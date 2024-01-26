@@ -38,6 +38,7 @@ import org.olat.course.assessment.ui.inspection.SearchAssessmentInspectionParame
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -129,6 +130,23 @@ public class AssessmentInspectionDAO {
 				.setParameter("date", date, TemporalType.TIMESTAMP)
 				.getResultList();
 		return inspectionList == null || inspectionList.isEmpty() ? null : inspectionList.get(0);
+	}
+	
+	public boolean hasAssessmentTestSession(IdentityRef identity, RepositoryEntryRef courseEntry, String subIdent) {
+		String query = """
+			select testSession.key from qtiassessmenttestsession as testSession
+			where testSession.identity.key=:identityKey and testSession.repositoryEntry.key=:repositoryEntryKey and testSession.subIdent=:subIdent
+			and (testSession.terminationTime is not null or testSession.finishTime is not null)
+			and testSession.exploded=false and testSession.cancelled=false and testSession.authorMode=false""";
+		
+		List<Long> inspectionList = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repositoryEntryKey", courseEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.getResultList();
+		return inspectionList != null && !inspectionList.isEmpty()
+				&& inspectionList.get(0) != null && inspectionList.get(0).longValue() > 0;
 	}
 	
 	public AssessmentInspection loadByKey(Long inspectionKey) {

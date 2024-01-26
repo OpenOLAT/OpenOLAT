@@ -104,8 +104,8 @@ implements SortableFlexiTableDataModel<AssessmentInspectionLogRow> {
 			case cancelled: return row.getInspectionAfter() != null ? row.getInspectionAfter().getComment() : "-";
 			case start, finishByParticipant, finishByCoach:
 				return after == null ? "???" : translator.translate("inspection.status." + after.getInspectionStatus());
-			case effectiveDuration:
-				return getEffectiveDurationDecorated(row.getRawAfter());
+			case effectiveDuration: return getEffectiveDurationDecorated(row.getRawAfter());
+			case noShow: return row.getRawAfter();
 			default: return "-";
 		}
 	}

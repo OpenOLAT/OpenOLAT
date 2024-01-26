@@ -39,7 +39,9 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.ui.inspection.AssessmentInspectionOverviewController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.assessment.ui.tool.AssessmentEventToState;
@@ -50,6 +52,7 @@ import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,6 +70,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private static final String ORES_TYPE_PREVIEW = "Preview";
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
 	private static final String ORES_TYPE_COMMUNICATION = "Communication";
+	private static final String ORES_TYPE_INSPECTIONS = "Inspections";
 
 	private Link overviewLink;
 	private Link participantsLink;
@@ -74,6 +78,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private Link communicationLink;
 	private Link previewLink;
 	private Link remindersLink;
+	private Link inspectionsLink;
 	private final VelocityContainer mainVC;
 	private final CourseNodeSegmentPrefs segmentPrefs;
 	private final SegmentViewComponent segmentView;
@@ -86,13 +91,15 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private IQCommunicationController communicationCtrl;
 	private Controller previewCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
+	private AssessmentInspectionOverviewController inspectionController;
 	
 	private final UserCourseEnvironment userCourseEnv;
 	private final IQTESTCourseNode courseNode;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
+	@Autowired
+	private AssessmentInspectionService assessmentInspectionService;
 	
 	public IQTESTCoachRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			IQTESTCourseNode courseNode) {
@@ -159,6 +166,12 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			}
 		}
 		
+		// Inspections
+		if(assessmentInspectionService.hasInspectionConfigurations(courseEntry)) {
+			inspectionsLink = LinkFactory.createLink("segment.inspections", mainVC, this);
+			segmentView.addSegment(inspectionsLink, false);
+		}
+		
 		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);
@@ -216,6 +229,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 					doOpenReminders(ureq, true);
 				} else if (clickedLink == communicationLink) {
 					doOpenCommunication(ureq);
+				} else if (clickedLink == inspectionsLink) {
+					doOpenInspections(ureq);
 				}
 			}
 		}
@@ -298,4 +313,18 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		}
 	}
 	
+	private void doOpenInspections(UserRequest ureq) {
+		if (inspectionsLink == null) return;
+		
+		if(inspectionController == null) {
+			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			AssessmentToolSecurityCallback secCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, userCourseEnv);
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_INSPECTIONS), null);
+			inspectionController = new AssessmentInspectionOverviewController(ureq, swControl, entry, courseNode, secCallback);
+			listenTo(inspectionController);
+		}
+
+		mainVC.put("segmentCmp", inspectionController.getInitialComponent());
+		segmentView.select(inspectionsLink);
+	}
 }

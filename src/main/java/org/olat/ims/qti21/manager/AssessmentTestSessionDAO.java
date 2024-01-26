@@ -321,6 +321,25 @@ public class AssessmentTestSessionDAO {
 	}
 	
 	/**
+	 * Search test session without the author mode flag set to true.
+	 * @param testEntry
+	 * @return
+	 */
+	public boolean hasValidTestSession(RepositoryEntryRef testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session.key from qtiassessmenttestsession session ")
+		  .append("where session.testEntry.key=:testEntryKey and session.authorMode=false");
+		
+		List<Long> sessionKey = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return sessionKey != null && !sessionKey.isEmpty() && sessionKey.get(0) != null;
+	}
+	
+	/**
 	 * Return all assessment test session of a test with the author flag set to true.
 	 * @param testEntry
 	 * @return

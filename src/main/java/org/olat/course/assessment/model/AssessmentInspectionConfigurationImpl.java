@@ -31,6 +31,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -46,6 +47,7 @@ import org.olat.repository.RepositoryEntry;
 
 @Entity(name="courseassessmentinspectionconfig")
 @Table(name="o_as_inspection_configuration")
+@NamedQuery(name="hasAssessmentInspectionConfiguration", query="select config.key from courseassessmentinspectionconfig as config where config.repositoryEntry.key=:entryKey")
 public class AssessmentInspectionConfigurationImpl implements AssessmentInspectionConfiguration, Persistable {
 	
 	private static final long serialVersionUID = -8047542170697719545L;

@@ -170,6 +170,27 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasAssessmentTestSession() {
+		String subIdent = "123465H";
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-9-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-10-");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		// Test
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(id1, null, entry, subIdent, null, entry);
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry, id1, null, 300, false);
+		testSession.setFinishTime(new Date());
+		testSessionDao.update(testSession);
+		dbInstance.commitAndCloseSession();
+
+		// Id 1 has test
+		boolean hasTestSession = inspectionDao.hasAssessmentTestSession(id1, entry, subIdent);
+		Assert.assertTrue(hasTestSession);
+
+		boolean hasNoTestSession = inspectionDao.hasAssessmentTestSession(id2, entry, subIdent);
+		Assert.assertFalse(hasNoTestSession);
+	}
+	
+	@Test
 	public void searchInspection() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-6-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-7-");

@@ -22,16 +22,20 @@ package org.olat.course.assessment.manager;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.crypto.PasswordGenerator;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspectionLog;
@@ -43,6 +47,7 @@ import org.olat.course.assessment.model.AssessmentEntryInspection;
 import org.olat.course.assessment.model.AssessmentInspectionConfigurationWithUsage;
 import org.olat.course.assessment.model.AssessmentInspectionImpl;
 import org.olat.course.assessment.model.TransientAssessmentInspection;
+import org.olat.course.assessment.ui.inspection.AssessmentInspectionOverviewController;
 import org.olat.course.assessment.ui.inspection.CreateInspectionContext.InspectionCompensation;
 import org.olat.course.assessment.ui.inspection.SearchAssessmentInspectionParameters;
 import org.olat.modules.assessment.Role;
@@ -65,6 +70,8 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	@Autowired
 	private IdentityDAO identityDao;
 	@Autowired
+	private I18nManager i18nManager;
+	@Autowired
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private AssessmentInspectionDAO inspectionDao;
@@ -78,6 +85,19 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 		List<AssessmentInspection> noShowInspections = inspectionDao.searchNoShowInspections(new Date());
 		for(AssessmentInspection noShowInspection:noShowInspections) {
 			noShowInspection.setInspectionStatus(AssessmentInspectionStatusEnum.noShow);
+			
+			// Add a comment if the participant han't done any test
+			String comment = null;
+			Identity assessedIdentity = noShowInspection.getIdentity();
+			RepositoryEntry entry = noShowInspection.getConfiguration().getRepositoryEntry();
+			boolean hasTestSession = inspectionDao.hasAssessmentTestSession(assessedIdentity, entry, noShowInspection.getSubIdent());
+			if(!hasTestSession) {
+				Locale defaultLocale = i18nManager.getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
+				Translator translator = Util.createPackageTranslator(AssessmentInspectionOverviewController.class, defaultLocale);
+				comment = translator.translate("comment.no.test.sessions");
+				noShowInspection.setComment(comment);
+			}
+			inspectionLogDao.createLog(Action.noShow, null, comment, noShowInspection, null);
 			inspectionDao.updateInspection(noShowInspection);
 			dbInstance.commit();
 		}
@@ -121,6 +141,11 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 		return inspectionConfigurationDao.loadConfigurationsByEntry(entry);
 	}
 	
+	@Override
+	public boolean hasInspectionConfigurations(RepositoryEntryRef entry) {
+		return inspectionConfigurationDao.hasConfigurationByRepositoryEntry(entry);
+	}
+
 	@Override
 	public boolean isInspectionConfigurationNameInUse(RepositoryEntryRef entry, String newName,
 			AssessmentInspectionConfiguration configuration) {

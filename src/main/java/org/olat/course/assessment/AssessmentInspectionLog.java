@@ -56,7 +56,8 @@ public interface AssessmentInspectionLog extends CreateInfo {
 		effectiveDuration,
 		commentAdd,
 		cancelled,
-		withdrawn
+		withdrawn,
+		noShow
 	}
 
 }

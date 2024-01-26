@@ -109,6 +109,17 @@ public class AssessmentInspectionConfigurationDAO {
 		return configurations== null || configurations.isEmpty() ? null : configurations.get(0);
 	}
 	
+	public boolean hasConfigurationByRepositoryEntry(RepositoryEntryRef entry) {
+		List<Long> configurations = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("hasAssessmentInspectionConfiguration", Long.class)
+				.setParameter("entryKey", entry.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return configurations != null && !configurations.isEmpty()
+				&& configurations.get(0) != null && configurations.get(0).longValue() > 0;
+	}
+	
 	public List<AssessmentInspectionConfiguration> loadConfigurationsByEntry(RepositoryEntryRef entry) {
 		String query = """
 				select config from courseassessmentinspectionconfig as config

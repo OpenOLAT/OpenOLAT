@@ -59,6 +59,8 @@ public interface AssessmentInspectionService {
 	
 	boolean isInspectionConfigurationNameInUse(RepositoryEntryRef entry, String newName, AssessmentInspectionConfiguration configuration);
 	
+	boolean hasInspectionConfigurations(RepositoryEntryRef entry);
+	
 	List<AssessmentInspectionConfiguration> getInspectionConfigurations(RepositoryEntryRef entry);
 	
 	List<AssessmentInspectionConfigurationWithUsage> getInspectionConfigurationsWithUsage(RepositoryEntryRef entry);
