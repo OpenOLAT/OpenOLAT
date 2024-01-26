@@ -162,7 +162,6 @@ public class LTIConfigForm extends FormBasicController {
 	private final boolean isAssessable;
 	private String key;
 	private String pass;
-	private String replacedPassValue;
 	
 	
 	private final String subIdent;
@@ -303,7 +302,6 @@ public class LTIConfigForm extends FormBasicController {
 		if (pass == null) pass = "";
 		// pass is used as textValue in tPassEl, thus hiding it
 		if (StringHelper.containsNonWhitespace(pass)) {
-			replacedPassValue = pass;
 			pass = PLACEHOLDER.repeat(pass.length());
 		}
 
@@ -1186,14 +1184,14 @@ public class LTIConfigForm extends FormBasicController {
 	private ModuleConfiguration getUpdatedConfigLti11() {
 		config.set(CONFIGKEY_KEY, getFormKey());
 
-		// resetting tPassElement
+		// resetting tPassElement and setting value for CONFIGKEY_PASS only if password has changed
 		String password = tPassEl.getValue();
-		if (!PLACEHOLDER.equals(password)) {
-			tPassEl.setValue(PLACEHOLDER.repeat(password.length()));
-		} else if (StringHelper.containsNonWhitespace(replacedPassValue)) {
-			password = replacedPassValue;
+		if (!pass.equals(password)) {
+			String newPlaceholderValue = PLACEHOLDER.repeat(password.length());
+			pass = newPlaceholderValue;
+			tPassEl.setValue(newPlaceholderValue);
+			config.set(CONFIGKEY_PASS, password);
 		}
-		config.set(CONFIGKEY_PASS, password);
 
 		config.set(CONFIG_KEY_DEBUG, Boolean.toString(doDebug.isSelected(0)));
 		config.set(CONFIG_KEY_CUSTOM, getCustomConfig());
