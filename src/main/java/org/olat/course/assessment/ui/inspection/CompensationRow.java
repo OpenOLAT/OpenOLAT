@@ -35,10 +35,16 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class CompensationRow extends UserPropertiesRow {
 	
+	private int extraTime;
 	private TextElement durationEl;
 
-	public CompensationRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public CompensationRow(Identity identity, int extraTime, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
+		this.extraTime = extraTime;
+	}
+	
+	public int getExtraTime() {
+		return extraTime;
 	}
 
 	public TextElement getDurationEl() {

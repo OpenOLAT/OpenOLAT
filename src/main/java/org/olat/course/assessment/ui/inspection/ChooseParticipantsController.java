@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.inspection;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +87,7 @@ public class ChooseParticipantsController extends StepFormBasicController {
 	private final CreateInspectionContext context;
 	private final AssessmentConfig assessmentConfig;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final CreateInspectionStepsListener stepsListener;
 
 	@Autowired
 	private UserManager userManager;
@@ -99,13 +101,15 @@ public class ChooseParticipantsController extends StepFormBasicController {
 	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public ChooseParticipantsController(UserRequest ureq, WindowControl wControl,
-			CreateInspectionContext context, StepsRunContext runContext, Form rootForm) {
+			CreateInspectionContext context, StepsRunContext runContext, Form rootForm,
+			CreateInspectionStepsListener stepsListener) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "select_participants");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessmentForm.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessmentInspectionOverviewController.class, getLocale(), getTranslator()));
 		
 		this.context = context;
+		this.stepsListener = stepsListener;
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(context.getCourseEntry(), context.getCourseNode());
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -220,17 +224,27 @@ public class ChooseParticipantsController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
 		if(!selectedIndexes.isEmpty()) {
+			Set<Long> participantsKeys = new HashSet<>();
 			List<IdentityRef> participants = new ArrayList<>(selectedIndexes.size());
 			for(Iterator<Integer> it=selectedIndexes.iterator(); it.hasNext(); ) {
 				ChooseParticipantRow row = tableModel.getObject(it.next().intValue());
 				if(row != null) {
 					participants.add(new IdentityRefImpl(row.getIdentityKey()));
+					participantsKeys.add(row.getIdentityKey());
 				}
 			}
-			context.setParticipants(participants);
+			
+			List<DisadvantageCompensation> compensations = disadvantageCompensationService
+					.getActiveDisadvantageCompensations(context.getCourseEntry(), context.getCourseNode().getIdent());
+			List<DisadvantageCompensation> participantsCompensations = compensations.stream()
+					.filter(compensation -> participantsKeys.contains(compensation.getIdentity().getKey()))
+					.toList();
+			context.setParticipants(participants, participantsCompensations);
 		}
 		
 		if(context.getCourseNode() != null) {
+			stepsListener.onStepsChanged(ureq);
+			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
 			tableEl.setErrorKey("form.legende.mandatory");

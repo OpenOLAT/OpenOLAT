@@ -1,5 +1,5 @@
 /**
- * <a href="https://www.openolat.org">
+ * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, https://www.frentix.com
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.inspection.elements;
@@ -28,23 +28,18 @@ import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Initial date: 15 déc. 2023<br>
+ * Initial date: 26 janv. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MinuteCellRenderer implements FlexiCellRenderer {
-	
-	private final Translator translator;
-	
-	public MinuteCellRenderer(Translator translator) {
-		this.translator = translator;
-	}
+public class ExtraTimeCellRenderer implements FlexiCellRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator transl) {
-		if(cellValue instanceof Number duration) {
-			target.append(translator.translate("duration.cell", Long.toString(duration.longValue())));
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof Number extra) {
+			int extraTimeInMinutes = extra.intValue() / 60;
+			target.append("<i class='o_icon o_icon_disadvantage_compensation'> </i> ").append("+").append(extraTimeInMinutes).append("m");
 		}
 	}
 }

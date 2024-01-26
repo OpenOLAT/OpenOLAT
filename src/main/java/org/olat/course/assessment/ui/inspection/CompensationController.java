@@ -47,9 +47,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.ui.inspection.CompensationListModel.CompensationCols;
 import org.olat.course.assessment.ui.inspection.CreateInspectionContext.InspectionCompensation;
+import org.olat.course.assessment.ui.inspection.elements.ExtraTimeCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
-import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,8 +73,6 @@ public class CompensationController extends StepFormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
-	@Autowired
-	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public CompensationController(UserRequest ureq, WindowControl wControl,
 			CreateInspectionContext context, StepsRunContext runContext, Form rootForm) {
@@ -109,7 +107,7 @@ public class CompensationController extends StepFormBasicController {
 			colIndex++;
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompensationCols.duration));
-		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompensationCols.extraTime, new ExtraTimeCellRenderer()));
 		
 		tableModel = new CompensationListModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "compensations", tableModel, 25, true, getTranslator(), formLayout);
@@ -123,12 +121,11 @@ public class CompensationController extends StepFormBasicController {
 		List<DisadvantageCompensation> compensations;
 		if(context.getEditedInspection() != null) {
 			Identity assessedIdentity = context.getEditedInspection().getIdentity();
-			DisadvantageCompensation compensation = disadvantageCompensationService.getActiveDisadvantageCompensation(assessedIdentity, context.getCourseEntry(), context.getCourseNode().getIdent());
+			DisadvantageCompensation compensation = context.getEditedCompensation();
 			compensations = compensation == null ? List.of() : List.of(compensation);
 			selectedIdentities.add(assessedIdentity.getKey());
 		} else {
-			compensations = disadvantageCompensationService
-					.getActiveDisadvantageCompensations(context.getCourseEntry(), context.getCourseNode().getIdent());
+			compensations = context.getParticipantsCompensations();
 			List<IdentityRef> participants = context.getParticipants();
 			for(IdentityRef participant:participants) {
 				selectedIdentities.add(participant.getKey());
@@ -141,11 +138,11 @@ public class CompensationController extends StepFormBasicController {
 			if(duplicates.contains(identity) || !selectedIdentities.contains(identity.getKey())) {
 				continue;
 			}
-			CompensationRow row = new CompensationRow(identity, userPropertyHandlers, getLocale());
+			final int extraTime = compensation.getExtraTime().intValue();
+			CompensationRow row = new CompensationRow(identity, extraTime, userPropertyHandlers, getLocale());
 			rows.add(row);
-			
-			int extraTime = compensation.getExtraTime().intValue();
-			int duration = context.getInspectionConfiguration().getDuration();
+
+			final int duration = context.getInspectionConfiguration().getDuration();
 			int val = (extraTime + duration) / 60;
 			TextElement durationEl = uifactory.addTextElement("duration_" + (++counter), null, 10, Integer.toString(val), flc);
 			row.setDurationEl(durationEl);

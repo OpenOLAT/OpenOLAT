@@ -41,7 +41,19 @@ public class CreateInspection_4_NotificationsStep extends BasicStep {
 		super(ureq);
 		this.context = context;
 		
-		setNextStep(new CreateInspection_5_CompensationStep(ureq, context));
+		if(context.getEditedCompensation() != null) {
+			if(context.getEditedCompensation() != null) {
+				setNextStep(new CreateInspection_5_CompensationStep(ureq, context));
+			} else {
+				setNextStep(NOSTEP);
+			}
+			
+		} else if(context.getParticipantsCompensations() != null && !context.getParticipantsCompensations().isEmpty()) {
+			setNextStep(new CreateInspection_5_CompensationStep(ureq, context));
+		} else {
+			setNextStep(NOSTEP);
+		}
+
 		setI18nTitleAndDescr("wizard.notification.title", "wizard.notification.descr");
 	}
 	

@@ -57,6 +57,7 @@ implements SortableFlexiTableDataModel<CompensationRow> {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
 				case duration: return row.getDurationEl();
+				case extraTime: return row.getExtraTime();
 				default: return "ERROR";
 			}
 		}
@@ -67,7 +68,8 @@ implements SortableFlexiTableDataModel<CompensationRow> {
 	
 	public enum CompensationCols implements FlexiSortableColumnDef {
 		
-		duration("table.header.compensation.duration");
+		duration("table.header.compensation.duration"),
+		extraTime("table.header.extraTime");
 		
 		private final String i18nKey;
 

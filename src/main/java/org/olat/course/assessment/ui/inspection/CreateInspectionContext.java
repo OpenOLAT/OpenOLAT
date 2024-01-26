@@ -28,6 +28,7 @@ import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -44,9 +45,12 @@ public class CreateInspectionContext {
 	private CourseNode courseNode;
 	private MailTemplate mailTemplate;
 	private List<IdentityRef> participants;
+	private List<DisadvantageCompensation> participantsCompensations;
 	private List<InspectionCompensation> inspectionCompensations;
-	private AssessmentInspection editedInspection;
 	private AssessmentInspectionConfiguration inspectionConfiguration;
+	
+	private AssessmentInspection editedInspection;
+	private DisadvantageCompensation editedCompensation;
 	
 	private final RepositoryEntry courseEntry;
 	private final AssessmentToolSecurityCallback secCallback;
@@ -75,9 +79,14 @@ public class CreateInspectionContext {
 	public List<IdentityRef> getParticipants() {
 		return participants;
 	}
+	
+	public List<DisadvantageCompensation> getParticipantsCompensations() {
+		return participantsCompensations;
+	}
 
-	public void setParticipants(List<IdentityRef> participants) {
+	public void setParticipants(List<IdentityRef> participants, List<DisadvantageCompensation> compensations) {
 		this.participants = participants;
+		this.participantsCompensations = compensations;
 	}
 
 	public AssessmentInspectionConfiguration getInspectionConfiguration() {
@@ -123,9 +132,14 @@ public class CreateInspectionContext {
 	public AssessmentInspection getEditedInspection() {
 		return editedInspection;
 	}
+	
+	public DisadvantageCompensation getEditedCompensation() {
+		return editedCompensation;
+	}
 
-	public void setEditedInspection(AssessmentInspection editedInspection) {
+	public void setEditedInspection(AssessmentInspection editedInspection, DisadvantageCompensation compensation) {
 		this.editedInspection = editedInspection;
+		this.editedCompensation = compensation;
 	}
 	
 	public List<InspectionCompensation> getInspectionCompensations() {

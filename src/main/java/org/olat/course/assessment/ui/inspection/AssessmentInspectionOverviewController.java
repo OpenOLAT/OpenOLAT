@@ -62,6 +62,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.nodes.INode;
@@ -88,6 +89,8 @@ import org.olat.instantMessaging.ui.component.RosterEntryStatusCellRenderer;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
+import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
@@ -149,6 +152,8 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 	private UserSessionManager sessionManager;
 	@Autowired
 	private AssessmentInspectionService inspectionService;
+	@Autowired
+	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public AssessmentInspectionOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, AssessmentToolSecurityCallback secCallback) {
@@ -649,7 +654,11 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 			CourseNode node = course.getRunStructure().getNode(inspection.getSubIdent());
 			context.setCourseNode(node);
 		}
-		context.setEditedInspection(inspection);
+
+		Identity assessedIdentity = inspection.getIdentity();
+		DisadvantageCompensation compensation = disadvantageCompensationService
+				.getActiveDisadvantageCompensation(assessedIdentity, context.getCourseEntry(), context.getCourseNode().getIdent());
+		context.setEditedInspection(inspection, compensation);
 		context.setInspectionConfiguration(inspection.getConfiguration());
 		
 		Step start = new CreateInspection_3_InspectionStep(ureq, context);

@@ -239,12 +239,12 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 		inspection.setInspectionStatus(status);
 		if(status == AssessmentInspectionStatusEnum.cancelled) {
 			inspection.setComment(comment);
-			calculateEffectiveDuration(inspection);
+			calculateEffectiveDuration(inspection, doer);
 			calculateEndBy(inspection, doer);
 		} else if(status == AssessmentInspectionStatusEnum.withdrawn) {
 			inspection.setComment(comment);
 		} else if(status == AssessmentInspectionStatusEnum.carriedOut) {
-			calculateEffectiveDuration(inspection);
+			calculateEffectiveDuration(inspection, doer);
 			calculateEndBy(inspection, doer);
 		}
 		inspection = inspectionDao.updateInspection(inspection);
@@ -256,19 +256,27 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 		return inspection;
 	}
 	
-	private void calculateEffectiveDuration(AssessmentInspection inspection) {
+	private void calculateEffectiveDuration(AssessmentInspection inspection, Identity doer) {
 		if(inspection.getStartTime() == null) return;
+		
+		Long currentEffectiveDuration = inspection.getEffectiveDuration();
+		String currentEffectiveDurationVal = currentEffectiveDuration == null ? null : currentEffectiveDuration.toString();
 		
 		Date startTime = inspection.getStartTime();
 		int alreadyDone = inspection.getEffectiveDuration() == null ? 0 : inspection.getEffectiveDuration().intValue();
-		long effectiveDuration = (new Date().getTime() - startTime.getTime()) + alreadyDone;
+		// Calculate in seconds
+		long effectiveDuration = ((new Date().getTime() - startTime.getTime()) / 1000) + alreadyDone;
 		inspection.setEffectiveDuration(effectiveDuration);
+	
+		inspectionLogDao.createLog(Action.effectiveDuration, currentEffectiveDurationVal, Long.toString(effectiveDuration), inspection, doer);
 	}
 	
 
 	private void calculateEndBy(AssessmentInspection inspection, Identity doer) {
 		if(doer == null) {
 			((AssessmentInspectionImpl)inspection).setEndBy(Role.auto);
+		} else if(doer.getKey().equals(inspection.getIdentity().getKey())) {
+			((AssessmentInspectionImpl)inspection).setEndBy(Role.user);
 		} else {
 			((AssessmentInspectionImpl)inspection).setEndBy(Role.coach);
 		}
@@ -346,12 +354,15 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 		} else {
 			((AssessmentInspectionImpl)inspection).setEndBy(Role.auto);
 		}
-		int alreadyDone = inspection.getEffectiveDuration() == null ? 0 : inspection.getEffectiveDuration().intValue();
-		inspection.setEffectiveDuration(duration + alreadyDone);
+		long alreadyDone = inspection.getEffectiveDuration() == null ? 0 : inspection.getEffectiveDuration().intValue();
+		long effectiveDuration = duration + alreadyDone;
+		inspection.setEffectiveDuration(effectiveDuration);
 		inspection = inspectionDao.updateInspection(inspection);
 		inspection.getIdentity().getUser();
+		
 		String after = AssessmentInspectionXStream.toXml(inspection);
 		Action action = assessedIdentity.equals(doer) ? Action.finishByParticipant : Action.finishByCoach;
+		inspectionLogDao.createLog(Action.effectiveDuration, Long.toString(alreadyDone), Long.toString(effectiveDuration), inspection, doer);
 		inspectionLogDao.createLog(action, before, after, inspection, doer);
 	
 		AssessmentInspection updatedInspection = inspectionDao.updateInspection(inspection);

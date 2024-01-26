@@ -46,6 +46,10 @@ public interface AssessmentInspection extends ModifiedInfo, CreateInfo {
 
 	void setToDate(Date date);
 	
+	/**
+	 * 
+	 * @return In seconds
+	 */
 	Integer getExtraTime();
 
 	void setExtraTime(Integer extraTime);
@@ -75,6 +79,10 @@ public interface AssessmentInspection extends ModifiedInfo, CreateInfo {
 	
 	void setInspectionStatus(AssessmentInspectionStatusEnum inspectionStatus);
 	
+	/**
+	 * 
+	 * @return The effective duration in seconds
+	 */
 	Long getEffectiveDuration();
 
 	void setEffectiveDuration(Long effectiveDuration);

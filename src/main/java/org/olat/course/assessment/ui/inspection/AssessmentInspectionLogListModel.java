@@ -19,12 +19,15 @@
  */
 package org.olat.course.assessment.ui.inspection;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.assessment.AssessmentInspectionLog.Action;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
@@ -37,6 +40,8 @@ import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
  */
 public class AssessmentInspectionLogListModel extends DefaultFlexiTableDataModel<AssessmentInspectionLogRow>
 implements SortableFlexiTableDataModel<AssessmentInspectionLogRow> {
+	
+	private static final Logger log = Tracing.createLoggerFor(AssessmentInspectionLogListModel.class);
 	
 	private static final LogCols[] COLS = LogCols.values();
 	
@@ -86,6 +91,8 @@ implements SortableFlexiTableDataModel<AssessmentInspectionLogRow> {
 				return translator.translate("inspection.status.active");
 			case finishByParticipant, finishByCoach:
 				return before == null ? "???" : translator.translate("inspection.status." + before.getInspectionStatus());
+			case effectiveDuration:
+				return "-";
 			default: return "-";
 		}
 	}
@@ -97,8 +104,25 @@ implements SortableFlexiTableDataModel<AssessmentInspectionLogRow> {
 			case cancelled: return row.getInspectionAfter() != null ? row.getInspectionAfter().getComment() : "-";
 			case start, finishByParticipant, finishByCoach:
 				return after == null ? "???" : translator.translate("inspection.status." + after.getInspectionStatus());
+			case effectiveDuration:
+				return getEffectiveDurationDecorated(row.getRawAfter());
 			default: return "-";
 		}
+	}
+	
+	private String getEffectiveDurationDecorated(String val) {
+		if(StringHelper.containsNonWhitespace(val)) {
+			try {
+				long duration = Long.parseLong(val);
+				if(duration < 60) {
+					return translator.translate("duration.cell.seconds", Long.toString(duration));
+				}
+				return translator.translate("duration.cell", Long.toString(duration / 60));
+			} catch (Exception e) {
+				log.debug("cannot parse duration: {}", val, e);
+			}
+		}
+		return "-";
 	}
 	
 	public enum LogCols implements FlexiSortableColumnDef {

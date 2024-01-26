@@ -53,7 +53,14 @@ public class CreateInspection_2_ParticipantsStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext stepsRunContext, Form form) {
-		return new ChooseParticipantsController(ureq, wControl, context, stepsRunContext, form);
+		return new ChooseParticipantsController(ureq, wControl, context, stepsRunContext, form,
+				new CreateInspectionStepsListenerImpl());
 	}
-
+	
+	private final class CreateInspectionStepsListenerImpl implements CreateInspectionStepsListener {
+		@Override
+		public void onStepsChanged(UserRequest ureq) {
+			setNextStep(new CreateInspection_3_InspectionStep(ureq, context));
+		}
+	}
 }

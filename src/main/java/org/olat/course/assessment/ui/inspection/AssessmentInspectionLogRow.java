@@ -80,6 +80,14 @@ public class AssessmentInspectionLogRow extends UserPropertiesRow {
 		return inspectionLog.getAction();
 	}
 	
+	public String getRawBefore() {
+		return inspectionLog.getBefore();
+	}
+	
+	public String getRawAfter() {
+		return inspectionLog.getAfter();
+	}
+	
 	public AssessmentInspection getInspectionBefore() {
 		return inspectionBefore;
 	}
