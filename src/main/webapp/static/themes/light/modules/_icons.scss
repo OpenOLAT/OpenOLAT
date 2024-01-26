@@ -39,7 +39,7 @@ $fa-css-prefix: "o_icon" !default;
 }
 .o_icon_assessment_tool { @include o-add-icon('trophy');}
 .o_icon_assignment { @include o-add-icon('bolt'); color: $o-portfolio-assignment-color;}
-.o_icon_attempt_limit { @include o-add-icon('refresh');}
+.o_icon_attempts { @include o-add-icon('rotate-left');}
 .o_icon_accept { @include o-add-icon('check'); color: $brand-success;}
 .o_icon_add { @include o-add-icon('plus-circle');}
 .o_icon_add_member { @include o-add-icon('user-plus');}
@@ -358,7 +358,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_rubric_sufficient { @include o-add-icon('check-circle'); color: $o-evaluation-sufficient-color}
 .o_icon_rubric_neutral { @include o-add-icon('exclamation-circle'); color: $o-evaluation-neutral-color }
 .o_icon_save { @include o-add-icon('save');}
-.o_icon_scale_unbalanced { @include o-add-icon('scale-unbalanced');}
+.o_icon_score { @include o-add-icon('trophy');}
+.o_icon_score_unbalanced { @include o-add-icon('scale-unbalanced-flip');}
 .o_icon_search { @include o-add-icon('search');}
 .o_icon_search_lookup { @include o-add-icon('magnifying-glass-plus');}
 .o_icon_select { @include o-add-icon('check');}
@@ -395,6 +396,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_status_done { @include o-add-icon('check');}
 .o_icon_statistics_tool { @include o-add-icon('bar-chart', false);}
 .o_icon_submit { @include o-add-icon('check');}
+.o_icon_success_status { @include o-add-icon('medal');}
 .o_icon_table { @include o-add-icon('table-list');}
 .o_icon_table_custom {
 	/* custom multi-icon icon because FA6 does not have the right icon */
@@ -712,12 +714,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_as_mode_closed { @include o-add-icon('minus');}
 .o_as_mode_stop { @include o-add-icon('stop');}
 
-.o_as_widget_attempts { @include o-add-icon('rotate-left');}
-.o_as_widget_passed { @include o-add-icon('check-circle');}
-.o_as_widget_score { @include o-add-icon('trophy');}
-.o_as_widget_score_weighted { @include o-add-icon('scale-unbalanced-flip');}
-.o_as_widget_signature { @include o-add-icon('file-code');}
-
 .o_icon_qti_notPresented { @include o-add-icon('circle', false); color: $o-qti-status-notPresented-color;}
 .o_icon_qti_notAnswered { @include o-add-icon('play-circle'); color: $o-qti-status-notAnswered-color;}
 .o_icon_qti_answered { @include o-add-icon('check-circle'); color: $o-qti-status-answered-color;}
@@ -736,6 +732,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qti_summary_notAnswered { @include o-add-icon('circle'); color: $o-qti-status-notAnswered-color;}
 .o_icon_qti_summary_ended { @include o-add-icon('times-circle'); color: $brand-danger;}
 .o_icon_qti_summary_correct { @include o-add-icon('check-circle'); color: $brand-success;}
+.o_icon_qti_signature { @include o-add-icon('file-code');}
 
 /* lectures */
 .o_lectures_current { @include o-add-icon('circle'); color: $brand-warning;}
