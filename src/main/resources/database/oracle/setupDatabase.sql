@@ -601,6 +601,7 @@ CREATE TABLE o_repositoryentry (
   guests number default 0 not null,
   bookable number default 0 not null,
   publicvisible number default 0 not null,
+  videocollection number default 0,
   deletiondate date default null,
   fk_deleted_by number(20) default null,
   fk_educational_type number(20) default null,
@@ -2007,6 +2008,14 @@ create table o_vid_metadata (
   vid_download_enabled number default 0 not null,
   fk_resource_id number(20) not null,
   primary key (id)
+);
+
+create table o_vid_to_organisation (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_entry number(20) not null,
+   fk_organisation number(20) not null,
+   primary key (id)
 );
 
 -- video task
@@ -5164,6 +5173,11 @@ create index vid_status_trans_idx on o_vid_transcoding(vid_status);
 create index vid_transcoder_trans_idx on o_vid_transcoding(vid_transcoder);
 alter table o_vid_metadata add constraint vid_meta_rsrc_idx foreign key (fk_resource_id) references o_olatresource (resource_id);
 create index idx_vid_meta_rsrc_idx on o_vid_metadata(fk_resource_id);
+
+alter table o_vid_to_organisation add constraint vid_entry_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_vid_entry_to_entry_idx on o_vid_to_organisation (fk_entry);
+alter table o_vid_to_organisation add constraint vid_entry_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_vid_entry_to_org_idx on o_vid_to_organisation (fk_organisation);
 
 -- video task
 alter table o_vid_task_session add constraint vid_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

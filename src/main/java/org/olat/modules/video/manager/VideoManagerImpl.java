@@ -48,7 +48,6 @@ import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
-import com.google.common.io.Files;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Header;
@@ -64,6 +63,7 @@ import org.jcodec.common.io.FileChannelWrapper;
 import org.jcodec.common.io.NIOUtils;
 import org.jcodec.common.model.Picture;
 import org.jcodec.scale.AWTUtil;
+import org.json.JSONObject;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.ImageService;
@@ -76,6 +76,7 @@ import org.olat.core.commons.services.video.JCodecHelper;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -113,7 +114,9 @@ import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
+import org.olat.modules.video.VideoToOrganisation;
 import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.model.SearchVideoInCollectionParams;
 import org.olat.modules.video.model.TranscodingCount;
 import org.olat.modules.video.model.VideoCommentsImpl;
 import org.olat.modules.video.model.VideoMarkersImpl;
@@ -125,18 +128,22 @@ import org.olat.modules.video.spi.youtube.model.YoutubeMetadata;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.modules.video.ui.VideoHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
-import org.json.JSONObject;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.google.common.io.Files;
 
 /**
  * Manager for Videoressource
@@ -145,7 +152,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("videoManager")
-public class VideoManagerImpl implements VideoManager {
+public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeletable {
 	
 	private static final Logger log = Tracing.createLoggerFor(VideoManagerImpl.class);
 	
@@ -189,11 +196,17 @@ public class VideoManagerImpl implements VideoManager {
 	@Autowired 
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
 	private VideoTranscodingDAO videoTranscodingDao;
+	@Autowired
+	private VideoCollectionQuery videoCollectionQuery;
 	@Autowired
 	private VideoMetadataDAO videoMetadataDao;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private VideoToOrganisationDAO videoToOrganisationDao;
 	@Autowired
 	private Scheduler scheduler;
 	@Autowired
@@ -275,6 +288,64 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(videoResource, true);
 		repositoryManager.deleteImage(repoEntry);
+	}
+	
+	@Override
+	public List<Organisation> getVideoOrganisations(RepositoryEntryRef re) {
+		return videoToOrganisationDao.getOrganisations(re);
+	}
+
+	@Override
+	public RepositoryEntry setVideoCollection(RepositoryEntry re, boolean videoCollection, List<Organisation> organisations) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		reloadedRe.setVideoCollection(videoCollection);
+		RepositoryEntry updatedRe = repositoryEntryDao.updateAndCommit(reloadedRe);
+		List<VideoToOrganisation> relations = videoToOrganisationDao.getVideoToOrganisation(updatedRe);
+		Map<Organisation,VideoToOrganisation> relationsMap = relations.stream()
+				.collect(Collectors.toMap(VideoToOrganisation::getOrganisation, rel -> rel, (u, v) -> u));
+		
+		List<VideoToOrganisation> relationsToDelete = new ArrayList<>(relations);
+		if(videoCollection) {
+			// Only add if in collection, if not delete all relations to organisations
+			for(Organisation organisation:organisations) {
+				VideoToOrganisation relation = relationsMap.get(organisation);
+				if(relation == null) {
+					videoToOrganisationDao.createVideoToOrganisation(updatedRe, organisation);
+				} else {
+					relationsToDelete.remove(relation);
+				}
+			}
+		}
+		
+		for(VideoToOrganisation relationToDelete:relationsToDelete) {
+			videoToOrganisationDao.deleteVideoToOrganisation(relationToDelete);
+		}
+		dbInstance.commit();
+		return updatedRe;
+	}
+
+	@Override
+	public int countVideosInCollection(SearchVideoInCollectionParams params) {
+		return videoCollectionQuery.countVideos(params);
+	}
+
+	@Override
+	public List<RepositoryEntry> getVideosInCollection(SearchVideoInCollectionParams params, int firstResult, int maxResults) {
+		return videoCollectionQuery.searchVideos(params, firstResult, maxResults);
+	}
+
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		List<VideoToOrganisation> relations = videoToOrganisationDao.getVideoToOrganisation(re);
+		if(relations != null && !relations.isEmpty()) {
+			for(VideoToOrganisation relation:relations) {
+				videoToOrganisationDao.deleteVideoToOrganisation(relation);
+			}
+		}
+		return true;
 	}
 
 	/**

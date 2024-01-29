@@ -25,10 +25,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.logging.Tracing;
 import org.olat.test.OlatTestCase;
 
 /**
@@ -37,8 +35,6 @@ import org.olat.test.OlatTestCase;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class VideoSubtitlesHelperTest extends OlatTestCase {
-
-	private static final Logger log = Tracing.createLoggerFor(VideoSubtitlesHelperTest.class);
 
 	@Test
 	public void srtTimeCodeTest() {

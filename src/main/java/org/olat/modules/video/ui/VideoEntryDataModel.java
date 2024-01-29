@@ -21,7 +21,6 @@ package org.olat.modules.video.ui;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.repository.ui.list.RepositoryEntryRow;
 
 /**
  * 
@@ -29,7 +28,7 @@ import org.olat.repository.ui.list.RepositoryEntryRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VideoEntryDataModel extends DefaultFlexiTableDataSourceModel<RepositoryEntryRow> {
+public class VideoEntryDataModel extends DefaultFlexiTableDataSourceModel<VideoEntryRow> {
 	
 	private static final Cols[] COLS = Cols.values();
 	
@@ -44,7 +43,7 @@ public class VideoEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposi
 	}
 
 	@Override
-	public DefaultFlexiTableDataSourceModel<RepositoryEntryRow> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataSourceModel<VideoEntryRow> createCopyWithEmptyList() {
 		return new VideoEntryDataModel(getSourceDelegate(), getTableColumnModel());
 	}
 
@@ -53,7 +52,7 @@ public class VideoEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposi
 		return (VideoEntryDataSource)super.getSourceDelegate();
 	}
 	
-	public RepositoryEntryRow getRowByKey(Long key) {
+	public VideoEntryRow getRowByKey(Long key) {
 		return getObjects().stream()
 				.filter(row -> row != null && row.getKey().equals(key))
 				.findFirst()
@@ -62,7 +61,7 @@ public class VideoEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposi
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		RepositoryEntryRow item = getObject(row);
+		VideoEntryRow item = getObject(row);
 		if(item == null) {
 			return null;//don't break here
 		}

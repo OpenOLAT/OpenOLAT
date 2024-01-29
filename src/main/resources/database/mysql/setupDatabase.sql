@@ -549,6 +549,7 @@ create table if not exists o_repositoryentry (
    guests bit default 0 not null,
    bookable bit default 0 not null,
    publicvisible bool default false not null,
+   videocollection bool default false,
    allowtoleave varchar(16),
    candownload bit not null,
    cancopy bit not null,
@@ -1949,6 +1950,14 @@ create table o_vid_metadata (
   vid_download_enabled boolean not null default false,
   fk_resource_id bigint not null,
   primary key (id)
+);
+
+create table o_vid_to_organisation (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_entry bigint not null,
+   fk_organisation bigint not null,
+   primary key (id)
 );
 
 -- video task
@@ -4707,6 +4716,7 @@ alter table o_goto_meeting ENGINE = InnoDB;
 alter table o_goto_registrant ENGINE = InnoDB;
 alter table o_vid_transcoding ENGINE = InnoDB;
 alter table o_vid_metadata ENGINE = InnoDB;
+alter table o_vid_to_organisation ENGINE = InnoDB;
 alter table o_vid_task_session ENGINE = InnoDB;
 alter table o_vid_task_selection ENGINE = InnoDB;
 alter table o_pf_category_relation ENGINE = InnoDB;
@@ -5274,6 +5284,9 @@ alter table o_vid_transcoding add constraint fk_resource_id_idx foreign key (fk_
 create index vid_status_trans_idx on o_vid_transcoding(vid_status);
 create index vid_transcoder_trans_idx on o_vid_transcoding(vid_transcoder);
 alter table o_vid_metadata add constraint vid_meta_rsrc_idx foreign key (fk_resource_id) references o_olatresource (resource_id);
+
+alter table o_vid_to_organisation add constraint vid_entry_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_vid_to_organisation add constraint vid_entry_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 
 -- video task
 alter table o_vid_task_session add constraint vid_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

@@ -337,6 +337,7 @@
 		<class>org.olat.modules.video.model.VideoMetaImpl</class>
 		<class>org.olat.modules.video.model.VideoTaskSessionImpl</class>
 		<class>org.olat.modules.video.model.VideoTaskSegmentSelectionImpl</class>
+		<class>org.olat.modules.video.model.VideoToOrganisationImpl</class>
 		<class>org.olat.modules.webFeed.model.FeedImpl</class>
 		<class>org.olat.modules.webFeed.model.ItemImpl</class>
 		<class>org.olat.modules.zoom.model.ZoomProfileImpl</class>

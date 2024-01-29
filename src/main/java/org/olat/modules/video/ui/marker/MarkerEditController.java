@@ -173,13 +173,13 @@ public class MarkerEditController extends FormBasicController {
 		
 		markerTextEl.clearError();
 		if(!StringHelper.containsNonWhitespace(markerTextEl.getValue())) {
-			markerTextEl.setErrorKey("form.legende.mandatory", null);
+			markerTextEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		styleEl.clearError();
 		if(!styleEl.isOneSelected()) {
-			styleEl.setErrorKey("form.legende.mandatory", null);
+			styleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -196,17 +196,17 @@ public class MarkerEditController extends FormBasicController {
 		boolean allOk = true;
 		beginEl.clearError();
 		if(!StringHelper.containsNonWhitespace(beginEl.getValue())) {
-			beginEl.setErrorKey("form.legende.mandatory", null);
+			beginEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(videoDurationInSecs != null) {
 			try {
 				Date val = displayDateFormat.parse(beginEl.getValue());
 				if(val.getTime() > (videoDurationInSecs.longValue() * 1000l)) {
-					beginEl.setErrorKey("chapter.error.out.of.range", null);
+					beginEl.setErrorKey("chapter.error.out.of.range");
 					allOk &= false;
 				}
 			} catch(Exception e) {
-				beginEl.setErrorKey("chapter.error.format", null);
+				beginEl.setErrorKey("chapter.error.format");
 				allOk &= false;
 			}
 		}
@@ -217,10 +217,10 @@ public class MarkerEditController extends FormBasicController {
 		boolean allOk = true;
 		durationEl.clearError();
 		if(!StringHelper.containsNonWhitespace(durationEl.getValue())) {
-			durationEl.setErrorKey("form.legende.mandatory", null);
+			durationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!StringHelper.isLong(durationEl.getValue())) {
-			durationEl.setErrorKey("form.error.nointeger", null);
+			durationEl.setErrorKey("form.error.nointeger");
 			allOk &= false;
 		} else if(StringHelper.containsNonWhitespace(beginEl.getValue())) {
 			try {
@@ -228,10 +228,10 @@ public class MarkerEditController extends FormBasicController {
 				long duration = Long.parseLong(durationEl.getValue());
 				long end = duration + begin.getTime();
 				if(duration == 0) {
-					durationEl.setErrorKey("chapter.error.out.of.range", null);
+					durationEl.setErrorKey("chapter.error.out.of.range");
 					allOk &= false;
 				} else if(videoDurationInSecs != null && (end < 1 || end > (videoDurationInSecs.longValue() * 1000l))) {
-					durationEl.setErrorKey("chapter.error.out.of.range", null);
+					durationEl.setErrorKey("chapter.error.out.of.range");
 					allOk &= false;
 				}
 			} catch (NumberFormatException | ParseException e) {
@@ -247,17 +247,17 @@ public class MarkerEditController extends FormBasicController {
 		
 		el.clearError();
 		if(mandatory && !StringHelper.containsNonWhitespace(el.getValue())) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(StringHelper.containsNonWhitespace(el.getValue())) {
 			try {
 				int val = Integer.parseInt(el.getValue());
 				if(val < 0 || val > 100) {
-					el.setErrorKey("error.percent.value", null);
+					el.setErrorKey("error.percent.value");
 					allOk &= false;
 				}
 			} catch(NumberFormatException e) {
-				el.setErrorKey("error.percent.value", null);
+				el.setErrorKey("error.percent.value");
 				allOk &= false;
 			}
 		}
@@ -285,7 +285,7 @@ public class MarkerEditController extends FormBasicController {
 			marker.setHeight(fromPercent(heightEl.getValue()));		
 			fireEvent(ureq, Event.DONE_EVENT);
 		} catch (ParseException e) {
-			beginEl.setErrorKey("form.legende.mandatory", null);
+			beginEl.setErrorKey("form.legende.mandatory");
 			logError("", e);
 		}
 	}

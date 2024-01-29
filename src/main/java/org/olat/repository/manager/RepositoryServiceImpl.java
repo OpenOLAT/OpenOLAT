@@ -232,6 +232,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		re.setAllowToLeaveOption(repositoryModule.getAllowToLeaveDefaultOption());
 		re.setInvitationByOwnerWithAuthorRightsEnabled(false);
 		re.setLTI13DeploymentByOwnerWithAuthorRightsEnabled(false);
+		re.setVideoCollection(false);
 		
 		if(resource == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", CodeHelper.getForeverUniqueID());

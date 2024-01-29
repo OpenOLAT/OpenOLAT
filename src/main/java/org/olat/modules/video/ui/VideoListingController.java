@@ -20,7 +20,6 @@
 package org.olat.modules.video.ui;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,17 +55,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.fileresource.types.VideoFileResource;
+import org.olat.modules.video.model.SearchVideoInCollectionParams;
+import org.olat.modules.video.model.SearchVideoInCollectionParams.OrderBy;
 import org.olat.modules.video.ui.VideoEntryDataModel.Cols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
-import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
-import org.olat.repository.ui.list.RepositoryEntryRow;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,16 +82,15 @@ public class VideoListingController extends FormBasicController implements Activ
 	private FlexiTableElement tableEl;
 	private VideoEntryDataModel tableModel;
 	private VideoEntryDataSource dataSource;
-	private SearchMyRepositoryEntryViewParams searchParams;
-
+	private SearchVideoInCollectionParams searchParams;
+	
 	@Autowired
-	private RepositoryModule repositoryModule;
+	private ACService acService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private ACService acService;
+
 
 	public VideoListingController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel) {		
 		super(ureq, wControl, "video_listing");
@@ -104,10 +98,8 @@ public class VideoListingController extends FormBasicController implements Activ
 		
 		this.toolbarPanel = toolbarPanel;
 		
-		searchParams = new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), VideoFileResource.TYPE_NAME);
-		searchParams.setOfferOrganisations(acService.getOfferOrganisations(getIdentity()));
-		searchParams.setOfferValidAt(new Date());
-		searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published });
+		searchParams = new SearchVideoInCollectionParams(getIdentity(), ureq.getUserSession().getRoles());
+		searchParams.setOrganisations(acService.getOfferOrganisations(getIdentity()));
 		dataSource = new VideoEntryDataSource(searchParams);
 		imgUrl = registerMapper(ureq, new VideoMapper());
 
@@ -148,9 +140,6 @@ public class VideoListingController extends FormBasicController implements Activ
 		sorters.add(new FlexiTableSort(translate("orderby.author"), OrderBy.author.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.creationDate"), OrderBy.creationDate.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.launchCounter"), OrderBy.launchCounter.name()));
-		if(repositoryModule.isRatingEnabled()) {
-			sorters.add(new FlexiTableSort(translate("orderby.rating"), OrderBy.rating.name()));
-		}
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
 		options.setDefaultOrderBy(new SortKey(OrderBy.creationDate.name(), false));
 		tableElement.setSortSettings(options);
@@ -228,7 +217,7 @@ public class VideoListingController extends FormBasicController implements Activ
 				if (start != -1) {
 					relPath = relPath.substring(start+1);
 					Long id = Long.valueOf(relPath);
-					RepositoryEntryRow row = tableModel.getRowByKey(id);
+					VideoEntryRow row = tableModel.getRowByKey(id);
 					if(row != null) {
 						VFSLeaf imageFile = repositoryManager.getImage(id, row.getOLATResourceable());
 						if(imageFile != null) {

@@ -25,19 +25,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.manager.VideoExportMediaResource;
+import org.olat.modules.video.model.SearchVideoInCollectionParams;
 import org.olat.modules.video.model.TranscodingCount;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
-
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * The <code>VideoManager</code> singleton is responsible for dealing with video
@@ -92,6 +94,16 @@ public interface VideoManager {
 	public void setPosterframeResizeUploadfile(OLATResource videoResource, VFSLeaf newPosterFile, Identity changedBy);
 	
 	public void deletePosterframe(OLATResource videoResource);
+	
+	
+	public List<Organisation> getVideoOrganisations(RepositoryEntryRef re);
+	
+	public RepositoryEntry setVideoCollection(RepositoryEntry re, boolean videoCollection, List<Organisation> organisations);
+	
+	public int countVideosInCollection(SearchVideoInCollectionParams params);
+	
+	public List<RepositoryEntry> getVideosInCollection(SearchVideoInCollectionParams params, int firstResult, int maxResults);
+	
 
 	/**
 	 * get all available Tracks of given videoResource

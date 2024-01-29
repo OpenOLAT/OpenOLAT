@@ -65,7 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AuthoringEditAccessController extends BasicController {
 	
-	private VelocityContainer mainVC;
+	protected final VelocityContainer mainVC;
 	
 	private LTI13ResourceAccessController lti13AccessCtrl;
 	private AuthoringEditAccessShareController accessShareCtrl;
@@ -87,7 +87,7 @@ public class AuthoringEditAccessController extends BasicController {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private RepositoryService repositoryService;
+	protected RepositoryService repositoryService;
 	@Autowired
 	private RepositoryHandlerFactory handlerFactory;
 	

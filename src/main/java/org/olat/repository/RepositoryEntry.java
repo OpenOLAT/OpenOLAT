@@ -185,6 +185,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private Date statusPublishedDate;
 	@Column(name="publicvisible", nullable=false, insertable=true, updatable=true)
 	private boolean publicVisible;
+	@Column(name="videocollection", nullable=false, insertable=true, updatable=true)
+	private boolean videoCollection;
 	@Column(name="allusers", nullable=false, insertable=true, updatable=true)
 	private boolean allUsers;
 	@Column(name="guests", nullable=false, insertable=true, updatable=true)
@@ -542,6 +544,14 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		this.publicVisible = publicVisible;
 	}
 	
+	public boolean isVideoCollection() {
+		return videoCollection;
+	}
+
+	public void setVideoCollection(boolean videoCollection) {
+		this.videoCollection = videoCollection;
+	}
+
 	@Deprecated
 	public boolean isBookable() {
 		return bookable;

@@ -1,0 +1,13 @@
+$r.render("accessAndBooking")
+#if($r.visible("videoCollectionAccess"))
+	$r.render("videoCollectionAccess")
+#end
+#if($r.visible("offers"))
+	$r.render("offers")
+#end
+#if($r.visible("lti13Access"))
+	<div class="o_block_bottom">
+		$r.render("lti13Access")
+	</div>
+#end
+$r.render("accessOverview")

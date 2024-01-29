@@ -156,9 +156,6 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		initAccessAndBooking();
 		initOptions();
 		initPoster();
-		// initChapters();
-		// initComments();
-		// initQuiz();
 		initSubtitles();
 		initQualities();
 		initDownload();
@@ -221,6 +218,16 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		listenTo(videoMetadataController);
 		mainPanel.setContent(videoMetadataController.getInitialComponent());
 		buttonsGroup.setSelectedButton(metaDataLink);
+	}
+
+	@Override
+	protected void doOpenAccess(UserRequest ureq) {
+		entry = repositoryService.loadByKey(entry.getKey());
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Access"), null);
+		accessCtrl = new VideoEditAccessController(ureq, swControl, entry, readOnly);
+		listenTo(accessCtrl);
+		mainPanel.setContent(accessCtrl.getInitialComponent());
+		buttonsGroup.setSelectedButton(accessLink);
 	}
 	
 	private void doOpenPosterConfig(UserRequest ureq) {

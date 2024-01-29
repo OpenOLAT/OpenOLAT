@@ -30,12 +30,11 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.util.StringHelper;
-import org.olat.repository.RepositoryEntryMyView;
-import org.olat.repository.RepositoryService;
-import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
-import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
-import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
-import org.olat.repository.ui.list.RepositoryEntryRow;
+import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.model.SearchVideoInCollectionParams;
+import org.olat.modules.video.model.SearchVideoInCollectionParams.OrderBy;
+import org.olat.repository.RepositoryEntry;
+
 
 /**
  * 
@@ -43,22 +42,17 @@ import org.olat.repository.ui.list.RepositoryEntryRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
+public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<VideoEntryRow> {
 	
-	private final SearchMyRepositoryEntryViewParams searchParams;
+	private final SearchVideoInCollectionParams searchParams;
 	
-	private final RepositoryService repositoryService;
+	private final VideoManager videoManager;
 	
 	private Integer count;
 	
-	public VideoEntryDataSource(SearchMyRepositoryEntryViewParams searchParams) {
+	public VideoEntryDataSource(SearchVideoInCollectionParams searchParams) {
 		this.searchParams = searchParams;
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-	}
-	
-	public void setFilters(List<Filter> filters) {
-		searchParams.setFilters(filters);
-		count = null;
+		videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 	}
 	
 	public void setOrderBy(OrderBy orderBy) {
@@ -72,18 +66,18 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<Reposi
 	@Override
 	public int getRowCount() {
 		if(count == null) {
-			count = repositoryService.countMyView(searchParams);
+			count = videoManager.countVideosInCollection(searchParams);
 		}
 		return count.intValue();
 	}
 
 	@Override
-	public List<RepositoryEntryRow> reload(List<RepositoryEntryRow> rows) {
+	public List<VideoEntryRow> reload(List<VideoEntryRow> rows) {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public ResultInfos<RepositoryEntryRow> getRows(String query, List<FlexiTableFilter> filters,
+	public ResultInfos<VideoEntryRow> getRows(String query, List<FlexiTableFilter> filters,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
@@ -98,20 +92,19 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<Reposi
 			searchParams.setText(null);
 		}
 		
-		List<RepositoryEntryMyView> views = repositoryService.searchMyView(searchParams, firstResult, maxResults);
-		List<RepositoryEntryRow> rows = processViewModel(views);
-		ResultInfos<RepositoryEntryRow> results = new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
+		List<RepositoryEntry> views = videoManager.getVideosInCollection(searchParams, firstResult, maxResults);
+		List<VideoEntryRow> rows = processViewModel(views);
+		ResultInfos<VideoEntryRow> results = new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
 		if(firstResult == 0 && views.size() < maxResults) {
 			count = Integer.valueOf(views.size());
 		}
 		return results;
 	}
 
-	private List<RepositoryEntryRow> processViewModel(List<RepositoryEntryMyView> repoEntries) {
-		List<RepositoryEntryRow> items = new ArrayList<>();
-		for(RepositoryEntryMyView entry:repoEntries) {
-			RepositoryEntryRow row = new RepositoryEntryRow(entry);
-			items.add(row);
+	private List<VideoEntryRow> processViewModel(List<RepositoryEntry> repoEntries) {
+		List<VideoEntryRow> items = new ArrayList<>();
+		for(RepositoryEntry entry:repoEntries) {
+			items.add(new VideoEntryRow(entry));
 		}
 		return items;
 	}

@@ -70,6 +70,21 @@ create index idx_o_gui_prefs_key_idx on o_gui_prefs (g_pref_key);
 
 -- Repository
 alter table o_repositoryentry add column runtime_type varchar(16);
+alter table o_repositoryentry add column videocollection bool default false;
+
+create table o_vid_to_organisation (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_entry int8 not null,
+   fk_organisation int8 not null,
+   primary key (id)
+);
+
+alter table o_vid_to_organisation add constraint vid_entry_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_vid_entry_to_entry_idx on o_vid_to_organisation (fk_entry);
+alter table o_vid_to_organisation add constraint vid_entry_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_vid_entry_to_org_idx on o_vid_to_organisation (fk_organisation);
+
 
 -- Assessment inspection
 create table o_as_inspection_configuration (

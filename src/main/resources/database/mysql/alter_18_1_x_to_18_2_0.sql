@@ -69,6 +69,20 @@ create index idx_o_gui_prefs_key_idx on o_gui_prefs (g_pref_key);
 
 -- Repository
 alter table o_repositoryentry add column runtime_type varchar(16);
+alter table o_repositoryentry add column videocollection bool default false;
+
+create table o_vid_to_organisation (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_entry bigint not null,
+   fk_organisation bigint not null,
+   primary key (id)
+);
+alter table o_vid_to_organisation ENGINE = InnoDB;
+
+alter table o_vid_to_organisation add constraint vid_entry_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_vid_to_organisation add constraint vid_entry_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+
 
 -- Assessment inspection
 create table o_as_inspection_configuration (

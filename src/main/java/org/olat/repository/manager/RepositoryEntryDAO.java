@@ -101,6 +101,25 @@ public class RepositoryEntryDAO {
 		}
 		return null;
 	}
+	
+	/**
+	 * After the update, the method will fetch some values like resource.
+	 * 
+	 * @param re The repository entry
+	 * @return The merged repository entry
+	 */
+	public RepositoryEntry updateAndCommit(RepositoryEntry re) {
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(re);
+		dbInstance.commit();
+		
+		//fetch the values
+		updatedRe.getOlatResource().getResourceableTypeName();
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getCreationDate();
+		}
+		return updatedRe;
+	}
 
 	public RepositoryEntry loadByResourceKey(Long resourceKey) {
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()

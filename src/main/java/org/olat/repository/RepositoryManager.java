@@ -993,16 +993,7 @@ public class RepositoryManager {
 			return null;
 		}
 		reloadedRe.setExpenditureOfWork(expenditureOfWork);
-		
-		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-		updatedRe.getOlatResource().getResourceableTypeName();
-		//fetch the values
-		updatedRe.getStatistics().getLaunchCounter();
-		if(updatedRe.getLifecycle() != null) {
-			updatedRe.getLifecycle().getCreationDate();
-		}
-		dbInstance.commit();
-		return updatedRe;
+		return repositoryEntryDao.updateAndCommit(reloadedRe);
 	}
 
 	/**
