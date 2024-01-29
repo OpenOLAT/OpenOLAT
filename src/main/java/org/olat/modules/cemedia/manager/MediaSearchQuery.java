@@ -23,6 +23,7 @@ import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLik
 import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQueryString;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import jakarta.persistence.TypedQuery;
@@ -37,6 +38,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.CitationHandler;
+import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Access;
@@ -137,6 +140,11 @@ public class MediaSearchQuery {
 		}
 
 		String source = parameters.getSource();
+		if (source != null) {
+			sb
+					.and()
+					.append("media.type in (:typesWithSource)");
+		}
 		if (StringHelper.containsNonWhitespace(source)) {
 			source = PersistenceHelper.makeFuzzyQueryString(source);
 			sb.and();
@@ -180,10 +188,13 @@ public class MediaSearchQuery {
 		if(parameters.getSharedWith() != null && !parameters.getSharedWith().isEmpty()) {
 			query.setParameter("sharedWith", parameters.getSharedWith());
 		}
+		if (source != null) {
+ 			query.setParameter("typesWithSource", Arrays.asList(CitationHandler.CITATION_MEDIA, ImageHandler.IMAGE_TYPE));
+		}
 		if (StringHelper.containsNonWhitespace(source)) {
 			query.setParameter("source", source);
 		}
-		if(platforms != null && !platforms.isEmpty()) {
+		if (platforms != null && !platforms.isEmpty()) {
 			query.setParameter("platforms", platforms);
 		}
 		
