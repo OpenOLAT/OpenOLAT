@@ -123,7 +123,7 @@ public class PFEditFormController extends FormBasicController {
 		limitFileCount.select("xx", hasLimitCount);
 		limitFileCount.setVisible(hasStudentBox);
 		fileCount.setValue(String.valueOf(pfNode.getLimitCount()));
-		fileCount.setVisible(hasLimitCount);
+		fileCount.setVisible(limitFileCount.isVisible());
 		boolean hasTimeFrame = pfNode.hasDropboxTimeFrameConfigured();
 		timeFrame.select("xx", hasTimeFrame);
 		timeFrame.setVisible(hasStudentBox);
@@ -155,15 +155,20 @@ public class PFEditFormController extends FormBasicController {
 		}
 
 	}
-	
+
+	/**
+	 * gets called everytime studentDropBox is getting selected or deselected
+	 */
 	private void activateSettings () {
 		boolean studentDropBoxEnabled = studentDropBox.isSelected(0);
-		boolean fileCountEnabled = limitFileCount.isSelected(0);
 		boolean timeFrameEnabled = timeFrame.isSelected(0);
 		alterFiles.setVisible(studentDropBoxEnabled);
+		alterFiles.select("xx", studentDropBoxEnabled && pfNode.hasAlterFileConfigured());
 		limitFileCount.setVisible(studentDropBoxEnabled);
+		limitFileCount.select("xx", studentDropBoxEnabled && pfNode.hasLimitCountConfigured());
 		timeFrame.setVisible(studentDropBoxEnabled);
-		fileCount.setVisible(studentDropBoxEnabled && fileCountEnabled);
+		// by this, in case of deselection the input field also gets resetted e.g. in case of illegal chars
+		activateFileCount();
 		dateStart.setVisible(studentDropBoxEnabled && timeFrameEnabled);
 		dateEnd.setVisible(studentDropBoxEnabled && timeFrameEnabled);
 	}
@@ -171,6 +176,10 @@ public class PFEditFormController extends FormBasicController {
 	private void activateFileCount () {
 		boolean fileCountEnabled = limitFileCount.isSelected(0);
 		fileCount.setVisible(fileCountEnabled);
+		// if limitFileCount is not selected, reset the fileCount value to default
+		if (!fileCountEnabled) {
+			fileCount.setValue(String.valueOf(pfNode.getLimitCount()));
+		}
 	}
 	
 	private void activateTimeFrame () {

@@ -48,10 +48,6 @@ public class IQTESTDefaultsEditController extends FormBasicController {
 	private static final String[] dateKeys = new String[]{
 			"no",
 			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS,
-			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY,
-			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY,
-			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT,
-			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME,
 	};
 	private static final String[] resultsOptionsKeys = new String[]{
 			QTI21AssessmentResultsOptions.METADATA, QTI21AssessmentResultsOptions.SECTION_SUMMARY,

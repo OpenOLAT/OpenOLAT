@@ -322,9 +322,9 @@ public class PFManager {
 		VFSSecurityCallback callback;
 		SubscriptionContext folderSubContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		int count = countFiles(dropbox);
-		boolean limitCount = pfNode.hasLimitCountConfigured() && pfNode.isGreaterOrEqualToLimit(count);
+		boolean limitCount = (pfNode.hasParticipantBoxConfigured() && pfNode.hasLimitCountConfigured()) && pfNode.isGreaterOrEqualToLimit(count);
 		boolean timeFrame = pfNode.hasDropboxTimeFrameConfigured() && !pfNode.isInDropboxTimeFrame();
-		boolean alterFile = pfNode.hasAlterFileConfigured();
+		boolean alterFile = (pfNode.hasParticipantBoxConfigured() && pfNode.hasAlterFileConfigured());
 		if (timeFrame || limitCount && !alterFile){
 			callback = new ReadOnlyCallback(folderSubContext, quotaPath);
 		} else if (webdav) {

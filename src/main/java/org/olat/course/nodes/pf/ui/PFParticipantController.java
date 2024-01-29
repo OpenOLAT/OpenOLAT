@@ -116,7 +116,7 @@ public class PFParticipantController extends BasicController {
 	}
 
 	private void initLimitMessages(UserRequest ureq) {
-		if (pfNode.hasLimitCountConfigured()) {
+		if (pfNode.hasParticipantBoxConfigured() && pfNode.hasLimitCountConfigured()) {
 			mainVC.contextPut("limit", pfNode.getLimitCount());			
 		}
 		

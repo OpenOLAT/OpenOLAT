@@ -160,7 +160,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 		config.setBooleanEntry(CONFIG_KEY_COACHBOX, coachbox);
 		config.setBooleanEntry(CONFIG_KEY_ALTERFILE, alterfile);
 		config.setBooleanEntry(CONFIG_KEY_LIMITCOUNT, limitcount);
-		if (limitcount){
+		if (limitcount) {
 			config.set(CONFIG_KEY_FILECOUNT, filecount);
 		}
 		
@@ -183,19 +183,11 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 	}
 	
 	public boolean hasAlterFileConfigured() {
-		boolean hasStundentBox = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_PARTICIPANTBOX);
-		if (hasStundentBox) {
-			return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_ALTERFILE);
-		}
-		return false;
+		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_ALTERFILE);
 	}
 	
 	public boolean hasLimitCountConfigured() {
-		boolean hasStundentBox = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_PARTICIPANTBOX);
-		if (hasStundentBox) {
-			return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_LIMITCOUNT);
-		}
-		return false;
+		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_LIMITCOUNT);
 	}
 	
 	public boolean isGreaterOrEqualToLimit (int count) {
@@ -206,8 +198,8 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 	}
 	
 	public boolean hasDropboxTimeFrameConfigured() {
-		boolean hasStundentBox = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_PARTICIPANTBOX);
-		if (hasStundentBox) {
+		boolean hasStudentBox = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_PARTICIPANTBOX);
+		if (hasStudentBox) {
 			return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_TIMEFRAME);
 		}
 		return false;
@@ -227,7 +219,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 	
 	public int getLimitCount() {
 		ModuleConfiguration config = getModuleConfiguration();
-		return config.getBooleanEntry(CONFIG_KEY_FILECOUNT) != null ? 
+		return config.getBooleanEntry(CONFIG_KEY_FILECOUNT) != null && hasLimitCountConfigured() ?
 				(int) config.get(CONFIG_KEY_FILECOUNT) : 0;
 	}
 	

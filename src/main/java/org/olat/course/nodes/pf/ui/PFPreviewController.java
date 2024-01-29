@@ -46,7 +46,7 @@ public class PFPreviewController extends BasicController {
 
 		previewVC.contextPut("drop", pfNode.hasParticipantBoxConfigured());
 		previewVC.contextPut("return", pfNode.hasCoachBoxConfigured());
-		previewVC.contextPut("limit", pfNode.hasLimitCountConfigured());
+		previewVC.contextPut("limit", (pfNode.hasParticipantBoxConfigured() && pfNode.hasLimitCountConfigured()));
 		String timeframe = pfNode.hasDropboxTimeFrameConfigured() ?
 				pfNode.getDateStart().toString() + " - " + pfNode.getDateEnd().toString() : "-";
 		previewVC.contextPut("timeframe", timeframe);
