@@ -120,10 +120,8 @@ public class IQTESTDefaultsEditController extends FormBasicController {
 		iqtestModule.setScoreInfoEnabled(scoreInfo.isSelected(0));
 		iqtestModule.setDateDependentResults(showResultsDateDependentEl.getSelectedKey());
 		iqtestModule.setShowResultOnFinish(showResultsOnFinishEl.isSelected(0));
-		if (showResultsOnFinishEl.isSelected(0) || !showResultsDateDependentEl.isSelected(0)) {
-			String options = QTI21AssessmentResultsOptions.toString(assessmentResultsOnFinishEl.getSelectedKeys());
-			iqtestModule.setQtiResultsSummary(options);
-		}
+		String options = QTI21AssessmentResultsOptions.toString(assessmentResultsOnFinishEl.getSelectedKeys());
+		iqtestModule.setQtiResultsSummary(options);
 	}
 
 	private void initDateValues() {

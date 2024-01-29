@@ -705,6 +705,14 @@ public class QTI21EditForm extends FormBasicController {
 		scoreScalingEl.setVisible(incorporateScoreInCourse && scoreScalingEnabled);
 		
 		assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isSelected(0) || !showResultsDateDependentEl.isSelected(0));
+		if (assessmentResultsOnFinishEl.isVisible()) {
+			QTI21AssessmentResultsOptions resultsOptions = deliveryOptions.getAssessmentResultsOptions();
+			if(!QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT.equals(modConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
+				resultsOptions = QTI21AssessmentResultsOptions.parseString(modConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT));
+			}
+
+			updateAssessmentResultsOnFinish(resultsOptions);
+		}
 		switch (showResultsDateDependentEl.getSelectedKey()) {
 		case "no":
 			resultStartDateEl.setVisible(false);

@@ -380,10 +380,6 @@ public class GTAWorkflowEditController extends FormBasicController {
 		//coach allowed to upload documents
 		String[] onValues = new String[]{ translate("task.manage.documents.coach") };
 		coachAllowedUploadEl = uifactory.addCheckboxesVertical("coachTasks", "task.manage.documents", documentsCont, onKeys, onValues, 1);
-		boolean coachUpload = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false);
-		if(coachUpload) {
-			coachAllowedUploadEl.select(onKeys[0], true);
-		}
 		
 		updateDocuments();
 	}
@@ -730,12 +726,17 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private void updateRevisions() {
 		boolean review = reviewEl.isAtLeastSelected(1);
 		revisionEl.setVisible(review);
-		revisionEl.select(onKeys[0], review);
+		revisionEl.select(onKeys[0], config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD));
 	}
 	
 	private void updateDocuments() {
 		boolean visible = taskAssignmentEl.isAtLeastSelected(1) || sampleEl.isAtLeastSelected(1);
 		documentsCont.setVisible(visible);
+
+		boolean coachUpload = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false);
+		if(coachUpload && visible) {
+			coachAllowedUploadEl.select(onKeys[0], true);
+		}
 	}
 	
 	private void updateCoaching() {
