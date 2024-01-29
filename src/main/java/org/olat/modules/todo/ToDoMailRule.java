@@ -19,6 +19,8 @@
  */
 package org.olat.modules.todo;
 
+import org.olat.modules.todo.manager.ToDoMailRules;
+
 /**
  * 
  * Initial date: 12 Jan 2024<br>
@@ -26,6 +28,9 @@ package org.olat.modules.todo;
  *
  */
 public interface ToDoMailRule {
+	
+	public static final ToDoMailRule DEFAULT = new ToDoMailRules.ToDoMailDefaultRule();
+	public static final ToDoMailRule NO_EMAILS = new ToDoMailRules.ToDoMailNoRule();
 	
 	boolean isSendAssignmentEmail(boolean byMyself, boolean isAssignedOrDelegated, boolean wasAssignedOrDelegated);
 	

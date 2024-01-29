@@ -140,8 +140,8 @@ public class ToDoServiceImpl implements ToDoService {
 	@Override
 	public ToDoTask update(Identity doer, ToDoTask toDoTask, ToDoStatus previousStatus) {
 		ToDoProvider provider = getProvider(toDoTask.getType());
-		provider.getToDoMailRule().isSendDoneEmail();
-		if (provider.getToDoMailRule().isSendDoneEmail()) {
+		provider.getToDoMailRule(toDoTask).isSendDoneEmail();
+		if (provider.getToDoMailRule(toDoTask).isSendDoneEmail()) {
 			if (ToDoStatus.done != previousStatus && ToDoStatus.done == toDoTask.getStatus()) {
 				List<Identity> members = groupDao.getMembers(List.of(toDoTask.getBaseGroup()), ToDoRole.CREATOR_ASSIGNEE_DELEGATEE_NAMES);
 				members.remove(doer);
@@ -269,7 +269,7 @@ public class ToDoServiceImpl implements ToDoService {
 		}
 		
 		ToDoProvider provider = getProvider(toDoTask.getType());
-		boolean sendAssignmentEmail = provider.getToDoMailRule().isSendAssignmentEmail(
+		boolean sendAssignmentEmail = provider.getToDoMailRule(toDoTask).isSendAssignmentEmail(
 				doer != null && doer.getKey().longValue() != identity.getKey().longValue(),
 				roles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)),
 				currentRoles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)));

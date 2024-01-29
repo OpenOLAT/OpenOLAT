@@ -79,7 +79,7 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 	}
 
 	@Override
-	public ToDoMailRule getToDoMailRule() {
+	public ToDoMailRule getToDoMailRule(ToDoTask toDoTask) {
 		return this;
 	}
 

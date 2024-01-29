@@ -32,7 +32,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.modules.todo.manager.ToDoMailAssignmentDefaultRule;
 
 /**
  * 
@@ -54,8 +53,9 @@ public interface ToDoProvider {
 
 	public String getModifiedBy(Locale locale, ToDoTask toDoTask);
 	
-	public default ToDoMailRule getToDoMailRule() {
-		return ToDoMailAssignmentDefaultRule.RULE;
+	@SuppressWarnings("unused")
+	public default ToDoMailRule getToDoMailRule(ToDoTask toDoTask) {
+		return ToDoMailRule.DEFAULT;
 	}
 
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath, ToDoStatus status);

@@ -44,6 +44,7 @@ import org.olat.modules.project.ui.ProjToDoEditController;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.project.ui.ProjectUIFactory;
 import org.olat.modules.todo.ToDoContextFilter;
+import org.olat.modules.todo.ToDoMailRule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
@@ -108,6 +109,15 @@ public class ProjToDoProvider implements ToDoProvider, ToDoContextFilter {
 		return null;
 	}
 
+	@Override
+	public ToDoMailRule getToDoMailRule(ToDoTask toDoTask) {
+		ProjProject project = projectService.getProject(() -> toDoTask.getOriginId());
+		if (project == null || project.getStatus() == ProjectStatus.deleted || project.isTemplatePrivate() || project.isTemplatePublic()) {
+			return ToDoMailRule.NO_EMAILS;
+		}
+		return ToDoProvider.super.getToDoMailRule(toDoTask);
+	}
+	
 	@Override
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath, ToDoStatus status) {
 		projectService.updateToDoStatus(doer, originSubPath, status);
