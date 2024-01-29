@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
@@ -73,7 +74,14 @@ public class GeneralToDoTaskProvider extends QualityToDoTaskProvider {
 	@Override
 	public QualityToDoEditController createCreateController(UserRequest ureq, WindowControl wControl, Identity doer,
 			Long originId, String originSubPath) {
-		return new QualityToDoEditController(ureq, wControl, originId, originSubPath, CONTEXTS, CONTEXTS.get(0));
+		return new QualityToDoEditController(ureq, wControl, originId, originSubPath, CONTEXTS, CONTEXTS.get(0), null);
+	}
+
+	@Override
+	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
+			ToDoTask sourceToDoTask, boolean showContext) {
+		return new QualityToDoEditController(ureq, wControl, sourceToDoTask.getOriginId(),
+				sourceToDoTask.getOriginSubPath(), CONTEXTS, CONTEXTS.get(0), sourceToDoTask);
 	}
 	
 }

@@ -47,7 +47,9 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
+import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
+import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,6 +66,7 @@ public class QualityToDoEditController extends FormBasicController {
 	private final boolean showContext;
 	private final Collection<ToDoContext> availableContexts;
 	private final ToDoContext currentContext;
+	private final ToDoTask toDoTaskCopySource;
 	private Long dataCollectionId;
 	private String originSubPath;
 	private ToDoTask toDoTask;
@@ -79,14 +82,16 @@ public class QualityToDoEditController extends FormBasicController {
 	private EvaluationFormSessionToDoTaskProvider sessionProvider;
 
 	public QualityToDoEditController(UserRequest ureq, WindowControl wControl, Long dataCollectionId,
-			String originSubPath, Collection<ToDoContext> availableContexts, ToDoContext currentContext) {
+			String originSubPath, Collection<ToDoContext> availableContexts, ToDoContext currentContext,
+			ToDoTask toDoTaskCopySource) {
 		super(ureq, wControl, "todo_edit");
 		this.dataCollectionId = dataCollectionId;
 		this.originSubPath = originSubPath;
 		this.showContext = true;
 		this.availableContexts = availableContexts;
 		this.currentContext = currentContext;
-
+		this.toDoTaskCopySource = toDoTaskCopySource;
+		
 		initForm(ureq);
 	}
 
@@ -96,6 +101,7 @@ public class QualityToDoEditController extends FormBasicController {
 		this.showContext = showContext;
 		this.availableContexts = List.of(toDoTask);
 		this.currentContext = toDoTask;
+		this.toDoTaskCopySource = null;
 		
 		initForm(ureq);
 	}
@@ -124,6 +130,13 @@ public class QualityToDoEditController extends FormBasicController {
 			memberCandidates.addAll(delegatees);
 			
 			tagInfos = toDoService.getTagInfos(tagSearchParams, toDoTask);
+		} else if (toDoTaskCopySource != null) {
+			ToDoTaskMembers toDoTaskMembers = toDoService
+					.getToDoTaskGroupKeyToMembers(List.of(toDoTaskCopySource), ToDoRole.ALL)
+					.get(toDoTaskCopySource.getBaseGroup().getKey());
+			assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
+			delegatees = toDoTaskMembers.getMembers(ToDoRole.delegatee);
+			tagInfos = toDoService.getTagInfos(tagSearchParams, toDoTaskCopySource);
 		} else {
 			tagInfos = toDoService.getTagInfos(tagSearchParams, null);
 		}
@@ -131,8 +144,12 @@ public class QualityToDoEditController extends FormBasicController {
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, showContext,
 				availableContexts, currentContext, MemberSelection.search, memberCandidates, assignees,
 				MemberSelection.search, memberCandidates, delegatees, tagInfos, true);
-		toDoTaskEditForm.setValues(toDoTask);
-		toDoTaskEditForm.updateUIByAssigneeRight(toDoTask);
+		if (toDoTask != null) {
+			toDoTaskEditForm.setValues(new ToDoTaskValues(toDoTask));
+			toDoTaskEditForm.updateUIByAssigneeRight(toDoTask);
+		} else if (toDoTaskCopySource != null) {
+			toDoTaskEditForm.setValues(new CopyValues(getLocale(), toDoTaskCopySource));
+		}
 		listenTo(toDoTaskEditForm);
 		formLayout.add("content", toDoTaskEditForm.getInitialFormItem());
 		

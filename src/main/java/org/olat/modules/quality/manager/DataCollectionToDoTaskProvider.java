@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
@@ -79,10 +80,24 @@ public class DataCollectionToDoTaskProvider extends QualityToDoTaskProvider {
 	@Override
 	public QualityToDoEditController createCreateController(UserRequest ureq, WindowControl wControl, Identity doer,
 			Long originId, String originSubPath) {
+		return createCreateController2(ureq, wControl, originId, originSubPath, null);
+	}
+
+	@Override
+	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
+			ToDoTask sourceToDoTask, boolean showContext) {
+		return createCreateController2(ureq, wControl, sourceToDoTask.getOriginId(), sourceToDoTask.getOriginSubPath(),
+				sourceToDoTask);
+		
+	}
+
+	private QualityToDoEditController createCreateController2(UserRequest ureq, WindowControl wControl, Long originId,
+			String originSubPath, ToDoTask sourceToDoTask) {
 		QualityDataCollection dataCollection = dataCollectionDao.loadDataCollectionByKey(() -> originId);
 		ToDoContext currentContext = ToDoContext.of(TYPE, originId, dataCollection.getTitle());
 		Collection<ToDoContext> availableContexts = List.of(currentContext);
-		return new QualityToDoEditController(ureq, wControl, originId, originSubPath, availableContexts, currentContext);
+		return new QualityToDoEditController(ureq, wControl, originId, originSubPath, availableContexts, currentContext,
+				sourceToDoTask);
 	}
 	
 }

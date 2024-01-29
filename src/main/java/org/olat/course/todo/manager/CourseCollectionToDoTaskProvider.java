@@ -49,6 +49,7 @@ import org.olat.course.todo.model.ToDoTaskCollectionCreateContext;
 import org.olat.course.todo.model.ToDoTaskCollectionEditContext;
 import org.olat.course.todo.model.ToDoTaskCollectionEditContext.Field;
 import org.olat.course.todo.ui.CourseToDoUIFactory;
+import org.olat.course.todo.ui.ToDoCollectionCreateTaskStep;
 import org.olat.course.todo.ui.ToDoCollectionEditTaskStep;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoProvider;
@@ -63,9 +64,12 @@ import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoDeleteCollectionConfirmationController;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
+import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -89,6 +93,8 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 	private CourseToDoContextFilter contextFilter;
 	@Autowired
 	private BaseSecurityManager securityManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 
@@ -132,6 +138,11 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 			String originSubPath) {
 		return null;
 	}
+	
+	@Override
+	public boolean isCopyable() {
+		return true;
+	}
 
 	@Override
 	public boolean isEditWizard() {
@@ -147,6 +158,28 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 		
 		return new StepsMainRunController(ureq, wControl, new ToDoCollectionEditTaskStep(ureq, toDoTask, tagInfos),
 				createEditCallback(), null, translator.translate("task.edit"), "");
+	}
+	
+	@Override
+	public boolean isCopyWizard() {
+		return true;
+	}
+	
+	@Override
+	public StepsMainRunController createCopyWizardController(UserRequest ureq, WindowControl wControl,
+			Translator translator, Identity doer, ToDoTask sourceToDoTask) {
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(sourceToDoTask.getOriginId());
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, repositoryEntry);
+		boolean coachOnly = reSecurity.isCoach() && !reSecurity.isEntryAdmin();
+		return new StepsMainRunController(ureq, wControl,
+				new ToDoCollectionCreateTaskStep(ureq, coachOnly, repositoryEntry, sourceToDoTask, false),
+				createCreateCallback(), null,
+				Util.createPackageTranslator(ToDoUIFactory.class, ureq.getLocale()) .translate("task.copy"), "");
+	}
+
+	@Override
+	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer, ToDoTask sourceToDoTask, boolean showContext) {
+		return null;
 	}
 
 	@Override
@@ -331,7 +364,7 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 				? repositoryService.getCoachedParticipants(doer, repositoryEntry)
 				: repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 	}
-
+	
 	public StepRunnerCallback createEditCallback() {
 		return (uureq, wControl, runContext) -> {
 			ToDoTaskCollectionEditContext context = (ToDoTaskCollectionEditContext)runContext.get(ToDoTaskCollectionEditContext.KEY);

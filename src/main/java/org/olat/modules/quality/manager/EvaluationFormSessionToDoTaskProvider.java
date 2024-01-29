@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
@@ -79,11 +80,29 @@ public class EvaluationFormSessionToDoTaskProvider extends QualityToDoTaskProvid
 	@Override
 	public QualityToDoEditController createCreateController(UserRequest ureq, WindowControl wControl, Identity doer,
 			Long originId, String originSubPath) {
+		return createCreateController(ureq, wControl, originId, originSubPath);
+	}
+
+	private QualityToDoEditController createCreateController(UserRequest ureq, WindowControl wControl, Long originId,
+			String originSubPath) {
+		return createCreateController(ureq, wControl, originId, originSubPath, null);
+	}
+
+	@Override
+	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
+			ToDoTask toDoTaskCopySource, boolean showContext) {
+		return createCreateController(ureq, wControl, toDoTaskCopySource.getOriginId(),
+				toDoTaskCopySource.getOriginSubPath(), toDoTaskCopySource);
+	}
+
+	private QualityToDoEditController createCreateController(UserRequest ureq, WindowControl wControl, Long originId,
+			String originSubPath, ToDoTask toDoTaskCopySource) {
 		QualityDataCollection dataCollection = dataCollectionDao.loadDataCollectionByKey(() -> originId);
 		ToDoContext dataCollectionContext = ToDoContext.of(DataCollectionToDoTaskProvider.TYPE, originId, dataCollection.getTitle());
 		ToDoContext currentContext = ToDoContext.of(TYPE, originId, originSubPath, dataCollection.getTitle(), null);
 		Collection<ToDoContext> availableContexts = List.of(dataCollectionContext, currentContext);
-		return new QualityToDoEditController(ureq, wControl, originId, originSubPath, availableContexts, currentContext);
+		return new QualityToDoEditController(ureq, wControl, originId, originSubPath, availableContexts, currentContext,
+				toDoTaskCopySource);
 	}
 	
 }

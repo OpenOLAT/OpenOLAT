@@ -96,7 +96,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjectStatus;
-import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoPriority;
@@ -144,6 +143,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private static final String FILTER_KEY_MY = "my";
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_EDIT = "edit";
+	private static final String CMD_COPY = "copy";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_GOTO_ORIGIN = "origin";
 	private static final String CMD_EXPAND_PREFIX = "o_ex_";
@@ -610,6 +610,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 			boolean assignee = row.getAssignees().contains(getIdentity());
 			boolean delegatee = row.getDelegatees().contains(getIdentity());
 			row.setCanEdit(getSecurityCallback().canEdit(toDoTask, creator, assignee, delegatee));
+			row.setCanCopy(getSecurityCallback().canCopy(toDoTask, creator, assignee, delegatee)
+					&& toDoService.getProvider(toDoTask.getType()).isCopyable());
 			row.setCanDelete(getSecurityCallback().canDelete(toDoTask, creator, assignee, delegatee));
 			forgeDetailItem(row);
 			forgeDoItem(row);
@@ -998,7 +1000,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	private void forgeToolsLink(ToDoTaskRow row) {
-		if (row.canEdit() || row.canDelete()) {
+		if (row.canEdit() || row.canCopy() || row.canDelete()) {
 			FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 			toolsLink.setUserObject(row);
@@ -1054,9 +1056,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (event instanceof OpenArtefactEvent) {
-			fireEvent(ureq, event);
-		} else if (event instanceof ToDoTaskEditEvent editEvent) {
+		if (event instanceof ToDoTaskEditEvent editEvent) {
 			doEditToDoTask(ureq, editEvent.getToDoTask());
 		} else if (source == toDoTaskEditWizardCtrl) {
 			if (event == Event.CANCELLED_EVENT) {
@@ -1212,6 +1212,44 @@ public abstract class ToDoTaskListController extends FormBasicController
 		listenTo(toDoTaskEditCtrl);
 		
 		String title = translate("task.edit");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toDoTaskEditCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doCopyToDoTask(UserRequest ureq, ToDoTaskRef toDoTaskRef) {
+		ToDoTask toDoTask = toDoService.getToDoTask(toDoTaskRef);
+		if (toDoTask == null || toDoTask.getStatus() == ToDoStatus.deleted) {
+			showWarning("error.not.copyable.deleted");
+			return;
+		}
+		
+		ToDoProvider provider = toDoService.getProvider(toDoTask.getType());
+		if (provider.isCopyWizard()) {
+			doCopyToDoTaskWizard(ureq, provider, toDoTask);
+		} else {
+			doCopyToDoTaskPopup(ureq, provider, toDoTask);
+		}
+	}
+
+	private void doCopyToDoTaskWizard(UserRequest ureq, ToDoProvider provider, ToDoTask toDoTask) {
+		removeAsListenerAndDispose(toDoTaskEditWizardCtrl);
+		
+		toDoTaskEditWizardCtrl = provider.createCopyWizardController(ureq, getWindowControl(), getTranslator(), getIdentity(), toDoTask);
+		listenTo(toDoTaskEditWizardCtrl);
+		getWindowControl().pushAsModalDialog(toDoTaskEditWizardCtrl.getInitialComponent());
+	}
+
+	private void doCopyToDoTaskPopup(UserRequest ureq, ToDoProvider provider, ToDoTask toDoTask) {
+		if (guardModalController(toDoTaskEditCtrl)) return;
+		
+		toDoTaskEditCtrl = provider.createCopyController(ureq, getWindowControl(), getIdentity(), toDoTask, isShowContextInEditDialog());
+		if (toDoTaskEditCtrl == null) {
+			return;
+		}
+		listenTo(toDoTaskEditCtrl);
+		
+		String title = translate("task.copy");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), toDoTaskEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -1422,6 +1460,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 			if (row.canEdit()) {
 				addLink("edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
 			}
+			if (row.canCopy()) {
+				addLink("duplicate", CMD_COPY, "o_icon o_icon-fw o_icon_duplicate");
+			}
 			
 			createTools();
 			
@@ -1457,6 +1498,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 				String cmd = link.getCommand();
 				if (CMD_EDIT.equals(cmd)) {
 					doEditToDoTask(ureq, row);
+				} else if(CMD_COPY.equals(cmd)) {
+					doCopyToDoTask(ureq, row);
 				} else if(CMD_DELETE.equals(cmd)) {
 					doConfirmDelete(ureq, row);
 				}

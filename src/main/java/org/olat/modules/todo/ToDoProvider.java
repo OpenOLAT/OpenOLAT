@@ -63,6 +63,21 @@ public interface ToDoProvider {
 	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId,
 			String originSubPath);
 
+	public boolean isCopyable();
+	
+	public default boolean isCopyWizard() {
+		return false;
+	}
+	
+	@SuppressWarnings("unused")
+	public default StepsMainRunController createCopyWizardController(UserRequest ureq, WindowControl wControl,
+			Translator translator, Identity doer, ToDoTask sourceToDoTask) {
+		return null;
+	}
+	
+	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
+			ToDoTask sourceToDoTask, boolean showContext);
+	
 	public default boolean isEditWizard() {
 		return false;
 	}

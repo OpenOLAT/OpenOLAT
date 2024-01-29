@@ -205,6 +205,11 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 		}
 
 		@Override
+		public boolean canCopy(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return false;
+		}
+
+		@Override
 		public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 			return false;
 		}

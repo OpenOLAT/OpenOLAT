@@ -19,13 +19,11 @@
  */
 package org.olat.course.todo.manager;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -50,8 +48,6 @@ import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,8 +69,6 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider {
 	private ToDoService toDoService;
 	@Autowired
 	private CourseToDoContextFilter contextFilter;
-	@Autowired
-	private RepositoryService repositoryService;
 
 	@Override
 	public String getType() {
@@ -117,6 +111,17 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider {
 			String originSubPath) {
 		return null;
 	}
+	
+	@Override
+	public boolean isCopyable() {
+		return false;
+	}
+
+	@Override
+	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
+			ToDoTask sourceToDoTask, boolean showContext) {
+		return null;
+	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee) {
@@ -125,12 +130,10 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider {
 	
 	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			boolean showContext, RepositoryEntryRef repositoryEntry, ToDoContext context, boolean showSingleAssignee) {
-		Collection<Identity> assigneeCandidates = repositoryService.getMembers(repositoryEntry,
-				RepositoryEntryRelationType.all, GroupRoles.participant.name());
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, showContext, List.of(context), context,
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, null, showContext, List.of(context), context,
 				courseToDoService.createCourseTagSearchParams(repositoryEntry), ASSIGNEE_RIGHTS,
-				showSingleAssignee ? MemberSelection.readOnly : MemberSelection.disabled, 
-				assigneeCandidates, List.of(), MemberSelection.disabled, List.of());
+				showSingleAssignee ? MemberSelection.readOnly : MemberSelection.disabled, List.of(), List.of(),
+				MemberSelection.disabled, List.of());
 	}
 
 	@Override

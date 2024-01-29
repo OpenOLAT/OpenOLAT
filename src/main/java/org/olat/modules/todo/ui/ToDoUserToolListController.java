@@ -187,6 +187,11 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 		}
 
 		@Override
+		public boolean canCopy(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return canCreateToDoTasks && canEdit(toDoTask, creator, assignee, delegatee);
+		}
+
+		@Override
 		public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 			return ToDoStatus.deleted != toDoTask.getStatus()
 					&& !toDoTask.isOriginDeleted()

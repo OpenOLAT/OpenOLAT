@@ -27,7 +27,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.todo.model.ToDoTaskCollectionCreateContext;
-import org.olat.modules.todo.ui.ToDoTaskRow;
+import org.olat.modules.todo.ToDoTask;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -40,13 +40,16 @@ public class ToDoCollectionCreateTaskStep extends BasicStep {
 
 	private final RepositoryEntry repositoryEntry;
 	private final boolean coach;
-	private final ToDoTaskRow template;
+	private final ToDoTask sourceToDoTask;
+	private final boolean convert;
 
-	public ToDoCollectionCreateTaskStep(UserRequest ureq, boolean coach, RepositoryEntry repositoryEntry, ToDoTaskRow template) {
+	public ToDoCollectionCreateTaskStep(UserRequest ureq, boolean coach, RepositoryEntry repositoryEntry,
+			ToDoTask sourceToDoTask, boolean convert) {
 		super(ureq);
 		this.repositoryEntry = repositoryEntry;
 		this.coach = coach;
-		this.template = template;
+		this.sourceToDoTask = sourceToDoTask;
+		this.convert = convert;
 		setI18nTitleAndDescr("course.todo.collection.todo.step", null);
 		setNextStep(new ToDoCollectionCreateAssigneeStep(ureq));
 	}
@@ -63,8 +66,12 @@ public class ToDoCollectionCreateTaskStep extends BasicStep {
 		context.setDoer(getIdentity());
 		context.setCoach(coach);
 		context.setRepositoryEntry(repositoryEntry);
+
+		if (convert && sourceToDoTask != null) {
+			context.setConvertFromKey(sourceToDoTask.getKey());
+		}
 		stepsRunContext.put(ToDoTaskCollectionCreateContext.KEY, context);
-		return new ToDoCollectionCreateTaskController(ureq, windowControl, form, stepsRunContext, template);
+		return new ToDoCollectionCreateTaskController(ureq, windowControl, form, stepsRunContext, sourceToDoTask, convert);
 	}
 
 }

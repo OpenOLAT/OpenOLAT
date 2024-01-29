@@ -98,6 +98,11 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider, ToDoConte
 			String originSubPath) {
 		return null;
 	}
+	
+	@Override
+	public boolean isCopyable() {
+		return true;
+	}
 
 	@Override
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTaskRef, Long originId, String originSubPath, ToDoStatus status) {

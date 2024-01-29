@@ -33,9 +33,11 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.todo.CourseToDoService;
 import org.olat.course.todo.model.ToDoTaskCollectionCreateContext;
 import org.olat.modules.todo.ToDoService;
+import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
+import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
-import org.olat.modules.todo.ui.ToDoTaskRow;
+import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -48,7 +50,8 @@ public class ToDoCollectionCreateTaskController extends StepFormBasicController 
 
 	private ToDoTaskEditForm toDoTaskEditForm;
 	
-	private final ToDoTaskRow template;
+	private final ToDoTask sourceToDoTask;
+	private final boolean convert;
 	private final ToDoTaskCollectionCreateContext context;
 	
 	@Autowired
@@ -56,14 +59,13 @@ public class ToDoCollectionCreateTaskController extends StepFormBasicController 
 	@Autowired
 	private ToDoService toDoService;
 
-	public ToDoCollectionCreateTaskController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, ToDoTaskRow template) {
+	public ToDoCollectionCreateTaskController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			StepsRunContext runContext, ToDoTask sourceToDoTask, boolean convert) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		this.template = template;
+		this.sourceToDoTask = sourceToDoTask;
+		this.convert = convert;
 		
 		context = (ToDoTaskCollectionCreateContext)getFromRunContext(ToDoTaskCollectionCreateContext.KEY);
-		if (template != null) {
-			context.setConvertFromKey(template.getKey());
-		}
 		
 		initForm(ureq);
 	}
@@ -72,15 +74,13 @@ public class ToDoCollectionCreateTaskController extends StepFormBasicController 
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("course.todo.collection.todo.step");
 		
-		List<TagInfo> tagInfos = toDoService.getTagInfos(courseToDoService.createCourseTagSearchParams(context.getRepositoryEntry()), template);
+		List<TagInfo> tagInfos = toDoService.getTagInfos(courseToDoService.createCourseTagSearchParams(context.getRepositoryEntry()), sourceToDoTask);
 		
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, false, List.of(), null,
 				MemberSelection.disabled, List.of(), List.of(), MemberSelection.disabled, List.of(), List.of(),
 				tagInfos, true);
-		if (template != null) {
-			toDoTaskEditForm.setValues(template.getTitle(), template.getDescription(), template.getStatus(),
-					template.getPriority(), template.getExpenditureOfWork(), template.getStartDate(),
-					template.getDueDate());
+		if (sourceToDoTask != null) {
+			toDoTaskEditForm.setValues(convert ? new ToDoTaskValues(sourceToDoTask) : new CopyValues(getLocale(), sourceToDoTask));
 		}
 		listenTo(toDoTaskEditForm);
 		formLayout.add("content", toDoTaskEditForm.getInitialFormItem());

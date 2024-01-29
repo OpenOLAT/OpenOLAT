@@ -304,7 +304,7 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 		removeAsListenerAndDispose(toDoCreateCollectionCtrl);
 		
 		toDoCreateCollectionCtrl = new StepsMainRunController(ureq, getWindowControl(),
-				new ToDoCollectionCreateTaskStep(ureq, coachedParticipantKeys != null, repositoryEntry, null),
+				new ToDoCollectionCreateTaskStep(ureq, coachedParticipantKeys != null, repositoryEntry, null, false),
 				collectionProvider.createCreateCallback(), null, translate("course.todo.collection.create.title"), "");
 		listenTo(toDoCreateCollectionCtrl);
 		getWindowControl().pushAsModalDialog(toDoCreateCollectionCtrl.getInitialComponent());
@@ -312,9 +312,15 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 
 	private void doConvertToToDoCollection(UserRequest ureq, ToDoTaskRow row) {
 		removeAsListenerAndDispose(toDoCreateCollectionCtrl);
+		
+		ToDoTask toDoTask = toDoService.getToDoTask(() -> row.getKey());
+		if (toDoTask == null || toDoTask.getStatus() == ToDoStatus.deleted) {
+			showWarning("error.not.convertable.deleted");
+			return;
+		}
 
 		toDoCreateCollectionCtrl = new StepsMainRunController(ureq, getWindowControl(),
-				new ToDoCollectionCreateTaskStep(ureq, coachedParticipantKeys != null, repositoryEntry, row),
+				new ToDoCollectionCreateTaskStep(ureq, coachedParticipantKeys != null, repositoryEntry, toDoTask, true),
 				collectionProvider.createCreateCallback(), null, translate("course.todo.convert.to.collection"), "");
 		listenTo(toDoCreateCollectionCtrl);
 		getWindowControl().pushAsModalDialog(toDoCreateCollectionCtrl.getInitialComponent());
@@ -381,6 +387,11 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 		@Override
 		public boolean canCreateToDoTasks() {
 			return !readOnly;
+		}
+
+		@Override
+		public boolean canCopy(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return canEdit(toDoTask, creator, assignee, delegatee);
 		}
 
 		@Override

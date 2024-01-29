@@ -19,11 +19,14 @@
  */
 package org.olat.modules.todo.ui;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,7 +59,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoPriority;
@@ -313,31 +318,27 @@ public class ToDoTaskEditForm extends FormBasicController {
 		return membersEl;
 	}
 	
-	public void setValues(ToDoTask toDoTask) {
-		if (toDoTask != null) {
-			setValues(toDoTask.getTitle(), toDoTask.getDescription(), toDoTask.getStatus(), toDoTask.getPriority(),
-					toDoTask.getExpenditureOfWork(), toDoTask.getStartDate(), toDoTask.getDueDate());
+	public void setValues(ToDoTaskFormValues values) {
+		if (values == null) {
+			return;
 		}
-	}
-	
-	public void setValues(String title, String description, ToDoStatus status, ToDoPriority priority,
-			Long expenditureOfWork, Date startDate, Date dueDate) {
-		titleEl.setValue(title);
-		descriptionEl.setValue(description);
-		if (status != null) {
-			statusEl.select(status.name(), true);
-			doEl.toggle(ToDoStatus.done == status);
+		
+		titleEl.setValue(values.getTitle());
+		descriptionEl.setValue(values.getDescription());
+		if (values.getStatus() != null) {
+			statusEl.select(values.getStatus().name(), true);
+			doEl.toggle(ToDoStatus.done == values.getStatus());
 		}
-		if (priority != null) {
-			priorityEl.select(priority.name(), true);
+		if (values.getPriority() != null) {
+			priorityEl.select(values.getPriority().name(), true);
 		}
-		if (expenditureOfWork != null) {
-			ToDoExpenditureOfWork eow = toDoService.getExpenditureOfWork(expenditureOfWork);
+		if (values.getExpenditureOfWork() != null) {
+			ToDoExpenditureOfWork eow = toDoService.getExpenditureOfWork(values.getExpenditureOfWork());
 			String formattedExpenditureOfWork = ToDoUIFactory.format(eow);
 			expenditureOfWorkEl.setValue(formattedExpenditureOfWork);
 		}
-		startDateEl.setDate(startDate);
-		dueDateEl.setDate(dueDate);
+		startDateEl.setDate(values.getStartDate());
+		dueDateEl.setDate(values.getDueDate());
 	}
 	
 	public void updateUIByAssigneeRight(ToDoTask toDoTask) {
@@ -587,6 +588,142 @@ public class ToDoTaskEditForm extends FormBasicController {
 		return StringHelper.containsNonWhitespace(descriptionEl.getValue())
 				? descriptionEl.getValue()
 				: null;
+	}
+	
+	public static interface ToDoTaskFormValues {
+		
+		public String getTitle();
+
+		public String getDescription();
+
+		public ToDoStatus getStatus();
+
+		public ToDoPriority getPriority();
+
+		public Long getExpenditureOfWork();
+
+		public Date getStartDate();
+
+		public Date getDueDate();
+	}
+	
+	public static final class ToDoTaskValues implements ToDoTaskFormValues {
+		
+		private final ToDoTask toDoTask;
+		
+		public ToDoTaskValues(ToDoTask toDoTask) {
+			this.toDoTask = toDoTask;
+		}
+
+		@Override
+		public String getTitle() {
+			return toDoTask.getTitle();
+		}
+
+		@Override
+		public String getDescription() {
+			return toDoTask.getDescription();
+		}
+
+		@Override
+		public ToDoStatus getStatus() {
+			return toDoTask.getStatus();
+		}
+
+		@Override
+		public ToDoPriority getPriority() {
+			return toDoTask.getPriority();
+		}
+
+		@Override
+		public Long getExpenditureOfWork() {
+			return toDoTask.getExpenditureOfWork();
+		}
+
+		@Override
+		public Date getStartDate() {
+			return toDoTask.getStartDate();
+		}
+
+		@Override
+		public Date getDueDate() {
+			return toDoTask.getDueDate();
+		}
+		
+	}
+	
+	public static final class CopyValues implements ToDoTaskFormValues {
+		
+		private final ToDoTask toDoTask;
+		private final String title;
+		private Date startDate;
+		private Date dueDate;
+		
+		public CopyValues(Locale locale, ToDoTask toDoTask) {
+			this.toDoTask = toDoTask;
+			this.title = Util.createPackageTranslator(ToDoUIFactory.class, locale).translate("copy.title", toDoTask.getTitle());
+			this.startDate = toDoTask.getStartDate();
+			this.dueDate = toDoTask.getDueDate();
+			
+			// Move dates at least to now
+			LocalDate now = LocalDate.now();
+			Long diffDays = null;
+			if (toDoTask.getStartDate() != null) {
+				Long startDiffDays = DateUtils.toLocalDate(toDoTask.getStartDate()).until(now, ChronoUnit.DAYS);
+				if (startDiffDays > 0) {
+					diffDays = startDiffDays;
+				}
+			} 
+			if (diffDays == null && toDoTask.getDueDate() != null) {
+				Long dueDiffDays = DateUtils.toLocalDate(toDoTask.getDueDate()).until(now, ChronoUnit.DAYS);
+				if (dueDiffDays > 0) {
+					diffDays = dueDiffDays;
+				}
+			}
+			if (diffDays != null) {
+				if (startDate != null) {
+					startDate = DateUtils.addDays(startDate, diffDays.intValue());
+				}
+				if (dueDate != null) {
+					dueDate = DateUtils.addDays(dueDate, diffDays.intValue());
+				}
+			}
+		}
+
+		@Override
+		public String getTitle() {
+			return title;
+		}
+
+		@Override
+		public String getDescription() {
+			return toDoTask.getDescription();
+		}
+
+		@Override
+		public ToDoStatus getStatus() {
+			return ToDoStatus.open;
+		}
+
+		@Override
+		public ToDoPriority getPriority() {
+			return toDoTask.getPriority();
+		}
+
+		@Override
+		public Long getExpenditureOfWork() {
+			return toDoTask.getExpenditureOfWork();
+		}
+
+		@Override
+		public Date getStartDate() {
+			return startDate;
+		}
+
+		@Override
+		public Date getDueDate() {
+			return dueDate;
+		}
 	}
 
 }

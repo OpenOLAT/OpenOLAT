@@ -124,12 +124,29 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 	@Override
 	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId,
 			String originSubPath) {
-		return createEditController(ureq, wControl, null, true, false);
+		return createEditController(ureq, wControl, null, null, true);
+	}
+	
+	@Override
+	public boolean isCopyable() {
+		return true;
+	}
+
+
+	@Override
+	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
+			ToDoTask sourceToDoTask, boolean showContext) {
+		return createEditController(ureq, wControl, null, sourceToDoTask, true);
 	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			boolean showContext, boolean showSingleAssignee) {
+		return createEditController(ureq, wControl, toDoTask, null, showContext);
+	}
+
+	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
+			ToDoTask sourceToDoTask, boolean showContext) {
 		ToDoTaskSearchParams tagInfoSearchParams = new ToDoTaskSearchParams();
 		tagInfoSearchParams.setAssigneeOrDelegatee(ureq.getIdentity());
 		
@@ -153,8 +170,8 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 			delegateeCandidates = List.of(ureq.getIdentity());
 		}
 		
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, showContext, CONTEXTS, CONTEXTS.get(0),
-				tagInfoSearchParams, ASSIGNEE_RIGHTS, assigneeSelection, assigneeCandidates,
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, sourceToDoTask, showContext, CONTEXTS,
+				CONTEXTS.get(0), tagInfoSearchParams, ASSIGNEE_RIGHTS, assigneeSelection, assigneeCandidates,
 				List.of(ureq.getIdentity()), delegateeSelection, delegateeCandidates);
 	}
 	

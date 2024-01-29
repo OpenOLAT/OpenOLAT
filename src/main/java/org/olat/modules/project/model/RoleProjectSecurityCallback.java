@@ -186,6 +186,11 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	}
 
 	@Override
+	public boolean canCopy(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+		return canEdit(toDoTask, creator, assignee, delegatee);
+	}
+
+	@Override
 	public boolean canEditToDos() {
 		return canEditArtefacts();
 	}

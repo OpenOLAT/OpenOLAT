@@ -122,12 +122,28 @@ public class ProjToDoProvider implements ToDoProvider, ToDoContextFilter {
 		
 		return new ProjToDoEditController(ureq, wControl, ProjectBCFactory.createFactory(project), project, false);
 	}
+	
+	@Override
+	public boolean isCopyable() {
+		return true;
+	}
+
+	@Override
+	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
+			ToDoTask sourceToDoTask, boolean showContext) {
+		return createEditCopyController(ureq, wControl, sourceToDoTask, true, showContext);
+	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask, boolean showContext, boolean showSingleAssignee) {
+		return createEditCopyController(ureq, wControl, toDoTask, false, showContext);
+	}
+	
+	private Controller createEditCopyController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
+			boolean toDoTaskIsCopySource, boolean showContext) {
 		ProjToDo toDo = projectService.getToDo(toDoTask.getOriginSubPath());
 		ProjectBCFactory bcFactory = ProjectBCFactory.createFactory(toDo.getArtefact().getProject());
-		return new ProjToDoEditController(ureq, wControl, bcFactory, toDo, false, showContext);
+		return new ProjToDoEditController(ureq, wControl, bcFactory, toDo, toDoTaskIsCopySource, false, showContext);
 	}
 
 	@Override

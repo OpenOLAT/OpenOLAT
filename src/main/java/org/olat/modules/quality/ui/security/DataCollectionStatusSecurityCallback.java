@@ -144,6 +144,11 @@ class DataCollectionStatusSecurityCallback implements DataCollectionSecurityCall
 	}
 
 	@Override
+	public boolean canCopy(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+		return true;
+	}
+
+	@Override
 	public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 		return ToDoStatus.deleted != toDoTask.getStatus();
 	}

@@ -40,7 +40,9 @@ import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ui.ToDoTaskEditForm;
+import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.MemberSelection;
+import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,6 +58,7 @@ public class ProjToDoContentEditController extends FormBasicController {
 	private final ProjProject project;
 	private final boolean template;
 	private ProjToDo toDo;
+	private final boolean toDoTaskIsCopySource;
 	private final boolean showContext;
 	
 	@Autowired
@@ -63,9 +66,11 @@ public class ProjToDoContentEditController extends FormBasicController {
 	@Autowired
 	private ToDoService toDoService;
 
-	public ProjToDoContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjProject project, ProjToDo toDo, boolean showContext) {
+	public ProjToDoContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjProject project,
+			ProjToDo toDo, boolean toDoTaskIsCopySource, boolean showContext) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		this.project = project;
+		this.toDoTaskIsCopySource = toDoTaskIsCopySource;
 		this.showContext = showContext;
 		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.toDo = toDo;
@@ -98,9 +103,13 @@ public class ProjToDoContentEditController extends FormBasicController {
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, showContext,
 				toDoContextList, toDoTask, memberSelection, projectMembers, assignees, memberSelection, projectMembers,
 				delegatees, tagInfos, !template);
-		toDoTaskEditForm.setValues(toDoTask);
-		if (toDo != null) {
-			toDoTaskEditForm.updateUIByAssigneeRight(toDo.getToDoTask().getAssigneeRights());
+		if (toDoTask != null) {
+			if (toDoTaskIsCopySource) {
+				toDoTaskEditForm.setValues(new CopyValues(getLocale(), toDoTask));
+			} else {
+				toDoTaskEditForm.setValues(new ToDoTaskValues(toDoTask));
+				toDoTaskEditForm.updateUIByAssigneeRight(toDoTask.getAssigneeRights());
+			}
 		}
 		listenTo(toDoTaskEditForm);
 		formLayout.add(toDoTaskEditForm.getInitialFormItem());
@@ -108,7 +117,7 @@ public class ProjToDoContentEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (toDo == null) {
+		if (toDo == null || toDoTaskIsCopySource) {
 			toDo = projectService.createToDo(getIdentity(), project);
 		}
 		

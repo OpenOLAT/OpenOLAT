@@ -50,6 +50,8 @@ public interface CourseToDoService {
 			CourseCollectionElementToDoTaskProvider.TYPE);
 	
 	public ToDoTaskSearchParams createCourseTagSearchParams(RepositoryEntryRef repositoryEntry);
+	
+	public List<Identity> getAssigneeCandidates(Identity doer, RepositoryEntry repositoryEntry, boolean coachOnly);
 
 	public void deleteToDoTasks(RepositoryEntry entry);
 	

@@ -48,6 +48,7 @@ public class ProjToDoEditController extends FormBasicController {
 	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final ProjToDo toDo;
+	private final boolean toDoTaskIsCopySource;
 	private final boolean withOpenInSameWindow;
 	private final boolean showContext;
 	private Boolean referenceOpen = Boolean.FALSE;
@@ -59,6 +60,7 @@ public class ProjToDoEditController extends FormBasicController {
 		this.bcFactory = bcFactory;
 		this.project = project;
 		this.toDo = null;
+		this.toDoTaskIsCopySource = false;
 		this.withOpenInSameWindow = withOpenInSameWindow;
 		this.showContext = false;
 		
@@ -66,11 +68,12 @@ public class ProjToDoEditController extends FormBasicController {
 	}
 
 	public ProjToDoEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjToDo toDo,
-			boolean withOpenInSameWindow, boolean showContext) {
+			boolean toDoTaskIsCopySource, boolean withOpenInSameWindow, boolean showContext) {
 		super(ureq, wControl, "edit");
 		this.bcFactory = bcFactory;
 		this.project = toDo.getArtefact().getProject();
 		this.toDo = toDo;
+		this.toDoTaskIsCopySource = toDoTaskIsCopySource;
 		this.withOpenInSameWindow = withOpenInSameWindow;
 		this.showContext = showContext;
 		
@@ -83,7 +86,7 @@ public class ProjToDoEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjToDoContentEditController(ureq, getWindowControl(), mainForm, project, toDo, showContext);
+		contentCtrl = new ProjToDoContentEditController(ureq, getWindowControl(), mainForm, project, toDo, toDoTaskIsCopySource, showContext);
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
@@ -94,7 +97,7 @@ public class ProjToDoEditController extends FormBasicController {
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
 		
-		if (artefact != null) {
+		if (artefact != null && !toDoTaskIsCopySource) {
 			metadataCtrl = new ProjArtefactMetadataController(ureq, getWindowControl(), mainForm, artefact);
 			listenTo(metadataCtrl);
 			formLayout.add("metadata", metadataCtrl.getInitialFormItem());

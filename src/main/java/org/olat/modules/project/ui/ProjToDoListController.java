@@ -25,6 +25,8 @@ import java.util.List;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
@@ -32,6 +34,7 @@ import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoSearchParams;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.manager.ProjToDoProvider;
+import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskListController;
@@ -100,7 +103,15 @@ public abstract class ProjToDoListController extends ToDoTaskListController {
 		List<ProjToDo> toDos = projectService.getToDos(searchParams);
 		return !toDos.isEmpty()? toDos.get(0).getToDoTask().getKey(): Long.valueOf(0);
 	}
-
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (event instanceof OpenArtefactEvent) {
+			fireEvent(ureq, event);
+		}
+		super.event(ureq, source, event);
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

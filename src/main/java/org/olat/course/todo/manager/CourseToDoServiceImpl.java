@@ -130,6 +130,13 @@ public class CourseToDoServiceImpl implements CourseToDoService, GenericEventLis
 	}
 	
 	@Override
+	public List<Identity> getAssigneeCandidates(Identity doer, RepositoryEntry repositoryEntry, boolean coachOnly) {
+		return coachOnly
+				? repositoryService.getCoachedParticipants(doer, repositoryEntry)
+				: repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
+	}
+	
+	@Override
 	public void deleteToDoTasks(RepositoryEntry entry) {
 		ToDoTaskSearchParams elementSearchParams = new ToDoTaskSearchParams();
 		elementSearchParams.setOriginIds(List.of(entry.getKey()));

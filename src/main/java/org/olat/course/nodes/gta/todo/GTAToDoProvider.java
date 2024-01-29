@@ -103,12 +103,24 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 			String originSubPath) {
 		return null;
 	}
+	
+	@Override
+	public boolean isCopyable() {
+		return false;
+	}
+
+
+	@Override
+	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
+			ToDoTask sourceToDoTask, boolean showContext) {
+		return null;
+	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			boolean showContext, boolean showSingleAssignee) {
-		return new ToDoTaskEditController(ureq, wControl, toDoTask, showContext, List.of(toDoTask), toDoTask, null,
-				ASSIGNEE_RIGHTS, MemberSelection.disabled, List.of(), List.of(), MemberSelection.disabled, List.of());
+		return new ToDoTaskEditController(ureq, wControl, toDoTask, null, showContext, List.of(toDoTask), toDoTask,
+				null, ASSIGNEE_RIGHTS, MemberSelection.disabled, List.of(), List.of(), MemberSelection.disabled, List.of());
 	}
 
 	@Override

@@ -175,6 +175,11 @@ public class QualityToDoListController extends ToDoTaskListController {
 		}
 
 		@Override
+		public boolean canCopy(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return secCallback.canCreateDataCollections();
+		}
+
+		@Override
 		public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 			return assignee
 					|| delegatee
