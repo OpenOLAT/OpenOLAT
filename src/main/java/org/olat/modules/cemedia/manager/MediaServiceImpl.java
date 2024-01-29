@@ -602,8 +602,6 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 			platformsKV.add(SelectionValues.entry(urlVideoPlatform, translator.translate(videoFormat.getI18nKey())));
 		}
 
-		platformsKV.add(SelectionValues.entry(MediaSearchQuery.EMPTY_KEY, translator.translate("source.empty")));
-
 		return platformsKV;
 	}
 }

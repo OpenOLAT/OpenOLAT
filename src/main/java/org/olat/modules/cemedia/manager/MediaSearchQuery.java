@@ -58,8 +58,6 @@ public class MediaSearchQuery {
 	@Autowired
 	private DB dbInstance;
 
-	public static final String EMPTY_KEY = "";
-	
 	public List<MediaWithVersion> searchBy(SearchMediaParameters parameters) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select media, mversion, metadata,")
@@ -151,11 +149,6 @@ public class MediaSearchQuery {
 					.and()
 					.append("(")
 					.append("(mvmetadata is not null and mvmetadata.format in (:platforms))");
-			if (platforms.contains(EMPTY_KEY)) {
-				sb
-						.append(" or ")
-						.append("mvmetadata is null");
-			}
 			sb.append(")");
 		}
 
