@@ -1363,6 +1363,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(assessmentModeLink == source) {
 			doAssessmentMode(ureq);
 		} else if (lifeCycleChangeLink == source) {
@@ -1455,11 +1457,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		// Update window title
-		if (source instanceof Link) {
-			Link link = (Link) source;
+		if (source instanceof Link link) {
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 			String newTitle = course.getCourseTitle() + " - " + link.getI18n();
-			getWindowControl().getWindowBackOffice().getWindow().setTitle(getTranslator(), newTitle);						
+			getWindowControl().getWindowBackOffice().getWindow().setTitle(getTranslator(), newTitle);
 		}
 		
 		super.event(ureq, source, event);
@@ -1492,6 +1493,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(getRunMainController() == source) {
 			if(event instanceof BusinessGroupModifiedEvent) {
 				processBusinessGroupModifiedEvent(ureq, (BusinessGroupModifiedEvent)event);

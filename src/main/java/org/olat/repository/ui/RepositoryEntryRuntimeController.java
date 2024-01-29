@@ -85,6 +85,7 @@ import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntryPermanentlyDeletedEvent;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.repository.ui.author.ConfirmCloseController;
@@ -173,6 +174,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected final boolean allowBookmark;
 	
 	protected boolean corrupted;
+	protected boolean permanentlyDeleted = false;
 	protected boolean settingsChanged;
 	protected boolean overrideReadOnly = false;
 	protected final String businessPathEntry;
@@ -691,7 +693,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 	@Override
 	public void event(Event event) {
-		//
+		if (event instanceof RepositoryEntryPermanentlyDeletedEvent delEvent) {
+			if (delEvent.getRepositoryEntryKey().equals(getRepositoryEntry().getKey())) {
+				permanentlyDeleted = true;
+			}
+		}
 	}
 	
 	protected void processClosedUnclosedEvent(UserRequest ureq) {
@@ -741,9 +747,22 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		}
 	}
+	
+	protected boolean guardDeleted(UserRequest ureq) {
+		// The tab can not be closed directly on the deletion event
+		// because the we do not have the ureq when catching the event.
+		// We close the tab when the user clicks the next time.
+		if (permanentlyDeleted) {
+			doClose(ureq);
+			return true;
+		}
+		return false;
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(source == runtimeController) {
 			fireEvent(ureq, event);
 		} else if(editLink == source) {
@@ -815,6 +834,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(cmc == source) {
 			cleanUp();
 		} else if (source == accessController) {
