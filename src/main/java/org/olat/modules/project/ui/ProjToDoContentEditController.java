@@ -108,7 +108,6 @@ public class ProjToDoContentEditController extends FormBasicController {
 				toDoTaskEditForm.setValues(new CopyValues(getLocale(), toDoTask));
 			} else {
 				toDoTaskEditForm.setValues(new ToDoTaskValues(toDoTask));
-				toDoTaskEditForm.updateUIByAssigneeRight(toDoTask.getAssigneeRights());
 			}
 		}
 		listenTo(toDoTaskEditForm);
