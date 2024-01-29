@@ -91,6 +91,7 @@ public class CreateInspectionFinishStepCallback implements StepRunnerCallback {
 			inspectionService.addInspection(configuration, startDate, endDate, inspectionContext.getInspectionCompensations(),
 					accessCode, courseNode.getIdent(), inspectionContext.getParticipants(), ureq.getIdentity());
 			
+			
 			List<Identity> participants = securityManager.loadIdentityByRefs(inspectionContext.getParticipants());
 			for(Identity participant:participants) {
 				sendMail(participant, metaId,  wControl, ureq.getIdentity(), result);
@@ -102,13 +103,15 @@ public class CreateInspectionFinishStepCallback implements StepRunnerCallback {
 	private void sendMail( Identity identity, String metaId, WindowControl wControl,
 			Identity ureqIdentity, MailerResult result) {
 		MailTemplate template = inspectionContext.getMailTemplate();
-		MailContext context = new MailContextImpl(inspectionContext.getCourseEntry().getOlatResource(),
-				null, "[RepositoryEntry:" + inspectionContext.getCourseEntry().getKey() + "]");
-		MailPackage mailing = new MailPackage(template, result, wControl.getBusinessControl().getAsString(), template != null);
-		MailBundle bundle = mailManager.makeMailBundle(context, identity, template, ureqIdentity, metaId, result);
-		if(bundle != null) {
-			mailManager.sendMessage(bundle);
+		if(template != null) {
+			MailContext context = new MailContextImpl(inspectionContext.getCourseEntry().getOlatResource(),
+					null, "[RepositoryEntry:" + inspectionContext.getCourseEntry().getKey() + "]");
+			MailPackage mailing = new MailPackage(template, result, wControl.getBusinessControl().getAsString(), template != null);
+			MailBundle bundle = mailManager.makeMailBundle(context, identity, template, ureqIdentity, metaId, result);
+			if(bundle != null) {
+				mailManager.sendMessage(bundle);
+			}
+			mailing.appendResult(result);
 		}
-		mailing.appendResult(result);
 	}
 }
