@@ -59,7 +59,10 @@ public class AssessmentInspectionContextEntryControllerCreator extends DefaultCo
 
 	private Controller createLaunchController(UserRequest ureq, WindowControl wControl, ContextEntry contextEntry) {
 		AssessmentInspection inspection = getInspection(ureq, contextEntry);
-		return new AssessmentInspectionMainController(ureq, wControl, inspection);
+		if(inspection != null) {
+			return new AssessmentInspectionMainController(ureq, wControl, inspection);
+		}
+		return null;
 	}
 	
 	private AssessmentInspection getInspection(UserRequest ureq, ContextEntry contextEntry) {

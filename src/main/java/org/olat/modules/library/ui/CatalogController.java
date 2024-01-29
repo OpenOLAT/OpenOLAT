@@ -341,10 +341,12 @@ public class CatalogController extends FormBasicController implements GenericEve
 			if(vfsItem instanceof VFSLeaf) {
 				String name = vfsItem.getName();
 				CatalogItem item = filenameToItems.get(name);
-				item.setSelected(fileName != null && fileName.equals(name));
-				forgeSendMailLink(item);
-				forgeComment(item);
-				forgeRating(item);
+				if(item != null) {
+					item.setSelected(fileName != null && fileName.equals(name));
+					forgeSendMailLink(item);
+					forgeComment(item);
+					forgeRating(item);
+				}
 			}
 		}
 		
