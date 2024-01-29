@@ -163,6 +163,7 @@ public class ChooseParticipantsController extends StepFormBasicController {
 		tableModel = new ChooseParticipantsListModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "participants", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 	}
 	
 	private void loadModel() {

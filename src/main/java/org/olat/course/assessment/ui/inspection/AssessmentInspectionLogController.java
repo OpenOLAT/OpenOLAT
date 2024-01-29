@@ -46,9 +46,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.assessment.AssessmentInspection;
+import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspectionLog;
 import org.olat.course.assessment.AssessmentInspectionService;
-import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.assessment.ui.inspection.AssessmentInspectionLogListModel.LogCols;
 import org.olat.course.assessment.ui.inspection.elements.ActionLogCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
@@ -80,6 +81,7 @@ public class AssessmentInspectionLogController extends FormBasicController {
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AssessmentInspection inspection;
+	private final AssessmentInspectionConfiguration inspectionConfiguration;
 	
 	@Autowired
 	private UserManager userManager;
@@ -92,6 +94,7 @@ public class AssessmentInspectionLogController extends FormBasicController {
 			AssessmentInspection inspection) {
 		super(ureq, wControl, "inspection_logs");
 		this.inspection = inspection;
+		inspectionConfiguration = inspection.getConfiguration();
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -119,7 +122,7 @@ public class AssessmentInspectionLogController extends FormBasicController {
 			colIndex++;
 		}
 		
-		tableModel = new AssessmentInspectionLogListModel(columnsModel, getTranslator());
+		tableModel = new AssessmentInspectionLogListModel(columnsModel, inspectionConfiguration, getTranslator());
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(false);

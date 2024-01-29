@@ -81,7 +81,7 @@ implements SortableFlexiTableDataModel<AssessmentInspectionRow> {
 			case inspectionDuration, inspectionDurationShort: return getDuration(row);
 			case inspectionStatus: return row;
 			case comment: return row.getComment();
-			case effectiveDuration: return row.getEffectiveDuration();
+			case effectiveDuration: return getEffectiveDuration(row);
 			case accessCode: return row.getAccessCode();
 			case configuration: return row.getConfiguration().getName();
 			case cancel: return row.getCancelButton();
@@ -107,6 +107,15 @@ implements SortableFlexiTableDataModel<AssessmentInspectionRow> {
 		int totalDuration = (configurationDuration == null ? 0 : configurationDuration.intValue())
 				+ (extraTime == null ? 0 : extraTime.intValue());
 		return Integer.valueOf(totalDuration / 60);
+	}
+	
+	private Long getEffectiveDuration(AssessmentInspectionRow row) {
+		Long effectiveDuration = row.getEffectiveDuration();
+		if(effectiveDuration == null) {
+			return null;
+		}
+		long duration = effectiveDuration.longValue();
+		return duration / 60l;
 	}
 	
 	public enum OverviewCols implements FlexiSortableColumnDef {

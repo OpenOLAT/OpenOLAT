@@ -400,7 +400,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		overviewMenuTree.setHighlightSelection(false);
 		menuTree.setHighlightSelection(true);
 		
-		resultsInspectionLink.setVisible(courseNode instanceof IQTESTCourseNode);
+		resultsInspectionLink.setVisible(courseNode instanceof IQTESTCourseNode && inspectionService.hasInspectionConfigurations(courseEntry));
 		
 		stackPanel.popUpToController(this);
 		stackPanel.changeDisplayname(treeNode.getTitle(), "o_icon " + treeNode.getIconCssClass(), this);

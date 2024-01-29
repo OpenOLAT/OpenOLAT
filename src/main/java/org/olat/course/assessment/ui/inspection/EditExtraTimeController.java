@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.inspection;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -42,35 +44,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EditExtraTimeController extends FormBasicController {
 	
 	private TextElement extraTimeEl;
-	
-	private AssessmentInspection inspection;
-	private AssessmentInspectionConfiguration configuration;
+	private List<AssessmentInspection> inspections;
 	
 	@Autowired
 	private AssessmentInspectionService inspectionService;
-	
-	public EditExtraTimeController(UserRequest ureq, WindowControl wControl, AssessmentInspection inspection,
-			AssessmentInspectionConfiguration configuration) {
+
+	public EditExtraTimeController(UserRequest ureq, WindowControl wControl, List<AssessmentInspection> inspections) {
 		super(ureq, wControl);
-		this.inspection = inspection;
-		this.configuration = configuration;
+		this.inspections = inspections;
 		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String time = "";
+		if(inspections != null) {
+			int maxTime = 0;
+			for(AssessmentInspection inspection:inspections) {
+				int extra = inspection.getExtraTime() == null ? 0 : inspection.getExtraTime().intValue();
+				int duration = inspection.getConfiguration().getDuration();
+				int extraTimeInMinutes = (duration + extra) / 60;
+				if(extraTimeInMinutes > maxTime) {
+					time = Integer.toString(extraTimeInMinutes);
+					maxTime = extraTimeInMinutes;
+				}
+			}
+		}
 		
-		int extra = inspection.getExtraTime() == null ? 0 : inspection.getExtraTime().intValue();
-		int duration = configuration.getDuration();
-		int extraTimeInMinutes = (duration + extra) / 60;
-		
-		extraTimeEl = uifactory.addTextElement("edit.extra.time", "edit.extra.time", 5, Integer.toString(extraTimeInMinutes), formLayout);
+		extraTimeEl = uifactory.addTextElement("edit.extra.time", "edit.extra.time", 5, time, formLayout);
 		extraTimeEl.setElementCssClass("form-inline");
 		extraTimeEl.setDisplaySize(5);
 		extraTimeEl.setDomReplacementWrapperRequired(false);
 		extraTimeEl.setMandatory(true);
-		extraTimeEl.setTextAddOn("max.duration.unit");
+		extraTimeEl.setTextAddOn("edit.extra.time.unit");
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
@@ -84,11 +91,15 @@ public class EditExtraTimeController extends FormBasicController {
 		extraTimeEl.clearError();
 		if(StringHelper.containsNonWhitespace(extraTimeEl.getValue())) {
 			if(StringHelper.isLong(extraTimeEl.getValue())) {
-				int val = Integer.parseInt(extraTimeEl.getValue()) - (configuration.getDuration() / 60);
-				if(val < 0) {
-					extraTimeEl.setErrorKey("error.less.than.configuration.duration",
-							Integer.toString(configuration.getDuration() / 60));
-					allOk &= false;
+				for(AssessmentInspection inspection:inspections) {
+					AssessmentInspectionConfiguration configuration = inspection.getConfiguration();
+					int val = Integer.parseInt(extraTimeEl.getValue()) - (configuration.getDuration() / 60);
+					if(val < 0) {
+						extraTimeEl.setErrorKey("error.less.than.configuration.duration",
+								Integer.toString(configuration.getDuration() / 60));
+						allOk &= false;
+						break;
+					}
 				}
 			} else {
 				extraTimeEl.setErrorKey("form.error.positive.integer");
@@ -106,19 +117,21 @@ public class EditExtraTimeController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		inspection = inspectionService.getInspection(inspection.getKey());
-		if(inspection != null) {
-			Integer extraTime = null;
-			if(StringHelper.containsNonWhitespace(extraTimeEl.getValue())) {
-				int val = (Integer.parseInt(extraTimeEl.getValue()) * 60) - configuration.getDuration();
-				if(val >= 0) {
-					extraTime = Integer.valueOf(val);
+		for(AssessmentInspection inspection:inspections) {
+			inspection = inspectionService.getInspection(inspection.getKey());
+			if(inspection != null) {
+				Integer extraTime = null;
+				if(StringHelper.containsNonWhitespace(extraTimeEl.getValue())) {
+					AssessmentInspectionConfiguration configuration = inspection.getConfiguration();
+					int val = (Integer.parseInt(extraTimeEl.getValue()) * 60) - configuration.getDuration();
+					if(val >= 0) {
+						extraTime = Integer.valueOf(val);
+					}
 				}
+				inspectionService.updateInspection(inspection, null, inspection.getFromDate(), inspection.getToDate(), extraTime,
+						StringHelper.containsNonWhitespace(inspection.getAccessCode()), getIdentity());
 			}
-			inspection = inspectionService.updateInspection(inspection, null, inspection.getFromDate(), inspection.getToDate(), extraTime,
-					StringHelper.containsNonWhitespace(inspection.getAccessCode()), getIdentity());
 		}
-
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

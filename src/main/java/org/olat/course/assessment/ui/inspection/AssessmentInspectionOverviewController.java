@@ -533,7 +533,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		} else if(source == bulkCancelButton) {
 			doBulkCancel(ureq);
 		} else if(source == bulkExtendDurationButton) {
-			//
+			doBulkExtend(ureq);
 		} else if(source == bulkWithdrawButton) {
 			doBulkWithdraw(ureq);
 		} else if(source == tableEl) {
@@ -556,7 +556,14 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 	}
 	
 	private void doBulkCancel(UserRequest ureq) {
-		List<AssessmentInspection> inspectionList = getSelectedInspectionList();
+		List<AssessmentInspection> selectedInspectionList = getSelectedInspectionList();
+		List<AssessmentInspection> inspectionList = new ArrayList<>(selectedInspectionList.size());
+		for(AssessmentInspection inspection:selectedInspectionList) {
+			if(inspection.getInspectionStatus() == AssessmentInspectionStatusEnum.inProgress) {
+				inspectionList.add(inspection);
+			}
+		}
+		
 		if(inspectionList.isEmpty()) {
 			showWarning("warning.atleastone");
 		} else {
@@ -570,7 +577,15 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 	}
 	
 	private void doBulkWithdraw(UserRequest ureq) {
-		List<AssessmentInspection> inspectionList = getSelectedInspectionList();
+		List<AssessmentInspection> selectedInspectionList = getSelectedInspectionList();
+		List<AssessmentInspection> inspectionList = new ArrayList<>(selectedInspectionList.size());
+		for(AssessmentInspection inspection:selectedInspectionList) {
+			if(inspection.getInspectionStatus() == AssessmentInspectionStatusEnum.scheduled
+					&& (inspection.getToDate() == null || ureq.getRequestTimestamp().before(inspection.getToDate()))) {
+				inspectionList.add(inspection);
+			}
+		}
+		
 		if(inspectionList.isEmpty()) {
 			showWarning("warning.atleastone");
 		} else {
@@ -578,6 +593,28 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 			listenTo(confirmWithdrawCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmWithdrawCtrl.getInitialComponent(), true, translate("bulk.withdraw"));
+			cmc.activate();
+			listenTo(cmc);
+		}
+	}
+	
+	private void doBulkExtend(UserRequest ureq) {
+		List<AssessmentInspection> selectedInspectionList = getSelectedInspectionList();
+		List<AssessmentInspection> inspectionList = new ArrayList<>(selectedInspectionList.size());
+		for(AssessmentInspection inspection:selectedInspectionList) {
+			if(inspection.getInspectionStatus() == AssessmentInspectionStatusEnum.scheduled
+					&& (inspection.getToDate() == null || ureq.getRequestTimestamp().before(inspection.getToDate()))) {
+				inspectionList.add(inspection);
+			}
+		}
+		
+		if(inspectionList.isEmpty()) {
+			showWarning("warning.atleastone");
+		} else {
+			editExtraTimeCtrl = new EditExtraTimeController(ureq, getWindowControl(), inspectionList);
+			listenTo(editExtraTimeCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editExtraTimeCtrl.getInitialComponent(), true, translate("bulk.extend"));
 			cmc.activate();
 			listenTo(cmc);
 		}
@@ -641,8 +678,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 	}
 	
 	private void doExtendDuration(UserRequest ureq, AssessmentInspection inspection) {
-		editExtraTimeCtrl = new EditExtraTimeController(ureq, getWindowControl(),
-				inspection, inspection.getConfiguration());
+		editExtraTimeCtrl = new EditExtraTimeController(ureq, getWindowControl(), List.of(inspection));
 		listenTo(editExtraTimeCtrl);
 		
 		String fullName = userManager.getUserDisplayName(inspection.getIdentity());

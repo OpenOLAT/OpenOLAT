@@ -197,7 +197,10 @@ public class AssessmentInspectionDAO {
 				inner join fetch inspection.configuration as configuration
 				inner join fetch configuration.repositoryEntry as entry
 				inner join fetch inspection.identity as ident
-				where inspection.fromDate<=:date and inspection.toDate>:date and inspection.inspectionStatus=:status""";
+				inner join qtiassessmenttestsession testSession on (testSession.identity.key=inspection.identity.key and configuration.repositoryEntry.key=testSession.repositoryEntry.key and testSession.subIdent=inspection.subIdent)
+				where inspection.fromDate<=:date and inspection.toDate>:date and inspection.inspectionStatus=:status
+				and (testSession.terminationTime is not null or testSession.finishTime is not null) and testSession.exploded=false and testSession.cancelled=false
+				""";
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(query, AssessmentInspection.class)

@@ -34,6 +34,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentInspection;
+import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.AssessmentInspectionStatusEnum;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
@@ -86,12 +87,18 @@ public class TransientAssessmentInspection implements Serializable, LockRequest 
 		from = inspection.getFromDate();
 		to = inspection.getToDate();
 		accessCode = inspection.getAccessCode();
-		durationInSeconds = inspection.getConfiguration().getDuration();
+		
+		AssessmentInspectionConfiguration configuration = inspection.getConfiguration();
+		durationInSeconds = configuration.getDuration();
 		if(inspection.getExtraTime() != null) {
 			durationInSeconds += inspection.getExtraTime().intValue();
 		}
 		
-		RepositoryEntry entry = inspection.getConfiguration().getRepositoryEntry();
+		if(configuration.isRestrictAccessIps()) {
+			ipList = configuration.getIpList();
+		}
+		
+		RepositoryEntry entry = configuration.getRepositoryEntry();
 		entry = CoreSpringFactory.getImpl(RepositoryService.class).loadBy(entry);
 		repositoryEntryKey = entry.getKey();
 		courseDisplayName = entry.getDisplayname();
@@ -104,13 +111,13 @@ public class TransientAssessmentInspection implements Serializable, LockRequest 
 			courseNodeType = element.getType();
 		}
 		
-		if(inspection.getConfiguration().isSafeExamBrowser()) {
-			safeExamBrowserKey = inspection.getConfiguration().getSafeExamBrowserKey();
-			safeExamBrowserHint = inspection.getConfiguration().getSafeExamBrowserHint();
-			safeExamBrowserConfigPList = inspection.getConfiguration().getSafeExamBrowserConfigPList();
-			safeExamBrowserConfigPListKey = inspection.getConfiguration().getSafeExamBrowserConfigPListKey();
-			safeExamBrowserConfigDownload = inspection.getConfiguration().isSafeExamBrowserConfigDownload();
-			safeExamBrowserConfig = inspection.getConfiguration().getSafeExamBrowserConfiguration();
+		if(configuration.isSafeExamBrowser()) {
+			safeExamBrowserKey = configuration.getSafeExamBrowserKey();
+			safeExamBrowserHint = configuration.getSafeExamBrowserHint();
+			safeExamBrowserConfigPList = configuration.getSafeExamBrowserConfigPList();
+			safeExamBrowserConfigPListKey = configuration.getSafeExamBrowserConfigPListKey();
+			safeExamBrowserConfigDownload = configuration.isSafeExamBrowserConfigDownload();
+			safeExamBrowserConfig = configuration.getSafeExamBrowserConfiguration();
 		}
 
 		resource = OresHelper.createOLATResourceableInstance(AssessmentInspection.class, inspection.getKey());
