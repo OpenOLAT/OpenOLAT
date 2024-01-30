@@ -79,6 +79,7 @@ public class ModalInspectorController extends BasicController implements PageEle
 			// Do nothing, jquery.contenteditor.v3.js catch the event and send close_inspector event
 			// to trigger the onchange events of the fields in inspector
 		} else if(mainVC == source) {
+			// When scrolling moves inspector out of the picture:
 			if("close_inspector".equals(event.getCommand())) {
 				fireEvent(ureq, new CloseInspectorEvent(elementId, false));
 			}
