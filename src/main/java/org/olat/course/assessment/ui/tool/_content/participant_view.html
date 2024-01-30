@@ -85,65 +85,63 @@
 		#end
 		
 		#if($hasScoreField)
-			<div class="o_aps_widget o_widget #if($weightedScore)o_widget_two_parts#end">
-				<div class="o_widget_part">
-					<div class="o_widget_header">
-						<div class="o_widget_title o_flex_item_max">
-							$r.translate("score")
-						</div>
-						<div class="o_widget_icon">
-							<i class="o_icon o_icon_score"> </i>
-						</div>
+			<div class="o_aps_widget o_widget">
+				<div class="o_widget_header">
+					<div class="o_widget_title o_flex_item_max">
+						$r.translate("score")
 					</div>
-					<div class="o_widget_content">
-						<div class="o_widget_main o_widget_main_figure">
-							<div class="o_widget_figure o_flex_item_max">
-								<span class="o_widget_figure_value o_sel_score">$score </span>
-								#if ($maxScore && $maxScore > 0)
-									<span class="o_widget_figure_desc">$r.translate("score.of", "$maxScore")</span>
-								#end
-							</div>
-							<div class="o_widget_additional">
-								#if($r.available("scoreProgress"))
-									<div class="o_widget_progress">
-										$r.render("scoreProgress")
-									</div>
-								#end
-							</div>
-						</div>
+					<div class="o_widget_icon">
+						<i class="o_icon o_icon_score"> </i>
 					</div>
 				</div>
-				#if($weightedScore)
-					<div class="o_widget_part">
-						<div class="o_widget_header">
-							<div class="o_widget_title o_flex_item_max">
-								$r.translate("score") <span class="o_widget_subtitle">$r.translate("score.weighted.subtitle")</span>
-							</div>
-							<div class="o_widget_icon">
-								<i class="o_icon o_icon_score_unbalanced"> </i>
-							</div>
+				<div class="o_widget_content">
+					<div class="o_widget_main o_widget_main_figure">
+						<div class="o_widget_figure o_flex_item_max">
+							<span class="o_widget_figure_value o_sel_score">$score </span>
+							#if ($maxScore && $maxScore > 0)
+								<span class="o_widget_figure_desc">$r.translate("score.of", "$maxScore")</span>
+							#end
 						</div>
-						<div class="o_widget_content">
-							#if($resultsVisible && $score)
-								<div class="o_widget_main o_widget_main_figure">
-									<div class="o_widget_figure o_flex_item_max">
-										<span class="o_widget_figure_value">$weightedScore </span><span class="o_widget_figure_desc">$scoreScaleLabel</span>
-									</div>
-									<div class="o_widget_additional">
-									</div>
-								</div>
-							#else
-								<div class="o_widget_main o_widget_main_text o_flex_item_max">
-									<div class="o_widget_text o_nowrap">
-										$r.translate("assessment.value.not.visible")
-									</div>
-									<div class="o_widget_additional">
-									</div>
+						<div class="o_widget_additional">
+							#if($r.available("scoreProgress"))
+								<div class="o_widget_progress">
+									$r.render("scoreProgress")
 								</div>
 							#end
 						</div>
 					</div>
-				#end
+				</div>
+			</div>
+		#end
+		#if($weightedScore)
+			<div class="o_aps_widget o_widget">
+				<div class="o_widget_header">
+					<div class="o_widget_title o_flex_item_max">
+						$r.translate("score") <span class="o_widget_subtitle">$r.translate("score.weighted.subtitle")</span>
+					</div>
+					<div class="o_widget_icon">
+						<i class="o_icon o_icon_score_unbalanced"> </i>
+					</div>
+				</div>
+				<div class="o_widget_content">
+					#if($resultsVisible && $score)
+						<div class="o_widget_main o_widget_main_figure">
+							<div class="o_widget_figure o_flex_item_max">
+								<span class="o_widget_figure_value">$weightedScore </span><span class="o_widget_figure_desc">$scoreScaleLabel</span>
+							</div>
+							<div class="o_widget_additional">
+							</div>
+						</div>
+					#else
+						<div class="o_widget_main o_widget_main_text o_flex_item_max">
+							<div class="o_widget_text o_nowrap">
+								$r.translate("assessment.value.not.visible")
+							</div>
+							<div class="o_widget_additional">
+							</div>
+						</div>
+					#end
+				</div>
 			</div>
 		#end
 		

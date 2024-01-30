@@ -160,26 +160,6 @@
 			align-items: end;
 		}
 	}
-	.o_widget_part {
-		display: flex;
-		flex-direction: column;
- 		height: 100%;
-	}
-	&.o_widget_two_parts {
-		@container (min-width: 530px) {
-			grid-column: span 2;
-		}
-		display: grid;
-		min-width: 100%;
-		grid-template-columns: repeat(2, 1fr);
-		&>div:first-child {
-			border-right: $o-widget-border;
-			padding-right: 20px;
-		}
-		&>div:nth-child(2) {
-			padding-left: 20px;
-		}
-	}
 }
 
 .o_widgets {
