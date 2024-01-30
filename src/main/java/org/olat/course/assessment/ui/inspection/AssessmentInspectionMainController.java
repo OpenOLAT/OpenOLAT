@@ -47,10 +47,13 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.Coordinator;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentInspection;
+import org.olat.course.assessment.AssessmentInspectionChangeEvent;
 import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.AssessmentInspectionStatusEnum;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -77,12 +80,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentInspectionMainController extends BasicController {
+public class AssessmentInspectionMainController extends BasicController implements GenericEventListener {
 	
 	private final VelocityContainer mainVC;
 	private final Link closeInspectionButton;
 	
 	private AssessmentInspection inspection;
+	private final long startupEffectiveDuration;
 	private final Date controllerCreationDate = new Date();
 	private final InspectionStatus inspectionStatus = new InspectionStatus();
 	
@@ -91,6 +95,8 @@ public class AssessmentInspectionMainController extends BasicController {
 	private AssessmentResultController resultCtrl;
 	private ConfirmCloseInspectionController confirmCloseCtrl;
 
+	@Autowired
+	private Coordinator coordinator;
 	@Autowired
 	protected QTI21Service qtiService;
 	@Autowired
@@ -101,6 +107,7 @@ public class AssessmentInspectionMainController extends BasicController {
 	public AssessmentInspectionMainController(UserRequest ureq, WindowControl wControl, AssessmentInspection inspection) {
 		super(ureq, wControl);
 		this.inspection = inspection;
+		startupEffectiveDuration = inspection.getEffectiveDuration() == null ? 0l : inspection.getEffectiveDuration().longValue();
 		
 		mainVC = createVelocityContainer("inspection_main");
 		
@@ -115,6 +122,10 @@ public class AssessmentInspectionMainController extends BasicController {
 		closeInspectionButton.setCustomEnabledLinkCSS("btn btn-default btn-primary");
 		mainVC.put("close.inspection", closeInspectionButton);
 		putInitialPanel(mainVC);
+		
+		OLATResourceable sessionOres = OresHelper
+        		.createOLATResourceableInstance(AssessmentInspection.class, inspection.getKey());
+        coordinator.getEventBus().registerFor(this, getIdentity(), sessionOres);
 	}
 
 	private void initTestResults(UserRequest ureq, RepositoryEntry courseEntry, IQTESTCourseNode testNode, String options) {
@@ -162,6 +173,20 @@ public class AssessmentInspectionMainController extends BasicController {
 				long durationSeconds = (new Date().getTime() - controllerCreationDate.getTime()) / 1000;
 				inspectionService.pauseInspection(getIdentity(), inspection, durationSeconds);
 			}
+		}
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof AssessmentInspectionChangeEvent aice && aice.sameInspection(inspection)) {
+			processInspectionChanges();
+		}
+	}
+	
+	private void processInspectionChanges() {
+		inspection = inspectionService.getInspection(inspection.getKey());
+		if(timerCtrl != null) {
+			timerCtrl.extraTime();
 		}
 	}
 
@@ -267,6 +292,10 @@ public class AssessmentInspectionMainController extends BasicController {
 			}
 			super.formInnerEvent(ureq, source, event);
 		}
+		
+		public void extraTime() {
+			timerEl.getComponent().setDirty(true);
+		}
 
 		@Override
 		protected void formOK(UserRequest ureq) {
@@ -285,15 +314,14 @@ public class AssessmentInspectionMainController extends BasicController {
 		}
 
 		private Long getInspectionMaxTimeLimit() {
-			int extra = inspection.getExtraTime() == null ? 0 : inspection.getExtraTime().intValue();
 			Long leadingTimeInMilliSeconds = getLeadingTimeEndInspectionOption();
 			long leadingDuration = Long.MAX_VALUE;
 			if(leadingTimeInMilliSeconds != null) {
-				double leadingDurationInSeconds = leadingTimeInMilliSeconds / 1000.0d;
-				leadingDuration = Math.round(leadingDurationInSeconds);
+				leadingDuration = leadingTimeInMilliSeconds.longValue() / 1000;
 			}
 			
 			if(inspection.getConfiguration() != null) {
+				int extra = inspection.getExtraTime() == null ? 0 : inspection.getExtraTime().intValue();
 				int timeLimits = inspection.getConfiguration().getDuration() + extra;
 				return Math.min(leadingDuration, timeLimits);
 			}
@@ -303,7 +331,7 @@ public class AssessmentInspectionMainController extends BasicController {
 		private Long getLeadingTimeEndInspectionOption() {
 			if(inspection != null && inspection.getToDate() != null) {
 				Date endTestDate = inspection.getToDate();
-				long diff = endTestDate.getTime() - new Date().getTime();
+				long diff = endTestDate.getTime() - controllerCreationDate.getTime();
 				return Long.valueOf(diff);
 			}
 			return null;// default is a year
@@ -312,31 +340,29 @@ public class AssessmentInspectionMainController extends BasicController {
 		/**
 		 * @return The inspection duration in milliseconds
 		 */
-		public long getInspectionDuration() {
+		public long getInspectionDuration(Date now) {
 			if(inspection == null) {
 				return -1;
 			}
-			
-			Date startTime = inspection.getStartTime();
-			
-			Date timestamp = new Date();
-			startTime = startTime == null ? controllerCreationDate : startTime;
-	        final long durationDelta = timestamp.getTime() - startTime.getTime(); 
-	        int accumulated = inspection.getEffectiveDuration() == null ? 0 : (inspection.getEffectiveDuration().intValue() * 1000);
-	        return accumulated + durationDelta;
+
+	        final long durationDelta = now.getTime() - controllerCreationDate.getTime(); 
+	        // Effective duration is in seconds
+	        return (startupEffectiveDuration * 1000l) + durationDelta;
 		}
 		
-		public String getInspectionEndTime() {
+		public String getInspectionEndTime(Date now) {
 			Long timeLimits = getInspectionMaxTimeLimit();
 			if(timeLimits != null) {
-				long inspectionDuration = getInspectionDuration();
+				long inspectionDuration = getInspectionDuration(now);
 				if(inspectionDuration < 0) {
 					inspectionDuration = 0;
 				}
 				
-				Calendar calendar = Calendar.getInstance(); // gets a calendar using the default time zone and locale.
+				// gets a calendar using the default time zone and locale.
+				Calendar calendar = Calendar.getInstance(); 
+				calendar.setTime(now);
 				calendar.add(Calendar.MILLISECOND, -(int)inspectionDuration);
-				calendar.add(Calendar.SECOND, timeLimits.intValue());
+				calendar.add(Calendar.SECOND, timeLimits.intValue() + 1);// +1 to compensante some rounding errors
 				return Formatter.getInstance(getLocale()).formatTimeShort(calendar.getTime());
 			}
 			return "";

@@ -31,12 +31,15 @@ import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.crypto.PasswordGenerator;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentInspection;
+import org.olat.course.assessment.AssessmentInspectionChangeEvent;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspectionLog;
 import org.olat.course.assessment.AssessmentInspectionLog.Action;
@@ -233,6 +236,13 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 		String after = AssessmentInspectionXStream.toXml(inspection);
 		inspectionLogDao.createLog(Action.update, before, after, inspection, doer);
 		dbInstance.commit();
+		
+		AssessmentInspectionChangeEvent event = new AssessmentInspectionChangeEvent(AssessmentInspectionChangeEvent.UPDATE,
+				inspection, inspection.getIdentity().getKey());
+		OLATResourceable inspectionOres = OresHelper
+        		.createOLATResourceableInstance(AssessmentInspection.class, inspection.getKey());
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, inspectionOres);
+
 		return inspection;
 	}
 
