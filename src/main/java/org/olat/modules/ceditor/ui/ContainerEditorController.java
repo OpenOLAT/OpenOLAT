@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
@@ -35,7 +34,6 @@ import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
-import org.olat.modules.ceditor.ui.event.ContainerNameEvent;
 import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
 
 /**
@@ -46,8 +44,6 @@ import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
  */
 public class ContainerEditorController extends FormBasicController implements PageElementEditorController {
 
-	private ContainerNameController nameCtrl;
-	private CloseableCalloutWindowController calloutCtrl;
 	private Controller ruleLinkController;
 	
 	private ContainerElement container;
@@ -73,27 +69,11 @@ public class ContainerEditorController extends FormBasicController implements Pa
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(nameCtrl == source) {
-			calloutCtrl.deactivate();
-			cleanUp();
-			if(event instanceof ContainerNameEvent cne) {
-				setContainerName(ureq, cne.getName());
-				fireEvent(ureq, event);
-			}
-		} else if(calloutCtrl == source) {
-			cleanUp();
-		} else if(ruleLinkController == source && event instanceof ContainerRuleLinkEvent) {
+		if (ruleLinkController == source && event instanceof ContainerRuleLinkEvent) {
 			fireEvent(ureq, event);
 		}
 		
 		super.event(ureq, source, event);
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(calloutCtrl);
-		removeAsListenerAndDispose(nameCtrl);
-		calloutCtrl = null;
-		nameCtrl = null;
 	}
 
 	@Override
@@ -173,23 +153,6 @@ public class ContainerEditorController extends FormBasicController implements Pa
 		for(String elementId:elementsIds) {
 			settings.setElementAt(elementId, slot, null);
 		}
-		save(ureq, settings);
-	}
-	
-	public void openNameCallout(UserRequest ureq, String nameLinkId) {
-		nameCtrl = new ContainerNameController(ureq, getWindowControl(), container.getContainerSettings().getName());
-		nameCtrl.addControllerListener(this);
-		
-		String title = translate("change.container.name");
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), nameCtrl.getInitialComponent(),
-				nameLinkId, title, true, null);
-		calloutCtrl.addControllerListener(this);
-		calloutCtrl.activate();
-	}
-	
-	private void setContainerName(UserRequest ureq, String name) {
-		ContainerSettings settings = container.getContainerSettings();
-		settings.setName(name);
 		save(ureq, settings);
 	}
 	

@@ -925,9 +925,9 @@ public class PageEditorV2Controller extends BasicController {
 		
 		ContentEditorFragment cmp;
 		if(element instanceof ContainerElement) {
-			cmp = new ContentEditorContainerComponent(cmpId, (ContainerEditorController)editorPart, inspectorPart);
+			cmp = new ContentEditorContainerComponent(cmpId, (ContainerEditorController)editorPart, inspectorPart, getTranslator());
 		} else {
-			cmp = new ContentEditorFragmentComponent(cmpId, element, viewPart, editorPart, inspectorPart);
+			cmp = new ContentEditorFragmentComponent(cmpId, element, viewPart, editorPart, inspectorPart, getTranslator());
 		}
 		cmp.setCloneable(secCallback.canCloneElement() && cloneHandlerMap.containsKey(element.getType()));
 		cmp.setDeleteable(secCallback.canDeleteElement());

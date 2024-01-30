@@ -34,6 +34,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageRunElement;
@@ -73,7 +74,7 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	private final Controller editorPart;
 	private final PageRunElement viewPart;
 	
-	public ContentEditorFragmentComponent(String name, PageElement pageElement, PageRunElement viewPart, Controller editorPart, Controller inspectorPart) {
+	public ContentEditorFragmentComponent(String name, PageElement pageElement, PageRunElement viewPart, Controller editorPart, Controller inspectorPart, Translator translator) {
 		super(name);
 		this.editorPart = editorPart;
 		this.viewPart = viewPart;
@@ -83,7 +84,8 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 		toggleInspectorButton = LinkFactory.createCustomLink("toggle", "toggle", "", Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
 		toggleInspectorButton.setIconLeftCSS("o_icon o_icon-fw o_icon_inspect");
 		toggleInspectorButton.setAriaRole("button");
-		
+		toggleInspectorButton.setTitle(translator.translate("edit.settings"));
+
 		if(inspectorPart != null) {
 			inspectorPanel = new InspectorPanelComponent(inspectorPart.getInitialComponent());
 			toggleInspectorButton.setElementCssClass("o_sel_elementinspector active");

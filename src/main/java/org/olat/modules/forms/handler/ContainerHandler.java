@@ -42,7 +42,7 @@ import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.ContainerEditorController;
-import org.olat.modules.ceditor.ui.ContainerInspectorController;
+import org.olat.modules.ceditor.ui.ContainerInFormInspectorController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Container;
@@ -112,7 +112,7 @@ public class ContainerHandler implements PageLayoutHandler, EvaluationFormElemen
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof ContainerElement containerElement) {
-			return new ContainerInspectorController(ureq, wControl, containerElement, this);
+			return new ContainerInFormInspectorController(ureq, wControl, containerElement, this);
 		}
 		return null;
 	}

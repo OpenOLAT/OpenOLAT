@@ -97,7 +97,6 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 
 		renderToggleInspector(fr, sb, cmp, containerUbu, translator, renderResult, args);
 		renderDuplicate(sb, cmp, containerUbu, translator);
-		renderNameLink(sb, cmp, containerUbu, translator);
 		renderRuleLink(sb, cmp, containerUbu, translator);
 		renderMoreMenu(sb, cmp, containerUbu, translator);
 		renderMoveDown(sb, cmp, containerUbu, translator);
@@ -105,21 +104,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		
 		sb.append("</div>");
 	}
-	
-	private void renderNameLink(StringOutput sb, ContentEditorContainerComponent cmp, URLBuilder ubu,
-			Translator translator) {
-		if (cmp.supportsName()) {
-			sb.append("<a id='o_cname_").append(cmp.getElementId()).append("'")
-			  .append(" title='").append(translator.translate("container.name")).append("'")
-			  .append(" href='javascript:;' onclick=\"");
-			ubu.buildXHREvent(sb, "", false, true,
-					new NameValuePair(VelocityContainer.COMMAND_ID, "change_name"),
-					new NameValuePair("fragment", cmp.getComponentName()));
-			sb.append(" return false;\" class=''><i class='o_icon o_icon_tag'> </i>")
-			  .append(" <span>").append(translator.translate("container.name")).append("</span></a>");
-		}
-	}
-	
+
 	private void renderRuleLink(StringOutput sb, ContentEditorContainerComponent cmp, URLBuilder ubu,
 			Translator translator) {
 		if (cmp.isRuleLinkEnabled()) {
@@ -196,7 +181,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 				? Formatter.truncate(name, 20)
 				: StringHelper.escapeHtml(PageEditorUIFactory.formatUntitled(translator, cmp.getElementId()));
 		sb.append("<span><i class='o_icon o_icon_name'> </i> ")
-		  .append(translator.translate("container.name.ref", displayName))
+		  .append(displayName)
 		  .append("</span>");
 		sb.append("</span>");
 	}

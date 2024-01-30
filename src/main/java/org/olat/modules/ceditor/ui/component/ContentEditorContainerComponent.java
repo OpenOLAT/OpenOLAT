@@ -45,7 +45,6 @@ import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.CloneElementEvent;
 import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
-import org.olat.modules.ceditor.ui.event.ContainerNameEvent;
 import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
 import org.olat.modules.ceditor.ui.event.DropCanceledEvent;
@@ -84,7 +83,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 
 	private List<Component> components = new ArrayList<>();
 	
-	public ContentEditorContainerComponent(String name, ContainerEditorController editorPart, Controller inspectorPart) {
+	public ContentEditorContainerComponent(String name, ContainerEditorController editorPart, Controller inspectorPart, Translator translator) {
 		super(name);
 		this.editorPart = editorPart;
 		this.inspectorPart = inspectorPart;
@@ -95,6 +94,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 		toggleInspectorButton = LinkFactory.createCustomLink("toggle", "toggle", "", Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
 		toggleInspectorButton.setIconLeftCSS("o_icon o_icon-fw o_icon_inspect");
 		toggleInspectorButton.setAriaRole("button");
+		toggleInspectorButton.setTitle(translator.translate("edit.settings"));
 		
 		if(inspectorPart != null) {
 			inspectorPanel = new InspectorPanelComponent(inspectorPart.getInitialComponent());
@@ -166,10 +166,6 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 					String belowLinkId = "o_cmore_".concat(getDispatchID());
 					fireEvent(ureq, new OpenAddLayoutEvent(belowLinkId, this, PageElementTarget.below));
 					break;
-				case "change_name":
-					String nameLinkId = "o_cname_".concat(getElementId());
-					editorPart.openNameCallout(ureq, nameLinkId);
-					break;
 				case "open_rules":
 					fireEvent(ureq, new OpenRulesEvent());
 					break;
@@ -189,8 +185,6 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 					ruleLinkEnabled = containsId;
 					setDirty(true);
 				}
-			} else if(event instanceof ContainerNameEvent) {
-				setDirty(true);
 			}
 		} else if(source == inspectorPart) {
 			if (event instanceof ChangePartEvent crle) {
