@@ -421,18 +421,28 @@ public class DialogElementListController extends FormBasicController implements 
 				// card view selection by filename
 				String fileKey = link.getName().replaceAll(".+?_", "");
 				if (StringHelper.isLong(fileKey)) {
-					element = dialogElementsManager.getDialogElementByKey(Long.valueOf(fileKey));
-					DialogElementRow row = new DialogElementRow(element, userPropertyHandlers, getLocale());
-					fireEvent(ureq, new SelectRowEvent(row));
+					DialogElement selectedElement = dialogElementsManager.getDialogElementByKey(Long.valueOf(fileKey));
+					if (selectedElement != null) {
+						element = selectedElement;
+						DialogElementRow row = new DialogElementRow(element, userPropertyHandlers, getLocale());
+						fireEvent(ureq, new SelectRowEvent(row));
+					} else {
+						loadModel();
+					}
 				}
 			}
 		} else if ("ONCLICK".equals(event.getCommand())) {
 			// case when card view element was selected
 			String fileKey = ureq.getParameter("select_file");
 			if (StringHelper.isLong(fileKey)) {
-				element = dialogElementsManager.getDialogElementByKey(Long.valueOf(fileKey));
-				DialogElementRow row = new DialogElementRow(element, userPropertyHandlers, getLocale());
-				fireEvent(ureq, new SelectRowEvent(row));
+				DialogElement selectedElement = dialogElementsManager.getDialogElementByKey(Long.valueOf(fileKey));
+				if (selectedElement != null) {
+					element = selectedElement;
+					DialogElementRow row = new DialogElementRow(element, userPropertyHandlers, getLocale());
+					fireEvent(ureq, new SelectRowEvent(row));
+				} else {
+					loadModel();
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
