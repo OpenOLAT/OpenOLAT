@@ -73,9 +73,14 @@ public class CourseEditorPageFragment {
 	}
 	
 	public CourseEditorPageFragment assertOnWarning() {
-		By warningBy = By.cssSelector("div.modal.in div.modal-dialog div.alert.alert-warning");
-		OOGraphene.waitElement(warningBy, browser);
-		OOGraphene.closeWarningBox(browser);
+		try {
+			By warningBy = By.cssSelector("div.modal.in div.modal-dialog div.alert.alert-warning");
+			OOGraphene.waitElement(warningBy, browser);
+			OOGraphene.closeWarningBox(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("CourseEditorWarning", browser);
+			throw e;
+		}
 		return this;
 	}
 	
