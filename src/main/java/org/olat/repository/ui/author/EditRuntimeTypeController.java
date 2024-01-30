@@ -26,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -77,6 +76,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_edit_runtime_type_form");
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("r_info", translate("change.runtime.type.info"));
 			layoutCont.contextPut("r_info_help_url", "manual_user/learningresources/Access_configuration/");
@@ -95,7 +95,6 @@ public class EditRuntimeTypeController extends FormBasicController {
 				translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"), "o_icon o_icon_people", null, true));
 		
 		runtimeTypeEl = uifactory.addCardSingleSelectHorizontal("cif.runtime.type", "cif.runtime.type", formLayout, runtimeTypeKV);
-		runtimeTypeEl.addActionListener(FormEvent.ONCHANGE);
 		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			runtimeTypeEl.select(RepositoryEntryRuntimeType.standalone.name(), true);
 		} else if(entry.getRuntimeType() != null) {

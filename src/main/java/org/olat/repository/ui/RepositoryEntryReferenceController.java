@@ -39,18 +39,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
-import org.olat.repository.ui.author.AuthorListConfiguration;
-import org.olat.repository.ui.author.AuthorListController;
-import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
 import org.olat.repository.ui.author.CreateEntryController;
 import org.olat.repository.ui.author.ImportRepositoryEntryController;
 import org.olat.repository.ui.author.ImportURLRepositoryEntryController;
@@ -82,7 +78,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 	private final Link editLink;
 	
 	private CloseableModalController cmc;
-	private AuthorListController searchCtrl;
+	private ReferencableEntriesSearchController searchCtrl;
 	private CreateEntryController createCtrl;
 	private ImportRepositoryEntryController importCtrl;
 	private ImportURLRepositoryEntryController importUrlCtrl;
@@ -90,8 +86,6 @@ public class RepositoryEntryReferenceController extends BasicController {
 	private RepositoryEntry repositoryEntry;
 	private final RepositoryEntryReferenceProvider referenceProvider;
 	
-	@Autowired
-	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 
@@ -272,8 +266,8 @@ public class RepositoryEntryReferenceController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == searchCtrl) {
-			if (event instanceof AuthoringEntryRowSelectionEvent se) {
-				repositoryEntry = repositoryService.loadByKey(se.getRow().getKey());
+			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				repositoryEntry = searchCtrl.getSelectedEntry();
 				updateUI(ureq);
 				cmc.deactivate();
 				cleanUp();
@@ -377,17 +371,10 @@ public class RepositoryEntryReferenceController extends BasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(searchCtrl);
 		
-		Roles roles = ureq.getUserSession().getRoles();
-		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("keep-refs", referenceProvider.getResourceTypes());
-		tableConfig.setBatchSelect(true);
-		tableConfig.setRowSelect(true);
-		
-		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
-		searchParams.setCanReference(true);
-		searchParams.setResourceTypes(referenceProvider.getResourceTypes());
-		searchCtrl = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
+		// The commandLabel is used to get the stored prefs, but it is never displayed in the gui?!
+		searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+				referenceProvider.getResourceTypes().stream().toArray(String[]::new), "keep.prefs");
 		listenTo(searchCtrl);
-		searchCtrl.selectFilterTab(ureq, searchCtrl.getMyTab());
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchCtrl.getInitialComponent(),
 				true, referenceProvider.getSelectionTitle());
 		listenTo(cmc);

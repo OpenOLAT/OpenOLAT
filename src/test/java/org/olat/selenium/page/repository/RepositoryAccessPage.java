@@ -46,14 +46,21 @@ public class RepositoryAccessPage {
 	 * @return
 	 */
 	public RepositoryAccessPage setRuntimeType(RepositoryEntryRuntimeType type) {
-		By runtimeTypeBy = By.xpath("//fieldset[@id='o_cocif_runtime_type']//label/input[@name='cif.runtime.type' and @value='" + type + "']");
+		By runtimeTypeBy = By.xpath("//fieldset[contains(@class,'o_ac_runtime_type_form')]//a[contains(@class,'o_sel_repo_change_runtime_type')]");
+		OOGraphene.waitElement(runtimeTypeBy, browser);
 		browser.findElement(runtimeTypeBy).click();
-		By accessBy = By.cssSelector("fieldset#o_coentry_access_type input[name='entry.access.type']");
-		if(type == RepositoryEntryRuntimeType.standalone) {
-			OOGraphene.waitElement(accessBy, browser);
-		} else if(type == RepositoryEntryRuntimeType.embedded) {
-			OOGraphene.waitElementDisappears(accessBy, 5, browser);
-		}
+		OOGraphene.waitModalDialog(browser);
+		
+		By typeBy = By.xpath("//div[@id='o_cocif_runtime_type']/fieldset//label/input[@name='cif.runtime.type' and @value='" + type + "']");
+		browser.findElement(typeBy).click();
+		
+		By saveBy = By.cssSelector("fieldset.o_sel_edit_runtime_type_form button.btn.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		String icon = type == RepositoryEntryRuntimeType.standalone ? "o_icon_people" : "o_icon_link";
+		By accessBy = By.cssSelector("fieldset.o_ac_runtime_type_form i." + icon);
+		OOGraphene.waitElement(accessBy, browser);
 		return this;
 	}
 	
