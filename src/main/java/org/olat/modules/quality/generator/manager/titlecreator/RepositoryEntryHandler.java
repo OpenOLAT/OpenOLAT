@@ -21,7 +21,6 @@ package org.olat.modules.quality.generator.manager.titlecreator;
 
 import static org.olat.core.util.StringHelper.blankIfNull;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.velocity.VelocityContext;
@@ -39,8 +38,10 @@ import org.springframework.stereotype.Service;
 public class RepositoryEntryHandler implements TitleCreatorHandler {
 
 	public static final String DISPLAY_NAME = "repoDisplayName";
-	private static final List<String> identifiers = Arrays.asList(
-			DISPLAY_NAME
+	public static final String EXTERNAL_REF = "repoExternalRef";
+	private static final List<String> identifiers = List.of(
+			DISPLAY_NAME,
+			EXTERNAL_REF
 	);
 
 	@Override
@@ -53,6 +54,7 @@ public class RepositoryEntryHandler implements TitleCreatorHandler {
 		if (object instanceof RepositoryEntry) {
 			RepositoryEntry entry = (RepositoryEntry) object;
 			context.put(DISPLAY_NAME, blankIfNull(entry.getDisplayname()));
+			context.put(EXTERNAL_REF, blankIfNull(entry.getExternalRef()));
 		}
 	}
 
