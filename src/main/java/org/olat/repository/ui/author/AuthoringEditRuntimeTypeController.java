@@ -71,11 +71,11 @@ public class AuthoringEditRuntimeTypeController extends FormBasicController {
 		String page = velocity_root +"/runtimetype.html";
 		FormLayoutContainer changeRuntimeCont = uifactory.addCustomFormLayout("runtime", "change.runtime.type.label", page, formLayout);
 		
-		RepositoryEntryRuntimeType type = entry.getRuntimeType();
+		RepositoryEntryRuntimeType type = entry.getRuntimeType() == null ? RepositoryEntryRuntimeType.standalone : entry.getRuntimeType();
 		String iconCss = (type == RepositoryEntryRuntimeType.standalone) ? "o_icon_people" : "o_icon_link";
 		changeRuntimeCont.contextPut("iconCss", iconCss);
-		changeRuntimeCont.contextPut("title", translate("runtime.type." + type.name() + ".title"));
-		changeRuntimeCont.contextPut("text", translate("runtime.type." + type.name() + ".desc"));
+		changeRuntimeCont.contextPut("title", translate("runtime.type." + type + ".title"));
+		changeRuntimeCont.contextPut("text", translate("runtime.type." + type + ".desc"));
 		
 		changeRuntimeTypeButton = uifactory.addFormLink("change.runtime.type", "change.run", "change", null, changeRuntimeCont, Link.LINK);
 		changeRuntimeTypeButton.setIconLeftCSS("o_icon o_icon_edit");
