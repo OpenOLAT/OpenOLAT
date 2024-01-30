@@ -1,31 +1,33 @@
-<div class="o_qual_main clearfix">
+<div class="o_qual_main o_qual_panels">
 	#foreach($panel in $panels)
-		<div class="col-sm-6">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<div class="o_flex_first_grow">
-						<div>
-							<h4 class="panel-title">
-								$panel.title
-							</h4>
-						</div>
-						#if($panel.getTitleIndicatorName())
-							$r.render($panel.getTitleIndicatorName())
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<div class="o_flex_first_grow">
+					<div>
+						<h4 class="panel-title">
+							$panel.title
+						</h4>
+					</div>
+					#if($panel.getTitleIndicatorName())
+						$r.render($panel.getTitleIndicatorName())
+					#end
+				</div>
+			</div>
+			<div class="panel-body">
+				<div class="o_qual_panel_desc">
+					$panel.helpText
+				</div>
+				#if($r.isNotEmpty($panel.links))
+					<div class="o_qual_panel_links">
+						#foreach($link in $panel.links)
+							<div class="o_qual_panel_link">
+								$r.render($link)
+							</div>
 						#end
 					</div>
-				</div>
-				<div class="panel-body">
-					$panel.helpText
-					<div class="o_button_group o_button_group_right">
-						<ul class="list-unstyled">
-							#foreach($link in $panel.links)
-								<li>$r.render($link)</li>
-							#end
-						</ul>
-					</div>
-					<div class="o_button_group o_button_group_right">
-						$r.render($panel.goToLink)
-					</div>
+				#end
+				<div class="o_qual_goto">
+					$r.render($panel.goToLink)
 				</div>
 			</div>
 		</div>

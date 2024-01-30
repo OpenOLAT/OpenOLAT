@@ -1,5 +1,42 @@
 .o_qual_main {
 
+	/* Second css class because o_qual_main is used in home and breadcrumb ...  */
+	&.o_qual_panels {
+		display: grid;
+		gap: 20px;
+		grid-template-columns: 1fr;
+		@media (min-width: 768px) {
+			grid-template-columns: 1fr 1fr;
+		}
+		
+		.panel {
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			margin-bottom: 0;
+			
+			.panel-body {
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+				.o_qual_panel_desc {
+					margin-bottom: auto;
+				}
+				.o_qual_panel_links {
+					margin-top: 1em;
+					.o_qual_panel_link {
+						text-align: right;
+					}
+				
+				}
+				.o_qual_goto {
+					margin-top: 1em;
+					text-align: right;
+				}
+			}
+		}
+	}
+
 	/* --- Data collection dc_status in configuration view --- */
 	.o_labeled,
 	.o_toolbar .o_tools_container a.o_labeled {
