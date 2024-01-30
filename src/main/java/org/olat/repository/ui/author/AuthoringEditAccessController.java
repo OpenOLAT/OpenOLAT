@@ -20,9 +20,7 @@
 package org.olat.repository.ui.author;
 
 import java.util.Collection;
-import java.util.List;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -49,8 +47,6 @@ import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.settings.AccessOverviewController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationDisabledController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,17 +67,13 @@ public class AuthoringEditAccessController extends BasicController {
 	private AuthoringEditAccessShareController accessShareCtrl;
 	private AccessConfigurationController accessOffersCtrl;
 	private AccessConfigurationDisabledController accessOfferDisabledCtrl;
+	private AuthoringEditRuntimeTypeController runtimeTypeCtrl;
 	private AccessOverviewController accessOverviewCtrl;
 	private DialogBoxController confirmDeleteOffersDialog;
 	
 	protected RepositoryEntry entry;
 	protected final boolean readOnly;
-	protected RepositoryEntryRuntimeType currentRuntimeType;
 	
-	@Autowired
-	private DB dbInstance;
-	@Autowired
-	private ACService acService;
 	@Autowired
 	private LTI13Module lti13Module;
 	@Autowired
@@ -96,9 +88,11 @@ public class AuthoringEditAccessController extends BasicController {
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = readOnly;
-		currentRuntimeType = entry.getRuntimeType();
 		
 		mainVC = createVelocityContainer("editproptabpub");
+		if(!"CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			initRuntimeType(ureq, mainVC);
+		}
 		initAccessShare(ureq, mainVC);
 		initAccessOffers(ureq, mainVC);
 		if(lti13Module.isEnabled()) {
@@ -120,9 +114,13 @@ public class AuthoringEditAccessController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(accessShareCtrl == source) {
+		if(runtimeTypeCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
+				onRuntimeTypeChange(ureq);
+			}
+		} else if(accessShareCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				doConfirmSaveAccessShare(ureq);
+				doSaveAccessShare(ureq);
 			} else if(event == Event.CANCELLED_EVENT) {
 				initAccessShare(ureq, mainVC);
 			}
@@ -143,25 +141,19 @@ public class AuthoringEditAccessController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
-	private void doConfirmSaveAccessShare(UserRequest ureq) {
-		if(accessShareCtrl.getRuntimeType() != currentRuntimeType
-				&& accessShareCtrl.getRuntimeType() == RepositoryEntryRuntimeType.embedded
-				&& repositoryService.hasUserManaged(entry)) {
-			accessShareCtrl.revertRuntimeTypeToStandalone();
-			showWarning("warning.user.managed.prevent.embedded");
-		} else if (!accessShareCtrl.isPublicVisible() && accessOffersCtrl != null && accessOffersCtrl.getNumOfBookingConfigurations() > 0) {
-			String title = translate("confirmation.offers.delete.title");
-			String msg = translate("confirmation.offers.delete.text");
-			confirmDeleteOffersDialog = activateOkCancelDialog(ureq, title, msg, confirmDeleteOffersDialog);
-		} else {
-			doSaveAccessShare(ureq);
-		}
+	private void onRuntimeTypeChange(UserRequest ureq) {
+		// Reload the repository entry and the UI
+		entry = repositoryService.loadBy(entry);
+		initRuntimeType(ureq, mainVC);
+		initAccessOffers(ureq, mainVC);
+		initAccessShare(ureq, mainVC);
+		updateUI();
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doSaveAccessShare(UserRequest ureq) {
 		entry = repositoryManager.setAccess(entry,
 				accessShareCtrl.isPublicVisible(),
-				accessShareCtrl.getRuntimeType(),
 				accessShareCtrl.getSelectedLeaveSetting(),
 				accessShareCtrl.canCopy(),
 				accessShareCtrl.canReference(),
@@ -169,14 +161,7 @@ public class AuthoringEditAccessController extends BasicController {
 				accessShareCtrl.canIndexMetadata(),
 				accessShareCtrl.getSelectedOrganisations());
 		accessShareCtrl.validateOfferAvailable();
-		// Embedded hasn't any offers
-		if(accessShareCtrl.getRuntimeType() == RepositoryEntryRuntimeType.embedded) {
-			List<Offer> deletedOfferList = acService.findOfferByResource(entry.getOlatResource(), true, null, null);
-			for(Offer offerToDelete:deletedOfferList) {
-				acService.deleteOffer(offerToDelete);
-			}
-			dbInstance.commit();
-		}
+		
 		
 		boolean publicEnabledNow = accessShareCtrl.isPublicVisible() && accessOffersCtrl == null;
 		initAccessOffers(ureq, mainVC);
@@ -193,6 +178,14 @@ public class AuthoringEditAccessController extends BasicController {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void initRuntimeType(UserRequest ureq, VelocityContainer vc) {
+		removeAsListenerAndDispose(runtimeTypeCtrl);
+		
+		runtimeTypeCtrl = new AuthoringEditRuntimeTypeController(ureq, this.getWindowControl(), entry, readOnly);
+		listenTo(runtimeTypeCtrl);
+		vc.put("runtimeType", runtimeTypeCtrl.getInitialComponent());
 	}
 	
 	private void initAccessShare(UserRequest ureq, VelocityContainer vc) {

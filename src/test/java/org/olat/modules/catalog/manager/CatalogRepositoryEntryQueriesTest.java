@@ -57,7 +57,6 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryEducationalType;
-import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -306,8 +305,8 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntries_exclude_private() {
 		TestCatalogItem catalogItem = createCatalogItem();
 		
-		repositoryManager.setAccess(catalogItem.getRepositoryEntry(), false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(catalogItem.getRepositoryEntry(), false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams(), 0, -1)).doesNotContain(catalogItem.getRepositoryEntry());
@@ -479,8 +478,8 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntriesOpenAccess_exclude_private() {
 		TestCatalogItem catalogItem = createOpenAccessCatalogItem();
 		
-		repositoryManager.setAccess(catalogItem.getRepositoryEntry(), false,  RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(catalogItem.getRepositoryEntry(), false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams(), 0, -1)).doesNotContain(catalogItem.getRepositoryEntry());
@@ -555,8 +554,8 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntriesForGuests_exclude_private() {
 		RepositoryEntry repositoryEntry = createRepositoryEntryForGuest();
 		
-		repositoryManager.setAccess(repositoryEntry, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(repositoryEntry, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(sut.loadRepositoryEntries(createGuestSearchParams(), 0, -1)).doesNotContain(repositoryEntry);
@@ -1405,8 +1404,8 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		
 		for (int i = 0; i < number; i++) {
 			RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-			repositoryEntry = repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryRuntimeType.embedded,
-					RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+			repositoryEntry = repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+					false, false, false, false, null);
 			repositoryEntry = repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
 			repositoryEntries.add(repositoryEntry);
 			
@@ -1431,8 +1430,8 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	
 	private TestCatalogItem createOpenAccessCatalogItem() {
 		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
 		Offer offer = acService.createOffer(repositoryEntry.getOlatResource(), random());
 		offer.setOpenAccess(true);
@@ -1470,8 +1469,8 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	
 	private RepositoryEntry createRepositoryEntryForGuest() {
 		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
 		Offer offer = acService.createOffer(repositoryEntry.getOlatResource(), random());
 		offer.setGuestAccess(true);

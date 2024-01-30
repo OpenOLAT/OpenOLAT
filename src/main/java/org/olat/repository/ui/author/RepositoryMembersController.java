@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.panel.InfoPanelItem;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -59,6 +60,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
@@ -101,6 +103,14 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		addMemberLink = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
 		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		addMemberLink.setVisible(!managed);
+		
+		if(repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.embedded) {
+			InfoPanelItem panel = new InfoPanelItem("userManagementInfos");
+			panel.setTitle(translate("infos.embedded.user.management.title"));
+			panel.setInformations(translate("infos.embedded.user.management"));
+			panel.setPersistedStatusId(ureq, "user-management-infos-v1-" + repoEntry.getResourceableId());
+			formLayout.add("userManagementInfos", panel);
+		}
 	}
 
 	@Override

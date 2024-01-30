@@ -322,8 +322,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		
 		// Open access
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryManager.setAccess(re1, true, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(re1, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		Offer offer = acService.createOffer(re1.getOlatResource(), re1.getDisplayname());
 		offer.setOpenAccess(true);
 		acService.save(offer);
@@ -533,8 +533,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		// Not bookable
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		re = repositoryManager.setStatus(re,  RepositoryEntryStatusEnum.published);
-		re = repositoryManager.setAccess(re, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, reOrgs);
+		re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, reOrgs);
 		Offer offer = acService.createOffer(re.getOlatResource(), random());
 		OfferAccess offerAccess = acService.createOfferAccess(offer, method);
 		acService.saveOfferAccess(offerAccess);
@@ -548,8 +548,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		assertThat(views).isEmpty();
 		
 		// Bookable
-		re = repositoryManager.setAccess(re, true, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, reOrgs);
+		re = repositoryManager.setAccess(re, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, reOrgs);
 		dbInstance.commitAndCloseSession();
 		
 		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
@@ -690,8 +690,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 			List<Organisation> offerOrganisations, RepositoryEntryStatusEnum status, Date validFrom, Date validTo) {
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry();
 		rePreparation = repositoryManager.setStatus(rePreparation, status);
-		rePreparation = repositoryManager.setAccess(rePreparation, true, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, reOrgs);
+		rePreparation = repositoryManager.setAccess(rePreparation, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, reOrgs);
 		Offer offer = acService.createOffer(rePreparation.getOlatResource(), random());
 		offer.setValidFrom(validFrom);
 		offer.setValidTo(validTo);
@@ -709,8 +709,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// Open access enabled, repository entry public visible, status published
-		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
 		Offer offer = acService.createOffer(repositoryEntry.getOlatResource(), random());
 		offer.setOpenAccess(true);
@@ -724,16 +724,16 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		assertThat(views).extracting(RepositoryEntry::getKey).contains(repositoryEntry.getKey());
 		
 		// repository entry not public visible
-		repositoryManager.setAccess(repositoryEntry, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(repositoryEntry, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
 		assertThat(views).extracting(RepositoryEntry::getKey).doesNotContain(repositoryEntry.getKey());
 		
 		// repository entry not published
-		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.coachpublished);
 		dbInstance.commitAndCloseSession();
 		
@@ -774,8 +774,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	private RepositoryEntry createReOpenAccess(List<Organisation> reOrgs, List<Organisation> offerOrganisations) {
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry();
 		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.published);
-		rePreparation = repositoryManager.setAccess(rePreparation, true, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, reOrgs);
+		rePreparation = repositoryManager.setAccess(rePreparation, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, reOrgs);
 		Offer offer = acService.createOffer(rePreparation.getOlatResource(), random());
 		offer.setOpenAccess(true);
 		offer = acService.save(offer);
@@ -790,8 +790,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// Guest enabled, repository entry public visible, status published
-		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
 		Offer offer = acService.createOffer(repositoryEntry.getOlatResource(), random());
 		offer.setGuestAccess(true);
@@ -803,16 +803,16 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		assertThat(views).extracting(RepositoryEntry::getKey).contains(repositoryEntry.getKey());
 		
 		// repository entry not public visible
-		repositoryManager.setAccess(repositoryEntry, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(repositoryEntry, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		views = repositoryEntryQueries.searchEntries(params, 0, -1, false);
 		assertThat(views).extracting(RepositoryEntry::getKey).doesNotContain(repositoryEntry.getKey());
 		
 		// repository entry not published
-		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, false, false, null);
+		repositoryManager.setAccess(repositoryEntry, true, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, false, false, null);
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.coachpublished);
 		dbInstance.commitAndCloseSession();
 		

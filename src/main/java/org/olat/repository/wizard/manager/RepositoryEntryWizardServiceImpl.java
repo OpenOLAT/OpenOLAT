@@ -185,8 +185,7 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 			repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, entry, executor);
 		}
 
-		entry = repositoryManager.setAccess(entry, accessAndProps.isPublicVisible(),
-				accessAndProps.getRuntimeType(), accessAndProps.getSetting(),
+		entry = repositoryManager.setAccess(entry, accessAndProps.isPublicVisible(), accessAndProps.getSetting(),
 				accessAndProps.isCanCopy(), accessAndProps.isCanReference(), accessAndProps.isCanDownload(),
 				accessAndProps.isCanIndexMetadata(), accessAndProps.getOrganisations());
 		

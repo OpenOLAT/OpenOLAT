@@ -52,6 +52,10 @@ public class InfoPanelItem extends FormItemImpl {
 	public void setInformations(String informations) {
 		infoPanel.setInformations(informations);
 	}
+
+	public void setPersistedStatusId(UserRequest ureq, String id) {
+		infoPanel.setPersistedStatusId(ureq, id);
+	}
 	
 	@Override
 	protected InfoPanel getFormItemComponent() {

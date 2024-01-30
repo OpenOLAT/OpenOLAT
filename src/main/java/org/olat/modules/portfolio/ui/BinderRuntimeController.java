@@ -189,8 +189,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	@Override
 	protected void doEdit(UserRequest ureq) {
 		super.doEdit(ureq);
-		if(editorCtrl instanceof BinderController) {
-			BinderController binderCtrl = (BinderController)editorCtrl;
+		if(editorCtrl instanceof BinderController binderCtrl) {
 			binderCtrl.activate(ureq, null, null);
 		}
 		enableRuntimeNavBar(true);
@@ -229,8 +228,8 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	
 	private void enableRuntimeNavBar(boolean enabled) {
 		Controller runner = getRuntimeController();
-		if(runner instanceof BinderController) {
-			((BinderController)runner).setSegmentButtonsVisible(enabled);
+		if(runner instanceof BinderController binderCtrl) {
+			binderCtrl.setSegmentButtonsVisible(enabled);
 		}
 	}
 }

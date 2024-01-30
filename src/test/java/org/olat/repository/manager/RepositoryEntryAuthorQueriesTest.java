@@ -38,7 +38,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
-import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -176,16 +175,16 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		repositoryManager.setStatus(reNotOwner, RepositoryEntryStatusEnum.review);
 		RepositoryEntry reNotOwnerButCopy = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reNotOwnerButCopy = repositoryManager.setStatus(reNotOwnerButCopy, RepositoryEntryStatusEnum.review);
-		repositoryManager.setAccess(reNotOwnerButCopy, false,  RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, false, null);
+		repositoryManager.setAccess(reNotOwnerButCopy, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, null);
 		RepositoryEntry reNotOwnerButReference = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reNotOwnerButReference = repositoryManager.setStatus(reNotOwnerButReference, RepositoryEntryStatusEnum.review);
-		repositoryManager.setAccess(reNotOwnerButReference, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, true, false, false, null);
+		repositoryManager.setAccess(reNotOwnerButReference, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, null);
 		RepositoryEntry reNotOwnerButDownload = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reNotOwnerButDownload = repositoryManager.setStatus(reNotOwnerButReference, RepositoryEntryStatusEnum.review);
-		repositoryManager.setAccess(reNotOwnerButDownload, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, true, null);
+		repositoryManager.setAccess(reNotOwnerButDownload, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, true, true, null);
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
@@ -214,8 +213,8 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		repositoryManager.setStatus(reNotOwner, RepositoryEntryStatusEnum.coachpublished);
 		RepositoryEntry reNotOwnerButCopy = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reNotOwnerButCopy = repositoryManager.setStatus(reNotOwnerButCopy, RepositoryEntryStatusEnum.coachpublished);
-		repositoryManager.setAccess(reNotOwnerButCopy, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, false, null);
+		repositoryManager.setAccess(reNotOwnerButCopy, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
@@ -238,32 +237,32 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
-		rePreparation = repositoryManager.setAccess(rePreparation, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, false, null);
+		rePreparation = repositoryManager.setAccess(rePreparation, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, null);
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
-		reReview = repositoryManager.setAccess(reReview, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, false, null);
+		reReview = repositoryManager.setAccess(reReview, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, null);
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reCoachPublished = repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
-		reCoachPublished = repositoryManager.setAccess(reCoachPublished, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, false, null);
+		reCoachPublished = repositoryManager.setAccess(reCoachPublished, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, null);
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		rePublished = repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
-		rePublished = repositoryManager.setAccess(rePublished, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, false, null);
+		rePublished = repositoryManager.setAccess(rePublished, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, null);
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reClosed = repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
-		reClosed = repositoryManager.setAccess(reClosed, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, false, null);
+		reClosed = repositoryManager.setAccess(reClosed, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, null);
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reTrash = repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
-		reTrash = repositoryManager.setAccess(reTrash, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, true, false, false, false, null);
+		reTrash = repositoryManager.setAccess(reTrash, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, null);
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reDeleted = repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
-		reDeleted = repositoryManager.setAccess(reDeleted,false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime,  true, false, false, false, null);
+		reDeleted = repositoryManager.setAccess(reDeleted,false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, null);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -325,32 +324,32 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		// a set of entries with every possible status
 		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
-		rePreparation = repositoryManager.setAccess(rePreparation, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, false, null);
+		rePreparation = repositoryManager.setAccess(rePreparation, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, true, false, null);
 		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
-		reReview = repositoryManager.setAccess(reReview, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, false, null);
+		reReview = repositoryManager.setAccess(reReview, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, true, false, null);
 		RepositoryEntry reCoachPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reCoachPublished = repositoryManager.setStatus(reCoachPublished, RepositoryEntryStatusEnum.coachpublished);
-		reCoachPublished = repositoryManager.setAccess(reCoachPublished, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, false, null);
+		reCoachPublished = repositoryManager.setAccess(reCoachPublished, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, true, false, null);
 		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		rePublished = repositoryManager.setStatus(rePublished, RepositoryEntryStatusEnum.published);
-		rePublished = repositoryManager.setAccess(rePublished, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, false, null);
+		rePublished = repositoryManager.setAccess(rePublished, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, true, false, null);
 		RepositoryEntry reClosed = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reClosed = repositoryManager.setStatus(reClosed, RepositoryEntryStatusEnum.closed);
-		reClosed = repositoryManager.setAccess(reClosed, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, false, null);
+		reClosed = repositoryManager.setAccess(reClosed, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, true, false, null);
 		RepositoryEntry reTrash = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reTrash = repositoryManager.setStatus(reTrash, RepositoryEntryStatusEnum.trash);
-		reTrash = repositoryManager.setAccess(reTrash, false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, false, null);
+		reTrash = repositoryManager.setAccess(reTrash, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, true, false, null);
 		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry(true);
 		reDeleted = repositoryManager.setStatus(reDeleted, RepositoryEntryStatusEnum.deleted);
-		reDeleted = repositoryManager.setAccess(reDeleted,false, RepositoryEntryRuntimeType.embedded,
-				RepositoryEntryAllowToLeaveOptions.atAnyTime, false, false, true, false, null);
+		reDeleted = repositoryManager.setAccess(reDeleted,false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, false, true, false, null);
 		
 		dbInstance.commitAndCloseSession();
 		

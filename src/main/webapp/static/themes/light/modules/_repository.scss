@@ -213,6 +213,30 @@
 	}
 }
 
+.o_ac_runtime_type {
+	padding: 12px;
+	display: grid;
+	align-items: center;
+	grid-template-columns: 50px 1fr auto;
+	
+	>i {
+		font-size: 200%;
+	}
+	h5 {
+		margin: 0 0 5px 0;
+	}
+	p {
+		margin: 0;
+		color: #777;
+	}
+}
+
+@media (min-width: 768px) {
+	.o_form.form-horizontal.o_ac_runtime_type_form label {
+		padding-top: 1.5em;
+	}
+}
+
 .o_ac_overview {
 	.panel-body {
 		padding: 0px;

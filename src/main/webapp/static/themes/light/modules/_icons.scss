@@ -275,6 +275,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_passed_undefined { @include o-add-icon('dot-circle', false);}
 .o_icon_password { @include o-add-icon('lock');}
 .o_icon_pending { @include o-add-icon('spinner');}
+.o_icon_people { @include o-add-icon('people-group');}
 .o_icon_phone { @include o-add-icon('phone');}
 .o_icon_pointer { @include o-add-icon('mouse-pointer');}
 .o_icon_post { @include o-add-icon('comment', false);}
