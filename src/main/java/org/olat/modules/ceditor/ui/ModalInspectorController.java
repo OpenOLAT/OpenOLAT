@@ -62,7 +62,7 @@ public class ModalInspectorController extends BasicController implements PageEle
 		closeButton.setDomReplacementWrapperRequired(false);
 		// a11y: Set focus to close link and thus to the dialog itself
 		closeButton.setFocus(true, true); 
-		closeButton.setTitle(title);
+		closeButton.setTitle(translate("close"));
 		mainVC.put("close", closeButton);
 		
 		putInitialPanel(mainVC);
