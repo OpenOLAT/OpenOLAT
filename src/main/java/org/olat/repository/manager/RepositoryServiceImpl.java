@@ -57,6 +57,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
@@ -103,6 +104,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.model.RepositoryEntryPermanentlyDeletedEvent;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
@@ -614,6 +616,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			log.info(Tracing.M_AUDIT, "deleteRepositoryEntry aborted: references detected for entry={}", entry);
 			return errors;
 		}
+		
+		MultiUserEvent event = new RepositoryEntryPermanentlyDeletedEvent(entry.getKey());
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, OresHelper.clone(entry));
 
 		userCourseInformationsManager.deleteUserCourseInformations(entry);
 		certificatesManager.deleteRepositoryEntry(entry);

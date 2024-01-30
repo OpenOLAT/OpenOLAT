@@ -146,10 +146,16 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		Map<String, AbstractElement> elementIdToElement = rawElements.stream()
 				.collect(Collectors.toMap(AbstractElement::getId, Function.identity()));
 		
+		Set<String> containerElementIds = new HashSet<>();
+		for (AbstractElement element : rawElements) {
+			if (element instanceof Container container) {
+				containerElementIds.addAll(container.getContainerSettings().getAllElementIds());
+			}
+		}
+		
 		List<AbstractElement> uncontainerizedElements = new ArrayList<>(rawElements.size());
 		for (AbstractElement element : rawElements) {
-			if (element instanceof Container) {
-				Container container = (Container)element;
+			if (element instanceof Container container) {
 				List<String> allElementIds = container.getContainerSettings().getAllElementIds();
 				for (String elementId : allElementIds) {
 					AbstractElement uncontainerizedElement = elementIdToElement.remove(elementId);
@@ -157,12 +163,9 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 						uncontainerizedElements.add(uncontainerizedElement);
 					}
 				}
-			} else {
-				AbstractElement uncontainerizedElement = elementIdToElement.remove(element.getId());
-				// If null, it was already in a container
-				if (uncontainerizedElement != null) {
-					uncontainerizedElements.add(uncontainerizedElement);
-				}
+			} else if (!containerElementIds.contains(element.getId())) {
+				// Element is not in container. Add it in the order of the elements.
+				uncontainerizedElements.add(element);
 			}
 		}
 		return uncontainerizedElements;
