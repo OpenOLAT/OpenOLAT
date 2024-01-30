@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.survey;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
@@ -75,7 +76,6 @@ public class SurveyModule extends AbstractSpringModule implements ConfigOnOff {
 	@Override
 	public void init() {
 		updateProperties();
-		setDefaultProperties();
 	}
 
 	public void updateProperties() {
@@ -117,17 +117,6 @@ public class SurveyModule extends AbstractSpringModule implements ConfigOnOff {
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			isReportGuest = "true".equals(enabledObj);
 		}
-	}
-
-	public void setDefaultProperties() {
-		setStringPropertyDefault(CONFIG_KEY_SURVEY_EXECUTION_OWNER, isExecutionOwner ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_SURVEY_EXECUTION_COACH, isExecutionCoach ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_SURVEY_EXECUTION_PARTICIPANT, isExecutionParticipant ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_SURVEY_EXECUTION_GUEST, isExecutionGuest ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_SURVEY_REPORT_OWNER, isReportOwner ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_SURVEY_REPORT_COACH, isReportCoach ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_SURVEY_REPORT_PARTICIPANT, isReportParticipant ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_SURVEY_REPORT_GUEST, isReportGuest ? "true" : "false");
 	}
 
 	@Override
@@ -218,15 +207,23 @@ public class SurveyModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void resetProperties() {
-		removeProperty(CONFIG_KEY_SURVEY_EXECUTION_OWNER, true);
-		removeProperty(CONFIG_KEY_SURVEY_EXECUTION_COACH, true);
-		removeProperty(CONFIG_KEY_SURVEY_EXECUTION_PARTICIPANT, true);
-		removeProperty(CONFIG_KEY_SURVEY_EXECUTION_GUEST, true);
-		removeProperty(CONFIG_KEY_SURVEY_REPORT_OWNER, true);
-		removeProperty(CONFIG_KEY_SURVEY_REPORT_COACH, true);
-		removeProperty(CONFIG_KEY_SURVEY_REPORT_PARTICIPANT, true);
-		removeProperty(CONFIG_KEY_SURVEY_REPORT_GUEST, true);
-		updateProperties();
+		removeProperty(CONFIG_KEY_SURVEY_EXECUTION_OWNER, false);
+		isExecutionOwner = "true".equals(CoreSpringFactory.resolveProperty("survey.execution.owner:false"));
+		removeProperty(CONFIG_KEY_SURVEY_EXECUTION_COACH, false);
+		isExecutionCoach = "true".equals(CoreSpringFactory.resolveProperty("survey.execution.coach:false"));
+		removeProperty(CONFIG_KEY_SURVEY_EXECUTION_PARTICIPANT, false);
+		isExecutionParticipant = "true".equals(CoreSpringFactory.resolveProperty("survey.execution.participant:true"));
+		removeProperty(CONFIG_KEY_SURVEY_EXECUTION_GUEST, false);
+		isExecutionGuest = "true".equals(CoreSpringFactory.resolveProperty("survey.execution.guest:false"));
+		removeProperty(CONFIG_KEY_SURVEY_REPORT_OWNER, false);
+		isReportOwner = "true".equals(CoreSpringFactory.resolveProperty("survey.report.owner:true"));
+		removeProperty(CONFIG_KEY_SURVEY_REPORT_COACH, false);
+		isReportCoach = "true".equals(CoreSpringFactory.resolveProperty("survey.report.coach:true"));
+		removeProperty(CONFIG_KEY_SURVEY_REPORT_PARTICIPANT, false);
+		isReportParticipant = "true".equals(CoreSpringFactory.resolveProperty("survey.report.participant:false"));
+		removeProperty(CONFIG_KEY_SURVEY_REPORT_GUEST, false);
+		isReportGuest = "true".equals(CoreSpringFactory.resolveProperty("survey.report.guest:false"));
+		this.savePropertiesAndFireChangedEvent();
 	}
 
 	public NodeRightType getExecutionNodeRightType() {

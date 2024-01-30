@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
@@ -73,7 +74,6 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 	@Override
 	public void init() {
 		updateProperties();
-		setDefaultProperties();
 	}
 
 	public void updateProperties() {
@@ -119,18 +119,6 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			canCoachAssign = "true".equals(enabledObj);
 		}
-	}
-
-	public void setDefaultProperties() {
-		setStringPropertyDefault(CONFIG_KEY_GTASK_OBLIGATION, hasObligation ? "true": "false");
-		setStringPropertyDefault(CONFIG_KEY_GTASK_ASSIGNMENT, hasAssignment ? "true": "false");
-		setStringPropertyDefault(CONFIG_KEY_GTASK_SUBMIT, hasSubmission ? "true": "false");
-		setStringPropertyDefault(CONFIG_KEY_GTASK_REVIEW_AND_CORRECTION, hasReviewAndCorrection ? "true": "false");
-		setStringPropertyDefault(CONFIG_KEY_GTASK_REVISION_PERIOD, hasRevisionPeriod ? "true": "false");
-		setStringPropertyDefault(CONFIG_KEY_GTASK_SAMPLE_SOLUTION, hasSampleSolution ? "true": "false");
-		setStringPropertyDefault(CONFIG_KEY_GTASK_GRADING, hasGrading ? "true": "false");
-		setStringPropertyDefault(CONFIG_KEY_GTASK_COACH_ALLOWED_UPLOAD_TASKS, canCoachUploadTasks ? "true": "false");
-		setStringPropertyDefault(CONFIG_KEY_GTASK_COACH_ASSIGNMENT, canCoachAssign ? "true": "false");
 	}
 
 	@Override
@@ -230,15 +218,24 @@ public class GTAModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void resetProperties() {
-		removeProperty(CONFIG_KEY_GTASK_OBLIGATION, true);
-		removeProperty(CONFIG_KEY_GTASK_ASSIGNMENT, true);
-		removeProperty(CONFIG_KEY_GTASK_SUBMIT, true);
-		removeProperty(CONFIG_KEY_GTASK_REVIEW_AND_CORRECTION, true);
-		removeProperty(CONFIG_KEY_GTASK_REVISION_PERIOD, true);
-		removeProperty(CONFIG_KEY_GTASK_SAMPLE_SOLUTION, true);
-		removeProperty(CONFIG_KEY_GTASK_GRADING, true);
-		removeProperty(CONFIG_KEY_GTASK_COACH_ALLOWED_UPLOAD_TASKS, true);
-		removeProperty(CONFIG_KEY_GTASK_COACH_ASSIGNMENT, true);
-		updateProperties();
+		removeProperty(CONFIG_KEY_GTASK_OBLIGATION, false);
+		hasObligation = "true".equals(CoreSpringFactory.resolveProperty("gta.obligation:true"));
+		removeProperty(CONFIG_KEY_GTASK_ASSIGNMENT, false);
+		hasAssignment = "true".equals(CoreSpringFactory.resolveProperty("gta.assignment:true"));
+		removeProperty(CONFIG_KEY_GTASK_SUBMIT, false);
+		hasSubmission = "true".equals(CoreSpringFactory.resolveProperty("gta.submit:true"));
+		removeProperty(CONFIG_KEY_GTASK_REVIEW_AND_CORRECTION, false);
+		hasReviewAndCorrection = "true".equals(CoreSpringFactory.resolveProperty("gta.review.and.correction:true"));
+		removeProperty(CONFIG_KEY_GTASK_REVISION_PERIOD, false);
+		hasRevisionPeriod = "true".equals(CoreSpringFactory.resolveProperty("gta.revision.period:true"));
+		removeProperty(CONFIG_KEY_GTASK_SAMPLE_SOLUTION, false);
+		hasSampleSolution = "true".equals(CoreSpringFactory.resolveProperty("gta.solution:true"));
+		removeProperty(CONFIG_KEY_GTASK_GRADING, false);
+		hasGrading = "true".equals(CoreSpringFactory.resolveProperty("gta.grading:true"));
+		removeProperty(CONFIG_KEY_GTASK_COACH_ALLOWED_UPLOAD_TASKS, false);
+		canCoachUploadTasks = "true".equals(CoreSpringFactory.resolveProperty("gta.coach.allowed.upload.tasks:false"));
+		removeProperty(CONFIG_KEY_GTASK_COACH_ASSIGNMENT, false);
+		canCoachAssign = "true".equals(CoreSpringFactory.resolveProperty("gta.coach.assignment:false"));
+		this.savePropertiesAndFireChangedEvent();
 	}
 }

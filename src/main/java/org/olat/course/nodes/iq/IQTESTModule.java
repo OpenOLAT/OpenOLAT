@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.iq;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
@@ -58,7 +59,6 @@ public class IQTESTModule extends AbstractSpringModule implements ConfigOnOff {
 	@Override
 	public void init() {
 		updateProperties();
-		setDefaultProperties();
 	}
 
 	public void updateProperties() {
@@ -84,13 +84,6 @@ public class IQTESTModule extends AbstractSpringModule implements ConfigOnOff {
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			qtiResultsSummary = enabledObj;
 		}
-	}
-
-	public void setDefaultProperties() {
-		setStringPropertyDefault(CONFIG_KEY_IQ_TEST_ENABLE_SCORE_INFO, isScoreInfoEnabled ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_IQ_TEST_DATE_DEPENDENT_RESULTS, dateDependentResults);
-		setStringPropertyDefault(CONFIG_KEY_IQ_TEST_RESULT_ON_FINISH, showResultOnFinish ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_IQ_TEST_SUMMARY, qtiResultsSummary);
 	}
 
 	@Override
@@ -145,10 +138,14 @@ public class IQTESTModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void resetProperties() {
-		removeProperty(CONFIG_KEY_IQ_TEST_ENABLE_SCORE_INFO, true);
-		removeProperty(CONFIG_KEY_IQ_TEST_DATE_DEPENDENT_RESULTS, true);
-		removeProperty(CONFIG_KEY_IQ_TEST_RESULT_ON_FINISH, true);
-		removeProperty(CONFIG_KEY_IQ_TEST_SUMMARY, true);
-		updateProperties();
+		removeProperty(CONFIG_KEY_IQ_TEST_ENABLE_SCORE_INFO, false);
+		isScoreInfoEnabled = "true".equals(CoreSpringFactory.resolveProperty("iq.test.enable.score.info:true"));
+		removeProperty(CONFIG_KEY_IQ_TEST_DATE_DEPENDENT_RESULTS, false);
+		dateDependentResults = CoreSpringFactory.resolveProperty("iq.test.result.date.dependent.results:no");
+		removeProperty(CONFIG_KEY_IQ_TEST_RESULT_ON_FINISH, false);
+		showResultOnFinish = "true".equals(CoreSpringFactory.resolveProperty("iq.test.result.on.finish:false"));
+		removeProperty(CONFIG_KEY_IQ_TEST_SUMMARY, false);
+		qtiResultsSummary = CoreSpringFactory.resolveProperty("iq.test.summary:null");
+		this.savePropertiesAndFireChangedEvent();
 	}
 }

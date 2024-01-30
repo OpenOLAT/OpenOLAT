@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.pf;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
@@ -62,7 +63,6 @@ public class PFModule extends AbstractSpringModule implements ConfigOnOff {
 	@Override
 	public void init() {
 		updateProperties();
-		setDefaultProperties();
 	}
 
 	public void updateProperties() {
@@ -89,14 +89,6 @@ public class PFModule extends AbstractSpringModule implements ConfigOnOff {
 			canLimitCount = "true".equals(enabledObj);
 		}
 		fileCount = getIntPropertyValue(CONFIG_KEY_FILECOUNT, 0);
-	}
-
-	public void setDefaultProperties() {
-		setStringPropertyDefault(CONFIG_KEY_COACHBOX, hasCoachBox ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_PARTICIPANTBOX, hasParticipantBox ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_ALTERFILE, hasParticipantBox && canAlterFile ? "true" : "false");
-		setStringPropertyDefault(CONFIG_KEY_LIMITCOUNT, hasParticipantBox && canLimitCount ? "true" : "false");
-		setIntPropertyDefault(CONFIG_KEY_FILECOUNT, canLimitCount ? fileCount : 0);
 	}
 
 	@Override
@@ -160,11 +152,16 @@ public class PFModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void resetProperties() {
-		removeProperty(CONFIG_KEY_PARTICIPANTBOX, true);
-		removeProperty(CONFIG_KEY_COACHBOX, true);
-		removeProperty(CONFIG_KEY_ALTERFILE, true);
-		removeProperty(CONFIG_KEY_LIMITCOUNT, true);
-		removeProperty(CONFIG_KEY_FILECOUNT, true);
-		updateProperties();
+		removeProperty(CONFIG_KEY_PARTICIPANTBOX, false);
+		hasParticipantBox = "true".equals(CoreSpringFactory.resolveProperty("participant.folder.participantbox:true"));
+		removeProperty(CONFIG_KEY_COACHBOX, false);
+		hasCoachBox = "true".equals(CoreSpringFactory.resolveProperty("participant.folder.coachbox:true"));
+		removeProperty(CONFIG_KEY_ALTERFILE, false);
+		canAlterFile = "true".equals(CoreSpringFactory.resolveProperty("participant.folder.alterfile:true"));
+		removeProperty(CONFIG_KEY_LIMITCOUNT, false);
+		canLimitCount = "true".equals(CoreSpringFactory.resolveProperty("participant.folder.limitcount:false"));
+		removeProperty(CONFIG_KEY_FILECOUNT, false);
+		fileCount = Integer.parseInt(CoreSpringFactory.resolveProperty("participant.folder.filecount:0"));
+		this.savePropertiesAndFireChangedEvent();
 	}
 }
