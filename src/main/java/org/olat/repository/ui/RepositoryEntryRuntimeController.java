@@ -773,7 +773,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(editLink == source) {
 			doEdit(ureq);
 		} else if(membersLink == source) {
-			doMembers(ureq);
+			Activateable2 membersCtrl = doMembers(ureq);
+			if(membersCtrl != null) {
+				membersCtrl.activate(ureq, null, null);
+			}
 		} else if(settingsLink == source) {
 			doSettings(ureq, null);
 		} else if(ordersLink == source) {

@@ -122,6 +122,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
@@ -288,11 +289,13 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 		
 		boolean withOwners = repoEntry != null;
+		boolean withCoaches = repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.standalone || businessGroup != null;
+		boolean withParticipants = repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.standalone || businessGroup != null;
 		boolean withWaitingList = businessGroup != null
 				|| "CourseModule".equals(repoEntry.getOlatResource().getResourceableTypeName());
 		
-		initFilters(withOwners, withWaitingList);
-		initFiltersPresets(withOwners, withWaitingList);
+		initFilters(withOwners, withCoaches, withParticipants, withWaitingList);
+		initFiltersPresets(withOwners, withCoaches, withParticipants, withWaitingList);
 
 		editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
 		membersTable.addBatchButton(editButton);
@@ -304,7 +307,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		membersTable.addBatchButton(removeButton);
 	}
 	
-	protected final void initFiltersPresets(boolean withOwners, boolean withWaitingList) {
+	protected final void initFiltersPresets(boolean withOwners, boolean withCoaches, boolean withParticipants, boolean withWaitingList) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
 		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
@@ -323,17 +326,21 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 		
 		// Coaches + participants
-		FlexiFiltersTab coachTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Coaches", translate("role.repo.tutor"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.coach.name())));
-		coachTab.setElementCssClass("o_sel_members_coach");
-		coachTab.setFiltersExpanded(true);
-		tabs.add(coachTab);
+		if(withCoaches) {
+			FlexiFiltersTab coachTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Coaches", translate("role.repo.tutor"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.coach.name())));
+			coachTab.setElementCssClass("o_sel_members_coach");
+			coachTab.setFiltersExpanded(true);
+			tabs.add(coachTab);
+		}
 		
-		FlexiFiltersTab participantTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Participants", translate("role.repo.participant"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.participant.name())));
-		participantTab.setElementCssClass("o_sel_members_participant");
-		participantTab.setFiltersExpanded(true);
-		tabs.add(participantTab);
+		if(withParticipants) {
+			FlexiFiltersTab participantTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Participants", translate("role.repo.participant"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, GroupRoles.participant.name())));
+			participantTab.setElementCssClass("o_sel_members_participant");
+			participantTab.setFiltersExpanded(true);
+			tabs.add(participantTab);
+		}
 		
 		if(withWaitingList) {
 			// If groups or course: waiting list
@@ -357,7 +364,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		membersTable.setFilterTabs(true, tabs);
 	}
 	
-	protected void initFilters(boolean withOwners, boolean withWaitingList) {
+	protected void initFilters(boolean withOwners, boolean withCoaches, boolean withParticipants, boolean withWaitingList) {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		// Course / group roles
@@ -365,8 +372,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		if(withOwners) {
 			rolesValues.add(SelectionValues.entry(GroupRoles.owner.name(), translate("role.repo.owner")));
 		}
-		rolesValues.add(SelectionValues.entry(GroupRoles.coach.name(), translate("role.repo.tutor")));
-		rolesValues.add(SelectionValues.entry(GroupRoles.participant.name(), translate("role.repo.participant")));
+		if(withCoaches) {
+			rolesValues.add(SelectionValues.entry(GroupRoles.coach.name(), translate("role.repo.tutor")));
+		}
+		if(withParticipants) {
+			rolesValues.add(SelectionValues.entry(GroupRoles.participant.name(), translate("role.repo.participant")));
+		}
 		if(withWaitingList) {
 			rolesValues.add(SelectionValues.entry(GroupRoles.waiting.name(), translate("role.group.waiting")));
 		}

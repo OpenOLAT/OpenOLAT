@@ -77,10 +77,11 @@ public class AuthoringEditRuntimeTypeController extends FormBasicController {
 		changeRuntimeCont.contextPut("title", translate("runtime.type." + type + ".title"));
 		changeRuntimeCont.contextPut("text", translate("runtime.type." + type + ".desc"));
 		
-		changeRuntimeTypeButton = uifactory.addFormLink("change.runtime.type", "change.run", "change", null, changeRuntimeCont, Link.LINK);
+		changeRuntimeTypeButton = uifactory.addFormLink("change.runtime.type", "change.run", "change", null, changeRuntimeCont, Link.BUTTON);
 		changeRuntimeTypeButton.setIconLeftCSS("o_icon o_icon_edit");
 		changeRuntimeTypeButton.setElementCssClass("o_sel_repo_change_runtime_type");
 		changeRuntimeTypeButton.setVisible(!readOnly);
+		changeRuntimeTypeButton.setGhost(true);
 	}
 	
 	@Override

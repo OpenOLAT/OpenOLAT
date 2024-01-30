@@ -1,7 +1,7 @@
 <fieldset #if(!$!f.domReplacementWrapperRequired  && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
 	<div class="clearfix"><div class="col-sm-12">
 		<div class="o_hint">$r_info $r.contextHelpAdditionalInfo($r_info_help_url)</div>
-		#if ($off_warn) <div class="o_warning">$off_warn</div> #end
+		#if ($off_warn) <div class="o_warning_with_icon">$off_warn</div> #end
 	</div></div>
 	#foreach ($item in $formitemnames)
 		$r.render(${item}, "3_9", "form")
