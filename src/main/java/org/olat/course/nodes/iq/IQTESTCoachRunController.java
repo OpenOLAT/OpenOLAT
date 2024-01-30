@@ -139,6 +139,10 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		participantsLink = LinkFactory.createLink("segment.participants", mainVC, this);
 		segmentView.addSegment(participantsLink, false);
 		
+		// Preview
+		previewLink = LinkFactory.createLink("segment.preview", mainVC, this);
+		segmentView.addSegment(previewLink, false);
+		
 		communicationLink = LinkFactory.createLink("segment.communication", mainVC, this);
 		segmentView.addSegment(communicationLink, false);
 		
@@ -151,9 +155,11 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			segmentView.addSegment(assessmentModeLink, false);
 		}
 		
-		// Preview
-		previewLink = LinkFactory.createLink("segment.preview", mainVC, this);
-		segmentView.addSegment(previewLink, false);
+		// Inspections
+		if(assessmentInspectionService.hasInspectionConfigurations(courseEntry)) {
+			inspectionsLink = LinkFactory.createLink("segment.inspections", mainVC, this);
+			segmentView.addSegment(inspectionsLink, false);
+		}
 		
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
@@ -165,13 +171,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 				segmentView.addSegment(remindersLink, false);
 			}
 		}
-		
-		// Inspections
-		if(assessmentInspectionService.hasInspectionConfigurations(courseEntry)) {
-			inspectionsLink = LinkFactory.createLink("segment.inspections", mainVC, this);
-			segmentView.addSegment(inspectionsLink, false);
-		}
-		
+
 		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);

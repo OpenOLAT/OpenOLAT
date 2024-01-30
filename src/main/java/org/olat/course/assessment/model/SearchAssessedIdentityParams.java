@@ -72,6 +72,8 @@ public class SearchAssessedIdentityParams {
 	
 	private Map<String,String> userProperties;
 	private List<UserPropertyHandler> userPropertyHandlers;
+	
+	private boolean excludeAdminsAndCoaches;
 
 	private boolean coachNotAssigned;
 	private List<Long> assignedCoachKeys;
@@ -295,5 +297,12 @@ public class SearchAssessedIdentityParams {
 	public void setUserPropertyHandlers(List<UserPropertyHandler> userPropertyHandlers) {
 		this.userPropertyHandlers = userPropertyHandlers;
 	}
-	
+
+	public boolean isExcludeAdminsAndCoaches() {
+		return excludeAdminsAndCoaches;
+	}
+
+	public void setExcludeAdminsAndCoaches(boolean excludeAdminsAndCoaches) {
+		this.excludeAdminsAndCoaches = excludeAdminsAndCoaches;
+	}
 }

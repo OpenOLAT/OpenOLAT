@@ -33,16 +33,16 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CreateInspection_5_CompensationStep extends BasicStep {
-	
+public class CreateInspection_5_NotificationsStep extends BasicStep {
+
 	private final CreateInspectionContext context;
 	
-	public CreateInspection_5_CompensationStep(UserRequest ureq, CreateInspectionContext context) {
+	public CreateInspection_5_NotificationsStep(UserRequest ureq, CreateInspectionContext context) {
 		super(ureq);
 		this.context = context;
 		
 		setNextStep(NOSTEP);
-		setI18nTitleAndDescr("wizard.compensation.title", "wizard.compensation.descr");
+		setI18nTitleAndDescr("wizard.notification.title", "wizard.notification.descr");
 	}
 	
 	@Override
@@ -53,7 +53,6 @@ public class CreateInspection_5_CompensationStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext stepsRunContext, Form form) {
-		return new CompensationController(ureq, wControl, context, stepsRunContext, form);
+		return new NotificationsController(ureq, wControl, context, stepsRunContext, form);
 	}
-
 }

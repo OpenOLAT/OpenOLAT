@@ -177,6 +177,6 @@ public class CompensationController extends StepFormBasicController {
 			}
 		}
 		context.setInspectionCompensations(compensations);
-		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

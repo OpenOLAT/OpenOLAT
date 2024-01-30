@@ -204,6 +204,7 @@ public class ChooseParticipantsController extends StepFormBasicController {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(),
 				null, context.getSecCallback());
 		params.setUserPropertyHandlers(userPropertyHandlers);
+		params.setExcludeAdminsAndCoaches(true);
 		return params;
 	}
 	

@@ -99,6 +99,6 @@ public class NotificationsController extends StepFormBasicController {
 		} else {
 			context.setMailTemplate(null);
 		}
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 }

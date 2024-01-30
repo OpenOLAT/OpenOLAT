@@ -415,10 +415,15 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 						.filter(AssessmentInspectionStatusEnum::isValueOf)
 						.map(AssessmentInspectionStatusEnum::valueOf)
 						.collect(Collectors.toList());
-				if(filterValues.contains("active")) {
+				
+				if(filterValues.contains(AssessmentInspectionStatusEnum.scheduled.name()) && filterValues.contains("active")) {
+					params.setActiveInspections(null);
+				} else if(filterValues.contains(AssessmentInspectionStatusEnum.scheduled.name())) {
+					params.setActiveInspections(Boolean.FALSE);
+				} else if(filterValues.contains("active")) {
 					params.setActiveInspections(Boolean.TRUE);
 					statusList.add(AssessmentInspectionStatusEnum.scheduled);
-				}
+				} 
 				params.setInspectionStatus(statusList);
 				
 			}
@@ -710,7 +715,8 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 			CourseNode node = course.getRunStructure().getNode(inspection.getSubIdent());
 			context.setCourseNode(node);
 		}
-
+		
+		inspection = inspectionService.getInspection(inspection.getKey());
 		Identity assessedIdentity = inspection.getIdentity();
 		DisadvantageCompensation compensation = disadvantageCompensationService
 				.getActiveDisadvantageCompensation(assessedIdentity, context.getCourseEntry(), context.getCourseNode().getIdent());

@@ -33,38 +33,27 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CreateInspection_4_NotificationsStep extends BasicStep {
-
+public class CreateInspection_4_CompensationStep extends BasicStep {
+	
 	private final CreateInspectionContext context;
 	
-	public CreateInspection_4_NotificationsStep(UserRequest ureq, CreateInspectionContext context) {
+	public CreateInspection_4_CompensationStep(UserRequest ureq, CreateInspectionContext context) {
 		super(ureq);
 		this.context = context;
-		
-		if(context.getEditedCompensation() != null) {
-			if(context.getEditedCompensation() != null) {
-				setNextStep(new CreateInspection_5_CompensationStep(ureq, context));
-			} else {
-				setNextStep(NOSTEP);
-			}
-			
-		} else if(context.getParticipantsCompensations() != null && !context.getParticipantsCompensations().isEmpty()) {
-			setNextStep(new CreateInspection_5_CompensationStep(ureq, context));
-		} else {
-			setNextStep(NOSTEP);
-		}
 
-		setI18nTitleAndDescr("wizard.notification.title", "wizard.notification.descr");
+		setNextStep(new CreateInspection_5_NotificationsStep(ureq, context));
+		setI18nTitleAndDescr("wizard.compensation.title", "wizard.compensation.descr");
 	}
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, true, true);
+		return new PrevNextFinishConfig(true, true, false);
 	}
 	
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext stepsRunContext, Form form) {
-		return new NotificationsController(ureq, wControl, context, stepsRunContext, form);
+		return new CompensationController(ureq, wControl, context, stepsRunContext, form);
 	}
+
 }

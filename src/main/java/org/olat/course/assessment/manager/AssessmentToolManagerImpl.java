@@ -412,6 +412,15 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				queryParams.addSubIdent();
 			}
 			sb.append(")");
+			
+			if(params.isExcludeAdminsAndCoaches()) {
+				sb.append(" and ").append(identKey).append(" not in (");
+				sb.append("select distinct participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
+				sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
+				sb.append("   and participant.role").in(GroupRoles.coach.name(), CurriculumRoles.mastercoach.name(), GroupRoles.owner.name()).append("");
+				sb.append(")");
+			}
+			
 			queryParams.addRepoEntryKey();
 		} else {
 			sb.append(" and (");
@@ -473,10 +482,19 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				queryParams.addRepoEntryKey();
 				filtered = true;
 			}
+
 			if(!filtered) {
 				sb.append("1=2");// Security if there are no criteria to search for
 			}
 			sb.append(")");
+			
+			if(filtered && params.isExcludeAdminsAndCoaches()) {
+				sb.append(" and ").append(identKey).append(" not in (");
+				sb.append("select distinct participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
+				sb.append(" where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key");
+				sb.append("   and participant.role").in(GroupRoles.coach.name(), CurriculumRoles.mastercoach.name(), GroupRoles.owner.name()).append("");
+				sb.append(")");
+			}
 		}
 	}
 

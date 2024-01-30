@@ -236,13 +236,22 @@ public class AssessmentInspectionDAO {
 		if(params.hasSubIdents()) {
 			sb.and().append("inspection.subIdent in :subIdents");
 		}
+		
+		List<AssessmentInspectionStatusEnum> inspectionStatus = null;
 		if(params.hasInspectionStatus()) {
-			sb.and().append("( inspection.inspectionStatus in :inspectionStatus");
-			if(params.getActiveInspections() != null) {
-				sb.append(" or ");
+			if(params.getInspectionStatus().size() == 1 && params.getInspectionStatus().contains(AssessmentInspectionStatusEnum.scheduled) && params.getActiveInspections() != null) {
+				sb.and().append(" (");
 				queryActiveInspection(sb, params.getActiveInspections());
+				sb.append(")");
+			} else {
+				inspectionStatus = params.getInspectionStatus();
+				sb.and().append("( inspection.inspectionStatus in :inspectionStatus");
+				if(params.getActiveInspections() != null) {
+					sb.append(" or ");
+					queryActiveInspection(sb, params.getActiveInspections());
+				}
+				sb.append(")");
 			}
-			sb.append(")");
 		} else if(params.getActiveInspections() != null) {
 			sb.and();
 			queryActiveInspection(sb, params.getActiveInspections());
@@ -263,7 +272,7 @@ public class AssessmentInspectionDAO {
 		if(params.hasSubIdents()) {
 			query.setParameter("subIdents", params.getSubIdents());
 		}
-		if(params.hasInspectionStatus()) {
+		if(inspectionStatus != null && !inspectionStatus.isEmpty()) {
 			List<String> statusList = params.getInspectionStatus().stream()
 					.map(AssessmentInspectionStatusEnum::toString)
 					.toList();
