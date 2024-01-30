@@ -288,9 +288,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			membersTable.setSortSettings(options);
 		}
 		
+		boolean standaloneResource = (repoEntry != null && repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.standalone);
 		boolean withOwners = repoEntry != null;
-		boolean withCoaches = repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.standalone || businessGroup != null;
-		boolean withParticipants = repoEntry.getRuntimeType() == RepositoryEntryRuntimeType.standalone || businessGroup != null;
+		boolean withCoaches = standaloneResource || businessGroup != null;
+		boolean withParticipants = standaloneResource || businessGroup != null;
 		boolean withWaitingList = businessGroup != null
 				|| "CourseModule".equals(repoEntry.getOlatResource().getResourceableTypeName());
 		
