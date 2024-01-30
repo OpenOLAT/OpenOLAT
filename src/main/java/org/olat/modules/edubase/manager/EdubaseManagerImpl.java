@@ -182,9 +182,8 @@ public class EdubaseManagerImpl implements EdubaseManager {
 		BookDetails infoReponse = new BookDetailsImpl();
 
 		String url = String.format(edubaseModule.getInfoverUrl(), bookId);
-		HttpGet request = new HttpGet(url);
 		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
-				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
+				CloseableHttpResponse httpResponse = httpClient.execute(new HttpGet(url));) {
 			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
 			ObjectMapper objectMapper = new ObjectMapper();
 			infoReponse = objectMapper.readValue(json, BookDetailsImpl.class);
