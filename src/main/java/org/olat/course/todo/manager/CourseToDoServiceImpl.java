@@ -312,6 +312,7 @@ public class CourseToDoServiceImpl implements CourseToDoService, GenericEventLis
 	}
 	
 	private void synchCourseToDoTasks(Long repositoryEntryKey, Long assigneeKey) {
+		if(repositoryEntryKey == null) return;
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(repositoryEntryKey);
 		boolean courseNotDeleted = isCourseNotDeleted(repositoryEntry);
 		
