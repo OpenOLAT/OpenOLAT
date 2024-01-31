@@ -169,20 +169,23 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 	}
 
 	private void renderName(StringOutput sb, ContentEditorContainerComponent cmp, Translator translator) {
-		String name = cmp.getContainerSettings().getName();
 		sb.append("<span class='o_container_name'>");
-		if (cmp.isRuleLinkEnabled()) {
-			sb.append("<span>")
-			  .append("<i class='o_icon o_icon_branch'> </i> ")
-			  .append(translator.translate("container.rule"))
-			  .append("</span> ");
-		}
+
+		String name = cmp.getContainerSettings().getName();
 		String displayName = StringHelper.containsNonWhitespace(name)
 				? Formatter.truncate(name, 20)
 				: StringHelper.escapeHtml(PageEditorUIFactory.formatUntitled(translator, cmp.getElementId()));
 		sb.append("<span><i class='o_icon o_icon_name'> </i> ")
 		  .append(displayName)
 		  .append("</span>");
+
+		if (cmp.isRuleLinkEnabled()) {
+			sb.append("<span>")
+					.append("<i class='o_icon o_icon_branch'> </i> ")
+					.append(translator.translate("container.rule"))
+					.append("</span> ");
+		}
+
 		sb.append("</span>");
 	}
 }
