@@ -228,7 +228,7 @@ public class OLATUpgrade_18_2_0 extends OLATUpgrade {
 	
 	private void migrateRepositoryEntryRuntimeType(RepositoryEntry entry) {
 		entry = repositoryService.loadBy(entry);
-		if(entry.getRuntimeType() != null) return;
+		if(entry == null || entry.getRuntimeType() != null) return;
 		
 		String typeName = entry.getOlatResource().getResourceableTypeName();
 		RepositoryEntryRuntimeType type = RepositoryEntryRuntimeType.embedded;
