@@ -496,6 +496,7 @@ public class PageDAO {
 		  .append(" left join fetch page.body as body")
 		  .append(" left join fetch body.parts as parts")
 		  .append(" left join fetch parts.mediaVersion as partVersion")
+		  .append(" left join fetch partVersion.versionMetadata as partMersionMetadata")
 		  .append(" left join fetch parts.media as media")
 		  .append(" left join fetch media.versions as mediaVersion")
 		  .append(" where page.key=:pageKey");
