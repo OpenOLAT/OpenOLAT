@@ -130,10 +130,9 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		copyMailBeforeExpirationEl = uifactory.addTextElement("copy.mail.before.expiration", -1, StringUtils.join(userModule.getMailCopyBeforeExpiration(), ", "), formLayout);
 		copyMailBeforeExpirationEl.setHelpTextKey("copy.mail.help", null);
 
-		String[] bodyParams = new String[] { daysBefore };
 		// subject + content mail
 		mailBeforeExpirationBundle = initForm("mail.before.expiration.body.label",
-				"mail.before.expiration.subject", null, "mail.before.expiration.body", bodyParams, formLayout);
+				"mail.before.expiration.subject", "mail.before.expiration.body", formLayout);
 		
 		// enable mail after
 		enableMailAfterExpirationEl = uifactory.addCheckboxesHorizontal("enable.mail.after.expiration", "enable.mail.after.expiration", formLayout, onKeys, onValues);
@@ -146,7 +145,7 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 
 		// subject + content mail
 		mailAfterExpirationBundle = initForm("mail.after.expiration.body.label",
-				"mail.after.expiration.subject", null, "mail.after.expiration.body", bodyParams, formLayout);
+				"mail.after.expiration.subject", "mail.after.expiration.body", formLayout);
 	}
 
 	protected void initDeactivationForm(FormItemContainer formLayout) {
@@ -174,10 +173,9 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		copyMailBeforeDeactivationEl = uifactory.addTextElement("copy.mail.before.deactivation", -1, StringUtils.join(userModule.getMailCopyBeforeDeactivation(), ", "), formLayout);
 		copyMailBeforeDeactivationEl.setHelpTextKey("copy.mail.help", null);
 
-		String[] bodyParams = new String[] { daysBeforeMail };
 		// subject + content mail
 		mailBeforeDeactivationBundle = initForm("mail.before.deactivation.body.label",
-				"mail.before.deactivation.subject", null, "mail.before.deactivation.body", bodyParams, formLayout);
+				"mail.before.deactivation.subject", "mail.before.deactivation.body", formLayout);
 
 		// enable mail after
 		enableMailAfterDeactivationEl = uifactory.addCheckboxesHorizontal("enable.mail.after.deactivation", "enable.mail.after.deactivation", formLayout, onKeys, onValues);
@@ -190,7 +188,7 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 
 		// subject + content mail
 		mailAfterDeactivationBundle = initForm("mail.after.deactivation.body.label",
-				"mail.after.deactivation.subject", null, "mail.after.deactivation.body", bodyParams, formLayout);
+				"mail.after.deactivation.subject", "mail.after.deactivation.body", formLayout);
 	}
 
 	protected void initDeletionForm(FormItemContainer formLayout) {
@@ -217,10 +215,9 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		copyMailBeforeDeletionEl = uifactory.addTextElement("copy.mail.before.deletion", -1, StringUtils.join(userModule.getMailCopyBeforeDeletion(), ", "), formLayout);
 		copyMailBeforeDeletionEl.setHelpTextKey("copy.mail.help", null);
 
-		String[] bodyParams = new String[] { daysBeforeMail };
 		// subject + content mail
 		mailBeforeDeletionBundle = initForm("mail.before.deletion.body.label",
-				"mail.before.deletion.subject", null, "mail.before.deletion.body", bodyParams, formLayout);
+				"mail.before.deletion.subject", "mail.before.deletion.body", formLayout);
 		
 		// enable mail after
 		enableMailAfterDeletionEl = uifactory.addCheckboxesHorizontal("enable.mail.after.deletion", "enable.mail.after.deletion", formLayout, onKeys, onValues);
@@ -233,16 +230,15 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		
 		// subject + content mail
 		mailAfterDeletionBundle = initForm("mail.after.deletion.body.label",
-				"mail.after.deletion.subject", null, "mail.after.deletion.body", bodyParams, formLayout);
+				"mail.after.deletion.subject", "mail.after.deletion.body", formLayout);
 		
 	}
 
-	private TranslationBundle initForm(String labelI18nKey, String subjectI18nKey, String[] subjectParams,
-									   String bodyI18nKey, String[] bodyParams, FormItemContainer formLayout) {
+	private TranslationBundle initForm(String labelI18nKey, String subjectI18nKey, String bodyI18nKey, FormItemContainer formLayout) {
 		StaticTextElement viewEl = uifactory.addStaticTextElement("view." + counter++, labelI18nKey, "", formLayout);
 		viewEl.setElementCssClass("o_omit_margin");
 		FormLink translationLink = uifactory.addFormLink("translate." + counter++, "translation.edit", null, formLayout, Link.BUTTON);
-		TranslationBundle bundle = new TranslationBundle(labelI18nKey, subjectI18nKey, subjectParams, bodyI18nKey, bodyParams, viewEl, translationLink);
+		TranslationBundle bundle = new TranslationBundle(labelI18nKey, subjectI18nKey, null, bodyI18nKey, null, viewEl, translationLink);
 		translationLink.setUserObject(bundle);
 		bundle.update(getTranslator());
 		return bundle;
