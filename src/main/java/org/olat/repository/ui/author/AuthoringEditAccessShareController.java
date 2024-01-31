@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationModule;
@@ -596,11 +597,13 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		private final String key;
 		private final String url;
 		private final String name;
+		private final String id;
 
 		public ExtLink(String key, String url, String name) {
 			this.key = key;
 			this.url = url;
 			this.name = name;
+			this.id = UUID.randomUUID().toString().replace("-", "");
 		}
 
 		public String getKey() {
@@ -615,5 +618,8 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			return name;
 		}
 
+		public String getId() {
+			return id;
+		}
 	}
  }

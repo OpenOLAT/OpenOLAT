@@ -1,10 +1,10 @@
 <div id="o_repo_url_${repoLink.key}" class="o_block_small_top">
 	<div class="o_copy_code o_nowrap">
-		<a href="javascript:;" id="o_extlink_${repoLink.key}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+		<a href="javascript:;" id="o_extlink_${repoLink.id}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
 		<input type="text" value="$repoLink.url" onclick="this.select()"/>
 		<script>
 		jQuery(function() {
-			o_QRCodePopup('o_extlink_${repoLink.key}', '${searchLink.url}', 'right');
+			o_QRCodePopup('o_extlink_${repoLink.id}', '${repoLink.url}', 'right');
 		});
 		</script>
 	</div>
