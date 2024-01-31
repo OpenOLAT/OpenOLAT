@@ -1,10 +1,10 @@
 <div id="o_ac_url_${searchLink.key}" class="o_block_small_top #if($r.isNotNull($taxonomyLinks) && $r.isNotEmpty($taxonomyLinks))o_block_small_bottom#end">
 	<div class="o_copy_code o_nowrap">
-		<a href="javascript:;" id="o_extlink_${searchLink.key}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+		<a href="javascript:;" id="o_extlink_${searchLink.id}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
 		<input type="text" value="$searchLink.url" onclick="this.select()"/>
 		<script>
 		jQuery(function() {
-			o_QRCodePopup('o_extlink_${searchLink.key}', '${searchLink.url}', 'right');
+			o_QRCodePopup('o_extlink_${searchLink.id}', '${searchLink.url}', 'right');
 		});
 		</script>
 	</div>
@@ -18,11 +18,11 @@
 						$link.name
 					</div>
 					<div class="o_copy_code o_nowrap">
-						<a href="javascript:;" id="o_extlink_${link.key}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+						<a href="javascript:;" id="o_extlink_${link.id}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
 						<input type="text" value="$link.url" onclick="this.select()"/>
 						<script>
 						jQuery(function() {
-							o_QRCodePopup('o_extlink_${link.key}', '${link.url}', 'right');
+							o_QRCodePopup('o_extlink_${link.id}', '${link.url}', 'right');
 						});
 						</script>
 					</div>
