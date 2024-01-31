@@ -8,8 +8,12 @@
 			<div class="col-sm-6 o_block_bottom">
 				<h5>$r.translate("access.overview.members")</h5>
 				<div>$owners</div>
+				#if($r.isNotEmpty($coaches))
 				<div>$coaches</div>
+				#end
+				#if($r.isNotEmpty($participants))
 				<div>$participants</div>
+				#end
 				<div>$r.render("open.members.management")</div>
 			</div>
 			<div class="col-sm-6 o_block_bottom">

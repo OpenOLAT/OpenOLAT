@@ -46,6 +46,7 @@ import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -101,19 +102,21 @@ public class AccessOverviewController extends BasicController {
 		String owners = ICON_ACTIVE + translate("access.overview.owners", ownersCount.toString());
 		mainVC.contextPut("owners", owners);
 		
-		Long coachesCount = roleToCountMemebers.getOrDefault(GroupRoles.coach.name(), Long.valueOf(0));
-		String coaches = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.coachPublishedToClosed())
-				? ICON_ACTIVE
-				: ICON_INACTIVE;
-		coaches += translate("access.overview.coaches", coachesCount.toString());
-		mainVC.contextPut("coaches", coaches);
-		
-		Long participantsCount = roleToCountMemebers.getOrDefault(GroupRoles.participant.name(), Long.valueOf(0));
-		String participants = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())
-				? ICON_ACTIVE
-				: ICON_INACTIVE;
-		participants += translate("access.overview.participants", participantsCount.toString());
-		mainVC.contextPut("participants", participants);
+		if(entry.getRuntimeType() == RepositoryEntryRuntimeType.standalone) {
+			Long coachesCount = roleToCountMemebers.getOrDefault(GroupRoles.coach.name(), Long.valueOf(0));
+			String coaches = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.coachPublishedToClosed())
+					? ICON_ACTIVE
+					: ICON_INACTIVE;
+			coaches += translate("access.overview.coaches", coachesCount.toString());
+			mainVC.contextPut("coaches", coaches);
+			
+			Long participantsCount = roleToCountMemebers.getOrDefault(GroupRoles.participant.name(), Long.valueOf(0));
+			String participants = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())
+					? ICON_ACTIVE
+					: ICON_INACTIVE;
+			participants += translate("access.overview.participants", participantsCount.toString());
+			mainVC.contextPut("participants", participants);
+		}
 		
 		openMemberManagementLink = LinkFactory.createLink("access.overview.open.members.management", getTranslator(), this);
 		openMemberManagementLink.setIconLeftCSS("o_icon o_icon_membersmanagement");

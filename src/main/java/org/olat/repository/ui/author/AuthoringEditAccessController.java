@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -47,6 +48,8 @@ import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.settings.AccessOverviewController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationDisabledController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +78,8 @@ public class AuthoringEditAccessController extends BasicController {
 	protected final boolean readOnly;
 	
 	@Autowired
+	private ACService acService;
+	@Autowired
 	private LTI13Module lti13Module;
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -101,6 +106,7 @@ public class AuthoringEditAccessController extends BasicController {
 		initAccessOverview(ureq, mainVC);
 		updateUI();
 		putInitialPanel(mainVC);
+		validateOfferAvailable();
 	}
 	
 	public RepositoryEntry getEntry() {
@@ -133,7 +139,6 @@ public class AuthoringEditAccessController extends BasicController {
 		} else if(accessOffersCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				doSaveAccessOffers(ureq);
-				accessShareCtrl.validateOfferAvailable();
 				fireEvent(ureq, new ReloadSettingsEvent());
 			}
 		}
@@ -148,6 +153,7 @@ public class AuthoringEditAccessController extends BasicController {
 		initAccessOffers(ureq, mainVC);
 		initAccessShare(ureq, mainVC);
 		updateUI();
+		validateOfferAvailable();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -160,8 +166,7 @@ public class AuthoringEditAccessController extends BasicController {
 				accessShareCtrl.canDownload(),
 				accessShareCtrl.canIndexMetadata(),
 				accessShareCtrl.getSelectedOrganisations());
-		accessShareCtrl.validateOfferAvailable();
-		
+		validateOfferAvailable();
 		
 		boolean publicEnabledNow = accessShareCtrl.isPublicVisible() && accessOffersCtrl == null;
 		initAccessOffers(ureq, mainVC);
@@ -178,6 +183,19 @@ public class AuthoringEditAccessController extends BasicController {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void validateOfferAvailable() {
+		if (accessShareCtrl.isPublicVisible()) {
+			List<Offer> offers = acService.findOfferByResource(entry.getOlatResource(), true, null, null);
+			if (offers.isEmpty()) {
+				mainVC.contextPut("warningOffersMsg", translate("error.public.no.offers"));
+			} else {
+				mainVC.contextRemove("warningOffersMsg");
+			}
+		} else {
+			mainVC.contextRemove("warningOffersMsg");
+		}
 	}
 	
 	private void initRuntimeType(UserRequest ureq, VelocityContainer vc) {

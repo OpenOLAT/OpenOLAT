@@ -74,8 +74,6 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.ui.settings.AccessOverviewController;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -129,8 +127,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
-	private ACService acService;
-	@Autowired
 	private CatalogV2Module catalogModule;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
@@ -152,7 +148,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		initForm(ureq);
 		updateRuntimeTypeUI();
-		validateOfferAvailable();
+		updateCatalogLinksUI();
 	}
 
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
@@ -165,6 +161,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		status = true;
 
 		initForm(ureq);
+		updateCatalogLinksUI();
 	}
 
 	public boolean isPublicVisible() {
@@ -278,8 +275,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		showMicrositeLinks = uifactory.addFormLink("show.additional", "nodeConfigForm.show.additional", null, catalogLinksCont, Link.LINK);
 		showMicrositeLinks.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
-
-		updateCatalogLinksUI();
 
 		initLeaveOption(generalCont);
 
@@ -482,16 +477,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		reOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}
 
-	public void validateOfferAvailable() {
-		setFormWarning(null);
-		if (accessEl.isVisible() && accessEl.isKeySelected(KEY_PUBLIC)) {
-			List<Offer> offers = acService.findOfferByResource(entry.getOlatResource(), true, null, null);
-			if (offers.isEmpty()) {
-				setFormWarning("error.public.no.offers");
-			}
-		}
-	}
-
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == accessEl) {
@@ -519,7 +504,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	}
 
 	private void updateCatalogLinksUI() {
-		catalogLinksCont.setVisible(catalogModule.isEnabled() && accessEl.isKeySelected(KEY_PUBLIC));
+		catalogLinksCont.setVisible(catalogModule.isEnabled() && accessEl.isVisible() && accessEl.isKeySelected(KEY_PUBLIC));
 
 		if (catalogLinksCont.isVisible()) {
 			String url = Settings.getServerContextPathURI() + "/url/Catalog/0/" + CatalogMainController.ORES_TYPE_SEARCH
