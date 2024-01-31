@@ -148,6 +148,11 @@ public class MediaVersionMetadataImpl implements Persistable, MediaVersionMetada
 	}
 
 	@Override
+	public int hashCode() {
+		return getKey() == null ? 28681 : getKey().hashCode();
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;

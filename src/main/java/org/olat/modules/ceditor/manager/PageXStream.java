@@ -47,8 +47,10 @@ import org.olat.modules.ceditor.model.jpa.SpacerPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.ceditor.model.jpa.TitlePart;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.MediaVersionMetadata;
 import org.olat.modules.cemedia.model.MediaImpl;
 import org.olat.modules.cemedia.model.MediaVersionImpl;
+import org.olat.modules.cemedia.model.MediaVersionMetadataImpl;
 
 import com.microsoft.graph.callrecords.models.Media;
 import com.thoughtworks.xstream.XStream;
@@ -68,7 +70,7 @@ public class PageXStream {
 		Class<?>[] types = new Class[] {
 				PageImpl.class, Page.class, PageBodyImpl.class, PageBody.class,
 				AbstractPart.class, PagePart.class, Media.class, MediaImpl.class,
-				MediaVersion.class, MediaVersionImpl.class,
+				MediaVersion.class, MediaVersionImpl.class, MediaVersionMetadata.class, MediaVersionMetadataImpl.class,
 				ContainerPart.class, EvaluationFormPart.class,  HTMLPart.class, MathPart.class,
 				MediaPart.class, SpacerPart.class, TablePart.class, TitlePart.class, ParagraphPart.class,
 				CodePart.class,
