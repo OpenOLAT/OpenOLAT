@@ -113,7 +113,7 @@ public class UserSettingsController extends BasicController implements Activatea
 		segmentView.addSegment(userDataLink, false);
 
 		guiPreferencesLink = LinkFactory.createLink("tab.guiprefs", mainVC, this);
-		disclaimerLink.setElementCssClass("o_sel_user_settings_gui_preferences");
+		guiPreferencesLink.setElementCssClass("o_sel_user_settings_gui_preferences");
 		segmentView.addSegment(guiPreferencesLink, false);
 		
 		mainVC.put("segments", segmentView);
