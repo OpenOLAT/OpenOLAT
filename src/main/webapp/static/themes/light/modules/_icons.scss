@@ -237,7 +237,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_move_up { @include o-add-icon('angle-double-up');}
 .o_icon_ms_done { @include o-add-icon('check');}
 .o_icon_ms_pending { @include o-add-icon('play');}
-.o_icon_name { @include o-add-icon('pencil');}
+.o_icon_name { @include o-add-icon('table-cells-large');}
 .o_icon_new { @include o-add-icon('asterisk'); color: $brand-success;}
 .o_icon_new_document { @include o-add-icon('file-text');}
 .o_icon_new_folder { @include o-add-icon('folder');}
