@@ -47,17 +47,15 @@
 			</div>
 		#else
 			<div class="o_error o_assessment_mode_error">$inspection.errors</div>
-			#if($r.visible($inspection.downloadSEBButton) || $r.visible($inspection.downloadSEBConfigurationButton))
-				<div class="o_button_group">
+			<div class="o_button_group">
 				#if($r.visible($inspection.downloadSEBButton))
 					$r.render($inspection.downloadSEBButton)
 				#end
 				#if($r.visible($inspection.downloadSEBConfigurationButton))
 					$r.render($inspection.downloadSEBConfigurationButton)
 				#end
-				$r.render($inspection.cancelInspection)
-				</div>
-			#end
+				$r.render($inspection.cancelInspection)		
+			</div>
 		#end
 	</div>
 #end

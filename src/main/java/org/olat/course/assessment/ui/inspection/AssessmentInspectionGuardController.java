@@ -283,6 +283,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		downloadSEBLink.setName(translate("download.seb"));
 		downloadSEBLink.setTooltip(translate("download.seb"));
 		downloadSEBLink.setElementCssClass("btn btn-default");
+		downloadSEBLink.setVisible(false);
 
 		ResourceGuard guard = new ResourceGuard(inspection, iconCssClass, fromTo, duration,
 				startInspectionButton, cancelInspectionButton, accessCodeEl,
