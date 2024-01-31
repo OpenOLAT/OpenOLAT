@@ -149,19 +149,27 @@ public class ContainerInFormInspectorController extends FormBasicController impl
 		String name = getContainerSettings().getName();
 		nameEl = uifactory.addTextElement("container.name", null, 128, name, layoutCont);
 		nameEl.setPlaceholderKey("untitled", new String[] {""});
-		uifactory.addFormSubmitButton("save", layoutCont);
+		nameEl.addActionListener(FormEvent.ONCHANGE);
+	}
+
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if (!(fiSrc instanceof TextElement)) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof FormLink formLink && formLink.getUserObject() instanceof ContainerLayout containerLayout) {
 			doSetLayout(ureq, containerLayout);
+		} else if (source == nameEl) {
+			doSetName(ureq);
 		}
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doSetName(ureq);
 	}
 
 	private void doSetName(UserRequest ureq) {
