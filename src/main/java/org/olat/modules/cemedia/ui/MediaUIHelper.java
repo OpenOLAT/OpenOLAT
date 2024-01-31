@@ -239,22 +239,22 @@ public class MediaUIHelper {
 
 		spacingsCont.setVisible(false);
 		if (layoutSettings != null && layoutSettings.getSpacing() != null) {
-			if (topEl.containsKey(layoutSettings.getCustomTopSpacing().name())) {
+			if (layoutSettings.getCustomTopSpacing() != null && topEl.containsKey(layoutSettings.getCustomTopSpacing().name())) {
 				topEl.select(layoutSettings.getCustomTopSpacing().name(), true);
 			} else {
 				topEl.select(topEl.getKeys()[0], true);
 			}
-			if (rightEl.containsKey(layoutSettings.getCustomRightSpacing().name())) {
+			if (layoutSettings.getCustomRightSpacing() != null && rightEl.containsKey(layoutSettings.getCustomRightSpacing().name())) {
 				rightEl.select(layoutSettings.getCustomRightSpacing().name(), true);
 			} else {
 				rightEl.select(rightEl.getKeys()[0], true);
 			}
-			if (bottomEl.containsKey(layoutSettings.getCustomBottomSpacing().name())) {
+			if (layoutSettings.getCustomBottomSpacing() != null && bottomEl.containsKey(layoutSettings.getCustomBottomSpacing().name())) {
 				bottomEl.select(layoutSettings.getCustomBottomSpacing().name(), true);
 			} else {
 				bottomEl.select(bottomEl.getKeys()[0], true);
 			}
-			if (leftEl.containsKey(layoutSettings.getCustomLeftSpacing().name())) {
+			if (layoutSettings.getCustomLeftSpacing() != null && leftEl.containsKey(layoutSettings.getCustomLeftSpacing().name())) {
 				leftEl.select(layoutSettings.getCustomLeftSpacing().name(), true);
 			} else {
 				leftEl.select(leftEl.getKeys()[0], true);
