@@ -27,12 +27,12 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -74,7 +74,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		private CreateBadgeClassWizardContext createContext;
 		private TextElement nameEl;
 		private TextElement versionEl;
-		private TextAreaElement descriptionEl;
+		private MarkdownElement descriptionEl;
 		private TextElement issuerNameEl;
 		private TextElement issuerUrlEl;
 		private TextElement issuerEmailEl;
@@ -245,10 +245,9 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			versionEl = uifactory.addTextElement("form.version", 24, badgeClass.getVersionWithScan(), formLayout);
 			versionEl.setMandatory(true);
 
-			descriptionEl = uifactory.addTextAreaElement("form.description", "form.description",
-					512, 2, 80, false, false,
+			descriptionEl = uifactory.addMarkdownElement("form.description", "form.description",
 					badgeClass.getDescriptionWithScan(), formLayout);
-			descriptionEl.setElementCssClass("o_sel_badge_description");
+			descriptionEl.setElementCssClass("o_sel_badge_description o_badge_class_description");
 			descriptionEl.setMandatory(true);
 
 			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuer.getNameWithScan(), formLayout);

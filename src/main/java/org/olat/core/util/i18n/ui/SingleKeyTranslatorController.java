@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -114,6 +115,10 @@ public class SingleKeyTranslatorController extends FormBasicController {
 		initForm(ureq);
 	}
 
+	public void setMarkerClass(String markerClass) {
+		setFormStyle(markerClass);
+	}
+
 	/**
 	 * package protected getter for the translator base class (used only by inner
 	 * class <code>i18nRowBundle</code>)
@@ -184,6 +189,10 @@ public class SingleKeyTranslatorController extends FormBasicController {
 						rte.getEditorConfiguration().disableSmileys();
 						rte.getEditorConfiguration().disableMedia();
 						te = rte;
+						break;
+					case MARKDOWN_ELEMENT:
+						MarkdownElement markdownElement = uifactory.addMarkdownElement(textId, null, value, formLayout);
+						te = markdownElement;
 						break;
 					default:
 						te = uifactory.addTextElement(textId, textId, null, 255, value, formLayout);
@@ -313,6 +322,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	public enum InputType {
 		TEXT_ELEMENT,
 		TEXT_AREA,
-		RICH_TEXT_ELEMENT
+		RICH_TEXT_ELEMENT,
+		MARKDOWN_ELEMENT
 	}
 }

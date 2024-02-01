@@ -35,10 +35,10 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.components.link.Link;
@@ -75,7 +75,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 	private CloseableModalController cmc;
 	private SingleKeyTranslatorController templateNameTranslatorCtrl;
 	private FormLayoutContainer descriptionCont;
-	private TextAreaElement descriptionEl;
+	private MarkdownElement descriptionEl;
 	private StaticTextElement descriptionSpacerEl;
 	private FormLink descriptionLink;
 	private SingleKeyTranslatorController templateDescriptionTranslatorCtrl;
@@ -170,10 +170,10 @@ public class EditBadgeTemplateController extends FormBasicController {
 		descriptionCont.setRootForm(mainForm);
 		formLayout.add(descriptionCont);
 
-		descriptionEl = uifactory.addTextAreaElement("description", null,
-				-1, 3, 80, true, false, description, descriptionCont);
+		descriptionEl = uifactory.addMarkdownElement("description", null, description, descriptionCont);
 		descriptionEl.setEnabled(false);
 		descriptionEl.setVisible(StringHelper.containsNonWhitespace(description));
+		descriptionEl.setElementCssClass("o_badge_template_description");
 
 		descriptionSpacerEl = uifactory.addStaticTextElement("descriptionSpacer", "-", descriptionCont);
 		descriptionSpacerEl.setVisible(!StringHelper.containsNonWhitespace(description));
@@ -319,7 +319,8 @@ public class EditBadgeTemplateController extends FormBasicController {
 		String i18nKey = OpenBadgesUIFactory.getTemplateDescriptionI18nKey(identifierEl.getValue());
 
 		templateDescriptionTranslatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(),
-				i18nKey, OpenBadgesUIFactory.class, SingleKeyTranslatorController.InputType.TEXT_AREA, null);
+				i18nKey, OpenBadgesUIFactory.class, SingleKeyTranslatorController.InputType.MARKDOWN_ELEMENT, null);
+		templateDescriptionTranslatorCtrl.setMarkerClass("o_badge_template_description");
 		listenTo(templateDescriptionTranslatorCtrl);
 
 		cmc =  new CloseableModalController(getWindowControl(), translate("close"),

@@ -110,9 +110,11 @@
 			</div>
 		</div>
 	</div>
-	<div class="col-xs-12">
+	<div class="col-xs-12 o_badge_class_description_wrapper">
 		<legend>$r.translate("form.description")</legend>
-		<p>$badgeClass.descriptionWithScan</p>
+		<div class="o_badge_class_description">$r.formatMarkdown($badgeClass.descriptionWithScan)</div>
+	</div>
+	<div class="col-xs-12">
 		<legend>$r.translate("form.criteria")</legend>
 		<p>$criteriaDescription</p>
 
