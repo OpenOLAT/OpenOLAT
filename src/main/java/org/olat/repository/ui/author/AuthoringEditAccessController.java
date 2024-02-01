@@ -152,6 +152,7 @@ public class AuthoringEditAccessController extends BasicController {
 		initRuntimeType(ureq, mainVC);
 		initAccessOffers(ureq, mainVC);
 		initAccessShare(ureq, mainVC);
+		initAccessOverview(ureq, mainVC);
 		updateUI();
 		validateOfferAvailable();
 		fireEvent(ureq, Event.CHANGED_EVENT);

@@ -68,7 +68,7 @@ public class ModifyRuntimeTypeController extends FormBasicController {
 	private RepositoryService repositoryService;
 
 	public ModifyRuntimeTypeController(UserRequest ureq, WindowControl wControl, List<RepositoryEntry> entries) {
-		super(ureq, wControl);
+		super(ureq, wControl, "editruntimetype");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
 		this.entries = entries;
 		initForm(ureq);
@@ -76,13 +76,19 @@ public class ModifyRuntimeTypeController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_edit_runtime_type_form");
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("r_info", translate("change.runtime.type.info"));
+			layoutCont.contextPut("r_info_help_url", "manual_user/learningresources/Access_configuration/");
+		}
+		
 		SelectionValues runtimeTypeKV = new SelectionValues();
-		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(),
-				translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".title"),
-				translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"), null, null, true));
 		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.embedded.name(),
 				translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".title"),
-				translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".desc"), null, null, true));
+				translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".desc"), "o_icon o_icon_link", null, true));
+		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(),
+				translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".title"),
+				translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"), "o_icon o_icon_people", null, true));
 		
 		runtimeTypeEl = uifactory.addCardSingleSelectHorizontal("cif.runtime.type", "cif.runtime.type", formLayout, runtimeTypeKV);
 		runtimeTypeEl.addActionListener(FormEvent.ONCHANGE);
