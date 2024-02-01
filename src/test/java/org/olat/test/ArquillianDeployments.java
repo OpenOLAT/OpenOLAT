@@ -75,6 +75,9 @@ public class ArquillianDeployments {
 		
 		addHibernateInfinispanConfiguration(archive);
 		
+		File resourceFile = new File(TEST_RSRC);
+		archive.addAsResource(new File(resourceFile, "log4j2-test.xml"), "log4j2.xml");
+		
 		addWebResourceRecursive(new File(WEBAPP), "static", new StaticFileFilter(), archive);
 		addOlatLocalProperties(archive, overrideProperties);
 		archive.setWebXML(new File(WEBINF_TOMCAT, "web.xml"));

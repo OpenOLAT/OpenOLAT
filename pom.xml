@@ -82,7 +82,7 @@
 		<swagger.ui.version>5.10.3</swagger.ui.version>
 		<com.mysql.version>8.3.0</com.mysql.version>
 		<org.postgresql.version>42.7.1</org.postgresql.version>
-		<org.infinispan.version>14.0.21.Final</org.infinispan.version>
+		<org.infinispan.version>14.0.22.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.17.0</version.selenium>
 		<activemq.artemis.version>2.31.2</activemq.artemis.version>
@@ -1857,7 +1857,7 @@
 		<dependency>
 			<groupId>com.webauthn4j</groupId>
 			<artifactId>webauthn4j-core</artifactId>
-			<version>0.22.0.RELEASE</version>
+			<version>0.22.1.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -2471,7 +2471,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.25.1</version>
+			<version>3.25.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
