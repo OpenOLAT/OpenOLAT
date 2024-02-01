@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.id.Roles;
 
 /**
  * 
@@ -33,7 +32,6 @@ import org.olat.core.id.Roles;
  */
 public class SearchVideoInCollectionParams {
 	
-	private final Roles roles;
 	private final Identity identity;
 	
 	private String text;
@@ -41,17 +39,12 @@ public class SearchVideoInCollectionParams {
 	private boolean orderByAsc;
 	private List<OrganisationRef> organisations;
 	
-	public SearchVideoInCollectionParams(Identity identity, Roles roles) {
+	public SearchVideoInCollectionParams(Identity identity) {
 		this.identity = identity;
-		this.roles = roles;
 	}
 
 	public Identity getIdentity() {
 		return identity;
-	}
-
-	public Roles getRoles() {
-		return roles;
 	}
 
 	public String getText() {
