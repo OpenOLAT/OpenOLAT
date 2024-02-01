@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,12 +14,13 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.user.manager.lifecycle;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,8 +32,8 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
-import org.olat.user.UserModule;
 
 public class LifecycleMailTemplate extends MailTemplate {
 	
@@ -61,7 +62,7 @@ public class LifecycleMailTemplate extends MailTemplate {
 		if(recipient != null) {
 			UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 			BaseSecurityManager securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
-			UserModule userModule = CoreSpringFactory.getImpl(UserModule.class);
+			UserLifecycleManager userLifecycleManager = CoreSpringFactory.getImpl(UserLifecycleManager.class);
 			
 			User user = recipient.getUser();
 			
@@ -83,7 +84,15 @@ public class LifecycleMailTemplate extends MailTemplate {
 			}
 			vContext.put("username", loginName);
 			vContext.put(USER_NAME, loginName);
-			String reactionTime = String.valueOf(userModule.getNumberOfDayBeforeExpirationMail());
+
+			String reactionTime = "";
+			// getDaysUntilDeactivation covers expiration and deactivation
+			if (vContext.get("type").equals("before expiration") || vContext.get("type").equals("before deactivation")) {
+				reactionTime = String.valueOf(userLifecycleManager.getDaysUntilDeactivation(recipient, new Date()));
+			} else if (vContext.get("type").equals("before deletion")) {
+				reactionTime = String.valueOf(userLifecycleManager.getDaysUntilDeletion(recipient, new Date()));
+			}
+
 			vContext.put("reactiontime", reactionTime);
 			vContext.put(REACTION_TIME, reactionTime);
 		}

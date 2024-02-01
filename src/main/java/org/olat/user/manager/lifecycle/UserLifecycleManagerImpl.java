@@ -343,8 +343,8 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			if(!identities.isEmpty()) {
 				for(Identity identity:identities) {
 					if(identity.getLastLogin() != null && (vetoed.isEmpty() || !vetoed.contains(identity))) {
-						sendEmail(identity, "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactiviation", false);
-						sendEmailCopy(userModule.getMailCopyBeforeDeactivation(), "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactiviation", identity);
+						sendEmail(identity, "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactivation", false);
+						sendEmailCopy(userModule.getMailCopyBeforeDeactivation(), "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactivation", identity);
 						identity = setIdentityInactivationMail(identity);
 						vetoed.add(identity);
 					}
@@ -365,8 +365,8 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			if(vetoed.isEmpty() || !vetoed.contains(identity)) {
 				identity = setIdentityAsInactive(identity);
 				if(identity.getLastLogin() != null && userModule.isMailAfterDeactivation()) {
-					sendEmail(identity, "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactiviation", false);
-					sendEmailCopy(userModule.getMailCopyAfterDeactivation(), "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactiviation", identity);
+					sendEmail(identity, "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactivation", false);
+					sendEmailCopy(userModule.getMailCopyAfterDeactivation(), "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactivation", identity);
 				}
 				vetoed.add(identity);
 			}
@@ -530,6 +530,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	private void sendUserEmailTo(Identity identity, MailTemplate template, String type, boolean externalOnly) {
 		// for backwards compatibility
 		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
+		template.addToContext("type", type);
 
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, identity, template, null, null, result);
@@ -546,6 +547,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	private void sendUserEmailCopyTo(String receiver, MailTemplate template, String type, Identity identity) {
 		// for backwards compatibility
 		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
+		template.addToContext("type", type);
 
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, identity, template, null, null, result);
