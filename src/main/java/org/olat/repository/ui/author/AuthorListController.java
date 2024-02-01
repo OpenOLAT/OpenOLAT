@@ -477,8 +477,7 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			if(StringHelper.containsNonWhitespace(configuration.getI18nKeyTitle())) {
 				layoutCont.contextPut("title", configuration.getI18nKeyTitle());
 			}
@@ -906,15 +905,17 @@ public class AuthorListController extends FormBasicController implements Activat
 				} else {
 					selectFilterTab(ureq, myTab);
 				}
+				dirtyRows.clear();// Selection of tab reload the data
+			} else if("Deleted".equals(tabName)) {
+				tableEl.addToHistory(ureq);
+				reloadRows();
 			} else {
 				tableEl.addToHistory(ureq);
+				reloadDirtyRows();
 			}
-			
-			reloadDirtyRows();
 		}
 		
-		if(state instanceof AuthorListState) {
-			AuthorListState se = (AuthorListState)state;
+		if(state instanceof AuthorListState se) {
 			if(se.getTableState() != null) {
 				tableEl.setStateEntry(ureq, se.getTableState());
 			}
