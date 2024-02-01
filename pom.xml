@@ -85,7 +85,7 @@
 		<org.infinispan.version>14.0.22.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.17.0</version.selenium>
-		<activemq.artemis.version>2.31.2</activemq.artemis.version>
+		<activemq.artemis.version>2.32.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.1</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.1</jakarta.xml.ws-api>
@@ -2022,7 +2022,7 @@
 		<dependency>
 			<groupId>com.lmax</groupId>
 			<artifactId>disruptor</artifactId>
-			<version>3.4.4</version>
+			<version>4.0.0</version>
 		</dependency>
 
 		<!-- basic LTI stuff for lti demo: http://www.imsglobal.org/toolsinteroperability2.cfm -->
