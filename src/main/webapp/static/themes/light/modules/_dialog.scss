@@ -72,6 +72,10 @@
 	}
 }
 
+.o_warning_with_icon p:last-child {
+	margin-bottom: 1px;
+}
+
 /* Callout window (implemented with bootstrap popover, see CloseableCalloutWindowController for JS part */
 div.o_callout_overlay { 
 	position: fixed; 

@@ -130,6 +130,7 @@ public class LTI13ContentItemsListEditController extends FormBasicController {
 		
 		ContentItemRow row = new ContentItemRow(contentItem, titleEl, textEl, addLink, removeLink, upLink, downLink);
 		upLink.setUserObject(row);
+		addLink.setUserObject(row);
 		downLink.setUserObject(row);
 		removeLink.setUserObject(row);
 		return row;
@@ -185,14 +186,13 @@ public class LTI13ContentItemsListEditController extends FormBasicController {
 			if("rm".equals(cmd) && button.getUserObject() instanceof ContentItemRow row) {
 				doConfirmRemoveItem(ureq, row);
 			} else if("add".equals(cmd)) {
-				fireEvent(ureq, new LTI13ContentItemAddEvent());
+				int index = contentItemRows.indexOf(button.getUserObject());
+				fireEvent(ureq, new LTI13ContentItemAddEvent(index));
 			} else if("up".equals(cmd) && button.getUserObject() instanceof ContentItemRow row) {
 				doMoveUp(row);
 			} else if("down".equals(cmd) && button.getUserObject() instanceof ContentItemRow row) {
 				doMoveDown(row);
 			}
-			
-			
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -282,6 +282,10 @@ public class LTI13ContentItemsListEditController extends FormBasicController {
 		
 		public Long getKey() {
 			return contentItem.getKey();
+		}
+		
+		public String presentation() {
+			return contentItem.getPresentation() == null ? null : contentItem.getPresentation().name();
 		}
 
 		public String type() {

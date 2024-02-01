@@ -51,6 +51,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 	private SingleSelection runtimeTypeEl;
 	
 	private RepositoryEntry entry;
+	private final int numOfOffers;
 	private final boolean hasUserManager;
 	
 	@Autowired
@@ -66,7 +67,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 		super(ureq, wControl, "editruntimetype", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		this.entry = entry;
 		hasUserManager = repositoryService.hasUserManaged(entry);
-		
+		numOfOffers = acService.findOfferByResource(entry.getOlatResource(), true, null, null).size();
 		initForm(ureq);
 	}
 	
@@ -82,8 +83,15 @@ public class EditRuntimeTypeController extends FormBasicController {
 			layoutCont.contextPut("r_info_help_url", "manual_user/learningresources/Access_configuration/");
 		}
 		
+		StringBuilder warnings = new StringBuilder();
 		if(hasUserManager) {
-			setFormWarning("change.runtime.type.warning");
+			warnings.append("<p>").append(translate("change.runtime.type.warning")).append("</p>");
+		}
+		if(numOfOffers > 0) {
+			warnings.append("<p>").append(translate("change.runtime.type.warning.offers", Integer.toString(numOfOffers))).append("</p>");
+		}
+		if(!warnings.isEmpty()) {
+			setFormTranslatedWarning(warnings.toString());
 		}
 		
 		SelectionValues runtimeTypeKV = new SelectionValues();

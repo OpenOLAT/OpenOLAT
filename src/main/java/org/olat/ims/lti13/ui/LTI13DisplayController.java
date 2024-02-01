@@ -117,12 +117,16 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 			back = LinkFactory.createLinkBack(mainVC, this);
 		}
 		
-		boolean newWindow = false;
+		Boolean newWindow;
 		if(contentItem != null) {
-			newWindow = contentItem.getPresentation() == LTI13ContentItemPresentationEnum.window
-					&& !StringHelper.containsNonWhitespace(contentItem.getIframeSrc());
-		} else if(LTIDisplayOptions.window == displayOption) {
-			newWindow = true;
+			if(contentItem.getPresentation() == null) {
+				newWindow = Boolean.valueOf(LTIDisplayOptions.window == displayOption);
+			} else {
+				newWindow = contentItem.getPresentation() == LTI13ContentItemPresentationEnum.window
+						&& !StringHelper.containsNonWhitespace(contentItem.getIframeSrc());
+			}
+		} else {
+			newWindow = Boolean.valueOf(LTIDisplayOptions.window == displayOption);
 		}
 		mainVC.contextPut("newWindow", newWindow);
 		

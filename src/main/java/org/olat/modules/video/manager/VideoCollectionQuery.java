@@ -78,7 +78,7 @@ public class VideoCollectionQuery {
 			return Collections.emptyList();
 		}
 
-		TypedQuery<RepositoryEntry> query = createMyViewQuery(params, RepositoryEntry.class);
+		TypedQuery<Object[]> query = createMyViewQuery(params, Object[].class);
 		if(query == null) {
 			return new ArrayList<>();
 		}
@@ -88,7 +88,16 @@ public class VideoCollectionQuery {
 			query.setMaxResults(maxResults);
 		}
 		
-		return query.getResultList();
+		List<Object[]> rawObjects = query.getResultList();
+		List<RepositoryEntry> videos = new ArrayList<>(rawObjects.size());
+		for(Object[] rawObject:rawObjects) {
+			Object obj = rawObject[0];
+			if(obj instanceof RepositoryEntry entry) {
+				videos.add(entry);
+			}
+		}
+		return videos;
+		
 	}
 	
 	private final <T> TypedQuery<T> createMyViewQuery(SearchVideoInCollectionParams params, Class<T> type) {
@@ -96,7 +105,7 @@ public class VideoCollectionQuery {
 		boolean count = Number.class.equals(type);
 		boolean oracle = "oracle".equals(dbInstance.getDbVendor());
 		QueryBuilder sb = new QueryBuilder(2048);
-		
+		boolean needIdentityKey = false;
 		if(count) {
 			sb.append("select count(v.key) ")
 			  .append(" from repositoryentry as v")
@@ -104,9 +113,11 @@ public class VideoCollectionQuery {
 			  .append(" left join v.lifecycle as lifecycle ");
 		} else {
 			sb.append("select v");
+			needIdentityKey |= appendOrderByInSelect(params, sb);
 			sb.append(" from repositoryentry as v")
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res")
-			  .append(" inner join fetch v.statistics as stats");
+			  .append(" inner join fetch v.statistics as stats")
+			  .append(" left join v.lifecycle as lifecycle ");
 		}
 		if(params.hasOrganisations()) {
 			sb.append(" inner join videotoorganisation as videoToOrganisation on (videoToOrganisation.repositoryEntry.key=v.key)");
@@ -133,7 +144,9 @@ public class VideoCollectionQuery {
 			sb.append(")");
 		}
 		
-		appendOrderBy(params, sb);
+		if(!count) {
+			appendOrderBy(params, sb);
+		}
 		
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), type)
@@ -149,21 +162,39 @@ public class VideoCollectionQuery {
 		if(StringHelper.containsNonWhitespace(text)) {
 			dbQuery.setParameter("displaytext", text);
 		}
-		
+		if(needIdentityKey) {
+			dbQuery.setParameter("identityKey", params.getIdentity().getKey());
+		}
 		return dbQuery;
+	}
+	
+	private boolean appendOrderByInSelect(SearchVideoInCollectionParams params, QueryBuilder sb) {
+		boolean needIdentityKey = false;
+		OrderBy orderBy = params.getOrderBy();
+		if(orderBy != null) {
+			switch(orderBy) {
+				case automatic://need lastVisited
+					needIdentityKey = true;
+					sb.append(" ,(select infos2.recentLaunch from usercourseinfos as infos2")
+					  .append("    where infos2.resource=res and infos2.identity.key=:identityKey")
+					  .append(" ) as recentLaunch");
+					break;
+				default: //do nothing
+			}
+		}
+		return needIdentityKey;
 	}
 	
 	private void appendOrderBy(SearchVideoInCollectionParams params, QueryBuilder sb) {
 		OrderBy orderBy = params.getOrderBy();
-		boolean asc = params.isOrderByAsc();
-		
 		if(orderBy != null) {
+			boolean asc = params.isOrderByAsc();
 			switch(orderBy) {
 				case automatic://! the sorting is reverse
 					if(asc) {
-						sb.append(" order by recentLaunch desc nulls last, lifecycle.validFrom desc nulls last, marks desc nulls last, lower(v.displayname) asc, v.key asc ");
+						sb.append(" order by recentLaunch desc nulls last, lifecycle.validFrom desc nulls last, lower(v.displayname) asc, v.key asc ");
 					} else {
-						sb.append(" order by recentLaunch asc nulls last, lifecycle.validFrom asc nulls last, marks asc nulls last, lower(v.displayname) desc, v.key desc ");
+						sb.append(" order by recentLaunch asc nulls last, lifecycle.validFrom asc nulls last, lower(v.displayname) desc, v.key desc ");
 					}
 					break;
 

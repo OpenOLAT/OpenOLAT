@@ -98,7 +98,7 @@ public class VideoListingController extends FormBasicController implements Activ
 		
 		this.toolbarPanel = toolbarPanel;
 		
-		searchParams = new SearchVideoInCollectionParams(getIdentity(), ureq.getUserSession().getRoles());
+		searchParams = new SearchVideoInCollectionParams(getIdentity());
 		searchParams.setOrganisations(acService.getOfferOrganisations(getIdentity()));
 		dataSource = new VideoEntryDataSource(searchParams);
 		imgUrl = registerMapper(ureq, new VideoMapper());

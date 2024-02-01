@@ -143,6 +143,15 @@ public interface FileElement extends FormMultipartItem {
 	
 	public void setDndInformations(String infos);
 	
+	public boolean isShowInputIfFileUploaded();
+	
+	/**
+	 * Show / hide the input field if a file is uploaded.
+	 * 
+	 * @param showInputIfFileUploaded default: true
+	 */
+	public void setShowInputIfFileUploaded(boolean showInputIfFileUploaded);
+	
 	//
 	// Methods that are used when a file has been uploaded
 

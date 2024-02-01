@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -68,6 +69,8 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 	private final List<RepositoryEntry> rows;
 	private final List<ReferenceInfos> references;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
@@ -181,6 +184,7 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			}
 		}
+		dbInstance.commitAndCloseSession();
 		return allOk;
 	}
 	

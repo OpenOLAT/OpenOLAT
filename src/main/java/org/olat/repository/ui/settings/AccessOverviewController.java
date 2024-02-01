@@ -116,6 +116,9 @@ public class AccessOverviewController extends BasicController {
 					: ICON_INACTIVE;
 			participants += translate("access.overview.participants", participantsCount.toString());
 			mainVC.contextPut("participants", participants);
+		} else {
+			mainVC.contextRemove("coaches");
+			mainVC.contextRemove("participants");
 		}
 		
 		openMemberManagementLink = LinkFactory.createLink("access.overview.open.members.management", getTranslator(), this);

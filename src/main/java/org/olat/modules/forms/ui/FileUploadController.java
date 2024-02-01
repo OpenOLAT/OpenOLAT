@@ -105,6 +105,7 @@ public class FileUploadController extends FormBasicController implements Evaluat
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), fileElId, "", formLayout);
 		fileEl.setButtonsEnabled(false);
 		fileEl.setDeleteEnabled(true);
+		fileEl.setShowInputIfFileUploaded(false);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 	}
 	

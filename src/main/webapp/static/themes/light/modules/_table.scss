@@ -371,6 +371,11 @@ table.table.o_table_middle>tbody>tr>td {
 	}
 }
 
+.o_table_batch_buttons.o_table_batch_buttons {
+	min-height: 0px; 
+	margin: 0;
+}
+
 .input-group .input-group-btn .o_reset_filter_search {
 	width: 38px;
 	margin-left: -38px;

@@ -99,6 +99,7 @@ public class FileElementImpl extends FormItemImpl
 	private boolean replaceButton;
 	private boolean deleteEnabled;
 	private boolean confirmDelete;
+	private boolean showInputIfFileUploaded = true;
 
 	private boolean checkForMaxFileSize = false;
 	private boolean checkForMimeTypes = false;
@@ -485,6 +486,16 @@ public class FileElementImpl extends FormItemImpl
 
 	public void setConfirmDelete(boolean confirmDelete) {
 		this.confirmDelete = confirmDelete;
+	}
+
+	@Override
+	public boolean isShowInputIfFileUploaded() {
+		return showInputIfFileUploaded;
+	}
+
+	@Override
+	public void setShowInputIfFileUploaded(boolean showInputIfFileUploaded) {
+		this.showInputIfFileUploaded = showInputIfFileUploaded;
 	}
 
 	@Override

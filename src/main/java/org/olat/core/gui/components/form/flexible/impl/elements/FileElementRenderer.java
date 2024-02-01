@@ -84,6 +84,8 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				hasFile = false;
 			}
 		}
+		
+		boolean showInput = !hasFile || fileElem.isShowInputIfFileUploaded();
 
 		// Read-write view
 		if (fileComp.isEnabled()) {
@@ -105,7 +107,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				sb.append("</div>");
 				
 				sb.append("<div>");
-				if (showReplaceButton) {
+				if (showInput && showReplaceButton) {
 					renderFileInput(sb, trans, fileElem, id, fileName, showReplaceButton);
 				}
 				boolean showDeleteButton = fileElem.isDeleteEnabled()
@@ -120,7 +122,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				sb.append("</div>");
 			}
 			
-			if (!showReplaceButton) {
+			if (showInput && !showReplaceButton) {
 				renderFileInput(sb, trans, fileElem, id, fileName, showReplaceButton);
 			}
 			

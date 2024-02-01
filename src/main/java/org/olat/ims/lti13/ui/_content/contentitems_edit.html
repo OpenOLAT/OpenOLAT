@@ -23,7 +23,12 @@
 	</div>
 	<div class="o_meta">
 		#if($r.isNotEmpty(${row.url()}))
-		<div class="o_lti_url"><i class="o_icon o_icon-fw o_icon_link"> </i> ${row.url()}</div>
+		<div class="o_lti_url"><i class="o_icon o_icon-fw o_icon_link"> </i>
+			#if($r.isNotEmpty(${row.presentation()}))
+			 ($r.translate("presentation.type.${row.presentation()}"))
+			
+			#end
+			${row.url()}</div>
 		#end
 		$r.render(${row.titleComponentName()}, "vertical", "form")
 		$r.render(${row.textComponentName()}, "vertical", "form")
