@@ -283,6 +283,10 @@ public class LTI13ContentItemsListEditController extends FormBasicController {
 		public Long getKey() {
 			return contentItem.getKey();
 		}
+		
+		public String presentation() {
+			return contentItem.getPresentation() == null ? null : contentItem.getPresentation().name();
+		}
 
 		public String type() {
 			return contentItem.getType().name();
