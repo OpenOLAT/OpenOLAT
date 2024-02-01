@@ -71,7 +71,7 @@
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.4</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.3</apache.cxf>
-		<apache.pdfbox>3.0.0</apache.pdfbox>
+		<apache.pdfbox>3.0.1</apache.pdfbox>
 		<apache.poi>5.2.5</apache.poi>
 		<apache.log4j>2.22.1</apache.log4j>
 		<org.slf4j>2.0.11</org.slf4j>
@@ -1443,7 +1443,7 @@
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<skipTests>${skipTests}</skipTests>
-					<argLine>-Xmx768m -Xms256m -Djava.awt.headless=true</argLine>
+					<argLine>-Xmx2048m -Xms256m -Djava.awt.headless=true</argLine>
 					<systemPropertyVariables>
 						<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
 					</systemPropertyVariables>
@@ -1465,7 +1465,7 @@
 					<skipITs>${skipSeleniumTests}</skipITs>
 					<skipTests>${skipSeleniumTests}</skipTests>
 					<reuseForks>false</reuseForks>
-					<argLine>-Xmx768m -Xms256m -Djava.awt.headless=true -Dwebdriver.http.factory=jdk-http-client</argLine>
+					<argLine>-Xmx2048m -Xms256m -Djava.awt.headless=true -Dwebdriver.http.factory=jdk-http-client</argLine>
 					<trimStackTrace>false</trimStackTrace>
 					<systemPropertyVariables>
 						<profile>${test.env}</profile>
