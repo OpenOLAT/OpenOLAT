@@ -235,7 +235,7 @@ public class LTIRunSegmentController extends BasicController implements Activate
 				ltiContext = lti13Service.getContext(courseEntry, courseNode.getIdent());
 			}
 			List<LTI13ContentItem> contentItems = lti13Service.getContentItems(ltiContext);
-			List<LTI13ContentItem> orderContentItems = lti13Service.reorderContentItems(contentItems, contentItemKeysOrder);
+			List<LTI13ContentItem> orderContentItems = lti13Service.reorderContentItems(contentItems, contentItemKeysOrder, -1);
 			contentCtrl = new LTIRunController(ureq, swControl, courseNode, ltiContext, orderContentItems, userCourseEnv);
 		} else {
 			contentCtrl = new LTIRunController(ureq, swControl, courseNode, userCourseEnv);

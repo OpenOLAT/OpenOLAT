@@ -33,7 +33,14 @@ public class LTI13ContentItemAddEvent extends Event {
 
 	public static final String ADD = "lti-13-content-item-add-content-item";
 	
-	public LTI13ContentItemAddEvent() {
+	private int addPosition;
+	
+	public LTI13ContentItemAddEvent(int addPosition) {
 		super(ADD);
+		this.addPosition = addPosition;
+	}
+	
+	public int getAddPosition() {
+		return addPosition;
 	}
 }

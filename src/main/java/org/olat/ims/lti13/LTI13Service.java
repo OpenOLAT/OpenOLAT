@@ -196,7 +196,7 @@ public interface LTI13Service {
 	
 	public List<LTI13ContentItem> getContentItems(LTI13Context context);
 	
-	public List<LTI13ContentItem> reorderContentItems(List<LTI13ContentItem> items, List<Long> preferedOrder);
+	public List<LTI13ContentItem> reorderContentItems(List<LTI13ContentItem> items, List<Long> preferedOrder, int position);
 	
 	public LTI13ContentItem getContentItemByKey(Long key);
 

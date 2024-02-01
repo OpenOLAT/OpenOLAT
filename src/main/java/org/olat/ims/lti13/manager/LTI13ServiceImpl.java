@@ -29,6 +29,7 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -987,7 +988,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 	
 	@Override
-	public List<LTI13ContentItem> reorderContentItems(List<LTI13ContentItem> items, List<Long> preferedOrder) {
+	public List<LTI13ContentItem> reorderContentItems(List<LTI13ContentItem> items, List<Long> preferedOrder, int position) {
 		if(preferedOrder == null || preferedOrder.isEmpty() || items == null || items.size() <= 1) {
 			return items;
 		}
@@ -1002,7 +1003,21 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 				contentItemsMap.remove(key);
 			}
 		}
-		orderedItems.addAll(contentItemsMap.values());
+		
+		List<LTI13ContentItem> lastItems = new ArrayList<>(contentItemsMap.values());
+		try {
+			Collections.sort(lastItems, (i1, i2) -> {
+				return i1.getKey().compareTo(i2.getKey());
+			});
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		
+		if(position < 0 || position >= orderedItems.size()) {
+			orderedItems.addAll(lastItems);
+		} else {
+			orderedItems.addAll(position, lastItems);
+		}
 		return orderedItems;
 	}
 

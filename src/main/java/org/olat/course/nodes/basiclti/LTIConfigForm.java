@@ -336,7 +336,7 @@ public class LTIConfigForm extends FormBasicController {
 		itemListEditEl = itemListEditCtrl.getInitialFormItem();
 
 		initForm(ureq);
-		loadContentItems(config.getList(CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER, Long.class));
+		loadContentItems(config.getList(CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER, Long.class), -1);
 		updateUI();
 	}
 	
@@ -584,12 +584,12 @@ public class LTIConfigForm extends FormBasicController {
 		return null;
 	}
 	
-	protected void loadContentItems(List<Long> orderItemsKeys) {
+	protected void loadContentItems(List<Long> orderItemsKeys, int position) {
 		String selectedVersionKey = ltiVersionEl.getSelectedKey();
 		boolean lti13 = !CONFIGKEY_LTI_11.equals(selectedVersionKey);
 		if(lti13) {
 			List<LTI13ContentItem> items = lti13Service.getContentItems(ltiContext);
-			items = lti13Service.reorderContentItems(items, orderItemsKeys);
+			items = lti13Service.reorderContentItems(items, orderItemsKeys, position);
 			itemListEditCtrl.loadItems(items);	
 			itemListEditCtrl.getInitialFormItem().setVisible(!itemListEditCtrl.isEmpty());
 		} else {
@@ -981,7 +981,7 @@ public class LTIConfigForm extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(chooseResourceButton == source) {
-			doChooseResource(ureq);
+			doChooseResource(ureq, -1);
 		} else if(isAssessableEl == source || displayEl == source
 				|| publicKeyTypeEl == source || includeInCourseAssessmentEl == source) {
 			updateUI();
@@ -1026,23 +1026,27 @@ public class LTIConfigForm extends FormBasicController {
 			}
 		} else if(chooseResourceCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
+				loadContentItems(itemListEditCtrl.getOrderedItemsKey(), chooseResourceCtrl.getAddPosition());
+				updateContentItemsKeysOrder();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(itemListEditCtrl == source) {
-			if(event instanceof LTI13ContentItemAddEvent) {
-				doChooseResource(ureq);
+			if(event instanceof LTI13ContentItemAddEvent ciae) {
+				doChooseResource(ureq, ciae.getAddPosition());
 			} else if(event instanceof LTI13ContentItemRemoveEvent) {
-				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
+				loadContentItems(itemListEditCtrl.getOrderedItemsKey(), -1);
+				updateContentItemsKeysOrder();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 				markDirty();
 			}
 		} else if(cmc == source) {
 			if(chooseResourceCtrl != null) {
-				loadContentItems(itemListEditCtrl.getOrderedItemsKey());
+				loadContentItems(itemListEditCtrl.getOrderedItemsKey(), chooseResourceCtrl.getAddPosition());
+				updateContentItemsKeysOrder();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 				markDirty();
 			}
 			cleanUp();
@@ -1192,17 +1196,21 @@ public class LTIConfigForm extends FormBasicController {
 		config.remove(CONFIGKEY_13_DEPLOYMENT_KEY_DEP);
 		getUpdateConfigCommon();
 		
+		updateContentItemsKeysOrder();
+		
+		// A deployment ID is mandatory
+		chooseResourceButton.setEnabled(tool != null && tool.getKey() != null && ltiContext != null && ltiContext.getKey() != null);
+		
+		return config;
+	}
+	
+	private void updateContentItemsKeysOrder() {
 		if(itemListEditEl != null && itemListEditEl.isVisible()) {
 			List<Long> itemKeys = itemListEditCtrl.commitConfig();
 			config.setList(CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER, itemKeys);
 		} else {
 			config.remove(CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER);
 		}
-		
-		// A deployment ID is mandatory
-		chooseResourceButton.setEnabled(tool != null && tool.getKey() != null && ltiContext != null && ltiContext.getKey() != null);
-		
-		return config;
 	}
 	
 	private ModuleConfiguration getUpdatedConfigLti11() {
@@ -1337,8 +1345,8 @@ public class LTIConfigForm extends FormBasicController {
 		return null;
 	}
 	
-	private void doChooseResource(UserRequest ureq) {
-		chooseResourceCtrl = new LTI13ChooseResourceController(ureq, getWindowControl(), ltiContext);
+	private void doChooseResource(UserRequest ureq, int addPosition) {
+		chooseResourceCtrl = new LTI13ChooseResourceController(ureq, getWindowControl(), ltiContext, addPosition);
 		listenTo(chooseResourceCtrl);
 		
 		String title = translate("choose.resource");

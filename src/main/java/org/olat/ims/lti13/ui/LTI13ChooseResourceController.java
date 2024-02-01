@@ -62,8 +62,9 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 
 	private final VelocityContainer mainVC;
 	private final Link closeButton;
-	
 	private JSAndCSSComponent jsc;
+	
+	private final int addPosition;
 	private LTI13Context ltiContext;
 	private LTI13ToolDeployment toolDeployment;
 	private final OLATResourceable ltiResourceOres;
@@ -75,8 +76,9 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 	@Autowired
 	private CoordinatorManager coordinatorManager;
 	
-	public LTI13ChooseResourceController(UserRequest ureq, WindowControl wControl, LTI13Context ltiContext) {
+	public LTI13ChooseResourceController(UserRequest ureq, WindowControl wControl, LTI13Context ltiContext, int addPosition) {
 		super(ureq, wControl);
+		this.addPosition = addPosition;
 		this.ltiContext = ltiContext;
 		this.toolDeployment = ltiContext.getDeployment();
 		
@@ -93,6 +95,10 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 	protected void doDispose() {
 		coordinatorManager.getCoordinator().getEventBus().deregisterFor(this, ltiResourceOres);
 		super.doDispose();
+	}
+	
+	public int getAddPosition() {
+		return addPosition;
 	}
 
 	private void init() {
