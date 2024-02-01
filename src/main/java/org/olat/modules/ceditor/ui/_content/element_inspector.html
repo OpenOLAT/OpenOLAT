@@ -92,24 +92,32 @@ jQuery(function() {
 		function dragStart(e) {
 			e = e || window.event;
 			e.preventDefault();
-			if(position.x == 0) {
-				position.x = e.clientX;
-				position.y = e.clientY;
-			}
+			setReferencePosition(e);
 			document.onmouseup = dragStop;
 			document.onmousemove = elementDrag;
 		}
-		
+
+		function setReferencePosition(coordinateSource) {
+			if (position.x === 0 && position.y === 0) {
+				position.x = coordinateSource.clientX;
+				position.y = coordinateSource.clientY;
+			} else {
+				const lastClientX = position.x + position.dx;
+				const lastClientY = position.y + position.dy;
+				const diffX = coordinateSource.clientX - lastClientX;
+				const diffY = coordinateSource.clientY - lastClientY;
+				position.x += diffX;
+				position.y += diffY;
+			}
+		}
+
 		function touchStart(e) {
 			e = e || window.event;
 			if(e.target.tagName === "I") {
 				return;// Touch close
 			}
 			e.preventDefault();
-			if(position.x == 0) {
-				position.x = e.touches[0].clientX;
-				position.y = e.touches[0].clientY;
-			}
+			setReferencePosition(e.touches[0]);
 			document.ontouchend = dragStop;
 			document.ontouchmove = elementMove;
 		}
