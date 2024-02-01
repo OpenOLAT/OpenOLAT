@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
 import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -146,7 +147,9 @@ public class CreateBadge04SummaryStep extends BasicStep {
 			uifactory.addStaticTextElement("name", "form.name", badgeClass.getNameWithScan(), formLayout);
 			uifactory.addStaticTextElement("version", "form.version", badgeClass.getVersionWithScan(), formLayout);
 			uifactory.addStaticTextElement("language", "form.language", badgeClass.getLanguage(), formLayout);
-			uifactory.addStaticTextElement("description", "form.description", badgeClass.getDescriptionWithScan(),formLayout);
+			MarkdownElement descriptionEl = uifactory.addMarkdownElement("description", "form.description", badgeClass.getDescriptionWithScan(),formLayout);
+			descriptionEl.setElementCssClass("o_badge_class_description");
+			descriptionEl.setEnabled(false);
 			uifactory.addStaticTextElement("expires", "form.badge.expiry", createExpiryString(badgeClass), formLayout);
 
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();

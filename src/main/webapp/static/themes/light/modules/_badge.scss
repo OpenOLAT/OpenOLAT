@@ -128,3 +128,62 @@
 		}
 	}
 }
+
+.o_badge_wiz_summary_step {
+	.o_small_badge {
+		max-width: 250px;
+		max-height: 250px;
+
+		.o_image {
+			max-width: 250px;
+			max-height: 250px;
+			width: 100%;
+
+			img {
+				max-width: 250px;
+				max-height: 250px;
+				width: 100%;
+			}
+		}
+	}
+
+	.o_badge_condition_line {
+		margin-bottom: 10px;
+
+		.o_badge_theme_area.o_tab_left {
+			margin-left: 10px;
+		}
+	}
+}
+
+.o_badge_template_description, .o_badge_class_description {
+	@media (min-width: $screen-sm-min) {
+		&.o_markdown_element {
+			padding-top: 7px;
+		}
+	}
+
+	.milkdown {
+		h1 { font-size: $font-size-h2; } // #
+		h2 { font-size: $font-size-h3; } // ##
+		h3 { font-size: $font-size-h4; } // ###
+		h4 { font-size: $font-size-h5; } // ####
+		h5 { font-size: $font-size-h6; } // #####
+		h6 { font-size: $font-size-h6; } // ######
+
+		h1, h2, h3, h4, h5, h6 {
+			line-height: 1;
+		}
+		h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child {
+			margin-top: 0;
+		}
+	}
+}
+
+.o_badge_class_description_wrapper {
+	margin-bottom: 20px;
+
+	.o_badge_class_description.o_markdown_element {
+		padding-top: 0;
+	}
+}
