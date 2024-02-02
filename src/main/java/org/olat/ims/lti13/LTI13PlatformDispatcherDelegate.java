@@ -933,7 +933,7 @@ public class LTI13PlatformDispatcherDelegate {
 	public void handleAgs(String[] path, HttpServletRequest request, HttpServletResponse response) {
 		// /ags/{deploymentId}/context/{entryResourceId}/lineitems/{subIdent}/lineitem
 		if(path.length < 4 || !"ags".equals(path[0]) || !"lineitems".equals(path[4])
-				|| !StringHelper.isLong(path[1]) || !StringHelper.isLong(path[3])) {
+				|| !StringHelper.isLong(path[3])) {
 			DispatcherModule.sendBadRequest("", response);
 			return;
 		}
