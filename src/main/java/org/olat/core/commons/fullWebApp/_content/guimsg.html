@@ -1,6 +1,7 @@
 #if($guiMessage.hasInfo())
 ##needs to be delayed otherwise IE6 will crash in non ajax mode
 <script>
+"use strict";
 setTimeout(function(){
 	var title = #if($r.isNotEmpty(${guiMessage.getTitle()})) '${guiMessage.getTitle()}' #else '$r.translate("info.header")' #end;
 	showInfoBox(title, "$r.get("guiMessage").renderInfo()");
@@ -10,6 +11,7 @@ setTimeout(function(){
 
 #if($guiMessage.hasWarn())
 <script>
+"use strict";
 setTimeout(function() {
 	var title = #if($r.isNotEmpty(${guiMessage.getTitle()})) '${guiMessage.getTitle()}' #else '$r.translate("warn.header")' #end;
 	var dialog = showMessageBox("warn", title,  "$r.get("guiMessage").renderWarn()");
@@ -26,10 +28,11 @@ setTimeout(function() {
 
 #if($guiMessage.hasError())
 <script>
-	setTimeout(function(){
-		var title = #if($r.isNotEmpty(${guiMessage.getTitle()})) '${guiMessage.getTitle()}' #else '$r.translate("error.header")' #end;
-		showMessageBox("error", title,  "$r.get("guiMessage").renderError()");
-	}, 100);
+"use strict";
+setTimeout(function(){
+	var title = #if($r.isNotEmpty(${guiMessage.getTitle()})) '${guiMessage.getTitle()}' #else '$r.translate("error.header")' #end;
+	showMessageBox("error", title,  "$r.get("guiMessage").renderError()");
+}, 100);
 </script>
 #end
 
