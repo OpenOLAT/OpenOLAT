@@ -50,6 +50,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.SingleChoice;
@@ -71,13 +72,19 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	private ChoiceDataModel dataModel;
 
 	private SingleChoice singleChoice;
-	private boolean restrictedEdit;
+	private final boolean restrictedEdit;
 	
 	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice, boolean restrictedEdit) {
 		super(ureq, wControl, "single_choice_editor");
 		this.singleChoice = singleChoice;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
+
+		setBlockLayoutClass();
+	}
+
+	private void setBlockLayoutClass() {
+		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(singleChoice.getLayoutSettings(), true));
 	}
 
 	@Override
@@ -161,10 +168,10 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source instanceof RubricInspectorController && event instanceof ChangePartEvent) {
-			ChangePartEvent cpe = (ChangePartEvent)event;
-			if(cpe.isElement(singleChoice)) {
-				singleChoice = (SingleChoice)cpe.getElement();
+		if (source instanceof SingleChoiceInspectorController && event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.isElement(singleChoice) && changePartEvent.getElement() instanceof SingleChoice singleChoice) {
+				this.singleChoice = singleChoice;
+				setBlockLayoutClass();
 			}
 		}
 		super.event(ureq, source, event);

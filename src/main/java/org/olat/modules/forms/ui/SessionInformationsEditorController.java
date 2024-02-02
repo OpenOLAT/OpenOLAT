@@ -34,9 +34,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
@@ -53,7 +55,7 @@ public class SessionInformationsEditorController extends FormBasicController imp
 	private SingleSelection obligationEl;
 	private MultipleSelectionElement informationsEl;
 	
-	private final SessionInformations sessionInformations;
+	private SessionInformations sessionInformations;
 	private final boolean restrictedEdit;
 	
 	public SessionInformationsEditorController(UserRequest ureq, WindowControl wControl,
@@ -63,6 +65,12 @@ public class SessionInformationsEditorController extends FormBasicController imp
 		this.restrictedEdit = restrictedEdit;
 		
 		initForm(ureq);
+
+		setBlockLayoutClass();
+	}
+
+	private void setBlockLayoutClass() {
+		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(sessionInformations.getLayoutSettings(), true));
 	}
 
 	@Override
@@ -109,6 +117,17 @@ public class SessionInformationsEditorController extends FormBasicController imp
 		}
 		fireEvent(ureq, new ChangePartEvent(sessionInformations));
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source instanceof SessionInfoInspectorController && event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.isElement(sessionInformations) && changePartEvent.getElement() instanceof SessionInformations sessionInfo) {
+				this.sessionInformations = sessionInfo;
+				setBlockLayoutClass();
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	private void doSetObligation() {

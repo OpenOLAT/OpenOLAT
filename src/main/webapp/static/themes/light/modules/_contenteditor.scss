@@ -1230,6 +1230,9 @@ table.o_ce_table {
 		&.o_ce_html_paragraph_edit > div {
 			border: 1px solid $o-editor-inspector-border-color;
 		}
+		&.o_form_disclaimer, &.o_form_session_info {
+			margin: 0;
+		}
 	}
 
 	.o_audio,

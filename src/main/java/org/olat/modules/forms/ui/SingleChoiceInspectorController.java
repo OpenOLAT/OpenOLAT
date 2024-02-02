@@ -64,7 +64,7 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 	private SingleSelection obligationEl;
 	
 	private final SingleChoice singleChoice;
-	private boolean restrictedEdit;
+	private final boolean restrictedEdit;
 	
 	public SingleChoiceInspectorController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice, boolean restrictedEdit) {
 		super(ureq, wControl, "single_choice_inspector");
@@ -84,14 +84,14 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
 
-		addStyleTab(formLayout);
+		addGeneralTab(formLayout);
 		addLayoutTab(formLayout);
 	}
 
-	private void addStyleTab(FormItemContainer formLayout) {
-		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+	private void addGeneralTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		formLayout.add(layoutCont);
-		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.general"), layoutCont);
 
 		// name
 		nameEl = uifactory.addTextElement("rubric.name", 128, singleChoice.getName(), layoutCont);
