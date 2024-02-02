@@ -80,12 +80,10 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	private Date lastModified;
 	
 	/** Only used for order by (hibernate hack) */
-	@GeneratedValue
 	@Column(name="pos", insertable=false, updatable=false)
 	private Integer pos;
 	
 	/** Only used for order by (hibernate hack) */
-	@GeneratedValue
 	@Column(name="pos_cur", insertable=false, updatable=false)
 	private Integer posCurriculum;
 	

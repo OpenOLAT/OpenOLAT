@@ -69,7 +69,6 @@ public abstract class AbstractPart implements Persistable, ModifiedInfo, CreateI
 	private Date lastModified;
 	
 	/** Only used for order by */
-	@GeneratedValue
 	@Column(name="pos", insertable=false, updatable=false)//order hack
 	private long pos;
 

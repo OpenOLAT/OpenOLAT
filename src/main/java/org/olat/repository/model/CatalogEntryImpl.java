@@ -120,7 +120,6 @@ public class CatalogEntryImpl implements CatalogEntry {
 	@Column(name = "type", unique = false, nullable = false)
 	private int type;
 	
-	@GeneratedValue
 	@Column(name = "order_index", updatable = false, insertable = false)
 	private Integer position;
 

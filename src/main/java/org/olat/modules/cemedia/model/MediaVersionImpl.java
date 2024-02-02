@@ -65,7 +65,6 @@ public class MediaVersionImpl implements Persistable, MediaVersion {
 	private Date creationDate;
 	
 	/** Only used for order by */
-	@GeneratedValue
 	@Column(name="pos", insertable=false, updatable=false)//order hack
 	private long pos;
 	

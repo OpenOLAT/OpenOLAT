@@ -171,6 +171,29 @@ public class PageDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getPagesOrder() {
+		BinderImpl binder = binderDao.createAndPersist("Binder nice order", "A binder with 5 pages", null, null);
+		Section section1 = binderDao.createSection("Section", "First section", null, null, binder);
+		Section section2 = binderDao.createSection("Section", "Second section", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		
+		Section reloadedSection1 = binderDao.loadSectionByKey(section1.getKey());
+		Section reloadedSection2 = binderDao.loadSectionByKey(section2.getKey());
+		Page page1 = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection1, null);
+		Page page2 = pageDao.createAndPersist("Page 2", "A page with content.", null, null, true, reloadedSection1, null);
+		Page page3 = pageDao.createAndPersist("Page 3", "Juno is a spacecraft.", null, null, true, reloadedSection1, null);
+		Page page4 = pageDao.createAndPersist("Page 4", "Juno is a spacecraft.", null, null, true, reloadedSection2, null);
+		Page page5 = pageDao.createAndPersist("Page 5", "Juno is a spacecraft.", null, null, true, reloadedSection2, null);
+		dbInstance.commitAndCloseSession();
+
+		//reload
+		List<Page> sectionPages = pageDao.getPages(binder);
+		assertThat(sectionPages)
+			.hasSize(5)
+			.containsExactly(page1, page2, page3, page4, page5);
+	}
+	
+	@Test
 	public void getPages_section() {
 		BinderImpl binder = binderDao.createAndPersist("Binder p2", "A binder with 2 page", null, null);
 		Section section = binderDao.createSection("Section", "First section", null, null, binder);

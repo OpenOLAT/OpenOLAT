@@ -77,7 +77,6 @@ public class SectionImpl implements Persistable, CreateInfo, Section {
 	private Date lastModified;
 	
 	/** Only used for order by */
-	@GeneratedValue
 	@Column(name="pos", insertable=false, updatable=false)
 	private long pos;
 
