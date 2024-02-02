@@ -82,7 +82,7 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 
 	private <T> T tryGetPayload(String jwtToken, Class<T> toValueObject) throws IOException, JsonParseException, JsonMappingException {
 		Claims body = Jwts.parser()
-				.decryptWith(onlyOfficeModule.getJwtSignKey())
+				.verifyWith(onlyOfficeModule.getJwtSignKey())
 				.build()
 				.parseSignedClaims(jwtToken)
 				.getPayload();
@@ -90,14 +90,14 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 		if (log.isDebugEnabled()) {
 			log.debug("JWT claims for ONLYOFFICE token:");
 			for (Entry<String, Object> entry : body.entrySet()) {
-				log.debug("  JWT claim " + entry.getKey() + ": " + entry.getValue());
+				log.debug("  JWT claim {}: {}", entry.getKey(), entry.getValue());
 			}
 		}
 		
 		Object payload = body.get("payload");
 		T valueObject = mapper.convertValue(payload, toValueObject);
 		
-		if (log.isDebugEnabled()) log.debug("Converted payload: " + valueObject);
+		if (log.isDebugEnabled()) log.debug("Converted payload: {}", valueObject);
 		return valueObject;
 	}
 
