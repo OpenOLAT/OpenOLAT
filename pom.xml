@@ -187,6 +187,7 @@
 										<exclude>**/basicLightbox/**/*</exclude>
 										<exclude>**/pdfjs/**/*</exclude>
 										<exclude>**/passkey/*</exclude>
+										<exclude>**/highlightjs/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -234,6 +235,7 @@
 										<exclude>**/basicLightbox/**/*</exclude>
 										<exclude>**/pdfjs/**/*</exclude>
 										<exclude>**/passkey/*</exclude>
+										<exclude>**/highlightjs/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -325,6 +327,7 @@
 										<exclude>**/basicLightbox/**/*</exclude>
 										<exclude>**/pdfjs/**/*</exclude>
 										<exclude>**/passkey/*</exclude>
+										<exclude>**/highlightjs/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -377,6 +380,7 @@
 										<exclude>**/basicLightbox/**/*</exclude>
 										<exclude>**/pdfjs/**/*</exclude>
 										<exclude>**/passkey/*</exclude>
+										<exclude>**/highlightjs/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
