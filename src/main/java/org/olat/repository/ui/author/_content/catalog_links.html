@@ -21,9 +21,10 @@
 						<a href="javascript:;" id="o_extlink_${link.id}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
 						<input type="text" value="$link.url" onclick="this.select()"/>
 						<script>
-						jQuery(function() {
-							o_QRCodePopup('o_extlink_${link.id}', '${link.url}', 'right');
-						});
+							"use strict";
+							jQuery(function() {
+								o_QRCodePopup('o_extlink_${link.id}', '${link.url}', 'right');
+							});
 						</script>
 					</div>
 				</div>
