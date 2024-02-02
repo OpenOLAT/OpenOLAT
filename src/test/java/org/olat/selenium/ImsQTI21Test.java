@@ -41,7 +41,6 @@ import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.MembersPage;
-import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21CorrectionPage;
 import org.olat.selenium.page.qti.QTI21GradingPage;
@@ -1237,10 +1236,6 @@ public class ImsQTI21Test extends Deployments {
 		configPage
 			.selectLearnContent()
 			.chooseTest(qtiTestTitle);
-		
-		//SEL cannot wait and discard the warning box on the server, simply wait it disappears
-		OOGraphene.waitingTooLong();
-		OOGraphene.waitingTooLong();
 		
 		configPage
 			.showScoreOnHomepage(true)
