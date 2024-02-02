@@ -105,16 +105,16 @@ public class TextInputInspectorController extends FormBasicController implements
 		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
 
-		addStyleTab(formLayout);
+		addGeneralTab(formLayout);
 		addLayoutTab(formLayout);
 
 		updateUI();
 	}
 
-	private void addStyleTab(FormItemContainer formLayout) {
-		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+	private void addGeneralTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		formLayout.add(layoutCont);
-		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.general"), layoutCont);
 
 		inputTypeEl = uifactory.addRadiosVertical("textinput_num_" + CodeHelper.getRAMUniqueID(),
 				"textinput.numeric", layoutCont, NUMERIC_KEYS, translateAll(getTranslator(), NUMERIC_KEYS));

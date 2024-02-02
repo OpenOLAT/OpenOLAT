@@ -71,7 +71,7 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 	}
 
 	private void setBlockLayoutClass() {
-		this.setFormStyle("o_form_element " + BlockLayoutClassFactory.buildClass(disclaimer.getLayoutSettings(), true));
+		this.setFormStyle("o_form_disclaimer o_form_element " + BlockLayoutClassFactory.buildClass(disclaimer.getLayoutSettings(), true));
 	}
 
 	public DisclaimerController(UserRequest ureq, WindowControl wControl, Disclaimer disclaimer, Form rootForm) {

@@ -95,14 +95,14 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
 
-		addStyleTab(formLayout);
+		addGeneralTab(formLayout);
 		addLayoutTab(formLayout);
 	}
 
-	private void addStyleTab(FormItemContainer formLayout) {
-		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+	private void addGeneralTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		formLayout.add(layoutCont);
-		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
+		tabbedPane.addTab(getTranslator().translate("tab.general"), layoutCont);
 
 		// name
 		nameEl = uifactory.addTextElement("rubric.name", 128, multipleChoice.getName(), layoutCont);

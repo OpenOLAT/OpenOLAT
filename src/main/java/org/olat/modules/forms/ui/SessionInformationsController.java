@@ -89,7 +89,7 @@ public class SessionInformationsController extends FormBasicController implement
 	}
 
 	private void setBlockLayoutClass(BlockLayoutSettings layoutSettings) {
-		this.setFormStyle("o_form_two_cols o_form_element " + BlockLayoutClassFactory.buildClass(layoutSettings, true));
+		this.setFormStyle("o_form_session_info o_form_two_cols o_form_element " + BlockLayoutClassFactory.buildClass(layoutSettings, true));
 	}
 
 	@Override

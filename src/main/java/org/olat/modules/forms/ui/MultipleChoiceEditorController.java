@@ -50,6 +50,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.MultipleChoice;
@@ -69,7 +70,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	private FlexiTableElement tableEl;
 	private ChoiceDataModel dataModel;
 	
-	private final MultipleChoice multipleChoice;
+	private MultipleChoice multipleChoice;
 	private final boolean restrictedEdit;
 	
 	public MultipleChoiceEditorController(UserRequest ureq, WindowControl wControl, MultipleChoice multipleChoice, boolean restrictedEdit) {
@@ -77,6 +78,12 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		this.multipleChoice = multipleChoice;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
+
+		setBlockLayoutClass();
+	}
+
+	private void setBlockLayoutClass() {
+		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(multipleChoice.getLayoutSettings(), true));
 	}
 
 	@Override
@@ -166,7 +173,18 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 			}
 		}
 	}
-	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source instanceof MultipleChoiceInspectorController && event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.isElement(multipleChoice) && changePartEvent.getElement() instanceof MultipleChoice multipleChoice) {
+				this.multipleChoice = multipleChoice;
+				setBlockLayoutClass();
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event instanceof UpDownEvent ude) {
