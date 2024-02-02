@@ -183,13 +183,13 @@ public class LTI13ToolDispatcherDelegate {
 		try {
 			OIDCService service = (OIDCService)stateToRequests.get(state);
 			OIDCApi api = service.getApi();
-			Jws<Claims> jws = Jwts.parserBuilder()
-				.setSigningKeyResolver(new LTI13SharedToolSigningKeyResolver(api.getPlatform()))
-				.setAllowedClockSkewSeconds(300)
+			Jws<Claims> jws = Jwts.parser()
+				.keyLocator(new LTI13SharedToolSigningKeyResolver(api.getPlatform()))
+				.clockSkewSeconds(300)
 				.build()
-				.parseClaimsJws(idToken);
+				.parseSignedClaims(idToken);
 
-			Claims body = jws.getBody();
+			Claims body = jws.getPayload();
 			String targetLinkUri = body.get(LTI13Constants.Claims.TARGET_LINK_URI.url(), String.class);
 			if(!checkTargetLinkUri(targetLinkUri, api.getDeployment())) {
 				DispatcherModule.sendBadRequest(Errors.INVALID_TARGET_LINK_URI, response);

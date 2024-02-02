@@ -82,5 +82,35 @@ public class LTI13ToolDAOTest extends OlatTestCase {
 			.isNotNull()
 			.contains(tool);
 	}
+	
+	@Test
+	public void loadToolsByClientId() {
+		String toolName = "LTI 1.3 demo";
+		String toolUrl = "https://www.openolat.com/lti";
+		String clientId = UUID.randomUUID().toString();
+		String initiateLoginUrl = "https://www.openolat.com/lti/api/login";
+		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, null, LTI13ToolType.EXTERNAL);
+		dbInstance.commitAndCloseSession();
+		
+		List<LTI13Tool> tools = lti13ToolDao.loadToolsByClientId(clientId);
+		assertThat(tools)
+			.isNotNull()
+			.containsExactly(tool);
+	}
+	
+	@Test
+	public void loadToolByAudience() {
+		String toolName = "LTI 1.3 demo";
+		String toolUrl = "https://www.openolat.com/lti";
+		String clientId = UUID.randomUUID().toString();
+		String initiateLoginUrl = "https://www.openolat.com/lti/api/login";
+		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, null, LTI13ToolType.EXTERNAL);
+		dbInstance.commitAndCloseSession();
+		
+		LTI13Tool loadedTool = lti13ToolDao.loadToolBy(List.of(toolUrl), clientId);
+		Assert.assertEquals(tool, loadedTool);
+	}
+	
+	
 
 }

@@ -123,11 +123,12 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 	
 	private String loginHint(LTI13Key platformKey) {
 		JwtBuilder builder = Jwts.builder()
-			//headers
-			.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
-			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
-			.setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
+			.header()
+				.type(LTI13Constants.Keys.JWT)
+				.keyId(platformKey.getKeyId())
+				.add(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
 			//
+			.and()
 			.claim("contextKey", ltiContext.getKey())
 			.claim("deploymentKey", toolDeployment.getKey())
 			.claim("deploymentId", toolDeployment.getDeploymentId());
@@ -139,11 +140,11 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 	
 	private String messageHint(LTI13Key platformKey) {
 		JwtBuilder builder = Jwts.builder()
-			//headers
-			.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
-			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
-			.setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
-			//
+			.header()
+				.type(LTI13Constants.Keys.JWT)
+				.add(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
+				.keyId(platformKey.getKeyId())
+			.and()
 			.claim(OpenOlatClaims.IDENTITY_KEY, getIdentity().getKey())
 			.claim(OpenOlatClaims.MESSAGE_TYPE, MessageTypes.LTI_DEEP_LINKING_REQUEST);
 		if(ltiContext.getEntry() != null) {

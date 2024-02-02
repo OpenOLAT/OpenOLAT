@@ -33,9 +33,8 @@ import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.SigningKeyResolver;
+import io.jsonwebtoken.LocatorAdapter;
 
 /**
  * 
@@ -43,7 +42,7 @@ import io.jsonwebtoken.SigningKeyResolver;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LTI13ToolSigningKeyResolver implements SigningKeyResolver {
+public class LTI13ToolSigningKeyResolver extends LocatorAdapter<Key> {
 	
 	private static final Logger log = Tracing.createLoggerFor(LTI13ToolSigningKeyResolver.class);
 	
@@ -76,25 +75,14 @@ public class LTI13ToolSigningKeyResolver implements SigningKeyResolver {
 	}
 
 	@Override
-	public Key resolveSigningKey(JwsHeader header, Claims claims) {
+	protected Key locate(JwsHeader header) {
 		try {
 			if(tool.getPublicKeyTypeEnum() == PublicKeyType.KEY) {
 				String publicKeyContent = tool.getPublicKey();
 				return CryptoUtil.string2PublicKey(publicKeyContent);
 			} else if(tool.getPublicKeyTypeEnum() == PublicKeyType.URL) {
-				String kid = header.getKeyId();
-				withKid = StringHelper.containsNonWhitespace(kid);
-				String alg = header.getAlgorithm();
-				String publicKeyUrl = tool.getPublicKeyUrl();
-				List<LTI13Key> keys = lti13Service.getKeys(publicKeyUrl, alg, kid);
-				if(keys.size() == 1) {
-					return keys.get(0).getPublicKey();
-				}
-				if(keys.size() > 1) {
-					foundKeys = keys;
-					return keys.get(0).getPublicKey();
-				}
-				return null;
+				LTI13Key key = getKeyByURL(header.getKeyId(), header.getAlgorithm());
+				return key == null ? null : key.getPublicKey();
 			}
 			return null;
 		} catch (Exception e) {
@@ -102,10 +90,18 @@ public class LTI13ToolSigningKeyResolver implements SigningKeyResolver {
 			return null;
 		}
 	}
-
-	@Override
-	public Key resolveSigningKey(JwsHeader header, String plaintext) {
-		log.debug("resolveSigningKey plain: {} claims: {}", header, plaintext);
+	
+	private LTI13Key getKeyByURL(String kid, String alg) {
+		withKid = StringHelper.containsNonWhitespace(kid);
+		String publicKeyUrl = tool.getPublicKeyUrl();
+		List<LTI13Key> keys = lti13Service.getKeys(publicKeyUrl, alg, kid);
+		if(keys.size() == 1) {
+			return keys.get(0);
+		}
+		if(keys.size() > 1) {
+			foundKeys = keys;
+			return keys.get(0);
+		}
 		return null;
 	}
 }

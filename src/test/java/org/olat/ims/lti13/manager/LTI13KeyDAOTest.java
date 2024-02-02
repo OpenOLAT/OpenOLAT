@@ -31,8 +31,7 @@ import org.olat.ims.lti13.model.LTI13KeyImpl;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Jwts;
 
 /**
  * 
@@ -87,8 +86,8 @@ public class LTI13KeyDAOTest extends OlatTestCase {
 		String issuer = "https://c.frentix.com";
 		String kid = UUID.randomUUID().toString();
 
-		KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
-		LTI13Key key = lti13KeyDao.createKey(issuer, kid, SignatureAlgorithm.RS256.name(), keyPair.getPublic());
+		KeyPair keyPair = Jwts.SIG.RS256.keyPair().build();
+		LTI13Key key = lti13KeyDao.createKey(issuer, kid, Jwts.SIG.RS256.getId(), keyPair.getPublic());
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(key);

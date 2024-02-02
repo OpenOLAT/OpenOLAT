@@ -19,12 +19,10 @@
  */
 package org.olat.ims.lti13.manager;
 
-import java.security.Key;
 import java.security.PublicKey;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.SigningKeyResolver;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.Locator;
 
 /**
  * 
@@ -32,7 +30,7 @@ import io.jsonwebtoken.SigningKeyResolver;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PublicKeyResolver implements SigningKeyResolver {
+public class PublicKeyResolver implements Locator<PublicKey> {
 	
 	private PublicKey publicKey;
 	
@@ -41,12 +39,7 @@ public class PublicKeyResolver implements SigningKeyResolver {
 	}
 
 	@Override
-	public Key resolveSigningKey(JwsHeader header, Claims claims) {
-		return publicKey;
-	}
-
-	@Override
-	public Key resolveSigningKey(JwsHeader header, String plaintext) {
+	public PublicKey locate(Header header) {
 		return publicKey;
 	}
 }

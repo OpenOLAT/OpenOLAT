@@ -61,11 +61,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.impl.DefaultClaims;
 import io.jsonwebtoken.jackson.io.JacksonDeserializer;
-import io.jsonwebtoken.security.Keys;
 
 /**
  * 
@@ -109,9 +107,11 @@ public class LTI13ServiceTest extends OlatTestCase {
 		// signed jwt
 		JwtBuilder builder = Jwts.builder()
 			//headers
-			.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
-			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, currentPlatformKey.getAlgorithm())
-			.setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, currentPlatformKey.getKeyId())
+			.header()
+				.add(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
+				.add(LTI13Constants.Keys.ALGORITHM, currentPlatformKey.getAlgorithm())
+				.add(LTI13Constants.Keys.KEY_IDENTIFIER, currentPlatformKey.getKeyId())
+			.and()
 			.claim("nonce", nonce);
 		
 		String jwtString = builder
@@ -121,21 +121,21 @@ public class LTI13ServiceTest extends OlatTestCase {
 		Assert.assertNotNull(jwtString);
 		
 		LTI13PlatformSigningPrivateKeyResolver signingResolver = new LTI13PlatformSigningPrivateKeyResolver();
-		Jws<Claims> jwt = Jwts.parserBuilder()
-				.setSigningKeyResolver(signingResolver)
+		Jws<Claims> jwt = Jwts.parser()
+				.keyLocator(signingResolver)
 				.build()
-				.parseClaimsJws(jwtString);
+				.parseSignedClaims(jwtString);
 		
 		Assert.assertNotNull(jwt);
-		Assert.assertEquals(nonce, jwt.getBody().get("nonce"));
+		Assert.assertEquals(nonce, jwt.getPayload().get("nonce"));
 	}
 	
 	@Test
 	public void getAndVerifyClientAssertionToolWithPublicKey() {
 		String issuer = "https://a.openolat.com";
 		String clientId = UUID.randomUUID().toString();
-		KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
-
+		KeyPair keyPair = Jwts.SIG.RS256.keyPair().build();
+		
 		LTI13Tool tool = lti13Service.createExternalTool("GAV-1", issuer, clientId, "", "", LTI13ToolType.EXTERNAL);
 		tool.setPublicKey(CryptoUtil.getPublicEncoded(keyPair.getPublic()));
 		tool.setPublicKeyTypeEnum(PublicKeyType.KEY);
@@ -146,11 +146,12 @@ public class LTI13ServiceTest extends OlatTestCase {
 		
 		// signed jwt
 		JwtBuilder builder = Jwts.builder()
-			//headers
-			.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
-			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, "RS256")
-			.setIssuer(issuer)
-			.setSubject(clientId)
+			.header()
+				.add(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
+				.add(LTI13Constants.Keys.ALGORITHM, "RS256")
+			.and()
+			.issuer(issuer)
+			.subject(clientId)
 			.claim("nonce", nonce);
 		
 		String jwtString = builder
@@ -160,7 +161,7 @@ public class LTI13ServiceTest extends OlatTestCase {
 		JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(jwtString);
 		Jws<Claims> jws = bundle.getJwt();
 		Assert.assertNotNull(jws);
-		Assert.assertEquals(nonce, jws.getBody().get("nonce"));
+		Assert.assertEquals(nonce, jws.getPayload().get("nonce"));
 		
 		LTI13Tool bTool = bundle.getTool();
 		Assert.assertNotNull(bTool);
@@ -171,7 +172,7 @@ public class LTI13ServiceTest extends OlatTestCase {
 	public void getAndVerifyClientAssertionToolWithout() {
 		String issuer = "https://a.openolat.com";
 		String clientId = UUID.randomUUID().toString();
-		KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
+		KeyPair keyPair = Jwts.SIG.RS256.keyPair().build();
 
 		LTI13Tool tool = lti13Service.createExternalTool("GAV-1", issuer, clientId, "", "", LTI13ToolType.EXTERNAL);
 		tool.setPublicKey(CryptoUtil.getPublicEncoded(keyPair.getPublic()));
@@ -183,11 +184,12 @@ public class LTI13ServiceTest extends OlatTestCase {
 		
 		// signed jwt
 		JwtBuilder builder = Jwts.builder()
-			//headers
-			.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
-			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, "RS256")
-			.setIssuer(issuer)
-			.setSubject(clientId)
+			.header()
+				.add(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
+				.add(LTI13Constants.Keys.ALGORITHM, "RS256")
+			.and()
+			.issuer(issuer)
+			.subject(clientId)
 			.claim("nonce", nonce);
 		
 		String jwtString = builder
@@ -202,15 +204,16 @@ public class LTI13ServiceTest extends OlatTestCase {
 		String clientId = UUID.randomUUID().toString();
 		LTI13Platform platform = createPlatform("https://cuberai.openolat.com", clientId);
 		
-		DefaultClaims claims = new DefaultClaims();
 		String sub = Long.toString(CodeHelper.getForeverUniqueID());
-		claims.setSubject(sub);
-		claims.setIssuer(platform.getIssuer());
-		claims.put(UserSub.GIVEN_NAME, "Fabio");
-		claims.put(UserSub.FAMILY_NAME, "Orlando");
 		String email = "f.orlando." + sub + "@openolat.com";
-		claims.put(UserSub.EMAIL, email);
-		claims.put(UserSub.LOCALE, "en-US");
+		Claims claims = Jwts.claims()
+				.subject(sub)
+				.issuer(platform.getIssuer())
+				.add(UserSub.GIVEN_NAME, "Fabio")
+				.add(UserSub.FAMILY_NAME, "Orlando")
+				.add(UserSub.EMAIL, email)
+				.add(UserSub.LOCALE, "en-US")
+				.build();
 
 		Identity identity = lti13Service.matchIdentity(claims, platform);
 		Assert.assertNotNull(identity);
@@ -230,14 +233,15 @@ public class LTI13ServiceTest extends OlatTestCase {
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("lti-user-1");
 		User user = ident.getIdentity().getUser();
 		
-		DefaultClaims claims = new DefaultClaims();
 		String sub = Long.toString(CodeHelper.getForeverUniqueID());
-		claims.setSubject(sub);
-		claims.setIssuer(platform.getIssuer());
-		claims.put(UserSub.GIVEN_NAME, user.getFirstName());
-		claims.put(UserSub.FAMILY_NAME, user.getLastName());
-		claims.put(UserSub.EMAIL, user.getEmail());
-		claims.put(UserSub.LOCALE, "en-US");
+		Claims claims = Jwts.claims()
+				.subject(sub)
+				.issuer(platform.getIssuer())
+				.add(UserSub.GIVEN_NAME, user.getFirstName())
+				.add(UserSub.FAMILY_NAME, user.getLastName())
+				.add(UserSub.EMAIL, user.getEmail())
+				.add(UserSub.LOCALE, "en-US")
+				.build();
 
 		Identity identity = lti13Service.matchIdentity(claims, platform);
 		Assert.assertEquals(ident.getIdentity(), identity);
@@ -252,14 +256,15 @@ public class LTI13ServiceTest extends OlatTestCase {
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("lti-user-1");
 		User user = ident.getIdentity().getUser();
 		
-		DefaultClaims claims = new DefaultClaims();
 		String sub = Long.toString(CodeHelper.getForeverUniqueID());
-		claims.setSubject(sub);
-		claims.setIssuer(platform.getIssuer());
-		claims.put(UserSub.GIVEN_NAME, user.getFirstName());
-		claims.put(UserSub.FAMILY_NAME, user.getLastName());
-		claims.put(UserSub.EMAIL, user.getEmail());
-		claims.put(UserSub.LOCALE, "en-US");
+		Claims claims = Jwts.claims()
+			.subject(sub)
+			.issuer(platform.getIssuer())
+			.add(UserSub.GIVEN_NAME, user.getFirstName())
+			.add(UserSub.FAMILY_NAME, user.getLastName())
+			.add(UserSub.EMAIL, user.getEmail())
+			.add(UserSub.LOCALE, "en-US")
+			.build();
 
 		Identity identity = lti13Service.matchIdentity(claims, platform);
 		Assert.assertNotEquals(ident.getIdentity(), identity);

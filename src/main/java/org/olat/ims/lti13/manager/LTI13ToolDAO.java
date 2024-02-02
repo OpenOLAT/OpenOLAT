@@ -19,11 +19,11 @@
  */
 package org.olat.ims.lti13.manager;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.ims.lti13.model.LTI13ToolImpl;
@@ -93,13 +93,13 @@ public class LTI13ToolDAO {
 			.getResultList();
 	}
 	
-	public LTI13Tool loadToolBy(String toolUrl, String clientId) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select tool from ltitool as tool")
-		  .append(" where tool.toolUrl=:toolUrl and tool.clientId=:clientId");
+	public LTI13Tool loadToolBy(Collection<String> toolUrl, String clientId) {
+		String query = """
+			select tool from ltitool as tool
+			where tool.toolUrl in (:toolUrl) and tool.clientId=:clientId""";
 		
 		List<LTI13Tool> tools = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), LTI13Tool.class)
+			.createQuery(query, LTI13Tool.class)
 			.setParameter("toolUrl", toolUrl)
 			.setParameter("clientId", clientId)
 			.getResultList();

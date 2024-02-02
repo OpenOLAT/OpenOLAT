@@ -28,11 +28,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
@@ -52,6 +50,7 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
+import com.nimbusds.jwt.SignedJWT;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -64,16 +63,14 @@ import io.jsonwebtoken.Jwts;
  *
  */
 public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
-	
-	private static final Logger log = Tracing.createLoggerFor(LTI13ExternalToolSigningKeyResolverTest.class);
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private LTI13Service lti13Service;
 	
 	@Test
-	public void resolveWithKid() throws Exception {
+	public void getAndVerifyClientAssertionRSAKeyWithKid() throws Exception {
 		// prepare the public key
 		RSAKey rsaJWK = new RSAKeyGenerator(2048)
 		    .keyID("public-key-1")
@@ -109,13 +106,17 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		String s = jwsObject.serialize();
 
 		// Verify the JWT with the file public key
-		LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver();
-		Jws<Claims> jwt = Jwts.parserBuilder()
-				.setSigningKeyResolver(signingResolver)
+		SignedJWT signedJWT = SignedJWT.parse(s);
+		String issuer = signedJWT.getJWTClaimsSet().getIssuer();
+		String subject = signedJWT.getJWTClaimsSet().getSubject();
+		LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver(issuer, subject);
+		Jws<Claims> jws = Jwts.parser()
+				.keyLocator(signingResolver)
 				.build()
-				.parseClaimsJws(s);
-		log.debug("Token: {}", jwt);
-		Claims body = jwt.getBody();
+				.parseSignedClaims(s);
+		
+		Assert.assertEquals(tool, signingResolver.getTool());
+		Claims body = jws.getPayload();
 		Assert.assertEquals("top", body.get("secret"));
 	}
 	
@@ -125,7 +126,7 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 	 * @throws Exception
 	 */
 	@Test
-	public void resolveWithoutKid() throws Exception {
+	public void getAndVerifyClientAssertionRSAKeyWithoutKid() throws Exception {
 		// prepare the public key
 		RSAKey rsaJWK = new RSAKeyGenerator(2048)
 		    .algorithm(JWSAlgorithm.RS256)
@@ -156,14 +157,20 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		jwsObject.sign(signer);
 		String s = jwsObject.serialize();
 		
-		LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver();
-		Jws<Claims> jwt = Jwts.parserBuilder()
-				.setSigningKeyResolver(signingResolver)
+		// Retrieve the lost tool
+		// Verify the JWT with the file public key
+		SignedJWT signedJWT = SignedJWT.parse(s);
+		String issuer = signedJWT.getJWTClaimsSet().getIssuer();
+		String subject = signedJWT.getJWTClaimsSet().getSubject();
+		LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver(issuer, subject);
+		Jws<Claims> jws = Jwts.parser()
+				.keyLocator(signingResolver)
 				.build()
-				.parseClaimsJws(s);
-		log.debug("Token: {}", jwt);
-		Claims body = jwt.getBody();
-		Assert.assertEquals("tip", body.get("secret"));
+				.parseSignedClaims(s);
+		
+		Assert.assertEquals(tool, signingResolver.getTool());
+		Claims payload = jws.getPayload();
+		Assert.assertEquals("tip", payload.get("secret"));
 	}
 	
 	/**
@@ -205,7 +212,7 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		String s = jwsObject.serialize();
 		
 		JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(s);
-		Claims body = bundle.getJwt().getBody();
+		Claims body = bundle.getJwt().getPayload();
 		Assert.assertEquals("tip", body.get("secret"));
 	}
 	
@@ -257,7 +264,7 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		String s = jwsObject.serialize();
 		
 		JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(s);
-		Claims body = bundle.getJwt().getBody();
+		Claims body = bundle.getJwt().getPayload();
 		Assert.assertEquals("tip", body.get("secret"));
 	}
 	
@@ -349,7 +356,7 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		String s = jwsObject.serialize();
 		
 		JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(s);
-		Claims body = bundle.getJwt().getBody();
+		Claims body = bundle.getJwt().getPayload();
 		Assert.assertEquals("tip", body.get("secret"));
 		
 		RSAKey rsa2JWK = new RSAKeyGenerator(2048)
@@ -372,7 +379,7 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		String s2 = jws2Object.serialize();
 		
 		JwtToolBundle bundle2 = lti13Service.getAndVerifyClientAssertion(s2);
-		Claims body2 = bundle2.getJwt().getBody();
+		Claims body2 = bundle2.getJwt().getPayload();
 		Assert.assertEquals("very", body2.get("secret"));
 	}
 }

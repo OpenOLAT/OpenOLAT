@@ -20,7 +20,6 @@
 package org.olat.ims.lti13.manager;
 
 import java.security.Key;
-import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
@@ -30,9 +29,9 @@ import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JweHeader;
 import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.SigningKeyResolver;
+import io.jsonwebtoken.LocatorAdapter;
 
 /**
  * 
@@ -40,7 +39,7 @@ import io.jsonwebtoken.SigningKeyResolver;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LTI13PlatformSigningPrivateKeyResolver implements SigningKeyResolver {
+public class LTI13PlatformSigningPrivateKeyResolver extends LocatorAdapter<Key> {
 	
 	private static final Logger log = Tracing.createLoggerFor(LTI13PlatformSigningPrivateKeyResolver.class);
 	
@@ -58,17 +57,10 @@ public class LTI13PlatformSigningPrivateKeyResolver implements SigningKeyResolve
 	}
 
 	@Override
-	public Key resolveSigningKey(JwsHeader header, Claims claims) {
+	protected Key locate(JweHeader header) {
 		try {
-			String kid = header.getKeyId();
-			String alg = header.getAlgorithm();
-			List<LTI13Key> keys = lti13Service.getPlatformKeys();
-			for(LTI13Key key:keys) {
-				if(key.getKeyId().equals(kid) && key.getAlgorithm().equals(alg)) {
-					return key.getPrivateKey();
-				}
-			}
-			return null;
+			LTI13Key key = lti13Service.getPlatformKey(header.getAlgorithm(), header.getKeyId());
+			return key == null ? null : key.getPrivateKey();
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -76,8 +68,13 @@ public class LTI13PlatformSigningPrivateKeyResolver implements SigningKeyResolve
 	}
 
 	@Override
-	public Key resolveSigningKey(JwsHeader header, String plaintext) {
-		log.debug("resolveSigningKey plain: {} claims: {}", header, plaintext);
-		return null;
+	protected Key locate(JwsHeader header) {
+		try {
+			LTI13Key key = lti13Service.getPlatformKey(header.getAlgorithm(), header.getKeyId());
+			return key == null ? null : key.getPublicKey();
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
 	}
 }

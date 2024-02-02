@@ -34,9 +34,8 @@ import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.SigningKeyResolver;
+import io.jsonwebtoken.LocatorAdapter;
 
 /**
  * 
@@ -44,10 +43,12 @@ import io.jsonwebtoken.SigningKeyResolver;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LTI13ExternalToolSigningKeyResolver implements SigningKeyResolver {
+public class LTI13ExternalToolSigningKeyResolver extends LocatorAdapter<Key> {
 	
 	private static final Logger log = Tracing.createLoggerFor(LTI13ExternalToolSigningKeyResolver.class);
 	
+	private final String iss;
+	private final String sub;
 	private LTI13Tool tool;
 	private boolean withKid;
 	private List<LTI13Key> foundKeys;
@@ -55,8 +56,10 @@ public class LTI13ExternalToolSigningKeyResolver implements SigningKeyResolver {
 	@Autowired
 	private LTI13Service lti13Service;
 
-	public LTI13ExternalToolSigningKeyResolver() {
+	public LTI13ExternalToolSigningKeyResolver(String iss, String subject) {
 		CoreSpringFactory.autowireObject(this);
+		this.iss = iss;
+		this.sub = subject;
 	}
 	
 	public LTI13Tool getTool() {
@@ -74,12 +77,12 @@ public class LTI13ExternalToolSigningKeyResolver implements SigningKeyResolver {
 	public boolean isWithKid() {
 		return withKid;
 	}
+	
+	
 
 	@Override
-	public Key resolveSigningKey(JwsHeader header, Claims claims) {
+	protected Key locate(JwsHeader header) {
 		try {
-			String iss = claims.getIssuer();
-			String sub = claims.getSubject();// client id
 			List<LTI13Tool> tools = lti13Service.getToolsByClientId(sub);
 			if(tools.isEmpty()) {
 				log.error("Client ID not found: {}", sub);
@@ -128,11 +131,5 @@ public class LTI13ExternalToolSigningKeyResolver implements SigningKeyResolver {
 			log.error("", e);
 			return null;
 		}
-	}
-
-	@Override
-	public Key resolveSigningKey(JwsHeader header, String plaintext) {
-		log.debug("resolveSigningKey plain: {} claims: {}", header, plaintext);
-		return null;
 	}
 }

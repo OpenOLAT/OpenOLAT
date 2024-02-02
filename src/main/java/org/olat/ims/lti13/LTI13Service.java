@@ -20,6 +20,7 @@
 package org.olat.ims.lti13;
 
 import java.security.PublicKey;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
@@ -56,7 +57,7 @@ public interface LTI13Service {
 	
 	public LTI13Tool getToolByKey(Long key);
 	
-	public LTI13Tool getToolBy(String toolUrl, String clientId);
+	public LTI13Tool getToolBy(Collection<String> toolUrl, String clientId);
 	
 	public List<LTI13Tool> getToolsByClientId(String clientId);
 	
@@ -154,6 +155,8 @@ public interface LTI13Service {
 	 * @return The last valid public/private key
 	 */
 	public LTI13Key getLastPlatformKey();
+	
+	public LTI13Key getPlatformKey(String algorithm, String keyId);
 	
 	public List<LTI13Key> getPlatformKeys();
 	

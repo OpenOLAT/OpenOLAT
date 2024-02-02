@@ -30,9 +30,8 @@ import org.olat.ims.lti13.LTI13Platform;
 import org.olat.ims.lti13.LTI13Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.SigningKeyResolver;
+import io.jsonwebtoken.LocatorAdapter;
 
 /**
  * 
@@ -40,7 +39,7 @@ import io.jsonwebtoken.SigningKeyResolver;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LTI13SharedToolSigningKeyResolver implements SigningKeyResolver {
+public class LTI13SharedToolSigningKeyResolver extends LocatorAdapter<Key> {
 	
 	private static final Logger log = Tracing.createLoggerFor(LTI13SharedToolSigningKeyResolver.class);
 	
@@ -53,11 +52,11 @@ public class LTI13SharedToolSigningKeyResolver implements SigningKeyResolver {
 		CoreSpringFactory.autowireObject(this);
 		this.tool = tool;
 	}
-
+	
 	@Override
-	public Key resolveSigningKey(JwsHeader header, Claims claims) {
+	protected Key locate(JwsHeader header) {
 		try {
-			log.debug("resolveSigningKey: {} claims: {}", header, claims);
+			log.debug("resolveSigningKey: {}", header);
 			String kid = header.getKeyId();
 			String alg = header.getAlgorithm();
 			String jwksSetUri = tool.getJwkSetUri();
@@ -67,11 +66,5 @@ public class LTI13SharedToolSigningKeyResolver implements SigningKeyResolver {
 			log.error("", e);
 			return null;
 		}
-	}
-
-	@Override
-	public Key resolveSigningKey(JwsHeader header, String plaintext) {
-		log.debug("resolveSigningKey: {} claims: {}", header, plaintext);
-		return null;
 	}
 }

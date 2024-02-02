@@ -29,6 +29,7 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -126,6 +127,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jwt.SignedJWT;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -133,8 +135,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 
 /**
@@ -268,8 +269,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		platform.setKeyId(UUID.randomUUID().toString());
 		platform.setScopeEnum(type);
 		
-		KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
-	
+		KeyPair keyPair = Jwts.SIG.RS256.keyPair().build();
 		String publicEncoded = CryptoUtil.getPublicEncoded(keyPair.getPublic());
 		publicEncoded = CryptoUtil.getPublicEncoded(publicEncoded);
 		platform.setPublicKey(publicEncoded);
@@ -419,7 +419,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public LTI13Tool getToolBy(String toolUrl, String clientId) {
+	public LTI13Tool getToolBy(Collection<String> toolUrl, String clientId) {
 		return lti13ToolDao.loadToolBy(toolUrl, clientId);
 	}
 
@@ -647,6 +647,17 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
+	public LTI13Key getPlatformKey(String algorithm, String keyId) {
+		List<LTI13Key> keys = getPlatformKeys();
+		for(LTI13Key key:keys) {
+			if(key.getKeyId().equals(keyId) && key.getAlgorithm().equals(algorithm)) {
+				return key;
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public PublicKey getPlatformPublicKey(String kid) {
 		//kid is unique
 		List<LTI13Platform> platforms = lti13SharedToolDao.loadByKid(kid);
@@ -730,20 +741,33 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	
 	@Override
 	public JwtToolBundle getAndVerifyClientAssertion(String clientAssertion) {
-		LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver();
+		String issuer = null;
+		String subject = null;
+		LTI13ExternalToolSigningKeyResolver signingResolver = null;
 		try {
-			Jws<Claims> jws = Jwts.parserBuilder()
-				.setSigningKeyResolver(signingResolver)
+			SignedJWT signedJWT = SignedJWT.parse(clientAssertion);
+			issuer = signedJWT.getJWTClaimsSet().getIssuer();
+			subject = signedJWT.getJWTClaimsSet().getSubject();
+			signingResolver = new LTI13ExternalToolSigningKeyResolver(issuer, subject);
+		} catch (ParseException e) {
+			log.debug("Cannot parse a client assertion: {}", clientAssertion, e);
+			log.error("Cannot parse a client assertion", e);
+			throw new UnsupportedJwtException("");
+		}
+
+		try {	
+			Jws<Claims> jws = Jwts.parser()
+				.keyLocator(signingResolver)
 				.build()
-				.parseClaimsJws(clientAssertion);
+				.parseSignedClaims(clientAssertion);
 			log.debug("Token: {}", jws);
 			return new JwtToolBundle(jws, signingResolver.getTool());
 		} catch (SignatureException | IllegalArgumentException e) {
 			// if a tool was found with several possible keys, loop them
 			if(signingResolver.getTool() != null && signingResolver.getTool().getPublicKeyTypeEnum() == PublicKeyType.URL) {
 				return verifyAlternativeKeys(clientAssertion, signingResolver);
-			}	
-			log.error("", e);
+			}
+			log.error("Cannot parse signed assertion from issuer: {} and sub: {}", issuer, subject, e);
 		} catch (ExpiredJwtException | MalformedJwtException e) {
 			log.error("", e);
 		}
@@ -783,10 +807,10 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	
 	private JwtToolBundle getAndVerify(String clientassertion, PublicKey publicKey, LTI13Tool tool) {
 		try {
-			Jws<Claims> jwt = Jwts.parserBuilder()
-				.setSigningKeyResolver(new PublicKeyResolver(publicKey))
+			Jws<Claims> jwt = Jwts.parser()
+				.verifyWith(publicKey)
 				.build()
-				.parseClaimsJws(clientassertion);
+				.parseSignedClaims(clientassertion);
 			log.debug("Token: {}", jwt);
 			return new JwtToolBundle(jwt, tool);
 		} catch (SignatureException | IllegalArgumentException e) {
@@ -828,16 +852,19 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		Date expirationDate = DateUtils.addMinutes(new Date(), 60);
 		
 		JwtBuilder builder = Jwts.builder()
-				.setIssuedAt(new Date())
-				.setExpiration(expirationDate)
-				.setIssuer(lti13Module.getPlatformIss())
-				.setAudience(tokenUrl)
-				.setSubject(clientId);
+			.header()
+				.type( LTI13Constants.Keys.JWT)
+				.add(LTI13Constants.Keys.ALGORITHM, "RS256")
+				.keyId(tool.getKeyId())
+			.and()
+			.issuedAt(new Date())
+			.expiration(expirationDate)
+			.issuer(lti13Module.getPlatformIss())
+			.audience()
+				.add(tokenUrl)
+			.and()
+			.subject(clientId);
 
-		builder.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT);
-		builder.setHeaderParam(LTI13Constants.Keys.ALGORITHM, "RS256");
-		builder.setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, tool.getKeyId());
-		
 		Key key = CryptoUtil.string2PrivateKey(tool.getPrivateKey());
 		
 		String assertion = builder
@@ -912,8 +939,8 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			lineItem.setLabel(courseNode.getLongTitle());
 		}
 		
-		if(courseNode instanceof BasicLTICourseNode) {
-			Float maxScore = getMaxScoreFromNode(entry, (BasicLTICourseNode)courseNode);
+		if(courseNode instanceof BasicLTICourseNode ltiNode) {
+			Float maxScore = getMaxScoreFromNode(entry, ltiNode);
 			if(maxScore != null) {
 				lineItem.setScoreMaximum(maxScore.doubleValue());
 			}

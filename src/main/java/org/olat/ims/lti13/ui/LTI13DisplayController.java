@@ -155,11 +155,11 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 		LTI13Key platformKey = lti13Service.getLastPlatformKey();
 		
 		JwtBuilder builder = Jwts.builder()
-			//headers
-			.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
-			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
-			.setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
-			//
+			.header()
+				.type(LTI13Constants.Keys.JWT)
+				.add(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
+				.keyId(platformKey.getKeyId())
+			.and()
 			.claim("deploymentKey", toolDeployment.getKey())
 			.claim("deploymentId", toolDeployment.getDeploymentId())
 			.claim("contextKey", ltiContext.getKey())

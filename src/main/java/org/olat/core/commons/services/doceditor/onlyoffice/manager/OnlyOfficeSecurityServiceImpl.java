@@ -63,7 +63,7 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 	public boolean isValidSecret(String secret) {
 		try {
 			Key signKey = Keys.hmacShaKeyFor(secret.getBytes());
-			Jwts.builder().setIssuer("issuer").signWith(signKey).compact();
+			Jwts.builder().issuer("issuer").signWith(signKey).compact();
 		} catch (Exception e) {
 			return false;
 		}
@@ -82,9 +82,10 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 
 	private <T> T tryGetPayload(String jwtToken, Class<T> toValueObject) throws IOException, JsonParseException, JsonMappingException {
 		Claims body = Jwts.parser()
-				.setSigningKey(onlyOfficeModule.getJwtSignKey())
-				.parseClaimsJws(jwtToken)
-				.getBody();
+				.decryptWith(onlyOfficeModule.getJwtSignKey())
+				.build()
+				.parseSignedClaims(jwtToken)
+				.getPayload();
 		
 		if (log.isDebugEnabled()) {
 			log.debug("JWT claims for ONLYOFFICE token:");
@@ -112,7 +113,7 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 	@Override
 	public String getFileDonwloadToken() {
 		return Jwts.builder()
-				.setSubject("download") // not specified by ONLYOFFICE, but jjwt forces us to set something
+				.subject("download") // not specified by ONLYOFFICE, but jjwt forces us to set something
 				.signWith(onlyOfficeModule.getJwtSignKey())
 				.compact();
 	}
@@ -120,7 +121,7 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 	@Override
 	public String getToken(Map<String, Object> claims) {
 		return Jwts.builder()
-				.setClaims(claims)
+				.claims(claims)
 				.signWith(onlyOfficeModule.getJwtSignKey())
 				.compact();
 	}

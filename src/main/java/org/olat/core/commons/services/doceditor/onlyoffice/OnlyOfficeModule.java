@@ -19,11 +19,12 @@
  */
 package org.olat.core.commons.services.doceditor.onlyoffice;
 
-import java.security.Key;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.crypto.SecretKey;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -77,7 +78,7 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private String conversionPath;
 	private String conversionUrl;
 	private String jwtSecret;
-	private Key jwtSignKey;
+	private SecretKey jwtSignKey;
 	@Value("${onlyoffice.editor.enabled:false}")
 	private boolean editorEnabled;
 	@Value("${onlyoffice.mobile.modes}")
@@ -232,7 +233,7 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		setStringProperty(ONLYOFFICE_JWT_SECRET, jwtSecret, true);
 	}
 
-	public Key getJwtSignKey() {
+	public SecretKey getJwtSignKey() {
 		if (jwtSignKey == null) {
 			try {
 				jwtSignKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());

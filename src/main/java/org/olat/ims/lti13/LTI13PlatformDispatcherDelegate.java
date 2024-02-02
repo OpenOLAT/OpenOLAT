@@ -161,7 +161,7 @@ public class LTI13PlatformDispatcherDelegate {
 		} else if(StringHelper.containsNonWhitespace(messageHintString) && !StringHelper.isLong(messageHintString)) {
 			Jws<Claims> messageHintJws = parseClaimsHint(messageHintString);
 			if(messageHintJws != null) {
-				messageHint = messageHintJws.getBody();
+				messageHint = messageHintJws.getPayload();
 				Long identityKey = messageHint.get("identityKey", Long.class);
 				if(identity == null) {
 					identity = securityManager.loadIdentityByKey(identityKey);
@@ -175,7 +175,7 @@ public class LTI13PlatformDispatcherDelegate {
 		Jws<Claims> loginHintJws = parseClaimsHint(request.getParameter("login_hint"));
 		log.debug("Start Authorization: state: {} redirectUri: {} loginHint: {} nonce: {}", state, redirectUri, loginHintJws, nonce);
 		if(loginHintJws != null) {
-			Claims loginHint = loginHintJws.getBody();
+			Claims loginHint = loginHintJws.getPayload();
 			Long contextKey = loginHint.get("contextKey", Long.class);
 			Long deploymentKey = loginHint.get("deploymentKey", Long.class);
 			Long contentItemKey = loginHint.get("contentItemKey", Long.class);
@@ -244,10 +244,10 @@ public class LTI13PlatformDispatcherDelegate {
 	
 	private Jws<Claims> parseClaimsHint(String hint) {
 		LTI13PlatformSigningPrivateKeyResolver signingResolver = new LTI13PlatformSigningPrivateKeyResolver();
-		return Jwts.parserBuilder()
-				.setSigningKeyResolver(signingResolver)
+		return Jwts.parser()
+				.keyLocator(signingResolver)
 				.build()
-				.parseClaimsJws(hint);
+				.parseSignedClaims(hint);
 	}
 	
 	/**
@@ -271,16 +271,19 @@ public class LTI13PlatformDispatcherDelegate {
 		LTI13Key platformKey = lti13Service.getLastPlatformKey();
 		
 		JwtBuilder builder = Jwts.builder()
-			//headers
-			.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
-			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
-			.setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
+			.header()
+				.add(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
+				.add(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
+				.add(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
 			//body
-			.setIssuedAt(new Date())
-			.setExpiration(expirationDate)
-			.setIssuer(lti13Module.getPlatformIss())
-			.setAudience(clientId)
-			.setSubject(sub)
+			.and()
+			.issuedAt(new Date())
+			.expiration(expirationDate)
+			.issuer(lti13Module.getPlatformIss())
+			.audience()
+				.add(clientId)
+			.and()
+			.subject(sub)
 			.claim("nonce", nonce);
 		
 		String messageType;
@@ -699,7 +702,7 @@ public class LTI13PlatformDispatcherDelegate {
 	
 	private void handleTokenClientCredentials(Jwt<?,?> jwt, LTI13Tool tool, HttpServletRequest request, HttpServletResponse response) {
 		String scope = request.getParameter(LTI13Constants.OAuth.SCOPE);
-		Claims body = (Claims)jwt.getBody();
+		Claims body = (Claims)jwt.getPayload();
 		String subject = body.getSubject();
 		String toolIss = body.getIssuer();
 		String clientId = tool.getClientId();
@@ -712,16 +715,19 @@ public class LTI13PlatformDispatcherDelegate {
 		LTI13Key platformKey = lti13Service.getLastPlatformKey();
 		
 		JwtBuilder builder = Jwts.builder()
-			// Encryption parameters
-			.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
-			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
-			.setHeaderParam(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
-			//
-			.setIssuedAt(new Date())
-			.setExpiration(expirationDate)
-			.setIssuer(lti13Module.getPlatformIss())
-			.setAudience(toolIss)
-			.setSubject(clientId)
+			.header()
+				// Encryption parameters
+				.add(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
+				.add(LTI13Constants.Keys.ALGORITHM, platformKey.getAlgorithm())
+				.add(LTI13Constants.Keys.KEY_IDENTIFIER, platformKey.getKeyId())
+			.and()
+			.issuedAt(new Date())
+			.expiration(expirationDate)
+			.issuer(lti13Module.getPlatformIss())
+			.audience()
+				.add(toolIss)
+			.and()
+			.subject(clientId)
 			.claim(LTI13Constants.OAuth.SCOPE, scope);
 
 		String jwtString = builder
@@ -739,10 +745,10 @@ public class LTI13PlatformDispatcherDelegate {
 			authorization = authorization.substring("Bearer ".length());
 			try {
 				LTI13PlatformSigningPrivateKeyResolver resolver = new LTI13PlatformSigningPrivateKeyResolver();
-				return Jwts.parserBuilder()
-					.setSigningKeyResolver(resolver)
+				return Jwts.parser()
+					.keyLocator(resolver)
 					.build()
-					.parseClaimsJws(authorization);
+					.parseSignedClaims(authorization);
 			} catch (Exception e) {
 				log.error("", e);
 			}
@@ -765,8 +771,8 @@ public class LTI13PlatformDispatcherDelegate {
 		if(jws == null) {
 			DispatcherModule.sendForbidden("", response);
 		} else {
-			Claims claims = jws.getBody();
-			String toolIss = claims.getAudience();
+			Claims claims = jws.getPayload();
+			Set<String> toolIss = claims.getAudience();
 			String clientId = claims.getSubject();
 			
 			if(path.length == 1 && "nrps".equals(path[0])) {
@@ -874,12 +880,12 @@ public class LTI13PlatformDispatcherDelegate {
 			LTI13Context ltiContext = lti13Service.getContextByContextId(path[1]);
 			LTI13ToolDeployment deployment = ltiContext.getDeployment();
 			
-			Jws<Claims> jws = Jwts.parserBuilder()
-					.setSigningKeyResolver(new LTI13ToolSigningKeyResolver(deployment.getTool()))
+			Jws<Claims> jws = Jwts.parser()
+					.keyLocator(new LTI13ToolSigningKeyResolver(deployment.getTool()))
 					.build()
-					.parseClaimsJws(jwt);
+					.parseSignedClaims(jwt);
 			
-			Claims body = jws.getBody();
+			Claims body = jws.getPayload();
 			String messageType = body.get(LTI13Constants.Claims.MESSAGE_TYPE.url(), String.class);
 			String deploymentId = body.get(LTI13Constants.Claims.DEPLOYMENT_ID.url(), String.class);
 			if(MessageTypes.LTI_DEEP_LINKING_RESPONSE.equals(messageType) && deployment.getDeploymentId().equals(deploymentId)) {

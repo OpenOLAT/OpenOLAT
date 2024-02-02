@@ -32,8 +32,7 @@ import org.olat.ims.lti13.model.LTI13KeyImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Jwts;
 
 /**
  * 
@@ -53,8 +52,8 @@ public class LTI13KeyDAO {
 		key.setLastModified(key.getCreationDate());
 		key.setIssuer(issuer);
 		key.setKeyId(UUID.randomUUID().toString());
-		KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
-		key.setKeyPair(SignatureAlgorithm.RS256.name(), keyPair);
+		KeyPair keyPair = Jwts.SIG.RS256.keyPair().build();
+		key.setKeyPair(Jwts.SIG.RS256.getId(), keyPair);
 		dbInstance.getCurrentEntityManager().persist(key);
 		return key;
 	}
