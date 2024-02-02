@@ -1198,22 +1198,34 @@ function o_QRCodePopup(id, text, loc) {
     	trigger: 'click',
     	container: 'body',
     	content: '<div id="' + id + '_pop" class="o_qrcode"></div>'
-	 }).on('shown.bs.popover', function () {
-		 o_info.qr = o_QRCode(id + '_pop', (jQuery.isFunction(text) ? text() : text));
-		 var clickListener = function (e) {
-			 if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) { 
-				 jQuery("#" + id).popover('hide');
-				 jQuery('body').unbind('click', clickListener);
-			 }
+	}).on('shown.bs.popover', function () {
+		if (!o_info.qr || typeof o_info.qr !== 'object') {
+			o_info.qr = {};
+		}
+		o_info.qr[id] = o_QRCode(id + '_pop', (jQuery.isFunction(text) ? text() : text));
+		var clickListener = function (e) {
+			if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) {
+				elem.popover('hide');
+				var popover = elem.data('bs.popover');
+				if (popover && popover.inState) {
+					popover.inState.click = false; // simulate hide by click
+				}
+				jQuery('body').unbind('click', clickListener);
+			}
 		};
 		setTimeout(function() {
 			jQuery('body').on('click', clickListener);
 		}, 5);
-	 }).on('hidden.bs.popover', function () {
-		 try {
-			 o_info.qr.clear();
-			 delete o_info.qr;			 
-		 } catch(e) {}
+	}).on('hidden.bs.popover', function () {
+		if (o_info.qr && typeof o_info.qr === 'object') {
+			if (o_info.qr[id]) {
+				try {
+					o_info.qr[id].clear();
+					delete o_info.qr[id];
+				} catch(e) {
+				}
+			}
+		}
 	});
 	// make mouse over link text work again
 	elem.attr('title',elem.attr('data-original-title'));

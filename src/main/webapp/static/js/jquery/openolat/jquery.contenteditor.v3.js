@@ -79,7 +79,7 @@
 			var tinyClonedFrame = jQuery(clone).find('.o_richtext_mce iframe');
 			var tinyOriginalFrame = jQuery(original).find('.o_richtext_mce iframe');
 			if (tinyClonedFrame.length > 0 && tinyOriginalFrame.length > 0) {
-				let frameDocument = tinyOriginalFrame.get(0).contentWindow.document;
+				var frameDocument = tinyOriginalFrame.get(0).contentWindow.document;
 				tinyClonedFrame.get(0).srcdoc = '<!DOCTYPE html><html>' + frameDocument.head.innerHTML + frameDocument.body.innerHTML + '</html>';
 			}
 		}).on('drop', function(el, target, source, sibling) {
