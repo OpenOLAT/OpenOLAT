@@ -107,7 +107,7 @@ public class AutoAccessManagerImplTest {
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 
 		accessMethodDummy = mock(AutoAccessMethod.class);
 		List<AccessMethod> accessMethods = Arrays.asList(accessMethodDummy);

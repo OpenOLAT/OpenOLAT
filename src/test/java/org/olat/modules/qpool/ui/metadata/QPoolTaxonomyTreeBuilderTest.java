@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui.metadata;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
@@ -42,6 +44,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.test.KeyTranslator;
+
 
 
 /**
@@ -82,12 +85,12 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
-		
+		MockitoAnnotations.openMocks(this);
+
+		when(qpoolModule.isReviewProcessEnabled()).thenReturn(false);
 		when(qpoolService.getTaxonomyLevels()).thenReturn(createLevelsOfClassicSchoolTaxonomy());
 		when(qpoolService.getTaxonomyLevel(any(), any())).thenReturn(createLevelsWithCompetence());
-		
-		when(qpoolModule.isReviewProcessEnabled()).thenReturn(false);
+		when(qpoolService.getTaxonomyLevel(isNull(Identity.class), any(), any())).thenReturn(createLevelsWithCompetence());
 		
 		translator = new KeyTranslator(Locale.ENGLISH);
 		translator.setPrefix("prefix");

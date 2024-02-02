@@ -116,7 +116,7 @@ public class FeedManagerImplTest {
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		when(coordinaterManagerMock.getCoordinator()).thenReturn(coordinaterMock);
 		when(coordinaterMock.getSyncer()).thenReturn(syncerDummy);
 		sut = new FeedManagerImpl(resourceManagerMock, fileResourceManagerMock, coordinaterManagerMock);

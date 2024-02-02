@@ -98,7 +98,7 @@ public class ShibbolethManagerImplTest {
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		ReflectionTestUtils.setField(sut, "securityManager", securityManagerMock);
 		ReflectionTestUtils.setField(sut, "acModule", acModuleMock);
 		ReflectionTestUtils.setField(sut, "autoAccessManager", autoAccessManagerMock);

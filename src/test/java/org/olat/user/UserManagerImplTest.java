@@ -69,7 +69,7 @@ public class UserManagerImplTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(userDaoMock.isEmailInUse(UNUSED_EMAIL)).thenReturn(false);
 		when(userDaoMock.isEmailInUse(DUPLICATE_EMAIL)).thenReturn(true);

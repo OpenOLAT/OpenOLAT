@@ -49,7 +49,7 @@ public class OnlyOfficeServiceImplTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 	}
 	
 	@Test

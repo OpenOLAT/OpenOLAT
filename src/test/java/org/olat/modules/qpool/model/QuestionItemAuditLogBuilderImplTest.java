@@ -59,7 +59,7 @@ public class QuestionItemAuditLogBuilderImplTest {
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(authorMock.getKey()).thenReturn(AUTHOR_KEY);
 		when(qitemMock.getKey()).thenReturn(QITEM_KEY);

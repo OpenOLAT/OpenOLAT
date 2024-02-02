@@ -87,7 +87,7 @@ public class ShibbolethAttributesTest {
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 
 		sut = new ShibbolethAttributes();
 

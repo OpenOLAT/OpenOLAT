@@ -72,7 +72,7 @@ public class QualityServiceImplTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(evaluationFormManagerMock.loadSurvey(any())).thenReturn(surveyMock);
 	}

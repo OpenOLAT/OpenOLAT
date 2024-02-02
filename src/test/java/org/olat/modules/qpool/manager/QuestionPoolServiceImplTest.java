@@ -88,7 +88,7 @@ public class QuestionPoolServiceImplTest {
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(questionItemDaoMock.merge(item)).thenReturn(item);
 		when(questionItemDaoMock.loadById(any())).thenReturn(item);

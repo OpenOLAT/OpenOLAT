@@ -67,7 +67,7 @@ public class LearningPathNodeAccessProviderTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		participantCourseEnv = mock(UserCourseEnvironment.class);
 		when(participantCourseEnv.isParticipant()).thenReturn(Boolean.TRUE);

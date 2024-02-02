@@ -69,7 +69,7 @@ public class QuestionPoolUserDataDeletableTest {
 	
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		itemsDummy = Stream.generate(() -> mock(QuestionItem.class))
 				.limit(numberOfItems)

@@ -54,7 +54,7 @@ public class IdentifierHandlerTest {
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 
 		when(externaHandlerMock.getIdentifierKey()).thenReturn(IdentifierKey.externalId);
 		sut.setLoadedHandlers(List.of(externaHandlerMock));

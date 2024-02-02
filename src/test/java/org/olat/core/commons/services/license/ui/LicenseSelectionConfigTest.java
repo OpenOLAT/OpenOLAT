@@ -62,7 +62,7 @@ public class LicenseSelectionConfigTest {
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(licenseServiceMock.loadActiveLicenseTypes(any())).thenReturn(getActiveLicenseTypes());
 	}

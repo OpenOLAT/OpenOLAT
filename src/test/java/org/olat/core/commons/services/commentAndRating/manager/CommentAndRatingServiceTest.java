@@ -67,7 +67,7 @@ public class CommentAndRatingServiceTest {
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 
 		when(resourceMock.getResourceableId()).thenReturn(RESOURCABLE_ID);
 		when(resourceMock.getResourceableTypeName()).thenReturn(RESOURCEABLE_TYPE_NAME);

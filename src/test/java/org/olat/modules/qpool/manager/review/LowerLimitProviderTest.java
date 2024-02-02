@@ -64,7 +64,7 @@ public class LowerLimitProviderTest {
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		
 		when(qpoolModuleMock.getReviewDecisionLowerLimit()).thenReturn(RATING_LOWER_LIMIT);
 		when(qpoolModuleMock.getReviewDecisionNumberOfRatings()).thenReturn(RATINGS_NEEDED);
