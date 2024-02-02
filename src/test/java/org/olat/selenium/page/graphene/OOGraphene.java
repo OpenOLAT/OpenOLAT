@@ -859,13 +859,19 @@ public class OOGraphene {
 	 * 
 	 * @param browser The browser
 	 */
-	public static final void closeWarningBox(WebDriver browser) {
-		By errorBoxBy = By.cssSelector("div.modal.fade.in div.modal-body.alert.alert-warning");
-		waitElement(errorBoxBy, browser);
-		By closeButtonBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]//button[@class='close']");
-		waitElement(closeButtonBy, browser);
-		browser.findElement(closeButtonBy).click();
-		waitModalDialogDisappears(browser);	
+	public static final void assertAndCloseWarningBox(WebDriver browser) {
+		By warningBy = By.xpath("//div[@id='myFunctionalModal'][contains(@class,'in')]//div[contains(@class,'modal-body')][contains(@class,'alert-warning')]/p");
+		OOGraphene.waitElementPresence(warningBy, 5, browser);
+		OOGraphene.waitingALittleLonger();
+		try {
+			new org.openqa.selenium.interactions.Actions(browser).moveToLocation(240, 240).click().perform();
+			OOGraphene.waitModalDialogWithDivDisappears(browser, "alert-warning");
+		} catch (Exception e) {
+			log.error("Wait until warning disappears");
+			OOGraphene.waitingTooLong();
+			OOGraphene.waitingTooLong();
+			OOGraphene.waitModalDialogWithDivDisappears(browser, "alert-warning");
+		}
 	}
 	
 	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
