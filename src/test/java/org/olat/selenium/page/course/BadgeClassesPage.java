@@ -110,7 +110,7 @@ public class BadgeClassesPage {
 	}
 	
 	public BadgeClassesPage details(String description) {		
-		By descriptionBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_description textarea");
+		By descriptionBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_description div.milkdown div[contenteditable=true]");
 		browser.findElement(descriptionBy).sendKeys(description);
 		return this;
 	}
