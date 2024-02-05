@@ -42,6 +42,8 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
+import uk.ac.ed.ph.jqtiplus.attribute.AttributeList;
+import uk.ac.ed.ph.jqtiplus.exception.QtiAttributeException;
 import uk.ac.ed.ph.jqtiplus.node.ForeignElement;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
@@ -604,6 +606,21 @@ public class AssessmentRenderFunctions {
 	public static final String getAtClass(QtiNode node) {
 		Attribute classAttribute = node.getAttributes().get("class");
 		return classAttribute.toDomAttributeValue(classAttribute.getValue());
+	}
+	
+	/**
+	 * @param list The list of attributes
+	 * @param attributeName The name of the attribute
+	 * @return The value (toString) or null if not found
+	 */
+	public static final String getAttributeFromList(AttributeList list, String attributeName, String defaultValue) {
+		try {
+			Attribute<?> dataAttr = list.get(attributeName);
+			return dataAttr.getValue().toString();
+		} catch (QtiAttributeException e) {
+			log.debug("Attribute not found: {}", attributeName);
+		}
+		return defaultValue;
 	}
 
 	/**

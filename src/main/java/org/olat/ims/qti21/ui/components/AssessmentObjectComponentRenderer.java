@@ -28,6 +28,7 @@ import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.extract
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.extractResponseInputAt;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.extractSingleCardinalityResponseInput;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.getAtClass;
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.getAttributeFromList;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.getCardinalitySize;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.getHtmlAttributeValue;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.getOutcomeValue;
@@ -774,10 +775,13 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		*/
 		String id = attrId.getValue().toString();
 		String uniqueId = id + CodeHelper.getForeverUniqueID();
-		Attribute<?> dataAttr = object.getAttributes().get("data");
-		String data = dataAttr.getValue().toString();
-		Attribute<?> attrDataMovie = object.getAttributes().get("data-oo-movie");
-		String dataMovie = attrDataMovie.getValue().toString();
+		String data = getAttributeFromList(object.getAttributes(), "data", null);
+		String dataMovie = getAttributeFromList(object.getAttributes(), "data-oo-movie", null);
+		
+		// Several unescaping steps
+		if(data != null) {
+			data = data.replace("&#61;", "=");
+		}
 		
 		if(data != null && !data.startsWith("http://") && !data.startsWith("https://")) {
 			String relativePath = component.relativePathTo(resolvedAssessmentItem);
@@ -793,8 +797,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			dataMovie = dataMovie.replace(data, src);
 		}
 		
-		String height = "240";
-		String width = "320";
+		String height = getAttributeFromList(object.getAttributes(), "height", "240");
+		String width = getAttributeFromList(object.getAttributes(), "width", "320");
 		//try to guess the height and width
 		if(dataMovie != null) {
 			String[] dataMovieParts = dataMovie.split(",");
@@ -802,7 +806,14 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				width = dataMovieParts[2];
 				height = dataMovieParts[3];
 			}
-			dataMovie = dataMovie.replace(id, uniqueId);
+		} else if(data != null) {
+			dataMovie = "'" + data + "','" + id + "'," + width + "," + height + ",0,0,'video',undefined,false,false,true,undefined";
+		}
+		if(dataMovie != null) {
+			dataMovie = dataMovie
+					.replace(id, uniqueId)
+					.replace("&#39;", "'")
+					.replace("&#61;", "=");
 		}
 
 		sb.append("<span id=\"").append(uniqueId).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:").append(width).append("px; height:").append(height).append("px;\">\n")
@@ -813,7 +824,6 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		  .append("  BPlayer.insertPlayer(").append(dataMovie).append(");\n")
 		  .append(" </script>\n")
 		  .append("</span>\n");
-		
 	}
 	
 	protected final void renderInfoControl(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
@@ -922,7 +932,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
 		String id = "qtiworks_response_".concat(responseUniqueId);
 		if(!ended) {
-			sb.append("<input name=\"qtiworks_presented_").append(responseUniqueId).append("\" type=\"hidden\" value=\"1\"/>");
+			sb.append("<input name=\"qtiworks_presented_").append(responseUniqueId).append("\" type=\"hidden\" value=\"1\">");
 		}
 
 		FormItem endAttemptButton = item.getFormComponent(id);
