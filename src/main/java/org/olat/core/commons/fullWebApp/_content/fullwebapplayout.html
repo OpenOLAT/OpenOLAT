@@ -147,40 +147,41 @@ function o_mathjax(fct_success) {
 	<link href='$r.staticLink("js/js.plugins.min.css")' rel="stylesheet">
 #end
 <script>
-	jQuery.noConflict();
-	
-	## Initialize js translator factory with the js translator mapper path
-	jQuery(document).ooTranslator().initialize("$jsTranslationMapperPath");
-	o_info.oo_translator = jQuery(document).ooTranslator();
-	## History and back button support
-	jQuery(window).on("popstate", function(e) {
-		if(e.originalEvent.state && e.originalEvent.state.businessPath) {
-			if (e.originalEvent.state.businessPath.indexOf('oow') == -1) {
-				var windowedPath = e.originalEvent.state.businessPath + '?oow=' + window.name;
-				window.history.replaceState(e.originalEvent.state, document.title, windowedPath);
-				window.location.reload();
-			} else {
-				window.location.href = e.originalEvent.state.businessPath;
-			}
+jQuery.noConflict();
+
+## Initialize js translator factory with the js translator mapper path
+jQuery(document).ooTranslator().initialize("$jsTranslationMapperPath");
+o_info.oo_translator = jQuery(document).ooTranslator();
+## History and back button support
+jQuery(window).on("popstate", function(e) {
+	if(e.originalEvent.state && e.originalEvent.state.businessPath) {
+		if (e.originalEvent.state.businessPath.indexOf('oow') == -1) {
+			var windowedPath = e.originalEvent.state.businessPath + '?oow=' + window.name;
+			window.history.replaceState(e.originalEvent.state, document.title, windowedPath);
+			window.location.reload();
+		} else {
+			window.location.href = e.originalEvent.state.businessPath;
 		}
-	});
+	}
+});
 	
-	var closing = function(e) {
-		if(navigator.sendBeacon) {
-			var beaconUrl = '$r.formURI("close-window")';
-			if(beaconUrl.indexOf("${r.getPathDefault()}") == -1) {
-				navigator.sendBeacon(beaconUrl, null);
-			}
+var closing = function(e) {
+	if(navigator.sendBeacon) {
+		var beaconUrl = '$r.formURI("close-window")';
+		if(beaconUrl.indexOf("${r.getPathDefault()}") == -1) {
+			navigator.sendBeacon(beaconUrl, null);
 		}
-	};
-	window.onbeforeunload = closing;
-	window.onunload = closing;
+	}
+};
+window.onbeforeunload = closing;
+window.onunload = closing;
+
 ## same configuration in 
 jQuery(function() {
 	if ((window.unsafeWindow == null ? window : unsafeWindow).MathJax == null) {
 		var count = jQuery('div.math,span.math,math,div.mathEntryInteraction').length;
-		if (count > 0) {
-		    o_mathjax();
+		if (count > 0 || o_info.latexit) {
+			o_mathjax();
 		}
 	}
 });
@@ -192,16 +193,15 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 ## 2) CSS theme inclusion, theme JavaScript, favicons and appicons
 $theme.renderHTMLHeaderElements()
 ## 3) Insert IE specific class names
-	<script>
-        jQuery(document).ready(function() {
-            /* Detect IE below version 11 */
-            if (window.navigator.userAgent.indexOf('MSIE ') > 0) {
-                jQuery('body').addClass('o_browser_ie10');
-            } else if (!!navigator.userAgent.match(/Trident\/7\./)) {
-            	jQuery('body').addClass('o_browser_ie11');
-            }
-        });
-	</script>
+<script>
+"use strict";
+jQuery(document).ready(function() {
+	// Detect IE below version 11
+	if (window.navigator.userAgent.indexOf('MSIE ') > 0) {
+		jQuery('body').addClass('o_browser_ie10');
+	}
+});
+</script>
 ## 5) Dynamic overriding of CSS rules
 $r.render("jsCssRawHtmlHeader", "post-theme")
 ## 6) Add user font size (id o_fontSize_css used to place on demand css)
@@ -389,7 +389,8 @@ $r.render("instantmessagepanel")
 <div id="o_width_1em" style="width:1em; position: absolute; left: -1000px;" aria-hidden="true"></div>
 <div><script>
 // init size and listen to text resize events
+"use strict";
 jQuery(function() {
-	o_initEmPxFactor(); 
+	o_initEmPxFactor();
 });
 </script></div></body></html>
