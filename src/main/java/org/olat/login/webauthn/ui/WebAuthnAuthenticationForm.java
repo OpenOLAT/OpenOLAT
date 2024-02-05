@@ -30,7 +30,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -95,7 +94,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private FormLink tryAgainButton;
 	private FormLink recoveryKeyButton;
 	private FormSubmit submitButton;
-	private StaticTextElement usernameEl;
+	private FormLayoutContainer usernameEl;
 	
 	private Flow step = Flow.username;
 	private CredentialRequest requestData;
@@ -151,8 +150,9 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		loginEl.setVisible(step == Flow.username);
 		loginEl.setFocus(true);
 		
-		usernameEl = uifactory.addStaticTextElement(mainForm.getFormId() + "_uname", null, "", formLayout);
-		usernameEl.setElementCssClass("o_login_username");
+		String page = velocity_root + "/username.html";
+		usernameEl = uifactory.addCustomFormLayout(mainForm.getFormId() + "_uname", "lf.login", page, formLayout);
+		usernameEl.setDomReplacementWrapperRequired(false);
 		usernameEl.setVisible(false);
 		
 		recoveryKeyEl = uifactory.addPasswordElement(mainForm.getFormId() + "_rkey", "lf_rkey",  "lf.rkey", 128, "", formLayout);
@@ -305,7 +305,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		
 		notNowButton.setVisible(false);
 		usernameEl.setVisible(false);
-		usernameEl.setValue("");
+		usernameEl.contextPut("username", "");
 		pass.setVisible(false);
 		
 		loginEl.setVisible(true);
@@ -323,7 +323,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		
 		notNowButton.setVisible(false);
 		usernameEl.setVisible(false);
-		usernameEl.setValue("");
+		usernameEl.contextPut("username", "");
 		pass.setVisible(false);
 		
 		loginEl.setVisible(true);
@@ -390,7 +390,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		
 		pass.setVisible(showPassword);
 		pass.setFocus(showPassword);
-		usernameEl.setValue("<i class='o_icon o_icon_user'> </i> " + loginEl.getValue());
+
+		usernameEl.contextPut("username", loginEl.getValue());
 		usernameEl.setVisible(showPassword);
 		recoveryKeyEl.setVisible(false);
 		
@@ -600,7 +601,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 			step = updateUIFor(Flow.username);
 		}
 		loginEl.setValue("");
-		usernameEl.setValue("");
+		usernameEl.contextPut("username", "");
 		pass.setValue("");
 		flc.setDirty(true);
 		fireEvent(ureq, Event.BACK_EVENT);
