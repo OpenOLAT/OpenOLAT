@@ -289,7 +289,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			}
 
 			metaCont.contextRemove("url");
-			metaCont.contextRemove("source");
+			metaCont.contextRemove("platform");
 			if (selectedVersion.getVersionMetadata() != null) {
 				String url = selectedVersion.getVersionMetadata().getUrl();
 				if (StringHelper.containsNonWhitespace(url)) {
@@ -297,7 +297,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 				}
 				VideoFormatExtended videoFormat = VideoFormatExtended.valueOfUrl(url);
 				if (videoFormat != null) {
-					metaCont.contextPut("source", translate(videoFormat.getI18nKey()));
+					metaCont.contextPut("platform", translate(videoFormat.getI18nKey()));
 				}
 			}
 
