@@ -132,6 +132,7 @@ public class NavigationPage {
 	}
 	
 	public UserAdminPage openUserManagement() {
+		OOGraphene.waitElement(By.xpath("//body[not(contains(@class,'o_dmz'))]//div[@id='o_main_container']"), browser);
 		navigate(userManagementBy);
 		return UserAdminPage.getUserAdminPage(browser);
 	}
