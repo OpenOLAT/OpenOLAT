@@ -51,6 +51,7 @@ public class OpenOLATPolicy {
 	private static final Pattern HTMLCLASS = Pattern.compile("[a-zA-Z0-9\\s,-_]+");
 	private static final Pattern ANYTHING = Pattern.compile(".*");
 	private static final Pattern ONSITEURL = Pattern.compile("([\\p{L}\\p{N}\\p{Zs}/\\.\\?=&\\-~_]|ccrep:)+");
+	private static final Pattern DATA_MOVIE = Pattern.compile("([\\p{L}\\p{N}\\p{Zs}/\\,'\\.\\?=&\\s\\-~_\\(\\):/]|&[0-9]{2};)*");
 	private static final Pattern ANCHOR = Pattern.compile("#[a-zA-Z0-9_]*");
 	private static final Pattern QTI_IDENTIFIER = HTMLCLASS;
 	private static final Pattern NUMBER = Pattern.compile("[0-9]+");
@@ -119,7 +120,7 @@ public class OpenOLATPolicy {
 		.allowAttributes("data")
 			.matching(new Patterns(ONSITEURL, OFFSITEURL)).onElements("object")
 		.allowAttributes("data-oo-movie")
-			.matching(PARAGRAPH).onElements("object")
+			.matching(DATA_MOVIE).onElements("object")
 		.allowAttributes("type")
 			.matching(PARAGRAPH).onElements("object")
 		// edu-sharing
