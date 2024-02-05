@@ -216,7 +216,7 @@
 					if(!excludedEls) {
 						var edited = jTarget.closest(".o_fragment_edited").length > 0;
 						var parts = jTarget.closest(".o_page_part");
-						if(jTarget.hasClass('o_page_container_tools') && !jTarget.parent().hasClass('o_page_container_edit')) {
+						if(jTarget.hasClass('o_page_container_tools')) {
 							var containerUrl = jTarget.data("oo-content-editor-url");
 							closeMathLive();
 							o_XHREvent(containerUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'edit_fragment', 'fragment', jTarget.data('oo-page-fragment'));

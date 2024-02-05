@@ -426,6 +426,11 @@
 			margin: -2px;
 			border-radius: 4px;
 		}
+		&.o_page_container_edit {
+			border: 2px solid rgba($o-editor-selected-border-color, 0.8);
+			margin: -1px -2px 0 -2px;
+			border-radius: 3px;
+		}
 	}
 	
 	.o_page_container_tools {
