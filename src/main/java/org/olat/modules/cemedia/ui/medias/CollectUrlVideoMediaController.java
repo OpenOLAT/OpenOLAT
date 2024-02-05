@@ -63,7 +63,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 	private TextElement titleEl;
 	private TextElement urlEl;
 	private FormLink lookUpTitleButton;
-	private StaticTextElement sourceEl;
+	private StaticTextElement platformEl;
 	private StaticTextElement durationEl;
 	private StaticTextElement widthEl;
 	private StaticTextElement heightEl;
@@ -131,7 +131,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 
 	private void initMetadataForm(FormItemContainer formLayout) {
 		initUrl(formLayout);
-		initSource(formLayout);
+		initPlatform(formLayout);
 		initLookUpTitleButton(formLayout);
 		initTitle(formLayout);
 		initVersionMetadata(formLayout);
@@ -143,8 +143,8 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 		urlEl = uifactory.addTextElement("artefact.url", 512, null, formLayout);
 	}
 
-	private void initSource(FormItemContainer formLayout) {
-		sourceEl = uifactory.addStaticTextElement("source", null, formLayout);
+	private void initPlatform(FormItemContainer formLayout) {
+		platformEl = uifactory.addStaticTextElement("platform", null, formLayout);
 	}
 
 	private void initVersionMetadata(FormItemContainer formLayout) {
@@ -158,7 +158,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 
 	private void updateVersionMetadata(Long versionKey) {
 		String url = null;
-		String source = null;
+		String platform = null;
 		String duration = null;
 		String width = null;
 		String height = null;
@@ -171,7 +171,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 			if (mediaVersionMetadata != null) {
 				url = mediaVersionMetadata.getUrl();
 				VideoFormatExtended videoFormat = VideoFormatExtended.valueOf(mediaVersionMetadata.getFormat());
-				source = translate(videoFormat.getI18nKey());
+				platform = translate(videoFormat.getI18nKey());
 				duration = mediaVersionMetadata.getLength();
 				if (mediaVersionMetadata.getWidth() != null) {
 					width = Integer.toString(mediaVersionMetadata.getWidth());
@@ -202,11 +202,11 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 			urlEl.setEnabled(true);
 		}
 
-		if (source != null) {
-			sourceEl.setValue(source);
-			sourceEl.setVisible(true);
+		if (platform != null) {
+			platformEl.setValue(platform);
+			platformEl.setVisible(true);
 		} else {
-			sourceEl.setVisible(false);
+			platformEl.setVisible(false);
 		}
 
 		if (duration != null) {

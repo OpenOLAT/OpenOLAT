@@ -59,13 +59,27 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		this.inForm = inForm;
 
 		initForm(ureq);
+
+		setBlockLayoutClass();
+		setHeight();
+	}
+
+	private void setBlockLayoutClass() {
+		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(title.getTitleSettings().getLayoutSettings(), inForm));
+	}
+
+	private void setHeight() {
+		TitleSettings titleSettings = title.getTitleSettings();
+		int size = titleSettings.getSize();
+		if (size >= 1 && size <= 6) {
+			int heightInPixels = 42 - (size - 1) * 6; // trial and error
+			titleItem.getEditorConfiguration().setEditorHeight(heightInPixels + "px");
+		}
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		TitleSettings titleSettings = title.getTitleSettings();
-		String blockLayoutClass = TitleElement.toCssClass(titleSettings, null, inForm);
-		flc.contextPut("blockLayoutClass", blockLayoutClass);
 		String content = TitleElement.toHtmlForEditor(title.getContent(), titleSettings);
 		titleItem = uifactory.addRichTextElementForStringDataCompact("title", null, content, 1, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
 		titleItem.getEditorConfiguration().setSendOnBlur(true);
@@ -123,10 +137,11 @@ public class TitleEditorController extends FormBasicController implements PageEl
 	
 	private void doUpdate() {
 		TitleSettings titleSettings = title.getTitleSettings();
-		flc.contextPut("blockLayoutClass", TitleElement.toCssClass(titleSettings, null, inForm));
 		String content = title.getContent();
 		String htmlContent = TitleElement.toHtmlForEditor(content, titleSettings);
 		titleItem.setValue(htmlContent);
+		setBlockLayoutClass();
+		setHeight();
 	}
 	
 	private void doSave(UserRequest ureq) {
