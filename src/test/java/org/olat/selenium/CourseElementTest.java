@@ -2253,7 +2253,7 @@ public class CourseElementTest extends Deployments {
 			.openElementsChooser(1, 1)
 			.addTitle(title)
 			.setTitleSize(3)
-			.closeEditFragment()
+			.closeEditFragmentOfPage()
 			.assertOnTitle(title, 3);
 		
 		page.closeEditor();
@@ -2299,7 +2299,7 @@ public class CourseElementTest extends Deployments {
 			.openElementsChooser(1, 1)
 			.addTitle("My survey")
 			.setTitleSize(1)
-			.closeEditFragment()
+			.closeEditFragmentOfResource()
 			.assertOnTitle("My survey", 1);
 		
 		surveyEditor
@@ -2307,14 +2307,14 @@ public class CourseElementTest extends Deployments {
 			.addMultipleChoiceElement()
 			.addMultipleChoice("Jupiter", 2)
 			.addMultipleChoice("Saturn", 3)
-			.closeEditFragment();
+			.closeEditFragmentOfResource();
 		
 		surveyEditor
 			.openElementsChooser(1, 3)
 			.addSingleChoiceElement()
 			.addSingleChoice("Mercury", 2)
 			.addSingleChoice("Venus", 3)
-			.closeEditFragment();
+			.closeEditFragmentOfResource();
 		
 		surveyEditor
 			.close();
