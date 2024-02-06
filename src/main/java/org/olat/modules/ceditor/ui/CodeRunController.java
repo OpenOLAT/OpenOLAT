@@ -19,6 +19,7 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -84,6 +85,11 @@ public class CodeRunController extends BasicController implements PageRunElement
 		CodeSettings settings = codeElement.getSettings();
 		String content = codeElement.getContent();
 		long numberOfLines = content.lines().count();
+		ArrayList<String> lineNumbers = new ArrayList<>();
+		for (int i = 0; i < numberOfLines; i++) {
+			lineNumbers.add(Integer.toString(i + 1));
+		}
+		mainVC.contextPut("lineNumbers", lineNumbers);
 		CodeLanguage codeLanguage = settings.getCodeLanguage();
 		if (codeLanguage.equals(CodeLanguage.auto)) {
 			mainVC.contextRemove("codeLanguage");

@@ -259,11 +259,9 @@ public class PageRunController extends BasicController implements TooledControll
 		List<String> cssPath = new ArrayList<>();
 		if (Settings.isDebuging()) {
 			jsPath.add("js/highlightjs/highlight.js");
-			jsPath.add("js/highlightjs/plugins/highlightjs-line-numbers.js");
 			cssPath.add(StaticMediaDispatcher.getStaticURI("js/highlightjs/styles/default.css"));
 		} else {
 			jsPath.add("js/highlightjs/highlight.min.js");
-			jsPath.add("js/highlightjs/plugins/highlightjs-line-numbers.min.js");
 			cssPath.add(StaticMediaDispatcher.getStaticURI("js/highlightjs/styles/default.min.css"));
 		}
 		JSAndCSSComponent highlightJs = new JSAndCSSComponent("highlightjs",
