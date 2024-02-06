@@ -100,6 +100,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			formLayout.add(warnLayout);
 			
 			String notFoundNames = membersByNameContext.getNotFoundNames().stream()
+					.map(StringHelper::escapeHtml)
 					.collect(Collectors.joining(", "));
 			String msg = translate("user.notfound", notFoundNames);
 			warnLayout.contextPut("notFounds", msg);

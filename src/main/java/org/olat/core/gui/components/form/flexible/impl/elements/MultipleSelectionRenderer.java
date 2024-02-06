@@ -140,7 +140,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append("<input type='checkbox' id='").append(formDispatchId).append("' ");
 			sb.append(subStrName);
 			sb.append(" value='").append(key).append("'");
-			sb.append(" data-value='").append(check.getValue()).append("'");
+			sb.append(" data-value='").append(StringHelper.escapeForHtmlAttribute(check.getValue())).append("'");
 			sb.append(" data-checked='").append(selected).append("'");
 			if (selected) {
 				sb.append(" checked='checked' ");

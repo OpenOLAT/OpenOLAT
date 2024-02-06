@@ -41,7 +41,7 @@ public class BGRightsResourceNameRenderer implements FlexiCellRenderer {
 			Translator translator) {
 		
 		if(cellValue instanceof String stringValue) {
-			target.append(stringValue);
+			target.appendHtmlEscaped(stringValue);
 		} else if(cellValue instanceof BGRightsRow rights) {
 			if(rights.getResourceType() == BGRightsResourceType.businessGroup) {
 				target.append("<i class='o_icon o_icon-fw o_icon_group'> </i> ");
@@ -51,7 +51,7 @@ public class BGRightsResourceNameRenderer implements FlexiCellRenderer {
 			if(StringHelper.containsNonWhitespace(rights.getManagedFlags())) {
 				target.append("<i class='o_icon o_icon-fw o_icon_managed'> </i> ");
 			}
-			target.append(rights.getName());
+			target.appendHtmlEscaped(rights.getName());
 		}
 	}
 }

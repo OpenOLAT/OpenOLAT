@@ -153,7 +153,8 @@ public abstract class AbstractTopicController extends FormBasicController {
 		// Organizers
 		SelectionValues organizerCandidateKV = new SelectionValues();
 		for (Identity organizerCandidate : organizerCandidates) {
-			organizerCandidateKV.add(entry(organizerCandidate.getKey().toString(), userManager.getUserDisplayName(organizerCandidate.getKey())));
+			String fullName = userManager.getUserDisplayName(organizerCandidate.getKey());
+			organizerCandidateKV.add(entry(organizerCandidate.getKey().toString(), fullName));
 		}
 		organizerCandidateKV.sort(VALUE_ASC);
 		organizerEl = uifactory.addCheckboxesDropdown("organizer", "organizer", formLayout, organizerCandidateKV.keys(), organizerCandidateKV.values());

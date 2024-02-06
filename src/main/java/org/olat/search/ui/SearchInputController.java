@@ -252,7 +252,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	protected void setContext(ContextTokens context) {
 		if(!context.isEmpty()) {
 			String scope = context.getValueAt(context.getSize() - 1);
-			String tooltip = getTranslator().translate("form.search.label.tooltip", scope);
+			String tooltip = getTranslator().translate("form.search.label.tooltip", StringHelper.escapeForHtmlAttribute(scope));
 			searchButton.getComponent().setTitle(tooltip);
 		}
 	}

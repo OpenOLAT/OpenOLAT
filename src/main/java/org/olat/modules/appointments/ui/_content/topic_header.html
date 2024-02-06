@@ -1,5 +1,5 @@
 <div class='o_appointments o_appointment_header'>
-	<h3>$title
+	<h3>$r.escapeHtml($title)
 		<span class='o_organizers'>
 			#if($r.isNotEmpty($organizerNames))
 				<span class="small">
