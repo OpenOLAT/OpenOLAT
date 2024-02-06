@@ -424,7 +424,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			
 			if(currentIdentity.score == null) {
 				currentIdentity.score = score;
-			} else {
+			} else if(score != null) {
 				currentIdentity.score = currentIdentity.score.add(score);
 			}
 
