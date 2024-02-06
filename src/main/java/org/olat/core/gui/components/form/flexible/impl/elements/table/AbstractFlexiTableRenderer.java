@@ -590,7 +590,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<li><a id='").append(dispatchId).append("_").append(index).append("_bc' href=\"javascript:;\" onclick=\"")
 		  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
 				  new NameValuePair("tt-crumb", index)))
-		  .append("\">").append(crumb.getCrump()).append("</a></li>");
+		  .append("\">").appendHtmlEscaped(crumb.getCrump()).append("</a></li>");
 	}
 	
 	protected void renderFormItem(Renderer renderer, StringOutput sb, FormItem item, URLBuilder ubu, Translator translator,

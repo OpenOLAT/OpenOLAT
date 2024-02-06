@@ -68,7 +68,7 @@ public class ProjAvatarRenderer extends DefaultComponentRenderer implements Comp
 					sb.append("o_proj_avatar_prevborder ");
 				}
 				sb.append("\">");
-				sb.append(avatar.getAbbrev());
+				sb.appendHtmlEscaped(avatar.getAbbrev());
 				sb.append("</div>");
 			}
 			// Border in a separate overlay div to keep the image dimension.

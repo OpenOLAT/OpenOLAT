@@ -1,30 +1,26 @@
 <div class="o_page_run_code $blockLayoutClass">
 <div class="o_page_run_code_box">
-	<pre><code id="$r.getCId()_code"
-			   class="#if($codeLanguage) language-$codeLanguage #end #if($lineNumbersEnabled) o_line_numbers_enabled #end"
-			   #if($height && !$expanded) style="height: $height; overflow: auto;" #end>$content</code></pre>
+	<div class="o_code_content_area">
+		<div id="$.getCId()_cont" #if($height && !$expanded) style="height: $height; overflow: auto;" #end>
+			<div class="o_code_scrollable_content">
+				#if($lineNumbersEnabled)
+				<div class="o_code_line_numbers">
+					#foreach($lineNumber in $lineNumbers)
+					<div class="o_code_line_number">
+						<span class="o_code_line_number_span text-muted">$lineNumber</span>
+					</div>
+					#end
+				</div>
+				#end
+				<pre><code id="$r.getCId()_code"
+						   class="#if($codeLanguage) language-$codeLanguage #end #if($lineNumbersEnabled) o_line_numbers_enabled #end">$content</code></pre>
+			</div>
+		</div>
+	</div>
 	<div id="$r.getCId()_overlay" class="o_button_overlay"></div>
 	<script>
 		"use strict";
-		function copyToClipboard(selector, lineNumbersEnabled) {
-			if (lineNumbersEnabled) {
-				copyToClipboardWithLineNumbers(selector);
-			} else {
-				copyToClipboardWithoutLineNumbers(selector);
-			}
-		}
-
-		function copyToClipboardWithLineNumbers(selector) {
-			const tableRows = jQuery(`${selector} tr`);
-			let targetText = '';
-			for (let i = 0; i < tableRows.length; i++) {
-				const line = jQuery(tableRows.get(i)).text();
-				targetText += `${line}\n`;
-			}
-			navigator.clipboard.writeText(targetText);
-		}
-
-		function copyToClipboardWithoutLineNumbers(selector) {
+		function copyToClipboard(selector) {
 			navigator.clipboard.writeText(jQuery(selector).text() + '\n');
 		}
 
@@ -41,23 +37,21 @@
 			}, 2000);
 		}
 
-		function adjustToScrollbars(codeElement) {
-			const horizontalScrollbarVisible = codeElement.scrollWidth > codeElement.clientWidth;
+		function adjustToScrollbars(scrollableElement) {
+			const horizontalScrollbarVisible = scrollableElement.scrollWidth > scrollableElement.clientWidth;
 			if (horizontalScrollbarVisible) {
 				const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 				if (isSafari) {
-					codeElement.style.overflowX = 'scroll';
+					scrollableElement.style.overflowX = 'scroll';
 				}
 			}
 		}
 
 		jQuery(function() {
 			const codeElement = document.getElementById('$r.getCId()_code');
+			const containerElement = document.getElementById('$r.getCId()_cont');
 			const overlayElement = document.getElementById('$r.getCId()_overlay');
 			hljs.highlightElement(codeElement);
-			#if($lineNumbersEnabled)
-				hljs.lineNumbersBlock(codeElement);
-			#end
 			const cssClasses = Array.from(codeElement.classList).filter((c) => c.startsWith('language-'));
 			if (cssClasses.length > 0) {
 				const languageClassParts = cssClasses[0].split('-');
@@ -70,12 +64,12 @@
 					overlayElement.innerHTML =
 						'<a href="javascript:;" ' +
 						'   title="$r.translate('code.copy.to.clipboard')" ' +
-						'   onclick="copyToClipboard(\'#$r.getCId()_code\', $lineNumbersEnabled); codeCopiedNotification(this); this.blur();">' +
+						'   onclick="copyToClipboard(\'#$r.getCId()_code\'); codeCopiedNotification(this); this.blur();">' +
 						'  <i class="o_icon o_icon_copy"> </i> ' + languageLabel + '</a>';
 				}
 			}
 			setTimeout(function() {
-				adjustToScrollbars(codeElement);
+				adjustToScrollbars(containerElement);
 			}, 0);
 		});
 	</script>

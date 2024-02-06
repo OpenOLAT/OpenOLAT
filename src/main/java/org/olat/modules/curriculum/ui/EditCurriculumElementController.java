@@ -294,7 +294,7 @@ public class EditCurriculumElementController extends FormBasicController {
 			StringBuilder sb = new StringBuilder();
 			for(TaxonomyLevel level:levels) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
+				sb.append(StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), level)));
 			}
 			uifactory.addStaticTextElement("curriculum.element.taxonomy", sb.toString(), formLayout);
 		}

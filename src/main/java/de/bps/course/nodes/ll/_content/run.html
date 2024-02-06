@@ -6,7 +6,7 @@
 				<a href="#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end" target="$link.getHtmlTarget()" rel="noopener noreferrer" class="o_desc">
 					$r.escapeHtml($link.getDescription())
 					<small>
-						#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end
+						#if($link.intern) $mapperBaseUrl$link.getTarget() #else $r.escapeHtml($link.getTarget()) #end
 						#if($link.getHtmlTarget() == "_blank")
 							<i class="o_icon o_icon_external_link"> </i>
 						#end

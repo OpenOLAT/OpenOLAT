@@ -173,15 +173,34 @@ public class ContentEditorPage extends ContentViewPage {
 	}
 	
 	/**
-	 * Close the fragment editor.
+	 * Close the fragment editor in the page editor by clicking the header surface.
 	 * 
 	 * @return Itself
 	 */
-	public ContentEditorPage closeEditFragment() {
-		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_page_content_editor')]/div[1]/div[contains(@class,'o_page_container_tools')]");
+	public ContentEditorPage closeEditFragmentOfPage() {
+		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_ce_wrapper')]//div[contains(@class,'o_page_lead')]");
+		return closeEditFragment(toolbarContainerBy);
+	}
+	
+	public ContentEditorPage closeEditFragmentOfPortfolioPage() {
+		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_page_lead')]//div[contains(@class,'o_portfolio_status_block')]");
+		return closeEditFragment(toolbarContainerBy);
+	}
+	
+	/**
+	 * Close the fragment editor in the editor for survey.
+	 * 
+	 * @return Itself
+	 */
+	public ContentEditorPage closeEditFragmentOfResource() {
+		By toolbarContainerBy = By.xpath("//div[@id='o_main_container']//div[@class='o_tools_container']");
+		return closeEditFragment(toolbarContainerBy);
+	}
+	
+	private ContentEditorPage closeEditFragment(By containerBy) {
 		// Move the focus, important
 		new Actions(browser)
-			.moveToElement(browser.findElement(toolbarContainerBy), -50, 0)
+			.moveToElement(browser.findElement(containerBy), 0, 0)
 			.click().perform();
 		
 		OOGraphene.waitBusy(browser);

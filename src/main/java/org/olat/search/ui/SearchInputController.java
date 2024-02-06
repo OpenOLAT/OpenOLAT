@@ -237,7 +237,12 @@ public class SearchInputController extends FormBasicController implements Generi
 			searchButton = uifactory.addFormLink("rightAddOn", searchLabel, "", searchLayout, Link.NONTRANSLATED + Link.BUTTON_SMALL);
 			searchButton.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
 		}
-		searchButton.setElementCssClass("input-group-addon");
+		
+		if(displayOption.equals(DisplayOption.STANDARD) || displayOption.equals(DisplayOption.STANDARD_TEXT)
+				|| displayOption.equals(DisplayOption.BUTTON_WITH_LABEL)) {
+			searchButton.setElementCssClass("input-group-addon");
+		}
+		
 		searchButton.setCustomEnabledLinkCSS("o_search");
 		searchButton.setEnabled(true);
 	}
@@ -252,7 +257,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	protected void setContext(ContextTokens context) {
 		if(!context.isEmpty()) {
 			String scope = context.getValueAt(context.getSize() - 1);
-			String tooltip = getTranslator().translate("form.search.label.tooltip", scope);
+			String tooltip = getTranslator().translate("form.search.label.tooltip", StringHelper.escapeForHtmlAttribute(scope));
 			searchButton.getComponent().setTitle(tooltip);
 		}
 	}

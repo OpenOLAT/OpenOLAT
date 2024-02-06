@@ -838,7 +838,7 @@ public class PortfolioV2Test extends Deployments {
 			.openElementsChooser(1, 1)
 			.addTitle(title)
 			.setTitleSize(3)
-			.closeEditFragment()
+			.closeEditFragmentOfPage()
 			.assertOnTitle(title, 3);
 		
 		// add an image

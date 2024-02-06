@@ -47,7 +47,7 @@
 				#if($row.getDetails() && $row.getDetails() != "")
 					<div>
 						<i class="o_icon o_icon-fw o_icon_info_ap">&nbsp;</i>
-						$row.getDetails()
+						$r.escapeHtml($row.getDetails())
 					</div>
 				#end
 				#if($r.isNotNull($row.getRecordingLinks()))
