@@ -390,7 +390,7 @@ public class BinderController extends BasicController implements TooledControlle
 		
 		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Templates", 0l);
 		WindowControl swControl = addToHistory(ureq, bindersOres, null);
-		editTemplatesCtrl = new AssignmentTemplatesEditController(ureq, swControl, binder);
+		editTemplatesCtrl = new AssignmentTemplatesEditController(ureq, swControl, secCallback, binder);
 		listenTo(editTemplatesCtrl);
 		
 		popUpToBinderController(ureq);
