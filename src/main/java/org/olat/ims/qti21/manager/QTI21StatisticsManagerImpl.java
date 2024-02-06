@@ -426,8 +426,6 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				currentIdentity.score = score;
 			} else if(score != null) {
 				currentIdentity.score = currentIdentity.score.add(score);
-			} else {
-				System.out.println();
 			}
 
 			Number duration = (Number)result[3];
