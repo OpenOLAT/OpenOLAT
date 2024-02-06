@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.quality.QualityDataCollectionLight;
 
 /**
@@ -51,7 +52,7 @@ public class DataCollectionDeleteConfirmationController extends FormBasicControl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String formattedTitle = dataCollection.getTitle() == null? "": dataCollection.getTitle();
-		setFormInfo("data.collection.delete.confirm", new String[] { formattedTitle });
+		setFormInfo("data.collection.delete.confirm", new String[] { StringHelper.escapeHtml(formattedTitle) });
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

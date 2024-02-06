@@ -164,7 +164,7 @@ public class BinderMetadataEditController extends FormBasicController {
 				List<Identity> owners = portfolioService.getMembers(binder, ContentRoles.owner.name());
 				for(Identity owner:owners) {
 					if(sb.length() > 0) sb.append(", ");
-					sb.append(userManager.getUserDisplayName(owner));
+					sb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(owner)));
 				}
 			}
 			uifactory.addStaticTextElement("author", "author", sb.toString(), formLayout);

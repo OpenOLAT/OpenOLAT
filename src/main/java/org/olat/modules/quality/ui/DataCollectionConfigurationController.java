@@ -280,7 +280,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 				break;
 			case IDENTIY: 
 				String userName = topicIdentity != null
-					? userManager.getUserDisplayName(topicIdentity.getKey())
+					? StringHelper.escapeHtml(userManager.getUserDisplayName(topicIdentity.getKey()))
 					: translate("data.collection.topic.identity.none");
 				topicIdentityNameEl.setValue(userName);
 				topicIdentityNameEl.setVisible(true);
@@ -335,7 +335,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 				break;
 			case REPOSITORY:
 				String repositoryName = topicRepository != null
-						? topicRepository.getDisplayname()
+						? StringHelper.escapeHtml(topicRepository.getDisplayname())
 						: translate("data.collection.topic.repository.none");
 				topicRepositoryNameEl.setValue(repositoryName);
 				topicRepositoryNameEl.setVisible(true);

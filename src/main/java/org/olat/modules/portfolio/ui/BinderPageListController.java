@@ -235,7 +235,7 @@ public class BinderPageListController extends AbstractPageListController {
 			StringBuilder ownerSb = new StringBuilder();
 			for(Identity owner:owners) {
 				if(ownerSb.length() > 0) ownerSb.append(", ");
-				ownerSb.append(userManager.getUserDisplayName(owner));
+				ownerSb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(owner)));
 			}
 			layoutCont.contextPut("owners", ownerSb.toString());
 			layoutCont.contextPut("binderKey", binder.getKey());

@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.Structure;
 import org.olat.course.assessment.ScoreAccountingTriggerData;
 import org.olat.course.nodes.CourseNode;
@@ -83,11 +84,10 @@ public class IdentityExceptionalObligationHandler implements ExceptionalObligati
 
 	@Override
 	public String getDisplayName(Translator translator, ExceptionalObligation exceptionalObligation, RepositoryEntry courseEntry) {
-		if (exceptionalObligation instanceof IdentityExceptionalObligation) {
-			IdentityExceptionalObligation identityExceptionalObligation = (IdentityExceptionalObligation)exceptionalObligation;
+		if (exceptionalObligation instanceof IdentityExceptionalObligation identityExceptionalObligation) {
 			Identity identity = securityManager.loadIdentityByKey(identityExceptionalObligation.getIdentityRef().getKey(), false);
 			if (identity != null) {
-				return userManager.getUserDisplayName(identity);
+				return StringHelper.escapeHtml(userManager.getUserDisplayName(identity));
 			}
 		}
 		return null;
