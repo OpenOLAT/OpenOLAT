@@ -53,6 +53,7 @@ import org.olat.modules.ceditor.AssignmentType;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.ui.AssignmentTemplatesDataModel.TemplateCols;
 import org.olat.modules.portfolio.ui.component.AssignmentTypeCellRenderer;
@@ -90,11 +91,16 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 	@Autowired
 	private ContentEditorFileStorage portfolioFileStorage;
 	
-	public AssignmentTemplatesEditController(UserRequest ureq, WindowControl wControl, Binder binder) {
+	public AssignmentTemplatesEditController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback, Binder binder) {
 		super(ureq, wControl, "templates_edit");
 		this.binder = binder;
 		initForm(ureq);
 		loadModel();
+		
+		if (secCallback.canNewAssignment()) {
+			// in template mode, add editor class to toolbar
+			initialPanel.setCssClass("o_edit_mode");
+		}
 	}
 
 	@Override

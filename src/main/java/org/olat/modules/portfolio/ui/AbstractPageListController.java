@@ -422,7 +422,9 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		List<FormLink> competencesAndUsage = new ArrayList<>();
 		
 		pageService.getCompetencesAndUsage(pages).forEach((taxonomyLevel, usage) -> {
-			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel) + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			String name = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
+			name = StringHelper.escapeHtml(name) + (usage > 1 ? " (" + usage + ")" : "");
+			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", name, null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable o_competence";
 			if (activeCompetenceFilters.contains(taxonomyLevel)) {
 				css += " o_tag_selected";

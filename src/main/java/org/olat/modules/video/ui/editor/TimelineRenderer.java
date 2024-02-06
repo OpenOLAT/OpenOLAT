@@ -354,7 +354,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 						true, false, false,
 						new NameValuePair(idParameterName, event.getId())))
 				.append(";\"")
-				.append(">").append(event.getText()).append("</div>");
+				.append(">").appendScanned(event.getText()).append("</div>");
 	}
 
 	private void renderPostprocessing(StringOutput stringOutput) {

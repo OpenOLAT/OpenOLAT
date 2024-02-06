@@ -243,7 +243,7 @@ public class FileUploadController extends FormBasicController {
 				container = container.getParentContainer();
 			}
 			
-			pathEl = uifactory.addStaticTextElement("ul.target", path,fileUpload);
+			pathEl = uifactory.addStaticTextElement("ul.target", path, fileUpload);
 			
 			if (subfolderPath != null) {
 				targetSubPath = uifactory.addInlineTextElement("ul.target.child", subfolderPath, fileUpload, this);	
@@ -826,10 +826,10 @@ public class FileUploadController extends FormBasicController {
 		
 		// Update the destination path in the GUI
 		if (showTargetPath) {			
-			String path = "/ " + currentContainer.getName() + (uploadRelPath == null ? "" : " / " + uploadRelPath);
+			String path = "/ " + StringHelper.escapeHtml(currentContainer.getName() + (uploadRelPath == null ? "" : " / " + uploadRelPath));
 			VFSContainer container = currentContainer.getParentContainer();
 			while (container != null) {
-				path = "/ " + container.getName() + " " + path;
+				path = "/ " + StringHelper.escapeHtml(container.getName()) + " " + path;
 				container = container.getParentContainer();
 			}
 			pathEl.setValue(path);

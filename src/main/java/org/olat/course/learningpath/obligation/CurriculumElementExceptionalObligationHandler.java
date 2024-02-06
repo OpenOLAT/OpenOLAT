@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.Structure;
 import org.olat.course.assessment.ScoreAccountingTriggerData;
 import org.olat.course.nodes.CourseNode;
@@ -84,11 +85,10 @@ public class CurriculumElementExceptionalObligationHandler implements Exceptiona
 
 	@Override
 	public String getDisplayName(Translator translator, ExceptionalObligation exceptionalObligation, RepositoryEntry courseEntry) {
-		if (exceptionalObligation instanceof CurriculumElementExceptionalObligation) {
-			CurriculumElementExceptionalObligation curEleExceptionalObligation = (CurriculumElementExceptionalObligation)exceptionalObligation;
+		if (exceptionalObligation instanceof CurriculumElementExceptionalObligation curEleExceptionalObligation) {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(curEleExceptionalObligation.getCurriculumElementRef());
 			if (curriculumElement != null) {
-				return curriculumElement.getDisplayName();
+				return StringHelper.escapeHtml(curriculumElement.getDisplayName());
 			}
 		}
 		return null;

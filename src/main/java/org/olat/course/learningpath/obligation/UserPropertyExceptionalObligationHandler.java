@@ -91,7 +91,7 @@ public class UserPropertyExceptionalObligationHandler implements ExceptionalObli
 				Translator trans = Util.createPackageTranslator(UserPropertyHandler.class, translator.getLocale(), translator);
 				String translatedPropertyName = trans.translate(userPropertyHandler.i18nFormElementLabelKey());
 				String value = userPropertyExceptionalObligation.getValue();
-				return trans.translate("exceptional.obligation.user.property.name", new String[] {translatedPropertyName, value});
+				return trans.translate("exceptional.obligation.user.property.name", translatedPropertyName, value);
 			}
 		}
 		return null;

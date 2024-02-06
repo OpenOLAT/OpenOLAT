@@ -318,10 +318,11 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 					output.append(" style='background-color:").append(item.getColor()).append(";'");
 				}
 				
-				output.append(">").append(label).append("</span>");		
+				output.append(">").appendHtmlEscaped(label).append("</span>");		
 				if (item.showTooltip()) {
 					// render tooltip only when it contains something
 					output.append("<script>")
+					  .append("\"use strict\";\n")
 					  .append("jQuery(function() {\n")
 					  .append("  jQuery('#o_tag_item_").append(dispatchId).append("').tooltip({\n")
 					  .append("    html: true,\n")
