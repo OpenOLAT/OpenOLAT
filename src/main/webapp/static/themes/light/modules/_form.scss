@@ -1001,6 +1001,10 @@ ul.o_color_picker_dropdown {
 	margin-left: 0;
 	margin-right: 0;
 
+	&.o_drop_up {
+		bottom: 34px;
+	}
+
 	li {
 		cursor: pointer;
 

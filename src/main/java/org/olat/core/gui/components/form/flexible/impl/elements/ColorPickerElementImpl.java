@@ -38,6 +38,7 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	private final List<Color> colors;
 	private String nonSelectedText;
 	private String resetButtonId;
+	private boolean dropUp;
 
 	public ColorPickerElementImpl(String name, List<Color> colors) {
 		super(name);
@@ -119,5 +120,15 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	public void setColor(String colorId) {
 		this.color = colors.stream().filter(c -> c.id().equals(colorId)).findFirst().orElse(null);
 		component.setDirty(true);
+	}
+
+	@Override
+	public boolean isDropUp() {
+		return dropUp;
+	}
+
+	@Override
+	public void setDropUp(boolean dropUp) {
+		this.dropUp = dropUp;
 	}
 }
