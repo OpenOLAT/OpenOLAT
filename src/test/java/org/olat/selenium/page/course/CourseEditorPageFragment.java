@@ -26,6 +26,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -485,7 +486,7 @@ public class CourseEditorPageFragment {
 	 * @param url The URL of the blog or podcast
 	 * @return Itself
 	 */
-	public CourseEditorPageFragment importExternalUrl(String resourceTitle, String url) {
+	public CourseEditorPageFragment importExternalUrl(String resourceTitle, String url, String type) {
 		By importByUrlBy = By.cssSelector("button.o_sel_repo_import_url");
 		browser.findElement(importByUrlBy).click();
 		
@@ -498,9 +499,18 @@ public class CourseEditorPageFragment {
 		browser.findElement(urlBy).sendKeys(url);
 		By displayNameBy = By.cssSelector("fieldset.o_sel_re_import_url_form div.o_sel_author_imported_name input[type='text']");
 		browser.findElement(displayNameBy).sendKeys(resourceTitle);
-		
+
 		By submitBy = By.cssSelector("fieldset.o_sel_re_import_url_form .o_sel_repo_save_details button.btn.btn-primary");
 		browser.findElement(submitBy).click();
+		
+		if(type != null) {
+			By imporTypeBy = By.cssSelector("fieldset.o_sel_re_import_url_form .o_sel_import_type select"); 
+			OOGraphene.waitElement(imporTypeBy, browser);
+			new Select(browser.findElement(imporTypeBy)).selectByValue(type);
+			
+			browser.findElement(submitBy).click();
+		}
+		
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		By resourceTitleBy = By.xpath("//div[contains(@class,'o_re_reference')]//h4[text()[contains(.,'" + resourceTitle + "')]]");

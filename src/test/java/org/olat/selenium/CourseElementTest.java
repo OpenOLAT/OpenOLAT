@@ -541,6 +541,7 @@ public class CourseElementTest extends Deployments {
 			.assertOnLearnPathNodeDone(practiceNodeTitle);
 	}
 	
+	
 	/**
 	 * Create a course with a course element of type podcast. Create
 	 * a podcast, publish the course, go the the course and configure
@@ -568,6 +569,7 @@ public class CourseElementTest extends Deployments {
 		
 		String podcastNodeTitle = "PodcatNode-1";
 		String podcastTitle = "ThePodcast - " + UUID.randomUUID();
+		String podcastUrl = "https://www.srf.ch/feed/podcast/sd/6e633013-c03d-4f49-a1b7-d5b58cfed837.xml";
 		
 		//create a course element of type podcast
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
@@ -576,7 +578,7 @@ public class CourseElementTest extends Deployments {
 			.createNode("podcast")
 			.nodeTitle(podcastNodeTitle)
 			.selectTabFeedContent()
-			.createFeed(podcastTitle);
+			.importExternalUrl(podcastTitle, podcastUrl, "FileResource.PODCAST");
 
 		//publish the course
 		courseEditor
@@ -595,7 +597,6 @@ public class CourseElementTest extends Deployments {
 		OOGraphene.waitElement(podcastElementBy, browser);
 
 		FeedPage.getFeedPage(browser)
-			.newExternalPodcast(podcastTitle, "https://www.srf.ch/feed/podcast/sd/6e633013-c03d-4f49-a1b7-d5b58cfed837.xml")
 			.assertOnPodcastEpisodeTitle();
 	}
 	
@@ -635,7 +636,7 @@ public class CourseElementTest extends Deployments {
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
 			.selectTabFeedContent()
-			.importExternalUrl(blogTitle, "https://www.openolat.com/feed/");
+			.importExternalUrl(blogTitle, "https://www.openolat.com/feed/", null);
 
 		//publish the course
 		courseEditor
