@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.webFeed.ui;
@@ -84,34 +84,36 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ItemsController extends BasicController implements Activateable2 {
 
-	private VelocityContainer vcItems;
+	private final VelocityContainer vcItems;
 	private ArrayList<Link> editButtons;
 	private ArrayList<Link> deleteButtons;
 	private ArrayList<Link> itemLinks;
 	private Map<Item, Controller> artefactLinks;
 	private Map<Item, Controller> commentsLinks;
-	private Link addItemButton, makeInternalButton, makeExternalButton, olderItemsLink, newerItemsLink, startpageLink;
-	private Link externalUrlButton;
+	private Link addItemButton;
+	private Link makeInternalButton;
+	private final Link olderItemsLink;
+	private final Link newerItemsLink;
+	private final Link startpageLink;
 	private FormBasicController itemFormCtr;
-	private ExternalUrlController externalUrlCtr;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDialogCtr;
 	private Feed feedResource;
 	private List<Item> accessibleItems;
 	private List<Long> filteredItemKeys;
 	private Item currentItem;
-	private FeedViewHelper helper;
-	private FeedUIFactory uiFactory;
-	private YearNavigationController naviCtr;
-	private FeedSecurityCallback callback;
-	private Panel mainPanel;
+	private final FeedViewHelper helper;
+	private final FeedUIFactory uiFactory;
+	private final YearNavigationController naviCtr;
+	private final FeedSecurityCallback callback;
+	private final Panel mainPanel;
 	private ItemController itemCtr;
 	// private int allItemsCount = 0;
 	private List<ItemId> allItemIds;
 	// Only one lock variable is needed, since only one item can be edited
 	// at a time.
 	private LockResult lock;
-	private FeedItemDisplayConfig displayConfig;
+	private final FeedItemDisplayConfig displayConfig;
 	public static final Event HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT = new Event("cmd.handle.new.external.feed.dialog");
 	public static final Event FEED_INFO_IS_DIRTY_EVENT = new Event("cmd.feed.info.is.dirty");
 
@@ -245,9 +247,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 					createButtonsForItem(feed, item);
 				}
 			}
-		} else if (feed.isExternal()) {
-			externalUrlButton = LinkFactory.createButtonSmall("feed.external.url", vcItems, this);
-			externalUrlButton.setElementCssClass("o_sel_feed_item_new");
 		} else if (feed.isUndefined()) {
 			// The feed is whether internal nor external:
 			// That is,
@@ -257,7 +256,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			// In such a case, the user can decide whether to make it internal
 			// or
 			// external.
-			makeInternalAndExternalButtons();
+			makeInternalButton();
 		}
 	}
 
@@ -352,13 +351,12 @@ public class ItemsController extends BasicController implements Activateable2 {
 	}
 
 	/**
-	 * Instantiates the makeInternal and the makeExternal-Buttons and puts it to
+	 * Instantiates the makeInternal-Button and puts it to
 	 * the items velocity container's context.
 	 */
-	public void makeInternalAndExternalButtons() {
+	public void makeInternalButton() {
 		if (callback.mayEditItems() || callback.mayCreateItems()) {
 			makeInternalButton = LinkFactory.createButton("feed.make.internal", vcItems, this);
-			makeExternalButton = LinkFactory.createButton("feed.make.external", vcItems, this);
 		}
 	}
 
@@ -468,19 +466,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 			if (item != null) {
 				displayItemController(ureq, item);
 			}
-		} else if (source == externalUrlButton) {
-			externalUrlCtr = uiFactory.createExternalUrlController(ureq, getWindowControl(), feedResource);
-			activateModalDialog(externalUrlCtr, uiFactory.getTranslator().translate("feed.external.url"));
 		} else if (source == makeInternalButton) {
 			if (feedResource.isUndefined()) {
 				feedResource = feedManager.updateFeedMode(Boolean.FALSE, feedResource);
-			} else if (feedResource.isExternal()) {
-				externalUrlButton = LinkFactory.createButtonSmall("feed.external.url", vcItems, this);
-				externalUrlButton.setElementCssClass("o_sel_feed_item_new");
-				// Very special case: another user concurrently changed feed to
-				// external. Do nothing
-				vcItems.setDirty(true);
-				return;
 			}
 			// else nothing to do, already set to internal by a concurrent user
 
@@ -499,20 +487,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 			ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(),
 					LoggingResourceable.wrap(feedResource));
 
-		} else if (source == makeExternalButton) {
-			if (feedResource.isUndefined()) {
-				externalUrlButton = LinkFactory.createButtonSmall("feed.external.url", vcItems, this);
-				externalUrlButton.setElementCssClass("o_sel_feed_item_new");
-				feedResource = feedManager.updateFeedMode(Boolean.TRUE, feedResource);
-				vcItems.setDirty(true);
-				// Ask listening FeedMainController to open and handle a new
-				// external
-				// feed dialog.
-				fireEvent(ureq, HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT);
-				// do logging
-				ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(),
-						LoggingResourceable.wrap(feedResource));
-			}
 		} else if (source == olderItemsLink) {
 			helper.olderItems();
 			createEditButtons(feedResource);
@@ -531,14 +505,11 @@ public class ItemsController extends BasicController implements Activateable2 {
 			createCommentsAndRatingsLinks(ureq, feedResource);
 			vcItems.setDirty(true);
 
-		} else if (source instanceof Link) {
+		} else if (source instanceof Link userLink) {
 			// if it's a link try to get attached identity and assume that user
 			// wants
-			// to see the users home page
-			Link userLink = (Link) source;
 			Object userObject = userLink.getUserObject();
-			if (userObject instanceof Identity) {
-				Identity chosenIdentity = (Identity) userObject;
+			if (userObject instanceof Identity chosenIdentity) {
 				String bPath = "[HomePage:" + chosenIdentity.getKey() + "]";
 				NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
 			}
@@ -572,7 +543,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 				// internally or subscribe to an external feed.
 				if (!feedManager.hasItems(feedResource)) {
 					feedResource = feedManager.updateFeedMode(null, feedResource);
-					makeInternalAndExternalButtons();
+					makeInternalButton();
 				}
 				// release lock
 				feedManager.releaseLock(lock);
@@ -599,10 +570,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 						break;
 					}
 				}
-				// If the last item has been deleted, provide buttons for adding
-				// items manually or from an external source/feed.
+				// If the last item has been deleted, provide buttons for adding items manually
 				if (!feedManager.hasItems(feedResource)) {
-					makeInternalAndExternalButtons();
+					makeInternalButton();
 					// The subscription/feed url from the feed info is obsolete
 					fireEvent(ureq, ItemsController.FEED_INFO_IS_DIRTY_EVENT);
 				} else {
@@ -690,7 +660,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 					// internally or subscribe to an external feed.
 					if (!feedManager.hasItems(feedResource)) {
 						feedResource = feedManager.updateFeedMode(null, feedResource);
-						makeInternalAndExternalButtons();
+						makeInternalButton();
 					}
 				}
 				// release the lock
@@ -703,24 +673,11 @@ public class ItemsController extends BasicController implements Activateable2 {
 				removeAsListenerAndDispose(itemFormCtr);
 				itemFormCtr = null;
 			}
-		} else if (source == externalUrlCtr) {
-			if (event.equals(Event.CHANGED_EVENT))  {
-				String externalUrl = externalUrlCtr.getExternalFeedUrlEl();
-				feedManager.updateExternalFeedUrl(feedResource, externalUrl);
-			} else if (event.equals(Event.CHANGED_EVENT)) {
-				// nothing to do
-			}
-			cmc.deactivate();
-			removeAsListenerAndDispose(cmc);
-			cmc = null;
-			removeAsListenerAndDispose(externalUrlCtr);
-			externalUrlCtr = null;
-		} else if (source == naviCtr && event instanceof NavigationEvent) {
-			List<? extends Dated> selItems = ((NavigationEvent) event).getSelectedItems();
+		} else if (source == naviCtr && event instanceof NavigationEvent navEvent) {
+			List<? extends Dated> selItems = navEvent.getSelectedItems();
 			filteredItemKeys = new ArrayList<>();
 			for (Dated selItem : selItems) {
-				if (selItem instanceof Item) {
-					Item item = (Item) selItem;
+				if (selItem instanceof Item item) {
 					filteredItemKeys.add(item.getKey());
 				}
 			}
@@ -737,8 +694,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 				itemCtr = null;
 			}
 
-		} else if (source instanceof UserCommentsAndRatingsController) {
-			UserCommentsAndRatingsController commentsRatingsCtr = (UserCommentsAndRatingsController) source;
+		} else if (source instanceof UserCommentsAndRatingsController commentsRatingsCtr) {
 			if (event == UserCommentsAndRatingsController.EVENT_COMMENT_LINK_CLICKED) {
 				// go to details page
 				Item item = (Item) commentsRatingsCtr.getUserObject();
@@ -914,8 +870,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			if (this == obj) {
 				return true;
 			}
-			if (obj instanceof ItemId) {
-				ItemId id = (ItemId) obj;
+			if (obj instanceof ItemId id) {
 				return guid.equals(id.guid) && ((lastModification == null && id.lastModification == null)
 						|| (lastModification != null && lastModification.equals(id.lastModification)));
 			}

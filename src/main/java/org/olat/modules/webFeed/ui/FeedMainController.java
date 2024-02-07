@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.webFeed.ui;
@@ -85,20 +85,20 @@ public class FeedMainController extends BasicController implements Activateable2
 	private Feed feed;
 	private Link editFeedButton;
 	private CloseableModalController cmc;
-	private FeedFormController feedFormCtr;
-	private VelocityContainer vcMain, vcInfo, vcRightCol;
-	private ItemsController itemsCtr;
+	private FeedFormController feedFormCtrl;
+	private VelocityContainer vcMain;
+	private VelocityContainer vcInfo;
+	private ItemsController itemsCtrl;
 	private LockResult lock;
 	private FeedViewHelper helper;
-	private DisplayFeedUrlController displayUrlCtr;
-	private FeedUIFactory uiFactory;
-	private FeedSecurityCallback callback;
-	private ContextualSubscriptionController cSubscriptionCtrl;
+	private DisplayFeedUrlController displayUrlCtrl;
+	private final FeedUIFactory feedUIFactory;
+	private final FeedSecurityCallback callback;
 
 	// needed for comparison
 	private String oldFeedUrl;
-	private SubscriptionContext subsContext;
-	private OLATResourceable ores;
+	private final SubscriptionContext subsContext;
+	private final OLATResourceable ores;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -133,7 +133,7 @@ public class FeedMainController extends BasicController implements Activateable2
 	public FeedMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, Long courseId, String nodeId,
 			FeedUIFactory uiFactory, FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig) {
 		super(ureq, wControl);
-		this.uiFactory = uiFactory;
+		this.feedUIFactory = uiFactory;
 		this.callback = callback;
 		this.ores = ores;
 		
@@ -190,7 +190,7 @@ public class FeedMainController extends BasicController implements Activateable2
 	private void display(UserRequest ureq, WindowControl wControl, FeedItemDisplayConfig displayConfig) {
 		vcMain = createVelocityContainer("feed_main");
 
-		vcInfo = uiFactory.createInfoVelocityContainer(this);
+		vcInfo = feedUIFactory.createInfoVelocityContainer(this);
 		vcInfo.contextPut("feed", feed);
 		vcInfo.contextPut("helper", helper);
 		vcInfo.contextPut("suppressCache", "");
@@ -198,12 +198,12 @@ public class FeedMainController extends BasicController implements Activateable2
 		if (subsContext != null) {
 			String businessPath = wControl.getBusinessControl().getAsString();
 			PublisherData data = new PublisherData(ores.getResourceableTypeName(), ores.getResourceableId().toString(), businessPath);
-			cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
+			ContextualSubscriptionController cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
 			listenTo(cSubscriptionCtrl);
 			vcInfo.put("subscription", cSubscriptionCtrl.getInitialComponent());
 		}
-		
-		vcRightCol = uiFactory.createRightColumnVelocityContainer(this);
+
+		VelocityContainer vcRightCol = feedUIFactory.createRightColumnVelocityContainer(this);
 		vcMain.put("rightColumn", vcRightCol);
 
 		if (callback.mayEditMetadata()) {
@@ -213,15 +213,15 @@ public class FeedMainController extends BasicController implements Activateable2
 
 		vcInfo.contextPut("callback", callback);
 
-		displayUrlCtr = new DisplayFeedUrlController(ureq, wControl, feed, helper, uiFactory.getTranslator());
-		listenTo(displayUrlCtr);
-		vcInfo.put("feedUrlComponent", displayUrlCtr.getInitialComponent());
+		displayUrlCtrl = new DisplayFeedUrlController(ureq, wControl, feed, helper, feedUIFactory.getTranslator());
+		listenTo(displayUrlCtrl);
+		vcInfo.put("feedUrlComponent", displayUrlCtrl.getInitialComponent());
 
 		vcMain.put("info", vcInfo);
 
-		itemsCtr = new ItemsController(ureq, wControl, feed, helper, uiFactory, callback, vcRightCol, displayConfig);
-		listenTo(itemsCtr);
-		vcMain.put("items", itemsCtr.getInitialComponent());
+		itemsCtrl = new ItemsController(ureq, wControl, feed, helper, feedUIFactory, callback, vcRightCol, displayConfig);
+		listenTo(itemsCtrl);
+		vcMain.put("items", itemsCtrl.getInitialComponent());
 
 		putInitialPanel(vcMain);
 	}
@@ -246,15 +246,15 @@ public class FeedMainController extends BasicController implements Activateable2
 				// If the user cancels the first time after deciding to subscribe to
 				// an external feed, undo his decision
 				if (feed.isExternal()) {
-					if (oldFeedUrl == null || "".equals(oldFeedUrl)) {
+					if (oldFeedUrl == null || oldFeedUrl.isEmpty()) {
 						feed = feedManager.updateFeedMode(null, feed);
-						itemsCtr.makeInternalAndExternalButtons();
+						itemsCtrl.makeInternalButton();
 					}
 				}
 				//release lock
 				feedManager.releaseLock(lock);
 			}
-		} else if (source == feedFormCtr) {
+		} else if (source == feedFormCtrl) {
 			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
 				// Dispose the cmc and the feedFormCtr.
 				cmc.deactivate();
@@ -264,20 +264,18 @@ public class FeedMainController extends BasicController implements Activateable2
 				} else if (event.equals(Event.CANCELLED_EVENT)) {
 					// If the user cancels the first time after deciding to subscribe to
 					// an external feed, undo his decision
-					if (feed.isExternal()) {
-						if (oldFeedUrl == null || "".equals(oldFeedUrl)) {
-							feed = feedManager.updateFeedMode(null, feed);
-							itemsCtr.makeInternalAndExternalButtons();
-						}
+					if (feed.isExternal() && (oldFeedUrl == null || oldFeedUrl.isEmpty())) {
+						feed = feedManager.updateFeedMode(null, feed);
+						itemsCtrl.makeInternalButton();
 					}
 				}
 				// release the lock
 				feedManager.releaseLock(lock);
 				cleanUp();
 			}
-		} else if (source == itemsCtr) {
+		} else if (source == itemsCtrl) {
 			if(event.equals(ItemsController.HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT)) {
-				doNewExternalFeedurl(ureq);
+				doNewExternalFeedUrl(ureq);
 			} else if (event.equals(ItemsController.FEED_INFO_IS_DIRTY_EVENT)) {
 				vcInfo.setDirty(true);
 			}
@@ -285,9 +283,9 @@ public class FeedMainController extends BasicController implements Activateable2
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(feedFormCtr);
+		removeAsListenerAndDispose(feedFormCtrl);
 		removeAsListenerAndDispose(cmc);
-		feedFormCtr = null;
+		feedFormCtrl = null;
 		cmc = null;
 	}
 
@@ -318,21 +316,19 @@ public class FeedMainController extends BasicController implements Activateable2
 			}
 		}
 		if (item != null) {
-			itemsCtr.activate(ureq, item);
+			itemsCtrl.activate(ureq, item);
 		}
 	}
 
 	@Override
 	public void event(Event event) {
-		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
-			OLATResourceableJustBeforeDeletedEvent ojde = (OLATResourceableJustBeforeDeletedEvent) event;
+		if (event instanceof OLATResourceableJustBeforeDeletedEvent ojde) {
 			// make sure it is our course (actually not needed till now, since we
 			// registered only to one event, but good style.
 			if (ojde.targetEquals(feed, true)) {
 				dispose();
 			}
-		} else if (event instanceof FeedChangedEvent) {
-			FeedChangedEvent fce = (FeedChangedEvent) event;
+		} else if (event instanceof FeedChangedEvent fce) {
 			if (fce.getFeedKey().equals(feed.getKey())) {
 				feed = feedManager.loadFeed(feed);
 				vcInfo.contextPut("suppressCache", "&" + ZonedDateTime.now().toInstant().toEpochMilli());
@@ -342,12 +338,12 @@ public class FeedMainController extends BasicController implements Activateable2
 		}
 	}
 	
-	private void doNewExternalFeedurl(UserRequest ureq) {
+	private void doNewExternalFeedUrl(UserRequest ureq) {
 		feed = feedManager.loadFeed(feed);
 		oldFeedUrl = feed.getExternalFeedUrl();	
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(feed, false);		
-		feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory, repositoryEntry, true);
-		activateModalDialog(feedFormCtr, uiFactory.getTranslator().translate("feed.edit"));
+		feedFormCtrl = new FeedFormController(ureq, getWindowControl(), feed, feedUIFactory, repositoryEntry, true);
+		activateModalDialog(feedFormCtrl, feedUIFactory.getTranslator().translate("feed.edit"));
 	}
 	
 	private void doEditFeedDescription(UserRequest ureq) {
@@ -358,8 +354,8 @@ public class FeedMainController extends BasicController implements Activateable2
 			}
 
 			RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(feed, false);
-			feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory, repositoryEntry, false);
-			activateModalDialog(feedFormCtr, uiFactory.getTranslator().translate("feed.edit"));
+			feedFormCtrl = new FeedFormController(ureq, getWindowControl(), feed, feedUIFactory, repositoryEntry, false);
+			activateModalDialog(feedFormCtrl, feedUIFactory.getTranslator().translate("feed.edit"));
 		} else {
 			String fullName = userManager.getUserDisplayName(lock.getOwner());
 			String i18nMsg = lock.isDifferentWindows() ? "feed.is.being.edited.by.same.user" : "feed.is.being.edited.by";
@@ -371,12 +367,12 @@ public class FeedMainController extends BasicController implements Activateable2
 		vcInfo.setDirty(true);
 		// For external podcasts, set the feed to undefined if the feed url
 		// has been set empty.
-		if (feed.isExternal() && feedFormCtr.canChangeUrl()) {
+		if (feed.isExternal() && feedFormCtrl.canChangeUrl()) {
 			String newFeed = feed.getExternalFeedUrl();
-			displayUrlCtr.setUrl(newFeed);
+			displayUrlCtrl.setUrl(newFeed);
 			if (newFeed == null) {
 				feed.setExternal(null);
-				itemsCtr.makeInternalAndExternalButtons();
+				itemsCtrl.makeInternalButton();
 			}
 		}
 		
@@ -384,7 +380,7 @@ public class FeedMainController extends BasicController implements Activateable2
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(feed, false);
 		
 		//handle image-changes if any
-		if (feedFormCtr.isImageDeleted()) {
+		if (feedFormCtrl.isImageDeleted()) {
 			feed = feedManager.deleteFeedImage(feed);
 			if(re != null) {
 				repositoryManager.deleteImage(re);
@@ -393,7 +389,7 @@ public class FeedMainController extends BasicController implements Activateable2
 			doUpdateImage(re, getIdentity());
 		}
 
-		itemsCtr.resetItems(ureq, feed);	
+		itemsCtrl.resetItems(ureq, feed);
 		// Set the URIs correctly
 		helper.setURIs(feed);
 		vcInfo.contextPut("feed", feed);
@@ -408,7 +404,7 @@ public class FeedMainController extends BasicController implements Activateable2
 	}
 	
 	private void doUpdateImage(RepositoryEntry re, Identity updatedBy) {
-		FileElement image = feedFormCtr.getFile();
+		FileElement image = feedFormCtrl.getFile();
 		if(image != null && re != null) {
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
 			VFSContainer tmpContainer = tmpHome.createChildContainer(UUID.randomUUID().toString());
@@ -418,5 +414,13 @@ public class FeedMainController extends BasicController implements Activateable2
 			tmpContainer.deleteSilently();
 		}
 		feed = feedManager.replaceFeedImage(feed, image);
+	}
+
+	public ItemsController getItemsCtrl() {
+		return itemsCtrl;
+	}
+
+	public FeedUIFactory getFeedUIFactory() {
+		return feedUIFactory;
 	}
 }

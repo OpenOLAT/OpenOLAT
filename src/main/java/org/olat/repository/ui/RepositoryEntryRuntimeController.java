@@ -571,9 +571,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 		
 		if(canCopy || canDownload) {
-			if(toolsDropdown.size() > 0) {
-				toolsDropdown.addComponent(new Spacer("copy-download"));
-			}
 			initToolsMenuReplaceItem(toolsDropdown);
 			if (canCopy) {
 				copyLink = LinkFactory.createToolLink("copy", translate("details.copy"), this, "o_icon o_icon-fw o_icon_copy");

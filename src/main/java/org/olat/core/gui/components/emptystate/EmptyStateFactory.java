@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.gui.components.emptystate;
@@ -25,11 +25,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 /**
  * 
  * Initial date: 22 Apr 2021<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class EmptyStateFactory {
-	
+
 	public static EmptyState create(String name, VelocityContainer vc, ComponentEventListener listener, EmptyStateConfig config) {
 		EmptyState emptyState = create(name, vc, listener);
 		emptyState.setIconCss(config.getIconCss());
@@ -39,6 +39,10 @@ public class EmptyStateFactory {
 		emptyState.setMessageTranslated(config.getMessageTranslated());
 		emptyState.setHintI18nKey(config.getHintI18nKey());
 		emptyState.setHintI18nArgs(config.getHintI18nArgs());
+		emptyState.setHintTranslated(config.getHintTranslated());
+		emptyState.setDescI18nKey(config.getDescI18nKey());
+		emptyState.setDescI18nArgs(config.getDescI18nArgs());
+		emptyState.setDescTranslated(config.getDescTranslated());
 		emptyState.setButtonI18nKey(config.getButtonI18nKey());
 		emptyState.setSecondaryButtonI18nKey(config.getSecondaryButtonI18nKey());
 		return emptyState;

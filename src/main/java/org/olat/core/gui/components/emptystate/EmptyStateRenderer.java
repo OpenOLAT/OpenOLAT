@@ -62,9 +62,19 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 			Util.createPackageTranslator(EmptyState.class, translator.getLocale()).translate("default.message");
 		}
 		sb.append("<h3 class='o_empty_msg'>").append(message).append("</h3>");
-		if (StringHelper.containsNonWhitespace(emptyState.getHintI18nKey())) {
+
+		if (StringHelper.containsNonWhitespace(emptyState.getHintTranslated())) {
+			sb.append("<div class='o_empty_hint'>").append(emptyState.getHintTranslated()).append("</div>");
+		} else if (StringHelper.containsNonWhitespace(emptyState.getHintI18nKey())) {
 			sb.append("<div class='o_empty_hint'>").append(translator.translate(emptyState.getHintI18nKey(), emptyState.getHintI18nArgs())).append("</div>");
 		}
+
+		if (StringHelper.containsNonWhitespace(emptyState.getDescTranslated())) {
+			sb.append("<small class=\"text-muted\">").append(emptyState.getDescTranslated()).append("</small>");
+		} else if (StringHelper.containsNonWhitespace(emptyState.getDescI18nKey())) {
+			sb.append("<small class=\"text-muted\">").append(translator.translate(emptyState.getDescI18nKey(), emptyState.getDescI18nArgs())).append("</small>");
+		}
+
 		if (StringHelper.containsNonWhitespace(emptyState.getButtonI18nKey()) || StringHelper.containsNonWhitespace(emptyState.getSecondaryButtonI18nKey())) {
 			sb.append("<div class='o_empty_action'>");
 			if (StringHelper.containsNonWhitespace(emptyState.getButtonI18nKey())) {

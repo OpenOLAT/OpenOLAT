@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.gui.components.panel;
@@ -34,10 +34,10 @@ import org.olat.core.util.StringHelper;
 /**
  * 
  * Initial date: 16 Nov 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class IconPanelLabelTextlRenderer extends DefaultComponentRenderer {
+public class IconPanelLabelTextRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
@@ -59,14 +59,14 @@ public class IconPanelLabelTextlRenderer extends DefaultComponentRenderer {
 				String id = "o_text_label_" + i;
 				sb.append("<div class='form-horizontal'>");
 				sb.append("<label class='control-label col-sm-3' for=\"").append(id).append("\">");
-				if (StringHelper.containsNonWhitespace(labelText.getLabel())) {
-					sb.append(labelText.getLabel());
+				if (StringHelper.containsNonWhitespace(labelText.label())) {
+					sb.append(labelText.label());
 				}
 				sb.append("</label>");
 				sb.append("</div>");
 				sb.append("<div class='form-control-static col-sm-9' id=\"").append(id).append("\">");
-				if (StringHelper.containsNonWhitespace(labelText.getText())) {
-					sb.append(labelText.getText());
+				if (StringHelper.containsNonWhitespace(labelText.text())) {
+					sb.append(labelText.text());
 				}
 				sb.append("</div>");
 			}

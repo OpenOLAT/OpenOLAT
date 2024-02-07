@@ -50,7 +50,7 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 	}
 
 	@Override
-	protected String getResourceablTypeName() {
+	protected String getResourceableTypeName() {
 		return PodcastFileResource.TYPE_NAME;
 	}
 

@@ -55,7 +55,7 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 	}
 
 	@Override
-	protected String getResourceablTypeName() {
+	protected String getResourceableTypeName() {
 		return BlogFileResource.TYPE_NAME;
 	}
 

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.gui.components.emptystate;
@@ -22,7 +22,7 @@ package org.olat.core.gui.components.emptystate;
 /**
  * 
  * Initial date: 22 Apr 2021<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public interface EmptyStateConfig {
@@ -44,6 +44,30 @@ public interface EmptyStateConfig {
 	public String getHintI18nKey();
 
 	public String[] getHintI18nArgs();
+
+	/**
+	 * if translation happens before passing the value, retrieve it and don't translate it afterwards
+	 * @return translated hint
+	 */
+	public String getHintTranslated();
+
+	/**
+	 * retrieve i18n key for the description
+	 * @return i18n key for the description
+	 */
+	public String getDescI18nKey();
+
+	/**
+	 * should be used alongside with getDescI18nKey()
+	 * @return i18n args for the description
+	 */
+	public String[] getDescI18nArgs();
+
+	/**
+	 * if translation happens before passing the value, retrieve it and don't translate it afterwards
+	 * @return translated description
+	 */
+	public String getDescTranslated();
 
 	public String getButtonI18nKey();
 	

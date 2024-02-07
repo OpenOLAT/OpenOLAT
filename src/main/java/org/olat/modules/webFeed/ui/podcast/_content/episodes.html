@@ -4,25 +4,18 @@
 		$r.render("feed.add.item")
 	</div>
 #end
-#if ($callback.mayCreateItems() && $feed.isExternal())
-	<div class="pull-right">
-		$r.render("feed.external.url")
-	</div>
-#end
 <div class="clearfix"></div>
 
 #if ($items.size() == 0)
-	<div class="o_podcast_no_episodes o_important">
-		<p>
-			<i class="o_icon o_icon_warn"></i>
+	<div class="o_empty_state">
+		<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_podcast_icon"></i></div>
+		<h3 class="o_empty_msg">
 			$r.translate("podcast.has.no.episodes")
-		</p>
+		</h3>
 		#if ( $callback.mayEditMetadata() && $feed.isUndefined() && $r.available("feed.make.internal") )
 			$r.contextHelpWithWrapper("manual_user/learningresources/Podcast/")
-			<p>$r.translate("podcast.internal.or.external")</p>
 			<div class="o_button_group">
 				$r.render("feed.make.internal")
-				$r.render("feed.make.external")
 			</div>
 		#end
 	</div>

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes;
@@ -115,15 +115,17 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 			.build();
 	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(MODERATE, POST);
 	
-	protected Condition preConditionReader, preConditionPoster, preConditionModerator;
+	protected Condition preConditionReader;
+	protected Condition preConditionPoster;
+	protected Condition preConditionModerator;
 
-	public AbstractFeedCourseNode(String type) {
+	protected AbstractFeedCourseNode(String type) {
 		super(type);
 	}
 	
 	protected abstract String getTranslatorPackage();
 
-	protected abstract String getResourceablTypeName();
+	protected abstract String getResourceableTypeName();
 	
 	protected abstract FeedUIFactory getFeedUIFactory(Locale locale);
 	
@@ -135,15 +137,15 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			ICourse course, UserCourseEnvironment euce) {
+			ICourse course, UserCourseEnvironment userCourseEnv) {
 		String translatorPackage = getTranslatorPackage();
 		FeedUIFactory uiFactory = getFeedUIFactory(ureq.getLocale());
-		String resourceablTypeName = getResourceablTypeName();
+		String resourceableTypeName = getResourceableTypeName();
 		String editHelpUrl = getEditHelpUrl();
 		TabbableController editCtrl = new FeedNodeEditController(ureq, wControl, stackPanel, translatorPackage, course,
-				this, euce, uiFactory, resourceablTypeName, editHelpUrl);
-		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, editCtrl);
+				this, userCourseEnv, uiFactory, resourceableTypeName, editHelpUrl);
+		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, userCourseEnv, editCtrl);
 	}
 	
 	@Override
@@ -520,7 +522,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	@Override
 	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		if(withReferences) {
-			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(getResourceablTypeName());
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(getResourceableTypeName());
 			importFeed(handler, importDirectory, owner, organisation, locale);
 		} else {
 			removeReference(getModuleConfiguration());

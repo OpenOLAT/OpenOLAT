@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.gui.components.emptystate;
@@ -37,7 +37,7 @@ import org.olat.core.util.CodeHelper;
 /**
  * 
  * Initial date: 22 Apr 2021<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class EmptyState extends AbstractComponent implements FormBaseComponent, ComponentCollection, ComponentEventListener {
@@ -54,6 +54,10 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	private String messageTranslated;
 	private String hintI18nKey;
 	private String[] hintI18nArgs;
+	private String hintTranslated;
+	private String descI18nKey;
+	private String[] descI18nArgs;
+	private String descTranslated;
 	private String buttonI18nKey;
 	private String secondaryButtonI18nKey;
 	private Link button;
@@ -136,6 +140,38 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 
 	public void setHintI18nArgs(String[] hintI18nArgs) {
 		this.hintI18nArgs = hintI18nArgs;
+	}
+
+	public String getHintTranslated() {
+		return hintTranslated;
+	}
+
+	public void setHintTranslated(String hintTranslated) {
+		this.hintTranslated = hintTranslated;
+	}
+
+	public String getDescI18nKey() {
+		return descI18nKey;
+	}
+
+	public void setDescI18nKey(String descI18nKey) {
+		this.descI18nKey = descI18nKey;
+	}
+
+	public String[] getDescI18nArgs() {
+		return descI18nArgs;
+	}
+
+	public void setDescI18nArgs(String[] descI18nArgs) {
+		this.descI18nArgs = descI18nArgs;
+	}
+
+	public String getDescTranslated() {
+		return descTranslated;
+	}
+
+	public void setDescTranslated(String descTranslated) {
+		this.descTranslated = descTranslated;
 	}
 
 	@Override

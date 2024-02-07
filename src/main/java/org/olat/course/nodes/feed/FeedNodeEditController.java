@@ -60,12 +60,12 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 	private VelocityContainer accessVC;
 
 	private ConditionRemoveController conditionRemoveCtrl;
-	private ConditionEditController readerCtr;
-	private ConditionEditController posterCtr;
-	private ConditionEditController moderatroCtr;
-	private Controller configCtrl;
+	private ConditionEditController readerCtrl;
+	private ConditionEditController posterCtrl;
+	private ConditionEditController moderatorCtrl;
+	private final Controller configCtrl;
 
-	private AbstractFeedCourseNode courseNode;
+	private final AbstractFeedCourseNode courseNode;
 
 	public FeedNodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			String translatorPackage, ICourse course, AbstractFeedCourseNode courseNode, UserCourseEnvironment uce,
@@ -86,24 +86,24 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 			// Moderator precondition
 			CourseEntryRef courseEntry = new CourseEntryRef(uce);
 			Condition moderatorCondition = courseNode.getPreConditionModerator();
-			moderatroCtr = new ConditionEditController(ureq, getWindowControl(), uce, moderatorCondition,
+			moderatorCtrl = new ConditionEditController(ureq, getWindowControl(), uce, moderatorCondition,
 					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, courseNode));
-			this.listenTo(moderatroCtr);
-			accessVC.put("moderatorCondition", moderatroCtr.getInitialComponent());
+			this.listenTo(moderatorCtrl);
+			accessVC.put("moderatorCondition", moderatorCtrl.getInitialComponent());
 			
 			// Poster precondition
 			Condition posterCondition = courseNode.getPreConditionPoster();
-			posterCtr = new ConditionEditController(ureq, getWindowControl(), uce, posterCondition,
+			posterCtrl = new ConditionEditController(ureq, getWindowControl(), uce, posterCondition,
 					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, courseNode));
-			this.listenTo(posterCtr);
-			accessVC.put("posterCondition", posterCtr.getInitialComponent());
+			this.listenTo(posterCtrl);
+			accessVC.put("posterCondition", posterCtrl.getInitialComponent());
 			
 			// Reader precondition
 			Condition readerCondition = courseNode.getPreConditionReader();
-			readerCtr = new ConditionEditController(ureq, getWindowControl(), uce, readerCondition,
+			readerCtrl = new ConditionEditController(ureq, getWindowControl(), uce, readerCondition,
 					AssessmentHelper.getAssessableNodes(courseEntry, editorModel, courseNode));
-			this.listenTo(readerCtr);
-			accessVC.put("readerCondition", readerCtr.getInitialComponent());
+			this.listenTo(readerCtrl);
+			accessVC.put("readerCondition", readerCtrl.getInitialComponent());
 		}
 
 		configCtrl = new FeedNodeConfigsController(ureq, wControl, stackPanel, translatorPackage, course, courseNode,
@@ -128,21 +128,21 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == moderatroCtr) {
+		if (source == moderatorCtrl) {
 			if (event == Event.CHANGED_EVENT) {
-				Condition cond = moderatroCtr.getCondition();
+				Condition cond = moderatorCtrl.getCondition();
 				courseNode.setPreConditionModerator(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == posterCtr) {
+		} else if (source == posterCtrl) {
 			if (event == Event.CHANGED_EVENT) {
-				Condition cond = posterCtr.getCondition();
+				Condition cond = posterCtrl.getCondition();
 				courseNode.setPreConditionPoster(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == readerCtr) {
+		} else if (source == readerCtrl) {
 			if (event == Event.CHANGED_EVENT) {
-				Condition cond = readerCtr.getCondition();
+				Condition cond = readerCtrl.getCondition();
 				courseNode.setPreConditionReader(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
