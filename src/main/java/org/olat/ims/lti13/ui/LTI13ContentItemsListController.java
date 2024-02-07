@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.ui.events.LTI13ContentItemStartEvent;
@@ -48,24 +49,35 @@ public class LTI13ContentItemsListController extends BasicController {
 	
 	private int count = 0;
 	private final LTI13Context context;
+	private final UserCourseEnvironment userCourseEnv;
 	
 	public LTI13ContentItemsListController(UserRequest ureq, WindowControl wControl,
-			LTI13Context context, List<LTI13ContentItem> contentItems) {
+			LTI13Context context, List<LTI13ContentItem> contentItems, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		this.context = context;
+		this.userCourseEnv = userCourseEnv;
 		
 		mainVC = createVelocityContainer("contentitems");
-		initContentItems(contentItems);
+		initContentItems(ureq, contentItems);
 		putInitialPanel(mainVC);
 	}
 	
-	private void initContentItems(List<LTI13ContentItem> contentItems) {
+	private void initContentItems(UserRequest ureq, List<LTI13ContentItem> contentItems) {
 		List<ContentItem> items = new ArrayList<>(contentItems.size());
 		for(LTI13ContentItem contentItem:contentItems) {
-			Link openLink = LinkFactory.createCustomLink("open_" + (++count), "open", translate("start.resource.link"), Link.LINK | Link.NONTRANSLATED, mainVC, this);
-			openLink.setUserObject(contentItem);
-			openLink.setIconRightCSS("o_icon o_icon_start");
-			items.add(new ContentItem(contentItem, openLink));
+			String cmpName = "open_" + (++count);
+			Boolean useNewWindow = LTI13DisplayController.newWindow(contentItem, context);
+			if(useNewWindow != null && useNewWindow.booleanValue()) {
+				LTI13DisplayController ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), context, contentItem, true, userCourseEnv);
+				listenTo(ltiCtrl);
+				mainVC.put(cmpName, ltiCtrl.getInitialComponent());
+				items.add(new ContentItem(contentItem, ltiCtrl.getInitialComponent(), cmpName));
+			} else {
+				Link openLink = LinkFactory.createCustomLink(cmpName, "open", translate("start.resource.link"), Link.LINK | Link.NONTRANSLATED, mainVC, this);
+				openLink.setUserObject(contentItem);
+				openLink.setIconRightCSS("o_icon o_icon_start");
+				items.add(new ContentItem(contentItem, openLink, openLink.getComponentName()));
+			}
 		}
 		mainVC.contextPut("items", items);
 	}
@@ -77,14 +89,14 @@ public class LTI13ContentItemsListController extends BasicController {
 		}
 	}
 	
-	public record ContentItem(LTI13ContentItem contentItem, Link openLink) implements Comparator<ContentItem> {
+	public record ContentItem(LTI13ContentItem contentItem, Component openLink, String componentName) implements Comparator<ContentItem> {
 		
 		public String type() {
 			return contentItem.getType().name();
 		}
 		
 		public String openLinkName() {
-			return openLink.getComponentName();
+			return componentName;
 		}
 		
 		public String html() {

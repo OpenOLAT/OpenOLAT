@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
@@ -57,6 +58,7 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	private Link back;
 	private final VelocityContainer mainVC;
 
+	private final String frmConnectId;
 	private final LTI13Context ltiContext;
 	private final LTI13ContentItem contentItem;
 	private final LTI13ToolDeployment toolDeployment;
@@ -67,18 +69,21 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	private LTI13Service lti13Service;
 	
 	public LTI13DisplayController(UserRequest ureq, WindowControl wControl,
-			LTI13Context context, LTI13ContentItem contentItem, UserCourseEnvironment userCourseEnv) {
-		this(ureq, wControl, context, contentItem, userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
+			LTI13Context context, LTI13ContentItem contentItem, boolean inList, UserCourseEnvironment userCourseEnv) {
+		this(ureq, wControl, context, contentItem, inList, userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
 	}
 
 	public LTI13DisplayController(UserRequest ureq, WindowControl wControl, LTI13Context context, LTI13ContentItem contentItem,
-			boolean admin, boolean coach, boolean participant) {
+			boolean inList, boolean admin, boolean coach, boolean participant) {
 		super(ureq, wControl);
 		this.ltiContext = context;
 		this.contentItem = contentItem;
 		toolDeployment = context.getDeployment();
+		frmConnectId = "frmConnect" + CodeHelper.getRAMUniqueID();
 		
 		mainVC = createVelocityContainer("launch");
+		mainVC.contextPut("inList", Boolean.valueOf(inList));
+		mainVC.contextPut("frmConnect", frmConnectId);
 
 		String loginHint = loginHint(admin, coach, participant);
 		initViewSettings();
@@ -112,22 +117,12 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	}
 	
 	private void initViewSettings() {
-		LTIDisplayOptions displayOption = ltiContext.getDisplayOptions();
+		final LTIDisplayOptions displayOption = ltiContext.getDisplayOptions();
 		if(displayOption == LTIDisplayOptions.fullscreen) {
 			back = LinkFactory.createLinkBack(mainVC, this);
 		}
 		
-		Boolean newWindow;
-		if(contentItem != null) {
-			if(contentItem.getPresentation() == null) {
-				newWindow = Boolean.valueOf(LTIDisplayOptions.window == displayOption);
-			} else {
-				newWindow = contentItem.getPresentation() == LTI13ContentItemPresentationEnum.window
-						&& !StringHelper.containsNonWhitespace(contentItem.getIframeSrc());
-			}
-		} else {
-			newWindow = Boolean.valueOf(LTIDisplayOptions.window == displayOption);
-		}
+		Boolean newWindow = newWindow(contentItem, ltiContext);
 		mainVC.contextPut("newWindow", newWindow);
 		
 		String iframeHeight = null;
@@ -149,6 +144,24 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 		if(iframeWidth != null) {
 			mainVC.contextPut("width", iframeWidth);
 		}
+	}
+	
+	protected static Boolean newWindow(LTI13ContentItem item, LTI13Context context) {
+		final LTIDisplayOptions displayOption = context.getDisplayOptions();
+		
+		Boolean newWindow;
+		if(item != null) {
+			if(item.getPresentation() == null) {
+				newWindow = Boolean.valueOf(LTIDisplayOptions.window == displayOption);
+			} else {
+				newWindow = item.getPresentation() == LTI13ContentItemPresentationEnum.window
+						&& !StringHelper.containsNonWhitespace(item.getIframeSrc());
+			}
+		} else {
+			newWindow = Boolean.valueOf(LTIDisplayOptions.window == displayOption);
+		}
+		
+		return newWindow;
 	}
 	
 	private String loginHint(boolean admin, boolean coach, boolean participant) {
@@ -184,7 +197,7 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	public void manuallyOpenLtiContentInSeparateWindow() {
 		StringBuilder sb = new StringBuilder(100);
 		sb.append("setTimeout(() => { ");
-		sb.append("  var frmConnect = document.forms['frmConnect']; ");
+		sb.append("  var frmConnect = document.forms['").append(frmConnectId).append("']; ");
 		sb.append("  if (frmConnect) { ");
 		sb.append("    frmConnect.target = '_blank'; ");
 		sb.append("    frmConnect.submit(); ");

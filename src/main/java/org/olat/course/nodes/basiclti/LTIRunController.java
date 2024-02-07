@@ -179,7 +179,7 @@ public class LTIRunController extends BasicController {
 			String displayStr = context.getDisplay();
 			display = LTIDisplayOptions.valueOfOrDefault(displayStr);
 			
-			ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), context, null, userCourseEnv);
+			ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), context, null, false, userCourseEnv);
 			listenTo(ltiCtrl);
 			initRun(ureq);
 			if(contentItems != null && !contentItems.isEmpty()) {
@@ -278,7 +278,7 @@ public class LTIRunController extends BasicController {
 	private void initContentItems(UserRequest ureq, LTI13Context deployment, List<LTI13ContentItem> contentItems) {
 		startButton.setVisible(false);
 		
-		contentItemsCtrl = new LTI13ContentItemsListController(ureq, getWindowControl(), deployment, contentItems);
+		contentItemsCtrl = new LTI13ContentItemsListController(ureq, getWindowControl(), deployment, contentItems, userCourseEnv);
 		listenTo(contentItemsCtrl);
 		startPage.put("contentItemsStarter", contentItemsCtrl.getInitialComponent());
 	}
@@ -307,7 +307,7 @@ public class LTIRunController extends BasicController {
 	
 	private void openLTI13ContentItem(UserRequest ureq, LTI13Context context, LTI13ContentItem contentItem) {
 		removeAsListenerAndDispose(ltiCtrl);
-		ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), context, contentItem, userCourseEnv);
+		ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), context, contentItem, false, userCourseEnv);
 		listenTo(ltiCtrl);
 		
 		openBasicLTIContent(ureq);
