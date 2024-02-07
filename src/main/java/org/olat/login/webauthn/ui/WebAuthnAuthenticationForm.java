@@ -148,6 +148,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		loginEl = uifactory.addTextElement(mainForm.getFormId() + "_name", "lf_login", "lf.login", 128, "", formLayout);
 		loginEl.setAutocomplete("username webauthn");
 		loginEl.setVisible(step == Flow.username);
+		loginEl.setAriaLabel(translate("lf.login.aria"));
 		loginEl.setFocus(true);
 		
 		String page = velocity_root + "/username.html";
