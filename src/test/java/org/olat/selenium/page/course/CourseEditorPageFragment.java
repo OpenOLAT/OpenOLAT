@@ -46,7 +46,6 @@ public class CourseEditorPageFragment {
 	public static final By chooseCpButton = By.className("o_sel_cp_choose_repofile");
 	public static final By chooseWikiButton = By.className("o_sel_wiki_choose_repofile");
 	public static final By chooseTestButton = By.className("o_sel_re_reference_select");
-	public static final By chooseFeedButton = By.className("o_sel_feed_choose_repofile");
 	public static final By chooseScormButton = By.className("o_sel_scorm_choose_repofile");
 	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
 	public static final By chooseSurveyButton = By.className("o_sel_survey_choose_repofile");
@@ -345,7 +344,7 @@ public class CourseEditorPageFragment {
 	}
 	
 	public CourseEditorPageFragment selectTabFeedContent() {
-		return selectTabContent(chooseFeedButton);
+		return selectTabContent(By.className("o_sel_feed"));
 	}
 	
 	public CourseEditorPageFragment selectTabPortfolioContent() {
@@ -475,7 +474,38 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment createFeed(String resourceTitle) {
-		return createResource(chooseFeedButton, resourceTitle, null);
+		By createFeedButtonBy = By.cssSelector("fieldset.o_sel_feed  a.btn.o_sel_re_reference_select");
+		return createResource(createFeedButtonBy, resourceTitle, null);
+	}
+	
+	/**
+	 * Add a podcast or a blog to a course element with an URL.
+	 * 
+	 * @param resourceTitle The new of the ressource
+	 * @param url The URL of the blog or podcast
+	 * @return Itself
+	 */
+	public CourseEditorPageFragment importExternalUrl(String resourceTitle, String url) {
+		By importByUrlBy = By.cssSelector("button.o_sel_repo_import_url");
+		browser.findElement(importByUrlBy).click();
+		
+		By importButton = By.cssSelector("fieldset.o_sel_feed .o_re_reference a.o_sel_re_reference_import_url");
+		OOGraphene.waitElement(importButton, browser);
+		browser.findElement(importButton).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By urlBy = By.cssSelector("fieldset.o_sel_re_import_url_form div.o_sel_import_url input[type='text']");
+		browser.findElement(urlBy).sendKeys(url);
+		By displayNameBy = By.cssSelector("fieldset.o_sel_re_import_url_form div.o_sel_author_imported_name input[type='text']");
+		browser.findElement(displayNameBy).sendKeys(resourceTitle);
+		
+		By submitBy = By.cssSelector("fieldset.o_sel_re_import_url_form .o_sel_repo_save_details button.btn.btn-primary");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		By resourceTitleBy = By.xpath("//div[contains(@class,'o_re_reference')]//h4[text()[contains(.,'" + resourceTitle + "')]]");
+		OOGraphene.waitElementSlowly(resourceTitleBy, 10, browser);
+		return this;
 	}
 	
 	private CourseEditorPageFragment createResource(By chooseButton, String resourceTitle, String resourceType) {

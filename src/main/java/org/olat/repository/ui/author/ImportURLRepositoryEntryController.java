@@ -106,8 +106,10 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("cmd.import.ressource.url.desc");
+		formLayout.setElementCssClass("o_sel_re_import_url_form");
 		
 		urlEl = uifactory.addTextElement("upload", "upload.url", 128, null, formLayout);
+		urlEl.setElementCssClass("o_sel_import_url");
 		urlEl.setFocus(true);
 
 		SpacerElement spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);

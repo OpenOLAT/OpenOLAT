@@ -185,6 +185,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 			}
 			if (isImportUrlLinkVisible()) {
 				Dropdown importDropdown = new Dropdown("import.dropdown", null, true, getTranslator());
+				importDropdown.setElementCssClass("o_sel_repo_import_url");
 				importDropdown.setDomReplaceable(false);
 				importDropdown.setButton(true);
 				importDropdown.setOrientation(DropdownOrientation.right);
@@ -406,7 +407,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 	
 	private void doImportUrlRepositoryEntry(UserRequest ureq) {
 		removeAsListenerAndDispose(importCtrl);
-		importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl(),  referenceProvider.getResourceTypes().stream().toArray(String[]::new));
+		importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl(), referenceProvider.getResourceTypes().stream().toArray(String[]::new));
 		listenTo(importUrlCtrl);
 		
 		removeAsListenerAndDispose(cmc);

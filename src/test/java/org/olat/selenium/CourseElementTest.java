@@ -635,7 +635,7 @@ public class CourseElementTest extends Deployments {
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
 			.selectTabFeedContent()
-			.createFeed(blogTitle);
+			.importExternalUrl(blogTitle, "https://www.openolat.com/feed/");
 
 		//publish the course
 		courseEditor
@@ -649,14 +649,7 @@ public class CourseElementTest extends Deployments {
 			.tree()
 			.selectWithTitle(blogNodeTitle);
 		
-		//check that the title of the podcast is correct
-		WebElement podcastH2 = browser.findElement(By.cssSelector("div.o_blog_info>h2>i.o_FileResource-BLOG_icon"));
-		Assert.assertNotNull(podcastH2);
-		//Assert.assertEquals(blogTitle, podcastH2.getText().trim());
-		
-		FeedPage.getFeedPage(browser)
-			.newExternalBlog(blogTitle, "https://www.openolat.com/feed/")
-			.assertOnBlogPostTitle();
+		OOGraphene.waitElement(By.cssSelector("div.o_blog_info>h2>i.o_FileResource-BLOG_icon"), browser);
 	}
 
 	/**
@@ -716,7 +709,7 @@ public class CourseElementTest extends Deployments {
 		String postContent = "Content of the post";
 		FeedPage feed = FeedPage.getFeedPage(browser);
 		feed
-			.newBlog()
+			.newBlogPost()
 			.fillPostForm(postTitle, postSummary, postContent)
 			.publishPost();
 

@@ -397,7 +397,7 @@ public class PortfolioV2Test extends Deployments {
 
 		FeedPage feed = FeedPage.getFeedPage(browser);
 		feed
-			.newBlog()
+			.newBlogPost()
 			.fillPostForm(postTitle, postSummary, postContent)
 			.publishPost();
 		

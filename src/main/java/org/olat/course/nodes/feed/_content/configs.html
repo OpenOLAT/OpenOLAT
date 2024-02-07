@@ -1,8 +1,10 @@
-<legend>
-	$r.contextHelpWithWrapper($helpUrl)
-	$r.translate("form.title.choose.feed")
-</legend>
-$r.render("reference")
-#if($r.available("rights"))
-	$r.render("rights")
-#end
+<fieldset class="o_sel_feed">
+	<legend>
+		$r.contextHelpWithWrapper($helpUrl)
+		$r.translate("form.title.choose.feed")
+	</legend>
+	$r.render("reference")
+	#if($r.available("rights"))
+		$r.render("rights")
+	#end
+</fieldset>

@@ -124,20 +124,28 @@ public class FeedPage {
 		return this;
 	}
 	
-	public FeedPage newBlog() {
+	/**
+	 * Create the first post of a blog.
+	 * 
+	 * @return Itself
+	 */
+	public FeedPage newBlogPost() {
 		//click the button to create a feed
-		By feedButton = By.xpath("//div[contains(@class,'o_blog_no_posts')]//a[contains(@onclick,'feed.make.internal')]");
-		browser.findElement(feedButton).click();
-		OOGraphene.waitModalDialog(browser);
+		By newPostBy = By.xpath("//div[contains(@class,'o_blog_posts')]//div[contains(@class,'o_empty_state')]//a[contains(@onclick,'feed.make.internal')]");
+		OOGraphene.waitElement(newPostBy, browser);
+		browser.findElement(newPostBy).click();
 		return this;
 	}
 	
+	/**
+	 * Create additional post in a blog.
+	 * 
+	 * @return Itself
+	 */
 	public FeedPage addBlogPost() {
-		By newItemButton = By.className("o_sel_feed_item_new");
-		browser.findElement(newItemButton).click();
-		OOGraphene.waitModalDialog(browser);
-		By postForm = By.className("o_sel_feed_form");
-		OOGraphene.waitElement(postForm, browser);
+		By addPostBy = By.className("o_sel_feed_item_new");
+		OOGraphene.waitElement(addPostBy, browser);
+		browser.findElement(addPostBy).click();
 		return this;
 	}
 	

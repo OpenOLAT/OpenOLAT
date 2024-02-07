@@ -25,7 +25,6 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
@@ -50,7 +49,7 @@ import org.olat.modules.webFeed.ui.FeedUIFactory;
  * 
  * @author gwassmann
  */
-public class FeedNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+public class FeedNodeEditController extends ActivateableTabbableDefaultController {
 
 	public static final String PANE_TAB_CONFIG = "pane.tab.feed";
 	private static final String PANE_TAB_ACCESS = "pane.tab.access";
