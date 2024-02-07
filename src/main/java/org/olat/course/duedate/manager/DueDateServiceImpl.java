@@ -100,6 +100,9 @@ public class DueDateServiceImpl implements DueDateService {
 			Collection<? extends IdentityRef> identities) {
 		if (TYPE_COURSE_START.equals(config.getRelativeToType())) {
 			Date courseStart = addNumOfDays(getCourseStart(courseEntry), config.getNumOfDays());
+			if(courseStart == null) {
+				return Map.of();
+			}
 			return identities.stream().collect(Collectors.toMap(IdentityRef::getKey, i2 -> courseStart));
 		} else if (TYPE_COURSE_LAUNCH.equals(config.getRelativeToType())) {
 			Map<Long, Date> initialLaunchDates = userCourseInformationsManager.getInitialLaunchDates(courseEntry, identities);
