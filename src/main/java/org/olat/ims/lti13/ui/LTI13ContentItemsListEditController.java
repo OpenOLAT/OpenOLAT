@@ -186,7 +186,7 @@ public class LTI13ContentItemsListEditController extends FormBasicController {
 			if("rm".equals(cmd) && button.getUserObject() instanceof ContentItemRow row) {
 				doConfirmRemoveItem(ureq, row);
 			} else if("add".equals(cmd)) {
-				int index = contentItemRows.indexOf(button.getUserObject());
+				int index = contentItemRows.indexOf(button.getUserObject()) + 1;
 				fireEvent(ureq, new LTI13ContentItemAddEvent(index));
 			} else if("up".equals(cmd) && button.getUserObject() instanceof ContentItemRow row) {
 				doMoveUp(row);
