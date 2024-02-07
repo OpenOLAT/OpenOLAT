@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -136,7 +135,6 @@ import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExport;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
-import org.olat.ims.qti21.ui.AssessmentTestSessionComparator;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.modules.ModuleConfiguration;
@@ -792,6 +790,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		AssessmentService assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, this);
 		boolean gradeEnabled = CoreSpringFactory.getImpl(GradeModule.class).isEnabled();
 		GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
@@ -800,6 +799,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, this.getIdent());
 			gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
 		}
+		
+		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qti21Service.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 		
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, getIdent());
 		Map<Long, List<AssessmentTestSession>> identityKeyToSessions = CoreSpringFactory.getImpl(QTI21Service.class)
@@ -825,9 +829,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				}
 			} else {
 				List<AssessmentTestSession> sessions = identityKeyToSessions.get(assessmentEntry.getIdentity().getKey());
-				if (sessions != null && !sessions.isEmpty()) {
-					Collections.sort(sessions, new AssessmentTestSessionComparator());
-					passed = sessions.get(0).getPassed();
+				// Recalculate passed only if a test was done, with the cut value
+				if (sessions != null && !sessions.isEmpty() && cutValue != null && currentEval.getScore() != null) {
+					boolean calculated = currentEval.getScore().compareTo(cutValue.floatValue()) >= 0;
+					passed = Boolean.valueOf(calculated);
+				} else {
+					passed = assessmentEntry.getPassed();
 				}
 			}
 			
