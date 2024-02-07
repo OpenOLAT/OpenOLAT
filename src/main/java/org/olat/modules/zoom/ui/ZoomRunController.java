@@ -98,7 +98,7 @@ public class ZoomRunController extends BasicController implements Activateable2 
             inactiveVC.contextPut("zoomProfileName", zoomConfig.getProfile().getName());
             putInitialPanel(inactiveVC);
         } else {
-            ltiCtrl = new LTI13DisplayController(ureq, wControl, zoomConfig.getLtiContext(), null, admin, coach, participant);
+            ltiCtrl = new LTI13DisplayController(ureq, wControl, zoomConfig.getLtiContext(), null, false, admin, coach, participant);
 
             VelocityContainer runVC = createVelocityContainer("run");
             runVC.put("lti", ltiCtrl.getInitialComponent());
