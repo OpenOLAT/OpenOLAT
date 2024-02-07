@@ -37,10 +37,6 @@ public interface ColorPickerElement extends FormItem {
 
 	void setDomReplacementWrapperRequired(boolean required);
 
-	boolean isDropUp();
-
-	void setDropUp(boolean dropUp);
-
 	/**
 	 *
 	 * @param id
