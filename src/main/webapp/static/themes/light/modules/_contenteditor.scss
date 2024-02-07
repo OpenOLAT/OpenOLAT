@@ -1104,55 +1104,21 @@ table.o_ce_table {
 	border: 1px solid $pre-border-color;
 	border-radius: $border-radius-base;
 
-	.o_code_content_area {
-		padding-top: 24px;
-		padding-bottom: 8px;
-		padding-left: 3px;
+	pre {
+		border: none;
+		margin: 24px 0 8px 0;
+		padding: 0;
+		background-color: inherit;
 
-		.o_code_scrollable_content {
-			display: flex;
-			flex-direction: row;
-			flex-wrap: nowrap;
+		code.hljs {
+			padding: 0 12px;
+			background-color: inherit;
+			white-space: unset;
+			text-overflow: unset;
 
-			.o_code_line_numbers {
-				margin: 0;
-				padding: 0 0 0 10px;
-				line-height: 17px;
-				font-size: 12px;
-				overflow: hidden;
-
-				.o_code_line_number {
-					width: 100%;
-					display: flex;
-					align-items: center;
-
-					.o_code_line_number_span {
-						font-family: $font-family-monospace;
-						text-align: right;
-						margin-left: auto;
-					}
-				}
-			}
-
-			> pre {
-				flex-grow: 1;
-
-				border: none;
-				margin: 0;
-				padding: 0;
-				background-color: inherit;
-
-				code.hljs {
-					padding: 0 10px;
-					background-color: inherit;
-					white-space: unset;
-					text-overflow: unset;
-
-					&.o_line_numbers_enabled {
-						span {
-							white-space: nowrap;
-						}
-					}
+			&.o_line_numbers_enabled {
+				span {
+					white-space: nowrap;
 				}
 			}
 		}
