@@ -53,7 +53,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
-import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -115,23 +114,34 @@ public class FeedNodeConfigsController extends FormBasicController implements Re
 		}
 
 		// CourseNodeReferenceProvider for handling references
+		RepositoryEntry refRepoEntry = feedCourseNode.getReferencedRepositoryEntry();
 		String selectionTitle = translate("button.create.feed");
 		CourseNodeReferenceProvider referenceProvider = new CourseNodeReferenceProvider(repositoryService,
 				List.of(resourceTypeName), emptyStateConfig, selectionTitle, this);
-		referenceCtrl = new RepositoryEntryReferenceController(ureq, getWindowControl(), feedCourseNode.getReferencedRepositoryEntry(), referenceProvider);
+		referenceCtrl = new RepositoryEntryReferenceController(ureq, getWindowControl(), refRepoEntry, referenceProvider);
 		listenTo(referenceCtrl);
 		flc.put("reference", referenceCtrl.getInitialComponent());
 
-		// user rights
-		OLATResource feedResource = null;
-		if (feedCourseNode.getReferencedRepositoryEntry() != null) {
-			feedResource = feedCourseNode.getReferencedRepositoryEntry().getOlatResource();
+		initUserRights(ureq, refRepoEntry);
+
+		// if resource already exists, update UI (iconPanelContent) with labels
+		if (refRepoEntry != null) {
+			OLATResourceable feedResource = refRepoEntry.getOlatResource();
+			updateReferenceContentUI(feedResource);
 		}
+	}
+
+	private void initUserRights(UserRequest ureq, RepositoryEntry feedEntry) {
+		// clean up
+		removeAsListenerAndDispose(nodeRightCtrl);
+		nodeRightCtrl = null;
+
+		// user rights
 		if (!feedCourseNode.hasCustomPreConditions()) {
 			List<NodeRightType> nodeRightTypes = new ArrayList<>(AbstractFeedCourseNode.NODE_RIGHT_TYPES);
 			// remove post/create items right configuration if the feed is external
-			if (feedResource != null) {
-				Feed feed = feedManager.loadFeed(feedResource);
+			if (feedEntry != null) {
+				Feed feed = feedManager.loadFeed(feedEntry.getOlatResource());
 				if (feed.isExternal()) {
 					nodeRightTypes.remove(AbstractFeedCourseNode.NODE_RIGHT_TYPES.stream().filter(r -> r.getIdentifier().equals("post")).findFirst().orElse(null));
 				}
@@ -142,11 +152,6 @@ public class FeedNodeConfigsController extends FormBasicController implements Re
 					nodeRightTypes, feedCourseNode.getModuleConfiguration(), null);
 			listenTo(nodeRightCtrl);
 			flc.put("rights", nodeRightCtrl.getInitialComponent());
-		}
-
-		// if resource already exists, update UI (iconPanelContent) with labels
-		if (feedCourseNode.getReferencedRepositoryEntry() != null) {
-			updateReferenceContentUI(feedResource);
 		}
 	}
 
@@ -163,6 +168,7 @@ public class FeedNodeConfigsController extends FormBasicController implements Re
 			if (event == RepositoryEntryReferenceController.SELECTION_EVENT) {
 				RepositoryEntry newEntry = referenceCtrl.getRepositoryEntry();
 				doChangeResource(ureq, newEntry);
+				initUserRights(ureq, newEntry);
 			} else if (event == RepositoryEntryReferenceController.PREVIEW_EVENT) {
 				doPreview(ureq);
 			}
