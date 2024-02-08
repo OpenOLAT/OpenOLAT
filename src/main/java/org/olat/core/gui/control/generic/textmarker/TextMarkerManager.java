@@ -48,7 +48,7 @@ public interface TextMarkerManager {
 	 * @param textMarkerFile The file. Null value is accepted.
 	 * @return List of textMarker objects
 	 */
-	public List<TextMarker> loadTextMarkerList(VFSLeaf textMarkerFile);
+	List<TextMarker> loadTextMarkerList(VFSLeaf textMarkerFile);
 
 	/**
 	 * Load a text marker file and convert it to a string that can be indexed by
@@ -57,7 +57,7 @@ public interface TextMarkerManager {
 	 * @param textMarkerFile The file. Null value is accepted.
 	 * @return String
 	 */
-	public abstract String loadFileAsString(VFSLeaf textMarkerFile);
+	String loadFileAsString(VFSLeaf textMarkerFile);
 
 	/**
 	 * Save a list of TextMarker objects to a file
@@ -65,7 +65,7 @@ public interface TextMarkerManager {
 	 * @param textMarkerFile The file
 	 * @param textMarkerList The list of TextMarker objects
 	 */
-	public abstract void saveToFile(VFSLeaf textMarkerFile, List<TextMarker> textMarkerList);
+	void saveToFile(VFSLeaf textMarkerFile, List<TextMarker> textMarkerList);
 
 	/**
 	 * check if a resource has textMakring enabled
@@ -73,6 +73,6 @@ public interface TextMarkerManager {
 	 * @param ores
 	 * @return
 	 */
-	public boolean isTextmarkingEnabled(UserRequest ureq, OLATResourceable ores);
+	boolean isTextmarkingEnabled(UserRequest ureq, OLATResourceable ores);
 
 }

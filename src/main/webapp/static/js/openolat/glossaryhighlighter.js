@@ -80,8 +80,7 @@ function o_tm_highlightFromArray(glossaryId, domId) {
 	workedOnDom.push(domId);
 	setLastActiveGlossary(glossaryId);
 	try {
-		markerArray = new Array();
-		markerArray = eval(jQuery(document).data("o_glossaries")[glossaryId]);
+		markerArray = jQuery(document).data("o_glossaries")[glossaryId];
 		// do the highlighting on the given dom element
 		o_tm_doHighlightAll(document, markerArray, domId);
 	} catch (e) {

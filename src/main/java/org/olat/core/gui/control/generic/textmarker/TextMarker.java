@@ -163,16 +163,19 @@ public class TextMarker implements Comparable<TextMarker> {
 		return Collator.getInstance(Locale.ENGLISH).compare(this.getMarkedText(), arg0.getMarkedText());
 	}
     
-    /**
+    @Override
+	public int hashCode() {
+    	String mt = getMarkedText();
+		return mt == null ? 27647554 : mt.hashCode();
+	}
+
+	/**
      * Check only marked text and ignore case
      */
 	@Override
     public boolean equals(Object obj) {
-        if (obj instanceof TextMarker) {
-            TextMarker tm = (TextMarker)obj;
-            if ( getMarkedText().equalsIgnoreCase(tm.getMarkedText()) ) {
-                return true;
-            }
+        if (obj instanceof TextMarker tm) {
+            return getMarkedText().equalsIgnoreCase(tm.getMarkedText());
         }
         return false;
     }

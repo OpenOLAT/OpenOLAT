@@ -26,7 +26,7 @@ debug ? console.log("started") : null;
 function o_gloss_getLastActiveGlossArray(){
 	markerArray = new Array();
 	if (lastActiveGlossary != "" && lastActiveGlossary != "undefined"){
-		markerArray = eval(jQuery(document).data("o_glossaries")[lastActiveGlossary]);
+		markerArray = jQuery(document).data("o_glossaries")[lastActiveGlossary];
 	}
 	return markerArray;
 }

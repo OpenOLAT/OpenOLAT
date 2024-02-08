@@ -65,12 +65,12 @@ class GlossaryDefinitionMapper implements Mapper {
 				+ GlossaryMarkupItemController.INTERNAL_FOLDER_NAME;
 		File glossaryFolderFile = new File(glossaryFolderString);
 		if (!glossaryFolderFile.isDirectory()) {
-			log.warn("GlossaryDefinition delivery failed; path to glossaryFolder not existing: " + relPath);
+			log.warn("GlossaryDefinition delivery failed; path to glossaryFolder not existing: {}", relPath);
 			return new NotFoundMediaResource();
 		}
 		VFSContainer glossaryFolder = new LocalFolderImpl(glossaryFolderFile);
 		if (!gIM.isFolderContainingGlossary(glossaryFolder)) {
-			log.warn("GlossaryDefinition delivery failed; glossaryFolder doesn't contain a valid Glossary: " + glossaryFolder);
+			log.warn("GlossaryDefinition delivery failed; glossaryFolder doesn't contain a valid Glossary: {}", glossaryFolder);
 			return new NotFoundMediaResource();
 		}
 
@@ -120,7 +120,7 @@ class GlossaryDefinitionMapper implements Mapper {
 		resource.setData(filteredHtml);
 		resource.setEncoding("utf-8");
 
-		if (log.isDebugEnabled()) log.debug("loaded definition for " + glossaryMainTerm);
+		log.debug("loaded definition for {}", glossaryMainTerm);
 		return resource;
 	}
 	

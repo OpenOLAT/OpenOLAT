@@ -8,6 +8,8 @@
 #end
 <div id="$domId">$r.render("tmComponent")</div>
 <script>
+"use strict";
+
 #if ($glossaryEnabled)
 	jQuery(function() {
 		var glossaryId = "$glossaryId";
@@ -20,12 +22,13 @@
 		var terms = glossaries[glossaryId];
 		if (terms == null) {
 			// do load
-			var url = b_glossaryTermMapperPath + "/" + glossaryId + "/terms.js";
+			var url = b_glossaryTermMapperPath + "/" + glossaryId + "/terms.json";
 			jQuery.ajax(url, {
 				encoding : 'UTF-8',
-				method : 'GET', 
+				method : 'GET',
+				dataType: 'json',
 				success: function(data, textStatus, jqXHR) {
-					jQuery(document).data("o_glossaries")[glossaryId] = eval(data);
+					jQuery(document).data("o_glossaries")[glossaryId] = data;
 					o_tm_highlightFromArray(glossaryId, "$domId");
 				}
 			});

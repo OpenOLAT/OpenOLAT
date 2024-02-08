@@ -45,16 +45,6 @@ import org.olat.core.util.vfs.VFSContainer;
  * 
  */
 public class TextMarkerJsGenerator {
-
-	
-	public static String loadGlossaryItemListAsJSCommandsString(VFSContainer glossaryFolder, String domID) {
-		List<GlossaryItem> glossaryItemArr = CoreSpringFactory.getImpl(GlossaryItemManager.class).getGlossaryItemListByVFSItem(glossaryFolder);
-		StringBuilder sb = new StringBuilder(4096);		
-		sb.append("o_info.glossaryTermArray_").append(domID).append(" = ").append(buildJSArrayString(glossaryItemArr));
-		// start highlighting process with this array
-		sb.append("jQuery(function() {o_tm_highlightFromArray(o_info.glossaryTermArray_").append(domID).append(", \"").append(domID).append("\")});");
-		return sb.toString();
-	}
 	
 	public static String loadGlossaryItemListAsJSArray(VFSContainer glossaryFolder) {
 		List<GlossaryItem> glossaryItemArr = CoreSpringFactory.getImpl(GlossaryItemManager.class).getGlossaryItemListByVFSItem(glossaryFolder);
@@ -64,7 +54,7 @@ public class TextMarkerJsGenerator {
 	/*
 	 * build array of glossaryTerms containing array with term, flexion, synonym...
 	 */
-	public static StringBuilder buildJSArrayString(List<GlossaryItem> glossaryItemArr){
+	private static StringBuilder buildJSArrayString(List<GlossaryItem> glossaryItemArr){
 		StringBuilder sb = new StringBuilder(4096);
 		sb.append("new Array(");
 		for (Iterator<GlossaryItem> iterator = glossaryItemArr.iterator(); iterator.hasNext();) {

@@ -20,18 +20,20 @@
 package org.olat.core.gui.control.generic.textmarker;
 
 import java.io.File;
+import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.glossary.GlossaryItem;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
 import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.gui.media.StringMediaResource;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -51,7 +53,7 @@ class GlossaryTermMapper implements Mapper {
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		GlossaryItemManager gIM = CoreSpringFactory.getImpl(GlossaryItemManager.class);
+		GlossaryItemManager glossaryManager = CoreSpringFactory.getImpl(GlossaryItemManager.class);
 		// security checks are done by MapperRegistry
 		String[] parts = relPath.split("/");
 		String glossaryId = parts[1];
@@ -60,34 +62,30 @@ class GlossaryTermMapper implements Mapper {
 				+ GlossaryMarkupItemController.INTERNAL_FOLDER_NAME;
 		File glossaryFolderFile = new File(glossaryFolderString);
 		if (!glossaryFolderFile.isDirectory()) {
-			log.warn("GlossaryTerms delivery failed; path to glossaryFolder not existing: " + relPath);
+			log.warn("GlossaryTerms delivery failed; path to glossaryFolder not existing: {}", relPath);
 			return new NotFoundMediaResource();
 		}
 		VFSContainer glossaryFolder = new LocalFolderImpl(glossaryFolderFile);
-		if (!gIM.isFolderContainingGlossary(glossaryFolder)) {
-			log.warn("GlossaryTerms delivery failed; glossaryFolder doesn't contain a valid Glossary: " + glossaryFolder);
+		if (!glossaryManager.isFolderContainingGlossary(glossaryFolder)) {
+			log.warn("GlossaryTerms delivery failed; glossaryFolder doesn't contain a valid Glossary: {}", glossaryFolder);
 			return new NotFoundMediaResource();
 		}
-
-		// Create a media resource
-		StringMediaResource resource = new StringMediaResource() {
-			@Override
-			public void prepare(HttpServletResponse hres) {
-			// don't use normal string media headers which prevent caching,
-			// use standard browser caching based on last modified timestamp
-			}
-		};
-
-		resource.setLastModified(gIM.getGlossaryLastModifiedTime(glossaryFolder));
-		resource.setContentType("text/javascript");
-		// Get data
-		String glossaryArrayData = TextMarkerJsGenerator.loadGlossaryItemListAsJSArray(glossaryFolder);
-
-		resource.setData(glossaryArrayData);
-		// UTF-8 encoding used in this js file since explicitly set in the ajax
-		// call (usually js files are 8859-1)
-		resource.setEncoding("utf-8");
-		return resource;
+		
+		List<GlossaryItem> glossaryItemArr = glossaryManager.getGlossaryItemListByVFSItem(glossaryFolder);
+		JSONArray jsonObject = toJSON(glossaryItemArr);
+		return new JSONMediaResource(jsonObject, "utf-8");
 	}
-
+	
+	private JSONArray toJSON(List<GlossaryItem> glossaryItemsList) {
+		JSONArray items = new JSONArray();
+		for (GlossaryItem glossaryItem:glossaryItemsList) {
+			List<String> allStrings = glossaryItem.getAllStringsToMarkup();
+			JSONArray item = new JSONArray();
+			for (String termFlexionSynonym: allStrings) {
+				item.put(termFlexionSynonym);
+			}
+			items.put(item);
+		}
+		return items;
+	}
 }
