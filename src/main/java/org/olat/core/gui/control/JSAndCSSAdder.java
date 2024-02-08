@@ -76,12 +76,6 @@ public interface JSAndCSSAdder {
 	 * 
 	 */
 	public boolean finishAndCheckChange();
-	
-	/**
-	 * @param baseClass
-	 * @param rawHeader
-	 */
-	public void addRequiredRawHeader(Class<?> baseClass, String rawHeader);
 
 	/**
 	 *

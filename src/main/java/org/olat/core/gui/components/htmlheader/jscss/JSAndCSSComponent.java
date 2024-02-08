@@ -56,7 +56,6 @@ public class JSAndCSSComponent extends AbstractComponent {
 	private final Class<?> baseClass;
 	private final boolean forceCssRemove;
 	private final int cssFileIndex;
-	private final String rawHeader;
 
 	private int refreshIntervall;
 	private boolean fullPageRefresh = false;
@@ -79,7 +78,6 @@ public class JSAndCSSComponent extends AbstractComponent {
 		this.forceCssRemove = false;
 		// use before theme as default configuration
 		this.cssFileIndex = JSAndCSSAdder.CSS_INDEX_BEFORE_THEME;
-		this.rawHeader = null;
 		this.refreshIntervall = refreshIntervall;
 	}
 
@@ -90,7 +88,7 @@ public class JSAndCSSComponent extends AbstractComponent {
 	 * @param forceCssRemove if true, the given css will be removed if no longer necessary (e.g. for a custom css as in the course), otherwise it will stay in the html-header for the whole usersession
 	 * @param rawHeader -only use if neither jsFileNames nor cssFileName can be used (only for dynamically created jslibs for example)-a string (e.g. "<script...." or "<link rel=...  those entries will be refreshed after each page, that is entries causes an full page reload in ajax mode
 	 */
-	public JSAndCSSComponent(String componentName, Class<?> baseClass, boolean forceCssRemove, String rawHeader) {
+	public JSAndCSSComponent(String componentName, Class<?> baseClass, boolean forceCssRemove) {
 		super(componentName);
 		this.baseClass = baseClass;
 		this.jsFileNames = null;
@@ -101,18 +99,7 @@ public class JSAndCSSComponent extends AbstractComponent {
 		this.forceCssRemove = forceCssRemove;
 		// use before theme as default configuration
 		this.cssFileIndex = JSAndCSSAdder.CSS_INDEX_BEFORE_THEME;
-		this.rawHeader = rawHeader;
 		this.refreshIntervall = -1;
-	}
-
-	/**
-	 * 
-	 * @param componentName the name of the component
-	 * @param baseClass the class of the controller (or from the package's Manager) from where the resources will be fetched: e.g. org/olat/demo/_static/js or /css respectively.
-	 * @param forceCssRemove if true, the given css will be removed if no longer necessary (e.g. for a custom css as in the course), otherwise it will stay in the html-header for the whole usersession
-	 */
-	public JSAndCSSComponent(String componentName, Class<?> baseClass, boolean forceCssRemove) {
-		this(componentName, baseClass, forceCssRemove, null);
 	}
 	
 	/**
@@ -129,7 +116,6 @@ public class JSAndCSSComponent extends AbstractComponent {
 		baseClass = null;
 		forceCssRemove = false;
 		cssFileIndex = -1;
-		rawHeader = null;
 		jsFileNames = jsPath;
 		
 		if(cssPath != null) {
@@ -163,9 +149,6 @@ public class JSAndCSSComponent extends AbstractComponent {
 					jsadder.addRequiredCSSPath(cssPath, true, index);
 				}
 			}
-		}
-		if (rawHeader != null) {
-			jsadder.addRequiredRawHeader(baseClass, rawHeader);
 		}
 		if (fullPageRefresh) {
 			jsadder.requireFullPageRefresh();

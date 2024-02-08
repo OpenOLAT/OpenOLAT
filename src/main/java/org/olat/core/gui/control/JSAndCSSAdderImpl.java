@@ -65,7 +65,7 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	
 	private static final Logger log = Tracing.createLoggerFor(JSAndCSSAdderImpl.class);
 
-	private DelegatingComponent dc;
+	private final DelegatingComponent dc;
 
 	private List<String> curCssList = new ArrayList<>();
 	private List<String> prevCssList = new ArrayList<>();
@@ -78,7 +78,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	private List<String> curJsList = new ArrayList<>();
 	private List<String> prevJsList = new ArrayList<>();
 
-	
 	private Set<String> cssToAdd;  // the css to add for the next round
 	private Set<String> cssToRemove;  // the css to remove for the next round
 	private List<String> jsToAdd; // the js to add for the next round
@@ -86,23 +85,17 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	private List<String> cssToRender; // the css's to render
 	private List<String> jsToRender; // the js's to render
 	
-	// FIXME:fj: make the rawset deprecated; all raw includes can be replaced by a css or js include; the js calls can be moved to the velocity files.
-	// for QTIEditormaincontroller / Displaycontroller -> Autocomplete files which need are dynamic files to be included -> 
-	// simplest sol would be: get the content of the file (in utf-8) and put it into <script> tags of the appropriate velocitycontainer.
-	private Collection<String> curRawSet = new ArrayList<>(2);
-	private Collection<String> oldRawSet = new ArrayList<>(2);
-	
 	private static final int MINIMAL_REFRESHINTERVAL = 1000;//in [ms] 
 	private int refreshInterval = -1;
 	private final WindowBackOfficeImpl wboImpl;
 
-	private Map<String,String> jsPathToJsFileName = new HashMap<>();
-	private Map<String,String> jsPathToEvalFileEncoding = new HashMap<>();
+	private final Map<String,String> jsPathToJsFileName = new HashMap<>();
+	private final Map<String,String> jsPathToEvalFileEncoding = new HashMap<>();
 	
 	private static final String ENCODING_DEFAULT = "utf-8";
 
-	private Map<String, String> cssPathToId = new HashMap<>();
-	private Map<String, Integer> cssPathToIndex = new HashMap<>();
+	private final Map<String, String> cssPathToId = new HashMap<>();
+	private final Map<String, Integer> cssPathToIndex = new HashMap<>();
 	private final Comparator<String> cssIndexComparator = (css1, css2) -> {
 		int index1 = cssPathToIndex.get(css1);
 		int index2 = cssPathToIndex.get(css2);
@@ -210,20 +203,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		List<String> curJs = new ArrayList<>(curJsList);
 		curJs.removeAll(allJsKeepSet); // the current minus the previously added ones = the new ones to be added
 		jsToAdd = curJs;
-
-		//System.out.println("---- css-add:\n"+cssToAdd);
-		//System.out.println("---- css-remove:\n"+cssToRemove);
-		//System.out.println("---- js-add:\n"+jsToAdd);
-		
-		// raw set -> deprecated, see comments at variable declaration
-		boolean wasRawChanged = false;
-		if (curRawSet.size() != oldRawSet.size()) {
-			wasRawChanged = true;
-		} else {
-			// same size, but could still be different:
-			wasRawChanged = !curRawSet.containsAll(oldRawSet);
-		}
-
 		
 		// ----- end-of-calculations: make the cur to the prev for the next add-round -----
 		// css
@@ -250,12 +229,7 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		jsTmp.clear();
 		prevJsList = curJsList;
 		curJsList = jsTmp;
-		jsToRender = prevJsList;
-		// raw set -> deprecated, see comments at variable declaration
-		Collection<String> tmp = oldRawSet;
-		oldRawSet = curRawSet;
-		curRawSet = tmp;
-		curRawSet.clear();		
+		jsToRender = prevJsList;	
 		
 		// set and reset update/refresh intervall for ajax polling
 		wboImpl.setRequiredRefreshInterval(refreshInterval);
@@ -264,7 +238,7 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		boolean fullPageRefresh = requiresFullPageRefresh;
 		requiresFullPageRefresh = false;
 		
-		return wasRawChanged || fullPageRefresh;
+		return fullPageRefresh;
 	}
 
 	public Component getJsCssRawHtmlHeader() {
@@ -306,19 +280,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 				sb.append("<link id=\"").append(acssId).append("\" rel=\"StyleSheet\" href=\"").append(cssExpr).append("\" media=\"all\" />\n");
 			}
 		}
-		
-		if (postThemeRendering) {
-			// Render raw header after theme. See also OLAT-4262
-			for (Iterator<String> it_raw = oldRawSet.iterator(); it_raw.hasNext();) {
-				String rawE = it_raw.next();
-				sb.append("\n").append(rawE);
-			}			
-		}
-	}
-
-	@Override
-	public void addRequiredRawHeader(Class<?> baseClass, String rawHeader) {
-		curRawSet.add(rawHeader);
 	}
 
 	@Override
