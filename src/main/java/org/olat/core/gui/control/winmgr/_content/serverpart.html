@@ -1,6 +1,8 @@
 ## Set height to 0 to fix IE rendering issue (div would consume some visible space)
 <div style="height:0px">
 <script>
+"use strict";
+
 var stopped = true;
 function initPolling () {
 	o_info.lastClickTime = new Date().getTime();
@@ -15,7 +17,6 @@ function initPolling () {
 ##observe mouse/keyboard activity to resume polling
 jQuery("#o_body").bind("mouseover click keypress", function(event){initPolling();});
 
-o_info.mainwinref = this.window;
 o_info.wins = {};
 o_info.poller = null;
 
@@ -41,6 +42,7 @@ function tick () {
 						o_info.ajaxpp = jQuery.ajax({
 							method:'POST',
 							url:'$mapuri/?_csrf=$csrfToken&oow=' + window.name,
+							dataType: 'json',
 							cache: false,
 							success:onPollSuccess,
 							error:onPollFailure
@@ -76,7 +78,7 @@ function onPollSuccess(content, s, response) {
 	 	pollError = 0;
 	} else if(response.status >= 200 && response.status < 300) {
 	 	pollError = 0;
-	 	o_onc(response);
+	 	o_ainvoke(content);
 	} else {
 	 	pollError++;
 	}
@@ -90,15 +92,6 @@ function onPollFailure(response) {
 	  o_info.poller.cancel(); 
   }
 }
-/* ]]> */
 </script>
 $r.render("pollperiodPanel")
-## for safari: we cannot use display:none which would be the obvious choice here
-<div id="oaawrp" style="visibility:hidden;width:0px;height:0px">
-## don't use the document.write approach, triggers an 'page contains insecure elements' warning (OLAT-4548). Load empty.html instead
-<iframe src='$r.staticLink("empty.html")' name="oaa0" id="oaa0" width="1" height="1" onload="clearAfterAjaxIframeCall()"></iframe>
-## try javascript:void(0)
-</div>
-## below we need to provide an action attribute to make it html 4.01 transitional
-	<form id="o_oaap" method="post" action="#" onsubmit="return false" target="oaa0"><input type="hidden" name="v"></form>
 </div>

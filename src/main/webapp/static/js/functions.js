@@ -74,10 +74,7 @@ var BLoader = {
 	// used to describe execution context verbally, this is only used to improve meaninfull logging
 	executeGlobalJS : function(jsString, contextDesc) {
 		try{
-			// FIXME:FG refactor as soon as global exec available in prototype
-			// https://prototype.lighthouseapp.com/projects/8886/tickets/433-provide-an-eval-that-works-in-global-scope 
-			if (window.execScript) window.execScript(jsString); // IE style
-			else window.eval(jsString);
+			window.eval(jsString);
 		} catch(e){
 			if(window.console) console.log(contextDesc, 'cannot execute js', jsString);
 			if (o_info.debug) { // add webbrowser console log
@@ -376,14 +373,6 @@ function o2cl_noDirtyCheck() {
 		o_beforeserver();
 		return true;
 	}
-}
-
-// on ajax poll complete
-function o_onc(response) {
-	var te = response.responseText;
-	BLoader.executeGlobalJS("o_info.last_o_onc="+te+";", 'o_onc');
-	//asynchronous! from polling
-	o_ainvoke(o_info.last_o_onc);
 }
 
 function o_allowNextClick() {
@@ -2548,7 +2537,6 @@ function o_doPrint() {
 			// We use best guess code to find the target iframe in the window frames list
 			for (i=0; frames.length > i; i++) {
 				iframe = frames[i];
-				if (iframe.name == 'oaa0') continue; // skip ajax iframe
 				var domFrame = document.getElementsByName(iframe.name)[0];
 				if (domFrame && domFrame.getAttribute('class') == 'ext-shim') continue; // skip ext shim iframe
 				// Buest guess is that this is our renamed target iframe			
@@ -2661,7 +2649,7 @@ function b_hideExtMessageBox() {
 var BDebugger = {
 	_lastDOMCount : 0,
 	_lastObjCount : 0,
-	_knownGlobalOLATObjects : ["o_afterserver","o_onc","o_getMainWin","o_ainvoke","o_info","o_beforeserver","o_ffEvent","o_openPopUp","o_debu_show","o_logwarn","o_dbg_unmark","o_ffRegisterSubmit","o_clearConsole","o_init","o_log","o_allowNextClick","o_dbg_mark","o_debu_hide","o_logerr","o_debu_oldcn","o_debu_oldtt","o_debug_trid","o_log_all"],
+	_knownGlobalOLATObjects : ["o_afterserver","o_getMainWin","o_ainvoke","o_info","o_beforeserver","o_ffEvent","o_openPopUp","o_debu_show","o_logwarn","o_dbg_unmark","o_ffRegisterSubmit","o_clearConsole","o_init","o_log","o_allowNextClick","o_dbg_mark","o_debu_hide","o_logerr","o_debu_oldcn","o_debu_oldtt","o_debug_trid","o_log_all"],
 		
 	_countDOMElements : function() {
 		return document.getElementsByTagName('*').length;
