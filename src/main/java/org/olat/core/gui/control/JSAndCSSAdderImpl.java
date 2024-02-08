@@ -44,7 +44,6 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.winmgr.WindowBackOfficeImpl;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -325,17 +324,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 				sb.append("\n").append(rawE);
 			}			
 		}
-	}
-
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		//
-	}
-
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		//
 	}
 
 	@Override

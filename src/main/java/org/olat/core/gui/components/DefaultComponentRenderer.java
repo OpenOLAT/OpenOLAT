@@ -23,7 +23,6 @@ import org.olat.core.gui.components.form.flexible.FormBaseComponent;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -90,20 +89,6 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 	public abstract void renderComponent(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args);
-
-
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
-			Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		//
-	}
-
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
-			StringOutput sb, Component source, RenderingState rstate) {
-		//
-	}
 	
 	protected String layout(Component component, String[] args) {
 		boolean hasArgs = (args != null && args.length > 0 && args[0] != null);

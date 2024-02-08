@@ -36,7 +36,6 @@ import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -129,25 +128,6 @@ class FormWrapperContainerRenderer extends DefaultComponentRenderer {
 			 */
 			Command focus = CommandFactory.createFlexiFocus(formC.getFormName(), null);
 			formC.getWindowControl().getWindowBackOffice().sendCommandTo(focus);
-		}
-	}
-
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		FormWrapperContainer formC = (FormWrapperContainer) source;
-		ComponentCollection toRender = formC.getFormLayout();
-		if (toRender != null) {
-			renderer.renderBodyOnLoadJSFunctionCall(sb, toRender, rstate);
-		}
-	}
-
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		FormWrapperContainer formC = (FormWrapperContainer) source;
-		ComponentCollection toRender = formC.getFormLayout();
-		if (toRender != null) {
-			renderer.renderHeaderIncludes(sb, toRender, rstate);
 		}
 	}
 }

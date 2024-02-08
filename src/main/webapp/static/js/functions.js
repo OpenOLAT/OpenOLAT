@@ -534,11 +534,8 @@ function o_ainvoke(r) {
 							var civis = c1["cidvis"];// component visibility
 							var withWrapper = c1["cw"]; // component has a wrapper element, replace only inner content
 							var hfrag = c1["hfrag"]; // html fragment of component
-							var jsol = c1["jsol"]; // javascript on load
-							var hdr = c1["hdr"]; // header
-							if (o_info.debug) o_log("c2: redraw: "+c1["cname"]+ " ("+ciid+") "+c1["hfragsize"]+" bytes, listener(s): "+c1["clisteners"]);
 							
-							var hdrco = hdr+"\n\n"+hfrag;
+							if (o_info.debug) o_log("c2: redraw: "+c1["cname"]+ " ("+ciid+") "+c1["hfragsize"]+" bytes, listener(s): "+c1["clisteners"]);
 							
 							var replaceElement = false;
 							var newcId = "o_c"+ciid;
@@ -594,26 +591,22 @@ function o_ainvoke(r) {
 								
 								if(replaceElement || !withWrapper) {
 									// replace entire DOM element 
-									newc.replaceWith(hdrco);	
+									newc.replaceWith(hfrag);	
 								} else {
 									try{
-										newc.empty().html(hdrco);
+										newc.empty().html(hfrag);
 										//check if the operation is a success especially for IE8
-										if(hdrco.length > 0 && newc.get(0).innerHTML == "") {
-											newc.get(0).innerHTML = hdrco;
+										if(hfrag.length > 0 && newc.get(0).innerHTML == "") {
+											newc.get(0).innerHTML = hfrag;
 										}
 									} catch(e) {
 										if(window.console) console.log(e);
-										if(window.console) console.log('Fragment',hdrco);
+										if(window.console) console.log('Fragment',hfrag);
 									}
 								}
 								newc = null;
 
 								checkDrakes();
-								
-								if (jsol != "") {
-									BLoader.executeGlobalJS(jsol, 'o_ainvoker::jsol');
-								}
 							}
 						}
 						break;

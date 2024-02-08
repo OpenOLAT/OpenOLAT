@@ -46,7 +46,6 @@ import org.olat.core.gui.dev.Util;
 import org.olat.core.gui.dev.controller.SourceViewController;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.intercept.DebugHelper;
@@ -79,17 +78,6 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 				// save urlbuilder for later use (valid only for one request scope thus
 				// transient, normally you may not save the url builder for later usage)
 				debugURLBuilder = ubu;
-			}
-
-			@Override
-			public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-					RenderingState rstate) {
-			// void
-			}
-
-			@Override
-			public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-			// void
 			}
 		}); 
 		
@@ -203,17 +191,6 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 					// render original component
 					originalRenderer.render(renderer, sb, source, ubu, translator, renderResult, args);
 				}
-			}
-
-			@Override
-			public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-					RenderingState rstate) {
-				originalRenderer.renderHeaderIncludes(renderer, sb, source, ubu, translator, rstate);
-			}
-
-			@Override
-			public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-				originalRenderer.renderBodyOnLoadJSFunctionCall(renderer, sb, source, rstate);
 			}
 		};
 	}

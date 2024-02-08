@@ -28,7 +28,6 @@ package org.olat.core.gui.components;
 
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -56,28 +55,4 @@ public interface ComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args);
 
-	/**
-	 * @deprecated please use either the validate(..) method in Component.java in your component or create a new JSAndCSSComponent(...) in your controller which you can then include in your render tree. This method here is legacy and does not support web 2.0 mode.<br>
-	 * <br>
-	 * things like css and .js files to be loaded in the <head>tag, e.g. <script
-	 * src="/bla/blu/blo.js" />
-	 * 
-	 * @param renderer
-	 * @param sb
-	 * @param source
-	 * @param ubu
-	 * @param translator
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate);
-
-	/**
-	 * contributes a line to the following code: <script>
-	 * function o2init() { < < < <other previous inserts>>>> < < < <here comes the
-	 * insert, e.g. olat_epoz_init();>>>> } </script> ... <body onLoad="o2init()">
-	 * 
-	 * @param renderer
-	 * @param sb
-	 * @param source
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate);
 }

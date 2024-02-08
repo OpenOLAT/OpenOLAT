@@ -20,18 +20,14 @@
 package org.olat.core.gui.control.generic.portal;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.notifications.PersonalRSSUtil;
-import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.HtmlHeaderComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.home.HomeMainController;
@@ -60,15 +56,6 @@ public class PortalMainController extends BasicController {
 		portalEditButton = LinkFactory.createButtonSmall("command.portal.edit", welcome, this);
 		portalEditButton.setIconLeftCSS("o_icon o_icon_edit");
 		portalEditButton.setElementCssClass("pull-right");
-
-		// rss link
-		String rssLink = PersonalRSSUtil.getPersonalRssLink(ureq);
-		welcome.contextPut("rssLink", rssLink);
-		StringOutput staticUrl = new StringOutput();
-		StaticMediaDispatcher.renderStaticURI(staticUrl, "js/egg.js");
-		welcome.put("htmlHeader", new HtmlHeaderComponent("rss", null, "<link rel=\"alternate\" type=\"application/rss+xml\" title=\""
-				+ translate("welcome.rss") + "\" href=\"" + rssLink + "\" />\n" + "<script src=\""
-				+ staticUrl.toString() + "\"></script>"));
 
 		// add portal
 		if (myPortal == null) {

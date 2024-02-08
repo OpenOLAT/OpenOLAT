@@ -49,8 +49,6 @@ if (top!=self){top.location=self.location+"?o_winrndo=1";}
 #end
 function o_start() {
 	o_init();
-	## js B
-	$r.renderBodyOnLoadJSFunctionCall()
 	## js E
 	## Set flag that bodyOnLoad has already been called and the page is fully loaded. 
 	## Needed to identify if call like Ext.onRead() makes any sense (often not the case in AJAX mode)
@@ -213,10 +211,6 @@ $r.render("jsCssRawHtmlHeader", "post-theme")
 		.o_custom_navbar-brand { background-image: none; }
 	#end
 </style>
-
-
-## deprecated - include any raw header
-$r.renderHeaderIncludes()
 
 ## Page title
 <title>$windowTitle.getValue()</title>

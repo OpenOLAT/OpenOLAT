@@ -114,58 +114,6 @@ public class Renderer {
 	}
 
 	/**
-	 * renders the HTMLHeader-Part which this component comp needs. e.g. the
-	 * richtext component needs some css and javascript libraries an
-	 * velocity-container is a special case: it should collect the information
-	 * from all the children that are visible since all could be renderer. since
-	 * the actual rendering of a component depends on the page and is not know
-	 * beforehand, we could include some css/js which turns out not to be needed
-	 * in this request, but it is cached by the browser anyway, so it should not
-	 * matter to much. a little advice if you want to do it perfectly : program
-	 * the controller in such a way that they make a component invisible if not
-	 * needed
-	 * 
-	 * @param sb
-	 * @param source
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer
-	 */
-	public void renderBodyOnLoadJSFunctionCall(StringOutput sb, Component source, RenderingState rstate) {
-		if (source != null && source.isVisible()) {
-			ComponentRenderer cr = findComponentRenderer(source);
-			cr.renderBodyOnLoadJSFunctionCall(this, sb, source, rstate);
-		}
-	}
-	
-	/**
-	 * to be called by VelocityRenderDecorator only
-	 * @param sb
-	 * @param source
-	 */
-	public void renderBodyOnLoadJSFunctionCall(StringOutput sb, Component source) {
-		RenderingState rstate = new RenderingState();
-		renderBodyOnLoadJSFunctionCall(sb, source, rstate);
-	}
-
-
-	/**
-	 * @param sb
-	 * @param source
-	 */
-	public void renderHeaderIncludes(StringOutput sb, Component source, RenderingState rstate) {
-		if (source != null && source.isVisible()) {
-			ComponentRenderer cr = findComponentRenderer(source);
-			
-			URLBuilder cubu = urlBuilder.createCopyFor(source);
-			cr.renderHeaderIncludes(this, sb, source, cubu, translator, rstate);
-		}
-	}
-	
-	public void renderHeaderIncludes(StringOutput sb, Component source) {
-		RenderingState rstate = new RenderingState();
-		renderHeaderIncludes(sb, source, rstate);
-	}
-
-	/**
 	 * searches the rootcomponent of this renderer and all children recursively
 	 * for a component by its name
 	 * 

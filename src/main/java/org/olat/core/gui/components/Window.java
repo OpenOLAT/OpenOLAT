@@ -1086,8 +1086,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							Panel wrapper = new Panel("renderpanel");
 							wrapper.setDomReplaceable(false); // to omit <div> around the render helper panel
 							RenderResult renderResult = null;
-							StringOutput jsol = null;
-							StringOutput hdr = null;
 							StringOutput result = null;
 							try {
 								toRender.setDomReplaceable(false);
@@ -1106,10 +1104,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 								}
 
 								Renderer fr = Renderer.getInstance(wrapper,null, ubu, renderResult, gsettings, csrfToken);
-								jsol = StringOutputPool.allocStringBuilder(2048);
-								fr.renderBodyOnLoadJSFunctionCall(jsol,toRender);
-								hdr = StringOutputPool.allocStringBuilder(2048);
-								fr.renderHeaderIncludes(hdr, toRender);
 
 								long pstart = 0;
 								if (isDebugLog) {
@@ -1155,8 +1149,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							jo.put("cw", toRender.isDomReplacementWrapperRequired());
 							jo.put("cidvis", toRender.isVisible());
 							jo.put("hfrag", StringOutputPool.freePop(result));
-							jo.put("jsol", StringOutputPool.freePop(jsol));
-							jo.put("hdr", StringOutputPool.freePop(hdr));
 							ja.put(jo);
 						}
 						//polling case should never set the asyncMediaResp. 
@@ -1168,7 +1160,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 						if (isDebugLog) {
 							long rstop = System.currentTimeMillis();
 							debugMsg.append(";inl_part_render:").append((rstop-rstart));
-							log.debug(debugMsg.toString());
+							log.debug("{}", debugMsg);
 						}
 
 					}
@@ -1176,7 +1168,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 					com.setSubJSON(root);
 					if (isDebugLog) {
 						long durationHandleDirties = System.currentTimeMillis() - start;
-						log.debug("Perf-Test:" + durationHandleDirties);
+						log.debug("Perf-Test:{}", durationHandleDirties);
 					}
 					return com;
 					
@@ -1186,7 +1178,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 			}
 			if (isDebugLog) {
 				long durationHandleDirties = System.currentTimeMillis() - start;
-				log.debug("Perf-Test: Window.handleDirties finished 2  durationHandleDirties=" + durationHandleDirties);
+				log.debug("Perf-Test: Window.handleDirties finished 2  durationHandleDirties={}", durationHandleDirties);
 			}
 			return com;
 		}

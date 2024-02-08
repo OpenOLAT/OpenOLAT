@@ -32,7 +32,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
@@ -74,26 +73,6 @@ public class VelocityContainerRenderer extends DefaultComponentRenderer {
 			}
 		} catch(Exception e) {
 			log.error("", e);
-		}
-	}
-
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
-		VelocityContainer vc = (VelocityContainer) source;
-		// the velocity container itself needs no headerincludes, but ask the
-		// children also
-		for (Component child : vc.getComponents()) {
-			renderer.renderHeaderIncludes(sb, child, rstate);
-		}
-	}
-
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		VelocityContainer vc = (VelocityContainer) source;
-		// the velocity container itself needs no headerincludes, but ask the
-		// children also
-		for (Component child : vc.getComponents()) {
-			renderer.renderBodyOnLoadJSFunctionCall(sb, child, rstate);
 		}
 	}
 }

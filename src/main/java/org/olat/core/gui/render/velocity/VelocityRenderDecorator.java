@@ -321,30 +321,6 @@ public class VelocityRenderDecorator implements Closeable {
 		renderer.getUrlBuilder().buildURI(sb, new String[] { VelocityContainer.COMMAND_ID, paramKey }, new String[] { command, paramValue }, isIframePostEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		return sb;
 	}
-	
-	/**
-	 * should be called within the main .html template after the <head>tag. gets
-	 * some js/css/onLoad code from the component to render/work correctly.
-	 * 
-	 * @return
-	 */
-	public StringOutput renderBodyOnLoadJSFunctionCall() {
-		StringOutput sb = new StringOutput(100);
-		renderer.renderBodyOnLoadJSFunctionCall(sb, vc);
-		return sb;
-	}
-
-	/**
-	 * should be called within the main .html template after the <head>tag. gets
-	 * some js/css/onLoad code from the component to render/work correctly.
-	 * 
-	 * @return
-	 */
-	public StringOutput renderHeaderIncludes() {
-		StringOutput sb = new StringOutput(100);
-		renderer.renderHeaderIncludes(sb, vc);
-		return sb;
-	}
 
 	/**
 	 * Note: use only rarely - e.g. for static redirects to login screen or to a

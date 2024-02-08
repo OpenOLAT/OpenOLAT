@@ -25,7 +25,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.PanelRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -56,33 +55,6 @@ class LayeredPanelRenderer extends PanelRenderer {
 			renderer.render(sb, component, args);
 			sb.append("</div>");
 			level++;
-		}
-	}
-
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
-			Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		LayeredPanel panel = (LayeredPanel) source;
-		List<Component> layers = panel.getLayers();
-		for (Component component : layers) {
-			if (component != null) {
-				// delegate header rendering to the content
-				renderer.renderHeaderIncludes(sb, component, rstate);
-			}
-		}
-	}
-
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
-			StringOutput sb, Component source, RenderingState rstate) {
-		LayeredPanel panel = (LayeredPanel) source;
-		List<Component> layers = panel.getLayers();
-		for (Component component : layers) {
-			if (component != null) {
-				// delegate header rendering to the content
-				renderer.renderBodyOnLoadJSFunctionCall(sb, component, rstate);
-			}
 		}
 	}
 }

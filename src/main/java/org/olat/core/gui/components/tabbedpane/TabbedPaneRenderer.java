@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -116,32 +115,6 @@ public class TabbedPaneRenderer extends DefaultComponentRenderer {
 		
 		if (tb.isPanelFocus()) {
 			sb.append("<script>try {document.getElementById('o_c").append(tb.getDispatchID()).append("_c').focus({preventScroll:true});} catch(e){if(console){console.log(e);}};</script>");
-		}
-	}
-	
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
-		TabbedPane tp = (TabbedPane)source;
-		int cnt = tp.getTabCount();
-		if (cnt > 0 && tp.getSelectedPane() < cnt) {
-			Component paneToRender = tp.getTabAt(tp.getSelectedPane());
-			// delegate header rendering to the selected pane
-			if(paneToRender != null) {
-				renderer.renderHeaderIncludes(sb, paneToRender, rstate);
-			}
-		}
-	}
-
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		TabbedPane tp = (TabbedPane)source;
-		int cnt = tp.getTabCount();
-		if (cnt > 0 && tp.getSelectedPane() < cnt) {
-			Component paneToRender = tp.getTabAt(tp.getSelectedPane());
-			//	delegate js rendering to the selected pane
-			if(paneToRender != null) {
-				renderer.renderBodyOnLoadJSFunctionCall(sb, paneToRender, rstate);
-			}
 		}
 	}
 }

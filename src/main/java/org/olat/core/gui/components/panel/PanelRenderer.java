@@ -24,7 +24,6 @@ import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -42,24 +41,6 @@ public class PanelRenderer extends DefaultComponentRenderer {
 		ComponentCollection panel = (ComponentCollection) source;
 		for(Component toRender:panel.getComponents()) {
 			renderer.render(sb, toRender, args);
-		}
-	}
-
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
-		ComponentCollection panel = (ComponentCollection) source;
-		for(Component toRender:panel.getComponents()) {
-			// delegate header rendering to the content
-			renderer.renderHeaderIncludes(sb, toRender, rstate);
-		}
-	}
-
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		ComponentCollection panel = (ComponentCollection) source;
-		for(Component toRender:panel.getComponents()) {
-			// delegate header rendering to the content
-			renderer.renderBodyOnLoadJSFunctionCall(sb, toRender, rstate);
 		}
 	}
 }
