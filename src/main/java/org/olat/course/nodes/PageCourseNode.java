@@ -226,7 +226,7 @@ public class PageCourseNode extends AbstractAccessableCourseNode implements Cour
 		
 		PageImportExportHelper importHelper = CoreSpringFactory.getImpl(PageImportExportHelper.class);
 		try(ZipFile zfile= new ZipFile(importPage)) {	
-			Page page = importHelper.importPage(zfile, owner);
+			Page page = importHelper.importPage(zfile, null);
 			if(page != null) {
 				setPageReferenceKey(page.getKey());
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
