@@ -240,7 +240,7 @@ public class PageCourseNode extends AbstractAccessableCourseNode implements Cour
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		PageCourseNode pageNode = (PageCourseNode)super.createInstanceForCopy(isNewTitle, course, author);
-		Page copiedPage = copyPage(course, this, pageNode, author);
+		Page copiedPage = copyPage(course, this, pageNode);
 		if(copiedPage != null) {
 			String title = pageNode.getLongTitle();
 			if(!StringHelper.containsNonWhitespace(title)) {
@@ -257,22 +257,22 @@ public class PageCourseNode extends AbstractAccessableCourseNode implements Cour
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		super.postCopy(envMapper, processType, course, sourceCourse, context);
-		copyPage(course, this, this, envMapper.getAuthor());
+		copyPage(course, this, this);
 	}
 	
 	@Override // Import course elements wizard
 	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
 		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
-		copyPage(course, (PageCourseNode)sourceCourseNode, this, envMapper.getAuthor());
+		copyPage(course, (PageCourseNode)sourceCourseNode, this);
 	}
 	
-	private Page copyPage(ICourse course, PageCourseNode sourceCourseNode, PageCourseNode targetCourseNode, Identity owner) {
+	private Page copyPage(ICourse course, PageCourseNode sourceCourseNode, PageCourseNode targetCourseNode) {
 		Long sourcePageKey = sourceCourseNode.getPageReferenceKey();
 		PageService pageService = CoreSpringFactory.getImpl(PageService.class);
 		Page sourcePage = pageService.getFullPageByKey(sourcePageKey);
 		Page targetPage = null;
 		if(sourcePage != null) {
-			targetPage = pageService.copyPage(owner, sourcePage);
+			targetPage = pageService.copyPage(null, sourcePage);
 			if(targetPage != null) {
 				targetCourseNode.setPageReferenceKey(targetPage.getKey());
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
