@@ -49,7 +49,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -98,7 +97,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	private final WindowBackOfficeImpl wboImpl;
 
 	private Map<String,String> jsPathToJsFileName = new HashMap<>();
-	private Map<String,String> jsPathToEvalBeforeAJAXAddJsCode = new HashMap<>();
 	private Map<String,String> jsPathToEvalFileEncoding = new HashMap<>();
 	
 	private static final String ENCODING_DEFAULT = "utf-8";
@@ -124,15 +122,10 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	
 	@Override
 	public void addRequiredStaticJsFile(String jsFileName) {
-		addRequiredJsFile(jsFileName, ENCODING_DEFAULT, null);
-	}
-	
-	@Override
-	public void addRequiredStaticJsFile(String jsFileName, String fileEncoding, String preAJAXAddJsCode) {
-		addRequiredJsFile(jsFileName, fileEncoding, preAJAXAddJsCode);
+		addRequiredJsFile(jsFileName, ENCODING_DEFAULT);
 	}
 
-	private void addRequiredJsFile(String jsFileName, String fileEncoding, String AJAXAddJsCode) {
+	private void addRequiredJsFile(String jsFileName, String fileEncoding) {
 		try(StringOutput sb = new StringOutput(50)) {
 			String jsPath;
 			if(jsFileName.startsWith("http:") || jsFileName.startsWith("https:") || jsFileName.startsWith("//")) {
@@ -145,9 +138,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 			if (!curJsList.contains(jsPath)) {
 				curJsList.add(jsPath);
 				jsPathToJsFileName.put(jsPath, jsFileName);
-				if (StringHelper.containsNonWhitespace(AJAXAddJsCode)) {
-					jsPathToEvalBeforeAJAXAddJsCode.put(jsPath, AJAXAddJsCode);
-				}
 				if (fileEncoding != null) {
 					jsPathToEvalFileEncoding.put(jsPath, fileEncoding);
 				} else {
@@ -384,10 +374,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 				JSONObject fileInfo = new JSONObject();
 				fileInfo.put("url", addJs);
 				fileInfo.put("enc", fileEncoding);
-				// add code to be executed before the js code is inserted
-				if (jsPathToEvalBeforeAJAXAddJsCode.containsKey(addJs)) {
-					fileInfo.put("before", jsPathToEvalBeforeAJAXAddJsCode.get(addJs));					
-				}
 				jsAdd.put(fileInfo);
 			}
 			Command com = CommandFactory.createJSCSSCommand();

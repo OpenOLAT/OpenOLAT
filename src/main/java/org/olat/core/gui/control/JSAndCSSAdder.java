@@ -45,8 +45,6 @@ public interface JSAndCSSAdder {
 	
 	public void addRequiredStaticJsFile(String jsFileName);
 	
-	public void addRequiredStaticJsFile(String jsFileName, String fileEncoding, String preAJAXAddJsCode);
-	
 	/**
 	 * 
 	 * used rather rarely, e.g. when you have a css with content which is dynamic

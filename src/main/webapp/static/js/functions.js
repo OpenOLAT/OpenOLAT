@@ -651,12 +651,7 @@ function o_ainvoke(r) {
 						var jsadd = cda["jsadd"];
 						for (var l=0; l<jsadd.length; l++) {
 							var ce = jsadd[l];
-							// 3.1) execute before AJAX-code
-							var preJsAdd = ce["before"];
-							if (jQuery.type(preJsAdd) === "string") {
-								BLoader.executeGlobalJS(preJsAdd, 'o_ainvoker::preJsAdd');
-							}
-							// 3.2) load js file
+							// 3.1) load js file
 							var url = ce["url"];
 							var enc = ce["enc"];
 							if (jQuery.type(url) === "string") BLoader.loadJS(url, enc, true);
