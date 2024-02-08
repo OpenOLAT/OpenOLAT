@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -82,38 +83,32 @@ public class TUConfigForm extends FormBasicController {
    *  They are only used inside this form and will not be saved
    *  anywhere, so feel free to change them...
    */ 
-  
-  private static final String OPTION_TUNNEL_THROUGH_OLAT_INLINE = "tunnelInline";
   private static final String OPTION_TUNNEL_THROUGH_OLAT_IFRAME = "tunnelIFrame";
   private static final String OPTION_SHOW_IN_OLAT_IN_AN_IFRAME  = "directIFrame";
   private static final String OPTION_SHOW_IN_NEW_BROWSER_WINDOW = "extern";
-
   
   /*
    * NLS support:
    */
+  private static final String NLS_OPTION_TUNNEL_IFRAME_LABEL	= "option.tunnel.iframe.label";
+  private static final String NLS_OPTION_OLAT_IFRAME_LABEL		= "option.olat.iframe.label";
+  private static final String NLS_OPTION_EXTERN_PAGE_LABEL		= "option.extern.page.label";
+  private static final String NLS_DESCRIPTION_LABEL				= "description.label";
+  private static final String NLS_DESCRIPTION_PREAMBLE			= "description.preamble";
+  private static final String NLS_DISPLAY_CONFIG_EXTERN 		= "display.config.extern";
 
-  private static final String NLS_OPTION_TUNNEL_INLINE_LABEL			= "option.tunnel.inline.label";
-  private static final String NLS_OPTION_TUNNEL_IFRAME_LABEL			= "option.tunnel.iframe.label";
-  private static final String NLS_OPTION_OLAT_IFRAME_LABEL				= "option.olat.iframe.label";
-  private static final String NLS_OPTION_EXTERN_PAGE_LABEL				= "option.extern.page.label";
-  private static final String NLS_DESCRIPTION_LABEL								= "description.label";
-  private static final String NLS_DESCRIPTION_PREAMBLE						= "description.preamble";
-  private static final String NLS_DISPLAY_CONFIG_EXTERN 					= "display.config.extern";
-
-  private ModuleConfiguration config;
 	
 	private TextElement thost;
 	private TextElement tuser;
 	private TextElement tpass;
-	
 	private SingleSelection selectables;
-	private String[] selectableValues, selectableLabels;
-	
-
-	String user, pass;
-	String fullURI;
 	private MultipleSelectionElement checkboxPagePasswordProtected;
+	
+	private String user;
+	private String pass;
+	private String fullURI;
+	private ModuleConfiguration config;
+	
 	/**
 	 * Constructor for the tunneling configuration form
 	 * @param name
@@ -143,12 +138,6 @@ public class TUConfigForm extends FormBasicController {
 		pass = (String)config.get(CONFIGKEY_PASS);
 
 		fullURI = getFullURL(proto, host, port, uri, query, ref).toString();
-		
-		selectableValues = new String[] { OPTION_TUNNEL_THROUGH_OLAT_IFRAME, OPTION_SHOW_IN_OLAT_IN_AN_IFRAME,
-				OPTION_SHOW_IN_NEW_BROWSER_WINDOW, OPTION_TUNNEL_THROUGH_OLAT_INLINE };
-
-		selectableLabels = new String[] { translate(NLS_OPTION_TUNNEL_IFRAME_LABEL), translate(NLS_OPTION_OLAT_IFRAME_LABEL),
-				translate(NLS_OPTION_EXTERN_PAGE_LABEL), translate(NLS_OPTION_TUNNEL_INLINE_LABEL) };
 		
 		initForm (ureq);
 	}
@@ -205,21 +194,16 @@ public class TUConfigForm extends FormBasicController {
 		Boolean tunnel = cfg.getBooleanEntry(CONFIG_TUNNEL);
 		Boolean iframe = cfg.getBooleanEntry(CONFIG_IFRAME);
 		Boolean extern = cfg.getBooleanEntry(CONFIG_EXTERN);
-		if (tunnel == null && iframe == null && extern == null) {				// nothing saved yet
+		if (tunnel == null && iframe == null && extern == null) {	// nothing saved yet
 			return OPTION_TUNNEL_THROUGH_OLAT_IFRAME;
-		} else {																												// something is saved ...
-			if (extern != null && extern.booleanValue()) {								// ... it was extern...
-				return OPTION_SHOW_IN_NEW_BROWSER_WINDOW;
-			} else if (tunnel != null && tunnel.booleanValue()) {					// ... it was tunneled
-				if (iframe != null && iframe.booleanValue()) {							// ... and in a iframe
-					return OPTION_TUNNEL_THROUGH_OLAT_IFRAME;
-				} else {																										// ... no iframe
-					return OPTION_TUNNEL_THROUGH_OLAT_INLINE;
-				}
-			} else {																											// ... no tunnel means inline
-				return OPTION_SHOW_IN_OLAT_IN_AN_IFRAME;
-			}
 		}
+		if (extern != null && extern.booleanValue()) {				// ... it was extern...
+			return OPTION_SHOW_IN_NEW_BROWSER_WINDOW;
+		}
+		if (tunnel != null && tunnel.booleanValue()) {				// ... and in a iframe
+			return OPTION_TUNNEL_THROUGH_OLAT_IFRAME;
+		}															// ... no tunnel means inline
+		return OPTION_SHOW_IN_OLAT_IN_AN_IFRAME;
 	}
 	
 	/**
@@ -249,7 +233,7 @@ public class TUConfigForm extends FormBasicController {
 		// if content should be show in extern window
 		config.setBooleanEntry(CONFIG_EXTERN, selected.equals(OPTION_SHOW_IN_NEW_BROWSER_WINDOW));
 		// if content should be tunneled
-		config.setBooleanEntry(CONFIG_TUNNEL, (selected.equals(OPTION_TUNNEL_THROUGH_OLAT_INLINE) || selected.equals(OPTION_TUNNEL_THROUGH_OLAT_IFRAME)));
+		config.setBooleanEntry(CONFIG_TUNNEL, selected.equals(OPTION_TUNNEL_THROUGH_OLAT_IFRAME));
 		// if content should be displayed in iframe
 		config.setBooleanEntry(CONFIG_IFRAME, (selected.equals(OPTION_TUNNEL_THROUGH_OLAT_IFRAME) || selected.equals(OPTION_SHOW_IN_OLAT_IN_AN_IFRAME)));			
 		return config;
@@ -280,15 +264,18 @@ public class TUConfigForm extends FormBasicController {
 		
 		uifactory.addStaticTextElement("expl", NLS_DESCRIPTION_LABEL, translate(NLS_DESCRIPTION_PREAMBLE), formLayout);
 
+		SelectionValues selectablePK = new SelectionValues();
+		selectablePK.add(SelectionValues.entry(OPTION_TUNNEL_THROUGH_OLAT_IFRAME, translate(NLS_OPTION_TUNNEL_IFRAME_LABEL)));
+		selectablePK.add(SelectionValues.entry(OPTION_SHOW_IN_OLAT_IN_AN_IFRAME, translate(NLS_OPTION_OLAT_IFRAME_LABEL)));
+		selectablePK.add(SelectionValues.entry(OPTION_SHOW_IN_NEW_BROWSER_WINDOW, translate(NLS_OPTION_EXTERN_PAGE_LABEL)));
+
 		String loadedConfig = convertConfigToNewStyle(config);
-		selectables = uifactory.addRadiosVertical("selectables", NLS_DISPLAY_CONFIG_EXTERN, formLayout, selectableValues, selectableLabels);
+		selectables = uifactory.addRadiosVertical("selectables", NLS_DISPLAY_CONFIG_EXTERN, formLayout, selectablePK.keys(), selectablePK.values());
 		selectables.select(loadedConfig, true);
 		selectables.addActionListener(FormEvent.ONCLICK);
 		
 		checkboxPagePasswordProtected = uifactory.addCheckboxesHorizontal("checkbox", "TUConfigForm.protected", formLayout, new String[] { "ison" }, new String[] { "" });
-		
 		checkboxPagePasswordProtected.select("ison", (user != null) && !user.equals(""));
-		// register for on click event to hide/disable other elements
 		checkboxPagePasswordProtected.addActionListener(FormEvent.ONCLICK);
 		
 		tuser = uifactory.addTextElement("user", "TUConfigForm.user", 255, user == null ? "" : user, formLayout);

@@ -37,8 +37,6 @@ import org.olat.course.nodes.TUCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.tu.IframeTunnelController;
-import org.olat.modules.tu.TunnelController;
 
 /**
 *  Description:<br>
@@ -79,10 +77,7 @@ public class TURunController extends BasicController {
 		}		
 		putInitialPanel(main);
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showButton) {
@@ -107,18 +102,9 @@ public class TURunController extends BasicController {
 	}
 
 	private void doLaunch(UserRequest ureq) {
-		boolean iniframe = config.getBooleanSafe(TUConfigForm.CONFIG_IFRAME);
-		Controller controller;
-		if (iniframe) {  
-			// Do not dispose this controller if the course is closed...
-			controller = new IframeTunnelController(ureq, getWindowControl(), config);
-		} else {
-			controller = new TunnelController(ureq, getWindowControl(), config);
-		}
+		Controller controller = new IframeTunnelController(ureq, getWindowControl(), config);
 		listenTo(controller);
-		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), controller, userCourseEnv, courseNode, "o_tu_icon");
 		main.setContent(ctrl.getInitialComponent());
 	}
-
 }

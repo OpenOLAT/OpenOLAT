@@ -34,7 +34,6 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
@@ -42,7 +41,6 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.TUCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.tu.IframeTunnelController;
 
 /**
  * Description:<BR/>
@@ -53,7 +51,7 @@ import org.olat.modules.tu.IframeTunnelController;
  * @author Felix Jost
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class TUEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+public class TUEditController extends ActivateableTabbableDefaultController {
 
 	public static final String PANE_TAB_TUCONFIG = "pane.tab.tuconfig";
 	

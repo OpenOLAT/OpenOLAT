@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.tu;
+package org.olat.course.nodes.tu;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
