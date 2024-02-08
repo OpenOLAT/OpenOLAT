@@ -169,13 +169,6 @@
 		}
 	}
 
-	function closeInspector() {
-		var jInspector = jQuery(".o_page_inspector");
-		if (jInspector.length > 0) {
-			jInspector.hide();
-		}
-	}
-
 	function initWindowListener(settings) {
 		if(o_info.contentEditorWindowListener === undefined || o_info.contentEditorWindowListener == null) {
 			o_info.contentEditorWindowListener = function(e) {
@@ -231,7 +224,6 @@
 							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment', 'ignore-validating-error', 'oo-ignore-validating-error');
 						} else if(jTarget.closest(".o_ceditor_inspector_header").length > 0 && jTarget.closest("a").length > 0) {
 							closeMathLive();
-							closeInspector();
 							o_afterserver();
 							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_inspector', 'ignore-validating-error', 'oo-ignore-validating-error');
 						}
