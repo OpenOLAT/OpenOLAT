@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.repository.ui.author;
@@ -31,6 +31,7 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -49,16 +50,20 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 8 févr. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ImportURLRepositoryEntryController extends FormBasicController {
@@ -73,12 +78,15 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	private TextElement urlEl;
 	private SingleSelection selectType;
 	private TextElement displaynameEl;
+	private TextElement externalRef;
 	private SingleSelection organisationEl;
 	
 	@Autowired
 	private LicenseService licenseService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -123,6 +131,11 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
 		displaynameEl.setElementCssClass("o_sel_author_imported_name");
+
+		externalRef = uifactory.addTextElement("cif.externalref", 255, null, formLayout);
+		externalRef.setHelpText(translate("cif.externalref.hover"));
+		externalRef.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
+		externalRef.setInlineValidationOn(true);
 		
 		List<String> organisationKeys = new ArrayList<>();
 		List<String> organisationValues = new ArrayList<>();
@@ -161,6 +174,19 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
+
+	private void validateExtRefUnique(UserRequest ureq) {
+		externalRef.clearWarning();
+		if (StringHelper.containsNonWhitespace(externalRef.getValue())) {
+			SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+			params.setStatus(RepositoryEntryStatusEnum.preparationToPublished());
+			params.setExactSearch(true);
+			params.setReference(externalRef.getValue().toLowerCase());
+			if (repositoryService.countAuthorView(params) > 0) {
+				externalRef.setWarningKey("error.exists.ext.ref");
+			}
+		}
+	}
 	
 	private void updateHandlerForUrl() {
 		String url = urlEl.getValue();
@@ -196,7 +222,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			String[] keys = new String[numOfHandlers];
 			String[] values = new String[numOfHandlers];
 			for(int i=0; i<numOfHandlers; i++) {
-				String type = handlerForUploadedResources.get(i).getHandler().getSupportedType();
+				String type = handlerForUploadedResources.get(i).handler().getSupportedType();
 				keys[i] = type;
 				values[i] = NewControllerFactory.translateResourceableTypeName(type, getLocale());
 			}
@@ -230,6 +256,17 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormItem(UserRequest ureq, FormItem item) {
+		boolean ok = super.validateFormItem(ureq, item);
+
+		if(item == externalRef) {
+			validateExtRefUnique(ureq);
+		}
+
+		return ok;
+	}
+
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		updateHandlerForUrl();
 		
@@ -248,6 +285,13 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			allOk = false;
 		} else {
 			displaynameEl.clearError();
+		}
+
+		boolean extRefOk = RepositoyUIFactory.validateTextElement(externalRef, false, 255);
+		if (extRefOk) {
+			validateExtRefUnique(ureq);
+		} else {
+			allOk &= false;
 		}
 
 		return allOk;
@@ -286,7 +330,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 				boolean match = false;
 				ResourceHandler handler = handlerIt.next();
 				for(String limitType:limitTypes) {
-					if(limitType.equals(handler.getHandler().getSupportedType())) {
+					if(limitType.equals(handler.handler().getSupportedType())) {
 						match = true;
 					}
 				}
@@ -296,7 +340,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			}
 			if(handlers.isEmpty()) {
 				allOk = false;
-				urlEl.setErrorKey("add.failed", new String[] {});
+				urlEl.setErrorKey("add.failed");
 			}
 		}
 		
@@ -309,8 +353,8 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		if(handlerForUploadedResources == null || handlerForUploadedResources.isEmpty()) {
 			handler = null;
 		} else if(handlerForUploadedResources.size() == 1) {
-			handler = handlerForUploadedResources.get(0).getHandler();
-			evaluation = handlerForUploadedResources.get(0).getEvaluation();
+			handler = handlerForUploadedResources.get(0).handler();
+			evaluation = handlerForUploadedResources.get(0).evaluation();
 		} else if(selectType.isOneSelected()){
 			String type = selectType.getSelectedKey();
 			handler = repositoryHandlerFactory.getRepositoryHandler(type);
@@ -341,7 +385,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			
 			if(evaluation != null) {
 				String expenditureOfWork = evaluation.getDuration() == null
-						? null : Formatter.formatTimecode(evaluation.getDuration().longValue() * 1000l);
+						? null : Formatter.formatTimecode(evaluation.getDuration() * 1000L);
 				importedEntry = repositoryManager.setDescriptionAndName(importedEntry, displayname, null,
 						evaluation.getAuthors(), evaluation.getDescription(), null, null, null, null, null,
 						null, expenditureOfWork, null, null, null, null);
@@ -355,6 +399,9 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			} else {
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 						LoggingResourceable.wrap(importedEntry, OlatResourceableType.genRepoEntry));
+
+				String ref = externalRef.getValue().trim();
+				importedEntry.setExternalRef(ref);
 				
 				repositoryManager.triggerIndexer(importedEntry);
 			}
@@ -370,23 +417,6 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			licenseService.update(license);
 		}
 	}
-	
-	private class ResourceHandler {
-		
-		private final RepositoryHandler handler;
-		private final ResourceEvaluation evaluation;
 
-		public ResourceHandler(ResourceEvaluation evaluation, RepositoryHandler handler) {
-			this.handler = handler;
-			this.evaluation = evaluation;
-		}
-
-		public RepositoryHandler getHandler() {
-			return handler;
-		}
-
-		public ResourceEvaluation getEvaluation() {
-			return evaluation;
-		}
-	}
+	private record ResourceHandler(ResourceEvaluation evaluation, RepositoryHandler handler) { }
 }
