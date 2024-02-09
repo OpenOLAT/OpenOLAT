@@ -226,6 +226,7 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 	private void doShowScan(UserRequest ureq) {
 		scanController = new GenericQrScanController(ureq, getWindowControl());
 		listenTo(scanController);
+		scanController.startScanner();
 
 		cmc = new CloseableModalController(getWindowControl(), translate("cancel"),
 				scanController.getInitialComponent(), true, translate("add.immunity.proof"));
@@ -333,13 +334,13 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 		confirmOverrideEl.clearError();
 		if (confirmOverrideEl.isVisible() && !confirmOverrideEl.isSelected(0)) {
 			allOk &= false;
-			confirmOverrideEl.setErrorKey("form.legende.mandatory", null);
+			confirmOverrideEl.setErrorKey("form.legende.mandatory");
 		}
 		
 		confirmTruthEl.clearError();
 		if (confirmTruthEl.isVisible() && !confirmTruthEl.isSelected(0)) {
 			allOk &= false;
-			confirmTruthEl.setErrorKey("form.legende.mandatory", null);
+			confirmTruthEl.setErrorKey("form.legende.mandatory");
 		}
 
 		return allOk;

@@ -84,9 +84,7 @@ import org.olat.core.gui.control.navigation.BornSiteInstance;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.util.ZIndexWrapper;
-import org.olat.core.gui.control.winmgr.Command;
-import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -101,7 +99,6 @@ import org.olat.core.id.context.HistoryPointImpl;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -313,7 +310,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, getIdentity());	
 		
 		// Set initial title
-		getWindow().setTitle(getTranslator(), translate("page.appname") + " - " + translate("page.title"));
+		getWindow().setTitle(translate("page.appname") + " - " + translate("page.title"));
 		mainVc.contextPut("windowTitle", getWindow().getTitle());
 	}
 	
@@ -669,8 +666,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				}
 
 				doActivateDTab(dt);
-				if(dt.getController() instanceof Activateable2) {
-					((Activateable2)dt.getController()).activate(ureq, null, new ReloadEvent());
+				if(dt.getController() instanceof Activateable2 adtController) {
+					adtController.activate(ureq, null, new ReloadEvent());
 				}
 				if(point != null) {
 					BusinessControlFactory.getInstance().addToHistory(ureq, point);
@@ -685,8 +682,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				
 				HistoryPoint point = ureq.getUserSession().popLastHistoryEntry();
 				if(point != null) {
-					Command reloadCmd = CommandFactory.reloadWindow();
-					getWindow().getWindowBackOffice().sendCommandTo(reloadCmd);
+					getWindow().getWindowBackOffice()
+						.sendCommandTo(FunctionCommand.reloadWindow());
 				}
 			}
 		} else if (source == mainVc) {
@@ -872,7 +869,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		setGuiStack(gs);
 		NavElement navEl = s.getNavElement();
 		if(navEl != null) {
-			getWindow().setTitle(getTranslator(), navEl.getTitle());
+			getWindow().setTitle(navEl.getTitle());
 			setBodyDataResource("site", s.getClass().getSimpleName(), null);
 		}
 		// update marking of active site/tab
@@ -892,7 +889,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		setCurrent(null, dtabi);
 		setGuiStack(dtabi.getGuiStackHandle());
 		// set description as page title, getTitel() might contain trucated values
-		getWindow().setTitle(getTranslator(), dtabi.getNavElement().getTitle());
+		getWindow().setTitle(dtabi.getNavElement().getTitle());
 		// set data-* values on body for css and javascript customizations
 		OLATResourceable ores = dtabi.getOLATResourceable();
 		String restype = (ores == null ? null : ores.getResourceableTypeName());
@@ -918,41 +915,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	 * @param repoentryid the repository entry ID if available or NULL if n.a.
 	 */
 	private void setBodyDataResource(String restype, String resid, String repoentryid) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("try {var oobody = jQuery('body');");
-		// The source type info: for sites value is 'site', for courses
-		// 'CourseModule' and groups 'BusinessGroup'
-		if (restype == null) {
-			sb.append("oobody.removeAttr('data-restype');");						
-		} else {
-			sb.append("oobody.attr('data-restype','");
-			sb.append(Formatter.escapeDoubleQuotes(restype));
-			sb.append("');");			
-		}
-		// The resource id: for sites this is the name of the site (e.g.
-		// MyCoursesSite") for courses it is the numeric resource id (not the
-		// course/repo entry id)
-		if (resid == null) {
-			sb.append("oobody.removeAttr('data-resid');");									
-		} else {
-			sb.append("oobody.attr('data-resid','");
-			sb.append(Formatter.escapeDoubleQuotes(resid));
-			sb.append("');");
-		}
-		// The repository id, aka course-id. Normally only available for courses
-		// (not for sites or groups)
-		if (repoentryid == null) {
-			sb.append("oobody.removeAttr('data-repoid');");									
-		} else {
-			sb.append("oobody.attr('data-repoid','");
-			sb.append(Formatter.escapeDoubleQuotes(repoentryid));
-			sb.append("');");
-		}
-		sb.append("oobody=null;}catch(e){}");
-		JSCommand jsc = new JSCommand(sb.toString());
 		WindowControl wControl = getWindowControl();
 		if (wControl != null && wControl.getWindowBackOffice() != null) {
-			wControl.getWindowBackOffice().sendCommandTo(jsc);			
+			wControl.getWindowBackOffice()
+				.sendCommandTo(FunctionCommand.setBodyDataResource(restype, resid, repoentryid));			
 		}
 	}
 
@@ -1069,7 +1035,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		bodyCssClasses.add(cssClass);
 
 		// only relevant in AJAX mode
-		JSCommand jsc = new JSCommand("try { jQuery('#o_body').addClass('" + cssClass + "'); } catch(e){if(window.console) console.log(e) }");
+		FunctionCommand jsc = FunctionCommand.addClassToBody(cssClass);
 		getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
 	}
 
@@ -1085,7 +1051,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		bodyCssClasses.remove(cssClass);
 		
 		//only relevant in AJAX mode
-		JSCommand jsc = new JSCommand("try { jQuery('#o_body').removeClass('" + cssClass + "'); } catch(e){if(window.console) console.log(e) }");
+		FunctionCommand jsc = FunctionCommand.removeClassToBody(cssClass);
 		getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
 	}
 	
@@ -1181,8 +1147,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	 */
 	private void requestCloseTab(UserRequest ureq, DTab delt) {
 		Controller c = delt.getController();
-		if (c instanceof VetoableCloseController) {
-			VetoableCloseController vcc = (VetoableCloseController) c;
+		if (c instanceof VetoableCloseController vcc) {
 			// rembember current dtab, and swap to the temporary one
 			DTab reTab = curDTab;
 			doActivateDTab(delt);

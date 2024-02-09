@@ -22,6 +22,7 @@ package org.olat.core.commons.services.analytics;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.render.StringOutput;
 
 /**
@@ -84,7 +85,7 @@ public interface AnalyticsSPI {
 	 * @param url
 	 *            The location as an URL part
 	 */
-	public void analyticsCountPageJavaScript(StringBuilder sb, String title, String url);
+	public Command analyticsCountPageJavaScript(String businessPath, String title, String url);
 	
 	/**
 	 * The script can rely on the download attribute.

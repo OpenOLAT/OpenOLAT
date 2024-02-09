@@ -65,8 +65,7 @@ public class HeadersFilter implements Filter {
 	}
 	
 	private void addSecurityHeaders(ServletResponse response) {
-		if(response instanceof HttpServletResponse) {
-			HttpServletResponse httpResponse = (HttpServletResponse)response;	
+		if(response instanceof HttpServletResponse httpResponse) {
 			if(securityModule.isStrictTransportSecurityEnabled()) {
 				httpResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
 			}
@@ -154,8 +153,11 @@ public class HeadersFilter implements Filter {
 	}
 	
 	private void appendScriptSrcDirective(StringBuilder sb, boolean standard) {
-		sb.append("script-src ")
-		  .append(CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_SCRIPT_SRC);
+		sb.append("script-src ");
+		if(securityModule.isAllowUnsafeEval()) {
+			sb.append("'unsafe-eval' ");
+		}
+		sb.append(CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_SCRIPT_SRC);
 		if(!standard && StringHelper.containsNonWhitespace(securityModule.getContentSecurityPolicyScriptSrc())) {
 			sb.append(" ").append(securityModule.getContentSecurityPolicyScriptSrc());
 		}

@@ -51,7 +51,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.OLATResourceable;
@@ -377,10 +377,8 @@ public class CPDisplayController extends BasicController implements Activateable
 	}
 
 	private void printPages(final List<String> selectedNodeIds) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("window.open('" + mapperBaseURL + "/print.html', '_print','height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location= no,scrollbars=1');");
 		printMapper.setSelectedNodeIds(selectedNodeIds);
-		getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(sb.toString()));
+		getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.print(mapperBaseURL));
 	}
 
 	private void selectPagesToPrint(UserRequest ureq) {

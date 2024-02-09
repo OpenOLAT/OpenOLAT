@@ -26,7 +26,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.util.StringHelper;
 
 public class GenericQrScanController extends BasicController {
@@ -69,10 +69,7 @@ public class GenericQrScanController extends BasicController {
 		// TODO Discuss the timeout. Reason: If not there, errors are shown sometimes,
 		// because the code is not in DOM yet
 		if (!isScanning) {
-			JSCommand startScanner = new JSCommand(
-					"jQuery(initCameraAndScanner);");
-			getWindowControl().getWindowBackOffice().sendCommandTo(startScanner);
-
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.initCameraAndScanner());
 			isScanning = true;
 		}
 	}
@@ -81,12 +78,8 @@ public class GenericQrScanController extends BasicController {
 		// TODO Problem: If the camera is opened once, closed and opened again, it is
 		// not closed again properly
 		if (isScanning) {
-			JSCommand stopScanner = new JSCommand(
-					"jQuery(cleanUpScanner);");
-			getWindowControl().getWindowBackOffice().sendCommandTo(stopScanner);
-
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.cleanUpCameraAndScanner());
 			isScanning = false;
 		}
 	}
-
 }

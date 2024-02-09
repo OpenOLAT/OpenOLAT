@@ -25,6 +25,8 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -158,13 +160,15 @@ public class MatomoSPI extends AbstractSpringModule implements AnalyticsSPI {
 	}
 
 	@Override
-	public void analyticsCountPageJavaScript(StringBuilder sb, String title, String url) {
-		if(!isValid()) return;
+	public Command analyticsCountPageJavaScript(String businessPath, String title, String url) {
+		if(!isValid()) return null;
 
+		StringBuilder sb = new StringBuilder();
 		sb.append("try{\n")
 		  .append("_paq.push([\"setDocumentTitle\", \"").append(Formatter.escapeDoubleQuotes(title)).append("\"]);\n")
 		  .append("_paq.push([\"setCustomUrl\", \"").append(url).append("\"]);\n")
 		  .append("_paq.push([\"trackPageView\"]);\n")
 		  .append("} catch(e) { if(window.console) console.log(e) }");
+		return new JSCommand(sb.toString());
 	}
 }

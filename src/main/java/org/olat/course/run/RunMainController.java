@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -64,7 +65,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -72,7 +73,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -671,46 +671,28 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void updateCourseDataAttributes(CourseNode calledCourseNode) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("try {var oocourse = jQuery('.o_course_run');");
-		if (calledCourseNode == null) {
-			sb.append("oocourse.removeAttr('data-nodeid');");						
-		} else {
-			sb.append("oocourse.attr('data-nodeid','");
-			sb.append(Formatter.escapeDoubleQuotes(calledCourseNode.getIdent()));
-			sb.append("');");			
-		}
-		sb.append("oocourse=null;}catch(e){}");
-		
+		JSONObject oInfoCourseNode = null;
 		if (courseModule.isInfoDetailsEnabled()) {
-			String oInfoCourseNode = null;
 			try {
 				InfoCourseNode infoCourseNode = InfoCourseNode.of(calledCourseNode);
 				if (infoCourseNode != null) {
-					oInfoCourseNode = objectMapper.writeValueAsString(infoCourseNode);
+					oInfoCourseNode = infoCourseNode.toJSONObject();
 				}
-			} catch (JsonProcessingException e) {
+			} catch (Exception e) {
 				log.error("", e);
 			}
-			sb.append("try {");
-			if (StringHelper.containsNonWhitespace(oInfoCourseNode)) {
-				sb.append("o_info.course_node=").append(oInfoCourseNode).append(";");
-			} else {
-				sb.append("delete o_info.course_node;");
-			}
-			sb.append("}catch(e){}");
 		}
-		
-		JSCommand jsc = new JSCommand(sb.toString());
+
 		WindowControl wControl = getWindowControl();
 		if (wControl != null && wControl.getWindowBackOffice() != null) {
-			wControl.getWindowBackOffice().sendCommandTo(jsc);			
+			String nodeIdent = calledCourseNode == null ? null : calledCourseNode.getIdent();
+			wControl.getWindowBackOffice().sendCommandTo(FunctionCommand.setCourseDataAttributes(nodeIdent, oInfoCourseNode));			
 		}
 		// update window title, but only if a tree node is activated. Initial
 		// course title already set by BaseFullWebappController on tab activate
 		if (calledCourseNode != null) {
 			String newTitle = courseTitle + " - " + calledCourseNode.getShortTitle();
-			getWindowControl().getWindowBackOffice().getWindow().setTitle(getTranslator(), newTitle);						
+			getWindowControl().getWindowBackOffice().getWindow().setTitle(newTitle);						
 		}
 	}
 	

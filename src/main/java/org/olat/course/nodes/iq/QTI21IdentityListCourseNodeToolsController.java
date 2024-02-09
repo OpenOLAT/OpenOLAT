@@ -41,7 +41,7 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.gui.control.winmgr.ShowInfoCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -360,7 +360,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	}
 	
 	private void doExportResults(UserRequest ureq) {
-		getWindowControl().getWindowBackOffice().sendCommandTo(new ShowInfoCommand("", translate("info.start.download.pdf")));
+		getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.showInfoMessage("", translate("info.start.download.pdf")));
 		
 		final File fUnzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		final URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);

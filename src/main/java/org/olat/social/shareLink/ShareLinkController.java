@@ -30,7 +30,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -98,7 +98,8 @@ public class ShareLinkController extends BasicController {
 				}
 				// update user prefs
 				usess.getGuiPreferences().putAndSave(WindowManager.class, "landing-page", landingPage);				
-				getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand("showInfoBox(\"" + translate("info.header") + "\",\"" + translate("landingpage.set.message") + "\");"));
+				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand
+						.showInfoMessage(translate("info.header"), translate("landingpage.set.message")));
 			}
 		}
 	}

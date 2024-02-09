@@ -84,7 +84,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
@@ -2068,25 +2069,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			
 			boolean showSelectAll = (selectCount == 0);
 			boolean showDeselectAll = (count != 0 && count == selectCount);
-			
 			String selectedEntriesInfo;
 			if(selectCount <= 1) {
 				selectedEntriesInfo = translator.translate("number.selected.entry", Integer.toString(selectCount));
 			} else {
 				selectedEntriesInfo = translator.translate("number.selected.entries", Integer.toString(selectCount));
 			}
-			
-			StringBuilder sb = new StringBuilder();
-			sb.append("o_table_updateCheckAllMenu('")
-			.append(getFormDispatchId())
-			.append("',")
-			.append(Boolean.toString(showSelectAll))
-			.append(",")
-			.append(Boolean.toString(showDeselectAll))
-			.append(",'")
-			.append(selectedEntriesInfo)
-			.append("');");
-			JSCommand updateSelectAllToggleCmd = new JSCommand(sb.toString());
+			Command updateSelectAllToggleCmd = FunctionCommand.tableUpdateCheckAllMenu(getFormDispatchId(),
+					showSelectAll, showDeselectAll, selectedEntriesInfo);
 			getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(updateSelectAllToggleCmd);
 		}
 	}

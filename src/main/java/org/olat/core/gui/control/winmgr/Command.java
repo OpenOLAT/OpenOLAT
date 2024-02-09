@@ -27,6 +27,7 @@
 package org.olat.core.gui.control.winmgr;
 
 import org.json.JSONObject;
+import org.olat.core.gui.control.winmgr.CommandFactory.InvokeIdentifier;
 
 /**
  * Initial Date:  22.03.2006 <br>
@@ -34,31 +35,31 @@ import org.json.JSONObject;
  * @author Felix Jost
  */
 public class Command {
-	private int command;
+	private InvokeIdentifier command;
 	private JSONObject subJSON;
 	
-	Command(int command) {
+	protected Command(InvokeIdentifier command) {
 		this.command = command;
 	}
 	
 	/**
 	 * @return Returns the command.
 	 */
-	public int getCommand() {
-		return command;
+	public final int getCommand() {
+		return command.number();
 	}
 
 	/**
 	 * @return Returns the subJSON.
 	 */
-	public JSONObject getSubJSON() {
+	public final JSONObject getSubJSON() {
 		return subJSON;
 	}
 
 	/**
 	 * @param subJSON The subJSON to set.
 	 */
-	public void setSubJSON(JSONObject subJSON) {
+	public final void setSubJSON(JSONObject subJSON) {
 		this.subJSON = subJSON;
 	}
 	

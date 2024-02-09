@@ -74,7 +74,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
@@ -619,12 +619,10 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	}
 	
 	private void doPrint(Date from, Date to) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("window.open('" + printUrl + "/print.html', '_print','height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location= no,scrollbars=1');");
 		printMapper.setFrom(from);
 		printMapper.setTo(to);
 		printMapper.setCalendarWrappers(calendarWrappers);
-		getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(sb.toString()));
+		getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.print(printUrl));
 	}
 	
 	private void doPrintEventCallout(UserRequest ureq, String targetDomId) {

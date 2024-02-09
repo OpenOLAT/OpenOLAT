@@ -81,7 +81,7 @@ public class ConfirmLeaveController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
-			acknowledgeEl.setErrorKey("details.delete.acknowledge.error", null);
+			acknowledgeEl.setErrorKey("details.delete.acknowledge.error");
 			return false;
 		}else{
 			return true;

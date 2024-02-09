@@ -36,7 +36,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.StringHelper;
 
@@ -171,12 +172,8 @@ public class FloatingResizableDialogController extends BasicController {
 		return panelName;
 	}
 	
-	public JSCommand getCloseCommand () {
-		StringBuilder sb = new StringBuilder();
-		sb.append("try{")
-		  .append(" jQuery('#").append(getPanelName()).append("').dialog('destroy').remove();")
-		  .append("}catch(e){}");
-		return new JSCommand(sb.toString());
+	public Command getCloseCommand () {
+		return FunctionCommand.closeDialog(getPanelName());
 	}
 	
 	public void executeCloseCommand() {

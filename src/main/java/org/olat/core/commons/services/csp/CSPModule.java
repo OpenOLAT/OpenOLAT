@@ -36,7 +36,7 @@ import org.springframework.stereotype.Service;
 public class CSPModule extends AbstractSpringModule {
 	
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_DEFAULT_SRC = "'self'";
-	public static final String DEFAULT_CONTENT_SECURITY_POLICY_SCRIPT_SRC = "'unsafe-inline' 'unsafe-eval' 'self' https://player.vimeo.com https://www.youtube.com https://s.ytimg.com";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_SCRIPT_SRC = "'unsafe-inline' 'self' https://player.vimeo.com https://www.youtube.com https://s.ytimg.com";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_STYLE_SRC = "'unsafe-inline' 'self'";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_IMG_SRC = "'self' data:";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FONT_SRC = "'self' data:";
@@ -78,6 +78,9 @@ public class CSPModule extends AbstractSpringModule {
 	private String contentSecurityPolicy;
 	@Value("${base.security.contentSecurityPolicy.reportOnly:enabled}")
 	private String contentSecurityPolicyReportOnly;
+	
+	@Value("${base.security.unsafe.eval:true}")
+	private String allowUnsafeEval;
 	
 	@Value("${base.security.contentSecurityPolicy.defaultSrc:}")
 	private String contentSecurityPolicyDefaultSrc;
@@ -256,6 +259,10 @@ public class CSPModule extends AbstractSpringModule {
 		String enabled = enable ? "enabled" : "disabled";
 		contentSecurityPolicyReportOnly = enabled;
 		setStringProperty(CONTENT_SECURITY_POLICY_REPORT_ONLY, enabled, true);
+	}
+	
+	public boolean isAllowUnsafeEval() {
+		return "true".equals(allowUnsafeEval);
 	}
 
 	public String getContentSecurityPolicyDefaultSrc() {

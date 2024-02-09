@@ -255,7 +255,7 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 			confirmVaccinationEl.clearError();
 			if (!confirmVaccinationEl.isAtLeastSelected(2)) {
 				allOk &= false;
-				confirmVaccinationEl.setErrorKey("vaccination.error.confirm", null);
+				confirmVaccinationEl.setErrorKey("vaccination.error.confirm");
 			}
 			
 			allOk &= checkDateElement(vaccinationDateChooser, true);
@@ -272,7 +272,7 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 		confirmTruthEl.clearError();
 		if (!confirmTruthEl.isAtLeastSelected(1)) {
 			allOk &= false;
-			confirmTruthEl.setErrorKey("confirmation.mandatory", null);
+			confirmTruthEl.setErrorKey("confirmation.mandatory");
 		}
 		
 		ImmunityProof existingProof = immunityProofService.getImmunityProof(editedIdentity);
@@ -325,10 +325,10 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 		if (date != null) {
 			if (dateInPast && date.after(new Date())) {
 				allOk &= false;
-				dateChooser.setErrorKey("date.mandatory.past", null);
+				dateChooser.setErrorKey("date.mandatory.past");
 			} else if (!dateInPast && date.before(new Date())) {
 				allOk &= false;
-				dateChooser.setErrorKey("date.mandatory.future", null);
+				dateChooser.setErrorKey("date.mandatory.future");
 			}
 		}
 		

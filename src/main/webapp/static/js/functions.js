@@ -69,23 +69,6 @@ var BLoader = {
 			if (o_info.debug) o_log("BLoader::loadJS: already loaded url::" + jsURL);			
 		}
 	},
-
-	// Execute the given string as java script code in a global context. The contextDesc is a string that can be 
-	// used to describe execution context verbally, this is only used to improve meaninfull logging
-	executeGlobalJS : function(jsString, contextDesc) {
-		try{
-			window.eval(jsString);
-		} catch(e){
-			if(window.console) console.log(contextDesc, 'cannot execute js', jsString);
-			if (o_info.debug) { // add webbrowser console log
-				o_logerr('BLoader::executeGlobalJS: Error when executing JS code in contextDesc::' + contextDesc + ' error::"'+showerror(e)+' for: '+escape(jsString));
-			}
-			// Parsing of JS script can fail in IE for unknown reasons (e.g. tinymce gets 8002010 error)
-			// Try to do a 'full page refresh' and load everything via page header, this normally works
-			if (window.location.href.indexOf('o_winrndo') != -1) window.location.reload();
-			else window.location.href = window.location.href + (window.location.href.indexOf('?') != -1 ? '&' : '?' ) + 'o_winrndo=1';
-		}		
-	},
 	
 	// Load a CSS file from the given URL. The linkid represents the DOM id that is used to identify this CSS file
 	loadCSS : function (cssURL, linkid, loadAfterTheme) {
@@ -483,6 +466,116 @@ function o_postInvoke(r, newWindow) {
 	}
 }
 
+function o_aexecute(command, parameters) {
+	'use strict';
+	
+	function setCourseDataAttributes(nodeId, nodeInfo) {
+		try {
+			var oocourse = jQuery('.o_course_run');
+			if (nodeId === undefined || nodeId == null) {
+				oocourse.removeAttr('data-nodeid');					
+			} else {
+				oocourse.attr('data-nodeid', nodeId);			
+			}
+		} catch(e){
+			console.log(e);
+		}
+		try {
+			if(nodeInfo === undefined || nodeInfo == null) {
+				delete o_info.course_node;
+			} else {
+				o_info.course_node = nodeInfo;
+			} 
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function setBodyDataResource(restype, resid, repoentryid) {
+		try {
+			var oobody = jQuery('body');
+			if (restype == null) {
+				oobody.removeAttr('data-restype');						
+			} else {
+				oobody.attr('data-restype', restype);		
+			}
+			if (resid == null) {
+				oobody.removeAttr('data-resid');								
+			} else {
+				oobody.attr('data-resid',resid);
+			}
+			if (repoentryid == null) {
+				oobody.removeAttr('data-repoid');									
+			} else {
+				oobody.attr('data-repoid',repoentryid);
+			}
+			console.log(oobody);
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function doPrint(url) {
+		var win = window.open(parameters["url"] + "/print.html", "_print","height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location=no,scrollbars=1");
+		win.focus();
+	}
+	
+	// console.log('o_aexecute', command, parameters);
+	switch(command) {
+		case "addclassbody":
+			jQuery('#o_body').addClass(parameters["class"]);
+			break;
+		case "removeclassbody":
+			jQuery('#o_body').removeClass(parameters["class"]);
+			break;
+		case "showinfomessage":
+			setTimeout(function() {
+				showInfoBox(parameters["title"], parameters["message"]);
+			}, 100);
+			break;
+		case "closelightbox":
+			window[parameters["boxid"]].close();
+			break;
+		case "closedialog":
+			jQuery('#' + parameters["dialogid"]).dialog('destroy').remove();
+			break;
+		case "setdocumenttitle":
+			document.title = parameters["title"];
+			break;
+		case "setbusinesspath":
+			o_info.businessPath = parameters["url"];
+			break;
+		case "setbodydataresource":
+			setBodyDataResource(parameters["restype"], parameters["resid"], parameters["repoentryid"]);
+			break;
+		case "setcoursedataattributes":
+			setCourseDataAttributes(parameters["nodeid"], parameters["nodeinfos"]);
+			break;
+		case "tableupdatecheckkallmenu":
+			o_table_updateCheckAllMenu(parameters["did"], parameters["showSelectAll"], parameters["showDeselectAll"], parameters["infos"]);
+			break;
+		case "reloadWindow":
+			window.location.reload(); 
+			break;
+		case "print":
+			doPrint(parameters["url"]);
+			break;
+		case "initcameraandscanner":
+			jQuery(initCameraAndScanner);
+			break;
+		case "cleanupcameraandscanner":
+			jQuery(cleanUpScanner);
+			break;
+		case "tinywritelinkselection":
+			BTinyHelper.writeLinkSelectionToTiny(parameters["url"], parameters["width"], parameters["height"]);
+			break;
+		default:
+			console.log("Unkown command", command, parameters);
+	}
+}
+
+
+
 // main interpreter for ajax mode
 var o_debug_trid = 0;
 function o_ainvoke(r) {
@@ -511,9 +604,13 @@ function o_ainvoke(r) {
 			if (wi) {
 				switch (co) {
 					case 1: // Excecute JavaScript Code
-						var jsexec = cda["e"];
-						BLoader.executeGlobalJS(jsexec, 'o_ainvoker::jsexec');
-						if (o_info.debug) o_log("c1: execute jscode: "+jsexec);
+						try {
+							var jsexec = cda["e"];
+							window.eval(jsexec);
+						} catch(e) {
+							if(window.console) console.log(e);
+							showMessageBox("error", "JS Eval error", e);
+						}
 					case 2:  // redraw components command
 						var cnt = cda["cc"];
 						var ca = cda["cps"];
@@ -599,8 +696,12 @@ function o_ainvoke(r) {
 							}
 						}
 						break;
-					case 3: // createParentRedirectTo leads to a full page reload
-					case 5: // create redirect for external resource mapper
+					case 4:
+						o_aexecute(cda["func"], cda["fparams"]);
+						break;
+					case 5:
+						// createParentRedirectTo leads to a full page reload
+						// create redirect for external resource mapper
 						wi.o2c = 0;
 						var rurl = cda["rurl"];
 						//in case of a mapper served media resource (xls,pdf etc.)
@@ -655,7 +756,7 @@ function o_ainvoke(r) {
 					case 10: // dirty form, executed in o_afterserver
 						break;
 					case 11:
-						focusArray.push({ formName: cda.formName, formItemId: cda.formItemId });
+						focusArray.push({ type: cda.type, formName: cda.formName, formItemId: cda.formItemId });
 						break;
 					case 12:
 						o_downloadUrl(cda["filename"], cda["rurl"]);
@@ -2053,7 +2154,7 @@ function o_ffSetFocusArray(focusArray) {
 	if(focusArray) {
 		for(var i=0;i<focusArray.length; i++) {
 			var f = focusArray[i];
-			if(o_ffSetFocus(f.formName, f.formItemId)) {
+			if(o_ffSetFocus(f.type, f.formName, f.formItemId)) {
 				return;
 			}
 		}
@@ -2062,7 +2163,7 @@ function o_ffSetFocusArray(focusArray) {
 
 // Set the focus in a flexi form to a specific form item, the first error 
 // in the form or the last element focused by a user action 
-function o_ffSetFocus(formId, formItemId) {
+function o_ffSetFocus(type, formId, formItemId) {
 	
 	var applyFocus = function(el) {
 		var tagName = el.tagName;
@@ -2115,6 +2216,11 @@ function o_ffSetFocus(formId, formItemId) {
 		});
 		return !hidden;
 	}
+
+	if(type === "lightbox") {
+		document.querySelector('.basicLightbox__placeholder :first-child:not(div)').focus();
+		return true;
+	}
 	
 	// 1) Focus on element stored in 
 	// o_info.lastFormFocusEl
@@ -2123,7 +2229,7 @@ function o_ffSetFocus(formId, formItemId) {
 	//    - Focus on a field with an error
 	//    - Wanted element
 	//    - last focused element
-	//    - element with autofocus 
+	//    - element with autofocus
 	
 	var autofocusEl = jQuery("#" + formId + " input[autofocus]");
 	var errItem = jQuery('#' + formId + ' .has-error .form-control');

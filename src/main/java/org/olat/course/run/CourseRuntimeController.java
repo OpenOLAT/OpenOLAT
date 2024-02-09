@@ -1497,7 +1497,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if (source instanceof Link link) {
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 			String newTitle = course.getCourseTitle() + " - " + link.getI18n();
-			getWindowControl().getWindowBackOffice().getWindow().setTitle(getTranslator(), newTitle);
+			getWindowControl().getWindowBackOffice().getWindow().setTitle(newTitle);
 		}
 		
 		super.event(ureq, source, event);

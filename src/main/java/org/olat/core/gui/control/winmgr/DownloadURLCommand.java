@@ -21,6 +21,7 @@ package org.olat.core.gui.control.winmgr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.gui.control.winmgr.CommandFactory.InvokeIdentifier;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -32,7 +33,7 @@ import org.olat.core.logging.AssertException;
 public class DownloadURLCommand extends Command {
 	
 	public DownloadURLCommand(String filename, String redirectMapperURL) {
-		super(12);
+		super(InvokeIdentifier.DOWNLOAD_URL);
 		
 		JSONObject root = new JSONObject();
 		try {

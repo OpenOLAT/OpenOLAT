@@ -34,7 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -212,19 +212,16 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 			escapedUrl = escapeUrl(url);
 		}
 		
-		StringBuilder cmd = new StringBuilder(128);
-		String apo = escapedUrl.contains("'") ? "\"" : "'";
-		cmd.append("BTinyHelper.writeLinkSelectionToTiny(").append(apo).append(escapedUrl).append(apo);
+		Integer width = null;
+		Integer height = null;
 		if(urlChoosenEvent.getWidth() > 0) {
-			cmd.append(",").append(urlChoosenEvent.getWidth());
+			width = Integer.valueOf(urlChoosenEvent.getWidth());
 		}
 		if(urlChoosenEvent.getHeight() > 0) {
-			cmd.append(",").append(urlChoosenEvent.getHeight());
+			height = Integer.valueOf(urlChoosenEvent.getHeight());
 		}
-		cmd.append(");");
-		
-		JSCommand writeLinkSelectionToTiny = new JSCommand(cmd.toString());
-		Windows.getWindows(ureq).getWindow(ureq).getWindowBackOffice().sendCommandTo(writeLinkSelectionToTiny);
+		Windows.getWindows(ureq).getWindow(ureq).getWindowBackOffice()
+			.sendCommandTo(FunctionCommand.writeLinkToTinyMCESelection(escapedUrl, width, height));
 	}
 	
 	private String escapeUrl(String url) {

@@ -23,9 +23,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.immunityproof.ImmunityProof;
@@ -53,7 +53,7 @@ public class ImmunityProofConfirmResetController extends FormBasicController {
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-        uifactory.addStaticTextElement("warning", null, translate("mail.reset.warning", new String[] {translate(resetKey)}), formLayout);
+        uifactory.addStaticTextElement("warning", null, translate("mail.reset.warning", translate(resetKey)), formLayout);
 
         confirmationEl = uifactory.addCheckboxesHorizontal("mail.reset.confirm", formLayout, CONFIRMATION_KEYS, new String[]{ translate("mail.reset.confirm.value" )});
 
@@ -72,7 +72,7 @@ public class ImmunityProofConfirmResetController extends FormBasicController {
 
         if (!confirmationEl.isSelected(0)) {
             allOk = false;
-            confirmationEl.setErrorKey("form.legende.mandatory", null);
+            confirmationEl.setErrorKey("form.legende.mandatory");
         }
 
         return allOk;
@@ -80,11 +80,11 @@ public class ImmunityProofConfirmResetController extends FormBasicController {
 
     @Override
     protected void formOK(UserRequest ureq) {
-        fireEvent(ureq, FormEvent.DONE_EVENT);
+        fireEvent(ureq, Event.DONE_EVENT);
     }
 
     @Override
     protected void formCancelled(UserRequest ureq) {
-        fireEvent(ureq, FormEvent.CANCELLED_EVENT);
+        fireEvent(ureq, Event.CANCELLED_EVENT);
     }
 }

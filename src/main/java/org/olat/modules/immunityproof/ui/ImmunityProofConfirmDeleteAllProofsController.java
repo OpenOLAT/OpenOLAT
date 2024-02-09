@@ -73,7 +73,7 @@ public class ImmunityProofConfirmDeleteAllProofsController extends FormBasicCont
 
         if (!confirmationEl.isKeySelected("confirm")) {
             allOk = false;
-            confirmationEl.setErrorKey("form.legende.mandatory", null);
+            confirmationEl.setErrorKey("form.legende.mandatory");
         }
 
         return allOk;

@@ -46,6 +46,30 @@ import org.olat.core.util.CodeHelper;
  */
 public class CommandFactory {
 	
+	public enum InvokeIdentifier {
+		JAVASCRIPT(1),
+		DIRTY(2),
+		FUNCTION(4),
+		REDIRECT_URL(5),
+		PREPARE_CLIENT(6),
+		JS_CSS(7),
+		NEW_WINDOW(8),
+		SCROLL(9),
+		DIRTY_FORM(10),
+		FOCUS(11),
+		DOWNLOAD_URL(12);
+		
+		private int number;
+		
+		private InvokeIdentifier(int number) {
+			this.number = number;
+		}
+		
+		public int number() {
+			return number;
+		}
+	}
+	
 	/**
 	 * tells the ajax-command interpreter to reload the main (=ajax's parent) window
 	 * @param redirectURL e.g. /olat/m/10001/
@@ -58,7 +82,7 @@ public class CommandFactory {
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}
-		Command c = new Command(3);
+		Command c = new Command(InvokeIdentifier.REDIRECT_URL);
 		c.setSubJSON(root);
 		return c;
 	}
@@ -70,7 +94,7 @@ public class CommandFactory {
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}
-		Command c = new Command(8);
+		Command c = new Command(InvokeIdentifier.NEW_WINDOW);
 		c.setSubJSON(root);
 		return c;
 	}
@@ -86,7 +110,7 @@ public class CommandFactory {
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}
-		Command c = new Command(8);
+		Command c = new Command(InvokeIdentifier.NEW_WINDOW);
 		c.setSubJSON(root);
 		return c;
 	}
@@ -96,7 +120,7 @@ public class CommandFactory {
 	 * @return
 	 */
 	public static Command createDirtyComponentsCommand() {
-		return new Command(2);
+		return new Command(InvokeIdentifier.DIRTY);
 	}
 	
 	/**
@@ -104,7 +128,7 @@ public class CommandFactory {
 	 * @return
 	 */
 	public static Command createJSCSSCommand() {
-		return new Command(7);
+		return new Command(InvokeIdentifier.JS_CSS);
 	}
 	
 
@@ -119,7 +143,7 @@ public class CommandFactory {
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}
-		Command c = new Command(6);
+		Command c = new Command(InvokeIdentifier.PREPARE_CLIENT);
 		c.setSubJSON(root);
 		return c;		
 	}
@@ -135,7 +159,7 @@ public class CommandFactory {
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}
-		Command c = new Command(5);
+		Command c = new Command(InvokeIdentifier.REDIRECT_URL);
 		c.setSubJSON(root);
 		return c;
 	}
@@ -151,7 +175,7 @@ public class CommandFactory {
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}
-		Command c = new Command(5);
+		Command c = new Command(InvokeIdentifier.REDIRECT_URL);
 		c.setSubJSON(root);
 		return c;
 	}
@@ -179,7 +203,7 @@ public class CommandFactory {
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}
-		Command c = new Command(9);
+		Command c = new Command(InvokeIdentifier.SCROLL);
 		c.setSubJSON(root);
 		return c;
 	}
@@ -192,7 +216,19 @@ public class CommandFactory {
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}
-		Command c = new Command(10);
+		Command c = new Command(InvokeIdentifier.DIRTY_FORM);
+		c.setSubJSON(root);
+		return c;
+	}
+	
+	public static Command createLightBoxFocus() {
+		JSONObject root = new JSONObject();
+		try {
+			root.put("type", "lightbox");
+		} catch (JSONException e) {
+			throw new AssertException("wrong data put into json object", e);
+		}
+		Command c = new Command(InvokeIdentifier.FOCUS);
 		c.setSubJSON(root);
 		return c;
 	}
@@ -200,21 +236,16 @@ public class CommandFactory {
 	public static Command createFlexiFocus(String formName, String formItemId) {
 		JSONObject root = new JSONObject();
 		try {
+			root.put("type", "flexi");
 			root.put("formName", formName);
 			root.put("formItemId", formItemId);
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}
-		Command c = new Command(11);
+		Command c = new Command(InvokeIdentifier.FOCUS);
 		c.setSubJSON(root);
 		return c;
 	}
-	
-	public static Command reloadWindow() {
-		String script = "try { window.location.reload(); } catch(e) { if(window.console) console.log(e) }";
-		return new JSCommand(script);
-	}
-	
 }
 
 

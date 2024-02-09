@@ -23,7 +23,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
-import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 
 /**
@@ -31,7 +30,7 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ImmunityProofSiteDef extends AbstractSiteDefinition implements SiteDefinition {
+public class ImmunityProofSiteDef extends AbstractSiteDefinition {
 
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {

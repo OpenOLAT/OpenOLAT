@@ -67,9 +67,9 @@ import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.control.winmgr.MediaResourceMapper;
 import org.olat.core.gui.control.winmgr.WindowBackOfficeImpl;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.exception.MsgFactory;
 import org.olat.core.gui.media.AsyncMediaResponsible;
 import org.olat.core.gui.media.MediaResource;
@@ -84,7 +84,6 @@ import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.render.intercept.InterceptHandler;
 import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.themes.Theme;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControl;
@@ -251,10 +250,9 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	}
 
 	/**
-	 * @param translator
 	 * @param newTitle The new title of this window (for browser history)
 	 */
-	public void setTitle(Translator translator, String newTitle) {
+	public void setTitle(String newTitle) {
 		if(!StringHelper.containsNonWhitespace(newTitle)) {
 			return;
 		}
@@ -265,15 +263,9 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		
 		// When current title is null we don't need to update via JS, we are in initial
 		// page load
-		if (title.getValue() != null && !Objects.equals(title.getValue(), newTitle)) {			
-			StringBuilder sb = new StringBuilder();
-			sb.append("document.title = \"");
-			sb.append(newTitle);
-			sb.append("\";");
-			JSCommand jsc = new JSCommand(sb.toString());
-			if (getWindowBackOffice() != null) {
-				getWindowBackOffice().sendCommandTo(jsc);			
-			}
+		if (title.getValue() != null && !Objects.equals(title.getValue(), newTitle)
+				&& getWindowBackOffice() != null) {
+			getWindowBackOffice().sendCommandTo(FunctionCommand.setDocumentTitle(newTitle));
 		}
 		title.setValue(newTitle);
 	}
@@ -970,21 +962,16 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	public Command handleBusinessPath(UserRequest ureq) {
 		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
 		if(p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
-			StringBuilder sb = new StringBuilder();
 			List<ContextEntry> ces = p.getEntries();
 			String url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
-			sb.append("try { o_info.businessPath='").append(url).append("';");
 			// Add analytics code
 			if (analyticsSPI != null) {
 				String serverUri = Settings.getServerContextPathURI();
 				if(url != null && url.startsWith(serverUri)) {
-					analyticsSPI.analyticsCountPageJavaScript(sb, getTitle().getValue(), url.substring(serverUri.length()));
+					return analyticsSPI.analyticsCountPageJavaScript(url, getTitle().getValue(), url.substring(serverUri.length()));
 				}
-			}			
-			sb.append(" } catch(e) { }");
-
-
-			return new JSCommand(sb.toString());
+			}
+			return FunctionCommand.setBusinessPath(url);
 		}
 		return null;
 	}

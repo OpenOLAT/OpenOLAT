@@ -34,7 +34,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.control.winmgr.ShowInfoCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -100,7 +100,7 @@ public class CreateTemporaryUsersCallback implements StepRunnerCallback {
 	private void showInfo(WindowControl wControl, String i18nKey, int numOfUsers) {
 		String title = translator.translate("info.header");
 		String msg = translator.translate(i18nKey, Integer.toString(numOfUsers));
-		wControl.getWindowBackOffice().sendCommandTo(new ShowInfoCommand(title, msg));
+		wControl.getWindowBackOffice().sendCommandTo(FunctionCommand.showInfoMessage(title, msg));
 	}
 	
 	private Identity doCreateAndPersistIdentity(TransientIdentity identity, Organisation organisation) {

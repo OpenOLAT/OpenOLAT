@@ -70,7 +70,7 @@ public class ImmunityProofCreateConfirmController extends FormBasicController {
 
          if (!confirmationEl.isSelected(0)) {
              allOk = false;
-             confirmationEl.setErrorKey("form.legende.mandatory", null);
+             confirmationEl.setErrorKey("form.legende.mandatory");
          }
 
          return allOk;

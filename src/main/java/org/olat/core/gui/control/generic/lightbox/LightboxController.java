@@ -33,7 +33,8 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.util.ZIndexWrapper;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
@@ -100,25 +101,15 @@ public class LightboxController extends BasicController {
 	
 	public void activate() {
 		getWindowControl().pushAsModalDialog(mainVC);
-		
 		// Set the focus to the first element in the lightbox.
-		// Invoke it slightly delayed to be executed after the regular OpenOlat focus function.
-		String command = """
-				try {
-				 setTimeout(() => {document.querySelector( '.basicLightbox__placeholder :first-child:not(div)' ).focus();}, 500);
-				} catch(e) {
-				 if (window.console) console.log(e);
-				}
-				""";
-		getWindowControl().getWindowBackOffice().sendCommandTo( new JSCommand(command));
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createLightBoxFocus());
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == contentCtrl) {
 			if (event == Event.CLOSE_EVENT) {
-				JSCommand command = new JSCommand("try {" + lightboxId + ".close();} catch(e){}");
-				getWindowControl().getWindowBackOffice().sendCommandTo(command);
+				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.closeLightBox(lightboxId));
 				getWindowControl().removeModalDialog(mainVC);
 				fireEvent(ureq, Event.CLOSE_EVENT);
 			}
@@ -129,6 +120,7 @@ public class LightboxController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if ("lightbox-closed".equals(event.getCommand())) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.closeLightBox(lightboxId));
 			getWindowControl().removeModalDialog(mainVC);
 			fireEvent(ureq, Event.CLOSE_EVENT);
 		}

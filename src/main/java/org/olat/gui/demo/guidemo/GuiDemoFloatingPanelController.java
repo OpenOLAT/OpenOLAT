@@ -44,8 +44,10 @@ public class GuiDemoFloatingPanelController extends BasicController {
 	private VelocityContainer openerVc = createVelocityContainer("opener");
 	private VelocityContainer localContent = createVelocityContainer("localContent");
 	private Panel panel = new Panel("panel");
+	
 	private Link open;
 	private Link open2;
+	private Link closeButton;
 	private Link contentLink;
 	private FloatingResizableDialogController dialog;
 	
@@ -55,10 +57,11 @@ public class GuiDemoFloatingPanelController extends BasicController {
 		panel.setContent(openerVc);
 		open = LinkFactory.createLink("open", openerVc, this);
 		open2 = LinkFactory.createLink("open2", openerVc, this);
+		closeButton = LinkFactory.createLink("close", panelVc, this);
 		
 		//add source view control
-    Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), openerVc);
-    openerVc.put("sourceview", sourceview.getInitialComponent());
+		Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), openerVc);
+		openerVc.put("sourceview", sourceview.getInitialComponent());
 		
 		putInitialPanel(panel);
 	}
@@ -81,8 +84,11 @@ public class GuiDemoFloatingPanelController extends BasicController {
 			panel.setContent(panelVc);
 		} else if (source == contentLink) {
 			getWindowControl().setInfo("Congratulations! You won a trip to Lorem Ipsum.");
+		} else if(source == closeButton) {
+			if(dialog != null) {
+				dialog.executeCloseCommand();
+			}
 		}
-		
 	}
 	
 	@Override
@@ -93,5 +99,4 @@ public class GuiDemoFloatingPanelController extends BasicController {
 			}
 		}
 	}
-
 }

@@ -28,6 +28,7 @@ package org.olat.core.gui.control.winmgr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.gui.control.winmgr.CommandFactory.InvokeIdentifier;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -43,7 +44,7 @@ public class JSCommand extends Command {
 	 * @param javaScriptCode
 	 */
 	public JSCommand(String javaScriptCode) {
-		super(1); // do not change this command id, it is in js also
+		super(InvokeIdentifier.JAVASCRIPT); // do not change this command id, it is in js also
 		JSONObject subjo = new JSONObject();
 		try {
 			subjo.put("e", javaScriptCode);

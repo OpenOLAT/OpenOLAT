@@ -19,6 +19,7 @@
  */
 package org.olat.course.run;
 
+import org.json.JSONObject;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNode;
 
@@ -86,4 +87,13 @@ public class InfoCourseNode {
 		return displayOption;
 	}
 	
+	public JSONObject toJSONObject() {
+		JSONObject obj = new JSONObject();
+		obj.putOpt("type", type);
+		obj.putOpt("shortTitle", shortTitle);
+		obj.putOpt("longTitle", longTitle);
+		obj.putOpt("description", description);
+		obj.putOpt("displayOption", displayOption);
+		return obj;
+	}
 }

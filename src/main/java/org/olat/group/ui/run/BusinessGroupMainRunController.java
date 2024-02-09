@@ -760,7 +760,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		// Update window title
 		String newTitle = businessGroup.getName() + " - " + bgTree.getSelectedNode().getTitle();
-		getWindowControl().getWindowBackOffice().getWindow().setTitle(getTranslator(), newTitle);						
+		getWindowControl().getWindowBackOffice().getWindow().setTitle(newTitle);						
 	}
 	
 	private void doMain(UserRequest ureq) {

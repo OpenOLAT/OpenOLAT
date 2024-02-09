@@ -193,7 +193,7 @@ public class ResourceInfoDispatcher implements Dispatcher {
 				Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
 				// set a search engine friendly page title
 				Translator trans = Util.createPackageTranslator(ResourceInfoDispatcher.class, ureq.getLocale());
-				w.setTitle(trans, trans.translate("resource.info.page.title", entry.getDisplayname()));
+				w.setTitle(trans.translate("resource.info.page.title", entry.getDisplayname()));
 				// dispatch and go
 				w.dispatchRequest(ureq, false); // renderOnly
 				chiefController.resetReload();

@@ -86,8 +86,7 @@ public class ImmunityProofCreateWrapperController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == segments) {
-			if (event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent) event;
+			if (event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == manualLink) {
