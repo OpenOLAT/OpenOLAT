@@ -101,7 +101,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 			toggleInspectorButton.setElementCssClass("o_sel_elementinspector");
 			toggleInspectorButton.setEnabled(inspectorPart != null);
 			components.add(toggleInspectorButton);
-			
+			components.add(inspectorPanel);
 			components.add(inspectorPart.getInitialComponent());
 			inspectorPart.addControllerListener(this);
 		} else {
