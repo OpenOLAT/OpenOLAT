@@ -26,9 +26,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.winmgr.Command;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,11 +138,7 @@ public class GoogleAnalyticsSPI extends AbstractSpringModule implements Analytic
 	@Override
 	public Command analyticsCountPageJavaScript(String businessPath, String title, String url) {
 		if (isValid()) {
-			StringBuilder sb = new StringBuilder();
-			// Currently only send page views with url and title. No support for tags so far
-			sb.append("ga('send', 'pageview', { page: \"").append(url).append("\", title: \"")
-					.append(Formatter.escapeDoubleQuotes(title)).append("\" });");
-			return new JSCommand(sb.toString());
+			return FunctionCommand.analytics("google", url, title);
 		}
 		return null;
 	}

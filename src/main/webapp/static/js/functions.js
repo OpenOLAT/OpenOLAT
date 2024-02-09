@@ -509,7 +509,42 @@ function o_aexecute(command, parameters) {
 			} else {
 				oobody.attr('data-repoid',repoentryid);
 			}
-			console.log(oobody);
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function tinyExecCommand(tcommand, tparams) {
+		try {
+			if(tparams === undefined || tparams == null) {
+				tinymce.activeEditor.execCommand(tcommand);
+			} else {
+				tinymce.activeEditor.execCommand(tcommand, false, tparams);
+			}
+		 } catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function startLti13(frmConnectId) {
+		setTimeout(function() {
+			var frmConnect = document.forms[frmConnectId];
+			if (frmConnect) {
+				frmConnect.target = '_blank';
+				frmConnect.submit();
+			}
+		}, 200);
+	}
+	
+	function analytics(type, url, title) {
+		try{
+			if("google" === type) {
+				ga('send', 'pageview', { page: url, title: title });
+			} else if("matamo" === type) {
+				_paq.push(["setDocumentTitle", title]);
+				_paq.push(["setCustomUrl", url]);
+				_paq.push(["trackPageView"]);
+			}
 		} catch(e) {
 			console.log(e);
 		}
@@ -569,12 +604,28 @@ function o_aexecute(command, parameters) {
 		case "tinywritelinkselection":
 			BTinyHelper.writeLinkSelectionToTiny(parameters["url"], parameters["width"], parameters["height"]);
 			break;
+		case "tinyexec":
+			tinyExecCommand(parameters["tcommand"], parameters["tparams"]);
+			break;
+		case "startlti13":
+			startLti13(parameters["frmConnectId"]);
+			break;
+		case "unloadsco":
+			o_unloadSCO(parameters["scoCommand"],parameters["currentSco"],parameters["nextSco"]);
+			break;
+		case "analytics":
+			analytics(parameters["type"],parameters["url"],parameters["title"])
+			break;
+		case "disposeaudiorecorder":
+			audioRecorder.dispose();// Not working, use strict hide the recorder
+			break;
+		case "disposevideorecorder":
+			videoRecorder.dispose();// Not working, use strict hide the recorder
+			break;
 		default:
 			console.log("Unkown command", command, parameters);
 	}
 }
-
-
 
 // main interpreter for ajax mode
 var o_debug_trid = 0;
@@ -697,7 +748,11 @@ function o_ainvoke(r) {
 						}
 						break;
 					case 4:
-						o_aexecute(cda["func"], cda["fparams"]);
+						try {
+							o_aexecute(cda["func"], cda["fparams"]);
+						} catch(e) {
+							console.log(e);
+						}
 						break;
 					case 5:
 						// createParentRedirectTo leads to a full page reload

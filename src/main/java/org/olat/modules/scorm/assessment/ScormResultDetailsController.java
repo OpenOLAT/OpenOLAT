@@ -211,11 +211,11 @@ public class ScormResultDetailsController extends BasicController {
 							if(matcher.find()) {
 								String pos2 = key.substring(matcher.start(), matcher.end());
 								key = key.replace(pos + ".", "").replace(pos2 + ".", "");
-								translation = translator.translate(key, new String[]{pos,pos2});
+								translation = translator.translate(key, pos, pos2);
 							}
 							else {
 								key = key.replace(pos + ".", "");
-								translation = translator.translate(key, new String[]{pos});
+								translation = translator.translate(key, pos);
 							}
 						}
 						else {
@@ -323,7 +323,7 @@ public class ScormResultDetailsController extends BasicController {
 
 		@Override
 		public Object createCopyWithEmptyList() {
-			return new SummaryTableDataModelMultiResults(new HashMap<Date, List<CmiData>>());
+			return new SummaryTableDataModelMultiResults(new HashMap<>());
 		}
 
 		@Override

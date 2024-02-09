@@ -42,6 +42,8 @@ public class FunctionCommand extends Command {
 		SHOW_INFO_MESSAGE("showinfomessage"),
 		CLOSE_LIGHTBOX("closelightbox"),
 		CLOSE_DIALOG("closedialog"),
+		DISPOSE_AUDIO_RECORDER("disposeaudiorecorder"),
+		DISPOSE_VIDEO_RECORDER("disposevideorecorder"),
 		
 		SET_DOCUMENT_TITLE("setdocumenttitle"),
 		SET_BUSINESS_PATH("setbusinesspath"),
@@ -55,6 +57,10 @@ public class FunctionCommand extends Command {
 		INIT_CAMERAANDSCANNER("initcameraandscanner"),
 		CLEANUP_CAMERAANDSCANNER("cleanupcameraandscanner"),
 		TINYMCE_WRITE_LINK_TO_SELECTION("tinywritelinkselection"),
+		TINYMCE_EXEC_COMMAND("tinyexec"),
+		START_LTI_13("startlti13"),
+		UNLOAD_SCO("unloadsco"),
+		ANALYTICS("analytics"),
 		
 		;
 		
@@ -122,6 +128,14 @@ public class FunctionCommand extends Command {
 		return valueOf(Functions.CLOSE_LIGHTBOX, "boxid", boxId);
 	}
 	
+	public static FunctionCommand disposeAudioRecorder() {
+		return valueOf(Functions.DISPOSE_AUDIO_RECORDER, null);
+	}
+	
+	public static FunctionCommand disposeVideoRecorder() {
+		return valueOf(Functions.DISPOSE_VIDEO_RECORDER, null);
+	}
+	
 	public static FunctionCommand setDocumentTitle(String title) {
 		return valueOf(Functions.SET_DOCUMENT_TITLE, "title", title);
 	}
@@ -166,6 +180,13 @@ public class FunctionCommand extends Command {
 		parameters.put("height", height);
 		return valueOf(Functions.TINYMCE_WRITE_LINK_TO_SELECTION, parameters);
 	}
+	
+	public static FunctionCommand tinyMCEExec(String command, JSONObject params) {
+		JSONObject parameters = new JSONObject();
+		parameters.put("tcommand", command);
+		parameters.put("tparams", params);
+		return valueOf(Functions.TINYMCE_EXEC_COMMAND, parameters);
+	}
 
 	public static FunctionCommand initCameraAndScanner() {
 		return valueOf(Functions.INIT_CAMERAANDSCANNER, null);
@@ -173,5 +194,25 @@ public class FunctionCommand extends Command {
 	
 	public static FunctionCommand cleanUpCameraAndScanner() {
 		return valueOf(Functions.CLEANUP_CAMERAANDSCANNER, null);
+	}
+	
+	public static FunctionCommand startLti13(String frmConnectId) {
+		return valueOf(Functions.START_LTI_13, "frmConnectId", frmConnectId);
+	}
+	
+	public static FunctionCommand unloadSco(String scoCommand, String currentScoId, String nextScoId) {
+		JSONObject parameters = new JSONObject();
+		parameters.put("scoCommand", scoCommand);
+		parameters.put("currentSco", currentScoId);
+		parameters.put("nextSco", nextScoId);
+		return valueOf(Functions.UNLOAD_SCO, parameters);
+	}
+	
+	public static FunctionCommand analytics(String type, String url, String title) {
+		JSONObject parameters = new JSONObject();
+		parameters.put("type", type);
+		parameters.put("url", url);
+		parameters.put("title", title);
+		return valueOf(Functions.ANALYTICS, parameters);
 	}
 }

@@ -27,7 +27,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -195,16 +195,8 @@ public class LTI13DisplayController extends BasicController implements LTIDispla
 	}
 
 	public void manuallyOpenLtiContentInSeparateWindow() {
-		StringBuilder sb = new StringBuilder(100);
-		sb.append("setTimeout(() => { ");
-		sb.append("  var frmConnect = document.forms['").append(frmConnectId).append("']; ");
-		sb.append("  if (frmConnect) { ");
-		sb.append("    frmConnect.target = '_blank'; ");
-		sb.append("    frmConnect.submit(); ");
-		sb.append("  } ");
-		sb.append("}, 200); ");
-		JSCommand command = new JSCommand(sb.toString());
-		getWindowControl().getWindowBackOffice().sendCommandTo(command);
+		getWindowControl().getWindowBackOffice()
+			.sendCommandTo(FunctionCommand.startLti13(frmConnectId));
 	}
 
 	@Override

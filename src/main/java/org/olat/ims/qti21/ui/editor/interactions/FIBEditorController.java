@@ -37,8 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.winmgr.Command;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
@@ -158,8 +157,7 @@ public class FIBEditorController extends FormBasicController {
 			jo.put("responseIdentifier", responseIdentifier);
 			jo.put("data-qti-solution", solution);
 			jo.put("data-qti-gap-type", gapType);
-			Command jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiUpdateTextEntry', false, " + jo.toString() + "); } catch(e){if(window.console) console.log(e) }");
-			getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.tinyMCEExec("qtiUpdateTextEntry", jo));
 		} catch (JSONException e) {
 			logError("", e);
 		}
@@ -170,8 +168,7 @@ public class FIBEditorController extends FormBasicController {
 	 */
 	private void cancelFeedbackToTextElement() {
 		try {
-			Command jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiCancelTextEntry'); } catch(e){if(window.console) console.log(e) }");
-			getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.tinyMCEExec("qtiCancelTextEntry", null));
 		} catch (JSONException e) {
 			logError("", e);
 		}

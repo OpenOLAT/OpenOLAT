@@ -56,6 +56,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
@@ -74,7 +75,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.modules.scorm.events.FinishEvent;
-import org.olat.modules.scorm.events.UnloadSCOCommand;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -460,13 +460,13 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private void requestBack() {
 		requestScoId = BACK_PSEUDO_SCO;
 		getWindowControl().getWindowBackOffice()
-			.sendCommandTo(new UnloadSCOCommand("Back", sessionController.getCurrenSCOId(), requestScoId));
+			.sendCommandTo(FunctionCommand.unloadSco("Back", sessionController.getCurrenSCOId(), requestScoId));
 	}
 	
 	private void requestSco(String nextScoId) {
 		requestScoId = nextScoId;
 		getWindowControl().getWindowBackOffice()
-			.sendCommandTo(new UnloadSCOCommand("Next", sessionController.getCurrenSCOId(), nextScoId));
+			.sendCommandTo(FunctionCommand.unloadSco("Next", sessionController.getCurrenSCOId(), nextScoId));
 	}
 	
 	private void setSco(String scoId, TreeNode tn, boolean force) {

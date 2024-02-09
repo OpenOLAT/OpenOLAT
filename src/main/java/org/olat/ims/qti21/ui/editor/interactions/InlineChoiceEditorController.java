@@ -45,8 +45,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.winmgr.Command;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -186,8 +185,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 			jo.put("responseIdentifier", responseIdentifier);
 			jo.put("data-qti-solution", solution);
 			jo.put("data-qti-correct-response", Boolean.toString(correctResponse));
-			Command jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiUpdateInlineChoice', false, " + jo.toString() + "); } catch(e){if(window.console) console.log(e) }");
-			getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.tinyMCEExec("qtiUpdateInlineChoice", jo));
 		} catch (JSONException e) {
 			logError("", e);
 		}
@@ -198,8 +196,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 	 */
 	private void cancelFeedbackToInlineChoiceElement() {
 		try {
-			Command jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiCancelInlineChoice'); } catch(e){if(window.console) console.log(e) }");
-			getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.tinyMCEExec("qtiCancelInlineChoice", null));
 		} catch (JSONException e) {
 			logError("", e);
 		}
@@ -231,8 +228,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 			}
 		} else if(addGlobalChoiceButton == source) {
 			doEnableGlobalChoices();
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if("add".equals(link.getCmd()) && link.getUserObject() instanceof GlobalInlineChoiceWrapper) {
 				doCommitGlobalChoices();
 				doAddGlobalChoice((GlobalInlineChoiceWrapper)link.getUserObject());
@@ -240,8 +236,7 @@ public class InlineChoiceEditorController extends FormBasicController implements
 				doCommitGlobalChoices();
 				doRemoveGlobalChoice((GlobalInlineChoiceWrapper)link.getUserObject());
 			}
-		} else if(source instanceof TextElement) {
-			TextElement el = (TextElement)source;
+		} else if(source instanceof TextElement el) {
 			if(el.getName().startsWith("gic_") && el.getUserObject() instanceof GlobalInlineChoiceWrapper) {
 				((GlobalInlineChoiceWrapper)el.getUserObject()).setText();
 			}

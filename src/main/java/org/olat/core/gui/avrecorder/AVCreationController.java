@@ -19,7 +19,11 @@
  */
 package org.olat.core.gui.avrecorder;
 
-import org.apache.logging.log4j.Logger;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,16 +38,10 @@ import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Initial date: 2022-08-10<br>
@@ -51,8 +49,6 @@ import java.util.List;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class AVCreationController extends FormBasicController {
-
-	private static final Logger log = Tracing.createLoggerFor(AVCreationController.class);
 
 	private final AVConfiguration config;
 
@@ -180,12 +176,10 @@ public class AVCreationController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		if (config.getMode() == AVConfiguration.Mode.video) {
-			JSCommand cmd = new JSCommand("videoRecorder.dispose();");
-			getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.disposeVideoRecorder());
 		}
 		if (config.getMode() == AVConfiguration.Mode.audio) {
-			JSCommand cmd = new JSCommand("audioRecorder.dispose();");
-			getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.disposeAudioRecorder());
 		}
 
 		super.doDispose();
