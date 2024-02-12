@@ -39,12 +39,12 @@ import org.olat.modules.webFeed.manager.ValidatedURL;
 /**
  *
  * Initial date: 18.09.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class ExternalUrlController extends FormBasicController {
 
-	private Feed feed;
+	private final Feed feed;
 
 	private TextElement externalFeedUrlEl;
 	private FormLink cancelButton;

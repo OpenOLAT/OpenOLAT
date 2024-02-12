@@ -88,6 +88,7 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 
 		// reload everything
 		if (feedMainCtrl != null && feedResource != null) {
+			feedMainCtrl.setInfos(feedResource, ureq, getWindowControl());
 			feedMainCtrl.getItemsCtrl().resetItems(ureq, feedResource);
 		}
 
