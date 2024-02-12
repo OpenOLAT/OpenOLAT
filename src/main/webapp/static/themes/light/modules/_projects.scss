@@ -590,12 +590,21 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 
 .o_proj_note {
 	.o_proj_note_header {
-		align-items: flex-start;
+		align-items: center;
 		.o_proj_note_header_infos {
 			display: flex;
 			flex-wrap: wrap;
 			align-items: center;
-			gap: 30px;
+			column-gap: 30px;
+			row-gap: 5px;
+		}
+		.o_prjo_note_edit_toggle {
+			display: flex;
+			align-items: center;
+ 			gap: 5px;
+ 			label {
+ 				margin: 0;
+ 			}
 		}
 	}
 	.panel-body {

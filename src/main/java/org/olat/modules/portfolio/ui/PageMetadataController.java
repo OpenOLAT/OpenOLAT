@@ -369,7 +369,7 @@ public class PageMetadataController extends FormBasicController {
 			}
 		}
 
-		editLink = uifactory.addToggleButton("edit.page", "edit.page.toggle", translate("on"), translate("off"), flc);
+		editLink = uifactory.addToggleButton("edit.page", "edit.mode", translate("on"), translate("off"), flc);
 		editLink.setElementCssClass("o_sel_page_edit");
 		editLink.setUserObject(Boolean.FALSE);
 		editLink.setVisible(page.isEditable() && secCallback.canEditPage(page));

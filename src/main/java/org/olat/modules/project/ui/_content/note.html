@@ -7,12 +7,19 @@
 			<div>
 				<i class="o_icon i_icon_lg o_icon_proj_reference"></i> $numReferences
 			</div>
-			<div class="o_muted">
-				$modified
+			<div class="o_muted o_small">
+				#if($r.isTrue($edit))
+					<span><i class="o_icon o_icon_fw o_icon_save"> </i> $r.translate("auto.save")</span>
+				#else
+					<span><i class="o_icon o_icon_fw o_icon_time"> </i> $modified</span>
+				#end
 			</div>
 		</div>
 		#if($r.visible("edit"))
-			$r.render("edit")
+			<div class="o_prjo_note_edit_toggle">
+				<label class="control-label" for="$editLableFor">$r.translate("edit.mode")</label>
+				$r.render("edit")
+			</div>
 		#end
 		#if($r.visible("cmds"))
 			$r.render("cmds")

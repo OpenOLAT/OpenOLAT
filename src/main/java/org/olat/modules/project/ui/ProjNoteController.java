@@ -28,6 +28,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -73,7 +74,7 @@ public class ProjNoteController extends BasicController {
 	private static final String CMD_DELETE = "delete";
 
 	private final VelocityContainer mainVC;
-	private final Link editLink;
+	private final FormToggleComponent editToggle;
 	private Dropdown cmdsDropDown;
 	private Link openNewWindowLink;
 	private Link downloadLink;
@@ -109,8 +110,10 @@ public class ProjNoteController extends BasicController {
 		mainVC = createVelocityContainer("note");
 		putInitialPanel(mainVC);
 		
-		editLink = LinkFactory.createButton("edit", mainVC, this);
-		editLink.setIconLeftCSS("o_icon o_icon_lg o_icon_edit");
+		editToggle = new FormToggleComponent("edit", translate("on"), translate("off"));
+		editToggle.addListener(this);
+		mainVC.put("edit", editToggle);
+		mainVC.contextPut("editLableFor", editToggle.getFormDispatchId());
 		
 		cmdsDropDown = new Dropdown("cmds", null, false, getTranslator());
 		cmdsDropDown.setElementCssClass("o_proj_cmds");
@@ -164,8 +167,9 @@ public class ProjNoteController extends BasicController {
 		noteViewCtrl = new ProjNoteViewController(ureq, getWindowControl(), bcFactory, noteInfo, false);
 		listenTo(noteViewCtrl);
 		mainVC.put("viewNote", noteViewCtrl.getInitialComponent());
+		mainVC.contextPut("edit", Boolean.FALSE);
 		
-		editLink.setVisible(secCallback.canEditNote(noteInfo.getNote()));
+		editToggle.setVisible(secCallback.canEditNote(noteInfo.getNote()));
 	}
 	
 	private void doOpenEdit(UserRequest ureq) {
@@ -183,8 +187,7 @@ public class ProjNoteController extends BasicController {
 			noteEditCtrl = new ProjNoteEditController(ureq, getWindowControl(), bcFactory, noteInfo.getNote(), noteInfo.getMembers(), false, true);
 			listenTo(noteEditCtrl);
 			mainVC.put("editNote", noteEditCtrl.getInitialComponent());
-			
-			editLink.setVisible(false);
+			mainVC.contextPut("edit", Boolean.TRUE);
 		}
 	}
 	
@@ -242,9 +245,19 @@ public class ProjNoteController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == editLink) {
+		if (source == editToggle) {
+			if (!editToggle.isOn()) {
+				if (noteEditCtrl != null) {
+					noteEditCtrl.doSave();
+				}
+			}
+			
 			if (reloadNote()) {
-				doOpenEdit(ureq);
+				if (editToggle.isOn()) {
+					doOpenEdit(ureq);
+				} else {
+					doOpenView(ureq);
+				}
 			}
 		} else if (source == openNewWindowLink) {
 			doOpenWindow();

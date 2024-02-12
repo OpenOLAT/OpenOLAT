@@ -137,12 +137,11 @@ public class ProjNoteEditController extends FormBasicController {
 		formLayout.add("buttons", buttonLayout);
 		if (firstEdit) {
 			closeLink = uifactory.addFormLink("create", buttonLayout, Link.BUTTON);
+			closeLink.setPrimary(true);
+			closeLink.setElementCssClass("o_sel_notice_close");
+			
 			cancelLink = uifactory.addFormLink("cancel", buttonLayout, Link.BUTTON);
-		} else {
-			closeLink = uifactory.addFormLink("close", buttonLayout, Link.BUTTON);
 		}
-		closeLink.setPrimary(true);
-		closeLink.setElementCssClass("o_sel_notice_close");
 	}
 	
 	@Override
@@ -181,7 +180,7 @@ public class ProjNoteEditController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == closeLink) {
-			contentCtrl.doSave();
+			doSave();
 			fireEvent(ureq, FormEvent.DONE_EVENT);
 		} else if (source == cancelLink) {
 			projectService.deleteNotePermanent(note);
@@ -202,6 +201,10 @@ public class ProjNoteEditController extends FormBasicController {
 			lockEntry = null;
 		}
 		super.doDispose();
+	}
+
+	public void doSave() {
+		contentCtrl.doSave();
 	}
 
 }
