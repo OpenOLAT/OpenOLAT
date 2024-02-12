@@ -7,7 +7,6 @@
  * @copyright       Initial code contributed and copyrighted by frentix GmbH, http://www.frentix.com
  * @license         Licensed under the Apache License, Version 2.0 (the "License"); 
  * @link            http://www.openolat.org
- * @mercurial       http://hg.openolat.org
  * @version			1.0.0
  *
  ******************************************/

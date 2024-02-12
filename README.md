@@ -300,8 +300,7 @@ The JavaScript and CSS files are minified and aggregated. If you make some chang
 command to compress them (execution time about 1-2 minutes) and refresh your Eclipse project:
 
 ```bash
-mvn clean package
-mvn compile -Pcompressjs,tomcat
+mvn clean package -Pcompressjs,tomcat
 ```
 
 ### Themes

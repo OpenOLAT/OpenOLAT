@@ -471,7 +471,7 @@ function o_aexecute(command, parameters) {
 	
 	function setCourseDataAttributes(nodeId, nodeInfo) {
 		try {
-			var oocourse = jQuery('.o_course_run');
+			let oocourse = jQuery('.o_course_run');
 			if (nodeId === undefined || nodeId == null) {
 				oocourse.removeAttr('data-nodeid');					
 			} else {
@@ -493,7 +493,7 @@ function o_aexecute(command, parameters) {
 	
 	function setBodyDataResource(restype, resid, repoentryid) {
 		try {
-			var oobody = jQuery('body');
+			let oobody = jQuery('body');
 			if (restype == null) {
 				oobody.removeAttr('data-restype');						
 			} else {
@@ -528,7 +528,7 @@ function o_aexecute(command, parameters) {
 	
 	function startLti13(frmConnectId) {
 		setTimeout(function() {
-			var frmConnect = document.forms[frmConnectId];
+			let frmConnect = document.forms[frmConnectId];
 			if (frmConnect) {
 				frmConnect.target = '_blank';
 				frmConnect.submit();
@@ -551,7 +551,7 @@ function o_aexecute(command, parameters) {
 	}
 	
 	function doPrint(url) {
-		var win = window.open(parameters["url"] + "/print.html", "_print","height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location=no,scrollbars=1");
+		let win = window.open(parameters["url"] + "/print.html", "_print","height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location=no,scrollbars=1");
 		win.focus();
 	}
 	
@@ -565,7 +565,7 @@ function o_aexecute(command, parameters) {
 		}
 	}
 	
-	console.log('o_aexecute', command, parameters);
+	// console.log('o_aexecute', command, parameters);
 	switch(command) {
 		case "addclassbody":
 			jQuery('#o_body').addClass(parameters["class"]);
@@ -645,7 +645,7 @@ function o_avideo(command, parameters) {
 
 	function videoContinue(elementId) {
 		try {
-			var player = jQuery('#' + elementId).data('player');
+			let player = jQuery('#' + elementId).data('player');
 			player.play();
 			player.options.enableKeyboard=true;
 			jQuery(player.controls).show();
@@ -659,7 +659,7 @@ function o_avideo(command, parameters) {
 	
 	function videoContinueAt(elementId, timeInSeconds) {
 		try {
-			var player = jQuery('#' + elementId).data('player');
+			let player = jQuery('#' + elementId).data('player');
 			player.play();
 			player.options.enableKeyboard=true;
 			jQuery(player.controls).show();
@@ -674,7 +674,7 @@ function o_avideo(command, parameters) {
 	
 	function videoPause(elementId, timeInSeconds) {
 		try {
-			var player = jQuery('#' + elementId).data('player');
+			let player = jQuery('#' + elementId).data('player');
 			player.pause();
 			o_info.sendNextPlayEventWithResponse = true;
 			player.options.enableKeyboard=true;
@@ -689,9 +689,9 @@ function o_avideo(command, parameters) {
 	
 	function videoTimeUpdate(elementId, delayInMillis) {
 		try {
-			var player = jQuery('#' + elementId).data('player');
-			var loaded = jQuery('#' + elementId).data('playerloaded');
-			var muted = player.muted;
+			let player = jQuery('#' + elementId).data('player');
+			let loaded = jQuery('#' + elementId).data('playerloaded');
+			let muted = player.muted;
 			if (loaded) {
 				player.setMuted(true);
 				player.play();
@@ -720,13 +720,13 @@ function o_avideo(command, parameters) {
 	
 	function videoSelectTime(elementId, timeInSeconds) {
 		try {
-			var player = jQuery('#' + elementId).data('player');
-			var loaded = jQuery('#' + elementId).data('playerloaded');
+			let player = jQuery('#' + elementId).data('player');
+			let loaded = jQuery('#' + elementId).data('playerloaded');
 			if(loaded) {
 				player.pause();
 				player.setCurrentTime(timeInSeconds);
 			} else {
-				var metaListener = function(e) {
+				let metaListener = function(e) {
 					player.setCurrentTime(timeInSeconds);
 					player.pause();
 					player.media.removeEventListener(metaListener);
@@ -741,14 +741,14 @@ function o_avideo(command, parameters) {
 	
 	function videoReloadMarkers(elementId, markers) {
 		try {
-			var player = jQuery('#' + elementId).data('player');
-			var loaded = jQuery('#' + elementId).data('playerloaded');
+			let player = jQuery('#' + elementId).data('player');
+			let loaded = jQuery('#' + elementId).data('playerloaded');
 			if(loaded) {
 				player.pause();
 				player.clearmarkers(player);
 				player.rebuildmarkers(player, markers);
 			} else {
-				var metaListener = function(e) {
+				let metaListener = function(e) {
 					player.pause();
 					player.clearmarkers(player);
 					player.rebuildmarkers(player, markers);
@@ -764,7 +764,7 @@ function o_avideo(command, parameters) {
 	
 	function videoShowHideProgressTooltip(elementId, show) {
 		try {
-			var player = jQuery('#' + elementId).data('player');
+			let player = jQuery('#' + elementId).data('player');
 			jQuery('.mejs__time-float').not('.o_video_comment_container .mejs__time-float').css('opacity', (show ? "1.0" : "0.0"));
 		} catch(e) {
 			console.log(e);
@@ -839,39 +839,39 @@ function o_ainvoke(r) {
 		return;
 	}
 	
-	var scrollTop = false;
-	var focusArray = [];
+	let scrollTop = false;
+	let focusArray = [];
 	
-	var cmdcnt = r["cmdcnt"];
+	let cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
 		// let everybody know dom replacement has started
 		jQuery(document).trigger("oo.dom.replacement.before");
 		
 		if (o_info.debug) { o_debug_trid++; }
 		
-		var cs = r["cmds"];
-		for (var i=0; i<cmdcnt; i++) {
-			var acmd = cs[i];
-			var co = acmd["cmd"];
-			var cda = acmd["cda"];
-			var wi = this.window;
+		let cs = r["cmds"];
+		for (let i=0; i<cmdcnt; i++) {
+			let acmd = cs[i];
+			let co = acmd["cmd"];
+			let cda = acmd["cda"];
+			let wi = this.window;
 			if (wi) {
 				switch (co) {
 					case 2:  // redraw components command
-						var cnt = cda["cc"];
-						var ca = cda["cps"];
-						for (var j=0;  j<cnt; j++) {
-							var c1 = ca[j];
-							var ciid = c1["cid"]; // component id
-							var civis = c1["cidvis"];// component visibility
-							var withWrapper = c1["cw"]; // component has a wrapper element, replace only inner content
-							var hfrag = c1["hfrag"]; // html fragment of component
+						let cnt = cda["cc"];
+						let ca = cda["cps"];
+						for (let j=0;  j<cnt; j++) {
+							let c1 = ca[j];
+							let ciid = c1["cid"]; // component id
+							let civis = c1["cidvis"];// component visibility
+							let withWrapper = c1["cw"]; // component has a wrapper element, replace only inner content
+							let hfrag = c1["hfrag"]; // html fragment of component
 							
 							if (o_info.debug) o_log("c2: redraw: "+c1["cname"]+ " ("+ciid+") "+c1["hfragsize"]+" bytes, listener(s): "+c1["clisteners"]);
 							
-							var replaceElement = false;
-							var newcId = "o_c"+ciid;
-							var newc = jQuery('#' + newcId);
+							let replaceElement = false;
+							let newcId = "o_c"+ciid;
+							let newc = jQuery('#' + newcId);
 							if (newc == null || newc.length == 0) {
 								//not a container, perhaps an element
 								newcId = "o_fi"+ciid;
@@ -880,10 +880,10 @@ function o_ainvoke(r) {
 							}
 							
 							if (newc != null) {
-								var eds = jQuery('div.o_richtext_mce textarea', newc);
-								for(var t=0; t<eds.length; t++) {
+								let eds = jQuery('div.o_richtext_mce textarea', newc);
+								for(let t=0; t<eds.length; t++) {
 									try {
-										var edId = jQuery(eds.get(t)).attr('id');
+										let edId = jQuery(eds.get(t)).attr('id');
 										if(typeof tinymce !== 'undefined') {
 											tinymce.remove('#' + edId);
 										}
@@ -892,8 +892,8 @@ function o_ainvoke(r) {
 									}
 								}
 								
-								var bTooltips = jQuery('body>div.tooltip.in');
-								for(var u=0; u<bTooltips.length; u++) {
+								let bTooltips = jQuery('body>div.tooltip.in');
+								for(let u=0; u<bTooltips.length; u++) {
 									try {
 										jQuery(bTooltips.get(u)).remove();
 									} catch(e) {
@@ -901,8 +901,8 @@ function o_ainvoke(r) {
 									}
 								}
 								
-								var jTooltips = jQuery('body>div.ui-tooltip');
-								for(var v=0; v<jTooltips.length; v++) {
+								let jTooltips = jQuery('body>div.ui-tooltip');
+								for(let v=0; v<jTooltips.length; v++) {
 									try {
 										jQuery(jTooltips.get(v)).remove();
 									} catch(e) {
@@ -910,7 +910,7 @@ function o_ainvoke(r) {
 									}
 								}
 								
-								var videos = jQuery('div.o_video_run video', newc);
+								let videos = jQuery('div.o_video_run video', newc);
 								if(videos.length > 0) {
 									destroyRunningVideos(videos);
 								}
@@ -960,7 +960,7 @@ function o_ainvoke(r) {
 						// createParentRedirectTo leads to a full page reload
 						// create redirect for external resource mapper
 						wi.o2c = 0;
-						var rurl = cda["rurl"];
+						let rurl = cda["rurl"];
 						//in case of a mapper served media resource (xls,pdf etc.)
 						wi.o_afterserver();
 						wi.document.location.replace(rurl);//opens non-inline media resource
@@ -971,36 +971,36 @@ function o_ainvoke(r) {
 						break;
 					case 7: // JSCSS: handle dynamic insertion of js libs and dynamic insertion/deletion of css stylesheets
 						// css remove, add, js add order should makes no big difference? except js calling/modifying css? 
-						var loc = wi.document.location;
-						var furlp = loc.protocol+"//"+loc.hostname; // e.g. http://my.server.com:8000
+						let loc = wi.document.location;
+						let furlp = loc.protocol+"//"+loc.hostname; // e.g. http://my.server.com:8000
 						if (loc.port != "" ) furlp += ":"+ loc.port; 
 						// 1. unload css file
-						var cssrm = cda["cssrm"];
-						for (var j = 0; j<cssrm.length; j++) {
-							var ce = cssrm[j];
-							var id = ce["id"];
-							var url = furlp + ce["url"];
+						let cssrm = cda["cssrm"];
+						for (let j = 0; j<cssrm.length; j++) {
+							let ce = cssrm[j];
+							let id = ce["id"];
+							let url = furlp + ce["url"];
 							BLoader.unLoadCSS(url, id);
 							if (o_info.debug) o_log("c7: rm css: id:"+id+" ,url:'"+url+"'");
 						}
 						// 2) load css file
-						var cssadd = cda["cssadd"];
-						for (var k = 0; k<cssadd.length; k++) {
-							var ce = cssadd[k];
-							var id = ce["id"];
-							var url = furlp + ce["url"];
-							var pt = ce["pt"];
+						let cssadd = cda["cssadd"];
+						for (let k = 0; k<cssadd.length; k++) {
+							let ce = cssadd[k];
+							let id = ce["id"];
+							let url = furlp + ce["url"];
+							let pt = ce["pt"];
 							BLoader.loadCSS(url,id,pt);
 							if (o_info.debug) o_log("c7: add css: id:"+id+" ,url:'"+url+"'");
 						}
 						
 						// 3) js lib adds
-						var jsadd = cda["jsadd"];
-						for (var l=0; l<jsadd.length; l++) {
-							var ce = jsadd[l];
+						let jsadd = cda["jsadd"];
+						for (let l=0; l<jsadd.length; l++) {
+							let ce = jsadd[l];
 							// 3.1) load js file
-							var url = ce["url"];
-							var enc = ce["enc"];
+							let url = ce["url"];
+							let enc = ce["enc"];
 							if (jQuery.type(url) === "string") BLoader.loadJS(url, enc, true);
 							if (o_info.debug) o_log("c7: add js: "+url);
 						}	
