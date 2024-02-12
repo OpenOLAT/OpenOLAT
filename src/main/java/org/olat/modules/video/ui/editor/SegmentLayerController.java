@@ -28,13 +28,12 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.course.nodes.video.VideoRunController;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegments;
 import org.olat.repository.RepositoryEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -93,11 +92,8 @@ public class SegmentLayerController extends BasicController {
 	private void setSegmentVisible(String segmentId, boolean visible) {
 		segments.getSegment(segmentId).map(s -> segments.getSegments().indexOf(s))
 				.ifPresent(segmentIndex -> {
-					JSCommand jsCommand = new JSCommand("try { setTimeout(() => { jQuery('#vt-marker-" +
-							(segmentIndex + 1) +
-							"').tooltip('" + (visible ? "show" : "hide") +
-							"'); }, 50); } catch(e) { if (window.console) console.log(e) }");
-					getWindowControl().getWindowBackOffice().sendCommandTo(jsCommand);
+					String elementId = "vt-marker-" + (segmentIndex + 1);
+					getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.showTooltip(elementId, visible));
 				});
 	}
 

@@ -42,6 +42,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.functions.VideoCommands;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -85,8 +86,6 @@ import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.VideoHelper;
-import org.olat.modules.video.ui.component.ContinueCommand;
-import org.olat.modules.video.ui.component.PauseCommand;
 import org.olat.modules.video.ui.editor.CommentLayerController;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
@@ -407,13 +406,13 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	}
 
 	private void doContinue() {
-		ContinueCommand cmd = new ContinueCommand(displayCtrl.getVideoElementId());
-		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands
+				.videoContinue(displayCtrl.getVideoElementId()));
 	}
 
 	private void doPause(long timeInSeconds) {
-		PauseCommand cmd = new PauseCommand(displayCtrl.getVideoElementId(), timeInSeconds);
-		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands
+				.pause(displayCtrl.getVideoElementId(), timeInSeconds));
 	}
 
 	private void doStart(UserRequest ureq) {

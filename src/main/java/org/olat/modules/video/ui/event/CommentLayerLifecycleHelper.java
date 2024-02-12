@@ -25,9 +25,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.functions.VideoCommands;
 import org.olat.modules.video.ui.VideoDisplayController;
-import org.olat.modules.video.ui.component.ContinueCommand;
-import org.olat.modules.video.ui.component.PauseCommand;
 import org.olat.modules.video.ui.editor.CommentLayerController;
 
 /**
@@ -87,12 +86,12 @@ public class CommentLayerLifecycleHelper {
 	}
 
 	private void doContinue() {
-		ContinueCommand cmd = new ContinueCommand(videoDisplayController.getVideoElementId());
-		windowControlSupplier.get().getWindowBackOffice().sendCommandTo(cmd);
+		windowControlSupplier.get().getWindowBackOffice().sendCommandTo(VideoCommands
+				.videoContinue(videoDisplayController.getVideoElementId()));
 	}
 
 	private void doPause(long timeInSeconds) {
-		PauseCommand cmd = new PauseCommand(videoDisplayController.getVideoElementId(), timeInSeconds);
-		windowControlSupplier.get().getWindowBackOffice().sendCommandTo(cmd);
+		windowControlSupplier.get().getWindowBackOffice().sendCommandTo(VideoCommands
+				.pause(videoDisplayController.getVideoElementId(), timeInSeconds));
 	}
 }

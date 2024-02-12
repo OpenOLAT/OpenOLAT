@@ -555,7 +555,17 @@ function o_aexecute(command, parameters) {
 		win.focus();
 	}
 	
-	// console.log('o_aexecute', command, parameters);
+	function showTooltip(elementId, show) {
+		try {
+			setTimeout(function() {
+				jQuery('#' + elementId).tooltip((visible ? "show" : "hide"));
+			}, 50);
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	console.log('o_aexecute', command, parameters);
 	switch(command) {
 		case "addclassbody":
 			jQuery('#o_body').addClass(parameters["class"]);
@@ -567,6 +577,9 @@ function o_aexecute(command, parameters) {
 			setTimeout(function() {
 				showInfoBox(parameters["title"], parameters["message"]);
 			}, 100);
+			break;
+		case "showtooltip":
+			showTooltip(parameters["elementId"], parameters["show"]);
 			break;
 		case "closelightbox":
 			window[parameters["boxid"]].close();
@@ -627,6 +640,196 @@ function o_aexecute(command, parameters) {
 	}
 }
 
+function o_avideo(command, parameters) {
+	'use strict';
+
+	function videoContinue(elementId) {
+		try {
+			var player = jQuery('#' + elementId).data('player');
+			player.play();
+			player.options.enableKeyboard=true;
+			jQuery(player.controls).show();
+			jQuery('#' + player.id + ' .mejs__overlay-play')
+				.show()
+				.css('width', '100%');
+		} catch(e) {
+			console.log(e);
+		}  
+	}
+	
+	function videoContinueAt(elementId, timeInSeconds) {
+		try {
+			var player = jQuery('#' + elementId).data('player');
+			player.play();
+			player.options.enableKeyboard=true;
+			jQuery(player.controls).show();
+			player.setCurrentTime(timeInSeconds);
+			jQuery('#' + player.id + ' .mejs__overlay-play')
+				.show()
+				.css('width', '100%');
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function videoPause(elementId, timeInSeconds) {
+		try {
+			var player = jQuery('#' + elementId).data('player');
+			player.pause();
+			o_info.sendNextPlayEventWithResponse = true;
+			player.options.enableKeyboard=true;
+			player.setCurrentTime(timeInSeconds);
+			jQuery('#' + player.id + ' .mejs__overlay-play')
+				.show()
+				.css('width', '100%');
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function videoTimeUpdate(elementId, delayInMillis) {
+		try {
+			var player = jQuery('#' + elementId).data('player');
+			var loaded = jQuery('#' + elementId).data('playerloaded');
+			var muted = player.muted;
+			if (loaded) {
+				player.setMuted(true);
+				player.play();
+				setTimeout(function() {
+					player.pause();
+					player.setMuted(muted);
+					player.media.dispatchEvent(mejs.Utils.createEvent('timeupdate', player.media));
+				}, delayInMillis);
+			} else {
+				const metaListener = function(e) {
+					setTimeout(function() {
+						player.pause();
+						player.setMuted(muted);
+						player.media.dispatchEvent(mejs.Utils.createEvent('timeupdate', player.media));
+					}, delayInMillis);
+					player.media.removeEventListener(metaListener);
+				};
+				player.setMuted(true);
+				player.play();
+				player.media.addEventListener('loadedmetadata', metaListener);
+			}
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function videoSelectTime(elementId, timeInSeconds) {
+		try {
+			var player = jQuery('#' + elementId).data('player');
+			var loaded = jQuery('#' + elementId).data('playerloaded');
+			if(loaded) {
+				player.pause();
+				player.setCurrentTime(timeInSeconds);
+			} else {
+				var metaListener = function(e) {
+					player.setCurrentTime(timeInSeconds);
+					player.pause();
+					player.media.removeEventListener(metaListener);
+				};
+				player.play();
+				player.media.addEventListener('loadedmetadata', metaListener);
+			}
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function videoReloadMarkers(elementId, markers) {
+		try {
+			var player = jQuery('#' + elementId).data('player');
+			var loaded = jQuery('#' + elementId).data('playerloaded');
+			if(loaded) {
+				player.pause();
+				player.clearmarkers(player);
+				player.rebuildmarkers(player, markers);
+			} else {
+				var metaListener = function(e) {
+					player.pause();
+					player.clearmarkers(player);
+					player.rebuildmarkers(player, markers);
+					player.media.removeEventListener(metaListener);
+				};
+				player.play();
+				player.media.addEventListener('loadedmetadata', metaListener);
+			}
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function videoShowHideProgressTooltip(elementId, show) {
+		try {
+			var player = jQuery('#' + elementId).data('player');
+			jQuery('.mejs__time-float').not('.o_video_comment_container .mejs__time-float').css('opacity', (show ? "1.0" : "0.0"));
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function videoMarkSelect(id, typeClass) {
+		try {
+			jQuery('.o_video_timeline_box').removeClass('o_video_active');
+			if(typeClass != null) {
+				jQuery('.o_video_timeline_box.' + typeClass).addClass('o_video_active');
+			}
+			jQuery('.o_video_selected').removeClass('o_video_selected');
+			jQuery('#o_video_event_' + id).addClass('o_video_selected');
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	function videoMarkTypeOnly(typeClass) {
+		try {
+			jQuery('.o_video_timeline_box').removeClass('o_video_active');
+			if(typeClass != null) {
+				jQuery('.o_video_timeline_box.' + typeClass).addClass('o_video_active');
+			}
+			jQuery('.o_video_selected').removeClass('o_video_selected');
+		} catch(e) {
+			console.log(e);
+		}
+	}
+	
+	// console.log('o_avideo', command, parameters);
+	switch(command) {
+		case "videocontinue":
+			videoContinue(parameters["elementId"]);
+			break;
+		case "videocontinueat":
+			videoContinueAt(parameters["elementId"], parameters["timeInSeconds"]);
+			break;
+		case "videopause":
+			videoPause(parameters["elementId"]);
+			break;
+		case "videoselecttime":
+			videoSelectTime(parameters["elementId"], parameters["timeInSeconds"]);
+			break;
+		case "videotimeupdate":
+			videoTimeUpdate(parameters["elementId"], parameters["delayInMillis"]);
+			break;
+		case "videoreloadmarkers":
+			videoReloadMarkers(parameters["elementId"], parameters["markers"]);
+			break;
+		case "videoshowhideprogresstooltip":
+			videoShowHideProgressTooltip(parameters["elementId"], parameters["show"]);
+			break;
+		case "videomarkselect":
+			videoMarkSelect(parameters["id"], parameters["typeClass"]);
+			break;
+		case "videomarktypeonly":
+			videoMarkTypeOnly(parameters["typeClass"]);
+			break;
+		default:
+			console.log("Unkown command", command, parameters);
+	}
+}
+
 // main interpreter for ajax mode
 var o_debug_trid = 0;
 function o_ainvoke(r) {
@@ -654,14 +857,6 @@ function o_ainvoke(r) {
 			var wi = this.window;
 			if (wi) {
 				switch (co) {
-					case 1: // Excecute JavaScript Code
-						try {
-							var jsexec = cda["e"];
-							window.eval(jsexec);
-						} catch(e) {
-							if(window.console) console.log(e);
-							showMessageBox("error", "JS Eval error", e);
-						}
 					case 2:  // redraw components command
 						var cnt = cda["cc"];
 						var ca = cda["cps"];
@@ -745,6 +940,13 @@ function o_ainvoke(r) {
 
 								checkDrakes();
 							}
+						}
+						break;
+					case 3:
+						try {
+							o_avideo(cda["func"], cda["fparams"]);
+						} catch(e) {
+							console.log(e);
 						}
 						break;
 					case 4:

@@ -40,6 +40,7 @@ public class FunctionCommand extends Command {
 		ADD_CLASS_BOODY("addclassbody"),
 		REMOVE_CLASS_BOODY("removeclassbody"),
 		SHOW_INFO_MESSAGE("showinfomessage"),
+		SHOW_TOOLTIP("showtooltip"),
 		CLOSE_LIGHTBOX("closelightbox"),
 		CLOSE_DIALOG("closedialog"),
 		DISPOSE_AUDIO_RECORDER("disposeaudiorecorder"),
@@ -214,5 +215,12 @@ public class FunctionCommand extends Command {
 		parameters.put("url", url);
 		parameters.put("title", title);
 		return valueOf(Functions.ANALYTICS, parameters);
+	}
+	
+	public static FunctionCommand showTooltip(String elementId, boolean show) {
+		JSONObject parameters = new JSONObject();
+		parameters.put("elementId", elementId);
+		parameters.put("show", show);
+		return valueOf(Functions.SHOW_TOOLTIP, parameters);
 	}
 }

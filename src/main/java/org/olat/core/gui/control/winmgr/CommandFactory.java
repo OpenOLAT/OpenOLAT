@@ -47,8 +47,8 @@ import org.olat.core.util.CodeHelper;
 public class CommandFactory {
 	
 	public enum InvokeIdentifier {
-		JAVASCRIPT(1),
 		DIRTY(2),
+		VIDEO(3),
 		FUNCTION(4),
 		REDIRECT_URL(5),
 		PREPARE_CLIENT(6),

@@ -28,14 +28,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.winmgr.functions.VideoCommands;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.VideoHelper;
-import org.olat.modules.video.ui.component.SelectTimeCommand;
 import org.olat.modules.video.ui.event.MarkerMovedEvent;
 import org.olat.modules.video.ui.event.MarkerResizedEvent;
 import org.olat.modules.video.ui.event.VideoEvent;
-import org.olat.modules.video.ui.marker.ReloadMarkersCommand;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -151,8 +150,8 @@ public class VideoController extends BasicController {
 		} else {
 			markers = videoDisplayController.loadMarkers();
 		}
-		ReloadMarkersCommand reloadMarkersCommand = new ReloadMarkersCommand(videoElementId, markers);
-		getWindowControl().getWindowBackOffice().sendCommandTo(reloadMarkersCommand);
+		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands
+				.reloadMarkers(videoElementId, markers));
 	}
 
 	public void reloadChapters() {
@@ -164,12 +163,12 @@ public class VideoController extends BasicController {
 	}
 
 	public void selectTime(long timeInSeconds, boolean isYoutube) {
-		SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, timeInSeconds);
-		getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
+		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands
+				.selectTime(videoElementId, timeInSeconds));
 
 		if (isYoutube) {
-			TimeUpdateCommand timeUpdateCommand = new TimeUpdateCommand(videoElementId, 200);
-			getWindowControl().getWindowBackOffice().sendCommandTo(timeUpdateCommand);
+			getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands
+					.timeUpdate(videoElementId, 200));
 		}
 	}
 
@@ -189,7 +188,7 @@ public class VideoController extends BasicController {
 			case ANNOTATION, QUIZ -> {
 				segmentLayerController.clearSegments();
 				videoDisplayController.loadMarker(ureq,
-						Double.toString((double) selectedTimelineEvent.getStartTimeInMillis() / 1000.0),
+						Double.toString((double) selectedTimelineEvent.getStartTimeInMillis() / 1000.0d),
 						selectedTimelineEvent.getId());
 			}
 			case CHAPTER -> {

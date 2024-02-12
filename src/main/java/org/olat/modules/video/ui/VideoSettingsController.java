@@ -35,8 +35,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
-import org.olat.modules.video.ui.marker.VideoMarkerEditController;
-import org.olat.modules.video.ui.question.VideoQuestionEditController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
 import org.olat.repository.ui.settings.RepositoryEntryInfoController;
@@ -55,11 +53,8 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	private RepositoryEntryInfoController infoCtrl;
 	private VideoMetaDataWrapperController videoMetadataController;
 	private VideoPosterEditController posterEditController;
-	private VideoChapterEditController chapterEditController;
 	private VideoTrackEditController trackEditController;
 	private VideoQualityTableFormController qualityEditController;
-	private VideoMarkerEditController markerEditController;
-	private VideoQuestionEditController questionEditController;
 	private VideoDownloadSettingsController downloadSettingsController;
 
 	private Link infoLink;
@@ -129,21 +124,15 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	protected void cleanUp() {
 		removeAsListenerAndDispose(downloadSettingsController);
 		removeAsListenerAndDispose(videoMetadataController);
-		removeAsListenerAndDispose(questionEditController);
 		removeAsListenerAndDispose(qualityEditController);
-		removeAsListenerAndDispose(markerEditController);
 		removeAsListenerAndDispose(trackEditController);
-		removeAsListenerAndDispose(chapterEditController);
 		removeAsListenerAndDispose(posterEditController);
 		removeAsListenerAndDispose(infoCtrl);
 		
 		downloadSettingsController = null;
 		videoMetadataController = null;
-		questionEditController = null;
 		qualityEditController = null;
-		markerEditController = null;
 		trackEditController = null;
-		chapterEditController = null;
 		posterEditController = null;
 		infoCtrl = null;
 		

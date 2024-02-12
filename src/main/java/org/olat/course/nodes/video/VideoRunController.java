@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.winmgr.functions.VideoCommands;
 import org.olat.core.logging.Tracing;
 import org.olat.course.assessment.AssessmentEvents;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -46,8 +47,6 @@ import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.VideoHelper;
-import org.olat.modules.video.ui.component.ContinueCommand;
-import org.olat.modules.video.ui.component.PauseCommand;
 import org.olat.modules.video.ui.editor.CommentLayerController;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.modules.video.ui.segment.SegmentsController;
@@ -142,13 +141,13 @@ public class VideoRunController extends BasicController {
 	}
 
 	private void doContinue() {
-		ContinueCommand cmd = new ContinueCommand(videoDispCtr.getVideoElementId());
-		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands
+				.videoContinue(videoDispCtr.getVideoElementId()));
 	}
 
 	private void doPause(long timeInSeconds) {
-		PauseCommand cmd = new PauseCommand(videoDispCtr.getVideoElementId(), timeInSeconds);
-		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands
+				.pause(videoDispCtr.getVideoElementId(), timeInSeconds));
 	}
 
 	private void doUpdateAssessmentStatus(UserRequest ureq, double progress, boolean forceSave) {
