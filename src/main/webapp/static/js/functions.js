@@ -1337,11 +1337,9 @@ function o_viewportHeight() {
 
 
 /**
- *  calculate the height of the inner content area that can be used for 
+ *  Calculate the height of the inner content area that can be used for 
  *  displaying content without using scrollbars. The height includes the 
- *  margin, border and padding of the main columns
- *  @dependencies: prototype library, jQuery
- *  @author: Florian Gnaegi
+ *  margin, border and padding of the main columns.
  */
 OPOL.getMainColumnsMaxHeight =  function(){
 	var mainDomElement = jQuery('#o_main');

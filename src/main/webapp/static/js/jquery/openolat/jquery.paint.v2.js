@@ -213,7 +213,6 @@
 					fill: 'rgba(255,255,255,0.0)',
 					strokeWidth: width,
 					stroke: color,
-					originX: 'left',
 					hasRotatingPoint: false,
 					centerTransform: true,
 					strokeUniform: true
