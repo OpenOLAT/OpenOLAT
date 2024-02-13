@@ -76,6 +76,7 @@ form .o_form, form.o_form {
 		display: flex;
 		align-items: center;
 		column-gap: 20px;
+		row-gap: 15px;
 		flex-wrap: wrap;
 	}
 	
@@ -127,6 +128,13 @@ form .o_form, form.o_form {
 	
 	.input-group.o_date_picker {
 		width: 11em;
+	}
+	
+	.o_date_bloc {
+		white-space: nowrap;
+		.o_first_date, .o_second_date {
+			padding-right: 1em;
+		}
 	}
 	
 	.has-feedback .o_date_picker .form-control {

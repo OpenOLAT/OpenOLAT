@@ -20,7 +20,6 @@
 package org.olat.course.assessment.ui.tool.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.course.assessment.AssessmentInspectionStatusEnum;
 
 /**
  * 
@@ -33,14 +32,14 @@ public class AssessmentInspectionSelectionEvent extends Event {
 	private static final long serialVersionUID = 1365578226635269327L;
 	public static final String STATUS_CHANGED = "assessment-inspection-selection";
 	
-	private AssessmentInspectionStatusEnum status;
+	private String status;
 	
-	public AssessmentInspectionSelectionEvent(AssessmentInspectionStatusEnum status) {
+	public AssessmentInspectionSelectionEvent(String status) {
 		super(STATUS_CHANGED);
 		this.status = status;
 	}
 	
-	public AssessmentInspectionStatusEnum getStatus() {
+	public String getStatus() {
 		return status;
 	}
 }

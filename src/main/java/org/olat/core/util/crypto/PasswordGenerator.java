@@ -28,21 +28,30 @@ package org.olat.core.util.crypto;
 public class PasswordGenerator {
 
 	private static final String CHARSET = "23456789abcdefghjkmnpqrstuvwxyz23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+	private static final String NUMERICAL = "123456789";
 	
 	private PasswordGenerator() {
 		//
 	}
 	
+	public static final String generateNumericalCode(int length) {
+		return generate(NUMERICAL, length);
+	}
+	
 	public static final String generatePassword(int length) {
+		return generate(CHARSET, length);
+	}
+	
+	private static final String generate(String set, int length) {
 		StringBuilder sb = new StringBuilder();
 		int countNum = 0;
 		for (int i = 0; i < length; i++) {
-			double dPos = Math.random() * CHARSET.length();
+			double dPos = Math.random() * set.length();
 			long pos = Math.round(dPos);
-			if(pos >= CHARSET.length()) {
-				pos = CHARSET.length() - 1l;
+			if(pos >= set.length()) {
+				pos = set.length() - 1l;
 			}
-			char ch = CHARSET.charAt((int)pos);
+			char ch = set.charAt((int)pos);
 			if(Character.isDigit(ch)) {
 				countNum++;
 			}
@@ -53,10 +62,10 @@ public class PasswordGenerator {
 		for (int i = countNum; i < 2; i++) {
 			double dPos = Math.random() * 10;
 			long pos = Math.round(dPos);
-			if(pos >= CHARSET.length()) {
-				pos = CHARSET.length() - 1l;
+			if(pos >= set.length()) {
+				pos = set.length() - 1l;
 			}
-			char ch = CHARSET.charAt((int)pos);
+			char ch = set.charAt((int)pos);
 			sb.append(ch);
 		}
 		return sb.toString();

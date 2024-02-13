@@ -735,6 +735,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qti_summary_correct { @include o-add-icon('check-circle'); color: $brand-success;}
 .o_icon_qti_signature { @include o-add-icon('file-code');}
 
+/* assessment inspection */
+.o_icon_assessment_inspection_scheduled { @include o-add-icon('clock'); }
+.o_icon_assessment_inspection_active { @include o-add-icon('play'); }
+.o_icon_assessment_inspection_inprogress { @include o-add-icon('spinner'); }
+.o_icon_assessment_inspection_carriedout { @include o-add-icon('check'); }
+.o_icon_assessment_inspection_noshow { @include o-add-icon('user-large-slash'); }
+.o_icon_assessment_inspection_cancelled { @include o-add-icon('circle-stop'); }
+.o_icon_assessment_inspection_withdrawn { @include o-add-icon('ban'); }
+
 /* lectures */
 .o_lectures_current { @include o-add-icon('circle'); color: $brand-warning;}
 .o_lectures_next { @include o-add-icon('clock', false);  }

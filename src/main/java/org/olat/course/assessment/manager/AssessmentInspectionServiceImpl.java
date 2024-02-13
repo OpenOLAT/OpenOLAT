@@ -193,7 +193,7 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 			boolean withAccessCode, String subIdent, List<IdentityRef> identitiesRefs, Identity doer) {
 		List<Identity> identities = identityDao.loadByRefs(identitiesRefs);
 		for(Identity identity:identities) {
-			String accessCode = withAccessCode ? PasswordGenerator.generatePassword(10) : null;
+			String accessCode = withAccessCode ? PasswordGenerator.generateNumericalCode(6) : null;
 			Integer extraTime = getExtraTime(compensations, identity);
 			AssessmentInspection inspection = inspectionDao
 					.createInspection(identity, start, end, extraTime, accessCode, subIdent, configuration);
@@ -222,7 +222,7 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 		inspection.setToDate(to);
 		inspection.setExtraTime(extraTime);
 		if(accessCode && !StringHelper.containsNonWhitespace(inspection.getAccessCode())) {
-			inspection.setAccessCode(PasswordGenerator.generatePassword(10));
+			inspection.setAccessCode(PasswordGenerator.generateNumericalCode(6));
 		} else if(!accessCode) {
 			inspection.setAccessCode(null);
 		}
@@ -416,6 +416,12 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 		AssessmentInspection updatedInspection = inspectionDao.updateInspection(inspection);
 		dbInstance.commit();
 		return updatedInspection;
+	}
+	
+	@Override
+	public void log(Action action, String before, String after, TransientAssessmentInspection inspection, Identity doer) {
+		AssessmentInspection assessmentInspection = inspectionDao.loadByKey(inspection.getInspectionKey());
+		inspectionLogDao.createLog(action, before, after, assessmentInspection, doer);
 	}
 
 	@Override

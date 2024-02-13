@@ -53,6 +53,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
@@ -64,9 +66,14 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.inspection.CreateInspectionContext;
+import org.olat.course.assessment.ui.inspection.CreateInspectionFinishStepCallback;
+import org.olat.course.assessment.ui.inspection.CreateInspection_1a_CreateConfigurationStep;
+import org.olat.course.assessment.ui.inspection.CreateInspection_3_InspectionStep;
 import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
 import org.olat.course.assessment.ui.reset.ResetDataContext;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
@@ -143,10 +150,12 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private FormLink bulkExportResultsButton;
 	private FormLink bulkStatsButton;
 	private FormLink bulkCorrectionButton;
+	private FormLink bulkInspectionButton;
 
 	private Controller retrieveConfirmationCtr;
 	private QTI21DeleteDataController deleteAllDataCtrl;
 	private ConfirmExtraTimeController extraTimeCtrl;
+	private StepsMainRunController bulkInspectionWizard;
 	private QTI21ExportResultsController exportResultsCtrl;
 	private ValidationXmlSignatureController validationCtrl;
 	private ConfirmResetDataController confirmResetDataCtrl;
@@ -163,6 +172,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private GradeService gradeService;
 	@Autowired
 	private GradingService gradingService;
+	@Autowired
+	private AssessmentInspectionService inspectionService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -300,6 +311,10 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					validateButton = uifactory.addFormLink("validate.xml.signature", formLayout, Link.BUTTON);
 					validateButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
 				}
+				
+				bulkInspectionButton  = uifactory.addFormLink("bulk.inspection.title", "bulk.inspection.title", null, formLayout, Link.BUTTON);
+				bulkInspectionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
+				tableEl.addBatchButton(bulkInspectionButton);
 			}
 		}
 		
@@ -480,7 +495,13 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			} else if(event == Event.DONE_EVENT) {
 				doOpenCorrection(correctionCtrl);
 			}
+		} else if(bulkInspectionWizard == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				cleanUp();
+			}
 		}
+		
 		super.event(ureq, source, event);
 	}
 
@@ -502,6 +523,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			doStartCorrection(ureq);
 		} else if(bulkCorrectionButton == source) {
 			doStartBulkCorrection(ureq);
+		} else if(bulkInspectionButton == source) {
+			doBulkInspection(ureq);
 		} else if(pullButton == source) {
 			doConfirmPull(ureq);
 		} else if(deleteDataButton == source) {
@@ -521,12 +544,14 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		removeAsListenerAndDispose(extraTimeCtrl);
 		removeAsListenerAndDispose(deleteAllDataCtrl);
 		removeAsListenerAndDispose(confirmResetDataCtrl);
+		removeAsListenerAndDispose(bulkInspectionWizard);
 		reopenForCorrectionCtrl = null;
 		retrieveConfirmationCtr = null;
 		validationCtrl = null;
 		extraTimeCtrl = null;
 		deleteAllDataCtrl = null;
 		confirmResetDataCtrl = null;
+		bulkInspectionWizard = null;
 		super.cleanUp();
 	}
 	
@@ -643,6 +668,37 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 				doSetStatus(assessedIdentity, AssessmentEntryStatus.inReview, courseNode, course);
 				dbInstance.commitAndCloseSession();			}
+		}
+	}
+	
+	private void doBulkInspection(UserRequest ureq) {
+		removeAsListenerAndDispose(bulkInspectionWizard);
+
+		List<Identity> identities = getSelectedIdentities(row -> true);
+		if(identities == null || identities.isEmpty()) {
+			showWarning("error.no.assessed.users");
+		} else {
+			List<IdentityRef> participants = new ArrayList<>(identities);
+			List<DisadvantageCompensation> compensations = disadvantageCompensationService
+					.getActiveDisadvantageCompensations(getCourseRepositoryEntry(), courseNode.getIdent());
+			List<DisadvantageCompensation> participantsCompensations = compensations.stream()
+					.filter(compensation -> identities.contains(compensation.getIdentity()))
+					.toList();
+		
+			CreateInspectionContext context = new CreateInspectionContext(courseEntry, getAssessmentCallback());
+			context.setCourseNode(courseNode);
+			context.setParticipants(participants, participantsCompensations);
+			CreateInspectionFinishStepCallback finish = new CreateInspectionFinishStepCallback(context);
+			
+			Step start;
+			if(inspectionService.hasInspectionConfigurations(getCourseRepositoryEntry())) {
+				start = new CreateInspection_3_InspectionStep(ureq, context);
+			} else {
+				start = new CreateInspection_1a_CreateConfigurationStep(ureq, context);
+			}
+			bulkInspectionWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("bulk.inspection.title"), "");
+			listenTo(bulkInspectionWizard);
+			getWindowControl().pushAsModalDialog(bulkInspectionWizard.getInitialComponent());
 		}
 	}
 	

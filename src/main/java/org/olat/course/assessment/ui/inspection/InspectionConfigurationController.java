@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.inspection;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -40,6 +41,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.render.DomWrapperElement;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspectionService;
@@ -58,8 +60,10 @@ public class InspectionConfigurationController extends StepFormBasicController {
 	private StaticTextElement durationEl;
 	private DateChooser inspectionPeriodEl;
 	private SingleSelection configurationEl;
+	private StaticTextElement accessCodeInfosEl;
 	private StaticTextElement configurationInfosEl;
 	
+	private Date startDate;
 	private final CreateInspectionContext context;
 	private final List<AssessmentInspectionConfiguration> configurations;
 
@@ -88,13 +92,18 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		
 		configurationEl = uifactory.addDropdownSingleselect("configuration", "inspection.configuration", formLayout,
 				configurationKV.keys(), configurationKV.values());
-		configurationEl.addActionListener(FormEvent.ONCHANGE);
-		configurationEl.setMandatory(true);
-		if(context.getEditedInspection() != null && configurationKV.containsKey(context.getEditedInspection().getConfiguration().getKey().toString()) ) {
-			configurationEl.select(context.getEditedInspection().getConfiguration().getKey().toString(), true);
-		} else if(!configurations.isEmpty()) {
-			AssessmentInspectionConfiguration firstConfiguration = configurations.get(0);
-			configurationEl.select(firstConfiguration.getKey().toString(), true);
+		if(context.getNewConfiguration() != null) {
+			configurationEl.setVisible(false);
+			configurationEl.enableNoneSelection();
+		} else {
+			configurationEl.addActionListener(FormEvent.ONCHANGE);
+			configurationEl.setMandatory(true);
+			if(context.getEditedInspection() != null && configurationKV.containsKey(context.getEditedInspection().getConfiguration().getKey().toString()) ) {
+				configurationEl.select(context.getEditedInspection().getConfiguration().getKey().toString(), true);
+			} else if(!configurations.isEmpty()) {
+				AssessmentInspectionConfiguration firstConfiguration = configurations.get(0);
+				configurationEl.select(firstConfiguration.getKey().toString(), true);
+			}
 		}
 		
 		durationEl = uifactory.addStaticTextElement("configuration.duration", "configuration.duration", "", formLayout);
@@ -104,6 +113,7 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		inspectionPeriodEl.setDateChooserTimeEnabled(true);
 		inspectionPeriodEl.setSeparator("configuration.inspection.period.separator");
 		inspectionPeriodEl.setMandatory(true);
+		inspectionPeriodEl.addActionListener(FormEvent.ONCHANGE);
 		if(context.getEditedInspection() != null) {
 			inspectionPeriodEl.setDate(context.getEditedInspection().getFromDate());
 			inspectionPeriodEl.setSecondDate(context.getEditedInspection().getToDate());
@@ -112,9 +122,14 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		}
 		
 		accessCodeEl = uifactory.addToggleButton("configuration.access.code", "configuration.access.code", translate("on"), translate("off"), formLayout);
+		accessCodeEl.addActionListener(FormEvent.ONCHANGE);
 		if(context.getEditedInspection() != null && StringHelper.containsNonWhitespace(context.getEditedInspection().getAccessCode())) {
 			accessCodeEl.toggleOn();
 		}
+		
+		String accessCodeInfos = translate("access.code.infos");
+		accessCodeInfosEl = uifactory.addStaticTextElement("access.code", null, accessCodeInfos, formLayout);
+		accessCodeInfosEl.setVisible(accessCodeEl.isOn());
 	
 		configurationInfosEl = uifactory.addStaticTextElement("configuration.infos", null, "", formLayout);
 		configurationInfosEl.setDomWrapperElement(DomWrapperElement.div);
@@ -135,7 +150,7 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		configurationEl.clearError();
-		if(!configurationEl.isOneSelected()) {
+		if(configurationEl.isVisible() && !configurationEl.isOneSelected()) {
 			configurationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -160,38 +175,76 @@ public class InspectionConfigurationController extends StepFormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(configurationEl == source) {
 			updateUI();
+		} else if(inspectionPeriodEl == source) {
+			updatePeriod();
+		} else if(accessCodeEl == source) {
+			accessCodeInfosEl.setVisible(accessCodeEl.isOn());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	private void updatePeriod() {
+		Date newStartdDate = inspectionPeriodEl.getDate();
+		Date endDate = inspectionPeriodEl.getSecondDate();
+		if (newStartdDate == null || startDate == null || endDate == null) {
+			return;
+		}
+		
+		Duration duration = Duration.between(DateUtils.toLocalDateTime(startDate), DateUtils.toLocalDateTime(newStartdDate));
+		Date newEndDate = DateUtils.toDate(DateUtils.toLocalDateTime(endDate).plus(duration));
+		inspectionPeriodEl.setSecondDate(newEndDate);
+		startDate = newStartdDate;
+	}
+	
 	private void updateUI() {
-		AssessmentInspectionConfiguration configuration = getSelectedConfiguration();
-		if(configuration == null) {
-			durationEl.setValue("");
-			configurationInfosEl.setValue("");
+		if(context.getNewConfiguration() != null) {
+			int durationInMinutes = context.getNewConfiguration().duration() / 60;
+			updateDuration(durationInMinutes);
+			String name = translate("standard.configuration.message");
+			String infos = getConfigurationInfos(durationInMinutes, name,
+					context.getNewConfiguration().getOverviewOptionsAsList(), false, false);
+			configurationInfosEl.setValue(infos);
 		} else {
-			int durationInMinutes = configuration.getDuration() / 60;
-			durationEl.setValue(translate("duration.cell", Integer.toString(durationInMinutes)));
-			configurationInfosEl.setValue(getConfigurationInfos(configuration));
-			
-			Date fromDate = inspectionPeriodEl.getDate();
-			if(fromDate != null && context.getEditedInspection() == null) {
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(fromDate);
-				cal.add(Calendar.MINUTE, durationInMinutes);
-				inspectionPeriodEl.setSecondDate(cal.getTime());
+			AssessmentInspectionConfiguration configuration = getSelectedConfiguration();
+			if(configuration == null) {
+				durationEl.setValue("");
+				configurationInfosEl.setValue("");
+			} else {
+				int durationInMinutes = configuration.getDuration() / 60;
+				updateDuration(durationInMinutes);
+
+				String infos = getConfigurationInfos(durationInMinutes, configuration.getName(),
+						configuration.getOverviewOptionsAsList(), configuration.isRestrictAccessIps(),
+						configuration.isSafeExamBrowser());
+				configurationInfosEl.setValue(infos);
 			}
 		}
 	}
 	
-	private String getConfigurationInfos(AssessmentInspectionConfiguration configuration) {
-		int durationInMinutes = configuration.getDuration() / 60;
+	private void updateDuration(int durationInMinutes) {
+		durationEl.setValue(translate("duration.cell", Integer.toString(durationInMinutes)));
+		
+		Date fromDate = inspectionPeriodEl.getDate();
+		if(fromDate != null && context.getEditedInspection() == null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(fromDate);
+			cal.add(Calendar.MINUTE, durationInMinutes);
+			inspectionPeriodEl.setSecondDate(cal.getTime());
+			
+			if(startDate == null) {
+				startDate = fromDate;
+			}
+		}
+	}
+	
+	private String getConfigurationInfos(int durationInMinutes, String configurationName, List<String> options,
+			boolean restrictAccessIps, boolean safeExamBrowser) {
 		StringBuilder sb = new StringBuilder(1000);
 		sb.append("<div class='o_info_with_icon'><p>")
-		  .append(translate("configuration.infos.title", StringHelper.escapeHtml(configuration.getName()))).append("</p><ul>")
+		  .append(translate("configuration.infos.title", StringHelper.escapeHtml(configurationName))).append("</p><ul>")
 		  .append("<li>").append(translate("configuration.infos.duration", Integer.toString(durationInMinutes))).append("</li>");
 		
-		List<String> options = configuration.getOverviewOptionsAsList();
+		
 		ResultsDisplayCellRenderer renderer = new ResultsDisplayCellRenderer(getTranslator());
 		List<String> translatedOptions = new ArrayList<>(options.size());
 		for(String option:options) {
@@ -199,8 +252,8 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		}
 
 		sb.append("<li>").append(translate("configuration.infos.options")).append(": ").append(String.join(" / ", translatedOptions)).append("</li>")
-		  .append("<li>").append(translate("configuration.infos.ips")).append(": ").append(configuration.isRestrictAccessIps() ? translate("yes") : translate("no")).append("</li>")
-		  .append("<li>").append(translate("configuration.infos.seb")).append(": ").append(configuration.isSafeExamBrowser() ? translate("yes") : translate("no")).append("</li>");  
+		  .append("<li>").append(translate("configuration.infos.ips")).append(": ").append(restrictAccessIps ? translate("yes") : translate("no")).append("</li>")
+		  .append("<li>").append(translate("configuration.infos.seb")).append(": ").append(safeExamBrowser ? translate("yes") : translate("no")).append("</li>");  
 		return sb.append("</ul></div>").toString();
 	}
 	
@@ -218,7 +271,7 @@ public class InspectionConfigurationController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(configurationEl.isOneSelected()) {
+		if(configurationEl.isVisible() && configurationEl.isOneSelected()) {
 			AssessmentInspectionConfiguration configuration = getSelectedConfiguration();
 			context.setInspectionConfiguration(configuration);
 		}

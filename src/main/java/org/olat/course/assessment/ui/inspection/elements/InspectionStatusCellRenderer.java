@@ -58,21 +58,25 @@ public class InspectionStatusCellRenderer implements FlexiCellRenderer {
 				Date start = inspectionRow.getFromDate();
 				Date end = inspectionRow.getToDate();
 				if(end != null && end.before(now)) {
-					target.append(translator.translate("inspection.status.noShow"));
+					render(target, AssessmentInspectionStatusEnum.noShow.name());
 				} else if(start != null && start.before(now)) {
-					target.append(translator.translate("inspection.status.active"));
+					render(target, "active");
 				} else {
-					render(target, status);
+					render(target, status.name());
 				}
 			} else {
-				render(target, status);
+				render(target, status.name());
 			}
 		} else if(cellValue instanceof AssessmentInspectionStatusEnum status) {
-			render(target, status);
+			render(target, status.name());
 		}
 	}
 	
-	private void render(StringOutput target, AssessmentInspectionStatusEnum status) {
-		target.append(translator.translate("inspection.status.".concat(status.name())));
+	private void render(StringOutput target, String status) {
+		String statusLC = status.toLowerCase();
+		target.append("<span class='o_labeled_light o_assessment_inspection_").append(statusLC).append("'>")
+		      .append("<i class='o_icon o_icon-fw o_icon_assessment_inspection_").append(statusLC).append("'> </i> ")
+		      .append(translator.translate("inspection.status.".concat(status)))
+		      .append("</span>");
 	}
 }

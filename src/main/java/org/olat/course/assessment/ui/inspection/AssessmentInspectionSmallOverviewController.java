@@ -20,6 +20,7 @@
 package org.olat.course.assessment.ui.inspection;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.spacesaver.ExpandableController;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -63,12 +65,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentInspectionSmallOverviewController extends FormBasicController {
-	
+public class AssessmentInspectionSmallOverviewController extends FormBasicController implements ExpandableController {
+
+	private FormLink activeLink;
 	private FormLink scheduledLink;
 	private FormLink inProgressLink;
+	private FlexiTableElement activeTable;
 	private FlexiTableElement scheduledTable;
 	private FlexiTableElement inProgressTable;
+	private AssessmentInspectionOverviewListModel activeModel;
 	private AssessmentInspectionOverviewListModel scheduledModel;
 	private AssessmentInspectionOverviewListModel inProgressModel;
 
@@ -89,24 +94,38 @@ public class AssessmentInspectionSmallOverviewController extends FormBasicContro
 		super(ureq, wControl, "small_overviews");
 		this.courseEntry = courseEntry;
 		initForm(ureq);
-		loadModel();
+		loadModel(ureq);
 	}
 	
 	public int getNumOfInspections() {
 		return scheduledModel.getRowCount() + inProgressModel.getRowCount();
+	}
+	
+	@Override
+	public boolean isExpandable() {
+		return true;
+	}
+	
+	@Override
+	public void setExpanded(boolean expanded) {
+		flc.contextPut("expanded", Boolean.valueOf(expanded));
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		scheduledLink = uifactory.addFormLink("link.in.progress", "overview.small.link.in.progress.plural", null, formLayout,
 				Link.LINK | Link.NONTRANSLATED);
-		scheduledLink.setIconLeftCSS("o_icon o_icon-fw o_icon_time");
+		scheduledLink.setIconLeftCSS("o_icon o_icon-fw o_icon_assessment_inspection_scheduled");
+		activeLink = uifactory.addFormLink("link.active", "overview.small.link.active.plural", null, formLayout,
+				Link.LINK | Link.NONTRANSLATED);
+		activeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_assessment_inspection_active");
 		inProgressLink = uifactory.addFormLink("link.scheduled", "overview.small.link.scheduled.plural", null, formLayout,
 				Link.LINK | Link.NONTRANSLATED);
-		inProgressLink.setIconLeftCSS("o_icon o_icon-fw o_icon_status_in_progress");
+		inProgressLink.setIconLeftCSS("o_icon o_icon-fw o_icon_assessment_inspection_inprogress");
 
 		initInProgressForm(formLayout);
 		initScheduledForm(formLayout);
+		initActiveForm(formLayout);
 	}
 	
 	private void initInProgressForm(FormItemContainer formLayout) {	
@@ -148,12 +167,31 @@ public class AssessmentInspectionSmallOverviewController extends FormBasicContro
 		scheduledTable.setCssDelegate(new AssessmentInspectionTableCSSDelegate(scheduledModel));
 	}
 	
-	private void loadModel() {
+	private void initActiveForm(FormItemContainer formLayout) {	
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.courseNode,
+					new CourseNodeCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.participant));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.inspectionStart,
+				new DateTimeFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.inspectionDuration,
+				new MinuteCellRenderer(getTranslator())));
+
+		activeModel = new AssessmentInspectionOverviewListModel(columnsModel, getIdentity(), sessionManager, getLocale());
+		activeTable = uifactory.addTableElement(getWindowControl(), "activeTable", activeModel, 25, false, getTranslator(), formLayout);
+		activeTable.setCustomizeColumns(false);
+		activeTable.setNumOfRowsEnabled(false);
+		activeTable.setCssDelegate(new AssessmentInspectionTableCSSDelegate(scheduledModel));
+	}
+	
+	private void loadModel(UserRequest ureq) {
 		SearchAssessmentInspectionParameters params = new SearchAssessmentInspectionParameters();
 		params.setInspectionStatus(List.of(AssessmentInspectionStatusEnum.scheduled, AssessmentInspectionStatusEnum.inProgress));
 		params.setEntry(courseEntry);
 		
+		Date now = ureq.getRequestTimestamp();
 		List<AssessmentEntryInspection> inspectionEntryList = inspectionService.searchInspection(params);
+		List<AssessmentInspectionRow> activeRows = new ArrayList<>(inspectionEntryList.size());
 		List<AssessmentInspectionRow> scheduledRows = new ArrayList<>(inspectionEntryList.size());
 		List<AssessmentInspectionRow> inProgressRows = new ArrayList<>(inspectionEntryList.size());
 		
@@ -162,27 +200,41 @@ public class AssessmentInspectionSmallOverviewController extends FormBasicContro
 			for(AssessmentEntryInspection inspectionEntry:inspectionEntryList) {
 				AssessmentInspection inspection = inspectionEntry.inspection();
 				if(inspection.getInspectionStatus() == AssessmentInspectionStatusEnum.scheduled) {
-					scheduledRows.add(forgeRow(inspectionEntry, course));
+					Date start = inspection.getFromDate();
+					Date end = inspection.getToDate();
+					if(end != null && end.before(now)) {
+						// Ignore no show
+					} else if(start != null && start.before(now)) {
+						activeRows.add(forgeRow(inspectionEntry, course));
+					} else {
+						scheduledRows.add(forgeRow(inspectionEntry, course));
+					}
 				} else if(inspection.getInspectionStatus() == AssessmentInspectionStatusEnum.inProgress) {
 					inProgressRows.add(forgeRow(inspectionEntry, course));
 				}
 			}
 		}
 		
+		activeModel.setObjects(activeRows);
+		activeTable.reset(true, true, true);
+		activeTable.setVisible(!activeRows.isEmpty());
+		String activeI18n = activeRows.size() == 1 ? "overview.small.link.active.singular" : "overview.small.link.active.plural";
+		activeLink.setI18nKey(translate(activeI18n, Integer.toString(activeRows.size())));
+		activeLink.setVisible(!activeRows.isEmpty());
+
 		scheduledModel.setObjects(scheduledRows);
-		inProgressModel.setObjects(inProgressRows);
 		scheduledTable.reset(true, true, true);
 		scheduledTable.setVisible(!scheduledRows.isEmpty());
-		inProgressTable.reset(true, true, true);
-		inProgressTable.setVisible(!inProgressRows.isEmpty());
-		
-		String i18n = inProgressRows.size() == 1 ? "overview.small.link.in.progress.singular" : "overview.small.link.in.progress.plural";
-		inProgressLink.setI18nKey(translate(i18n, Integer.toString(inProgressRows.size())));
-		inProgressLink.setVisible(!inProgressRows.isEmpty());
-		
 		String scheduledI18n = scheduledRows.size() == 1 ? "overview.small.link.scheduled.singular" : "overview.small.link.scheduled.plural";
 		scheduledLink.setI18nKey(translate(scheduledI18n, Integer.toString(scheduledRows.size())));
 		scheduledLink.setVisible(!scheduledRows.isEmpty());
+
+		inProgressModel.setObjects(inProgressRows);
+		inProgressTable.reset(true, true, true);
+		inProgressTable.setVisible(!inProgressRows.isEmpty());
+		String i18n = inProgressRows.size() == 1 ? "overview.small.link.in.progress.singular" : "overview.small.link.in.progress.plural";
+		inProgressLink.setI18nKey(translate(i18n, Integer.toString(inProgressRows.size())));
+		inProgressLink.setVisible(!inProgressRows.isEmpty());
 		
 		flc.setDirty(true);
 	}
@@ -210,7 +262,7 @@ public class AssessmentInspectionSmallOverviewController extends FormBasicContro
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmCancelCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel();
+				loadModel(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -230,9 +282,11 @@ public class AssessmentInspectionSmallOverviewController extends FormBasicContro
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(inProgressLink == source) {
-			fireEvent(ureq, new AssessmentInspectionSelectionEvent(AssessmentInspectionStatusEnum.inProgress));
+			fireEvent(ureq, new AssessmentInspectionSelectionEvent(AssessmentInspectionStatusEnum.inProgress.name()));
+		} else if(activeLink == source) {
+			fireEvent(ureq, new AssessmentInspectionSelectionEvent("active"));
 		} else if(scheduledLink == source) {
-			fireEvent(ureq, new AssessmentInspectionSelectionEvent(AssessmentInspectionStatusEnum.scheduled));
+			fireEvent(ureq, new AssessmentInspectionSelectionEvent(AssessmentInspectionStatusEnum.scheduled.name()));
 		} else if(source instanceof FormLink link) {
 			if("cancel".equals(link.getCmd()) && link.getUserObject() instanceof AssessmentInspectionRow row) {
 				doConfirmCancelInspection(ureq, row.getInspection());

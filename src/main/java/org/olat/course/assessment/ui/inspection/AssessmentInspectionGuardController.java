@@ -57,6 +57,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.course.assessment.AssessmentInspectionLog.Action;
 import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModule;
@@ -210,6 +211,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'> </i> ")
 				  .append(translate("error.ip.range")).append("</h4>")
 				  .append(translate("error.ip.range.desc", address));
+				inspectionService.log(Action.wrongIpRange, null, address, inspection, getIdentity());
 			}
 			allowed &= ipInRange;
 		}
@@ -414,6 +416,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			}
 			if(!inspection.getAccessCode().equals(guard.getAccessCode().getValue())) {
 				guard.getAccessCode().setErrorKey("error.access.code");
+				inspectionService.log(Action.incorrectAccessCode, null, guard.getAccessCode().getValue(), inspection, getIdentity());
 				return;
 			}
 		}

@@ -120,6 +120,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab inProgressTab;
 	private FlexiFiltersTab scheduledTab;
+	private FlexiFiltersTab activeTab;
 	
 	private FormLink addMembersButton;
 	private FormLink bulkCancelButton;
@@ -259,7 +260,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		scheduledTab.setFiltersExpanded(true);
 		tabs.add(scheduledTab);
 		
-		FlexiFiltersTab activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB_ID, translate("filter.status.active"),
+		activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB_ID, translate("filter.status.active"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_INSPECTION_STATUS, "active")));
 		activeTab.setFiltersExpanded(true);
 		tabs.add(activeTab);
@@ -482,11 +483,14 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		if(entries == null || entries.isEmpty()) return null;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(AssessmentInspectionStatusEnum.inProgress.name().equals(type)) {
+		if(AssessmentInspectionStatusEnum.inProgress.name().equalsIgnoreCase(type)) {
 			return inProgressTab;
 		}
-		if(AssessmentInspectionStatusEnum.scheduled.name().equals(type)) {
+		if(AssessmentInspectionStatusEnum.scheduled.name().equalsIgnoreCase(type)) {
 			return scheduledTab;
+		}
+		if("active".equalsIgnoreCase(type)) {
+			return activeTab;
 		}
 		return null;
 	}

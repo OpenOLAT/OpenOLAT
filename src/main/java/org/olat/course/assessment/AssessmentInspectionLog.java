@@ -57,7 +57,9 @@ public interface AssessmentInspectionLog extends CreateInfo {
 		commentAdd,
 		cancelled,
 		withdrawn,
-		noShow
+		noShow,
+		incorrectAccessCode,
+		wrongIpRange
 	}
 
 }

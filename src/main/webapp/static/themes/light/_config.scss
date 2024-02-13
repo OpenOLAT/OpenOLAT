@@ -659,6 +659,13 @@ $o-assessment-mode-end-soon-border-color		: $state-danger-text !default;
 
 $o-assessment-inspection-border-color			: 1px solid #cccccc !default;
 
+$o-assessment-inspection-scheduled-color		: #4a6785 !default;
+$o-assessment-inspection-active-color			: #32cd32 !default;
+$o-assessment-inspection-inprogress-color		: #ff8c00 !default;
+$o-assessment-inspection-carriedout-color		: #228b22 !default;
+$o-assessment-inspection-noshow-color			: #fcca46 !default;
+$o-assessment-inspection-cancelled-color		: #99583d !default;
+$o-assessment-inspection-withdrawn-color		: #5a5958 !default;
 
 /* Portfolio v2 */
 $o-portfolio-assignment-color						: $brand-danger !default;

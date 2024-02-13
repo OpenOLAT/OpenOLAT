@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessagePanelController;
+import org.olat.core.gui.control.generic.spacesaver.ExpandController;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Util;
@@ -87,6 +88,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 	private final AssessmentStatisticsController statisticCtrl;
 	private final CourseNodeToReviewSmallController toReviewCtrl;
 	private final Controller toReleaseCtrl;
+	private ExpandController expandInspectionCtrl;
 	private CourseNodeAssignedSmallController assignedCtrl;
 	private CourseNodeToApplyGradeSmallController toApplyGradeCtrl;
 	private final AssessmentModeOverviewListController assessmentModeListCtrl;
@@ -206,11 +208,17 @@ public class AssessmentCourseOverviewController extends BasicController {
 		}
 		
 		if(inspectionService.hasInspectionConfigurations(courseEntry)) {
+			expandInspectionCtrl = new ExpandController(ureq, wControl, "assessment-inspection-small-" + courseEntry.getKey().toString());
+			listenTo(expandInspectionCtrl);
+			mainVC.put("expandInspections", expandInspectionCtrl.getInitialComponent());
+			
 			inspectionListCtrl = new AssessmentInspectionSmallOverviewController(ureq, getWindowControl(), courseEntry);
+			inspectionListCtrl.setExpanded(true);
 			listenTo(inspectionListCtrl);
 			if(inspectionListCtrl.getNumOfInspections() > 0) {
 				mainVC.put("inspections", inspectionListCtrl.getInitialComponent());
 			}
+			expandInspectionCtrl.setExpandableController(inspectionListCtrl);
 		}
 		
 		putInitialPanel(mainVC);
