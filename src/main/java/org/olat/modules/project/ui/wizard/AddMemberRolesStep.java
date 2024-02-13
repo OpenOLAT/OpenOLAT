@@ -41,14 +41,14 @@ public class AddMemberRolesStep extends BasicStep {
 
 	public AddMemberRolesStep(UserRequest ureq) {
 		super(ureq);
-		setNextStep(NOSTEP);
+		setNextStep(new AddMemberMailStep(ureq));
 		setTranslator(Util.createPackageTranslator(ProjectUIFactory.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("member.wizard.roles", "member.wizard.roles");
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, false, true);
+		return PrevNextFinishConfig.BACK_NEXT;
 	}
 
 	@Override

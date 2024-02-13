@@ -364,7 +364,7 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 				if (projectRoles == null || projectRoles.isEmpty()) {
 					projectRoles = Set.of(ProjectRole.participant);
 				}
-				projectService.updateMember(identity, ProjectBCFactory.createFactory(project),project, identity, projectRoles);
+				projectService.updateMember(identity, ProjectBCFactory.createFactory(project),project, identity, projectRoles, null);
 			}
 		}
 	}

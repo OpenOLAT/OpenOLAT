@@ -65,7 +65,7 @@ public class ProjMemberQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		assertThat(sut.isProjectMember(idenity)).isFalse();
 		
-		projectService.updateMember(project.getCreator(), new ProjectBCFactory(), project, idenity, Set.of(ProjectRole.client));
+		projectService.updateMember(project.getCreator(), new ProjectBCFactory(), project, idenity, Set.of(ProjectRole.client), null);
 		dbInstance.commitAndCloseSession();
 		assertThat(sut.isProjectMember(idenity)).isTrue();
 	}
@@ -75,8 +75,8 @@ public class ProjMemberQueriesTest extends OlatTestCase {
 		Identity idenity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		ProjProject project = projectService.createProject(creator, new ProjectBCFactory(), creator);
-		projectService.updateMember(creator, new ProjectBCFactory(), project, creator, Set.of(ProjectRole.client, ProjectRole.steeringCommitee));
-		projectService.updateMember(creator, new ProjectBCFactory(), project, idenity, Set.of(ProjectRole.client, ProjectRole.steeringCommitee));
+		projectService.updateMember(creator, new ProjectBCFactory(), project, creator, Set.of(ProjectRole.client, ProjectRole.steeringCommitee), null);
+		projectService.updateMember(creator, new ProjectBCFactory(), project, idenity, Set.of(ProjectRole.client, ProjectRole.steeringCommitee), null);
 		dbInstance.commitAndCloseSession();
 		
 		ProjMemberInfoSearchParameters params = new ProjMemberInfoSearchParameters();

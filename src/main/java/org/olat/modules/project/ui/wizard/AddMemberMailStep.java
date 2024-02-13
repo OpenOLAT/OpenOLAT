@@ -27,30 +27,29 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
-import org.olat.course.member.wizard.ImportMemberByUsernamesController;
-import org.olat.course.member.wizard.ImportMemberOverviewIdentitiesController;
 import org.olat.modules.project.ui.ProjectUIFactory;
 
+
 /**
- * Initial date: 1 Dec 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 12 Feb 2024<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public class AddMemberUserConfirmStep extends BasicStep {
-	
-	public AddMemberUserConfirmStep(UserRequest ureq) {
+public class AddMemberMailStep extends BasicStep {
+
+	public AddMemberMailStep(UserRequest ureq) {
 		super(ureq);
-		setNextStep(new AddMemberRolesStep(ureq));
+		setNextStep(NOSTEP);
 		setTranslator(Util.createPackageTranslator(ProjectUIFactory.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("member.wizard.user.confirm", "member.wizard.user.confirm");
+		setI18nTitleAndDescr("member.wizard.mail", "member.wizard.mail");
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return PrevNextFinishConfig.BACK_NEXT;
+		return PrevNextFinishConfig.BACK_FINISH;
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new ImportMemberOverviewIdentitiesController(ureq, wControl, form, runContext, ImportMemberByUsernamesController.RUN_CONTEXT_KEY, null);
+		return new AddMemberMailController(ureq, wControl, form, runContext);
 	}
 }

@@ -87,6 +87,7 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.manager.ProjectMailing.ProjectMailTemplate;
 import org.olat.modules.project.ui.ProjMemberListTableModel.MemberCols;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
 import org.olat.modules.project.ui.wizard.AddMemberUserStep;
@@ -396,10 +397,11 @@ public class ProjMemberListController extends FormBasicController implements Act
 		removeAsListenerAndDispose(addMembersWizardCtrl);
 		
 		reloadProjectAfterWizard = false;
-		Step start = new AddMemberUserStep(ureq);
+		Step start = new AddMemberUserStep(ureq, project, bcFactory);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			Set<Identity> identites = ((MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY)).getIdentities();
 			Set<ProjectRole> roles = ((ProjectRolesContext)runContext.get("roles")).getProjectRoles();
+			ProjectMailTemplate memberAddTemplate = (ProjectMailTemplate)runContext.get("memberAddTemplate");
 			
 			if (identites.contains(getIdentity())) {
 				Set<ProjectRole> currentRoles = projectService.getRoles(project, getIdentity());
@@ -413,7 +415,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 			
 			Map<Identity, Set<ProjectRole>> identityToRoles = new HashMap<>(identites.size());
 			identites.forEach(identity -> identityToRoles.put(identity, roles));
-			projectService.updateMembers(getIdentity(), bcFactory, project, identityToRoles);
+			projectService.updateMembers(getIdentity(), bcFactory, project, identityToRoles, memberAddTemplate);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
@@ -546,7 +548,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 			}
 		}
 		
-		projectService.updateMembers(getIdentity(), bcFactory, project, Map.of(member, roles));
+		projectService.updateMembers(getIdentity(), bcFactory, project, Map.of(member, roles), null);
 		reload(ureq, updatedMyself);
 	}
 

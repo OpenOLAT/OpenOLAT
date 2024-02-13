@@ -134,6 +134,7 @@ import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectSecurityCallbackFactory;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.manager.ProjectMailing.ProjectMailTemplate;
 import org.olat.modules.project.model.ProjAppointmentInfoImpl;
 import org.olat.modules.project.model.ProjArtefactInfoImpl;
 import org.olat.modules.project.model.ProjArtefactItemsImpl;
@@ -204,6 +205,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private ProjCalendarHelper calendarHelper;
 	@Autowired
 	private ProjActivityDAO activityDao;
+	@Autowired
+	private ProjectMailing projectMailing;
 	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired
@@ -349,9 +352,9 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			Map<Identity,Set<ProjectRole>> memberToRoles = getMemberToRoles(params);
 			for (Map.Entry<Identity,Set<ProjectRole>> entry: memberToRoles.entrySet()) {
 				if (entry.getValue().contains(ProjectRole.owner)) {
-					updateMember(doer, bcFactory, reloadedProject, entry.getKey(), Set.of(ProjectRole.owner));
+					updateMember(doer, bcFactory, reloadedProject, entry.getKey(), Set.of(ProjectRole.owner), null);
 				} else {
-					updateMember(doer, bcFactory, reloadedProject, entry.getKey(), Set.of());
+					updateMember(doer, bcFactory, reloadedProject, entry.getKey(), Set.of(), null);
 				}
 			}
 			
@@ -533,7 +536,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 
 	@Override
-	public void updateMember(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Identity identity, Set<ProjectRole> roles) {
+	public void updateMember(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Identity identity,
+			Set<ProjectRole> roles, ProjectMailTemplate memberAddTemplate) {
 		Group group = project.getBaseGroup();
 		
 		List<ProjectRole> currentRoles = groupDao.getMemberships(group, identity).stream()
@@ -591,25 +595,32 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		if (currentRoles.isEmpty() || (currentRoles.size() == 1 && currentRoles.get(0) == ProjectRole.invitee)) {
 			activityDao.create(Action.projectMemberAdd, null, null, doer, project, identity);
-			markNews(project);
-				
-			notificationManager.subscribe(identity, getSubscriptionContext(project), getPublisherData(bcFactory, project));
 			
 			ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
 			searchParams.setProject(project);
 			searchParams.setStatus(List.of(ProjectStatus.active));
 			milestoneDao.loadMilestones(searchParams).forEach(milestone -> calendarHelper.createOrUpdateEvent(bcFactory, milestone, List.of(identity)));
+			
+			notificationManager.subscribe(identity, getSubscriptionContext(project), getPublisherData(bcFactory, project));
+			markNews(project);
+			
+			if (memberAddTemplate != null) {
+				memberAddTemplate.setRolesAdd(roles);
+				projectMailing.send(doer, identity, memberAddTemplate);
+			}
 		}
 	}
 	
 	@Override
-	public void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Map<Identity, Set<ProjectRole>> identityToRoles) {
-		identityToRoles.entrySet().forEach(identityToRole -> updateMember(doer, bcFactory, project, identityToRole.getKey(), identityToRole.getValue()));
+	public void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project,
+			Map<Identity, Set<ProjectRole>> identityToRoles, ProjectMailTemplate memberAddTemplate) {
+		identityToRoles.entrySet().forEach(identityToRole
+				-> updateMember(doer, bcFactory, project, identityToRole.getKey(), identityToRole.getValue(), memberAddTemplate));
 	}
 	
 	@Override
 	public void removeMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Collection<Identity> identities) {
-		identities.forEach(identity -> updateMember(doer, bcFactory, project, identity, Set.of()));
+		identities.forEach(identity -> updateMember(doer, bcFactory, project, identity, Set.of(), null));
 	}
 
 	@Override
