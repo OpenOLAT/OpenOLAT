@@ -48,11 +48,14 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTAType;
+import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.manager.GTAManagerImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.rule.LaunchUnit;
 import org.olat.modules.vitero.model.GroupRole;
@@ -439,6 +442,11 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		AssignmentResponse response = gtaManager.selectTask(participant1, tasks, null, node, taskFile);
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals(AssignmentResponse.Status.ok, response.getStatus());
+		
+		//submit a document
+		Task submitTask = gtaManager.submitTask(response.getTask(), node, 1, participant1, Role.user);
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(TaskProcess.review, submitTask.getTaskStatus());
 		
 		//only remind participant 2
 		List<Identity> toRemind = submissionTaskRuleSPI.getPeopleToRemind(re, node);

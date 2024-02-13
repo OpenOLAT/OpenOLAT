@@ -900,6 +900,28 @@ div.o_assessment_inspection_status_list {
 	}
 }
 
+.o_labeled_light.o_assessment_inspection_scheduled { 
+	color: $o-assessment-inspection-scheduled-color;
+}
+.o_labeled_light.o_assessment_inspection_active { 
+	color: $o-assessment-inspection-active-color;
+}
+.o_labeled_light.o_assessment_inspection_inprogress {
+	color: $o-assessment-inspection-inprogress-color;
+}
+.o_labeled_light.o_assessment_inspection_carriedout {
+	color: $o-assessment-inspection-carriedout-color;
+}
+.o_labeled_light.o_assessment_inspection_noshow {
+	color: $o-assessment-inspection-noshow-color;
+}
+.o_labeled_light.o_assessment_inspection_cancelled {
+	color: $o-assessment-inspection-cancelled-color;
+}
+.o_labeled_light.o_assessment_inspection_withdrawn {
+	color: $o-assessment-inspection-withdrawn-color;
+}
+
 div.panel.o_assessment_mini_overview {
 	display: grid;
 	align-items: center;

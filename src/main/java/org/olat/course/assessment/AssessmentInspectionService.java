@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.AssessmentInspectionLog.Action;
 import org.olat.course.assessment.model.AssessmentEntryInspection;
 import org.olat.course.assessment.model.AssessmentInspectionConfigurationWithUsage;
 import org.olat.course.assessment.model.TransientAssessmentInspection;
@@ -101,6 +102,8 @@ public interface AssessmentInspectionService {
 	AssessmentInspection endInspection(Identity assessedIdentity, AssessmentInspection inspection, long duration, Identity doer);
 	
 	AssessmentInspection pauseInspection(Identity assessedIdentity, AssessmentInspection inspection, long duration);
+	
+	void log(Action action, String before, String after, TransientAssessmentInspection inspection, Identity doer);
 	
 	List<AssessmentInspectionLog> getLogFor(AssessmentInspection inspection, Date from, Date to);
 

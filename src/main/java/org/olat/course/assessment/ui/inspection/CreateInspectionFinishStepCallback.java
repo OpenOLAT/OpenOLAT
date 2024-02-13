@@ -31,7 +31,9 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -69,7 +71,21 @@ public class CreateInspectionFinishStepCallback implements StepRunnerCallback {
 
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-		AssessmentInspectionConfiguration configuration = inspectionContext.getInspectionConfiguration();
+		AssessmentInspectionConfiguration configuration;
+		
+		if(inspectionContext.getNewConfiguration() != null) {
+			configuration = inspectionService.createInspectionConfiguration(inspectionContext.getCourseEntry());
+			
+			Translator translator = Util.createPackageTranslator(CreateInspectionFinishStepCallback.class, ureq.getLocale());
+			String name = translator.translate("standard.configuration.message");
+			configuration.setName(name);
+			configuration.setDuration(inspectionContext.getNewConfiguration().duration());// In seconds
+			configuration.setOverviewOptions(inspectionContext.getNewConfiguration().overviewOptions());
+			configuration = inspectionService.saveConfiguration(configuration);
+		} else {
+			configuration = inspectionContext.getInspectionConfiguration();
+		}
+		
 		CourseNode courseNode = inspectionContext.getCourseNode();
 		Date startDate = inspectionContext.getStartDate();
 		Date endDate = inspectionContext.getEndDate();

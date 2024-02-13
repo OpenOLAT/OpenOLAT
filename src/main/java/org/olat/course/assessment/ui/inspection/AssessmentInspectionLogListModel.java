@@ -115,7 +115,7 @@ implements SortableFlexiTableDataModel<AssessmentInspectionLogRow> {
 				return after == null ? "???" : translator.translate("inspection.status." + after.getInspectionStatus());
 			case effectiveDuration:
 				return getEffectiveDurationDecorated(row.getRawAfter());
-			case noShow:
+			case noShow, wrongIpRange, incorrectAccessCode:
 				return row.getRawAfter();
 			case update:
 				return getUpdateAfterValue(row);

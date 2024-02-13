@@ -345,7 +345,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				doOpenOrders(ureq).activate(ureq, showEvent.getEntries(), null);
 				overviewMenuTree.setSelectedNode(ordersNode);
 			} else if (event instanceof AssessmentInspectionSelectionEvent se) {
-				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(se.getStatus().name());
+				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(se.getStatus());
 				doOpenInspectionOverview(ureq).activate(ureq, entries, null);
 				overviewMenuTree.setSelectedNode(inspectionNode);
 			} else {

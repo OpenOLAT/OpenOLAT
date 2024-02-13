@@ -49,7 +49,7 @@ public class NotificationsController extends StepFormBasicController {
 	
 	public NotificationsController(UserRequest ureq, WindowControl wControl,
 			CreateInspectionContext context, StepsRunContext runContext, Form rootForm) {
-		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
+		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.context = context;
 		
 		mailTemplate = getTemplate();

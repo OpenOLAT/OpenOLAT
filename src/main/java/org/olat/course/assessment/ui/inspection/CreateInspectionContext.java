@@ -19,10 +19,12 @@
  */
 package org.olat.course.assessment.ui.inspection;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspection;
@@ -48,6 +50,8 @@ public class CreateInspectionContext {
 	private List<DisadvantageCompensation> participantsCompensations;
 	private List<InspectionCompensation> inspectionCompensations;
 	private AssessmentInspectionConfiguration inspectionConfiguration;
+	
+	private NewInspectionConfiguration newConfiguration;
 	
 	private AssessmentInspection editedInspection;
 	private DisadvantageCompensation editedCompensation;
@@ -159,9 +163,31 @@ public class CreateInspectionContext {
 		this.inspectionMailTemplate = inspectionMailTemplate;
 	}
 
+	public NewInspectionConfiguration getNewConfiguration() {
+		return newConfiguration;
+	}
 
+	public void setNewConfiguration(NewInspectionConfiguration newConfiguration) {
+		this.newConfiguration = newConfiguration;
+	}
 
 	public static record InspectionCompensation(IdentityRef identity, int extraTimeInSeconds) {
 		//
+	}
+	
+	public static record NewInspectionConfiguration(int duration, String overviewOptions) {
+		
+		public List<String> getOverviewOptionsAsList() {
+			List<String> list = new ArrayList<>();
+			if(StringHelper.containsNonWhitespace(overviewOptions)) {
+				String[] options = overviewOptions.split(",");
+				for(String option:options) {
+					if(StringHelper.containsNonWhitespace(option)) {
+						list.add(option);
+					}
+				}
+			}
+			return list;
+		}
 	}
 }

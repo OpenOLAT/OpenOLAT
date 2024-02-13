@@ -51,8 +51,13 @@ public class InspectionMailTemplate extends MailTemplate {
 			fillContextWithStandardIdentityValues(vContext, recipient, locale);
 		}
 		
-		AssessmentInspectionConfiguration configuration = context.getInspectionConfiguration();
-		long duration = configuration.getDuration() / 60;
+		long duration;
+		if(context.getNewConfiguration() != null) {
+			duration = context.getNewConfiguration().duration() / 60;
+		} else {
+			AssessmentInspectionConfiguration configuration = context.getInspectionConfiguration();
+			duration = configuration.getDuration() / 60;
+		}
 		
 		List<InspectionCompensation> compensations = context.getInspectionCompensations();
 		if(compensations != null && recipient != null) {

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
@@ -39,6 +40,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
@@ -48,6 +51,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentInspectionService;
+import org.olat.course.assessment.ui.inspection.CreateInspectionContext;
+import org.olat.course.assessment.ui.inspection.CreateInspectionFinishStepCallback;
+import org.olat.course.assessment.ui.inspection.CreateInspection_1a_CreateConfigurationStep;
+import org.olat.course.assessment.ui.inspection.CreateInspection_3_InspectionStep;
 import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
 import org.olat.course.assessment.ui.reset.ResetDataContext;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
@@ -114,6 +122,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private Link reopenLink;
 	private Link chatLink;
 	private Link resetDataLink;
+	private Link inspectionLink;
 	private Link exportPdfResultsLink;
 	private Link compensationExtraTimeLink;
 	private Link removeCompensationExtraTimeLink;
@@ -122,6 +131,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private CloseableModalController cmc;
 	private ConfirmReopenController reopenCtrl;
 	private ConfirmExtraTimeController extraTimeCtrl;
+	private StepsMainRunController newInspectionWizard;
 	private ConfirmResetDataController confirmResetDataCtrl;
 	private QTI21RetrieveTestsController retrieveConfirmationCtr;
 	private CorrectionIdentityAssessmentItemListController correctionCtrl;
@@ -152,6 +162,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private TeamsModule teamsModule;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
+	@Autowired
+	private AssessmentInspectionService inspectionService;
 	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
 	
@@ -227,6 +239,11 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 			}
 			chatLink = addLink(i18nKey, "tool.chat", "o_icon o_icon-fw o_icon_chats");
 		}
+		
+		if (!coachCourseEnv.isCourseReadOnly()) {
+			addSeparator();
+			inspectionLink = addLink("new.individual.inspection", "new.inspection", "o_icon o_icon-fw o_icon_inspection");
+		}
 	}
 	
 	private boolean hasActiveDisadvantageCompensation() {
@@ -285,6 +302,9 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		} else if(chatLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doOpenChat(ureq);
+		} else if(inspectionLink == source) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+			doNewInspection(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -326,6 +346,11 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		} else if(cmc == source) {
 			cleanUp();
 			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if(newInspectionWizard == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				cleanUp();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -347,6 +372,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		removeAsListenerAndDispose(compensationExtraTimeCtrl);
 		removeAsListenerAndDispose(reopenForCorrectionCtrl);
 		removeAsListenerAndDispose(confirmResetDataCtrl);
+		removeAsListenerAndDispose(newInspectionWizard);
 		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(extraTimeCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -354,6 +380,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		compensationExtraTimeCtrl = null;
 		reopenForCorrectionCtrl = null;
 		confirmResetDataCtrl = null;
+		newInspectionWizard = null;
 		correctionCtrl = null;
 		extraTimeCtrl = null;
 		cmc = null;
@@ -569,6 +596,30 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		viewConfig.setRosterDisplay(RosterFormDisplay.supervisor);
 		OpenInstantMessageEvent event = new OpenInstantMessageEvent(courseEntry.getOlatResource(), testCourseNode.getIdent(), channel, viewConfig, true, false);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
+	}
+	
+	private void doNewInspection(UserRequest ureq) {
+		List<IdentityRef> participants = List.of(assessedIdentity);
+		List<DisadvantageCompensation> compensations = disadvantageCompensationService
+				.getActiveDisadvantageCompensations(getCourseRepositoryEntry(), courseNode.getIdent());
+		List<DisadvantageCompensation> participantsCompensations = compensations.stream()
+				.filter(compensation -> assessedIdentity.equals(compensation.getIdentity()))
+				.toList();
+	
+		CreateInspectionContext context = new CreateInspectionContext(courseEntry, secCallback);
+		context.setCourseNode(courseNode);
+		context.setParticipants(participants, participantsCompensations);
+		CreateInspectionFinishStepCallback finish = new CreateInspectionFinishStepCallback(context);
+		
+		Step start;
+		if(inspectionService.hasInspectionConfigurations(getCourseRepositoryEntry())) {
+			start = new CreateInspection_3_InspectionStep(ureq, context);
+		} else {
+			start = new CreateInspection_1a_CreateConfigurationStep(ureq, context);
+		}
+		newInspectionWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("bulk.inspection.title"), "");
+		listenTo(newInspectionWizard);
+		getWindowControl().pushAsModalDialog(newInspectionWizard.getInitialComponent());
 	}
 	
 	public static class AssessmentTestSessionDetailsComparator implements Comparator<AssessmentTestSessionStatistics> {

@@ -23,6 +23,8 @@ import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.ui.BeforeDateTaskRuleEditor;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -71,6 +73,17 @@ public class SubmissionTaskRuleSPI extends AbstractDueDateTaskRuleSPI {
 			return gtaCourseNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
 		}
 		return DueDateConfig.noDueDateConfig();
+	}
+
+	@Override
+	protected boolean isRuleDone(Task task) {
+		if (task != null) {
+			TaskProcess taskStatus = task.getTaskStatus();
+			if (taskStatus != null) {
+				return taskStatus.ordinal() > TaskProcess.submit.ordinal();
+			}
+		}
+		return false;
 	}
 	
 }
