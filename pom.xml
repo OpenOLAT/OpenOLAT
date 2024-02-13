@@ -67,14 +67,14 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>6.1.3</org.springframework.version>
-		<org.hibernate.version>6.4.3.Final</org.hibernate.version>
+		<org.hibernate.version>6.4.4.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.4</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.3</apache.cxf>
 		<apache.pdfbox>3.0.1</apache.pdfbox>
 		<apache.poi>5.2.5</apache.poi>
 		<apache.log4j>2.22.1</apache.log4j>
-		<org.slf4j>2.0.11</org.slf4j>
+		<org.slf4j>2.0.12</org.slf4j>
 		<org.bouncycastle>1.77</org.bouncycastle>
 		<io.jsonwebtoken>0.12.5</io.jsonwebtoken>
 		<io.undertow>2.3.10.Final</io.undertow>
@@ -1626,7 +1626,7 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.16.0</version>
+			<version>1.16.1</version>
 		</dependency>
 		<dependency>
 			<!-- Used by at least commons-validator -->
@@ -2167,7 +2167,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20231013</version>
+			<version>20240205</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2388,7 +2388,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.25.2</version>
+			<version>3.25.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
