@@ -28,6 +28,8 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
 import org.olat.course.member.wizard.ImportMemberByController;
+import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.project.ui.ProjectUIFactory;
 
 /**
@@ -38,8 +40,13 @@ import org.olat.modules.project.ui.ProjectUIFactory;
  */
 public class AddMemberUserStep extends BasicStep {
 	
-	public AddMemberUserStep(UserRequest ureq) {
+	private final ProjProject project;
+	private final ProjectBCFactory bcFactory;
+
+	public AddMemberUserStep(UserRequest ureq, ProjProject project, ProjectBCFactory bcFactory) {
 		super(ureq);
+		this.project = project;
+		this.bcFactory = bcFactory;
 		setNextStep(new AddMemberUserConfirmStep(ureq));
 		setTranslator(Util.createPackageTranslator(ProjectUIFactory.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("member.wizard.user.search", "member.wizard.user.search");
@@ -47,11 +54,13 @@ public class AddMemberUserStep extends BasicStep {
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, true, false);
+		return PrevNextFinishConfig.NEXT;
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
+		runContext.put("project", project);
+		runContext.put("bcFactory", bcFactory);
 		return new ImportMemberByController(ureq, wControl, form, runContext);
 	}
 }

@@ -79,8 +79,8 @@ import org.olat.modules.invitation.ui.InvitationListTableModel.InvitationCols;
 import org.olat.modules.invitation.ui.component.InvitationRolesCellRenderer;
 import org.olat.modules.invitation.ui.component.InvitationStatusCellRenderer;
 import org.olat.modules.project.ProjProject;
-import org.olat.modules.project.ProjectMailing;
-import org.olat.modules.project.ProjectMailing.ProjProjectMailTemplate;
+import org.olat.modules.project.manager.ProjectMailing;
+import org.olat.modules.project.manager.ProjectMailing.ProjInvitationMailTemplate;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryMailing;
 import org.olat.repository.RepositoryMailing.RepositoryEntryMailTemplate;
@@ -125,6 +125,8 @@ abstract class AbstractInvitationListController extends FormBasicController {
 	protected UserManager userManager;
 	@Autowired
 	protected InvitationService invitationService;
+	@Autowired
+	private ProjectMailing projectMailing;
 	
 	public AbstractInvitationListController(UserRequest ureq, WindowControl wControl, String pageName, boolean readOnly) {
 		super(ureq, wControl, pageName);
@@ -404,8 +406,8 @@ abstract class AbstractInvitationListController extends FormBasicController {
 			mailTemplate.addToContext("groupurl", businessGroupUrl);
 		} else if(projProject != null) {
 			ores = OresHelper.clone(projProject);
-			mailTemplate = ProjectMailing.getInvitationTemplate(projProject, getIdentity());
-			if (mailTemplate instanceof ProjProjectMailTemplate projectMailTemplate) {
+			mailTemplate = projectMailing.getInvitationTemplate(projProject, getIdentity());
+			if (mailTemplate instanceof ProjInvitationMailTemplate projectMailTemplate) {
 				projectMailTemplate.setUrl(invitationService.toUrl(invitation, projProject));
 			}
 		}

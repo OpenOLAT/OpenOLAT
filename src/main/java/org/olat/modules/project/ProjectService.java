@@ -40,6 +40,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.project.manager.ProjectMailing.ProjectMailTemplate;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoStatus;
@@ -85,9 +86,11 @@ public interface ProjectService {
 
 	public VFSLeaf getProjectImage(ProjProjectRef project, ProjProjectImageType type);
 
-	public void updateMember(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Identity identity, Set<ProjectRole> roles);
+	public void updateMember(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Identity identity,
+			Set<ProjectRole> roles, ProjectMailTemplate memberAddTemplate);
 	
-	public void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Map<Identity, Set<ProjectRole>> identityToRoles);
+	public void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project,
+			Map<Identity, Set<ProjectRole>> identityToRoles, ProjectMailTemplate memberAddTemplate);
 	
 	public void removeMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Collection<Identity> identities);
 

@@ -91,6 +91,13 @@ public class ProjectUIFactory {
 		}
 		return null;
 	}
+
+	public static String translateRoleInSentence(Translator translator, ProjectRole role) {
+		if (role != null) {
+			return translator.translate("role." + role.name() + ".in.sentence");
+		}
+		return null;
+	}
 	
 	public static String getDisplayName(Translator translator, ProjDecision decision) {
 		return StringHelper.containsNonWhitespace(decision.getTitle())
