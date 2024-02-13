@@ -94,8 +94,8 @@ public class ProjFileDAO {
 		sb.append("       inner join fetch artefact.creator creator");
 		sb.append("       inner join fetch artefact.contentModifiedBy modifier");
 		sb.append("       inner join fetch file.vfsMetadata metadata");
-		sb.append("       inner join fetch metadata.fileLastModifiedBy fileLastModifiedBy");
-		sb.append("       inner join fetch metadata.fileInitializedBy fileInitializedBy");
+		sb.append("       left join fetch metadata.fileLastModifiedBy fileLastModifiedBy");
+		sb.append("       left join fetch metadata.fileInitializedBy fileInitializedBy");
 		QueryParams queryParams = new QueryParams();
 		appendQuery(sb, searchParams, queryParams);
 		appendOrderBy(searchParams, sb);
