@@ -458,7 +458,7 @@ public class CalendarEntryForm extends FormBasicController {
 
 		classification = uifactory.addDropdownSingleselect("classification", "cal.form.class", formLayout, classKeys, classValues);
 		classification.setHelpUrlForManualPage("manual_user/personal_menu/Calendar/#visibility");
-		//classification.setHelpTextKey("cal.form.class.hover", null);
+		classification.setHelpTextKey("cal.form.class.hover", null);
 		classification.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.classification));
 		setClassification(event);
 
