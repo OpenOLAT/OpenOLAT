@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,17 +14,18 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.group.ui.main;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class CourseMembership {
 	
@@ -44,6 +45,8 @@ public class CourseMembership {
 	private boolean pending;
 	private boolean externalUser;
 	private boolean managedMembersRepo;
+
+	private ResourceReservation resourceReservation;
 	
 	public CourseMembership() {
 		//
@@ -195,6 +198,14 @@ public class CourseMembership {
 
 	public void setCurriculumElementParticipant(boolean curriculumElementParticipant) {
 		this.curriculumElementParticipant = curriculumElementParticipant;
+	}
+
+	public ResourceReservation getResourceReservation() {
+		return resourceReservation;
+	}
+
+	public void setResourceReservation(ResourceReservation resourceReservation) {
+		this.resourceReservation = resourceReservation;
 	}
 	
 	public void setCurriculumElementRole(String role) {

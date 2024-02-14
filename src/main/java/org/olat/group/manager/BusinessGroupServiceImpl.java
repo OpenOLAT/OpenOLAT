@@ -824,7 +824,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					cal.add(Calendar.MONTH, 6);
 					Date expiration = cal.getTime();
 					ResourceReservation reservation =
-							reservationDao.createReservation(identityToAdd, "group_coach", expiration, group.getResource());
+							reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_COACH, expiration, group.getResource());
 					if(reservation != null) {
 						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addCoach, mailing);
 						// logging
@@ -961,11 +961,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<>();
 			if(group != null) {
 				String type = reservation.getType();
-				if("group_coach".equals(type)) {
+				if(BusinessGroupService.GROUP_COACH.equals(type)) {
 					if(!businessGroupRelationDAO.hasRole(reservationOwner, group, GroupRoles.coach.name())) {
 						internalAddCoach(ureqIdentity, reservationOwner, group, events);
 					}
-				} else if("group_participant".equals(type)) {
+				} else if(BusinessGroupService.GROUP_PARTICIPANT.equals(type)) {
 					if(!businessGroupRelationDAO.hasRole(reservationOwner, group, GroupRoles.participant.name())) {
 						internalAddParticipant(ureqIdentity, reservationOwner, group, events);
 					}

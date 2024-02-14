@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.group.ui.edit;
@@ -69,7 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class BusinessGroupMembersController extends BasicController {
 	
@@ -82,7 +82,7 @@ public class BusinessGroupMembersController extends BasicController {
 
 	private final DisplayMemberSwitchForm dmsForm;
 	private final MembershipConfigurationForm configForm;
-	private MemberListController membersController;
+	private final MemberListController membersController;
 	private StepsMainRunController invitationWizard;
 	private StepsMainRunController importMembersWizard;
 	
@@ -104,6 +104,7 @@ public class BusinessGroupMembersController extends BasicController {
 		putInitialPanel(mainVC);
 		
 		boolean hasWaitingList = businessGroup.getWaitingListEnabled().booleanValue();
+		mainVC.contextPut("hasWaitingList", hasWaitingList);
 
 		// Member Display Form, allows to enable/disable that others partips see
 		// partips and/or owners
@@ -129,7 +130,9 @@ public class BusinessGroupMembersController extends BasicController {
 		membersController.switchToAllMembers(ureq);
 
 		mainVC.put("members", membersController.getInitialComponent());
-		
+
+		reloadInformation();
+
 		if(managed && isAllowedToOverrideManaged(ureq)) {
 			overrideLink = LinkFactory.createButton("override.member", mainVC, this);
 			overrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
@@ -158,6 +161,30 @@ public class BusinessGroupMembersController extends BasicController {
 			invitationLink.setElementCssClass("o_sel_course_invitations");
 			invitationLink.setVisible(!managed);
 			addMemberDropdown.addComponent(invitationLink);
+		}
+	}
+
+	/**
+	 * if group has a waiting list
+	 * then information about current and max size should be displayed appropriately
+	 */
+	private void reloadInformation() {
+		if ((boolean) mainVC.getContext().get("hasWaitingList")) {
+			boolean isOverbooked = false;
+			String infoWarningText;
+			Integer currentParticipantSize = membersController.getMemberListModelSize();
+			Integer maxParticipants = businessGroup.getMaxParticipants();
+
+			// show warning if maximum size of waiting list is exceeded
+			// else show an information how much space is left
+			if (currentParticipantSize > maxParticipants) {
+				isOverbooked = true;
+				infoWarningText = translate("group.waiting.list.warning", String.valueOf(maxParticipants - currentParticipantSize), String.valueOf(maxParticipants));
+			} else {
+				infoWarningText = translate("group.waiting.list.info", String.valueOf(maxParticipants - currentParticipantSize), String.valueOf(maxParticipants));
+			}
+			mainVC.contextPut("infoWarningText", infoWarningText);
+			mainVC.contextPut("isOverbooked", isOverbooked);
 		}
 	}
 
@@ -252,6 +279,7 @@ public class BusinessGroupMembersController extends BasicController {
 				importMembersWizard = null;
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					membersController.reloadModel();
+					reloadInformation();
 				}
 			}
 		} else if(source == invitationWizard) {
@@ -264,6 +292,8 @@ public class BusinessGroupMembersController extends BasicController {
 					fireEvent(ureq, new NewInvitationEvent());
 				}
 			}
+		} else if (source == membersController && event == Event.CHANGED_EVENT) {
+			reloadInformation();
 		}
 		super.event(ureq, source, event);
 	}

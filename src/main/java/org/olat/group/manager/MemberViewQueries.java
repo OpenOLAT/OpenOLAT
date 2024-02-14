@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.group.manager;
@@ -54,6 +54,7 @@ import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 6 juin 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -112,6 +113,8 @@ public class MemberViewQueries {
 		getPending(views, businessGroup, params, userPropertyHandlers, locale);
 		// Pending create the membership object
 		getExternalUsers(views, businessGroup);
+
+		getResourceReservation(views, businessGroup, userPropertyHandlers, locale);
 		
 		List<MemberView> members = new ArrayList<>(views.values());
 		filterByRoles(members, params);
@@ -369,6 +372,24 @@ public class MemberViewQueries {
 			MemberView m = views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale));
 			m.addGroup(entry);
 			m.getMemberShip().setPending(true);
+		}
+	}
+
+	private void getResourceReservation(Map<Identity,MemberView> views, BusinessGroup entry,
+										List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		QueryBuilder qb = new QueryBuilder();
+
+		qb.append("select reservation from resourcereservation as reservation")
+				.append(" inner join businessgroup as grp on (reservation.resource.key = grp.resource.key)")
+				.and().append("grp.key=:groupKey");
+
+		TypedQuery<ResourceReservation> query = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), ResourceReservation.class)
+				.setParameter("groupKey", entry.getKey());
+
+		for(ResourceReservation reservation: query.getResultList()) {
+			MemberView m = views.computeIfAbsent(reservation.getIdentity(), id -> new MemberView(id, userPropertyHandlers, locale));
+			m.getMemberShip().setResourceReservation(reservation);
 		}
 	}
 	

@@ -11,7 +11,19 @@
 </fieldset>
 <fieldset class="o_sel_group_members_mgmt">
 	<legend>
-		$r.translate("group.edit.tab.members")</legend>
+		$r.translate("group.edit.tab.members")
+	</legend>
+	#if($hasWaitingList)
+		#if($isOverbooked)
+			<div class="o_warning_with_icon">
+				$infoWarningText
+			</div>
+		#else
+			<div class="o_info_with_icon">
+				$infoWarningText
+			</div>
+		#end
+	#end
 	
 	#if($r.visible("override.member") || $r.visible("unoverride.member"))
 	<div class="o_warning">
@@ -37,4 +49,3 @@
 	</div>
 	$r.render("members")
 </fieldset>
-

@@ -229,7 +229,7 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		}
 		
 		public boolean isCoach() {
-			return "group_coach".equals(reservation.getType()) || "repo_tutors".equals(reservation.getType());
+			return BusinessGroupService.GROUP_COACH.equals(reservation.getType()) || "repo_tutors".equals(reservation.getType());
 		}
 
 		public String getName() {

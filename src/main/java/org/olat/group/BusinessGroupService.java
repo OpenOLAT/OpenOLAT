@@ -53,11 +53,12 @@ import org.olat.resource.accesscontrol.ResourceReservation;
  * 
  * 
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public interface BusinessGroupService {
 	
 	static final String GROUP_PARTICIPANT = "group_participant";
+	static final String GROUP_COACH = "group_coach";
 
 	/**
 	 * Create a persistent BusinessGroup with the provided

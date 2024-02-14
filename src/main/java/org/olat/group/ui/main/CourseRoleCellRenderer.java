@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.group.ui.main;
@@ -28,10 +28,11 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.group.BusinessGroupService;
 
 /**
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class CourseRoleCellRenderer implements FlexiCellRenderer {
 	
@@ -44,8 +45,8 @@ public class CourseRoleCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator trans) {
-		if (cellValue instanceof CourseMembership) {
-			render(target, (CourseMembership) cellValue);
+		if (cellValue instanceof CourseMembership courseMembership) {
+			render(target, courseMembership);
 		}
 	}
 	
@@ -96,6 +97,16 @@ public class CourseRoleCellRenderer implements FlexiCellRenderer {
 		}
 		if(membership.isPending()) {
 			and = and(sb, and);
+			// if reservation exists, then add additional information to pending role: If it is pending for a participant or coach
+			if (membership.getResourceReservation() != null) {
+				if (membership.getResourceReservation().getType().equals(BusinessGroupService.GROUP_PARTICIPANT)) {
+					sb.append(translator.translate("role.group.participant"));
+				} else if (membership.getResourceReservation().getType().equals(BusinessGroupService.GROUP_COACH)) {
+					sb.append(translator.translate("role.group.tutor"));
+				}
+				sb.append(" ");
+			}
+
 			sb.append(translator.translate("role.pending"));
 		}
 		if(membership.isExternalUser()) {
