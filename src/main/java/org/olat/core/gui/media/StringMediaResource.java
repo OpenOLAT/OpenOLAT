@@ -33,6 +33,8 @@ import java.io.UnsupportedEncodingException;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 
@@ -45,15 +47,13 @@ public class StringMediaResource extends DefaultMediaResource {
 	private String data;
 	private boolean downloadable = false;
 	private String downloadFileName = null;
+	private String contentSecurityPolicy;
 	
 	@Override
 	public boolean acceptRanges() {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
-	 */
 	@Override
 	public InputStream getInputStream() {
 		ByteArrayInputStream bis = null;
@@ -80,6 +80,10 @@ public class StringMediaResource extends DefaultMediaResource {
 	public void setEncoding(String encoding) {
 		this.encoding = StringHelper.check4xMacRoman(encoding);
 	}
+	
+	public void setContentSecurityPolicy(String policy) {
+		this.contentSecurityPolicy = policy;
+	}
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
@@ -92,6 +96,12 @@ public class StringMediaResource extends DefaultMediaResource {
 		if (downloadable && downloadFileName != null) {
 			String filename = StringHelper.urlEncodeUTF8(downloadFileName);
 			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
+		}
+		
+		if(StringHelper.containsNonWhitespace(contentSecurityPolicy)) {
+			String header = CoreSpringFactory.getImpl(CSPModule.class).isContentSecurityPolicyReportOnlyEnabled()
+					? "Content-Security-Policy-Report-Only" : "Content-Security-Policy";
+			hres.setHeader(header, contentSecurityPolicy);
 		}
 	}
 	

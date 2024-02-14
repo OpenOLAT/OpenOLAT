@@ -83,7 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Felix Jost
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class CPRunController extends BasicController implements ControllerEventListener, Activateable2 {
+public class CPRunController extends BasicController implements Activateable2 {
 	private static final Logger log = Tracing.createLoggerFor(CPRunController.class);
 
 	private ModuleConfiguration config;

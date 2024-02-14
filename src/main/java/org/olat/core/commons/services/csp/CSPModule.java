@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.csp;
 
+import java.util.List;
+
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -27,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
+ * The default policy allows the classic video services: YouTube, Vimeo, Nanoo.tv.
  * 
  * Initial date: 19 avr. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -41,11 +44,10 @@ public class CSPModule extends AbstractSpringModule {
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_IMG_SRC = "'self' data:";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FONT_SRC = "'self' data:";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_CONNECT_SRC = "'self' https://youtu.be https://www.youtube.com";
-	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FRAME_SRC = "'self' https://player.vimeo.com https://youtu.be https://www.youtube.com https://s.ytimg.com https://applications.zoom.us";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FRAME_SRC = "'self' https://player.vimeo.com https://youtu.be https://www.youtube.com https://s.ytimg.com https://applications.zoom.us https://www.nanoo.tv";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_WORKER_SRC = "'self' blob:";
-	public static final String DEFAULT_CONTENT_SECURITY_POLICY_MEDIA_SRC = "'self' blob: https://player.vimeo.com https://youtu.be https://www.youtube.com";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_MEDIA_SRC = "'self' blob: https://vimeo.com https://player.vimeo.com https://youtu.be https://www.youtube.com";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_OBJECT_SRC = "'self'";
-	public static final String DEFAULT_CONTENT_SECURITY_POLICY_PLUGIN_TYPE_SRC = null;
 	
 	private static final String CSRF = "csrf";
 	private static final String FORCE_TOP_FRAME = "forceTopFrame";
@@ -64,7 +66,6 @@ public class CSPModule extends AbstractSpringModule {
 	private static final String CONTENT_SECURITY_POLICY_WORKER_SRC = "base.security.contentSecurityPolicy.workerSrc";
 	private static final String CONTENT_SECURITY_POLICY_MEDIA_SRC = "base.security.contentSecurityPolicy.mediaSrc";
 	private static final String CONTENT_SECURITY_POLICY_OBJECT_SRC = "base.security.contentSecurityPolicy.objectSrc";
-	private static final String CONTENT_SECURITY_POLICY_PLUGIN_TYPE = "base.security.contentSecurityPolicy.pluginType";
 
 	@Value("${base.security.csrf:disabled}")
 	private String csrf;
@@ -102,8 +103,9 @@ public class CSPModule extends AbstractSpringModule {
 	private String contentSecurityPolicyMediaSrc;
 	@Value("${base.security.contentSecurityPolicy.objectSrc:}")
 	private String contentSecurityPolicyObjectSrc;
-	@Value("${base.security.contentSecurityPolicy.pluginType:}")
-	private String contentSecurityPolicyPluginType;
+	
+	@Autowired
+	private List<CSPDirectiveProvider> directiveProviders;
 	
 	@Autowired
 	public CSPModule(CoordinatorManager coordinatorManager) {
@@ -185,10 +187,6 @@ public class CSPModule extends AbstractSpringModule {
 		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_OBJECT_SRC, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			contentSecurityPolicyObjectSrc = enabled;
-		}
-		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_PLUGIN_TYPE, true);
-		if(StringHelper.containsNonWhitespace(enabled)) {
-			contentSecurityPolicyPluginType = enabled;
 		}
 	}
 
@@ -355,14 +353,7 @@ public class CSPModule extends AbstractSpringModule {
 		setStringProperty(CONTENT_SECURITY_POLICY_OBJECT_SRC, policy, true);
 	}
 
-	public String getContentSecurityPolicyPluginType() {
-		return contentSecurityPolicyPluginType;
+	public List<CSPDirectiveProvider> getDirectiveProviders() {
+		return directiveProviders == null ? List.of() : List.copyOf(directiveProviders);
 	}
-
-	public void setContentSecurityPolicyPluginType(String policy) {
-		this.contentSecurityPolicyPluginType = policy;
-		setStringProperty(CONTENT_SECURITY_POLICY_PLUGIN_TYPE, policy, true);
-	}
-	
-	
 }

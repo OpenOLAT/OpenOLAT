@@ -144,15 +144,15 @@ public class SinglePageController extends BasicController implements Activateabl
 		BusinessControl bc = getWindowControl().getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
 		if ( ce != null ) { // a context path is left for me
-			log.debug("businesscontrol (for further jumps) would be:"+bc);
+			log.debug("businesscontrol (for further jumps) would be:{}", bc);
 			OLATResourceable ores = ce.getOLATResourceable();
-			log.debug("OLATResourceable=" + ores);
+			log.debug("OLATResourceable={}", ores);
 			String typeName = ores.getResourceableTypeName();
 			// typeName format: 'path=/test1/test2/readme.txt'
 			// First remove prefix 'path='
 			String path = typeName.substring("path=".length());
 			if  (path.length() > 0) {
-			  log.debug("direct navigation to container-path=" + path);
+			  log.debug("direct navigation to container-path={}", path);
 			  jumpIn = true;
 			  startURI = path;
 			}
@@ -183,7 +183,7 @@ public class SinglePageController extends BasicController implements Activateabl
 		
 		// Display in iframe when
 		idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer,
-				frameId, contextResourcable, deliveryOptions, false, randomizeMapper);
+				frameId, contextResourcable, deliveryOptions, null, false, randomizeMapper);
 		listenTo(idc);
 			
 		idc.setCurrentURI(startURI);

@@ -22,6 +22,7 @@ package org.olat.admin.security;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderModule;
+import org.olat.core.commons.services.csp.CSPBuilder;
 import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -69,7 +70,6 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 	private TextElement frameSrcEl;
 	private TextElement mediaSrcEl;
 	private TextElement objectSrcEl;
-	private TextElement pluginTypeEl;
 	
 	private FormLayoutContainer cspOptionsCont;
 	
@@ -163,47 +163,45 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 			contentSecurityPolicyReportOnlyEl.select("on", true);
 		}
 		
+		CSPBuilder cspBuilder = new CSPBuilder(cspModule);
+		cspBuilder.defaultDirectives();
+		
 		String defaultSrcPolicy = cspModule.getContentSecurityPolicyDefaultSrc();
 		defaultSrcEl = uifactory.addTextElement("sec.csp.default.src", 512, defaultSrcPolicy, cspOptionsCont);
-		defaultSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("default-src"), EXAMPLE });
+		defaultSrcEl.setExampleKey("sec.csp.default.value", new String[] { cspBuilder.defaultSrc().toString(), EXAMPLE });
 		
 		String scriptSrcPolicy = cspModule.getContentSecurityPolicyScriptSrc();
 		scriptSrcEl = uifactory.addTextElement("sec.csp.script.src", 512, scriptSrcPolicy, cspOptionsCont);
-		scriptSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("script-src"), EXAMPLE });
+		scriptSrcEl.setExampleKey("sec.csp.default.value", new String[] { cspBuilder.scriptSrc().toString(), EXAMPLE });
 		
 		String styleSrcPolicy = cspModule.getContentSecurityPolicyStyleSrc();
 		styleSrcEl = uifactory.addTextElement("sec.csp.style.src", 512, styleSrcPolicy, cspOptionsCont);
-		styleSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("style-src"), EXAMPLE });
+		styleSrcEl.setExampleKey("sec.csp.default.value", new String[] { cspBuilder.styleSrc().toString(), EXAMPLE });
 		
 		String imgSrcPolicy = cspModule.getContentSecurityPolicyImgSrc();
 		imgSrcEl = uifactory.addTextElement("sec.csp.img.src", 512, imgSrcPolicy, cspOptionsCont);
-		imgSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("img-src"), EXAMPLE });
+		imgSrcEl.setExampleKey("sec.csp.default.value", new String[] { cspBuilder.imgSrc().toString(), EXAMPLE });
 		
 		String fontSrcPolicy = cspModule.getContentSecurityPolicyFontSrc();
 		fontSrcEl = uifactory.addTextElement("sec.csp.font.src", 512, fontSrcPolicy, cspOptionsCont);
-		fontSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("font-src"), EXAMPLE });
+		fontSrcEl.setExampleKey("sec.csp.default.value", new String[] { cspBuilder.fontSrc().toString(), EXAMPLE });
 		
 		String connectSrcPolicy = cspModule.getContentSecurityPolicyConnectSrc();
 		connectSrcEl = uifactory.addTextElement("sec.csp.connect.src", 512, connectSrcPolicy, cspOptionsCont);
-		connectSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("connect-src"), EXAMPLE });
+		connectSrcEl.setExampleKey("sec.csp.default.value", new String[] { cspBuilder.connectSrc().toString(), EXAMPLE });
 		
 		String frameSrcPolicy = cspModule.getContentSecurityPolicyFrameSrc();
 		frameSrcEl = uifactory.addTextElement("sec.csp.frame.src", 512, frameSrcPolicy, cspOptionsCont);
-		frameSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("frame-src"), EXAMPLE });
+		frameSrcEl.setExampleKey("sec.csp.default.value", new String[] { cspBuilder.frameSrc().toString(), EXAMPLE });
 		
 		String mediaSrcPolicy = cspModule.getContentSecurityPolicyMediaSrc();
 		mediaSrcEl = uifactory.addTextElement("sec.csp.media.src", 512, mediaSrcPolicy, cspOptionsCont);
-		mediaSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("nedia-src"), EXAMPLE });
+		mediaSrcEl.setExampleKey("sec.csp.default.value", new String[] { cspBuilder.mediaSrc().toString(), EXAMPLE });
 		
 		String objectSrcPolicy = cspModule.getContentSecurityPolicyObjectSrc();
 		objectSrcEl = uifactory.addTextElement("sec.csp.object.src", 512, objectSrcPolicy, cspOptionsCont);
-		objectSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("object-src"), EXAMPLE });
-		
-		String pluginTypePolicy = cspModule.getContentSecurityPolicyPluginType();
-		pluginTypeEl = uifactory.addTextElement("sec.csp.plugin.type", 512, pluginTypePolicy, cspOptionsCont);
-		pluginTypeEl.setExampleKey("sec.csp.default.value", new String[] { "", "application/x-shockwave-flash" });
+		objectSrcEl.setExampleKey("sec.csp.default.value", new String[] { cspBuilder.objectSrc().toString() , EXAMPLE });
 
-		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
@@ -240,7 +238,6 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 			cspModule.setContentSecurityPolicyFrameSrc(frameSrcEl.getValue());
 			cspModule.setContentSecurityPolicyMediaSrc(mediaSrcEl.getValue());
 			cspModule.setContentSecurityPolicyObjectSrc(objectSrcEl.getValue());
-			cspModule.setContentSecurityPolicyPluginType(pluginTypeEl.getValue());
 		} else {
 			cspModule.setContentSecurityPolicyReportOnly(false);
 			cspModule.setContentSecurityPolicyDefaultSrc(null);
@@ -252,7 +249,6 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 			cspModule.setContentSecurityPolicyFrameSrc(null);
 			cspModule.setContentSecurityPolicyMediaSrc(null);
 			cspModule.setContentSecurityPolicyObjectSrc(null);
-			cspModule.setContentSecurityPolicyPluginType(null);
 		}
 		CollaborationToolsFactory.getInstance().initAvailableTools();
 		

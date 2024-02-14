@@ -93,7 +93,7 @@ public class WebDocumentRunController extends BasicController {
 				listenTo(editCtrl);
 				mainVC.put("content", editCtrl.getInitialComponent());
 			} else {
-				IFrameDisplayController idc = new IFrameDisplayController(ureq, getWindowControl(), document.getParentContainer(), null, null);
+				IFrameDisplayController idc = new IFrameDisplayController(ureq, getWindowControl(), document.getParentContainer(), null, null, null);
 				listenTo(idc);	
 				idc.setCurrentURI(document.getName());
 				mainVC.put("content", idc.getInitialComponent());

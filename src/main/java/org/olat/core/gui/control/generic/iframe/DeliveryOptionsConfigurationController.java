@@ -360,7 +360,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			glossarEl.clearError();
 			if(glossarEl.isAtLeastSelected(1) && !jsOptionEl.isSelected(1)) {
 				allOk &= false;
-				glossarEl.setErrorKey("glossary.need.jQuery", null);
+				glossarEl.setErrorKey("glossary.need.jQuery");
 			}
 			allOk &= validateDropdown(jsOptionEl);
 			allOk &= validateDropdown(heightEl);
@@ -377,7 +377,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		
 		element.clearError();
 		if(element.isEnabled() && !element.isOneSelected()) {
-			element.setErrorKey("form.general.error", null);
+			element.setErrorKey("form.general.error");
 			allOk &= false;
 		}
 		

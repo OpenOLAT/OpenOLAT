@@ -36,6 +36,8 @@ import org.json.JSONObject;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.csp.CSPBuilder;
+import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -56,6 +58,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
+import org.olat.core.gui.control.generic.iframe.SecurityOptions;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -108,6 +111,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private String requestScoId;
 	private ScormSessionController sessionController;
 	
+	@Autowired
+	private CSPModule cspModule;
 	@Autowired
 	private ScormMainManager scormMainManager;
 
@@ -203,7 +208,21 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		if(deliveryOptions != null && (fullWindow == ScormDisplayEnum.fullWidthHeight || fullWindow == ScormDisplayEnum.fullWidthHeightWithBack)) {
 			deliveryOptions.setHeight(DeliveryOptions.CONFIG_HEIGHT_IGNORE);
 		}
-		iframeCtr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres, deliveryOptions, true, radomizeDelivery);
+		
+		SecurityOptions securityOptions = new SecurityOptions();
+		// Most packages need eval()
+		CSPBuilder builder = new CSPBuilder(cspModule);
+		String policy = builder
+			.defaultDirectives()
+			.configurationDirectives()
+			.scriptSrc()
+			.allowUnsafeEval()
+			.builder()
+			.build();
+		securityOptions.setContentSecurityPolicy(policy);
+		
+		iframeCtr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres,
+				deliveryOptions, securityOptions, true, radomizeDelivery);
 		listenTo(iframeCtr);
 		displayContent.put("contentpackage", iframeCtr.getInitialComponent());
 		displayContent.contextPut("frameId", SCORM_CONTENT_FRAME);

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,30 +14,26 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.gui.control.generic.iframe;
 
-import java.io.Serializable;
-
-import org.olat.core.util.vfs.VFSItem;
-
 /**
  * 
- * @author srosse
+ * Initial date: 13 févr. 2024<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SerializableIFrameDeliveryMapper extends IFrameDeliveryMapper implements Serializable {
+public class SecurityOptions {
 
-	private static final long serialVersionUID = 8710796223152048613L;
+	private String contentSecurityPolicy;
 	
-	public SerializableIFrameDeliveryMapper() {
-		//for XStream
+	public String getContentSecurityPolicy() {
+		return contentSecurityPolicy;
 	}
 	
-	public SerializableIFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking,
-			String frameId, String themeBaseUri, String contentSecurityPolicy) {
-		super(rootDir, rawContent, enableTextmarking, frameId, themeBaseUri, contentSecurityPolicy);
+	public void setContentSecurityPolicy(String contentSecurityPolicy) {
+		this.contentSecurityPolicy = contentSecurityPolicy;
 	}
 }

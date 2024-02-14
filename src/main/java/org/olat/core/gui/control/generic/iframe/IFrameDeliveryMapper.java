@@ -92,12 +92,14 @@ public class IFrameDeliveryMapper implements Mapper {
 	private transient boolean checkForInlineEvent;
 	private transient long suppressEndlessReload;
 	
+	private String contentSecurityPolicy;
+	
 	public IFrameDeliveryMapper() {
 		//for XStream
 	}
 	
 	public IFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking, String frameId,
-			String customCssURL, String themeBaseUri, String customHeaderContent) {
+			String themeBaseUri, String contentSecurityPolicy) {
 		
 		this.rootDir = rootDir;
 		
@@ -105,9 +107,8 @@ public class IFrameDeliveryMapper implements Mapper {
 		this.enableTextmarking = enableTextmarking;
 		
 		this.frameId = frameId;
-		this.customCssURL = customCssURL;
 		this.themeBaseUri = themeBaseUri;
-		this.customHeaderContent = customHeaderContent;
+		this.contentSecurityPolicy = contentSecurityPolicy;
 	}
 	
 	public void setDeliveryOptions(DeliveryOptions config) {
@@ -159,10 +160,6 @@ public class IFrameDeliveryMapper implements Mapper {
 
 	public void setCustomHeaderContent(String customHeaderContent) {
 		this.customHeaderContent = customHeaderContent;
-	}
-
-	public void setCustomCssURL(String customCssURL) {
-		this.customCssURL = customCssURL;
 	}
 	
 	public void setCustomCssDelegate(CustomCSSDelegate customCssDelegate) {
@@ -300,6 +297,10 @@ public class IFrameDeliveryMapper implements Mapper {
 	
 	private StringMediaResource prepareMediaResource(HttpServletRequest httpRequest, String page, String enc, String contentType, boolean isPopUp) {
 		StringMediaResource smr = new StringMediaResource();
+		if(contentSecurityPolicy != null) {
+			smr.setContentSecurityPolicy(contentSecurityPolicy);
+		}
+		
 		if(XHTML_CONTENT_TYPE.equals(contentType)) {
 			//check if the application/xhtml+xml is supported (not supported by IEs)
 			//if not, replace the content type by text/html for compatibility

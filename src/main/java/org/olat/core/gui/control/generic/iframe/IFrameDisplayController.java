@@ -86,6 +86,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	private Panel main;
 	private IFrameDeliveryMapper contentMapper;
 	private DeliveryOptions deliveryOptions;
+	
 	/**
 	 * Base URI of contentMapper
 	 */
@@ -111,19 +112,9 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param fileRoot File that points to the root directory of the resource 
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot) {
-		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, null);
+		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, null, null);
 	}
-	
-	/**
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param fileRoot
-	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
-	 */
-	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot, OLATResourceable ores) {
-		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, ores, null, false, false);
-	}
+
 	/**
 	 * 
 	 * @param ureq
@@ -131,7 +122,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param rootDir VFSItem that points to the root folder of the resource
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir) {
-		this(ureq, wControl, rootDir, null, null, null, false, false);
+		this(ureq, wControl, rootDir, null, null, null, null, false, false);
 	}
 	/**
 	 * 
@@ -140,8 +131,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param rootDir
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
-	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, OLATResourceable ores, DeliveryOptions deliveryOptions) {
-		this(ureq, wControl, rootDir, null, ores, deliveryOptions, false, false);
+	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, OLATResourceable ores, DeliveryOptions deliveryOptions, SecurityOptions securityOptions) {
+		this(ureq, wControl, rootDir, null, ores, deliveryOptions, securityOptions, false, false);
 	}
 	/**
 	 * 
@@ -152,7 +143,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param enableTextmarking to enable textmakring of the content in the iframe enable it here
 	 */
 	public IFrameDisplayController(final UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String frameId,
-			OLATResourceable contextResourceable, DeliveryOptions options, boolean persistMapper, boolean randomizeMapper) {
+			OLATResourceable contextResourceable, DeliveryOptions options, SecurityOptions securityOptions, boolean persistMapper, boolean randomizeMapper) {
 		super(ureq, wControl);
 
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID		
@@ -171,17 +162,18 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		} else {
 			iFrameId = frameId;
 		}
+		
+		String contentSecurityPolicy = (securityOptions != null && securityOptions.getContentSecurityPolicy() != null)
+				? securityOptions.getContentSecurityPolicy() : null;
 
 		//Delivers content files via local mapper to enable session based browser caching for at least this instance
 		if(persistMapper) {
-			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking,
-					iFrameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
+			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking, iFrameId, themeBaseUri, contentSecurityPolicy);
 		} else {
-			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, iFrameId,
-					null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
+			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, iFrameId, themeBaseUri, contentSecurityPolicy);
 		}
-
 		contentMapper.setDeliveryOptions(options);
+
 		
 		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);
 		myContent.put("js", js);
