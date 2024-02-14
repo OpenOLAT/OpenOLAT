@@ -5959,9 +5959,7 @@ alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doe
 create index idx_activity_doer_idx on o_proj_activity (fk_doer);
 alter table o_proj_activity add constraint activity_project_idx foreign key (fk_project) references o_proj_project(id);
 create index idx_activity_project_idx on o_proj_activity (fk_project);
-alter table o_proj_activity add constraint activity_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
 create index idx_activity_artefact_idx on o_proj_activity (fk_artefact);
-alter table o_proj_activity add constraint activity_artefact_reference_idx foreign key (fk_artefact_reference) references o_proj_artefact(id);
 create index idx_activity_artefact_reference_idx on o_proj_activity (fk_artefact_reference);
 alter table o_proj_activity add constraint activity_member_idx foreign key (fk_member) references o_bs_identity(id);
 create index idx_activity_member_idx on o_proj_activity (fk_member);

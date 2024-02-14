@@ -80,7 +80,6 @@ public class ProjFileDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldSaveFile() {
-		
 		ProjArtefact artefact = createRandomArtefact();
 		VFSMetadata metadata = createRandomMetadata();
 		ProjFile file = sut.create(artefact, metadata);
@@ -90,6 +89,22 @@ public class ProjFileDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// No exception
+	}
+	
+	@Test
+	public void shouldDelete() {
+		ProjFile file1 = createRandomFile();
+		ProjFile file2 = createRandomFile();
+		dbInstance.commitAndCloseSession();
+		
+		sut.delete(file1);
+		dbInstance.commitAndCloseSession();
+		
+		ProjFileSearchParams params = new ProjFileSearchParams();
+		params.setFiles(List.of(file1, file2));
+		List<ProjFile> files = sut.loadFiles(params);
+		
+		assertThat(files).containsExactly(file2);
 	}
 	
 	@Test

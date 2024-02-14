@@ -219,6 +219,10 @@ form .o_form, form.o_form {
 		margin-right: 0.2em;
 	}
 	
+	.o_static_list {
+		padding-left: 15px;
+	}
+	
 	.o_markdown_element {
 		.form-control.ProseMirror {
 			height: unset;

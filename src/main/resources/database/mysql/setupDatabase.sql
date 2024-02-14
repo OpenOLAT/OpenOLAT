@@ -5802,8 +5802,8 @@ alter table o_proj_decision add constraint decision_artefact_idx foreign key (fk
 
 alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doer) references o_bs_identity (id);
 alter table o_proj_activity add constraint activity_project_idx foreign key (fk_project) references o_proj_project (id);
-alter table o_proj_activity add constraint activity_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
-alter table o_proj_activity add constraint activity_artefact_ref_idx foreign key (fk_artefact_reference) references o_proj_artefact (id);
+create index idx_activity_artefact_idx on o_proj_activity (fk_artefact);
+create index idx_activity_artefact_reference_idx on o_proj_activity (fk_artefact_reference);
 alter table o_proj_activity add constraint activity_member_idx foreign key (fk_member) references o_bs_identity (id);
 alter table o_proj_activity add constraint activity_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_activity_temp_ident_idx on o_proj_activity (p_temp_identifier);

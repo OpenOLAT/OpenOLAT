@@ -32,6 +32,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjFile;
+import org.olat.modules.project.ProjFileRef;
 import org.olat.modules.project.ProjFileSearchParams;
 import org.olat.modules.project.model.ProjFileImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +67,15 @@ public class ProjFileDAO {
 			dbInstance.getCurrentEntityManager().merge(file);
 		}
 		return file;
+	}
+
+	public void delete(ProjFileRef file) {
+		String query = "delete from projfile file where file.key = :fileKey";
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("fileKey", file.getKey())
+				.executeUpdate();
 	}
 
 	public long loadFilesCount(ProjFileSearchParams searchParams) {

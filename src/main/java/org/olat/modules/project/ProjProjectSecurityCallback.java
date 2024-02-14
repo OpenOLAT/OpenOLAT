@@ -64,7 +64,11 @@ public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 
 	boolean canEditFile(ProjFile file);
 
+	boolean canRestoreFile(ProjFile file);
+	
 	boolean canDeleteFile(ProjFile file, IdentityRef identity);
+	
+	boolean canDeleteFilePermanently(ProjFile file);
 	
 	boolean canViewToDos();
 

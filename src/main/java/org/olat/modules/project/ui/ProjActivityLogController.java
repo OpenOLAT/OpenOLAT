@@ -189,6 +189,7 @@ public class ProjActivityLogController extends ActivityLogController {
 		case fileCreate: addRow(rows, activity, "activity.log.message.create"); break;
 		case fileUpload: addRow(rows, activity, "activity.log.message.upload"); break;
 		case fileEdit: addRow(rows, activity, "activity.log.message.edit.file"); break;
+		case fileRestore: addRow(rows, activity, "activity.log.message.restore"); break;
 		case fileStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
 		case fileMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember().getKey())); break;
 		case fileMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember().getKey()), null); break;

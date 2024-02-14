@@ -45,20 +45,23 @@ public class ProjConfirmationController extends FormBasicController {
 	
 	private final String message;
 	private final String confirmationI18nKey;
+	private final String[] confimationI18nArgs;
 	private final String confirmButtonI18nKey;
 	private final boolean confirmDanger;
 	private Object userObject;
 	
 	public ProjConfirmationController(UserRequest ureq, WindowControl wControl, String message,
 			String confirmationI18nKey, String confirmButtonI18nKey, boolean confirmDanger) { 
-		this(ureq, wControl, message, confirmationI18nKey, confirmButtonI18nKey, confirmDanger, true);
+		this(ureq, wControl, message, confirmationI18nKey, null, confirmButtonI18nKey, confirmDanger, true);
 	}
 	
 	protected ProjConfirmationController(UserRequest ureq, WindowControl wControl, String message,
-			String confirmationI18nKey, String confirmButtonI18nKey, boolean confirmDanger, boolean init) {
+			String confirmationI18nKey, String[] confimationI18nArgs, String confirmButtonI18nKey,
+			boolean confirmDanger, boolean init) {
 		super(ureq, wControl, "confirmation");
 		this.message = message;
 		this.confirmationI18nKey = confirmationI18nKey;
+		this.confimationI18nArgs = confimationI18nArgs;
 		this.confirmButtonI18nKey = confirmButtonI18nKey;
 		this.confirmDanger = confirmDanger;
 		
@@ -92,7 +95,7 @@ public class ProjConfirmationController extends FormBasicController {
 			
 			initFormElements(confirmCont);
 			
-			String[] acknowledge = new String[] { translate(confirmationI18nKey) };
+			String[] acknowledge = new String[] { translate(confirmationI18nKey, confimationI18nArgs) };
 			confirmationEl = uifactory.addCheckboxesHorizontal("confirmation", "confirmation", confirmCont, new String[]{ "" }, acknowledge);
 			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

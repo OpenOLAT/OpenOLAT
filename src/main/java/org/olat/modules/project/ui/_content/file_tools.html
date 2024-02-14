@@ -8,6 +8,9 @@
 	#if($r.available("download"))
 		<li>$r.render("download")</li>
 	#end
+	#if($r.available("restore"))
+		<li>$r.render("restore")</li>
+	#end
 	#if($r.available("delete"))
 		<li class="divider"></li>
 		<li>$r.render("delete")</li>

@@ -60,6 +60,7 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticListElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
@@ -92,6 +93,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelecti
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SliderElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.StaticListElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.StaticTextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextAreaElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementImpl;
@@ -655,6 +657,14 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, ste);
 		formLayout.add(ste);
 		return ste;
+	}
+	
+	public StaticListElement addStaticListElement(String name, String i18nLabel, List<String> values, FormItemContainer formLayout) {
+		StaticListElementImpl ele = new StaticListElementImpl(name);
+		ele.setValues(values);
+		setLabelIfNotNull(i18nLabel, ele);
+		formLayout.add(ele);
+		return ele;
 	}
 	
 	public TextElement addInlineTextElement(String name, String value, FormItemContainer formLayout, FormBasicController listener) {

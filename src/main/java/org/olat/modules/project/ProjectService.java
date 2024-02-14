@@ -166,7 +166,11 @@ public interface ProjectService {
 
 	public void updateFile(Identity doer, ProjFile file, String filename, String title, String description);
 	
+	public void restoreFile(Identity doer, ProjFileRef file);
+	
 	public void deleteFileSoftly(Identity doer, ProjFileRef file);
+	
+	public void deleteFilePermanently(Identity doer, ProjFileRef file);
 	
 	public boolean existsFile(ProjProjectRef project, String filename);
 	
