@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.todo.manager.CourseCollectionToDoTaskProvider;
 import org.olat.course.todo.manager.CourseCollectionToDoTaskProvider.UpdateToDoTaskStrategie;
@@ -103,7 +104,7 @@ public class ToDoCollectionEditOverviewController extends StepFormBasicControlle
 		
 		List<OverviewField> fields = new ArrayList<>(2);
 		if (context.isSelected(Field.title)) {
-			String text = translate("course.todo.collection.overview.change.title", context.getTitle());
+			String text = translate("course.todo.collection.overview.change.title", StringHelper.escapeHtml(context.getTitle()));
 			String resourceItemName = createResourceLink(context.isOverride(Field.title), strategie.getChanges(Field.title), strategie.getNumElements());
 			fields.add(new OverviewField(text, resourceItemName));
 		}
@@ -135,7 +136,7 @@ public class ToDoCollectionEditOverviewController extends StepFormBasicControlle
 			fields.add(new OverviewField(text, resourceItemName));
 		}
 		if (context.isSelected(Field.description)) {
-			String text = translate("course.todo.collection.overview.change.description", context.getDescription());
+			String text = translate("course.todo.collection.overview.change.description", StringHelper.escapeHtml(context.getDescription()));
 			String resourceItemName = createResourceLink(context.isOverride(Field.description), strategie.getChanges(Field.description), strategie.getNumElements());
 			fields.add(new OverviewField(text, resourceItemName));
 		}
