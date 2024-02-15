@@ -57,7 +57,7 @@ import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
-import org.olat.modules.project.manager.ProjectMailing.ProjInvitationMailTemplate;
+import org.olat.modules.project.manager.ProjectMailing.ProjProjectMailTemplate;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryMailing.RepositoryEntryMailTemplate;
@@ -258,8 +258,9 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 			String businessGroupUrl = invitationService.toUrl(invitation, businessGroup);
 			template.addToContext("groupurl", businessGroupUrl);
 		} else if (project != null) {
-			if (template instanceof ProjInvitationMailTemplate projectMailTemplate) {
+			if (template instanceof ProjProjectMailTemplate projectMailTemplate) {
 				projectMailTemplate.setUrl(invitationService.toUrl(invitation, project));
+				projectMailTemplate.setRolesAddNames(invitation.getRoleList());
 			}
 		}
 		

@@ -57,6 +57,7 @@ import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.inspection.AssessmentInspectionOverviewController;
 import org.olat.course.assessment.ui.tool.event.AssessmentInspectionSelectionEvent;
+import org.olat.course.assessment.ui.tool.event.NewAssessmentInspectionEvent;
 import org.olat.course.assessment.ui.tool.event.ShowOrdersEvent;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -85,8 +86,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	
 	private final VelocityContainer mainVC;
 	private final MenuTree overviewMenuTree;
-	private final GenericTreeNode ordersNode;
-	private final GenericTreeNode overviewNode;
+	private GenericTreeNode ordersNode;
+	private GenericTreeNode overviewNode;
 	private GenericTreeNode  inspectionNode;
 	private final MenuTree menuTree;
 	private final SegmentViewComponent segmentView;
@@ -131,26 +132,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		
 		// Overview navigation
 		overviewMenuTree = new MenuTree("menuTree");
-		GenericTreeModel overviewTreeModel = new GenericTreeModel();
-		GenericTreeNode overviewRootNode = new GenericTreeNode();
-		overviewTreeModel.setRootNode(overviewRootNode);
-
-		overviewNode = new GenericTreeNode();
-		overviewNode.setTitle(translate("assessment.tool.overview"));
-		overviewNode.setIconCssClass("o_icon_assessment_tool");
-		overviewRootNode.addChild(overviewNode);
-		
-		ordersNode = new GenericTreeNode();
-		ordersNode.setTitle(translate("assessment.tool.orders"));
-		ordersNode.setIconCssClass("o_icon_list");
-		overviewRootNode.addChild(ordersNode);
-		
-		if(inspectionService.hasInspectionConfigurations(courseEntry)) {
-			inspectionNode = new GenericTreeNode();
-			inspectionNode.setTitle(translate("assessment.tool.inspections"));
-			inspectionNode.setIconCssClass("o_icon_inspection");
-			overviewRootNode.addChild(inspectionNode);
-		}
+		TreeModel overviewTreeModel = overviewTreeModel();
 		
 		overviewMenuTree.setTreeModel(overviewTreeModel);
 		overviewMenuTree.setSelectedNodeId(overviewNode.getIdent());
@@ -185,6 +167,31 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuCont, mainVC, "course" + course.getResourceableId());
 		listenTo(columLayoutCtr); // cleanup on dispose
 		putInitialPanel(columLayoutCtr.getInitialComponent());
+	}
+	
+	private TreeModel overviewTreeModel() {
+		GenericTreeModel overviewTreeModel = new GenericTreeModel();
+		GenericTreeNode overviewRootNode = new GenericTreeNode("Root");
+		overviewTreeModel.setRootNode(overviewRootNode);
+		
+		overviewNode = new GenericTreeNode("Overview");
+		overviewNode.setTitle(translate("assessment.tool.overview"));
+		overviewNode.setIconCssClass("o_icon_assessment_tool");
+		overviewRootNode.addChild(overviewNode);
+		
+		ordersNode = new GenericTreeNode("Orders");
+		ordersNode.setTitle(translate("assessment.tool.orders"));
+		ordersNode.setIconCssClass("o_icon_list");
+		overviewRootNode.addChild(ordersNode);
+		
+		if(inspectionService.hasInspectionConfigurations(courseEntry)) {
+			inspectionNode = new GenericTreeNode("Inspections");
+			inspectionNode.setTitle(translate("assessment.tool.inspections"));
+			inspectionNode.setIconCssClass("o_icon_inspection");
+			overviewRootNode.addChild(inspectionNode);
+		}
+		
+		return overviewTreeModel;
 	}
 	
 	public String getRootNodeId() {
@@ -358,9 +365,18 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		} else if (source == identityListCtrl) {
 			if (event instanceof ParticipantTypeFilterEvent filterEvent) {
 				participantTypeFilter = filterEvent.getParticipantTypes();
+			} else if(event instanceof NewAssessmentInspectionEvent) {
+				updateOverviewMenuTree();
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void updateOverviewMenuTree() {
+		if(inspectionNode != null) return;
+		
+		TreeModel overviewTreeModel = overviewTreeModel();
+		overviewMenuTree.setTreeModel(overviewTreeModel);
 	}
 
 	private void processSelectCourseNodeWithMemory(UserRequest ureq, TreeNode tn, CourseNode cn) {

@@ -128,6 +128,13 @@ public class ProjectStorage {
 		return getOrCreateFileContainer(project).resolve(filename) != null? true: false;
 	}
 	
+	public void deleteFile(ProjProjectRef project, String filename) {
+		VFSLeaf vfsLeaf = getLeaf(project, "file", filename);
+		if (vfsLeaf != null) {
+			vfsLeaf.deleteSilently();
+		}
+	}
+	
 	private VFSContainer getOrCreateContainer(ProjProjectRef project, String path) {
 		File storage = new File(projectDirectory, project.getKey().toString());
 		if (!storage.exists()) {

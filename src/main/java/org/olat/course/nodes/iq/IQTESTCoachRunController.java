@@ -47,6 +47,7 @@ import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController
 import org.olat.course.assessment.ui.tool.AssessmentEventToState;
 import org.olat.course.assessment.ui.tool.AssessmentModeOverviewListController;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
+import org.olat.course.assessment.ui.tool.event.NewAssessmentInspectionEvent;
 import org.olat.course.nodes.CourseNodeSegmentPrefs;
 import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.IQTESTCourseNode;
@@ -156,10 +157,9 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		}
 		
 		// Inspections
-		if(assessmentInspectionService.hasInspectionConfigurations(courseEntry)) {
-			inspectionsLink = LinkFactory.createLink("segment.inspections", mainVC, this);
-			segmentView.addSegment(inspectionsLink, false);
-		}
+		inspectionsLink = LinkFactory.createLink("segment.inspections", mainVC, this);
+		inspectionsLink.setVisible(assessmentInspectionService.hasInspectionConfigurations(courseEntry));
+		segmentView.addSegment(inspectionsLink, false);
 		
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
@@ -206,6 +206,11 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		} else if(assessmentModeCtrl == source) {
 			if(event instanceof CourseNodeEvent cne) {
 				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, cne.getIdent()));
+			}
+		} else if(participantsCtrl == source) {
+			if(event instanceof NewAssessmentInspectionEvent) {
+				inspectionsLink.setVisible(true);
+				segmentView.setDirty(true);
 			}
 		}
 		super.event(ureq, source, event);

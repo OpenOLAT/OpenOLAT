@@ -137,7 +137,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private static final String CMD_OPEN = "open";
 	private static final String CMD_METADATA = "metadata";
 	private static final String CMD_DOWNLOAD = "download";
+	private static final String CMD_RESTORE = "restore";
 	private static final String CMD_DELETE = "delete";
+	private static final String CMD_DELETE_PERMANENTLY = "deletePermanently";
 	
 	private FormLink bulkDownloadButton;
 	private FormLink bulkDeleteButton;
@@ -154,7 +156,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private ProjFileCreateController fileCreateCtrl;
 	private ProjFileEditController fileEditCtrl;
 	private ProjRecordAVController recordAVController;
-	private ProjConfirmationController deleteConfirmationCtrl;
+	private ProjConfirmationController deleteSoftlyConfirmationCtrl;
+	private ProjConfirmationController deletePermanentlyConfirmationCtrl;
 	private ProjConfirmationController bulkDeleteConfirmationCtrl;
 	private Controller docEditorCtrl;
 	private ToolsController toolsCtrl;
@@ -257,8 +260,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		tableEl.addBatchButton(bulkDownloadButton);
 		
 		if (secCallback.canEditFiles()) {
-			bulkDeleteButton = uifactory.addFormLink("delete", flc, Link.BUTTON);
+			bulkDeleteButton = uifactory.addFormLink("delete", flc, Link.BUTTON + Link.NONTRANSLATED);
 			bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+			bulkDeleteButton.setI18nKey(translate("delete"));
 			tableEl.addBatchButton(bulkDeleteButton);
 		}
 	}
@@ -356,7 +360,11 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		}
 		
 		if (bulkDeleteButton != null) {
-			bulkDeleteButton.setVisible(tab != tabDeleted);
+			if (tab != tabDeleted) {
+				bulkDeleteButton.setI18nKey(translate("delete"));
+			} else {
+				bulkDeleteButton.setI18nKey(translate("delete.permanently"));
+			}
 		}
 	}
 	
@@ -645,9 +653,15 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (deleteConfirmationCtrl == source) {
+		} else if (deleteSoftlyConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				doDelete(ureq, (ProjFileRef)deleteConfirmationCtrl.getUserObject());
+				doDeleteSoftly(ureq, (ProjFileRef)deleteSoftlyConfirmationCtrl.getUserObject());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (deletePermanentlyConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doDeletePermanently(ureq, (ProjFileRef)deletePermanentlyConfirmationCtrl.getUserObject());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -683,7 +697,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
-		removeAsListenerAndDispose(deleteConfirmationCtrl);
+		removeAsListenerAndDispose(deleteSoftlyConfirmationCtrl);
+		removeAsListenerAndDispose(deletePermanentlyConfirmationCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(fileEditCtrl);
 		removeAsListenerAndDispose(fileUploadCtrl);
@@ -693,7 +708,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		removeAsListenerAndDispose(recordAVController);
 		removeAsListenerAndDispose(cmc);
 		bulkDeleteConfirmationCtrl = null;
-		deleteConfirmationCtrl = null;
+		deleteSoftlyConfirmationCtrl = null;
+		deletePermanentlyConfirmationCtrl = null;
 		toolsCalloutCtrl = null;
 		fileEditCtrl = null;
 		fileUploadCtrl = null;
@@ -914,8 +930,14 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
+	private void doRestore(UserRequest ureq, ProjFileRef file) {
+		projectService.restoreFile(getIdentity(), file);
+		loadModel(ureq, false);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
 	private void doConfirmDelete(UserRequest ureq, ProjFileRef fileRef) {
-		if (guardModalController(deleteConfirmationCtrl)) return;
+		if (guardModalController(deleteSoftlyConfirmationCtrl)) return;
 		
 		ProjFile file = projectService.getFile(fileRef);
 		if (file == null || ProjectStatus.deleted == file.getArtefact().getStatus()) {
@@ -923,19 +945,45 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		}
 		
 		String message = translate("file.delete.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file)));
-		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
+		deleteSoftlyConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
 				"file.delete.confirmation.confirm", "file.delete.confirmation.button", true);
-		deleteConfirmationCtrl.setUserObject(file);
-		listenTo(deleteConfirmationCtrl);
+		deleteSoftlyConfirmationCtrl.setUserObject(file);
+		listenTo(deleteSoftlyConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteSoftlyConfirmationCtrl.getInitialComponent(),
 				true, translate("file.delete"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
-	private void doDelete(UserRequest ureq, ProjFileRef file) {
+	private void doDeleteSoftly(UserRequest ureq, ProjFileRef file) {
 		projectService.deleteFileSoftly(getIdentity(), file);
+		loadModel(ureq, false);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	private void doConfirmDeletePermanently(UserRequest ureq, ProjFileRef fileRef) {
+		if (guardModalController(deleteSoftlyConfirmationCtrl)) return;
+		
+		ProjFile file = projectService.getFile(fileRef);
+		if (file == null || ProjectStatus.deleted != file.getArtefact().getStatus()) {
+			return;
+		}
+		
+		String message = translate("file.delete.permanently.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file)));
+		deletePermanentlyConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
+				"file.delete.permanently.confirmation.confirm", "file.delete.permanently.confirmation.button", true);
+		deletePermanentlyConfirmationCtrl.setUserObject(file);
+		listenTo(deletePermanentlyConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deletePermanentlyConfirmationCtrl.getInitialComponent(),
+				true, translate("file.delete.permanently.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doDeletePermanently(UserRequest ureq, ProjFileRef file) {
+		projectService.deleteFilePermanently(getIdentity(), file);
 		loadModel(ureq, false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -948,6 +996,14 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			return;
 		}
 		
+		if (tableEl.getSelectedFilterTab() == tabDeleted) {
+			doConfirmBulkDeletePermanently(ureq, selectedIndex);
+		} else {
+			doConfirmBulkDeleteSoftly(ureq, selectedIndex);
+		}
+	}
+
+	private void doConfirmBulkDeleteSoftly(UserRequest ureq, Set<Integer> selectedIndex) {
 		String message = translate("file.bulk.delete.message", Integer.toString(selectedIndex.size()));
 		bulkDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
 				"file.bulk.delete.confirm", "file.bulk.delete.button", true);
@@ -955,6 +1011,25 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
 				true, translate("file.bulk.delete.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doConfirmBulkDeletePermanently(UserRequest ureq, Set<Integer> selectedIndex) {
+		List<String> filenames = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index))
+				.map(ProjFileRow::getDisplayName)
+				.sorted()
+				.toList();
+		
+		bulkDeleteConfirmationCtrl = new ProjBulkDeleteConfirmationController(ureq, getWindowControl(),
+				translate("file.bulk.delete.permanently.message", String.valueOf(selectedIndex.size())),
+				"file.bulk.delete.permanently.confirm", new String[] { String.valueOf(selectedIndex.size()) }, "delete",
+				translate("file.bulk.delete.permanently.label"), filenames, "file.bulk.delete.permanently.show.all");
+		listenTo(bulkDeleteConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
+				true, translate("file.bulk.delete.permanently.title"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -970,6 +1045,17 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				.filter(Objects::nonNull)
 				.toList();
 		
+		if (tableEl.getSelectedFilterTab() == tabDeleted) {
+			doBulkDeletePermanently(selectedRows);
+		} else {
+			doBulkDeleteSoftly(selectedRows);
+		}
+		
+		loadModel(ureq, false);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	private void doBulkDeleteSoftly(List<ProjFileRow> selectedRows) {
 		ProjFileSearchParams searchParams = new ProjFileSearchParams();
 		searchParams.setFiles(selectedRows);
 		searchParams.setStatus(List.of(ProjectStatus.active));
@@ -978,9 +1064,17 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		filesToDelete.stream()
 				.filter(file -> secCallback.canDeleteFile(file, getIdentity()))
 				.forEach(file -> projectService.deleteFileSoftly(getIdentity(), file));
+	}
+
+	private void doBulkDeletePermanently(List<ProjFileRow> selectedRows) {
+		ProjFileSearchParams searchParams = new ProjFileSearchParams();
+		searchParams.setFiles(selectedRows);
+		searchParams.setStatus(List.of(ProjectStatus.deleted));
+		List<ProjFile> filesToDelete = projectService.getFiles(searchParams);
 		
-		loadModel(ureq, false);
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		filesToDelete.stream()
+				.filter(file -> secCallback.canDeleteFilePermanently(file, getIdentity()))
+				.forEach(file -> projectService.deleteFilePermanently(getIdentity(), file));
 	}
 	
 	private void doOpenTools(UserRequest ureq, ProjFileRow row, FormLink link) {
@@ -1061,8 +1155,14 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					
 					addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download");
 					
+					if (secCallback.canRestoreFile(file)) {
+						addLink("restore", CMD_RESTORE, "o_icon o_icon-fw o_icon_restore");
+					}
+						
 					if (secCallback.canDeleteFile(file, getIdentity())) {
 						addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+					} else if (secCallback.canDeleteFilePermanently(file, getIdentity())) {
+						addLink("delete.permanently", CMD_DELETE_PERMANENTLY, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 					}
 				}
 			}
@@ -1090,8 +1190,12 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					doEditMetadata(ureq, row);
 				} else if (CMD_DOWNLOAD.equals(cmd)) {
 					doDownload(ureq, file.getArtefact(), vfsLeaf);
+				} else if (CMD_RESTORE.equals(cmd)) {
+					doRestore(ureq, row);
 				} else if (CMD_DELETE.equals(cmd)) {
 					doConfirmDelete(ureq, row);
+				} else if (CMD_DELETE_PERMANENTLY.equals(cmd)) {
+					doConfirmDeletePermanently(ureq, row);
 				}
 			}
 		}

@@ -1330,6 +1330,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				.getResultList();
 		return templates.isEmpty() ? null : templates.get(0);
 	}
+	
+	@Override
+	public boolean isTemplateInUse(CertificateTemplate template) {
+		return certificateConfigurationDao.isTemplateInUse(template);
+	}
 
 	@Override
 	public void deleteTemplate(CertificateTemplate template) {

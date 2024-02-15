@@ -137,10 +137,14 @@ public class CertificatesListAdminController extends FormBasicController {
 		cmc = null;
 	}
 	private void doConfirmDelete(UserRequest ureq, CertificateTemplate selectedTemplate) {
-		String title = translate("confirm.delete.title");
-		String text = translate("confirm.delete.text");
-		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
-		confirmDeleteCtrl.setUserObject(selectedTemplate);
+		if(certificatesManager.isTemplateInUse(selectedTemplate)) {
+			showWarning("warning.template.in.use");
+		} else {
+			String title = translate("confirm.delete.title");
+			String text = translate("confirm.delete.text");
+			confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
+			confirmDeleteCtrl.setUserObject(selectedTemplate);
+		}
 	}
 	
 	private void doDelete(CertificateTemplate template) {

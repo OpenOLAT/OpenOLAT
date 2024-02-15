@@ -134,7 +134,7 @@ import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectSecurityCallbackFactory;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
-import org.olat.modules.project.manager.ProjectMailing.ProjectMailTemplate;
+import org.olat.modules.project.manager.ProjectMailing.ProjProjectMailTemplate;
 import org.olat.modules.project.model.ProjAppointmentInfoImpl;
 import org.olat.modules.project.model.ProjArtefactInfoImpl;
 import org.olat.modules.project.model.ProjArtefactItemsImpl;
@@ -537,7 +537,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 
 	@Override
 	public void updateMember(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Identity identity,
-			Set<ProjectRole> roles, ProjectMailTemplate memberAddTemplate) {
+			Set<ProjectRole> roles, ProjProjectMailTemplate memberAddTemplate) {
 		Group group = project.getBaseGroup();
 		
 		List<ProjectRole> currentRoles = groupDao.getMemberships(group, identity).stream()
@@ -613,7 +613,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	@Override
 	public void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project,
-			Map<Identity, Set<ProjectRole>> identityToRoles, ProjectMailTemplate memberAddTemplate) {
+			Map<Identity, Set<ProjectRole>> identityToRoles, ProjProjectMailTemplate memberAddTemplate) {
 		identityToRoles.entrySet().forEach(identityToRole
 				-> updateMember(doer, bcFactory, project, identityToRole.getKey(), identityToRole.getValue(), memberAddTemplate));
 	}
@@ -1212,6 +1212,15 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		artefactDao.save(artefact);
 	}
 	
+	private void restoreArtefact(ProjArtefact artefact) {
+		if (ProjectStatus.deleted == artefact.getStatus()) {
+			artefact.setDeletedDate(null);
+			artefact.setDeletedBy(null);
+			artefact.setStatus(ProjectStatus.active);
+			artefactDao.save(artefact);
+		}
+	}
+	
 	private void deleteArtefactSoftly(Identity doer, ProjArtefact artefact) {
 		if (ProjectStatus.deleted != artefact.getStatus()) {
 			artefact.setDeletedDate(new Date());
@@ -1222,8 +1231,14 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	private void deleteArtefactPermanent(ProjArtefact artefact) {
+		deleteArtefactPermanent(artefact, false);
+	}
+	
+	private void deleteArtefactPermanent(ProjArtefact artefact, boolean deleteActivities) {
 		tagDao.delete(artefact);
-		activityDao.delete(artefact);
+		if (deleteActivities) {
+			activityDao.delete(artefact);
+		}
 		artefactToArtefactDao.delete(artefact);
 		groupDao.removeMemberships(artefact.getBaseGroup());
 		groupDao.removeGroup(artefact.getBaseGroup());
@@ -1294,9 +1309,24 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
+	public void restoreFile(Identity doer, ProjFileRef file) {
+		ProjFile reloadedFile = getFile(file);
+		if (reloadedFile == null || ProjectStatus.deleted != reloadedFile.getArtefact().getStatus()) {
+			return;
+		}
+		String before = ProjectXStream.toXml(reloadedFile);
+		
+		restoreArtefact(reloadedFile.getArtefact());
+		
+		String after = ProjectXStream.toXml(reloadedFile);
+		activityDao.create(Action.fileRestore, before, after, null, doer, reloadedFile.getArtefact());
+		markNews(reloadedFile.getArtefact().getProject());
+	}
+	
+	@Override
 	public void deleteFileSoftly(Identity doer, ProjFileRef file) {
 		ProjFile reloadedFile = getFile(file);
-		if (reloadedFile == null) {
+		if (reloadedFile == null  || ProjectStatus.deleted == reloadedFile.getArtefact().getStatus()) {
 			return;
 		}
 		String before = ProjectXStream.toXml(reloadedFile);
@@ -1306,6 +1336,23 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		String after = ProjectXStream.toXml(reloadedFile);
 		activityDao.create(Action.fileStatusDelete, before, after, null, doer, reloadedFile.getArtefact());
 		markNews(reloadedFile.getArtefact().getProject());
+	}
+	
+	@Override
+	public void deleteFilePermanently(Identity doer, ProjFileRef file) {
+		ProjFile reloadedFile = getFile(file);
+		if (reloadedFile == null || ProjectStatus.deleted != reloadedFile.getArtefact().getStatus()) {
+			return;
+		}
+		String before = ProjectXStream.toXml(reloadedFile);
+		ProjProject project = reloadedFile.getArtefact().getProject();
+		String filename = reloadedFile.getVfsMetadata().getFilename();
+		
+		activityDao.create(Action.fileDeletePermanently, before, null, null, doer, reloadedFile.getArtefact());
+
+		fileDao.delete(file);
+		projectStorage.deleteFile(project, filename);
+		deleteArtefactPermanent(reloadedFile.getArtefact());
 	}
 	
 	@Override
@@ -1750,7 +1797,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		ProjArtefact artefact = reloadedNote.getArtefact();
 		noteDao.delete(note);
-		deleteArtefactPermanent(artefact);
+		deleteArtefactPermanent(artefact, true);
 	}
 
 	@Override

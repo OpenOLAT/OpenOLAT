@@ -42,7 +42,7 @@ public class ProjAppointmentDeleteConfirmationController extends ProjConfirmatio
 	private final boolean reccurence;
 
 	public ProjAppointmentDeleteConfirmationController(UserRequest ureq, WindowControl wControl, String message, boolean reccurence) {
-		super(ureq, wControl, message, "appointment.delete.confirmation.confirm", "appointment.delete.confirmation.button", true, false);
+		super(ureq, wControl, message, "appointment.delete.confirmation.confirm", null, "appointment.delete.confirmation.button", true, false);
 		this.reccurence = reccurence;
 		initForm(ureq);
 	}

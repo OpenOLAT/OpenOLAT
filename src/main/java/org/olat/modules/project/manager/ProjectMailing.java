@@ -33,7 +33,6 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
@@ -63,33 +62,55 @@ public class ProjectMailing {
 	@Autowired
 	private UserManager userManager;
 	
-	public ProjectMailTemplate createMemberAddTemplate(Identity sender, ProjProject project, ProjectBCFactory bcFactory) {
+	public ProjProjectMailTemplate createMemberAddTemplate(Identity sender, ProjProject project, ProjectBCFactory bcFactory) {
+		return createMailTemplate(
+				project,
+				bcFactory,
+				sender,
+				"mail.member.add.subject",
+				"mail.member.add.body");
+	}
+
+	public ProjProjectMailTemplate createInvitationTemplate(ProjProject project, Identity actor) {
+		return createMailTemplate(
+				project,
+				ProjectBCFactory.createFactory(project),
+				actor,
+				"mail.invitation.subject",
+				"mail.invitation.body");
+	}
+
+	private ProjProjectMailTemplate createMailTemplate(ProjProject project, ProjectBCFactory bcFactory, Identity sender, String subjectKey,
+			String bodyKey) {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(sender.getUser().getPreferences().getLanguage());
-		Translator translator = Util.createPackageTranslator(ProjectUIFactory.class, locale);
-		String subject = translator.translate("mail.member.add.subject");
-		String body = translator.translate("mail.member.add.body");
-		return new ProjectMailTemplate(subject, body, sender, project, bcFactory, locale);
+		Translator trans = Util.createPackageTranslator(ProjectUIFactory.class, locale);
+		String subject = trans.translate(subjectKey);
+		String body = trans.translate(bodyKey);
+		return new ProjProjectMailTemplate(subject, body, sender, project, bcFactory, locale);
 	}
 	
-	public class ProjectMailTemplate extends MailTemplate {
+	public class ProjProjectMailTemplate extends MailTemplate {
 		
 		private static final String PROJECT_TITLE = "projectTitle";
 		private static final String PROJECT_EXTERNAL_REF = "projectRef";
+		private static final String PROJECT_TEASER = "projectTeaser";
+		private static final String PROJECT_DESCRIPTION = "projectDescription";
 		private static final String PROJECT_URL = "projectUrl";
+		private static final String RECIPIENT_DISPLAYNAME = "userDisplayName";
 		private static final String SENDER_FIRST_NAME = "senderFirstName";
 		private static final String SENDER_LAST_NAME = "senderLastName";
 		private static final String SENDER_DISPLAYNAME = "senderDisplayName";
 		private static final String SENDER_EMAIL = "senderEmail";
 		private static final String ROLES_ADD = "rolesAdd";
 		
-		private final Locale locale;
-		
 		private final Identity sender;
 		private final ProjProject project;
 		private final ProjectBCFactory bcFactory;
-		private Set<ProjectRole> rolesAdd;
+		private final Locale locale;
+		private String url;
+		private Collection<ProjectRole> rolesAdd;
 		
-		public ProjectMailTemplate(String subject, String body, Identity sender, ProjProject project, ProjectBCFactory bcFactory, Locale locale) {
+		public ProjProjectMailTemplate(String subject, String body, Identity sender, ProjProject project, ProjectBCFactory bcFactory, Locale locale) {
 			super(subject, body, null);
 			this.sender = sender;
 			this.project = project;	
@@ -97,8 +118,18 @@ public class ProjectMailing {
 			this.locale = locale;
 		}
 		
-		public void setRolesAdd(Set<ProjectRole> rolesAdd) {
+		public void setUrl(String url) {
+			this.url = url;
+		}
+		
+		public void setRolesAdd(Collection<ProjectRole> rolesAdd) {
 			this.rolesAdd = rolesAdd;
+		}
+		
+		public void setRolesAddNames(Collection<String> rolesAddNames) {
+			if (rolesAddNames != null) {
+				this.rolesAdd = rolesAddNames.stream().filter(ProjectRole::isValueOf).map(ProjectRole::valueOf).toList();
+			}
 		}
 		
 		@Override
@@ -107,6 +138,8 @@ public class ProjectMailing {
 			variableNames.addAll(getStandardIdentityVariableNames());
 			variableNames.add(PROJECT_TITLE);
 			variableNames.add(PROJECT_EXTERNAL_REF);
+			variableNames.add(PROJECT_TEASER);
+			variableNames.add(PROJECT_DESCRIPTION);
 			variableNames.add(PROJECT_URL);
 			variableNames.add(ROLES_ADD);
 			variableNames.add(SENDER_FIRST_NAME);
@@ -119,6 +152,7 @@ public class ProjectMailing {
 		@Override
 		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 			fillContextWithStandardIdentityValues(context, identity, locale);
+			putVariablesInMailContext(context, RECIPIENT_DISPLAYNAME, userManager.getUserDisplayName(identity));
 			
 			putVariablesInMailContext(context, SENDER_FIRST_NAME, StringHelper.escapeHtml(sender.getUser().getProperty(UserConstants.FIRSTNAME, locale)));
 			putVariablesInMailContext(context, SENDER_LAST_NAME, StringHelper.escapeHtml(sender.getUser().getProperty(UserConstants.LASTNAME, locale)));
@@ -127,7 +161,13 @@ public class ProjectMailing {
 			
 			putVariablesInMailContext(context, PROJECT_TITLE, StringHelper.escapeHtml(project.getTitle()));
 			putVariablesInMailContext(context, PROJECT_EXTERNAL_REF, StringHelper.blankIfNull(StringHelper.escapeHtml(project.getExternalRef())));
-			putVariablesInMailContext(context, PROJECT_URL, bcFactory.getProjectUrl(project));
+			putVariablesInMailContext(context, PROJECT_TEASER, StringHelper.blankIfNull(StringHelper.escapeHtml(project.getTeaser())));
+			putVariablesInMailContext(context, PROJECT_DESCRIPTION, StringHelper.blankIfNull(StringHelper.escapeHtml(project.getDescription())));
+			if (StringHelper.containsNonWhitespace(url)) {
+				putVariablesInMailContext(context, PROJECT_URL, url);
+			} else {
+				putVariablesInMailContext(context, PROJECT_URL, bcFactory.getProjectUrl(project));
+			}
 			
 			if (rolesAdd != null) {
 				Translator translator = Util.createPackageTranslator(ProjectUIFactory.class, locale);
@@ -139,79 +179,7 @@ public class ProjectMailing {
 		}
 	}
 
-	public ProjInvitationMailTemplate getInvitationTemplate(ProjProject project, Identity actor) {
-		String subjectKey = "mail.invitation.subject";
-		String bodyKey = "mail.invitation.body";
-		return createInvitationMailTemplate(project, actor, subjectKey, bodyKey);
-	}
-
-	private ProjInvitationMailTemplate createInvitationMailTemplate(ProjProject project, Identity actor, String subjectKey,
-			String bodyKey) {
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
-		Translator trans = Util.createPackageTranslator(ProjectUIFactory.class, locale);
-		String subject = trans.translate(subjectKey);
-		String body = trans.translate(bodyKey);
-
-		return new ProjInvitationMailTemplate(subject, body, project, actor, locale);
-	}
-
-	public static class ProjInvitationMailTemplate extends MailTemplate {
-
-		private static final String PROJECT_TITLE = "projectTitle";
-		private static final String PROJECT_DESCRIPTION = "projectDescription";
-		private static final String PROJECT_URL = "projectUrl";
-
-		private final ProjProject project;
-		private final Identity actor;
-		private final Locale locale;
-		private String url;
-
-		public ProjInvitationMailTemplate(String subject, String body, ProjProject project, Identity actor,
-				Locale locale) {
-			super(subject, body, null);
-			this.actor = actor;
-			this.locale = locale;
-			this.project = project;
-		}
-
-		public void setUrl(String url) {
-			this.url = url;
-		}
-
-		@Override
-		public Collection<String> getVariableNames() {
-			Set<String> variableNames = new HashSet<>();
-			variableNames.addAll(getStandardIdentityVariableNames());
-			variableNames.add(PROJECT_TITLE);
-			variableNames.add(PROJECT_DESCRIPTION);
-			variableNames.add(PROJECT_URL);
-			return variableNames;
-		}
-
-		@Override
-		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-			fillContextWithStandardIdentityValues(context, actor, locale);
-
-			String title = project.getTitle();
-			context.put(PROJECT_TITLE, title);
-			context.put(PROJECT_TITLE.toLowerCase(), title);
-
-			String description = StringHelper.containsNonWhitespace(project.getDescription())
-					? FilterFactory.getHtmlTagAndDescapingFilter().filter(project.getDescription())
-					: "";
-			context.put(PROJECT_DESCRIPTION, description);
-			context.put(PROJECT_DESCRIPTION.toLowerCase(), description);
-
-			if (!StringHelper.containsNonWhitespace(url)) {
-				url = ProjectBCFactory.createFactory(project).getProjectUrl(project);
-			}
-			context.put(PROJECT_URL, url);
-			context.put(PROJECT_URL.toLowerCase(), url);
-		}
-
-	}
-
-	public void send(Identity doer, Identity recipient, ProjectMailTemplate template) {
+	public void send(Identity doer, Identity recipient, ProjProjectMailTemplate template) {
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, recipient, template, doer, null, result);
 		if (bundle != null) {

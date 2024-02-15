@@ -172,6 +172,7 @@ public class ProjTimelineActivityRowsFactory {
 		case fileCreate: addArtefactRow(rows, activityRowData, businesssPathKey, artefactKeyToIdentityKeys, translator.translate("timeline.activity.file.create", displayName), iconCSS); break;
 		case fileUpload: addArtefactRow(rows, activityRowData, businesssPathKey, artefactKeyToIdentityKeys, translator.translate("timeline.activity.file.upload", displayName), iconCSS); break;
 		case fileEdit: addArtefactRow(rows, activityRowData, businesssPathKey, artefactKeyToIdentityKeys, translator.translate("timeline.activity.file.edit", displayName), iconCSS); break;
+		case fileRestore: addArtefactRow(rows, activityRowData, businesssPathKey, artefactKeyToIdentityKeys, translator.translate("timeline.activity.file.restore", displayName), iconCSS); break;
 		case fileStatusDelete: addArtefactRow(rows, activityRowData, businesssPathKey, artefactKeyToIdentityKeys, translator.translate("timeline.activity.file.delete", displayName), iconCSS); break;
 		case fileContentUpdate: {
 			List<ProjActivity> changedActivities = activityRowData.activities().stream()

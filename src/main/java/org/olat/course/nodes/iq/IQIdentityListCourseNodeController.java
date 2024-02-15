@@ -81,6 +81,7 @@ import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
+import org.olat.course.assessment.ui.tool.event.NewAssessmentInspectionEvent;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
@@ -500,6 +501,10 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				getWindowControl().pop();
 				cleanUp();
 			}
+		}
+		
+		if(event instanceof NewAssessmentInspectionEvent) {
+			fireEvent(ureq, event);// Propagate them in the hierarchy
 		}
 		
 		super.event(ureq, source, event);

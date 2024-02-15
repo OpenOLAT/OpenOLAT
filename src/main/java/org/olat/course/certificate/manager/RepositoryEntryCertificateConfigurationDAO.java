@@ -142,6 +142,19 @@ public class RepositoryEntryCertificateConfigurationDAO {
 				&& configurations.get(0) != null && configurations.get(0).longValue() > 0;
 	}
 	
+	public boolean isTemplateInUse(CertificateTemplate template) {
+		String query = "select config.key from certificateentryconfig config where config.template.key=:templateKey";
+
+		List<Long> configurations = dbInstance.getCurrentEntityManager()
+			.createQuery(query, Long.class)
+			.setParameter("templateKey", template.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return configurations != null && !configurations.isEmpty()
+				&& configurations.get(0) != null && configurations.get(0).longValue() > 0;
+	}
+	
 	public int deleteConfiguration(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("delete certificateentryconfig config where config.entry.key=:entryKey");

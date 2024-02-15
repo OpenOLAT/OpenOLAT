@@ -116,6 +116,8 @@ public interface CertificatesManager {
 	public void deleteTemplate(CertificateTemplate template);
 	
 	public CertificateTemplate getTemplateById(Long key);
+	
+	public boolean isTemplateInUse(CertificateTemplate template);
 
 	public File getTemplateFile(CertificateTemplate template);
 	
