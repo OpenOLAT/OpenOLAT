@@ -63,6 +63,7 @@ public class PasswordBasedLoginManagerImpl implements PasswordBasedLoginManager 
 		Identity id = null;
 		status.setStatus(AuthHelper.LOGIN_NOTAVAILABLE);
 		if(ldapModule.isLDAPEnabled() && (ldapModule.isCreateUsersOnLogin()
+				|| ldapModule.isConvertExistingLocalUsersToLDAPUsers()
 				|| providers.contains(LDAPAuthenticationController.PROVIDER_LDAP))) {
 			id = ldapLoginManager.authenticate(login, pwd, status);
 		}

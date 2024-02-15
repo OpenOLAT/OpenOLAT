@@ -986,25 +986,27 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		projectService.deleteFilePermanently(getIdentity(), file);
 		loadModel(ureq, false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		showInfo("file.delete.permanently.success");
 	}
 	
 	private void doConfirmBulkDelete(UserRequest ureq) {
-		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
-		
-		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
-		if (selectedIndex == null || selectedIndex.isEmpty()) {
-			return;
-		}
-		
 		if (tableEl.getSelectedFilterTab() == tabDeleted) {
-			doConfirmBulkDeletePermanently(ureq, selectedIndex);
+			doConfirmBulkDeletePermanently(ureq);
 		} else {
-			doConfirmBulkDeleteSoftly(ureq, selectedIndex);
+			doConfirmBulkDeleteSoftly(ureq);
 		}
 	}
 
-	private void doConfirmBulkDeleteSoftly(UserRequest ureq, Set<Integer> selectedIndex) {
-		String message = translate("file.bulk.delete.message", Integer.toString(selectedIndex.size()));
+	private void doConfirmBulkDeleteSoftly(UserRequest ureq) {
+		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
+		
+		List<ProjFile> filesToDelete = getFilesToBulkDeleteSoftly();
+		if (filesToDelete.isEmpty()) {
+			showWarning("file.bulk.not.authorized");
+			return;
+		}
+		
+		String message = translate("file.bulk.delete.message", Integer.toString(filesToDelete.size()));
 		bulkDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
 				"file.bulk.delete.confirm", "file.bulk.delete.button", true);
 		listenTo(bulkDeleteConfirmationCtrl);
@@ -1015,16 +1017,23 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		cmc.activate();
 	}
 
-	private void doConfirmBulkDeletePermanently(UserRequest ureq, Set<Integer> selectedIndex) {
-		List<String> filenames = selectedIndex.stream()
-				.map(index -> dataModel.getObject(index))
-				.map(ProjFileRow::getDisplayName)
+	private void doConfirmBulkDeletePermanently(UserRequest ureq) {
+		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
+		
+		List<ProjFile> filesToDelete = getFilesToBulkDeletePermanently();
+		if (filesToDelete.isEmpty()) {
+			showWarning("file.bulk.not.authorized");
+			return;
+		}
+		
+		List<String> filenames = filesToDelete.stream()
+				.map(ProjectUIFactory::getDisplayName)
 				.sorted()
 				.toList();
 		
 		bulkDeleteConfirmationCtrl = new ProjBulkDeleteConfirmationController(ureq, getWindowControl(),
-				translate("file.bulk.delete.permanently.message", String.valueOf(selectedIndex.size())),
-				"file.bulk.delete.permanently.confirm", new String[] { String.valueOf(selectedIndex.size()) }, "delete",
+				translate("file.bulk.delete.permanently.message", String.valueOf(filesToDelete.size())),
+				"file.bulk.delete.permanently.confirm", new String[] { String.valueOf(filesToDelete.size()) }, "delete",
 				translate("file.bulk.delete.permanently.label"), filenames, "file.bulk.delete.permanently.show.all");
 		listenTo(bulkDeleteConfirmationCtrl);
 		
@@ -1035,9 +1044,23 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	}
 	
 	private void doBulkDelete(UserRequest ureq) {
+		if (tableEl.getSelectedFilterTab() == tabDeleted) {
+			doBulkDeletePermanently(ureq);
+		} else {
+			doBulkDeleteSoftly(ureq);
+		}
+	}
+
+	private void doBulkDeleteSoftly(UserRequest ureq) {
+		getFilesToBulkDeleteSoftly().forEach(file -> projectService.deleteFileSoftly(getIdentity(), file));
+		loadModel(ureq, false);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	private List<ProjFile> getFilesToBulkDeleteSoftly() {
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		if (selectedIndex == null || selectedIndex.isEmpty()) {
-			return;
+			return List.of();
 		}
 		
 		List<ProjFileRow> selectedRows = selectedIndex.stream()
@@ -1045,36 +1068,38 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				.filter(Objects::nonNull)
 				.toList();
 		
-		if (tableEl.getSelectedFilterTab() == tabDeleted) {
-			doBulkDeletePermanently(selectedRows);
-		} else {
-			doBulkDeleteSoftly(selectedRows);
-		}
-		
-		loadModel(ureq, false);
-		fireEvent(ureq, Event.CHANGED_EVENT);
-	}
-
-	private void doBulkDeleteSoftly(List<ProjFileRow> selectedRows) {
 		ProjFileSearchParams searchParams = new ProjFileSearchParams();
 		searchParams.setFiles(selectedRows);
 		searchParams.setStatus(List.of(ProjectStatus.active));
-		List<ProjFile> filesToDelete = projectService.getFiles(searchParams);
-		
-		filesToDelete.stream()
+		return projectService.getFiles(searchParams).stream()
 				.filter(file -> secCallback.canDeleteFile(file, getIdentity()))
-				.forEach(file -> projectService.deleteFileSoftly(getIdentity(), file));
+				.toList();
 	}
 
-	private void doBulkDeletePermanently(List<ProjFileRow> selectedRows) {
+	private void doBulkDeletePermanently(UserRequest ureq) {
+		getFilesToBulkDeletePermanently().forEach(file -> projectService.deleteFilePermanently(getIdentity(), file));
+		loadModel(ureq, false);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+		showInfo("file.bulk.delete.permanently.success");
+	}
+
+	private List<ProjFile> getFilesToBulkDeletePermanently() {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return List.of();
+		}
+		
+		List<ProjFileRow> selectedRows = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
 		ProjFileSearchParams searchParams = new ProjFileSearchParams();
 		searchParams.setFiles(selectedRows);
 		searchParams.setStatus(List.of(ProjectStatus.deleted));
-		List<ProjFile> filesToDelete = projectService.getFiles(searchParams);
-		
-		filesToDelete.stream()
+		return projectService.getFiles(searchParams).stream()
 				.filter(file -> secCallback.canDeleteFilePermanently(file, getIdentity()))
-				.forEach(file -> projectService.deleteFilePermanently(getIdentity(), file));
+				.toList();
 	}
 	
 	private void doOpenTools(UserRequest ureq, ProjFileRow row, FormLink link) {
