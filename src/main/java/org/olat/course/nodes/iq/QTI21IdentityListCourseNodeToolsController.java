@@ -60,6 +60,7 @@ import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
 import org.olat.course.assessment.ui.reset.ResetDataContext;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
+import org.olat.course.assessment.ui.tool.event.NewAssessmentInspectionEvent;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -350,6 +351,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
 				cleanUp();
+				fireEvent(ureq, new NewAssessmentInspectionEvent());
 			}
 		}
 		super.event(ureq, source, event);
