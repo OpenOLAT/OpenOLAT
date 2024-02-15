@@ -19,9 +19,17 @@
  */
 package org.olat.course.certificate.manager;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.UUID;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.course.certificate.CertificateTemplate;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.CertificationTimeUnit;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -39,6 +47,8 @@ public class RepositoryEntryCertificateConfigurationDAOTest extends OlatTestCase
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	@Autowired
 	private RepositoryEntryCertificateConfigurationDAO repositoryEntryCertificateConfigurationDao;
 	
@@ -160,5 +170,28 @@ public class RepositoryEntryCertificateConfigurationDAOTest extends OlatTestCase
 		
 		boolean certificationEnabled = repositoryEntryCertificateConfigurationDao.isAutomaticCertificationEnabled(entry);
 		Assert.assertTrue(certificationEnabled);
+	}
+	
+	@Test
+	public void isTemplateInUse() throws URISyntaxException {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-0");
+		URL templateUrl = RepositoryEntryCertificateConfigurationDAOTest.class.getResource("template.pdf");
+		Assert.assertNotNull(templateUrl);
+		File templateFile = new File(templateUrl.toURI());
+		
+		String certificateName = UUID.randomUUID().toString();
+		CertificateTemplate template1 = certificatesManager.addTemplate(certificateName + "_1.pdf", templateFile, null, null, true, identity);
+		CertificateTemplate template2 = certificatesManager.addTemplate(certificateName + "_2.pdf", templateFile, null, null, true, identity);
+		
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();	
+		RepositoryEntryCertificateConfiguration config = repositoryEntryCertificateConfigurationDao.createConfiguration(entry);
+		config.setTemplate(template1);
+		repositoryEntryCertificateConfigurationDao.updateConfiguration(config);
+		dbInstance.commitAndCloseSession();
+		
+		boolean inUse = repositoryEntryCertificateConfigurationDao.isTemplateInUse(template1);
+		Assert.assertTrue(inUse);
+		boolean notInUse = repositoryEntryCertificateConfigurationDao.isTemplateInUse(template2);
+		Assert.assertFalse(notInUse);
 	}
 }
