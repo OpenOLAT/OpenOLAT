@@ -80,7 +80,7 @@ import org.olat.modules.invitation.ui.component.InvitationRolesCellRenderer;
 import org.olat.modules.invitation.ui.component.InvitationStatusCellRenderer;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.manager.ProjectMailing;
-import org.olat.modules.project.manager.ProjectMailing.ProjInvitationMailTemplate;
+import org.olat.modules.project.manager.ProjectMailing.ProjProjectMailTemplate;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryMailing;
 import org.olat.repository.RepositoryMailing.RepositoryEntryMailTemplate;
@@ -406,9 +406,10 @@ abstract class AbstractInvitationListController extends FormBasicController {
 			mailTemplate.addToContext("groupurl", businessGroupUrl);
 		} else if(projProject != null) {
 			ores = OresHelper.clone(projProject);
-			mailTemplate = projectMailing.getInvitationTemplate(projProject, getIdentity());
-			if (mailTemplate instanceof ProjInvitationMailTemplate projectMailTemplate) {
+			mailTemplate = projectMailing.createInvitationTemplate(projProject, getIdentity());
+			if (mailTemplate instanceof ProjProjectMailTemplate projectMailTemplate) {
 				projectMailTemplate.setUrl(invitationService.toUrl(invitation, projProject));
+				projectMailTemplate.setRolesAddNames(invitation.getRoleList());
 			}
 		}
 		

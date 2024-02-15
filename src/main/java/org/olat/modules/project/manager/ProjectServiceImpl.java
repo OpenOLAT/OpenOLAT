@@ -134,7 +134,7 @@ import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectSecurityCallbackFactory;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
-import org.olat.modules.project.manager.ProjectMailing.ProjectMailTemplate;
+import org.olat.modules.project.manager.ProjectMailing.ProjProjectMailTemplate;
 import org.olat.modules.project.model.ProjAppointmentInfoImpl;
 import org.olat.modules.project.model.ProjArtefactInfoImpl;
 import org.olat.modules.project.model.ProjArtefactItemsImpl;
@@ -537,7 +537,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 
 	@Override
 	public void updateMember(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Identity identity,
-			Set<ProjectRole> roles, ProjectMailTemplate memberAddTemplate) {
+			Set<ProjectRole> roles, ProjProjectMailTemplate memberAddTemplate) {
 		Group group = project.getBaseGroup();
 		
 		List<ProjectRole> currentRoles = groupDao.getMemberships(group, identity).stream()
@@ -613,7 +613,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	@Override
 	public void updateMembers(Identity doer, ProjectBCFactory bcFactory, ProjProject project,
-			Map<Identity, Set<ProjectRole>> identityToRoles, ProjectMailTemplate memberAddTemplate) {
+			Map<Identity, Set<ProjectRole>> identityToRoles, ProjProjectMailTemplate memberAddTemplate) {
 		identityToRoles.entrySet().forEach(identityToRole
 				-> updateMember(doer, bcFactory, project, identityToRole.getKey(), identityToRole.getValue(), memberAddTemplate));
 	}

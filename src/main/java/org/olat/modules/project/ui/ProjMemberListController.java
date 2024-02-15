@@ -87,7 +87,7 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
-import org.olat.modules.project.manager.ProjectMailing.ProjectMailTemplate;
+import org.olat.modules.project.manager.ProjectMailing.ProjProjectMailTemplate;
 import org.olat.modules.project.ui.ProjMemberListTableModel.MemberCols;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
 import org.olat.modules.project.ui.wizard.AddMemberUserStep;
@@ -401,7 +401,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			Set<Identity> identites = ((MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY)).getIdentities();
 			Set<ProjectRole> roles = ((ProjectRolesContext)runContext.get("roles")).getProjectRoles();
-			ProjectMailTemplate memberAddTemplate = (ProjectMailTemplate)runContext.get("memberAddTemplate");
+			ProjProjectMailTemplate memberAddTemplate = (ProjProjectMailTemplate)runContext.get("memberAddTemplate");
 			
 			if (identites.contains(getIdentity())) {
 				Set<ProjectRole> currentRoles = projectService.getRoles(project, getIdentity());
