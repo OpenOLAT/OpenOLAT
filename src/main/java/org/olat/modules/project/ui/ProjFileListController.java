@@ -260,8 +260,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		tableEl.addBatchButton(bulkDownloadButton);
 		
 		if (secCallback.canEditFiles()) {
-			bulkDeleteButton = uifactory.addFormLink("delete", flc, Link.BUTTON);
+			bulkDeleteButton = uifactory.addFormLink("delete", flc, Link.BUTTON + Link.NONTRANSLATED);
 			bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+			bulkDeleteButton.setI18nKey(translate("delete"));
 			tableEl.addBatchButton(bulkDeleteButton);
 		}
 	}
@@ -356,6 +357,14 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			tableEl.setEmptyTableSettings("file.list.empty.message", null, "o_icon_proj_file", "file.upload", "o_icon_upload", false);
 		} else {
 			tableEl.setEmptyTableSettings("file.list.empty.message", null, "o_icon_proj_file");
+		}
+		
+		if (bulkDeleteButton != null) {
+			if (tab != tabDeleted) {
+				bulkDeleteButton.setI18nKey(translate("delete"));
+			} else {
+				bulkDeleteButton.setI18nKey(translate("delete.permanently"));
+			}
 		}
 	}
 	
@@ -968,7 +977,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		listenTo(deletePermanentlyConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), deletePermanentlyConfirmationCtrl.getInitialComponent(),
-				true, translate("file.delete"), true);
+				true, translate("file.delete.permanently.title"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -1064,7 +1073,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		List<ProjFile> filesToDelete = projectService.getFiles(searchParams);
 		
 		filesToDelete.stream()
-				.filter(file -> secCallback.canDeleteFilePermanently(file))
+				.filter(file -> secCallback.canDeleteFilePermanently(file, getIdentity()))
 				.forEach(file -> projectService.deleteFilePermanently(getIdentity(), file));
 	}
 	
@@ -1152,8 +1161,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 						
 					if (secCallback.canDeleteFile(file, getIdentity())) {
 						addLink("delete", CMD_DELETE, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
-					} else if (secCallback.canDeleteFilePermanently(file)) {
-						addLink("delete", CMD_DELETE_PERMANENTLY, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+					} else if (secCallback.canDeleteFilePermanently(file, getIdentity())) {
+						addLink("delete.permanently", CMD_DELETE_PERMANENTLY, "o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 					}
 				}
 			}

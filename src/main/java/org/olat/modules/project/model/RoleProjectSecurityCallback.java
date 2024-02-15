@@ -176,8 +176,8 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	}
 	
 	@Override
-	public boolean canDeleteFilePermanently(ProjFile file) {
-		return canDeleteArtefactPermanently(file.getArtefact());
+	public boolean canDeleteFilePermanently(ProjFile file, IdentityRef identity) {
+		return canDeleteArtefactPermanently(file.getArtefact(), identity);
 	}
 	
 	@Override
@@ -364,10 +364,10 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 				&& (templateManager || hasRole(PROJECT_ADMIN) || identity.getKey().equals(artefact.getCreator().getKey()));
 	}
 
-	private boolean canDeleteArtefactPermanently(ProjArtefact artefact) {
+	private boolean canDeleteArtefactPermanently(ProjArtefact artefact, IdentityRef identity) {
 		return !projectReadOnly 
 				&& ProjectStatus.deleted == artefact.getStatus()
-				&& (templateManager || hasRole(PROJECT_ADMIN));
+				&& (templateManager || hasRole(PROJECT_ADMIN) || identity.getKey().equals(artefact.getCreator().getKey()));
 	}
 
 	private boolean hasRole(Collection<ProjectRole> targetRoles) {
