@@ -490,6 +490,8 @@ public class RepositoryEntryListController extends FormBasicController
 			} else {
 				tableEl.addToHistory(ureq);
 			}
+		} else {
+			selectFilterTab(ureq, myTab);
 		}
 		
 		if(state instanceof RepositoryEntryListState) {
