@@ -804,6 +804,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		
 		groupPriority(row);
 		groupExpenditureOfWork(row);
+		groupStatus(row);
 		
 		VariousDate startDate = groupDate(row, ToDoTaskRow::getStartDate);
 		row.setStartDate(startDate.date());
@@ -814,13 +815,14 @@ public abstract class ToDoTaskListController extends FormBasicController
 		row.setFormattedDueDate(ToDoUIFactory.format(getTranslator(), formatter, dueDate));
 		if (dueDate.various()) {
 			row.setDue(row.getFormattedDueDate());
+		} else {
+			Due due = ToDoUIFactory.getDue(getTranslator(), DateUtils.toLocalDate(row.getDueDate()), LocalDate.now(), row.getStatus());
+			row.setDue(due.name());
 		}
 		
 		VariousDate doneDate = groupDate(row, ToDoTaskRow::getDoneDate);
 		row.setDoneDate(doneDate.date());
 		row.setFormattedDoneDate(ToDoUIFactory.format(getTranslator(), formatter, doneDate));
-		
-		groupStatus(row);
 		
 		// Depends on status
 		forgeDoItem(row);
