@@ -84,7 +84,7 @@ import org.olat.core.util.component.FormComponentVisitor;
  * <li>dispatch to the correct FormComponent</li>
  * <li>the dispatched FormComponent may decide to SUBMIT the form, e.g. let all
  * FormComponents validate its input and report error, or taken other actions.</li>
- * <li>during the validatition phase each FormComponent can register an action</li>
+ * <li>during the validation phase each FormComponent can register an action</li>
  * <li>after the validation, all actions are applied</li>
  * <li>an event is thrown if the form validated or not</li>
  * </ol>
@@ -176,9 +176,7 @@ public class Form {
 	private boolean inlineValidationOn = false;
 	// temporary form data, only valid within execution of evalFormRequest()
 	private Map<String,String[]> requestParams = new HashMap<>();
-	private Map<String, File> requestMultipartFiles = new HashMap<>();
-	private Map<String, String> requestMultipartFileNames = new HashMap<>();
-	private Map<String, String> requestMultipartFileMimeTypes = new HashMap<>();
+	private Map<String, MultipartFileInfos> requestMultipartFiles = new HashMap<>();
 	private int requestError = REQUEST_ERROR_NO_ERROR;
 	
 	private Form() {
@@ -329,19 +327,18 @@ public class Form {
 				String name = part.getName();
 				String contentType = part.getContentType();
 				String fileName = getSubmittedFileName(part);
-				if(StringHelper.containsNonWhitespace(fileName)) {
+				if(fileName != null && StringHelper.containsNonWhitespace(fileName)) {
 					File tmpFile = new File(WebappHelper.getTmpDir(), "upload-" + CodeHelper.getGlobalForeverUniqueID());
 					part.write(tmpFile.getAbsolutePath());
-					
+					long size = tmpFile.length();
+
 					// Cleanup IE filenames that are absolute
 					int slashpos = fileName.lastIndexOf('/');
 					if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
 					slashpos = fileName.lastIndexOf('\\');
 					if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
 					
-					requestMultipartFiles.put(name, tmpFile);
-					requestMultipartFileNames.put(name, fileName);
-					requestMultipartFileMimeTypes.put(name, contentType);
+					requestMultipartFiles.put(name, new MultipartFileInfos(tmpFile, fileName, size, contentType));
 				} else {
 					String value = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8);
 					addRequestParameter(name, value);
@@ -419,15 +416,13 @@ public class Form {
 	 * responsible FormItem.
 	 */
 	private void doClearRequestParameterAndMultipartData() {
-		for (Entry<String, File> entry : requestMultipartFiles.entrySet()) {
-			File tmpFile = entry.getValue();
+		for (Entry<String, MultipartFileInfos> entry : requestMultipartFiles.entrySet()) {
+			File tmpFile = entry.getValue().file();
 			if (tmpFile.exists()) {
 				FileUtils.deleteFile(tmpFile);
 			}
 		}
 		requestMultipartFiles.clear();
-		requestMultipartFileNames.clear();
-		requestMultipartFileMimeTypes.clear();
 		requestParams.clear();
 		requestError = REQUEST_ERROR_NO_ERROR;
 	}
@@ -486,8 +481,8 @@ public class Form {
 			isValid &= iterator.next().validateFormItem(ureq, item);
 		}
 
-		if(formLayout instanceof FormLayoutContainer) {
-			((FormLayoutContainer)formLayout).validateDeferred();
+		if(formLayout instanceof FormLayoutContainer layoutContainer) {
+			layoutContainer.validateDeferred();
 		}
 		return isValid;
 	}
@@ -590,14 +585,12 @@ public class Form {
 	 * @return
 	 */
 	public File getRequestMultipartFile(String key) {
-		return requestMultipartFiles.get(key);
+		MultipartFileInfos infos = getRequestMultipartFileInfos(key);
+		return infos == null ? null : infos.file();
 	}
 	
 	public MultipartFileInfos getRequestMultipartFileInfos(String key) {
-		File file = requestMultipartFiles.get(key);
-		String mimeType = requestMultipartFileMimeTypes.get(key);
-		String filename = requestMultipartFileNames.get(key);
-		return new MultipartFileInfos(file, filename, mimeType);
+		return requestMultipartFiles.get(key);
 	}
 
 	/**
@@ -607,7 +600,8 @@ public class Form {
 	 * @return
 	 */
 	public String getRequestMultipartFileName(String key) {
-		return requestMultipartFileNames.get(key);
+		MultipartFileInfos infos = getRequestMultipartFileInfos(key);
+		return infos == null ? null : infos.fileName();
 	}
 
 	/**
@@ -617,11 +611,12 @@ public class Form {
 	 * @return
 	 */
 	public String getRequestMultipartFileMimeType(String key) {
-		return requestMultipartFileMimeTypes.get(key);
+		MultipartFileInfos infos = getRequestMultipartFileInfos(key);
+		return infos == null ? null : infos.contentType();
 	}
 
 	/**
-	 * @return The set of multipart file identifyers
+	 * @return The set of multipart file identifiers
 	 */
 	public Set<String> getRequestMultipartFilesSet() {
 		return requestMultipartFiles.keySet();

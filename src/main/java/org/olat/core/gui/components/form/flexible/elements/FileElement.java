@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.elements;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormMultipartItem;
@@ -58,6 +59,19 @@ public interface FileElement extends FormMultipartItem {
 	 * @return the file or NULL if not set
 	 */
 	public File getInitialFile();
+
+	public boolean isMultiFileUpload();
+	
+	public void setMultiFileUpload(boolean enable);
+	
+	/**
+	 * @return true if the whole form is the drop zone
+	 */
+	public boolean isDragAndDropForm();
+	
+	public void setDragAndDropForm(boolean enable);
+	
+	public void setMaxNumberOfFiles(int maxNumberOfFiles, String i18nErrKey);
 
 	/**
 	 * Set the KB that are allowed in the file upload. In case the user uploads
@@ -135,10 +149,6 @@ public interface FileElement extends FormMultipartItem {
 	
 	public void setReplaceButton(boolean replaceButton);
 	
-	public boolean isArea();
-	
-	public void setArea(boolean area);
-	
 	public String getDndInformations();
 	
 	public void setDndInformations(String infos);
@@ -197,6 +207,8 @@ public interface FileElement extends FormMultipartItem {
 	 * @return A reference to the uploaded file
 	 */
 	public File getUploadFile();
+	
+	public List<FileElementInfos> getUploadFilesInfos();
 
 	/**
 	 * Get the input stream of the uploaded file to copy it to some other place
@@ -243,5 +255,7 @@ public interface FileElement extends FormMultipartItem {
 	 * @return
 	 */
 	public VFSLeaf moveUploadFileTo(VFSContainer destinationContainer, boolean crop);
+	
+	public void resetTempFile(File file);
 	
 }

@@ -21,40 +21,34 @@ package org.olat.core.gui.components.form.flexible.impl;
 
 import java.io.File;
 
+import org.olat.core.gui.util.CSSHelper;
+
 /**
  * 
  * Initial date: 03.06.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MultipartFileInfos {
-	
-	private final File file;
-	private final String fileName;
-	private final String contentType;
-	
-	public MultipartFileInfos(File file, String fileName, String contentType) {
-		this.file = file;
-		this.fileName = fileName;
-		this.contentType = contentType;
-	}
+public record MultipartFileInfos(File file, String fileName, long size, String contentType) {
 	
 	public boolean isEmpty() {
 		return file == null || !file.exists() || file.length() <= 0;
 	}
-
-	public File getFile() {
-		return file;
-	}
-
-	public String getFileName() {
-		return fileName;
-	}
-
-	public String getContentType() {
-		return contentType;
+	
+	public boolean exists() {
+		return file != null && file.exists();
 	}
 	
+	public String iconCssClass() {
+		return CSSHelper.createFiletypeIconCssClassFor(fileName);
+	}
 	
-
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("multipartFileInfos[file=").append((file == null ? "NULL" : file.toString()))
+		  .append(";fileName=").append((fileName == null ? "NULL" : fileName))
+		  .append(";contentType=").append((contentType == null ? "NULL" : contentType));
+		return sb.toString();
+	}
 }

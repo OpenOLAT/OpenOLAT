@@ -86,15 +86,15 @@ public abstract class ResponseInput {
 		}
 
 		public File getFile() {
-			return multipartFileInfos.getFile();
+			return multipartFileInfos.file();
 		}
 
 		public String getFileName() {
-			return multipartFileInfos.getFileName();
+			return multipartFileInfos.fileName();
 		}
 
 		public String getContentType() {
-			return multipartFileInfos.getContentType();
+			return multipartFileInfos.contentType();
 		}	
 	}
 }

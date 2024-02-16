@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,35 +14,29 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.impl.elements;
+package org.olat.core.gui.components.form.flexible.elements;
 
 import java.io.File;
 
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.image.ImageFormItem;
+import org.olat.core.gui.util.CSSHelper;
 
 /**
  * 
- * Initial date: 04.09.2015<br>
+ * Initial date: 15 févr. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FileElementEvent extends FormEvent {
-
-	private static final long serialVersionUID = -767107043693286989L;
-	public static final String DELETE = "delete-file";
+public record FileElementInfos(File file, String fileName, long size, String contentType, ImageFormItem previewEl) {
 	
-	private File file;
-	
-	public FileElementEvent(String command, FormItem source, File file, int action) {
-		super(command, source, action);
-		this.file = file;
+	public String iconCssClass() {
+		return CSSHelper.createFiletypeIconCssClassFor(fileName);
 	}
-
-	public File getFile() {
-		return file;
+	
+	public boolean exists() {
+		return file != null && file.exists();
 	}
 }

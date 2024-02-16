@@ -68,7 +68,8 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 	private SingleSelection horizontalRadioButtons;
 	private SingleSelection verticalRadioButtons;
-	private FileElement file, file2, file3, file4;
+	private FileElement file;
+	private FileElement file2;
 	// Usually, the keys are i18n keys and the options correspond to their
 	// translated values. To avoid unnecessary translation these dummy values are
 	// defined right here.
@@ -196,28 +197,16 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		// File Chooser
 		// There is a multipart parameter problem with that element.
 		file = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "advanced_form.file", form);
-		file.setArea(false);
 		file.setHelpText("Old-school styling");
 
 		file2 = uifactory.addFileElement(getWindowControl(), getIdentity(), "file2", "advanced_form.file", form);
+		file2.addActionListener(FormEvent.ONCHANGE);
 		file2.setHelpText("Drag&Drop area styling");
-
-		
-		file3 = uifactory.addFileElement(getWindowControl(), getIdentity(), "file3", "advanced_form.file", form);
-		file3.setArea(false); 
-		file3.addActionListener(FormEvent.ONCHANGE);
-		file3.setDeleteEnabled(true);
-		file3.setPreview(usess, true);
-		file3.setHelpText("Old-school styling with delete and file preview");
-
-		
-		file4 = uifactory.addFileElement(getWindowControl(), getIdentity(), "file4", "advanced_form.file", form);
-		file4.addActionListener(FormEvent.ONCHANGE);
-		file4.setDeleteEnabled(true);
-		file4.setPreview(usess, true);
-		file4.setHelpText("Drag&Drop area styling with delete and file preview");
-
-	
+		file2.setMultiFileUpload(true);
+		file2.setDeleteEnabled(true);
+		file2.setPreview(usess, true);
+		file2.setMaxNumberOfFiles(3, null);
+		file2.setReplaceButton(true);
 	}
 
 	/**
@@ -334,9 +323,8 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 			}
 		} else if (source == richTextElement) {
 			getWindowControl().setInfo("Wow, you just changed the html editor area. The new content is now: " + richTextElement.getValue());
-		} else if (source == file3) {
-			getWindowControl().setInfo("Crazy, you uploaded or deleted a file with the name \"" + file3.getUploadFileName());
-
+		} else if (source == file2) {
+			getWindowControl().setInfo("Crazy, you uploaded or deleted a file with the name \"" + file2.getUploadFileName());
 		} else if (source instanceof ColorPickerElement colorPickerElement) {
 			showInfo("advanced_form.your_selection_is", colorPickerElement.getColor().translatedName());
 		}

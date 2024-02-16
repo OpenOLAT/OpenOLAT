@@ -1436,7 +1436,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public FileElement addFileElement(WindowControl wControl, Identity savedBy, String name, String i18nLabel, FormItemContainer formLayout) {
-		FileElement fileElement = new FileElementImpl(wControl, savedBy, name);
+		FileElement fileElement = new FileElementImpl(savedBy, name);
 		setLabelIfNotNull(i18nLabel, fileElement);
 		formLayout.add(fileElement);
 		return fileElement;

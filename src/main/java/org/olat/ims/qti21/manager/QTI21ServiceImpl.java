@@ -1558,7 +1558,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
         
 		try {
 			//add the date in the file
-			String filename = multipartFile.getFileName();
+			String filename = multipartFile.fileName();
 			String extension = FileUtils.getFileSuffix(filename);
 			if(extension != null && extension.length() > 0) {
 				filename = filename.substring(0, filename.length() - extension.length() - 1);
@@ -1574,7 +1574,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			if(!datedFilename.equals(renamedFile)) {
 				submittedFile = new File(submissionDir, datedFilename);
 			}
-			Files.move(multipartFile.getFile().toPath(), submittedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.move(multipartFile.file().toPath(), submittedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			return submittedFile;
 		} catch (IOException e) {
 			log.error("", e);

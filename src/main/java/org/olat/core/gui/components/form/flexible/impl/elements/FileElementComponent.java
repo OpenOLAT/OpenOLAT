@@ -20,12 +20,14 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.image.ImageFormItem;
 
@@ -50,8 +52,8 @@ public class FileElementComponent extends FormBaseComponentImpl implements Compo
 		return element;
 	}
 	
-	protected ImageFormItem getPreviewElementImpl() {
-		return element.getPreviewFormItem();
+	protected ImageFormItem getInitialPreviewElementImpl() {
+		return element.getInitialPreviewFormItem();
 	}
 
 	@Override
@@ -61,27 +63,25 @@ public class FileElementComponent extends FormBaseComponentImpl implements Compo
 
 	@Override
 	public Component getComponent(String name) {
-		if(element.getPreviewFormItem() != null &&
-				element.getPreviewFormItem().getComponent().getComponentName().equals(name)) {
-			return element.getPreviewFormItem().getComponent();
+		for(FormItem item:element.getFormItems()) {
+			if(item.getComponent().getComponentName().equals(name)) {
+				return item.getComponent();
+			}
 		}
 		return null;
 	}
 
 	@Override
 	public Iterable<Component> getComponents() {
-		if(element.getPreviewFormItem() == null) {
-			return Collections.emptyList();
+		List<Component> cmps = new ArrayList<>();
+		for(FormItem item:element.getFormItems()) {
+			cmps.add(item.getComponent());
 		}
-		return Collections.singletonList(element.getPreviewFormItem().getComponent());
+		return cmps;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
-
 }

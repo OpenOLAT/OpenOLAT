@@ -1078,21 +1078,25 @@ function showAjaxBusy() {
 	setTimeout(function(){
 		if (o_info.linkbusy) {
 			// try/catch because can fail in full page refresh situation when called before DOM is ready
-			try {
-				//don't set 2 layers
-				if(jQuery('#o_ajax_busy_backdrop').length == 0) {
-					jQuery('#o_body').addClass('o_ajax_busy');
-					jQuery('#o_ajax_busy').modal({show: true, backdrop: 'static', keyboard: 'false'});
-					// fix modal conflic with modal dialogs, make ajax busy appear always above modal dialogs
-					jQuery('#o_ajax_busy').after('<div id="o_ajax_busy_backdrop" class="modal-backdrop in"></div>');
-					jQuery('#o_ajax_busy>.modal-backdrop').remove();
-					jQuery('#o_ajax_busy_backdrop').css({'z-index' : 70041});
-				}
-			} catch (e) {
-				if(window.console) console.log(e);
-			}
+			showAjaxSpinner();
 		}
 	}, 700);
+}
+
+function showAjaxSpinner() {
+	try {
+		//don't set 2 layers
+		if(jQuery('#o_ajax_busy_backdrop').length == 0) {
+			jQuery('#o_body').addClass('o_ajax_busy');
+			jQuery('#o_ajax_busy').modal({show: true, backdrop: 'static', keyboard: 'false'});
+			// fix modal conflic with modal dialogs, make ajax busy appear always above modal dialogs
+			jQuery('#o_ajax_busy').after('<div id="o_ajax_busy_backdrop" class="modal-backdrop in"></div>');
+			jQuery('#o_ajax_busy>.modal-backdrop').remove();
+			jQuery('#o_ajax_busy_backdrop').css({'z-index' : 70041});
+		}
+	} catch (e) {
+		if(window.console) console.log(e);
+	}
 }
 
 function removeAjaxBusy() {
@@ -1179,31 +1183,180 @@ function o_openTab(url) {
 	}
 }
 
+function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
+	function preventDefaults (e) {
+		e.preventDefault()
+		e.stopPropagation()
+	}
+
+	function o_handleFiles(files) {	
+		showAjaxSpinner();
+		
+		let htmlForm = document.getElementById(formName);
+		htmlForm.classList.remove('o_dnd_over');
+		
+		let targetUrl = htmlForm.getAttribute("action");
+		let csrf = document.querySelector('#' + formName + " input[name='_csrf']").getAttribute('value');
+		let numOfFiles = files.length;
+		let numOfFilesToEnd = numOfFiles;
+		let totalFiles = 0;
+		let totalLoadedFiles = 0;
+		for(const file of files) {
+			totalFiles += file.size;
+		}
+
+		function loadStart(evt) {
+    		showAjaxSpinner();
+		}
+		
+		function loadProgress(evt) {
+    		showAjaxSpinner();
+    		if (evt.lengthComputable) {
+    			let loaded = totalLoadedFiles + evt.loaded;
+       			let percentComplete = Math.floor(((loaded / totalFiles) * 100.0));
+        		// only upldate UI once in a while, painting is a lot slower than progress updates
+        		let now = Date.now();
+				if (now - o_info.ajaxBusyLastProgress > 100) {        			
+					o_info.ajaxBusyLastProgress = now;
+					jQuery('#o_ajax_busy .progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');        		
+					jQuery('#o_ajax_progress .o_progress_info').text(BFormatter.formatBytes(loaded) + '  /  ' + BFormatter.formatBytes(totalFiles));        	
+				}
+			}
+    	}
+		
+		function loadEnd(evt) {
+    		totalLoadedFiles += evt.loaded;
+			numOfFilesToEnd = numOfFilesToEnd - 1;
+			if(numOfFilesToEnd <= 0) {
+				o_XHRLoadend();
+			}
+		}
+		
+		for(const file of files) {
+			let formData = new FormData(htmlForm);
+			formData.append(inputFileId, file);
+			formData.append('_csrf', csrf);
+			formData.delete('dispatchevent');
+			formData.append('dispatchevent', '4');
+			formData.delete('dispatchuri');
+			formData.append('dispatchuri', inputFileId);
+	
+			jQuery.ajax(targetUrl,{
+				xhr: function() {
+					let xhr = new window.XMLHttpRequest();						
+					xhr.upload.addEventListener("loadstart", o_XHRLoadstart, false);
+					xhr.upload.addEventListener("progress", loadProgress, false);
+					xhr.upload.addEventListener("loadend", loadEnd, false);
+					return xhr;
+			    },
+				type:'POST',
+				data: formData,
+				cache: false,
+				contentType: false,
+				enctype: 'multipart/form-data',
+			    processData: false,
+				dataType: 'json',
+				success: function(returnedData, textStatus, jqXHR) {
+					o_onXHRSuccess(returnedData, textStatus, jqXHR);
+				},
+				error: o_onXHRError
+			});
+		}
+	}
+	
+	function o_handleFilesValidate(files) {
+		let fileInputElement = document.getElementById(inputFileId);
+		let errorElementId = fileInputElement.getAttribute('id') + "_validation_error";
+		let errorEl = document.getElementById(errorElementId);
+		let maxSize = fileInputElement.getAttribute('data-max-size');
+
+		if (maxSize && maxSize > null) {
+			let fileSize = 0;
+			for(const file of files) {
+				fileSize += file.size;
+			}
+
+			if (fileSize > maxSize) {
+				// show a validation error message, reset the fileInputElement and stop processing
+				// to prevent unneeded uploads of potentially really big files
+				let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
+				let msgLimitExceeded = trans.translate('file.upload.error.limit.exeeded');
+				let msgUploadLimit = trans.translate('file.upload.limit');
+				let maxSizeFormatted = o_handleFileFormatSize(maxSize);
+				let errorMsg = msgLimitExceeded + " (" + msgUploadLimit + ": " + maxSizeFormatted + ")";
+				fileInputElement.setCustomValidity(errorMsg);
+
+				if (!errorEl) {
+					errorEl = document.createElement('div');
+					errorEl.setAttribute('class','o_error');
+					errorEl.setAttribute('id', errorElementId);
+					fileInputElement.parentNode.parentNode.appendChild(errorEl);
+				}
+				errorEl.textContent = errorMsg;
+				return false;
+			}	
+		}
+		
+		if (errorEl) {
+			fileInputElement.parentNode.parentNode.removeChild(errorEl);
+		}
+		return true;
+	}
+	
+	function handleDrop(e) {
+		let dt = e.dataTransfer;
+		let files = dt.files;
+		if(o_handleFilesValidate(files)) {
+			o_handleFiles(files);
+		}
+	}
+	
+	function handleFileOver() {
+		this.classList.add('o_dnd_over');
+	}
+	
+	function handleFileLeave() {
+		this.classList.remove('o_dnd_over');
+	}
+	
+	let dropAreaEl = document.getElementById(dropAreaId);
+  	dropAreaEl.addEventListener('dragover', handleFileOver, false);	
+  	dropAreaEl.addEventListener("dragleave", handleFileLeave, false);
+	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  		dropAreaEl.addEventListener(eventName, preventDefaults, false);
+	});
+	dropAreaEl.addEventListener('drop', handleDrop, false);
+}
+
+function o_handleFileFormatSize(size) {
+	let sizeFormatted;
+	if(size < 250 * 1024) {
+		sizeFormatted = (size / 1024).toFixed(1) + " KB";
+	} else if(size < 250 * 1024 * 1024) {
+		sizeFormatted = (size / 1024 / 1024).toFixed(1) + " MB";
+	} else {
+		sizeFormatted = (size / 1024 / 1024 / 1024).toFixed(1) + " GB";
+	}
+	return sizeFormatted;
+}
+
 function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveButton) {
 
 	fileInputElement.setCustomValidity('');
 
-	var fileSize = formInputFileSize(fileInputElement);
+	let fileSize = formInputFileSize(fileInputElement);
 	if (fileInputElement.hasAttribute('data-max-size')) {
 		// check if the file selected does satisfy the max-size constraint
-		var maxSize = fileInputElement.getAttribute('data-max-size');
+		let maxSize = fileInputElement.getAttribute('data-max-size');
 		if (maxSize) {
 			if (fileSize > maxSize) {
 				// show a validation error message, reset the fileInputElement and stop processing
 				// to prevent unneeded uploads of potentially really big files
-				var trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
-				var msgLimitExceeded = trans.translate('file.upload.error.limit.exeeded');
-				var msgUploadLimit = trans.translate('file.upload.limit');
-				var maxSizeFormatted;
-				if(maxSize < 250 * 1024) {
-					maxSizeFormatted = (maxSize / 1024).toFixed(1) + " KB";
-				} else if(maxSize < 250 * 1024 * 1024) {
-					maxSizeFormatted = (maxSize / 1024 / 1024).toFixed(1) + " MB";
-				} else {
-					maxSizeFormatted = (maxSize / 1024 / 1024 / 1024).toFixed(1) + " GB";
-				}
-				fileInputElement.setCustomValidity(msgLimitExceeded
-						+ " (" + msgUploadLimit + ": " + maxSizeFormatted + ")");
+				let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
+				let msgLimitExceeded = trans.translate('file.upload.error.limit.exeeded');
+				let msgUploadLimit = trans.translate('file.upload.limit');
+				let maxSizeFormatted = o_handleFileFormatSize(maxSize);
+				fileInputElement.setCustomValidity(msgLimitExceeded + " (" + msgUploadLimit + ": " + maxSizeFormatted + ")");
 			}
 		}
 	}
@@ -1211,9 +1364,9 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 	// file upload forms are rendered transparent and have a fake input field that is rendered.
 	// on change events of the real input field this method is triggered to display the file 
 	// path in the fake input field. See the code for more info on this
-	var fileName = fileInputElement.value;
+	let fileName = fileInputElement.value;
 	// remove unix path
-	var slashPos = fileName.lastIndexOf('/');
+	let slashPos = fileName.lastIndexOf('/');
 	if (slashPos != -1) {
 		fileName=fileName.substring(slashPos + 1); 
 	}
@@ -1227,7 +1380,7 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 		fakeInputElement.value=fileName;
 	} else {
 		// in drop-down mode, add filename above input field
-		var fileSizeFormatted = fileSize;
+		let fileSizeFormatted;
 		if(fileSize < 250 * 1024) {
 			fileSizeFormatted = (fileSize / 1024).toFixed(1) + " KB";
 		} else if(fileSize < 250 * 1024 * 1024) {
@@ -1235,29 +1388,29 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 		} else {
 			fileSizeFormatted = (fileSize / 1024 / 1024 / 1024).toFixed(1) + " GB";
 		}
-		var inputWrapperEl = jQuery(fileInputElement).parent();
-		var escapedFileName = o_escapeHtml(fileName);
-		var fileHtml = "<div class='o_filemeta'><i class='o_icon o_icon-fw o_filetype_file'> </i> " + escapedFileName + " <span class='text-muted o_filesize'>(" + fileSizeFormatted + ")</span></div>";
-		var existingFileEl = inputWrapperEl.parent().find('.o_file');
-		if (existingFileEl.length == 0) {
-			jQuery(fileHtml).insertBefore(inputWrapperEl);						
+		let inputWrapperEl = jQuery(fileInputElement).parent();
+		let escapedFileName = o_escapeHtml(fileName);
+		let fileHtml = "<div><i class='o_icon o_icon-fw o_filetype_file'> </i> " + escapedFileName + " <span class='text-muted o_filesize'>(" + fileSizeFormatted + ")</span></div>";
+		let existingMetaEl = inputWrapperEl.parent().find('.o_filemeta');
+		if (existingMetaEl.length == 0) {
+			jQuery("<div class='o_filemeta'>" + fileHtml + "</div>").insertBefore(inputWrapperEl);						
 		} else {
-			jQuery(existingFileEl[0]).replaceWith(fileHtml);			
+			existingMetaEl[0].insertAdjacentHTML("beforeend", fileHtml)			
 		}
 		
 	}
 	// set focus to next element if available
-	var elements = fileInputElement.form.elements;
-	var fileInputCheckElement = (fakeInputElement ? fakeInputElement : fileInputElement);
-	for (var i=0; i < elements.length; i++) {
-		var elem = elements[i];
+	let elements = fileInputElement.form.elements;
+	let fileInputCheckElement = (fakeInputElement ? fakeInputElement : fileInputElement);
+	for (let i=0; i < elements.length; i++) {
+		let elem = elements[i];
 		if (elem.name == fileInputCheckElement.name && i+1 < elements.length) {
 			elements[i+1].focus();
 		}
 	}
 	// mark save button as dirty
 	if (saveButton) {
-		saveButton.className='o_button_dirty'
+		saveButton.className='o_button_dirty';
 	}
 }
 
@@ -1882,10 +2035,10 @@ function o_XHRLoadstart(evt) {
 	o_info.ajaxBusyLastProgress = Date.now();
 }
 function o_XHRProgress(evt) {
-    if (evt.lengthComputable) {
-        var percentComplete = Math.floor((evt.loaded / evt.total) * 100);
-        // only upldate UI once in a while, painting is a lot slower than progress updates
-        var now = Date.now();
+	if (evt.lengthComputable) {
+		let percentComplete = Math.floor((evt.loaded / evt.total) * 100);
+		// only upldate UI once in a while, painting is a lot slower than progress updates
+		let now = Date.now();
 		if (now - o_info.ajaxBusyLastProgress > 100) {        			
 			o_info.ajaxBusyLastProgress = now;
 			jQuery('#o_ajax_busy .progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');        		
@@ -1895,7 +2048,7 @@ function o_XHRProgress(evt) {
 			// Cleanup now, even when on server side something is still working
 			o_XHRLoadend();
 		}
-    }
+	}
 }
 function o_XHRLoadend() {
 	// Upload done, reset progress bar and activate spinner again to indicated server activity
@@ -1906,13 +2059,12 @@ function o_XHRLoadend() {
 	o_info.ajaxBusyLastProgress = null;
 }
 
-
 function o_onXHRSuccess (data, textStatus, jqXHR) {
 	try {	
 		o_ainvoke(data);
-		var businessPath = data['businessPath'];
-		var documentTitle = data['documentTitle'];
-		var historyPointId = data['historyPointId'];
+		let businessPath = data['businessPath'];
+		let documentTitle = data['documentTitle'];
+		let historyPointId = data['historyPointId'];
 		if(businessPath) {
 			o_pushState(historyPointId, documentTitle, businessPath);
 		}

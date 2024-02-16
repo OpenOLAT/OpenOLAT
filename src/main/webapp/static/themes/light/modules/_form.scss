@@ -595,18 +595,19 @@ form .o_form, form.o_form {
 
 /* file chooser */
 .o_filepreview {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+	
 	img {
 		@extend .img-thumbnail;
 	}
-	margin-bottom: $padding-base-vertical;
 }
 /* uploaded file with delete button */
 .o_filemeta {
   	padding-top: ($padding-base-vertical + 1);
   	padding-bottom: ($padding-base-vertical + 1);
-	display: flex;
-	flex-wrap: wrap;
-	gap: 5px;
+
 	.o_filesize {
 		margin-left: 0.5em;
 		margin-right: 2em;
@@ -648,7 +649,7 @@ form .o_form, form.o_form {
 	&.o_area {
 		padding: 5px 20px ;
 		border-style: dashed;
-		
+		margin-bottom: 3px;
 		
 		.o_dnd {
 			text-align: center;
@@ -706,7 +707,12 @@ form .o_form, form.o_form {
 	display: none;
 }
 
-
+form.o_dnd_over {
+	border: 2px dashed $o-panel-placeholder-border-active-color;
+	border-radius: $o-panel-placeholder-border-radius;
+	background: $o-panel-placeholder-bg-active;
+	margin: -2px;
+}
 
 .o_form_inline_mandatory_compact {
 	i {

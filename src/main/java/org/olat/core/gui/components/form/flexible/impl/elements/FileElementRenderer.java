@@ -21,10 +21,12 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FileElementInfos;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.image.ImageFormItem;
@@ -62,8 +64,8 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source,
-			URLBuilder ubu, Translator translator, RenderResult renderResult,
-			String[] args) {
+			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+		
 		// Use translator with flexi form elements fallback
 		Translator trans = getTranslator(translator);
 		//
@@ -89,41 +91,15 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 
 		// Read-write view
 		if (fileComp.isEnabled()) {
-			ImageFormItem previewCmp = fileElem.getPreviewFormItem();
-			if(previewCmp != null && previewCmp.isEnabled() && previewCmp.isVisible()) {
-				sb.append("<div class='o_filepreview'>");	
-				renderer.render(previewCmp.getComponent(), sb, new String[] { "form" });
-				sb.append("</div>");
-			}
-			
+			renderFilesPreview(renderer, sb, fileElem, hasFile);
 
 			// Show available file and delete button
-			boolean showReplaceButton = hasFile && fileElem.isReplaceButton() && (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
-			if (hasFile) {
-				sb.append("<div class='o_filemeta'>").append(CSSHelper.getIcon(CSSHelper.createFiletypeIconCssClassFor(fileName)));
-				sb.append("<div>");
-				sb.appendHtmlEscaped(fileName);
-				sb.append("<span class='o_filesize text-muted'>(").append(Formatter.formatBytes(fileElem.getUploadSize())).append(")</span>");
-				sb.append("</div>");
-				
-				sb.append("<div>");
-				if (showInput && showReplaceButton) {
-					renderFileInput(sb, trans, fileElem, id, fileName, showReplaceButton);
-				}
-				boolean showDeleteButton = fileElem.isDeleteEnabled()
-						&& (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
-				if(showDeleteButton) {
-					sb.append("<a class='btn btn-xs btn-default o_filedelete' href=\"javascript:")
-					.append(FormJSHelper.getXHRFnCallFor(fileElem.getRootForm(), fileComp.getFormDispatchId(), 1, false, false, true, new NameValuePair("delete", "delete")))
-					.append(";\" onclick=\"\" ")
-					.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.delete")).append("\" ><i class='o_icon o_icon_delete_item'> </i> ").append(trans.translate("delete")).append("</a>");
-				}
-				sb.append("</div>");
-				sb.append("</div>");
-			}
+			boolean showReplaceButton = fileElem.isReplaceButton() && (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
+			boolean showDeleteButton = fileElem.isDeleteEnabled() && (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
 			
-			if (showInput && !showReplaceButton) {
-				renderFileInput(sb, trans, fileElem, id, fileName, showReplaceButton);
+			renderFilesMeta(sb, fileComp, hasFile, showDeleteButton, showReplaceButton, trans);
+			if (showInput) {
+				renderFileInput(sb, trans, fileElem, id, showReplaceButton);
 			}
 			
 			// Add example text and  max upload size
@@ -157,50 +133,57 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			  .append("</span>");
 		}
 	}
-
-	private void renderFileInput(StringOutput sb, Translator trans, FileElementImpl fileElem, String id,
-			String fileName, boolean showReplaceButton) {
-		sb.append("<div class='o_fileinput")
-		  .append(" o_sel_file_uploaded", fileElem.getUploadFile() != null)
-		  .append(" o_area panel-placeholder", fileElem.isArea() && !showReplaceButton)
-		  .append(" o_replace", showReplaceButton)
-		  .append(" o_preview", !fileElem.isButtonsEnabled())
-		  .append("'");
-		if(fileElem.isArea()) {
-			sb.append(" ondragover=\"jQuery(this).addClass('o_dnd_over')\" ondragleave=\"jQuery(this).removeClass('o_dnd_over')\"");				
+	
+	private void renderFilesPreview(Renderer renderer, StringOutput sb, FileElementImpl fileElem, boolean hasFile) {
+		sb.append("<div class='o_filepreview'>");
+		if (hasFile) {
+			List<FileElementInfos> uploadedFiles = fileElem.getUploadFilesInfos();
+			if(!uploadedFiles.isEmpty()) {
+				for(FileElementInfos uploadedFile:uploadedFiles) {
+					renderFilePreview(renderer, sb, uploadedFile.previewEl());
+				}
+			}  else if(fileElem.getInitialFile() != null) {
+				renderFilePreview(renderer, sb, fileElem.getInitialPreviewFormItem());
+			}
 		}
-		sb.append(">");
+		sb.append("</div>");
+	}
+	
+	private void renderFilePreview(Renderer renderer, StringOutput sb, ImageFormItem previewCmp) {
+		if(previewCmp != null && previewCmp.isEnabled() && previewCmp.isVisible()) {	
+			renderer.render(previewCmp.getComponent(), sb, new String[] { "form" });
+		}
+	}
+	
+	private void renderFilesMeta(StringOutput sb, FileElementComponent fileComp, boolean hasFile, boolean showDeleteButton, boolean showReplaceButton, Translator trans) {
+		FileElementImpl fileElem = fileComp.getFormItem();
 		
-		// input.Browse is the real filebrowser, but set to be transparent. 
-		// the div.o_fakechooser is layered below the input.Browse and represents the visual GUI. 
-		// Since input.Browse is layered above div.o_fakechooser, all click events to go input.Browse
-		// See http://www.quirksmode.org/dom/inputfile.html
-		if (fileElem.isButtonsEnabled()) {
-			sb.append("<input type='file' name=\"");
-			 sb.append(id); // name for form labeling
-			 sb.append("\" id=\"");
-			 sb.append(id); // id to make dirty button work
-			 if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
-				 sb.append("\" data-max-size=\"").append(fileElem.getMaxUploadSizeKB() * 1024l);
-			 }
-			 sb.append("\" class='form-control o_realchooser' tabindex='0' ");
-			 // Add on* event handlers
-			 StringBuilder eventHandlers = FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction());
-			 int onChangePos = eventHandlers.indexOf("onchange=");
-			 if (onChangePos != -1) {
-				 // add file upload change handler
-				 sb.append(eventHandlers.substring(0, onChangePos + 10))
-				   .append("b_handleFileUploadFormChange(this, this.form.fake_").append(id).append(", this.form.upload);")
-				   .append(eventHandlers.substring(onChangePos + 10, eventHandlers.length()));
-			 } else {
-				 sb.append(eventHandlers)
-				   .append(" onchange=\"b_handleFileUploadFormChange(this, this.form.fake_").append(id).append(", this.form.upload)\"");
-			 }
-			 // Add pseudo focus marker on fake file chooser button
-			 sb.append(" onblur=\"try { this.form.fake_").append(id).append(".nextSibling.style.border = '0'; } catch(e) {}\"");
-			 // Add select text (hover)
-			 sb.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\">");
+		sb.append("<div class='o_filemeta'>");
+		if (hasFile) {
+			List<FileElementInfos> uploadedFiles = fileElem.getUploadFilesInfos();
+			if(!uploadedFiles.isEmpty()) {
+				for(FileElementInfos fileInfos:uploadedFiles) {
+					renderFileMeta(sb, fileComp, fileInfos.fileName(), fileInfos.iconCssClass(), fileInfos.size(), showDeleteButton, showReplaceButton, trans);
+				}
+			} else if(fileElem.getInitialFile() != null) {
+				File initialFile = fileElem.getInitialFile();
+				String iconCssClass = CSSHelper.createFiletypeIconCssClassFor(initialFile.getName());
+				renderFileMeta(sb, fileComp, initialFile.getName(), iconCssClass, initialFile.length(), showDeleteButton, showReplaceButton, trans);
+			}
+			
 		}
+		sb.append("</div>"); // End o_filemeta
+	}
+	
+	private void renderFileMeta(StringOutput sb, FileElementComponent fileComp, String fileName, String iconCssClass, long size,
+			boolean showDeleteButton, boolean showReplaceButton, Translator trans) {
+		FileElementImpl fileElem = fileComp.getFormItem();
+		
+		sb.append("<div>");
+		sb.append("<i class='").append(CSSHelper.getIconCssClassFor(iconCssClass)).append("'> </i> ")
+		  .append("<span>").appendHtmlEscaped(fileName)
+		  .append("<span class='o_filesize text-muted'>(").append(Formatter.formatBytes(size)).append(")</span>")
+		  .append("</span>");
 		
 		if(showReplaceButton) {
 			sb.append("<div class='o_dnd' aria-hidden='true'>");
@@ -208,7 +191,69 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			sb.append("<i class='o_icon o_icon_upload'> </i> ").append(trans.translate("replace"));
 			sb.append("</span></button></div>");
 			sb.append("</div>");
-		} else if(fileElem.isArea()) {
+		}
+		
+		if(showDeleteButton) {
+			sb.append("<a class='btn btn-xs btn-default o_filedelete' href=\"javascript:")
+			.append(FormJSHelper.getXHRFnCallFor(fileElem.getRootForm(), fileComp.getFormDispatchId(), 1, false, false, true,
+					new NameValuePair("delete", "delete"), new NameValuePair("filename", fileName)))
+			.append(";\" onclick=\"\" ")
+			.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.delete")).append("\" ><i class='o_icon o_icon_delete_item'> </i> ").append(trans.translate("delete")).append("</a>");
+		}
+		sb.append("</div>");
+	}
+
+	private void renderFileInput(StringOutput sb, Translator trans, FileElementImpl fileElem, String id, boolean showReplaceButton) {
+		
+		String areaId = fileElem.getFormDispatchId().concat("_area");
+		sb.append("<div id='").append(areaId).append("'")
+		  .append(" class='o_fileinput")
+		  .append(" o_sel_file_uploaded", fileElem.getUploadFile() != null)
+		  .append(" o_area panel-placeholder", !showReplaceButton)
+		  .append(" o_replace", showReplaceButton)
+		  .append(" o_preview", !fileElem.isButtonsEnabled())
+		  .append("'>");
+		
+		// input.Browse is the real filebrowser, but set to be transparent. 
+		// the div.o_fakechooser is layered below the input.Browse and represents the visual GUI. 
+		// Since input.Browse is layered above div.o_fakechooser, all click events to go input.Browse
+		// See http://www.quirksmode.org/dom/inputfile.html
+		if (fileElem.isButtonsEnabled()) {
+			sb.append("<input type='file' name=\"");
+			sb.append(id); // name for form labeling
+			sb.append("\" id=\"");
+			sb.append(id); // id to make dirty button work
+			if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
+				sb.append("\" data-max-size=\"").append(fileElem.getMaxUploadSizeKB() * 1024l);
+			}
+			sb.append("\" class='form-control o_realchooser' tabindex='0' ");
+			// Add on* event handlers
+
+			StringBuilder eventHandlers = FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction());
+			int onChangePos = eventHandlers.indexOf("onchange=");
+			if (onChangePos != -1) {
+				// add file upload change handler
+				sb.append(eventHandlers.substring(0, onChangePos + 10))
+				  .append("b_handleFileUploadFormChange(this, this.form.fake_").append(id).append(", this.form.upload);")
+				  .append(eventHandlers.substring(onChangePos + 10, eventHandlers.length()));
+			} else {
+				sb.append(eventHandlers)
+				  .append(" onchange=\"b_handleFileUploadFormChange(this, this.form.fake_").append(id).append(", this.form.upload)\"");
+			}
+			 
+			// Add pseudo focus marker on fake file chooser button
+			sb.append(" onblur=\"try { this.form.fake_").append(id).append(".nextSibling.style.border = '0'; } catch(e) {}\"");
+			// Add select text (hover)
+			sb.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\">");
+
+			String formName = fileElem.getRootForm().getFormName();
+			String dropArea = fileElem.isDragAndDropForm() ? formName : areaId;
+			sb.append("<script>o_handleFileInit('").append(formName).append("','").append(areaId).append("','").append(id).append("','").append(dropArea).append("');</script>");
+		}
+		
+		if(showReplaceButton) {
+			
+		} else {
 			String dndInfo = fileElem.getDndInformations();
 			if(!StringHelper.containsNonWhitespace(dndInfo)) {
 				dndInfo = trans.translate("file.element.dnd.info");
@@ -219,14 +264,6 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			  .append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>")
 			  .append(trans.translate("file.element.dnd.select")).append("</span></button></div>")
 			  .append("</div>");
-			
-		} else {
-			// Add the visible but fake input field and a styled faked file chooser button
-			sb.append("<div class='o_fakechooser input-group' aria-hidden='true'>");
-			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").appendHtmlEscaped(fileName)
-			  .append("\" placeholder=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" tabindex='-1'>");  
-			sb.append("<span class='input-group-addon'><a href='javascript:;' tabindex='-1'><i class='o_icon o_icon_upload'> </i></a></span>");
-			sb.append("</div>");				
 		}
 		
 		sb.append("</div>"); // End o_fileinput

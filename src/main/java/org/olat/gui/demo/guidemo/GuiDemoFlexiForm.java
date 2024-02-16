@@ -25,15 +25,17 @@
 package org.olat.gui.demo.guidemo;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -83,6 +85,17 @@ public class GuiDemoFlexiForm extends FormBasicController {
 			FileUtils.deleteFile(tmpFile);
 		}
         super.doDispose();
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == fileElement) {
+			if(event instanceof FileElementEvent fee && FileElementEvent.DELETE.equals(fee.getCommand())) {
+				fileElement.resetTempFile(fee.getFile());
+			}
+
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -138,9 +151,14 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		lastName.setHelpUrl("https://en.wikipedia.org/wiki/Family_name");
 
 		fileElement = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", "guidemo.flexi.form.file", formLayout);
-		fileElement.setMaxUploadSizeKB(500, "guidemo.flexi.form.filetobig", null);
-		Set<String> mimeTypes = new HashSet<>();
-		mimeTypes.add("image/*");
+		fileElement.setMaxUploadSizeKB(5000, "guidemo.flexi.form.filetobig", null);
+		fileElement.setMaxNumberOfFiles(2, null);
+		fileElement.addActionListener(FormEvent.ONCHANGE);
+		fileElement.setDragAndDropForm(true);
+		fileElement.setPreview(ureq.getUserSession(), true);
+		fileElement.setMultiFileUpload(true);
+		fileElement.setDeleteEnabled(true);
+		Set<String> mimeTypes = Set.of("image/*");
 		fileElement.limitToMimeType(mimeTypes, "guidemo.flexi.form.wrongfiletype", null);
 		fileElement.setMandatory(true, "guidemo.flexi.form.mustbefilled");
 		fileElement.setEnabled(inputMode);
