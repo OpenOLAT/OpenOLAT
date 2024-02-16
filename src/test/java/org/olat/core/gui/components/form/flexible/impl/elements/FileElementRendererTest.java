@@ -61,6 +61,7 @@ public class FileElementRendererTest {
 	@Test
 	public void renderButtonsShouldContainFileInput() {
 		when(fileElementImplMock.getRootForm()).thenReturn(formMock);
+		when(fileElementImplMock.getFormDispatchId()).thenReturn("o_f10000263");
 		when(fileElementComponentMock.getFormItem()).thenReturn(fileElementImplMock);
 		when(fileElementComponentMock.isEnabled()).thenReturn(Boolean.TRUE);
 		when(fileElementImplMock.isButtonsEnabled()).thenReturn(Boolean.TRUE);
