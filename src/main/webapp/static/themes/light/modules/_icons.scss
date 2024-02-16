@@ -101,10 +101,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_copy { @include o-add-icon('copy');}
 .o_icon_course_previous { @include o-add-icon('chevron-left');}
 .o_icon_course_next { @include o-add-icon('chevron-right');}
+.o_icon_coursearchive { @include o-add-icon('boxes-packing', false);}
 .o_icon_courseareas { @include o-add-icon('circle', false);}
 .o_icon_coursedb { @include o-add-icon('database');}
 .o_icon_courseeditor { @include o-add-icon('edit');}
 .o_icon_coursefolder { @include o-add-icon('folder', false);}
+.o_icon_courselog { @include o-add-icon('file-lines', true);}
 .o_icon_courserun { @include o-add-icon('cube');}
 .o_icon_comments { @include o-add-icon('comments');}
 .o_icon_comments_none { @include o-add-icon('comment', false);}
