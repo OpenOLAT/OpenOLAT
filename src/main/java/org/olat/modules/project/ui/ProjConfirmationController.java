@@ -31,6 +31,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -95,8 +96,10 @@ public class ProjConfirmationController extends FormBasicController {
 			
 			initFormElements(confirmCont);
 			
-			String[] acknowledge = new String[] { translate(confirmationI18nKey, confimationI18nArgs) };
-			confirmationEl = uifactory.addCheckboxesHorizontal("confirmation", "confirmation", confirmCont, new String[]{ "" }, acknowledge);
+			if (StringHelper.containsNonWhitespace(confirmationI18nKey)) {
+				String[] acknowledge = new String[] { translate(confirmationI18nKey, confimationI18nArgs) };
+				confirmationEl = uifactory.addCheckboxesHorizontal("confirmation", "confirmation", confirmCont, new String[]{ "" }, acknowledge);
+			}
 			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			confirmCont.add(buttonsCont);
@@ -111,10 +114,12 @@ public class ProjConfirmationController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		confirmationEl.clearError();
-		if (!confirmationEl.isAtLeastSelected(1)) {
-			confirmationEl.setErrorKey("error.confirmation.mandatory");
-			allOk &= false;
+		if (confirmationEl != null) {
+			confirmationEl.clearError();
+			if (!confirmationEl.isAtLeastSelected(1)) {
+				confirmationEl.setErrorKey("error.confirmation.mandatory");
+				allOk &= false;
+			}
 		}
 		
 		return allOk;
