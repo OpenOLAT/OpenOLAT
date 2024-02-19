@@ -589,8 +589,13 @@ public class Form {
 		return infos == null ? null : infos.file();
 	}
 	
+	/**
+	 * @param key The name of the file input
+	 * @return always an informations object but with null values if the key is not in the request
+	 */
 	public MultipartFileInfos getRequestMultipartFileInfos(String key) {
-		return requestMultipartFiles.get(key);
+		MultipartFileInfos infos = requestMultipartFiles.get(key);
+		return infos == null ? new MultipartFileInfos(null, null, -1l, null) : infos;
 	}
 
 	/**
