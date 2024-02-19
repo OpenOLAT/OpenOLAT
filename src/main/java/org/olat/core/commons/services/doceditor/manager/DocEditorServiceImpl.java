@@ -111,7 +111,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	@Override
 	public boolean hasEditor(Identity identity, Roles roles, String suffix, Mode mode, boolean metadataAvailable,
 			boolean collaborativeOnly) {
-		if (mode == null) return false;
+		if (mode == null || !metadataAvailable) return false;
 		
 		return editors.stream()
 				.filter(DocEditor::isEnable)
@@ -128,6 +128,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 
 	@Override
 	public List<DocEditor> getEditors(Identity identity, Roles roles, String suffix, Mode mode, boolean metadataAvailable) {
+		if (!metadataAvailable) return List.of();
+		
 		return editors.stream()
 				.filter(DocEditor::isEnable)
 				.filter(editor -> editor.isEnabledFor(identity, roles))
@@ -155,13 +157,17 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	
 	@Override
 	public DocEditorDisplayInfo getEditorInfo(Identity identity, Roles roles, VFSItem vfsItem, VFSMetadata metadata, boolean checkLocked, List<Mode> modes) {
+		if (metadata == null) {
+			return NoEditorAvailable.get();
+		}
+		
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
 			String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
 			for (Mode mode : modes) {
 				Optional<DocEditor> docEditor = editors.stream()
 						.filter(DocEditor::isEnable)
 						.filter(editor -> editor.isEnabledFor(identity, roles))
-						.filter(editor -> editor.isSupportingFormat(suffix, mode, metadata != null))
+						.filter(editor -> editor.isSupportingFormat(suffix, mode, true))
 						.filter(editor -> checkLocked? !editor.isLockedForMe(vfsLeaf, metadata, identity, mode): true)
 						.findFirst();
 				if (docEditor.isPresent()) {
