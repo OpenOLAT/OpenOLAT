@@ -166,12 +166,14 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					   .append("</a></li>");
 				}
 	
-				// option new file
-				target.append("<li><a class=\"b_bc_newfile\" ");
-				ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "cfile" ))
-				   .append(" role='button'><i class='o_icon o_icon_new_document o_icon-fw'></i> ")
-				   .append(translator.translate("cfile"))
-				   .append("</a></li>");
+				if ( fc.getCurrentContainer().canMeta() == VFSConstants.YES) {
+					// option new file
+					target.append("<li><a class=\"b_bc_newfile\" ");
+					ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "cfile" ))
+					   .append(" role='button'><i class='o_icon o_icon_new_document o_icon-fw'></i> ")
+					   .append(translator.translate("cfile"))
+					   .append("</a></li>");
+				}
 			}
 		}
 		
