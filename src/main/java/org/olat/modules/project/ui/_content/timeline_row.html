@@ -4,10 +4,12 @@
 		$r.render("$row.getRangeLinkName()")
 	</div>
 	<div class="o_proj_timeline_range_deco"></div>
-#elseif($row.getMoreLinkName())
-	<div class="o_proj_timeline_more">
-		$r.render("$row.getMoreLinkName()")
-	</div>
+#elseif($row.getShowLaterLinkName())
+	#if($r.visible("$row.getShowLaterLinkName()"))
+		<div class="o_proj_timeline_button_row">
+			$r.render("$row.getShowLaterLinkName()")
+		</div>
+	#end
 #elseif($row.getRangeEmpty())
 	<div class="o_proj_timeline_range_empty">
 		$row.getRangeEmpty()

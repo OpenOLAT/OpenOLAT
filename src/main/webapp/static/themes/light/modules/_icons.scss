@@ -1016,6 +1016,8 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_proj_project_status_active { @include o-add-icon('check');}
 .o_icon_proj_project_status_done { @include o-add-icon('ban');}
 .o_icon_proj_project_status_deleted { @include o-add-icon('trash-can', false);}
+.o_icon_proj_timeline_later { @include o-add-icon('circle-arrow-up'); }
+.o_icon_proj_timeline_earlier { @include o-add-icon('circle-arrow-down'); }
 
 /* To-dos */
 .o_icon_todo_task { @include o-add-icon('check-square', false);}

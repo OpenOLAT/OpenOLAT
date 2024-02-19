@@ -53,6 +53,7 @@ public class ProjTimelineRow {
 	private FormItem iconItem;
 	private FormItem messageItem;
 	private FormLink rangeLink;
+	private FormLink showLaterLink;
 	
 	public ProjTimelineRow() {
 		//
@@ -185,6 +186,18 @@ public class ProjTimelineRow {
 
 	public void setRangeLink(FormLink rangeLink) {
 		this.rangeLink = rangeLink;
+	}
+
+	public FormLink getShowLaterLink() {
+		return showLaterLink;
+	}
+
+	public void setShowLaterLink(FormLink showLaterLink) {
+		this.showLaterLink = showLaterLink;
+	}
+	
+	public String getShowLaterLinkName() {
+		return showLaterLink != null? showLaterLink.getComponent().getComponentName(): null;
 	}
 	
 }
