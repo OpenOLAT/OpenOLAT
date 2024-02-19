@@ -847,6 +847,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 
 	private void groupPriority(ToDoTaskRow row) {
+		if (row.getChildren().size() == 1) {
+			row.setPriority(row.getChildren().get(0).getPriority());
+			return;
+		}
+		
 		boolean various = false;
 		ToDoPriority currentPriority = !row.getChildren().isEmpty()? row.getChildren().get(0).getPriority(): null;
 		for (ToDoTaskRow childRow : row.getChildren()) {
