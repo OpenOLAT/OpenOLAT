@@ -111,7 +111,7 @@ public class GTAToDoSyncher implements CourseNodeToDoSyncher {
 		DueDateConfig dueDateConfig = ((GTACourseNode)courseNode).getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
 		
 		return syncStepToDo(courseNode, userCourseEnv, toDoEnv, stepEnabled, false, true, OPEN_ASSIGNMENT, dueDateConfig,
-				GTAAssignmentToDoProvider.TYPE, "todo.assignment.title", null, task -> getAssignmentDueDate(userCourseEnv, dueDateConfig));
+				GTAAssignmentToDoProvider.TYPE, "todo.assignment.title", null, task -> getAssignmentDueDate(courseNode, userCourseEnv, dueDateConfig));
 	}
 
 	public static final boolean isSynchAssignmentEnabled(CourseNode courseNode) {
@@ -125,7 +125,7 @@ public class GTAToDoSyncher implements CourseNodeToDoSyncher {
 		boolean needsPrevStep = isSynchAssignmentEnabled(courseNode);
 		
 		return syncStepToDo(courseNode, userCourseEnv, toDoEnv, stepEnabled, needsPrevStep, prevToDoDone, OPEN_SUBMIT, dueDateConfig,
-				GTASubmitToDoProvider.TYPE, "todo.submit.title", null, task -> getSubmitDueDate(userCourseEnv, dueDateConfig));
+				GTASubmitToDoProvider.TYPE, "todo.submit.title", null, task -> getSubmitDueDate(courseNode, userCourseEnv, dueDateConfig));
 	}
 
 	public static final boolean isSynchSubmitEnabled(CourseNode courseNode) {
@@ -352,8 +352,15 @@ public class GTAToDoSyncher implements CourseNodeToDoSyncher {
 		return identityToRevision.get(userCourseEnv.getIdentityEnvironment().getIdentity().getKey());
 	}
 
-	private Date getAssignmentDueDate(UserCourseEnvironment userCourseEnv, DueDateConfig dueDateConfig) {
-		// Due date is only the due date of the course node configuration without extension-period.
+	private Date getAssignmentDueDate(CourseNode courseNode, UserCourseEnvironment userCourseEnv, DueDateConfig dueDateConfig) {
+		TaskRef task = getTask(courseNode, userCourseEnv);
+		if (task != null) {
+			Date dueDate = task.getAssignmentDueDate();
+			if (dueDate != null) {
+				return dueDate;
+			}
+		}
+		
 		if (identityToAssignmentDueDate == null) {
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			identityToAssignmentDueDate = dueDateService.getIdentityKeyToDueDate(dueDateConfig, entry, identities);
@@ -362,8 +369,15 @@ public class GTAToDoSyncher implements CourseNodeToDoSyncher {
 		return identityToAssignmentDueDate.get(userCourseEnv.getIdentityEnvironment().getIdentity().getKey());
 	}
 	
-	private Date getSubmitDueDate(UserCourseEnvironment userCourseEnv, DueDateConfig dueDateConfig) {
-		// Due date is only the due date of the course node configuration without extension-period.
+	private Date getSubmitDueDate(CourseNode courseNode, UserCourseEnvironment userCourseEnv, DueDateConfig dueDateConfig) {
+		TaskRef task = getTask(courseNode, userCourseEnv);
+		if (task != null) {
+			Date dueDate = task.getSubmissionDueDate();
+			if (dueDate != null) {
+				return dueDate;
+			}
+		}
+		
 		if (identityToSubmitDueDate == null) {
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			identityToSubmitDueDate = dueDateService.getIdentityKeyToDueDate(dueDateConfig, entry, identities);
