@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
@@ -47,7 +48,7 @@ public class ToDoDeleteCollectionConfirmationController extends ToDoConfirmation
 		Long toDoTaskCount = toDoService.getToDoTaskCount(searchParams);
 		
 		this.message = translate("task.delete.collection.conformation.message",
-				ToDoUIFactory.getDisplayName(getTranslator(), toDoTask), String.valueOf(toDoTaskCount));
+				StringHelper.escapeHtml(ToDoUIFactory.getDisplayName(getTranslator(), toDoTask)), String.valueOf(toDoTaskCount));
 		
 		initForm(ureq);
 	}
