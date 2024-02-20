@@ -190,7 +190,7 @@ public class PreviewController extends BasicController implements TooledControll
 		stackPanel.popUpToController(this);
 		configurationCtrl = new PreviewConfigurationController(ureq, getWindowControl(), stackPanel, preview);
 		listenTo(configurationCtrl);
-		configurationCtrl.setReadOnly(blacklisted);
+		configurationCtrl.setReadOnly(!canEdit || blacklisted);
 		stackPanel.pushController(translate("data.collection.configuration"), configurationCtrl);
 		segmentButtonsCmp.setSelectedButton(configurationLink);
 	}

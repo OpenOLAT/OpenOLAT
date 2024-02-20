@@ -829,12 +829,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				tools.addComponent(assessmentModeLink);
 			}
 			
-			if (qualityModule.isEnabled() && qualityModule.isPreviewEnabled() && (reSecurity.isEntryAdmin() || reSecurity.isPrincipal())) {
+			if (qualityModule.isEnabled() && qualityModule.isPreviewEnabled() && (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isCoach())) {
 				qualityPreviewLink = LinkFactory.createToolLink("quality.preview.cmd", translate("command.quality.preview"), this, "o_icon_qual_preview");
 				qualityPreviewLink.setUrl(BusinessControlFactory.getInstance()
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[QualityPreview:0]"));
 				qualityPreviewLink.setElementCssClass("o_sel_course_quality_preview");
-				qualityPreviewLink.setVisible(uce != null && !uce.isCourseReadOnly());
+				qualityPreviewLink.setVisible(uce != null);
 				tools.addComponent(qualityPreviewLink);
 			}
 
@@ -2360,7 +2360,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("QualityPreview");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			RepositoryEntryPreviewListController ctrl = new RepositoryEntryPreviewListController(ureq, swControl, toolbarPanel, getRepositoryEntry(), reSecurity.isEntryAdmin());
+			boolean canEdit = getUserCourseEnvironment() != null && getUserCourseEnvironment().isAdmin() && !getUserCourseEnvironment().isCourseReadOnly();
+			RepositoryEntryPreviewListController ctrl = new RepositoryEntryPreviewListController(ureq, swControl, toolbarPanel, getRepositoryEntry(), canEdit);
 			qualityPreviewCtrl = pushController(ureq, translate("command.quality.preview"), ctrl);
 
 			setActiveTool(qualityPreviewLink);

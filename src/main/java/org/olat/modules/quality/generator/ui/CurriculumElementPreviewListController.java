@@ -22,6 +22,7 @@ package org.olat.modules.quality.generator.ui;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
@@ -43,6 +44,7 @@ public class CurriculumElementPreviewListController extends AbstractPreviewListC
 	
 	private final List<CurriculumElement> curriculumElements;
 	private final List<RepositoryEntry> repositoryEntries;
+	private final boolean admin;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -55,6 +57,9 @@ public class CurriculumElementPreviewListController extends AbstractPreviewListC
 		curriculumElements.add(curriculumElement);
 		
 		repositoryEntries = curriculumService.getRepositoryEntriesWithDescendants(curriculumElement);
+		
+		admin = ureq.getUserSession().getRoles().hasSomeRoles(curriculumElement.getCurriculum().getOrganisation(),
+				OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
 		
 		initForm(ureq);
 		initFilters();
@@ -109,7 +114,7 @@ public class CurriculumElementPreviewListController extends AbstractPreviewListC
 
 	@Override
 	protected boolean canEdit() {
-		return true;
+		return admin;
 	}
 
 }
