@@ -108,16 +108,21 @@ public class ScormResourceEditController extends FormBasicController {
 
 		String typeName = entry.getOlatResource().getResourceableTypeName();
 		if (typeName.equals(ScormCPFileResource.TYPE_NAME)) {
-			if (currentResource.delete()) {
-				FileUtils.copyFileToFile(uploadFileEl.getUploadFile(), currentResource, false);
-
-				String repositoryHome = FolderConfig.getCanonicalRepositoryHome();
-				String relUnzipDir = frm.getUnzippedDirRel(entry.getOlatResource());
-				File unzipDir = new File(repositoryHome, relUnzipDir);
-				if (unzipDir.exists()) {
-					FileUtils.deleteDirsAndFiles(unzipDir, true, true);
-				}
+			if (currentResource.getName().endsWith(".zip")) {
+				currentResource.delete();
+			}
+			
+			File resourceDir = frm.getFileResourceRoot(entry.getOlatResource());
+			File newResource = new File(resourceDir, "scorm.zip");
+			
+			String repositoryHome = FolderConfig.getCanonicalRepositoryHome();
+			String relUnzipDir = frm.getUnzippedDirRel(entry.getOlatResource());
+			File unzipDir = new File(repositoryHome, relUnzipDir);	
+			FileUtils.copyFileToFile(uploadFileEl.getUploadFile(), newResource, false);	
+			if (unzipDir.exists()) {
+				FileUtils.deleteDirsAndFiles(unzipDir, true, true);
 				frm.unzipFileResource(entry.getOlatResource());
+				newResource.delete();
 			}
 			return true;
 		}

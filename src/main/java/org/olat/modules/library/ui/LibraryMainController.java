@@ -57,6 +57,8 @@ import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -153,12 +155,16 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		super(ureq, control);
 		
 		RepositoryEntry catalogEntry = libraryManager.getCatalogRepoEntry();
-		if (catalogEntry != null) {
-			Long resId = catalogEntry.getOlatResource().getResourceableId();
-			basePath = "/repository/" + resId + "/" + libraryManager.getSharedFolder().getName();
-			libraryOres = libraryManager.getLibraryResourceable();
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), libraryOres);
+		if(catalogEntry == null) {
+			MessageController msg = MessageUIFactory.createWarnMessage(ureq, control, null, translate("warning.not.configured"));
+			putInitialPanel(msg.getInitialComponent());
+			return;
 		}
+		
+		Long resId = catalogEntry.getOlatResource().getResourceableId();
+		basePath = "/repository/" + resId + "/" + libraryManager.getSharedFolder().getName();
+		libraryOres = libraryManager.getLibraryResourceable();
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), libraryOres);
 
 		// url mapper
 		final Mapper mapper = new LibraryMapper(libraryManager);

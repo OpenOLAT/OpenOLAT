@@ -1903,7 +1903,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private void loadCustomSettings(Preferences prefs) {
-		if(StringHelper.containsNonWhitespace(persistentId)) {
+		if(prefs != null && StringHelper.containsNonWhitespace(persistentId)) {
 			FlexiTablePreferences tablePrefs = (FlexiTablePreferences)prefs.get(FlexiTableElement.class, persistentId);
 			if(tablePrefs != null) {
 				if(tablePrefs.getPageSize() != getDefaultPageSize() && tablePrefs.getPageSize() != 0) {

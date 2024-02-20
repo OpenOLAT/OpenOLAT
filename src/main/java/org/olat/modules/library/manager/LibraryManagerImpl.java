@@ -163,7 +163,7 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 			if (repoEntry != null) {
 				OLATResourceable ores = repoEntry.getOlatResource();
 				LocalFolderImpl loadedFolder = SharedFolderManager.getInstance().getSharedFolder(ores);	
-				if(loadedFolder != null) {
+				if(loadedFolder != null && loadedFolder.exists()) {
 					loadedFolder.setDefaultItemFilter(new VFSSystemItemFilter());
 					sharedFolder = loadedFolder;
 					sharedFolderPath = "/repository/" + repoEntry.getOlatResource().getResourceableId() + "/" + loadedFolder.getName();
