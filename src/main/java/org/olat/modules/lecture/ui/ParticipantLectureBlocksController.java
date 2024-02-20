@@ -165,22 +165,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 				layoutCont.contextPut("title", StringHelper.escapeHtml(entry.getDisplayname()));
 
 				// entry lifecycle date information
-				if (entry.getLifecycle() != null) {
-					Formatter formatter = Formatter.getInstance(getLocale());
-					String startDate = formatter.formatDate(entry.getLifecycle().getValidFrom());
-					String endDate = formatter.formatDate(entry.getLifecycle().getValidTo());
-					String startDayOfWeek = formatter.dayOfWeek(entry.getLifecycle().getValidFrom());
-					String endDayOfWeek = formatter.dayOfWeek(entry.getLifecycle().getValidTo());
-
-					String[] args = new String[] {
-							startDate,					// 0
-							endDate,					// 1
-							startDayOfWeek,				// 2
-							endDayOfWeek				// 3
-					};
-
-					layoutCont.contextPut("dateAndTime", translate("lecture.block.dateAndTime.lifecycle", args));
-				}
+				initEntryLifecycleInformation(layoutCont);
 				
 				openCourseButton = uifactory.addFormLink("open.course", formLayout, Link.BUTTON);
 				openCourseButton.setIconLeftCSS("o_icon o_CourseModule_icon");
@@ -306,7 +291,52 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		tableEl.reset(true, true, true);
 	}
 
+	private void initEntryLifecycleInformation(FormLayoutContainer layoutCont) {
+		// is lifecycle available at all?
+		if (entry.getLifecycle() != null) {
+			Formatter formatter = Formatter.getInstance(getLocale());
+			// start- & endDate is available
+			if (entry.getLifecycle().getValidFrom() != null
+					&& entry.getLifecycle().getValidTo() != null) {
+				String startDate = formatter.formatDate(entry.getLifecycle().getValidFrom());
+				String endDate = formatter.formatDate(entry.getLifecycle().getValidTo());
+				String startDayOfWeek = "";
+				String endDayOfWeek = "";
+				startDayOfWeek = formatter.dayOfWeek(entry.getLifecycle().getValidFrom());
+				endDayOfWeek = formatter.dayOfWeek(entry.getLifecycle().getValidTo());
 
+				String[] args = new String[] {
+						startDate,					// 0
+						endDate,					// 1
+						startDayOfWeek,				// 2
+						endDayOfWeek				// 3
+				};
+
+				layoutCont.contextPut("dateAndTime", translate("lecture.block.dateAndTime.lifecycle.full", args));
+			} else {
+				String date = "";
+				String dayOfWeek = "";
+				// preText is the information if it is a start- or endDate, e.g. Begin or End
+				String preText = "";
+				if (entry.getLifecycle().getValidFrom() != null) {
+					// only startDate is available
+					date = formatter.formatDate(entry.getLifecycle().getValidFrom());
+					dayOfWeek = formatter.dayOfWeek(entry.getLifecycle().getValidFrom());
+					preText = translate("lecture.start");
+				} else if (entry.getLifecycle().getValidTo() != null) {
+					// only endDate is available
+					date = formatter.formatDate(entry.getLifecycle().getValidTo());
+					dayOfWeek = formatter.dayOfWeek(entry.getLifecycle().getValidTo());
+					preText = translate("lecture.end");
+				}
+				String[] args = new String[] {
+						date,					// 0
+						dayOfWeek,				// 1
+				};
+				layoutCont.contextPut("dateAndTime", preText + ": " + translate("lecture.block.dateAndTime.lifecycle.single", args));
+			}
+		}
+	}
 
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
