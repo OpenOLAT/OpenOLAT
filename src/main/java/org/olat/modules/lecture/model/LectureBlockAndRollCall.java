@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.lecture.model;
@@ -34,7 +34,7 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 /**
  * 
  * Initial date: 29 mars 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class LectureBlockAndRollCall {
@@ -46,9 +46,11 @@ public class LectureBlockAndRollCall {
 	private final int plannedLectures;
 	private final int effectiveLectures;
 	private final Date startDate;
+	private final Date endDate;
 	private final boolean compulsory;
 	private final LectureBlockStatus status;
 	private final LectureRollCallStatus rollCallStatus;
+	private final String coachComment;
 	
 	private final Long rollCallKey;
 	private final int lecturesAbsentNumber;
@@ -68,6 +70,7 @@ public class LectureBlockAndRollCall {
 		this.absenceNoticeType = absenceNotice == null ? null : absenceNotice.getNoticeType();
 
 		startDate = lectureBlock.getStartDate();
+		endDate = lectureBlock.getEndDate();
 		lectureBlockKey = lectureBlock.getKey();
 		lectureBlockTitle = lectureBlock.getTitle();
 		plannedLectures = lectureBlock.getPlannedLecturesNumber();
@@ -75,7 +78,13 @@ public class LectureBlockAndRollCall {
 		compulsory = lectureBlock.isCompulsory();
 		status = lectureBlock.getStatus();
 		rollCallStatus = lectureBlock.getRollCallStatus();
-		
+		if (rollCall != null) {
+			coachComment = rollCall.getComment();
+		} else {
+			coachComment = "";
+		}
+
+
 		if(rollCall == null) {
 			rollCallKey = null;
 			lecturesAttendedNumber = 0;
@@ -85,7 +94,7 @@ public class LectureBlockAndRollCall {
 			appealStatus = null;
 		} else {
 			rollCallKey = rollCall.getKey();
-			
+
 			if(absenceNotice != null) {
 				lecturesAttendedNumber = 0;
 				lecturesAbsentNumber = lectureBlock.getCalculatedLecturesNumber();
@@ -100,8 +109,12 @@ public class LectureBlockAndRollCall {
 		}
 	}
 
-	public Date getDate() {
+	public Date getStartDate() {
 		return startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
 	}
 	
 	public String getEntryDisplayname() {
@@ -178,5 +191,9 @@ public class LectureBlockAndRollCall {
 
 	public LectureBlockAppealStatus getAppealStatus() {
 		return appealStatus;
+	}
+
+	public String getCoachComment() {
+		return coachComment;
 	}
 }

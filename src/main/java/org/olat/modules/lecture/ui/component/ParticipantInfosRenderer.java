@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.lecture.ui.component;
@@ -31,7 +31,7 @@ import org.olat.modules.lecture.ui.ParticipantRow;
 /**
  * 
  * Initial date: 18 juil. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ParticipantInfosRenderer implements FlexiCellRenderer {
@@ -48,8 +48,7 @@ public class ParticipantInfosRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof ParticipantRow) {
-			ParticipantRow participantRow = (ParticipantRow)cellValue;
+		if(cellValue instanceof ParticipantRow participantRow) {
 			double requiredRate = participantRow.getStatistics().getRequiredRate();
 			if(requiredRate >= 0.0d && Math.abs(defaultAttendanceRate - requiredRate) > 0.0001) {
 				String id = "p_infos_" + ++count;
@@ -58,7 +57,7 @@ public class ParticipantInfosRenderer implements FlexiCellRenderer {
 				// Attach bootstrap tooltip handler to help icon
 				double percent = requiredRate * 100.0d;
 				long rounded = Math.round(percent);
-				String rateInfos = translator.translate("infos.participant.attendance.rate", new String[] { Long.toString(rounded) });
+				String rateInfos = translator.translate("infos.participant.attendance.rate", Long.toString(rounded));
 				
 				target.append("<script>jQuery(function () {jQuery('#").append(id).append("').tooltip({placement:\"top\",container: \"body\",html:true,title:\"")
 				      .append(StringHelper.escapeJavaScript(rateInfos))

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,13 +14,14 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -35,6 +36,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -46,9 +48,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -82,10 +92,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Appeal button: after 5 day (coach can change the block) start, end after 15 day (appeal period)
  * 
  * Initial date: 28 mars 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ParticipantLectureBlocksController extends FormBasicController {
+
+	public static final String APPEAL_KEY = "appeal";
+	public static final String ALL_TAB_ID = "showAll";
+	public static final String WITH_COMMENT_TAB = "withComment";
+	public static final String FILTER_WITH_COMMENT = "filter.with.comment";
 	
 	private FormLink openCourseButton;
 	private FlexiTableElement tableEl;
@@ -105,7 +120,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	private final Identity assessedIdentity;
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean absenceDefaultAuthorized;
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -136,31 +151,50 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		appealPeriod = lectureModule.getAbsenceAppealPeriod();
 		initForm(ureq);
 		loadModel();
+		initFiltersPresets(ureq);
+		initFilters();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			if(withPrint) {
 				layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
 				layoutCont.getFormItemComponent().addListener(this);
 				layoutCont.getFormItemComponent().contextPut("withPrint", Boolean.TRUE);
 				layoutCont.contextPut("title", StringHelper.escapeHtml(entry.getDisplayname()));
+
+				// entry lifecycle date information
+				if (entry.getLifecycle() != null) {
+					Formatter formatter = Formatter.getInstance(getLocale());
+					String startDate = formatter.formatDate(entry.getLifecycle().getValidFrom());
+					String endDate = formatter.formatDate(entry.getLifecycle().getValidTo());
+					String startDayOfWeek = formatter.dayOfWeek(entry.getLifecycle().getValidFrom());
+					String endDayOfWeek = formatter.dayOfWeek(entry.getLifecycle().getValidTo());
+
+					String[] args = new String[] {
+							startDate,					// 0
+							endDate,					// 1
+							startDayOfWeek,				// 2
+							endDayOfWeek				// 3
+					};
+
+					layoutCont.contextPut("dateAndTime", translate("lecture.block.dateAndTime.lifecycle", args));
+				}
 				
 				openCourseButton = uifactory.addFormLink("open.course", formLayout, Link.BUTTON);
 				openCourseButton.setIconLeftCSS("o_icon o_CourseModule_icon");
 			} else {
-				layoutCont.contextPut("title", translate("lectures.repository.print.title", new String[] {
-						StringHelper.escapeHtml(entry.getDisplayname()),
-						StringHelper.escapeHtml(userManager.getUserDisplayName(assessedIdentity))
-				}));
+				layoutCont.contextPut("title", translate("lectures.repository.print.title", StringHelper.escapeHtml(entry.getDisplayname()),
+						StringHelper.escapeHtml(userManager.getUserDisplayName(assessedIdentity))));
 			}
 			layoutCont.contextPut("authorizedAbsenceEnabled", authorizedAbsenceEnabled);
 		}
-		
+
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.date, new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.startTime, new TimeFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.endTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.entry));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.lectureBlock));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.coach));
@@ -175,10 +209,11 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.status,
 				new LectureBlockRollCallStatusCellRenderer(authorizedAbsenceEnabled, absenceDefaultAuthorized, getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.coachComment));
 
 		if(appealEnabled && withAppeal && assessedIdentity.equals(getIdentity())) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("appeal", ParticipantCols.appeal.ordinal(), "appeal",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("appeal"), "appeal"), null)));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(APPEAL_KEY, ParticipantCols.appeal.ordinal(), APPEAL_KEY,
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(APPEAL_KEY), APPEAL_KEY), null)));
 		}
 
 		tableModel = new ParticipantLectureBlocksDataModel(columnsModel,
@@ -192,11 +227,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		tableEl.setCustomizeColumns(withPrint);
 		tableEl.setAndLoadPersistedPreferences(ureq, "participant-roll-call-appeal");
 		tableEl.setEmptyTableMessageKey("empty.repository.entry.lectures");
-		
-		List<FlexiTableFilter> filters = new ArrayList<>();
-		filters.add(new FlexiTableFilter(translate("filter.showAll"), "showAll", true));
-		filters.add(new FlexiTableFilter(translate("filter.mandatory"), "mandatory"));
-		tableEl.setFilters("", filters, false);
+		tableEl.setSearchEnabled(true);
 	}
 	
 	private void loadModel() {
@@ -208,6 +239,17 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		List<LectureBlockAndRollCallRow> rows = new ArrayList<>(rollCalls.size());
 		for(LectureBlockAndRollCall rollCall:rollCalls) {
 			LectureBlockAndRollCallRow row = new LectureBlockAndRollCallRow(rollCall);
+
+			// check if any filter is applied and if then skip this row, instead of adding it to the table
+			if (tableEl.getSelectedFilterTab() != null
+					&& tableEl.getSelectedFilterTab().getId().equals(WITH_COMMENT_TAB)
+					&& row.getRow().getCoachComment() == null
+					|| (!tableEl.getQuickSearchString().isBlank() && isExcludedBySearchString(tableEl.getQuickSearchString(), row.getRow()))
+					|| (getFilterByComment().contains(translate(FILTER_WITH_COMMENT))
+					&& row.getRow().getCoachComment() == null)) {
+				continue;
+			}
+
 			if(appealEnabled && !LectureBlockStatus.cancelled.equals(row.getRow().getStatus())
 					&& rollCall.isCompulsory()) {
 				
@@ -219,7 +261,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 				boolean absenceNotice = rollCall.hasAbsenceNotice();
 				int attended = row.getRow().getLecturesAttendedNumber();
 				if(!absenceNotice && attended < lectures) {
-					Date date = row.getRow().getDate();
+					Date date = row.getRow().getStartDate();
 					Calendar cal = Calendar.getInstance();
 					cal.setTime(date);
 					cal = CalendarUtils.getEndOfDay(cal);
@@ -239,8 +281,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 					if(sendAppealDate != null) {
 						appealLink = getAppealedLink(beginAppeal, endAppeal, sendAppealDate, appealStatus, formatter);
 					} else if(now.compareTo(beginAppeal) >= 0 && now.compareTo(endAppeal) <= 0) {
-						appealLink = uifactory.addFormLink("appeal_" + count++, "appeal", translate("appeal"), null, flc, Link.LINK | Link.NONTRANSLATED);
-						appealLink.setTitle(translate("appeal.tooltip", new String[] { formatter.formatDate(beginAppeal), formatter.formatDate(endAppeal) }));
+						appealLink = uifactory.addFormLink("appeal_" + count++, APPEAL_KEY, translate(APPEAL_KEY), null, flc, Link.LINK | Link.NONTRANSLATED);
+						appealLink.setTitle(translate("appeal.tooltip", formatter.formatDate(beginAppeal), formatter.formatDate(endAppeal)));
 						appealLink.setUserObject(row);
 						//appeal
 					} else if(now.compareTo(endAppeal) > 0) {
@@ -250,7 +292,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 						appealLink.setDomReplacementWrapperRequired(false);
 					} else if(now.compareTo(date) >= 0) {
 						// appeal at
-						String appealFrom = translate("appeal.from", new String[]{ formatter.formatDate(beginAppeal) });
+						String appealFrom = translate("appeal.from", formatter.formatDate(beginAppeal));
 						appealLink = uifactory.addFormLink("appeal_" + count++, "appealat", appealFrom, null, flc, Link.LINK | Link.NONTRANSLATED);
 						appealLink.setEnabled(false);
 						appealLink.setDomReplacementWrapperRequired(false);
@@ -262,6 +304,82 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+
+
+
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+
+		if (!tableModel.getObjects().isEmpty()) {
+			SelectionValues columnValues = new SelectionValues();
+
+			columnValues.add(SelectionValues.entry(translate(FILTER_WITH_COMMENT), translate(FILTER_WITH_COMMENT)));
+
+			FlexiTableMultiSelectionFilter commentFilter = new FlexiTableMultiSelectionFilter(translate("table.header.comment"),
+					"comment", columnValues, true);
+			filters.add(commentFilter);
+		}
+
+		tableEl.setFilters(true, filters, false, false);
+		tableEl.expandFilters(true);
+	}
+
+	private void initFiltersPresets(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		// filter: show all
+		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithFilters(ALL_TAB_ID, translate("filter.showAll"),
+				TabSelectionBehavior.clear, List.of());
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+
+		// filter: show only rows with coachComments
+		FlexiFiltersTab withCommentTab = FlexiFiltersTabFactory.tabWithFilters(WITH_COMMENT_TAB, translate(FILTER_WITH_COMMENT),
+				TabSelectionBehavior.clear, List.of());
+		withCommentTab.setFiltersExpanded(true);
+		tabs.add(withCommentTab);
+
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, allTab);
+	}
+
+	private boolean isExcludedBySearchString(String searchString, LectureBlockAndRollCall row) {
+		boolean excluded = true;
+
+		// compare searchString with name of course (display name)
+		if (row.getEntryDisplayname().toLowerCase().contains(searchString.toLowerCase())) {
+			excluded = false;
+		}
+		// compare searchString with lecture block title
+		else if (row.getLectureBlockTitle().toLowerCase().contains(searchString.toLowerCase()))
+			excluded = false;
+		// compare searchString with coach name (if it exists)
+		else if (row.getCoach() != null && row.getCoach().toLowerCase().contains(searchString.toLowerCase()))
+			excluded = false;
+		// compare searchString with comment string from coach (if it exists)
+		else if (row.getCoachComment() != null && row.getCoachComment().toLowerCase().contains(searchString.toLowerCase()))
+			excluded = false;
+
+
+		return excluded;
+	}
+
+	/**
+	 * currently there is only one filter (comment)
+	 * But this method can also be used later if more filters will be added, just needs to be modified with FlexiTableFilter
+	 * @return list of selected filterValues
+	 */
+	private List<String> getFilterByComment() {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		FlexiTableFilter commentFilter = FlexiTableFilter.getFilter(filters, "comment");
+		if (commentFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter) commentFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				return filterValues;
+			}
+		}
+		return Collections.emptyList();
 	}
 	
 	private FormLink getAppealedLink(Date beginAppeal, Date endAppeal, Date sendAppealDate,
@@ -278,9 +396,9 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		} else {
 			i18nKey = "appeal.sent";
 		}
-		String appealFrom = translate(i18nKey, new String[]{ formatter.formatDate(sendAppealDate) });
+		String appealFrom = translate(i18nKey, formatter.formatDate(sendAppealDate));
 		FormLink appealLink = uifactory.addFormLink("appeal_" + count++, "appealsend", appealFrom, null, flc, Link.LINK | Link.NONTRANSLATED);
-		appealLink.setTitle(translate("appeal.sent.tooltip", new String[] { formatter.formatDate(sendAppealDate), formatter.formatDate(beginAppeal), formatter.formatDate(endAppeal) }));
+		appealLink.setTitle(translate("appeal.sent.tooltip", formatter.formatDate(sendAppealDate), formatter.formatDate(beginAppeal), formatter.formatDate(endAppeal)));
 		appealLink.setEnabled(false);
 		appealLink.setDomReplacementWrapperRequired(false);
 		return appealLink;
@@ -320,19 +438,21 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				LectureBlockAndRollCallRow row = tableModel.getObject(se.getIndex());
-				if("appeal".equals(cmd)) {
+				if(APPEAL_KEY.equals(cmd)) {
 					doAppeal(ureq, row.getRow());
 				}
 			}
+			if (event instanceof FlexiTableSearchEvent
+					|| event instanceof FlexiTableFilterTabEvent) {
+				loadModel();
+			}
 		} else if(openCourseButton == source) {
 			doOpenCourse(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if("appeal".equals(link.getCmd())) {
+		} else if(source instanceof FormLink link) {
+			if(APPEAL_KEY.equals(link.getCmd())) {
 				LectureBlockAndRollCallRow row = (LectureBlockAndRollCallRow)link.getUserObject();
 				doAppeal(ureq, row.getRow());
 			}
@@ -358,7 +478,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		
 		StringBuilder teacherNames = new StringBuilder();
 		for(Identity teacher:teachers) {
-			if(teacherNames.length() > 0) teacherNames.append(", ");
+			if(!teacherNames.isEmpty()) teacherNames.append(", ");
 			teacherNames.append(teacher.getUser().getFirstName()).append(" ").append(teacher.getUser().getLastName());
 		}
 		String date = Formatter.getInstance(getLocale()).formatDate(block.getStartDate());
@@ -370,7 +490,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 			date,
 			url
 		};
-		
+
 		StringBuilder body = new StringBuilder(1024);
 		body.append(translate("appeal.body.title", args))
 		    .append(translate("appeal.body", args));
@@ -384,7 +504,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		appealCtrl.setContactFormTitle(translate("new.appeal.title"));
 		listenTo(appealCtrl);
 		
-		String title = translate("appeal.title", new String[]{ row.getLectureBlockTitle() });
+		String title = translate("appeal.title", row.getLectureBlockTitle());
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), appealCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
@@ -418,8 +538,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 			listenTo(printCtrl);
 			return printCtrl;
 		};				
-		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr, true);
+		ControllerCreator layoutCtrl = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
+		openInNewBrowserWindow(ureq, layoutCtrl, true);
 	}
 	
 	private void doOpenCourse(UserRequest ureq) {
