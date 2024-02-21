@@ -21,8 +21,8 @@ package org.olat.modules.video.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 24 janv. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class VideoCollectionAccessController extends FormBasicController {
@@ -65,9 +65,9 @@ public class VideoCollectionAccessController extends FormBasicController {
 	private MultiSelectionFilterElement organisationsEl;
 	
 	private final boolean readOnly;
-	private RepositoryEntry entry;
+	private final RepositoryEntry entry;
 	private final List<Organisation> organisations;
-	private List<Organisation> videoOrganisations;
+	private final List<Organisation> videoOrganisations;
 	
 	@Autowired
 	private ACService acService;
@@ -161,7 +161,7 @@ public class VideoCollectionAccessController extends FormBasicController {
 	public List<Organisation> getVideoOrganisations() {
 		if (organisationsEl == null) {
 			if (videoOrganisations == null) {
-				return null;
+				return Collections.emptyList();
 			}
 			return List.copyOf(videoOrganisations);
 		}
@@ -169,6 +169,6 @@ public class VideoCollectionAccessController extends FormBasicController {
 		Collection<String> selectedOrgKeys = organisationsEl.getSelectedKeys();
 		return organisations.stream()
 				.filter(org -> selectedOrgKeys.contains(org.getKey().toString()))
-				.collect(Collectors.toList());
+				.toList();
 	}
 }
