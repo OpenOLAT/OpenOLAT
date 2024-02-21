@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.lecture.ui;
@@ -22,7 +22,6 @@ package org.olat.modules.lecture.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -39,7 +38,7 @@ import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 /**
  * 
  * Initial date: 29 mars 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ParticipantLectureBlocksDataModel extends DefaultFlexiTableDataModel<LectureBlockAndRollCallRow>
@@ -73,7 +72,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 			if("mandatory".equals(key)) {
 				filteredRows = backups.stream()
 						.filter(node -> node.getRow().isCompulsory())
-						.collect(Collectors.toList());
+						.toList();
 			} else {
 				filteredRows = new ArrayList<>(backups);
 			}
@@ -91,35 +90,48 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 
 	@Override
 	public Object getValueAt(LectureBlockAndRollCallRow row, int col) {
-		switch(ParticipantCols.values()[col]) {
-			case date: return row.getRow().getDate();
-			case entry: return row.getRow().getEntryDisplayname();
-			case lectureBlock: return row.getRow().getLectureBlockTitle();
-			case coach: return row.getRow().getCoach();
-			case plannedLectures: {
-				if(LectureBlockStatus.cancelled.equals(row.getRow().getStatus())) {
+		switch (ParticipantCols.values()[col]) {
+			case date, startTime -> {
+				return row.getRow().getStartDate();
+			}
+			case endTime -> {
+				return row.getRow().getEndDate();
+			}
+			case coachComment -> {
+				return row.getRow().getCoachComment();
+			}
+			case entry -> {
+				return row.getRow().getEntryDisplayname();
+			}
+			case lectureBlock -> {
+				return row.getRow().getLectureBlockTitle();
+			}
+			case coach -> {
+				return row.getRow().getCoach();
+			}
+			case plannedLectures -> {
+				if (LectureBlockStatus.cancelled.equals(row.getRow().getStatus())) {
 					return null;
 				}
 				return row.getRow().getPlannedLecturesNumber();
 			}
-			case attendedLectures: {
-				if(!isDataVisible(row.getRow())) {
+			case attendedLectures -> {
+				if (!isDataVisible(row.getRow())) {
 					return null;
 				}
-				if(row.getRow().isCompulsory()) {
+				if (row.getRow().isCompulsory()) {
 					return positive(row.getRow().getLecturesAttendedNumber());
 				}
 				return null;
 			}
-			case unauthorizedAbsentLectures:
-			case absentLectures: {
-				if(!isDataVisible(row.getRow())) {
+			case unauthorizedAbsentLectures, absentLectures -> {
+				if (!isDataVisible(row.getRow())) {
 					return null;
 				}
-				if(row.getRow().isCompulsory()) {
+				if (row.getRow().isCompulsory()) {
 					long value;
-					if(isAuthorized(row.getRow())) {
-						value = 0l;
+					if (isAuthorized(row.getRow())) {
+						value = 0L;
 					} else {
 						value = positive(row.getRow().getLecturesAbsentNumber());
 					}
@@ -127,24 +139,30 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 				}
 				return null;
 			}
-			case authorizedAbsentLectures: {
-				if(!isDataVisible(row.getRow())) {
+			case authorizedAbsentLectures -> {
+				if (!isDataVisible(row.getRow())) {
 					return null;
 				}
-				if(row.getRow().isCompulsory()) {
+				if (row.getRow().isCompulsory()) {
 					long value;
-					if(isAuthorized(row.getRow())) {
+					if (isAuthorized(row.getRow())) {
 						value = positive(row.getRow().getLecturesAbsentNumber());
 					} else {
-						value = 0l;
+						value = 0L;
 					}
 					return value;
 				}
 				return null;
 			}
-			case status: return row;
-			case appeal: return row.getAppealButton();
-			default: return null;
+			case status -> {
+				return row;
+			}
+			case appeal -> {
+				return row.getAppealButton();
+			}
+			default -> {
+				return null;
+			}
 		}
 	}
 	
@@ -174,7 +192,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 	}
 
 	private int positive(int num) {
-		return num < 0 ? 0 : num;
+		return Math.max(num, 0);
 	}
 	
 	@Override
@@ -185,6 +203,8 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 	
 	public enum ParticipantCols implements FlexiSortableColumnDef {
 		date("table.header.date"),
+		startTime("table.header.start.time"),
+		endTime("table.header.end.time"),
 		entry("table.header.entry"),
 		lectureBlock("table.header.lecture.block"),
 		coach("table.header.teachers"),
@@ -194,7 +214,8 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 		unauthorizedAbsentLectures("table.header.unauthorized.absence"),
 		authorizedAbsentLectures("table.header.authorized.absence"),
 		status("table.header.status"),
-		appeal("table.header.appeal");
+		appeal("table.header.appeal"),
+		coachComment("table.header.comment");
 		
 		private final String i18nKey;
 		
