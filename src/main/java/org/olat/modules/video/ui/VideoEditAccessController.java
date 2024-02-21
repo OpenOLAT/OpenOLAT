@@ -26,8 +26,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.id.Organisation;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.site.VideoSiteDef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.AuthoringEditAccessController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 24 janv. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class VideoEditAccessController extends AuthoringEditAccessController {
@@ -44,6 +46,8 @@ public class VideoEditAccessController extends AuthoringEditAccessController {
 	
 	@Autowired
 	private VideoManager videoManager;
+	@Autowired
+	private SiteDefinitions siteDefinitions;
 	
 	public VideoEditAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl, entry, readOnly);
@@ -51,13 +55,16 @@ public class VideoEditAccessController extends AuthoringEditAccessController {
 
 	@Override
 	protected void initAccessOffers(UserRequest ureq, VelocityContainer vc) {
-		removeAsListenerAndDispose(videoCollectionAccessController);
-		
-		videoCollectionAccessController = new VideoCollectionAccessController(ureq, getWindowControl(), entry, readOnly); 
-		listenTo(videoCollectionAccessController);
-		vc.put("videoCollectionAccess", videoCollectionAccessController.getInitialComponent());
-		
-		super.initAccessOffers(ureq, vc);
+		// only show VideoCollectionAccessController if VideoCollection Site is enabled
+		if (siteDefinitions.isSiteEnabled(VideoSiteDef.class)) {
+			removeAsListenerAndDispose(videoCollectionAccessController);
+
+			videoCollectionAccessController = new VideoCollectionAccessController(ureq, getWindowControl(), entry, readOnly);
+			listenTo(videoCollectionAccessController);
+			vc.put("videoCollectionAccess", videoCollectionAccessController.getInitialComponent());
+
+			super.initAccessOffers(ureq, vc);
+		}
 	}
 
 	@Override
