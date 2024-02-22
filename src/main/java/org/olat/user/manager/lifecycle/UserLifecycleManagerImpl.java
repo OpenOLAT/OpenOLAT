@@ -382,13 +382,15 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		boolean sendMailBeforeDeletion = userModule.isMailBeforeDeletion() && numOfDaysBeforeEmail > 0;
 		if(sendMailBeforeDeletion) {
 			int days = numOfDaysBeforeDeletion - numOfDaysBeforeEmail;
+			String[] i18nParams = new String[] { Integer.toString(days) };
 			Date lastLoginDate = getDate(days);
 			List<Identity> identities = getReadyToDeleteIdentities(lastLoginDate);
 			if(!identities.isEmpty()) {
 				for(Identity identity:identities) {
 					if(identity.getLastLogin() != null) {
-						sendEmail(identity, "mail.before.deletion.subject", "mail.before.deletion.body", "before deletion", false);
-						sendEmailCopy(userModule.getMailCopyBeforeDeletion(), "mail.before.deletion.subject", "mail.before.deletion.body", "before deletion", identity);
+
+						sendEmail(identity, "mail.before.deletion.subject", i18nParams, "mail.before.deletion.body", i18nParams, "before deletion", false);
+						sendEmailCopy(userModule.getMailCopyBeforeDeletion(), "mail.before.deletion.subject", i18nParams, "mail.before.deletion.body", i18nParams, "before deletion", identity);
 						identity = setIdentityDeletionMail(identity);
 						vetoed.add(identity);
 					}
@@ -492,18 +494,25 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	}	
 	
 	private void sendEmail(Identity identity, String subjectI18nKey, String bodyI18nKey, String type, boolean externalOnly) {
+		sendEmail(identity, subjectI18nKey, null, bodyI18nKey, null, type, externalOnly);
+	}
+	
+	private void sendEmail(Identity identity, String subjectI18nKey, String[] subjectParams, String bodyI18nKey, String[] bodyParams, String type, boolean externalOnly) {
 		String language = identity.getUser().getPreferences().getLanguage();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
 		Translator translator = Util.createPackageTranslator(UserAdminLifecycleConfigurationController.class, locale);
 		
-		String subject = translator.translate(subjectI18nKey);
-		String body = translator.translate(bodyI18nKey);
+		String subject = translator.translate(subjectI18nKey, subjectParams);
+		String body = translator.translate(bodyI18nKey, bodyParams);
 		LifecycleMailTemplate template = new LifecycleMailTemplate(subject, body, locale);
 		
 		sendUserEmailTo(identity, template, type, externalOnly);
 	}
 	
 	private void sendEmailCopy(List<String> receivers, String subjectI18nKey, String bodyI18nKey, String type, Identity identity) {
+		sendEmailCopy(receivers, subjectI18nKey, null, bodyI18nKey, null, type, identity);
+	}	
+	private void sendEmailCopy(List<String> receivers, String subjectI18nKey, String[] subjectParams, String bodyI18nKey, String[] bodyParams, String type, Identity identity) {
 		if (receivers == null || receivers.isEmpty()) {
 			return;
 		}
