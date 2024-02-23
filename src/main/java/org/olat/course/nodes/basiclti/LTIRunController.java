@@ -41,6 +41,7 @@ import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -87,6 +88,7 @@ public class LTIRunController extends BasicController {
 	private ChiefController thebaseChief;
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	
+	private LTI13Context ltiContext;
 	private final LTIDisplayOptions display;
 	private final BasicLTICourseNode courseNode;
 	private final ModuleConfiguration config;
@@ -162,6 +164,7 @@ public class LTIRunController extends BasicController {
 			LTI13Context context, List<LTI13ContentItem> contentItems, UserCourseEnvironment userCourseEnv) {
  		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		this.courseNode = courseNode;
+		this.ltiContext = context;
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
@@ -268,9 +271,11 @@ public class LTIRunController extends BasicController {
 		// only run when user as already accepted to data exchange or no data 
 		// has to be exchanged or when it is configured to not show the accept
 		// dialog
-		boolean sendName = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDNAME, false);
-		boolean sendMail = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDEMAIL, false);
-		String customAttributes = (String)config.get(LTIConfigForm.CONFIG_KEY_CUSTOM);
+		boolean sendName = (ltiContext != null && ltiContext.getSendUserAttributesList().contains(UserConstants.LASTNAME))
+				|| config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDNAME, false);
+		boolean sendMail = (ltiContext != null && ltiContext.getSendUserAttributesList().contains(UserConstants.EMAIL))
+				|| config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDEMAIL, false);
+		String customAttributes = ltiContext != null ? ltiContext.getSendCustomAttributes() : (String)config.get(LTIConfigForm.CONFIG_KEY_CUSTOM);
 		disclaimerCtrl = new LTIDataExchangeDisclaimerController(ureq, getWindowControl(), sendName, sendMail, customAttributes);
 		listenTo(disclaimerCtrl);
 	}
@@ -292,7 +297,8 @@ public class LTIRunController extends BasicController {
 		Boolean skipAcceptLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE);
 		if (dataExchangeHash == null || checkHasDataExchangeAccepted(dataExchangeHash)
 				|| (!ltiModule.isForceLaunchPage() && skipAcceptLaunchPage != null && skipAcceptLaunchPage.booleanValue()) ) {
-			Boolean skipLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE);
+			Boolean skipLaunchPage = (ltiContext != null && ltiContext.isSkipLaunchPage()) 
+					|| config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE);
 			if(!ltiModule.isForceLaunchPage() && skipLaunchPage != null && skipLaunchPage.booleanValue()) {
 				// start the content immediately
 				openBasicLTIContent(ureq);
