@@ -484,8 +484,11 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		infos.removeAll(infosStartOutOfRange);
 		
 		if (!manualStartInRangeOverrides.isEmpty()) {
-			List<Long> searchKeys = manualStartInRangeOverrides.stream()
-					.map(override -> override.getIdentifier().split("::"))
+			List<String> manualStartInRangeOverridesIdentifiers = manualStartInRangeOverrides.stream()
+					.map(QualityGeneratorOverride::getIdentifier)
+					.toList();
+			List<Long> searchKeys = manualStartInRangeOverridesIdentifiers.stream()
+					.map(identifier -> identifier.split("::"))
 					.filter(identifierParts -> identifierParts.length == 3)
 					.map(identifierParts -> QualityDataCollectionTopicType.IDENTIY == topicType? identifierParts[2]: identifierParts[1])
 					.map(Long::valueOf)
@@ -503,8 +506,15 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			}
 			SearchParameters manualStartInRangeSearchParams = getSeachParameters(generator, configs, organisations, null,
 					null, identityKeys, repositoryEntryKeys, excludeBlacklisted, applyAnnouncement);
+			// Load lecture block of teacher in all courses
 			List<LectureBlockInfo> manualStartInRangeInfos = loadLectureBlockInfo(generator, configs, manualStartInRangeSearchParams, false);
-			infos.addAll(manualStartInRangeInfos);
+			for (LectureBlockInfo  manualStartInRangeInfo: manualStartInRangeInfos) {
+				String identifier = getIdentifier(generator, () -> manualStartInRangeInfo.getCourseRepoKey(), () -> manualStartInRangeInfo.getTeacherKey());
+				// Add only courses lecture block of data collection with manual start date
+				if (manualStartInRangeOverridesIdentifiers.contains(identifier)) {
+					infos.add(manualStartInRangeInfo);
+				}
+			}
 		}
 		
 		Map<Long, RepositoryEntry> entryKeyToEntry = repositoryService

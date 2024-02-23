@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
@@ -88,11 +89,11 @@ public interface QualityGeneratorService {
 
 	public void removeFromBlacklist(QualityPreview preview);
 
-	public QualityGeneratorOverride createOverride(String identifier, QualityGenerator generator, Long generatorProviderKey);
+	public QualityGeneratorOverride createOverride(Identity doer, String identifier, QualityGenerator generator, Long generatorProviderKey);
 
-	public QualityGeneratorOverride updateOverride(QualityGeneratorOverride override);
+	public QualityGeneratorOverride updateOverride(Identity doer, QualityGeneratorOverride override);
 
-	public void deleteOverride(String identifier);
+	public void deleteOverride(Identity doer, String identifier);
 
 	public QualityGeneratorOverride getOverride(String identifier);
 	

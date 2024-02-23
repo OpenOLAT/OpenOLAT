@@ -457,7 +457,7 @@ public class CourseProvider implements QualityGeneratorProvider {
 				generator, generatorProviderKey);
 		if (override != null) {
 			override.setDataCollection(dataCollection);
-			generatorService.updateOverride(override);
+			generatorService.updateOverride(null, override);
 		}
 		
 		Date start = override != null? override.getStart(): generatedStart;

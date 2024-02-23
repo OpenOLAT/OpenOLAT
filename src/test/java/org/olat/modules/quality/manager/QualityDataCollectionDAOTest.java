@@ -199,8 +199,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 
 		updatedDataCollection = sut.loadDataCollectionByKey(updatedDataCollection);
 		assertThat(updatedDataCollection.getTitle()).isEqualTo(title);
-		assertThat(updatedDataCollection.getStart()).isEqualToIgnoringSeconds(start);
-		assertThat(updatedDataCollection.getDeadline()).isEqualToIgnoringSeconds(end);
+		assertThat(updatedDataCollection.getStart()).isCloseTo(start, 2000);
+		assertThat(updatedDataCollection.getDeadline()).isCloseTo(end, 2000);
 		assertThat(updatedDataCollection.isQualitativeFeedback()).isTrue();
 		assertThat(updatedDataCollection.getTopicType()).isEqualTo(topicType);
 		assertThat(updatedDataCollection.getTopicCustom()).isEqualTo(topicCustom);
@@ -580,9 +580,9 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection1 = sut.createDataCollection(generator, null);
 		QualityDataCollection dataCollection2 = sut.createDataCollection(generator, null);
 		QualityDataCollection dataCollection3 = sut.createDataCollection(generator, null);
-		QualityGeneratorOverride override = generatorService.createOverride(random(), generator, 1l);
+		QualityGeneratorOverride override = generatorService.createOverride(null, random(), generator, 1l);
 		override.setDataCollection(dataCollection3);
-		generatorService.updateOverride(override);
+		generatorService.updateOverride(null, override);
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();

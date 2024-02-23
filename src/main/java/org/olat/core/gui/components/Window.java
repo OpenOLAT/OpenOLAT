@@ -1228,7 +1228,8 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 			// tree was changed by another thread in the meantime
 		}
 		if (!target.isVisible()) {
-			throw new OLATRuntimeException(Window.class, "target with name: '" + target.getComponentName() + "', was invisible, but called to dispatch", null);
+			log.warn("target with name: '{}', was invisible, but called to dispatch", target.getComponentName());
+			return NO_DISPATCHRESULT;
 		}
 		
 		boolean toDispatch = true;
