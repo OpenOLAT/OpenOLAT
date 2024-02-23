@@ -45,9 +45,11 @@ import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.generator.GeneratorOverrideSearchParams;
 import org.olat.modules.quality.generator.GeneratorPreviewSearchParams;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
+import org.olat.modules.quality.generator.QualityGeneratorOverride;
 import org.olat.modules.quality.generator.QualityGeneratorOverrides;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityPreview;
@@ -159,7 +161,48 @@ public class CourseLecturesProviderTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(generated).isEmpty();
+	}
+	
+	@Test
+	public void shouldNotCreateDataCollectionIfOverrideInOtherRepository() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry courseEntryPast = createCourseWithLecture(DateUtils.addDays(new Date(), -12), DateUtils.addDays(new Date(), -11), List.of(teacher));
+		RepositoryEntry courseEntryOverride = createCourseWithLecture(DateUtils.addDays(new Date(), 2), DateUtils.addDays(new Date(), 3), List.of(teacher));
 		
+		QualityGenerator generator = createGeneratorInDefaultOrganisation();
+		QualityGeneratorConfigs configs = createConfigs(generator, "10", courseEntryPast);
+		RepositoryEntryWhiteListController.setRepositoryEntryRefs(configs, List.of(courseEntryPast, courseEntryOverride));
+		dbInstance.commitAndCloseSession();
+		
+		List<QualityDataCollection> generated = sut.generate(generator, configs, NO_OVERRIDES, DateUtils.addDays(new Date(), -20), new Date());
+		dbInstance.commitAndCloseSession();
+		assertThat(generated).isEmpty();
+		
+		GeneratorPreviewSearchParams searchParams = new GeneratorPreviewSearchParams();
+		searchParams.setDateRange(new DateRange(DateUtils.addDays(new Date(), -20), DateUtils.addDays(new Date(), 10)));
+		List<QualityPreview> previews = sut.getPreviews(generator, configs, NO_OVERRIDES, searchParams);
+		QualityPreview privewOverride = previews.stream()
+				.filter(preview -> preview.getIdentifier().indexOf(courseEntryOverride.getKey().toString()) > -1)
+				.findFirst().get();
+		
+		QualityGeneratorOverride override = generatorService.createOverride(teacher, privewOverride.getIdentifier(), privewOverride.getGenerator(), privewOverride.getGeneratorProviderKey());
+		override.setStart(DateUtils.addDays(new Date(), -2));
+		generatorService.updateOverride(teacher, override);
+		dbInstance.commitAndCloseSession();
+		
+		GeneratorOverrideSearchParams overrideSearchParams = new GeneratorOverrideSearchParams();
+		overrideSearchParams.setGenerators(List.of(generator));
+		QualityGeneratorOverrides overrides = generatorService.getOverrides(overrideSearchParams);
+		
+		// Start was moved, but not in this range
+		generated = sut.generate(generator, configs, overrides, DateUtils.addDays(new Date(), -20), DateUtils.addDays(new Date(), -3));
+		dbInstance.commitAndCloseSession();
+		assertThat(generated).isEmpty();
+		
+		// Start was moved in this range
+		generated = sut.generate(generator, configs, overrides, DateUtils.addDays(new Date(), -20), new Date());
+		dbInstance.commitAndCloseSession();
+		assertThat(generated).hasSize(1);
 	}
 	
 	@Test

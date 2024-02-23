@@ -183,14 +183,14 @@ public class PreviewConfigurationController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (startCompareFormat.format(startEl.getDate()).equals(startCompareFormat.format(preview.getStart()))) {
-			generatorService.deleteOverride(preview.getIdentifier());
+			generatorService.deleteOverride(getIdentity(), preview.getIdentifier());
 		} else {
 			QualityGeneratorOverride override = generatorService.getOverride(preview.getIdentifier());
 			if (override == null) {
-				override = generatorService.createOverride(preview.getIdentifier(), preview.getGenerator(), preview.getGeneratorProviderKey());
+				override = generatorService.createOverride(getIdentity(), preview.getIdentifier(), preview.getGenerator(), preview.getGeneratorProviderKey());
 			}
 			override.setStart(startEl.getDate());
-			generatorService.updateOverride(override);
+			generatorService.updateOverride(getIdentity(), override);
 		}
 	}
 

@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
@@ -337,17 +338,25 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	}
 
 	@Override
-	public QualityGeneratorOverride createOverride(String identifier, QualityGenerator generator, Long generatorProviderKey) {
-		return generatorOverrideDao.create(identifier, generator, generatorProviderKey);
+	public QualityGeneratorOverride createOverride(Identity doer, String identifier, QualityGenerator generator, Long generatorProviderKey) {
+		QualityGeneratorOverride override = generatorOverrideDao.create(identifier, generator, generatorProviderKey);
+		log.info("Quality data collection override {} created by {}", override, doer);
+		return override;
 	}
 
 	@Override
-	public QualityGeneratorOverride updateOverride(QualityGeneratorOverride override) {
-		return generatorOverrideDao.save(override);
+	public QualityGeneratorOverride updateOverride(Identity doer, QualityGeneratorOverride override) {
+		QualityGeneratorOverride updatedOverride = generatorOverrideDao.save(override);
+		log.info("Quality data collection override {} updated by {}", override, doer);
+		return updatedOverride;
 	}
 
 	@Override
-	public void deleteOverride(String identifier) {
+	public void deleteOverride(Identity doer, String identifier) {
+		QualityGeneratorOverride override = generatorOverrideDao.load(identifier);
+		if (override != null) {
+			log.info("Quality data collection override {} deleted by {}", override, doer);
+		}
 		generatorOverrideDao.delete(identifier);
 	}
 

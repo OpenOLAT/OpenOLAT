@@ -569,9 +569,9 @@ public class CourseProviderTest  extends OlatTestCase {
 		assertThat(previews).hasSize(12);
 
 		String identifier = sut.getDailyIdentifier(generator, courseEntry, new GregorianCalendar(2045, 10, 4).getTime());
-		QualityGeneratorOverride override = generatorService.createOverride(identifier, generator, courseEntry.getKey());
+		QualityGeneratorOverride override = generatorService.createOverride(null, identifier, generator, courseEntry.getKey());
 		override.setStart(new GregorianCalendar(2045, 11, 4).getTime());
-		override = generatorService.updateOverride(override);
+		override = generatorService.updateOverride(null, override);
 		sut.generateDataCollection(generator, configs, override, courseEntry, new GregorianCalendar(2045, 10, 4).getTime());
 		dbInstance.commitAndCloseSession();
 		
