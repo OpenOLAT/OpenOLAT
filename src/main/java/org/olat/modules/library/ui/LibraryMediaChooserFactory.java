@@ -44,7 +44,7 @@ public class LibraryMediaChooserFactory implements CustomMediaChooserFactory {
 	@Override
 	public CustomMediaChooserController getInstance(UserRequest ureq, WindowControl wControl) {
 		VFSContainer libraryDir = libraryManager.getSharedFolder();
-		if(libraryDir != null) {
+		if(libraryDir != null && libraryDir.exists()) {
 			return new LibraryMediaChooserController(ureq, wControl, libraryDir);
 		}
 		return null;
