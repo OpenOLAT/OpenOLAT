@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
@@ -71,8 +70,7 @@ public class ShareItemOptionController extends FormBasicController {
 	private boolean isAuthor(List<QuestionItemShort> itemList) {
 		boolean isAuthor = true;
 		for(QuestionItemShort item:itemList) {
-			List<Identity> authors = qpoolService.getAuthors(item);
-			isAuthor &= authors.contains(getIdentity());
+			isAuthor &= qpoolService.isAuthor(item, getIdentity());
 			if(!isAuthor) {
 				break;
 			}

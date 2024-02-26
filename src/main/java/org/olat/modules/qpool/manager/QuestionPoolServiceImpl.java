@@ -218,14 +218,13 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
+	public boolean isAuthor(QuestionItemShort item, IdentityRef identity) {
+		return questionItemDao.isOwner(item, identity);
+	}
+
+	@Override
 	public List<Identity> getAuthors(QuestionItemShort item) {
-		QuestionItemImpl itemImpl;
-		if(item instanceof QuestionItemImpl) {
-			itemImpl = (QuestionItemImpl)item;
-		} else {
-			itemImpl = questionItemDao.loadById(item.getKey());
-		}
-		return securityGroupDao.getIdentitiesOfSecurityGroup(itemImpl.getOwnerGroup());
+		return questionItemDao.getOwners(item);
 	}
 	
 	@Override

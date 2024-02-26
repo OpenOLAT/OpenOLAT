@@ -617,7 +617,7 @@ public class LTIConfigForm extends FormBasicController {
 		if(ltiModule.isForceLaunchPage()) {
 			skipLaunchPageEl.select(enabledKeys[0], true);
 			skipLaunchPageEl.setEnabled(false);
-		} else if ((ltiContext == null ? null : ltiContext.isSkipLaunchPage())
+		} else if ((ltiContext != null && ltiContext.isSkipLaunchPage())
 				|| config.getBooleanSafe(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE)) {
 			skipLaunchPageEl.select(enabledKeys[0], true);
 		}
