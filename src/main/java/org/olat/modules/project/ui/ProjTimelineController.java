@@ -92,6 +92,7 @@ import org.olat.modules.project.ui.ProjTimelineActivityRowsFactory.ActivityRowDa
 import org.olat.modules.project.ui.ProjTimelineActivityRowsFactory.ProjTimelineUIFactory;
 import org.olat.modules.project.ui.ProjTimelineDataModel.TimelineCols;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
+import org.olat.modules.project.ui.event.QuickStartEvents;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.user.UserManager;
@@ -122,20 +123,21 @@ public class ProjTimelineController extends FormBasicController
 	private FlexiFiltersTab tabMy;
 	private FlexiFiltersTab tabAll;
 	private List<FormLink> rangeLinks = new ArrayList<>();
-	private FormLink futureRangeLink;
+	private FormLink laterRangeLink;
 	private FormLink overdueRangeLink;
-	private FormLink futureMoreLink;
+	private FormLink laterMoreLink;
 	private FormLink moreLink;
+	private FormLink toDosLink;
 	private FlexiTableElement tableEl;
 	private ProjTimelineDataModel dataModel;
 	
 	private final List<ProjTimelineRow> allRows = new ArrayList<>();
 	private final List<ProjTimelineRow> artefactRows = new ArrayList<>();
-	private final List<ProjTimelineRow> futureRows = new ArrayList<>();
+	private final List<ProjTimelineRow> laterRows = new ArrayList<>();
 	private final List<ProjTimelineRow> overdueRows = new ArrayList<>();
 	private final List<ProjTimelineRow> activityTodayRows = new ArrayList<>();
 	private final List<ProjTimelineRow> activityEarlierRows = new ArrayList<>();
-	private final DateRange futureDateRange;
+	private final DateRange laterDateRange;
 	private final DateRange todayDateRange;
 	private Date offsetDate;
 	private int nextLaterRowsNum = FUTURE_ROWS_NUM_INITIAL;
@@ -171,12 +173,13 @@ public class ProjTimelineController extends FormBasicController
 		this.todayDateRange = new DateRange(today, DateUtils.addDays(today, 1));
 		
 		// Date range not used to allocation but for order
-		futureRangeLink = createRangeLink(Range.future, DateUtils.addYears(today, 10), DateUtils.addDays(today, 8), translate("timeline.range.future"), false);
-		futureDateRange = ((RangeUserObject)futureRangeLink.getUserObject()).getDateRange();
+		laterRangeLink = createRangeLink(Range.later, DateUtils.addYears(today, 10), DateUtils.addDays(today, 8), translate("timeline.range.later"), false);
+		laterDateRange = ((RangeUserObject)laterRangeLink.getUserObject()).getDateRange();
 		overdueRangeLink = createRangeLink(Range.overdue, DateUtils.addDays(today, 1), DateUtils.addDays(today, 1), translate("timeline.range.overdue"), true);
 		
 		initForm(ureq);
 		loadModel(ureq, true);
+		doMore(ureq);
 	}
 
 	@Override
@@ -197,9 +200,9 @@ public class ProjTimelineController extends FormBasicController
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
 		
-		futureMoreLink = uifactory.addFormLink("o_later_" + counter++, CMD_SHOW_LATER, "timeline.show.more", null, flc, Link.BUTTON);
-		futureMoreLink.setIconLeftCSS("o_icon o_icon_proj_timeline_later");
-		futureMoreLink.setGhost(true);
+		laterMoreLink = uifactory.addFormLink("o_later_" + counter++, CMD_SHOW_LATER, "timeline.show.more", null, flc, Link.BUTTON);
+		laterMoreLink.setIconLeftCSS("o_icon o_icon_proj_timeline_later");
+		laterMoreLink.setGhost(true);
 		
 		moreLink = uifactory.addFormLink("more", CMD_MORE, "timeline.show.more", null, flc, Link.BUTTON);
 		moreLink.setIconLeftCSS("o_icon o_icon_proj_timeline_earlier");
@@ -336,34 +339,36 @@ public class ProjTimelineController extends FormBasicController
 	}
 
 	private void addFutureRows(List<ProjTimelineRow> rows) {
-		if (futureRows.isEmpty()) {
+		if (laterRows.isEmpty()) {
 			return;
 		}
 		
-		if (futureRangeLink.getUserObject() instanceof RangeUserObject rangeUserObject) {
-			rangeUserObject.setRowsAvailable(!futureRows.isEmpty());
+		if (laterRangeLink.getUserObject() instanceof RangeUserObject rangeUserObject) {
+			rangeUserObject.setRowsAvailable(!laterRows.isEmpty());
 			if (rangeUserObject.isShow()) {
 				// Add from button to top, so index 0 can be used for every add.
-				int numRowsToAdd = nextLaterRowsNum < futureRows.size()? nextLaterRowsNum: futureRows.size();
-				futureRows.sort((r1, r2) -> r1.getDate().compareTo(r2.getDate()));
+				int numRowsToAdd = nextLaterRowsNum < laterRows.size()? nextLaterRowsNum: laterRows.size();
+				laterRows.sort((r1, r2) -> r1.getDate().compareTo(r2.getDate()));
 				for (int i = 0; i < numRowsToAdd; i++) {
-					rows.add(0, futureRows.get(i));
+					rows.add(0, laterRows.get(i));
 				}
 				
-				if (futureRows.size() > nextLaterRowsNum) {
+				if (laterRows.size() > nextLaterRowsNum) {
 					ProjTimelineRow rangeRow = new ProjTimelineRow();
-					rangeRow.setShowLaterLink(futureMoreLink);
+					rangeRow.setShowLaterLink(laterMoreLink);
 					rows.add(0, rangeRow);
 				}
 			}
 		}
 		
-		rows.add(0, createRangeRowLink(futureRangeLink));
+		rows.add(0, createRangeRowLink(laterRangeLink));
 	}
 
 	private void addOverdueRows(List<ProjTimelineRow> rows) {
 		int todayRangeLinkIndex = getTodayRangeLinkIndex(rows);
-		rows.add(todayRangeLinkIndex, createRangeRowLink(overdueRangeLink));
+		ProjTimelineRow overdueLinkRow = createRangeRowLink(overdueRangeLink);
+		overdueLinkRow.setOverdue(true);
+		rows.add(todayRangeLinkIndex, overdueLinkRow);
 		
 		todayRangeLinkIndex++;
 		if (overdueRangeLink.getUserObject() instanceof RangeUserObject rangeUserObject) {
@@ -388,8 +393,12 @@ public class ProjTimelineController extends FormBasicController
 			
 			String message = translate("timeline.todo.without.due", String.valueOf(toDoTaskWithoutDue));
 			row.setMessage(message);
-			addStaticMessageItem(row);
-			row.getMessageItem().setElementCssClass("o_proj_timline_bold");
+			toDosLink = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT,
+					StringHelper.escapeHtml(row.getMessage()), null, flc, Link.LINK + Link.NONTRANSLATED);
+			toDosLink.setElementCssClass("o_proj_timline_bold");
+			String url = bcFactory.getToDosUrl(project);
+			toDosLink.setUrl(url);
+			row.setMessageItem(toDosLink);
 			
 			row.setFormattedDate(activityRowsFactory.getFormattedDate(new Date(), false));
 			row.setToday(true);
@@ -421,7 +430,11 @@ public class ProjTimelineController extends FormBasicController
 					if (rangeUserObject.getRange() == Range.next7Days || rangeUserObject.getRange() == Range.today) {
 						if (rangeUserObject.isShow()) {
 							ProjTimelineRow emptyMessageRow = new ProjTimelineRow();
-							emptyMessageRow.setRangeEmpty(translate("timeline.range.empty"));
+							if (rangeUserObject.getRange() == Range.next7Days) {
+								emptyMessageRow.setRangeEmpty(translate("timeline.range.empty.next.7.days"));
+							} else if (rangeUserObject.getRange() == Range.today) {
+								emptyMessageRow.setRangeEmpty(translate("timeline.range.empty.today"));
+							}
 							emptyMessageRow.setDate(DateUtils.addMinutes(row.getDate(), 1));
 							rows.add(i + 1, emptyMessageRow);
 							i++;
@@ -437,7 +450,7 @@ public class ProjTimelineController extends FormBasicController
 
 	private void loadArtefactRows() {
 		artefactRows.clear();
-		futureRows.clear();
+		laterRows.clear();
 		overdueRows.clear();
 		loadToDoRows();
 		loadAppointmentRows();
@@ -456,9 +469,10 @@ public class ProjTimelineController extends FormBasicController
 			if (toDo.getToDoTask().getDueDate() != null) {
 				ProjTimelineRow row = createToDoRow(toDo);
 				
-				if (toDo.getToDoTask().getDueDate().after(futureDateRange.getFrom())) {
-					futureRows.add(row);
+				if (toDo.getToDoTask().getDueDate().after(laterDateRange.getFrom())) {
+					laterRows.add(row);
 				} else if (toDo.getToDoTask().getDueDate().before(todayDateRange.getFrom())) {
+					row.setOverdue(true);
 					overdueRows.add(row);
 				} else {
 					artefactRows.add(row);
@@ -507,8 +521,8 @@ public class ProjTimelineController extends FormBasicController
 		
 		for (KalendarEvent appointmentEvent : appointmentEvents) {
 			ProjTimelineRow row = createAppointmentRow(appointmentEvent, appointmentIdentToAppointment.get(appointmentEvent.getExternalId()));
-			if (row.getDate().after(futureDateRange.getFrom())) {
-				futureRows.add(row);
+			if (row.getDate().after(laterDateRange.getFrom())) {
+				laterRows.add(row);
 			} else {
 				artefactRows.add(row);
 			}
@@ -549,9 +563,10 @@ public class ProjTimelineController extends FormBasicController
 		List<ProjMilestone> milestones = projectService.getMilestones(searchParams);
 		for (ProjMilestone milestone : milestones) {
 			ProjTimelineRow row = createMilestoneRow(milestone);
-			if (milestone.getDueDate().after(futureDateRange.getFrom())) {
-				futureRows.add(row);
+			if (milestone.getDueDate().after(laterDateRange.getFrom())) {
+				laterRows.add(row);
 			} else if (milestone.getDueDate().before(todayDateRange.getFrom())) {
+				row.setOverdue(true);
 				overdueRows.add(row);
 			} else {
 				artefactRows.add(row);
@@ -835,10 +850,12 @@ public class ProjTimelineController extends FormBasicController
 				initFilters();
 				loadModel(ureq, true);
 			}
-		} else if (source == futureMoreLink) {
+		} else if (source == laterMoreLink) {
 			doFutureMore();
 		} else if (source == moreLink) {
 			doMore(ureq);
+		} else if (source == toDosLink) {
+			fireEvent(ureq, QuickStartEvents.TODOS_EVENT);
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if (CMD_RANGE.equals(link.getCmd()) && link.getUserObject() instanceof RangeUserObject) {
@@ -885,6 +902,9 @@ public class ProjTimelineController extends FormBasicController
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
 			ProjTimelineRow row = dataModel.getObject(pos);
 			String cssClass = "o_proj_timeline_row";
+			if (row != null && row.isOverdue()) {
+				cssClass += " o_proj_timeline_overdue";
+			}
 			if (row != null && row.isToday()) {
 				cssClass += " o_proj_timeline_today";
 			}
@@ -895,7 +915,7 @@ public class ProjTimelineController extends FormBasicController
 		}
 	}
 	
-	private enum Range { future, next7Days, overdue, today, last7Days, lastYear, lastYearEarlier }
+	private enum Range { later, next7Days, overdue, today, last7Days, lastYear, lastYearEarlier }
 	
 	private final static class RangeUserObject {
 		

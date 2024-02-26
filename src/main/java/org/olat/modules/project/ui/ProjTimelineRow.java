@@ -43,6 +43,7 @@ public class ProjTimelineRow {
 	private String message;
 	private Date date;
 	private String formattedDate;
+	private boolean overdue;
 	private boolean today;
 	private String doerDisplyName;
 	private Collection<Long> identityKeys;
@@ -102,6 +103,14 @@ public class ProjTimelineRow {
 
 	public void setFormattedDate(String formattedDate) {
 		this.formattedDate = formattedDate;
+	}
+
+	public boolean isOverdue() {
+		return overdue;
+	}
+
+	public void setOverdue(boolean overdue) {
+		this.overdue = overdue;
 	}
 
 	public boolean isToday() {

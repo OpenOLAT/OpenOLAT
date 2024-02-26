@@ -428,6 +428,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				doReopen(ureq);
 			}
+		} else if (source == timelineCtrl) {
+			if (event == QuickStartEvents.TODOS_EVENT) {
+				doOpenToDos(ureq, null);
+			}
 		} else if (source == quickWidgetCtrl) {
 			if (event == QuickStartEvents.CALENDAR_EVENT) {
 				doOpenCalendar(ureq, null, null);
