@@ -1180,8 +1180,7 @@ public class LTIConfigForm extends FormBasicController {
 		boolean assessable = isAssessableEl.isOn();
 		ltiContext.setAssessable(assessable);
 		
-		boolean skipLaunchPage = (ltiModule.isForceLaunchPage() || skipAcceptLaunchPageEl.isAtLeastSelected(1))
-				&& (sendName.isSelected(0) || sendEmail.isSelected(0));
+		boolean skipLaunchPage = ltiModule.isForceLaunchPage() || skipLaunchPageEl.isAtLeastSelected(1);
 		ltiContext.setSkipLaunchPage(skipLaunchPage);
 
 		ltiContext = lti13Service.updateContext(ltiContext);
@@ -1253,17 +1252,17 @@ public class LTIConfigForm extends FormBasicController {
 			config.set(BasicLTICourseNode.CONFIG_WIDTH, widthEl.getSelectedKey());
 		}
 		
+		getUpdateConfigCommon();
+		return config;
+	}
+	
+	private void getUpdateConfigCommon() {
 		if ((ltiModule.isForceLaunchPage() || skipAcceptLaunchPageEl.isAtLeastSelected(1)) && (sendName.isSelected(0) || sendEmail.isSelected(0))) {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE, Boolean.TRUE);
 		} else {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE, Boolean.FALSE);
 		}
 		
-		getUpdateConfigCommon();
-		return config;
-	}
-	
-	private void getUpdateConfigCommon() {
 		if(isAssessableEl.isOn()) {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.TRUE);
 			
