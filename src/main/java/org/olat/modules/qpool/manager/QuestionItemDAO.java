@@ -31,6 +31,7 @@ import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
@@ -411,6 +412,40 @@ public class QuestionItemDAO {
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("identityKey", identity.getKey());
 		return query.getResultList();
+	}
+	
+	public boolean isOwner(QuestionItemShort item, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select item.key from questionitem item")
+		  .append(" inner join ownerGroup as ownerGroup")
+		  .append(" inner join ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi on (ownerGroup.key = sgmsi.securityGroup.key)")
+		  .append(" inner join sgmsi.identity identity") 
+		  .append(" where item.key=:itemKey and identity.key=:identityKey");
+		
+		List<Long> ownedItems = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("itemKey", item.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();				
+		return ownedItems != null && !ownedItems.isEmpty()
+				&& ownedItems.get(0) != null && ownedItems.get(0).longValue() > 0l;
+	}
+	
+	public List<Identity> getOwners(QuestionItemShort item) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select ident from questionitem item")
+		  .append(" inner join ownerGroup as ownerGroup")
+		  .append(" inner join ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi on (ownerGroup.key = sgmsi.securityGroup.key)")
+		  .append(" inner join sgmsi.identity ident")
+		  .append(" inner join ident.user identUser")
+		  .append(" where item.key in :itemKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("itemKey", item.getKey())
+				.getResultList();
 	}
 	
 	public void share(QuestionItem item, OLATResource resource) {

@@ -241,13 +241,11 @@ public class RightsMetadataEditController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == groupController) {
-			if(event instanceof IdentitiesAddEvent ) { 
-				IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent) event;
+			if(event instanceof IdentitiesAddEvent identitiesAddedEvent) { 
 				List<Identity> list = identitiesAddedEvent.getAddIdentities();
 				qpoolService.addAuthors(list, Collections.<QuestionItemShort>singletonList(item));
 				identitiesAddedEvent.getAddedIdentities().addAll(list);
-			} else if (event instanceof IdentitiesRemoveEvent) {
-				IdentitiesRemoveEvent identitiesRemoveEvent = (IdentitiesRemoveEvent) event;
+			} else if (event instanceof IdentitiesRemoveEvent identitiesRemoveEvent) {
 				List<Identity> list = identitiesRemoveEvent.getRemovedIdentities();
 				qpoolService.removeAuthors(list, Collections.<QuestionItemShort>singletonList(item));
 			}

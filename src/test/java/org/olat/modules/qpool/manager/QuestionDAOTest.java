@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import static org.olat.test.JunitTestHelper.random;
 
 import java.math.BigDecimal;
@@ -226,7 +228,7 @@ public class QuestionDAOTest extends OlatTestCase {
 	@Test
 	public void getItemsWithOneAuthor() {
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QOwn-all-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-all-");
 		QuestionItem item1 = questionDao.createAndPersist(id, "NGC all", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
 		QuestionItem item2 = questionDao.createAndPersist(id, "NGC all", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
 		QuestionItem item3 = questionDao.createAndPersist(id, "NGC all", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
@@ -241,7 +243,36 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertTrue(itemsWithOneAuthor.contains(item1));	
 		Assert.assertTrue(itemsWithOneAuthor.contains(item2));	
 	}
-
+	
+	@Test
+	public void isOwner() {
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-2");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-3");
+		QuestionItem item = questionDao.createAndPersist(id, "NGC all", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		questionDao.addAuthors(Collections.singletonList(id), item);
+		dbInstance.commitAndCloseSession();
+		
+		boolean idAuthor = questionDao.isOwner(item, id);
+		Assert.assertTrue(idAuthor);
+		boolean idNotAuthor = questionDao.isOwner(item, id2);
+		Assert.assertFalse(idNotAuthor);
+	}
+	
+	@Test
+	public void getOwners() {
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-4");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-5");
+		QuestionItem item = questionDao.createAndPersist(id, "NGC all", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		questionDao.addAuthors(List.of(id, id2), item);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> owners = questionDao.getOwners(item);
+		assertThat(owners)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(id, id2);
+	}
 
 	@Test
 	public void getNumOfQuestions() {
