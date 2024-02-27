@@ -21,11 +21,17 @@ package org.olat.core.commons.services.export.ui;
 
 import java.util.Date;
 
+import org.olat.core.commons.services.export.ArchiveType;
+import org.olat.core.commons.services.export.ExportMetadata;
 import org.olat.core.commons.services.export.model.ExportInfos;
+import org.olat.core.commons.services.taskexecutor.Task;
+import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 
 /**
  * 
@@ -35,41 +41,93 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class ExportRow {
 	
-	private final String creatorFullName;
+	private Task runningTask;
 	private final ExportInfos export;
-	
+	private final ExportMetadata metadata;
+	private final String creatorFullName;
+
 	private String month;
+	private final String type;
 	
 	private FormLink downloadLink;
 	private FormLink downloadButton;
 	private FormLink cancelButton;
 	private FormLink deleteButton;
 	private FormLink infosButton;
+	private FormLink toolsButton;
 	private ProgressBarItem progressBar;
 	
-	public ExportRow(ExportInfos export, String creatorFullName) {
+	public ExportRow(ExportInfos export, String type, String creatorFullName) {
+		runningTask = export.getTask();
+		metadata = export.getExportMetadata();
+		this.type = type;
 		this.export = export;
 		this.creatorFullName = creatorFullName;
 	}
 	
+	public ExportRow(ExportMetadata metadata, String type, String creatorFullName) {
+		runningTask = metadata.getTask();
+		this.metadata = metadata;
+		this.type = type;
+		export = null;
+		this.creatorFullName = creatorFullName;
+	}
+	
 	public boolean isTaskNew() {
-		return export.isNew();
+		return runningTask != null && TaskStatus.newTask.equals(runningTask.getStatus());
 	}
 	
 	public boolean isTaskRunning() {
-		return export.isRunning();
+		return runningTask != null && TaskStatus.inWork.equals(runningTask.getStatus());
 	}
 	
 	public boolean isTaskCancelled() {
-		return export.isCancelled();
+		return runningTask != null && TaskStatus.cancelled.equals(runningTask.getStatus());
+	}
+
+	public String getTitle() {
+		if(metadata != null) {
+			return metadata.getTitle();
+		}
+		return export == null ? null : export.getTitle();
 	}
 	
-	public String getTitle() {
-		return export.getTitle();
+	public Long getMetadataKey() {
+		return metadata == null ? null : metadata.getKey();
+	}
+	
+	public ExportMetadata getMetadata() {
+		return metadata;
+	}
+	
+	public String getRepositoryEntryDisplayname() {
+		if(metadata != null && metadata.getEntry() != null) {
+			return metadata.getEntry().getDisplayname();
+		}
+		return null;
+	}
+	
+	public String getRepositoryEntryExternalRef() {
+		if(metadata != null && metadata.getEntry() != null) {
+			return metadata.getEntry().getExternalRef();
+		}
+		return null;
+	}
+	
+	public boolean isOnlyAdministrators() {
+		return metadata == null ? false : metadata.isOnlyAdministrators();
+	}
+	
+	public String getType() {
+		return type;
+	}
+	
+	public ArchiveType getArchiveType() {
+		return metadata == null ? null : metadata.getArchiveType();
 	}
 	
 	public String getDescription() {
-		return export.getDescription();
+		return export == null ? null : export.getDescription();
 	}
 	
 	public String getCreatorFullName() {
@@ -77,19 +135,48 @@ public class ExportRow {
 	}
 
 	public Date getCreationDate() {
-		return export.getCreationDate();
+		if(metadata != null) {
+			return metadata.getCreationDate();
+		}
+		return export == null ? null : export.getCreationDate();
+	}
+	
+	public Task getRunningTask() {
+		if(metadata != null) {
+			return metadata.getTask();
+		}
+		if(export != null) {
+			return export.getTask();
+		}
+		return null;
 	}
 	
 	public Date getExpirationDate() {
+		if(metadata != null) {
+			return metadata.getExpirationDate();
+		}
 		return export.getExpirationDate();
 	}
 	
 	public long getArchiveSize() {
-		return export.getZipLeaf() == null ? 0l : export.getZipLeaf().getSize();
+		if(metadata != null) {
+			if(metadata.getMetadata() == null) {
+				return 0l;
+			}
+			return metadata.getMetadata().getFileSize();
+		}
+		VFSLeaf archive = getArchive();
+		return archive == null ? 0l : archive.getSize();
 	}
 	
 	public VFSLeaf getArchive() {
-		return export.getZipLeaf();
+		if(metadata != null && StringHelper.containsNonWhitespace(metadata.getFilePath())) {
+			return VFSManager.olatRootLeaf(metadata.getFilePath());
+		}
+		if(export != null) {
+			return export.getZipLeaf();
+		}
+		return null;
 	}
 
 	public String getMonth() {
@@ -162,5 +249,13 @@ public class ExportRow {
 			days = 0;
 		}
 		return days;
+	}
+
+	public FormLink getToolsButton() {
+		return toolsButton;
+	}
+
+	public void setToolsButton(FormLink toolsButton) {
+		this.toolsButton = toolsButton;
 	}
 }

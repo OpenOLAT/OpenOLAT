@@ -76,6 +76,8 @@ public class CourseModule extends AbstractSpringModule {
 	private static final String COURSE_STYLE_SYSTEM_IMAGES_PROVIDED = "course.style.system.images.provided";
 	private static final String COURSE_EFFICIENCY_STATEMENT_ENABLED = "course.efficiency.statement.enabled";
 	
+	private static final String COURSE_ARCHIVE_RETENTION = "course.archive.retention";
+	
 	@Value("${course.display.participants.count}")
 	private boolean displayParticipantsCount;
 	@Value("${help.course.softkey}")
@@ -105,6 +107,9 @@ public class CourseModule extends AbstractSpringModule {
 	private String teaserImageStyleName;
 	private TeaserImageStyle teaserImageStyle;
 	private String systemImagesProvided;
+	
+	private Integer courseArchiveRetention;
+	@Value("${course.archive.retention:10}")
 	
 	// Repository types
 	public static final String ORES_TYPE_COURSE = OresHelper.calculateTypeName(CourseModule.class);
@@ -159,6 +164,11 @@ public class CourseModule extends AbstractSpringModule {
 		}
 		
 		systemImagesProvided = getStringPropertyValue(COURSE_STYLE_SYSTEM_IMAGES_PROVIDED, systemImagesProvided);
+		
+		String retentionObj = getStringPropertyValue(COURSE_ARCHIVE_RETENTION, true);
+		if (StringHelper.containsNonWhitespace(retentionObj) && StringHelper.isLong(retentionObj)) {
+			courseArchiveRetention = Integer.valueOf(retentionObj);
+		}
 	}
 
 	@Override
@@ -352,5 +362,18 @@ public class CourseModule extends AbstractSpringModule {
 		systemImagesProvided = provided.stream().collect(Collectors.joining(","));
 		setStringProperty(COURSE_STYLE_SYSTEM_IMAGES_PROVIDED, systemImagesProvided, true);
 	}
-	
+
+	/**
+	 * How long the archives can stay.
+	 * 
+	 * @return A number of day
+	 */
+	public Integer getCourseArchiveRetention() {
+		return courseArchiveRetention == null ? Integer.valueOf(10) : courseArchiveRetention;
+	}
+
+	public void setCourseArchiveRetention(Integer retention) {
+		this.courseArchiveRetention = retention;
+		setStringProperty(COURSE_ARCHIVE_RETENTION, retention == null ? "" : retention.toString(), true);
+	}
 }

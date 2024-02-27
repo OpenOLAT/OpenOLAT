@@ -57,14 +57,11 @@ public class AccessRenderer implements FlexiCellRenderer, CustomCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object val,
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans)  {
-		if(val instanceof RepositoryEntryLight) {
-			RepositoryEntryLight re = (RepositoryEntryLight)val;
+		if(val instanceof RepositoryEntryLight re) {
 			render(sb, re.getEntryStatus());
-		} else if(val instanceof RepositoryEntry) {
-			RepositoryEntry re = (RepositoryEntry)val;
+		} else if(val instanceof RepositoryEntry re) {
 			render(sb, re.getEntryStatus());
-		} else if(val instanceof RepositoryEntryStatusEnum) {
-			RepositoryEntryStatusEnum entryStatus = (RepositoryEntryStatusEnum)val;
+		} else if(val instanceof RepositoryEntryStatusEnum entryStatus) {
 			render(sb, entryStatus);
 		}
 	}

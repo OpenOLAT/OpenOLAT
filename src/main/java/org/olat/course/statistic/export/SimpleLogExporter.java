@@ -40,7 +40,7 @@ import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
-import org.hibernate.jpa.QueryHints;
+import org.hibernate.jpa.HibernateHints;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -76,9 +76,19 @@ public class SimpleLogExporter implements ICourseLogExporter {
 	@Autowired
 	private LogLineConverter logLineConverter;
 	
-
 	@Override
 	public void exportCourseLog(File outFile, Long resourceableId, Date begin, Date end, boolean resourceAdminAction,
+			boolean anonymize, boolean isAdministrativeUser) {
+		try(OutputStream out = Files.newOutputStream(outFile.toPath(), StandardOpenOption.CREATE_NEW)) {
+			exportCourseLog(out, resourceableId, begin, end, resourceAdminAction, anonymize, isAdministrativeUser);
+		} catch(Exception e) {
+			log.error("", e);
+		} finally {
+			dbInstance.commitAndCloseSession();
+		}
+	}
+	
+	public void exportCourseLog(OutputStream out, Long resourceableId, Date begin, Date end, boolean resourceAdminAction,
 			boolean anonymize, boolean isAdministrativeUser) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select v, ident, identUser from loggingobject as v")
@@ -98,7 +108,7 @@ public class SimpleLogExporter implements ICourseLogExporter {
 		em.clear();
 
 		TypedQuery<Object[]> dbQuery = em.createQuery(sb.toString(), Object[].class)
-				.setHint(QueryHints.HINT_FETCH_SIZE, "10000")
+				.setHint(HibernateHints.HINT_FETCH_SIZE, "10000")
 				.setParameter("resAdminAction", resourceAdminAction)
 				.setParameter("resId", Long.toString(resourceableId));
 		if (begin != null) {
@@ -112,8 +122,7 @@ public class SimpleLogExporter implements ICourseLogExporter {
 			dbQuery.setParameter("createdBefore", end, TemporalType.DATE);
 		}
 		
-		try(OutputStream out = Files.newOutputStream(outFile.toPath(), StandardOpenOption.CREATE_NEW);
-				OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 			OpenXMLWorksheet sheet = workbook.nextWorksheet();
 			logLineConverter.setHeader(sheet, anonymize, isAdministrativeUser);
 

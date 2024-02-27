@@ -101,7 +101,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_copy { @include o-add-icon('copy');}
 .o_icon_course_previous { @include o-add-icon('chevron-left');}
 .o_icon_course_next { @include o-add-icon('chevron-right');}
-.o_icon_coursearchive { @include o-add-icon('boxes-packing', false);}
+.o_icon_coursearchive { @include o-add-icon('boxes-packing', true);}
 .o_icon_courseareas { @include o-add-icon('circle', false);}
 .o_icon_coursedb { @include o-add-icon('database');}
 .o_icon_courseeditor { @include o-add-icon('edit');}

@@ -79,7 +79,7 @@ public class UserRatingsDAOTest extends OlatTestCase {
 		Assert.assertEquals(ores.getResourceableId(), newRating.getResId());
 		Assert.assertEquals("test-1", newRating.getResSubPath());
 		Assert.assertEquals(id, newRating.getCreator());
-		Assert.assertEquals(new Integer(5), newRating.getRating());
+		Assert.assertEquals(Integer.valueOf(5), newRating.getRating());
 	}
 	
 	@Test
@@ -103,7 +103,7 @@ public class UserRatingsDAOTest extends OlatTestCase {
 		Assert.assertEquals(ores.getResourceableId(), updatedRating.getResId());
 		Assert.assertEquals("test-2", updatedRating.getResSubPath());
 		Assert.assertEquals(id, updatedRating.getCreator());
-		Assert.assertEquals(new Integer(4), updatedRating.getRating());
+		Assert.assertEquals(Integer.valueOf(4), updatedRating.getRating());
 	}
 	
 

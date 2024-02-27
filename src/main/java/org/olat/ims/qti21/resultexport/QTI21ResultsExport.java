@@ -95,6 +95,7 @@ import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.ResourcesMapper;
+import org.olat.ims.qti21.ui.logviewer.LogExcelExport;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -427,6 +428,9 @@ public class QTI21ResultsExport {
 				String assessmentDocsBaseDir = idPath + "assessmentdocs";
 				ZipUtil.addDirectoryToZip(assessmentDocsDir.toPath(), assessmentDocsBaseDir, zout);
 			}
+			
+			new LogExcelExport(session, translator)
+				.export(idPath + "/log.xlsx", zout);
 		}
 		dbInstance.commitAndCloseSession();
 		return assessments;

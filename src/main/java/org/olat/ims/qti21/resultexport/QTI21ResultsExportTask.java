@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.resultexport;
 
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -27,12 +28,15 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.export.AbstractExportTask;
 import org.olat.core.commons.services.export.ExportManager;
+import org.olat.core.commons.services.export.ExportMetadata;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskProgressCallback;
+import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.WindowControlMocker;
@@ -41,6 +45,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -50,6 +55,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -134,13 +140,17 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 		VFSContainer subFolder = exportManager
 				.getExportContainer(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNodeIdent);
 		
-		String vfsName = generateFilename(filename);
+
+		ExportMetadata metadata = exportManager.getExportMetadataByTask((PersistentTask)task);
+		String vfsName = metadata.getFilename();
 		exportZip = subFolder.createChildLeaf(vfsName);
 		if(exportZip == null) {
-			exportZip = (VFSLeaf)subFolder.resolve(vfsName);
+			vfsName = VFSManager.rename(subFolder, vfsName);
+			exportZip = subFolder.createChildLeaf(vfsName);
 		} else {
 			String metadataDescr = Formatter.truncate(description, 31000);
-			fillMetadata(exportZip, title, metadataDescr);
+			Date expirationDate = CalendarUtils.endOfDay(DateUtils.addDays(new Date(), 10));
+			fillMetadata(exportZip, title, metadataDescr, expirationDate);
 		}
 		
 		if(task.getStatus() == TaskStatus.cancelled) {
@@ -149,6 +159,11 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 			}
 			return;
 		}
+		
+		metadata.setFilename(exportZip.getName());
+		metadata.setFilePath(exportZip.getRelPath());
+		metadata.setMetadata(exportZip.getMetaInfo());
+		metadata = exportManager.updateMetadata(metadata);
 		
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		List<Identity> identities = securityManager.loadIdentityByKeys(identitiesKeys);

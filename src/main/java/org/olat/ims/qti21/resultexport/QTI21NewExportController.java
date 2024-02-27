@@ -19,6 +19,10 @@
  */
 package org.olat.ims.qti21.resultexport;
 
+import java.util.Date;
+
+import org.olat.commons.calendar.CalendarUtils;
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
@@ -34,11 +38,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,13 +140,18 @@ public class QTI21NewExportController extends FormBasicController {
 		if (!identities.isEmpty()) {
 			boolean withPdfs = isWithPdfs();
 			OLATResource resource = courseEnv.getCourseGroupManager().getCourseResource();
+			RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 			String title = titleEl.getValue();
 			String description = buildDescription();
-			String filename = FileUtils.normalizeFilename(title);
+			String filename = FileUtils.normalizeFilename(title) + ".zip";
+			Date expirationDate = CalendarUtils.endOfDay(DateUtils.addDays(ureq.getRequestTimestamp(), 10));
 	
 			QTI21ResultsExportTask task = new QTI21ResultsExportTask(resource, courseNode, identities.getIdentities(),
 					title, description, filename, identities.isWithNonParticipants(), withPdfs, getLocale());
-			exportManager.startExport(task, getIdentity(), resource, courseNode.getIdent());
+			
+			exportManager.startExport(task, title, description,
+					filename, ArchiveType.QTI21, expirationDate, false,
+					entry, courseNode.getIdent(), getIdentity());
 		} else {
 			showWarning("error.no.assessed.users");
 		}

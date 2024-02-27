@@ -29,21 +29,7 @@
 		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 	</bean>
 	
-	<!-- Extension for chat log export -->	
-	<bean class="org.olat.instantMessaging.ui.ArchiverActionExtension" init-method="initExtensionPoints">
-		<property name="actionController">	
-			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.instantMessaging.ui.IMArchiveController"/>
-			</bean>
-		</property>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.course.archiver.ArchiverMainController</value>		
-			</list>
-		</property>
-		<property name="order" value="36" />
-	</bean>
-	
+	<!-- Extension for chat log export -->
 	<bean class="org.olat.instantMessaging.InstantMessagingUserToolExtension" init-method="initExtensionPoints">
 		<property name="order" value="118" />
 		<property name="navigationKey" value="imclient" />

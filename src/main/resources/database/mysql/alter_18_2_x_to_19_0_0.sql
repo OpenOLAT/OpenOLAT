@@ -1,0 +1,25 @@
+-- Export
+create table o_ex_export_metadata (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   e_archive_type varchar(32),
+   e_title varchar(255),
+   e_description varchar(4000),
+   e_file_name varchar(255),
+   e_file_path varchar(1024),
+   e_only_administrators bool default false,
+   e_expiration_date datetime,
+   fk_entry bigint,
+   e_sub_ident varchar(2048),
+   fk_task bigint,
+   fk_creator bigint,
+   fk_metadata bigint,
+   primary key (id)
+);
+alter table o_ex_export_metadata ENGINE = InnoDB;
+
+alter table o_ex_export_metadata add constraint export_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_ex_export_metadata add constraint export_to_creator_idx foreign key (fk_creator) references o_bs_identity (id);
+alter table o_ex_export_metadata add constraint export_to_task_idx foreign key (fk_task) references o_ex_task (id);
+alter table o_ex_export_metadata add constraint export_to_vfsdata_idx foreign key (fk_metadata) references o_vfs_metadata(id);

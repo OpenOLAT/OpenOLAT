@@ -120,6 +120,10 @@ public class LogViewerTableDataModel extends DefaultFlexiTableDataModel<LogViewe
 	@Override
 	public Object getValueAt(int row, int col) {
 		LogViewerEntry entry = getObject(row);
+		return getValueAt(entry, col);
+	}
+	
+	public Object getValueAt(LogViewerEntry entry, int col) {
 		switch(COLS[col]) {
 			case date: return entry.getDate();
 			case event: return getEvents(entry);

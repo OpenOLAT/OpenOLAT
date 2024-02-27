@@ -241,8 +241,7 @@ public class MergeSource extends AbstractVirtualContainer {
 			if (container.getName().equals(childName)) {
 				VFSItem vfsItem = container.resolve(nextPath);
 				// set default filter on resolved file if it is a container
-				if (vfsItem instanceof VFSContainer) {
-					VFSContainer resolvedContainer = (VFSContainer) vfsItem;
+				if (vfsItem instanceof VFSContainer resolvedContainer) {
 					resolvedContainer.setDefaultItemFilter(defaultFilter);
 				}
 				return vfsItem;
@@ -273,8 +272,7 @@ public class MergeSource extends AbstractVirtualContainer {
 			if (nameMatch) {
 				VFSItem vfsItem = container.resolve(nextPath);
 				// set default filter on resolved file if it is a container
-				if (vfsItem instanceof VFSContainer) {
-					VFSContainer resolvedContainer = (VFSContainer) vfsItem;
+				if (vfsItem instanceof VFSContainer resolvedContainer) {
 					resolvedContainer.setDefaultItemFilter(defaultFilter);
 				}
 				return vfsItem;

@@ -95,8 +95,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.Structure;
-import org.olat.course.archiver.ArchiverMainController;
-import org.olat.course.archiver.FullAccessArchiverCallback;
+import org.olat.course.archiver.ArchiveAndReportController;
 import org.olat.course.area.CourseAreasController;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -270,7 +269,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CoachFolderController coachFolderCtrl;
 	private CourseAreasController areasCtrl;
 	private ConfirmLeaveController leaveDialogBox;
-	private ArchiverMainController archiverCtrl;
+	private Controller archiverCtrl;
 	private CustomDBMainController databasesCtrl;
 	private FolderRunController courseFolderCtrl;
 	private InfoRunController participatInfoCtrl;
@@ -896,7 +895,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ARCHIVING)) {
-				archiverLink = LinkFactory.createToolLink("archiver", translate("command.openarchiver"), this, "o_icon_archive_tool");
+				archiverLink = LinkFactory.createToolLink("archiver", translate("command.openarchiver"), this, "o_icon_coursearchive");
 				archiverLink.setUrl(BusinessControlFactory.getInstance()
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Archives:0]"));
 				tools.addComponent(archiverLink);
@@ -2372,18 +2371,17 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		return null;
 	}
 	
-	private ArchiverMainController doArchive(UserRequest ureq) {
+	private Activateable2 doArchive(UserRequest ureq) {
 		if(delayedClose == Delayed.archive || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ARCHIVING)) {
 				removeCustomCSS();
-				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-				WindowControl swControl = this.addToHistory(ureq, OresHelper.createOLATResourceableInstance("Archives", 0l), null);
-				ArchiverMainController ctrl = new ArchiverMainController(ureq, swControl, course, new FullAccessArchiverCallback());
+				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Archives", 0l), null);
+				Controller ctrl = new ArchiveAndReportController(ureq, swControl, getRepositoryEntry());
 				listenTo(ctrl);
 				archiverCtrl = pushController(ureq, translate("command.openarchiver"), ctrl);
 				currentToolCtr = archiverCtrl;
 				setActiveTool(archiverLink);
-				return ctrl;
+				return (Activateable2)ctrl;
 			}
 		} else {
 			delayedClose = Delayed.archive;

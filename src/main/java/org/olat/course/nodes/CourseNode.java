@@ -324,6 +324,14 @@ public interface CourseNode extends INode, ShortName {
 	 * @return true If any data to be archived was found, false otherwise.
 	 */
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String path, String charset);
+	
+	/**
+	 * 
+	 * @param course The course
+	 * @param options The options to generate the archive
+	 * @return A time in milliseconds
+	 */
+	public int estimatedArchivedTime(ICourse course, ArchiveOptions options);
 
 	/**
 	 * Export all node user data to the given directory. This might be one file or

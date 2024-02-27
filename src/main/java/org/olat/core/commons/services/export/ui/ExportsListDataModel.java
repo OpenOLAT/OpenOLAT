@@ -65,19 +65,29 @@ implements SortableFlexiTableDataModel<ExportRow> {
 		switch(COLS[col]) {
 			case title: return row.getTitle();
 			case creationDate: return row.getCreationDate();
-			case creator: return getCreator();
+			case entry: return row.getRepositoryEntryDisplayname();
+			case entryExternalRef: return row.getRepositoryEntryExternalRef();
+			case archiveType: return row.getType();
+			case access: return row.isOnlyAdministrators();
+			case creator: return row.getCreatorFullName();
+			case archiveSize: return row.getArchiveSize();
+			case status: return row;
+			case tools: return row.getToolsButton();
 			default: return "ERROR";
 		}
-	}
-	
-	private String getCreator() {
-		return null;
 	}
 	
 	public enum ExportsCols implements FlexiSortableColumnDef {
 		title("table.header.title"),
 		creationDate("table.header.creation.date"),
-		creator("table.header.creator");
+		entry("table.header.entry"),
+		entryExternalRef("table.header.external.ref"),
+		archiveType("table.header.archive.type"),
+		access("table.header.access"),
+		creator("table.header.creator"),
+		archiveSize("table.header.size"),
+		status("table.header.status"),
+		tools("table.header.tools");
 		
 		private final String i18nKey;
 		

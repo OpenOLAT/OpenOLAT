@@ -38,6 +38,7 @@ public class AuthorListConfiguration {
 	private boolean helpCenter = true;
 	private boolean tools = true;
 	private boolean infos = false;
+	private boolean moreMenu = false;
 	
 	private SelectionMode selectRepositoryEntries = SelectionMode.disabled;
 	private boolean batchSelect = false;
@@ -59,6 +60,7 @@ public class AuthorListConfiguration {
 	public static final AuthorListConfiguration allEnabled() {
 		AuthorListConfiguration config = new AuthorListConfiguration("authors-list-v2");
 		config.setI18nKeyTitle("author.title");
+		config.setMoreMenu(true);
 		return config;
 	}
 	
@@ -134,6 +136,14 @@ public class AuthorListConfiguration {
 
 	public void setInfos(boolean infos) {
 		this.infos = infos;
+	}
+
+	public boolean isMoreMenu() {
+		return moreMenu;
+	}
+
+	public void setMoreMenu(boolean moreMenu) {
+		this.moreMenu = moreMenu;
 	}
 
 	public boolean isSelectRepositoryEntries() {

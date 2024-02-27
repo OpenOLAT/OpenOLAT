@@ -27,12 +27,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportManager;
+import org.olat.core.commons.services.export.ExportMetadata;
 import org.olat.core.commons.services.export.model.ExportInfos;
+import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
 import org.olat.core.commons.services.export.ui.ExportsListDataModel.ExportsCols;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskEvent;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
+import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -41,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -59,6 +64,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -86,12 +93,13 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	
 	private int count = 0;
 	private final DateFormatSymbols symbols;
+	private final ExportsListSettings options;
 
 	private CloseableModalController cmc;
 	private ExportInfosController infosCtrl;
 	private DialogBoxController confirmCancelCtrl;
-	private DialogBoxController confirmDeleteCtrl;
 	private DialogBoxController confirmDeleteAllCtrl;
+	private ConfirmDeleteExportController confirmDeleteCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -104,10 +112,17 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	@Autowired
 	private TaskExecutorManager taskExecutorManager;
 	
-	public ExportsListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent, boolean admin) {
-		super(ureq, wControl, "export_list");
+	public ExportsListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent, boolean admin,
+			ExportsListSettings options) {
+		this(ureq, wControl, entry, subIdent, admin, options, "export_list");
+	}
+
+	public ExportsListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent, boolean admin,
+			ExportsListSettings options, String pageName) {
+		super(ureq, wControl, pageName, Util.createPackageTranslator(ExportsListController.class, ureq.getLocale()));
 		this.admin = admin;
 		this.entry = entry;
+		this.options = options;
 		this.subIdent = subIdent;
 		symbols = new DateFormatSymbols(getLocale());
 
@@ -127,6 +142,10 @@ public class ExportsListController extends FormBasicController implements FlexiT
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("withTitle", Boolean.valueOf(options.withTitle()));
+		}
+		
 		deleteAllButton = uifactory.addFormLink("delete.all", formLayout, Link.BUTTON);
 		deleteAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		
@@ -139,22 +158,26 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.creationDate));
 		
 		tableModel = new ExportsListDataModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "list", tableModel, 24, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "list", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setElementCssClass("o_sel_export_list");
-		VelocityContainer row = createVelocityContainer("row_1");
+		initTable(tableEl);
+	}
+	
+	protected void initTable(FlexiTableElement tableElement) {
+		VelocityContainer row = new VelocityContainer(null, "vc_row1", Util.getPackageVelocityRoot(ExportsListController.class) + "/row_1.html",
+				getTranslator(), this);
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
-		tableEl.setRowRenderer(row, this);
+		tableElement.setRowRenderer(row, this);
 	}
 	
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> cmps = null;
-		if(rowObject instanceof ExportRow) {
+		if(rowObject instanceof ExportRow exportRow) {
 			cmps = new ArrayList<>();
-			ExportRow exportRow = (ExportRow)rowObject;
 			if(exportRow.getCancelButton() != null) {
 				cmps.add(exportRow.getCancelButton().getComponent());
 			}
@@ -176,9 +199,19 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		}
 		return cmps;
 	}
+	
+	public SearchExportMetadataParameters getSearchParams() {
+		return new SearchExportMetadataParameters(entry, subIdent);
+	}
 
 	public void loadModel() {
-		List<ExportInfos> exports = exportManager.getResultsExport(entry, subIdent);
+		List<ExportInfos> exports;
+		if(entry == null) {
+			SearchExportMetadataParameters params = getSearchParams();
+			exports = exportManager.getResultsExport(params);
+		} else {
+			exports = exportManager.getResultsExport(entry, subIdent);
+		}
 		if(!admin) {
 			exports = exports.stream()
 					.filter(exp -> getIdentity().equals(exp.getCreator()))
@@ -188,8 +221,10 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		List<ExportRow> rows = new ArrayList<>(exports.size());
 		for(ExportInfos export:exports) {
 			String creatorFullName = userManager.getUserDisplayName(export.getCreator());
-			ExportRow row = new ExportRow(export, creatorFullName);
-			if(export.getTask() != null) {
+			String type = getTranslatedType(export);
+			ExportRow row = new ExportRow(export, type, creatorFullName);
+			if(export.getTask() != null && (export.getTask().getStatus() == TaskStatus.newTask
+					|| export.getTask().getStatus() == TaskStatus.inWork)) {
 				forgeRunningExport(row);
 			} else {
 				forgeExport(row);
@@ -215,6 +250,19 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		deleteAllButton.setVisible(!rows.isEmpty());
 	}
 	
+	private String getTranslatedType(ExportInfos export) {
+		ExportMetadata metadata  = export.getExportMetadata();
+		if(metadata == null || metadata.getArchiveType() == null) {
+			return null;
+		}
+		ArchiveType type = metadata.getArchiveType();
+		return switch(type) {
+			case COMPLETE -> translate("archive.complete");
+			case PARTIAL -> translate("archive.partial");
+			default -> "-";
+		};
+	}
+	
 	private void forgeRunningExport(ExportRow row) {
 		String c = Integer.toString(++count);
 		
@@ -223,7 +271,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		progressItem.setWidthInPercent(true);
 		progressItem.setLabelAlignment(LabelAlignment.none);
 		progressItem.setMax(1.0f);
-		Task runningTask = row.getExport().getTask();
+		Task runningTask = row.getRunningTask();
 		if(runningTask != null) {
 			if(runningTask.getProgress() != null) {
 				progressItem.setActual(runningTask.getProgress().floatValue());
@@ -233,6 +281,8 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		row.setProgressBar(progressItem);
 
 		FormLink cancelButton = uifactory.addFormLink("cancel-".concat(c), "cancel", "cancel", null, flc, Link.BUTTON);
+		cancelButton.setGhost(true);
+		cancelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_cancel");
 		row.setCancelButton(cancelButton);
 		cancelButton.setUserObject(row);
 	}
@@ -240,30 +290,31 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	private void forgeExport(ExportRow row) {
 		String c = Integer.toString(++count);
 		
-		FormLink infosButton = uifactory.addFormLink("infos-".concat(c), "infos", "", null, flc, Link.NONTRANSLATED);
+		FormLink infosButton = uifactory.addFormLink("infos-".concat(c), "infos", "info", null, flc, Link.LINK);
 		infosButton.setIconLeftCSS("o_icon o_icon-fw o_icon_description");
 		row.setInfosButton(infosButton);
 		infosButton.setUserObject(row);
 		
-		FormLink deleteButton = uifactory.addFormLink("delete-".concat(c), "delete", "", null, flc, Link.NONTRANSLATED);
+		FormLink deleteButton = uifactory.addFormLink("delete-".concat(c), "delete", "delete", null, flc, Link.LINK);
 		deleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		row.setDeleteButton(deleteButton);
 		deleteButton.setUserObject(row);
 		
-		FormLink downloadButton = uifactory.addFormLink("download-".concat(c), "download", "", null, flc, Link.NONTRANSLATED);
+		FormLink downloadButton = uifactory.addFormLink("download-".concat(c), "download", "download", null, flc, Link.LINK);
 		downloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		row.setDownloadButton(downloadButton);
 		downloadButton.setUserObject(row);
 		
-		FormLink downloadLink = uifactory.addFormLink("download-2-".concat(c), "download", row.getTitle(), null, flc, Link.NONTRANSLATED);
+		String title = StringHelper.escapeHtml(row.getTitle());
+		FormLink downloadLink = uifactory.addFormLink("download-2-".concat(c), "download", title, null, flc, Link.NONTRANSLATED);
 		row.setDownloadLink(downloadLink);
 		downloadLink.setUserObject(row);
 	}
 	
 	@Override
 	public void event(Event event) {
-		if(event instanceof TaskEvent) {
-			processTask(((TaskEvent)event).getTaskKey());
+		if(event instanceof TaskEvent te) {
+			processTask(te.getTaskKey());
 		}
 	}
 	
@@ -286,9 +337,9 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmDeleteCtrl == source) {
-			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
-				doDelete((ExportRow)confirmDeleteCtrl.getUserObject());
-			}
+			loadModel();
+			cmc.deactivate();
+			cleanUp();
 		} else if(confirmCancelCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				doCancel((ExportRow)confirmCancelCtrl.getUserObject());
@@ -306,7 +357,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		super.event(ureq, source, event);
 	}
 	
-	private void cleanUp() {
+	protected void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(infosCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -321,17 +372,16 @@ public class ExportsListController extends FormBasicController implements FlexiT
 			doConfirmDeleteAll(ureq, Boolean.TRUE);
 		} else if(deleteMyButton == source) {
 			doConfirmDeleteAll(ureq, Boolean.FALSE);
-		}  else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		}  else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if("cancel".equals(cmd) && link.getUserObject() instanceof ExportRow) {
-				doConfirmCancel(ureq, (ExportRow)link.getUserObject());
-			} else if("infos".equals(cmd) && link.getUserObject() instanceof ExportRow) {
-				doInfos(ureq, (ExportRow)link.getUserObject());
-			} else if("delete".equals(cmd) && link.getUserObject() instanceof ExportRow) {
-				doConfirmDelete(ureq, (ExportRow)link.getUserObject());
-			} else if("download".equals(cmd) && link.getUserObject() instanceof ExportRow) {
-				doDownload(ureq, (ExportRow)link.getUserObject());
+			if("cancel".equals(cmd) && link.getUserObject() instanceof ExportRow exportRow) {
+				doConfirmCancel(ureq, exportRow);
+			} else if("infos".equals(cmd) && link.getUserObject() instanceof ExportRow exportRow) {
+				doInfos(ureq, exportRow);
+			} else if("delete".equals(cmd) && link.getUserObject() instanceof ExportRow exportRow) {
+				doConfirmDelete(ureq, exportRow);
+			} else if("download".equals(cmd) && link.getUserObject() instanceof ExportRow exportRow) {
+				doDownload(ureq, exportRow);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -343,7 +393,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	}
 	
 	private void doConfirmCancel(UserRequest ureq, ExportRow row) {
-		String[] args = { row.getTitle() };
+		String[] args = { StringHelper.escapeHtml(row.getTitle()) };
 		String title = translate("confirm.cancel.title", args);
 		String text = translate("confirm.cancel.text", args);		
 		confirmCancelCtrl = activateYesNoDialog(ureq, title, text, confirmCancelCtrl);
@@ -357,17 +407,13 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, ExportRow row) {
-		String[] args = { row.getTitle() };
-		String title = translate("confirm.delete.title", args);
-		String text = translate("confirm.delete.text", args);		
-		confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
-		confirmDeleteCtrl.setUserObject(row);
-	}
-	
-	private void doDelete(ExportRow row) {
-		exportManager.deleteExport(row.getExport());
-		loadModel();
-		showInfo("info.export.deleted");
+		confirmDeleteCtrl = new ConfirmDeleteExportController(ureq, getWindowControl(), row);
+		listenTo(confirmDeleteCtrl);
+		
+		String title = translate("confirm.delete.title", row.getTitle());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doConfirmDeleteAll(UserRequest ureq, Boolean all) {
@@ -401,8 +447,8 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		showInfo("infos.export.delete.all");
 	}
 	
-	private void doInfos(UserRequest ureq, ExportRow row) {
-		infosCtrl = new ExportInfosController(ureq, this.getWindowControl(), row);
+	protected void doInfos(UserRequest ureq, ExportRow row) {
+		infosCtrl = new ExportInfosController(ureq, getWindowControl(), row);
 		listenTo(infosCtrl);
 		
 		String title = translate("export.metadata", row.getTitle());

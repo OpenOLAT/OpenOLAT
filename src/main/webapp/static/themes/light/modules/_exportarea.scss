@@ -24,6 +24,10 @@
 			font-size: 90%;
 			color: $o-export-area-meta-color;
 		}
+		
+		h5 {
+			margin: 3px 0 3px 0;
+		}
 	}
 	
 	.o_export_wait {
@@ -41,24 +45,24 @@
 		display: inline-block;
 	}
 	
-	.o_export_exp {
-		flex: 0 0 auto;
-		overflow: hidden;
-	}
-	
 	.o_export_actions {
 		flex: 0 0 auto;
 		overflow: hidden;
-		font-size: 150%;
 		margin-bottom: -5px;
 		margin-left: 20px;
 		text-align: right;
 		
 		.o_actions {
 			white-space: nowrap;
+			
+			a {
+				margin-right: 2em;
+			}
+			a:last-child {
+				margin-right: 0;
+			}
 		}
-		
-		
+
 		&.small {
 			font-size: 100%;
 		}
@@ -66,11 +70,6 @@
 }
 
 @media (max-width: $screen-sm-max) {
-	.o_export_card .o_export_exp {
-		margin-left: 80px;
-		text-align: left;
-	}
-	
 	.o_export_card .o_export_actions {
 		margin-left: 80px;
 		text-align: right;

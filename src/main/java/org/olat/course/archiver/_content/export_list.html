@@ -1,0 +1,25 @@
+<div class="">
+	<h2><i class="o_icon o_icon_coursearchive"> </i> $r.translate("course.archive.title")</h2>
+	<div class="o_hint">$off_info#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end</div>
+	<fieldset>
+		<legend>$r.translate("course.archive.list.title")</legend>
+		<div class="o_button_group o_button_group_right">
+			$r.render("course.archive.new")
+		</div>
+		$r.render("archive.scopes")
+		$r.render("list")
+	</fieldset>
+	
+#if($webdavhttp or $webdavhttps)
+	<div class="o_briefcase_webdav">
+	#o_togglebox_start("o_briefcase_webdav_link" "$r.translate('webdav.link')")
+		<div class="pull-right">$r.contextHelpWithWrapper("manual_user/basic_concepts/Using_WebDAV/")</div>
+		#if($webdavhttps)
+			<p><code>$webdavhttps</code></p>
+		#else
+			<p><code>$webdavhttp</code></p>
+		#end		
+	#o_togglebox_end()
+	</div>
+#end
+</div>

@@ -1,5 +1,7 @@
 <fieldset>
+	#if($r.isTrue($withTitle))
 	<legend>$r.translate("export.list")</legend>
+	#end
 	#if($r.visible("delete.all") || $r.visible("delete.my"))
 	<div class="o_button_group o_button_group_right">
 		#if($r.visible("delete.my"))

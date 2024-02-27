@@ -9,7 +9,7 @@
 	<bean id="extmanager" class="org.olat.core.extensions.ExtManager" />
 
 	<!-- classes implementing the Extension interface -->
-	<!-- Locations that implement action extensions: SystemAdminMainController, ArchiverMaincontroller -->
+	<!-- Locations that implement action extensions: SystemAdminMainController -->
 	
 <!-- SYSADMIN extension for admin site for OLAT setup -->
 

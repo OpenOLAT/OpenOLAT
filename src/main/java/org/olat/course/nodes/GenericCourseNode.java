@@ -517,6 +517,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
+	public int estimatedArchivedTime(ICourse course, ArchiveOptions options) {
+		return 10;
+	}
+
+	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 	// nothing to do in default implementation
 	}

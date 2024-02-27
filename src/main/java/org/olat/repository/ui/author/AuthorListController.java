@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -128,6 +129,9 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
+import org.olat.course.archiver.wizard.BulkCoursesArchivesContext;
+import org.olat.course.archiver.wizard.BulkCoursesArchivesFinishStepCallback;
+import org.olat.course.archiver.wizard.BulkCoursesArchives_1_RepositoryEntriesStep;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.core.CourseElement;
 import org.olat.course.core.CourseElementSearchParams;
@@ -234,6 +238,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private RepositoryEntrySmallDetailsController infosCtrl;
 	private MigrationSelectionController migrationSelectionCtrl;
 	private ModifyRuntimeTypeController modifyRuntimeTypeCtrl;
+	private StepsMainRunController coursesArchivesWizard;
 	
 	private final Roles roles;
 	private final boolean isGuestOnly;
@@ -246,12 +251,14 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FormLink copyButton;
 	private FormLink selectButton;
 	private FormLink settingsButton;
+	private FormLink courseArchiveButton;
 	private FormLink indexMetadataButton;
 	private FormLink deleteButton;
 	private FormLink restoreButton;
 	private FormLink sendMailButton;
 	private FormLink modifyStatusButton;
 	private FormLink modifyOwnersButton;
+	private FormLink coursesArchivesButton;
 	private FormLink modifyRuntimeTypeButton;
 	private FormLink deletePermanentlyButton;
 
@@ -357,6 +364,10 @@ public class AuthorListController extends FormBasicController implements Activat
 		if (configuration.isHelpCenter() && helpModule.isHelpEnabled()) {
 			initHelpModuleTools(ureq, formLayout);
 		}
+		
+		if (configuration.isMoreMenu()) {
+			initMoreMenu(formLayout);
+		}
 	}
 	
 	private void initImportTools(List<OrderedRepositoryHandler> handlers, FormLayoutContainer formLayout) {	
@@ -423,6 +434,18 @@ public class AuthorListController extends FormBasicController implements Activat
 						.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, formLayout.getFormItemComponent()));
 			}
 		}
+	}
+	
+	private void initMoreMenu(FormLayoutContainer formLayout) {
+		DropdownItem moreDropdown = uifactory.addDropdownMenu("more.menu", null, null, formLayout, getTranslator());
+		moreDropdown.setCarretIconCSS("o_icon o_icon_commands");
+		moreDropdown.setOrientation(DropdownOrientation.right);
+		moreDropdown.setEmbbeded(true);
+		moreDropdown.setButton(true);
+		
+		courseArchiveButton = uifactory.addFormLink("course.archive", formLayout, Link.LINK); 
+		courseArchiveButton.setIconLeftCSS("o_icon o_icon_coursearchive");
+		moreDropdown.addElement(courseArchiveButton);
 	}
 	
 	private List<OrderedRepositoryHandler> getAllowedRepositoryHandlers() {
@@ -844,6 +867,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			tableEl.addBatchButton(settingsButton);
 			copyButton = uifactory.addFormLink("details.copy", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(copyButton);
+			coursesArchivesButton = uifactory.addFormLink("courses.archives", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(coursesArchivesButton);
 			deleteButton = uifactory.addFormLink("details.delete", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(deleteButton);
 			restoreButton = uifactory.addFormLink("tools.restore", formLayout, Link.BUTTON);
@@ -1005,11 +1030,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")
 			List<AuthoringEntryRow> rows = (List<AuthoringEntryRow>)userSearchCtr.getUserObject();
-			if (event instanceof MultiIdentityChosenEvent) {
-				MultiIdentityChosenEvent mice = (MultiIdentityChosenEvent) event; 
+			if (event instanceof MultiIdentityChosenEvent mice) {
 				doAddOwners(mice.getChosenIdentities(), rows);
-			} else if (event instanceof SingleIdentityChosenEvent) {
-				SingleIdentityChosenEvent  sice = (SingleIdentityChosenEvent) event;
+			} else if (event instanceof SingleIdentityChosenEvent sice) {
 				List<Identity> futureOwners = Collections.singletonList(sice.getChosenIdentity());
 				doAddOwners(futureOwners, rows);
 			}
@@ -1082,6 +1105,14 @@ public class AuthorListController extends FormBasicController implements Activat
 				cmc.deactivate();
 				cleanUp();
 			}
+		} else if(source == coursesArchivesWizard) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event == Event.CANCELLED_EVENT) {
+				getWindowControl().pop();
+				cleanUp();
+			}
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doCompleteCoursesArchives();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -1090,6 +1121,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(confirmDeletePermanentlyCtrl);
 		removeAsListenerAndDispose(modifyOwnersWizardCtrl);
 		removeAsListenerAndDispose(modifyRuntimeTypeCtrl);
+		removeAsListenerAndDispose(coursesArchivesWizard);
 		removeAsListenerAndDispose(settingsWizardCtrl);
 		removeAsListenerAndDispose(confirmRestoreCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
@@ -1108,6 +1140,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		confirmDeletePermanentlyCtrl = null;
 		modifyOwnersWizardCtrl = null;
 		modifyRuntimeTypeCtrl = null;
+		coursesArchivesWizard = null;
 		settingsWizardCtrl = null;
 		confirmRestoreCtrl = null;
 		confirmDeleteCtrl = null;
@@ -1167,6 +1200,13 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
+		} else if(coursesArchivesButton == source) {
+			List<AuthoringEntryRow> rows = getMultiSelectedRows("CourseModule");
+			if(!rows.isEmpty()) {
+				doCoursesArchives(ureq, rows);
+			} else {
+				showWarning("bulk.update.nothing.selected");
+			}
 		} else if(settingsButton == source) {
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
@@ -1210,35 +1250,28 @@ public class AuthorListController extends FormBasicController implements Activat
 			doImportUrl(ureq);
 		} else if (selectButton == source) {
 			fireEvent(ureq, new AuthoringEntryRowsListSelectionEvent(getMultiSelectedRows()));
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink) source;
+		} else if(courseArchiveButton == source) {
+			fireEvent(ureq, new AuthoringEvent(AuthoringEvent.COURSE_ARCHIVE_LIST));
+		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if ("mark".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
-				AuthoringEntryRow row = (AuthoringEntryRow) link.getUserObject();
+			if ("mark".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow row) {
 				boolean marked = doMark(ureq, row);
 				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.setAriaLabel(translate(marked ? "details.bookmark.remove" : "details.bookmark"));				
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
-			} else if ("tools".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
-				AuthoringEntryRow row = (AuthoringEntryRow) link.getUserObject();
+			} else if ("tools".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow row) {
 				doOpenTools(ureq, row, link);
-			} else if (("infos".equals(cmd) || "details".equals(cmd)) && link.getUserObject() instanceof AuthoringEntryRow) {
-				AuthoringEntryRow row = (AuthoringEntryRow) link.getUserObject();
+			} else if (("infos".equals(cmd) || "details".equals(cmd)) && link.getUserObject() instanceof AuthoringEntryRow row) {
 				doOpenInfos(ureq, row, link);
-			} else if ("references".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
-				AuthoringEntryRow row = (AuthoringEntryRow) link.getUserObject();
+			} else if ("references".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow row) {
 				doOpenReferences(ureq, row, link);
-			} else if (source instanceof FormLink && ((FormLink) source).getUserObject() instanceof RepositoryHandler) {
-				RepositoryHandler handler = (RepositoryHandler) ((FormLink) source).getUserObject();
-				if (handler != null) {
-					doCreate(ureq, handler);
-				}
+			} else if (link.getUserObject() instanceof RepositoryHandler handler) {
+				doCreate(ureq, handler);
 			}
 		} else if (source == tableEl) {
-			if (event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent) event;
+			if (event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				AuthoringEntryRow row = model.getObject(se.getIndex());
 				if ("details".equals(cmd)) {
@@ -1248,8 +1281,8 @@ public class AuthorListController extends FormBasicController implements Activat
 				} else if ("select".equals(cmd)) {
 					launch(ureq, row);
 				}
-			} else if (event instanceof FlexiTableFilterTabEvent) {
-				doSelectFilterTab(((FlexiTableFilterTabEvent) event).getTab());
+			} else if (event instanceof FlexiTableFilterTabEvent fte) {
+				doSelectFilterTab(fte.getTab());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -1462,12 +1495,22 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	public List<AuthoringEntryRow> getMultiSelectedRows() {
+		return getMultiSelectedRows(row -> true);
+	}
+	
+	public List<AuthoringEntryRow> getMultiSelectedRows(String typeName) {
+		return getMultiSelectedRows(row ->
+			row.getOLATResourceable().getResourceableTypeName().equals(typeName));
+	}
+	
+	public List<AuthoringEntryRow> getMultiSelectedRows(Predicate<AuthoringEntryRow> acceptRow) {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
 		List<AuthoringEntryRow> rows = new ArrayList<>(selections.size());
 		if(!selections.isEmpty()) {
 			for(Integer i:selections) {
+				
 				AuthoringEntryRow row = model.getObject(i.intValue());
-				if(row != null) {
+				if(row != null && acceptRow.test(row)) {
 					rows.add(row);
 				}
 			}
@@ -1703,6 +1746,30 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		showInfo("details.copy.success", new String[]{ Integer.toString(rows.size()) });
+	}
+	
+	private void doCoursesArchives(UserRequest ureq, List<AuthoringEntryRow> rows) {
+		removeAsListenerAndDispose(coursesArchivesWizard);
+		
+		List<Long> repositoryEntryKeys = rows.stream()
+				.map(AuthoringEntryRow::getKey)
+				.toList();
+		
+		List<RepositoryEntry> repositoryEntries = repositoryService.loadByKeys(repositoryEntryKeys);
+		BulkCoursesArchivesContext context = BulkCoursesArchivesContext.defaultValues(repositoryEntries);
+		
+		Step start = new BulkCoursesArchives_1_RepositoryEntriesStep(ureq, context);
+		BulkCoursesArchivesFinishStepCallback finish = new BulkCoursesArchivesFinishStepCallback(context);
+		coursesArchivesWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("wizard.bulk.courses.archives.title"), "");
+		listenTo(coursesArchivesWizard);
+		getWindowControl().pushAsModalDialog(coursesArchivesWizard.getInitialComponent());
+	}
+	
+	private void doCompleteCoursesArchives() {
+		String title = translate("wizard.complete.courses.archives.title");
+		String text = translate("wizard.complete.courses.archives.desc");
+		getWindowControl().setInfo(title, text);
 	}
 	
 	private void doCloseResource(UserRequest ureq, AuthoringEntryRow row) {

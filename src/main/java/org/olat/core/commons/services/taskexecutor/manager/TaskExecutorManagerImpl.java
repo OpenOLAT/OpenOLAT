@@ -42,6 +42,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskAwareRunnable;
+import org.olat.core.commons.services.taskexecutor.TaskCompanionFactory;
 import org.olat.core.commons.services.taskexecutor.TaskEvent;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.taskexecutor.TaskRunnable;
@@ -130,8 +131,7 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 		//wrap call to the task here to catch all errors that are may not catched yet in the task itself
 		//like outOfMemory or other system errors.
 		Task persistentTask = null;
-		if(task instanceof LongRunnable) {
-			LongRunnable lRunnable = (LongRunnable)task;
+		if(task instanceof LongRunnable lRunnable) {
 			persistentTask = persistentTaskDao.createTask(UUID.randomUUID().toString(), lRunnable);
 			dbInstance.commit();
 			
@@ -141,8 +141,8 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 			}
 		} else {
 			Queue queue = Queue.standard;
-			if(task instanceof TaskRunnable) {
-				queue = ((TaskRunnable)task).getExecutorsQueue();
+			if(task instanceof TaskRunnable runnable) {
+				queue = runnable.getExecutorsQueue();
 			}
 			execute(task, persistentTask, queue);
 		}
@@ -151,14 +151,24 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	@Override
 	public void execute(LongRunnable task, Identity creator, OLATResource resource,
 			String resSubPath, Date scheduledDate) {
-
-		Task persistentTask = persistentTaskDao.createTask(UUID.randomUUID().toString(), task, creator, resource, resSubPath, scheduledDate);
+		execute(task, creator, resource, resSubPath, scheduledDate, null);
+	}
+	
+	@Override
+	public <U> U execute(LongRunnable task, Identity creator, OLATResource resource,
+			String resSubPath, Date scheduledDate, TaskCompanionFactory<U> companionFactory) {
+		PersistentTask persistentTask = persistentTaskDao.createTask(UUID.randomUUID().toString(), task, creator, resource, resSubPath, scheduledDate);
+		U companion = null;
+		if(companionFactory != null) {
+			companion = companionFactory.create(creator, persistentTask);
+		}
 		dbInstance.commit();
 		
 		if(!task.isDelayed()) {
 			Queue queue = getExecutorsQueue(task);
 			processTaskToDo(persistentTask.getKey(), queue, new ArrayList<>());
 		}
+		return companion;
 	}
 	
 	private void execute(Runnable task, Task persistentTask, Queue queue) {
@@ -246,6 +256,11 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	@Override
 	public List<Task> getTasks(OLATResource resource, String resSubPath) {
 		return persistentTaskDao.findTasks(resource, resSubPath);
+	}
+
+	@Override
+	public List<Task> getTasks(String resSubPath) {
+		return persistentTaskDao.findTasksBySubPath(resSubPath);
 	}
 
 	@Override

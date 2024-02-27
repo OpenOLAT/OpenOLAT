@@ -20,16 +20,26 @@
 package org.olat.core.commons.services.export.manager;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportManager;
+import org.olat.core.commons.services.export.ExportMetadata;
 import org.olat.core.commons.services.export.ExportTask;
 import org.olat.core.commons.services.export.model.ExportInfos;
+import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
+import org.olat.core.commons.services.taskexecutor.TaskStatus;
+import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -52,7 +62,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ExportManagerImpl implements ExportManager {
 	
-
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private ExportMetadataDAO exportMetadataDao;
 	@Autowired
 	private TaskExecutorManager taskExecutorManager;
 	@Autowired
@@ -70,8 +83,28 @@ public class ExportManagerImpl implements ExportManager {
 	}
 	
 	@Override
-	public void startExport(ExportTask task, Identity creator, OLATResource resource, String resSubPath) {
-		taskExecutorManager.execute(task, creator, resource, resSubPath, null);
+	public ExportMetadata getExportMetadataByTask(PersistentTask task) {
+		return exportMetadataDao.getMetadataByTask(task);
+	}
+	
+	@Override
+	public ExportMetadata getExportMetadataByKey(Long metadataKey) {
+		return exportMetadataDao.getMetadataByKey(metadataKey);
+	}
+
+	@Override
+	public ExportMetadata updateMetadata(ExportMetadata metadata) {
+		return exportMetadataDao.updateMetadata(metadata);
+	}
+	
+	@Override
+	public ExportMetadata startExport(ExportTask task, String title, String description, 
+			String filename, ArchiveType type, Date expirationDate, boolean onlyAdministrators,
+			RepositoryEntry entry, String resSubPath, Identity creator) {
+		final OLATResource resource = entry.getOlatResource();
+		return taskExecutorManager.execute(task, creator, resource, resSubPath, null,
+				(id, persistentTask) -> exportMetadataDao.createMetadata(title, description, filename, type,
+						expirationDate, onlyAdministrators, entry, resSubPath, id, persistentTask));
 	}
 
 	@Override
@@ -79,6 +112,47 @@ public class ExportManagerImpl implements ExportManager {
 		VFSLeaf exportFile = export.getZipLeaf();
 		if(exportFile != null) {
 			exportFile.deleteSilently();
+		}
+	}
+
+	@Override
+	public void deleteExportMetadata(ExportMetadata metadata) {
+		Task task = metadata.getTask();
+		if(task != null && (task.getStatus() == TaskStatus.newTask || task.getStatus() == TaskStatus.inWork)) {
+			Task cancelledTask = taskExecutorManager.cancel(task);
+			if(cancelledTask == null) {
+				deleteExport(metadata);
+			}
+		} else {
+			deleteExport(metadata);
+		}
+	}
+	
+	@Override
+	public void deleteExpiredExports() {
+		List<ExportMetadata> expiredMetadataList = exportMetadataDao.expiredExports(new Date());
+		for(ExportMetadata expiredMetadata:expiredMetadataList) {
+			deleteExport(expiredMetadata);
+			dbInstance.commit();
+		}
+		dbInstance.commitAndCloseSession();
+	}
+
+	private void deleteExport(ExportMetadata metadata) {
+		String filePath = metadata.getFilePath();
+		String filename = metadata.getFilename();
+		// Delete export first, foreign key to VFS metadata
+		exportMetadataDao.deleteMetadata(metadata);
+		dbInstance.commit();
+		
+		if(StringHelper.containsNonWhitespace(filePath) && StringHelper.containsNonWhitespace(filename)) {
+			VFSLeaf leaf = VFSManager.olatRootLeaf(filePath);
+			if(leaf != null) {
+				VFSMetadata vfsMetadata = leaf.getMetaInfo();
+				if(vfsMetadata == null || !exportMetadataDao.metadataInUse(vfsMetadata)) {
+					leaf.deleteSilently();
+				}
+			}
 		}
 	}
 
@@ -106,38 +180,39 @@ public class ExportManagerImpl implements ExportManager {
 			deleteExport(export);
 		}
 	}
+	
+	@Override
+	public List<ExportMetadata> searchMetadata(SearchExportMetadataParameters params) {
+		return exportMetadataDao.searchMetadatas(params);
+	}
+
+	@Override
+	public List<ExportInfos> getResultsExport(SearchExportMetadataParameters params) {
+		List<ExportInfos> exports = new ArrayList<>();
+		List<ExportMetadata> exportMetadataList = exportMetadataDao.searchMetadatas(params);
+		for(ExportMetadata data:exportMetadataList) {
+			exports.add(new ExportInfos(data));
+		}
+		return exports;
+	}
 
 	@Override
 	public List<ExportInfos> getResultsExport(RepositoryEntry courseEntry, String resSubPath) {
 		List<ExportInfos> exports = new ArrayList<>();
 		
-		List<String> taskEndings = new ArrayList<>();
-		List<Task> runningTasks = taskExecutorManager.getTasks(courseEntry.getOlatResource(), resSubPath);
-		for(Task runningTask:runningTasks) {
-			try {
-				ExportTask exportTask = taskExecutorManager.getPersistedRunnableTask(runningTask, ExportTask.class);
-				if(exportTask != null) {
-					ExportInfos resultsExport = new ExportInfos(exportTask.getTitle(), runningTask);
-					exports.add(resultsExport);
-					taskEndings.add("_" + runningTask.getKey().toString() + ".zip");
-				}
-			} catch (Exception e) {
-				//
-			}
+		Set<String> archiveNames = new HashSet<>();
+		SearchExportMetadataParameters params = new SearchExportMetadataParameters(courseEntry, resSubPath);
+		List<ExportMetadata> exportMetadataList = exportMetadataDao.searchMetadatas(params);
+		for(ExportMetadata data:exportMetadataList) {
+			exports.add(new ExportInfos(data));
+			archiveNames.add(data.getFilename());
 		}
 		
 		VFSContainer exportContainer = getExportContainer(courseEntry, resSubPath);
 		if(exportContainer != null) {
 			List<VFSItem> zipItems = exportContainer.getItems(new ZIPLeafFilter());
 			for(VFSItem zipItem:zipItems) {
-				boolean running = false;
-				for(String taskEnding:taskEndings) {
-					if(zipItem.getName().endsWith(taskEnding)) {
-						running = true;
-					}
-				}
-				if(!running && zipItem instanceof VFSLeaf) {
-					VFSLeaf zipLeaf = (VFSLeaf)zipItem;
+				if(!archiveNames.contains(zipItem.getName()) && zipItem instanceof VFSLeaf zipLeaf) {
 					VFSMetadata metadata = vfsRepositoryService.getMetadataFor(zipLeaf);
 					ExportInfos resultsExport = new ExportInfos(zipLeaf, metadata);
 					exports.add(resultsExport);

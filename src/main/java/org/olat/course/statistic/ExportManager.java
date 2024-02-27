@@ -67,16 +67,16 @@ public class ExportManager {
 	/**
 	 * filename used to store courseauthor's activities (personalized)
 	 */
-	private static final String FILENAME_ADMIN_LOG = "course_admin_log.xlsx";
+	public static final String FILENAME_ADMIN_LOG = "course_admin_log.xlsx";
 	/**
 	 * filename used to store all user's activities (personalized) in the course
 	 * only visible for OLAT-admins
 	 */
-	private static final String FILENAME_USER_LOG = "course_user_log.xlsx";
+	public static final String FILENAME_USER_LOG = "course_user_log.xlsx";
 	/** 
 	 * filename used to store all user's activities (anonymized) in the course
 	 */
-	private static final String FILENAME_STATISTIC_LOG = "course_statistic_log.xlsx";
+	public static final String FILENAME_STATISTIC_LOG = "course_statistic_log.xlsx";
 	/**
 	 * zip filename substring (archive log files)
 	 */

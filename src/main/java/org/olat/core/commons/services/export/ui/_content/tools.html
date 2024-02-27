@@ -1,0 +1,7 @@
+<ul class="o_dropdown list-unstyled">
+	<li>$r.render("show.metadata")</li>
+	<li>$r.render("download")</li>
+	#if($r.available("delete"))
+	<li>$r.render("delete")</li>
+	#end
+</ul>

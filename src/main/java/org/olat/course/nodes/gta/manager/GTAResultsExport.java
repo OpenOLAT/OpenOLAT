@@ -201,6 +201,10 @@ public class GTAResultsExport {
 				.filter(task -> task.getIdentity() != null)
 				.collect(Collectors.toMap(task -> task.getIdentity().getKey(), task -> task, (u, v) -> u));
 		} else {
+			if(businessGroups == null) {
+				businessGroups = gtaManager.getBusinessGroups(gtaNode);
+			}
+			
 			List<Long> businessGroupsKeys = businessGroups.stream()
 					.map(BusinessGroup::getKey)
 					.collect(Collectors.toList());

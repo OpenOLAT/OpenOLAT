@@ -21,13 +21,11 @@ package org.olat.core.commons.services.export;
 
 import java.util.Date;
 
-import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.util.DateUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.user.UserManager;
 
@@ -59,7 +57,7 @@ public abstract class AbstractExportTask implements ExportTask {
 		return filename + "_" + task.getKey() + ".zip";
 	}
 
-	protected VFSMetadata fillMetadata(VFSLeaf exportZip, String title, String description) {
+	protected VFSMetadata fillMetadata(VFSLeaf exportZip, String title, String description, Date expirationDate) {
 		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 		VFSMetadata meta = vfsRepositoryService.getMetadataFor(exportZip);
 		if (task.getCreator() != null) {
@@ -70,7 +68,7 @@ public abstract class AbstractExportTask implements ExportTask {
 		meta.setTitle(title);
 		meta.setComment(description);
 		meta.setSource(task.getKey().toString());
-		meta.setExpirationDate(CalendarUtils.endOfDay(DateUtils.addDays(new Date(), 10)));
+		meta.setExpirationDate(expirationDate);
 		meta = vfsRepositoryService.updateMetadata(meta);
 		DBFactory.getInstance().commitAndCloseSession();
 		return meta;

@@ -181,7 +181,7 @@
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 	
-	<!-- Expired files -->
+	<!-- Expired files and exports -->
 	<bean id="vfsExpiredTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="vfsExpiredJob.${cluster.singleton.services}" />
 		<property name="cronExpression" value="28 22 2 * * ?" />
@@ -192,8 +192,22 @@
 		<property name="jobClass" value="org.olat.core.commons.services.vfs.manager.VFSExpiredJob" />
 	</bean>
 	
+	<bean id="exportsExpiredTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="exportsExpiredJob.${cluster.singleton.services}" />
+		<property name="cronExpression" value="28 17 2 * * ?" />
+		<property name="startDelay" value="50000" />
+	</bean>
+
+	<bean id="exportsExpiredJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.export.manager.ExpiredExportJob" />
+	</bean>
+	
 	<!-- dummy bean -->
 	<bean id="vfsExpiredJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
+	<bean id="exportsExpiredJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 

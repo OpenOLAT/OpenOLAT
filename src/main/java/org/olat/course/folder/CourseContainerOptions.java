@@ -32,26 +32,28 @@ public class CourseContainerOptions {
 	private final boolean withCourseFolder;
 	private final boolean withCourseDocuments;
 	private final boolean withCoachFolder;
+	private final boolean withArchives;
 	
 	private CourseContainerOptions(boolean withSharedResource, boolean withCourseElements, boolean withCourseFolder,
-			boolean withCourseDocuments, boolean withCoachFolder) {
+			boolean withCourseDocuments, boolean withCoachFolder, boolean withArchives) {
 		this.withSharedResource = withSharedResource;
 		this.withCourseElements = withCourseElements;
 		this.withCourseFolder = withCourseFolder;
 		this.withCourseDocuments = withCourseDocuments;
 		this.withCoachFolder = withCoachFolder;
+		this.withArchives = withArchives;
 	}
 	
 	public static final CourseContainerOptions all() {
-		return new CourseContainerOptions(true, true, true, true, true);
+		return new CourseContainerOptions(true, true, true, true, true, true);
 	}
 	
 	public static final CourseContainerOptions withoutElements() {
-		return new CourseContainerOptions(true, false, true, false, false);
+		return new CourseContainerOptions(true, false, true, false, false, false);
 	}
 	
 	public static final CourseContainerOptions courseFolder() {
-		return new CourseContainerOptions(false, false, true, false, false);
+		return new CourseContainerOptions(false, false, true, false, false, false);
 	}
 
 	public boolean withSharedResource() {
@@ -70,7 +72,11 @@ public class CourseContainerOptions {
 		return withCourseDocuments;
 	}
 
-	public boolean isWithCoachFolder() {
+	public boolean withCoachFolder() {
 		return withCoachFolder;
+	}
+	
+	public boolean withArchives() {
+		return withArchives;
 	}
 }

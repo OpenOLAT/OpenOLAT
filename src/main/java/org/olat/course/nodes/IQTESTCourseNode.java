@@ -555,6 +555,26 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		// Delete GradeScales
 		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(courseEntry, getIdent());
 	}
+	
+	@Override
+	public int estimatedArchivedTime(ICourse course, ArchiveOptions options) {
+		int numOfIdentities = 0;
+		if(options.getIdentities() != null) {
+			numOfIdentities = options.getIdentities().size();
+		} else {
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			numOfIdentities = repositoryService.countMembers(entry, GroupRoles.participant.name());
+		}
+		
+		int time = 0;
+		if(options.isWithPdfs()) {
+			time = numOfIdentities * 3000;
+		} else {
+			time = numOfIdentities * 50;
+		}
+		return time;
+	}
 
 	@Override
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,

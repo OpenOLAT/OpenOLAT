@@ -52,7 +52,7 @@ public class VFSSizeCellRenderer implements FlexiCellRenderer {
 		if (cellValue instanceof Number val) {
 			long size = val.longValue();
 			String formatted = inputInKB ? Formatter.formatKBytes(size) : Formatter.formatBytes(size);
-			target.append(formatted);
+			target.append("<span class='o_nowrap'>").append(formatted).append("</span>");
 		}
 	}
 }

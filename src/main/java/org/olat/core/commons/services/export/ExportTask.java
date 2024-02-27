@@ -31,8 +31,8 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public interface ExportTask extends LongRunnable, TaskAwareRunnable {
 	
-	public String getTitle();
-	
-	public VFSLeaf getExportZip();
+	String getTitle();
+
+	VFSLeaf getExportZip();
 
 }

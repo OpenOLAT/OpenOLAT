@@ -57,6 +57,20 @@ public interface TaskExecutorManager extends Executor {
 	public void execute(LongRunnable task, Identity creator, OLATResource resource,
 			String resSubPath, Date scheduledDate);
 	
+	/**
+	 * 
+	 * @param <U> The class of the companion
+	 * @param task The task to run
+	 * @param creator The creator of the task
+	 * @param resource The resource
+	 * @param resSubPath The sub identifier
+	 * @param scheduledDate An optional date 
+	 * @param companionFactory A factory to create a companion to the task and make sure the companion exists if the task is executed right at creation.
+	 * @return The companion
+	 */
+	public <U> U execute(LongRunnable task, Identity creator, OLATResource resource,
+			String resSubPath, Date scheduledDate, TaskCompanionFactory<U> companionFactory);
+	
 	public void executeTaskToDo();
 	
 	/**
@@ -96,6 +110,8 @@ public interface TaskExecutorManager extends Executor {
 	public List<Task> getTasks(OLATResource resource);
 	
 	public List<Task> getTasks(OLATResource resource, String resSubPath);
+	
+	public List<Task> getTasks(String resSubPath);
 	
 	public List<Identity> getModifiers(Task task);
 	

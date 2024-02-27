@@ -119,7 +119,7 @@ public class TaskExecutorManagerTest extends OlatTestCase {
 		}
 	}
 	
-	public static class DummySerializableTask implements LongRunnable, Runnable {
+	public static class DummySerializableTask implements LongRunnable {
 
 		private static final long serialVersionUID = 7459138015999298102L;
 		

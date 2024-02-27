@@ -19,13 +19,15 @@
  */
 package org.olat.core.commons.services.export;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.export.model.ExportInfos;
+import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
+import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
 
 /**
  * Only support course for the moment<br>
@@ -40,14 +42,30 @@ public interface ExportManager {
 	
 	public static final String ROOT_FOLDER = "persistedexports";
 	
-	public VFSContainer getExportContainer(RepositoryEntry entry, String resSubPath);
+	VFSContainer getExportContainer(RepositoryEntry entry, String resSubPath);
 	
-	public List<ExportInfos> getResultsExport(RepositoryEntry entry, String resSubPath);
+	List<ExportInfos> getResultsExport(RepositoryEntry entry, String resSubPath);
 	
-	public void startExport(ExportTask task, Identity creator, OLATResource resource, String resSubPath);
+	List<ExportInfos> getResultsExport(SearchExportMetadataParameters searchParams);
 	
-	public void cancelExport(ExportInfos export, RepositoryEntry entry, String resSubPath);
+	ExportMetadata getExportMetadataByTask(PersistentTask task);
 	
-	public void deleteExport(ExportInfos export);
+	ExportMetadata getExportMetadataByKey(Long metadataKey);
+	
+	ExportMetadata updateMetadata(ExportMetadata metadata);
+	
+	ExportMetadata startExport(ExportTask task, String title, String description,
+			String filename, ArchiveType type, Date expirationDate, boolean onlyAdministrators,
+			RepositoryEntry entry, String resSubPath, Identity creator);
+	
+	void cancelExport(ExportInfos export, RepositoryEntry entry, String resSubPath);
+	
+	void deleteExport(ExportInfos export);
+	
+	void deleteExportMetadata(ExportMetadata metadata);
+	
+	void deleteExpiredExports();
+	
+	List<ExportMetadata> searchMetadata(SearchExportMetadataParameters searchParams);
 
 }

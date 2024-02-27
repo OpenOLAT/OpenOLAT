@@ -113,6 +113,15 @@ public class PersistentTaskDAO {
 				.getResultList();
 	}
 	
+	public List<Task> findTasksBySubPath(String resSubPath) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select task from extask task where task.resSubPath=:resSubPath");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Task.class)
+				.setParameter("resSubPath", resSubPath)
+				.getResultList();
+	}
+	
 	public PersistentTask loadTaskById(Long taskKey) {
 		return dbInstance.getCurrentEntityManager().find(PersistentTask.class, taskKey);
 	}
@@ -247,6 +256,13 @@ public class PersistentTaskDAO {
 	}
 	
 	public boolean delete(Task task) {
+		// Remove the task from the metadata
+		dbInstance.getCurrentEntityManager()
+			.createQuery("update exportmetadata exp set exp.task=null where exp.task.key=:taskKey")
+			.setParameter("taskKey", task.getKey())
+			.executeUpdate();
+		dbInstance.commit();
+		
 		PersistentTask reloadedTask = loadForUpdate(task.getKey());
 		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from extaskmodifier taskmod where taskmod.task.key=:taskKey")

@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -34,6 +36,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.course.archiver.ArchivesOverviewController;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -48,7 +51,10 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
  */
 public class OverviewAuthoringController extends BasicController implements Activateable2, GenericEventListener {
 
+	private final BreadcrumbedStackedPanel stackPanel;
+	
 	private final AuthorListController authorListCtrl;
+	private ArchivesOverviewController archivesOverviewCtrl;
 
 	private boolean entriesDirty;
 	private final boolean isGuestOnly;
@@ -72,8 +78,11 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		authorListCtrl = new AuthorListController(ureq, wControl, searchParams, config);
 		listenTo(authorListCtrl);
 		
+		stackPanel = new BreadcrumbedStackedPanel("authoring", getTranslator(), this);
+		stackPanel.pushController(translate("author.title"), authorListCtrl);
+		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
-		putInitialPanel(authorListCtrl.getInitialComponent());
+		putInitialPanel(stackPanel);
 	}
 	
 	@Override
@@ -85,8 +94,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	
 	@Override
 	public void event(Event event) {
-		if(EntryChangedEvent.CHANGE_CMD.equals(event.getCommand()) && event instanceof EntryChangedEvent) {
-			EntryChangedEvent ece = (EntryChangedEvent)event;
+		if(EntryChangedEvent.CHANGE_CMD.equals(event.getCommand()) && event instanceof EntryChangedEvent ece) {
 			if(ece.getChange() == Change.modifiedAccess
 					|| ece.getChange() == Change.modifiedAtPublish
 					|| ece.getChange() == Change.modifiedDescription) {
@@ -124,6 +132,24 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == authorListCtrl) {
+			if(event instanceof AuthoringEvent ae && AuthoringEvent.COURSE_ARCHIVE_LIST.equals(ae.getCommand())) {
+				doOpenCourseArchive(ureq);
+			}
+		}
+	}
+	
+	private void doOpenCourseArchive(UserRequest ureq) {
+		removeAsListenerAndDispose(archivesOverviewCtrl);
+		archivesOverviewCtrl = null;
+		
+		archivesOverviewCtrl = new ArchivesOverviewController(ureq, getWindowControl());
+		listenTo(archivesOverviewCtrl);
+		stackPanel.pushController(translate("archives.title.crumb"), archivesOverviewCtrl);
 	}
 
 }

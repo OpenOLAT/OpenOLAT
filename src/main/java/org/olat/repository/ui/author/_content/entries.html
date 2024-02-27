@@ -21,6 +21,9 @@
 			#elseif($r.visible("help.list")) 
 				$r.render("help.list")
 			#end
+			#if($r.visible("more.menu")) 
+				$r.render("more.menu")
+			#end
 		</div>
 	</div>
 	#end

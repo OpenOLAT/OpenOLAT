@@ -9,26 +9,6 @@
 
 	<context:component-scan base-package="org.olat.resource.accesscontrol" />
 
-	<!--  Extension for archiver -->
-	<bean class="org.olat.resource.accesscontrol.ui.OrdersActionExtension" init-method="initExtensionPoints">
-		<constructor-arg index="0" ref="acModule" />
-		<property name="actionController">
-			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.resource.accesscontrol.ui.OrdersAdminController"/>
-			</bean>
-		</property>
-
-		<property name="i18nActionKey" value="order.menu.title.alt"/>
-		<property name="i18nDescriptionKey" value="order.menu.title.alt"/>
-		<property name="translationPackage" value="org.olat.resource.accesscontrol.ui"/>
-		<property name="extensionPoints">
-			<list>
-				<value>org.olat.course.archiver.ArchiverMainController</value>
-			</list>
-		</property>
-		<property name="order" value="267" />
-	</bean>
-
 	<!--  The "orders"  (Buchungen) in Home -->
 	<bean class="org.olat.resource.accesscontrol.ui.HomeOrdersActionExtension" name="accesscontrol.actExt" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="acModule" />

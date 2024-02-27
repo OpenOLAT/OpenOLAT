@@ -30,6 +30,9 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.export.ArchiveType;
+import org.olat.core.commons.services.export.ExportMetadata;
+import org.olat.core.commons.services.export.manager.ExportMetadataDAO;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
@@ -57,6 +60,8 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 	private DB dbInstance;
 	@Autowired
 	private PersistentTaskDAO persistentTaskDao;
+	@Autowired
+	private ExportMetadataDAO exportMetadataDao;
 	
 	@Test
 	public void createTask() {
@@ -334,6 +339,39 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		PersistentTask task = persistentTaskDao.createTask(taskName, new DummyTask(), creator, re.getOlatResource(), "test", null);
 		Assert.assertNotNull(task);
 		dbInstance.commitAndCloseSession();
+		
+		PersistentTask reloaded = dbInstance.getCurrentEntityManager().find(PersistentTask.class, task.getKey());
+		Assert.assertEquals(task, reloaded);
+		dbInstance.commitAndCloseSession();
+
+		boolean deleted = persistentTaskDao.delete(task);
+		Assert.assertTrue(deleted);
+		dbInstance.commitAndCloseSession();
+		
+		boolean found = true;
+		try {
+			PersistentTask deletedTask = dbInstance.getCurrentEntityManager().find(PersistentTask.class, task.getKey());
+			if(deletedTask == null) {
+				found = false;
+			}
+		} catch (EntityNotFoundException e) {
+			found = false;
+		}
+		Assert.assertFalse(found);
+	}
+	
+	@Test
+	public void deleteTask_withExportMetadata() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsUser("extask-1-" + UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		
+		String taskName = UUID.randomUUID().toString();
+		PersistentTask task = persistentTaskDao.createTask(taskName, new DummyTask(), creator, re.getOlatResource(), "test", null);
+		ExportMetadata metadata = exportMetadataDao.createMetadata(taskName, null, null, ArchiveType.PARTIAL, null, false, re, "some-id", creator, task);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(task);
+		Assert.assertNotNull(metadata);
 		
 		PersistentTask reloaded = dbInstance.getCurrentEntityManager().find(PersistentTask.class, task.getKey());
 		Assert.assertEquals(task, reloaded);

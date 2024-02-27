@@ -23,10 +23,16 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportManager;
+import org.olat.core.commons.services.export.ExportMetadata;
+import org.olat.core.commons.services.export.ExportTask;
 import org.olat.core.commons.services.export.model.ExportInfos;
+import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -43,6 +49,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ExportManagerTest extends OlatTestCase {
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private ExportManager exportManager;
 	
@@ -71,6 +79,69 @@ public class ExportManagerTest extends OlatTestCase {
 		List<ExportInfos> infos = exportManager.getResultsExport(entry, courseNode.getIdent());
 		Assert.assertNotNull(infos);
 		Assert.assertTrue(infos.isEmpty());
+	}
+	
+	@Test
+	public void startExportWithRepositoryEntry() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("task-1");
+		LittleTask task = new LittleTask();
+		String subIdent = "task-two";
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		ExportMetadata metadata = exportManager.startExport(task, "New archive", "Brand new one", null, ArchiveType.COMPLETE,
+				null, false, entry, subIdent, id);
+		dbInstance.commit();
+		
+		Assert.assertNotNull(metadata);
+		Assert.assertNotNull(metadata.getKey());
+		Assert.assertNotNull(metadata.getTask());
+		Assert.assertEquals(entry, metadata.getEntry());
+		Assert.assertEquals(subIdent, metadata.getSubIdent());
+		Assert.assertNotNull(metadata.getTask());
+		Assert.assertEquals(entry.getOlatResource(), metadata.getTask().getResource());
+		Assert.assertEquals(subIdent, metadata.getTask().getResSubPath());
+	}
+	
+	@Test
+	public void getExportMetadataByTask() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("task-1");
+		LittleTask task = new LittleTask();
+		String subIdent = "task-two";
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		ExportMetadata metadata = exportManager.startExport(task, "New archive", "Brand new one", null, ArchiveType.COMPLETE,
+				null, false, entry, subIdent, id);
+		dbInstance.commit();
+
+		Assert.assertNotNull(metadata);
+		Assert.assertNotNull(metadata.getTask());
+		ExportMetadata reloadedMetadata = exportManager.getExportMetadataByTask(metadata.getTask());
+		Assert.assertEquals(metadata, reloadedMetadata);
+	}
+	
+	public static class LittleTask implements ExportTask {
+
+		private static final long serialVersionUID = 5706709932092654234L;
+
+		@Override
+		public void setTask(Task task) {
+			//
+		}
+
+		@Override
+		public void run() {
+			//
+		}
+
+		@Override
+		public String getTitle() {
+			return null;
+		}
+
+		@Override
+		public VFSLeaf getExportZip() {
+			return null;
+		}
+	
+		
 	}
 
 }

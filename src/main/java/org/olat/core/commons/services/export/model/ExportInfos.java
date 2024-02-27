@@ -21,6 +21,7 @@ package org.olat.core.commons.services.export.model;
 
 import java.util.Date;
 
+import org.olat.core.commons.services.export.ExportMetadata;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -44,18 +45,25 @@ public class ExportInfos {
 	private Identity creator;
 	private String description;
 	
-	private Task runningTask;
+	private final Task runningTask;
+	private final ExportMetadata exportMetadata;
 	
-	public ExportInfos(String title, Task runningTask) {
-		this.title = title;
-		this.runningTask = runningTask;
-		creationDate = runningTask.getCreationDate();
-		creator = runningTask.getCreator();
+	public ExportInfos(ExportMetadata exportMetadata) {
+		this.exportMetadata = exportMetadata;
+		
+		title = exportMetadata.getTitle();
+		creationDate = exportMetadata.getCreationDate();
+		expirationDate = exportMetadata.getExpirationDate();
+		creator = exportMetadata.getCreator();
+		
+		runningTask = exportMetadata.getTask();
 	}
 	
 	public ExportInfos(VFSLeaf zipLeaf, VFSMetadata zipMetadata) {
 		this.zipLeaf = zipLeaf;
-		
+		exportMetadata = null;
+		runningTask = null;
+
 		creator = zipMetadata.getFileInitializedBy();
 		creationDate = zipMetadata.getCreationDate();
 		expirationDate = zipMetadata.getExpirationDate();
@@ -104,8 +112,11 @@ public class ExportInfos {
 		return zipLeaf;
 	}
 	
+	public ExportMetadata getExportMetadata() {
+		return exportMetadata;
+	}
+	
 	public Task getTask() {
 		return runningTask;
 	}
-
 }

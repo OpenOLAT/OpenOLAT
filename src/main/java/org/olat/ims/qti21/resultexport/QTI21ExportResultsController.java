@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.resultexport;
 
 import org.olat.core.commons.services.export.ui.ExportsListController;
+import org.olat.core.commons.services.export.ui.ExportsListSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -50,8 +51,9 @@ public class QTI21ExportResultsController extends BasicController {
 		newExportCtrl = new QTI21NewExportController(ureq, wControl, courseEnv, courseNode, identities);
 		listenTo(newExportCtrl);
 		
+		ExportsListSettings options = new ExportsListSettings(true);
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		exportListController = new ExportsListController(ureq, wControl, entry, courseNode.getIdent(), secCallback.isAdmin());
+		exportListController = new ExportsListController(ureq, wControl, entry, courseNode.getIdent(), secCallback.isAdmin(), options);
 		listenTo(exportListController);
 		
 		VelocityContainer mainVC = createVelocityContainer("export");

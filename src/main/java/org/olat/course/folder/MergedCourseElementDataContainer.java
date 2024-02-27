@@ -99,8 +99,7 @@ public class MergedCourseElementDataContainer extends MergeSource {
 					count.incrementAndGet();
 				}
 			}, course.getRunStructure().getRootNode(), true).visitAll();
-		} else if(course instanceof PersistingCourseImpl) {
-			PersistingCourseImpl persistingCourse = (PersistingCourseImpl)course;
+		} else if(course instanceof PersistingCourseImpl persistingCourse) {
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
 			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 			CourseTreeNode rootTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
@@ -109,8 +108,7 @@ public class MergedCourseElementDataContainer extends MergeSource {
 					.getRootNode();
 	
 			new TreeVisitor(node -> {
-				if(node instanceof CourseTreeNode) {
-					CourseTreeNode courseTreeNode = (CourseTreeNode)node;
+				if(node instanceof CourseTreeNode courseTreeNode) {
 					if (courseTreeNode.getCourseNode() instanceof PFCourseNode || courseTreeNode.getCourseNode() instanceof BCCourseNode) {
 						count.incrementAndGet();
 					}

@@ -31,6 +31,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.course.archiver.webdav.CourseArchiveWebDAVSource;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.folder.MergedCourseElementDataContainer;
@@ -120,7 +121,7 @@ public class MergedCourseContainer extends MergeSource {
 			initCourseDocuments(persistingCourse);
 		}
 		
-		if(options.isWithCoachFolder()) {
+		if(options.withCoachFolder()) {
 			initCoachFolder(persistingCourse);
 		}
 			
@@ -129,6 +130,13 @@ public class MergedCourseContainer extends MergeSource {
 			MergedCourseElementDataContainer nodesContainer = new MergedCourseElementDataContainer(courseId, identityEnv, courseReadOnly);
 			if (!nodesContainer.isEmpty()) {
 				addContainer(nodesContainer);
+			}
+		}
+
+		if(options.withArchives()) {
+			CourseArchiveWebDAVSource archivesContainer = new CourseArchiveWebDAVSource(courseRe);
+			if (!archivesContainer.isEmpty()) {
+				addContainer(archivesContainer);
 			}
 		}
 	}

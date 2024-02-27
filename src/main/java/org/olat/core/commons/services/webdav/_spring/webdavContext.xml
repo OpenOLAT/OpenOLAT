@@ -41,6 +41,7 @@
 	<bean id="webdav_groupfolders" class="org.olat.group.GroupfoldersWebDAVProvider">
 		<property name="collaborationManager" ref="collaborationManager" />
 	</bean>
+	<bean id="webdav_mycoursesarchives" class="org.olat.course.archiver.webdav.MyArchivesWebDAVProvider" />
 	
 	<!-- WebDAV admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
