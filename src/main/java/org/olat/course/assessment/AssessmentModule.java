@@ -75,6 +75,9 @@ public class AssessmentModule extends AbstractSpringModule {
 	
 	private static final String MANAGED_ASSESSMENT_MODES_ENABLED = "managedAssessmentModes";
 	
+	@Value("${assessment.inspection:enabled}")
+	private String assessmentInspectionEnabled;
+	
 	@Value("${assessment.mode:enabled}")
 	private String assessmentModeEnabled;
 	@Value("${assessment.mode.managed}")
@@ -151,9 +154,14 @@ public class AssessmentModule extends AbstractSpringModule {
 	}
 	
 	private void updateProperties() {
-		String enabledObj = getStringPropertyValue("assessment.mode", true);
-		if(StringHelper.containsNonWhitespace(enabledObj)) {
-			assessmentModeEnabled = enabledObj;
+		String enabledInspectionObj = getStringPropertyValue("assessment.inspection", true);
+		if(StringHelper.containsNonWhitespace(enabledInspectionObj)) {
+			assessmentInspectionEnabled = enabledInspectionObj;
+		}
+	
+		String enabledModeObj = getStringPropertyValue("assessment.mode", true);
+		if(StringHelper.containsNonWhitespace(enabledModeObj)) {
+			assessmentModeEnabled = enabledModeObj;
 		}
 		
 		String managedModes = getStringPropertyValue(MANAGED_ASSESSMENT_MODES_ENABLED, true);
@@ -191,6 +199,15 @@ public class AssessmentModule extends AbstractSpringModule {
 		safeExamBrowserBlockedUrlRegex = getStringPropertyValue(SEB_BLOCKEDURLREGEX, safeExamBrowserBlockedUrlRegex);
 		
 		safeExamBrowserHint = getStringPropertyValue(SEB_HINT, safeExamBrowserHint);
+	}
+	
+	public boolean isAssessmentInspectionEnabled() {
+		return "enabled".equals(assessmentInspectionEnabled);
+	}
+	
+	public void setAssessmentInspectionEnabled(boolean enabled) {
+		assessmentInspectionEnabled = enabled ? "enabled" : "disabled";
+		setStringProperty("assessment.inspection", assessmentInspectionEnabled, true);
 	}
 
 	public boolean isAssessmentModeEnabled() {

@@ -67,6 +67,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentInspectionService;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -173,6 +174,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private GradeService gradeService;
 	@Autowired
 	private GradingService gradingService;
+	@Autowired
+	private AssessmentModule assessmentModule;
 	@Autowired
 	private AssessmentInspectionService inspectionService;
 	@Autowired
@@ -313,9 +316,11 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					validateButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
 				}
 				
-				bulkInspectionButton  = uifactory.addFormLink("bulk.inspection.title", "bulk.inspection.title", null, formLayout, Link.BUTTON);
-				bulkInspectionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
-				tableEl.addBatchButton(bulkInspectionButton);
+				if(assessmentModule.isAssessmentInspectionEnabled()) {
+					bulkInspectionButton  = uifactory.addFormLink("bulk.inspection.title", "bulk.inspection.title", null, formLayout, Link.BUTTON);
+					bulkInspectionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
+					tableEl.addBatchButton(bulkInspectionButton);
+				}
 			}
 		}
 		

@@ -103,6 +103,7 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+
 		addConfigurationButton = uifactory.addFormLink("add.configuration", formLayout, Link.BUTTON);
 		addConfigurationButton.setIconLeftCSS("o_icon o_icon_add");
 

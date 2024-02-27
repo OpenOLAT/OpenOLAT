@@ -32,10 +32,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.ui.inspection.AssessmentInspectionConfigurationListController;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
 import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -57,6 +59,9 @@ public class AssessmentManagementController extends BasicController {
 	private AssessmentModeListController assessmentModeListCtrl;
 	private AssessmentInspectionConfigurationListController assessmentInspectionListCtrl;
 	
+	@Autowired
+	private AssessmentModule assessmentModule;
+	
 	public AssessmentManagementController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry entry, AssessmentModeSecurityCallback secCallback) {
 		super(ureq, wControl);
@@ -66,12 +71,21 @@ public class AssessmentManagementController extends BasicController {
 		
 		mainVC = createVelocityContainer("segments");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setDontShowSingleSegment(true);
+		
 		assessmentModeLink = LinkFactory.createLink("assessment.mode", mainVC, this);
+		assessmentModeLink.setVisible(assessmentModule.isAssessmentModeEnabled());		
+		
 		segmentView.addSegment(assessmentModeLink, true);
 		assessmentInspectionLink = LinkFactory.createLink("assessment.inspection", mainVC, this);
+		assessmentInspectionLink.setVisible(assessmentModule.isAssessmentInspectionEnabled());
 		segmentView.addSegment(assessmentInspectionLink, false);
 		
-		doOpenAssessmentMode(ureq);
+		if(assessmentModule.isAssessmentModeEnabled()) {
+			doOpenAssessmentMode(ureq);
+		} else if(assessmentModule.isAssessmentInspectionEnabled()) {
+			doOpenAssessmentInspection(ureq);
+		}
 		
 		putInitialPanel(mainVC);
 	}
@@ -82,9 +96,11 @@ public class AssessmentManagementController extends BasicController {
 			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink =  mainVC.getComponent(segmentCName);
-				if(clickedLink == assessmentModeLink) {
+				if(clickedLink == assessmentModeLink
+						&& assessmentModule.isAssessmentModeEnabled()) {
 					doOpenAssessmentMode(ureq);
-				} else if(clickedLink == assessmentInspectionLink) {
+				} else if(clickedLink == assessmentInspectionLink
+						&& assessmentModule.isAssessmentInspectionEnabled()) {
 					doOpenAssessmentInspection(ureq);
 				}
 			}

@@ -825,7 +825,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[AssessmentMode:0]"));
 				assessmentModeLink.setElementCssClass("o_sel_course_assessment_mode");
 				assessmentModeLink.setEnabled(!managed);
-				assessmentModeLink.setVisible(assessmentModule.isAssessmentModeEnabled() && uce != null && !uce.isCourseReadOnly());
+				assessmentModeLink.setVisible((assessmentModule.isAssessmentModeEnabled() || assessmentModule.isAssessmentInspectionEnabled())
+						&& uce != null && !uce.isCourseReadOnly());
 				tools.addComponent(assessmentModeLink);
 			}
 			

@@ -54,6 +54,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentInspectionService;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.inspection.AssessmentInspectionOverviewController;
 import org.olat.course.assessment.ui.tool.event.AssessmentInspectionSelectionEvent;
@@ -110,6 +111,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	private final String rootCourseNodeIdent;
 	private List<ParticipantType> participantTypeFilter = List.of(ParticipantType.member);
 
+	@Autowired
+	private AssessmentModule assessmentModule;
 	@Autowired
 	private AssessmentInspectionService inspectionService;
 	@Autowired
@@ -184,7 +187,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		ordersNode.setIconCssClass("o_icon_list");
 		overviewRootNode.addChild(ordersNode);
 		
-		if(inspectionService.hasInspectionConfigurations(courseEntry)) {
+		if(assessmentModule.isAssessmentInspectionEnabled()
+				&& inspectionService.hasInspectionConfigurations(courseEntry)) {
 			inspectionNode = new GenericTreeNode("Inspections");
 			inspectionNode.setTitle(translate("assessment.tool.inspections"));
 			inspectionNode.setIconCssClass("o_icon_inspection");
@@ -416,7 +420,8 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		overviewMenuTree.setHighlightSelection(false);
 		menuTree.setHighlightSelection(true);
 		
-		resultsInspectionLink.setVisible(courseNode instanceof IQTESTCourseNode && inspectionService.hasInspectionConfigurations(courseEntry));
+		resultsInspectionLink.setVisible(courseNode instanceof IQTESTCourseNode
+				&& assessmentModule.isAssessmentInspectionEnabled() && inspectionService.hasInspectionConfigurations(courseEntry));
 		
 		stackPanel.popUpToController(this);
 		stackPanel.changeDisplayname(treeNode.getTitle(), "o_icon " + treeNode.getIconCssClass(), this);
