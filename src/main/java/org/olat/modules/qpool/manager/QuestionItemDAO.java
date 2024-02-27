@@ -221,6 +221,7 @@ public class QuestionItemDAO {
 	public List<QuestionItemFull> getAllItems(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
+		  .append(" left join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.license license")
 		  .append(" left join fetch item.type itemType")
@@ -305,6 +306,7 @@ public class QuestionItemDAO {
 	public QuestionItemImpl loadById(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")
+		  .append(" left join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.license license")
 		  .append(" left join fetch item.type itemType")
@@ -332,6 +334,7 @@ public class QuestionItemDAO {
 	public List<QuestionItem> loadByIdentifier(String identifier) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select item from questionitem item")
+		  .append(" left join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.license license")
 		  .append(" left join fetch item.type itemType")
@@ -362,6 +365,7 @@ public class QuestionItemDAO {
 	public List<QuestionItemFull> loadByIds(Collection<Long> key) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select item from questionitem item")
+		  .append(" left join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.license license")
 		  .append(" left join fetch item.type itemType")

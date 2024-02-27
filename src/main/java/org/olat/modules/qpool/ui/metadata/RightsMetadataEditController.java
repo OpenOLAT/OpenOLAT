@@ -340,9 +340,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	}
 	
 	private void doOpenAuthorManager(UserRequest ureq) {
-		if(item instanceof QuestionItemImpl) {
-			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
-			
+		if(item instanceof QuestionItemImpl itemImpl) {
 			groupController = new GroupController(ureq, getWindowControl(), true, true, false, false,
 					false, false, itemImpl.getOwnerGroup());
 			listenTo(groupController);
