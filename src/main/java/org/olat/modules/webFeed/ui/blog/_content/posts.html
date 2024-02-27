@@ -1,23 +1,15 @@
 <div class="o_blog_posts clearfix">
-#if ($callback.mayCreateItems() && $feed.isInternal())
+#if ($callback.mayCreateItems() && $feed.isInternal() && !$items.isEmpty())
 	<div class="pull-right">
 		$r.render("feed.add.item")
 	</div>
 #end
 <div class="clearfix"></div>
 #if ($items.isEmpty())
-	<div class="o_empty_state">
-		<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_blog_icon"></i></div>
-		<h3 class="o_empty_msg">
-			$r.translate("blog.has.no.episodes")
-		</h3>
-		#if ( $callback.mayEditMetadata() && $feed.isUndefined() && $r.available("feed.make.internal"))
-			$r.contextHelpWithWrapper("manual_user/learningresources/Blog/")
-			<div class="o_button_group">
-				$r.render("feed.make.internal")
-			</div>
-		#end
-	</div>
+	$r.render("emptyStateCmp")
+	#if ($callback.mayEditMetadata())
+		$r.contextHelpWithWrapper("manual_user/learningresources/Blog/")
+	#end
 #else
 	#foreach( $post in $helper.getItemsOnPage($items) )
 		<div class="o_post o_block_with_datecomp clearfix $!post.extraCSSClass()">

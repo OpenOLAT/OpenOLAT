@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -119,6 +120,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		urlEl = uifactory.addTextElement("upload", "upload.url", 128, null, formLayout);
 		urlEl.setElementCssClass("o_sel_import_url");
 		urlEl.setFocus(true);
+		urlEl.addActionListener(FormEvent.ONCHANGE);
 
 		SpacerElement spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
 		spacerEl.setVisible(false);
@@ -173,6 +175,14 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == urlEl) {
+			updateHandlerForUrl();
+			validateResources();
+		}
 	}
 
 	private void validateExtRefUnique(UserRequest ureq) {
@@ -239,6 +249,9 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 						}
 					}
 				}
+				if (!selectType.isOneSelected() && keys.length > 0) {
+					selectType.select(selectType.getKey(0), true);
+				}
 				selectType.setVisible(true);
 			}
 		}
@@ -291,6 +304,11 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		if (extRefOk) {
 			validateExtRefUnique(ureq);
 		} else {
+			allOk &= false;
+		}
+
+		if(!selectType.isOneSelected()) {
+			selectType.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

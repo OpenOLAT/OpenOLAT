@@ -232,20 +232,12 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	@Override
-	public Feed updateFeedMode(Boolean external, Feed feed) {
+	public Feed setFeedMode(Boolean external, Feed feed) {
 		if (feed == null) return null;
 
 		// first, reload actual version of the feed
 		Feed reloaded = feedDAO.loadFeed(feed);
 		if (reloaded == null) return null;
-
-		// delete all items if the mode changes
-		if (external == null
-				|| feed.isUndefined()
-				|| external.booleanValue() != feed.getExternal().booleanValue()) {
-			itemDAO.removeItems(feed);
-			reloaded.setExternalImageURL(null);
-		}
 
 		reloaded.setExternal(external);
 		return updateFeed(reloaded);
@@ -264,7 +256,6 @@ public class FeedManagerImpl extends FeedManager {
 			reloaded.setExternalFeedUrl(externalFeedUrl);
 			saveExternalFeedIAndtems(feed);
 		} else {
-			reloaded.setExternal(null);
 			reloaded.setExternalFeedUrl(null);
 		}
 		reloaded.setLastModified(new Date());
@@ -467,13 +458,6 @@ public class FeedManagerImpl extends FeedManager {
 		// reload the Feed
 		Feed reloadedFeed = feedDAO.loadFeed(feed.getKey());
 
-		// If the last item has been removed, set the feed to undefined.
-		// The user can then newly decide whether to add items manually
-		// or from an external source.
-		if (!hasItems(reloadedFeed)) {
-			// set undefined
-			reloadedFeed.setExternal(null);
-		}
 		reloadedFeed.setLastModified(new Date());
 		reloadedFeed = feedDAO.updateFeed(reloadedFeed);
 

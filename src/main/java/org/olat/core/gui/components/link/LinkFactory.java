@@ -256,6 +256,27 @@ public class LinkFactory {
 		link.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		return link;
 	}
+
+	/**
+	 * add a button to the <code>vc</code> Velocity Container and make the <code>listeningController</code> listen to this button.<p>
+	 * Follow these instructions to show the button and catch its events:
+	 * <ol>
+	 * <li><code>$r.render("myButton")</code> in your velocity page, that the button shows up.</li>
+	 * <li>save the returned link as a instance variable <code>myButton</code></li>
+	 * <li>in the <code>listeningController.event(UserRequest ureq, Component source, Event event)</code> you catch the button by<br><code>if(source == myButton){..your stuff here..}</code></li>
+	 * </ol>
+	 *
+	 * @param name string for name of component and command
+	 * @param i18nKey
+	 * @param vc the VelocityContainer within you put this link
+	 * @param listener
+	 * @return the link component
+	 */
+	public static Link createButton(String name, String i18nKey, VelocityContainer vc, ComponentEventListener listener){
+		Link link = new Link(name, name, i18nKey, Link.BUTTON, vc, listener);
+		link.setAriaRole(Link.ARIA_ROLE_BUTTON);
+		return link;
+	}
 	
 	/**
 	 * add a small button to the <code>vc</code> Velocity Container and make the <code>listeningController</code> listen to this small button.<p>

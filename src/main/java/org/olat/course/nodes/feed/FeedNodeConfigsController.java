@@ -26,13 +26,13 @@ import java.util.Objects;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public class FeedNodeConfigsController extends FormBasicController implements ReferenceContentProvider {
+public class FeedNodeConfigsController extends BasicController implements ReferenceContentProvider {
 
 	private final String resourceTypeName;
 
@@ -69,6 +69,7 @@ public class FeedNodeConfigsController extends FormBasicController implements Re
 	private final FeedUIFactory feedUIFactory;
 	private final ICourse course;
 	private final AbstractFeedCourseNode feedCourseNode;
+	private final VelocityContainer mainVC;
 
 	private RepositoryEntryReferenceController referenceCtrl;
 	private Controller nodeRightCtrl;
@@ -81,7 +82,7 @@ public class FeedNodeConfigsController extends FormBasicController implements Re
 	public FeedNodeConfigsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, String translatorPackage,
 									 ICourse course, AbstractFeedCourseNode feedCourseNode, FeedUIFactory uiFactory, String resourceTypeName,
 									 String helpUrl) {
-		super(ureq, wControl, "configs");
+		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(translatorPackage, getLocale(), getTranslator()));
 		this.feedCourseNode = feedCourseNode;
 		this.stackPanel = stackPanel;
@@ -89,14 +90,15 @@ public class FeedNodeConfigsController extends FormBasicController implements Re
 		this.course = course;
 		this.resourceTypeName = resourceTypeName;
 
-		flc.contextPut("helpUrl", helpUrl);
+		mainVC = createVelocityContainer("configs");
+		mainVC.contextPut("helpUrl", helpUrl);
 
 		iconPanelContent = new IconPanelLabelTextContent("content");
 		initForm(ureq);
+		putInitialPanel(mainVC);
 	}
 
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+	protected void initForm(UserRequest ureq) {
 		// empty state configurations for blog and podcast
 		EmptyStateConfig emptyStateConfig;
 		if (Objects.equals(resourceTypeName, BlogFileResource.TYPE_NAME)) {
@@ -120,7 +122,7 @@ public class FeedNodeConfigsController extends FormBasicController implements Re
 				List.of(resourceTypeName), emptyStateConfig, selectionTitle, this);
 		referenceCtrl = new RepositoryEntryReferenceController(ureq, getWindowControl(), refRepoEntry, referenceProvider);
 		listenTo(referenceCtrl);
-		flc.put("reference", referenceCtrl.getInitialComponent());
+		mainVC.put("reference", referenceCtrl.getInitialComponent());
 
 		initUserRights(ureq, refRepoEntry);
 
@@ -151,13 +153,8 @@ public class FeedNodeConfigsController extends FormBasicController implements Re
 			nodeRightCtrl = new NodeRightsController(ureq, getWindowControl(), courseGroupManager,
 					nodeRightTypes, feedCourseNode.getModuleConfiguration(), null);
 			listenTo(nodeRightCtrl);
-			flc.put("rights", nodeRightCtrl.getInitialComponent());
+			mainVC.put("rights", nodeRightCtrl.getInitialComponent());
 		}
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		// no need
 	}
 
 	@Override
@@ -174,6 +171,11 @@ public class FeedNodeConfigsController extends FormBasicController implements Re
 			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 
 	private void doPreview(UserRequest ureq) {

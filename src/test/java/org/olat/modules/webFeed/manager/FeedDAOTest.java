@@ -217,7 +217,6 @@ public class FeedDAOTest extends OlatTestCase {
 		Assert.assertEquals(feed.getDescription(), reloaded.getDescription());
 		Assert.assertEquals(feed.isExternal(), reloaded.isExternal());
 		Assert.assertEquals(feed.isInternal(), reloaded.isInternal());
-		Assert.assertEquals(feed.isUndefined(), reloaded.isUndefined());
 		Assert.assertEquals(feed.getExternalFeedUrl(), reloaded.getExternalFeedUrl());
 		Assert.assertEquals(feed.getExternalImageURL(), reloaded.getExternalImageURL());
 		Assert.assertEquals(feed.getAuthor(), reloaded.getAuthor());

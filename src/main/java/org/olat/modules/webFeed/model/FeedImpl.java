@@ -235,17 +235,12 @@ public class FeedImpl implements Feed, Serializable {
 
 	@Override
 	public boolean isExternal() {
-		return isExternal != null && isExternal.booleanValue();
+		return isExternal != null && isExternal;
 	}
 
 	@Override
 	public boolean isInternal() {
-		return isExternal != null && !this.isExternal.booleanValue();
-	}
-
-	@Override
-	public boolean isUndefined() {
-		return isExternal == null;
+		return isExternal != null && !this.isExternal;
 	}
 
 	@Override

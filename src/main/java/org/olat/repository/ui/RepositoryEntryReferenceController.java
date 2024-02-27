@@ -174,7 +174,31 @@ public class RepositoryEntryReferenceController extends BasicController {
 		}
 		
 		if (guiConfig.canImport()) {
-			if (isImportLinkVisible()) {
+			if (isImportUrlLinkVisible()) {
+				importUrlLink = LinkFactory.createButton("import.url", "cmd.import.url.ressource", mainVC, this);
+				importUrlLink.setElementCssClass("o_sel_re_reference_import_url");
+				importUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+
+				replaceImportLink = LinkFactory.createCustomLink("replace.import", "import", "import", Link.LINK, mainVC, this);
+				replaceImportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+				commandsDropdown.addComponent(replaceImportLink);
+
+				Dropdown importDropdown = new Dropdown("import.dropdown", null, true, getTranslator());
+				importDropdown.setElementCssClass("o_sel_repo_import_url");
+				importDropdown.setDomReplaceable(false);
+				importDropdown.setButton(true);
+				importDropdown.setOrientation(DropdownOrientation.right);
+				mainVC.put(importDropdown.getComponentName(), importDropdown);
+
+				importLink = LinkFactory.createCustomLink("import", "import", "import", Link.LINK, mainVC, this);
+				importLink.setElementCssClass("o_sel_re_reference_import");
+				importLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+				importDropdown.addComponent(importLink);
+
+				replaceImportUrlLink = LinkFactory.createCustomLink("replace.import.url", "replace.import.url", "cmd.import.url.ressource", Link.LINK, mainVC, this);
+				replaceImportUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+				commandsDropdown.addComponent(replaceImportUrlLink);
+			} else if (isImportLinkVisible()) {
 				importLink = LinkFactory.createButton("import", mainVC, this);
 				importLink.setElementCssClass("o_sel_re_reference_import");
 				importLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
@@ -182,23 +206,6 @@ public class RepositoryEntryReferenceController extends BasicController {
 				replaceImportLink = LinkFactory.createCustomLink("replace.import", "import", "import", Link.LINK, mainVC, this);
 				replaceImportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
 				commandsDropdown.addComponent(replaceImportLink);
-			}
-			if (isImportUrlLinkVisible()) {
-				Dropdown importDropdown = new Dropdown("import.dropdown", null, true, getTranslator());
-				importDropdown.setElementCssClass("o_sel_repo_import_url");
-				importDropdown.setDomReplaceable(false);
-				importDropdown.setButton(true);
-				importDropdown.setOrientation(DropdownOrientation.right);
-				mainVC.put(importDropdown.getComponentName(), importDropdown);
-				
-				importUrlLink = LinkFactory.createCustomLink("import.url", "import.url", "cmd.import.url.ressource", Link.LINK, mainVC, this);
-				importUrlLink.setElementCssClass("o_sel_re_reference_import_url");
-				importUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
-				importDropdown.addComponent(importUrlLink);
-				
-				replaceImportUrlLink = LinkFactory.createCustomLink("replace.import.url", "replace.import.url", "cmd.import.url.ressource", Link.LINK, mainVC, this);
-				replaceImportUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
-				commandsDropdown.addComponent(replaceImportUrlLink);
 			}
 		}
 		

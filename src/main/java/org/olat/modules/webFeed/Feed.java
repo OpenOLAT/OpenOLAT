@@ -80,9 +80,9 @@ public interface Feed extends OLATResourceable, CreateInfo, ModifiedInfo {
 	public void setExternalFeedUrl(String externalFeedUrl);
 
 	/**
-	 * Set whether the Feed is external (true), internal (false) or undefined (null).
+	 * Set whether the Feed is external (true), internal (false).
 	 * This method should not be called directly, instead use
-	 * @see org.olat.modules.webFeed.FeedManager#method(java.lang.Boolean external, org.olat.modules.webFeed.Feed) .
+	 * @see org.olat.modules.webFeed.manager.FeedManager#setFeedMode(java.lang.Boolean external, org.olat.modules.webFeed.Feed) .
 	 * 
 	 * @param isExternal
 	 */
@@ -93,11 +93,6 @@ public interface Feed extends OLATResourceable, CreateInfo, ModifiedInfo {
 	public boolean isExternal();
 
 	public boolean isInternal();
-
-	/**
-	 * @return true if it is still undefined whether it is an internal or an external feed.
-	 */
-	public boolean isUndefined();
 
 	public int getModelVersion();
 	

@@ -160,15 +160,14 @@ public abstract class FeedManager {
 	public abstract Item updateItem(Item modifiedItem, FileElement file);
 
 	/**
-	 * Update the feed source mode. Additionally it deleted all Items of the Feed
-	 * if the mode of the Feed changes.
+	 * Update the feed source mode.
 	 *
 	 * @param external true: set to be an external feed; false: this is an
-	 *          internal feed; null: undefined
-	 * @param feed
-	 * @return Feed the updated feed object
+	 *          internal feed
+	 * @param feed feed that needs to be updated
+	 * @return updated feed object
 	 */
-	public abstract Feed updateFeedMode(Boolean external, Feed feed);
+	public abstract Feed setFeedMode(Boolean external, Feed feed);
 
 	/**
 	 * Update the feed from the given feed object

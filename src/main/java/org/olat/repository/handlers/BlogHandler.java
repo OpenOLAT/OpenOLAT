@@ -95,6 +95,9 @@ public class BlogHandler implements RepositoryHandler {
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
 				.create(initialAuthor, null, "", displayname, description, resource,
 						RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
+		Feed feed = FeedManager.getInstance().loadFeed(ores);
+		FeedManager.getInstance().setFeedMode(Boolean.FALSE, feed);
+		FeedManager.getInstance().enrichFeedByRepositoryEntry(feed, re, initialAuthor);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -154,7 +157,8 @@ public class BlogHandler implements RepositoryHandler {
 		DBFactory.getInstance().commit();
 		
 		Feed feed = FeedManager.getInstance().loadFeed(ores);
-		feed = FeedManager.getInstance().updateFeedMode(Boolean.TRUE, feed);
+		feed = FeedManager.getInstance().setFeedMode(Boolean.TRUE, feed);
+		FeedManager.getInstance().enrichFeedByRepositoryEntry(feed, re, initialAuthor);
 		FeedManager.getInstance().updateExternalFeedUrl(feed, url);
 		DBFactory.getInstance().commit();
 		

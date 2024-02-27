@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.webFeed.manager;
@@ -50,7 +50,7 @@ import com.rometools.rome.io.XmlReader;
  * feeds form an external web site.<br>
  *
  * Initial date: 12.05.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -106,7 +106,7 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 
 		return syndFeed.getEntries().stream()
 				.map(entry -> convertEntry(feed, entry))
-				.collect(Collectors.toList());
+				.toList();
 	}
 
 	/**
@@ -119,9 +119,9 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 
 		try(Reader xmlReader = new XmlReader(new URL(feedURL))) {
 			syndFeed = syndFeedInput.build(xmlReader);
-			log.info("Read external feed: " + feedURL);
+			log.info("Read external feed: {}", feedURL);
 		} catch (Exception e) {
-			log.warn("Cannot read external feed: : " + feedURL);
+			log.warn("Cannot read external feed: : {}", feedURL);
 		}
 
 		return syndFeed;
@@ -203,9 +203,7 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 
 		boolean modifiedProtocol = false;
 		try {
-			if (url != null) {
-				url = url.trim();
-			}
+			url = url.trim();
 			if (url.startsWith("feed") || url.startsWith("itpc")) {
 				// accept feed(s) urls like generated in safari browser
 				url = "http" + url.substring(4);
@@ -213,14 +211,11 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 			}
 			URL realUrl = new URL(url);
 			SyndFeed feed = input.build(new XmlReader(realUrl));
-			if (!feed.getEntries().isEmpty()) {
-				if (enclosuresExpected) {
-					SyndEntry entry = feed.getEntries().get(0);
-					if (entry.getEnclosures().isEmpty()) {
-						return new ValidatedURL(url, null, ValidatedURL.State.NO_ENCLOSURE);
-					}
+			if (!feed.getEntries().isEmpty() && enclosuresExpected) {
+				SyndEntry entry = feed.getEntries().get(0);
+				if (entry.getEnclosures().isEmpty()) {
+					return new ValidatedURL(url, null, ValidatedURL.State.NO_ENCLOSURE);
 				}
-				return new ValidatedURL(url, null, ValidatedURL.State.VALID);
 			}
 			// The feed was read successfully
 			return new ValidatedURL(url, feed.getTitle(), ValidatedURL.State.VALID);

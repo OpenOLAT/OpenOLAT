@@ -3,8 +3,10 @@
 		<i class="o_icon o_icon-fw o_icon o_FileResource-PODCAST_icon"></i> 
 		$r.escapeHtml($!feed.getTitle())
 	</h2>
-	#if ($helper.getImageUrl($feed) && $helper.getImageUrl($feed) != "")
-		<img class="o_media" src="$helper.getImageUrl($feed)?thumbnail=180x121${suppressCache}" aria-hidden="true"/>
+	#if ($helper.getImageUrl($feed) && $helper.getImageUrl($feed) != "" && $!r.available($feed.getExternalImageURL()))
+		<img class="o_media" src="$helper.getImageUrl($feed)?thumbnail=180x121${suppressCache}" aria-hidden="true" />
+	#elseif($helper.getImageUrl($feed))
+		<img class="o_media" style="max-width: 180px; max-height: 121px" src="$helper.getImageUrl($feed)" aria-hidden="true" />
 	#end
 	<div class="o_block">
 		#if ($!feed.getAuthor())
@@ -15,7 +17,7 @@
 			<div class="o_desc o_hint">$!helper.getFeedDescriptionForBrowser($feed)</div>
 		#end
 		
-		#if ( !$feed.isUndefined() && $helper.getFeedUrl() )			
+		#if ($helper.getFeedUrl())
 			<div class="o_subscription">
 				$r.render("feedUrlComponent")
 			</div>

@@ -36,6 +36,7 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,12 +44,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  *  The settings add quota management.
  *  
  * Initial date: 30 Oct 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class FeedSettingsController extends RepositoryEntrySettingsController {
 	
 	private Link quotaLink;
+	private Link metadataLink;
 	
 	private Controller quotaCtrl;
 	
@@ -67,6 +69,9 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 			quotaLink.setElementCssClass("o_sel_repo_quota");
 			buttonsGroup.addButton(quotaLink, false);
 		}
+		metadataLink = LinkFactory.createLink("details.metadata", getTranslator(), this);
+		metadataLink.setElementCssClass("o_sel_metadata");
+		buttonsGroup.addButton(metadataLink, false);
 	}
 
 	@Override
@@ -95,6 +100,8 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(quotaLink == source) {
 			doOpenQuota(ureq);
+		} else if (metadataLink == source) {
+			doOpenMetadata(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -118,5 +125,16 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 			mainPanel.setContent(quotaCtrl.getInitialComponent());
 			buttonsGroup.setSelectedButton(quotaLink);
 		}
+	}
+
+	@Override
+	protected void doOpenMetadata(UserRequest ureq) {
+		entry = repositoryService.loadByKey(entry.getKey());
+		boolean readOnly = entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted || entry.getEntryStatus() == RepositoryEntryStatusEnum.trash;
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Metadata"), null);
+		FeedMetadataWrapperController feedMetadataWrapperCtrl = new FeedMetadataWrapperController(ureq, swControl, entry, readOnly);
+		listenTo(feedMetadataWrapperCtrl);
+		mainPanel.setContent(feedMetadataWrapperCtrl.getInitialComponent());
+		buttonsGroup.setSelectedButton(metadataLink);
 	}
 }

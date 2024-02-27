@@ -15,9 +15,9 @@
 			#if($r.available("create"))
 				$r.render("create")
 			#end
-			#if($r.available("import") && $r.available("import.dropdown"))
+			#if($r.available("import.url") && $r.available("import.dropdown"))
 				<div class="btn-group">
-					$r.render("import")
+					$r.render("import.url")
 					$r.render("import.dropdown")
 				</div>
 			#elseif($r.available("import"))

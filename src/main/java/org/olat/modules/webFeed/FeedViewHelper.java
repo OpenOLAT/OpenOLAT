@@ -65,19 +65,19 @@ public class FeedViewHelper {
 	
 	// display 5 items per default
 	private int itemsPerPage = 5;
-	private Roles roles;
-	private Identity identity;
+	private final Roles roles;
+	private final Identity identity;
 	private Translator translator;
 	private Locale locale;
 	private String baseUri;
 	private String feedUrl;
-	private String nodeId;
-	private Long courseId;
+	private final String nodeId;
+	private final Long courseId;
 	private static final String MEDIA_DIR = Path.MEDIA_DIR;
 	// Per default show the first page
 	private int page = 0;
 
-	private FeedManager feedManager = FeedManager.getInstance();
+	private final FeedManager feedManager = FeedManager.getInstance();
 
 	/**
 	 * Use this constructor for localized content (like e.g. date formats)
@@ -111,8 +111,8 @@ public class FeedViewHelper {
 
 	/**
 	 * Set the base uri of an internal feed. <br>
-	 * E.g http://my.olat.org/olat/feed/ident/[IDKEY]/token/[TOKEN]/id/[ORESID]
-	 * @param feed 
+	 * E.g https://my.olat.org/olat/feed/ident/[IDKEY]/token/[TOKEN]/id/[ORESID]
+	 * @param feed
 	 */
 	public void setURIs(Feed feed) {
 		baseUri = FeedManager.getInstance().getFeedBaseUri(feed, identity, roles, courseId, nodeId);
@@ -122,10 +122,6 @@ public class FeedViewHelper {
 		} else if (feed.isExternal()) {
 			// The base uri is needed for dispatching the picture
 			feedUrl = feed.getExternalFeedUrl();
-		} else {
-			// feed is undefined
-			// The base uri is needed for dispatching the picture
-			feedUrl = null;
 		}
 	}
 
@@ -146,20 +142,6 @@ public class FeedViewHelper {
 			}
 		}
 		return iTunesfeed;
-	}
-
-	/**
-	 * @return The Yahoo! subscription url
-	 */
-	public String getYahooUrl() {
-		return "http://add.my.yahoo.com/rss?url=" + feedUrl;
-	}
-
-	/**
-	 * @return The Google subscription url
-	 */
-	public String getGoogleUrl() {
-		return "http://fusion.google.com/add?feedurl=" + feedUrl;
 	}
 
 	/**
@@ -250,7 +232,7 @@ public class FeedViewHelper {
 		} else if (item.isDraft()) {
 			info = translator.translate("feed.item.draft");
 		} else if (item.isScheduled()) {
-			info = translator.translate("feed.item.scheduled.for", new String[] { getPublishDate(item) });
+			info = translator.translate("feed.item.scheduled.for", getPublishDate(item));
 		} else if (item.isPublished()) {
 			info = getPublishInfo(item);
 		}
@@ -272,12 +254,12 @@ public class FeedViewHelper {
 			String author = StringHelper.escapeHtml(item.getAuthor());
 			if (author != null) {
 				if (date != null) {
-					publishInfo = translator.translate("feed.published.by.on", new String[] { author, date });
+					publishInfo = translator.translate("feed.published.by.on", author, date);
 				} else {
-					publishInfo = translator.translate("feed.published.by", new String[] { author });
+					publishInfo = translator.translate("feed.published.by", author);
 				}
 			} else if (date != null) {
-				publishInfo = translator.translate("feed.published.on", new String[] { date });
+				publishInfo = translator.translate("feed.published.on", date);
 			}
 		}
 
@@ -315,7 +297,7 @@ public class FeedViewHelper {
 		if (isModified(item)) {
 			String date = getLastModified(item);
 			String modifier = item.getModifier();
-			modifierInfo = translator.translate("feed.modified.by.on", new String[]{ modifier, date});
+			modifierInfo = translator.translate("feed.modified.by.on", modifier, date);
 		}
 		
 		return modifierInfo;
@@ -578,7 +560,7 @@ public class FeedViewHelper {
 	 * Get all displayed items inside the paged list of items.
 	 * 
 	 * @param items the already sorted items
-	 * @return
+	 * @return sorted list of Item objects
 	 */
 	public List<Item> getItemsOnPage(List<Item> items) {
 		List<Item> itemsOnPage = new ArrayList<>(itemsPerPage);
@@ -588,7 +570,7 @@ public class FeedViewHelper {
 		for (int i = start; i < end; i++) {
 			itemsOnPage.add(items.get(i));
 		}
-		Collections.sort(itemsOnPage, new ItemPublishDateComparator());
+		itemsOnPage.sort(new ItemPublishDateComparator());
 		
 		return itemsOnPage;
 	}

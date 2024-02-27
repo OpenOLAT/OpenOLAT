@@ -38,6 +38,10 @@ import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatings
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateConfigBuilder;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
@@ -91,7 +95,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private Map<Item, Controller> artefactLinks;
 	private Map<Item, Controller> commentsLinks;
 	private Link addItemButton;
-	private Link makeInternalButton;
 	private final Link olderItemsLink;
 	private final Link newerItemsLink;
 	private final Link startpageLink;
@@ -103,7 +106,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private List<Long> filteredItemKeys;
 	private Item currentItem;
 	private final FeedViewHelper helper;
-	private final FeedUIFactory uiFactory;
+	private final FeedUIFactory feedUIFactory;
 	private final YearNavigationController naviCtr;
 	private final FeedSecurityCallback callback;
 	private final Panel mainPanel;
@@ -114,7 +117,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 	// at a time.
 	private LockResult lock;
 	private final FeedItemDisplayConfig displayConfig;
-	public static final Event HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT = new Event("cmd.handle.new.external.feed.dialog");
 	public static final Event FEED_INFO_IS_DIRTY_EVENT = new Event("cmd.feed.info.is.dirty");
 
 	FeedManager feedManager = FeedManager.getInstance();
@@ -132,14 +134,14 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param wControl
 	 * @param feed
 	 * @param helper
-	 * @param uiFactory
+	 * @param feedUIFactory
 	 * @param callback
 	 * @param vcRightColumn
 	 */
 	public ItemsController(final UserRequest ureq, final WindowControl wControl, final Feed feed,
-			final FeedViewHelper helper, final FeedUIFactory uiFactory, final FeedSecurityCallback callback,
+			final FeedViewHelper helper, final FeedUIFactory feedUIFactory, final FeedSecurityCallback callback,
 			final VelocityContainer vcRightColumn) {
-		this(ureq, wControl, feed, helper, uiFactory, callback, vcRightColumn, null);
+		this(ureq, wControl, feed, helper, feedUIFactory, callback, vcRightColumn, null);
 	}
 
 	/**
@@ -149,13 +151,13 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param wControl
 	 * @param feed
 	 * @param helper
-	 * @param uiFactory
+	 * @param feedUIFactory
 	 * @param callback
 	 * @param vcRightColumn
 	 * @param displayConfig
 	 */
 	public ItemsController(final UserRequest ureq, final WindowControl wControl, final Feed feed,
-			final FeedViewHelper helper, final FeedUIFactory uiFactory, final FeedSecurityCallback callback,
+			final FeedViewHelper helper, final FeedUIFactory feedUIFactory, final FeedSecurityCallback callback,
 			final VelocityContainer vcRightColumn, FeedItemDisplayConfig displayConfig) {
 		super(ureq, wControl);
 
@@ -166,11 +168,11 @@ public class ItemsController extends BasicController implements Activateable2 {
 		this.feedResource = feed;
 		this.accessibleItems = feedManager.loadFilteredAndSortedItems(feed, filteredItemKeys, callback, ureq.getIdentity());
 		this.helper = helper;
-		this.uiFactory = uiFactory;
+		this.feedUIFactory = feedUIFactory;
 		this.callback = callback;
-		setTranslator(uiFactory.getTranslator());
+		setTranslator(feedUIFactory.getTranslator());
 
-		vcItems = uiFactory.createItemsVelocityContainer(this);
+		vcItems = feedUIFactory.createItemsVelocityContainer(this);
 		vcItems.contextPut("feed", feed);
 		vcItems.contextPut("items", accessibleItems);
 		vcItems.contextPut("callback", callback);
@@ -239,7 +241,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 		editButtons = new ArrayList<>();
 		deleteButtons = new ArrayList<>();
 		artefactLinks = new HashMap<>();
-		if (feed.isInternal()) {
+		if (accessibleItems.isEmpty()) {
+			initEmptyStateCmp(feed);
+		} else if (feed.isInternal()) {
 			addItemButton = LinkFactory.createButtonSmall("feed.add.item", vcItems, this);
 			addItemButton.setElementCssClass("o_sel_feed_item_new");
 			if (accessibleItems != null) {
@@ -247,16 +251,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 					createButtonsForItem(feed, item);
 				}
 			}
-		} else if (feed.isUndefined()) {
-			// The feed is whether internal nor external:
-			// That is,
-			// - it has just been created,
-			// - all items have been removed or
-			// - the feed url of an external feed has been set empty.
-			// In such a case, the user can decide whether to make it internal
-			// or
-			// external.
-			makeInternalButton();
 		}
 	}
 
@@ -336,28 +330,48 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 */
 	private void createItemLink(Item item) {
 		String guid = item.getGuid();
-		Link itemLink_more = LinkFactory.createCustomLink("link.to." + guid, "link.to." + guid, "feed.link.more",
+		Link itemLinkReadMore = LinkFactory.createCustomLink("link.to." + guid, "link.to." + guid, "feed.link.more",
 				Link.LINK, vcItems, this);
-		itemLink_more.setIconRightCSS("o_icon o_icon_start");
-		itemLink_more.setCustomEnabledLinkCSS("o_link_forward");
-		itemLink_more.setUserObject(item);
+		itemLinkReadMore.setIconRightCSS("o_icon o_icon_start");
+		itemLinkReadMore.setCustomEnabledLinkCSS("o_link_forward");
+		itemLinkReadMore.setUserObject(item);
 
-		Link itemLink_title = LinkFactory.createCustomLink("titlelink.to." + guid, "titlelink.to." + guid,
+		Link itemLinkTitle = LinkFactory.createCustomLink("titlelink.to." + guid, "titlelink.to." + guid,
 				StringHelper.escapeHtml(item.getTitle()), Link.NONTRANSLATED, vcItems, this);
-		itemLink_title.setUserObject(item);
+		itemLinkTitle.setUserObject(item);
 
-		itemLinks.add(itemLink_title);
-		itemLinks.add(itemLink_more);
+		itemLinks.add(itemLinkTitle);
+		itemLinks.add(itemLinkReadMore);
 	}
 
 	/**
-	 * Instantiates the makeInternal-Button and puts it to
+	 * Instantiates the empty state component and puts it to
 	 * the items velocity container's context.
+	 * Only available, if feed has no items and is empty
 	 */
-	public void makeInternalButton() {
-		if (callback.mayEditItems() || callback.mayCreateItems()) {
-			makeInternalButton = LinkFactory.createButton("feed.make.internal", vcItems, this);
+	public void initEmptyStateCmp(Feed feed) {
+		String emptyStateConfigI18nKey;
+		if (feed.getResourceableTypeName().toLowerCase().contains("blog")) {
+			emptyStateConfigI18nKey = "blog.has.no.episodes";
+		} else {
+			emptyStateConfigI18nKey = "podcast.has.no.episodes";
 		}
+		EmptyStateConfigBuilder emptyStateConfigBuilder = EmptyStateConfig.builder()
+				.withIconCss("o_icon o_" + feed.getResourceableTypeName().replace(".", "-") + "_icon")
+				.withIndicatorIconCss("o_icon_empty_indicator")
+				.withMessageI18nKey(emptyStateConfigI18nKey);
+		EmptyStateConfig emptyState;
+
+		if (callback.mayEditItems() || callback.mayCreateItems()) {
+			emptyState = emptyStateConfigBuilder
+					.withButtonI18nKey("feed.add.item")
+					.build();
+		} else {
+			emptyState = emptyStateConfigBuilder.build();
+		}
+		EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+		emptyStateCmp.setTranslator(feedUIFactory.getTranslator());
+		vcItems.put("emptyStateCmp", emptyStateCmp);
 	}
 
 	private void createButtonsForItem(Feed feed, Item item) {
@@ -434,8 +448,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 			// Generate new GUID for item, needed for media files that are
 			// stored relative to the GUID
 			currentItem.setGuid(CodeHelper.getGlobalForeverUniqueID());
-			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem);
-			activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
+			itemFormCtr = feedUIFactory.createItemFormController(ureq, getWindowControl(), currentItem);
+			activateModalDialog(itemFormCtr, feedUIFactory.getTranslator().translate("feed.edit.item"));
 
 		} else if (editButtons != null && editButtons.contains(source)) {
 			currentItem = (Item) ((Link) source).getUserObject();
@@ -446,8 +460,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 				if (lock.isSuccess()) {
 					// reload to prevent stale object, then launch editor
 					currentItem = feedManager.loadItem(currentItem.getKey());
-					itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem);
-					activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
+					itemFormCtr = feedUIFactory.createItemFormController(ureq, getWindowControl(), currentItem);
+					activateModalDialog(itemFormCtr, feedUIFactory.getTranslator().translate("feed.edit.item"));
 				} else {
 					String fullName = userManager.getUserDisplayName(lock.getOwner());
 					showInfo("feed.item.is.being.edited.by", fullName);
@@ -466,12 +480,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			if (item != null) {
 				displayItemController(ureq, item);
 			}
-		} else if (source == makeInternalButton) {
-			if (feedResource.isUndefined()) {
-				feedResource = feedManager.updateFeedMode(Boolean.FALSE, feedResource);
-			}
-			// else nothing to do, already set to internal by a concurrent user
-
+		} else if (source instanceof EmptyState) {
 			// Add temporary item and open edit dialog
 			addItemButton = LinkFactory.createButton("feed.add.item", vcItems, this);
 			addItemButton.setElementCssClass("o_sel_feed_item_new");
@@ -481,8 +490,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 			// Generate new GUID for item, needed for media files that are
 			// stored relative to the GUID
 			currentItem.setGuid(CodeHelper.getGlobalForeverUniqueID());
-			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem);
-			activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
+			itemFormCtr = feedUIFactory.createItemFormController(ureq, getWindowControl(), currentItem);
+			activateModalDialog(itemFormCtr, feedUIFactory.getTranslator().translate("feed.edit.item"));
 			// do logging
 			ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(),
 					LoggingResourceable.wrap(feedResource));
@@ -538,13 +547,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 				// Check if this item has ever been added to the feed. If not,
 				// remove the temp dir
 				cleanupTmpItemMediaDir(currentItem);
-				// If there were no items and the user doesn't want to save the
-				// first item, go back to the decision whether to make the feed
-				// internally or subscribe to an external feed.
-				if (!feedManager.hasItems(feedResource)) {
-					feedResource = feedManager.updateFeedMode(null, feedResource);
-					makeInternalButton();
-				}
 				// release lock
 				feedManager.releaseLock(lock);
 			}
@@ -572,7 +574,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 				}
 				// If the last item has been deleted, provide buttons for adding items manually
 				if (!feedManager.hasItems(feedResource)) {
-					makeInternalButton();
+					initEmptyStateCmp(feedResource);
 					// The subscription/feed url from the feed info is obsolete
 					fireEvent(ureq, ItemsController.FEED_INFO_IS_DIRTY_EVENT);
 				} else {
@@ -653,15 +655,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 					// Check if this item has ever been added to the feed. If
 					// not, remove the temp dir
 					cleanupTmpItemMediaDir(currentItem);
-					// If there were no items and the user doesn't want to save
-					// the
-					// first item, go back to the decision whether to make the
-					// feed
-					// internally or subscribe to an external feed.
-					if (!feedManager.hasItems(feedResource)) {
-						feedResource = feedManager.updateFeedMode(null, feedResource);
-						makeInternalButton();
-					}
 				}
 				// release the lock
 				feedManager.releaseLock(lock);
@@ -788,7 +781,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		Feed feed = feedManager.loadFeed(feedResource);
 		item = feedManager.loadItem(item.getKey());
 		if (item != null) {
-			itemCtr = new ItemController(ureq, getWindowControl(), item, feed, helper, uiFactory, callback, editButton,
+			itemCtr = new ItemController(ureq, getWindowControl(), item, feed, helper, feedUIFactory, callback, editButton,
 					deleteButton, artefactLink, displayConfig);
 			listenTo(itemCtr);
 			mainPanel.setContent(itemCtr.getInitialComponent());

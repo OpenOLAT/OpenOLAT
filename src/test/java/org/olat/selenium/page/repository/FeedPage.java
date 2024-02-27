@@ -131,7 +131,7 @@ public class FeedPage {
 	 */
 	public FeedPage newBlogPost() {
 		//click the button to create a feed
-		By newPostBy = By.xpath("//div[contains(@class,'o_blog_posts')]//div[contains(@class,'o_empty_state')]//a[contains(@onclick,'feed.make.internal')]");
+		By newPostBy = By.xpath("//div[contains(@class,'o_blog_posts')]//div[contains(@class,'o_empty_state')]//a[contains(@onclick,'empty.state')]");
 		OOGraphene.waitElement(newPostBy, browser);
 		browser.findElement(newPostBy).click();
 		return this;
