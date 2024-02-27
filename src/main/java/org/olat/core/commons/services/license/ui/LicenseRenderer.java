@@ -104,7 +104,7 @@ public class LicenseRenderer implements FlexiCellRenderer {
 	private void appendStaticControl(StringOutput sb, String i18n, String text) {
 		if (StringHelper.containsNonWhitespace(text)) {
 			sb.append("<div class='o_block_bottom'><h5>").append(translator.translate(i18n)).append("</h5>");
-			sb.append("<div>").appendHtmlEscaped(text).append("</div></div>");
+			sb.append("<div>").appendScanned(text).append("</div></div>");
 		}
 	}
 	
