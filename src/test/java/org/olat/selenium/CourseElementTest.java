@@ -636,7 +636,7 @@ public class CourseElementTest extends Deployments {
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
 			.selectTabFeedContent()
-			.importExternalUrl(blogTitle, "https://www.openolat.com/feed/", null);
+			.importExternalUrl(blogTitle, "https://www.openolat.com/feed/", "FileResource.BLOG");
 
 		//publish the course
 		courseEditor

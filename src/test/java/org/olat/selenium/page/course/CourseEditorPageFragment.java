@@ -498,18 +498,19 @@ public class CourseEditorPageFragment {
 		By urlBy = By.cssSelector("fieldset.o_sel_re_import_url_form div.o_sel_import_url input[type='text']");
 		browser.findElement(urlBy).sendKeys(url);
 		By displayNameBy = By.cssSelector("fieldset.o_sel_re_import_url_form div.o_sel_author_imported_name input[type='text']");
-		browser.findElement(displayNameBy).sendKeys(resourceTitle);
-
-		By submitBy = By.cssSelector("fieldset.o_sel_re_import_url_form .o_sel_repo_save_details button.btn.btn-primary");
-		browser.findElement(submitBy).click();
+		browser.findElement(displayNameBy).sendKeys("");
 		
 		if(type != null) {
 			By imporTypeBy = By.cssSelector("fieldset.o_sel_re_import_url_form .o_sel_import_type select"); 
 			OOGraphene.waitElement(imporTypeBy, browser);
 			new Select(browser.findElement(imporTypeBy)).selectByValue(type);
-			
-			browser.findElement(submitBy).click();
 		}
+		
+		browser.findElement(displayNameBy).clear();
+		browser.findElement(displayNameBy).sendKeys(resourceTitle);
+
+		By submitBy = By.cssSelector("fieldset.o_sel_re_import_url_form .o_sel_repo_save_details button.btn.btn-primary");
+		browser.findElement(submitBy).click();
 		
 		OOGraphene.waitModalDialogDisappears(browser);
 		
