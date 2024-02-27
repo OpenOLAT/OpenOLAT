@@ -40,6 +40,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentInspectionService;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.inspection.AssessmentInspectionOverviewController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
@@ -97,6 +98,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private final UserCourseEnvironment userCourseEnv;
 	private final IQTESTCourseNode courseNode;
 	
+	@Autowired
+	private AssessmentModule assessmentModule;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -158,7 +161,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		
 		// Inspections
 		inspectionsLink = LinkFactory.createLink("segment.inspections", mainVC, this);
-		inspectionsLink.setVisible(assessmentInspectionService.hasInspectionConfigurations(courseEntry));
+		inspectionsLink.setVisible(assessmentModule.isAssessmentInspectionEnabled()
+				&& assessmentInspectionService.hasInspectionConfigurations(courseEntry));
 		segmentView.addSegment(inspectionsLink, false);
 		
 		// Reminders

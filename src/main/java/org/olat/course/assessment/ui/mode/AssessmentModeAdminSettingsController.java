@@ -22,7 +22,7 @@ package org.olat.course.assessment.ui.mode;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
@@ -38,9 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentModeAdminSettingsController extends FormBasicController {
 	
-	private static final String[] onKeys = new String[]{ "on" };
-	
-	private MultipleSelectionElement enableEl;
+	private FormToggle enableAssessmentModeEl;
+	private FormToggle enableAssessmentInspectionEl;
 	
 	@Autowired
 	private AssessmentModule assessmentModule;
@@ -55,18 +54,19 @@ public class AssessmentModeAdminSettingsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("assessment.mode.title");
 		
+		enableAssessmentModeEl = uifactory.addToggleButton("modeenabled", "assessment.mode.enabled", translate("on"), translate("off"), formLayout);
+		enableAssessmentModeEl.toggle(assessmentModule.isAssessmentModeEnabled());
 		
-		String[] onValues = new String[]{ translate("assessment.mode.enabled.on") };
-		enableEl = uifactory.addCheckboxesHorizontal("modeenabled", "assessment.mode.enabled", formLayout, onKeys, onValues);
-		enableEl.select(onKeys[0], assessmentModule.isAssessmentModeEnabled());
-		enableEl.addActionListener(FormEvent.ONCHANGE);
+		enableAssessmentInspectionEl = uifactory.addToggleButton("inspectionenabled", "assessment.inspection.enabled", translate("on"), translate("off"), formLayout);
+		enableAssessmentInspectionEl.toggle(assessmentModule.isAssessmentInspectionEnabled());
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enableEl == source) {
-			boolean enabled = enableEl.isAtLeastSelected(1);
-			assessmentModule.setAssessmentModeEnabled(enabled);
+		if(enableAssessmentModeEl == source) {
+			assessmentModule.setAssessmentModeEnabled(enableAssessmentModeEl.isOn());
+		} else if(enableAssessmentInspectionEl == source) {
+			assessmentModule.setAssessmentInspectionEnabled(enableAssessmentInspectionEl.isOn());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

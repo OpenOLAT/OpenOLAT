@@ -52,6 +52,7 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentInspectionService;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.ui.inspection.CreateInspectionContext;
 import org.olat.course.assessment.ui.inspection.CreateInspectionFinishStepCallback;
 import org.olat.course.assessment.ui.inspection.CreateInspection_1a_CreateConfigurationStep;
@@ -162,6 +163,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	@Autowired
 	private TeamsModule teamsModule;
 	@Autowired
+	private AssessmentModule assessmentModule;
+	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private AssessmentInspectionService inspectionService;
@@ -241,7 +244,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 			chatLink = addLink(i18nKey, "tool.chat", "o_icon o_icon-fw o_icon_chats");
 		}
 		
-		if (!coachCourseEnv.isCourseReadOnly()) {
+		if (!coachCourseEnv.isCourseReadOnly() && assessmentModule.isAssessmentInspectionEnabled()) {
 			addSeparator();
 			inspectionLink = addLink("new.individual.inspection", "new.inspection", "o_icon o_icon-fw o_icon_inspection");
 		}
