@@ -82,6 +82,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.archiver.restapi.CourseArchivesWebService;
 import org.olat.course.assessment.restapi.CourseAssessmentModeWebService;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.cal.CalSecurityCallback;
@@ -196,6 +197,14 @@ public class CourseWebService {
 	public CourseGroupWebService getCourseGroupWebService() {
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseOres, false);
 		CourseGroupWebService ws = new CourseGroupWebService(re, courseOres);
+		CoreSpringFactory.autowireObject(ws);
+		return ws;
+	}
+	
+	@Path("archives")
+	public CourseArchivesWebService getCourseArchiveWebService() {
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseOres, false);
+		CourseArchivesWebService ws = new CourseArchivesWebService(re);
 		CoreSpringFactory.autowireObject(ws);
 		return ws;
 	}

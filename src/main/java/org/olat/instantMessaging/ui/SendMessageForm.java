@@ -139,9 +139,9 @@ public class SendMessageForm extends FormBasicController {
 	
 	public void setErrorTextField() {
 		if(dbInstance.isMySQL()) {
-			msg.setErrorKey("error.message.mysql", null);
+			msg.setErrorKey("error.message.mysql");
 		} else {
-			msg.setErrorKey("error.message", null);
+			msg.setErrorKey("error.message");
 		}
 	}
 	

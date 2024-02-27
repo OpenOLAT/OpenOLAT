@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.export.ArchiveType;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -47,7 +46,7 @@ public class SearchExportMetadataParameters {
 		//
 	}
 	
-	public SearchExportMetadataParameters(RepositoryEntry entry, String resSubPath) {
+	public SearchExportMetadataParameters(RepositoryEntryRef entry, String resSubPath) {
 		if(entry != null) {
 			repositoryEntries = new ArrayList<>(2);
 			repositoryEntries.add(entry);

@@ -32,7 +32,9 @@
 				<value>org.olat.core.commons.services.notifications.restapi</value>
 				<value>org.olat.core.commons.services.doceditor.drawio.restapi</value>
 				<value>org.olat.core.commons.services.doceditor.onlyoffice.restapi</value>
+				<value>org.olat.core.commons.services.export.restapi</value>
 				<value>org.olat.core.commons.services.vfs.restapi</value>
+				<value>org.olat.course.archiver.restapi</value>
 				<value>org.olat.course.assessment.restapi</value>
 				<value>org.olat.course.certificate.restapi</value>
 				<value>org.olat.course.db.restapi</value>

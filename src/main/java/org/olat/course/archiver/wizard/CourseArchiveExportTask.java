@@ -70,6 +70,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.statistic.export.SimpleLogExporter;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExport;
+import org.olat.instantMessaging.manager.ChatLogHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
@@ -182,15 +183,10 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 				}
 			}
 			
-			if (options.isLogFilesAuthors()) {
-				exportCourseLogs(course, org.olat.course.statistic.ExportManager.FILENAME_ADMIN_LOG, true, false, zout);
-			}
-			if (options.isLogFilesUsers()) {
-				exportCourseLogs(course, org.olat.course.statistic.ExportManager.FILENAME_USER_LOG, false, false, zout);
-			}
-			if (options.isLogFilesStatistics()) {
-				exportCourseLogs(course, org.olat.course.statistic.ExportManager.FILENAME_STATISTIC_LOG, false, true, zout);
-			}
+			exportCourseChat(zout);
+			exportCourseResults( course, nodeOptions.getIdentities(), courseNodesIdents, zout);
+			exportCourseLogs(course, zout);
+			
 		} catch(Exception e) {
 			log.error("", e);
 		}
@@ -203,6 +199,45 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 		} else {
 			vfsRepositoryService.getMetadataFor(exportZip);
 			sendMail(course, metadata, task.getCreator());
+		}
+	}
+
+	private void exportCourseResults(ICourse course, List<Identity> identities, List<String> nodeIdents, ZipOutputStream zout) {
+		if (options.isCourseResults()) {
+			List<CourseNode> nodes = getCourseNodes(course, nodeIdents);
+			try(OutputStream out = new ShieldOutputStream(zout)) {
+				zout.putNextEntry(new ZipEntry("course_results.xlsx"));
+				ScoreAccountingHelper.createCourseResultsOverviewXMLTable(identities, nodes, course, locale, out);
+				zout.closeEntry();
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		}
+	}
+
+	private void exportCourseChat(ZipOutputStream zout) {
+		if (options.isCourseChat()) {
+			try(OutputStream out = new ShieldOutputStream(zout)) {
+				zout.putNextEntry(new ZipEntry("course_chat.xlsx"));
+				CoreSpringFactory.getImpl(ChatLogHelper.class).generateWorkbook(courseRes, null, null, out, locale);
+				zout.closeEntry();
+			} catch(Exception e) {
+				log.error("", e);
+			}
+		}
+	}
+	
+	private void exportCourseLogs(ICourse course, ZipOutputStream zout) {
+		if(options.isLogFiles()) {
+			if (options.isLogFilesAuthors()) {
+				exportCourseLogs(course, org.olat.course.statistic.ExportManager.FILENAME_ADMIN_LOG, true, false, zout);
+			}
+			if (options.isLogFilesUsers()) {
+				exportCourseLogs(course, org.olat.course.statistic.ExportManager.FILENAME_USER_LOG, false, false, zout);
+			}
+			if (options.isLogFilesStatistics()) {
+				exportCourseLogs(course, org.olat.course.statistic.ExportManager.FILENAME_STATISTIC_LOG, false, true, zout);
+			}
 		}
 	}
 	
@@ -365,6 +400,17 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 			}
 		}, course.getRunStructure().getRootNode(), false).visitAll();
 		return courseNodesIdents;
+	}
+	
+	public static List<CourseNode> getCourseNodes(ICourse course, List<String> nodeIdents) {
+		Set<String> identsSet = Set.copyOf(nodeIdents);
+		List<CourseNode> courseNodes = new ArrayList<>();
+		new TreeVisitor(node -> {
+			if(node instanceof CourseNode cNode && identsSet.contains(cNode.getIdent())) {
+				courseNodes.add(cNode);
+			}
+		}, course.getRunStructure().getRootNode(), false).visitAll();
+		return courseNodes;
 	}
 	
 	public static String getDescription(CourseArchiveOptions archiveOptions, List<CourseNode> courseNodes, Locale locale) {

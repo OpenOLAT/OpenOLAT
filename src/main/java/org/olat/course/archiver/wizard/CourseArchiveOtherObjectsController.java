@@ -87,6 +87,7 @@ public class CourseArchiveOtherObjectsController extends StepFormBasicController
 		
 		logsCont = uifactory.addDefaultFormLayout("logs.files", null, formLayout);
 		logsCont.setFormTitle(translate("log.files.title"));
+		logsCont.setVisible(archiveOptions.isLogFiles());
 		
 		SelectionValues logFilesOptionsPK = new SelectionValues();
 		if(archiveContext.isAllowedLogAuthors()) {
@@ -100,6 +101,7 @@ public class CourseArchiveOtherObjectsController extends StepFormBasicController
 		}
 		logFilesOptionsEl = uifactory.addCheckboxesVertical("log.files.options", "log.files.options", logsCont,
 				logFilesOptionsPK.keys(), logFilesOptionsPK.values(), 1);
+
 		if(archiveContext.isAllowedLogAuthors() && archiveOptions.isLogFilesAuthors()) {
 			logFilesOptionsEl.select(LOG_AUTHORS, true);
 		}
@@ -149,12 +151,20 @@ public class CourseArchiveOtherObjectsController extends StepFormBasicController
 		archiveOptions.setCourseResults(others.contains(COURSE_RESULTS));
 		archiveOptions.setCourseChat(others.contains(COURSE_CHAT));
 		
-		Collection<String> logFilesOptions = logFilesOptionsEl.getSelectedKeys();
-		archiveOptions.setLogFilesAuthors(logFilesOptions.contains(LOG_AUTHORS));
-		archiveOptions.setLogFilesUsers(logFilesOptions.contains(LOG_USERS));
-		archiveOptions.setLogFilesStatistics(logFilesOptions.contains(LOG_STATISTICS));
-		archiveOptions.setLogFilesStartDate(rangeEl.getDate());
-		archiveOptions.setLogFilesEndDate(rangeEl.getSecondDate());
+		if(archiveOptions.isLogFiles()) {
+			Collection<String> logFilesOptions = logFilesOptionsEl.getSelectedKeys();
+			archiveOptions.setLogFilesAuthors(logFilesOptions.contains(LOG_AUTHORS));
+			archiveOptions.setLogFilesUsers(logFilesOptions.contains(LOG_USERS));
+			archiveOptions.setLogFilesStatistics(logFilesOptions.contains(LOG_STATISTICS));
+			archiveOptions.setLogFilesStartDate(rangeEl.getDate());
+			archiveOptions.setLogFilesEndDate(rangeEl.getSecondDate());
+		} else {
+			archiveOptions.setLogFilesAuthors(false);
+			archiveOptions.setLogFilesUsers(false);
+			archiveOptions.setLogFilesStatistics(false);
+			archiveOptions.setLogFilesStartDate(null);
+			archiveOptions.setLogFilesEndDate(null);
+		}
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

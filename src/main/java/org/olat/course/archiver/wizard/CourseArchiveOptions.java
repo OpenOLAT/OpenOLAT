@@ -63,7 +63,7 @@ public class CourseArchiveOptions {
 	}
 	
 	public boolean isOnlyAdministrators() {
-		return isLogFilesUsers() || isLogFilesStatistics();
+		return isLogFiles() && (isLogFilesUsers() || isLogFilesStatistics());
 	}
 	
 	public ArchiveType getArchiveType() {

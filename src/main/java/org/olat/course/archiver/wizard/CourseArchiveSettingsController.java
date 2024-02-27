@@ -187,8 +187,16 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		LogSettings logSetting = LogSettings.valueOf(logEl.getSelectedKey());
-		archiveOptions.setLogSettings(logSetting);
+		if(logEl.isVisible()) {
+			LogSettings logSetting = LogSettings.valueOf(logEl.getSelectedKey());
+			archiveOptions.setLogSettings(logSetting);
+			archiveOptions.setLogFiles(true);
+			archiveOptions.setLogFilesAuthors(logSetting == LogSettings.PERSONALISED);
+			archiveOptions.setLogFilesUsers(logSetting == LogSettings.PERSONALISED);	
+			archiveOptions.setLogFilesStatistics(true);
+			archiveOptions.setCourseChat(true);
+			archiveOptions.setCourseResults(true);
+		}
 		
 		if(customizeElementEl.isVisible() && customizeElementEl.isOneSelected()
 				&& CUSTOMIZE.equals(customizeElementEl.getSelectedKey())) {

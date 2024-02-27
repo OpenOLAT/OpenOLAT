@@ -289,7 +289,7 @@ public class QTI21ResultsExport {
 			
 			AssessmentEntry assessmentEntry = assessmentEntryMap.get(assessedIdentity);
 			List<AssessmentTestSession> currentSessions = sessions.get(assessedIdentity.getKey());
-			AssessedMember member = createAssessedMemberDetail(zout, assessedIdentity, currentSessions, assessmentEntry, false);
+			AssessedMember member = createAssessedMemberDetail(zout, assessedIdentity, currentSessions, assessmentEntry, true);
 			assessedMembers.add(member);
 		}
 		return assessedMembers;
@@ -386,7 +386,7 @@ public class QTI21ResultsExport {
 					assessmentDateFormat.format(session.getCreationDate()),
 					displayDateFormat.format(new Date(session.getDuration())),
 					session.getScore(), session.getManualScore(), createPassedIcons(session.getPassed()),
-					resultsPath + ".html", resultsPath + ".pdf");
+					resultsPath + ".html", resultsPath + ".pdf", resultsPath + "_log.xlsx");
 			
 			assessments.add(resultDetail);
 			//WindowControlMocker needed because this is not a controller
@@ -430,7 +430,7 @@ public class QTI21ResultsExport {
 			}
 			
 			new LogExcelExport(session, translator)
-				.export(idPath + "/log.xlsx", zout);
+				.export(idPath + assessmentID + "_log.xlsx", zout);
 		}
 		dbInstance.commitAndCloseSession();
 		return assessments;

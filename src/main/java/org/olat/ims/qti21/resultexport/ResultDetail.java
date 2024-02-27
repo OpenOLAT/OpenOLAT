@@ -40,9 +40,10 @@ public class ResultDetail {
 	private final String passed;
 	private final String link;
 	private final String linkPdf;
+	private final String linkLog;
 
 	public ResultDetail(String assessmentID, String assessmentDate, String duration,
-			BigDecimal score, BigDecimal manualScore, String passed, String link, String linkPdf) {
+			BigDecimal score, BigDecimal manualScore, String passed, String link, String linkPdf, String linkLog) {
 		this.assessmentID = assessmentID;
 		this.assessmentDate = assessmentDate;
 		this.duration = duration;
@@ -51,6 +52,7 @@ public class ResultDetail {
 		this.passed = passed;
 		this.link = link;
 		this.linkPdf = linkPdf;
+		this.linkLog = linkLog;
 	}
 
 	public String getLink() {
@@ -63,6 +65,14 @@ public class ResultDetail {
 	
 	public boolean hasLinkPdf() {
 		return StringHelper.containsNonWhitespace(linkPdf);
+	}
+	
+	public String getLinkLog() {
+		return linkLog;
+	}
+	
+	public boolean hasLinkLog() {
+		return StringHelper.containsNonWhitespace(linkLog);
 	}
 
 	public String getAssessmentID() {

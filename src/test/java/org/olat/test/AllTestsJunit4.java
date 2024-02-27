@@ -573,6 +573,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.CoursesForumsTest.class,
 	org.olat.restapi.CoursesQTIElementTest.class,
 	org.olat.restapi.CoursesResourcesFoldersTest.class,
+	org.olat.restapi.CourseArchivesWebServiceTest.class,
 	org.olat.restapi.CourseAssessmentWebServiceTest.class,
 	org.olat.restapi.CourseRightsWebServiceTest.class,
 	org.olat.restapi.CoursesTest.class,

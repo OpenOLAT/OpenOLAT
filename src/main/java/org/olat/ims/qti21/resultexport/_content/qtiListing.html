@@ -62,6 +62,7 @@
 					#if($hasPdfResults)
 						<th scope="col">$t.translate("button.pdf")</th>
 					#end
+					<th scope="col">$t.translate("button.log")</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -77,6 +78,10 @@
 					<td><button class="btn btn-default btn-sm" onclick="window.open('$assessment.link','_blank');">$t.translate("button.show")</button></td>
 					#if($hasPdfResults && ${assessment.hasLinkPdf()})
 						<td><button onclick="window.open('$assessment.linkPdf','_blank'); return false;" class="btn btn-default btn-sm">$t.translate("button.pdf")</button></td>
+					#end
+					
+					#if(${assessment.hasLinkLog()})
+						<td><button onclick="window.open('$assessment.linkLog','_blank'); return false;" class="btn btn-default btn-sm">$t.translate("button.log")</button></td>
 					#end
 				</tr>
 				#end

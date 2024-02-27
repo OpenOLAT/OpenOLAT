@@ -101,35 +101,40 @@ public class ChatLogHelper {
 		String label = tableExportTitle
 				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
 				+ ".xlsx";
-		
 		return new OpenXMLWorkbookResource(label) {
 			@Override
 			protected void generate(OutputStream out) {
-				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
-					//headers
-					OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
-					Row headerRow = exportSheet.newRow();
-					headerRow.addCell(0, translator.translate("log.user"), workbook.getStyles().getHeaderStyle());
-					headerRow.addCell(1, translator.translate("log.date"), workbook.getStyles().getHeaderStyle());
-					headerRow.addCell(2, translator.translate("log.content"), workbook.getStyles().getHeaderStyle());
-
-					//content
-					List<InstantMessage> messages = imDao.getMessages(ores, resSubPath, channel, null, 0, -1);
-					for(InstantMessage message:messages) {
-						
-						Row dataRow = exportSheet.newRow();
-						dataRow.addCell(0, message.getFromNickName(), null);
-						dataRow.addCell(1, message.getCreationDate(), workbook.getStyles().getDateStyle());
-						if(message.getType().isStatus()) {
-							dataRow.addCell(2, translator.translate("log.status." + message.getType().name()), null);
-						} else {
-							dataRow.addCell(2, message.getBody(), null);
-						}
-					}
-				} catch (IOException e) {
-					log.error("", e);
-				}
+				generateWorkbook(ores, resSubPath, channel, out, locale);
 			}
 		};		
+	}
+	
+	public void generateWorkbook(OLATResourceable ores, String resSubPath, String channel, OutputStream out, Locale locale) {
+		Translator translator = Util.createPackageTranslator(ChatController.class, locale);
+		
+		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			//headers
+			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
+			Row headerRow = exportSheet.newRow();
+			headerRow.addCell(0, translator.translate("log.user"), workbook.getStyles().getHeaderStyle());
+			headerRow.addCell(1, translator.translate("log.date"), workbook.getStyles().getHeaderStyle());
+			headerRow.addCell(2, translator.translate("log.content"), workbook.getStyles().getHeaderStyle());
+
+			//content
+			List<InstantMessage> messages = imDao.getMessages(ores, resSubPath, channel, null, 0, -1);
+			for(InstantMessage message:messages) {
+				
+				Row dataRow = exportSheet.newRow();
+				dataRow.addCell(0, message.getFromNickName(), null);
+				dataRow.addCell(1, message.getCreationDate(), workbook.getStyles().getDateStyle());
+				if(message.getType().isStatus()) {
+					dataRow.addCell(2, translator.translate("log.status." + message.getType().name()), null);
+				} else {
+					dataRow.addCell(2, message.getBody(), null);
+				}
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 }
