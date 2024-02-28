@@ -75,6 +75,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	private boolean deleteable = false;
 	private boolean deleteLinkDisabled = false;
 	private boolean ruleLinkEnabled = false;
+	private boolean collapsed = false;
 
 	private final Controller inspectorPart;
 	private final Link toggleInspectorButton;
@@ -169,8 +170,12 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 				case "open_rules":
 					fireEvent(ureq, new OpenRulesEvent());
 					break;
+				case "toggle_collapsed":
+					setCollapsed(!isCollapsed());
+					setDirty(true);
+					break;
 				default:
-					log.error("Uncatched dispatch to container {} with command {}", getComponentName(), cmd);
+					log.error("Uncaught dispatch to container {} with command {}", getComponentName(), cmd);
 					break;
 			}
 		}
@@ -480,5 +485,13 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+
+	public boolean isCollapsed() {
+		return collapsed;
+	}
+
+	public void setCollapsed(boolean collapsed) {
+		this.collapsed = collapsed;
 	}
 }

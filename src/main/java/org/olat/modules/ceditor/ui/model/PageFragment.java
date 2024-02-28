@@ -40,6 +40,7 @@ public class PageFragment {
 	private final String componentName;
 	private final PageElement element;
 	private final PageRunElement runElement;
+	private boolean collapsed;
 	
 	public PageFragment(String type, String componentName, PageRunElement runElement, PageElement element) {
 		this.type = type;
@@ -78,5 +79,13 @@ public class PageFragment {
 	
 	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
 		return runElement.validate(ureq, messages);
+	}
+
+	public boolean isCollapsed() {
+		return collapsed;
+	}
+
+	public void setCollapsed(boolean collapsed) {
+		this.collapsed = collapsed;
 	}
 }
