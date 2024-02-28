@@ -55,6 +55,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.restapi.EventVO;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
@@ -149,6 +150,10 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void putCalendarEvent() throws IOException, URISyntaxException {
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth1.getIdentity(),
+				RepositoryEntryStatusEnum.preparation, false, false);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(auth1));
 
@@ -162,26 +167,34 @@ public class CourseCalendarTest extends OlatRestTestCase {
 		event.setSubject(subject);
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
-				.path(course1.getResourceableId().toString()).path("calendar").path("event").build();
+				.path(course.getResourceableId().toString()).path("calendar").path("event").build();
 		HttpPut putEventMethod = conn.createPut(eventUri, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(putEventMethod, event);
 		HttpResponse putEventResponse = conn.execute(putEventMethod);
 		assertEquals(200, putEventResponse.getStatusLine().getStatusCode());
 		EntityUtils.consume(putEventResponse.getEntity());
 		
-		//check if the event is saved
-		KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course1);
-		Collection<KalendarEvent> savedEvents = calendarWrapper.getKalendar().getEvents();
-		
-		boolean found = false;
-		for(KalendarEvent savedEvent:savedEvents) {
-			if(subject.equals(savedEvent.getSubject())) {
-				found = true;
-			}
-		}
-		Assert.assertTrue(found);
-
 		conn.shutdown();
+		
+		//check if the event is saved
+		KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course);
+		List<KalendarEvent> savedEvents = calendarWrapper.getKalendar().getEvents();
+		
+		Assert.assertNotNull(savedEvents);
+		Assert.assertEquals(1, savedEvents.size());
+		
+		KalendarEvent savedEvent = savedEvents.get(0);
+		Assert.assertEquals(subject, savedEvent.getSubject());
+		
+		List<KalendarEventLink> links = savedEvent.getKalendarEventLinks();
+		Assert.assertNotNull(links);
+		Assert.assertEquals(1, links.size());
+		
+		KalendarEventLink link = links.get(0);
+		Assert.assertNotNull(link);
+		Assert.assertTrue(link.getDisplayName().startsWith("Basic course"));
+		Assert.assertEquals("o_CourseModule_icon", link.getIconCssClass());
+		Assert.assertTrue(link.getURI().endsWith("RepositoryEntry/" + courseEntry.getKey()));
 	}
 	
 	@Test
