@@ -97,6 +97,8 @@ public class AssessmentCourseOverviewController extends BasicController {
 	private SearchAssessedIdentityParams params;
 
 	@Autowired
+	private AssessmentModule assessmentModule;
+	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private AssessmentInspectionService inspectionService;
@@ -207,7 +209,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 			mainVC.put("assessmentModes", assessmentModeListCtrl.getInitialComponent());
 		}
 		
-		if(inspectionService.hasInspectionConfigurations(courseEntry)) {
+		if(assessmentModule.isAssessmentInspectionEnabled() && inspectionService.hasInspectionConfigurations(courseEntry) ) {
 			expandInspectionCtrl = new ExpandController(ureq, wControl, "assessment-inspection-small-" + courseEntry.getKey().toString());
 			listenTo(expandInspectionCtrl);
 			mainVC.put("expandInspections", expandInspectionCtrl.getInitialComponent());

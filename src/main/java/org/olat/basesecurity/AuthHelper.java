@@ -369,7 +369,9 @@ public class AuthHelper {
 				if(!modes.isEmpty()) {
 					lockRequests.addAll(TransientAssessmentMode.create(modes));
 				}
-				
+			}
+			
+			if(assessmentModule.isAssessmentInspectionEnabled()) {
 				AssessmentInspectionService inspectionService = CoreSpringFactory.getImpl(AssessmentInspectionService.class);
 				List<AssessmentInspection> inspections = inspectionService.getInspectionFor(identity, ureq.getRequestTimestamp());
 				if(!inspections.isEmpty()) {
