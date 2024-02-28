@@ -20,6 +20,7 @@
 package org.olat.modules.forms.model.xml;
 
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
@@ -38,7 +39,7 @@ public class FormXStream {
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 
 	static {
-		Class<?>[] types = new Class[] { BlockLayoutSettings.class, Choice.class, Choices.class,
+		Class<?>[] types = new Class[] { AlertBoxSettings.class, BlockLayoutSettings.class, Choice.class, Choices.class,
 				ChoiceSelectedCondition.class, Container.class, Disclaimer.class, FileStoredData.class,
 				FileUpload.class, Form.class, HTMLParagraph.class, HTMLRaw.class, Image.class, ImageSettings.class,
 				InformationType.class, MultipleChoice.class, Rubric.class, Rule.class, ScaleType.class,
@@ -47,6 +48,7 @@ public class FormXStream {
 
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
+		xstream.alias("alertboxsettings", AlertBoxSettings.class);
 		xstream.alias("blocklayoutsettings", BlockLayoutSettings.class);
 		xstream.alias("choice", Choice.class);
 		xstream.alias("choices", Choices.class);

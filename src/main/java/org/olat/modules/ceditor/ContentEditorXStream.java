@@ -21,6 +21,7 @@ package org.olat.modules.ceditor;
 
 
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.CodeLanguage;
 import org.olat.modules.ceditor.model.CodeSettings;
@@ -59,7 +60,8 @@ public class ContentEditorXStream {
 				TextSettings.class, TitleSettings.class, ContainerSettings.class, ContainerLayout.class, ContainerColumn.class,
 				TableContent.class, TableRow.class, TableColumn.class, TableSettings.class,
 				CodeSettings.class, CodeLanguage.class,
-				BlockLayoutSettings.class, MediaSettings.class, MathSettings.class
+				BlockLayoutSettings.class, MediaSettings.class, MathSettings.class,
+				AlertBoxSettings.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 
@@ -85,6 +87,8 @@ public class ContentEditorXStream {
 		xstream.alias("blocklayoutsettings", BlockLayoutSettings.class);
 		xstream.alias("mediasettings", MediaSettings.class);
 		xstream.alias("mathsettings", MathSettings.class);
+
+		xstream.alias("alertboxsettings", AlertBoxSettings.class);
 	}
 	
 	public static String toXml(Object obj) {
