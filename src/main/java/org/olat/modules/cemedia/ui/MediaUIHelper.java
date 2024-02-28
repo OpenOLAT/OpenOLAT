@@ -20,17 +20,26 @@
 package org.olat.modules.cemedia.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.IconSelectorElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
@@ -42,8 +51,13 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.Quota;
+import org.olat.modules.ceditor.model.AlertBoxIcon;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.AlertBoxType;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSpacing;
+import org.olat.modules.ceditor.model.ContainerLayout;
+import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.MediaVersion;
@@ -56,7 +70,10 @@ import org.olat.modules.cemedia.model.MediaUsage;
  *
  */
 public class MediaUIHelper {
-	
+
+	public static final String withIconKey = "withIcon";
+	public static final String collapsibleKey = "collapsible";
+
 	private MediaUIHelper() {
 		//
 	}
@@ -191,6 +208,115 @@ public class MediaUIHelper {
 		}
 	}
 
+	public static SelectionValues getAlertBoxTypes(Translator translator) {
+		SelectionValues selectionValues = new SelectionValues();
+		for (AlertBoxType alertBoxType : AlertBoxType.values()) {
+			selectionValues.add(SelectionValues.entry(alertBoxType.name(), translator.translate(alertBoxType.getI18nKey())));
+		}
+		return selectionValues;
+	}
+
+	public static List<IconSelectorElement.Icon> getIcons(Translator translator) {
+		return Arrays.stream(AlertBoxIcon.values()).map(i ->
+			new IconSelectorElement.Icon(i.name(), translator.translate(i.getI18nKey()), i.getCssClass())
+		).toList();
+	}
+
+	public static AlertBoxComponents addAlertBoxSettings(FormLayoutContainer formLayout, Translator translator,
+														 FormUIFactory uifactory, AlertBoxSettings alertBoxSettings,
+														 ColorService colorService, Locale locale) {
+		FormLayoutContainer alertBoxLayout = FormLayoutContainer.createVerticalFormLayout("alertBoxLayout", translator);
+		alertBoxLayout.setFormTitle(translator.translate("alert"));
+		formLayout.add(alertBoxLayout);
+
+		FormToggle alertBoxToggleEl = uifactory.addToggleButton("showAlertBox", "alert.box",
+				translator.translate("on"), translator.translate("off"), alertBoxLayout);
+		alertBoxToggleEl.addActionListener(FormEvent.ONCHANGE);
+		alertBoxToggleEl.toggle(alertBoxSettings.isShowAlertBox());
+
+		SelectionValues alertBoxTypes = getAlertBoxTypes(translator);
+		SingleSelection typeEl = uifactory.addDropdownSingleselect("type", alertBoxLayout, alertBoxTypes.keys(),
+				alertBoxTypes.values());
+		typeEl.addActionListener(FormEvent.ONCHANGE);
+		if (alertBoxSettings.getType() != null) {
+			typeEl.select(alertBoxSettings.getType().name(), true);
+		} else {
+			typeEl.select(typeEl.getKeys()[0], true);
+		}
+
+		TextElement titleEl = uifactory.addTextElement("title", 80, "", alertBoxLayout);
+		titleEl.addActionListener(FormEvent.ONCHANGE);
+		titleEl.setValue(alertBoxSettings.getTitle());
+
+		SelectionValues checkBoxesKV = new SelectionValues();
+		checkBoxesKV.add(SelectionValues.entry(withIconKey, translator.translate("alert.with.icon")));
+		checkBoxesKV.add(SelectionValues.entry(collapsibleKey, translator.translate("alert.collapsible")));
+		MultipleSelectionElement checkBoxesEl = uifactory.addCheckboxesVertical("alert.checkboxes", null,
+				alertBoxLayout, checkBoxesKV.keys(), checkBoxesKV.values(),1);
+		checkBoxesEl.setAjaxOnly(true);
+		checkBoxesEl.addActionListener(FormEvent.ONCHANGE);
+		checkBoxesEl.select(withIconKey, alertBoxSettings.isWithIcon());
+		checkBoxesEl.select(collapsibleKey, alertBoxSettings.isCollapsible());
+
+		List<IconSelectorElement.Icon> icons = getIcons(translator);
+		IconSelectorElement iconEl = uifactory.addIconSelectorElement("icon", "icon", alertBoxLayout,
+				icons);
+		iconEl.setDropUp(true);
+		iconEl.addActionListener(FormEvent.ONCHANGE);
+		if (alertBoxSettings.getIcon() != null) {
+			iconEl.setIcon(alertBoxSettings.getIcon().name());
+		} else {
+			iconEl.setIcon(icons.get(0).id());
+		}
+
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorService.getColors(), locale);
+		ColorPickerElement colorEl = uifactory.addColorPickerElement("color", "color", alertBoxLayout,
+				colors);
+		colorEl.setDropUp(true);
+		colorEl.addActionListener(FormEvent.ONCHANGE);
+		if (alertBoxSettings.getColor() != null) {
+			colorEl.setColor(alertBoxSettings.getColor());
+		} else {
+			colorEl.setColor(colors.get(0).id());
+		}
+
+		return new AlertBoxComponents(alertBoxToggleEl, typeEl, titleEl, checkBoxesEl, iconEl, colorEl);
+	}
+
+	public static List<FormLink> addContainerLayoutTab(FormItemContainer formLayout, TabbedPaneItem tabbedPane,
+													   Translator translator, FormUIFactory uifactory,
+													   ContainerSettings containerSettings, String velocity_root) {
+		String page = velocity_root + "/container_inspector.html";
+		FormLayoutContainer layoutCont = FormLayoutContainer.createCustomFormLayout("layout", translator, page);
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(translator.translate("tab.layout"), layoutCont);
+
+		List<FormLink> layoutLinks = new ArrayList<>();
+
+		ContainerLayout activeLayout = containerSettings.getType();
+
+		int count = 0;
+		for (ContainerLayout layout : ContainerLayout.values()) {
+			if (layout.deprecated() && layout != activeLayout) {
+				continue;
+			}
+
+			String id = "add." + (++count);
+			String pseudoIcon = layout.pseudoIcons();
+			FormLink layoutLink = uifactory.addFormLink(id, pseudoIcon, null, layoutCont,
+					Link.LINK | Link.NONTRANSLATED);
+			if (activeLayout == layout) {
+				layoutLink.setElementCssClass("active");
+			}
+			layoutLink.setUserObject(layout);
+			layoutLinks.add(layoutLink);
+		}
+
+		layoutCont.contextPut("layouts", layoutLinks);
+
+		return layoutLinks;
+	}
+
 	public static LayoutTabComponents addLayoutTab(FormItemContainer formLayout, TabbedPaneItem tabbedPane,
 												   Translator translator, FormUIFactory uifactory,
 												   BlockLayoutSettings layoutSettings, String velocity_root) {
@@ -306,6 +432,63 @@ public class MediaUIHelper {
 			} else {
 				spacingsCont().setVisible(false);
 			}
+		}
+	}
+
+	public record AlertBoxComponents(FormToggle alertBoxToggleEl, SingleSelection typeEl, TextElement titleEl,
+									 MultipleSelectionElement checkBoxesEl, IconSelectorElement iconEl,
+									 ColorPickerElement colorEl) {
+
+		public AlertBoxComponents(FormToggle alertBoxToggleEl, SingleSelection typeEl, TextElement titleEl,
+								  MultipleSelectionElement checkBoxesEl, IconSelectorElement iconEl,
+								  ColorPickerElement colorEl) {
+			this.alertBoxToggleEl = alertBoxToggleEl;
+			this.typeEl = typeEl;
+			this.titleEl = titleEl;
+			this.checkBoxesEl = checkBoxesEl;
+			this.iconEl = iconEl;
+			this.colorEl = colorEl;
+
+			updateVisibility();
+		}
+
+		public boolean matches(FormItem source) {
+			return source == alertBoxToggleEl || source == typeEl || source == titleEl || source == checkBoxesEl ||
+					source == iconEl || source == colorEl;
+		}
+
+		public void sync(AlertBoxSettings alertBoxSettings) {
+			alertBoxSettings.setShowAlertBox(alertBoxToggleEl().isOn());
+
+			AlertBoxType type = AlertBoxType.valueOf(typeEl().getSelectedKey());
+			alertBoxSettings.setType(type);
+
+			alertBoxSettings.setTitle(titleEl.getValue());
+
+			alertBoxSettings.setWithIcon(checkBoxesEl.isKeySelected(withIconKey));
+
+			alertBoxSettings.setCollapsible(checkBoxesEl.isKeySelected(collapsibleKey));
+
+			if (iconEl.isVisible() && iconEl.getIcon() != null) {
+				alertBoxSettings.setIcon(AlertBoxIcon.valueOf(iconEl.getIcon().id()));
+			}
+
+			alertBoxSettings.setColor(colorEl.getColor().id());
+
+			updateVisibility();
+		}
+
+		private void updateVisibility() {
+			boolean visible = alertBoxToggleEl().isOn();
+			typeEl.setVisible(visible);
+			titleEl.setVisible(visible);
+			checkBoxesEl.setVisible(visible);
+
+			boolean customVisible = visible && AlertBoxType.custom.name().equals(typeEl.getSelectedKey());
+			colorEl.setVisible(customVisible);
+
+			boolean iconVisible = customVisible && checkBoxesEl.isKeySelected(withIconKey);
+			iconEl.setVisible(iconVisible);
 		}
 	}
 }

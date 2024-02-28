@@ -19,10 +19,10 @@
  */
 package org.olat.modules.ceditor.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -40,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
@@ -57,15 +57,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ContainerInFormInspectorController extends FormBasicController implements PageElementInspectorController {
 
 	private TabbedPaneItem tabbedPane;
-	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
-	private int count = 0;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 	private ContainerElement container;
 	private final PageElementStore<ContainerElement> store;
-	private final List<FormLink> layoutLinks = new ArrayList<>();
+	private List<FormLink> layoutLinks;
 	private TextElement nameEl;
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ColorService colorService;
 
 	public ContainerInFormInspectorController(UserRequest ureq, WindowControl wControl, ContainerElement container,
 											  PageElementStore<ContainerElement> store) {
@@ -86,11 +87,9 @@ public class ContainerInFormInspectorController extends FormBasicController impl
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source instanceof ContainerEditorController &&
-				event instanceof ChangePartEvent changePartEvent &&
-				changePartEvent.getElement() instanceof ContainerElement containerElement) {
-			if (changePartEvent.isElement(container)) {
-				this.container = containerElement;
+		if (source instanceof ContainerEditorController && event instanceof ChangePartEvent cpe) {
+			if (cpe.isElement(container)) {
+				container = (ContainerElement) cpe.getElement();
 			}
 		}
 		super.event(ureq, source, event);
@@ -104,41 +103,12 @@ public class ContainerInFormInspectorController extends FormBasicController impl
 
 		addLayoutTab(formLayout);
 		addNameTab(formLayout);
+		addStyleTab(formLayout);
 	}
 
 	private void addLayoutTab(FormItemContainer formLayout) {
-		String page = velocity_root + "/container_inspector.html";
-		FormLayoutContainer layoutCont = FormLayoutContainer.createCustomFormLayout("layout", getTranslator(), page);
-		formLayout.add(layoutCont);
-		tabbedPane.addTab(getTranslator().translate("tab.layout"), layoutCont);
-
-		layoutLinks.clear();
-
-		ContainerLayout activeLayout = getContainerSettings().getType();
-
-		for (ContainerLayout layout:ContainerLayout.values()) {
-			if (layout.deprecated() && layout != activeLayout) {
-				continue;
-			}
-
-			String id = "add." + (++count);
-			String pseudoIcon = layout.pseudoIcons();
-			FormLink layoutLink = uifactory.addFormLink(id, pseudoIcon, null, layoutCont, Link.LINK | Link.NONTRANSLATED);
-			if (activeLayout == layout) {
-				layoutLink.setElementCssClass("active");
-			}
-			layoutLink.setUserObject(layout);
-			layoutLinks.add(layoutLink);
-		}
-
-		layoutCont.contextPut("layouts", layoutLinks);
-	}
-
-	private ContainerSettings getContainerSettings() {
-		if (container.getContainerSettings() != null) {
-			return container.getContainerSettings();
-		}
-		return new ContainerSettings();
+		layoutLinks = MediaUIHelper.addContainerLayoutTab(formLayout, tabbedPane, getTranslator(), uifactory,
+				container.getContainerSettings(), velocity_root);
 	}
 
 	private void addNameTab(FormItemContainer formLayout) {
@@ -146,10 +116,19 @@ public class ContainerInFormInspectorController extends FormBasicController impl
 		formLayout.add(layoutCont);
 		tabbedPane.addTab(getTranslator().translate("container.name"), layoutCont);
 
-		String name = getContainerSettings().getName();
+		String name = container.getContainerSettings().getName();
 		nameEl = uifactory.addTextElement("container.name", null, 128, name, layoutCont);
 		nameEl.setPlaceholderKey("untitled", new String[] {""});
 		nameEl.addActionListener(FormEvent.ONCHANGE);
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer styleCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		formLayout.add(styleCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), styleCont);
+
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory,
+				getAlertBoxSettings(container.getContainerSettings()), colorService, getLocale());
 	}
 
 	@Override
@@ -165,24 +144,27 @@ public class ContainerInFormInspectorController extends FormBasicController impl
 			doSetLayout(ureq, containerLayout);
 		} else if (source == nameEl) {
 			doSetName(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 	private void doSetName(UserRequest ureq) {
-		ContainerSettings containerSettings = getContainerSettings();
-		containerSettings.setName(nameEl.getValue());
-		container.setLayoutOptions(ContentEditorXStream.toXml(containerSettings));
+		ContainerSettings settings = container.getContainerSettings();
+		settings.setName(nameEl.getValue());
+		container.setLayoutOptions(ContentEditorXStream.toXml(settings));
 		container = store.savePageElement(container);
 		dbInstance.commit();
 		fireEvent(ureq, new ChangePartEvent(container));
 	}
 
 	private void doSetLayout(UserRequest ureq, ContainerLayout newLayout) {
-		ContainerSettings settings = getContainerSettings();
+		ContainerSettings settings = container.getContainerSettings();
 		settings.updateType(newLayout);
 		container.setLayoutOptions(ContentEditorXStream.toXml(settings));
 		container = store.savePageElement(container);
@@ -193,5 +175,25 @@ public class ContainerInFormInspectorController extends FormBasicController impl
 			boolean active = layoutLink.getUserObject() == newLayout;
 			layoutLink.setElementCssClass(active ? "active" : "");
 		}
+	}
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		ContainerSettings settings = container.getContainerSettings();
+
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(settings);
+		alertBoxComponents.sync(alertBoxSettings);
+		settings.setAlertBoxSettings(alertBoxSettings);
+
+		container.setLayoutOptions(ContentEditorXStream.toXml(settings));
+		container = store.savePageElement(container);
+		dbInstance.commit();
+		fireEvent(ureq, new ChangePartEvent(container));
+	}
+
+	private AlertBoxSettings getAlertBoxSettings(ContainerSettings containerSettings) {
+		if (containerSettings.getAlertBoxSettings() != null) {
+			return containerSettings.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
 	}
 }
