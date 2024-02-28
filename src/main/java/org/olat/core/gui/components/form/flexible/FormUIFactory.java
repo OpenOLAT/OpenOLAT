@@ -51,6 +51,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.IconSelectorElement;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MemoryElement;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
@@ -83,6 +84,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormReset;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.IconSelectorElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.IntegerElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
@@ -366,6 +368,14 @@ public class FormUIFactory {
 		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors);
 		setLabelIfNotNull(i18nLabel, colorPickerElement);
 		return colorPickerElement;
+	}
+
+	public IconSelectorElement addIconSelectorElement(String name, String i18nLabel, FormItemContainer formLayout,
+													  List<IconSelectorElement.Icon> icons) {
+		IconSelectorElement iconSelectorElement = new IconSelectorElementImpl(name, icons);
+		setLabelIfNotNull(i18nLabel, iconSelectorElement);
+		formLayout.add(iconSelectorElement);
+		return iconSelectorElement;
 	}
 
 	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name,
