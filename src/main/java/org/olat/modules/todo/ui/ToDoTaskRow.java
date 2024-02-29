@@ -88,6 +88,7 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 	private String formattedTags;
 	private boolean canEdit;
 	private boolean canCopy;
+	private boolean canRestore;
 	private boolean canDelete;
 	private FormToggle detailsItem;
 	private FormItem titleItem;
@@ -460,6 +461,14 @@ public class ToDoTaskRow implements ToDoTaskRef, FlexiTreeTableNode {
 
 	public void setCanCopy(boolean canCopy) {
 		this.canCopy = canCopy;
+	}
+	
+	public boolean canRestore() {
+		return canRestore;
+	}
+
+	public void setCanRestore(boolean canRestore) {
+		this.canRestore = canRestore;
 	}
 
 	public boolean canDelete() {

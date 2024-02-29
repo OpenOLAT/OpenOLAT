@@ -128,6 +128,11 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 	public boolean isCopyable() {
 		return true;
 	}
+	
+	@Override
+	public boolean isRestorable() {
+		return true;
+	}
 
 	@Override
 	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,
@@ -199,7 +204,7 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 	}
 	
 	private void updateStatus(Identity doer, ToDoTaskRef toDoTask, ToDoStatus status) {
-		ToDoTask reloadedToDoTask = getToDoTask(toDoTask, true);
+		ToDoTask reloadedToDoTask = getToDoTask(toDoTask, false);
 		if (reloadedToDoTask == null) {
 			return;
 		}

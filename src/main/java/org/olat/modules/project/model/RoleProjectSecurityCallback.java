@@ -235,6 +235,11 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	}
 	
 	@Override
+	public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+		return false;
+	}
+	
+	@Override
 	public boolean canViewDecisions() {
 		return canViewArtefacts();
 	}

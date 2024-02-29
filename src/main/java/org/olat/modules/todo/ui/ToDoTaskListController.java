@@ -144,6 +144,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_COPY = "copy";
+	private static final String CMD_RESTORE = "restore";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_GOTO_ORIGIN = "origin";
 	private static final String CMD_EXPAND_PREFIX = "o_ex_";
@@ -612,6 +613,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 			row.setCanEdit(getSecurityCallback().canEdit(toDoTask, creator, assignee, delegatee));
 			row.setCanCopy(getSecurityCallback().canCopy(toDoTask, creator, assignee, delegatee)
 					&& toDoService.getProvider(toDoTask.getType()).isCopyable());
+			row.setCanRestore(getSecurityCallback().canRestore(toDoTask, creator, assignee, delegatee)
+					&& toDoService.getProvider(toDoTask.getType()).isRestorable());
 			row.setCanDelete(getSecurityCallback().canDelete(toDoTask, creator, assignee, delegatee));
 			forgeDetailItem(row);
 			forgeDoItem(row);
@@ -1007,7 +1010,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	private void forgeToolsLink(ToDoTaskRow row) {
-		if (row.canEdit() || row.canCopy() || row.canDelete()) {
+		if (row.canEdit() || row.canCopy() || row.canDelete() || row.canRestore()) {
 			FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 			toolsLink.setUserObject(row);
@@ -1410,6 +1413,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
+	private void doRestore(UserRequest ureq, ToDoTaskRow row) {
+		ToDoProvider provider = toDoService.getProvider(row.getType());
+		provider.upateStatus(getIdentity(), row, row.getOriginId(), row.getOriginSubPath(), ToDoStatus.open);
+		loadModel(ureq, false);
+	}
+	
 	private void doOpenOrigin(UserRequest ureq, ToDoTaskRow row) {
 		ToDoTask toDoTask = toDoService.getToDoTask(row);
 		if (toDoTask == null) {
@@ -1473,7 +1482,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 			
 			createTools();
 			
-			if (row.canEdit() && row.canDelete()) {
+			if (row.canRestore()) {
+				addLink("restore", CMD_RESTORE, "o_icon o_icon-fw o_icon_restore");
+			}
+			
+			if ((row.canEdit() || row.canRestore()) && row.canDelete()) {
 				names.add("divider");
 			}
 			
@@ -1507,6 +1520,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 					doEditToDoTask(ureq, row);
 				} else if(CMD_COPY.equals(cmd)) {
 					doCopyToDoTask(ureq, row);
+				} else if(CMD_RESTORE.equals(cmd)) {
+					doRestore(ureq, row);
 				} else if(CMD_DELETE.equals(cmd)) {
 					doConfirmDelete(ureq, row);
 				}

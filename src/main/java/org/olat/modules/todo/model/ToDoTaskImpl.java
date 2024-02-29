@@ -200,6 +200,11 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 		} else if (ToDoStatus.open == status || ToDoStatus.inProgress == status) {
 			doneDate = null;
 		}
+		
+		if (ToDoStatus.deleted != status) {
+			deletedDate = null;
+			deletedBy = null;
+		}
 	}
 
 	@Override

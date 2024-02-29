@@ -204,6 +204,7 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 				return false;
 			});
 		}
+		super.applyFilters(rows);
 	}
 	
 	@Override
@@ -396,8 +397,11 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 
 		@Override
 		public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return ToDoStatus.deleted != toDoTask.getStatus() && canEdit(toDoTask, creator);
+		}
+		
+		public boolean canEdit(ToDoTask toDoTask, boolean creator) {
 			return !readOnly
-					&&ToDoStatus.deleted != toDoTask.getStatus()
 					&& !toDoTask.isOriginDeleted()
 					&& isNotCollectionCreatedByOtherCoach(toDoTask, creator);
 		}
@@ -414,6 +418,11 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 		@Override
 		public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 			return canEdit(toDoTask, creator, assignee, delegatee);
+		}
+		
+		@Override
+		public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return ToDoStatus.deleted == toDoTask.getStatus() && canEdit(toDoTask, creator);
 		}
 		
 	}

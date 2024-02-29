@@ -143,6 +143,11 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 	public boolean isCopyable() {
 		return true;
 	}
+	
+	@Override
+	public boolean isRestorable() {
+		return false;
+	}
 
 	@Override
 	public boolean isEditWizard() {
