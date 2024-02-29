@@ -23,60 +23,36 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
+import org.olat.core.gui.components.form.flexible.elements.IconSelectorElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 
 /**
- * Initial date: 2023-03-23<br>
+ * Initial date: 2024-02-26<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerElement {
-	private final ColorPickerComponent component;
-	private Color color;
-	private final List<Color> colors;
-	private String nonSelectedText;
-	private String resetButtonId;
+public class IconSelectorElementImpl extends FormItemImpl implements IconSelectorElement {
+	private final IconSelectorComponent component;
+	private Icon icon;
+	private final List<Icon> icons;
 	private boolean dropUp;
 
-	public ColorPickerElementImpl(String name, List<Color> colors) {
+	public IconSelectorElementImpl(String name, List<Icon> icons) {
 		super(name);
 
-		String id = getFormItemId() == null ? null : getFormItemId() + "_COLOR_PICKER";
-		component = new ColorPickerComponent(id, this);
-		this.colors = colors;
-	}
-
-	public String getNonSelectedText() {
-		return nonSelectedText;
+		String id = getFormItemId() == null ? null : getFormItemId() + "_ICON_SELECTOR";
+		component = new IconSelectorComponent(id, this);
+		this.icons = icons;
 	}
 
 	@Override
-	public void setNonSelectedText(String nonSelectedText) {
-		this.nonSelectedText = nonSelectedText;
+	public Icon getIcon() {
+		return icon;
 	}
 
-	public Color getColor() {
-		return color;
-	}
-
-	public void setColor(Color color) {
-		this.color = color;
-	}
-
-	@Override
-	public void setResetButtonId(String resetButtonId) {
-		this.resetButtonId = resetButtonId;
-	}
-
-	@Override
-	public void setDomReplacementWrapperRequired(boolean required) {
-		component.setDomReplacementWrapperRequired(required);
-	}
-
-	public String getResetButtonId() {
-		return resetButtonId;
+	public void setIcon(Icon icon) {
+		this.icon = icon;
 	}
 
 	@Override
@@ -86,15 +62,15 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 		if (isEnabled()) {
 			String dispatchuri = form.getRequestParameter("dispatchuri");
 			if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
-				String colorId = form.getRequestParameter("colorId");
-				if (colorId != null) {
-					setColor(colorId);
+				String iconId = form.getRequestParameter("iconId");
+				if (iconId != null) {
+					setIcon(iconId);
 					return;
 				}
 			}
-			String colorId = form.getRequestParameter(DISPPREFIX + component.getDispatchID());
-			if (colorId != null) {
-				setColor(colorId);
+			String iconId = form.getRequestParameter(DISPPREFIX + component.getDispatchID());
+			if (iconId != null) {
+				setIcon(iconId);
 			}
 		}
 	}
@@ -112,13 +88,13 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	protected void rootFormAvailable() {
 	}
 
-	public List<Color> getColors() {
-		return colors;
+	public List<Icon> getIcons() {
+		return icons;
 	}
 
 	@Override
-	public void setColor(String colorId) {
-		this.color = colors.stream().filter(c -> c.id().equals(colorId)).findFirst().orElse(null);
+	public void setIcon(String iconId) {
+		this.icon = icons.stream().filter(i -> i.id().equals(iconId)).findFirst().orElse(null);
 		component.setDirty(true);
 	}
 

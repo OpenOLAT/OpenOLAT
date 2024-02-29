@@ -22,30 +22,19 @@ package org.olat.core.gui.components.form.flexible.elements;
 import org.olat.core.gui.components.form.flexible.FormItem;
 
 /**
- * Initial date: 2023-03-23<br>
+ * Initial date: 2024-02-26<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface ColorPickerElement extends FormItem {
-	void setColor(String color);
+public interface IconSelectorElement extends FormItem {
 
-	void setNonSelectedText(String text);
+	void setIcon(String iconId);
 
-	Color getColor();
-
-	void setResetButtonId(String resetButtonId);
-
-	void setDomReplacementWrapperRequired(boolean required);
+	Icon getIcon();
 
 	boolean isDropUp();
 
 	void setDropUp(boolean dropUp);
 
-	/**
-	 *
-	 * @param id
-	 * @param translatedName
-	 * @param cssClass
-	 */
-	record Color(String id, String translatedName, String cssClass) { }
+	record Icon(String id, String translatedName, String iconCssClass) { }
 }

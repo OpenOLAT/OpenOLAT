@@ -151,6 +151,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eportfolio_link { @include o-add-icon('puzzle-piece');}
 .o_icon_eraser { @include o-add-icon('eraser');}
 .o_icon_error { @include o-add-icon('circle-xmark'); color: $brand-danger;}
+.o_icon_error_alert { @include o-add-icon('circle-xmark');}
 .o_icon_exclamation { @include o-add-icon('exclamation');}
 .o_icon_exclamation_circle { @include o-add-icon('exclamation-circle');}
 .o_icon_expand { @include o-add-icon('expand');}
@@ -182,6 +183,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_import { @include o-add-icon('upload');}
 .o_icon_incorrect_response { @include o-add-icon('times-circle', false); color: $brand-danger;}
 .o_icon_info { @include o-add-icon('info-circle'); color: $brand-info}
+.o_icon_info_alert { @include o-add-icon('info-circle');}
 .o_icon_info_badge { @include o-add-icon('info-circle');}
 .o_icon_info_ap { @include o-add-icon('info-circle');}
 .o_icon_info_msg { @include o-add-icon('exclamation-circle'); color: $brand-danger}
@@ -315,6 +317,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_quota { @include o-add-icon('database');}
 .o_icon_qrcode { @include o-add-icon('qrcode');}
 .o_icon_quickview { @include o-add-icon('eye');}
+.o_icon_radiation { @include o-add-icon('radiation');}
 .o_icon_radio_off { @include o-add-icon('circle', false);}
 .o_icon_radio_on { @include o-add-icon('check-circle', false);}
 .o_icon_rating_on { @include o-add-icon('star');}
@@ -435,6 +438,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_template { @include o-add-icon('object-group');}
 .o_icon_text { @include o-add-icon('font');}
 .o_icon_textinput { @include o-add-icon('align-left');}
+.o_icon_tip { @include o-add-icon('hand-point-up');}
 .o_icon_time { @include o-add-icon('clock', false);}
 .o_icon_timelimit { @include o-add-icon('clock', false);}
 .o_icon_timelimit_start { @include o-add-icon('hourglass-start');}

@@ -976,15 +976,15 @@ legend.control-label {
 	}
 }
 
-/* Color Picker */
+/* Color Picker, Icon Selector */
 
-.o_color_picker_icon {
+.o_color_picker_icon, .o_icon_selector_caret {
 	position: absolute;
 	right: 5px;
 	top: 10px;
 }
 
-.o_color_picker_button {
+.o_color_picker_button, .o_icon_selector_button {
 	width: 100%;
 	text-align: left;
 	position: relative;
@@ -1011,7 +1011,18 @@ legend.control-label {
 	text-align: center;
 }
 
-ul.o_color_picker_dropdown {
+.o_icon_selector_icon {
+	display: inline-block;
+	position: absolute;
+	top: 6px;
+	left: 6px;
+	width: 20px;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+}
+
+ul.o_color_picker_dropdown, ul.o_icon_selector_dropdown {
 	width: 100%;
 	height: auto;
 	top: unset;
@@ -1019,10 +1030,14 @@ ul.o_color_picker_dropdown {
 	margin-left: 0;
 	margin-right: 0;
 
+	&.o_drop_up {
+		bottom: 34px;
+	}
+
 	li {
 		cursor: pointer;
 
-		a.o_color_picker_link {
+		a.o_color_picker_link, a.o_icon_selector_link {
 			width: 100%;
 			text-align: left;
 			position: relative;

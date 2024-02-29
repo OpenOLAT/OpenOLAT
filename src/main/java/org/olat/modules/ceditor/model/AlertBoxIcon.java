@@ -17,35 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.elements;
-
-import org.olat.core.gui.components.form.flexible.FormItem;
+package org.olat.modules.ceditor.model;
 
 /**
- * Initial date: 2023-03-23<br>
+ * Initial date: 2024-02-26<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface ColorPickerElement extends FormItem {
-	void setColor(String color);
+public enum AlertBoxIcon {
+	radiation("alert.box.icon.radiation", "o_icon_radiation"),
+	error("alert.box.icon.error", "o_icon_error_alert"),
+	warning("alert.box.icon.warning", "o_icon_warning"),
+	info("alert.box.icon.info", "o_icon_info_alert"),
+	note("alert.box.icon.note", "o_icon_notes"),
+	tip("alert.box.icon.tip", "o_icon_tip"),
+	check("alert.box.icon.check", "o_icon_check");
 
-	void setNonSelectedText(String text);
+	private final String i18nKey;
+	private final String cssClass;
 
-	Color getColor();
+	AlertBoxIcon(String i18nKey, String cssClass) {
+		this.i18nKey = i18nKey;
+		this.cssClass = cssClass;
+	}
 
-	void setResetButtonId(String resetButtonId);
+	public String getI18nKey() {
+		return i18nKey;
+	}
 
-	void setDomReplacementWrapperRequired(boolean required);
-
-	boolean isDropUp();
-
-	void setDropUp(boolean dropUp);
-
-	/**
-	 *
-	 * @param id
-	 * @param translatedName
-	 * @param cssClass
-	 */
-	record Color(String id, String translatedName, String cssClass) { }
+	public String getCssClass() {
+		return cssClass;
+	}
 }

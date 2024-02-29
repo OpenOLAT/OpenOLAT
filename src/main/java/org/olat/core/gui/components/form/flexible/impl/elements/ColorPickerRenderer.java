@@ -85,7 +85,10 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 
 		sb.append("</button>");
 
-		sb.append("<ul class='dropdown-menu o_color_picker_dropdown' aria-labelledby='").append(buttonId).append("'>");
+		sb.append("<ul class='dropdown-menu o_color_picker_dropdown");
+		sb.append(" o_drop_up", colorPickerEl.isDropUp());
+		sb.append("' aria-labelledby='");
+		sb.append(buttonId).append("'>");
 
 		for (ColorPickerElement.Color color : colors) {
 			sb.append("<li data-color='").append(color.id()).append("'");

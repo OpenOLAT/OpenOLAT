@@ -39,7 +39,7 @@ public class ContainerSettings {
 	private int numOfColumns = 2;
 	private ContainerLayout type;
 	private List<ContainerColumn> columns;
-	
+	private AlertBoxSettings alertBoxSettings;
 
 	public ContainerLayout getType() {
 		return type == null ? ContainerLayout.ofColumn(numOfColumns, columns) : type;
@@ -71,6 +71,29 @@ public class ContainerSettings {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public AlertBoxSettings getAlertBoxSettings() {
+		return alertBoxSettings;
+	}
+
+	public void setAlertBoxSettings(AlertBoxSettings alertBoxSettings) {
+		this.alertBoxSettings = alertBoxSettings;
+	}
+
+	@Transient
+	public AlertBoxSettings getAlertBoxSettingsIfActive() {
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings();
+		if (alertBoxSettings == null) {
+			return null;
+		}
+		if (!alertBoxSettings.isShowAlertBox()) {
+			return null;
+		}
+		if (alertBoxSettings.getType() == null) {
+			return null;
+		}
+		return alertBoxSettings;
 	}
 
 	public int getNumOfColumns() {

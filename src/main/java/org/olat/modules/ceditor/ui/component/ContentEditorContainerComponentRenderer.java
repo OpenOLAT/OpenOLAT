@@ -31,6 +31,8 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.AlertBoxType;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.PageEditorUIFactory;
@@ -58,6 +60,9 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 
 		Renderer fr = Renderer.getInstance(cmp, translator, containerUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
 		ContainerSettings settings = cmp.getContainerSettings();
+		AlertBoxSettings alertBoxSettings = settings.getAlertBoxSettingsIfActive();
+		AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
+		String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
 		
 		// Container with editor elements
 		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("'")
@@ -73,16 +78,67 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		  .append(" data-oo-page-fragment='").append(cmp.getComponentName()).append("'")
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")
 		  .append(" data-oo-content-editor-url='").append(fr.getUrlBuilder().getJavascriptURI()).append("'")
-		  .append(" class='o_container_part o_page_layout ")
-		  .append(settings.getType().cssClass()).append("'>");
-		renderContainer(renderer, sb, cmp, containerUbu, translator, renderResult, args);
+		  .append(" class='o_container_part o_page_layout ");
+		if (alertBoxType != null ) {
+			sb.append("o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor)).append(" ");
+		}
+		sb.append(settings.getType().cssClass()).append("'>");
+		renderAlertHeader(sb, cmp.getComponentName(), cmp.isCollapsed(), settings, containerUbu);
+		if (!cmp.isCollapsed()) {
+			renderContainer(renderer, sb, cmp, containerUbu, translator, renderResult, args);
+		}
 		sb.append("</div>");
 		
 		renderInspector(renderer, sb, cmp.getInspectorComponent(), containerUbu, translator, renderResult, args);
 
 		sb.append("</div>");
 	}
-	
+
+	private void renderAlertHeader(StringOutput sb, String fragmentId, boolean collapsed, ContainerSettings settings, URLBuilder ubu) {
+		AlertBoxSettings alertBoxSettings = settings.getAlertBoxSettings();
+		boolean showAlert = alertBoxSettings != null && alertBoxSettings.isShowAlertBox();
+		String title = showAlert ? alertBoxSettings.getTitle() : null;
+		String iconCssClass = showAlert ? alertBoxSettings.getIconCssClass() : null;
+		boolean showTitle = StringHelper.containsNonWhitespace(title);
+		boolean showIcon = showAlert && alertBoxSettings.isWithIcon() && iconCssClass != null;
+		boolean showAlertHeader = showTitle || showIcon;
+		boolean collapsible = showTitle && alertBoxSettings.isCollapsible();
+
+		if (showAlertHeader) {
+			sb.append("<div class='o_container_block' style='grid-column: 1 / -1;'>");
+			sb.append("<div class='o_container_block_alert'>");
+			if (showIcon) {
+				sb.append("<div class='o_alert_icon'><i class='o_icon ").append(iconCssClass).append("'> </i></div>");
+			}
+			if (showTitle) {
+				if (collapsible) {
+					openCollapseLink(sb, ubu, fragmentId, "o_alert_text o_alert_collapse_title");
+					sb.append(title).append("</a>");
+					openCollapseLink(sb, ubu, fragmentId, "o_alert_collapse_icon");
+					sb.append("<i class='o_icon o_icon_lg ")
+							.append(collapsed ? "o_icon_details_expand" : "o_icon_details_collaps")
+							.append("'> </i>")
+							.append("</a>");
+				} else {
+					sb.append("<div class='o_alert_text'>")
+							.append(title)
+							.append("</div>");
+				}
+			}
+			sb.append("</div>");
+			sb.append("</div>");
+		}
+	}
+
+	private void openCollapseLink(StringOutput sb, URLBuilder ubu, String fragmentId, String extraClasses) {
+		sb.append("<a role='button' data-toggle='collapse' ")
+				.append("href='javascript:;' onclick=\"");
+		ubu.buildXHREvent(sb, "", false, true,
+				new NameValuePair(VelocityContainer.COMMAND_ID, "toggle_collapsed"),
+				new NameValuePair("fragment", fragmentId));
+		sb.append(" return false;\" class='").append(extraClasses).append("'>");
+	}
+
 	private void renderTools(Renderer fr, StringOutput sb, ContentEditorContainerComponent cmp, URLBuilder containerUbu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		sb.append("<div class='o_page_container_tools'")
@@ -143,6 +199,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		  .append(">");
 		
 		sb.append("<div class='o_page_container_slot-inner'>");
+
 		if(column != null) {
 			for(String elementId:column.getElementIds()) {
 				Component fragment = cmp.getComponentByElementId(elementId);

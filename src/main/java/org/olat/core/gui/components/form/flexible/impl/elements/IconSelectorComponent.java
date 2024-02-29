@@ -17,35 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.elements;
+package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
- * Initial date: 2023-03-23<br>
+ * Initial date: 2024-02-26<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface ColorPickerElement extends FormItem {
-	void setColor(String color);
+public class IconSelectorComponent extends FormBaseComponentImpl {
+	private final IconSelectorElementImpl element;
+	private static final ComponentRenderer RENDERER = new IconSelectorRenderer();
 
-	void setNonSelectedText(String text);
+	public IconSelectorComponent(String id, IconSelectorElementImpl element) {
+		super(id, element.getName(), null);
+		this.element = element;
+	}
 
-	Color getColor();
+	@Override
+	public ComponentRenderer getHTMLRendererSingleton() {
+		return RENDERER;
+	}
 
-	void setResetButtonId(String resetButtonId);
-
-	void setDomReplacementWrapperRequired(boolean required);
-
-	boolean isDropUp();
-
-	void setDropUp(boolean dropUp);
-
-	/**
-	 *
-	 * @param id
-	 * @param translatedName
-	 * @param cssClass
-	 */
-	record Color(String id, String translatedName, String cssClass) { }
+	@Override
+	public IconSelectorElementImpl getFormItem() {
+		return element;
+	}
 }
