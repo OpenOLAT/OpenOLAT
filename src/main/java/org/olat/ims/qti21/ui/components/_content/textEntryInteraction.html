@@ -8,7 +8,7 @@
 #set($checkJavaScript = $r.checkJavaScript($responseDeclaration,$interaction.patternmask))
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <span class="$localName #if($r.isTrue($isCorrectionHelp)) has-feedback #if($r.isCorrectTextEntry($interaction)) has-success #else has-error #end #end">
-	<input id="od_${responseIdentifier}" type="text" name="qtiworks_response_${responseIdentifier}" #if($responseInputString && !$responseInputString.isEmpty()) value="$r.escapeHtml($responseInputString)" #else value="" #end #if(!$r.isItemSessionEnded()) $r.placeholder($interaction) #end #if($r.isItemSessionEnded()) disabled #end #if($isBadResponse) class='badResponse' #end #if($interaction.expectedLength) size='$interaction.expectedLength' #end #if($checks && $checks.size() > 0) onchange='$checkJavaScript' #end autocomplete="off" required="required"/>
+	<input id="od_${responseIdentifier}" type="text" class="$r.textEntryType($interaction)" name="qtiworks_response_${responseIdentifier}" #if($responseInputString && !$responseInputString.isEmpty()) value="$r.escapeHtml($responseInputString)" #else value="" #end #if(!$r.isItemSessionEnded()) $r.placeholder($interaction) #end #if($r.isItemSessionEnded()) disabled #end #if($isBadResponse) class='badResponse' #end #if($interaction.expectedLength) size='$interaction.expectedLength' #end #if($checks && $checks.size() > 0) onchange='$checkJavaScript' #end autocomplete="off" required="required"/>
 	#if($r.isTrue($isCorrectionHelp))<span class="o_icon #if($r.isCorrectTextEntry($interaction)) o_icon_qti_summary_correct #else o_icon_error #end o_feedback_right"> </span> #end
 	
 	#if($isBadResponse)

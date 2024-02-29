@@ -693,6 +693,20 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return AssessmentRenderFunctions.getResponseDeclaration(assessmentItem, identifier);
 	}
 	
+	public String textEntryType(TextEntryInteraction textEntry) {
+		try {
+			AbstractEntry correctAnswers = CorrectResponsesUtil.getCorrectTextResponses(assessmentItem, textEntry);
+			if(correctAnswers instanceof TextEntry) {
+				return "text";
+			} else if(correctAnswers instanceof NumericalEntry) {
+				return "numeric";
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return "other";
+	}
+	
 	public Boolean isCorrectTextEntry(TextEntryInteraction textEntry) {
 		if(textEntry == null) {
 			return null;
