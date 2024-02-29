@@ -22,6 +22,8 @@ package org.olat.modules.todo.ui;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+
 /**
  * 
  * Initial date: 16 Nov 2023<br>
@@ -36,7 +38,7 @@ public interface ToDoTaskRowGrouping {
 	
 	public boolean isShowEmptyGroups();
 	
-	public List<ToDoTaskRow> group(List<ToDoTaskRow> rows, Locale locale);
+	public List<ToDoTaskRow> group(List<ToDoTaskRow> rows, List<ToDoTaskRow> groupCandiatades, FlexiFiltersTab selectedTab, Locale locale);
 
 	static class NoToDoTaskRowGrouping implements ToDoTaskRowGrouping {
 
@@ -51,7 +53,7 @@ public interface ToDoTaskRowGrouping {
 		}
 
 		@Override
-		public List<ToDoTaskRow> group(List<ToDoTaskRow> rows, Locale locale) {
+		public List<ToDoTaskRow> group(List<ToDoTaskRow> rows, List<ToDoTaskRow> groupCandiatades,FlexiFiltersTab selectedTab,  Locale locale) {
 			return rows;
 		}
 		

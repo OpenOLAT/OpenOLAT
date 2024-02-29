@@ -26,6 +26,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.modules.todo.ui.ToDoTaskRow;
 import org.olat.modules.todo.ui.ToDoTaskRowGrouping;
 
@@ -56,7 +57,7 @@ public class CourseNodeToDoTaskRowGrouping implements ToDoTaskRowGrouping {
 	}
 
 	@Override
-	public List<ToDoTaskRow> group(List<ToDoTaskRow> rows, Locale locale) {
+	public List<ToDoTaskRow> group(List<ToDoTaskRow> rows, List<ToDoTaskRow> groupCandiatades, FlexiFiltersTab selectedTab, Locale locale) {
 		groupRows = groupRowsSupplier.get();
 		toDoTypeToGroupRow = groupRows.stream().collect(Collectors.toMap(ToDoTaskRow::getType, Function.identity()));
 		

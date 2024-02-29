@@ -134,12 +134,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	public static final String TYPE_TODO = "ToDo";
 	private static final String TAB_ID_MY = "My";
-	private static final String TAB_ID_ALL = "All";
+	public static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_OVERDUE = "Overdue";
 	private static final String TAB_ID_RECENTLY = "Recently";
 	private static final String TAB_ID_NEW = "New";
 	private static final String TAB_ID_DONE = "Done";
-	private static final String TAB_ID_DELETED = "Deleted";
+	public static final String TAB_ID_DELETED = "Deleted";
 	private static final String FILTER_KEY_MY = "my";
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_EDIT = "edit";
@@ -261,7 +261,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	protected abstract Collection<String> getTypes();
 
+	
 	protected abstract ToDoTaskSearchParams createSearchParams();
+	
+	protected ToDoTaskSearchParams createGroupSearchParams() {
+		return null;
+	}
 	
 	protected ToDoTaskRowGrouping getToDoTaskRowGrouping() {
 		return ToDoTaskRowGrouping.NO_GROUPING;
@@ -538,17 +543,37 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	protected void loadModel(UserRequest ureq, boolean sort) {
-		boolean contextTypeVisible = isVisible(ToDoTaskCols.contextType);
-		LocalDate now = LocalDate.now();
-		
 		ToDoTaskSearchParams searchParams = createSearchParams();
 		searchParams.setTypes(getTypes());
 		applyFilters(searchParams);
+		
+		List<ToDoTaskRow> rows = loadRows(ureq, searchParams);
+		applyFilters(rows);
+		dataModel.setRows(rows);
+		
+		// Load the group rows not filtered.
+		ToDoTaskSearchParams groupSearchParams = createGroupSearchParams();
+		if (groupSearchParams != null) {
+			List<ToDoTaskRow> groupCandiatades = loadRows(ureq, groupSearchParams);
+			dataModel.setGroupCandiatades(groupCandiatades);
+		}
+		
+		if (sort) {
+			sortTable();
+		} else {
+			dataModel.groupRows();
+		}
+		tableEl.reset(true, true, true);
+	}
+
+	private List<ToDoTaskRow> loadRows(UserRequest ureq, ToDoTaskSearchParams searchParams) {
 		List<ToDoTask> toDoTasks = toDoService.getToDoTasks(searchParams);
 		Map<ToDoTask, List<ToDoTaskTag>> toDoTaskToTags = toDoService.getToDoTaskTags(searchParams).stream()
 				.collect(Collectors.groupingBy(ToDoTaskTag::getToDoTask));
 		Map<Long, ToDoTaskMembers> toDoTaskGroupKeyToMembers = toDoService.getToDoTaskGroupKeyToMembers(toDoTasks, ToDoRole.ALL);
 		
+		boolean contextTypeVisible = isVisible(ToDoTaskCols.contextType);
+		LocalDate now = LocalDate.now();
 		List<ToDoTaskRow> rows = new ArrayList<>(toDoTasks.size());
 		for (ToDoTask toDoTask : toDoTasks) {
 			ToDoTaskRow row = new ToDoTaskRow(toDoTask);
@@ -624,15 +649,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			
 			rows.add(row);
 		}
-		
-		applyFilters(rows);
-		dataModel.setRows(rows);
-		if (sort) {
-			sortTable();
-		} else {
-			dataModel.groupRows();
-		}
-		tableEl.reset(true, true, true);
+		return rows;
 	}
 
 	private void applyFilters(ToDoTaskSearchParams searchParams) {
@@ -778,12 +795,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 
 	@Override
-	public List<ToDoTaskRow> groupRows(List<ToDoTaskRow> rows) {
+	public List<ToDoTaskRow> groupRows(List<ToDoTaskRow> rows, List<ToDoTaskRow> groupCandiatades) {
 		if (!getToDoTaskRowGrouping().isGrouping()) {
 			return rows;
 		}
 		
-		List<ToDoTaskRow> groupRows = getToDoTaskRowGrouping().group(rows, getLocale());
+		List<ToDoTaskRow> groupRows = getToDoTaskRowGrouping().group(rows, groupCandiatades, tableEl.getSelectedFilterTab(), getLocale());
 		List<ToDoTaskRow> groupedRows = new ArrayList<>(rows.size() + groupRows.size());
 		for (ToDoTaskRow groupRow : groupRows) {
 			if (groupRow.isGroup()) {
