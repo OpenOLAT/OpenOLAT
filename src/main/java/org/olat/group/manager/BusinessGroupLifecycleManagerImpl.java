@@ -23,12 +23,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
@@ -46,14 +46,18 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -82,15 +86,14 @@ import org.olat.group.model.DeletedBusinessGroupBackup;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.group.ui.lifecycle.BusinessGroupLifecycleTypeEnum;
+import org.olat.group.ui.main.BusinessGroupListController;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
-import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -628,7 +631,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	private void softDeleteBusinessGroups(List<BusinessGroup> businessGroupsToSoftDelete, Set<BusinessGroup> vetoed) {
 		for(BusinessGroup businessGroup:businessGroupsToSoftDelete) {
 			if(vetoed.isEmpty() || !vetoed.contains(businessGroup)) {
-				List<Identity> recipients = getEmailRecipients(businessGroup);
+				List<EmailRecepient> recipients = getEmailRecipients(businessGroup);
 				businessGroup = deleteBusinessGroupSoftly(businessGroup, null);
 				if(businessGroup.getLastUsage() != null && businessGroupModule.isMailAfterSoftDelete()) {
 					sendEmail(businessGroup, recipients, null, "notification.mail.after.soft.delete.subject", "notification.mail.after.soft.delete.body",
@@ -697,7 +700,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	
 	@Override
 	public BusinessGroup deleteBusinessGroupSoftly(BusinessGroup businessGroup, Identity deletedBy, boolean withMail) {
-		List<Identity> recipients = getEmailRecipients(businessGroup);
+		List<EmailRecepient> recipients = getEmailRecipients(businessGroup);
 		businessGroup = deleteBusinessGroupSoftly(businessGroup, deletedBy);
 		if(withMail) {
 			sendEmail(businessGroup, recipients, null, "notification.mail.after.soft.delete.subject", "notification.mail.after.soft.delete.body",
@@ -820,8 +823,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	
 	@Override
 	public void deleteBusinessGroup(BusinessGroup businessGroupToDelete, Identity deletedBy, boolean withMail) {
-		List<Identity> users = businessGroupRelationDao.getMembers(businessGroupToDelete,
-				GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		List<EmailRecepient> users = getEmailRecipients(businessGroupToDelete);
 		// now delete the group first
 		deleteBusinessGroup(businessGroupToDelete, deletedBy);
 		dbInstance.commit();
@@ -907,41 +909,54 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		}
 	}
 	
-	public List<Identity> getEmailRecipients(BusinessGroup businessGroup) {
-		List<Identity> recipients = businessGroupRelationDao.getMembers(businessGroup, GroupRoles.coach.name());
-		if(recipients == null || recipients.isEmpty()) {
-			List<Long> repositoryEntries = businessGroupRelationDao.getRepositoryEntryKeys(businessGroup);
+	public List<EmailRecepient> getEmailRecipients(BusinessGroup businessGroup) {
+		List<Identity> users = businessGroupRelationDao.getMembers(businessGroup, GroupRoles.coach.name());
+		List<EmailRecepient> recipients;
+		if(users == null || users.isEmpty()) {
+			List<RepositoryEntry> repositoryEntries = businessGroupRelationDao.findRepositoryEntries(List.of(businessGroup), 0, -1);
 			if(!repositoryEntries.isEmpty()) {
-				List<RepositoryEntryRef> entries = repositoryEntries.stream()
-						.map(RepositoryEntryRefImpl::new)
-						.collect(Collectors.toList());
-				recipients = repositoryEntryRelationDao
-						.getMembers(entries, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
+				Map<Long,EmailRecepient> authors = new HashMap<>();
+				for(RepositoryEntry repositoryEntry:repositoryEntries) {
+					List<Identity> courseOwners = repositoryEntryRelationDao
+						.getMembers(List.of(repositoryEntry), RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
+					for(Identity courseOwner:courseOwners) {
+						authors.computeIfAbsent(courseOwner.getKey(), userKey -> new EmailRecepient(courseOwner, new ArrayList<>()))
+							.courses().add(repositoryEntry);
+					}
+				}
+				recipients = new ArrayList<>(authors.values());
+			} else {
+				recipients = List.of();
 			}
+		} else {
+			recipients = users.stream()
+					.map(user -> new EmailRecepient(user, List.of()))
+					.toList();
 		}
 		return recipients;
 	}
 	
 	private void sendEmail(BusinessGroup businessGroup, String subjectI18nKey, String bodyI18nKey, String type, List<String> bcc, Identity doer) {
-		List<Identity> recipients = getEmailRecipients(businessGroup);
+		List<EmailRecepient> recipients = getEmailRecipients(businessGroup);
 		sendEmail(businessGroup, recipients, null, subjectI18nKey, bodyI18nKey, type, bcc, doer);
 	}
 	
-	private MailerResult sendEmail(BusinessGroup businessGroup, List<Identity> recipients, String metaId,
+	private MailerResult sendEmail(BusinessGroup businessGroup, List<EmailRecepient> recipients, String metaId,
 			String subjectI18nKey, String bodyI18nKey, String type, List<String> bcc, Identity doer) {
 
 		MailerResult result = new MailerResult();
-		for(Identity identity:recipients) {
-			MailTemplate template = BGMailHelper.createMailTemplate(businessGroup, identity, doer, subjectI18nKey, bodyI18nKey);
-			sendUserEmailTo(businessGroup, identity, metaId, template, type, result);
+		for(EmailRecepient recipient:recipients) {
+			MailTemplate template = BGMailHelper.createMailTemplate(businessGroup, recipient.user(), doer, subjectI18nKey, bodyI18nKey);
+			decorateTemplateForCourseOwners(template, recipient, null);
+			sendUserEmailTo(businessGroup, recipient.user(), metaId, template, type, result);
 			if(bcc != null && !bcc.isEmpty()) {
-				sendEmailCopy(businessGroup, identity, bcc, subjectI18nKey, bodyI18nKey, type);
+				sendEmailCopy(businessGroup, recipient, bcc, subjectI18nKey, bodyI18nKey, type);
 			}
 		}
 		return result;
 	}
-	
-	private void sendEmailCopy(BusinessGroup businessGroup, Identity identity, List<String> recepients, String subjectI18nKey, String bodyI18nKey, String type) {
+
+	private void sendEmailCopy(BusinessGroup businessGroup, EmailRecepient identity, List<String> recepients, String subjectI18nKey, String bodyI18nKey, String type) {
 		if (recepients == null || recepients.isEmpty()) {
 			return;
 		}
@@ -949,10 +964,40 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(null);
 		for (String recepient : recepients) {
 			if (MailHelper.isValidEmailAddress(recepient)) {
-				MailTemplate template = BGMailHelper.createCopyMailTemplate(businessGroup, identity, identity, subjectI18nKey, bodyI18nKey, locale);
+				MailTemplate template = BGMailHelper.createCopyMailTemplate(businessGroup, identity.user(), identity.user(), subjectI18nKey, bodyI18nKey, locale);
+				decorateTemplateForCourseOwners(template, identity, locale);
 				sendUserEmailCopyTo(businessGroup, recepient, template, type);
 			}
 		}
+	}
+	
+	private void decorateTemplateForCourseOwners(MailTemplate template, EmailRecepient recipient, Locale locale) {
+		if(recipient.courses() == null || recipient.courses().isEmpty()) return;
+		
+		if(locale == null) {
+			String lang = recipient.user().getUser().getPreferences().getLanguage();
+			locale = I18nManager.getInstance().getLocaleOrDefault(lang);
+		}
+		
+		StringBuilder courseList = new StringBuilder();
+		for(RepositoryEntry repositoryEntry:recipient.courses()) {
+			if(!courseList.isEmpty()) {
+				courseList.append(", ");
+			}
+			
+			List<ContextEntry> path = BusinessControlFactory.getInstance().createCEListFromString(OresHelper
+					.createOLATResourceableInstance(RepositoryEntry.class, repositoryEntry.getKey()));
+			String url = BusinessControlFactory.getInstance().getAsURIString(path, false);
+			courseList.append("\"").append(StringHelper.escapeHtml(repositoryEntry.getDisplayname()))
+				      .append("\" <a href=\"").append("/").append(url).append("\">").append(url).append("</a>");
+		}
+		
+		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale,
+				Util.createPackageTranslator(BusinessGroupListController.class, locale));
+		String i18nKey = recipient.courses().size() == 1 ? "notification.mail.owner.course.singular" : "notification.mail.owner.courses.plural";
+		String addOn = trans.translate(i18nKey, courseList.toString());
+		String body = template.getBodyTemplate();
+		template.setBodyTemplate(body + addOn);
 	}
 	
 	private void sendUserEmailTo(BusinessGroup businessGroup, Identity identity, String metaId, MailTemplate template, String type, MailerResult result) {
@@ -982,5 +1027,9 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			mailManager.sendExternMessage(bundle, result, true);
 		}
 		log.info(Tracing.M_AUDIT, "Business group lifecycle {} send copy regarding business group={} ({}) to email={}", type, businessGroup.getKey(), businessGroup.getName(), receiver);
+	}
+	
+	public record EmailRecepient(Identity user, List<RepositoryEntry> courses) {
+		//
 	}
 }

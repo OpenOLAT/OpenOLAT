@@ -792,7 +792,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 		final int maxLoop = 75; // => 400 x 100ms => 40sec => finished in 50sec
 		final String areaName = "BGArea_1";
 
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
 		final CountDownLatch finfishCount = new CountDownLatch(3);
 		
 		BGArea bgArea = areaManager.findBGArea(areaName, c1);
@@ -873,7 +873,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 		final int maxLoop = 30;
 		final String areaName = "BGArea_2";
 
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
 		final CountDownLatch finfishCount = new CountDownLatch(3);
 		
 		
