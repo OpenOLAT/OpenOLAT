@@ -27,14 +27,11 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.AlertBoxType;
@@ -135,29 +132,29 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			sb.append(" ").append("o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor));
 		}
 		sb.append("'>");
-		renderAlertHeader(sb, fragment, settings, ubu);
-		renderContainerLayout(renderer, sb, fragment, settings, elementIdToFragments, ubu, translator, renderResult, args);
+		FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), settings, ubu);
+		renderContainerLayout(renderer, sb, fragment.getComponentName(), settings, elementIdToFragments, ubu, translator, renderResult, args);
 		sb.append("</div>");
 	}
 
-	private void renderContainerLayout(Renderer renderer, StringOutput sb, PageFragment containerFragment,
+	private void renderContainerLayout(Renderer renderer, StringOutput sb, String fragmentName,
 									   ContainerSettings settings, Map<String, PageFragment> elementIdToFragments,
 									   URLBuilder ubu, Translator translator, RenderResult renderResult,
 									   String[] args) {
 
-		AlertBoxSettings alertBoxSettings = settings.getAlertBoxSettingsIfActive();
-		boolean showAlert = alertBoxSettings != null;
-		String title = showAlert ? alertBoxSettings.getTitle() : null;
-		boolean showTitle = StringHelper.containsNonWhitespace(title);
-		boolean collapsible = showTitle && alertBoxSettings.isCollapsible();
-		boolean collapsed = collapsible && containerFragment.isCollapsed();
-
 		List<ContainerColumn> columns = settings.getColumns();
 		int numOfBlocks = settings.getNumOfBlocks();
+		boolean collapsible = FragmentRendererHelper.isCollapsible(settings);
 		for(int i=0; i<numOfBlocks; i++) {
-			sb.append("<div class='o_container_block'>");
+			if (collapsible) {
+				sb.append("<div class='o_container_block collapse in ")
+						.append(FragmentRendererHelper.buildCollapsibleClass(fragmentName))
+						.append("' aria-expanded='true'>");
+			} else {
+				sb.append("<div class='o_container_block'>");
+			}
 
-			if (!collapsed && i < columns.size()) {
+			if (i < columns.size()) {
 				ContainerColumn column = columns.get(i);
 				for(String elementId:column.getElementIds()) {
 					PageFragment fragment = elementIdToFragments.get(elementId);
@@ -168,50 +165,5 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("</div>");
 		}
-	}
-
-	private void renderAlertHeader(StringOutput sb, PageFragment containerFragment, ContainerSettings settings, URLBuilder ubu) {
-		AlertBoxSettings alertBoxSettings = settings.getAlertBoxSettings();
-		boolean showAlert = alertBoxSettings != null && alertBoxSettings.isShowAlertBox();
-		String title = showAlert ? alertBoxSettings.getTitle() : null;
-		String iconCssClass = showAlert ? alertBoxSettings.getIconCssClass() : null;
-		boolean showTitle = StringHelper.containsNonWhitespace(title);
-		boolean showIcon = showAlert && alertBoxSettings.isWithIcon() && iconCssClass != null;
-		boolean showAlertHeader = showTitle || showIcon;
-		boolean collapsible = showTitle && alertBoxSettings.isCollapsible();
-
-		if (showAlertHeader) {
-			sb.append("<div class='o_container_block' style='grid-column: 1 / -1;'>");
-			sb.append("<div class='o_container_block_alert'>");
-			if (showIcon) {
-				sb.append("<div class='o_alert_icon'><i class='o_icon ").append(iconCssClass).append("'> </i></div>");
-			}
-			if (showTitle) {
-				if (collapsible) {
-					openCollapseLink(sb, ubu, containerFragment, "o_alert_text o_alert_collapse_title");
-					sb.append(title).append("</a>");
-					openCollapseLink(sb, ubu, containerFragment, "o_alert_collapse_icon");
-					sb.append("<i class='o_icon o_icon_lg ")
-							.append(containerFragment.isCollapsed() ? "o_icon_details_expand" : "o_icon_details_collaps")
-							.append("'> </i>")
-							.append("</a>");
-				} else {
-					sb.append("<div class='o_alert_text'>")
-							.append(title)
-							.append("</div>");
-				}
-			}
-			sb.append("</div>");
-			sb.append("</div>");
-		}
-	}
-
-	private void openCollapseLink(StringOutput sb, URLBuilder ubu, PageFragment containerFragment, String extraClasses) {
-		sb.append("<a role='button' data-toggle='collapse' ")
-				.append("href='javascript:;' onclick=\"");
-		ubu.buildXHREvent(sb, "", false, true,
-				new NameValuePair(VelocityContainer.COMMAND_ID, "toggle_collapsed"),
-				new NameValuePair("fragment", containerFragment.getElementId()));
-		sb.append(" return false;\" class='").append(extraClasses).append("'>");
 	}
 }

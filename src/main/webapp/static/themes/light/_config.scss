@@ -1317,6 +1317,7 @@ $o-color-gold        : #FFD82A;
 $o-color-silver      : #C0C0C0;
 $o-color-bronze      : #FFA080;
 
+/* Darker variants */
 $o-darker-color-light-gray  : darken($o-color-light-gray,  15);
 $o-darker-color-yellow      : darken($o-color-yellow,      15);
 $o-darker-color-orange      : darken($o-color-orange,      15);
@@ -1332,6 +1333,20 @@ $o-darker-color-sea-green   : darken($o-color-sea-green,   15);
 $o-darker-color-gold        : darken($o-color-gold,        15);
 $o-darker-color-silver      : darken($o-color-silver,      15);
 $o-darker-color-bronze      : darken($o-color-bronze,      15);
+
+/* Background variants */
+$o-color-light-gray-bg  : mix($o-color-light-gray, white, 10%);
+$o-color-yellow-bg      : mix($o-color-yellow, white, 10%);
+$o-color-orange-bg      : mix($o-color-orange, white, 10%);
+$o-color-brown-bg       : mix($o-color-brown, white, 10%);
+$o-color-red-bg         : mix($o-color-red, white, 10%);
+$o-color-orchid-bg      : mix($o-color-orchid, white, 10%);
+$o-color-purple-bg      : mix($o-color-purple, white, 10%);
+$o-color-light-blue-bg  : mix($o-color-light-blue, white, 10%);
+$o-color-cobalt-blue-bg : mix($o-color-cobalt-blue, white, 10%);
+$o-color-dark-blue-bg   : mix($o-color-dark-blue, white, 10%);
+$o-color-light-green-bg : mix($o-color-light-green, white, 10%);
+$o-color-sea-green-bg   : mix($o-color-sea-green, white, 10%);
 
 $o-bright-text-and-border : #FCFCFC;
 $o-dark-text-and-border   : #555555;

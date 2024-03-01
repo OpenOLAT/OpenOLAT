@@ -115,7 +115,7 @@
 
 		&.o_alert_box_type_note, &.o_alert_box_color_lightgray {
 			border-color: $o-color-light-gray;
-			background-color: rgba($o-color-light-gray, 0.1);
+			background-color: $o-color-light-gray-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-light-gray;
@@ -124,7 +124,7 @@
 
 		&.o_alert_box_type_info, &.o_alert_box_color_lightblue {
 			border-color: $o-color-light-blue;
-			background-color: rgba($o-color-light-blue, 0.1);
+			background-color: $o-color-light-blue-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-light-blue;
@@ -133,7 +133,7 @@
 
 		&.o_alert_box_type_tip, &.o_alert_box_color_purple {
 			border-color: $o-color-purple;
-			background-color: rgba($o-color-purple, 0.1);
+			background-color: $o-color-purple-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-purple;
@@ -142,7 +142,7 @@
 
 		&.o_alert_box_type_warning, &.o_alert_box_color_yellow {
 			border-color: $o-color-yellow;
-			background-color: rgba($o-color-yellow, 0.1);
+			background-color: $o-color-yellow-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-yellow;
@@ -151,7 +151,7 @@
 
 		&.o_alert_box_type_error, &.o_alert_box_color_red {
 			border-color: $o-color-red;
-			background-color: rgba($o-color-red, 0.1);
+			background-color: $o-color-red-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-red;
@@ -160,7 +160,7 @@
 
 		&.o_alert_box_type_success, &.o_alert_box_color_lightgreen {
 			border-color: $o-color-light-green;
-			background-color: rgba($o-color-light-green, 0.1);
+			background-color: $o-color-light-green-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-light-green;
@@ -169,7 +169,7 @@
 
 		&.o_alert_box_color_orange {
 			border-color: $o-color-orange;
-			background-color: rgba($o-color-orange, 0.1);
+			background-color: $o-color-orange-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-orange;
@@ -178,7 +178,7 @@
 
 		&.o_alert_box_color_brown {
 			border-color: $o-color-brown;
-			background-color: rgba($o-color-brown, 0.1);
+			background-color: $o-color-brown-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-brown;
@@ -187,7 +187,7 @@
 
 		&.o_alert_box_color_orchid {
 			border-color: $o-color-orchid;
-			background-color: rgba($o-color-orchid, 0.1);
+			background-color: $o-color-orchid-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-orchid;
@@ -196,7 +196,7 @@
 
 		&.o_alert_box_color_cobaltblue {
 			border-color: $o-color-cobalt-blue;
-			background-color: rgba($o-color-cobalt-blue, 0.1);
+			background-color: $o-color-cobalt-blue-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-cobalt-blue;
@@ -205,7 +205,7 @@
 
 		&.o_alert_box_color_darkblue {
 			border-color: $o-color-dark-blue;
-			background-color: rgba($o-color-dark-blue, 0.1);
+			background-color: $o-color-dark-blue-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-dark-blue;
@@ -214,7 +214,7 @@
 
 		&.o_alert_box_color_seagreen {
 			border-color: $o-color-sea-green;
-			background-color: rgba($o-color-sea-green, 0.1);
+			background-color: $o-color-sea-green-bg;
 
 			.o_container_block_alert .o_alert_icon {
 				color: $o-color-sea-green;
@@ -255,6 +255,25 @@
 					text-decoration: none;
 					color: unset;
 					line-height: 30px;
+				}
+
+				.o_alert_collapse_icon {
+					.o_icon_details_collaps {
+						display: inline;
+					}
+
+					.o_icon_details_expand {
+						display: none;
+					}
+
+					&.collapsed {
+						.o_icon_details_collaps {
+							display: none;
+						}
+						.o_icon_details_expand {
+							display: inline;
+						}
+					}
 				}
 			}
 		}
@@ -358,6 +377,7 @@
 	}
 }
 
+/* Editor mode of content editor */
 .o_page_content_editor .o_page_layout {
 	&.o_container_block_1_cols {
 		>div:nth-last-child(2) {
@@ -890,8 +910,10 @@
 }
 
 .o_page_container_slot-inner {
-	min-height: 100px;
-	flex-grow: 5;
+	&:not(.collapsing) {
+		min-height: 100px;
+		flex-grow: 5;
+	}
 }
 
 .gu-transit {
@@ -1386,6 +1408,7 @@ table.o_ce_table {
 	}
 }
 
+/* Editor and run mode of content editor */
 .o_page_layout {
 
 	.o_cit_container {
