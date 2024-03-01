@@ -101,10 +101,10 @@ public class ResetData1OptionsStep extends BasicStep {
 			setFormInfoHelp("manual_user/course_operation/Assessment_tool_-_overview/#course_reset");
 			
 			String displayname = dataContext.getRepositoryEntry().getDisplayname();
-			uifactory.addStaticTextElement("course.title", displayname, formLayout);
+			uifactory.addStaticTextElement("course.title", StringHelper.escapeHtml(displayname), formLayout);
 			
 			if(StringHelper.containsNonWhitespace(dataContext.getRepositoryEntry().getExternalRef())) {
-				uifactory.addStaticTextElement("course.external.ref", dataContext.getRepositoryEntry().getExternalRef(), formLayout);
+				uifactory.addStaticTextElement("course.external.ref", StringHelper.escapeHtml(dataContext.getRepositoryEntry().getExternalRef()), formLayout);
 			}
 			
 			SelectionValues courseElementsKV = new SelectionValues();

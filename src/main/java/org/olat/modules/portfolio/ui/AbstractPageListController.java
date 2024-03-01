@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
@@ -111,6 +109,8 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 
@@ -425,7 +425,9 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		List<FormLink> competencesAndUsage = new ArrayList<>();
 		
 		portfolioService.getCompetencesAndUsage(pages).forEach((taxonomyLevel, usage) -> {
-			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel) + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			String name = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
+			name = StringHelper.escapeHtml(name) + (usage > 1 ? " (" + usage + ")" : "");
+			FormLink competency = uifactory.addFormLink("competence_" + taxonomyLevel.getKey(), "competence_filter", name, null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable o_competence";
 			if (activeCompetenceFilters.contains(taxonomyLevel)) {
 				css += " o_tag_selected";
@@ -449,7 +451,8 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	protected void loadCategoriesFilter(Section section) {
 		List<FormLink> categoriesAndUsage = new ArrayList<>();
 		portfolioService.getCategoriesAndUsage(section).forEach((category, usage) -> {
-			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", category.getName() + (usage > 1 ? " (" + usage + ")" : ""), null, flc, Link.NONTRANSLATED);
+			String name = StringHelper.escapeHtml(category.getName()) + (usage > 1 ? " (" + usage + ")" : "");
+			FormLink categoryLink = uifactory.addFormLink("category_" + category.getKey(), "category_filter", name, null, flc, Link.NONTRANSLATED);
 			String css = "o_tag o_tag_clickable";
 			if (activeCategoryFilters.contains(category)) {
 				css += " o_tag_selected";

@@ -402,7 +402,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 				for(IdentityRef participant:participants) {
 					String fullname = um.getUserDisplayName(participant.getKey());
 					if(sb.length() > 0) sb.append(", ");
-					sb.append(fullname);
+					sb.append(StringHelper.escapeHtml(fullname));
 				}
 
 				String[] params = new String[] { getShortTitle(), sb.toString()  };

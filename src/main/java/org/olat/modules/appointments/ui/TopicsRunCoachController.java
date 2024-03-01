@@ -301,25 +301,25 @@ public class TopicsRunCoachController extends FormBasicController {
 			if (totalAppointments == 1) {
 				messages.add(translate("appointments.total.one"));
 			} else {
-				messages.add(translate("appointments.total", new String[] { String.valueOf(totalAppointments) }));
+				messages.add(translate("appointments.total", String.valueOf(totalAppointments)));
 			}
 			if (numParticipants == 1 && numAppointmentsWithParticipations == 1) {
 				messages.add(translate("participations.selected.one.one"));
 			} else if (numParticipants == 1 && numAppointmentsWithParticipations > 1) {
-				messages.add(translate("participations.selected.one.many", new String[] { String.valueOf(numAppointmentsWithParticipations) }));
+				messages.add(translate("participations.selected.one.many", String.valueOf(numAppointmentsWithParticipations)));
 			} else if (numParticipants > 1 && numAppointmentsWithParticipations == 1) {
-				messages.add(translate("participations.selected.many.one", new String[] { String.valueOf(numParticipants) }));
+				messages.add(translate("participations.selected.many.one", String.valueOf(numParticipants)));
 			} else if (numParticipants > 1 && numAppointmentsWithParticipations > 1) {
-				messages.add(translate("participations.selected.many.many", new String[] { String.valueOf(numParticipants), String.valueOf(numAppointmentsWithParticipations) }));
+				messages.add(translate("participations.selected.many.many", String.valueOf(numParticipants), String.valueOf(numAppointmentsWithParticipations)));
 			} else {
-				messages.add(translate("participations.selected.many.many", new String[] { String.valueOf(0), String.valueOf(0) }));
+				messages.add(translate("participations.selected.many.many", String.valueOf(0), String.valueOf(0)));
 			}
 			
 			if (!wrapper.getTopic().isAutoConfirmation() && numAppointmentsWithParticipations > 0) {
 				if (confirmableAppointmentsCount == 1) {
 					messages.add(translate("appointments.confirmable.one"));
 				} else if (confirmableAppointmentsCount > 1) {
-					messages.add(translate("appointments.confirmable", new String[] { String.valueOf(confirmableAppointmentsCount) }));
+					messages.add(translate("appointments.confirmable", String.valueOf(confirmableAppointmentsCount)));
 				} else {
 					messages.add(translate("appointments.confirmable.none"));
 				}

@@ -45,17 +45,17 @@ public class InfoCourse {
 			InfoCourse info = new InfoCourse();
 			info.id = entry.getKey();
 			if (StringHelper.containsNonWhitespace(entry.getExternalRef())) {
-				info.externalRef = entry.getExternalRef();
+				info.externalRef = StringHelper.escapeHtml(entry.getExternalRef());
 			}
 			if (StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
-				info.technicalType = entry.getTechnicalType();
+				info.technicalType = StringHelper.escapeHtml(entry.getTechnicalType());
 			}
 			if (entry.getEducationalType() != null) {
-				info.educationalTypeIdentifier = entry.getEducationalType().getIdentifier();
+				info.educationalTypeIdentifier = StringHelper.escapeHtml(entry.getEducationalType().getIdentifier());
 			}
-			info.displayname = entry.getDisplayname();
+			info.displayname = StringHelper.escapeHtml(entry.getDisplayname());
 			if (StringHelper.containsNonWhitespace(entry.getDescription())) {
-				info.description = entry.getDescription();
+				info.description = StringHelper.xssScan(entry.getDescription());
 			}
 			if (entry.getLifecycle() != null) {
 				if (entry.getLifecycle().getValidFrom() != null) {

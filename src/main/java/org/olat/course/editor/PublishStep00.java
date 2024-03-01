@@ -49,6 +49,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -215,7 +216,7 @@ class PublishStep00 extends BasicStep {
 						break;
 					}
 					String nodeName = publishProcess.getCourseEditorTreeModel().getCourseNode(nodeId).getShortName();
-					String isFor = "<h5>" + nodeName + "</h5>";
+					String isFor = "<h5>" + StringHelper.escapeHtml(nodeName) + "</h5>";
 					if (description.isError()) {
 						errors += "<li>" + isFor + description.getShortDescription(getLocale()) + "</li>";
 						errCnt++;

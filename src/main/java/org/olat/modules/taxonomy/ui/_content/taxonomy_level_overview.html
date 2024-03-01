@@ -1,7 +1,7 @@
 <div class="o_flex_first_grow">
 <div>
 #if($title)
-<h3>$title</h3>
+<h3>$r.escapeHtml($title)</h3>
 #end
 </div>
 #if($r.available("actions"))
@@ -14,16 +14,16 @@
 	<div>
 		<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.key")</label>
 	</div>
-	<div class='col-sm-9'><p class='form-control-static'>$id</p></div>
+	<div class='col-sm-9'><p class='form-control-static'>$r.escapeHtml($id)</p></div>
 	#if($r.isNotEmpty($externalId))
 	<div>
 		<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.external.id")</label>
 	</div>
-	<div class='col-sm-9'><p class='form-control-static'>$externalId</p></div>
+	<div class='col-sm-9'><p class='form-control-static'>$r.escapeHtml($externalId)</p></div>
 	#end
 	<div>
 		<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.path")</label>
 	</div>
-	<div class='col-sm-9'><p class='form-control-static'>$path</p></div>
+	<div class='col-sm-9'><p class='form-control-static'>$r.escapeHtml($path)</p></div>
 </div>
 <div class="clearfix">$r.render("tabs")</div>

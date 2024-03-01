@@ -59,7 +59,7 @@
 			<span class="o_portfolio_categories">
 				<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 		 	#foreach($category in $row.sectionCategories)
-		 		<a class="o_tag">$category</a>
+		 		<a class="o_tag">$r.escapeHtml($category)</a>
 		 	#end
 		 	</span>
 		</div>
@@ -68,7 +68,7 @@
 				<span class="o_portfolio_competences text-muted o_small">
 					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competences")"> </i>
 					#foreach($competence in $row.pageCompetences)
-						<a class="o_tag o_competence">$competence</a>
+						<a class="o_tag o_competence">$r.escapeHtml($competence)</a>
 					#end
 				</span>
 				#end	
@@ -153,7 +153,7 @@
 				<div class="o_portfolio_categories text-muted o_small">
 					<i class="o_icon o_icon_fw o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 					#foreach($category in $row.pageCategories)
-						<a class="o_tag">$category</a>
+						<a class="o_tag">$r.escapeHtml($category)</a>
 					#end
 				</div>
 				#end
@@ -161,7 +161,7 @@
 				<div class="o_portfolio_competences text-muted o_small">
 					<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competences")"> </i>
 					#foreach($competence in $row.pageCompetences)
-						<a class="o_tag o_competence">$competence</a>
+						<a class="o_tag o_competence">$r.escapeHtml($competence)</a>
 					#end
 				</div>
 				#end

@@ -45,6 +45,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.catalog.CatalogV2Module;
@@ -88,6 +89,7 @@ public class CatalogLayoutController extends FormBasicController {
 		formLayout.add(nameCont);
 		
 		String translateLauncherName = translate("header.search.title");
+		translateLauncherName = StringHelper.escapeHtml(translateLauncherName);
 		titleEl = uifactory.addStaticTextElement("admin.header.search.title", null, translateLauncherName, nameCont);
 		
 		titleLink = uifactory.addFormLink("admin.header.search.title.edit", nameCont);

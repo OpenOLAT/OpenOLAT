@@ -65,13 +65,16 @@ public class TaxonomyPathsRenderer implements FlexiCellRenderer {
 			
 			taxonomyLevelNames.sort(String::compareToIgnoreCase);
 			for (String name : taxonomyLevelNames) {
-				target.append("<div class='o_nowrap'>").append(name).append("</div>");
+				if(name == null) {
+					name = "-";
+				}
+				target.append("<div class='o_nowrap'>").appendHtmlEscaped(name).append("</div>");
 			}
 		}
 	}
 	
 	private void addParentNames(List<String> names, TaxonomyLevel level) {
-		names.add(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, level));
+		names.add(TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, level, level::getIdentifier));
 		TaxonomyLevel parent = level.getParent();
 		if (parent != null) {
 			addParentNames(names, parent);

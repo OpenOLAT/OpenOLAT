@@ -69,7 +69,8 @@ public class EditLicenseTypeController extends FormBasicController {
 			nameEl = uifactory.addTextElement("license.type.name", 100, null, formLayout);
 			nameEl.setMandatory(true);
 		} else {
-			uifactory.addStaticTextElement("license.type.name", licenseType.getName(), formLayout);
+			String name = StringHelper.escapeHtml(licenseType.getName());
+			uifactory.addStaticTextElement("license.type.name", name, formLayout);
 		}
 		
 		String text = licenseType == null ? "" : licenseType.getText();
@@ -97,10 +98,10 @@ public class EditLicenseTypeController extends FormBasicController {
 		if (nameEl != null) {
 			nameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-				nameEl.setErrorKey("form.legende.mandatory", null);
+				nameEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if (licenseService.licenseTypeExists(nameEl.getValue())) {
-				nameEl.setErrorKey("error.license.type.name.exists", null);
+				nameEl.setErrorKey("error.license.type.name.exists");
 				allOk &= false;
 			}
 		}

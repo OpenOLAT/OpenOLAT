@@ -42,7 +42,7 @@
 			#if($r.isNotNull($responseInfo.textComponent))
 				$r.render($responseInfo.textComponent)
 			#else
-				<strong>$responseInfo.text</strong>
+				<strong>$r.escapeHtml($responseInfo.text)</strong>
 			#end
 			</span>
 			<p class="o_qti_statistics_wrong_answer">#if($responseInfo.survey)
@@ -56,7 +56,7 @@
 			#if($r.isNotNull($responseInfo.textComponent))
 				$r.render($responseInfo.textComponent)
 			#else
-				$responseInfo.text
+				$r.escapeHtml($responseInfo.text)
 			#end</span>
 		#end
 		 </li>

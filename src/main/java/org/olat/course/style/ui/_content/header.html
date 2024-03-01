@@ -9,7 +9,7 @@
 								#if($item.iconCss) 
 									<i class="o_icon $item.iconCss"></i>
 								#end
-								<span>$item.title</span>
+								<span>$r.escapeHtml($item.title)</span>
 							</h2>
 						</div>
 						#if($r.isNotEmpty($handlingRange))

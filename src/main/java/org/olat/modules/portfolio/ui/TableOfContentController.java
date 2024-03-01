@@ -179,7 +179,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		StringBuilder ownerSb = new StringBuilder();
 		for(Identity owner:owners) {
 			if(ownerSb.length() > 0) ownerSb.append(", ");
-			ownerSb.append(userManager.getUserDisplayName(owner));
+			ownerSb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(owner)));
 		}
 		mainVC.contextPut("owners", ownerSb.toString());
 

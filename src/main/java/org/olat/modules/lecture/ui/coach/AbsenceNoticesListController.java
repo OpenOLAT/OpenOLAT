@@ -345,6 +345,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		String title;
 		if(entries.size() == 1) {
 			title = entries.iterator().next().getDisplayname();
+			title = StringHelper.escapeHtml(title);
 		} else {
 			title = translate("several.entries");
 		}
@@ -643,7 +644,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			List<String> entryLinkIds = new ArrayList<>(entries.size());
 			for(RepositoryEntry entry:entries) {
 				String linkId = "entry_" + (counter++);
-				String name = translate("open.specific.course", new String[] { entry.getDisplayname() });
+				String name = translate("open.specific.course", StringHelper.escapeHtml(entry.getDisplayname()));
 				Link link = LinkFactory.createLink(linkId, linkId, "entry", name, getTranslator(), mainVC, this, Link.NONTRANSLATED | Link.LINK);
 				link.setIconLeftCSS("o_icon o_CourseModule_icon");
 				link.setUserObject(entry);

@@ -276,7 +276,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
 			TreeNode node = new MyTaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel,
-					TaxonomyUIFactory.translateDisplayName(translator, taxonomyLevel));
+					TaxonomyUIFactory.translateDisplayName(translator, taxonomyLevel, taxonomyLevel::getIdentifier));
 			parentNode.addChild(node);
 		}
 	}

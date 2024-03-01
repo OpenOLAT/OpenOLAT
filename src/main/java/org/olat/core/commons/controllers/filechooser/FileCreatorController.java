@@ -95,10 +95,10 @@ public class FileCreatorController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_file_form");
 		
 		// Global target directory
-		String path = "/ " + baseContainer.getName();
+		String path = "/ " + StringHelper.escapeHtml(baseContainer.getName());
 		VFSContainer container = baseContainer.getParentContainer();
 		while (container != null) {
-			path = "/ " + container.getName() + " " + path;
+			path = "/ " + StringHelper.escapeHtml(container.getName()) + " " + path;
 			container = container.getParentContainer();
 		}
 		uifactory.addStaticTextElement("ul.target", path,formLayout);

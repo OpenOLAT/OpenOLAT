@@ -2,7 +2,7 @@
 	#if($r.available("bookmark"))
 		<div class="pull-right">$r.render("bookmark")</div>
 	#end
-	<h2>$r.escapeHtml($pageTitle) <small>$r.translate("binder.by",$owners)</small></h2>
+	<h2>$r.escapeHtml($pageTitle) <small>$r.translate("binder.by", $r.escapeHtml($owners))</small></h2>
 	<div class="o_portfolio_page_meta">		
 		#if($r.available("sharedWithLink"))
 		<div class="text-muted o_small">
@@ -36,7 +36,7 @@
 				<i class="o_icon o_icon_fw o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 				 #foreach($category in $pageCategories)
 				 	<span class="o_tag">
-					 	$category
+					 	$r.escapeHtml($category)
 				 	</span>
 				 #end
 			#end
@@ -51,7 +51,7 @@
 				<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competences")"> </i>
 				 #foreach($competence in $pageCompetences)
 				 	<span class="o_tag o_competence">
-					 	$competence
+					 	$r.escapeHtml($competence)
 				 	</span>
 				 #end
 			#end

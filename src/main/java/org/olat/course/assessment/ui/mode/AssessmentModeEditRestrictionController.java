@@ -177,7 +177,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		if(StringHelper.containsNonWhitespace(startElementKey)) {
 			startElementName = getCourseNodeName(startElementKey, treeModel);
 		}
-		startElementEl = uifactory.addStaticTextElement("mode.start.element", "mode.start.element", startElementName, formLayout);
+		startElementEl = uifactory.addStaticTextElement("mode.start.element", "mode.start.element", StringHelper.escapeHtml(startElementName), formLayout);
 		chooseStartElementButton = uifactory.addFormLink("choose.start.element", formLayout, Link.BUTTON);
 		chooseStartElementButton.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.startElements));

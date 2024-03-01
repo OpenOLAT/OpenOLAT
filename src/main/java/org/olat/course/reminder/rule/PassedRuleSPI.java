@@ -117,8 +117,7 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 	
 	@Override
 	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
-		if (rule instanceof ReminderRuleImpl) {
-			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+		if (rule instanceof ReminderRuleImpl r) {
 			Translator translator = Util.createPackageTranslator(PassedRuleEditor.class, locale);
 			String nodeIdent = r.getLeftOperand();
 			String statusValue = r.getRightOperand();
@@ -153,7 +152,8 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 				statusText.append(translator.translate("not.graded"));
 			}
 			
-			String[] args = new String[] { courseNode.getShortTitle(), courseNode.getIdent(), statusText.toString() };
+			String[] args = new String[] { StringHelper.escapeHtml(courseNode.getShortTitle()),
+					courseNode.getIdent(), statusText.toString() };
 			return translator.translate("rule.passed.text", args);
 		}
 		return null;

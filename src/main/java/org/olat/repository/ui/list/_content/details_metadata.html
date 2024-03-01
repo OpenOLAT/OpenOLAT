@@ -60,7 +60,7 @@
 		<h4>$taxonomyLevelsLabel</h4>
 		#foreach($taxonomyLevel in $taxonomyLevels)
 		<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomyLevel.materializedPathIdentifiersWithoutSlash)">
-			$taxonomyLevel.displayName
+			$r.escapeHtml($taxonomyLevel.displayName)
 		</span>
 		#end
 	</div>

@@ -56,6 +56,13 @@ public interface ExceptionalObligationHandler {
 	
 	public String getDisplayType(Translator translator, ExceptionalObligation exceptionalObligation);
 	
+	/**
+	 * 
+	 * @param translator the translator in the context
+	 * @param exceptionalObligation The obligation
+	 * @param courseEntry The course repository entry
+	 * @return A properly escaped display name
+	 */
 	public String getDisplayName(Translator translator, ExceptionalObligation exceptionalObligation, RepositoryEntry courseEntry);
 
 	public String getDisplayText(Translator translator, ExceptionalObligation exceptionalObligation, RepositoryEntry courseEntry);

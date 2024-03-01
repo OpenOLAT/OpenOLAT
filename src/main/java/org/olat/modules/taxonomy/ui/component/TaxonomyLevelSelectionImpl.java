@@ -231,7 +231,7 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 	private void updateButtonUI() {
 		String linkTitle = allTaxonomyLevels.stream()
 				.filter(level -> selectedKeys.contains(level.getKey()))
-				.map(level -> TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, level))
+				.map(level -> TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, level, level::getIdentifier))
 				.filter(Objects::nonNull)
 				.sorted(Collator.getInstance(getTranslator().getLocale()))
 				.map(this::toLabel)
@@ -244,7 +244,7 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 	}
 	
 	private String toLabel(String levelName) {
-		return "<span class=\"o_tax_ls_tag o_tag\">" + levelName + "</span>";
+		return "<span class=\"o_tax_ls_tag o_tag\">" + StringHelper.escapeHtml(levelName) + "</span>";
 	}
 	
 	private void doOpenSelection(UserRequest ureq) {

@@ -507,8 +507,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				AssessmentNodeData nodeData = tableModel.getObject(se.getIndex());
 				if(CMD_SELECT_NODE.equals(cmd)) {
@@ -520,8 +519,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			doSetUserVisibility(true);
 		} else if(bulkHiddenButton == source) {
 			doSetUserVisibility(false);
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink) source;
+		} else if (source instanceof FormLink link) {
 			if (CMD_SCORE_DESC.equals(link.getCmd())) {
 				doShowScoreDesc(ureq, link);
 			}

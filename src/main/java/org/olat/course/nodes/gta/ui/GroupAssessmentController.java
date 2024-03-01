@@ -414,7 +414,8 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 		
 		if(StringHelper.containsNonWhitespace(modelInfos.getDuplicates())) {
-			String warning = translate("error.duplicate.memberships", new String[]{ gtaNode.getShortTitle(), modelInfos.getDuplicates()});
+			String warning = translate("error.duplicate.memberships", StringHelper.escapeHtml(gtaNode.getShortTitle()),
+					StringHelper.escapeHtml(modelInfos.getDuplicates()));
 			flc.contextPut("duplicateWarning", warning);
 		} else {
 			flc.contextRemove("duplicateWarning");

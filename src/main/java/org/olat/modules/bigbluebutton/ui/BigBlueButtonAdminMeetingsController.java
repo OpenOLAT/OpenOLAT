@@ -213,8 +213,9 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, BigBlueButtonMeeting meeting) {
-		String confirmDeleteTitle = translate("confirm.delete.meeting.title", new String[]{ meeting.getName() });
-		String confirmDeleteText = translate("confirm.delete.meeting", new String[]{ meeting.getName() });
+		String meetingName = StringHelper.escapeHtml(meeting.getName());
+		String confirmDeleteTitle = translate("confirm.delete.meeting.title", meetingName);
+		String confirmDeleteText = translate("confirm.delete.meeting", meetingName);
 		confirmDelete = activateYesNoDialog(ureq, confirmDeleteTitle, confirmDeleteText, confirmDelete);
 		confirmDelete.setUserObject(meeting);
 	}
@@ -252,7 +253,7 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 				names.add(name);
 			}
 
-			String confirmDeleteTitle = translate("confirm.delete.meetings.title", new String[]{ Integer.toString( meetings.size()) });
+			String confirmDeleteTitle = translate("confirm.delete.meetings.title", Integer.toString( meetings.size()));
 			String i18nDelete = "confirm.delete.meetings";
 			if(numOfRecordings == 1) {
 				i18nDelete = "confirm.delete.meetings.recording";

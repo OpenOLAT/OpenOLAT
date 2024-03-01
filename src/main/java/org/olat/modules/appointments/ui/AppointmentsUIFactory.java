@@ -65,7 +65,7 @@ public class AppointmentsUIFactory {
 		return organizers.stream()
 				.map(organizer -> userManager.getUserDisplayName(organizer.getIdentity().getKey()))
 				.sorted(String.CASE_INSENSITIVE_ORDER)
-				.map(name -> "<span class=\"o_organizer\"><i class='o_icon o_icon_user'> </i> " + name + "</span>")
+				.map(name -> "<span class=\"o_organizer\"><i class='o_icon o_icon_user'> </i> " + StringHelper.escapeHtml(name) + "</span>")
 				.collect(Collectors.joining(" &nbsp;"));
 	}
 	

@@ -209,6 +209,19 @@ public class StringHelperTest {
 		String csv = StringHelper.formatAsEscapedCSVString(entries);
 		Assert.assertEquals("Hell\"\"o\"\",\"Test,dru,\",Final", csv);
 	}
+	
+
+	@Test
+	public void escapedCssClass() {
+		String cleanedClassnames = StringHelper.escapeCssClass("o_àétest<>[]\"");
+		Assert.assertEquals("o_test", cleanedClassnames);
+	}
+	
+	@Test
+	public void escapedSeveralCssClass() {
+		String cleanedClassnames = StringHelper.escapeCssClass("o_test\"><rsc# o_icon");
+		Assert.assertEquals("o_testrsc o_icon", cleanedClassnames);
+	}
 
   	@Test
   	public void truncateText() {

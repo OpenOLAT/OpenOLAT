@@ -128,6 +128,7 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		generalCont.add(nameCont);
 		
 		String translateLauncherName = CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, identifier);
+		translateLauncherName = StringHelper.escapeHtml(translateLauncherName);
 		nameEl = uifactory.addStaticTextElement("admin.launcher.name", null, translateLauncherName, nameCont);
 		
 		nameLink = uifactory.addFormLink("admin.launcher.name.edit", nameCont);

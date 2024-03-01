@@ -118,7 +118,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			
 			String id = "o_dml_" + CodeHelper.getRAMUniqueID();
 			Link displayNameLink = LinkFactory.createLink(id, id, "open", null, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
-			displayNameLink.setCustomDisplayText(entry.getDisplayname());
+			displayNameLink.setCustomDisplayText(StringHelper.escapeHtml(entry.getDisplayname()));
 			displayNameLink.setUserObject(entry.getKey());
 			item.setDisplayNameLink(displayNameLink);
 			
@@ -129,7 +129,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		mainVC.contextPut("launcherId", CodeHelper.getRAMUniqueID());
 		if (showMore) {
 			titleLink = LinkFactory.createLink("title", "title", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
-			titleLink.setCustomDisplayText(title);
+			titleLink.setCustomDisplayText(StringHelper.escapeHtml(title));
 			titleLink.setElementCssClass("o_link_plain");
 			
 			showAllLink = LinkFactory.createLink("show.all", mainVC, this);

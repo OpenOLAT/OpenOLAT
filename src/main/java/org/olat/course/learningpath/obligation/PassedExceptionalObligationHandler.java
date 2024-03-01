@@ -99,7 +99,7 @@ public class PassedExceptionalObligationHandler implements ExceptionalObligation
 		if (exceptionalObligation instanceof PassedExceptionalObligation) {
 			PassedExceptionalObligation passedExceptionalObligation = (PassedExceptionalObligation)exceptionalObligation;
 			String statusText = getStatusName(translator, passedExceptionalObligation);
-			return translator.translate("exceptional.obligation.passed.type", new String[] {statusText});
+			return translator.translate("exceptional.obligation.passed.type", statusText);
 		}
 		return null;
 	}

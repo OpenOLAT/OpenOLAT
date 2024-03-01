@@ -46,6 +46,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -343,7 +344,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		previousLink.setEnabled(hasPrevious(courseNode));
 		stackPanel.addTool(previousLink, Align.rightEdge, false);
 
-		courseNodeSelectionLink =  LinkFactory.createToolLink("node.select", "node.select", courseNode.getShortTitle(), this);
+		courseNodeSelectionLink =  LinkFactory.createToolLink("node.select", "node.select", StringHelper.escapeHtml(courseNode.getShortTitle()), this);
 		String courseNodeCssClass = CourseNodeFactory.getInstance()
 				.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass();
 		courseNodeSelectionLink.setElementCssClass("dropdown-toggle ");

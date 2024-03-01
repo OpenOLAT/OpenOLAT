@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.Structure;
 import org.olat.course.assessment.ScoreAccountingTriggerData;
 import org.olat.course.nodes.CourseNode;
@@ -85,8 +86,7 @@ public class BusinessGroupExceptionalObligationHandler implements ExceptionalObl
 
 	@Override
 	public String getDisplayName(Translator translator, ExceptionalObligation exceptionalObligation, RepositoryEntry courseEntry) {
-		if (exceptionalObligation instanceof BusinessGroupExceptionalObligation) {
-			BusinessGroupExceptionalObligation businessGroupExceptionalObligation = (BusinessGroupExceptionalObligation)exceptionalObligation;
+		if (exceptionalObligation instanceof BusinessGroupExceptionalObligation businessGroupExceptionalObligation) {
 			BusinessGroup group = getGroup(businessGroupExceptionalObligation);
 			if (group != null) {
 				String name = group.getName();
@@ -96,7 +96,7 @@ public class BusinessGroupExceptionalObligationHandler implements ExceptionalObl
 				if (courseGroups.isEmpty()) {
 					name = translator.translate("exceptional.obligation.group.error.not.course", name);
 				}
-				return name;
+				return StringHelper.escapeHtml(name);
 			}
 			return translator.translate("exceptional.obligation.group.error.not.available");
 		}

@@ -26,6 +26,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.StringHelper;
 import org.olat.course.Structure;
 import org.olat.course.assessment.ScoreAccountingTriggerData;
 import org.olat.course.nodes.CourseNode;
@@ -84,11 +85,10 @@ public class OrganisationExceptionalObligationHandler implements ExceptionalObli
 
 	@Override
 	public String getDisplayName(Translator translator, ExceptionalObligation exceptionalObligation, RepositoryEntry courseEntry) {
-		if (exceptionalObligation instanceof OrganisationExceptionalObligation) {
-			OrganisationExceptionalObligation organisationExceptionalObligation = (OrganisationExceptionalObligation)exceptionalObligation;
+		if (exceptionalObligation instanceof OrganisationExceptionalObligation organisationExceptionalObligation) {
 			Organisation organisation = organisationService.getOrganisation(organisationExceptionalObligation.getOrganisationRef());
 			if (organisation != null) {
-				return organisation.getDisplayName();
+				return StringHelper.escapeHtml(organisation.getDisplayName());
 			}
 		}
 		return null;

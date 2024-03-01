@@ -440,8 +440,9 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, BigBlueButtonMeeting meeting) {
-		String confirmDeleteTitle = translate("confirm.delete.meeting.title", new String[]{ meeting.getName() });
-		String confirmDeleteText = translate("confirm.delete.meeting", new String[]{ meeting.getName() });
+		String meetingName = StringHelper.escapeHtml(meeting.getName());
+		String confirmDeleteTitle = translate("confirm.delete.meeting.title", meetingName);
+		String confirmDeleteText = translate("confirm.delete.meeting", meetingName);
 		confirmDelete = activateYesNoDialog(ureq, confirmDeleteTitle, confirmDeleteText, confirmDelete);
 		confirmDelete.setUserObject(meeting);
 	}
@@ -464,8 +465,8 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 				names.add(meeting.getName());
 			}
 
-			String confirmDeleteTitle = translate("confirm.delete.meetings.title", new String[]{ Integer.toString(meetings.size()) });
-			String confirmDeleteText = translate("confirm.delete.meetings", new String[]{ Integer.toString(meetings.size()), namesBuilder.toString() });
+			String confirmDeleteTitle = translate("confirm.delete.meetings.title", Integer.toString(meetings.size()));
+			String confirmDeleteText = translate("confirm.delete.meetings", Integer.toString(meetings.size()), namesBuilder.toString());
 			confirmBatchDelete = activateYesNoDialog(ureq, confirmDeleteTitle, confirmDeleteText, confirmBatchDelete);
 			confirmBatchDelete.setUserObject(meetings);
 		}

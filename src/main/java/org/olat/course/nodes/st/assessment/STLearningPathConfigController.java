@@ -280,7 +280,7 @@ public class STLearningPathConfigController extends FormBasicController {
 	private void appendTypeName(ExceptionalObligationRow row, ExceptionalObligation exceptionalObligation) {
 		ExceptionalObligationHandler exceptionalObligationHandler = learningPathService.getExceptionalObligationHandler(exceptionalObligation.getType());
 		if (exceptionalObligationHandler != null) {
-			row.setName(exceptionalObligationHandler.getDisplayName(getTranslator(), exceptionalObligation, courseEntry));
+			row.setName(  exceptionalObligationHandler.getDisplayName(getTranslator(), exceptionalObligation, courseEntry));
 			row.setType(exceptionalObligationHandler.getDisplayType(getTranslator(), exceptionalObligation));
 		}
 	}

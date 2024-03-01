@@ -47,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -397,7 +398,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	
 	private void entrySelectedInfoMessage(RepositoryEntry entry) {
 		String type = translate(entry.getOlatResource().getResourceableTypeName());
-		String message = translate("message.entry.selected", entry.getDisplayname(), type);
+		String message = translate("message.entry.selected", StringHelper.escapeHtml(entry.getDisplayname()), type);
 		getWindowControl().setInfo(message);
 	}
 	
