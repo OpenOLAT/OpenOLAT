@@ -2,11 +2,11 @@
 	<div class="panel-heading">
 		<h4 class="panel-title"><i class="o_icon o_icon_inspection"> </i> $r.translate("overview.small.title")</h4>
 	</div>
-	<p class="o_assessment_tool_overview_link">
-		$r.render("link.in.progress")<br>
-		$r.render("link.active")<br>
-		$r.render("link.scheduled")
-	</p>
+	<ul class="o_assessment_tool_overview_link list-unstyled">
+		<li>$r.render("link.in.progress")</li>
+		<li>$r.render("link.active")</li>
+		<li>$r.render("link.scheduled")</li>
+	</ul>
 	
 	#if($expanded)
 		#if($r.visible("inProgressTable"))
@@ -27,5 +27,7 @@
 			$r.render("scheduledTable")
 		</div>
 		#end
+		
+		$r.render("no.inspections")
 	#end
 </div>
