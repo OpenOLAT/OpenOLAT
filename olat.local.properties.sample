@@ -94,7 +94,6 @@ localization.cache=true
 # without redeployment of the entire webapp.
 #project.build.home.directory=/Users/srosse/workspace/OpenOLAT
 
-user.generateTestUsers=false
 # disable full text indexer at startup for development environment
 generate.index.at.startup=false
 

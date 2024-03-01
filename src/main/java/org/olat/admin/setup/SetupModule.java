@@ -53,15 +53,11 @@ public class SetupModule extends AbstractSpringModule {
 	
 	private static final Logger log = Tracing.createLoggerFor(SetupModule.class);
 
-	@Value("${user.generateTestUsers}")
-	private boolean hasTestUsers;
 	@Value("${default.auth.provider.identifier}")
 	private String authenticationProviderConstant;
 
 	@Autowired @Qualifier("defaultUsers")
 	private ArrayList<DefaultUser> defaultUsers;
-	@Autowired @Qualifier("testUsers")
-	private ArrayList<DefaultUser> testUsers;
 
 	@Autowired
 	protected DB dbInstance;
@@ -104,12 +100,6 @@ public class SetupModule extends AbstractSpringModule {
 		// read user editable fields configuration
 		if (defaultUsers != null) {
 			for (DefaultUser user:defaultUsers) {
-				createUser(user);
-			}
-		}
-		if (hasTestUsers && testUsers != null) {
-			// read user editable fields configuration
-			for (DefaultUser user :testUsers) {
 				createUser(user);
 			}
 		}
