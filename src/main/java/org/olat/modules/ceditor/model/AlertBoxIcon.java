@@ -25,13 +25,29 @@ package org.olat.modules.ceditor.model;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public enum AlertBoxIcon {
-	radiation("alert.box.icon.radiation", "o_icon_radiation"),
-	error("alert.box.icon.error", "o_icon_error_alert"),
-	warning("alert.box.icon.warning", "o_icon_warning"),
-	info("alert.box.icon.info", "o_icon_info_alert"),
-	note("alert.box.icon.note", "o_icon_notes"),
-	tip("alert.box.icon.tip", "o_icon_tip"),
-	check("alert.box.icon.check", "o_icon_check");
+	circle_info("alert.box.icon.info", "o_icon_circle_info"),
+	lightbulb("alert.box.icon.lightbulb", "o_icon_lightbulb"),
+	hand_point_up("alert.box.icon.hand", "o_icon_hand_point_up"),
+	circle_exclamation("alert.box.icon.circle.exclamation", "o_icon_circle_exclamation"),
+	circle_check("alert.box.icon.check", "o_icon_circle_check"),
+	triangle_exclamation("alert.box.icon.triangle.exclamation", "o_icon_triangle_exclamation"),
+	circle_xmark("alert.box.icon.xmark", "o_icon_circle_xmark"),
+	fire("alert.box.icon.fire", "o_icon_fire"),
+	circle_radiation("alert.box.icon.radiation", "o_icon_circle_radiation"),
+	flask("alert.box.icon.flask", "o_icon_flask"),
+	pencil("alert.box.icon.pencil", "o_icon_pencil"),
+	quote_right("alert.box.icon.quote", "o_icon_quote_right"),
+	bolt("alert.box.icon.bolt", "o_icon_bolt"),
+	bug("alert.box.icon.bug", "o_icon_bug"),
+	heart("alert.box.icon.heart", "o_icon_heart"),
+	eye("alert.box.icon.eye", "o_icon_eye"),
+	globe("alert.box.icon.globe", "o_icon_globe"),
+	magnifying_glass("alert.box.icon.magnifying.glass", "o_icon_magnifying_glass"),
+	star("alert.box.icon.star", "o_icon_star"),
+	bomb("alert.box.icon.bomb", "o_icon_bomb"),
+	gear("alert.box.icon.gear", "o_icon_gear"),
+	thumbtack("alert.box.icon.thumbtack", "o_icon_thumbtack"),
+	compass("alert.box.icon.compass", "o_icon_compass");
 
 	private final String i18nKey;
 	private final String cssClass;
