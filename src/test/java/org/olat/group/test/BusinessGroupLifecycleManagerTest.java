@@ -42,6 +42,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupLifecycleManagerImpl;
+import org.olat.group.manager.BusinessGroupLifecycleManagerImpl.EmailRecepient;
 import org.olat.group.ui.lifecycle.BusinessGroupLifecycleTypeEnum;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.repository.RepositoryEntry;
@@ -872,7 +873,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 	}
 
 	@Test
-	public void softDeleteBBusinessGroups() {
+	public void softDeleteBusinessGroups() {
 		businessGroupModule.setAutomaticGroupSoftDeleteEnabled("enabled");
 		businessGroupModule.setMailBeforeSoftDelete(true);
 		businessGroupModule.setNumberOfInactiveDayBeforeSoftDelete(120);
@@ -1165,9 +1166,9 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(owner, resource, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<Identity> recipients = lifecycleManager.getEmailRecipients(group);
+		List<EmailRecepient> recipients = lifecycleManager.getEmailRecipients(group);
 		Assert.assertEquals(1, recipients.size());
-		Assert.assertEquals(coach, recipients.get(0));
+		Assert.assertEquals(coach, recipients.get(0).user());
 	}
 	
 	@Test
@@ -1179,9 +1180,9 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(owner, resource, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<Identity> recipients = lifecycleManager.getEmailRecipients(group);
+		List<EmailRecepient> recipients = lifecycleManager.getEmailRecipients(group);
 		Assert.assertEquals(1, recipients.size());
-		Assert.assertEquals(owner, recipients.get(0));
+		Assert.assertEquals(owner, recipients.get(0).user());
 	}
 	
 	private BusinessGroup setLastUsage(BusinessGroup group, BusinessGroupStatusEnum status, Date date) {

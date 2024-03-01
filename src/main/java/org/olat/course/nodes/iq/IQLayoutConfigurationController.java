@@ -163,7 +163,7 @@ public class IQLayoutConfigurationController extends BasicController {
 				String chosenFile = VFSManager.getRelativeItemPath(combiLinkCtr.getFile(), courseFolderBaseContainer, null);
 			    if (chosenFile != null){
 			        moduleConfiguration.set(IQEditController.CONFIG_KEY_DISCLAIMER, chosenFile);
-			    }  else {
+			    } else {
 			        moduleConfiguration.remove(IQEditController.CONFIG_KEY_DISCLAIMER);
 			    }
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);	
@@ -180,7 +180,10 @@ public class IQLayoutConfigurationController extends BasicController {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == mod21ConfigForm) {
-			if (event == Event.DONE_EVENT) {
+			if (event instanceof QTI21EditLayoutEvent ele && QTI21EditLayoutEvent.CHANGE_CONFIG_REFERENCE.equals(ele.getCommand())) {
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				mod21ConfigForm.markDirty();
+			} else if (event == Event.DONE_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}

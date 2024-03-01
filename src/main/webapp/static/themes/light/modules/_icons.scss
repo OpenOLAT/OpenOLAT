@@ -51,6 +51,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_badge { @include o-add-icon('award');}
 .o_icon_banned { @include o-add-icon('flask'); color: $brand-danger;}
 .o_icon_bold { @include o-add-icon('bold');}
+.o_icon_bolt { @include o-add-icon('bolt');}
+.o_icon_bomb { @include o-add-icon('bomb');}
 .o_icon_booking { @include o-add-icon('shopping-cart');}
 .o_icon_bookmark { @include o-add-icon('bookmark'); color: $o-bookmark-color;}
 .o_icon_bookmark_add { @include o-add-icon('bookmark', false);  color: $o-bookmark-color;}
@@ -59,6 +61,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_browse { @include o-add-icon('search-plus');} 
 .o_icon_brush { @include o-add-icon('paint-brush');}
 .o_icon_browsercheck { @include o-add-icon('thumbs-up');}
+.o_icon_bug { @include o-add-icon('bug');}
 .o_icon_busy { @include o-add-icon('spinner');}
 .o_icon_calendar { @include o-add-icon('calendar-days', false);}
 .o_icon_calendar_enabled { @include o-add-icon('check-square', false);}
@@ -81,7 +84,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_checkbox { @include o-add-icon('square', false);}
 .o_icon_checkbox_checked { @include o-add-icon('check-square');  }
 .o_icon_circle { @include o-add-icon('circle', false);}
+.o_icon_circle_check { @include o-add-icon('circle-check');}
 .o_icon_circle_color { @include o-add-icon('circle');}
+.o_icon_circle_exclamation { @include o-add-icon('circle-exclamation');}
+.o_icon_circle_info { @include o-add-icon('circle-info');}
+.o_icon_circle_radiation { @include o-add-icon('circle-radiation');}
+.o_icon_circle_xmark { @include o-add-icon('circle-xmark');}
 .o_icon_citation { @include o-add-icon('quote-left');}
 .o_icon_cleanup { @include o-add-icon('ambulance');}
 .o_icon_clear_all { @include o-add-icon('trash-can', false);}
@@ -110,6 +118,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_courserun { @include o-add-icon('cube');}
 .o_icon_comments { @include o-add-icon('comments');}
 .o_icon_comments_none { @include o-add-icon('comment', false);}
+.o_icon_compass { @include o-add-icon('compass', false);}
 .o_icon_compress { @include o-add-icon('compress');}
 .o_icon_compulsory { @include o-add-icon('asterisk');}
 .o_icon_competences { @include o-add-icon('shield');}
@@ -167,14 +176,20 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_files { @include o-add-icon('copy', false);} // files not in FA6 public set!
 .o_icon_fileupload { @include o-add-icon('file', false);}
 .o_icon_filter { @include o-add-icon('filter');}
+.o_icon_fire { @include o-add-icon('fire');}
+.o_icon_flask { @include o-add-icon('flask');}
 .o_icon_form { @include o-add-icon('clipboard', false);}
+.o_icon_gear { @include o-add-icon('gear');}
+.o_icon_globe { @include o-add-icon('globe');}
 .o_icon_grade { @include o-add-icon('star');}
 .o_icon_grade_scale { @include o-add-icon('calculator');}
 .o_icon_graduate { @include o-add-icon('graduation-cap');}
 .o_icon_group, .o_BusinessGroup_icon { @include o-add-icon('users');}
 .o_icon_disclaimer {@include o-add-icon('handshake', false);}
+.o_icon_hand_point_up { @include o-add-icon('hand-point-up');}
 .o_icon_hdd { @include o-add-icon('hdd', false);}
 .o_icon_header { @include o-add-icon('header');}
+.o_icon_heart { @include o-add-icon('heart');}
 .o_icon_help { @include o-add-icon('question-circle'); cursor: help;}
 .o_icon_home { @include o-add-icon('home');}
 .o_icon_image { @include o-add-icon('image');}
@@ -212,12 +227,14 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_list_num { @include o-add-icon('list-ol');}
 .o_icon_lifecycle { @include o-add-icon('power-off');}
 .o_icon_lifecycle_date { @include o-add-icon('calendar');}
+.o_icon_lightbulb { @include o-add-icon('lightbulb');}
 .o_icon_location { @include o-add-icon('map-marker');}
 .o_icon_locked { @include o-add-icon('lock');}
 .o_icon_log { @include o-add-icon('file-text');}
 .o_icon_login { @include o-add-icon('sign-in');}
 .o_icon_logout { @include o-add-icon('sign-out');}
 .o_icon_lrm { @include o-add-icon('university');}
+.o_icon_magnifying_glass { @include o-add-icon('magnifying-glass');}
 .o_icon_mandatory { @include o-add-icon('asterisk'); color: #f0ad4e;}
 .o_icon_managed { @include o-add-icon('retweet'); color: $text-muted}
 .o_icon_manual { @include o-add-icon('book'); cursor: help;}
@@ -278,6 +295,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_passed { @include o-add-icon('check-circle');}
 .o_icon_passed_undefined { @include o-add-icon('dot-circle', false);}
 .o_icon_password { @include o-add-icon('lock');}
+.o_icon_pencil { @include o-add-icon('pencil');}
 .o_icon_pending { @include o-add-icon('spinner');}
 .o_icon_people { @include o-add-icon('people-group');}
 .o_icon_phone { @include o-add-icon('phone');}
@@ -315,6 +333,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_publish { @include o-add-icon('share');}
 .o_icon_pull { @include o-add-icon('hand-back-fist');}
 .o_icon_quota { @include o-add-icon('database');}
+.o_icon_quote_right { @include o-add-icon('quote-right');}
 .o_icon_qrcode { @include o-add-icon('qrcode');}
 .o_icon_quickview { @include o-add-icon('eye');}
 .o_icon_radiation { @include o-add-icon('radiation');}
@@ -390,6 +409,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_sort_amount_asc { @include o-add-icon('sort-amount-asc');}
 .o_icon_sort_amount_desc { @include o-add-icon('sort-amount-desc');}
 .o_icon_sort_menu { @include o-add-icon('sort-amount-asc');}
+.o_icon_star { @include o-add-icon('star');}
 .o_icon_start { @include o-add-icon('chevron-right');}
 .o_icon_status_available { @include o-add-icon('circle'); color: $o-im-status-available-color;}
 .o_icon_status_chat { @include o-add-icon('comment');}
@@ -438,6 +458,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_template { @include o-add-icon('object-group');}
 .o_icon_text { @include o-add-icon('font');}
 .o_icon_textinput { @include o-add-icon('align-left');}
+.o_icon_thumbtack { @include o-add-icon('thumbtack');}
 .o_icon_tip { @include o-add-icon('hand-point-up');}
 .o_icon_time { @include o-add-icon('clock', false);}
 .o_icon_timelimit { @include o-add-icon('clock', false);}
@@ -455,6 +476,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_tool_pdf { @include o-add-icon('file-pdf', false);}
 .o_icon_tools { @include o-add-icon('wrench');}
 .o_icon_top { @include o-add-icon('chevron-up');}
+.o_icon_triangle_exclamation { @include o-add-icon('triangle-exclamation');}
 .o_icon_translation_item { @include o-add-icon('file-code', false);}
 .o_icon_translation_package { @include o-add-icon('folder-open', false);}
 .o_icon_trophy { @include o-add-icon('trophy'); color: gold;}

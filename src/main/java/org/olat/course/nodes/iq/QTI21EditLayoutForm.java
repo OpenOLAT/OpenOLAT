@@ -279,9 +279,8 @@ public class QTI21EditLayoutForm extends FormBasicController {
 			showFeedbacksEl.select(onKeys[0], true);
 		}
 		
-		if(!configRef) {
-			uifactory.addFormSubmitButton("submit", formLayout);
-		}
+		uifactory.addFormSubmitButton("submit", formLayout);
+
 		update();
 	}
 	
@@ -372,7 +371,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 						modConfig.remove(IQEditController.CONFIG_KEY_TIME_LIMIT);
 					}
 				}
-				fireEvent(ureq, Event.DONE_EVENT);
+				fireEvent(ureq, new QTI21EditLayoutEvent(QTI21EditLayoutEvent.CHANGE_CONFIG_REFERENCE));
 			}
 		} else if(maxTimeEl == source) {
 			maxTimeCont.setVisible(maxTimeEl.isAtLeastSelected(1));
