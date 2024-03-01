@@ -34,6 +34,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.user.DefaultUser;
 import org.olat.user.UserImpl;
@@ -88,7 +89,9 @@ public class SetupModule extends AbstractSpringModule {
 	 */
 	@Override
 	public void event(org.olat.core.gui.control.Event event) {
-		setup();
+		if(event instanceof FrameworkStartedEvent) {
+			setup();
+		}
 	}
 	
 	protected void setup() {
@@ -115,7 +118,7 @@ public class SetupModule extends AbstractSpringModule {
 	 */
 	private Identity createUser(DefaultUser user) {
 		Identity identity;
-		identity = securityManager.findIdentityByLogin(user.getUserName());
+		identity = securityManager.findIdentityByUsername(user.getUserName());
 		if (identity == null) {
 			// Create new user and subject
 			UserImpl newUser = new UserImpl();
@@ -132,12 +135,9 @@ public class SetupModule extends AbstractSpringModule {
 
 			// Now finally create that user thing on the database with all
 			// credentials, person etc. in one transaction context!
-			String legacyName = null;
-			if(user.isAdmin() || user.isSysAdmin() || user.isGuest()) {
-				legacyName = user.getUserName();
-			}
-			identity = securityManager.createAndPersistIdentityAndUser(legacyName, user.getUserName(), null, newUser,
-					authenticationProviderConstant, BaseSecurity.DEFAULT_ISSUER, null,
+			String authProvider = StringHelper.containsNonWhitespace(user.getPassword()) ? authenticationProviderConstant : null;
+			identity = securityManager.createAndPersistIdentityAndUser(user.getUserName(), user.getUserName(), null, newUser,
+					authProvider, BaseSecurity.DEFAULT_ISSUER, null,
 					user.getUserName(), user.getPassword(), null);
 
 			if (identity == null) {
