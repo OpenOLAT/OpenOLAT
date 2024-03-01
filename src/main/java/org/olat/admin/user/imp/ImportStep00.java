@@ -26,6 +26,7 @@ package org.olat.admin.user.imp;
 
 import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
 
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,14 +54,19 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.media.ExcelMediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorkbookResource;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.auth.OLATAuthManager;
@@ -169,7 +175,7 @@ class ImportStep00 extends BasicStep {
 				return true;
 			}
 
-			String defaultlang = i18nModule.getDefaultLocale().toString();
+			String defaultlang = I18nModule.getDefaultLocale().toString();
 			List<String> importedEmails = new ArrayList<>();
 			List<String> importedInstitutionalEmails = new ArrayList<>();
 
@@ -545,7 +551,7 @@ class ImportStep00 extends BasicStep {
 			textContainer.contextPut("canCreateOLATPassword", userImportContext.canCreateOLATPassword());
 
 			userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
-			excelMapper = createMapper(ureq);
+			excelMapper = createMapper();
 			String mapperURI = registerMapper(ureq, excelMapper);
 			textContainer.contextPut("mapperURI", mapperURI);
 
@@ -581,43 +587,14 @@ class ImportStep00 extends BasicStep {
 		 * 
 		 * @return
 		 */
-		private Mapper createMapper(UserRequest ureq) {
-			final String charset = um.getUserCharset(ureq.getIdentity());
+		private Mapper createMapper() {
 			return (relPath, request) -> {
-				setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
-				StringBuilder headerLine = new StringBuilder(1024);
-				headerLine.append(translate("table.user.login")).append(" *");
-				StringBuilder dataLine = new StringBuilder();
-				dataLine.append("demo");
-				if (userImportContext.canCreateOLATPassword()) {
-					headerLine.append("\t").append(translate("table.user.pwd"));
-					dataLine.append("\t").append("olat4you");
-				}
-				headerLine.append("\t").append(translate("table.user.lang"));
-				dataLine.append("\t").append(i18nModule.getLocaleKey(getLocale()));
-				for (int i = 0; i < userPropertyHandlers.size(); i++) {
-					UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
-					headerLine.append("\t").append(translate(userPropertyHandler.i18nColumnDescriptorLabelKey()));
-					if (um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler)) {
-						headerLine.append(" *");
-					}
-					dataLine.append("\t").append(translate("import.example.".concat(userPropertyHandler.getName())));
-				}
-				
-				headerLine.append("\t").append(translate("table.user.expiration"));
-				String dateExample = Formatter.getInstance(getLocale()).formatDate(ureq.getRequestTimestamp());
-				dataLine.append("\t").append(dateExample);
-				
-				String writeToFile = headerLine
-						.append("\n").append(dataLine)
-						.toString();
-				ExcelMediaResource emr = new ExcelMediaResource(writeToFile, charset);
-				emr.setFilename("UserImportExample");
-				return emr;
+				Translator translator = um.getPropertyHandlerTranslator(getTranslator());
+				return new ExampleWorkbook("UserImportExample.xlsx", translator);
 			};
 		}
 		
-		private class ErrorLine {
+		private static class ErrorLine {
 			private final int line;
 			private final String errorMsg;
 			
@@ -632,6 +609,65 @@ class ImportStep00 extends BasicStep {
 
 			public String getErrorMsg() {
 				return errorMsg;
+			}
+		}
+		
+		private class ExampleWorkbook extends OpenXMLWorkbookResource {
+			
+			private final Translator translator;
+			
+			public ExampleWorkbook(String name, Translator translator) {
+				super(name);
+				this.translator = translator;
+			}
+
+			@Override
+			protected void generate(OutputStream out) {
+				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+					OpenXMLWorksheet sheet = workbook.nextWorksheet();
+					sheet.setHeaderRows(1);
+					generateHeaders(sheet);
+					generateData(sheet);
+				} catch (Exception e) {
+					logError("", e);
+				}
+			}
+			
+			protected void generateHeaders(OpenXMLWorksheet sheet) {
+				int count = 0;
+				Row headerRow = sheet.newRow();
+				headerRow.addCell(count++, translator.translate("table.user.login"));
+				if (userImportContext.canCreateOLATPassword()) {
+					headerRow.addCell(count++, translator.translate("table.user.pwd"));
+				}
+				headerRow.addCell(count++, translator.translate("table.user.lang"));
+				
+				for (UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+					String header = translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey());
+					if (um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler)) {
+						header += " *";
+					}
+					headerRow.addCell(count++, header);
+				}
+				headerRow.addCell(count, translator.translate("table.user.expiration"));
+			}
+			
+			protected void generateData(OpenXMLWorksheet sheet) {
+				int count = 0;
+				Row row = sheet.newRow();
+				row.addCell(count++, "demo");
+				if (userImportContext.canCreateOLATPassword()) {
+					row.addCell(count++, "olat4you");
+				}
+				row.addCell(count++, i18nModule.getLocaleKey(getLocale()));
+				
+				for (UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+					row.addCell(count++, translator.translate("import.example.".concat(userPropertyHandler.getName())));
+				}
+				
+				Date date = DateUtils.addDays(new Date(), 60);
+				String dateExample = Formatter.getInstance(getLocale()).formatDate(date);
+				row.addCell(count, dateExample);
 			}
 		}
 	}
