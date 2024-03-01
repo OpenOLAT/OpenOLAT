@@ -45,6 +45,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 	
 	public interface DataCollectionDataSourceUIFactory {
 		
+		public void forgeTopicItem(DataCollectionRow row);
 		public void forgeToDosLink(DataCollectionRow row);
 		
 	}
@@ -105,6 +106,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 		List<DataCollectionRow> rows = new ArrayList<>();
 		for (QualityDataCollectionView dataCollection : dataCollections) {
 			DataCollectionRow row = new DataCollectionRow(dataCollection);
+			uiFactory.forgeTopicItem(row);
 			uiFactory.forgeToDosLink(row);
 			rows.add(row);
 		}

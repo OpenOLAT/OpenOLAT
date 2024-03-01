@@ -66,7 +66,7 @@ public class PreviewDataModel extends DefaultFlexiTableDataModel<PreviewRow> imp
 		case start: return row.getStart();
 		case deadline: return row.getDeadline();
 		case topicType: return row.getTopicType();
-		case topic: return row.getTopic();
+		case topic: return row.getTopicItem();
 		case formName: return row.getFormName();
 		case numberParticipants: return row.getNumberParticipants();
 		case generatorId: return row.getGeneratorId();

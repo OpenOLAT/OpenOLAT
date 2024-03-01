@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,6 +42,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -66,6 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PreviewConfigurationController extends FormBasicController {
 	
 	private static final DateFormat startCompareFormat = new SimpleDateFormat("yyyyMMddhhmm");
+	private static final String CMD_TOPIC = "topic";
 	
 	private final TooledStackedPanel stackPanel;
 	private FormLink evaFormPreviewLink;
@@ -98,7 +101,7 @@ public class PreviewConfigurationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		uifactory.addStaticTextElement("data.collection.title", preview.getTitle(), formLayout);
+		uifactory.addStaticTextElement("data.collection.title", StringHelper.escapeHtml(preview.getTitle()), formLayout);
 		
 		startEl = uifactory.addDateChooser("data.collection.start", preview.getStart(), formLayout);
 		startEl.setDateChooserTimeEnabled(true);
@@ -121,13 +124,36 @@ public class PreviewConfigurationController extends FormBasicController {
 		
 		uifactory.addStaticTextElement("data.collection.topic.type.select", translate(preview.getTopicType().getI18nKey()), formLayout);
 		
-		uifactory.addStaticTextElement("data.collection.topic.custom.text", getTopic(preview), formLayout);
+		addTopicItem(formLayout);
 		
 		buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		resetLink = uifactory.addFormLink("preview.reset", buttonLayout, Link.BUTTON);
+	}
+
+	private void addTopicItem(FormItemContainer formLayout) {
+		String topic = StringHelper.escapeHtml(getTopic(preview));
+		if (preview.getTopicRepositoryEntry() != null ) {
+			FormLink link = uifactory.addFormLink("topic", CMD_TOPIC, "", translate("data.collection.topic.custom.text"), formLayout, Link.NONTRANSLATED);
+			link.setI18nKey(topic);
+			String businessPath = "[RepositoryEntry:" + preview.getTopicRepositoryEntry().getKey() + "]";
+			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+			link.setUrl(url);
+			link.setUserObject(businessPath);
+		} else if (preview.getTopicCurriculumElement() != null ) {
+			FormLink link = uifactory.addFormLink("topic", CMD_TOPIC, "", translate("data.collection.topic.custom.text"), formLayout, Link.NONTRANSLATED);
+			link.setI18nKey(topic);
+			String businessPath = "[CurriculumAdmin:0][Curriculum:"
+					+ preview.getTopicCurriculumElement().getCurriculum().getKey() + "][CurriculumElement:"
+					+ preview.getTopicCurriculumElement().getKey() + "]";
+			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+			link.setUrl(url);
+			link.setUserObject(businessPath);
+		} else {
+			uifactory.addStaticTextElement("data.collection.topic.custom.text", getTopic(preview), formLayout);
+		}
 	}
 	
 	private String getTopic(QualityPreview preview) {
@@ -155,6 +181,11 @@ public class PreviewConfigurationController extends FormBasicController {
 			doPreviewEvaluationForm(ureq);
 		} else if (source == resetLink) {
 			doReset();
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if (CMD_TOPIC.equals(link.getCmd()) && link.getUserObject() instanceof String businessPath) {
+				doOpenTopic(ureq, businessPath);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -215,6 +246,12 @@ public class PreviewConfigurationController extends FormBasicController {
 		DataStorage storage = evaluationFormManager.loadStorage(reloadedFormEntry);
 		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null);
 		stackPanel.pushController(translate("data.collection.form.preview.title"), previewCtrl);
+	}
+	
+	private void doOpenTopic(UserRequest ureq, String businessPath) {
+		if (businessPath != null) {
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		}
 	}
 
 }
