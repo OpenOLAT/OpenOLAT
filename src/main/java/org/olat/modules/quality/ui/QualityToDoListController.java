@@ -197,6 +197,11 @@ public class QualityToDoListController extends ToDoTaskListController {
 			return canEdit(toDoTask, creator, assignee, delegatee);
 		}
 		
+		@Override
+		public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return false;
+		}
+		
 	}
 
 }

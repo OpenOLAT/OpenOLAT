@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -70,6 +71,7 @@ public class AssessmentInspectionSmallOverviewController extends FormBasicContro
 	private FormLink activeLink;
 	private FormLink scheduledLink;
 	private FormLink inProgressLink;
+	private EmptyStateItem emptyStateEl;
 	private FlexiTableElement activeTable;
 	private FlexiTableElement scheduledTable;
 	private FlexiTableElement inProgressTable;
@@ -122,6 +124,11 @@ public class AssessmentInspectionSmallOverviewController extends FormBasicContro
 		inProgressLink = uifactory.addFormLink("link.scheduled", "overview.small.link.scheduled.plural", null, formLayout,
 				Link.LINK | Link.NONTRANSLATED);
 		inProgressLink.setIconLeftCSS("o_icon o_icon-fw o_icon_assessment_inspection_inprogress");
+		
+		emptyStateEl = uifactory.addEmptyState("no.inspections", null, formLayout);
+		emptyStateEl.setIconCss("o_icon o_icon_inspection");
+		emptyStateEl.setMessageI18nKey("empty.inspections");
+		emptyStateEl.setVisible(false);
 
 		initInProgressForm(formLayout);
 		initScheduledForm(formLayout);
@@ -235,6 +242,8 @@ public class AssessmentInspectionSmallOverviewController extends FormBasicContro
 		String i18n = inProgressRows.size() == 1 ? "overview.small.link.in.progress.singular" : "overview.small.link.in.progress.plural";
 		inProgressLink.setI18nKey(translate(i18n, Integer.toString(inProgressRows.size())));
 		inProgressLink.setVisible(!inProgressRows.isEmpty());
+		
+		emptyStateEl.setVisible(activeRows.isEmpty() && scheduledRows.isEmpty() && inProgressRows.isEmpty());
 		
 		flc.setDirty(true);
 	}

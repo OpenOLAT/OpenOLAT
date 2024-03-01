@@ -20,7 +20,6 @@
 package org.olat.modules.quality.generator.ui;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -45,17 +44,11 @@ public class PreviewRowSortDelegate extends SortableFlexiTableModelDelegate<Prev
 		int columnIndex = getColumnIndex();
 		PreviewCols column = PreviewCols.values()[columnIndex];
 		switch(column) {
-			case status: Collections.sort(rows, new StatusComporator()); break;
+			case status: Collections.sort(rows, (r1, r2) -> compareString(r1.getTranslatedStatus(), r2.getTranslatedStatus())); break;
+			case topic: Collections.sort(rows, (r1, r2) -> compareString(r1.getTopic(), r2.getTopic())); break;
 			default: {
 				super.sort(rows);
 			}
-		}
-	}
-	
-	private class StatusComporator implements Comparator<PreviewRow> {
-		@Override
-		public int compare(PreviewRow r1, PreviewRow r2) {
-			return compareString(r1.getTranslatedStatus(), r2.getTranslatedStatus());
 		}
 	}
 

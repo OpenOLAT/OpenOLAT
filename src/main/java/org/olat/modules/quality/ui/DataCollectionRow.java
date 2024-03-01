@@ -21,6 +21,7 @@ package org.olat.modules.quality.ui;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionView;
@@ -34,6 +35,8 @@ import org.olat.modules.quality.QualityDataCollectionView;
 class DataCollectionRow {
 
 	private final QualityDataCollectionView dataCollectionView;
+	private String topicBusinessPath;
+	private FormItem topicItem;
 	private FormLink toDosItem;
 
 	public DataCollectionRow(QualityDataCollectionView dataCollectionView) {
@@ -80,6 +83,18 @@ class DataCollectionRow {
 		return dataCollectionView.getTopic();
 	}
 	
+	Long getTopicRepositoryKey() {
+		return dataCollectionView.getTopicRepositoryKey();
+	}
+	
+	Long getTopicCurriculumElementKey() {
+		return dataCollectionView.getTopicCurriculumElementKey();
+	}
+	
+	Long getTopicCurriculumElementCurriculumKey() {
+		return dataCollectionView.getTopicCurriculumElementCurriculumKey();
+	}
+	
 	Long getNumberOfParticipants() {
 		return dataCollectionView.getNumberOfParticipants();
 	}
@@ -98,6 +113,22 @@ class DataCollectionRow {
 
 	Long getNumToDoTasksTotal() {
 		return dataCollectionView.getNumToDoTaskTotal();
+	}
+
+	public String getTopicBusinessPath() {
+		return topicBusinessPath;
+	}
+
+	public void setTopicBusinessPath(String topicBusinessPath) {
+		this.topicBusinessPath = topicBusinessPath;
+	}
+
+	FormItem getTopicItem() {
+		return topicItem;
+	}
+
+	void setTopicItem(FormItem topicItem) {
+		this.topicItem = topicItem;
 	}
 
 	FormLink getToDosItem() {

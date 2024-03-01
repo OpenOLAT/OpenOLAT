@@ -37,4 +37,6 @@ public interface ToDoTaskSecurityCallback {
 	
 	public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee);
 
+	public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee);
+	
 }

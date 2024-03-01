@@ -36,6 +36,7 @@ import org.olat.course.todo.CourseToDoContextFilter;
 import org.olat.course.todo.CourseToDoService;
 import org.olat.course.todo.ui.CourseToDoUIFactory;
 import org.olat.modules.todo.ToDoContext;
+import org.olat.modules.todo.ToDoMailRule;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoService;
@@ -58,7 +59,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class CourseCollectionElementToDoTaskProvider implements ToDoProvider {
+public class CourseCollectionElementToDoTaskProvider implements ToDoProvider, ToDoMailRule {
 
 	public static final String TYPE = "course.todo.collection.element";
 	static final ToDoRight[] ASSIGNEE_RIGHTS = new ToDoRight[] {ToDoRight.status};
@@ -101,6 +102,21 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider {
 	}
 
 	@Override
+	public ToDoMailRule getToDoMailRule(ToDoTask toDoTask) {
+		return this;
+	}
+
+	@Override
+	public boolean isSendAssignmentEmail(boolean byMyself, boolean isAssignedOrDelegated, boolean wasAssignedOrDelegated) {
+		return isAssignedOrDelegated && !wasAssignedOrDelegated;
+	}
+
+	@Override
+	public boolean isSendDoneEmail() {
+		return true;
+	}
+
+	@Override
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath,
 			ToDoStatus status) {
 		updateStatus(doer, toDoTask, status);
@@ -115,6 +131,11 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider {
 	@Override
 	public boolean isCopyable() {
 		return false;
+	}
+	
+	@Override
+	public boolean isRestorable() {
+		return true;
 	}
 
 	@Override
@@ -166,7 +187,7 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider {
 	}
 	
 	private void updateStatus(Identity doer, ToDoTaskRef toDoTask, ToDoStatus status) {
-		ToDoTask reloadedToDoTask = getToDoTask(toDoTask, true);
+		ToDoTask reloadedToDoTask = getToDoTask(toDoTask, false);
 		if (reloadedToDoTask == null) {
 			return;
 		}

@@ -65,6 +65,8 @@ public interface ToDoProvider {
 
 	public boolean isCopyable();
 	
+	public boolean isRestorable();
+	
 	public default boolean isCopyWizard() {
 		return false;
 	}

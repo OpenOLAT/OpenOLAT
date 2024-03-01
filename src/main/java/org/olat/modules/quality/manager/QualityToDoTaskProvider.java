@@ -103,6 +103,11 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider, ToDoConte
 	public boolean isCopyable() {
 		return true;
 	}
+	
+	@Override
+	public boolean isRestorable() {
+		return false;
+	}
 
 	@Override
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTaskRef, Long originId, String originSubPath, ToDoStatus status) {

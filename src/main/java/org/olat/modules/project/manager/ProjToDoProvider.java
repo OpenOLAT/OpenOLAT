@@ -137,6 +137,11 @@ public class ProjToDoProvider implements ToDoProvider, ToDoContextFilter {
 	public boolean isCopyable() {
 		return true;
 	}
+	
+	@Override
+	public boolean isRestorable() {
+		return false;
+	}
 
 	@Override
 	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,

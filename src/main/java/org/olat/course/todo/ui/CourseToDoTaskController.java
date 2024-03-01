@@ -46,6 +46,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.todo.CourseToDoService;
+import org.olat.course.todo.manager.CourseCollectionElementToDoTaskProvider;
 import org.olat.course.todo.manager.CourseCollectionToDoTaskProvider;
 import org.olat.course.todo.manager.CourseIndividualToDoTaskProvider;
 import org.olat.modules.todo.ToDoService;
@@ -72,6 +73,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseToDoTaskController extends ToDoTaskListController {
 
+	public static final Collection<String> PROVIDER_TYPES = List.of(
+			CourseIndividualToDoTaskProvider.TYPE,
+			CourseCollectionElementToDoTaskProvider.TYPE);
+	public static final Collection<String> GROUP_PROVIDER_TYPES = List.of(
+			CourseCollectionToDoTaskProvider.TYPE);
 	private static final String GUIPREF_KEY_LAST_VISIT = "course.todos.last.visit";
 	private static final String CMD_ADD_ASSIGNEES = "add.assignees";
 	private static final String CMD_TO_COLLECTION = "to.collection";
@@ -183,7 +189,7 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 
 	@Override
 	protected Collection<String> getTypes() {
-		return CourseToDoService.COURSE_PROVIDER_TYPES;
+		return PROVIDER_TYPES;
 	}
 
 	@Override
@@ -191,6 +197,14 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setOriginIds(List.of(repositoryEntry.getKey()));
 		searchParams.setTypes(getTypes());
+		return searchParams;
+	}
+	
+	@Override
+	protected ToDoTaskSearchParams createGroupSearchParams() {
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setOriginIds(List.of(repositoryEntry.getKey()));
+		searchParams.setTypes(GROUP_PROVIDER_TYPES);
 		return searchParams;
 	}
 	
@@ -204,6 +218,7 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 				return false;
 			});
 		}
+		super.applyFilters(rows);
 	}
 	
 	@Override
@@ -396,8 +411,11 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 
 		@Override
 		public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return ToDoStatus.deleted != toDoTask.getStatus() && canEdit(toDoTask, creator);
+		}
+		
+		public boolean canEdit(ToDoTask toDoTask, boolean creator) {
 			return !readOnly
-					&&ToDoStatus.deleted != toDoTask.getStatus()
 					&& !toDoTask.isOriginDeleted()
 					&& isNotCollectionCreatedByOtherCoach(toDoTask, creator);
 		}
@@ -414,6 +432,11 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 		@Override
 		public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 			return canEdit(toDoTask, creator, assignee, delegatee);
+		}
+		
+		@Override
+		public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return ToDoStatus.deleted == toDoTask.getStatus() && canEdit(toDoTask, creator);
 		}
 		
 	}

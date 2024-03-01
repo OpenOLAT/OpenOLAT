@@ -47,14 +47,18 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	private final QualityDataCollectionTopicType topicType;
 	private final String translatedTopicType;
 	private final String topic;
+	private final Long topicRepositoryKey;
+	private final Long topicCurriculumElementKey;
+	private final Long topicCurriculumElementCurriculumKey;
 	private final String previousTitle;
 	private final Long numberOfParticipants;
 	private final Long numToDoTaskDone;
 	private final Long numToDoTaskTotal;
 	
 	public QualityDataCollectionViewImpl(Long key, QualityDataCollectionStatus status, String title, Date start,
-			Date deadline, boolean qualitativeFeedback, Date creationDate, Long generatorKey, String generatorTitle, String formName,
-			QualityDataCollectionTopicType topicType, String translatedTopicType, String topic,
+			Date deadline, boolean qualitativeFeedback, Date creationDate, Long generatorKey, String generatorTitle,
+			String formName, QualityDataCollectionTopicType topicType, String translatedTopicType, String topic,
+			Long topicRepositoryKey, Long topicCurriculumElementKey, Long topicCurriculumElementCurriculumKey,
 			String previousTitle, Long numberOfParticipants, Long numToDoTaskDone, Long numToDoTaskTotal) {
 		super();
 		this.key = key;
@@ -70,6 +74,9 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 		this.topicType = topicType;
 		this.translatedTopicType = translatedTopicType;
 		this.topic = topic;
+		this.topicRepositoryKey = topicRepositoryKey;
+		this.topicCurriculumElementKey = topicCurriculumElementKey;
+		this.topicCurriculumElementCurriculumKey = topicCurriculumElementCurriculumKey;
 		this.previousTitle = previousTitle;
 		this.numberOfParticipants = numberOfParticipants;
 		this.numToDoTaskDone = numToDoTaskDone;
@@ -149,6 +156,21 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	@Override
 	public String getTopic() {
 		return topic;
+	}
+
+	@Override
+	public Long getTopicRepositoryKey() {
+		return topicRepositoryKey;
+	}
+
+	@Override
+	public Long getTopicCurriculumElementKey() {
+		return topicCurriculumElementKey;
+	}
+
+	@Override
+	public Long getTopicCurriculumElementCurriculumKey() {
+		return topicCurriculumElementCurriculumKey;
 	}
 
 	@Override

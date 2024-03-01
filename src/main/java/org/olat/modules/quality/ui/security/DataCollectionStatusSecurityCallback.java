@@ -163,4 +163,9 @@ class DataCollectionStatusSecurityCallback implements DataCollectionSecurityCall
 		return ToDoStatus.deleted != toDoTask.getStatus();
 	}
 
+	@Override
+	public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+		return false;
+	}
+
 }

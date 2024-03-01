@@ -24,10 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.course.todo.manager.CourseCollectionElementToDoTaskProvider;
-import org.olat.course.todo.manager.CourseCollectionToDoTaskProvider;
 import org.olat.course.todo.manager.CourseIndividualToDoTaskProvider;
+import org.olat.modules.todo.ToDoStatus;
+import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoTaskRow;
 import org.olat.modules.todo.ui.ToDoTaskRowGrouping;
 
@@ -56,26 +60,45 @@ public class CourseToDoTaskRowGrouping implements ToDoTaskRowGrouping {
 	}
 
 	@Override
-	public List<ToDoTaskRow> group(List<ToDoTaskRow> rows, Locale locale) {
+	public List<ToDoTaskRow> group(List<ToDoTaskRow> rows, List<ToDoTaskRow> groupCandiatades, FlexiFiltersTab selectedTab, Locale locale) {
+		Map<Long, ToDoTaskRow> candidateKeyToRow = groupCandiatades.stream().collect(Collectors.toMap(ToDoTaskRow::getKey, Function.identity()));
+		
 		List<ToDoTaskRow> groupRows = new ArrayList<>();
 		Map<Long, ToDoTaskRow> collectionKeyToGroupRow = new HashMap<>();
 		
 		for (ToDoTaskRow row : rows) {
 			if (CourseIndividualToDoTaskProvider.TYPE.equals(row.getType())) {
 				groupRows.add(row);
-			} else if (CourseCollectionToDoTaskProvider.TYPE.equals(row.getType())) {
-				groupRows.add(row);
-				row.setGroup(true);
-				row.clearChildren();
-				collectionKeyToGroupRow.put(row.getKey(), row);
+			} else if (CourseCollectionElementToDoTaskProvider.TYPE.equals(row.getType())) {
+				ToDoTaskRow collectionRow = collectionKeyToGroupRow.get(row.getCollectionKey());
+				if (collectionRow == null) {
+					collectionRow = candidateKeyToRow.get(row.getCollectionKey());
+					if (collectionRow != null) {
+						groupRows.add(collectionRow);
+						collectionRow.setGroup(true);
+						collectionRow.clearChildren();
+						collectionKeyToGroupRow.put(row.getCollectionKey(), collectionRow);
+					}
+				}
+				if (collectionRow != null) {
+					collectionRow.addChild(row);
+				}
 			}
 		}
 		
-		for (ToDoTaskRow row : rows) {
-			if (CourseCollectionElementToDoTaskProvider.TYPE.equals(row.getType())) {
-				ToDoTaskRow collectionRow = collectionKeyToGroupRow.get(row.getCollectionKey());
-				if (collectionRow != null) {
-					collectionRow.addChild(row);
+		// Add empty collections at the end for the sake of completeness.
+		if (showEmptyGroups && selectedTab != null) {
+			for (ToDoTaskRow toDoTaskRow : groupCandiatades) {
+				if (!collectionKeyToGroupRow.containsKey(toDoTaskRow.getKey())) {
+					if (ToDoTaskListController.TAB_ID_ALL.equals(selectedTab.getId())) {
+						if (ToDoStatus.deleted != toDoTaskRow.getStatus()) {
+							groupRows.add(toDoTaskRow);
+						}
+					} else if (ToDoTaskListController.TAB_ID_DELETED.equals(selectedTab.getId())) {
+						if (ToDoStatus.deleted == toDoTaskRow.getStatus()) {
+							groupRows.add(toDoTaskRow);
+						}
+					}
 				}
 			}
 		}

@@ -108,7 +108,11 @@ public abstract class GTAToDoProvider implements ToDoProvider, ToDoMailRule {
 	public boolean isCopyable() {
 		return false;
 	}
-
+	
+	@Override
+	public boolean isRestorable() {
+		return false;
+	}
 
 	@Override
 	public Controller createCopyController(UserRequest ureq, WindowControl wControl, Identity doer,

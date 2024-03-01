@@ -27,7 +27,6 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Disposable;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.ceditor.ui.model.PageFragment;
@@ -105,12 +104,7 @@ public class PageFragmentsComponent extends AbstractComponent implements Compone
 
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
-		String fragment = ureq.getParameter("fragment");
-		if ("toggle_collapsed".equals(cmd)) {
-			fragments.stream().filter(f -> f.getElementId().equals(fragment)).forEach(f -> f.setCollapsed(!f.isCollapsed()));
-			setDirty(true);
-		}
+		//
 	}
 
 	@Override

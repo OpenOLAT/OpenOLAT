@@ -24,9 +24,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -38,6 +41,8 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -51,6 +56,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.scope.DateScope;
 import org.olat.core.gui.components.scope.FormDateScopeSelection;
 import org.olat.core.gui.components.scope.ScopeFactory;
@@ -63,6 +69,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.DateRange;
@@ -70,7 +77,10 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.project.ProjDecisionFilter;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
@@ -101,6 +111,7 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 	private enum PreviewFilter { form, generator, title, topicType, topic, status }
 	
 	private static final String CMD_OPEN = "open";
+	private static final String CMD_TOPIC = "topic";
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_COURSE = "Course";
 	private static final String TAB_ID_CURRICULUM_ELEMENT = "CurriculumElement";
@@ -118,6 +129,8 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 	private PreviewController previewCtrl;
 	private DataCollectionController dataCollectionCtrl;
 	
+	private int counter = 0;
+	
 	@Autowired
 	private QualityService qualityService;
 	@Autowired
@@ -128,6 +141,8 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 	private RepositoryEntryLifecycleDAO reLifecycleDao;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private CurriculumService curriculumService;
 
 	protected AbstractPreviewListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -308,11 +323,13 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		}
 		
 		applyFilters(rows);
+		appendTopicCurriculumElementCurriculumKeys(rows);
+		forgeTopicItems(rows);
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 	}
-	
+
 	private boolean isAllRestricted() {
 		return getRestrictRepositoryEntries() != null && getRestrictRepositoryEntries().isEmpty()
 				&& getRestrictCurriculumElements() != null && getRestrictCurriculumElements().isEmpty();
@@ -331,6 +348,12 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 			row.setTranslatedStatus(getTranslatedStatus(row.getStatus()));
 			row.setTopicType(translate(preview.getTopicType().getI18nKey()));
 			row.setTopic(getTopic(preview));
+			if (preview.getTopicRepositoryEntry() != null) {
+				row.setTopicRepositoryKey(preview.getTopicRepositoryEntry().getKey());
+			}
+			if (preview.getTopicCurriculumElement() != null) {
+				row.setTopicCurriculumElementKey(preview.getTopicCurriculumElement().getKey());
+			}
 			
 			rows.add(row);
 		}
@@ -457,6 +480,50 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		default -> null;
 		};
 	}
+	
+	private void appendTopicCurriculumElementCurriculumKeys(List<PreviewRow> rows) {
+		List<? extends CurriculumElementRef> elementRefs = rows.stream()
+				.map(PreviewRow::getTopicCurriculumElementKey)
+				.filter(Objects::nonNull)
+				.distinct()
+				.map(CurriculumElementRefImpl::new)
+				.toList();
+		Map<Long, Long> curriculumElementKeyToCurriculumKey = curriculumService.getCurriculumElements(elementRefs).stream()
+				.collect(Collectors.toMap(CurriculumElement::getKey, element -> element.getCurriculum().getKey()));
+		for (PreviewRow row : rows) {
+			if (row.getTopicCurriculumElementKey() != null) {
+				Long topicCurriculumElementCurriculumKey = curriculumElementKeyToCurriculumKey.get(row.getTopicCurriculumElementKey());
+				row.setTopicCurriculumElementCurriculumKey(topicCurriculumElementCurriculumKey);
+			}
+		}
+	}
+
+	private void forgeTopicItems(List<PreviewRow> rows) {
+		for (PreviewRow row : rows) {
+			if (row.getTopicRepositoryKey() != null ) {
+				FormLink link = uifactory.addFormLink("topic_" + counter++, CMD_TOPIC, "", null, null, Link.NONTRANSLATED);
+				link.setI18nKey(StringHelper.escapeHtml(row.getTopic()));
+				String businessPath = "[RepositoryEntry:" + row.getTopicRepositoryKey() + "]";
+				row.setTopicBusinessPath(businessPath);
+				String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+				link.setUrl(url);
+				link.setUserObject(row);
+				row.setTopicItem(link);
+			} else if (row.getTopicCurriculumElementKey() != null ) {
+				FormLink link = uifactory.addFormLink("topic_" + counter++, CMD_TOPIC, "", null, null, Link.NONTRANSLATED);
+				link.setI18nKey(StringHelper.escapeHtml(row.getTopic()));
+				String businessPath = "[CurriculumAdmin:0][Curriculum:" + row.getTopicCurriculumElementCurriculumKey() + "][CurriculumElement:" + row.getTopicCurriculumElementKey() + "]";
+				row.setTopicBusinessPath(businessPath);
+				String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+				link.setUrl(url);
+				link.setUserObject(row);
+				row.setTopicItem(link);
+			} else {
+				StaticTextElement topicItem = uifactory.addStaticTextElement("topic_" + counter++, null, StringHelper.escapeHtml(row.getTopic()), null);
+				row.setTopicItem(topicItem);
+			}
+		}
+	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -496,6 +563,11 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 			}
 		} else if (source == scopeEl) {
 			loadModel();
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if (CMD_TOPIC.equals(link.getCmd()) && link.getUserObject() instanceof PreviewRow row) {
+				doOpenTopic(ureq, row);
+			} 
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -543,6 +615,12 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 			showWarning("preview.error.not.available");
 			loadModel();
 			return;
+		}
+	}
+	
+	private void doOpenTopic(UserRequest ureq, PreviewRow row) {
+		if (row.getTopicBusinessPath() != null) {
+			NewControllerFactory.getInstance().launch(row.getTopicBusinessPath(), ureq, getWindowControl());
 		}
 	}
 

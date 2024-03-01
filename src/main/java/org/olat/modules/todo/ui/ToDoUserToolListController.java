@@ -210,6 +210,11 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 					&& ToDoRight.contains(toDoTask.getAssigneeRights(), ToDoRight.delete);
 		}
 		
+		@Override
+		public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return false;
+		}
+		
 	}
 
 }

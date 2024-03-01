@@ -69,7 +69,7 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 			case start: return dataCollectionRow.getStart();
 			case deadline: return dataCollectionRow.getDeadline();
 			case topicType: return dataCollectionRow.getTopicType();
-			case topic: return dataCollectionRow.getTopic();
+			case topic: return dataCollectionRow.getTopicItem();
 			case formName: return dataCollectionRow.getFormName();
 			case qualitativeFeedback: return dataCollectionRow.isQualitativeFeedback();
 			case numberParticipants: return dataCollectionRow.getNumberOfParticipants();

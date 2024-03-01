@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.ui;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.generator.QualityPreview;
 import org.olat.modules.quality.generator.QualityPreviewStatus;
@@ -42,6 +43,11 @@ public class PreviewRow {
 	private final Date deadline;
 	private String topicType;
 	private String topic;
+	private Long topicRepositoryKey;
+	private Long topicCurriculumElementKey;
+	private Long topicCurriculumElementCurriculumKey;
+	private String topicBusinessPath;
+	private FormItem topicItem;
 	private final String formName;
 	private final Long numberParticipants;
 	private final Long generatorId;
@@ -71,6 +77,8 @@ public class PreviewRow {
 		deadline = dataCollection.getDeadline();
 		topicType = dataCollection.getTranslatedTopicType();
 		topic = dataCollection.getTopic();
+		topicRepositoryKey = dataCollection.getTopicRepositoryKey();
+		topicCurriculumElementKey = dataCollection.getTopicCurriculumElementKey();
 		formName = dataCollection.getFormName();
 		numberParticipants = dataCollection.getNumberOfParticipants();
 		generatorId = dataCollection.getGeneratorKey();
@@ -126,6 +134,46 @@ public class PreviewRow {
 		this.topic = topic;
 	}
 	
+	public Long getTopicRepositoryKey() {
+		return topicRepositoryKey;
+	}
+
+	public void setTopicRepositoryKey(Long topicRepositoryKey) {
+		this.topicRepositoryKey = topicRepositoryKey;
+	}
+
+	public Long getTopicCurriculumElementKey() {
+		return topicCurriculumElementKey;
+	}
+
+	public void setTopicCurriculumElementKey(Long topicCurriculumElementKey) {
+		this.topicCurriculumElementKey = topicCurriculumElementKey;
+	}
+
+	public Long getTopicCurriculumElementCurriculumKey() {
+		return topicCurriculumElementCurriculumKey;
+	}
+
+	public void setTopicCurriculumElementCurriculumKey(Long topicCurriculumElementCurriculumKey) {
+		this.topicCurriculumElementCurriculumKey = topicCurriculumElementCurriculumKey;
+	}
+
+	public String getTopicBusinessPath() {
+		return topicBusinessPath;
+	}
+
+	public void setTopicBusinessPath(String topicBusinessPath) {
+		this.topicBusinessPath = topicBusinessPath;
+	}
+
+	public FormItem getTopicItem() {
+		return topicItem;
+	}
+
+	public void setTopicItem(FormItem topicItem) {
+		this.topicItem = topicItem;
+	}
+
 	public String getFormName() {
 		return formName;
 	}

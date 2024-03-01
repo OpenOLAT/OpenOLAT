@@ -182,11 +182,19 @@ public class CourseMyToDoTaskController extends ToDoTaskListController {
 		public boolean canBulkDeleteToDoTasks() {
 			return false;
 		}
-
+		
 		@Override
 		public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-			return ToDoStatus.deleted != toDoTask.getStatus()
-					&& !toDoTask.isOriginDeleted()
+			return ToDoStatus.deleted != toDoTask.getStatus() && canDelete(toDoTask);
+		}
+		
+		@Override
+		public boolean canRestore(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
+			return ToDoStatus.deleted == toDoTask.getStatus() && canDelete(toDoTask);
+		}
+		
+		private boolean canDelete(ToDoTask toDoTask) {
+			return !toDoTask.isOriginDeleted()
 					&& ToDoRight.contains(toDoTask.getAssigneeRights(), ToDoRight.delete);
 		}
 		

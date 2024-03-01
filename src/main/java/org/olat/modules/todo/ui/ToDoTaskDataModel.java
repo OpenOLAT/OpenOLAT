@@ -43,6 +43,7 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 	private final ToDoTaskGroupFactory groupFactory;
 	private final Integer maxRows;
 	private List<ToDoTaskRow> backups;
+	private List<ToDoTaskRow> groupCandiatades;
 	
 	public ToDoTaskDataModel(FlexiTableColumnModel columnsModel, ToDoTaskGroupFactory groupFactory, Integer maxRows, Locale locale) {
 		super(columnsModel);
@@ -70,6 +71,10 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 		return backups;
 	}
 
+	public void setGroupCandiatades(List<ToDoTaskRow> groupCandiatades) {
+		this.groupCandiatades = groupCandiatades;
+	}
+
 	@Override
 	public void sort(SortKey orderBy) {
 		// This sorts the backup rows
@@ -77,12 +82,12 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 		if (maxRows != null && rows.size() > maxRows.intValue()) {
 			rows = rows.subList(0, maxRows.intValue()-1);
 		}
-		rows = groupFactory.groupRows(rows);
+		rows = groupFactory.groupRows(rows, groupCandiatades);
 		super.setObjects(rows);
 	}
 	
 	public void groupRows() {
-		List<ToDoTaskRow> rows = groupFactory.groupRows(backups);
+		List<ToDoTaskRow> rows = groupFactory.groupRows(backups, groupCandiatades);
 		super.setObjects(rows);
 	}
 	
@@ -182,6 +187,6 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 	}
 	
 	public interface ToDoTaskGroupFactory {
-		public List<ToDoTaskRow> groupRows(List<ToDoTaskRow> sortedRows);
+		public List<ToDoTaskRow> groupRows(List<ToDoTaskRow> sortedRows, List<ToDoTaskRow> groupCandiatades);
 	}
 }

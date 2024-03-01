@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -121,6 +123,7 @@ public class DataCollectionListController extends FormBasicController
 	private static final String TAB_ID_FINISHED = "Finshed";
 	private static final String FILTER_KEY_TODO = "todo";
 	private static final String CMD_EDIT = "edit";
+	private static final String CMD_TOPIC = "topic";
 	private static final String CMD_TODOS = "todos";
 	
 	private final TooledStackedPanel stackPanel;
@@ -305,6 +308,32 @@ public class DataCollectionListController extends FormBasicController
 	}
 
 	@Override
+	public void forgeTopicItem(DataCollectionRow row) {
+		if (row.getTopicRepositoryKey() != null ) {
+			FormLink link = uifactory.addFormLink("topic_" + row.getKey(), CMD_TOPIC, "", null, null, Link.NONTRANSLATED);
+			link.setI18nKey(StringHelper.escapeHtml(row.getTopic()));
+			String businessPath = "[RepositoryEntry:" + row.getTopicRepositoryKey() + "]";
+			row.setTopicBusinessPath(businessPath);
+			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+			link.setUrl(url);
+			link.setUserObject(row);
+			row.setTopicItem(link);
+		} else if (row.getTopicCurriculumElementKey() != null ) {
+			FormLink link = uifactory.addFormLink("topic_" + row.getKey(), CMD_TOPIC, "", null, null, Link.NONTRANSLATED);
+			link.setI18nKey(StringHelper.escapeHtml(row.getTopic()));
+			String businessPath = "[CurriculumAdmin:0][Curriculum:" + row.getTopicCurriculumElementCurriculumKey() + "][CurriculumElement:" + row.getTopicCurriculumElementKey() + "]";
+			row.setTopicBusinessPath(businessPath);
+			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+			link.setUrl(url);
+			link.setUserObject(row);
+			row.setTopicItem(link);
+		} else {
+			StaticTextElement topicItem = uifactory.addStaticTextElement("topic_" + row.getKey(), null, StringHelper.escapeHtml(row.getTopic()), null);
+			row.setTopicItem(topicItem);
+		}
+	}
+
+	@Override
 	public void forgeToDosLink(DataCollectionRow row) {
 		if(row.getNumToDoTasksTotal() > 0) {
 			String text = translate("data.collection.todos.num", String.valueOf(row.getNumToDoTasksDone()), String.valueOf(row.getNumToDoTasksTotal()));
@@ -388,7 +417,9 @@ public class DataCollectionListController extends FormBasicController
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
-			if (CMD_TODOS.equals(link.getCmd()) && link.getUserObject() instanceof DataCollectionRow row) {
+			if (CMD_TOPIC.equals(link.getCmd()) && link.getUserObject() instanceof DataCollectionRow row) {
+				doOpenTopic(ureq, row);
+			} else if (CMD_TODOS.equals(link.getCmd()) && link.getUserObject() instanceof DataCollectionRow row) {
 				doOpenToDoTasks(ureq, link, row.getKey());
 			} 
 		}
@@ -622,6 +653,12 @@ public class DataCollectionListController extends FormBasicController
 				BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(DataCollectionController.ORES_TODOS_TYPE)),
 				BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(ToDoTaskListController.TYPE_TODO, toDoTask.getKey())));
 		doEditDataCollection(ureq, dataCollection, ces);
+	}
+	
+	private void doOpenTopic(UserRequest ureq, DataCollectionRow row) {
+		if (row.getTopicBusinessPath() != null) {
+			NewControllerFactory.getInstance().launch(row.getTopicBusinessPath(), ureq, getWindowControl());
+		}
 	}
 	
 	private void doOpenToDoTasks(UserRequest ureq, FormLink link, Long dataCollectionKey) {
