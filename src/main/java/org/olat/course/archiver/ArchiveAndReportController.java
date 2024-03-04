@@ -106,14 +106,13 @@ public class ArchiveAndReportController extends MainLayoutBasicController implem
 		
 		reports = new GenericTreeNode("Reports");
 		reports.setTitle(translate("menu.reports"));
-		reports.setDelegate(overviewRootNode);
 		overviewRootNode.addChild(reports);
 		
 		courseResults = new GenericTreeNode("CourseResults");
 		courseResults.setTitle(translate("menu.scoreaccounting"));
 		courseResults.setIconCssClass("o_icon_score");
 		reports.addChild(courseResults);
-		courseResults.setDelegate(reports);
+		reports.setDelegate(courseResults);
 		
 		courseChat = new GenericTreeNode("CourseChat");
 		courseChat.setTitle(translate("menu.chat"));
