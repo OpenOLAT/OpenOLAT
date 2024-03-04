@@ -106,10 +106,32 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 		if(element instanceof ContainerElement containerElement) {
 			renderContainer(renderer, sb, fragment, containerElement, elementIdToFragments, ubu, translator, renderResult, args);
 		} else {
-			sb.append("<div class='").append(fragment.getCssClass()).append("'>");
+			AlertBoxSettings alertBoxSettings = FragmentRendererHelper.getAlertBoxSettingsIfActive(element);
+			AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
+			String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
+
+			sb.append("<div class='o_page_part ").append(fragment.getCssClass());
+			if (alertBoxType != null) {
+				sb.append(" o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor));
+			}
+			sb.append("'>");
+
+			FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), alertBoxSettings, 1);
+
+			boolean collapsible = FragmentRendererHelper.isCollapsible(element);
+			if (collapsible) {
+				sb.append("<div class='collapse in ")
+						.append(FragmentRendererHelper.buildCollapsibleClass(fragment.getComponentName()))
+						.append("' aria-expanded='true'>");
+			}
+
 			Component subCmp = fragment.getComponent();
 			if (subCmp.isVisible()) {
 				subCmp.getHTMLRendererSingleton().render(renderer, sb, subCmp, ubu, translator, renderResult, args);
+			}
+
+			if (collapsible) {
+				sb.append("</div>");
 			}
 			sb.append("</div>");
 		}
@@ -132,7 +154,7 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			sb.append(" ").append("o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor));
 		}
 		sb.append("'>");
-		FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), settings, ubu);
+		FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), settings);
 		renderContainerLayout(renderer, sb, fragment.getComponentName(), settings, elementIdToFragments, ubu, translator, renderResult, args);
 		sb.append("</div>");
 	}

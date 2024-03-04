@@ -25,6 +25,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.AlertBoxType;
 
 /**
  * 
@@ -55,6 +57,9 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 
 		URLBuilder fragmentUbu = ubu.createCopyFor(cmp);
 		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
+		AlertBoxSettings alertBoxSettings = FragmentRendererHelper.getAlertBoxSettingsIfActive(cmp.getElement());
+		AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
+		String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
 
 		// Container with editor elements
 		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='o_page_fragment_edit o_fragment_edited' data-oo-page-fragment='").append(cmp.getComponentName()).append("'>");
@@ -64,8 +69,21 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		sb.append("<div id='o_cce").append(cmp.getDispatchID()).append("' data-oo-page-fragment='").append(cmp.getComponentName()).append("'")
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")
 		  .append(" data-oo-content-editor-url='").append(fr.getUrlBuilder().getJavascriptURI()).append("'")
-		  .append(" class='o_page_part")
-		  .append("'>");
+		  .append(" class='o_page_part ");
+		if (alertBoxType != null) {
+			sb.append("o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor));
+		}
+		sb.append("'>");
+
+		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), alertBoxSettings, 1);
+
+		boolean collapsible = FragmentRendererHelper.isCollapsible(cmp.getElement());
+		if (collapsible) {
+			sb.append("<div class='collapse in ")
+					.append(FragmentRendererHelper.buildCollapsibleClass(cmp.getComponentName()))
+					.append("' aria-expanded='true'>");
+		}
+
 		Component editorCmp = cmp.getEditorPageElementComponent();
 		Component viewCmp = cmp.getViewPageElementComponent();
 		if(editorCmp != null) {
@@ -74,6 +92,11 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		} else if(viewCmp != null) {
 			renderPartComponent(renderer, sb, viewCmp, true, fragmentUbu, translator, renderResult, args);
 		}
+
+		if (collapsible) {
+			sb.append("</div>");
+		}
+
 		sb.append("</div>");
 
 		renderInspector(renderer, sb, cmp.getInspectorComponent(), fragmentUbu, translator, renderResult, args);
@@ -120,19 +143,38 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 
 		URLBuilder fragmentUbu = ubu.createCopyFor(cmp);
 		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
+		AlertBoxSettings alertBoxSettings = FragmentRendererHelper.getAlertBoxSettingsIfActive(cmp.getElement());
+		AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
+		String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
 
 		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' data-oo-page-fragment='").append(cmp.getComponentName()).append("'")
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")
 		  .append(" data-oo-content-editor-url='").append(fr.getUrlBuilder().getJavascriptURI()).append("'")
-		  .append(" class='o_page_part o_page_part_view o_page_drop'>");
-		
+		  .append(" class='o_page_part o_page_part_view o_page_drop ");
+		if (alertBoxType != null) {
+			sb.append("o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor));
+		}
+		sb.append("'>");
+
+		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), alertBoxSettings, 1);
+
 		Component editorCmp = cmp.getEditorPageElementComponent();
 		Component viewCmp = cmp.getViewPageElementComponent();
+
+		boolean collapsible = FragmentRendererHelper.isCollapsible(cmp.getElement());
+		if (collapsible) {
+			sb.append("<div class='collapse in ")
+					.append(FragmentRendererHelper.buildCollapsibleClass(cmp.getComponentName()))
+					.append("' aria-expanded='true'>");
+		}
 		if(viewCmp != null) {
 			renderPartComponent(renderer, sb, viewCmp, true, fragmentUbu, translator, renderResult, args);
 			renderPartComponent(renderer, sb, editorCmp, false, fragmentUbu, translator, renderResult, args);
 		} else if(editorCmp != null) {
 			renderPartComponent(renderer, sb, editorCmp, true, fragmentUbu, translator, renderResult, args);
+		}
+		if (collapsible) {
+			sb.append("</div>");
 		}
 		sb.append("</div>");
 	}
