@@ -64,26 +64,26 @@ public class AssessmentModeEditController extends BasicController {
 		super(ureq, wControl);
 		this.entry = entry;
 		this.assessmentMode = assessmentMode;
-		this.create = assessmentMode.getKey() == null;
+		this.create = this.assessmentMode.getKey() == null;
 		
 		mainVC = createVelocityContainer("edit");
 		tabbedPane = new TabbedPane("segments", getLocale());
 		mainVC.put("segments", tabbedPane);
 
 		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.general"), null, uureq -> {
-			generalCtrl = new AssessmentModeEditGeneralController(uureq, getWindowControl(), entry, assessmentMode);
+			generalCtrl = new AssessmentModeEditGeneralController(uureq, getWindowControl(), entry, this.assessmentMode);
 			listenTo(generalCtrl);
 			return generalCtrl;
 		}, true);
 		
 		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.restriction"), null, uureq -> {
-			restrictionCtrl = new AssessmentModeEditRestrictionController(uureq, getWindowControl(), entry, assessmentMode);
+			restrictionCtrl = new AssessmentModeEditRestrictionController(uureq, getWindowControl(), entry, this.assessmentMode);
 			listenTo(restrictionCtrl);
 			return restrictionCtrl;
 		}, true);
 		
 		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.access"), null, uureq -> {
-			accessCtrl = new AssessmentModeEditAccessController(uureq, getWindowControl(), entry, assessmentMode);
+			accessCtrl = new AssessmentModeEditAccessController(uureq, getWindowControl(), entry, this.assessmentMode);
 			if(assessmentModeAreas != null) {
 				accessCtrl.selectAreas(assessmentModeAreas);
 			}
@@ -98,7 +98,7 @@ public class AssessmentModeEditController extends BasicController {
 		}, true);
 		
 		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.seb"), null, uureq -> {
-			safeExamBrowserCtrl = new AssessmentModeEditSafeExamBrowserController(uureq, getWindowControl(), entry, assessmentMode);
+			safeExamBrowserCtrl = new AssessmentModeEditSafeExamBrowserController(uureq, getWindowControl(), entry, this.assessmentMode);
 			listenTo(safeExamBrowserCtrl);
 			return safeExamBrowserCtrl;
 		}, true);
