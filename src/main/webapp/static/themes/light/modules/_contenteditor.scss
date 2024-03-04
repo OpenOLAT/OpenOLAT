@@ -103,7 +103,7 @@
 }
 
 
-.o_page_content_editor > .o_page_fragment_edit > .o_page_layout, .o_page_layout {
+.o_page_content_editor > .o_page_fragment_edit > .o_page_layout, .o_page_layout, .o_page_part {
 	&.o_alert_box_active {
 		border: 1px solid $o-color-light-gray;
 		border-radius: $border-radius-base;
@@ -531,6 +531,12 @@
 
 	.o_ceditor_inspector_content {
 		padding: 10px;
+
+		.o_image_inspector_style {
+			max-height: 360px;
+			overflow: auto;
+			padding-right: 4px;
+		}
 	}
 
 	.o_ceditor_inspector_wrap {

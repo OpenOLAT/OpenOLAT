@@ -224,7 +224,8 @@ public class PageEditorV2Controller extends BasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
-		} else if(event instanceof ChangePartEvent) {
+		} else if(event instanceof ChangePartEvent changePartEvent) {
+			doTriggerRenderIfNeeded(ureq, changePartEvent.getElement());
 			doSaveElement(ureq);
 		} else if(event instanceof ClosePartEvent cpe) {
 			doCloseEditor(ureq, cpe.getElement());
@@ -233,7 +234,20 @@ public class PageEditorV2Controller extends BasicController {
 		}
 		super.event(ureq, source, event);
 	}
-	
+
+	private void doTriggerRenderIfNeeded(UserRequest ureq, PageElement element) {
+		String elementId = element.getId();
+		new ComponentTraverser((comp, uureq) -> {
+			if (comp instanceof ContentEditorFragmentComponent fragmentComponent) {
+				if (fragmentComponent.getElementId().equals(elementId)) {
+					PageEditorUIFactory.refreshElementLayoutOptions(element, fragmentComponent.getElement());
+					fragmentComponent.setDirty(true);
+				}
+			}
+			return true;
+		}, editorCmp, false).visitAll(ureq);
+	}
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(deleteLayoutConfirmationCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);

@@ -41,6 +41,7 @@ public class ImageSettings {
 	private String description;
 
 	private BlockLayoutSettings layoutSettings;
+	private AlertBoxSettings alertBoxSettings;
 
 	public ImageSettings() {
 		//
@@ -132,5 +133,13 @@ public class ImageSettings {
 
 	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
 		this.layoutSettings = layoutSettings;
+	}
+
+	public AlertBoxSettings getAlertBoxSettings() {
+		return alertBoxSettings;
+	}
+
+	public void setAlertBoxSettings(AlertBoxSettings alertBoxSettings) {
+		this.alertBoxSettings = alertBoxSettings;
 	}
 }

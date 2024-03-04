@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -45,6 +46,7 @@ import org.olat.modules.ceditor.ContentEditorModule;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.ceditor.model.ImageElement;
@@ -77,6 +79,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 	private SingleSelection sizeEl;
 	private SingleSelection styleEl;
 	private SingleSelection alignmentEl;
@@ -108,6 +111,8 @@ public class ImageInspectorController extends FormBasicController implements Pag
 	private MediaService mediaService;
 	@Autowired
 	private ContentEditorModule contentEditorModule;
+	@Autowired
+	private ColorService colorService;
 
 	public ImageInspectorController(UserRequest ureq, WindowControl wControl, ImageElement mediaPart, PageElementStore<ImageElement> store, String titleI18nKey, boolean inForm) {
 		super(ureq, wControl, "image_inspector", Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale()));
@@ -135,11 +140,21 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		formLayout.add("tabs", tabbedPane);
 		
 		ImageSettings settings = imageElement.getImageSettings();
+		//addStyleTab(formLayout);
 		initStyleForm(formLayout, tabbedPane, settings);
 		initTitleForm(formLayout, tabbedPane, settings);
 		initDisplayForm(formLayout, tabbedPane, settings);
 		addMediaTab(formLayout);
 		addLayoutTab(formLayout);
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer styleCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		formLayout.add(styleCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), styleCont);
+
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory,
+				getAlertBoxSettings(getImageSettings()), colorService, getLocale());
 	}
 
 	private void addMediaTab(FormItemContainer formLayout) {
@@ -167,6 +182,13 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		return BlockLayoutSettings.getPredefined();
 	}
 
+	private AlertBoxSettings getAlertBoxSettings(ImageSettings imageSettings) {
+		if (imageSettings.getAlertBoxSettings() != null) {
+			return imageSettings.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
+	}
+
 	private ImageSettings getImageSettings() {
 		if (imageElement != null) {
 			if (imageElement.getImageSettings() != null) {
@@ -178,6 +200,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 
 	private void initStyleForm(FormItemContainer formLayout, TabbedPaneItem tPane, ImageSettings settings) {
 		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		layoutCont.setElementCssClass("o_image_inspector_style");
 		formLayout.add(layoutCont);
 		tPane.addTab(translate("image.style"), layoutCont);
 			
@@ -229,6 +252,9 @@ public class ImageInspectorController extends FormBasicController implements Pag
 				&& styleKeyValues.containsKey(settings.getStyle())) {
 			styleEl.select(settings.getStyle(), true);
 		}
+
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory,
+				getAlertBoxSettings(getImageSettings()), colorService, getLocale());
 	}
 	
 	private void initTitleForm(FormItemContainer formLayout, TabbedPaneItem tPane, ImageSettings settings) {
@@ -335,6 +361,8 @@ public class ImageInspectorController extends FormBasicController implements Pag
 			doOpenInMediaCenter(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -437,6 +465,22 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		BlockLayoutSettings layoutSettings = getLayoutSettings(imageSettings);
 		layoutTabComponents.sync(layoutSettings);
 		imageSettings.setLayoutSettings(layoutSettings);
+
+		String settingsXml = ContentEditorXStream.toXml(imageSettings);
+		imageElement.setLayoutOptions(settingsXml);
+		imageElement = store.savePageElement(imageElement);
+		dbInstance.commit();
+		fireEvent(ureq, new ChangePartEvent(imageElement));
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		ImageSettings imageSettings = getImageSettings();
+
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(imageSettings);
+		alertBoxComponents.sync(alertBoxSettings);
+		imageSettings.setAlertBoxSettings(alertBoxSettings);
 
 		String settingsXml = ContentEditorXStream.toXml(imageSettings);
 		imageElement.setLayoutOptions(settingsXml);
