@@ -197,7 +197,7 @@ public class MediaRow implements MediaLight {
 	}
 
 	public Object getPlatform(Translator translator) {
-		if (getVersion().hasUrl()) {
+		if (getVersion() != null && getVersion().hasUrl()) {
 			VideoFormatExtended videoFormat = VideoFormatExtended.valueOfUrl(getVersion().getVersionMetadata().getUrl());
 			if (videoFormat != null) {
 				return translator.translate(videoFormat.getI18nKey());
