@@ -21,6 +21,8 @@ package org.olat.modules.ceditor.ui;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
 
 /**
  * 
@@ -40,4 +42,9 @@ public class PageEditorUIFactory {
 		return translator.translate("untitled", new String[] { shortened } );
 	}
 
+	public static void refreshElementLayoutOptions(PageElement sourceElement, PageElement targetElement) {
+		if (sourceElement instanceof MediaPart sourceMediaPart && targetElement instanceof MediaPart targetMediaPart) {
+			targetMediaPart.setLayoutOptions(sourceMediaPart.getLayoutOptions());
+		}
+	}
 }

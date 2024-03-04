@@ -20,10 +20,11 @@
 package org.olat.modules.ceditor.ui.component;
 
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.ContainerSettings;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
 
 /**
  * Initial date: 2024-03-01<br>
@@ -32,8 +33,32 @@ import org.olat.modules.ceditor.model.ContainerSettings;
  */
 public class FragmentRendererHelper {
 
-	public static void renderAlertHeader(StringOutput sb, String fragmentId, ContainerSettings settings, URLBuilder ubu) {
-		AlertBoxSettings alertBoxSettings = settings.getAlertBoxSettings();
+	public static AlertBoxSettings getAlertBoxSettingsIfActive(PageElement element) {
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(element);
+		if (alertBoxSettings == null) {
+			return null;
+		}
+		if (!alertBoxSettings.isShowAlertBox()) {
+			return null;
+		}
+		return alertBoxSettings;
+	}
+
+	public static AlertBoxSettings getAlertBoxSettings(PageElement element) {
+		if (element instanceof MediaPart mediaPart) {
+			if (mediaPart.getImageSettings() != null) {
+				return mediaPart.getImageSettings().getAlertBoxSettings();
+			}
+		}
+		return null;
+	}
+
+	public static void renderAlertHeader(StringOutput sb, String fragmentId, ContainerSettings settings) {
+		renderAlertHeader(sb, fragmentId, settings.getAlertBoxSettings(), settings.getNumOfBlocks());
+	}
+
+	public static void renderAlertHeader(StringOutput sb, String fragmentId, AlertBoxSettings alertBoxSettings,
+										 int numberOfItems) {
 		boolean showAlert = alertBoxSettings != null && alertBoxSettings.isShowAlertBox();
 		String title = showAlert ? alertBoxSettings.getTitle() : null;
 		String iconCssClass = showAlert ? alertBoxSettings.getIconCssClass() : null;
@@ -50,7 +75,6 @@ public class FragmentRendererHelper {
 			}
 			if (showTitle) {
 				if (collapsible) {
-					int numberOfItems = settings.getNumOfBlocks();
 					String collapsingId = FragmentRendererHelper.buildCollapsingId(fragmentId);
 					FragmentRendererHelper.openCollapseLink(null, collapsingId, sb, fragmentId, numberOfItems, "o_alert_text o_alert_collapse_title");
 					sb.append(title).append("</a>");
@@ -100,8 +124,16 @@ public class FragmentRendererHelper {
 				.append("class='").append(extraClasses).append("'>");
 	}
 
+	public static boolean isCollapsible(PageElement pageElement) {
+		return isCollapsible(getAlertBoxSettings(pageElement));
+	}
+
 	public static boolean isCollapsible(ContainerSettings containerSettings) {
 		AlertBoxSettings alertBoxSettings = containerSettings.getAlertBoxSettingsIfActive();
+		return isCollapsible(alertBoxSettings);
+	}
+
+	public static boolean isCollapsible(AlertBoxSettings alertBoxSettings) {
 		boolean showAlert = alertBoxSettings != null;
 		String title = showAlert ? alertBoxSettings.getTitle() : null;
 		boolean showTitle = StringHelper.containsNonWhitespace(title);

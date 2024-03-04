@@ -83,7 +83,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 			sb.append("o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor)).append(" ");
 		}
 		sb.append(settings.getType().cssClass()).append("'>");
-		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), settings, containerUbu);
+		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), settings);
 		renderContainer(renderer, sb, cmp, containerUbu, translator, renderResult, args);
 		sb.append("</div>");
 		
