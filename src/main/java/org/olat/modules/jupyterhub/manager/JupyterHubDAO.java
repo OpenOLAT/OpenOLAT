@@ -44,15 +44,18 @@ public class JupyterHubDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public JupyterHub createJupyterHub(String name, String ram, BigDecimal cpu, LTI13Tool ltiTool,
+	public JupyterHub createJupyterHub(String name, String ramGuarantee, String ramLimit,
+									   BigDecimal cpuGuarantee, BigDecimal cpuLimit, LTI13Tool ltiTool,
 									   JupyterHub.AgreementSetting agreementSetting) {
 		JupyterHubImpl jupyterHub = new JupyterHubImpl();
 		jupyterHub.setCreationDate(new Date());
 		jupyterHub.setLastModified(jupyterHub.getCreationDate());
 		jupyterHub.setName(name);
 		jupyterHub.setStatus(JupyterHub.JupyterHubStatus.active);
-		jupyterHub.setRam(ram);
-		jupyterHub.setCpu(cpu);
+		jupyterHub.setRamGuarantee(ramGuarantee);
+		jupyterHub.setRamLimit(ramLimit);
+		jupyterHub.setCpuGuarantee(cpuGuarantee);
+		jupyterHub.setCpuLimit(cpuLimit);
 		jupyterHub.setLtiTool(ltiTool);
 		jupyterHub.setAgreementSetting(agreementSetting);
 		dbInstance.getCurrentEntityManager().persist(jupyterHub);

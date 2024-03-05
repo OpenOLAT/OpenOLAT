@@ -43,18 +43,26 @@ public interface JupyterHub extends ModifiedInfo, CreateInfo {
 
 	void setStatus(JupyterHubStatus status);
 
-	String getRam();
+	String getRamGuarantee();
 
-	void setRam(String ram);
+	void setRamGuarantee(String ramGuarantee);
+
+	String getRamLimit();
+
+	void setRamLimit(String ramLimit);
+
+	BigDecimal getCpuGuarantee();
+
+	void setCpuGuarantee(BigDecimal cpuGuarantee);
 
 	/**
 	 * The number of CPUs that the JupyterHub runtime is allowed to use per user. Can be a fractional value.
 	 *
 	 * @return The CPU value as a BigDecimal with scale 2 to represent numbers such as 0.25.
 	 */
-	BigDecimal getCpu();
+	BigDecimal getCpuLimit();
 
-	void setCpu(BigDecimal cpu);
+	void setCpuLimit(BigDecimal cpuLimit);
 
 	String getImageCheckingServiceUrl();
 
@@ -96,7 +104,7 @@ public interface JupyterHub extends ModifiedInfo, CreateInfo {
 
 	static boolean validateRam(String ram) {
 		if (!StringHelper.containsNonWhitespace(ram)) {
-			return false;
+			return true;
 		}
 
 		ram = ram.toUpperCase();

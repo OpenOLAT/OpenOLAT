@@ -60,8 +60,10 @@ public class JupyterHubConfigTabController extends FormBasicController {
 	private final RepositoryEntry courseEntry;
 	private final String subIdent;
 	private SingleSelection jupyterHubEl;
-	private StaticTextElement cpuEl;
-	private StaticTextElement ramEl;
+	private StaticTextElement cpuGuaranteeEl;
+	private StaticTextElement cpuLimitEl;
+	private StaticTextElement ramGuaranteeEl;
+	private StaticTextElement ramLimitEl;
 	private StaticTextElement infoTextEl;
 	private TextElement imageEl;
 	private FormLink checkImageButton;
@@ -109,8 +111,10 @@ public class JupyterHubConfigTabController extends FormBasicController {
 			jupyterHubEl.select(jupyterHubKV.keys()[0], true);
 		}
 
-		cpuEl = uifactory.addStaticTextElement("cpu", "table.header.hub.cpu", "", formLayout);
-		ramEl = uifactory.addStaticTextElement("ram", "table.header.hub.ram", "", formLayout);
+		cpuGuaranteeEl = uifactory.addStaticTextElement("cpuGuarantee", "table.header.hub.cpu.guarantee", "", formLayout);
+		cpuLimitEl = uifactory.addStaticTextElement("cpuLimit", "table.header.hub.cpu.limit", "", formLayout);
+		ramGuaranteeEl = uifactory.addStaticTextElement("ramGuarantee", "table.header.hub.ram.guarantee", "", formLayout);
+		ramLimitEl = uifactory.addStaticTextElement("ramLimit", "table.header.hub.ram.limit", "", formLayout);
 		infoTextEl = uifactory.addStaticTextElement("infoText", "form.hub.infoText", "", formLayout);
 		infoTextEl.setElementCssClass("o_jupyter_info_text");
 
@@ -129,14 +133,32 @@ public class JupyterHubConfigTabController extends FormBasicController {
 	}
 
 	private void setValues(String image, Boolean suppressDataTransmissionAgreement) {
-		cpuEl.setValue(jupyterHub.getCpu().stripTrailingZeros().toPlainString());
-		ramEl.setValue(jupyterHub.getRam());
+		if (jupyterHub.getCpuGuarantee() != null && jupyterHub.getCpuLimit() != null) {
+			cpuGuaranteeEl.setVisible(true);
+			cpuGuaranteeEl.setValue(jupyterHub.getCpuGuarantee().stripTrailingZeros().toPlainString());
+			cpuLimitEl.setVisible(true);
+			cpuLimitEl.setValue(jupyterHub.getCpuLimit().stripTrailingZeros().toPlainString());
+		} else {
+			cpuGuaranteeEl.setVisible(false);
+			cpuLimitEl.setVisible(false);
+		}
+		if (StringHelper.containsNonWhitespace(jupyterHub.getRamGuarantee()) && StringHelper.containsNonWhitespace(jupyterHub.getRamLimit())) {
+			ramGuaranteeEl.setVisible(true);
+			ramGuaranteeEl.setValue(jupyterHub.getRamGuarantee());
+			ramLimitEl.setVisible(true);
+			ramLimitEl.setValue(jupyterHub.getRamLimit());
+		} else {
+			ramGuaranteeEl.setVisible(false);
+			ramLimitEl.setVisible(false);
+		}
+
 		if (StringHelper.containsNonWhitespace(jupyterHub.getInfoText())) {
 			infoTextEl.setValue(jupyterHub.getInfoText());
 			infoTextEl.setVisible(true);
 		} else {
 			infoTextEl.setVisible(false);
 		}
+
 		imageEl.setValue(image);
 		checkImageButton.setVisible(StringHelper.containsNonWhitespace(jupyterHub.getImageCheckingServiceUrl()));
 
