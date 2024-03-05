@@ -1066,6 +1066,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 				int page = index / tableEl.getPageSize();
 				tableEl.setPage(page);
 			}
+			row.getDetailsItem().toggleOn();
 			doShowDetails(ureq, row);
 			tableEl.expandDetails(index);
 		}
