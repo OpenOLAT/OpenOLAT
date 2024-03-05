@@ -20,11 +20,16 @@
 package org.olat.modules.jupyterhub;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.lti13.LTI13Tool;
+
+import org.json.JSONObject;
 
 /**
  * Initial date: 2023-04-14<br>
@@ -63,6 +68,10 @@ public interface JupyterHub extends ModifiedInfo, CreateInfo {
 	BigDecimal getCpuLimit();
 
 	void setCpuLimit(BigDecimal cpuLimit);
+
+	String getAdditionalFields();
+
+	void setAdditionalFields(String additionalFields);
 
 	String getImageCheckingServiceUrl();
 
@@ -117,5 +126,33 @@ public interface JupyterHub extends ModifiedInfo, CreateInfo {
 		}
 		ram = ram.toUpperCase();
 		return ram.replace(" ", "");
+	}
+
+	static Map<String, String> parseFields(String value) {
+		HashMap<String, String> result = new HashMap<>();
+
+		try {
+			JSONObject jsonObject = new JSONObject(value);
+			Set<String> keySet = jsonObject.keySet();
+			if (!keySet.isEmpty()) {
+				for (String key : keySet) {
+					result.put(key, jsonObject.getString(key));
+				}
+				return result;
+			}
+		} catch(Exception e) {
+			result = new HashMap<>();
+		}
+
+		String[] lines = value.split("\n");
+		for (String line : lines) {
+			String[] tokens = line.split("=");
+			if (tokens.length != 2) {
+				return new HashMap<>();
+			}
+			result.put(tokens[0], tokens[1]);
+		}
+
+		return result;
 	}
 }

@@ -61,7 +61,8 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		String image = "jupyter/minimal-notebook";
 		JupyterHub jupyterHub = jupyterManager.createJupyterHub("Test hub",
 				"https://jupyterhub.openolat.org", clientId, "0.5 G", "3 G",
-				BigDecimal.valueOf(1), BigDecimal.valueOf(3), JupyterHub.AgreementSetting.configurableByAuthor);
+				BigDecimal.valueOf(1), BigDecimal.valueOf(3), "",
+				JupyterHub.AgreementSetting.configurableByAuthor);
 		LTI13Context context = jupyterManager.createLtiContext(jupyterHub.getLtiTool(), entry,
 				subIdent, jupyterHub, image);
 		JupyterDeployment jupyterDeployment = jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, context,
@@ -98,7 +99,8 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		String subIdent = UUID.randomUUID().toString();
 		JupyterHub jupyterHub = jupyterManager.createJupyterHub("Test hub",
 				"https://jupyterhub.openolat.org", clientId, "0.5 G", "3 G",
-				BigDecimal.valueOf(1), BigDecimal.valueOf(3), JupyterHub.AgreementSetting.configurableByAuthor);
+				BigDecimal.valueOf(1), BigDecimal.valueOf(3), "",
+				JupyterHub.AgreementSetting.configurableByAuthor);
 		LTI13Context context = jupyterManager.createLtiContext(jupyterHub.getLtiTool(), entry,
 				subIdent, jupyterHub, "jupyter/minimal-notebook");
 		JupyterDeployment jupyterDeployment = jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, context,
@@ -121,7 +123,8 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		String subIdent = UUID.randomUUID().toString();
 		JupyterHub jupyterHub = jupyterManager.createJupyterHub("Test hub",
 				"https://jupyterhub.openolat.org", clientId, "0.5 G", "3 G",
-				BigDecimal.valueOf(1), BigDecimal.valueOf(3), JupyterHub.AgreementSetting.configurableByAuthor);
+				BigDecimal.valueOf(1), BigDecimal.valueOf(3), "",
+				JupyterHub.AgreementSetting.configurableByAuthor);
 		LTI13Context context = jupyterManager.createLtiContext(jupyterHub.getLtiTool(), entry,
 				subIdent, jupyterHub, "jupyter/minimal-notebook");
 		JupyterDeployment jupyterDeployment = jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, context,

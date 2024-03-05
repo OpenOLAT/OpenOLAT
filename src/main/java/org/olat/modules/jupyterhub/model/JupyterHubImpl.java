@@ -86,6 +86,9 @@ public class JupyterHubImpl implements Persistable, JupyterHub {
 	@Column(name = "j_cpu", nullable = false, insertable = true, updatable = true)
 	private long cpuLimit;
 
+	@Column(name = "j_additional_fields", nullable = true, insertable = true, updatable = true)
+	private String additionalFields;
+
 	@Column(name = "j_image_checking_service_url", nullable = true, insertable = true, updatable = true)
 	private String imageCheckingServiceUrl;
 
@@ -208,6 +211,16 @@ public class JupyterHubImpl implements Persistable, JupyterHub {
 			cpuLimit = cpuLimit.setScale(2, RoundingMode.HALF_UP);
 		}
 		this.cpuLimit = cpuLimit.unscaledValue().longValue();
+	}
+
+	@Override
+	public String getAdditionalFields() {
+		return additionalFields;
+	}
+
+	@Override
+	public void setAdditionalFields(String additionalFields) {
+		this.additionalFields = additionalFields;
 	}
 
 	@Override

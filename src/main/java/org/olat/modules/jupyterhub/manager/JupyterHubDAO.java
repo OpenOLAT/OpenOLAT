@@ -45,8 +45,8 @@ public class JupyterHubDAO {
 	private DB dbInstance;
 
 	public JupyterHub createJupyterHub(String name, String ramGuarantee, String ramLimit,
-									   BigDecimal cpuGuarantee, BigDecimal cpuLimit, LTI13Tool ltiTool,
-									   JupyterHub.AgreementSetting agreementSetting) {
+									   BigDecimal cpuGuarantee, BigDecimal cpuLimit, String additionalFields,
+									   LTI13Tool ltiTool, JupyterHub.AgreementSetting agreementSetting) {
 		JupyterHubImpl jupyterHub = new JupyterHubImpl();
 		jupyterHub.setCreationDate(new Date());
 		jupyterHub.setLastModified(jupyterHub.getCreationDate());
@@ -56,6 +56,7 @@ public class JupyterHubDAO {
 		jupyterHub.setRamLimit(ramLimit);
 		jupyterHub.setCpuGuarantee(cpuGuarantee);
 		jupyterHub.setCpuLimit(cpuLimit);
+		jupyterHub.setAdditionalFields(additionalFields);
 		jupyterHub.setLtiTool(ltiTool);
 		jupyterHub.setAgreementSetting(agreementSetting);
 		dbInstance.getCurrentEntityManager().persist(jupyterHub);

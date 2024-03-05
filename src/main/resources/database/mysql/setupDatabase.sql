@@ -4331,6 +4331,7 @@ create table o_jup_hub (
    j_ram varchar(255) not null,
    j_cpu_guarantee bigint,
    j_cpu bigint not null,
+   j_additional_fields mediumtext,
    j_image_checking_service_url varchar(255),
    j_info_text mediumtext,
    j_lti_key varchar(255),

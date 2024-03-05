@@ -21,6 +21,7 @@ package org.olat.modules.jupyterhub.ui;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -56,10 +58,9 @@ public class EditJupyterHubController extends FormBasicController {
 	private final String clientId;
 	private JupyterHub jupyterHub;
 	private TextElement nameEl, jupyterHubUrlEl, ramGuaranteeEl, ramLimitEl, cpuGuaranteeEl, cpuLimitEl, imageCheckingServiceUrlEl;
+	private TextAreaElement additionalFieldsEl;
 	private RichTextElement infoTextEl;
 	private SingleSelection dataTransmissionAgreementEl;
-	private SelectionValues dataTransmissionAgreementKV;
-	private StaticTextElement clientEl;
 	private FormLink checkConnectionButton;
 
 	@Autowired
@@ -106,6 +107,13 @@ public class EditJupyterHubController extends FormBasicController {
 		ramLimitEl = uifactory.addTextElement("jupyterHub.ram", "table.header.hub.ram", 32, ramLimit, formLayout);
 		ramLimitEl.setExampleKey("form.hub.ram.example", null);
 
+		String additionalFields = jupyterHub != null ? jupyterHub.getAdditionalFields() : "";
+		additionalFieldsEl = uifactory.addTextAreaElement("jupyterHub.additionalFields",
+				"form.hub.additionalFields", -1, -1, -1, true,
+				true, additionalFields, formLayout);
+		additionalFieldsEl.setHelpTextKey("form.hub.additionalFields.help", null);
+		additionalFieldsEl.setExampleKey("form.hub.additionalFields.example", null);
+
 		String imageCheckingServiceUrl = jupyterHub != null ? jupyterHub.getImageCheckingServiceUrl() : "";
 		imageCheckingServiceUrlEl = uifactory.addTextElement("jupyterHub.imageCheckingServiceUrl",
 				"form.hub.imageCheckingServiceUrl", 255, imageCheckingServiceUrl, formLayout);
@@ -126,10 +134,10 @@ public class EditJupyterHubController extends FormBasicController {
 		jupyterHubUrlEl.setElementCssClass("o_sel_jupyterhub_url");
 		jupyterHubUrlEl.setMandatory(true);
 
-		clientEl = uifactory.addStaticTextElement("jupyterHub.clientId", "table.header.hub.clientId", clientId, formLayout);
+		StaticTextElement clientEl = uifactory.addStaticTextElement("jupyterHub.clientId", "table.header.hub.clientId", clientId, formLayout);
 		clientEl.setElementCssClass("text-muted");
 
-		dataTransmissionAgreementKV = new SelectionValues();
+		SelectionValues dataTransmissionAgreementKV = new SelectionValues();
 		dataTransmissionAgreementKV.add(SelectionValues.entry(JupyterHub.AgreementSetting.requireAgreement.name(), translate("form.agreement.requireAgreement")));
 		dataTransmissionAgreementKV.add(SelectionValues.entry(JupyterHub.AgreementSetting.suppressAgreement.name(), translate("form.agreement.suppressAgreement")));
 		dataTransmissionAgreementKV.add(SelectionValues.entry(JupyterHub.AgreementSetting.configurableByAuthor.name(), translate("form.agreement.configurableByAuthor")));
@@ -203,6 +211,8 @@ public class EditJupyterHubController extends FormBasicController {
 		allOk &= validateRam(ramLimitEl);
 		allOk &= validateBothSetOrNotSet(ramGuaranteeEl, ramLimitEl, "table.header.hub.ram.warning");
 
+		allOk &= validateAdditionalFields(additionalFieldsEl);
+
 		allOk &= validateImageChecker();
 		allOk &= validateJupyterHubUrl();
 
@@ -256,6 +266,19 @@ public class EditJupyterHubController extends FormBasicController {
 		return true;
 	}
 
+	private boolean validateAdditionalFields(TextAreaElement additionalFieldsEl) {
+		additionalFieldsEl.clearError();
+		if (!StringHelper.containsNonWhitespace(additionalFieldsEl.getValue())) {
+			return true;
+		}
+		Map<String, String> fields = JupyterHub.parseFields(additionalFieldsEl.getValue());
+		if (fields.isEmpty()) {
+			additionalFieldsEl.setErrorKey("form.hub.additionalFields.error");
+			return false;
+		}
+		return true;
+	}
+
 	private boolean validateImageChecker() {
 		imageCheckingServiceUrlEl.clearError();
 		if (StringHelper.containsNonWhitespace(imageCheckingServiceUrlEl.getValue())) {
@@ -299,13 +322,14 @@ public class EditJupyterHubController extends FormBasicController {
 		String ramLimit = ramLimitEl.getValue();
 		BigDecimal cpuGuarantee = parseAsBigDecimal(cpuGuaranteeEl);
 		BigDecimal cpuLimit = parseAsBigDecimal(cpuLimitEl);
+		String additionalFields = additionalFieldsEl.getValue();
 		String imageCheckingServiceUrl = imageCheckingServiceUrlEl.getValue();
 		String infoText = infoTextEl.getValue();
 		JupyterHub.AgreementSetting agreementSetting = JupyterHub.AgreementSetting.valueOf(dataTransmissionAgreementEl.getSelectedKey());
 
 		if (jupyterHub == null) {
 			jupyterHub = jupyterManager.createJupyterHub(name, jupyterHubUrl, clientId, ramGuarantee, ramLimit,
-					cpuGuarantee, cpuLimit, agreementSetting);
+					cpuGuarantee, cpuLimit, additionalFields, agreementSetting);
 		} else {
 			jupyterHub.setName(nameEl.getValue());
 			jupyterHub.setJupyterHubUrl(jupyterHubUrl);
@@ -313,6 +337,7 @@ public class EditJupyterHubController extends FormBasicController {
 			jupyterHub.setRamLimit(ramLimit);
 			jupyterHub.setCpuGuarantee(cpuGuarantee);
 			jupyterHub.setCpuLimit(cpuLimit);
+			jupyterHub.setAdditionalFields(additionalFields);
 		}
 
 		jupyterHub.setImageCheckingServiceUrl(imageCheckingServiceUrl);

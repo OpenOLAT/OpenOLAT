@@ -53,7 +53,7 @@ public class JupyterHubDAOTest extends OlatTestCase {
 		String clientId = UUID.randomUUID().toString();
 		LTI13Tool ltiTool = createTestLtiTool(clientId);
 		JupyterHub jupyterHub = jupyterHubDAO.createJupyterHub("JupyterHubTest", "1G", "2G",
-				BigDecimal.valueOf(1), BigDecimal.valueOf(2), ltiTool,
+				BigDecimal.valueOf(1), BigDecimal.valueOf(2), "", ltiTool,
 				JupyterHub.AgreementSetting.suppressAgreement);
 
 		Assert.assertNotNull(jupyterHub);
@@ -96,7 +96,7 @@ public class JupyterHubDAOTest extends OlatTestCase {
 											BigDecimal cpuGuarantee, BigDecimal cpuLimit,
 											JupyterHub.AgreementSetting agreementSetting) {
 		LTI13Tool ltiTool = createTestLtiTool(clientId);
-		return jupyterHubDAO.createJupyterHub(name, ramGuarantee, ramLimit, cpuGuarantee, cpuLimit, ltiTool, agreementSetting);
+		return jupyterHubDAO.createJupyterHub(name, ramGuarantee, ramLimit, cpuGuarantee, cpuLimit, "", ltiTool, agreementSetting);
 	}
 
 	@Test

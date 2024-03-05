@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
@@ -131,10 +132,12 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	}
 
 	@Override
-	public JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ramGuarantee, String ramLimit,
-									   BigDecimal cpuGuarantee, BigDecimal cpuLimit, JupyterHub.AgreementSetting agreementSetting) {
+	public JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ramGuarantee,
+									   String ramLimit, BigDecimal cpuGuarantee, BigDecimal cpuLimit,
+									   String additionalFields, JupyterHub.AgreementSetting agreementSetting) {
 		LTI13Tool ltiTool = createLtiTool(name, jupyterHubUrl, clientId);
-		return jupyterHubDAO.createJupyterHub(name, ramGuarantee, ramLimit, cpuGuarantee, cpuLimit, ltiTool, agreementSetting);
+		return jupyterHubDAO.createJupyterHub(name, ramGuarantee, ramLimit, cpuGuarantee, cpuLimit, additionalFields,
+				ltiTool, agreementSetting);
 	}
 
 	LTI13Tool createLtiTool(String name, String jupyterHubUrl, String clientId) {
@@ -196,8 +199,8 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		LTI13Tool updatedCopiedTool = lti13Service.updateTool(copiedTool);
 
 		jupyterHubDAO.createJupyterHub(copiedName, jupyterHub.getRamGuarantee(), jupyterHub.getRamLimit(),
-				jupyterHub.getCpuGuarantee(), jupyterHub.getCpuLimit(), updatedCopiedTool,
-				jupyterHub.getAgreementSetting());
+				jupyterHub.getCpuGuarantee(), jupyterHub.getCpuLimit(), jupyterHub.getAdditionalFields(),
+				updatedCopiedTool, jupyterHub.getAgreementSetting());
 	}
 
 	@Override
@@ -268,6 +271,13 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 			if (jupyterHub.getCpuGuarantee() != null && jupyterHub.getCpuLimit() != null) {
 				builder.add("cpu_guarantee", jupyterHub.getCpuGuarantee().stripTrailingZeros().toPlainString());
 				builder.add("cpu_limit", jupyterHub.getCpuLimit().stripTrailingZeros().toPlainString());
+			}
+
+			if (StringHelper.containsNonWhitespace(jupyterHub.getAdditionalFields())) {
+				Map<String, String> fields = JupyterHub.parseFields(jupyterHub.getAdditionalFields());
+				for (String key : fields.keySet()) {
+					builder.add(key, fields.get(key));
+				}
 			}
 		}
 
