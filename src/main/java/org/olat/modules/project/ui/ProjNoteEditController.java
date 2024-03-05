@@ -28,6 +28,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -78,6 +79,23 @@ public class ProjNoteEditController extends FormBasicController {
 	@Autowired
 	private ProjectService projectService;
 
+	public ProjNoteEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjectBCFactory bcFactory, ProjNote note,
+			Set<Identity> members, boolean firstEdit, boolean withOpenInSameWindow) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "edit", mainForm);
+		this.bcFactory = bcFactory;
+		this.template = note.getArtefact().getProject().isTemplatePrivate() || note.getArtefact().getProject().isTemplatePublic();
+		this.note = note;
+		this.members = members;
+		this.firstEdit = firstEdit;
+		this.withOpenInSameWindow = withOpenInSameWindow;
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ProjNote.class, note.getKey());
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), "", getWindow());
+		if (lockEntry.isSuccess()) {
+			initForm(ureq);
+		}
+	}
+	
 	public ProjNoteEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjNote note,
 			Set<Identity> members, boolean firstEdit, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
