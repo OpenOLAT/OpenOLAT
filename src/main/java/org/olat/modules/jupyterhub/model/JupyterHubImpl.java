@@ -74,11 +74,20 @@ public class JupyterHubImpl implements Persistable, JupyterHub {
 	@Column(name = "j_status", nullable = false, insertable = true, updatable = true)
 	private JupyterHubStatus status;
 
+	@Column(name = "j_ram_guarantee", nullable = true, insertable = true, updatable = true)
+	private String ramGuarantee;
+
 	@Column(name = "j_ram", nullable = false, insertable = true, updatable = true)
-	private String ram;
+	private String ramLimit;
+
+	@Column(name = "j_cpu_guarantee", nullable = true, insertable = true, updatable = true)
+	private Long cpuGuarantee;
 
 	@Column(name = "j_cpu", nullable = false, insertable = true, updatable = true)
-	private long cpu;
+	private long cpuLimit;
+
+	@Column(name = "j_additional_fields", nullable = true, insertable = true, updatable = true)
+	private String additionalFields;
 
 	@Column(name = "j_image_checking_service_url", nullable = true, insertable = true, updatable = true)
 	private String imageCheckingServiceUrl;
@@ -149,26 +158,69 @@ public class JupyterHubImpl implements Persistable, JupyterHub {
 	}
 
 	@Override
-	public String getRam() {
-		return ram;
+	public String getRamGuarantee() {
+		return ramGuarantee;
+	}
+
+	public void setRamGuarantee(String ramGuarantee) {
+		this.ramGuarantee = ramGuarantee;
 	}
 
 	@Override
-	public void setRam(String ram) {
-		this.ram = ram;
+	public String getRamLimit() {
+		return ramLimit;
+	}
+
+	public void setRamLimit(String ramLimit) {
+		this.ramLimit = ramLimit;
 	}
 
 	@Override
-	public BigDecimal getCpu() {
-		return BigDecimal.valueOf(cpu, 2);
-	}
-
-	@Override
-	public void setCpu(BigDecimal cpu) {
-		if (cpu.scale() != 2) {
-			cpu = cpu.setScale(2, RoundingMode.HALF_UP);
+	public BigDecimal getCpuGuarantee() {
+		if (cpuGuarantee == null) {
+			return null;
 		}
-		this.cpu = cpu.unscaledValue().longValue();
+		return BigDecimal.valueOf(cpuGuarantee, 2);
+	}
+
+	public void setCpuGuarantee(BigDecimal cpuGuarantee) {
+		if (cpuGuarantee == null) {
+			this.cpuGuarantee = null;
+			return;
+		}
+		if (cpuGuarantee.scale() != 2) {
+			cpuGuarantee = cpuGuarantee.setScale(2, RoundingMode.HALF_UP);
+		}
+		this.cpuGuarantee = cpuGuarantee.unscaledValue().longValue();
+	}
+
+	@Override
+	public BigDecimal getCpuLimit() {
+		if (cpuLimit == -1) {
+			return null;
+		}
+		return BigDecimal.valueOf(cpuLimit, 2);
+	}
+
+	public void setCpuLimit(BigDecimal cpuLimit) {
+		if (cpuLimit == null) {
+			this.cpuLimit = -1;
+			return;
+		}
+		if (cpuLimit.scale() != 2) {
+			cpuLimit = cpuLimit.setScale(2, RoundingMode.HALF_UP);
+		}
+		this.cpuLimit = cpuLimit.unscaledValue().longValue();
+	}
+
+	@Override
+	public String getAdditionalFields() {
+		return additionalFields;
+	}
+
+	@Override
+	public void setAdditionalFields(String additionalFields) {
+		this.additionalFields = additionalFields;
 	}
 
 	@Override

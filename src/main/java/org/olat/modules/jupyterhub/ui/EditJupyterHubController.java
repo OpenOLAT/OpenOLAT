@@ -21,6 +21,7 @@ package org.olat.modules.jupyterhub.ui;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -54,14 +56,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EditJupyterHubController extends FormBasicController {
 
 	private final String clientId;
-	private final String accessToken;
 	private JupyterHub jupyterHub;
-	private TextElement nameEl, jupyterHubUrlEl, ramEl, cpuEl, imageCheckingServiceUrlEl, ltiKeyEl;
+	private TextElement nameEl, jupyterHubUrlEl, ramGuaranteeEl, ramLimitEl, cpuGuaranteeEl, cpuLimitEl, imageCheckingServiceUrlEl;
+	private TextAreaElement additionalFieldsEl;
 	private RichTextElement infoTextEl;
 	private SingleSelection dataTransmissionAgreementEl;
-	private SelectionValues dataTransmissionAgreementKV;
-	private StaticTextElement accessTokenEl;
-	private StaticTextElement clientEl;
 	private FormLink checkConnectionButton;
 
 	@Autowired
@@ -73,20 +72,13 @@ public class EditJupyterHubController extends FormBasicController {
 	public EditJupyterHubController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		clientId = idGenerator.newId();
-		accessToken = generateAccessToken();
 		initForm(ureq);
-	}
-
-	private String generateAccessToken() {
-		String source = idGenerator.newId();
-		return source.substring(source.length() - 12);
 	}
 
 	public EditJupyterHubController(UserRequest ureq, WindowControl wControl, JupyterHub jupyterHub) {
 		super(ureq, wControl);
 		this.jupyterHub = jupyterHub;
 		clientId = jupyterHub.getLtiTool().getClientId();
-		accessToken = StringHelper.containsNonWhitespace(jupyterHub.getAccessToken()) ? jupyterHub.getAccessToken() : generateAccessToken();
 		initForm(ureq);
 	}
 
@@ -99,15 +91,28 @@ public class EditJupyterHubController extends FormBasicController {
 		nameEl.setElementCssClass("o_sel_jupyterhub_name");
 		nameEl.setMandatory(true);
 
-		String cpu = jupyterHub != null ? jupyterHub.getCpu().stripTrailingZeros().toPlainString() : "1";
-		cpuEl = uifactory.addTextElement("jupyterHub.cpu", "table.header.hub.cpu", 4, cpu, formLayout);
-		cpuEl.setMandatory(true);
-		cpuEl.setExampleKey("form.hub.cpu.example", null);
+		String cpuGuarantee = getInitialCpuGuaranteeValue(jupyterHub);
+		cpuGuaranteeEl = uifactory.addTextElement("jupyterHub.cpuGuarantee", "table.header.hub.cpu.guarantee", 4, cpuGuarantee, formLayout);
+		cpuGuaranteeEl.setExampleKey("form.hub.cpu.example", null);
 
-		String ram = jupyterHub != null ? jupyterHub.getRam() : "1 G";
-		ramEl = uifactory.addTextElement("jupyterHub.ram", "table.header.hub.ram", 32, ram, formLayout);
-		ramEl.setMandatory(true);
-		ramEl.setExampleKey("form.hub.ram.example", null);
+		String cpuLimit = getInitialCpuLimitValue(jupyterHub);
+		cpuLimitEl = uifactory.addTextElement("jupyterHub.cpuLimit", "table.header.hub.cpu.limit", 4, cpuLimit, formLayout);
+		cpuLimitEl.setExampleKey("form.hub.cpu.example", null);
+
+		String ramGuarantee = getInitialRamGuaranteeValue(jupyterHub);
+		ramGuaranteeEl = uifactory.addTextElement("jupyterHub.ramGuarantee", "table.header.hub.ram.guarantee", 32, ramGuarantee, formLayout);
+		ramGuaranteeEl.setExampleKey("form.hub.ram.example", null);
+
+		String ramLimit = getInitialRamLimitValue(jupyterHub);
+		ramLimitEl = uifactory.addTextElement("jupyterHub.ram", "table.header.hub.ram", 32, ramLimit, formLayout);
+		ramLimitEl.setExampleKey("form.hub.ram.example", null);
+
+		String additionalFields = jupyterHub != null ? jupyterHub.getAdditionalFields() : "";
+		additionalFieldsEl = uifactory.addTextAreaElement("jupyterHub.additionalFields",
+				"form.hub.additionalFields", -1, -1, -1, true,
+				true, additionalFields, formLayout);
+		additionalFieldsEl.setHelpTextKey("form.hub.additionalFields.help", null);
+		additionalFieldsEl.setExampleKey("form.hub.additionalFields.example", null);
 
 		String imageCheckingServiceUrl = jupyterHub != null ? jupyterHub.getImageCheckingServiceUrl() : "";
 		imageCheckingServiceUrlEl = uifactory.addTextElement("jupyterHub.imageCheckingServiceUrl",
@@ -129,16 +134,10 @@ public class EditJupyterHubController extends FormBasicController {
 		jupyterHubUrlEl.setElementCssClass("o_sel_jupyterhub_url");
 		jupyterHubUrlEl.setMandatory(true);
 
-//		String ltiKey = jupyterHub != null && jupyterHub.getLtiKey() != null ? jupyterHub.getLtiKey() : "";
-//		ltiKeyEl = uifactory.addTextElement("jupyterHub.ltiKey", "form.hub.ltiKey", 255, ltiKey, formLayout);
-
-//		accessTokenEl = uifactory.addStaticTextElement("jupyterHub.accessToken", "form.hub.accessToken", accessToken, formLayout);
-//		accessTokenEl.setElementCssClass("text-muted");
-
-		clientEl = uifactory.addStaticTextElement("jupyterHub.clientId", "table.header.hub.clientId", clientId, formLayout);
+		StaticTextElement clientEl = uifactory.addStaticTextElement("jupyterHub.clientId", "table.header.hub.clientId", clientId, formLayout);
 		clientEl.setElementCssClass("text-muted");
 
-		dataTransmissionAgreementKV = new SelectionValues();
+		SelectionValues dataTransmissionAgreementKV = new SelectionValues();
 		dataTransmissionAgreementKV.add(SelectionValues.entry(JupyterHub.AgreementSetting.requireAgreement.name(), translate("form.agreement.requireAgreement")));
 		dataTransmissionAgreementKV.add(SelectionValues.entry(JupyterHub.AgreementSetting.suppressAgreement.name(), translate("form.agreement.suppressAgreement")));
 		dataTransmissionAgreementKV.add(SelectionValues.entry(JupyterHub.AgreementSetting.configurableByAuthor.name(), translate("form.agreement.configurableByAuthor")));
@@ -154,14 +153,66 @@ public class EditJupyterHubController extends FormBasicController {
 		checkConnectionButton = uifactory.addFormLink("form.checkConnection", buttons, Link.BUTTON);
 	}
 
+	private String getInitialCpuGuaranteeValue(JupyterHub jupyterHub) {
+		if (jupyterHub == null) {
+			return "0.5";
+		}
+		if (jupyterHub.getCpuGuarantee() == null) {
+			return "";
+		}
+		return jupyterHub.getCpuGuarantee().stripTrailingZeros().toPlainString();
+	}
+
+	private String getInitialCpuLimitValue(JupyterHub jupyterHub) {
+		if (jupyterHub == null) {
+			return "1";
+		}
+		if (jupyterHub.getCpuLimit() == null) {
+			return "";
+		}
+		return jupyterHub.getCpuLimit().stripTrailingZeros().toPlainString();
+	}
+
+	private String getInitialRamGuaranteeValue(JupyterHub jupyterHub) {
+		if (jupyterHub == null) {
+			return "0.5 G";
+		}
+		if (!StringHelper.containsNonWhitespace(jupyterHub.getRamGuarantee())) {
+			return "";
+		}
+		return jupyterHub.getRamGuarantee();
+	}
+
+	private String getInitialRamLimitValue(JupyterHub jupyterHub) {
+		if (jupyterHub == null) {
+			return "1 G";
+		}
+		if (!StringHelper.containsNonWhitespace(jupyterHub.getRamLimit())) {
+			return "";
+		}
+		return jupyterHub.getRamLimit();
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
 		allOk &= validateName();
-		allOk &= validateCpu();
-		allOk &= validateRam();
+
+		cpuGuaranteeEl.clearError();
+		cpuLimitEl.clearError();
+		allOk &= validateCpu(cpuGuaranteeEl);
+		allOk &= validateCpu(cpuLimitEl);
+		allOk &= validateBothSetOrNotSet(cpuGuaranteeEl, cpuLimitEl, "table.header.hub.cpu.warning");
+
+		ramGuaranteeEl.clearError();
+		ramLimitEl.clearError();
+		allOk &= validateRam(ramGuaranteeEl);
+		allOk &= validateRam(ramLimitEl);
+		allOk &= validateBothSetOrNotSet(ramGuaranteeEl, ramLimitEl, "table.header.hub.ram.warning");
+
+		allOk &= validateAdditionalFields(additionalFieldsEl);
+
 		allOk &= validateImageChecker();
 		allOk &= validateJupyterHubUrl();
 
@@ -177,8 +228,10 @@ public class EditJupyterHubController extends FormBasicController {
 		return true;
 	}
 
-	private boolean validateCpu() {
-		cpuEl.clearError();
+	private boolean validateCpu(TextElement cpuEl) {
+		if (!StringHelper.containsNonWhitespace(cpuEl.getValue())) {
+			return true;
+		}
 		try {
 			double cpuDouble = Double.parseDouble(cpuEl.getValue());
 			if (cpuDouble <= 0 || cpuDouble > 32) {
@@ -192,13 +245,37 @@ public class EditJupyterHubController extends FormBasicController {
 		return true;
 	}
 
-	private boolean validateRam() {
-		ramEl.clearError();
+	private boolean validateRam(TextElement ramEl) {
+		if (!StringHelper.containsNonWhitespace(ramEl.getValue())) {
+			return true;
+		}
 		if (!JupyterHub.validateRam(ramEl.getValue())) {
 			ramEl.setErrorKey("form.hub.ram.error");
 			return false;
 		}
 
+		return true;
+	}
+
+	private boolean validateBothSetOrNotSet(TextElement el1, TextElement el2, String warningKey) {
+		if (StringHelper.containsNonWhitespace(el1.getValue()) ^ StringHelper.containsNonWhitespace(el2.getValue())) {
+			el1.setErrorKey(warningKey);
+			return false;
+		}
+
+		return true;
+	}
+
+	private boolean validateAdditionalFields(TextAreaElement additionalFieldsEl) {
+		additionalFieldsEl.clearError();
+		if (!StringHelper.containsNonWhitespace(additionalFieldsEl.getValue())) {
+			return true;
+		}
+		Map<String, String> fields = JupyterHub.parseFields(additionalFieldsEl.getValue());
+		if (fields.isEmpty()) {
+			additionalFieldsEl.setErrorKey("form.hub.additionalFields.error");
+			return false;
+		}
 		return true;
 	}
 
@@ -241,29 +318,42 @@ public class EditJupyterHubController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String name = nameEl.getValue();
 		String jupyterHubUrl = jupyterHubUrlEl.getValue();
-		String ram = ramEl.getValue();
-		double cpuAsDouble = Double.parseDouble(cpuEl.getValue());
+		String ramGuarantee = ramGuaranteeEl.getValue();
+		String ramLimit = ramLimitEl.getValue();
+		BigDecimal cpuGuarantee = parseAsBigDecimal(cpuGuaranteeEl);
+		BigDecimal cpuLimit = parseAsBigDecimal(cpuLimitEl);
+		String additionalFields = additionalFieldsEl.getValue();
 		String imageCheckingServiceUrl = imageCheckingServiceUrlEl.getValue();
 		String infoText = infoTextEl.getValue();
-//		String ltiKey = ltiKeyEl.getValue();
 		JupyterHub.AgreementSetting agreementSetting = JupyterHub.AgreementSetting.valueOf(dataTransmissionAgreementEl.getSelectedKey());
 
 		if (jupyterHub == null) {
-			jupyterHub = jupyterManager.createJupyterHub(name, jupyterHubUrl, clientId, ram, BigDecimal.valueOf(cpuAsDouble), agreementSetting);
+			jupyterHub = jupyterManager.createJupyterHub(name, jupyterHubUrl, clientId, ramGuarantee, ramLimit,
+					cpuGuarantee, cpuLimit, additionalFields, agreementSetting);
 		} else {
 			jupyterHub.setName(nameEl.getValue());
 			jupyterHub.setJupyterHubUrl(jupyterHubUrl);
-			jupyterHub.setRam(ram);
-			jupyterHub.setCpu(BigDecimal.valueOf(cpuAsDouble));
+			jupyterHub.setRamGuarantee(ramGuarantee);
+			jupyterHub.setRamLimit(ramLimit);
+			jupyterHub.setCpuGuarantee(cpuGuarantee);
+			jupyterHub.setCpuLimit(cpuLimit);
+			jupyterHub.setAdditionalFields(additionalFields);
 		}
 
 		jupyterHub.setImageCheckingServiceUrl(imageCheckingServiceUrl);
 		jupyterHub.setInfoText(infoText);
-//		jupyterHub.setLtiKey(ltiKey);
 
 		jupyterManager.updateJupyterHub(jupyterHub);
 
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	private BigDecimal parseAsBigDecimal(TextElement cpuEl) {
+		if (!StringHelper.containsNonWhitespace(cpuEl.getValue())) {
+			return null;
+		}
+		double cpuAsDouble = Double.parseDouble(cpuEl.getValue());
+		return BigDecimal.valueOf(cpuAsDouble);
 	}
 
 	@Override

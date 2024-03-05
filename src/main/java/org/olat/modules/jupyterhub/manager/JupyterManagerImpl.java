@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
@@ -131,10 +132,12 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	}
 
 	@Override
-	public JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ram, BigDecimal cpu,
-									   JupyterHub.AgreementSetting agreementSetting) {
+	public JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ramGuarantee,
+									   String ramLimit, BigDecimal cpuGuarantee, BigDecimal cpuLimit,
+									   String additionalFields, JupyterHub.AgreementSetting agreementSetting) {
 		LTI13Tool ltiTool = createLtiTool(name, jupyterHubUrl, clientId);
-		return jupyterHubDAO.createJupyterHub(name, ram, cpu, ltiTool, agreementSetting);
+		return jupyterHubDAO.createJupyterHub(name, ramGuarantee, ramLimit, cpuGuarantee, cpuLimit, additionalFields,
+				ltiTool, agreementSetting);
 	}
 
 	LTI13Tool createLtiTool(String name, String jupyterHubUrl, String clientId) {
@@ -195,8 +198,9 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		copiedTool.setPublicKeyUrl(originalTool.getPublicKeyUrl());
 		LTI13Tool updatedCopiedTool = lti13Service.updateTool(copiedTool);
 
-		jupyterHubDAO.createJupyterHub(copiedName, jupyterHub.getRam(), jupyterHub.getCpu(), updatedCopiedTool,
-				jupyterHub.getAgreementSetting());
+		jupyterHubDAO.createJupyterHub(copiedName, jupyterHub.getRamGuarantee(), jupyterHub.getRamLimit(),
+				jupyterHub.getCpuGuarantee(), jupyterHub.getCpuLimit(), jupyterHub.getAdditionalFields(),
+				updatedCopiedTool, jupyterHub.getAgreementSetting());
 	}
 
 	@Override
@@ -256,17 +260,33 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 
 	private void setCustomAttributes(LTI13Context context, JupyterHub jupyterHub, String image) {
 		CustomAttributesBuilder builder = new CustomAttributesBuilder();
-		builder
-				.add("singleuser_image", StringHelper.blankIfNull(image))
-				.add("memory_guarantee", "128M")
-				.add("memory_limit", jupyterHub != null ? JupyterHub.standardizeRam(jupyterHub.getRam()) : "1G")
-				.add("cpu_guarantee", "0.5")
-				.add("cpu_limit", jupyterHub != null ? jupyterHub.getCpu().stripTrailingZeros().toPlainString() : "1")
-				.add("username", LTIManager.USER_PROPS_PREFIX + LTIManager.USER_NAME_PROP)
+		builder.add("singleuser_image", StringHelper.blankIfNull(image));
+
+		if (jupyterHub != null) {
+			if (StringHelper.containsNonWhitespace(jupyterHub.getRamGuarantee()) && StringHelper.containsNonWhitespace(jupyterHub.getRamLimit())) {
+				builder.add("memory_guarantee", JupyterHub.standardizeRam(jupyterHub.getRamGuarantee()));
+				builder.add("memory_limit", JupyterHub.standardizeRam(jupyterHub.getRamLimit()));
+			}
+
+			if (jupyterHub.getCpuGuarantee() != null && jupyterHub.getCpuLimit() != null) {
+				builder.add("cpu_guarantee", jupyterHub.getCpuGuarantee().stripTrailingZeros().toPlainString());
+				builder.add("cpu_limit", jupyterHub.getCpuLimit().stripTrailingZeros().toPlainString());
+			}
+
+			if (StringHelper.containsNonWhitespace(jupyterHub.getAdditionalFields())) {
+				Map<String, String> fields = JupyterHub.parseFields(jupyterHub.getAdditionalFields());
+				for (String key : fields.keySet()) {
+					builder.add(key, fields.get(key));
+				}
+			}
+		}
+
+		builder.add("username", LTIManager.USER_PROPS_PREFIX + LTIManager.USER_NAME_PROP)
 				.add("course_id", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_COURSE_ID)
 				.add("course_url", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_COURSE_URL)
 				.add("node_id", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_NODE_ID)
 				.add("node_url", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_NODE_URL);
+
 		context.setSendCustomAttributes(builder.build());
 	}
 

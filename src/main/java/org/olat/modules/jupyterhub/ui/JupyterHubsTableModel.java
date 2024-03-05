@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial date: 2023-04-14<br>
@@ -56,8 +57,18 @@ public class JupyterHubsTableModel extends DefaultFlexiTableDataModel<JupyterHub
 			case name -> { return row.getName(); }
 			case status -> { return row.getStatus(); }
 			case clientId -> { return row.getClientId(); }
-			case ram -> { return row.getRam(); }
-			case cpu -> { return row.getCpu().stripTrailingZeros().toPlainString(); }
+			case ram -> {
+				if (StringHelper.containsNonWhitespace(row.getRamGuarantee()) && StringHelper.containsNonWhitespace(row.getRamLimit())) {
+					return row.getRamGuarantee() + " / " + row.getRamLimit();
+				}
+				return "";
+			}
+			case cpu -> {
+				if (row.getCpuGuarantee() != null && row.getCpuLimit() != null) {
+					return row.getCpuGuarantee().stripTrailingZeros().toPlainString() + " / " + row.getCpuLimit().stripTrailingZeros().toPlainString();
+				}
+				return "";
+			}
 			case applications -> { return row.getNumberOfApplications(); }
 			case tools -> { return row.getToolLink(); }
 			default -> { return "ERROR"; }

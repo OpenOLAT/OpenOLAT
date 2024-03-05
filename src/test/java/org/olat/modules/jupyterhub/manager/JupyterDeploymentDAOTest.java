@@ -60,7 +60,8 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		String subIdent = "12345678";
 		String image = "jupyter/minimal-notebook";
 		JupyterHub jupyterHub = jupyterManager.createJupyterHub("Test hub",
-				"https://jupyterhub.openolat.org", clientId, "3 G", BigDecimal.valueOf(3),
+				"https://jupyterhub.openolat.org", clientId, "0.5 G", "3 G",
+				BigDecimal.valueOf(1), BigDecimal.valueOf(3), "",
 				JupyterHub.AgreementSetting.configurableByAuthor);
 		LTI13Context context = jupyterManager.createLtiContext(jupyterHub.getLtiTool(), entry,
 				subIdent, jupyterHub, image);
@@ -85,7 +86,7 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 				.findFirst();
 		Assert.assertTrue(optionalMemoryLimit.isPresent());
 		Assert.assertTrue(JupyterHub.validateRam(optionalMemoryLimit.get()));
-		Assert.assertEquals(JupyterHub.standardizeRam(jupyterHub.getRam()), optionalMemoryLimit.get());
+		Assert.assertEquals(JupyterHub.standardizeRam(jupyterHub.getRamLimit()), optionalMemoryLimit.get());
 		Assert.assertEquals(image, jupyterDeployment.getImage());
 	}
 	
@@ -97,7 +98,8 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		String clientId = UUID.randomUUID().toString();
 		String subIdent = UUID.randomUUID().toString();
 		JupyterHub jupyterHub = jupyterManager.createJupyterHub("Test hub",
-				"https://jupyterhub.openolat.org", clientId, "3 G", BigDecimal.valueOf(3),
+				"https://jupyterhub.openolat.org", clientId, "0.5 G", "3 G",
+				BigDecimal.valueOf(1), BigDecimal.valueOf(3), "",
 				JupyterHub.AgreementSetting.configurableByAuthor);
 		LTI13Context context = jupyterManager.createLtiContext(jupyterHub.getLtiTool(), entry,
 				subIdent, jupyterHub, "jupyter/minimal-notebook");
@@ -120,7 +122,8 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		String clientId = UUID.randomUUID().toString();
 		String subIdent = UUID.randomUUID().toString();
 		JupyterHub jupyterHub = jupyterManager.createJupyterHub("Test hub",
-				"https://jupyterhub.openolat.org", clientId, "3 G", BigDecimal.valueOf(3),
+				"https://jupyterhub.openolat.org", clientId, "0.5 G", "3 G",
+				BigDecimal.valueOf(1), BigDecimal.valueOf(3), "",
 				JupyterHub.AgreementSetting.configurableByAuthor);
 		LTI13Context context = jupyterManager.createLtiContext(jupyterHub.getLtiTool(), entry,
 				subIdent, jupyterHub, "jupyter/minimal-notebook");

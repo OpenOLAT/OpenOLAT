@@ -44,7 +44,8 @@ public interface JupyterManager {
 
 	List<JupyterHubDAO.JupyterHubApplication> getJupyterHubApplications(Long key);
 
-	JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ram, BigDecimal cpu,
+	JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ramGuarantee, String ramLimit,
+								BigDecimal cpuGuarantee, BigDecimal cpuLimit, String additionalFields,
 								JupyterHub.AgreementSetting agreementSetting);
 
 	boolean isInUse(JupyterHub jupyterHub);

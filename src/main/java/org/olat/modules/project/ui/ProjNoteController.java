@@ -24,18 +24,18 @@ import java.util.List;
 
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
+import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
+import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleComponent;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.StringMediaResource;
@@ -67,18 +67,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjNoteController extends BasicController {
-	
-	private static final String CMD_OPEN_WINDOW = "open.window";
-	private static final String CMD_DOWNLOAD = "download";
-	private static final String CMD_DELETE = "delete";
+public class ProjNoteController extends FormBasicController {
 
-	private final VelocityContainer mainVC;
-	private final FormToggleComponent editToggle;
-	private Dropdown cmdsDropDown;
-	private Link openNewWindowLink;
-	private Link downloadLink;
-	private Link deleteLink;
+	private FormToggle editToggle;
+	private DropdownItem cmdsDropDown;
+	private FormLink openNewWindowLink;
+	private FormLink downloadLink;
+	private FormLink deleteLink;
 	
 	private ProjNoteViewController noteViewCtrl;
 	private ProjNoteEditController noteEditCtrl;
@@ -98,7 +93,7 @@ public class ProjNoteController extends BasicController {
 
 	public ProjNoteController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
 			ProjProjectSecurityCallback secCallback, ProjNoteInfo noteInfo, boolean edit, MapperKey avatarMapperKey) {
-		super(ureq, wControl);
+		super(ureq, wControl, "note");
 		this.bcFactory = bcFactory;
 		this.noteInfo = noteInfo;
 		this.secCallback = secCallback;
@@ -107,35 +102,7 @@ public class ProjNoteController extends BasicController {
 		
 		projectService.createActivityRead(getIdentity(), noteInfo.getNote().getArtefact());
 		
-		mainVC = createVelocityContainer("note");
-		putInitialPanel(mainVC);
-		
-		editToggle = new FormToggleComponent("edit", translate("on"), translate("off"));
-		editToggle.addListener(this);
-		mainVC.put("edit", editToggle);
-		mainVC.contextPut("editLableFor", editToggle.getFormDispatchId());
-		
-		cmdsDropDown = new Dropdown("cmds", null, false, getTranslator());
-		cmdsDropDown.setElementCssClass("o_proj_cmds");
-		cmdsDropDown.setCarretIconCSS("o_icon o_icon_commands");
-		cmdsDropDown.setButton(true);
-		cmdsDropDown.setEmbbeded(true);
-		cmdsDropDown.setOrientation(DropdownOrientation.right);
-		mainVC.put("cmds", cmdsDropDown);
-		
-		openNewWindowLink = LinkFactory.createToolLink(CMD_OPEN_WINDOW, translate("open.in.new.window"), this, "o_icon_content_popup");
-		openNewWindowLink.setNewWindow(true, true);
-		cmdsDropDown.addComponent(openNewWindowLink);
-		
-		downloadLink = LinkFactory.createToolLink(CMD_DOWNLOAD, translate("download"), this, "o_icon_download");
-		cmdsDropDown.addComponent(downloadLink);
-		
-		if (secCallback.canDeleteNote(noteInfo.getNote(), getIdentity())) {
-			cmdsDropDown.addComponent(new Spacer("delete-spacer"));
-			
-			deleteLink = LinkFactory.createToolLink(CMD_DELETE, translate("delete"), this, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
-			cmdsDropDown.addComponent(deleteLink);
-		}
+		initForm(ureq);
 		
 		if (edit && secCallback.canEditNote(noteInfo.getNote())) {
 			doOpenEdit(ureq);
@@ -143,21 +110,52 @@ public class ProjNoteController extends BasicController {
 			doOpenView(ureq);
 		}
 	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		editToggle = uifactory.addToggleButton("edit", "edit.mode", translate("on"), translate("off"), formLayout);
+		flc.contextPut("editLableFor", editToggle.getFormDispatchId());
+		
+		cmdsDropDown = uifactory.addDropdownMenu("cmds", null, null, formLayout, getTranslator());
+		cmdsDropDown.setElementCssClass("o_proj_cmds");
+		cmdsDropDown.setCarretIconCSS("o_icon o_icon_commands");
+		cmdsDropDown.setButton(true);
+		cmdsDropDown.setEmbbeded(true);
+		cmdsDropDown.setOrientation(DropdownOrientation.right);
+		
+		openNewWindowLink = uifactory.addFormLink("open.in.new.window", formLayout);
+		openNewWindowLink.setIconLeftCSS("o_icon o_icon-fw o_icon_content_popup");
+		openNewWindowLink.setNewWindow(true, true, true);
+		cmdsDropDown.addElement(openNewWindowLink);
+		
+		downloadLink = uifactory.addFormLink("download", formLayout);
+		downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		cmdsDropDown.addElement(downloadLink);
+		
+		if (secCallback.canDeleteNote(noteInfo.getNote(), getIdentity())) {
+			cmdsDropDown.addElement(new SpacerItem("delete-spacer"));
+			
+			deleteLink = uifactory.addFormLink("delete", formLayout);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+			cmdsDropDown.addElement(deleteLink);
+		}
+	}
 	
 	private void updateHeaderUI(UserRequest ureq) {
 		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(noteInfo.getMembers()));
-		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "members", mainVC, null, avatarMapperKey);
+		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "members", null, null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);
 		usersPortraitCmp.setUsers(portraitUsers);
+		flc.put("members", usersPortraitCmp);
 		
-		mainVC.contextPut("numReferences", noteInfo.getNumReferences());
+		flc.contextPut("numReferences", noteInfo.getNumReferences());
 		
 		String modifiedDate = formatter.formatDateRelative(noteInfo.getNote().getArtefact().getContentModifiedDate());
 		String modifiedBy = userManager.getUserDisplayName(noteInfo.getNote().getArtefact().getContentModifiedBy().getKey());
 		String modified = translate("date.by", modifiedDate, modifiedBy);
-		mainVC.contextPut("modified", modified);
+		flc.contextPut("modified", modified);
 	}
 
 	private void doOpenView(UserRequest ureq) {
@@ -166,8 +164,8 @@ public class ProjNoteController extends BasicController {
 		
 		noteViewCtrl = new ProjNoteViewController(ureq, getWindowControl(), bcFactory, noteInfo, false);
 		listenTo(noteViewCtrl);
-		mainVC.put("viewNote", noteViewCtrl.getInitialComponent());
-		mainVC.contextPut("edit", Boolean.FALSE);
+		flc.add("viewNote", noteViewCtrl.getInitialFormItem());
+		flc.contextPut("edit", Boolean.FALSE);
 		
 		editToggle.setVisible(secCallback.canEditNote(noteInfo.getNote()));
 	}
@@ -184,20 +182,25 @@ public class ProjNoteController extends BasicController {
 			showInfo("error.note.locked", displayName);
 			doOpenView(ureq);
 		} else {
-			noteEditCtrl = new ProjNoteEditController(ureq, getWindowControl(), bcFactory, noteInfo.getNote(), noteInfo.getMembers(), false, true);
+			noteEditCtrl = new ProjNoteEditController(ureq, getWindowControl(), mainForm, bcFactory, noteInfo.getNote(),
+					noteInfo.getMembers(), false, true);
 			listenTo(noteEditCtrl);
-			mainVC.put("editNote", noteEditCtrl.getInitialComponent());
-			mainVC.contextPut("edit", Boolean.TRUE);
+			flc.add("editNote", noteEditCtrl.getInitialFormItem());
+			flc.contextPut("edit", Boolean.TRUE);
 		}
 	}
 	
 	private void cleanUpNoteUI() {
+		if (noteViewCtrl != null) {
+			flc.remove(noteViewCtrl.getInitialFormItem());
+		}
+		if (noteEditCtrl != null) {
+			flc.remove(noteEditCtrl.getInitialFormItem());
+		}
 		removeAsListenerAndDispose(noteViewCtrl);
 		removeAsListenerAndDispose(noteEditCtrl);
 		noteViewCtrl = null;
 		noteEditCtrl = null;
-		mainVC.remove("viewNote");
-		mainVC.remove("editNote");
 	}
 
 	private boolean reloadNote() {
@@ -213,7 +216,6 @@ public class ProjNoteController extends BasicController {
 		return true;
 	}
 	
-
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == noteEditCtrl) {
@@ -242,9 +244,9 @@ public class ProjNoteController extends BasicController {
 		deleteConfirmationCtrl = null;
 		cmc = null;
 	}
-
+	
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == editToggle) {
 			if (!editToggle.isOn()) {
 				if (noteEditCtrl != null) {
@@ -268,6 +270,12 @@ public class ProjNoteController extends BasicController {
 				doConfirmDelete(ureq);
 			}
 		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 	private void doOpenWindow() {

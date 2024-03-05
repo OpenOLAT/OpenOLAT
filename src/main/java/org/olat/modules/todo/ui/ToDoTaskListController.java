@@ -1014,13 +1014,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private void forgeGoToOriginLink(ToDoTaskRow row) {
 		if (isVisible(ToDoTaskCols.contextTitle) && StringHelper.containsNonWhitespace(row.getOriginTitle())) {
 			FormLink link = uifactory.addFormLink("origin_" + row.getKey(), CMD_GOTO_ORIGIN, "", null, null, Link.NONTRANSLATED);
-			link.setI18nKey(row.getOriginTitle());
+			link.setI18nKey(StringHelper.escapeHtml(row.getOriginTitle()));
 			link.setUserObject(row);
 			row.setGoToOriginLink(link);
 		}
 		if (isVisible(ToDoTaskCols.contextSubTitle) && StringHelper.containsNonWhitespace(row.getOriginSubTitle())) {
 			FormLink link = uifactory.addFormLink("sub_origin_" + row.getKey(), CMD_GOTO_ORIGIN, "", null, null, Link.NONTRANSLATED);
-			link.setI18nKey(row.getOriginSubTitle());
+			link.setI18nKey(StringHelper.escapeHtml(row.getOriginTitle()));
 			link.setUserObject(row);
 			row.setGoToSubOriginLink(link);
 		}
@@ -1066,6 +1066,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 				int page = index / tableEl.getPageSize();
 				tableEl.setPage(page);
 			}
+			row.getDetailsItem().toggleOn();
 			doShowDetails(ureq, row);
 			tableEl.expandDetails(index);
 		}

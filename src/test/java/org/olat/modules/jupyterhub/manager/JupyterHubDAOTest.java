@@ -52,14 +52,15 @@ public class JupyterHubDAOTest extends OlatTestCase {
 	public void testCreateJupyterHub() {
 		String clientId = UUID.randomUUID().toString();
 		LTI13Tool ltiTool = createTestLtiTool(clientId);
-		JupyterHub jupyterHub = jupyterHubDAO.createJupyterHub("JupyterHubTest", "2G", BigDecimal.valueOf(2), ltiTool,
+		JupyterHub jupyterHub = jupyterHubDAO.createJupyterHub("JupyterHubTest", "1G", "2G",
+				BigDecimal.valueOf(1), BigDecimal.valueOf(2), "", ltiTool,
 				JupyterHub.AgreementSetting.suppressAgreement);
 
 		Assert.assertNotNull(jupyterHub);
 		Assert.assertNotNull(jupyterHub.getKey());
 		Assert.assertEquals("JupyterHubTest", jupyterHub.getName());
-		Assert.assertEquals("2G", jupyterHub.getRam());
-		Assert.assertEquals(BigDecimal.valueOf(2).setScale(2, RoundingMode.HALF_UP), jupyterHub.getCpu());
+		Assert.assertEquals("2G", jupyterHub.getRamLimit());
+		Assert.assertEquals(BigDecimal.valueOf(2).setScale(2, RoundingMode.HALF_UP), jupyterHub.getCpuLimit());
 		Assert.assertEquals(JupyterHub.AgreementSetting.suppressAgreement, jupyterHub.getAgreementSetting());
 
 		Assert.assertNotNull(jupyterHub.getLtiTool());
@@ -75,7 +76,8 @@ public class JupyterHubDAOTest extends OlatTestCase {
 	@Test
 	public void testGetJupyterHub() {
 		String clientId = UUID.randomUUID().toString();
-		JupyterHub jupyterHub = createTestJupyterHub(clientId, "Test1", "1G", BigDecimal.valueOf(1), JupyterHub.AgreementSetting.suppressAgreement);
+		JupyterHub jupyterHub = createTestJupyterHub(clientId, "Test1", "0.5 G", "1G",
+				BigDecimal.valueOf(1), BigDecimal.valueOf(1), JupyterHub.AgreementSetting.suppressAgreement);
 
 		JupyterHub jupyterHubForClientId = jupyterHubDAO.getJupyterHub(clientId);
 		JupyterHub jupyterHubForRandomClientId = jupyterHubDAO.getJupyterHub(UUID.randomUUID().toString());
@@ -90,18 +92,19 @@ public class JupyterHubDAOTest extends OlatTestCase {
 		Assert.assertEquals(clientId, jupyterHubForKey.getLtiTool().getClientId());
 	}
 
-	private JupyterHub createTestJupyterHub(String clientId, String name, String ram, BigDecimal cpu,
+	private JupyterHub createTestJupyterHub(String clientId, String name, String ramGuarantee, String ramLimit,
+											BigDecimal cpuGuarantee, BigDecimal cpuLimit,
 											JupyterHub.AgreementSetting agreementSetting) {
 		LTI13Tool ltiTool = createTestLtiTool(clientId);
-		return jupyterHubDAO.createJupyterHub(name, ram, cpu, ltiTool, agreementSetting);
+		return jupyterHubDAO.createJupyterHub(name, ramGuarantee, ramLimit, cpuGuarantee, cpuLimit, "", ltiTool, agreementSetting);
 	}
 
 	@Test
 	public void testGetJupyterHubs() {
 		String clientId1 = UUID.randomUUID().toString();
 		String clientId2 = UUID.randomUUID().toString();
-		JupyterHub jupyterHub1 = createTestJupyterHub(clientId1, "Test1", "1G", BigDecimal.valueOf(1), JupyterHub.AgreementSetting.suppressAgreement);
-		JupyterHub jupyterHub2 = createTestJupyterHub(clientId2, "Test2", "2G", BigDecimal.valueOf(2), JupyterHub.AgreementSetting.requireAgreement);
+		JupyterHub jupyterHub1 = createTestJupyterHub(clientId1, "Test1", "0.5G", "1G", BigDecimal.valueOf(1), BigDecimal.valueOf(1), JupyterHub.AgreementSetting.suppressAgreement);
+		JupyterHub jupyterHub2 = createTestJupyterHub(clientId2, "Test2", "1 G", "2G", BigDecimal.valueOf(1), BigDecimal.valueOf(2), JupyterHub.AgreementSetting.requireAgreement);
 
 		List<JupyterHub> jupyterHubs = jupyterHubDAO.getJupyterHubs();
 
@@ -116,7 +119,7 @@ public class JupyterHubDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("jupyter-author-1");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
 		String clientId = UUID.randomUUID().toString();
-		JupyterHub jupyterHub = createTestJupyterHub(clientId, "Used JupyterHub", "16G", BigDecimal.valueOf(16), JupyterHub.AgreementSetting.configurableByAuthor);
+		JupyterHub jupyterHub = createTestJupyterHub(clientId, "Used JupyterHub", "4G", "16G", BigDecimal.valueOf(4), BigDecimal.valueOf(16), JupyterHub.AgreementSetting.configurableByAuthor);
 		String subIdent1 = "1234";
 		String subIdent2 = "2345";
 		String image1 = "images/image1";
@@ -135,7 +138,7 @@ public class JupyterHubDAOTest extends OlatTestCase {
 
 		List<JupyterHubDAO.JupyterHubWithApplicationCount> hubsWithApplicationCounts = jupyterManager.getJupyterHubsWithApplicationCounts();
 
-		Assert.assertTrue(hubsWithApplicationCounts.size() >= 1);
+		Assert.assertFalse(hubsWithApplicationCounts.isEmpty());
 		List<JupyterHubDAO.JupyterHubWithApplicationCount> matchingHubs = hubsWithApplicationCounts.stream().filter(h -> h.getJupyterHub().getLtiTool().getClientId().equals(clientId)).toList();
 		Assert.assertEquals(1, matchingHubs.size());
 		Assert.assertEquals("Used JupyterHub", matchingHubs.get(0).getJupyterHub().getName());

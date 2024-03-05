@@ -51,12 +51,20 @@ public class JupyterHubRow {
 		return hub.getLtiTool().getClientId();
 	}
 
-	public String getRam() {
-		return hub.getRam();
+	public String getRamGuarantee() {
+		return hub.getRamGuarantee();
 	}
 
-	public BigDecimal getCpu() {
-		return hub.getCpu();
+	public String getRamLimit() {
+		return hub.getRamLimit();
+	}
+
+	public BigDecimal getCpuGuarantee() {
+		return hub.getCpuGuarantee();
+	}
+
+	public BigDecimal getCpuLimit() {
+		return hub.getCpuLimit();
 	}
 
 	public Long getNumberOfApplications() {

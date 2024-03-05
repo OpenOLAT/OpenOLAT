@@ -36,6 +36,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.todo.manager.CourseCollectionToDoTaskProvider;
 import org.olat.course.todo.model.ToDoTaskCollectionCreateContext;
 import org.olat.user.UserManager;
@@ -95,7 +96,7 @@ public class ToDoCollectionCreateAssigneeController extends StepFormBasicControl
 		List<Identity> participants = courseCollectionToDoTaskProvider.getAssigneeCandidates(getIdentity(), context.getRepositoryEntry(), context.isCoach());
 		participants.forEach(participant -> participantSV.add(SelectionValues.entry(
 						participant.getKey().toString(),
-						userManager.getUserDisplayName(participant))));
+						StringHelper.escapeHtml(userManager.getUserDisplayName(participant)))));
 		participantsEl = uifactory.addCheckboxesFilterDropdown("participants",
 				"course.todo.collection.assignees.participants", formLayout, getWindowControl(), participantSV);
 		if (context.getAssigneeKeys() != null) {
