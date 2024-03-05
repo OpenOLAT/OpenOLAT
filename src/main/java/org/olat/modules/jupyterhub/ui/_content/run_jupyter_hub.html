@@ -2,6 +2,9 @@
 	#if ($r.available("disclaimer"))
 	$r.render("disclaimer")
 	#end
+	#if ($r.available("infoText"))
+	$r.render("infoText")
+	#end
 	#if ($r.available("runButton"))
 	<div class="o_button_group">
 		$r.render("runButton")

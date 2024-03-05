@@ -88,13 +88,11 @@ public class ContentEditorPage extends ContentViewPage {
 		By titleSize = By.xpath("//div[@class='o_ceditor_inspector']//select[@id='o_fioheading_size_SELBOX']");
 		OOGraphene.waitElement(titleSize, browser);
 
-		// Move the focus, important
-		new Actions(browser)
-			.moveToElement(browser.findElement(titleSize))
-			.click().perform();
-		
 		new Select(browser.findElement(titleSize)).selectByValue(Integer.toString(size));
 		OOGraphene.waitBusy(browser);
+		By selectedSize = By.xpath("//div[@class='o_ceditor_inspector']//select[@id='o_fioheading_size_SELBOX']/option[@value='" + size +"'][@selected='selected']");
+		OOGraphene.waitElement(selectedSize, browser);
+		
 		return this;
 	}
 	

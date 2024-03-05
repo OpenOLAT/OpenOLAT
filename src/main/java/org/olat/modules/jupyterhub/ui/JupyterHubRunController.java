@@ -27,6 +27,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -34,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.basiclti.LTIDataExchangeDisclaimerController;
 import org.olat.course.properties.CoursePropertyManager;
@@ -59,6 +62,7 @@ public class JupyterHubRunController extends BasicController {
 	JupyterDeployment jupyterDeployment;
 	private LTI13DisplayController ltiCtrl;
 	private LTIDataExchangeDisclaimerController disclaimerCtrl;
+	private TextComponent infoText;
 	private Link runButton;
 	private VelocityContainer mainVC;
 	private final UserCourseEnvironment userCourseEnv;
@@ -104,6 +108,7 @@ public class JupyterHubRunController extends BasicController {
 			if (needToShowDataExchange()) {
 				mainVC.put("disclaimer", disclaimerCtrl.getInitialComponent());
 			} else {
+				initInfoText();
 				mainVC.put("runButton", runButton);
 			}
 
@@ -128,6 +133,12 @@ public class JupyterHubRunController extends BasicController {
 		listenTo(ltiCtrl);
 	}
 
+	private void initInfoText() {
+		if (StringHelper.containsNonWhitespace(jupyterDeployment.getJupyterHub().getInfoText())) {
+			infoText = TextFactory.createTextComponentFromString("infoText",
+					jupyterDeployment.getJupyterHub().getInfoText(), "o_info", false, mainVC);
+		}
+	}
 	private void initRunButton() {
 		runButton = LinkFactory.createButton("jupyterHub.runButton", mainVC, this);
 		runButton.setCustomEnabledLinkCSS("btn btn-primary");
