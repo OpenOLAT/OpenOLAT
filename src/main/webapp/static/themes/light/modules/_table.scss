@@ -160,6 +160,41 @@
     	background-color: rgb(250,250,250);
 	}
 		
+	/* Hover bg for expanded rows */
+	.table-striped {
+		> tbody {
+			> tr {
+				&.o_table_row_expanded {
+					// Case 1: If the expanded row is hovered ...
+					&:hover {
+						// ... darken the expanded row...
+						td {
+							background-color: darken($o-table-details-bg,10%);
+						}
+						// ... and the details row.
+						+.o_table_row_details {
+							td {
+								background-color: darken($o-table-details-bg,10%);
+							}
+						}
+					}
+					// Case 2: If the details row is hovered ...
+					&:has(+.o_table_row_details:hover) {
+						// ... darken the expanded row...
+						td {
+							background-color: darken($o-table-details-bg,10%);
+						}
+					}
+				}
+				// ... and the details row.
+				&.o_table_row_details:hover {
+					td {
+						background-color: darken($o-table-details-bg,10%);
+					}
+				}
+			}
+		}
+	}
 	
 	/* fix striped and hover bg colors for sticky columns */
 	.table-striped {
