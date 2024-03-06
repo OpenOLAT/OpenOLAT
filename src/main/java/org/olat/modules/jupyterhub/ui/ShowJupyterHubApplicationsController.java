@@ -19,7 +19,9 @@
  */
 package org.olat.modules.jupyterhub.ui;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -29,12 +31,14 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.ims.lti13.LTI13Context;
 import org.olat.modules.jupyterhub.JupyterHub;
 import org.olat.modules.jupyterhub.JupyterManager;
 import org.olat.modules.jupyterhub.manager.JupyterHubDAO;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,20 +59,24 @@ public class ShowJupyterHubApplicationsController extends BasicController {
 		List<JupyterHubDAO.JupyterHubApplication> applications = jupyterManager.getJupyterHubApplications(jupyterHub.getKey());
 
 		mainVC = createVelocityContainer("show_applications");
-		List<Link> links = applications.stream().map(this::applicationToLink).toList();
+		HashSet<Identity> collectedIdentities = new HashSet<>();
+		List<Link> links = applications.stream().map((l) -> applicationToLink(l, collectedIdentities)).toList();
 		mainVC.contextPut("links", links);
-
+		mainVC.contextPut("nbParticipants", collectedIdentities.size());
 		putInitialPanel(mainVC);
 	}
 
-	private Link applicationToLink(JupyterHubDAO.JupyterHubApplication application) {
+	private Link applicationToLink(JupyterHubDAO.JupyterHubApplication application, Set<Identity> collectedIdentities) {
 		LTI13Context ltiContext = application.getLti13Context();
 		String linkName = application.getDescription();
 		Link link = LinkFactory.createLink(linkName, mainVC, this);
+		RepositoryEntry courseEntry = ltiContext.getEntry();
 		ICourse course = CourseFactory.loadCourse(ltiContext.getEntry());
 		String courseElementName = course.getRunStructure().getNode(ltiContext.getSubIdent()).getShortName();
 		String courseName = course.getCourseTitle();
-		String linkText = getTranslator().translate("jupyterHub.application.courseElement", courseElementName, courseName);
+		long participantCount = jupyterManager.getParticipantCount(course, courseEntry, collectedIdentities);
+		String linkText = getTranslator().translate("jupyterHub.application.courseElement",
+				courseElementName, courseName, Long.toString(participantCount));
 		link.setCustomDisplayText(linkText);
 		String businessPath = "[RepositoryEntry:"+ ltiContext.getEntry().getKey() + "][CourseNode:" + ltiContext.getSubIdent() + "]";
 		link.setUserObject(businessPath);

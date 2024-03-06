@@ -136,12 +136,12 @@ public class JupyterHubDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, jupyterNode1Applications.size());
 		Assert.assertEquals(subIdent1, jupyterNode1Applications.get(0).getLti13Context().getSubIdent());
 
-		List<JupyterHubDAO.JupyterHubWithApplicationCount> hubsWithApplicationCounts = jupyterManager.getJupyterHubsWithApplicationCounts();
+		List<JupyterManager.JupyterHubWithCounts> hubsWithCounts = jupyterManager.getJupyterHubsWithApplicationCounts();
 
-		Assert.assertFalse(hubsWithApplicationCounts.isEmpty());
-		List<JupyterHubDAO.JupyterHubWithApplicationCount> matchingHubs = hubsWithApplicationCounts.stream().filter(h -> h.getJupyterHub().getLtiTool().getClientId().equals(clientId)).toList();
+		Assert.assertFalse(hubsWithCounts.isEmpty());
+		List<JupyterManager.JupyterHubWithCounts> matchingHubs = hubsWithCounts.stream().filter(h -> h.jupyterHub().getLtiTool().getClientId().equals(clientId)).toList();
 		Assert.assertEquals(1, matchingHubs.size());
-		Assert.assertEquals("Used JupyterHub", matchingHubs.get(0).getJupyterHub().getName());
-		Assert.assertEquals(Long.valueOf(2), matchingHubs.get(0).getApplicationCount());
+		Assert.assertEquals("Used JupyterHub", matchingHubs.get(0).jupyterHub().getName());
+		Assert.assertEquals(2, matchingHubs.get(0).applicationCount());
 	}
 }

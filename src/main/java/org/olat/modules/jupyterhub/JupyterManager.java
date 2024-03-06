@@ -21,8 +21,11 @@ package org.olat.modules.jupyterhub;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.id.Identity;
+import org.olat.course.ICourse;
 import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.modules.jupyterhub.manager.JupyterHubDAO;
@@ -40,7 +43,9 @@ public interface JupyterManager {
 
 	SelectionValues getJupyterHubsKV();
 
-	List<JupyterHubDAO.JupyterHubWithApplicationCount> getJupyterHubsWithApplicationCounts();
+	List<JupyterHubWithCounts> getJupyterHubsWithApplicationCounts();
+
+	long getParticipantCount(ICourse course, RepositoryEntry courseEntry, Set<Identity> collectedIdentities);
 
 	List<JupyterHubDAO.JupyterHubApplication> getJupyterHubApplications(Long key);
 
@@ -74,4 +79,6 @@ public interface JupyterManager {
 	CheckConnectionResponse checkConnection(String ltiKey, String clientId, String ltiMessageHint);
 
 	record CheckConnectionResponse(boolean success, String message) {}
+
+	record JupyterHubWithCounts(JupyterHub jupyterHub, long applicationCount, long participantCount) {}
 }

@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -57,7 +58,6 @@ import org.olat.ims.lti13.LTI13Module;
 import org.olat.modules.jupyterhub.JupyterHub;
 import org.olat.modules.jupyterhub.JupyterHubModule;
 import org.olat.modules.jupyterhub.JupyterManager;
-import org.olat.modules.jupyterhub.manager.JupyterHubDAO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -136,14 +136,14 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.ram));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.cpu));
 
-		FlexiCellRenderer renderer = new StaticFlexiCellRenderer(CMD_SHOW_APPLICATIONS, new TextFlexiCellRenderer());
+		FlexiCellRenderer applicationsRenderer = new StaticFlexiCellRenderer(CMD_SHOW_APPLICATIONS, new TextFlexiCellRenderer(EscapeMode.antisamy));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(
 				JupyterHubsTableModel.JupyterHubCols.applications.i18nHeaderKey(),
 				JupyterHubsTableModel.JupyterHubCols.applications.ordinal(),
 				CMD_SHOW_APPLICATIONS,
 				true,
 				JupyterHubsTableModel.JupyterHubCols.applications.name(),
-				renderer
+				applicationsRenderer
 		));
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), CMD_EDIT));
@@ -168,9 +168,9 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		hubsTable.reset(true, true, true);
 	}
 
-	private JupyterHubRow mapHubToHubRow(JupyterHubDAO.JupyterHubWithApplicationCount jupyterHubWithApplicationCount) {
-		JupyterHubRow row = new JupyterHubRow(jupyterHubWithApplicationCount.getJupyterHub(), jupyterHubWithApplicationCount.getApplicationCount());
-		addToolLink(row, jupyterHubWithApplicationCount.getJupyterHub());
+	private JupyterHubRow mapHubToHubRow(JupyterManager.JupyterHubWithCounts jupyterHubWithCounts) {
+		JupyterHubRow row = new JupyterHubRow(jupyterHubWithCounts.jupyterHub(), jupyterHubWithCounts.applicationCount(), jupyterHubWithCounts.participantCount());
+		addToolLink(row, jupyterHubWithCounts.jupyterHub());
 		return row;
 	}
 

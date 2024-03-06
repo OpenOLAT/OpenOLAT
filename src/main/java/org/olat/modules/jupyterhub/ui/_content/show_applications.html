@@ -1,7 +1,16 @@
+<style>
+	.o_simple_spacing {
+		margin: 20px 0 0 0;
+		padding: 12px;
+	}
+</style>
 <div>
 	<ul>
 		#foreach($link in $links)
 		<li>$r.render($link)</li>
 		#end
 	</ul>
+	<div class="o_simple_spacing">
+		$r.translate("jupyterHub.application.participants.total", $nbParticipants)
+	</div>
 </div>

@@ -33,10 +33,12 @@ public class JupyterHubRow {
 	private final Long numberOfApplications;
 	private FormLink toolLink;
 	private final JupyterHub hub;
+	private final long numberOfParticipants;
 
-	public JupyterHubRow(JupyterHub hub, Long numberOfApplications) {
+	public JupyterHubRow(JupyterHub hub, Long numberOfApplications, long numberOfParticipants) {
 		this.hub = hub;
 		this.numberOfApplications = numberOfApplications;
+		this.numberOfParticipants = numberOfParticipants;
 	}
 
 	public String getName() {
@@ -69,6 +71,10 @@ public class JupyterHubRow {
 
 	public Long getNumberOfApplications() {
 		return numberOfApplications;
+	}
+
+	public long getNumberOfParticipants() {
+		return numberOfParticipants;
 	}
 
 	public FormLink getToolLink() {
