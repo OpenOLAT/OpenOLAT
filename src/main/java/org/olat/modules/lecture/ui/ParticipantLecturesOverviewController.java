@@ -114,6 +114,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private final boolean withCurriculumAggregation;
 	private final List<RepositoryEntryRef> filterByEntries;
 	private final List<AggregatedElement> aggregatedElements;
+	private FlexiTableColumnModel aggregatedElementColumnsModel;
 	
 	private ParticipantLectureBlocksController lectureBlocksCtrl;
 	private CurriculumLecturesInfosController curriculumLecturesStatisticsCtrl;
@@ -224,7 +225,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 				layoutCont.contextPut("elementIdentifier", aggregatedElement.getCurriculumElementView().getCurriculumElement().getIdentifier());
 				layoutCont.contextPut("opened", openAll || aggregatedElement.isNow());
 				layoutCont.contextPut("titleSize", "4");
-				aggregatedElement.setTable(initTable(ureq,  layoutCont));
+				aggregatedElement.setTable(initTable(layoutCont));
 			}
 		}
 		
@@ -238,10 +239,9 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		}
 		genericLayoutCont.contextPut("opened", Boolean.TRUE);
 		genericLayoutCont.contextPut("titleSize", "3");
-		genericTable = initTable(ureq, genericLayoutCont);
+		genericTable = initTable(genericLayoutCont);
 		
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("authorizedAbsenceEnabled", authorizedAbsenceEnabled);
 			layoutCont.contextPut("absenceNoticeEnabled", absenceNoticeEnabled);
 			layoutCont.contextPut("aggregatedElements", containerIds);
@@ -251,7 +251,11 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		}
 	}
 	
-	private AggregatedTable initTable(UserRequest ureq, FormItemContainer formLayout) {
+	private FlexiTableColumnModel getFlexiTableColumnModel() {
+		if(aggregatedElementColumnsModel != null) {
+			return aggregatedElementColumnsModel;
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		String select = withPrint ? "details" : null;
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.externalRef, select));
@@ -275,11 +279,15 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		if(withSelect) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "details"));
 		}
-		
+		aggregatedElementColumnsModel = columnsModel;
+		return columnsModel;
+	}
+	
+	private AggregatedTable initTable(FormItemContainer formLayout) {
+		FlexiTableColumnModel columnsModel = getFlexiTableColumnModel();
 		ParticipantLecturesDataModel model = new ParticipantLecturesDataModel(columnsModel, getTranslator(), getLocale()); 
 		int paging = withPrint ? 20 : -1;
 		FlexiTableElement table = uifactory.addTableElement(getWindowControl(), "table", model, paging, false, getTranslator(), formLayout);
-		table.setAndLoadPersistedPreferences(ureq, "participant-lectures-overview-v2");
 		table.setCustomizeColumns(false);
 		table.setEmptyTableMessageKey("empty.lectures.list");
 		table.setFooter(true);
