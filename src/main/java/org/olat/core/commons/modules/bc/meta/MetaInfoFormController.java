@@ -128,8 +128,15 @@ public class MetaInfoFormController extends FormBasicController {
 	 * @param showTitle
 	 */
 	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm, boolean showFilename, boolean showTitle) {
+		this(ureq, control, parentForm, null, null, showFilename, showTitle);
+	}
+	
+	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm, VFSItem item,
+			String resourceUrl, boolean showFilename, boolean showTitle) {
 		super(ureq, control, FormBasicController.LAYOUT_DEFAULT, null, parentForm);
 		this.isSubform = true;
+		this.item = item;
+		this.resourceUrl = resourceUrl;
 		this.showFilename = showFilename;
 		this.showTitle = showTitle;
 		initForm(ureq);
@@ -192,7 +199,6 @@ public class MetaInfoFormController extends FormBasicController {
 		initialFilename = (item == null ? null : item.getName());
 		filename = uifactory.addTextElement("filename", "mf.filename", -1, initialFilename, formLayout);
 		filename.setEnabled(item == null || item.canRename() == VFSConstants.YES);
-		filename.setNotEmptyCheck("mf.error.empty");
 		filename.setMandatory(true);
 		filename.setVisible(showFilename);
 
@@ -565,17 +571,21 @@ public class MetaInfoFormController extends FormBasicController {
 				valid = false;
 			}
 		}
-				
+		
+		filename.clearError();
 		if(isFileRenamed()) {
-			//check if filetype is directory
-			if(!FileUtils.validateFilename(getFilename())) {
+			String filenameStr = getFilename();
+			if (!StringHelper.containsNonWhitespace(filenameStr)) {
+				filename.setErrorKey("form.legende.mandatory");
+				valid &= false;
+			} else if(!FileUtils.validateFilename(filenameStr)) {
 				valid = false;
 				if (item instanceof VFSContainer) {
 					filename.setErrorKey("folder.name.notvalid", new String[0]);
-				} else {					
+				} else {	
 					filename.setErrorKey("file.name.notvalid", new String[0]);
 				}
-			}			
+			}
 		}
 		
 		if (licenseEl != null) {

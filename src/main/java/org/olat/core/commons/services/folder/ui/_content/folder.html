@@ -1,0 +1,29 @@
+<div class="o_folder">
+	<div class="o_folder_navigation">
+		<div class="o_folder_view_selection">
+		</div>
+		<div class="o_folder_cmds">
+			#if($r.available("subscription") && $r.visible("subscription"))
+				$r.render("subscription")
+			#end
+			#if($r.available("add") && $r.visible("add"))
+				<div class="btn-group">
+					$r.render("add")
+					$r.render("create.dropdown")
+				</div>
+			#end
+			#if($r.available("cmds") && $r.visible("cmds"))
+				$r.render("cmds")
+			#end
+		</div>
+	</div>
+	<div class="o_folder_breadcrumb">
+		#if($r.available("folderBreadcrumb") && $r.visible("folderBreadcrumb"))
+			$r.render("folderBreadcrumb")
+		#end
+	</div>
+	<div class="o_folder_table">
+		$r.render("table")
+	</div>
+	$r.render("quota")
+</div>

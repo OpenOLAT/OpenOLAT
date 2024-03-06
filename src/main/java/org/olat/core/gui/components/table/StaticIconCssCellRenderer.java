@@ -27,7 +27,7 @@ package org.olat.core.gui.components.table;
  */
 public class StaticIconCssCellRenderer extends IconCssCellRenderer {
 	
-	private final String cssClass;
+	private final String iconCssClass;
 	private final String value;
 	private final String hoverText;
 	
@@ -35,15 +35,15 @@ public class StaticIconCssCellRenderer extends IconCssCellRenderer {
 		this(cssClass, null, null);
 	}
 
-	public StaticIconCssCellRenderer(String cssClass, String value, String hoverText) {
-		this.cssClass = cssClass;
+	public StaticIconCssCellRenderer(String iconCssClass, String value, String hoverText) {
+		this.iconCssClass = iconCssClass;
 		this.value = value;
 		this.hoverText = hoverText;
 	}
 
 	@Override
 	protected String getIconCssClass(Object val) {
-		return cssClass;
+		return iconCssClass;
 	}
 
 	@Override

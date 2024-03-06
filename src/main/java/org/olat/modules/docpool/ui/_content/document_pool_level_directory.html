@@ -2,5 +2,8 @@
 #if($r.available("folder"))
 <div class="clearfix">
 	$r.render("folder")
+	#if($r.available("folder2"))
+		$r.render("folder2")
+	#end
 </div>
 #end

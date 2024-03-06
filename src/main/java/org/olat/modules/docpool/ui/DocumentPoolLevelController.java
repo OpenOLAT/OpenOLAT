@@ -21,7 +21,8 @@ package org.olat.modules.docpool.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -52,7 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DocumentPoolLevelController extends BasicController implements Activateable2  {
 	
 	private final VelocityContainer mainVC;
-	private FolderRunController folderCtrl;
+	private FolderController folderCtrl;
 	
 	private TaxonomyLevel taxonomyLevel;
 	
@@ -86,9 +87,17 @@ public class DocumentPoolLevelController extends BasicController implements Acti
 				VFSContainer documents = taxonomyService.getDocumentsLibrary(level);
 				documents.setLocalSecurityCallback(secCallback);
 				VFSContainer namedContainer = new NamedContainerImpl(name, documents);
-				folderCtrl = new FolderRunController(namedContainer, true, true, true, ureq, getWindowControl());
-				folderCtrl.setResourceURL("[DocumentPool:0][TaxonomyLevel:" + taxonomyLevel.getKey() + "]");
+				
+				FolderControllerConfig config = FolderControllerConfig.builder()
+						.withSearchResourceUrl("[DocumentPool:0][TaxonomyLevel:" + taxonomyLevel.getKey() + "]")
+						.build();
+				folderCtrl = new FolderController(ureq, wControl, namedContainer, config);
+				listenTo(folderCtrl);
 				mainVC.put("folder", folderCtrl.getInitialComponent());
+				
+//				FolderRunController folderCtrl = new FolderRunController(namedContainer, true, true, true, ureq, getWindowControl());
+//				folderCtrl.setResourceURL("[DocumentPool:0][TaxonomyLevel:" + taxonomyLevel.getKey() + "]");
+//				mainVC.put("folder2", folderCtrl.getInitialComponent());
 			}
 		}
 		putInitialPanel(mainVC);

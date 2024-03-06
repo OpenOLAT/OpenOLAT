@@ -21,7 +21,8 @@ package org.olat.modules.docpool.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -43,10 +44,10 @@ import org.olat.core.util.vfs.VFSContainer;
 public class DocumentDirectoryController extends BasicController implements Activateable2  {
 	
 	private final VelocityContainer mainVC;
-	private FolderRunController folderCtrl;
+	private final FolderController folderCtrl;
 	
 	public DocumentDirectoryController(UserRequest ureq, WindowControl wControl,
-			VFSContainer documents, String name) {
+			VFSContainer documents, String name, String additionalSearchUrl) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("document_directory");
@@ -55,14 +56,15 @@ public class DocumentDirectoryController extends BasicController implements Acti
 
 		String rootName = translate("document.pool.templates");
 		VFSContainer namedContainer = new NamedContainerImpl(rootName, documents);
-		folderCtrl = new FolderRunController(namedContainer, true, true, true, ureq, getWindowControl());
+		
+		FolderControllerConfig config = FolderControllerConfig.builder()
+				.withSearchResourceUrl("[DocumentPool:0]" + additionalSearchUrl)
+				.build();
+		folderCtrl = new FolderController(ureq, wControl, namedContainer, config);
+		listenTo(folderCtrl);
 		mainVC.put("folder", folderCtrl.getInitialComponent());
 
 		putInitialPanel(mainVC);
-	}
-	
-	public void setAdditionalResourceURL(String additionalUrl) {
-		folderCtrl.setResourceURL("[DocumentPool:0]" + additionalUrl);
 	}
 
 	@Override

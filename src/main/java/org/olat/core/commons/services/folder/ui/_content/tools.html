@@ -1,0 +1,25 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("download"))
+		<li>$r.render("download")</li>
+	#end
+	#if($r.available("metadata"))
+		<li>$r.render("metadata")</li>
+	#end
+	#if($r.available("versions"))
+		<li>$r.render("versions")</li>
+	#end
+	#if($r.available("zip"))
+		<li>$r.render("zip")</li>
+	#end
+	#if($r.available("unzip"))
+		<li>$r.render("unzip")</li>
+	#end
+	#if($r.available("delete"))
+		<li class="divider"></li>
+		<li>$r.render("delete")</li>
+	#end
+	#if($r.available("delete.permanently"))
+		<li class="divider"></li>
+		<li>$r.render("delete.permanently")</li>
+	#end
+</ul>

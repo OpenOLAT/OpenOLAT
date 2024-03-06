@@ -206,15 +206,14 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			if (leafs.isEmpty()) {
 				wControl.setError(getTranslator().translate("send.mail.noFileSelected"));
 				return null;
-			} else {
-				setFormWarning(getTranslator().translate("send.mail.selectionContainsFolder"));
 			}
+			setFormWarning(getTranslator().translate("send.mail.selectionContainsFolder"));
 		}
 		setFiles(rootContainer, leafs);
 		return this;
 	}
 
-	protected void setFiles(VFSContainer rootContainer, List<VFSLeaf> files) {
+	public void setFiles(VFSContainer rootContainer, List<VFSLeaf> files) {
 		StringBuilder subjectSb = new StringBuilder();
 		if (StringHelper.containsNonWhitespace(subjectElement.getValue())) {
 			subjectSb.append(subjectElement.getValue()).append('\n').append('\n');

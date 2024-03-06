@@ -247,6 +247,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_menuhandel { @include o-add-icon('bars');}
 .o_icon_message { @include o-add-icon('envelope');}
 .o_icon_message_open { @include o-add-icon('envelope-open');}
+.o_icon_metadata { @include o-add-icon('circle-info');}
 .o_icon_mobile { @include o-add-icon('mobile');}
 .o_icon_move { @include o-add-icon('arrows');}
 .o_icon_objectives { @include o-add-icon('bullseye');}
@@ -261,7 +262,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_name { @include o-add-icon('table-cells-large');}
 .o_icon_new { @include o-add-icon('asterisk'); color: $brand-success;}
 .o_icon_new_document { @include o-add-icon('file-text');}
-.o_icon_new_folder { @include o-add-icon('folder');}
+.o_icon_new_folder { @include o-add-icon('folder-plus');}
 .o_icon_new_portfolio { @include o-add-icon('pencil');}
 .o_icon_news { @include o-add-icon('info-circle');}
 .o_icon_next { @include o-add-icon('chevron-circle-right');}
