@@ -24,8 +24,10 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
@@ -37,10 +39,15 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13Context;
@@ -55,6 +62,7 @@ import org.olat.ims.lti13.manager.LTI13ContextDAO;
 import org.olat.ims.lti13.manager.LTI13IDGenerator;
 import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.jupyterhub.JupyterDeployment;
 import org.olat.modules.jupyterhub.JupyterHub;
 import org.olat.modules.jupyterhub.JupyterManager;
@@ -101,6 +109,8 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	private LTI13Module lti13Module;
 	@Autowired
 	private HttpClientService httpClientService;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 
 	@Override
 	public JupyterHub getJupyterHub(String selectedKey) {
@@ -113,13 +123,43 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	}
 
 	@Override
-	public List<JupyterHubDAO.JupyterHubWithApplicationCount> getJupyterHubsWithApplicationCounts() {
-		return jupyterHubDAO.getJupyterHubsWithApplicationCounts();
+	public List<JupyterHubWithCounts> getJupyterHubsWithApplicationCounts() {
+		return jupyterHubDAO.getJupyterHubsWithApplicationCounts().stream().map((j) ->
+			new JupyterHubWithCounts(j.getJupyterHub(), j.getApplicationCount(), getParticipantCount(j.getJupyterHub().getKey()))
+		).toList();
 	}
 
 	@Override
 	public List<JupyterHubDAO.JupyterHubApplication> getJupyterHubApplications(Long key) {
 		return jupyterHubDAO.getApplications(key);
+	}
+
+	private long getParticipantCount(Long jupyterHubKey) {
+		List<JupyterHubDAO.JupyterHubApplication> applications = getJupyterHubApplications(jupyterHubKey);
+		HashSet<Identity> collectedIdentities = new HashSet<>();
+		for (JupyterHubDAO.JupyterHubApplication application : applications) {
+			getParticipantCount(application.getLti13Context(), collectedIdentities);
+		}
+		return collectedIdentities.size();
+	}
+
+	private long getParticipantCount(LTI13Context lti13Context, Set<Identity> collectedIdentities) {
+		RepositoryEntry courseEntry = lti13Context.getEntry();
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		return getParticipantCount(course, courseEntry, collectedIdentities);
+	}
+
+	@Override
+	public long getParticipantCount(ICourse course, RepositoryEntry courseEntry, Set<Identity> collectedIdentities) {
+		String rootIdent = course.getRunStructure().getRootNode().getIdent();
+		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false,
+				false, true, true, true,
+				null, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
+				courseEntry, rootIdent, null, secCallback);
+		Set<Identity> participantIdentities = new HashSet<>(assessmentToolManager.getAssessedIdentities(null, params));
+		collectedIdentities.addAll(participantIdentities);
+		return participantIdentities.size();
 	}
 
 	@Override

@@ -104,7 +104,7 @@ public class EditJupyterHubController extends FormBasicController {
 		ramGuaranteeEl.setExampleKey("form.hub.ram.example", null);
 
 		String ramLimit = getInitialRamLimitValue(jupyterHub);
-		ramLimitEl = uifactory.addTextElement("jupyterHub.ram", "table.header.hub.ram", 32, ramLimit, formLayout);
+		ramLimitEl = uifactory.addTextElement("jupyterHub.ramLimit", "table.header.hub.ram.limit", 32, ramLimit, formLayout);
 		ramLimitEl.setExampleKey("form.hub.ram.example", null);
 
 		String additionalFields = jupyterHub != null ? jupyterHub.getAdditionalFields() : "";
