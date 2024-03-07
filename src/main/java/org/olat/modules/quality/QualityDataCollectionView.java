@@ -38,8 +38,12 @@ public interface QualityDataCollectionView extends QualityDataCollectionLight, C
 	public String getTopic();
 	
 	public Long getTopicRepositoryKey();
+
+	public String getTopicRepositoryExternalRef();
 	
 	public Long getTopicCurriculumElementKey();
+	
+	public String getTopicCurriculumElementIdentifier();
 	
 	public Long getTopicCurriculumElementCurriculumKey();
 	

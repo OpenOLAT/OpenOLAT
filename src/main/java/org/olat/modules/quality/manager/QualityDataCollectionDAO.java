@@ -488,7 +488,9 @@ public class QualityDataCollectionDAO {
 		sb.append("            then repository.displayname");
 		sb.append("       end as topic");
 		sb.append("     , repository.key as topicRepositoryKey");
+		sb.append("     , repository.externalRef as topicRepositoryExternalRef");
 		sb.append("     , curriculumElement.key as topicCurriculumElementKey");
+		sb.append("     , curriculumElement.identifier as topicCurriculumElementIdentifier");
 		sb.append("     , curriculumElement.curriculum.key as topicCurriculumElementCurriculumKey");
 		sb.append("     , previousCollection.title as previousTitle");
 		sb.append("     , ( select count(participation.key)");
