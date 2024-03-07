@@ -55,6 +55,9 @@ public class FragmentRendererHelper {
 			if (mediaPart.getImageSettings() != null) {
 				return mediaPart.getImageSettings().getAlertBoxSettings();
 			}
+			if (mediaPart.getMediaSettings() != null) {
+				return mediaPart.getMediaSettings().getAlertBoxSettings();
+			}
 		}
 		if (element instanceof Image image) {
 			if (image.getImageSettings() != null) {

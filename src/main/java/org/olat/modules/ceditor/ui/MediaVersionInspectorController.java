@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
 import org.olat.core.gui.control.Controller;
@@ -38,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.MediaSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -59,6 +62,7 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 	private StaticTextElement nameEl;
 	private FormLink mediaCenterLink;
 	private SingleSelection versionEl;
@@ -72,6 +76,8 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 	private DB dbInstance;
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private ColorService colorService;
 
 	public MediaVersionInspectorController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart, PageElementStore<MediaPart> store) {
 		super(ureq, wControl, "image_inspector");
@@ -105,6 +111,7 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		formLayout.add("tabs", tabbedPane);
 
 		addMediaTab(formLayout);
+		addStyleTab(formLayout);
 		addLayoutTab(formLayout);
 	}
 
@@ -117,6 +124,15 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		nameEl = mediaCmps.nameEl();
 	}
 
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer styleCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		formLayout.add(styleCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), styleCont);
+
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory,
+				getAlertBoxSettings(getMediaSettings()), colorService, getLocale());
+	}
+
 	private void addLayoutTab(FormItemContainer formLayout) {
 		BlockLayoutSettings layoutSettings = getLayoutSettings(getMediaSettings());
 		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, getTranslator(), uifactory, layoutSettings, velocity_root);
@@ -127,6 +143,13 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 			return mediaSettings.getLayoutSettings();
 		}
 		return BlockLayoutSettings.getPredefined();
+	}
+
+	private AlertBoxSettings getAlertBoxSettings(MediaSettings mediaSettings) {
+		if (mediaSettings.getAlertBoxSettings() != null) {
+			return mediaSettings.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
 	}
 
 	private MediaSettings getMediaSettings() {
@@ -142,8 +165,10 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 			doSetVersion(ureq, versionEl.getSelectedKey());
 		} else if(mediaCenterLink == source) {
 			doOpenInMediaCenter(ureq);
-		} else if(layoutTabComponents.matches(source)) {
+		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -177,6 +202,19 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		BlockLayoutSettings layoutSettings = getLayoutSettings(mediaSettings);
 		layoutTabComponents.sync(layoutSettings);
 		mediaSettings.setLayoutSettings(layoutSettings);
+
+		mediaPart.setMediaSettings(mediaSettings);
+		doSaveMediaPart(ureq);
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		MediaSettings mediaSettings = getMediaSettings();
+
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(mediaSettings);
+		alertBoxComponents.sync(alertBoxSettings);
+		mediaSettings.setAlertBoxSettings(alertBoxSettings);
 
 		mediaPart.setMediaSettings(mediaSettings);
 		doSaveMediaPart(ureq);

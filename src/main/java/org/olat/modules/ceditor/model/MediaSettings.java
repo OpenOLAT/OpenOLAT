@@ -27,6 +27,7 @@ package org.olat.modules.ceditor.model;
 public class MediaSettings {
 
 	private BlockLayoutSettings layoutSettings;
+	private AlertBoxSettings alertBoxSettings;
 
 	public BlockLayoutSettings getLayoutSettings() {
 		return layoutSettings;
@@ -34,5 +35,13 @@ public class MediaSettings {
 
 	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
 		this.layoutSettings = layoutSettings;
+	}
+
+	public AlertBoxSettings getAlertBoxSettings() {
+		return alertBoxSettings;
+	}
+
+	public void setAlertBoxSettings(AlertBoxSettings alertBoxSettings) {
+		this.alertBoxSettings = alertBoxSettings;
 	}
 }
