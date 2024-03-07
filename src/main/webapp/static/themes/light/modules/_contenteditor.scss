@@ -664,6 +664,17 @@
 			}
 		}
 	}
+
+	.o_page_fragment_edit.o_fragment_edited {
+		&:not(.o_page_container_edit) {
+			> .o_page_part {
+				&.o_alert_box_active {
+					margin-left: 4px;
+					margin-right: 4px;
+				}
+			}
+		}
+	}
 }
 
 .o_page_fragment_edit  {
