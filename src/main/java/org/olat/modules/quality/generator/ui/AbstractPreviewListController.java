@@ -375,6 +375,15 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		for (QualityDataCollectionView dataCollection : dataCollections) {
 			PreviewRow row = new PreviewRow(dataCollection);
 			row.setTranslatedStatus(getTranslatedStatus(row.getStatus()));
+			
+			String topic = dataCollection.getTopic();
+			if (StringHelper.containsNonWhitespace(dataCollection.getTopicRepositoryExternalRef())) {
+				topic += " (" + dataCollection.getTopicRepositoryExternalRef() + ")";
+			} else if (StringHelper.containsNonWhitespace(dataCollection.getTopicCurriculumElementIdentifier())) {
+				topic += " (" + dataCollection.getTopicCurriculumElementIdentifier() + ")";
+			}
+			row.setTopic(topic);
+			
 			rows.add(row);
 		}
 		
@@ -475,12 +484,28 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		case IDENTIY -> userManager.getUserDisplayName(preview.getTopicIdentity().getKey());
 		case ORGANISATION -> preview.getTopicOrganisation().getDisplayName();
 		case CURRICULUM -> preview.getTopicCurriculum().getDisplayName();
-		case CURRICULUM_ELEMENT -> preview.getTopicCurriculumElement().getDisplayName();
-		case REPOSITORY -> preview.getTopicRepositoryEntry().getDisplayname();
+		case CURRICULUM_ELEMENT -> getTopicOfCurriculumElement(preview);
+		case REPOSITORY -> getTopicOfRepository(preview);
 		default -> null;
 		};
 	}
+
+	private String getTopicOfCurriculumElement(QualityPreview preview) {
+		String topic = preview.getTopicCurriculumElement().getDisplayName();
+		if (StringHelper.containsNonWhitespace(preview.getTopicCurriculumElement().getIdentifier())) {
+			topic += " (" + preview.getTopicCurriculumElement().getIdentifier() + ")";
+		}
+		return topic;
+	}
 	
+	private String getTopicOfRepository(QualityPreview preview) {
+		String topic = preview.getTopicRepositoryEntry().getDisplayname();
+		if (StringHelper.containsNonWhitespace(preview.getTopicRepositoryEntry().getExternalRef())) {
+			topic += " (" + preview.getTopicRepositoryEntry().getExternalRef() + ")";
+		}
+		return topic;
+	}
+
 	private void appendTopicCurriculumElementCurriculumKeys(List<PreviewRow> rows) {
 		List<? extends CurriculumElementRef> elementRefs = rows.stream()
 				.map(PreviewRow::getTopicCurriculumElementKey)

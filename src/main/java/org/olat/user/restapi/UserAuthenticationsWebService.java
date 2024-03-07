@@ -111,7 +111,7 @@ public class UserAuthenticationsWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthenticationTokenList(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
-		if(identityKey == null) {
+		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isManager(identity, request)) {

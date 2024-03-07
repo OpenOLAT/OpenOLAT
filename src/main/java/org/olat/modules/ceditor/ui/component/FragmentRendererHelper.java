@@ -24,7 +24,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.ContainerSettings;
+import org.olat.modules.ceditor.model.jpa.CodePart;
+import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.model.jpa.ParagraphPart;
+import org.olat.modules.ceditor.model.jpa.TablePart;
+import org.olat.modules.forms.model.xml.HTMLParagraph;
+import org.olat.modules.forms.model.xml.Image;
 
 /**
  * Initial date: 2024-03-01<br>
@@ -48,6 +54,39 @@ public class FragmentRendererHelper {
 		if (element instanceof MediaPart mediaPart) {
 			if (mediaPart.getImageSettings() != null) {
 				return mediaPart.getImageSettings().getAlertBoxSettings();
+			}
+			if (mediaPart.getMediaSettings() != null) {
+				return mediaPart.getMediaSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof Image image) {
+			if (image.getImageSettings() != null) {
+				return image.getImageSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof ParagraphPart paragraphPart) {
+			if (paragraphPart.getTextSettings() != null) {
+				return paragraphPart.getTextSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof HTMLParagraph htmlParagraph) {
+			if (htmlParagraph.getTextSettings() != null) {
+				return htmlParagraph.getTextSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof TablePart tablePart) {
+			if (tablePart.getTableSettings() != null) {
+				return tablePart.getTableSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof MathPart mathPart) {
+			if (mathPart.getMathSettings() != null) {
+				return mathPart.getMathSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof CodePart codePart) {
+			if (codePart.getSettings() != null) {
+				return codePart.getSettings().getAlertBoxSettings();
 			}
 		}
 		return null;

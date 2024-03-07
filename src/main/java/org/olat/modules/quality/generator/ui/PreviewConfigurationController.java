@@ -162,10 +162,26 @@ public class PreviewConfigurationController extends FormBasicController {
 		case IDENTIY -> userManager.getUserDisplayName(preview.getTopicIdentity().getKey());
 		case ORGANISATION -> preview.getTopicOrganisation().getDisplayName();
 		case CURRICULUM -> preview.getTopicCurriculum().getDisplayName();
-		case CURRICULUM_ELEMENT -> preview.getTopicCurriculumElement().getDisplayName();
-		case REPOSITORY -> preview.getTopicRepositoryEntry().getDisplayname();
+		case CURRICULUM_ELEMENT -> getTopicOfCurriculumElement(preview);
+		case REPOSITORY -> getTopicOfRepository(preview);
 		default -> null;
 		};
+	}
+
+	private String getTopicOfCurriculumElement(QualityPreview preview) {
+		String topic = preview.getTopicCurriculumElement().getDisplayName();
+		if (StringHelper.containsNonWhitespace(preview.getTopicCurriculumElement().getIdentifier())) {
+			topic += " (" + preview.getTopicCurriculumElement().getIdentifier() + ")";
+		}
+		return topic;
+	}
+	
+	private String getTopicOfRepository(QualityPreview preview) {
+		String topic = preview.getTopicRepositoryEntry().getDisplayname();
+		if (StringHelper.containsNonWhitespace(preview.getTopicRepositoryEntry().getExternalRef())) {
+			topic += " (" + preview.getTopicRepositoryEntry().getExternalRef() + ")";
+		}
+		return topic;
 	}
 
 	public void setReadOnly(boolean blacklisted) {

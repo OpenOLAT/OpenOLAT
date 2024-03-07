@@ -87,8 +87,16 @@ class DataCollectionRow {
 		return dataCollectionView.getTopicRepositoryKey();
 	}
 	
+	String getTopicRepositoryExternalRef() {
+		return dataCollectionView.getTopicRepositoryExternalRef();
+	}
+	
 	Long getTopicCurriculumElementKey() {
 		return dataCollectionView.getTopicCurriculumElementKey();
+	}
+	
+	String getTopicCurriculumElementIdentifier() {
+		return dataCollectionView.getTopicCurriculumElementIdentifier();
 	}
 	
 	Long getTopicCurriculumElementCurriculumKey() {

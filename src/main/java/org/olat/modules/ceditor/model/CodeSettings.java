@@ -31,6 +31,7 @@ public class CodeSettings {
 	private boolean displayAllLines;
 	private int numberOfLinesToDisplay;
 	private BlockLayoutSettings layoutSettings;
+	private AlertBoxSettings alertBoxSettings;
 
 	public CodeSettings() {
 		codeLanguage = CodeLanguage.auto;
@@ -77,5 +78,13 @@ public class CodeSettings {
 
 	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
 		this.layoutSettings = layoutSettings;
+	}
+
+	public AlertBoxSettings getAlertBoxSettings() {
+		return alertBoxSettings;
+	}
+
+	public void setAlertBoxSettings(AlertBoxSettings alertBoxSettings) {
+		this.alertBoxSettings = alertBoxSettings;
 	}
 }

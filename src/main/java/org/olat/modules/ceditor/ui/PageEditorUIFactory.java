@@ -22,7 +22,11 @@ package org.olat.modules.ceditor.ui;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.model.jpa.CodePart;
+import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.model.jpa.ParagraphPart;
+import org.olat.modules.ceditor.model.jpa.TablePart;
 
 /**
  * 
@@ -43,8 +47,20 @@ public class PageEditorUIFactory {
 	}
 
 	public static void refreshElementLayoutOptions(PageElement sourceElement, PageElement targetElement) {
-		if (sourceElement instanceof MediaPart sourceMediaPart && targetElement instanceof MediaPart targetMediaPart) {
-			targetMediaPart.setLayoutOptions(sourceMediaPart.getLayoutOptions());
+		if (sourceElement instanceof MediaPart sourcePart && targetElement instanceof MediaPart targetPart) {
+			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
+		}
+		if (sourceElement instanceof ParagraphPart sourcePart && targetElement instanceof ParagraphPart targetPart) {
+			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
+		}
+		if (sourceElement instanceof TablePart sourcePart && targetElement instanceof TablePart targetPart) {
+			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
+		}
+		if (sourceElement instanceof MathPart sourcePart && targetElement instanceof MathPart targetPart) {
+			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
+		}
+		if (sourceElement instanceof CodePart sourcePart && targetElement instanceof CodePart targetPart) {
+			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
 		}
 	}
 }

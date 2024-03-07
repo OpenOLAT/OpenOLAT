@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.ParagraphElement;
@@ -53,6 +55,7 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 
 	private SingleSelection columnsEl;
 	
@@ -62,7 +65,9 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 
 	@Autowired
 	private DB dbInstance;
-	
+	@Autowired
+	private ColorService colorService;
+
 	public HTMLRawInspectorController(UserRequest ureq, WindowControl wControl, HTMLElement htmlPart, PageElementStore<HTMLElement> store, boolean inForm) {
 		super(ureq, wControl, "tabs_inspector");
 		this.htmlPart = htmlPart;
@@ -118,6 +123,9 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 		} else {
 			columnsEl.select("1", true);
 		}
+
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory,
+				getAlertBoxSettings(getTextSettings()), colorService, getLocale());
 	}
 
 	private void addLayoutTab(FormItemContainer formLayout) {
@@ -132,6 +140,8 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 			fireEvent(ureq, new ChangePartEvent(htmlPart));
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -182,11 +192,34 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 		getInitialComponent().setDirty(true);
 	}
 
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		TextSettings textSettings = getTextSettings();
+
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(textSettings);
+		alertBoxComponents.sync(alertBoxSettings);
+		textSettings.setAlertBoxSettings(alertBoxSettings);
+
+		String settingsXml = ContentEditorXStream.toXml(textSettings);
+		htmlPart.setLayoutOptions(settingsXml);
+		htmlPart = store.savePageElement(htmlPart);
+		dbInstance.commit();
+		fireEvent(ureq, new ChangePartEvent(htmlPart));
+
+		getInitialComponent().setDirty(true);
+	}
+
 	private BlockLayoutSettings getLayoutSettings(TextSettings textSettings) {
 		if (textSettings.getLayoutSettings() != null) {
 			return textSettings.getLayoutSettings();
 		}
 		return BlockLayoutSettings.getPredefined();
+	}
+
+	private AlertBoxSettings getAlertBoxSettings(TextSettings textSettings) {
+		if (textSettings.getAlertBoxSettings() != null) {
+			return textSettings.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
 	}
 
 	private TextSettings getTextSettings() {

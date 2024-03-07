@@ -29,6 +29,7 @@ public class TextSettings {
 	
 	private int numOfColumns;
 	private BlockLayoutSettings layoutSettings;
+	private AlertBoxSettings alertBoxSettings;
 
 	public int getNumOfColumns() {
 		return numOfColumns;
@@ -40,6 +41,14 @@ public class TextSettings {
 
 	public BlockLayoutSettings getLayoutSettings() {
 		return layoutSettings;
+	}
+
+	public AlertBoxSettings getAlertBoxSettings() {
+		return alertBoxSettings;
+	}
+
+	public void setAlertBoxSettings(AlertBoxSettings alertBoxSettings) {
+		this.alertBoxSettings = alertBoxSettings;
 	}
 
 	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {

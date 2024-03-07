@@ -262,6 +262,7 @@ public class MediaUIHelper {
 		IconSelectorElement iconEl = uifactory.addIconSelectorElement("icon", "icon", alertBoxLayout,
 				icons);
 		iconEl.setDropUp(true);
+		iconEl.setCompact(true);
 		iconEl.addActionListener(FormEvent.ONCHANGE);
 		if (alertBoxSettings.getIcon() != null) {
 			iconEl.setIcon(alertBoxSettings.getIcon().name());

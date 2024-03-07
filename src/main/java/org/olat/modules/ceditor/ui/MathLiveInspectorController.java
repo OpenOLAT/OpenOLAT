@@ -20,16 +20,19 @@
 package org.olat.modules.ceditor.ui;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.MathElement;
 import org.olat.modules.ceditor.model.MathSettings;
@@ -47,6 +50,7 @@ public class MathLiveInspectorController extends FormBasicController implements 
 
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 
 	private MathElement math;
 
@@ -54,6 +58,8 @@ public class MathLiveInspectorController extends FormBasicController implements 
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ColorService colorService;
 
 	public MathLiveInspectorController(UserRequest ureq, WindowControl wControl, MathElement math, PageElementStore<MathElement> store) {
 		super(ureq, wControl, "tabs_inspector");
@@ -73,7 +79,17 @@ public class MathLiveInspectorController extends FormBasicController implements 
 		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
 
+		addStyleTab(formLayout);
 		addLayoutTab(formLayout);
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		FormLayoutContainer styleCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		formLayout.add(styleCont);
+		tabbedPane.addTab(getTranslator().translate("tab.style"), styleCont);
+
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory,
+				getAlertBoxSettings(getMathSettings()), colorService, getLocale());
 	}
 
 	private void addLayoutTab(FormItemContainer formLayout) {
@@ -86,6 +102,13 @@ public class MathLiveInspectorController extends FormBasicController implements 
 			return mathSettings.getLayoutSettings();
 		}
 		return BlockLayoutSettings.getPredefined();
+	}
+
+	private AlertBoxSettings getAlertBoxSettings(MathSettings mathSettings) {
+		if (mathSettings.getAlertBoxSettings() != null) {
+			return mathSettings.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
 	}
 
 	private MathSettings getMathSettings() {
@@ -104,6 +127,8 @@ public class MathLiveInspectorController extends FormBasicController implements 
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -125,6 +150,19 @@ public class MathLiveInspectorController extends FormBasicController implements 
 		BlockLayoutSettings layoutSettings = getLayoutSettings(mathSettings);
 		layoutTabComponents.sync(layoutSettings);
 		mathSettings.setLayoutSettings(layoutSettings);
+
+		math.setMathSettings(mathSettings);
+		doSave(ureq);
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		MathSettings mathSettings = getMathSettings();
+
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(mathSettings);
+		alertBoxComponents.sync(alertBoxSettings);
+		mathSettings.setAlertBoxSettings(alertBoxSettings);
 
 		math.setMathSettings(mathSettings);
 		doSave(ureq);

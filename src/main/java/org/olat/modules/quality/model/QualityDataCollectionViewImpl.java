@@ -48,7 +48,9 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	private final String translatedTopicType;
 	private final String topic;
 	private final Long topicRepositoryKey;
+	private final String topicRepositoryExternalRef;
 	private final Long topicCurriculumElementKey;
+	private final String topicCurriculumElementIdentifier;
 	private final Long topicCurriculumElementCurriculumKey;
 	private final String previousTitle;
 	private final Long numberOfParticipants;
@@ -58,8 +60,9 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	public QualityDataCollectionViewImpl(Long key, QualityDataCollectionStatus status, String title, Date start,
 			Date deadline, boolean qualitativeFeedback, Date creationDate, Long generatorKey, String generatorTitle,
 			String formName, QualityDataCollectionTopicType topicType, String translatedTopicType, String topic,
-			Long topicRepositoryKey, Long topicCurriculumElementKey, Long topicCurriculumElementCurriculumKey,
-			String previousTitle, Long numberOfParticipants, Long numToDoTaskDone, Long numToDoTaskTotal) {
+			Long topicRepositoryKey, String topicRepositoryExternalRef, Long topicCurriculumElementKey,
+			String topicCurriculumElementIdentifier, Long topicCurriculumElementCurriculumKey, String previousTitle,
+			Long numberOfParticipants, Long numToDoTaskDone, Long numToDoTaskTotal) {
 		super();
 		this.key = key;
 		this.status = status;
@@ -75,7 +78,9 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 		this.translatedTopicType = translatedTopicType;
 		this.topic = topic;
 		this.topicRepositoryKey = topicRepositoryKey;
+		this.topicRepositoryExternalRef = topicRepositoryExternalRef;
 		this.topicCurriculumElementKey = topicCurriculumElementKey;
+		this.topicCurriculumElementIdentifier = topicCurriculumElementIdentifier;
 		this.topicCurriculumElementCurriculumKey = topicCurriculumElementCurriculumKey;
 		this.previousTitle = previousTitle;
 		this.numberOfParticipants = numberOfParticipants;
@@ -164,8 +169,18 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	}
 
 	@Override
+	public String getTopicRepositoryExternalRef() {
+		return topicRepositoryExternalRef;
+	}
+
+	@Override
 	public Long getTopicCurriculumElementKey() {
 		return topicCurriculumElementKey;
+	}
+
+	@Override
+	public String getTopicCurriculumElementIdentifier() {
+		return topicCurriculumElementIdentifier;
 	}
 
 	@Override
