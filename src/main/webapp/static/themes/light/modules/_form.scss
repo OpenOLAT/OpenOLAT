@@ -1047,6 +1047,16 @@ ul.o_color_picker_dropdown, ul.o_icon_selector_dropdown {
 				color: $o-bright-text-and-border;
 			}
 		}
+
+		&.o_compact {
+			display: inline-block;
+
+			a {
+				padding: 0;
+				width: 32px;
+				height: 32px;
+			}
+		}
 	}
 }
 

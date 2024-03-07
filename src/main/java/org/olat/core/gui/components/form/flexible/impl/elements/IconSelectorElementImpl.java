@@ -37,6 +37,7 @@ public class IconSelectorElementImpl extends FormItemImpl implements IconSelecto
 	private Icon icon;
 	private final List<Icon> icons;
 	private boolean dropUp;
+	private boolean compact;
 
 	public IconSelectorElementImpl(String name, List<Icon> icons) {
 		super(name);
@@ -101,6 +102,16 @@ public class IconSelectorElementImpl extends FormItemImpl implements IconSelecto
 	@Override
 	public boolean isDropUp() {
 		return dropUp;
+	}
+
+	@Override
+	public boolean isCompact() {
+		return compact;
+	}
+
+	@Override
+	public void setCompact(boolean compact) {
+		this.compact = compact;
 	}
 
 	@Override

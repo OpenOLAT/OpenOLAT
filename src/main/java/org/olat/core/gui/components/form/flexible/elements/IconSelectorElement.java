@@ -36,5 +36,9 @@ public interface IconSelectorElement extends FormItem {
 
 	void setDropUp(boolean dropUp);
 
+	boolean isCompact();
+
+	void setCompact(boolean compact);
+
 	record Icon(String id, String translatedName, String iconCssClass) { }
 }

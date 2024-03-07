@@ -31,6 +31,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial date: 2024-02-26<br>
@@ -48,9 +49,9 @@ public class IconSelectorRenderer extends DefaultComponentRenderer {
 		IconSelectorElement.Icon selectedIcon = iconSelectorEl.getIcon();
 		boolean iconSelected = selectedIcon != null;
 		String iconCssClass = iconSelected ? selectedIcon.iconCssClass() : "";
-		String iconName = iconSelected ? selectedIcon.translatedName() : "";
+		String iconName = iconSelected && !iconSelectorEl.isCompact() ? selectedIcon.translatedName() : "";
 		String iconId = iconSelected ? selectedIcon.id() : "";
-
+		String ariaLabel = iconSelected && iconSelectorEl.isCompact() ? selectedIcon.translatedName() : "";
 		String inputId = iconSelectorEl.getFormDispatchId();
 		String dropdownId = inputId + "_D";
 		String buttonId = inputId + "_B";
@@ -62,7 +63,8 @@ public class IconSelectorRenderer extends DefaultComponentRenderer {
 		sb.append("<button style='padding-left: ").append(iconSelected ? "32" : "12")
 				.append("px;' class='btn btn-default dropdown-toggle o_icon_selector_button o_can_have_focus o_button_printed' type='button' ")
 				.append("id='").append(buttonId).append("' data-toggle='dropdown' ")
-				.append("aria-haspopup='true' aria-expanded='true'")
+				.append("aria-haspopup='true' aria-expanded='true' ")
+				.append("aria-label='" + ariaLabel + "' ", StringHelper.containsNonWhitespace(ariaLabel))
 				.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ")
 				.append(!iconSelectorEl.isEnabled() ? " disabled" : "").append(">")
 				.append("<i class='o_icon o_icon_selector_icon ")
@@ -81,15 +83,21 @@ public class IconSelectorRenderer extends DefaultComponentRenderer {
 				.append("' aria-labelledby='").append(buttonId).append("'>");
 
 		for (IconSelectorElement.Icon icon : icons) {
-			sb.append("<li data-icon='").append(icon.id()).append("'");
+			sb.append("<li data-icon='").append(icon.id()).append("' class='");
 			if (selectedIcon != null && icon.id().equals(selectedIcon.id())) {
-				sb.append(" class='o_selected'");
+				sb.append("o_selected ");
+			}
+			sb.append(" o_compact", iconSelectorEl.isCompact());
+			sb.append("' ");
+			if (iconSelectorEl.isCompact()) {
+				sb.append("aria-label='").append(icon.translatedName()).append("' ");
 			}
 			sb.append(">");
 			sb.append("<a tabindex='0' role='button' aria-pressed='false' class='dropdown-item o_icon_selector_link' ");
 
+			String name = !iconSelectorEl.isCompact() ? icon.translatedName() : "";
 			String updateFunctionCall = "o_is_set_icon('" + icon.id() + "', '" +
-					icon.translatedName() + "', '" +
+					name + "', '" +
 					buttonId + "', '" +
 					inputId + "', '" +
 					dropdownId + "', '" +
@@ -108,7 +116,9 @@ public class IconSelectorRenderer extends DefaultComponentRenderer {
 			sb.append("<i class='o_icon o_icon_selector_icon ")
 					.append(icon.iconCssClass())
 					.append("'>").append("</i>");
-			sb.append("<span>").append(icon.translatedName()).append("</span>");
+			sb.append("<span>")
+					.append(icon.translatedName(), !iconSelectorEl.isCompact())
+					.append("</span>");
 
 			sb.append("</a>");
 			sb.append("</li>");
