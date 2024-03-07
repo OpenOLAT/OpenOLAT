@@ -25,6 +25,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.forms.model.xml.Image;
 
 /**
  * Initial date: 2024-03-01<br>
@@ -48,6 +49,11 @@ public class FragmentRendererHelper {
 		if (element instanceof MediaPart mediaPart) {
 			if (mediaPart.getImageSettings() != null) {
 				return mediaPart.getImageSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof Image image) {
+			if (image.getImageSettings() != null) {
+				return image.getImageSettings().getAlertBoxSettings();
 			}
 		}
 		return null;
