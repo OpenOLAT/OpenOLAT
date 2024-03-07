@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.CodeElement;
 import org.olat.modules.ceditor.model.CodeLanguage;
@@ -53,6 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CodeInspectorController extends FormBasicController implements PageElementInspectorController {
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 	private CodeElement codeElement;
 	private final PageElementStore<CodeElement> store;
 	private SingleSelection codeLanguageEl;
@@ -62,6 +65,8 @@ public class CodeInspectorController extends FormBasicController implements Page
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ColorService colorService;
 
 	public CodeInspectorController(UserRequest ureq, WindowControl wControl, CodeElement codeElement,
 								   PageElementStore<CodeElement> store) {
@@ -90,6 +95,7 @@ public class CodeInspectorController extends FormBasicController implements Page
 
 	private void addStyleTab(FormItemContainer formLayout) {
 		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", getTranslator());
+		layoutCont.setElementCssClass("o_code_inspector_style");
 		formLayout.add(layoutCont);
 		tabbedPane.addTab(getTranslator().translate("tab.style"), layoutCont);
 
@@ -111,6 +117,9 @@ public class CodeInspectorController extends FormBasicController implements Page
 		numberOfLinesIntEl = uifactory.addIntegerElement("code.number.of.lines.int", null, 0,
 				layoutCont);
 		numberOfLinesIntEl.addActionListener(FormEvent.ONBLUR);
+
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory,
+				getAlertBoxSettings(getCodeSettings()), colorService, getLocale());
 	}
 	private void updateUI() {
 		CodeSettings codeSettings = codeElement.getSettings();
@@ -139,6 +148,8 @@ public class CodeInspectorController extends FormBasicController implements Page
 			doSaveSettings(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -184,11 +195,31 @@ public class CodeInspectorController extends FormBasicController implements Page
 		getInitialComponent().setDirty(true);
 	}
 
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		CodeSettings codeSettings = getCodeSettings();
+
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(codeSettings);
+		alertBoxComponents.sync(alertBoxSettings);
+		codeSettings.setAlertBoxSettings(alertBoxSettings);
+
+		codeElement.setSettings(codeSettings);
+		doSave(ureq);
+
+		getInitialComponent().setDirty(true);
+	}
+
 	private BlockLayoutSettings getLayoutSettings(CodeSettings codeSettings) {
 		if (codeSettings.getLayoutSettings() != null) {
 			return codeSettings.getLayoutSettings();
 		}
 		return BlockLayoutSettings.getPredefined();
+	}
+
+	private AlertBoxSettings getAlertBoxSettings(CodeSettings codeSettings) {
+		if (codeSettings.getAlertBoxSettings() != null) {
+			return codeSettings.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
 	}
 
 	private CodeSettings getCodeSettings() {

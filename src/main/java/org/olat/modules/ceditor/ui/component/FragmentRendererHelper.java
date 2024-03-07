@@ -24,6 +24,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.ContainerSettings;
+import org.olat.modules.ceditor.model.jpa.CodePart;
+import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
@@ -72,6 +74,16 @@ public class FragmentRendererHelper {
 		if (element instanceof TablePart tablePart) {
 			if (tablePart.getTableSettings() != null) {
 				return tablePart.getTableSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof MathPart mathPart) {
+			if (mathPart.getMathSettings() != null) {
+				return mathPart.getMathSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof CodePart codePart) {
+			if (codePart.getSettings() != null) {
+				return codePart.getSettings().getAlertBoxSettings();
 			}
 		}
 		return null;
