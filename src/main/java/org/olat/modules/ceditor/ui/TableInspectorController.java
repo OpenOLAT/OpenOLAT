@@ -22,6 +22,7 @@ package org.olat.modules.ceditor.ui;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -40,6 +41,7 @@ import org.olat.modules.ceditor.ContentEditorModule;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.TableContent;
 import org.olat.modules.ceditor.model.TableElement;
@@ -57,6 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TableInspectorController extends FormBasicController implements PageElementInspectorController {
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 
 	private static final String[] onKeys = new String[] { "on" };
 	
@@ -77,7 +80,9 @@ public class TableInspectorController extends FormBasicController implements Pag
 	private DB dbInstance;
 	@Autowired
 	private ContentEditorModule contentEditorModule;
-	
+	@Autowired
+	private ColorService colorService;
+
 	public TableInspectorController(UserRequest ureq, WindowControl wControl,
 			TableElement table, PageElementStore<TableElement> store, boolean inForm) {
 		super(ureq, wControl, "tabs_inspector");
@@ -167,6 +172,9 @@ public class TableInspectorController extends FormBasicController implements Pag
 		} else {
 			styleEl.select(styles[0], true);
 		}
+
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory,
+				getAlertBoxSettings(getTableSettings()), colorService, getLocale());
 	}
 
 	private void addLayoutTab(FormItemContainer formLayout) {
@@ -179,6 +187,13 @@ public class TableInspectorController extends FormBasicController implements Pag
 			return tableSettings.getLayoutSettings();
 		}
 		return BlockLayoutSettings.getPredefined();
+	}
+
+	private AlertBoxSettings getAlertBoxSettings(TableSettings tableSettings) {
+		if (tableSettings.getAlertBoxSettings() != null) {
+			return tableSettings.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
 	}
 
 	private TableSettings getTableSettings() {
@@ -206,6 +221,8 @@ public class TableInspectorController extends FormBasicController implements Pag
 			doSaveSettings(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -272,4 +289,21 @@ public class TableInspectorController extends FormBasicController implements Pag
 
 		getInitialComponent().setDirty(true);
 	}
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		TableSettings tableSettings = getTableSettings();
+
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(tableSettings);
+		alertBoxComponents.sync(alertBoxSettings);
+		tableSettings.setAlertBoxSettings(alertBoxSettings);
+
+		String settingsXml = ContentEditorXStream.toXml(tableSettings);
+		table.setLayoutOptions(settingsXml);
+		table = store.savePageElement(table);
+		dbInstance.commit();
+		fireEvent(ureq, new ChangePartEvent(table));
+
+		getInitialComponent().setDirty(true);
+	}
+
 }

@@ -36,6 +36,7 @@ public class TableSettings {
 	private String tableStyle;
 
 	private BlockLayoutSettings layoutSettings;
+	private AlertBoxSettings alertBoxSettings;
 
 	public boolean isRowHeaders() {
 		return rowHeaders;
@@ -83,5 +84,13 @@ public class TableSettings {
 
 	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
 		this.layoutSettings = layoutSettings;
+	}
+
+	public AlertBoxSettings getAlertBoxSettings() {
+		return alertBoxSettings;
+	}
+
+	public void setAlertBoxSettings(AlertBoxSettings alertBoxSettings) {
+		this.alertBoxSettings = alertBoxSettings;
 	}
 }

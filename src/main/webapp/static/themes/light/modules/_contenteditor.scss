@@ -532,7 +532,7 @@
 	.o_ceditor_inspector_content {
 		padding: 10px;
 
-		.o_image_inspector_style {
+		.o_image_inspector_style, .o_table_inspector_style {
 			max-height: 360px;
 			overflow: auto;
 			padding-right: 4px;

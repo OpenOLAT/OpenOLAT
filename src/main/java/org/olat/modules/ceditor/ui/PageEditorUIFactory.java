@@ -24,6 +24,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
+import org.olat.modules.ceditor.model.jpa.TablePart;
 
 /**
  * 
@@ -49,6 +50,9 @@ public class PageEditorUIFactory {
 		}
 		if (sourceElement instanceof ParagraphPart sourceParagraphPart && targetElement instanceof ParagraphPart targetParagraphPart) {
 			targetParagraphPart.setLayoutOptions(sourceParagraphPart.getLayoutOptions());
+		}
+		if (sourceElement instanceof TablePart sourceTablePart && targetElement instanceof TablePart targetTablePart) {
+			targetTablePart.setLayoutOptions(sourceTablePart.getLayoutOptions());
 		}
 	}
 }
