@@ -1,0 +1,11 @@
+<div class="o_folder_selection">
+	<div class="o_folder_breadcrumb o_block_top">
+		#if($r.available("folderBreadcrumb") && $r.visible("folderBreadcrumb"))
+			$r.render("folderBreadcrumb")
+		#end
+	</div>
+	<div class="o_folder_selection_table o_block_large_bottom">
+		$r.render("table")
+	</div>
+	$r.render("buttons")
+</div>

@@ -22,6 +22,7 @@ package org.olat.core.commons.services.folder.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Set;
 
@@ -111,6 +112,7 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -134,6 +136,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private static final String FILTER_TITLE = "filter.title";
 	private static final String CMD_FOLDER = "folder";
 	private static final String CMD_DOWNLOAD = "download";
+	private static final String CMD_COPY = "copy";
+	private static final String CMD_MOVE = "move";
 	private static final String CMD_METADATA = "metadata";
 	private static final String CMD_VERSION = "version";
 	private static final String CMD_ZIP = "zip";
@@ -151,6 +155,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FormLink webdavLink;
 	private FormLink quotaEditLink;
 	private FormLink bulkDownloadButton;
+	private FormLink bulkMoveButton;
+	private FormLink bulkCopyButton;
 	private FormLink bulkZipButton;
 	private FormLink bulkEmailButton;
 	private TooledStackedPanel folderBreadcrumb;
@@ -167,6 +173,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private RecordAVController recordAVController;
 	private WebDAVController webdavCtrl;
 	private Controller quotaEditCtrl;
+	private FolderSelectionController copySelectFolderCtrl;
 	private Controller metadataCtrl;
 	private RevisionListController revisonsCtrl;
 	private ZipConfirmationController zipConfirmationCtrl;
@@ -296,6 +303,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		quotaEditLink.setVisible(canEditQuota(ureq));
 		cmdDropdown.setVisible(webdavLink.isVisible() || quotaEditLink.isVisible());
 		
+		bulkMoveButton.setVisible(canEditCurrentContainer);
+		bulkCopyButton.setVisible(canEditCurrentContainer);
 		bulkZipButton.setVisible(canEditCurrentContainer);
 	}
 	
@@ -388,6 +397,14 @@ public class FolderController extends FormBasicController implements Activateabl
 		bulkDownloadButton = uifactory.addFormLink("download", flc, Link.BUTTON);
 		bulkDownloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		tableEl.addBatchButton(bulkDownloadButton);
+		
+		bulkMoveButton = uifactory.addFormLink("move.to", flc, Link.BUTTON);
+		bulkMoveButton.setIconLeftCSS("o_icon o_icon-fw o_icon_move");
+		tableEl.addBatchButton(bulkMoveButton);
+		
+		bulkCopyButton = uifactory.addFormLink("copy.to", flc, Link.BUTTON);
+		bulkCopyButton.setIconLeftCSS("o_icon o_icon-fw o_icon_duplicate");
+		tableEl.addBatchButton(bulkCopyButton);
 		
 		bulkZipButton = uifactory.addFormLink("zip", flc, Link.BUTTON);
 		bulkZipButton.setIconLeftCSS("o_icon o_icon-fw o_filetype_zip");
@@ -603,6 +620,10 @@ public class FolderController extends FormBasicController implements Activateabl
 			doEditQuota(ureq);
 		} else if (bulkDownloadButton == source) {
 			doBulkDownload(ureq);
+		} else if (bulkMoveButton == source) {
+			doBulkMoveSelectFolder(ureq);
+		} else if (bulkCopyButton == source) {
+			doBulkCopySelectFolder(ureq);
 		} else if (bulkZipButton == source) {
 			doBulkZipConfirmation(ureq);
 		} else if (bulkEmailButton == source) {
@@ -663,6 +684,15 @@ public class FolderController extends FormBasicController implements Activateabl
 			loadModel(ureq);
 			cmc.deactivate();
 			cleanUp();
+		} else if (copySelectFolderCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doCopyMove(ureq,
+						(Boolean) copySelectFolderCtrl.getUserObject(),
+						copySelectFolderCtrl.getSelectedContainer(),
+						copySelectFolderCtrl.getItemsToCopy());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (zipConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				doZip(ureq, zipConfirmationCtrl.getFileName(), zipConfirmationCtrl.getItemsToZip());
@@ -703,6 +733,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		removeAsListenerAndDispose(quotaEditCtrl);
 		removeAsListenerAndDispose(metadataCtrl);
 		removeAsListenerAndDispose(revisonsCtrl);
+		removeAsListenerAndDispose(copySelectFolderCtrl);
 		removeAsListenerAndDispose(zipConfirmationCtrl);
 		removeAsListenerAndDispose(emailCtrl);
 		removeAsListenerAndDispose(deleteSoftlyConfirmationCtrl);
@@ -717,6 +748,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		quotaEditCtrl = null;
 		metadataCtrl = null;
 		revisonsCtrl = null;
+		copySelectFolderCtrl = null;
 		zipConfirmationCtrl = null;
 		emailCtrl = null;
 		deleteSoftlyConfirmationCtrl = null;
@@ -799,7 +831,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		FolderQuota folderQuota = getFolderQuota(ureq);
 		if (folderQuota.isExceeded()) {
-			showWarning("error.quota.exceeded");
+			showWarning("error.upload.quota.exceeded");
 			return;
 		}
 		
@@ -1001,6 +1033,148 @@ public class FolderController extends FormBasicController implements Activateabl
 			return parentContainer.canWrite() == VFSConstants.YES;
 		}
 		return vfsItem.canWrite() == VFSConstants.YES;
+	}
+	
+	private void doCopySelectFolder(UserRequest ureq, FolderRow row) {
+		doCopyMoveSelectFolder(ureq, row, false, "copy.to", "copy");
+	}
+	
+	private void doMoveSelectFolder(UserRequest ureq, FolderRow row) {
+		doCopyMoveSelectFolder(ureq, row, true, "move.to", "move");
+	}
+	
+	private void doCopyMoveSelectFolder(UserRequest ureq, FolderRow row, boolean move, String titleI18nKey, String submitI18nKey) {
+		if (guardModalController(copySelectFolderCtrl)) return;
+		if (isItemNotAvailable(ureq, row, true)) return;
+		
+		VFSItem vfsItem = row.getVfsItem();
+		if (!canCopy(vfsItem)) {
+			return;
+		}
+		
+		removeAsListenerAndDispose(copySelectFolderCtrl);
+		
+		copySelectFolderCtrl = new FolderSelectionController(ureq, getWindowControl(), rootContainer, currentContainer,
+				List.of(vfsItem), submitI18nKey);
+		listenTo(copySelectFolderCtrl);
+		copySelectFolderCtrl.setUserObject(move);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), copySelectFolderCtrl.getInitialComponent(),
+				true, translate(titleI18nKey), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doCopyMove(UserRequest ureq, boolean move, VFSContainer targetContainer, List<VFSItem> itemsToCopy) {
+		if (isItemNotAvailable(ureq, targetContainer, true)) return;
+		
+		if (!canEdit(targetContainer)) {
+			showWarning("error.copy.target.read.only");
+			return;
+		}
+		
+		for (VFSItem itemToCopy : itemsToCopy) {
+			if (itemToCopy instanceof VFSContainer sourceContainer) {
+				if (VFSManager.isContainerDescendantOrSelf(targetContainer, sourceContainer)) {
+					showWarning("error.copy.overlapping");
+					loadModel(ureq);
+					return;
+				}
+			}
+			if (targetContainer.resolve(itemToCopy.getName()) != null) {
+				showWarning("error.copy.overlapping");
+				loadModel(ureq);
+				return;
+			}
+			if (vfsLockManager.isLockedForMe(itemToCopy, ureq.getIdentity(), VFSLockApplicationType.vfs, null)) {
+				showWarning("error.copy.locked");
+				loadModel(ureq);
+				return;
+			}
+			if (itemToCopy.canCopy() != VFSConstants.YES) {
+				showWarning("error.copy.other");
+				loadModel(ureq);
+				return;
+			}
+		}
+		
+		VFSStatus vfsStatus = VFSConstants.SUCCESS;
+		ListIterator<VFSItem> listIterator = itemsToCopy.listIterator();
+		while (listIterator.hasNext() && vfsStatus == VFSConstants.SUCCESS) {
+			VFSItem vfsItemToCopy = listIterator.next();
+			if (!isItemNotAvailable(ureq, targetContainer, false) && canCopy(vfsItemToCopy)) {	
+				VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
+				if (vfsItemToCopy instanceof VFSLeaf sourceLeaf && targetItem != null && targetItem.canVersion() == VFSConstants.YES) {
+					boolean success = vfsRepositoryService.addVersion(sourceLeaf, ureq.getIdentity(), false, "", sourceLeaf.getInputStream());
+					if (!success) {
+						vfsStatus = VFSConstants.ERROR_FAILED;
+					}
+				} else {
+					vfsStatus = targetContainer.copyFrom(vfsItemToCopy, ureq.getIdentity());
+				}
+				if (move && vfsStatus == VFSConstants.SUCCESS) {
+					vfsItemToCopy.deleteSilently();
+				}
+			}
+		}
+		
+		if (vfsStatus == VFSConstants.ERROR_QUOTA_EXCEEDED) {
+			showWarning("error.copy.quota.exceeded");
+		} else if (vfsStatus != VFSConstants.SUCCESS) {
+			showWarning("error.copy");
+		}
+		
+		loadModel(ureq);
+		markNews();
+	}
+	
+	private void doBulkCopySelectFolder(UserRequest ureq) {
+		doBulkCopyMoveSelectFolder(ureq, false, "copy.to", "copy");
+	}
+	
+	private void doBulkMoveSelectFolder(UserRequest ureq) {
+		doBulkCopyMoveSelectFolder(ureq, true, "move.to", "move");
+	}
+	
+	private void doBulkCopyMoveSelectFolder(UserRequest ureq, boolean move, String titleI18nKey, String submitI18nKey) {
+		if (guardModalController(copySelectFolderCtrl)) return;
+		if (!canEdit(currentContainer)) {
+			return;
+		}
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			showWarning("file.bulk.not.authorized");
+			return;
+		}
+		
+		List<VFSItem> itemsToCopy = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.filter(row -> !isItemNotAvailable(ureq, row, false))
+				.filter(row -> canCopy(row.getVfsItem()))
+				.map(FolderRow::getVfsItem)
+				.toList();
+		
+		if (itemsToCopy.isEmpty()) {
+			showWarning("file.bulk.not.authorized");
+			loadModel(ureq);
+			return;
+		}
+		
+		copySelectFolderCtrl = new FolderSelectionController(ureq, getWindowControl(), currentContainer,
+				currentContainer, itemsToCopy, submitI18nKey);
+		listenTo(copySelectFolderCtrl);
+		copySelectFolderCtrl.setUserObject(move);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				copySelectFolderCtrl.getInitialComponent(), true, translate(titleI18nKey), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private boolean canCopy(VFSItem vfsItem) {
+		return VFSConstants.YES == vfsItem.canCopy() && canEdit(vfsItem);
 	}
 	
 	private boolean hasMetadata(VFSItem item) {
@@ -1451,21 +1625,35 @@ public class FolderController extends FormBasicController implements Activateabl
 			
 			mainVC = createVelocityContainer("tools");
 			
+			boolean divider = false;
 			VFSItem vfsItem = row.getVfsItem();
 			addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download");
 			
+			if (canCopy(vfsItem)) {
+				addLink("move.to", CMD_MOVE, "o_icon o_icon-fw o_icon_move");
+				addLink("copy.to", CMD_COPY, "o_icon o_icon-fw o_icon_duplicate");
+				divider = true;
+			}
+			
 			if (hasMetadata(vfsItem)) {
 				addLink("metadata", CMD_METADATA, "o_icon o_icon-fw o_icon_metadata");
+				divider = true;
 			}
 			if (hasVersion(vfsItem) && canEdit(vfsItem)) {
 				addLink("versions", CMD_VERSION, "o_icon o_icon-fw o_icon_version");
+				divider = true;
 			}
 			if (canZip(vfsItem)) {
 				addLink("zip", CMD_ZIP, "o_icon o_icon-fw o_filetype_zip");
+				divider = true;
 			}
 			if (canUnzip(vfsItem)) {
 				addLink("unzip", CMD_UNZIP, "o_icon o_icon-fw o_filetype_zip");
+				divider = true;
 			}
+			
+			mainVC.contextPut("divider", divider);
+			
 			if (canDelete(vfsItem)) {
 				addLink("delete", CMD_DELETE, "o_icon o_icon-fw o_icon_delete_item");
 			}
@@ -1489,6 +1677,10 @@ public class FolderController extends FormBasicController implements Activateabl
 				String cmd = link.getCommand();
 				if (CMD_DOWNLOAD.equals(cmd)) {
 					doDownload(ureq, row);
+				} else if (CMD_MOVE.equals(cmd)) {
+					doMoveSelectFolder(ureq, row);
+				} else if (CMD_COPY.equals(cmd)) {
+					doCopySelectFolder(ureq, row);
 				} else if (CMD_METADATA.equals(cmd)) {
 					doOpenMetadata(ureq, row);
 				} else if (CMD_VERSION.equals(cmd)) {

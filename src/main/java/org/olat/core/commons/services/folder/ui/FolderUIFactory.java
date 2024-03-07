@@ -56,11 +56,13 @@ public class FolderUIFactory {
 	}
 
 	public static String getCreatedBy(UserManager userManager, VFSItem vfsItem) {
-		VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
-		if (vfsMetadata != null) {
-			Identity fileInitializedBy = vfsMetadata.getFileInitializedBy();
-			if (fileInitializedBy != null) {
-				return userManager.getUserDisplayName(fileInitializedBy.getKey());
+		if (vfsItem instanceof VFSLeaf vfsLeaf) {
+			VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
+			if (vfsMetadata != null) {
+				Identity fileInitializedBy = vfsMetadata.getFileInitializedBy();
+				if (fileInitializedBy != null) {
+					return userManager.getUserDisplayName(fileInitializedBy.getKey());
+				}
 			}
 		}
 		return null;

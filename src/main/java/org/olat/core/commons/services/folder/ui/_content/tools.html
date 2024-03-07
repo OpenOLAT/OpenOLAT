@@ -2,6 +2,15 @@
 	#if($r.available("download"))
 		<li>$r.render("download")</li>
 	#end
+	#if($divider)
+		<li class="divider"></li>
+	#end
+	#if($r.available("move.to"))
+		<li>$r.render("move.to")</li>
+	#end
+	#if($r.available("copy.to"))
+		<li>$r.render("copy.to")</li>
+	#end
 	#if($r.available("metadata"))
 		<li>$r.render("metadata")</li>
 	#end

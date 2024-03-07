@@ -273,21 +273,22 @@ ul.o_dropdown {
 			}
 		}
 	}
-	.o_folder_table {
-		margin-top: -15px;
+}
+
+.o_folder_breadcrumb {
+	margin-bottom: -15px;
+}
+.o_folder_row_thumbnail {
+	width: $o-folder-row-thumbnail-size;
+	height: $o-folder-row-thumbnail-size;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	.o_icon {
+		font-size: $o-folder-row-thumbnail-icon-size;
 	}
-	.o_folder_row_thumbnail {
-		width: $o-folder-row-thumbnail-size;
-		height: $o-folder-row-thumbnail-size;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		.o_icon {
-			font-size: $o-folder-row-thumbnail-icon-size;
-		}
-		&:not(:has(.o_icon)) {
-			outline: $o-folder-row-thumbnail-image-border;
-		}
+	&:not(:has(.o_icon)) {
+		outline: $o-folder-row-thumbnail-image-border;
 	}
 }
 
