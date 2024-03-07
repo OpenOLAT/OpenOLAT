@@ -23,6 +23,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 
 /**
  * 
@@ -45,6 +46,9 @@ public class PageEditorUIFactory {
 	public static void refreshElementLayoutOptions(PageElement sourceElement, PageElement targetElement) {
 		if (sourceElement instanceof MediaPart sourceMediaPart && targetElement instanceof MediaPart targetMediaPart) {
 			targetMediaPart.setLayoutOptions(sourceMediaPart.getLayoutOptions());
+		}
+		if (sourceElement instanceof ParagraphPart sourceParagraphPart && targetElement instanceof ParagraphPart targetParagraphPart) {
+			targetParagraphPart.setLayoutOptions(sourceParagraphPart.getLayoutOptions());
 		}
 	}
 }
