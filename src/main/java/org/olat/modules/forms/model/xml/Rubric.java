@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 
 /**
@@ -59,7 +60,8 @@ public class Rubric extends AbstractElement {
 	private Double upperBoundSufficient;
 	private boolean startGoodRating;
 	private BlockLayoutSettings layoutSettings;
-	
+	private AlertBoxSettings alertBoxSettings;
+
 	@Override
 	public String getType() {
 		return TYPE;
@@ -246,6 +248,14 @@ public class Rubric extends AbstractElement {
 
 	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
 		this.layoutSettings = layoutSettings;
+	}
+
+	public AlertBoxSettings getAlertBoxSettings() {
+		return alertBoxSettings;
+	}
+
+	public void setAlertBoxSettings(AlertBoxSettings alertBoxSettings) {
+		this.alertBoxSettings = alertBoxSettings;
 	}
 
 	@Override

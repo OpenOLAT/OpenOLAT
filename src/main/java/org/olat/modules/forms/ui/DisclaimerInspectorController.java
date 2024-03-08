@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,12 +31,15 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.Disclaimer;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2024-01-25<br>
@@ -45,8 +49,12 @@ import org.olat.modules.forms.model.xml.Disclaimer;
 public class DisclaimerInspectorController extends FormBasicController implements PageElementInspectorController {
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 
-	private Disclaimer disclaimer;
+	private final Disclaimer disclaimer;
+
+	@Autowired
+	private ColorService colorService;
 
 	public DisclaimerInspectorController(UserRequest ureq, WindowControl wControl, Disclaimer disclaimer) {
 		super(ureq, wControl, "disclaimer_inspector");
@@ -65,7 +73,13 @@ public class DisclaimerInspectorController extends FormBasicController implement
 		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
 
+		addStyleTab(formLayout);
 		addLayoutTab(formLayout);
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+				getAlertBoxSettings(), colorService, getLocale());
 	}
 
 	private void addLayoutTab(FormItemContainer formLayout) {
@@ -80,10 +94,19 @@ public class DisclaimerInspectorController extends FormBasicController implement
 		return BlockLayoutSettings.getPredefined();
 	}
 
+	private AlertBoxSettings getAlertBoxSettings() {
+		if (disclaimer.getAlertBoxSettings() != null) {
+			return disclaimer.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -102,6 +125,15 @@ public class DisclaimerInspectorController extends FormBasicController implement
 		BlockLayoutSettings layoutSettings = getLayoutSettings();
 		layoutTabComponents.sync(layoutSettings);
 		disclaimer.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(disclaimer));
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings();
+		alertBoxComponents.sync(alertBoxSettings);
+		disclaimer.setAlertBoxSettings(alertBoxSettings);
 		fireEvent(ureq, new ChangePartEvent(disclaimer));
 
 		getInitialComponent().setDirty(true);

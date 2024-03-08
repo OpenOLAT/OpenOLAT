@@ -239,7 +239,7 @@ public class PageRunController extends BasicController implements TooledControll
 			PageEditorSecurityCallback editorSecCallback = FullEditorSecurityCallback.all();
 			pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
 					new PortfolioPageEditorProvider(), editorSecCallback,
-					getTranslator());
+					getTranslator(), false);
 			listenTo(pageEditCtrl);
 			if (page.getBody() != null && page.getBody().getUsage() > 1) {
 				showWarning("page.is.referenced");
@@ -728,7 +728,7 @@ public class PageRunController extends BasicController implements TooledControll
 			if(lockEntry.isSuccess()) {
 				pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
 						new PortfolioPageEditorProvider(),
-						FullEditorSecurityCallback.all(), getTranslator());
+						FullEditorSecurityCallback.all(), getTranslator(), false);
 				if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
 					showWarning("page.is.referenced");
 				}

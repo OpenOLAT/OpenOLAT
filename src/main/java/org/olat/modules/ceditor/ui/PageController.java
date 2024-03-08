@@ -63,6 +63,7 @@ public class PageController extends BasicController {
 			handlerMap.put(handler.getType(), handler);
 		}
 		fragmentsCmp = new PageFragmentsComponent("page_fragments");
+		fragmentsCmp.setInForm(false);
 		fragmentsCmp.setTranslator(getTranslator());
 		putInitialPanel(fragmentsCmp);
 	}

@@ -23,6 +23,7 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.Arrays;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,6 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -51,6 +53,8 @@ import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.MultipleChoice.Presentation;
 import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -68,6 +72,7 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 
 	private TextElement nameEl;
 	private SingleSelection presentationEl;
@@ -76,7 +81,10 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 	
 	private final MultipleChoice multipleChoice;
 	private final boolean restrictedEdit;
-	
+
+	@Autowired
+	private ColorService colorService;
+
 	public MultipleChoiceInspectorController(UserRequest ureq, WindowControl wControl, MultipleChoice multipleChoice, boolean restrictedEdit) {
 		super(ureq, wControl, "multiple_choice_inspector");
 		this.multipleChoice = multipleChoice;
@@ -96,6 +104,7 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 		formLayout.add("tabs", tabbedPane);
 
 		addGeneralTab(formLayout);
+		addStyleTab(formLayout);
 		addLayoutTab(formLayout);
 	}
 
@@ -148,6 +157,11 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 		}
 	}
 
+	private void addStyleTab(FormItemContainer formLayout) {
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+				getAlertBoxSettings(), colorService, getLocale());
+	}
+
 	private void addLayoutTab(FormItemContainer formLayout) {
 		Translator translator = Util.createPackageTranslator(PageElementTarget.class, getLocale());
 		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, getLayoutSettings(), velocity_root);
@@ -158,6 +172,13 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 			return multipleChoice.getLayoutSettings();
 		}
 		return BlockLayoutSettings.getPredefined();
+	}
+
+	private AlertBoxSettings getAlertBoxSettings() {
+		if (multipleChoice.getAlertBoxSettings() != null) {
+			return multipleChoice.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
 	}
 
 	@Override
@@ -174,6 +195,8 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 			doSave(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 	}
 
@@ -203,6 +226,15 @@ public class MultipleChoiceInspectorController extends FormBasicController imple
 		BlockLayoutSettings layoutSettings = getLayoutSettings();
 		layoutTabComponents.sync(layoutSettings);
 		multipleChoice.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(multipleChoice));
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings();
+		alertBoxComponents.sync(alertBoxSettings);
+		multipleChoice.setAlertBoxSettings(alertBoxSettings);
 		fireEvent(ureq, new ChangePartEvent(multipleChoice));
 
 		getInitialComponent().setDirty(true);

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,12 +31,15 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.SessionInformations;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2024-01-25<br>
@@ -45,8 +49,12 @@ import org.olat.modules.forms.model.xml.SessionInformations;
 public class SessionInfoInspectorController extends FormBasicController implements PageElementInspectorController {
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 
-	private SessionInformations sessionInfo;
+	private final SessionInformations sessionInfo;
+
+	@Autowired
+	private ColorService colorService;
 
 	public SessionInfoInspectorController(UserRequest ureq, WindowControl wControl, SessionInformations sessionInfo) {
 		super(ureq, wControl, "session_info_inspector");
@@ -65,7 +73,13 @@ public class SessionInfoInspectorController extends FormBasicController implemen
 		tabbedPane.setTabIndentation(TabbedPaneItem.TabIndentation.none);
 		formLayout.add("tabs", tabbedPane);
 
+		addStyleTab(formLayout);
 		addLayoutTab(formLayout);
+	}
+
+	private void addStyleTab(FormItemContainer formLayout) {
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+				getAlertBoxSettings(), colorService, getLocale());
 	}
 
 	private void addLayoutTab(FormItemContainer formLayout) {
@@ -80,10 +94,19 @@ public class SessionInfoInspectorController extends FormBasicController implemen
 		return BlockLayoutSettings.getPredefined();
 	}
 
+	private AlertBoxSettings getAlertBoxSettings() {
+		if (sessionInfo.getAlertBoxSettings() != null) {
+			return sessionInfo.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -102,6 +125,15 @@ public class SessionInfoInspectorController extends FormBasicController implemen
 		BlockLayoutSettings layoutSettings = getLayoutSettings();
 		layoutTabComponents.sync(layoutSettings);
 		sessionInfo.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(sessionInfo));
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings();
+		alertBoxComponents.sync(alertBoxSettings);
+		sessionInfo.setAlertBoxSettings(alertBoxSettings);
 		fireEvent(ureq, new ChangePartEvent(sessionInfo));
 
 		getInitialComponent().setDirty(true);

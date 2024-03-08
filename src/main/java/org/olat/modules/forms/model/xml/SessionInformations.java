@@ -22,6 +22,7 @@ package org.olat.modules.forms.model.xml;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 
 /**
@@ -65,6 +66,7 @@ public class SessionInformations extends AbstractElement {
 	private Obligation obligation = Obligation.optional;
 	private List<InformationType> informationTypes = new ArrayList<>();
 	private BlockLayoutSettings layoutSettings;
+	private AlertBoxSettings alertBoxSettings;
 
 	@Override
 	public String getType() {
@@ -93,6 +95,14 @@ public class SessionInformations extends AbstractElement {
 
 	public void setLayoutSettings(BlockLayoutSettings layoutSettings) {
 		this.layoutSettings = layoutSettings;
+	}
+
+	public AlertBoxSettings getAlertBoxSettings() {
+		return alertBoxSettings;
+	}
+
+	public void setAlertBoxSettings(AlertBoxSettings alertBoxSettings) {
+		this.alertBoxSettings = alertBoxSettings;
 	}
 
 	@Override

@@ -42,9 +42,19 @@ public class PageFragmentsComponent extends AbstractComponent implements Compone
 	private static final PageFragmentsComponentRenderer RENDERER = new PageFragmentsComponentRenderer();
 	
 	private List<? extends PageFragment> fragments;
-	
+
+	private boolean inForm;
+
 	public PageFragmentsComponent(String name) {
 		super(name);
+	}
+
+	public boolean isInForm() {
+		return inForm;
+	}
+
+	public void setInForm(boolean inForm) {
+		this.inForm = inForm;
 	}
 
 	public List<PageFragment> getFragments() {

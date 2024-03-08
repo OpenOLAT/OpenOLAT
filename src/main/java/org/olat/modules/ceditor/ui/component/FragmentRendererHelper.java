@@ -23,14 +23,23 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.jpa.CodePart;
 import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
+import org.olat.modules.forms.model.xml.Disclaimer;
+import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.HTMLParagraph;
 import org.olat.modules.forms.model.xml.Image;
+import org.olat.modules.forms.model.xml.MultipleChoice;
+import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.SessionInformations;
+import org.olat.modules.forms.model.xml.SingleChoice;
+import org.olat.modules.forms.model.xml.Table;
+import org.olat.modules.forms.model.xml.TextInput;
 
 /**
  * Initial date: 2024-03-01<br>
@@ -89,15 +98,41 @@ public class FragmentRendererHelper {
 				return codePart.getSettings().getAlertBoxSettings();
 			}
 		}
+		if (element instanceof Table table) {
+			if (table.getTableSettings() != null) {
+				return table.getTableSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof Rubric rubric) {
+			return rubric.getAlertBoxSettings();
+		}
+		if (element instanceof SingleChoice singleChoice) {
+			return singleChoice.getAlertBoxSettings();
+		}
+		if (element instanceof MultipleChoice multipleChoice) {
+			return multipleChoice.getAlertBoxSettings();
+		}
+		if (element instanceof TextInput textInput) {
+			return textInput.getAlertBoxSettings();
+		}
+		if (element instanceof FileUpload fileUpload) {
+			return fileUpload.getAlertBoxSettings();
+		}
+		if (element instanceof Disclaimer disclaimer) {
+			return disclaimer.getAlertBoxSettings();
+		}
+		if (element instanceof SessionInformations sessionInformation) {
+			return sessionInformation.getAlertBoxSettings();
+		}
 		return null;
 	}
 
-	public static void renderAlertHeader(StringOutput sb, String fragmentId, ContainerSettings settings) {
-		renderAlertHeader(sb, fragmentId, settings.getAlertBoxSettings(), settings.getNumOfBlocks());
+	public static void renderAlertHeader(StringOutput sb, String fragmentId, ContainerSettings settings, boolean inForm) {
+		renderAlertHeader(sb, fragmentId, null, settings.getAlertBoxSettings(), settings.getNumOfBlocks(), inForm);
 	}
 
-	public static void renderAlertHeader(StringOutput sb, String fragmentId, AlertBoxSettings alertBoxSettings,
-										 int numberOfItems) {
+	public static void renderAlertHeader(StringOutput sb, String fragmentId, BlockLayoutSettings layoutSettings,
+										 AlertBoxSettings alertBoxSettings, int numberOfItems, boolean inForm) {
 		boolean showAlert = alertBoxSettings != null && alertBoxSettings.isShowAlertBox();
 		String title = showAlert ? alertBoxSettings.getTitle() : null;
 		String iconCssClass = showAlert ? alertBoxSettings.getIconCssClass() : null;
@@ -107,7 +142,11 @@ public class FragmentRendererHelper {
 		boolean collapsible = showTitle && alertBoxSettings.isCollapsible();
 
 		if (showAlertHeader) {
-			sb.append("<div class='o_container_block' style='grid-column: 1 / -1;'>");
+			sb.append("<div class='o_container_block o_alert_header");
+			if (layoutSettings != null) {
+				sb.append(" ").append(layoutSettings.getCssClass(inForm));
+			}
+			sb.append("' style='grid-column: 1 / -1;'>");
 			sb.append("<div class='o_container_block_alert'>");
 			if (showIcon) {
 				sb.append("<div class='o_alert_icon'><i class='o_icon ").append(iconCssClass).append("'> </i></div>");
@@ -177,5 +216,80 @@ public class FragmentRendererHelper {
 		String title = showAlert ? alertBoxSettings.getTitle() : null;
 		boolean showTitle = StringHelper.containsNonWhitespace(title);
 		return showTitle && alertBoxSettings.isCollapsible();
+	}
+
+	public static BlockLayoutSettings getLayoutSettings(PageElement element) {
+		if (element instanceof MediaPart mediaPart) {
+			if (mediaPart.getImageSettings() != null) {
+				return getLayoutSettings(mediaPart.getImageSettings().getLayoutSettings());
+			}
+			if (mediaPart.getMediaSettings() != null) {
+				return getLayoutSettings(mediaPart.getMediaSettings().getLayoutSettings());
+			}
+		}
+		if (element instanceof Image image) {
+			if (image.getImageSettings() != null) {
+				return getLayoutSettings(image.getImageSettings().getLayoutSettings());
+			}
+		}
+		if (element instanceof ParagraphPart paragraphPart) {
+			if (paragraphPart.getTextSettings() != null) {
+				return getLayoutSettings(paragraphPart.getTextSettings().getLayoutSettings());
+			}
+		}
+		if (element instanceof HTMLParagraph htmlParagraph) {
+			if (htmlParagraph.getTextSettings() != null) {
+				return getLayoutSettings(htmlParagraph.getTextSettings().getLayoutSettings());
+			}
+		}
+		if (element instanceof TablePart tablePart) {
+			if (tablePart.getTableSettings() != null) {
+				return getLayoutSettings(tablePart.getTableSettings().getLayoutSettings());
+			}
+		}
+		if (element instanceof MathPart mathPart) {
+			if (mathPart.getMathSettings() != null) {
+				return getLayoutSettings(mathPart.getMathSettings().getLayoutSettings());
+			}
+		}
+		if (element instanceof CodePart codePart) {
+			if (codePart.getSettings() != null) {
+				return getLayoutSettings(codePart.getSettings().getLayoutSettings());
+			}
+		}
+		if (element instanceof Table table) {
+			if (table.getTableSettings() != null) {
+				return getLayoutSettings(table.getTableSettings().getLayoutSettings());
+			}
+		}
+		if (element instanceof Rubric rubric) {
+			return getLayoutSettings(rubric.getLayoutSettings());
+		}
+		if (element instanceof SingleChoice singleChoice) {
+			return getLayoutSettings(singleChoice.getLayoutSettings());
+		}
+		if (element instanceof MultipleChoice multipleChoice) {
+			return getLayoutSettings(multipleChoice.getLayoutSettings());
+		}
+		if (element instanceof TextInput textInput) {
+			return getLayoutSettings(textInput.getLayoutSettings());
+		}
+		if (element instanceof FileUpload fileUpload) {
+			return getLayoutSettings(fileUpload.getLayoutSettings());
+		}
+		if (element instanceof Disclaimer disclaimer) {
+			return getLayoutSettings(disclaimer.getLayoutSettings());
+		}
+		if (element instanceof SessionInformations sessionInformation) {
+			return getLayoutSettings(sessionInformation.getLayoutSettings());
+		}
+		return null;
+	}
+
+	private static BlockLayoutSettings getLayoutSettings(BlockLayoutSettings layoutSettings) {
+		if (layoutSettings != null) {
+			return layoutSettings;
+		}
+		return BlockLayoutSettings.getPredefined();
 	}
 }

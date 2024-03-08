@@ -35,6 +35,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.AlertBoxType;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.ContainerLayout;
@@ -82,7 +83,7 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			
 			for(PageFragment fragment:fragments) {
 				if(!containerized.contains(fragment)) {
-					render(renderer, sb, fragment, elementIdToFragments, ubu, translator, renderResult, args);
+					render(renderer, sb, fragment, elementIdToFragments, ubu, translator, renderResult, cmp.isInForm(), args);
 				}
 			}
 		}
@@ -95,8 +96,9 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			sb.append("</div>");
 		}
 	
-	private void render(Renderer renderer, StringOutput sb, PageFragment fragment, Map<String, PageFragment> elementIdToFragments,
-			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+	private void render(Renderer renderer, StringOutput sb, PageFragment fragment, Map<String,
+			PageFragment> elementIdToFragments, URLBuilder ubu, Translator translator, RenderResult renderResult,
+						boolean inForm, String[] args) {
 		PageElement element = fragment.getPageElement();
 		if(!elementIdToFragments.containsKey(element.getId())) {
 			return;// already rendered fragments
@@ -104,8 +106,10 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 		elementIdToFragments.remove(element.getId());
 
 		if(element instanceof ContainerElement containerElement) {
-			renderContainer(renderer, sb, fragment, containerElement, elementIdToFragments, ubu, translator, renderResult, args);
+			renderContainer(renderer, sb, fragment, containerElement, elementIdToFragments, ubu, translator, renderResult,
+					inForm, args);
 		} else {
+			BlockLayoutSettings layoutSettings = FragmentRendererHelper.getLayoutSettings(element);
 			AlertBoxSettings alertBoxSettings = FragmentRendererHelper.getAlertBoxSettingsIfActive(element);
 			AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
 			String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
@@ -116,7 +120,7 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("'>");
 
-			FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), alertBoxSettings, 1);
+			FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), layoutSettings, alertBoxSettings, 1, inForm);
 
 			boolean collapsible = FragmentRendererHelper.isCollapsible(element);
 			if (collapsible) {
@@ -139,8 +143,9 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 		
 	}
 	
-	private void renderContainer(Renderer renderer, StringOutput sb, PageFragment fragment, ContainerElement container, Map<String, PageFragment> elementIdToFragments,
-			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+	private void renderContainer(Renderer renderer, StringOutput sb, PageFragment fragment, ContainerElement container,
+								 Map<String, PageFragment> elementIdToFragments, URLBuilder ubu, Translator translator,
+								 RenderResult renderResult, boolean inForm, String[] args) {
 		
 		ContainerSettings settings =  container.getContainerSettings();
 		AlertBoxSettings alertBoxSettings = settings.getAlertBoxSettingsIfActive();
@@ -154,15 +159,15 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			sb.append(" ").append("o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor));
 		}
 		sb.append("'>");
-		FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), settings);
-		renderContainerLayout(renderer, sb, fragment.getComponentName(), settings, elementIdToFragments, ubu, translator, renderResult, args);
+		FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), settings, inForm);
+		renderContainerLayout(renderer, sb, fragment.getComponentName(), settings, elementIdToFragments, ubu, translator, renderResult, inForm, args);
 		sb.append("</div>");
 	}
 
 	private void renderContainerLayout(Renderer renderer, StringOutput sb, String fragmentName,
 									   ContainerSettings settings, Map<String, PageFragment> elementIdToFragments,
 									   URLBuilder ubu, Translator translator, RenderResult renderResult,
-									   String[] args) {
+									   boolean inForm, String[] args) {
 
 		List<ContainerColumn> columns = settings.getColumns();
 		int numOfBlocks = settings.getNumOfBlocks();
@@ -181,7 +186,7 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 				for(String elementId:column.getElementIds()) {
 					PageFragment fragment = elementIdToFragments.get(elementId);
 					if(fragment != null) {
-						render(renderer, sb, fragment,  elementIdToFragments, ubu, translator, renderResult, args);
+						render(renderer, sb, fragment,  elementIdToFragments, ubu, translator, renderResult, inForm, args);
 					}
 				}
 			}
