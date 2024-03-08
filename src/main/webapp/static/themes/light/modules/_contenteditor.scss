@@ -223,7 +223,7 @@
 
 		.o_container_block, .o_page_container_slot-inner {
 			.o_container_block_alert {
-				padding: $o-ce-padding-compact;
+				padding: $o-ce-padding-compact 3px;
 				height: 40px;
 				display: flex;
 
@@ -1510,6 +1510,7 @@ table.o_ce_table {
 		}
 	}
 
+	.o_alert_header,
 	.o_audio,
 	.o_cit_container,
 	.o_evaluation_editor_form,
@@ -1644,6 +1645,10 @@ table.o_ce_table {
 
 	&.o_container_block_2_cols  {
 		> div:nth-last-child(2) {
+			.o_alert_box_active {
+				margin-right: 2px;
+			}
+
 			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
 				padding-left: 0;
 
@@ -1653,6 +1658,9 @@ table.o_ce_table {
 			}
 		}
 		> div:last-child {
+			.o_alert_box_active {
+				margin-left: 2px;
+			}
 			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
 				padding-right: 0;
 
@@ -1665,6 +1673,10 @@ table.o_ce_table {
 
 	&.o_container_block_3_cols  {
 		> div:nth-last-child(3) {
+			.o_alert_box_active {
+				margin-right: 4px;
+			}
+
 			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
 				padding-left: 0;
 
@@ -1674,6 +1686,10 @@ table.o_ce_table {
 			}
 		}
 		> div:last-child {
+			.o_alert_box_active {
+				margin-left: 4px;
+			}
+
 			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
 				padding-right: 0;
 
@@ -1684,8 +1700,84 @@ table.o_ce_table {
 		}
 	}
 
+	&.o_container_block_3_rows {
+		> div {
+			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
+				padding-left: 0;
+				padding-right: 0;
+
+				&.o_in_form {
+					padding-left: 0;
+					padding-right: 0;
+				}
+			}
+		}
+	}
+
+	&.o_container_block_2_1_rows {
+		> div:nth-last-child(3) {
+			.o_alert_box_active {
+				margin-right: 2px;
+			}
+
+			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
+				padding-left: 0;
+			}
+		}
+
+		> div:nth-last-child(2) {
+			.o_alert_box_active {
+				margin-left: 2px;
+			}
+
+			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
+				padding-right: 0;
+			}
+		}
+
+		> div:last-child {
+			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
+				padding-left: 0;
+				padding-right: 0;
+			}
+		}
+	}
+
+	&.o_container_block_1_3_rows {
+		> div:nth-last-child(4) {
+			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
+				padding-left: 0;
+				padding-right: 0;
+			}
+		}
+
+		> div:nth-last-child(3) {
+			.o_alert_box_active {
+				margin-right: 4px;
+			}
+
+			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
+				padding-left: 0;
+			}
+		}
+
+		> div:last-child {
+			.o_alert_box_active {
+				margin-left: 4px;
+			}
+
+			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
+				padding-right: 0;
+			}
+		}
+	}
+
 	&.o_container_block_1_1l_cols {
 		> div:nth-last-child(2) {
+			.o_alert_box_active {
+				margin-right: 2px;
+			}
+
 			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
 				padding-left: 0;
 
@@ -1695,6 +1787,10 @@ table.o_ce_table {
 			}
 		}
 		> div:last-child {
+			.o_alert_box_active {
+				margin-left: 2px;
+			}
+
 			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
 				padding-right: 0;
 
@@ -1714,90 +1810,42 @@ table.o_ce_table {
 		}
 
 		> div:nth-last-child(2) {
+			.o_alert_box_active {
+				margin-right: 2px;
+			}
+
 			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
 				padding-left: 0;
 			}
 		}
 
 		> div:last-child {
+			.o_alert_box_active {
+				margin-left: 2px;
+			}
+
 			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
 				padding-right: 0;
-			}
-		}
-	}
-
-	&.o_container_block_1_3_rows {
-		> div:nth-last-child(4) {
-			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
-				padding-left: 0;
-				padding-right: 0;
-			}
-		}
-
-		> div:nth-last-child(3) {
-			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
-				padding-left: 0;
-			}
-		}
-
-		> div:last-child {
-			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
-				padding-right: 0;
-			}
-		}
-	}
-
-	&.o_container_block_2_1_rows {
-		> div:nth-last-child(3) {
-			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
-				padding-left: 0;
-			}
-		}
-
-		> div:nth-last-child(2) {
-			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
-				padding-right: 0;
-			}
-		}
-
-		> div:last-child {
-			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
-				padding-left: 0;
-				padding-right: 0;
-			}
-		}
-	}
-
-	&.o_container_block_3_rows {
-		> div {
-			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
-				padding-left: 0;
-				padding-right: 0;
-
-				&.o_in_form {
-					padding-left: 0;
-					padding-right: 0;
-				}
-			}
-		}
-	}
-
-	&.o_container_block_1_1l_cols {
-		> div:nth-last-child(2) {
-			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
-				padding-left: 0;
 			}
 		}
 	}
 
 	&.o_container_block_1_2_cols {
 		> div:nth-last-child(3) {
+			.o_alert_box_active {
+				margin-right: 2px;
+			}
+
 			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
 				padding-left: 0;
 			}
 		}
 
 		> div:nth-last-child(2), > div:last-child {
+			.o_alert_box_active {
+				margin-left: 2px;
+			}
+
 			.o_ce_layout_predefined, .o_ce_layout_compact, .o_ce_layout_normal, .o_ce_layout_light, .o_ce_layout_large {
 				padding-right: 0;
 			}
@@ -1824,6 +1872,7 @@ table.o_ce_table {
 	}
 }
 
+/* Page / form: editor mode */
 .o_page_content_editor {
 	.o_page_fragment_edit {
 		.o_page_layout {

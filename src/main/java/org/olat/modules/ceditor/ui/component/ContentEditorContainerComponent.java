@@ -75,6 +75,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	private boolean deleteable = false;
 	private boolean deleteLinkDisabled = false;
 	private boolean ruleLinkEnabled = false;
+	private boolean inForm;
 
 	private final Controller inspectorPart;
 	private final Link toggleInspectorButton;
@@ -480,5 +481,15 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+
+	@Override
+	public boolean isInForm() {
+		return inForm;
+	}
+
+	@Override
+	public void setInForm(boolean inForm) {
+		this.inForm = inForm;
 	}
 }

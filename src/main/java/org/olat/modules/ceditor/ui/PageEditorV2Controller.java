@@ -110,14 +110,16 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private final PageEditorProvider provider;
 	private final PageEditorSecurityCallback secCallback;
+	private final boolean inForm;
 	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
 	private Map<String,CloneElementHandler> cloneHandlerMap = new HashMap<>();
 	
 	public PageEditorV2Controller(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
-			PageEditorSecurityCallback secCallback, Translator fallbackTranslator) {
+			PageEditorSecurityCallback secCallback, Translator fallbackTranslator, boolean inForm) {
 		super(ureq, wControl, fallbackTranslator);
 		this.provider = provider;
 		this.secCallback = secCallback;
+		this.inForm = inForm;
 
 		for(PageElementHandler handler:provider.getAvailableHandlers()) {
 			handlerMap.put(handler.getType(), handler);
@@ -943,6 +945,7 @@ public class PageEditorV2Controller extends BasicController {
 		} else {
 			cmp = new ContentEditorFragmentComponent(cmpId, element, viewPart, editorPart, inspectorPart, getTranslator());
 		}
+		cmp.setInForm(inForm);
 		cmp.setCloneable(secCallback.canCloneElement() && cloneHandlerMap.containsKey(element.getType()));
 		cmp.setDeleteable(secCallback.canDeleteElement());
 		cmp.setMoveable(secCallback.canMoveUpAndDown());

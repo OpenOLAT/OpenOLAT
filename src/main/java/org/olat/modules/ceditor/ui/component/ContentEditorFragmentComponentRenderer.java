@@ -27,6 +27,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.AlertBoxType;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 
 /**
  * 
@@ -57,6 +58,7 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 
 		URLBuilder fragmentUbu = ubu.createCopyFor(cmp);
 		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
+		BlockLayoutSettings layoutSettings = FragmentRendererHelper.getLayoutSettings(cmp.getElement());
 		AlertBoxSettings alertBoxSettings = FragmentRendererHelper.getAlertBoxSettingsIfActive(cmp.getElement());
 		AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
 		String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
@@ -75,7 +77,7 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		}
 		sb.append("'>");
 
-		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), alertBoxSettings, 1);
+		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), layoutSettings, alertBoxSettings, 1, cmp.isInForm());
 
 		boolean collapsible = FragmentRendererHelper.isCollapsible(cmp.getElement());
 		if (collapsible) {
@@ -143,6 +145,7 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 
 		URLBuilder fragmentUbu = ubu.createCopyFor(cmp);
 		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
+		BlockLayoutSettings layoutSettings = FragmentRendererHelper.getLayoutSettings(cmp.getElement());
 		AlertBoxSettings alertBoxSettings = FragmentRendererHelper.getAlertBoxSettingsIfActive(cmp.getElement());
 		AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
 		String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
@@ -156,7 +159,7 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		}
 		sb.append("'>");
 
-		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), alertBoxSettings, 1);
+		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), layoutSettings, alertBoxSettings, 1, cmp.isInForm());
 
 		Component editorCmp = cmp.getEditorPageElementComponent();
 		Component viewCmp = cmp.getViewPageElementComponent();

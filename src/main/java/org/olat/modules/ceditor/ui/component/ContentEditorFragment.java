@@ -69,5 +69,8 @@ public interface ContentEditorFragment extends ComponentCollection {
 	public void setCreate(boolean enable);
 	
 	public boolean isEditable();
-	
+
+	public boolean isInForm();
+
+	public void setInForm(boolean inForm);
 }

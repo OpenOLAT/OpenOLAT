@@ -66,6 +66,7 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	private boolean moveable = false;
 	private boolean cloneable = false;
 	private boolean deleteable = false;
+	private boolean inForm;
 
 	private final PageElement pageElement;
 	private final Link toggleInspectorButton;
@@ -341,5 +342,15 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 		if (editorPart != null) {
 			editorPart.dispatchEvent(ureq, this, event);
 		}
+	}
+
+	@Override
+	public boolean isInForm() {
+		return inForm;
+	}
+
+	@Override
+	public void setInForm(boolean inForm) {
+		this.inForm = inForm;
 	}
 }

@@ -47,6 +47,7 @@ public class PageFragmentsElementImpl extends FormItemImpl implements FormItemCo
 	public PageFragmentsElementImpl(String name) {
 		super(name);
 		component = new PageFragmentsComponent(name);
+		component.setInForm(true);
 	}
 	
 	public void setFragments(List<? extends PageFragment> fragments) {
