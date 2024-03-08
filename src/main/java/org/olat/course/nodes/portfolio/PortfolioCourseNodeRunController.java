@@ -260,14 +260,10 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 	}
 	
 	private void updateEmptyUI(UserRequest ureq) {
-		String title = "";
 		if(templateBinder != null) {
-			title = StringHelper.escapeHtml(templateBinder.getTitle());
-
-			flc.contextPut("image", registerCacheableMapper(ureq, "binder-cn", new ImageMapper(portfolioService.getPosterImageLeaf(templateBinder))));
-			flc.contextPut("imageName", portfolioService.getPosterImageLeaf(templateBinder).getName());
-			flc.contextPut("portfolioTitle", title);
-			flc.contextPut("portfolioDesc", Formatter.truncate(FilterFactory.getHtmlTagsFilter().filter(templateBinder.getSummary()), 255));
+			updateBinderData(ureq, templateBinder);
+			String portfolioDesc = StringHelper.containsNonWhitespace(templateBinder.getSummary()) ? Formatter.truncate(FilterFactory.getHtmlTagsFilter().filter(templateBinder.getSummary()), 255) : " ";
+			flc.contextPut("portfolioDesc", portfolioDesc);
 		}
 
 		if(newMapLink == null) {
@@ -275,6 +271,17 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			newMapLink.setElementCssClass("o_sel_ep_new_map_template o_button_call_to_action");
 			newMapLink.setPrimary(true);
 		}
+	}
+
+	private void updateBinderData(UserRequest ureq, Binder binder) {
+		String title = StringHelper.escapeHtml(binder.getTitle());
+		if (portfolioService.getPosterImageLeaf(binder) != null) {
+			// put image information into context
+			flc.contextPut("image", registerCacheableMapper(ureq, "binder-cn", new ImageMapper(portfolioService.getPosterImageLeaf(binder))));
+			flc.contextPut("imageName", portfolioService.getPosterImageLeaf(binder).getName());
+		}
+		// put binder information into context
+		flc.contextPut("portfolioTitle", title);
 	}
 	
 	private void updateSelectedUI(UserRequest ureq) {
@@ -295,14 +302,9 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 
 	private void updateSelectedBinderUI(UserRequest ureq) {
 		BinderStatistics binderStats = portfolioService.getBinderStatistics(copyBinder);
-		String copyTitle = StringHelper.escapeHtml(binderStats.getTitle());
 		binderSecCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(copyBinder);
 
-		// put image information into context
-		flc.contextPut("image", registerCacheableMapper(ureq, "binder-cn", new ImageMapper(portfolioService.getPosterImageLeaf(copyBinder))));
-		flc.contextPut("imageName", portfolioService.getPosterImageLeaf(copyBinder).getName());
-		// put binder information into context
-		flc.contextPut("portfolioTitle", copyTitle);
+		updateBinderData(ureq, copyBinder);
 		flc.contextPut("binderLastUpdate", binderStats.getLastModified());
 		String[] numOfSectionsAndPages = {
 				Integer.toString(binderStats.getNumOfSections()),
