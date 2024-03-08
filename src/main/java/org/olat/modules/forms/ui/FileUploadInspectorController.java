@@ -23,6 +23,7 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.Arrays;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,6 +40,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -60,6 +62,7 @@ public class FileUploadInspectorController extends FormBasicController implement
 
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 	private SingleSelection fileLimitEl;
 	private SingleSelection mimeTypesEl;
 	private SingleSelection obligationEl;
@@ -69,6 +72,8 @@ public class FileUploadInspectorController extends FormBasicController implement
 	
 	@Autowired
 	private EvaluationFormsModule evaluationFormsModule;
+	@Autowired
+	private ColorService colorService;
 
 	public FileUploadInspectorController(UserRequest ureq, WindowControl wControl, FileUpload fileUpload, boolean restrictedEdit) {
 		super(ureq, wControl, "file_upload_editor");
@@ -89,6 +94,7 @@ public class FileUploadInspectorController extends FormBasicController implement
 		formLayout.add("tabs", tabbedPane);
 
 		addGeneralTab(formLayout);
+		addStyleTab(formLayout);
 		addLayoutTab(formLayout);
 	}
 
@@ -126,6 +132,11 @@ public class FileUploadInspectorController extends FormBasicController implement
 		obligationEl.addActionListener(FormEvent.ONCLICK);
 	}
 
+	private void addStyleTab(FormItemContainer formLayout) {
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+				getAlertBoxSettings(), colorService, getLocale());
+	}
+
 	private void addLayoutTab(FormItemContainer formLayout) {
 		Translator translator = Util.createPackageTranslator(PageElementTarget.class, getLocale());
 		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, getLayoutSettings(), velocity_root);
@@ -136,6 +147,13 @@ public class FileUploadInspectorController extends FormBasicController implement
 			return fileUpload.getLayoutSettings();
 		}
 		return BlockLayoutSettings.getPredefined();
+	}
+
+	private AlertBoxSettings getAlertBoxSettings() {
+		if (fileUpload.getAlertBoxSettings() != null) {
+			return fileUpload.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
 	}
 
 	private String getInitialMaxFileUploadLimitKey(String[] orderedKeys) {
@@ -169,6 +187,8 @@ public class FileUploadInspectorController extends FormBasicController implement
 			doSetObligation();
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 		fireEvent(ureq, new ChangePartEvent(fileUpload));
 		super.formInnerEvent(ureq, source, event);
@@ -203,6 +223,15 @@ public class FileUploadInspectorController extends FormBasicController implement
 		BlockLayoutSettings layoutSettings = getLayoutSettings();
 		layoutTabComponents.sync(layoutSettings);
 		fileUpload.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(fileUpload));
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings();
+		alertBoxComponents.sync(alertBoxSettings);
+		fileUpload.setAlertBoxSettings(alertBoxSettings);
 		fireEvent(ureq, new ChangePartEvent(fileUpload));
 
 		getInitialComponent().setDirty(true);

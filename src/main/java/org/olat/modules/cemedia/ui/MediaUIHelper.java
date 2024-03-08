@@ -49,6 +49,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.modules.ceditor.model.AlertBoxIcon;
@@ -60,6 +61,7 @@ import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.model.MediaUsage;
 
@@ -220,6 +222,17 @@ public class MediaUIHelper {
 		return Arrays.stream(AlertBoxIcon.values()).map(i ->
 			new IconSelectorElement.Icon(i.name(), translator.translate(i.getI18nKey()), i.getCssClass())
 		).toList();
+	}
+
+	public static AlertBoxComponents addAlertBoxStyleTab(FormItemContainer formLayout, TabbedPaneItem tabbedPane,
+														 FormUIFactory uifactory, AlertBoxSettings alertBoxSettings,
+														 ColorService colorService, Locale locale) {
+		Translator translator = Util.createPackageTranslator(PageElementTarget.class, locale);
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("layout", translator);
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(translator.translate("tab.layout"), layoutCont);
+		return MediaUIHelper.addAlertBoxSettings(layoutCont, translator, uifactory,
+				alertBoxSettings, colorService, locale);
 	}
 
 	public static AlertBoxComponents addAlertBoxSettings(FormLayoutContainer formLayout, Translator translator,

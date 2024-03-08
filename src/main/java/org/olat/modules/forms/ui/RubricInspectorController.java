@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -49,6 +50,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -57,6 +59,8 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.ScaleType;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -85,6 +89,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 
 	private FormLink saveButton;
 	private SingleSelection sliderTypeEl;
@@ -107,6 +112,9 @@ public class RubricInspectorController extends FormBasicController implements Pa
 	private SingleSelection goodRatingEl;
 	private SingleSelection obligationEl;
 
+	@Autowired
+	private ColorService colorService;
+
 	public RubricInspectorController(UserRequest ureq, WindowControl wControl, Rubric rubric, boolean restrictedEdit) {
 		super(ureq, wControl, "rubric_inspector");
 		this.rubric = rubric;
@@ -128,6 +136,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		
 		initGeneralForm(formLayout, tabbedPane);
 		initSurveyConfigForm(formLayout, tabbedPane);
+		addStyleTab(formLayout);
 		addLayoutTab(formLayout, tabbedPane);
 	}
 	
@@ -321,6 +330,11 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		updatePlaceholders();
 	}
 
+	private void addStyleTab(FormItemContainer formLayout) {
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+				getAlertBoxSettings(), colorService, getLocale());
+	}
+
 	private void addLayoutTab(FormItemContainer formLayout, TabbedPaneItem tabbedPane) {
 		Translator translator = Util.createPackageTranslator(PageElementTarget.class, getLocale());
 		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, getLayoutSettings(), velocity_root);
@@ -332,7 +346,14 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		}
 		return BlockLayoutSettings.getPredefined();
 	}
-	
+
+	private AlertBoxSettings getAlertBoxSettings() {
+		if (rubric.getAlertBoxSettings() != null) {
+			return rubric.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
+	}
+
 	private void updateTypeSettings() {
 		if(!sliderTypeEl.isOneSelected()) return;
 		
@@ -433,10 +454,12 @@ public class RubricInspectorController extends FormBasicController implements Pa
 			doValidateAndSave(ureq);
 		} else if(noAnswerEl == source) {
 			doValidateAndSave(ureq);
-		} else if(source instanceof TextElement) {
-			doValidateAndSave(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
+		} else if(source instanceof TextElement) {
+			doValidateAndSave(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -670,7 +693,16 @@ public class RubricInspectorController extends FormBasicController implements Pa
 
 		getInitialComponent().setDirty(true);
 	}
-	
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings();
+		alertBoxComponents.sync(alertBoxSettings);
+		rubric.setAlertBoxSettings(alertBoxSettings);
+		fireEvent(ureq, new ChangePartEvent(rubric));
+
+		getInitialComponent().setDirty(true);
+	}
+
 	private static final class RatingPlaceholder {
 		
 		private final double lowerBoundInsufficient;

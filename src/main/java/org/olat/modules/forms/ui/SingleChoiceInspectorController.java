@@ -23,6 +23,7 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.Arrays;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,12 +39,15 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.model.xml.SingleChoice.Presentation;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -58,6 +62,7 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
+	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 
 	private TextElement nameEl;
 	private SingleSelection presentationEl;
@@ -65,7 +70,10 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 	
 	private final SingleChoice singleChoice;
 	private final boolean restrictedEdit;
-	
+
+	@Autowired
+	private ColorService colorService;
+
 	public SingleChoiceInspectorController(UserRequest ureq, WindowControl wControl, SingleChoice singleChoice, boolean restrictedEdit) {
 		super(ureq, wControl, "single_choice_inspector");
 		this.singleChoice = singleChoice;
@@ -85,6 +93,7 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 		formLayout.add("tabs", tabbedPane);
 
 		addGeneralTab(formLayout);
+		addStyleTab(formLayout);
 		addLayoutTab(formLayout);
 	}
 
@@ -116,6 +125,11 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 		obligationEl.addActionListener(FormEvent.ONCLICK);
 	}
 
+	private void addStyleTab(FormItemContainer formLayout) {
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+				getAlertBoxSettings(), colorService, getLocale());
+	}
+
 	private void addLayoutTab(FormItemContainer formLayout) {
 		Translator translator = Util.createPackageTranslator(PageElementTarget.class, getLocale());
 		layoutTabComponents = MediaUIHelper.addLayoutTab(formLayout, tabbedPane, translator, uifactory, getLayoutSettings(), velocity_root);
@@ -126,6 +140,13 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 			return singleChoice.getLayoutSettings();
 		}
 		return BlockLayoutSettings.getPredefined();
+	}
+
+	private AlertBoxSettings getAlertBoxSettings() {
+		if (singleChoice.getAlertBoxSettings() != null) {
+			return singleChoice.getAlertBoxSettings();
+		}
+		return AlertBoxSettings.getPredefined();
 	}
 
 	@Override
@@ -141,6 +162,8 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 			doSave(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
+		} else if (alertBoxComponents.matches(source)) {
+			doChangeAlertBoxSettings(ureq);
 		}
 	}
 
@@ -167,6 +190,15 @@ public class SingleChoiceInspectorController extends FormBasicController impleme
 		BlockLayoutSettings layoutSettings = getLayoutSettings();
 		layoutTabComponents.sync(layoutSettings);
 		singleChoice.setLayoutSettings(layoutSettings);
+		fireEvent(ureq, new ChangePartEvent(singleChoice));
+
+		getInitialComponent().setDirty(true);
+	}
+
+	private void doChangeAlertBoxSettings(UserRequest ureq) {
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings();
+		alertBoxComponents.sync(alertBoxSettings);
+		singleChoice.setAlertBoxSettings(alertBoxSettings);
 		fireEvent(ureq, new ChangePartEvent(singleChoice));
 
 		getInitialComponent().setDirty(true);

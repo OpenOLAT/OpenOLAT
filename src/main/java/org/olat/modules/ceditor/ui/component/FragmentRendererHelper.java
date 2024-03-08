@@ -29,8 +29,16 @@ import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
+import org.olat.modules.forms.model.xml.Disclaimer;
+import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.HTMLParagraph;
 import org.olat.modules.forms.model.xml.Image;
+import org.olat.modules.forms.model.xml.MultipleChoice;
+import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.SessionInformations;
+import org.olat.modules.forms.model.xml.SingleChoice;
+import org.olat.modules.forms.model.xml.Table;
+import org.olat.modules.forms.model.xml.TextInput;
 
 /**
  * Initial date: 2024-03-01<br>
@@ -88,6 +96,32 @@ public class FragmentRendererHelper {
 			if (codePart.getSettings() != null) {
 				return codePart.getSettings().getAlertBoxSettings();
 			}
+		}
+		if (element instanceof Table table) {
+			if (table.getTableSettings() != null) {
+				return table.getTableSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof Rubric rubric) {
+			return rubric.getAlertBoxSettings();
+		}
+		if (element instanceof SingleChoice singleChoice) {
+			return singleChoice.getAlertBoxSettings();
+		}
+		if (element instanceof MultipleChoice multipleChoice) {
+			return multipleChoice.getAlertBoxSettings();
+		}
+		if (element instanceof TextInput textInput) {
+			return textInput.getAlertBoxSettings();
+		}
+		if (element instanceof FileUpload fileUpload) {
+			return fileUpload.getAlertBoxSettings();
+		}
+		if (element instanceof Disclaimer disclaimer) {
+			return disclaimer.getAlertBoxSettings();
+		}
+		if (element instanceof SessionInformations sessionInformation) {
+			return sessionInformation.getAlertBoxSettings();
 		}
 		return null;
 	}
