@@ -989,7 +989,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 					.createOLATResourceableInstance(RepositoryEntry.class, repositoryEntry.getKey()));
 			String url = BusinessControlFactory.getInstance().getAsURIString(path, false);
 			courseList.append("\"").append(StringHelper.escapeHtml(repositoryEntry.getDisplayname()))
-				      .append("\" <a href=\"").append("/").append(url).append("\">").append(url).append("</a>");
+				      .append("\" (<a href=\"").append(url).append("\">").append(url).append("</a>)");
 		}
 		
 		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale,
