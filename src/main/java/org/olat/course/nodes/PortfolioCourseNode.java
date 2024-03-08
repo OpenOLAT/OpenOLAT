@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -22,8 +22,6 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -41,7 +39,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
@@ -59,7 +56,6 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.portfolio.PortfolioAssessmentConfig;
 import org.olat.course.nodes.portfolio.PortfolioCoachRunController;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration;
-import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeRunController;
 import org.olat.course.nodes.portfolio.PortfolioLearningPathNodeHandler;
@@ -92,7 +88,7 @@ import org.olat.repository.RepositoryManager;
  * 
  * <P>
  * Initial Date:  6 oct. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	
@@ -136,10 +132,10 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		PortfolioCourseNodeEditController childTabCntrllr = new PortfolioCourseNodeEditController(ureq, wControl, stackPanel,
+		PortfolioCourseNodeEditController childTabCtrl = new PortfolioCourseNodeEditController(ureq, wControl, stackPanel,
 				course, this, getModuleConfiguration());
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCtrl);
 	}
 
 	@Override
@@ -181,24 +177,14 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		preConditionEdit.setConditionId(EDIT_CONDITION_ID);
 		return preConditionEdit;
 	}
-
-	public void setPreConditionEdit(Condition preConditionEdit) {
-		if (preConditionEdit == null) {
-			preConditionEdit = getPreConditionEdit();
-		}
-		preConditionEdit.setConditionId(EDIT_CONDITION_ID);
-		this.preConditionEdit = preConditionEdit;
-	}
 	
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		Object repoSoftkey = getModuleConfiguration().get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY);
-		if(repoSoftkey instanceof String) {
+		if(repoSoftkey instanceof String reSoftkey) {
 			RepositoryManager rm = RepositoryManager.getInstance();
-			RepositoryEntry entry = rm.lookupRepositoryEntryBySoftkey((String)repoSoftkey, false);
-			if(entry != null) {
-				return entry;
-			}
+			// if re is null, null will be returned
+			return rm.lookupRepositoryEntryBySoftkey(reSoftkey, false);
 		}
 		return null;
 	}
@@ -206,47 +192,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
-	}
-	
-	public Date getDeadline() {
-		ModuleConfiguration config = getModuleConfiguration();
-		String type = (String)config.get(PortfolioCourseNodeConfiguration.DEADLINE_TYPE);
-		if(StringHelper.containsNonWhitespace(type)) {
-			switch(DeadlineType.valueOf(type)) {
-				case none: return null;
-				case absolut: 
-					Date date = (Date)config.get(PortfolioCourseNodeConfiguration.DEADLINE_DATE);
-					return date;
-				case relative:
-					Calendar cal = Calendar.getInstance();
-					cal.setTime(new Date());
-					boolean applied = applyRelativeToDate(cal, PortfolioCourseNodeConfiguration.DEADLINE_MONTH, Calendar.MONTH, 1);
-					applied |= applyRelativeToDate(cal, PortfolioCourseNodeConfiguration.DEADLINE_WEEK, Calendar.DATE, 7);
-					applied |= applyRelativeToDate(cal, PortfolioCourseNodeConfiguration.DEADLINE_DAY, Calendar.DATE, 1);
-					if(applied) {
-						return cal.getTime();
-					}
-					return null;
-				default: return null;
-			}
-		}
-		return null;
-	}
-	
-	private boolean applyRelativeToDate(Calendar cal, String time, int calTime, int factor) {
-		String t = (String)getModuleConfiguration().get(time);
-		if(StringHelper.containsNonWhitespace(t)) {
-			int timeToApply;
-			try {
-				timeToApply = Integer.parseInt(t) * factor;
-			} catch (NumberFormatException e) {
-				log.warn("Not a number: " + t, e);
-				return false;
-			}
-			cal.add(calTime, timeToApply);
-			return true;
-		}
-		return false;
 	}
 	
 	@Override
@@ -339,7 +284,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		super.calcAccessAndVisibility(ci, nodeEval);
 		
 		// evaluate the preconditions
-		boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
+		boolean editor = (getPreConditionEdit().getConditionExpression() == null || ci.evaluateCondition(getPreConditionEdit()));
 		nodeEval.putAccessStatus(EDIT_CONDITION_ID, editor);
 	}
 

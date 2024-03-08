@@ -346,20 +346,20 @@ public class CheckListRunController extends FormBasicController implements Activ
 	
 	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		Boolean showConfig  = (Boolean) guiPrefs.get(panelInfo.getAttributedClass(), getOpenPanelId(panelId));
+		Boolean showConfig  = (Boolean) guiPrefs.get(panelInfo.attributedClass(), getOpenPanelId(panelId));
 		return showConfig == null ? def : showConfig.booleanValue();
 	}
 	
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.putAndSave(panelInfo.getAttributedClass(), getOpenPanelId(panelId), Boolean.valueOf(newValue));
+			guiPrefs.putAndSave(panelInfo.attributedClass(), getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
 		flc.getFormItemComponent().getContext().put("in-".concat(panelId), Boolean.valueOf(newValue));
 	}
 	
 	private String getOpenPanelId(String panelId) {
-		return panelId + panelInfo.getIdSuffix();
+		return panelId + panelInfo.idSuffix();
 	}
 
 	public static class CheckboxWrapper {

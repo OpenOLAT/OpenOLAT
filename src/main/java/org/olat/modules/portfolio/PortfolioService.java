@@ -387,8 +387,17 @@ public interface PortfolioService {
 	 * @return The number of binder which copy this template
 	 */
 	public int getTemplateUsage(RepositoryEntryRef templateEntry);
-	
-	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry entry, String subIdent, Date deadline);
+
+	/**
+	 * assign a templateBinder to an identity (e.g. participant), as soon as they collect that Binder
+	 *
+	 * @param owner identity to which is should be assigned
+	 * @param templateBinder template of that binder/portfolio
+	 * @param entry respective courseEntry
+	 * @param subIdent subIdent of courseNode
+	 * @return return new Binder object which was created/copied by templateBinder with new information for 'owner'
+	 */
+	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry entry, String subIdent);
 	
 	public SynchedBinder loadAndSyncBinder(BinderRef binder);
 	

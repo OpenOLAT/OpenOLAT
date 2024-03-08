@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,13 +14,12 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,7 +108,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * This is the list of the binders owned by the user.
  * 
  * Initial date: 07.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class BinderListController extends FormBasicController
@@ -263,7 +262,7 @@ public class BinderListController extends FormBasicController
 				|| portfolioModule.isCanCreateBindersFromCourse()) {
 			rows.add(new BinderRow());
 		}
-		rows = reorderRowsBysettings(ureq, rows);
+		rows = reorderRowsBySettings(ureq, rows);
 		model.setObjects(rows);
 		if(reset) {
 			tableEl.reset();
@@ -271,7 +270,7 @@ public class BinderListController extends FormBasicController
 		tableEl.reloadData();
 	}
 	
-	private List<BinderRow> reorderRowsBysettings(UserRequest ureq, List<BinderRow> rows) {
+	private List<BinderRow> reorderRowsBySettings(UserRequest ureq, List<BinderRow> rows) {
 		BinderListSettings settings = getSettings(ureq);
 		if(settings.getOrderedBinderKeys() != null && !settings.getOrderedBinderKeys().isEmpty()) {
 			Map<Long,BinderRow> rowMap = rows.stream().collect(Collectors.toMap(BinderRow::getKey, r -> r, (u,v) -> u));
@@ -284,10 +283,8 @@ public class BinderListController extends FormBasicController
 					rows.remove(row);
 				}
 			}
-			
-			for(BinderRow row:rows) {
-				orderRows.add(row);
-			}
+
+			orderRows.addAll(rows);
 			return orderRows;
 		}
 		return rows;
@@ -467,8 +464,7 @@ public class BinderListController extends FormBasicController
 		} else if(newBinderFromCourseButton == source) {
 			doNewBinderFromCourse(ureq);
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if("select".equals(cmd)) {
 					BinderRow row = model.getObject(se.getIndex());
@@ -478,8 +474,7 @@ public class BinderListController extends FormBasicController
 					}
 				}
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("open".equals(cmd)) {
 				BinderRow row = (BinderRow)link.getUserObject();
@@ -517,9 +512,9 @@ public class BinderListController extends FormBasicController
 			showInfo("warning.binder.synched");
 		}
 		BinderController selectedBinderCtrl = doOpenBinder(ureq, binder.getBinder());
-		if(row instanceof BinderRow) {
+		if(row instanceof BinderRow binderRow) {
 			VFSLeaf image = portfolioService.getPosterImageLeaf(binder.getBinder());
-			((BinderRow)row).setBackgroundImage(image);
+			binderRow.setBackgroundImage(image);
 		}
 		return selectedBinderCtrl;
 	}
@@ -544,7 +539,7 @@ public class BinderListController extends FormBasicController
 	}
 	
 	private void doNewBinderCallout(UserRequest ureq) {
-		// short cut if only one option is selected
+		// shortcut if only one option is selected
 		if(portfolioModule.isLearnerCanCreateBinders() && !portfolioModule.isCanCreateBindersFromTemplate() && !portfolioModule.isCanCreateBindersFromCourse()) {
 			doNewBinder(ureq);
 		} else if(!portfolioModule.isLearnerCanCreateBinders() && portfolioModule.isCanCreateBindersFromTemplate() && !portfolioModule.isCanCreateBindersFromCourse()) {
@@ -593,7 +588,7 @@ public class BinderListController extends FormBasicController
 	
 	private void doCreateBinderFromTemplate(UserRequest ureq, RepositoryEntry entry) {
 		Binder templateBinder = portfolioService.getBinderByResource(entry.getOlatResource());
-		Binder newBinder = portfolioService.assignBinder(getIdentity(), templateBinder, null, null, null);
+		Binder newBinder = portfolioService.assignBinder(getIdentity(), templateBinder, null, null);
 		DBFactory.getInstance().commit();
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(newBinder);
 		newBinder = synchedBinder.getBinder();
@@ -621,8 +616,7 @@ public class BinderListController extends FormBasicController
 
 		Binder copyBinder = portfolioService.getBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent());
 		if(copyBinder == null) {
-			Date deadline = courseNode.getDeadline();
-			copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent(), deadline);
+			copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent());
 			DBFactory.getInstance().commit();
 			SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(copyBinder);
 			copyBinder = synchedBinder.getBinder();
@@ -794,7 +788,7 @@ public class BinderListController extends FormBasicController
 	
 	private void doConfirmRestore(UserRequest ureq, BinderRow row) {
 		String title = translate("restore.binder.confirm.title");
-		String text = translate("restore.binder.confirm.descr", new String[]{ StringHelper.escapeHtml(row.getTitle()) });
+		String text = translate("restore.binder.confirm.descr", StringHelper.escapeHtml(row.getTitle()));
 		confirmRestoreBinderCtrl = activateYesNoDialog(ureq, title, text, confirmRestoreBinderCtrl);
 		confirmRestoreBinderCtrl.setUserObject(row);
 	}
@@ -860,8 +854,8 @@ public class BinderListController extends FormBasicController
 		
 		private final BinderRow row;
 		
-		private Link moveUpLink;
-		private Link moveDownLink;
+		private final Link moveUpLink;
+		private final Link moveDownLink;
 		private Link deleteBinderLink;
 		private Link restoreBinderLink;
 		private Link exportBinderAsCpLink;

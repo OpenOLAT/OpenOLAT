@@ -275,7 +275,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		
 		
 		//user copy the template
-		Binder binder = portfolioService.assignBinder(id, template, null, null, new Date());
+		Binder binder = portfolioService.assignBinder(id, template, null, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(binder);
 		Assert.assertNotNull(binder.getKey());
@@ -305,7 +305,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 
 		//assign a template
 		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
-		Binder template = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
+		Binder template = portfolioService.assignBinder(id, templateBinder, templateEntry, null);
 		dbInstance.commit();
 		Assert.assertNotNull(template);
 
@@ -333,7 +333,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(3, templateSections.size());
 		
 		//user get a the binder from the template
-		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "ac-234", new Date());
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "ac-234");
 		dbInstance.commit();
 		Assert.assertNotNull(binder);
 		boolean inUse = portfolioService.isTemplateInUse(templateBinder, templateEntry, "ac-234");
@@ -382,7 +382,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(4, templateAssignments.size());
 		
 		// a user take the binder and synched it a first time
-		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "72", null);
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "72");
 		dbInstance.commit();
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 		dbInstance.commitAndCloseSession();
@@ -473,7 +473,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(4, templateAssignments.size());
 		
 		// a user take the binder and synched it a first time
-		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "72", null);
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "72");
 		dbInstance.commit();
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 		dbInstance.commitAndCloseSession();
@@ -589,7 +589,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(5, templateAssignments.size());
 		
 		// a user take the binder and synched it a first time
-		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "74", null);
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "74");
 		dbInstance.commit();
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 		dbInstance.commitAndCloseSession();
@@ -775,7 +775,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(6, templateAssignments.size());
 		
 		// a user take the binder and synched it a first time
-		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "74", null);
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "74");
 		dbInstance.commit();
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 		dbInstance.commitAndCloseSession();
@@ -894,7 +894,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertTrue(templateAssignments.contains(assignment_4));
 		
 		// synched and check the sections order
-		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null);
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 		binder = synchedBinder.getBinder();
 		dbInstance.commitAndCloseSession();
@@ -981,7 +981,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		for(int k=0; k<10; k++) {
 			// get a binder from the template
 			Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-13" + k);
-			Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
+			Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null);
 			SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 			binder = synchedBinder.getBinder();
 			dbInstance.commitAndCloseSession();
@@ -1035,7 +1035,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(2, templateAssignments.size());
 		
 		// synched and check the sections order
-		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null);
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 		binder = synchedBinder.getBinder();
 		dbInstance.commitAndCloseSession();
@@ -1184,7 +1184,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 
 		// the user use the template
-		Binder binder = portfolioService.assignBinder(owner, templateBinder, templateEntry, null, null);
+		Binder binder = portfolioService.assignBinder(owner, templateBinder, templateEntry, null);
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 		binder = synchedBinder.getBinder();
 		dbInstance.commitAndCloseSession();
@@ -1202,7 +1202,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		// add some markers
 		Identity permanentUser = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-22");
 		Media permanentMedia = mediaDao.createMediaAndVersion("Permanent", "Binder", null, "A media to stay", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, permanentUser);
-		Binder permanentBinder = portfolioService.assignBinder(permanentUser, templateBinder, templateEntry, null, null);
+		Binder permanentBinder = portfolioService.assignBinder(permanentUser, templateBinder, templateEntry, null);
 		dbInstance.commitAndCloseSession();
 		
 		// delete the user

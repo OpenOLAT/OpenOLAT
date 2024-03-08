@@ -861,7 +861,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	private String getOpenPanelId(String panelId) {
-		return panelId + panelInfo.getIdSuffix();
+		return panelId + panelInfo.idSuffix();
 	}
 	
 	private void doDownloadSignature(UserRequest ureq) {

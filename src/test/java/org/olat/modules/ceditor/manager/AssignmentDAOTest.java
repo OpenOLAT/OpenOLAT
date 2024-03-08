@@ -301,7 +301,7 @@ public class AssignmentDAOTest extends OlatTestCase {
 		Assert.assertFalse(assignmentNotInUse);
 
 		// synched and check the sections order
-		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null);
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 		binder = synchedBinder.getBinder();
 		dbInstance.commit();
@@ -367,7 +367,7 @@ public class AssignmentDAOTest extends OlatTestCase {
 		Assert.assertNotNull(assignment);
 
 		// synched and check the sections order
-		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null);
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 		binder = synchedBinder.getBinder();
 		dbInstance.commit();
@@ -406,7 +406,7 @@ public class AssignmentDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		// synched and check the sections order
-		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null);
 		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
 		binder = synchedBinder.getBinder();
 		dbInstance.commit();

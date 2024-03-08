@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.ui;
@@ -84,7 +84,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 13.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class PublishController extends BasicController implements TooledController {
@@ -104,9 +104,9 @@ public class PublishController extends BasicController implements TooledControll
 	private InvitationEmailController addInvitationEmailCtrl;
 	
 	private int counter;
-	private Binder binder;
+	private final Binder binder;
 	private RepositoryEntry entry;
-	private PortfolioElementRow binderRow;
+	private final PortfolioElementRow binderRow;
 	private final BinderConfiguration config;
 	private final BinderSecurityCallback secCallback;
 	
@@ -280,8 +280,7 @@ public class PublishController extends BasicController implements TooledControll
 			doAddAccessRights(ureq, GroupRoles.coach, "add.course.coach");
 		} else if(addParticipantAccessRightsLink == source) {
 			doAddAccessRights(ureq, GroupRoles.participant, "add.course.participant");
-		} else if(source instanceof Link) {
-			Link link = (Link)source;
+		} else if(source instanceof Link link) {
 			String cmd = link.getCommand();
 			if("edit_access".equals(cmd)) {
 				AccessRightsRow row = (AccessRightsRow)link.getUserObject();
@@ -506,8 +505,8 @@ public class PublishController extends BasicController implements TooledControll
 		
 		private final AccessRights rights;
 		private final ContentElement element;
-		private String fullName;
-		private Link editLink;
+		private final String fullName;
+		private final Link editLink;
 		
 		public AccessRightsRow(ContentElement element, AccessRights rights, Link editLink) {
 			this.rights = rights;
@@ -572,7 +571,7 @@ public class PublishController extends BasicController implements TooledControll
 		
 		private final ContentElement element;
 		private List<PortfolioElementRow> children;
-		private List<AccessRightsRow> accessRights = new ArrayList<>();
+		private final List<AccessRightsRow> accessRights = new ArrayList<>();
 		
 		private final AssessmentSection assessmentSection;
 		

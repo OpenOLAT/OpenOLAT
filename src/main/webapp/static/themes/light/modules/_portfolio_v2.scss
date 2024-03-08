@@ -104,6 +104,30 @@
 	display: none;
 }
 
+.o_portfolio_cn_preview.o_rendertype_custom {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	.o_portfolio_entry {
+		position: relative;
+		display: inline-block;
+		height: 230px;
+		width: 400px;
+		vertical-align: top;
+		margin-right: 10px;
+
+		.o_binder_tools a {
+			color: $text-color;
+		}
+	}
+
+	.panel-imagebg .panel-body {
+		padding: 15px;
+	}
+}
+
 .o_portfolio_listing.o_rendertype_custom {
 	
 	.o_table_body.container-fluid {

@@ -792,7 +792,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry entry, String subIdent, Date deadline) {
+	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry entry, String subIdent) {
 		BinderImpl reloadedTemplate = (BinderImpl)binderDao.loadByKey(templateBinder.getKey());
 		BinderImpl binder = binderDao.createCopy(reloadedTemplate, entry, subIdent);
 		groupDao.addMembershipTwoWay(binder.getBaseGroup(), owner, ContentRoles.owner.name());

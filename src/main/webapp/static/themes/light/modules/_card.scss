@@ -111,6 +111,13 @@
 				display: flex;
 				flex-direction: column;
 				width: 100%;
+				.o_meta_desc {
+					margin-top: 5px;
+					.o_meta_item {
+						display: flex;
+						justify-content: space-between;
+					}
+				}
 				.o_widget_figure {
 					line-height: 30px;
 					.o_widget_figure_value {

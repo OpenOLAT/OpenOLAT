@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -34,22 +34,13 @@ import org.olat.modules.portfolio.PortfolioV2Module;
 
 /**
  * Initial Date:  6 oct. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class PortfolioCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	public static final String MAP_KEY = "map-key";
 	public static final String REPO_SOFT_KEY = "repo-soft-key";
 	public static final String NODE_TEXT = "node_text";
-	public static final String DEADLINE_MONTH = "deadline_month";
-	public static final String DEADLINE_WEEK = "deadline_week";
-	public static final String DEADLINE_DAY = "deadline_day";
-	public static final String DEADLINE_DATE = "deadline_date";
-	public static final String DEADLINE_TYPE = "deadline_type";
-	
-	public enum DeadlineType {
-		none, absolut, relative
-	}
 	
 	private PortfolioCourseNodeConfiguration() {
 		super();

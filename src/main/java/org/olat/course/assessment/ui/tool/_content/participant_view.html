@@ -169,6 +169,47 @@
 				</div>
 			</div>
 		#end
+
+		#if($binder)
+			<div class="o_aps_widget o_widget">
+				<div class="o_widget_header">
+					<div class="o_widget_title o_flex_item_max">
+						$r.translate("portfolio.title")
+					</div>
+					<div class="o_widget_icon">
+						<i class="o_icon o_icon_pf_binder"> </i>
+					</div>
+				</div>
+				<div class="o_widget_content">
+					<div class="o_widget_main o_widget_main_figure">
+						<span class="o_widget_figure_desc">
+							$binder.getTitle()
+						</span>
+						<div class="o_flex_item_max o_meta_desc">
+							<div class="o_meta_item" id="copyDate">
+								<label>
+									$r.translate("map.copyDate"):
+								</label>
+								<span class="o_widget_figure_desc">$r.formatDateAndTime($binder.getCopyDate())</span>
+							</div>
+							<div class="o_meta_item" id="submitDate">
+								#if ($binder.getReturnDate())
+									<label>
+										$r.translate("map.returnDate")
+									</label>
+									<span class="o_widget_figure_desc">$r.formatDateAndTime($binder.getReturnDate())</span>
+								#else
+									<label>- $r.translate("portfolio.not.submitted") -</label>
+								#end
+							</div>
+						</div>
+						<div class="o_widget_additional">
+						</div>
+					</div>
+				</div>
+			</div>
+		#end
+
 		
 		#if($r.available("customWidgets"))
 			$r.render("customWidgets")

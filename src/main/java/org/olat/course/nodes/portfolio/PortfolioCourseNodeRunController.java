@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -22,19 +22,25 @@ package org.olat.course.nodes.portfolio;
 
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -43,16 +49,32 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseEntryRef;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -62,18 +84,35 @@ import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.Pa
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
-import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.ceditor.ContentElement;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
+import org.olat.modules.portfolio.model.AccessRightChange;
+import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.model.BinderStatistics;
+import org.olat.modules.portfolio.ui.AccessRightsEditController;
+import org.olat.modules.portfolio.ui.ImageMapper;
+import org.olat.modules.portfolio.ui.InvitationEditRightsController;
+import org.olat.modules.portfolio.ui.InvitationEmailController;
+import org.olat.modules.portfolio.ui.event.AccessRightsEvent;
+import org.olat.modules.portfolio.ui.wizard.AccessRightsContext;
+import org.olat.modules.portfolio.ui.wizard.AddMember_1_ChooseMemberStep;
+import org.olat.modules.portfolio.ui.wizard.AddMember_1_CourseMemberChoiceStep;
+import org.olat.modules.portfolio.ui.wizard.AddMember_3_ChoosePermissionStep;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -81,7 +120,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * <P>
  * Initial Date:  6 oct. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class PortfolioCourseNodeRunController extends FormBasicController implements AssessmentDocumentsSupplier {
 
@@ -93,20 +132,32 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 	
 	private FormLink newMapLink;
 	private FormLink selectMapLink;
-	private StaticTextElement newMapMsgEl, deadlineDateText;
-	private FormLayoutContainer infosContainer, assessmentInfosContainer;
+	private FormLayoutContainer assessmentInfosContainer;
 
 	private DialogBoxController restoreBinderCtrl;
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
-	
-	private Formatter formatter;
+	private InvitationEditRightsController addInvitationCtrl;
+	private StepsMainRunController addMembersWizardCtrl;
+	private AccessRightsEditController editAccessRightsCtrl;
+	private InvitationEmailController addInvitationEmailCtrl;
+	private CloseableModalController cmc;
+
 	private final UserCourseEnvironment userCourseEnv;
 	private final AssessmentConfig assessmentConfig;
 	private AssessmentEvaluation assessmentEval;
 	private PanelInfo panelInfo;
-	
+	private BinderSecurityCallback binderSecCallback;
+
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private InvitationModule invitationModule;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
@@ -119,8 +170,6 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
 		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
-		
-		formatter = Formatter.getInstance(getLocale());
 
 		RepositoryEntry mapEntry = courseNode.getReferencedRepositoryEntry();
 		if(mapEntry != null) {
@@ -156,10 +205,6 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		infosContainer = FormLayoutContainer.createDefaultFormLayout("infos", getTranslator());
-		infosContainer.setVisible(userCourseEnv.isParticipant());
-		formLayout.add(infosContainer);
-		
 		String assessmentPage = velocity_root + "/assessment_infos.html";
 		assessmentInfosContainer = FormLayoutContainer.createCustomFormLayout("assessmentInfos", getTranslator(), assessmentPage);
 		assessmentInfosContainer.setVisible(false);
@@ -175,25 +220,11 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 				mainVC.put("highScore", highScoreComponent);							
 			}
 		}
-		
+
 		Object text = config.get(PortfolioCourseNodeConfiguration.NODE_TEXT);
-		String explanation = (text instanceof String) ? (String)text : "";
+		String explanation = text instanceof String stringText ? stringText : "";
 		if(StringHelper.containsNonWhitespace(explanation)) {
-			uifactory.addStaticTextElement("explanation.text", explanation, infosContainer);
-		}
-		
-		String deadlineconfig = (String)config.get(PortfolioCourseNodeConfiguration.DEADLINE_TYPE);
-		if (!DeadlineType.none.name().equals(deadlineconfig) && deadlineconfig!=null){
-			// show deadline-config
-			String deadLineLabel = "map.deadline." + deadlineconfig + ".label";
-			String deadLineInfo = "";
-			if (deadlineconfig.equals(DeadlineType.absolut.name())){
-				Formatter f = Formatter.getInstance(getLocale());
-				deadLineInfo = f.formatDate((Date)config.get(PortfolioCourseNodeConfiguration.DEADLINE_DATE));
-			} else {
-				deadLineInfo = getDeadlineRelativeInfo();
-			}
-			deadlineDateText = uifactory.addStaticTextElement("deadline", deadLineLabel, deadLineInfo, infosContainer);			
+			flc.contextPut("explanation", StringHelper.truncateText(explanation));
 		}
 		
 		if(templateBinder != null) {
@@ -201,32 +232,24 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 		}
 	}
 	
-	private String getDeadlineRelativeInfo(){
-		String[] args = new String[3];
-		String month = (String)config.get(PortfolioCourseNodeConfiguration.DEADLINE_MONTH);
-		if (StringHelper.containsNonWhitespace(month)) args[0] = translate("map.deadline.info.month", month);
-		else args[0] = "";
-		String week = (String)config.get(PortfolioCourseNodeConfiguration.DEADLINE_WEEK);
-		if (StringHelper.containsNonWhitespace(week)) args[1] = translate("map.deadline.info.week", week);
-		else args[1] = "";
-		String day = (String)config.get(PortfolioCourseNodeConfiguration.DEADLINE_DAY);
-		if (StringHelper.containsNonWhitespace(day)) args[2] = translate("map.deadline.info.day", day);
-		else args[2] = "";
-		String deadLineInfo = translate("map.deadline.info", args);
-		return deadLineInfo;
-	}
-	
 	protected void updateUI(UserRequest ureq) {
 		if(templateBinder != null) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			copyBinder = portfolioService.getBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent());
 		}
+
+		assessmentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+
+		if (assessmentEval != null && assessmentEval.getMaxScore() != null) {
+			String maxScoreLabel = translate("assessment.minmax.value.plural", "0", AssessmentHelper.getRoundedScore(assessmentEval.getMaxScore()));
+			flc.contextPut("maxScore", maxScoreLabel);
+		}
 		
 		if(copyBinder == null || copyBinder.getBinderStatus() == BinderStatus.deleted) {
-			updateEmptyUI();
+			updateEmptyUI(ureq);
 		} else {
 			updateSelectedUI(ureq);
-		}	
+		}
 
 		if(selectMapLink != null) {
 			selectMapLink.setVisible(copyBinder != null && copyBinder.getBinderStatus() != BinderStatus.deleted);
@@ -234,70 +257,125 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 		if(newMapLink != null) {
 			newMapLink.setVisible(copyBinder == null || copyBinder.getBinderStatus() == BinderStatus.deleted);
 		}
-		if(newMapMsgEl != null) {
-			newMapMsgEl.setVisible(copyBinder == null || copyBinder.getBinderStatus() == BinderStatus.deleted);
-		}
 	}
 	
-	private void updateEmptyUI() {
+	private void updateEmptyUI(UserRequest ureq) {
 		String title = "";
 		if(templateBinder != null) {
 			title = StringHelper.escapeHtml(templateBinder.getTitle());
+
+			flc.contextPut("image", registerCacheableMapper(ureq, "binder-cn", new ImageMapper(portfolioService.getPosterImageLeaf(templateBinder))));
+			flc.contextPut("imageName", portfolioService.getPosterImageLeaf(templateBinder).getName());
+			flc.contextPut("portfolioTitle", title);
+			flc.contextPut("portfolioDesc", Formatter.truncate(FilterFactory.getHtmlTagsFilter().filter(templateBinder.getSummary()), 255));
 		}
 
-		String msg = translate("map.available", new String[]{ title });
-		if(newMapMsgEl == null) {
-			newMapMsgEl = uifactory.addStaticTextElement("map.available", msg, infosContainer);
-		}
-		newMapMsgEl.setLabel(null, null);
-		
-		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonGroupLayout.setRootForm(mainForm);
-		infosContainer.add(buttonGroupLayout);
 		if(newMapLink == null) {
-			newMapLink = uifactory.addFormLink("map.new", buttonGroupLayout, Link.BUTTON);
-			newMapLink.setElementCssClass("o_sel_ep_new_map_template");
+			newMapLink = uifactory.addFormLink("map.new", flc, Link.BUTTON);
+			newMapLink.setElementCssClass("o_sel_ep_new_map_template o_button_call_to_action");
+			newMapLink.setPrimary(true);
 		}
 	}
 	
 	private void updateSelectedUI(UserRequest ureq) {
 		if(selectMapLink == null) {
-			selectMapLink = uifactory.addFormLink("select", "select.mymap", "select.mymap", infosContainer, Link.LINK);
-			selectMapLink.setElementCssClass("o_sel_ep_select_map");
+			selectMapLink = uifactory.addFormLink("select", "open.portfolio", "open.portfolio", flc, Link.BUTTON);
+			selectMapLink.setElementCssClass("o_sel_ep_select_map o_button_call_to_action");
+			selectMapLink.setPrimary(true);
 		} else {
 			selectMapLink.setVisible(true);
 		}
 		
 		if(copyBinder != null) {
+			flc.contextRemove("portfolioDesc");
+			flc.remove("map.new");
 			updateSelectedBinderUI(ureq);
 		}
 	}
 
 	private void updateSelectedBinderUI(UserRequest ureq) {
-		String copyTitle = StringHelper.escapeHtml(copyBinder.getTitle());
-		selectMapLink.getComponent().setCustomDisplayText(copyTitle);
-		
-		updateCopyDate(copyBinder.getCopyDate());
-		updateAssessmentInfos(ureq, copyBinder.getReturnDate());
-		updateDeadlineText(copyBinder.getDeadLine());
-	}
-	
-	private void updateCopyDate(Date copyDate) {
-		if(copyDate != null) {
-			String copyDateStr = formatter.formatDateAndTime(copyDate);
-			uifactory.addStaticTextElement("map.copyDate", copyDateStr, infosContainer);			
+		BinderStatistics binderStats = portfolioService.getBinderStatistics(copyBinder);
+		String copyTitle = StringHelper.escapeHtml(binderStats.getTitle());
+		binderSecCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(copyBinder);
+
+		// put image information into context
+		flc.contextPut("image", registerCacheableMapper(ureq, "binder-cn", new ImageMapper(portfolioService.getPosterImageLeaf(copyBinder))));
+		flc.contextPut("imageName", portfolioService.getPosterImageLeaf(copyBinder).getName());
+		// put binder information into context
+		flc.contextPut("portfolioTitle", copyTitle);
+		flc.contextPut("binderLastUpdate", binderStats.getLastModified());
+		String[] numOfSectionsAndPages = {
+				Integer.toString(binderStats.getNumOfSections()),
+				Integer.toString(binderStats.getNumOfPages())
+		};
+		flc.contextPut("numSections", numOfSectionsAndPages);
+		flc.contextPut("numComments", binderStats.getNumOfComments());
+
+		List<AccessRights> accessRights = portfolioService.getAccessRights(copyBinder);
+		flc.contextPut("accessRights", accessRights);
+
+		List<AccessRightsRow> accessRightsRows = new ArrayList<>();
+
+		boolean canEditBinderAccessRights = binderSecCallback.canEditAccessRights(copyBinder);
+		for (AccessRights right : accessRights) {
+			if(right.getSectionKey() == null && right.getPageKey() == null) {
+				if(ContentRoles.invitee.equals(right.getRole())) {
+					continue; //only access
+				}
+
+				FormLink editLink = null;
+				if(canEditBinderAccessRights
+						&& !ContentRoles.owner.equals(right.getRole())) {
+					String id = "edit_" + CodeHelper.getUniqueID();
+
+					editLink = uifactory.addFormLink(id, "edit_access", "edit", "edit", flc, Link.LINK);
+				}
+				accessRightsRows.add(new AccessRightsRow(copyBinder, right, editLink));
+			}
 		}
+		flc.contextPut("isSharedWithCoach", accessRights.stream().anyMatch(ar -> ar.getRole().equals(ContentRoles.coach)));
+		flc.contextPut("accessRightsRows", accessRightsRows);
+
+		initAddAccessRightsTools();
+
+		updateAssessmentInfos(ureq, copyBinder.getReturnDate());
+
+		assessmentParticipantViewCtrl.setBinderInformation(copyBinder);
 	}
-	
-	/**
-	 * Show absolute deadline when task is taken. nothing if taken map still has a deadline configured.
-	 * @param deadline
-	 */
-	private void updateDeadlineText(Date deadlineDate) {
-		if (deadlineDateText != null && deadlineDate != null) {
-			String deadline = formatter.formatDateAndTime(deadlineDate);
-			deadlineDateText.setValue(deadline);
-			deadlineDateText.setLabel("map.deadline.absolut.label", null);
+
+	public void initAddAccessRightsTools() {
+		if(binderSecCallback.canEditAccessRights(copyBinder)) {
+			DropdownItem accessDropdown = uifactory.addDropdownMenu("access.rights", "access.rights", flc, getTranslator());
+			accessDropdown.setIconCSS("o_icon o_icon-fw o_icon_new_portfolio");
+			accessDropdown.setElementCssClass("o_sel_pf_access");
+			accessDropdown.setOrientation(DropdownOrientation.right);
+
+			FormLink addOwnerAccessRightsLink = uifactory.addFormLink("add.course.owner", flc, Link.LINK);
+			addOwnerAccessRightsLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_user_vip");
+			addOwnerAccessRightsLink.setElementCssClass("o_sel_pf_access_course_owner");
+			accessDropdown.addElement(addOwnerAccessRightsLink);
+
+			FormLink addCoachAccessRightsLink = uifactory.addFormLink("add.course.coach", flc, Link.LINK);
+			addCoachAccessRightsLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_user_vip");
+			addCoachAccessRightsLink.setElementCssClass("o_sel_pf_access_course_coach");
+			accessDropdown.addElement(addCoachAccessRightsLink);
+
+			FormLink addParticipantAccessRightsLink = uifactory.addFormLink("add.course.participant", flc, Link.LINK);
+			addParticipantAccessRightsLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_group");
+			addParticipantAccessRightsLink.setElementCssClass("o_sel_pf_access_course_participant");
+			accessDropdown.addElement(addParticipantAccessRightsLink);
+
+			FormLink addAccessRightsLink = uifactory.addFormLink("add.member", flc, Link.LINK);
+			addAccessRightsLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_user");
+			addAccessRightsLink.setElementCssClass("o_sel_pf_access_member");
+			accessDropdown.addElement(addAccessRightsLink);
+
+			if(invitationModule.isPortfolioInvitationEnabled()) {
+				FormLink addInvitationLink = uifactory.addFormLink("add.invitation", flc, Link.LINK);
+				addInvitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_user_anonymous");
+				addInvitationLink.setElementCssClass("o_sel_pf_access_invitation");
+				accessDropdown.addElement(addInvitationLink);
+			}
 		}
 	}
 	
@@ -307,11 +385,6 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 				panelInfo = new PanelInfo(PortfolioCourseNodeRunController.class,
 						"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
 			}
-			
-			String rDate = formatter.formatDateAndTime(returnDate);
-			uifactory.addStaticTextElement("map.returnDate", rDate, infosContainer);
-			
-			assessmentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 			
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 			assessmentParticipantViewCtrl = null;
@@ -328,13 +401,71 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 		}
 	}
 
+	private void cleanUp() {
+		removeAsListenerAndDispose(addInvitationEmailCtrl);
+		removeAsListenerAndDispose(editAccessRightsCtrl);
+		removeAsListenerAndDispose(addInvitationCtrl);
+		removeAsListenerAndDispose(addMembersWizardCtrl);
+		removeAsListenerAndDispose(cmc);
+		addInvitationEmailCtrl = null;
+		editAccessRightsCtrl = null;
+		addInvitationCtrl = null;
+		addMembersWizardCtrl = null;
+		cmc = null;
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(restoreBinderCtrl == source) {
-			if(DialogBoxUIFactory.isYesEvent(event)) {
-				doRestore();
-				updateUI(ureq);
+		if(restoreBinderCtrl == source && (DialogBoxUIFactory.isYesEvent(event))) {
+			doRestore();
+			updateUI(ureq);
+		} else if (addMembersWizardCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					updateSelectedBinderUI(ureq);
+				}
+				cleanUp();
 			}
+		} else if(addInvitationCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					updateSelectedBinderUI(ureq);
+				}
+				cleanUp();
+			}
+		} else if (source == editAccessRightsCtrl && editAccessRightsCtrl != null) {
+			if(event == Event.DONE_EVENT) {
+				List<AccessRightChange> changes = editAccessRightsCtrl.getChanges();
+				List<Identity> identities = Collections.singletonList(editAccessRightsCtrl.getMember());
+				portfolioService.changeAccessRights(identities, changes);
+				updateSelectedBinderUI(ureq);
+			} else if (AccessRightsEvent.REMOVE_ALL_RIGHTS.equals(event.getCommand())) {
+				portfolioService.removeAccessRights(copyBinder, editAccessRightsCtrl.getMember(),
+						ContentRoles.coach, ContentRoles.reviewer, ContentRoles.invitee, ContentRoles.readInvitee);
+				updateSelectedBinderUI(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == addInvitationEmailCtrl
+				&& addInvitationEmailCtrl != null
+				&& (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {
+				String email = addInvitationEmailCtrl.getEmail();
+				Identity invitee = addInvitationEmailCtrl.getInvitee();
+				cmc.deactivate();
+				cleanUp();
+
+				if(event == Event.DONE_EVENT) {
+					if(invitee != null) {
+						doAddInvitation(ureq, invitee);
+					} else {
+						doAddInvitation(ureq, email);
+					}
+				}
+
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -348,18 +479,17 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == newMapLink) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			Date deadline = courseNode.getDeadline();
 			if(templateBinder != null) {
 				if(copyBinder == null) {
-					copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent(), deadline);
+					copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent());
 					if(copyBinder != null) {
 						showInfo("map.copied", StringHelper.escapeHtml(templateBinder.getTitle()));
 						ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(copyBinder));
 						ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_TASK_STARTED, getClass());
 					}
-				} else if(copyBinder != null && copyBinder.getBinderStatus() == BinderStatus.deleted) {
+				} else if(copyBinder.getBinderStatus() == BinderStatus.deleted) {
 					String title = translate("trashed.binder.confirm.title");
-					String text = translate("trashed.binder.confirm.descr", new String[]{ StringHelper.escapeHtml(copyBinder.getTitle()) });
+					String text = translate("trashed.binder.confirm.descr", StringHelper.escapeHtml(copyBinder.getTitle()));
 					restoreBinderCtrl = activateYesNoDialog(ureq, title, text, restoreBinderCtrl);
 					restoreBinderCtrl.setUserObject(copyBinder);
 					return;
@@ -377,6 +507,168 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
+		} else if (source instanceof FormLink editLink) {
+			String cmd = editLink.getCmd();
+			if ("edit_access".equals(cmd)) {
+				AccessRightsRow row = (AccessRightsRow) editLink.getUserObject();
+				if(ContentRoles.invitee.name().equals(row.getRole())
+						|| ContentRoles.readInvitee.name().equals(row.getRole())) {
+					doEditInvitation(ureq, row.getIdentity());
+				} else {
+					doEditAccessRights(ureq, row.getElement(), row.getIdentity());
+				}
+			} else if ("add.member".equals(cmd)) {
+				doAddAccessRights(ureq);
+			} else if ("add.course.owner".equals(cmd)) {
+				doAddAccessRights(ureq, GroupRoles.owner, "add.course.owner");
+			} else if ("add.course.coach".equals(cmd)) {
+				doAddAccessRights(ureq, GroupRoles.coach, "add.course.coach");
+			} else if ("add.course.participant".equals(cmd)) {
+				doAddAccessRights(ureq, GroupRoles.participant, "add.course.participant");
+			} else if ("add.invitation".equals(cmd)) {
+				doAddInvitationEmail(ureq);
+			}
+		}
+	}
+
+	private void doAddInvitation(UserRequest ureq, String email) {
+		if(guardModalController(addInvitationCtrl)) return;
+
+		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), copyBinder, email, null);
+		listenTo(addInvitationCtrl);
+
+		String title = translate("add.invitation");
+		cmc = new CloseableModalController(getWindowControl(), null, addInvitationCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doAddInvitation(UserRequest ureq, Identity invitee) {
+		removeAsListenerAndDispose(addMembersWizardCtrl);
+
+		Roles inviteeRoles = securityManager.getRoles(invitee);
+		if(inviteeRoles.isInvitee()) {
+			doAddInvitation(ureq, invitee.getUser().getEmail());
+		} else {
+
+			Step start = new AddMember_3_ChoosePermissionStep(ureq, copyBinder, invitee);
+			StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+				AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
+				MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+				addMembers(rightsContext, mailTemplate);
+				return StepsMainRunController.DONE_MODIFIED;
+			};
+
+			addMembersWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+					translate("add.member"), "o_sel_course_member_import_1_wizard");
+			listenTo(addMembersWizardCtrl);
+			getWindowControl().pushAsModalDialog(addMembersWizardCtrl.getInitialComponent());
+		}
+	}
+
+	private void doAddInvitationEmail(UserRequest ureq) {
+		if(guardModalController(addInvitationEmailCtrl)) return;
+
+		addInvitationEmailCtrl = new InvitationEmailController(ureq, getWindowControl(), copyBinder);
+		listenTo(addInvitationEmailCtrl);
+
+		String title = translate("add.invitation");
+		cmc = new CloseableModalController(getWindowControl(), null, addInvitationEmailCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doAddAccessRights(UserRequest ureq, GroupRoles role, String titleKey) {
+		removeAsListenerAndDispose(addMembersWizardCtrl);
+
+		Step start = new AddMember_1_CourseMemberChoiceStep(ureq, copyBinder, userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), role);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
+			MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+			addMembers(rightsContext, mailTemplate);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+
+		addMembersWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate(titleKey), "o_sel_course_member_import_1_wizard");
+		listenTo(addMembersWizardCtrl);
+		getWindowControl().pushAsModalDialog(addMembersWizardCtrl.getInitialComponent());
+	}
+
+	private void doAddAccessRights(UserRequest ureq) {
+		removeAsListenerAndDispose(addMembersWizardCtrl);
+
+		Step start = new AddMember_1_ChooseMemberStep(ureq, copyBinder);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
+			MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+			addMembers(rightsContext, mailTemplate);
+			updateSelectedBinderUI(uureq);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+
+		addMembersWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("add.member"), "o_sel_course_member_import_1_wizard");
+		listenTo(addMembersWizardCtrl);
+		getWindowControl().pushAsModalDialog(addMembersWizardCtrl.getInitialComponent());
+	}
+
+	private void doEditInvitation(UserRequest ureq, Identity invitee) {
+		if(guardModalController(addInvitationCtrl)) return;
+
+		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), copyBinder, invitee);
+		listenTo(addInvitationCtrl);
+
+		String title = translate("add.invitation");
+		cmc = new CloseableModalController(getWindowControl(), null, addInvitationCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doEditAccessRights(UserRequest ureq, ContentElement element, Identity member) {
+		if(guardModalController(editAccessRightsCtrl)) return;
+
+		boolean canEdit = binderSecCallback.canEditAccessRights(element);
+		editAccessRightsCtrl = new AccessRightsEditController(ureq, getWindowControl(), copyBinder, member, canEdit);
+		listenTo(editAccessRightsCtrl);
+
+		String title = translate("edit.access.rights");
+		cmc = new CloseableModalController(getWindowControl(), null, editAccessRightsCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void addMembers(AccessRightsContext rightsContext, MailTemplate mailTemplate) {
+		List<Identity> identities = rightsContext.getIdentities();
+		List<AccessRightChange> changes = rightsContext.getAccessRightChanges();
+		portfolioService.changeAccessRights(identities, changes);
+
+		if(mailTemplate != null) {
+			sendInvitation(identities, mailTemplate);
+		}
+	}
+
+	private void sendInvitation(List<Identity> identities, MailTemplate mailTemplate) {
+		ContactList contactList = new ContactList("Invitation");
+		contactList.addAllIdentites(identities);
+
+		boolean success = false;
+		try {
+			MailContext context = new MailContextImpl(copyBinder, null, getWindowControl().getBusinessControl().getAsString());
+			MailBundle bundle = new MailBundle();
+			bundle.setContext(context);
+			bundle.setFromId(getIdentity());
+			bundle.setContactList(contactList);
+			bundle.setContent(mailTemplate.getSubjectTemplate(), mailTemplate.getBodyTemplate());
+			MailerResult result = mailManager.sendMessage(bundle);
+			success = result.isSuccessful();
+		} catch (Exception e) {
+			logError("Error on sending invitation mail to contactlist, invalid address.", e);
+		}
+		if (success) {
+			showInfo("invitation.mail.success");
+		}	else {
+			showError("invitation.mail.failure");
 		}
 	}
 	
@@ -385,6 +677,72 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 		copyBinder.setBinderStatus(BinderStatus.open);
 		copyBinder = portfolioService.updateBinder(copyBinder);
 		showInfo("restore.binder.success");
+	}
+
+	public class AccessRightsRow {
+
+		private final AccessRights rights;
+		private final ContentElement element;
+		private final String fullName;
+		private final FormLink editLink;
+
+		public AccessRightsRow(ContentElement element, AccessRights rights, FormLink editLink) {
+			this.rights = rights;
+			this.editLink = editLink;
+			this.element = element;
+
+			if(rights.getInvitation() == null) {
+				fullName = userManager.getUserDisplayName(rights.getIdentity());
+			} else {
+				Invitation invitation = rights.getInvitation();
+				fullName = userManager.getUserDisplayName(invitation.getFirstName(), invitation.getLastName());
+			}
+
+			if(editLink != null) {
+				editLink.setUserObject(this);
+			}
+		}
+
+		public String getRole() {
+			return rights.getRole().name();
+		}
+
+		public Identity getIdentity() {
+			return rights.getIdentity();
+		}
+
+		public ContentElement getElement() {
+			return element;
+		}
+
+		public String getFullName() {
+			return fullName;
+		}
+
+		public String getCssClass() {
+			if(ContentRoles.reviewer.equals(rights.getRole())) {
+				return "o_icon o_icon_reviewer o_icon-fw";
+			}
+			return "o_icon o_icon_user o_icon-fw";
+		}
+
+		public FormLink getEditLink() {
+			return editLink;
+		}
+
+		public String getExplanation() {
+			String explanation = null;
+			if(ContentRoles.owner.equals(rights.getRole())) {
+				explanation = translate("access.rights.owner.long");
+			} else if(ContentRoles.coach.equals(rights.getRole())) {
+				explanation = translate("access.rights.coach.long");
+			} else if(ContentRoles.reviewer.equals(rights.getRole())) {
+				explanation = translate("access.rights.reviewer.long");
+			} else if(ContentRoles.readInvitee.equals(rights.getRole())) {
+				explanation = translate("access.rights.invitee.long");
+			}
+			return explanation;
+		}
 	}
 	
 }

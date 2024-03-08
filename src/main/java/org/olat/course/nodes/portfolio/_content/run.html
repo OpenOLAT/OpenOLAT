@@ -2,4 +2,74 @@ $r.render("assessmentInfos")
 #if ($r.available("highScore"))
 	$r.render("highScore")
 #end
-$r.render("infos")
+<fieldset class="o_block_top o_start_info_box">
+	<legend>$r.translate("info.coach.title")</legend>
+	<div class="o_note">
+		<h4>$r.translate("info.box.title")</h4>
+		#if ($maxScore)
+			<p><i class="o_icon o_icon-fw o_icon_assessment_tool"> </i> $maxScore</p>
+		#end
+		<p><i class="o_icon o_icon-fw o_ep_icon"> </i> $r.translate("info.coach.title"): $portfolioTitle</p>
+		#if ($explanation)
+			<p><i class="o_icon o_icon-fw o_icon_message"> </i> $r.translate("explanation.text"): $explanation</p>
+		#end
+		<div class="o_portfolio_cn_preview o_rendertype_custom">
+			<div class="panel panel-default o_binder o_portfolio_assignments panel-imagebg o_portfolio_entry" style="background-image:url('$image/$imageName');">
+				<div class="panel-heading">
+					<h4 class="panel-title">$portfolioTitle</h4>
+				</div>
+				<div class="panel-body">
+					#if($portfolioDesc)
+						<span>$portfolioDesc</span>
+					#else
+						<ul>
+							<li><span>$r.translate("binder.last.update"): $r.formatDateAndTime($binderLastUpdate)</span></li>
+							<li><span>$r.translate("binder.num.sections.pages", $numSections)</span></li>
+							<li><span>$r.translate("binder.num.comments", $numComments)</span></li>
+						</ul>
+					#end
+				</div>
+			</div>
+			#if ($r.available("select"))
+				$r.render("select")
+			#elseif ($r.available("map.new"))
+				$r.render("map.new")
+			#end
+		</div>
+	</div>
+</fieldset>
+
+#if ($isSharedWithCoach)
+	<fieldset class="o_block_top o_start_info_box">
+		<legend>$r.translate("portfolio.access")</legend>
+		<div class="pull-right">
+			$r.render("access.rights")
+		</div>
+		<br>
+		<br>
+		#if(!${accessRightsRows.isEmpty()})
+			<div class="o_portfolio_ac o_portfolio_ac_binder" >
+				<h6>$r.translate("access.binder")</h6>
+				<table class="table table-striped table-condensed">
+					<tbody>
+						#foreach($binderRights in $accessRightsRows)
+						<tr>
+							<td><i class="$binderRights.cssClass"> </i> $r.escapeHtml($binderRights.fullName)</td>
+							<td class="text-muted">$binderRights.explanation</td>
+							<td>#if($r.isNotNull($binderRights.editLink)) $r.render($binderRights.editLink) #end</td>
+						</tr>
+						#end
+					</tbody>
+				</table>
+			</div>
+		#end
+	</fieldset>
+#elseif ($accessRightsRows)
+	<fieldset class="o_block_top o_start_info_box">
+		<legend>$r.translate("portfolio.access")</legend>
+		<div class="o_warning_with_icon">$r.translate("portfolio.access.no.coach")</div>
+		<div class="pull-left">
+			$r.render("access.rights")
+		</div>
+	</fieldset>
+#end

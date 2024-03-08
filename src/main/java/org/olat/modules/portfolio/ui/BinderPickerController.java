@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -52,14 +52,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 28.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class BinderPickerController extends FormBasicController {
 
 	private Binder copyBinder;
 	private Binder templateBinder;
-	private RepositoryEntry templateEntry;
+	private final RepositoryEntry templateEntry;
 	
 	private FormLink newMapLink;
 	private FormLink selectMapLink;
@@ -67,9 +67,8 @@ public class BinderPickerController extends FormBasicController {
 	private FormLayoutContainer infosContainer;
 	private FormLayoutContainer assessmentInfosContainer;
 
-	private Formatter formatter;
+	private final Formatter formatter;
 
-	private StaticTextElement deadlineDateText;
 	
 	@Autowired
 	private AssessmentService assessmentService;
@@ -131,7 +130,7 @@ public class BinderPickerController extends FormBasicController {
 			title = StringHelper.escapeHtml(templateBinder.getTitle());
 		}
 
-		String msg = translate("map.available", new String[]{ title });
+		String msg = translate("map.available", title);
 		if(newMapMsgEl == null) {
 			newMapMsgEl = uifactory.addStaticTextElement("map.available", msg, infosContainer);
 		}
@@ -165,25 +164,12 @@ public class BinderPickerController extends FormBasicController {
 		
 		updateCopyDate(copyBinder.getCopyDate());
 		updateAssessmentInfos(copyBinder.getReturnDate());
-		updateDeadlineText(copyBinder.getDeadLine());
 	}
 
 	private void updateCopyDate(Date copyDate) {
 		if(copyDate != null) {
 			String copyDateStr = formatter.formatDateAndTime(copyDate);
 			uifactory.addStaticTextElement("map.copyDate", copyDateStr, infosContainer);			
-		}
-	}
-	
-	/**
-	 * Show absolute deadline when task is taken. nothing if taken map still has a deadline configured.
-	 * @param deadline
-	 */
-	private void updateDeadlineText(Date deadlineDate) {
-		if (deadlineDateText != null && deadlineDate != null) {
-			String deadline = formatter.formatDateAndTime(deadlineDate);
-			deadlineDateText.setValue(deadline);
-			deadlineDateText.setLabel("map.deadline.absolut.label", null);
 		}
 	}
 	
@@ -237,7 +223,7 @@ public class BinderPickerController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == newMapLink) {
 			if(templateBinder != null) {
-				copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, templateEntry, null, null);
+				copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, templateEntry, null);
 				if(copyBinder != null) {
 					showInfo("map.copied", StringHelper.escapeHtml(templateBinder.getTitle()));
 					ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(copyBinder));

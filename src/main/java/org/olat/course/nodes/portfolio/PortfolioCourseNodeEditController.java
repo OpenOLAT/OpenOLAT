@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -42,7 +42,7 @@ import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial Date:  6 oct. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class PortfolioCourseNodeEditController extends ActivateableTabbableDefaultController {
 	
@@ -51,18 +51,18 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	static final String[] paneKeys = { PANE_TAB_CONFIG, PANE_TAB_SCORING };
 	
-	private VelocityContainer configContent;
-	private PortfolioConfigForm configForm;
-	private PortfolioTextForm textForm;
-	private Component scoringContent;
-	private MSEditFormController scoringController;
-	private HighScoreEditController highScoreNodeConfigController;
+	private final VelocityContainer configContent;
+	private final PortfolioConfigForm configForm;
+	private final PortfolioTextForm textForm;
+	private final Component scoringContent;
+	private final MSEditFormController scoringController;
+	private final HighScoreEditController highScoreNodeConfigController;
 	
 	private TabbedPane myTabbedPane;
 	
-	private boolean hasLogEntries;
-	private ModuleConfiguration config;
-	private PortfolioCourseNode courseNode;
+	private final boolean hasLogEntries;
+	private final ModuleConfiguration config;
+	private final PortfolioCourseNode courseNode;
 	
 	public PortfolioCourseNodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, PortfolioCourseNode node, ModuleConfiguration config) {
@@ -76,7 +76,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 				translate("grading.configuration.title"), "manual_user/learningresources/Portfolio_assignment_Grading/");
 		scoringContent = scoringController.getInitialComponent();
 		listenTo(scoringController);
-		textForm = new PortfolioTextForm(ureq, wControl, course, node);
+		textForm = new PortfolioTextForm(ureq, wControl, node);
 		listenTo(textForm);
 		
 		configContent = createVelocityContainer("edit");
@@ -114,8 +114,6 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 			if (event == Event.DONE_EVENT) {
 				configForm.getUpdatedConfig();
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-				textForm.loadMapOrBinder();
-				textForm.updateUI();
 				configContent.setDirty(true);
 			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(ureq, event);

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.tool;
@@ -73,6 +73,7 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.modules.portfolio.Binder;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 25 Mar 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentParticipantViewController extends BasicController implements Activateable2 {
@@ -250,7 +251,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		boolean hasComment = assessmentConfig.hasComment() && StringHelper.containsNonWhitespace(rawComment);
 		if (hasComment) {
 			StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
-			if (comment != null && comment.length() > 0) {
+			if (comment != null && !comment.isEmpty()) {
 				mainVC.contextPut("comment", StringHelper.xssScan(comment));
 				mainVC.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 			}
@@ -316,6 +317,10 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		
 		return wrapper;
 	}
+
+	public void setBinderInformation(Binder binder) {
+		mainVC.contextPut("binder", binder);
+	}
 	
 	public void setTitle(String title) {
 		mainVC.contextPut("title", title);
@@ -377,19 +382,19 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	
 	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean showDefault) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		Boolean showConfig  = (Boolean) guiPrefs.get(panelInfo.getAttributedClass(), getOpenPanelId(panelId));
+		Boolean showConfig  = (Boolean) guiPrefs.get(panelInfo.attributedClass(), getOpenPanelId(panelId));
 		return showConfig == null ? showDefault : showConfig.booleanValue();
 	}
 	
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.putAndSave(panelInfo.getAttributedClass(), getOpenPanelId(panelId), Boolean.valueOf(newValue));
+			guiPrefs.putAndSave(panelInfo.attributedClass(), getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
 	}
 	
 	private String getOpenPanelId(String panelId) {
-		return panelId + panelInfo.getIdSuffix();
+		return panelId + panelInfo.idSuffix();
 	}
 	
 	private void doOpenDocument(UserRequest ureq, DocumentWrapper wrapper) {
@@ -400,26 +405,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.modesEditView(false)).getController();
 		listenTo(docEditorCtrl);
 	}
-	
-	public static final class PanelInfo {
-		
-		private final Class<?> attributedClass;
-		private final String idSuffix;
-		
-		public PanelInfo(Class<?> attributedClass, String idSuffix) {
-			this.attributedClass = attributedClass;
-			this.idSuffix = idSuffix;
-		}
-		
-		public Class<?> getAttributedClass() {
-			return attributedClass;
-		}
-		
-		public String getIdSuffix() {
-			return idSuffix;
-		}
-		
-	}
+
+	public record PanelInfo(Class<?> attributedClass, String idSuffix) { }
 	
 	public interface GradeSystemSupplier {
 		
