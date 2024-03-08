@@ -60,16 +60,21 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
@@ -80,7 +85,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.table.StaticIconCssCellRenderer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -90,11 +94,13 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
@@ -187,6 +193,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private final boolean licensesEnabled;
 	private final boolean webdavEnabled;
 	private boolean versionsEnabled;
+	private final Formatter formatter;
 	private int counter = 0;
 	
 	@Autowired
@@ -220,6 +227,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		this.webdavEnabled = config.isDisplayWebDAVLink() && webDAVModule.isEnabled() && webDAVModule.isLinkEnabled()
 				&& ureq.getUserSession().getRoles().isGuestOnly();
 		reloadVersionsEnabled();
+		this.formatter = Formatter.getInstance(getLocale());
 		
 		VFSSecurityCallback secCallback = VFSManager.findInheritedSecurityCallback(rootContainer);
 		if (secCallback != null) {
@@ -326,8 +334,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		iconCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(iconCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.title));
-		StaticIconCssCellRenderer downloadCellRenderer = new StaticIconCssCellRenderer("o_icon o_icon_fw o_icon_download", null, translate("download"));
-		DefaultFlexiColumnModel downloadCol = new DefaultFlexiColumnModel(FolderCols.download, CMD_DOWNLOAD, downloadCellRenderer);
+		FlexiCellRenderer downloadCellRenderer = new StaticFlexiCellRenderer(null, CMD_DOWNLOAD, null, "o_icon o_icon_fw o_icon_download", translate("download"));
+		DefaultFlexiColumnModel downloadCol = new DefaultFlexiColumnModel(FolderCols.download, downloadCellRenderer);
 		downloadCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(downloadCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.createdBy));
@@ -354,6 +362,13 @@ public class FolderController extends FormBasicController implements Activateabl
 		tableEl.setAndLoadPersistedPreferences(ureq, "folder.folder");
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
+		
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setCssDelegate(FolderCssDelegate.DELEGATE);
+		VelocityContainer rowVC = createVelocityContainer("folder_row");
+		rowVC.setDomReplacementWrapperRequired(false);
+		tableEl.setRowRenderer(rowVC, this);
 		
 		initBulkLinks();
 		
@@ -422,10 +437,15 @@ public class FolderController extends FormBasicController implements Activateabl
 		for (VFSItem vfsItem : items) {
 			FolderRow row = new FolderRow(vfsItem);
 			
+			String iconCssClass = vfsItem instanceof VFSContainer
+					? "o_filetype_folder"
+					: CSSHelper.createFiletypeIconCssClassFor(vfsItem.getName());
+			row.setIconCssClass(iconCssClass);
 			row.setTitle(FolderUIFactory.getDisplayName(vfsItem));
 			row.setCreatedBy(FolderUIFactory.getCreatedBy(userManager, vfsItem));
 			row.setLastModifiedDate(FolderUIFactory.getLastModifiedDate(vfsItem));
 			row.setLastModifiedBy(FolderUIFactory.getLastModifiedBy(userManager, vfsItem));
+			row.setModified(FolderUIFactory.getModified(formatter, row.getLastModifiedDate(), row.getLastModifiedBy()));
 			row.setFileSuffix(FolderUIFactory.getFileSuffix(vfsItem));
 			row.setTranslatedType(FolderUIFactory.getTranslatedType(getTranslator(), vfsItem));
 			row.setSize(FolderUIFactory.getSize(vfsItem));
@@ -438,6 +458,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			if (licensesEnabled) {
 				row.setLicense(vfsRepositoryService.getLicense(vfsItem.getMetaInfo()));
 			}
+			row.setLabels(getLabels(row));
 			forgeThumbnail(ureq, row);
 			forgeTitleLink(row);
 			forgeToolsLink(row);
@@ -451,7 +472,17 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		updateQuotaBarUI(ureq);
 	}
-
+	
+	private String getLabels(FolderRow row) {
+		String labels = null;
+		if (row.getVfsItem() instanceof VFSContainer) {
+			if (StringHelper.containsNonWhitespace(row.getTranslatedSize())) {
+				labels = "<div class=\"o_folder_label o_folder_label_elements\"><i class=\"o_icon o_filetype_file\"> </i> " + row.getTranslatedSize() + "</div>";
+			}
+		}
+		return labels;
+	}
+	
 	private void forgeThumbnail(UserRequest ureq, FolderRow row) {
 		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf && isThumbnailAvailable(vfsLeaf)) {
 			VFSLeaf thumbnail = getThumbnail(vfsLeaf);
@@ -478,7 +509,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (isAudio(vfsLeaf)) {
 			return vfsRepositoryService.getLeafFor(avModule.getAudioWaveformUrl());
 		}
-		return vfsRepositoryService.getThumbnail(vfsLeaf, 30, 30, false);
+		return FlexiTableRendererType.classic == tableEl.getRendererType()
+				? vfsRepositoryService.getThumbnail(vfsLeaf, 30, 30, false)
+				: vfsRepositoryService.getThumbnail(vfsLeaf, 1000, 650, false);
 	}
 	
 	private boolean isAudio(VFSLeaf vfsLeaf) {
@@ -490,13 +523,29 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void forgeTitleLink(FolderRow row) {
 		if (row.getVfsItem() instanceof VFSContainer) {
-			FormLink link = uifactory.addFormLink("title_" + counter++, CMD_FOLDER, "", null, null, Link.NONTRANSLATED);
-			link.setI18nKey(row.getTitle());
-			link.setUserObject(row);
-			row.setTitleItem(link);
+			FormLink selectionLink = uifactory.addFormLink("select_" + counter++, CMD_FOLDER, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+			FormLink titleLink = uifactory.addFormLink("title_" + counter++, CMD_FOLDER, "", null, null, Link.NONTRANSLATED);
+			
+			selectionLink.setElementCssClass("o_link_plain");
+			
+			selectionLink.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
+			titleLink.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
+			
+			selectionLink.setUserObject(row);
+			titleLink.setUserObject(row);
+			
+			row.setSelectionItem(selectionLink);
+			row.setTitleItem(titleLink);
 		} else {
-			FormItem staticEl = uifactory.addStaticTextElement("title_" + counter++, null, row.getTitle(), flc);
-			row.setTitleItem(staticEl);
+			String iconCSS = CSSHelper.getIcon(CSSHelper.createFiletypeIconCssClassFor(row.getVfsItem().getName()));
+			String selectionText = iconCSS + " " + row.getTitle();
+			StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, selectionText, flc);
+			selectionEl.setElementCssClass("o_nowrap");
+			selectionEl.setStaticFormElement(false);
+			row.setSelectionItem(selectionEl);
+			
+			FormItem titleEl = uifactory.addStaticTextElement("title_" + counter++, null, row.getTitle(), flc);
+			row.setTitleItem(titleEl);
 		}
 	}
 	
@@ -566,6 +615,9 @@ public class FolderController extends FormBasicController implements Activateabl
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> cmps = new ArrayList<>(2);
 		if (rowObject instanceof FolderRow folderRow) {
+			if (folderRow.getSelectionItem() != null) {
+				cmps.add(folderRow.getSelectionItem().getComponent());
+			}
 			if (folderRow.getToolsLink() != null) {
 				cmps.add(folderRow.getToolsLink().getComponent());
 			}
@@ -1693,6 +1745,29 @@ public class FolderController extends FormBasicController implements Activateabl
 					doConfirmDelete(ureq, row);
 				}
 			}
+		}
+	}
+	
+	private static final class FolderCssDelegate extends DefaultFlexiTableCssDelegate {
+		
+		private static final FolderCssDelegate DELEGATE = new FolderCssDelegate();
+		
+		@Override
+		public String getWrapperCssClass(FlexiTableRendererType type) {
+			return null;
+		}
+		
+		@Override
+		public String getTableCssClass(FlexiTableRendererType type) {
+			if (FlexiTableRendererType.custom == type) {
+				return "o_folder_table o_block_top";
+			}
+			return null;
+		}
+		
+		@Override
+		public String getRowCssClass(FlexiTableRendererType type, int pos) {
+			return "o_folder_row";
 		}
 	}
 

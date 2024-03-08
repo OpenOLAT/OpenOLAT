@@ -1,0 +1,31 @@
+<div class="o_card o_folder_card">
+	<div class="o_folder_card_thumbnail" onClick="$f.ffXHREvent("select_file","$row.key");" role="link">
+		<div class="o_folder_card_img">
+			#if($row.isThumbnailAvailable())
+				<img src="${row.getThumbnailUrl()}" alt=""/>
+			#else
+				<div class="o_folder_row_thumbnail"><div class="o_folder_row_thumbnail_icon"><i class="o_icon $row.iconCssClass"></i></div></div>
+			#end
+		</div>
+	</div>
+	#if($row.getLabels())
+		<div class="o_folder_labels">
+			$row.getLabels()
+		</div>
+	#end
+	<div class="o_folder_card_meta">
+		<div class="o_flex_first_grow_base">
+			<div class="o_nowrap">
+				<h4 class="o_folder_card_title o_card_title">$r.render("$row.getSelectionItemName()")</h4>
+			</div>
+			#if($row.getToolsLinkName())
+				$r.render($row.getToolsLinkName())
+			#end
+		</div>
+		<div class="o_folder_card_modified o_flex_block_one_line_left">
+			<div class="o_nowrap o_muted">
+				$row.modified
+			</div>
+		</div>
+	</div>
+</div>

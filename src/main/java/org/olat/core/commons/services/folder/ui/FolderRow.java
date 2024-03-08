@@ -34,11 +34,12 @@ import org.olat.core.util.vfs.VFSItem;
 public class FolderRow {
 	
 	private final VFSItem vfsItem;
-	private String icon;
+	private String iconCssClass;
 	private String title;
 	private String createdBy;
 	private Date lastModifiedDate;
 	private String lastModifiedBy;
+	private String modified;
 	private String fileSuffix;
 	private String translatedType;
 	private String status;
@@ -47,9 +48,11 @@ public class FolderRow {
 	private String filePath;
 	private Long versions;
 	private License license;
+	private String labels;
 	private boolean thumbnailAvailable;
 	private String thumbnailUrl;
 	private FormItem titleItem;
+	private FormItem selectionItem;
 	private FormItem toolsLink;
 	
 	public FolderRow(VFSItem vfsItem) {
@@ -59,15 +62,15 @@ public class FolderRow {
 	public VFSItem getVfsItem() {
 		return vfsItem;
 	}
+	
+	public String getIconCssClass() {
+		return iconCssClass;
+	}
 
-	public String getIcon() {
-		return icon;
+	public void setIconCssClass(String iconCssClass) {
+		this.iconCssClass = iconCssClass;
 	}
-	
-	public void setIcon(String icon) {
-		this.icon = icon;
-	}
-	
+
 	public String getTitle() {
 		return title;
 	}
@@ -98,6 +101,14 @@ public class FolderRow {
 
 	public void setLastModifiedBy(String lastModifiedBy) {
 		this.lastModifiedBy = lastModifiedBy;
+	}
+
+	public String getModified() {
+		return modified;
+	}
+
+	public void setModified(String modified) {
+		this.modified = modified;
 	}
 
 	public String getFileSuffix() {
@@ -164,6 +175,14 @@ public class FolderRow {
 		this.license = license;
 	}
 
+	public String getLabels() {
+		return labels;
+	}
+
+	public void setLabels(String labels) {
+		this.labels = labels;
+	}
+
 	public boolean isThumbnailAvailable() {
 		return thumbnailAvailable;
 	}
@@ -188,12 +207,28 @@ public class FolderRow {
 		this.titleItem = titleItem;
 	}
 
+	public FormItem getSelectionItem() {
+		return selectionItem;
+	}
+
+	public void setSelectionItem(FormItem selectionItem) {
+		this.selectionItem = selectionItem;
+	}
+	
+	public String getSelectionItemName() {
+		return selectionItem != null? selectionItem.getComponent().getComponentName(): null;
+	}
+
 	public FormItem getToolsLink() {
 		return toolsLink;
 	}
 
 	public void setToolsLink(FormItem toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+	
+	public String getToolsLinkName() {
+		return toolsLink != null? toolsLink.getComponent().getComponentName(): null;
 	}
 
 }

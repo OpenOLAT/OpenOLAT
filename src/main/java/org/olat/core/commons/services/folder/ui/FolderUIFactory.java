@@ -90,6 +90,17 @@ public class FolderUIFactory {
 		return null;
 	}
 
+	public static String getModified(Formatter formatter, Date lastModifiedDate, String lastModifiedBy) {
+		String modified  = null;
+		if (lastModifiedDate != null) {
+			modified = formatter.formatDateAndTime(lastModifiedDate);
+			if (StringHelper.containsNonWhitespace(lastModifiedBy)) {
+				modified += " - " + lastModifiedBy;
+			}
+		}
+		return modified;
+	}
+
 	private static String getFilename(VFSLeaf vfsLeaf) {
 		String filename = null;
 		VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();

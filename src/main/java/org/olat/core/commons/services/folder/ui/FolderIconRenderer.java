@@ -25,8 +25,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.util.vfs.VFSContainer;
 
 /**
  * 
@@ -41,13 +39,11 @@ public class FolderIconRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof FolderRow folderRow) {
 			target.append("<div class=\"o_folder_row_thumbnail\">");
-			if (folderRow.getVfsItem() instanceof VFSContainer) {
-				target.append("<div class=\"o_folder_row_thumbnail_icon\"><i class=\"o_icon o_filetype_folder\"></i></div>");
-			} else if (folderRow.isThumbnailAvailable()) {
+			if (folderRow.isThumbnailAvailable()) {
 				target.append("<img src=\"").append(folderRow.getThumbnailUrl()).append("\" alt=\"\"/>");
 			} else {
 				target.append("<div class=\"o_folder_row_thumbnail_icon\"><i class=\"o_icon ")
-				.append(CSSHelper.createFiletypeIconCssClassFor(folderRow.getVfsItem().getName()))
+				.append(folderRow.getIconCssClass())
 				.append("\"></i></div>");
 			}
 			target.append("</div>");

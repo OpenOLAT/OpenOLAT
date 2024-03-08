@@ -105,6 +105,7 @@ public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> imple
 		@Override
 		public boolean sortable() {
 			return this != icon
+					&& this != download
 					&& this != tools;
 		}
 
