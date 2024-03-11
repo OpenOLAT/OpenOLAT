@@ -20,11 +20,14 @@
 package org.olat.core.commons.services.folder.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderModule;
@@ -122,6 +125,7 @@ import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.project.ui.ProjConfirmationController;
 import org.olat.modules.project.ui.ProjectUIFactory;
@@ -343,7 +347,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FolderCols.lastModifiedBy));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.size));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.status));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.status, new FolderStatusCellRenderer()));
 		if (versionsEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FolderCols.versions));
 		}
@@ -432,10 +436,19 @@ public class FolderController extends FormBasicController implements Activateabl
 
 	private void loadModel(UserRequest ureq) {
 		List<VFSItem> items = currentContainer.getItems(vfsFilter);
-		List<FolderRow> rows = new ArrayList<>(items.size());
 		
+		String relPath = currentContainer.getRelPath();
+		Map<String, VFSMetadata> metadatas = Collections.emptyMap();
+		if (relPath != null) {
+			List<VFSMetadata> m = vfsRepositoryService.getChildren(relPath);
+			metadatas = m.stream().collect(Collectors.toMap(VFSMetadata::getFilename, v -> v, (u, v) -> u));
+		}
+		
+		List<FolderRow> rows = new ArrayList<>(items.size());
 		for (VFSItem vfsItem : items) {
 			FolderRow row = new FolderRow(vfsItem);
+			VFSMetadata metadata = metadatas.get(vfsItem.getName());
+			row.setMetadata(metadata);
 			
 			String iconCssClass = vfsItem instanceof VFSContainer
 					? "o_filetype_folder"
@@ -458,7 +471,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			if (licensesEnabled) {
 				row.setLicense(vfsRepositoryService.getLicense(vfsItem.getMetaInfo()));
 			}
-			row.setLabels(getLabels(row));
+			forgeStatus(row);
 			forgeThumbnail(ureq, row);
 			forgeTitleLink(row);
 			forgeToolsLink(row);
@@ -473,14 +486,25 @@ public class FolderController extends FormBasicController implements Activateabl
 		updateQuotaBarUI(ureq);
 	}
 	
-	private String getLabels(FolderRow row) {
+	private void forgeStatus(FolderRow row) {
+		String translatedStatus = null;
 		String labels = null;
 		if (row.getVfsItem() instanceof VFSContainer) {
 			if (StringHelper.containsNonWhitespace(row.getTranslatedSize())) {
 				labels = "<div class=\"o_folder_label o_folder_label_elements\"><i class=\"o_icon o_filetype_file\"> </i> " + row.getTranslatedSize() + "</div>";
 			}
+		} else if (vfsLockManager.isLocked(row.getVfsItem(), row.getMetadata(), VFSLockApplicationType.vfs, null)) {
+			LockInfo lock = vfsLockManager.getLock(row.getVfsItem());
+			if (lock != null && lock.getLockedBy() != null && lock.isCollaborationLock()) {
+				translatedStatus = translate("status.editing");
+				labels = "<div class=\"o_folder_label o_folder_label_editing\"><i class=\"o_icon o_icon_user\"> </i> " + translatedStatus + "</div>";
+			} else {
+				translatedStatus = translate("status.locked");
+				labels = "<div class=\"o_folder_label o_folder_label_locked\"><i class=\"o_icon o_icon_locked\"> </i> " + translatedStatus + "</div>";
+			}
 		}
-		return labels;
+		row.setTranslatedStatus(translatedStatus);
+		row.setLabels(labels);
 	}
 	
 	private void forgeThumbnail(UserRequest ureq, FolderRow row) {

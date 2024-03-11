@@ -65,7 +65,7 @@ public class MetadataEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		metadataCtrl = new MetaInfoFormController(ureq, getWindowControl(), mainForm, vfsItem, resourceUrl, true, true);
+		metadataCtrl = new MetaInfoFormController(ureq, getWindowControl(), mainForm, vfsItem, resourceUrl, true, true, true);
 		formLayout.add("metadata", metadataCtrl.getFormItem());
 		listenTo(metadataCtrl);
 		

@@ -22,6 +22,7 @@ package org.olat.core.commons.services.folder.ui;
 import java.util.Date;
 
 import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.util.vfs.VFSItem;
 
@@ -34,6 +35,7 @@ import org.olat.core.util.vfs.VFSItem;
 public class FolderRow {
 	
 	private final VFSItem vfsItem;
+	private VFSMetadata metadata;
 	private String iconCssClass;
 	private String title;
 	private String createdBy;
@@ -42,13 +44,13 @@ public class FolderRow {
 	private String modified;
 	private String fileSuffix;
 	private String translatedType;
-	private String status;
+	private String translatedStatus;
+	private String labels;
 	private Long size;
 	private String translatedSize;
 	private String filePath;
 	private Long versions;
 	private License license;
-	private String labels;
 	private boolean thumbnailAvailable;
 	private String thumbnailUrl;
 	private FormItem titleItem;
@@ -63,6 +65,14 @@ public class FolderRow {
 		return vfsItem;
 	}
 	
+	public VFSMetadata getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(VFSMetadata metadata) {
+		this.metadata = metadata;
+	}
+
 	public String getIconCssClass() {
 		return iconCssClass;
 	}
@@ -126,13 +136,21 @@ public class FolderRow {
 	public void setTranslatedType(String translatedType) {
 		this.translatedType = translatedType;
 	}
-	
-	public String getStatus() {
-		return status;
+
+	public String getTranslatedStatus() {
+		return translatedStatus;
 	}
-	
-	public void setStatus(String status) {
-		this.status = status;
+
+	public void setTranslatedStatus(String translatedStatus) {
+		this.translatedStatus = translatedStatus;
+	}
+
+	public String getLabels() {
+		return labels;
+	}
+
+	public void setLabels(String labels) {
+		this.labels = labels;
 	}
 
 	public Long getSize() {
@@ -173,14 +191,6 @@ public class FolderRow {
 	
 	public void setLicense(License license) {
 		this.license = license;
-	}
-
-	public String getLabels() {
-		return labels;
-	}
-
-	public void setLabels(String labels) {
-		this.labels = labels;
 	}
 
 	public boolean isThumbnailAvailable() {

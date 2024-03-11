@@ -87,6 +87,7 @@ public class MetaInfoFormController extends FormBasicController {
 	private boolean isSubform;
 	private boolean showFilename = true;
 	private boolean showTitle = true;
+	private boolean showTechnicalData;
 	private Set<FormItem> metaFields;
 	private String resourceUrl;
 	
@@ -112,6 +113,7 @@ public class MetaInfoFormController extends FormBasicController {
 	public MetaInfoFormController(UserRequest ureq, WindowControl control, VFSItem item, String resourceUrl) {
 		super(ureq, control);
 		isSubform = false;
+		showTechnicalData = true;
 		this.item = item;
 		this.resourceUrl = resourceUrl;
 		// load the metainfo
@@ -128,17 +130,18 @@ public class MetaInfoFormController extends FormBasicController {
 	 * @param showTitle
 	 */
 	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm, boolean showFilename, boolean showTitle) {
-		this(ureq, control, parentForm, null, null, showFilename, showTitle);
+		this(ureq, control, parentForm, null, null, showFilename, showTitle, false);
 	}
 	
 	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm, VFSItem item,
-			String resourceUrl, boolean showFilename, boolean showTitle) {
+			String resourceUrl, boolean showFilename, boolean showTitle, boolean showTechnicalData) {
 		super(ureq, control, FormBasicController.LAYOUT_DEFAULT, null, parentForm);
 		this.isSubform = true;
 		this.item = item;
 		this.resourceUrl = resourceUrl;
 		this.showFilename = showFilename;
 		this.showTitle = showTitle;
+		this.showTechnicalData = showTechnicalData;
 		initForm(ureq);
 	}
 	
@@ -301,7 +304,7 @@ public class MetaInfoFormController extends FormBasicController {
 			setMetaFieldsVisible(false);
 		}
 
-		if (!isSubform) {
+		if (showTechnicalData) {
 
 			if(meta != null && !(item instanceof VFSContainer)) {
 				LockInfo lock = vfsLockManager.getLock(item);
@@ -520,8 +523,7 @@ public class MetaInfoFormController extends FormBasicController {
 	 * @return The updated MeatInfo object
 	 */
 	public VFSMetadata getMetaInfo() {
-		if (!isSubform && (item instanceof VFSLeaf) && (locked != null && locked.isEnabled())) {
-			//isSubForm
+		if (item instanceof VFSLeaf && locked != null && locked.isEnabled()) {
 			boolean alreadyLocked = vfsLockManager.isLocked(item, VFSLockApplicationType.vfs, null);
 			boolean currentlyLocked = locked.isSelected(0);
 			if(!currentlyLocked || !alreadyLocked) {
