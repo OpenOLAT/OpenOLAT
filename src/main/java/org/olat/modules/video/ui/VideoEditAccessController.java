@@ -62,9 +62,8 @@ public class VideoEditAccessController extends AuthoringEditAccessController {
 			videoCollectionAccessController = new VideoCollectionAccessController(ureq, getWindowControl(), entry, readOnly);
 			listenTo(videoCollectionAccessController);
 			vc.put("videoCollectionAccess", videoCollectionAccessController.getInitialComponent());
-
-			super.initAccessOffers(ureq, vc);
 		}
+		super.initAccessOffers(ureq, vc);
 	}
 
 	@Override
