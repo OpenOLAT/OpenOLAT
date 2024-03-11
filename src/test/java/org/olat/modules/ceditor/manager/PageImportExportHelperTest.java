@@ -55,7 +55,7 @@ public class PageImportExportHelperTest extends OlatTestCase {
 		File archiveFile = new File(archiveUrl.toURI());
 		Page importedPage = null;
 		try(ZipFile pageArchive=new ZipFile(archiveFile)) {
-			importedPage = pageImportExportHelper.importPage(pageArchive, author);
+			importedPage = pageImportExportHelper.importPage(pageArchive, author, author);
 		} catch(IOException e) {
 			log.error("", e);
 			throw e;
@@ -63,5 +63,22 @@ public class PageImportExportHelperTest extends OlatTestCase {
 
 		Assert.assertNotNull(importedPage);	
 	}
+	
+	
+	@Test
+	public void importPageWithoutPageOwner() throws Exception {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("page-io-1");
+		
+		URL archiveUrl = PageImportExportHelperTest.class.getResource("page_withImage.zip");
+		File archiveFile = new File(archiveUrl.toURI());
+		Page importedPage = null;
+		try(ZipFile pageArchive=new ZipFile(archiveFile)) {
+			importedPage = pageImportExportHelper.importPage(pageArchive, null, author);
+		} catch(IOException e) {
+			log.error("", e);
+			throw e;
+		}
 
+		Assert.assertNotNull(importedPage);	
+	}
 }

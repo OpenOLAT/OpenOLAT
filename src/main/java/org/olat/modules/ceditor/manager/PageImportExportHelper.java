@@ -77,11 +77,11 @@ public class PageImportExportHelper {
 		}
 	}
 	
-	public Page importPage(ZipFile zfile, Identity author) {
+	public Page importPage(ZipFile zfile, Identity pageOwner, Identity mediaOwner) {
 		ZipEntry entry = zfile.getEntry("page.xml");
 		try(InputStream in=zfile.getInputStream(entry)) {
 			Page page = PageXStream.fromStream(in);
-			return pageService.importPage(author, page, zfile);
+			return pageService.importPage(pageOwner, mediaOwner, page, zfile);
 		} catch(IOException e) {
 			log.error("", e);
 		}
