@@ -200,7 +200,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			createCommentsAndRatingsLinks(ureq, feed);
 		}
 		// Add date components
-		createDateComponents(feed);
+		createDateComponents();
 
 		// The year/month navigation
 		setAllItemIds(accessibleItems);
@@ -301,11 +301,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * Create a GUI component to display a nicely formatted date
-	 *
-	 * @param ureq
-	 * @param feed
 	 */
-	private void createDateComponents(Feed feed) {
+	private void createDateComponents() {
 		if (accessibleItems != null) {
 			for (Item item : accessibleItems) {
 				String guid = item.getGuid();
@@ -362,7 +359,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 				.withMessageI18nKey(emptyStateConfigI18nKey);
 		EmptyStateConfig emptyState;
 
-		if (callback.mayEditItems() || callback.mayCreateItems()) {
+		if (callback.mayCreateItems()) {
 			emptyState = emptyStateConfigBuilder
 					.withButtonI18nKey("feed.add.item")
 					.build();
@@ -419,7 +416,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	protected void doDispose() {
 		// make sure the lock is released
 		feedManager.releaseLock(lock);
-		// Dispose confirm deletion dialog controller since it isn't listend to.
+		// Dispose confirm deletion dialog controller since it isn't listened to.
 		if (confirmDialogCtr != null) {
 			removeAsListenerAndDispose(confirmDialogCtr);
 		}
@@ -762,7 +759,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			createCommentsAndRatingsLinks(ureq, feedResource);
 		}
 		// Add date components
-		createDateComponents(feedResource);
+		createDateComponents();
 
 		vcItems.setDirty(true);
 	}
@@ -837,11 +834,10 @@ public class ItemsController extends BasicController implements Activateable2 {
 	}
 
 	private Controller getArtefactLinkByUserObject(Item item) {
-		Controller result = null;
 		if (artefactLinks != null && artefactLinks.containsKey(item)) {
 			return artefactLinks.get(item);
 		}
-		return result;
+		return null;
 	}
 
 	private class ItemId {

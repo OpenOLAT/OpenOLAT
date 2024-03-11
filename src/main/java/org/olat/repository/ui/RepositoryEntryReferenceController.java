@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.repository.ui;
@@ -55,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 11 Nov 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class RepositoryEntryReferenceController extends BasicController {
@@ -177,7 +177,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 			if (isImportUrlLinkVisible()) {
 				importUrlLink = LinkFactory.createButton("import.url", "cmd.import.url.ressource", mainVC, this);
 				importUrlLink.setElementCssClass("o_sel_re_reference_import_url");
-				importUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+				importUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_link");
 
 				replaceImportLink = LinkFactory.createCustomLink("replace.import", "import", "import", Link.LINK, mainVC, this);
 				replaceImportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
@@ -196,13 +196,13 @@ public class RepositoryEntryReferenceController extends BasicController {
 				importDropdown.addComponent(importLink);
 
 				replaceImportUrlLink = LinkFactory.createCustomLink("replace.import.url", "replace.import.url", "cmd.import.url.ressource", Link.LINK, mainVC, this);
-				replaceImportUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+				replaceImportUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_link");
 				commandsDropdown.addComponent(replaceImportUrlLink);
 			} else if (isImportLinkVisible()) {
 				importLink = LinkFactory.createButton("import", mainVC, this);
 				importLink.setElementCssClass("o_sel_re_reference_import");
 				importLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
-				
+
 				replaceImportLink = LinkFactory.createCustomLink("replace.import", "import", "import", Link.LINK, mainVC, this);
 				replaceImportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
 				commandsDropdown.addComponent(replaceImportLink);
@@ -266,7 +266,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 			doImportUrlRepositoryEntry(ureq);
 		} else if (source == editLink) {
 			doEditRepositoryEntry(ureq);
-		} else if(source == createCmp || (source instanceof Link && ((Link)source).getUserObject() instanceof RepositoryHandler)) {
+		} else if(source == createCmp || (source instanceof Link link && link.getUserObject() instanceof RepositoryHandler)) {
 			doCreateRepositoryEntry(ureq, (RepositoryHandler)((Link)source).getUserObject());
 		}
 	}
