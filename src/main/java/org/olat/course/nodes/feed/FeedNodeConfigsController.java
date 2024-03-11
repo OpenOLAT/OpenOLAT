@@ -147,6 +147,8 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 				if (feed.isExternal()) {
 					nodeRightTypes.remove(AbstractFeedCourseNode.NODE_RIGHT_TYPES.stream().filter(r -> r.getIdentifier().equals("post")).findFirst().orElse(null));
 				}
+			} else {
+				nodeRightTypes.remove(AbstractFeedCourseNode.NODE_RIGHT_TYPES.stream().filter(r -> r.getIdentifier().equals("post")).findFirst().orElse(null));
 			}
 
 			CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
