@@ -228,9 +228,9 @@ public class MediaUIHelper {
 														 FormUIFactory uifactory, AlertBoxSettings alertBoxSettings,
 														 ColorService colorService, Locale locale) {
 		Translator translator = Util.createPackageTranslator(PageElementTarget.class, locale);
-		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("layout", translator);
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", translator);
 		formLayout.add(layoutCont);
-		tabbedPane.addTab(translator.translate("tab.layout"), layoutCont);
+		tabbedPane.addTab(translator.translate("tab.style"), layoutCont);
 		return MediaUIHelper.addAlertBoxSettings(layoutCont, translator, uifactory,
 				alertBoxSettings, colorService, locale);
 	}
