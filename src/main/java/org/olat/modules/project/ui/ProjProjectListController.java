@@ -344,7 +344,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		templateDropdown.setOrientation(DropdownOrientation.right);
 		for (ProjProject project : projects) {
 			FormLink link = uifactory.addFormLink("tem" + project.getKey(), CMD_CREATE_FROM_TEMPLATELINK, null, null, formLayout, Link.LINK + Link.NONTRANSLATED);
-			String name = translate("project.create.template.link", project.getTitle());
+			String name = translate("project.create.template.link", StringHelper.escapeHtml(project.getTitle()));
 			link.setI18nKey(name);
 			link.setUserObject(project);
 			templateDropdown.addElement(link);
