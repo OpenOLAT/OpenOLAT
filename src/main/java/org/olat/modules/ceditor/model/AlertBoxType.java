@@ -27,12 +27,12 @@ import org.olat.core.util.StringHelper;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public enum AlertBoxType {
-	note("alert.box.type.note", "lightgray", "o_alert_box_type_note", "o_icon_notes"),
-	info("alert.box.type.info", "lightblue", "o_alert_box_type_info", "o_icon_info_alert"),
-	tip("alert.box.type.tip", "purple", "o_alert_box_type_tip", "o_icon_tip"),
-	warning("alert.box.type.warning", "yellow", "o_alert_box_type_warning", "o_icon_warning"),
-	error("alert.box.type.error", "red", "o_alert_box_type_error", "o_icon_error_alert"),
-	success("alert.box.type.success", "lightgreen", "o_alert_box_type_success", "o_icon_check"),
+	note("alert.box.type.note", "lightgray", "o_alert_box_type_note", "o_icon_lightbulb"),
+	info("alert.box.type.info", "lightblue", "o_alert_box_type_info", "o_icon_circle_info"),
+	tip("alert.box.type.tip", "purple", "o_alert_box_type_tip", "o_icon_hand_point_up"),
+	warning("alert.box.type.warning", "yellow", "o_alert_box_type_warning", "o_icon_triangle_exclamation"),
+	error("alert.box.type.error", "red", "o_alert_box_type_error", "o_icon_circle_xmark"),
+	success("alert.box.type.success", "lightgreen", "o_alert_box_type_success", "o_icon_circle_check"),
 	custom("alert.box.type.custom", null, "o_alert_box_type_custom", null);
 
 	private final String i18nKey;
