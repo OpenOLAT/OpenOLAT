@@ -601,19 +601,19 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 
 	private TaxonomyLevelOverviewController doSelectTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
-		if(taxonomyLevel == null) {
+		TaxonomyLevel reloadedTaxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
+		if(reloadedTaxonomyLevel == null) {
 			showWarning("warning.taxonomy.level.deleted");
 			loadModel(false, false);
 			return null;
-		} else {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("TaxonomyLevel", taxonomyLevel.getKey());
-			WindowControl bwControl = addToHistory(ureq, ores, null);
-			TaxonomyLevelOverviewController detailsLevelCtrl = new TaxonomyLevelOverviewController(ureq, bwControl, taxonomyLevel);
-			listenTo(detailsLevelCtrl);
-			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
-			stackPanel.pushController(displayName, detailsLevelCtrl);
-			return detailsLevelCtrl;
 		}
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("TaxonomyLevel", taxonomyLevel.getKey());
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		TaxonomyLevelOverviewController detailsLevelCtrl = new TaxonomyLevelOverviewController(ureq, bwControl, reloadedTaxonomyLevel);
+		listenTo(detailsLevelCtrl);
+		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), reloadedTaxonomyLevel);
+		stackPanel.pushController(displayName, detailsLevelCtrl);
+		return detailsLevelCtrl;
 	}
 	
 	private void doNewLevel(UserRequest ureq) {

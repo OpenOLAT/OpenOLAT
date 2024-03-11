@@ -48,7 +48,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelType;
  */
 @Entity(name="ctaxonomylevel")
 @Table(name="o_tax_taxonomy_level")
-@NamedQuery(name="loadTaxonomyLevelsByKey", query="select level from ctaxonomylevel as level left join fetch level.parent parent left join fetch level.type type inner join fetch level.taxonomy taxonomy where level.key=:levelKey")
+@NamedQuery(name="loadTaxonomyLevelsByKey", query="select level from ctaxonomylevel as level left join fetch level.parent parent left join fetch level.type type left join fetch type.allowedSubTypes allowedSubTypes inner join fetch level.taxonomy taxonomy where level.key=:levelKey")
 public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLevel {
 
 	private static final long serialVersionUID = 7873564059919461651L;
