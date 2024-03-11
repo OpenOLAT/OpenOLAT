@@ -214,11 +214,11 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	}
 
 	@Override
-	public Page importPage(Identity owner, Page page, ZipFile storage) {
+	public Page importPage(Identity pageOwner, Identity mediaOwner, Page page, ZipFile storage) {
 		String imagePath = page.getImagePath();
 		Page copy = pageDao.createAndPersist(page.getTitle(), page.getSummary(), imagePath, page.getImageAlignment(), page.isEditable(), null, null);
-		if(owner != null) {
-			groupDao.addMembershipTwoWay(copy.getBaseGroup(), owner, ContentRoles.owner.name());
+		if(pageOwner != null) {
+			groupDao.addMembershipTwoWay(copy.getBaseGroup(), pageOwner, ContentRoles.owner.name());
 		}
 		
 		// Copy the parts but let the media untouched
@@ -228,10 +228,10 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 		for(PagePart part:parts) {
 			PagePart newPart = part.copy();
 			if(newPart instanceof MediaPart mediaPart && mediaPart.getMedia() != null) {
-				MediaWithVersion importedMedia = importMedia(mediaPart.getMedia(), mediaPart.getMediaVersion(), owner, storage);
+				MediaWithVersion importedMedia = importMedia(mediaPart.getMedia(), mediaPart.getMediaVersion(), mediaOwner, storage);
 				mediaPart.setMedia(importedMedia.media());
 				mediaPart.setMediaVersion(importedMedia.version());
-				mediaPart.setIdentity(owner);
+				mediaPart.setIdentity(mediaOwner);
 			}
 			copyBody = pageDao.persistPart(copyBody, newPart);
 			mapKeys.put(part.getKey().toString(), newPart.getKey().toString());

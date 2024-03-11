@@ -69,11 +69,12 @@ public interface PageService {
 	Page copyPage(Identity owner, Page page);
 	
 	/**
-	 * @param owner the future owner of all medias
+	 * @param pageOwner The future owner of the page (optional)
+	 * @param mediasOwner The future owner of the medias (mandatory)
 	 * @param page The page (loaded, but can be from an XStream flux)
 	 * @return The persisted page
 	 */
-	Page importPage(Identity owner, Page page, ZipFile storage);
+	Page importPage(Identity pageOwner, Identity mediasOwner, Page page, ZipFile storage);
 	
 	PageReference addReference(Page page, RepositoryEntry repositoryEntry, String subIdent);
 
