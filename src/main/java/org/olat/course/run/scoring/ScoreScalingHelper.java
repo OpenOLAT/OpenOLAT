@@ -137,7 +137,7 @@ public class ScoreScalingHelper {
 	
 	public static final Float getWeightedFloatScore(Float score, BigDecimal scale) {
 		BigDecimal wScore = getWeightedScore(score, scale);
-		return wScore == null ? null : Float.valueOf(wScore.floatValue());
+		return wScore == null || scale == null ? null : Float.valueOf(wScore.floatValue());
 	}
 	
 	public static final Float getWeightedFloatScore(BigDecimal score, BigDecimal scale) {

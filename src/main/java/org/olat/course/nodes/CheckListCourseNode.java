@@ -769,7 +769,9 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		if(scoreGrantedBool != null && scoreGrantedBool.booleanValue()) {
 			updatedScore = checkboxManager.calculateScore(assessedIdentity, course, getIdent());
 			updatedScoreScale = ScoreScalingHelper.isEnabled(course) ? ScoreScalingHelper.getScoreScale(this) : null;
-			updatedWeightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, updatedScoreScale);
+			if(updatedScoreScale != null) {
+				updatedWeightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, updatedScoreScale);
+			}
 		}
 		
 		Boolean passedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
