@@ -501,8 +501,9 @@ public class CourseEditorPageFragment {
 		browser.findElement(displayNameBy).sendKeys("");
 		
 		if(type != null) {
-			By imporTypeBy = By.cssSelector("fieldset.o_sel_re_import_url_form .o_sel_import_type select"); 
-			OOGraphene.waitElement(imporTypeBy, browser);
+			By typeBy = By.xpath("//fieldset[contains(@class,'o_sel_re_import_url_form')]//div[contains(@class,'o_sel_import_type')]//select/option[@value='" + type + "']"); 
+			OOGraphene.waitElement(typeBy, browser);
+			By imporTypeBy = By.cssSelector("fieldset.o_sel_re_import_url_form .o_sel_import_type select");
 			new Select(browser.findElement(imporTypeBy)).selectByValue(type);
 		}
 		
