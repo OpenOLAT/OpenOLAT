@@ -84,7 +84,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -141,11 +144,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FolderController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_FROM_ME = "FromMe";
+	private static final String TAB_ID_FOR_ME = "ForMe";
 	private static final String FILTER_TYPE = "filter.type";
 	private static final String FILTER_INITIALIZED_BY = "filter.initialized.by";
 	private static final String FILTER_MODIFIED_DATE = "filter.modified.date";
 	private static final String FILTER_TITLE = "filter.title";
 	private static final String CMD_FOLDER = "folder";
+	private static final String CMD_PATH = "path";
 	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_COPY = "copy";
 	private static final String CMD_MOVE = "move";
@@ -177,6 +184,9 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FormLink bulkEmailButton;
 	private TooledStackedPanel folderBreadcrumb;
 	private QuotaBar quotaBar;
+	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabFromMe;
+	private FlexiFiltersTab tabForMe;
 	private FolderDataModel dataModel;
 	private FlexiTableElement tableEl;
 	
@@ -266,11 +276,11 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		viewFolderLink = uifactory.addFormLink("view.folder", formLayout, Link.BUTTON);
 		viewFolderLink.setIconLeftCSS("o_icon o_icon-lg o_filetype_folder");
-		viewFolderLink.setTitle(translate("view.folder.title"));
+		viewFolderLink.setTitle("view.folder.title");
 		
 		viewFileLink = uifactory.addFormLink("view.file", formLayout, Link.BUTTON);
 		viewFileLink.setIconLeftCSS("o_icon o_icon-lg o_filetype_file");
-		viewFileLink.setTitle(translate("view.file.title"));
+		viewFileLink.setTitle("view.file.title");
 		
 		viewSearchLink = uifactory.addFormLink("view.search", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 		viewSearchLink.setIconLeftCSS("o_icon o_icon-lg o_icon_search");
@@ -358,16 +368,17 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void doOpenView(UserRequest ureq, FolderView view) {
 		this.folderView = view;
-		
-		switch (view) {
-		case folder -> doOpenFolderView(ureq);
-		default -> doOpenFolderView(ureq);
+		if (FolderView.folder != folderView) {
+			currentContainer = rootContainer;
 		}
 		
+		doOpenFolderView(ureq);
 		updateViewUI();
 	}
 	
 	private void updateViewUI() {
+		folderBreadcrumb.setVisible(FolderView.folder == folderView);
+		
 		if (FolderView.folder == folderView) {
 			viewFolderLink.setElementCssClass("active");
 		} else {
@@ -386,7 +397,9 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void doOpenFolderView(UserRequest ureq) {
-		folderBreadcrumb.setVisible(true);
+		FlexiTableRendererType rendererType = tableEl != null
+				? tableEl.getRendererType()
+				: FlexiTableRendererType.custom;
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel iconCol = new DefaultFlexiColumnModel(FolderCols.icon, new FolderIconRenderer());
@@ -403,6 +416,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.size));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.status, new FolderStatusCellRenderer()));
+		if (FolderView.folder != folderView) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.path));
+		}
 		if (versionsEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FolderCols.versions));
 		}
@@ -418,12 +434,12 @@ public class FolderController extends FormBasicController implements Activateabl
 		dataModel = new FolderDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), flc);
 		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(FolderCols.title.name(), true)));
-		tableEl.setAndLoadPersistedPreferences(ureq, "folder.folder");
+		tableEl.setAndLoadPersistedPreferences(ureq, "folder." + folderView.name());
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
-		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setRendererType(rendererType);
 		tableEl.setCssDelegate(FolderCssDelegate.DELEGATE);
 		VelocityContainer rowVC = createVelocityContainer("folder_row");
 		rowVC.setDomReplacementWrapperRequired(false);
@@ -432,6 +448,11 @@ public class FolderController extends FormBasicController implements Activateabl
 		initBulkLinks();
 		
 		loadModel(ureq);
+		
+		if (FolderView.file == folderView) {
+			initFilters();
+			initFilterTabs(ureq);
+		}
 	}
 	
 	private void doQuickSearch() {
@@ -470,6 +491,38 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		tableEl.setFilters(true, filters, false, false);
 	}
+	
+	protected void initFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
+		
+		tabAll = FlexiFiltersTabFactory.tab(
+				TAB_ID_ALL,
+				translate("tab.all"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabAll);
+		
+		tabFromMe = FlexiFiltersTabFactory.tab(
+				TAB_ID_FROM_ME,
+				translate("tab.from.me"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabFromMe);
+		
+		tabForMe = FlexiFiltersTabFactory.tab(
+				TAB_ID_FOR_ME,
+				translate("tab.for.me"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabForMe);
+		
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, tabAll);
+	}
+	
+	public void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+		if (tab == null) return;
+		
+		tableEl.setSelectedFilterTab(ureq, tab);
+		loadModel(ureq);
+	}
 
 	private void initBulkLinks() {
 		bulkDownloadButton = uifactory.addFormLink("download", flc, Link.BUTTON);
@@ -494,7 +547,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void loadModel(UserRequest ureq) {
-		List<VFSItem> items = currentContainer.getItems(vfsFilter);
+		List<VFSItem> items = loadItems();
 		
 		String relPath = currentContainer.getRelPath();
 		Map<String, VFSMetadata> metadatas = Collections.emptyMap();
@@ -522,8 +575,6 @@ public class FolderController extends FormBasicController implements Activateabl
 			row.setTranslatedType(FolderUIFactory.getTranslatedType(getTranslator(), vfsItem));
 			row.setSize(FolderUIFactory.getSize(vfsItem));
 			row.setTranslatedSize(FolderUIFactory.getTranslatedSize(getTranslator(), vfsItem, row.getSize()));
-			String filePath =  VFSManager.getRelativeItemPath(vfsItem, rootContainer, null);
-			row.setFilePath(filePath);
 			if (versionsEnabled) {
 				row.setVersions(FolderUIFactory.getVersions(vfsItem));
 			}
@@ -533,6 +584,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			forgeStatus(row);
 			forgeThumbnail(ureq, row);
 			forgeTitleLink(row);
+			forgeFilePath(row);
 			forgeToolsLink(row);
 			
 			rows.add(row);
@@ -544,7 +596,28 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		updateQuotaBarUI(ureq);
 	}
+
+	private List<VFSItem> loadItems() {
+		if (FolderView.folder == folderView) {
+			return currentContainer.getItems(vfsFilter);
+		}
+		
+		List<VFSItem> allItems = new ArrayList<>();
+		loadItemsAndChildren(allItems, currentContainer);
+		return allItems;
+	}
 	
+	private void loadItemsAndChildren(List<VFSItem> allItems, VFSContainer vfsContainer) {
+		List<VFSItem> items = vfsContainer.getItems(vfsFilter);
+		allItems.addAll(items);
+		
+		items.forEach(item -> {
+			if (item instanceof VFSContainer childContainer) {
+				loadItemsAndChildren(allItems, childContainer);
+			}
+		});
+	}
+
 	private void forgeStatus(FolderRow row) {
 		String translatedStatus = null;
 		String labels = null;
@@ -552,12 +625,12 @@ public class FolderController extends FormBasicController implements Activateabl
 			if (StringHelper.containsNonWhitespace(row.getTranslatedSize())) {
 				labels = "<div class=\"o_folder_label o_folder_label_elements\"><i class=\"o_icon o_filetype_file\"> </i> " + row.getTranslatedSize() + "</div>";
 			}
-		} else if (vfsLockManager.isLocked(row.getVfsItem(), row.getMetadata(), VFSLockApplicationType.vfs, null)) {
+		} else {
 			LockInfo lock = vfsLockManager.getLock(row.getVfsItem());
 			if (lock != null && lock.getLockedBy() != null && lock.isCollaborationLock()) {
 				translatedStatus = translate("status.editing");
 				labels = "<div class=\"o_folder_label o_folder_label_editing\"><i class=\"o_icon o_icon_user\"> </i> " + translatedStatus + "</div>";
-			} else {
+			} else if (lock != null) {
 				translatedStatus = translate("status.locked");
 				labels = "<div class=\"o_folder_label o_folder_label_locked\"><i class=\"o_icon o_icon_locked\"> </i> " + translatedStatus + "</div>";
 			}
@@ -632,6 +705,23 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 	}
 	
+	private void forgeFilePath(FolderRow row) {
+		VFSItem parent = row.getVfsItem().getParentContainer();
+		if (parent == null) {
+			return;
+		}
+		
+		String filePath =  VFSManager.getRelativeItemPath(parent, rootContainer, null);
+		row.setFilePath(filePath);
+		
+		if (FolderView.folder != folderView) {
+			FormLink link = uifactory.addFormLink("path_" + counter++, CMD_PATH, "", null, null, Link.NONTRANSLATED);
+			link.setI18nKey(StringHelper.escapeHtml(row.getFilePath()));
+			link.setUserObject(row);
+			row.setFilePathItem(link);
+		}
+	}
+	
 	private void forgeToolsLink(FolderRow row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + counter++, "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
@@ -640,6 +730,18 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void applyFilters(List<FolderRow> rows) {
+		if (tableEl.getSelectedFilterTab() != null) {
+			if (tableEl.getSelectedFilterTab() == tabFromMe) {
+				String myUserDisplayName = userManager.getUserDisplayName(getIdentity().getKey());
+				rows.removeIf(row -> row.getVfsItem() instanceof VFSContainer || !myUserDisplayName.equals(row.getCreatedBy()));
+			} else {
+				if (tableEl.getSelectedFilterTab() == tabForMe) {
+					String myUserDisplayName = userManager.getUserDisplayName(getIdentity().getKey());
+					rows.removeIf(row -> row.getVfsItem() instanceof VFSContainer || myUserDisplayName.equals(row.getCreatedBy()));
+				}
+			}
+		}
+		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		if (filters == null || filters.isEmpty()) return;
 		
@@ -728,8 +830,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			if (event instanceof FlexiTableSearchEvent) {
 				loadModel(ureq);
 			} else if (event instanceof FlexiTableFilterTabEvent) {
-//				doSelectFilterTab(((FlexiTableFilterTabEvent)event).getTab());
-//				loadModel(ureq, true);
+				selectFilterTab(ureq, ((FlexiTableFilterTabEvent)event).getTab());
+				loadModel(ureq);
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doUpload(ureq);
 			} else if (event instanceof SelectionEvent se) {
@@ -745,9 +847,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			doOpenView(ureq, FolderView.file);
 		} else if (viewSearchLink == source) {
 			doOpenView(ureq, FolderView.search);
-		} else if(quickSearchEl == source) {
+		} else if (quickSearchEl == source) {
 			doQuickSearch();
-		} else if(quickSearchButton == source) {
+		} else if (quickSearchButton == source) {
 			doQuickSearch();
 		} else if (uploadLink == source) {
 			doUpload(ureq);
@@ -779,6 +881,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				doOpenTools(ureq, folderRow, link);
 			} else if (CMD_FOLDER.equals(link.getCmd()) && link.getUserObject() instanceof FolderRow folderRow) {
 				doOpenFolder(ureq, folderRow);
+			} else if (CMD_PATH.equals(link.getCmd()) && link.getUserObject() instanceof FolderRow folderRow) {
+				doOpenPath(ureq, folderRow);
 			}
 		}
 		
@@ -962,9 +1066,28 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (isItemNotAvailable(ureq, folderRow, true)) return;
 		
 		if (folderRow.getVfsItem() instanceof VFSContainer vfsContainer) {
+			if (FolderView.folder != folderView) {
+				doOpenView(ureq, FolderView.folder);
+			}
 			updateCurrentContainer(ureq, vfsContainer);
-			loadModel(ureq);
 		}
+	}
+
+	private void doOpenPath(UserRequest ureq, FolderRow folderRow) {
+		VFSContainer parent = folderRow.getVfsItem().getParentContainer();
+		if (parent == null) {
+			showError("error.deleted.container");
+			return;
+		}
+		
+		if (isItemNotAvailable(ureq, parent, true)) {
+			return;
+		}
+		
+		if (FolderView.folder != folderView) {
+			doOpenView(ureq, FolderView.folder);
+		}
+		updateCurrentContainer(ureq, parent);
 	}
 
 	private void doUpload(UserRequest ureq) {

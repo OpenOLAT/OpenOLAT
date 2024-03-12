@@ -55,6 +55,7 @@ public class FolderRow {
 	private String thumbnailUrl;
 	private FormItem titleItem;
 	private FormItem selectionItem;
+	private FormItem filePathItem;
 	private FormItem toolsLink;
 	
 	public FolderRow(VFSItem vfsItem) {
@@ -227,6 +228,14 @@ public class FolderRow {
 	
 	public String getSelectionItemName() {
 		return selectionItem != null? selectionItem.getComponent().getComponentName(): null;
+	}
+
+	public FormItem getFilePathItem() {
+		return filePathItem;
+	}
+
+	public void setFilePathItem(FormItem filePathItem) {
+		this.filePathItem = filePathItem;
 	}
 
 	public FormItem getToolsLink() {

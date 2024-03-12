@@ -37,11 +37,11 @@
 			#end
 		</div>
 	</div>
-	<div class="o_folder_breadcrumb">
-		#if($r.available("folderBreadcrumb") && $r.visible("folderBreadcrumb"))
+	#if($r.available("folderBreadcrumb") && $r.visible("folderBreadcrumb"))
+		<div class="o_folder_breadcrumb">
 			$r.render("folderBreadcrumb")
-		#end
-	</div>
+		</div>
+	#end
 	<div class="o_folder_table">
 		$r.render("table")
 	</div>

@@ -68,7 +68,7 @@ public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> imple
 		case type: return row.getTranslatedType();
 		case status: return row;
 		case size: return row.getTranslatedSize();
-		case path: return row.getFilePath();
+		case path: return row.getFilePathItem();
 		case versions: return row.getVersions();
 		case license: return row.getLicense();
 		case tools: return row.getToolsLink();
