@@ -1,6 +1,6 @@
 <div class="o_page_table_run $blockLayoutClass">
 	#if($r.isNotEmpty($tableTitle))
-	<h4>$r.xssScan(tableTitle)</h4>
+	<h4>$r.xssScan($tableTitle)</h4>
 	#end
 	<table class="o_ce_table #if($r.isNotEmpty($settings.tableStyle)) $r.escapeHtml($settings.tableStyle) #end  #if(!$r.isTrue($settings.striped)) b_no_stripes #end #if($r.isTrue($settings.bordered)) b_border #else b_borderless #end">
 		#if($r.isNotEmpty($tableCaption))
