@@ -142,14 +142,14 @@ public class FragmentRendererHelper {
 		boolean collapsible = showTitle && alertBoxSettings.isCollapsible();
 
 		if (showAlertHeader) {
-			sb.append("<div class='o_container_block o_alert_header");
+			sb.append("<div style='padding-top: 0; padding-bottom: 0;' class='o_container_block o_alert_header");
 			if (layoutSettings != null) {
 				sb.append(" ").append(layoutSettings.getCssClass(inForm));
 			}
 			sb.append("' style='grid-column: 1 / -1;'>");
 			sb.append("<div class='o_container_block_alert'>");
 			if (showIcon) {
-				sb.append("<div class='o_alert_icon'><i class='o_icon ").append(iconCssClass).append("'> </i></div>");
+				sb.append("<div class='o_alert_icon'><i class='o_icon o_icon-lg ").append(iconCssClass).append("'> </i></div>");
 			}
 			if (showTitle) {
 				if (collapsible) {

@@ -277,8 +277,7 @@
 
 		.o_container_block, .o_page_container_slot-inner {
 			.o_container_block_alert {
-				padding: $o-ce-padding-compact 3px;
-				height: 40px;
+				padding: $o-ce-padding-normal $o-ce-padding-compact $o-ce-padding-normal 2px;
 				display: flex;
 
 				.o_alert_icon {
