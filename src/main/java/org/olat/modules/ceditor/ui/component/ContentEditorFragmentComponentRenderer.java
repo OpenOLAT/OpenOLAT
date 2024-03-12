@@ -56,6 +56,8 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 	private void renderEdit(Renderer renderer, StringOutput sb, ContentEditorFragmentComponent cmp,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 
+		boolean needsSelectionFrame = FragmentRendererHelper.needsSelectionFrame(cmp.getElement());
+
 		URLBuilder fragmentUbu = ubu.createCopyFor(cmp);
 		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
 		BlockLayoutSettings layoutSettings = FragmentRendererHelper.getLayoutSettings(cmp.getElement());
@@ -64,7 +66,18 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
 
 		// Container with editor elements
-		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='o_page_fragment_edit o_fragment_edited' data-oo-page-fragment='").append(cmp.getComponentName()).append("'>");
+		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("'");
+		sb.append(" style='border: none; margin: 0;'", needsSelectionFrame);
+		sb.append(" class='o_page_fragment_edit o_fragment_edited' data-oo-page-fragment='").append(cmp.getComponentName());
+		sb.append("'>");
+
+		if (needsSelectionFrame) {
+			String frameId = "o_c" + cmp.getDispatchID() + "_frame";
+			sb.append("<div id='")
+					.append(frameId).append("' class='o_fragment_selection_frame'")
+					.append("></div>");
+		}
+
 		// Tools
 		renderTools(renderer, sb, cmp, fragmentUbu, translator, renderResult, args);
 
@@ -106,9 +119,23 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		sb.append("<script>\n")
 		  .append("\"use strict\";\n")
 		  .append("jQuery(function() {\n")
-		  .append(" jQuery('.o_page_content_editor').ceditor('editFragment');\n")
-		  .append("});\n")
-		  .append("</script>");
+		  .append(" jQuery('.o_page_content_editor').ceditor('editFragment');\n");
+
+		if (needsSelectionFrame) {
+			String frameId = "o_c" + cmp.getDispatchID() + "_frame";
+			sb.append("setTimeout(() => {\n");
+			sb.append(" var imageDiv = jQuery('#").append("o_cce").append(cmp.getDispatchID()).append(" div.o_image');\n");
+			sb.append(" var frameDiv = jQuery('#").append(frameId).append("');\n");
+			sb.append(" frameDiv.width(imageDiv.innerWidth() - 4);\n");
+			sb.append(" frameDiv.height(imageDiv.innerHeight() - 4);\n");
+			sb.append(" var top = imageDiv.position().top + 'px';\n");
+			sb.append(" var left = imageDiv.position().left + 'px';\n");
+			sb.append(" frameDiv.css({top: top, left: left});\n");
+			sb.append("}, 50);\n");
+		}
+
+		sb.append("});\n");
+		sb.append("</script>");
 
 		sb.append("</div>");
 	}
