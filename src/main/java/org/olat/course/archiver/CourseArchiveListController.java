@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
+import org.olat.core.commons.services.export.ui.ExportRow;
 import org.olat.core.commons.services.export.ui.ExportsListController;
 import org.olat.core.commons.services.export.ui.ExportsListSettings;
 import org.olat.core.commons.services.webdav.WebDAVModule;
@@ -49,6 +50,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.archiver.wizard.CourseArchiveContext;
 import org.olat.course.archiver.wizard.CourseArchiveFinishStepCallback;
@@ -108,6 +110,7 @@ public class CourseArchiveListController extends ExportsListController implement
 		archiveScopes = uifactory.addScopeSelection("archive.scopes", null, formLayout, scopes);
 
 		newArchiveButton = uifactory.addFormLink("course.archive.new", formLayout, Link.BUTTON);
+		newArchiveButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		super.initForm(formLayout, listener, ureq);
 	}
@@ -161,11 +164,21 @@ public class CourseArchiveListController extends ExportsListController implement
 		SearchExportMetadataParameters params = super.getSearchParams();
 		String selectedKey = archiveScopes.getSelectedKey();
 		if(COMPLETE_ARCHIVES.equals(selectedKey)) {
-			params.setArchiveType(ArchiveType.COMPLETE);
+			params.setArchiveTypes(List.of(ArchiveType.COMPLETE));
 		} else if(PARTIAL_ARCHIVES.equals(selectedKey)) {
-			params.setArchiveType(ArchiveType.PARTIAL);
+			params.setArchiveTypes(List.of(ArchiveType.PARTIAL));
+		} else {
+			params.setArchiveTypes(List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
 		}
 		return params;
+	}
+	
+	protected void doConfirmCancel(UserRequest ureq, ExportRow row) {
+		String[] args = { StringHelper.escapeHtml(row.getTitle()) };
+		String title = translate("confirm.course.cancel.title", args);
+		String text = translate("confirm.course.cancel.text", args);		
+		confirmCancelCtrl = activateYesNoDialog(ureq, title, text, confirmCancelCtrl);
+		confirmCancelCtrl.setUserObject(row);
 	}
 
 	private void doNewArchive(UserRequest ureq) {

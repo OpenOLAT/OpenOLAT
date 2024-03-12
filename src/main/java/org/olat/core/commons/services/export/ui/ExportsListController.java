@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportManager;
@@ -94,10 +95,11 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	private int count = 0;
 	private final DateFormatSymbols symbols;
 	private final ExportsListSettings options;
+	protected final boolean isAdministrator;
 
 	private CloseableModalController cmc;
 	private ExportInfosController infosCtrl;
-	private DialogBoxController confirmCancelCtrl;
+	protected DialogBoxController confirmCancelCtrl;
 	private DialogBoxController confirmDeleteAllCtrl;
 	private ConfirmDeleteExportController confirmDeleteCtrl;
 	
@@ -125,6 +127,8 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		this.options = options;
 		this.subIdent = subIdent;
 		symbols = new DateFormatSymbols(getLocale());
+		isAdministrator = ureq.getUserSession().getRoles()
+				.hasSomeRoles(OrganisationRoles.administrator);
 
 		initForm(ureq);
 		loadModel();
@@ -201,16 +205,21 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	}
 	
 	public SearchExportMetadataParameters getSearchParams() {
-		return new SearchExportMetadataParameters(entry, subIdent);
+		SearchExportMetadataParameters params = new SearchExportMetadataParameters(entry, subIdent,
+				List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL, ArchiveType.QTI21));
+		if(!isAdministrator) {
+			params.setOnlyAdministrators3(Boolean.FALSE);
+		}
+		return params;
 	}
 
 	public void loadModel() {
 		List<ExportInfos> exports;
+		SearchExportMetadataParameters params = getSearchParams();
 		if(entry == null) {
-			SearchExportMetadataParameters params = getSearchParams();
 			exports = exportManager.getResultsExport(params);
 		} else {
-			exports = exportManager.getResultsExport(entry, subIdent);
+			exports = exportManager.getResultsExport(entry, subIdent, params);
 		}
 		if(!admin) {
 			exports = exports.stream()
@@ -290,18 +299,21 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	private void forgeExport(ExportRow row) {
 		String c = Integer.toString(++count);
 		
-		FormLink infosButton = uifactory.addFormLink("infos-".concat(c), "infos", "info", null, flc, Link.LINK);
+		FormLink infosButton = uifactory.addFormLink("infos-".concat(c), "infos", "info", null, flc, Link.BUTTON);
 		infosButton.setIconLeftCSS("o_icon o_icon-fw o_icon_description");
+		infosButton.setGhost(true);
 		row.setInfosButton(infosButton);
 		infosButton.setUserObject(row);
 		
-		FormLink deleteButton = uifactory.addFormLink("delete-".concat(c), "delete", "delete", null, flc, Link.LINK);
+		FormLink deleteButton = uifactory.addFormLink("delete-".concat(c), "delete", "delete", null, flc, Link.BUTTON);
 		deleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		deleteButton.setGhost(true);
 		row.setDeleteButton(deleteButton);
 		deleteButton.setUserObject(row);
 		
-		FormLink downloadButton = uifactory.addFormLink("download-".concat(c), "download", "download", null, flc, Link.LINK);
+		FormLink downloadButton = uifactory.addFormLink("download-".concat(c), "download", "download", null, flc, Link.BUTTON);
 		downloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		downloadButton.setGhost(true);
 		row.setDownloadButton(downloadButton);
 		downloadButton.setUserObject(row);
 		
@@ -392,7 +404,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		//
 	}
 	
-	private void doConfirmCancel(UserRequest ureq, ExportRow row) {
+	protected void doConfirmCancel(UserRequest ureq, ExportRow row) {
 		String[] args = { StringHelper.escapeHtml(row.getTitle()) };
 		String title = translate("confirm.cancel.title", args);
 		String text = translate("confirm.cancel.text", args);		

@@ -32,6 +32,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 public class ArchiveRepositoryEntryRow {
 	
 	private int numOfArchives = 0;
+	private int numOfCompleteArchives = 0;
 	private boolean completeArchive;
 	private boolean runningArchive;
 	
@@ -69,6 +70,14 @@ public class ArchiveRepositoryEntryRow {
 	
 	public void incrementNumOfArchives() {
 		numOfArchives++;
+	}
+	
+	public long getNumOfCompleteArchives() {
+		return numOfCompleteArchives;
+	}
+	
+	public void incrementNumOfCompleteArchives() {
+		numOfCompleteArchives++;
 	}
 
 	public boolean isCompleteArchive() {

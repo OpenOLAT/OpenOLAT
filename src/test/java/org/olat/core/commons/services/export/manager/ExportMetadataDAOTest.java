@@ -104,10 +104,10 @@ public class ExportMetadataDAOTest extends OlatTestCase {
 		String title = "Some meta export";
 		String resSubPath = UUID.randomUUID().toString();
 		Date expirationDate = DateUtils.addDays(new Date(), 7);
-		ExportMetadata metadata = exportMetadataDao.createMetadata(title, null, null, null, expirationDate, true, null, resSubPath, id, null);
+		ExportMetadata metadata = exportMetadataDao.createMetadata(title, null, null, ArchiveType.COMPLETE, expirationDate, true, null, resSubPath, id, null);
 		dbInstance.commit();
 		
-		SearchExportMetadataParameters params = new SearchExportMetadataParameters(null, resSubPath);
+		SearchExportMetadataParameters params = new SearchExportMetadataParameters(null, resSubPath, List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
 		List<ExportMetadata> metadataList = exportMetadataDao.searchMetadatas(params);
 		assertThat(metadataList)
 			.hasSize(1)

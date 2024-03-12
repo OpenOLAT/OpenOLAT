@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.export.ExportMetadata;
@@ -40,7 +41,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -113,6 +117,12 @@ public class ExportsAdminListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.entry));
+		
+		StaticFlexiCellRenderer entryRenderer = new StaticFlexiCellRenderer("entry", new TextFlexiCellRenderer());
+		entryRenderer.setIconLeftCSS("o_icon o_icon-fw o_CourseModule_icon");
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.entry.i18nHeaderKey(), ExportsCols.entry.ordinal(), "entry",
+				entryRenderer));
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.entryExternalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.archiveType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ExportsCols.creationDate));
@@ -204,18 +214,18 @@ public class ExportsAdminListController extends FormBasicController {
 	}
 	
 	protected SearchExportMetadataParameters getSearchParams() {
-		SearchExportMetadataParameters params = new SearchExportMetadataParameters();
+		SearchExportMetadataParameters params = new SearchExportMetadataParameters(List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
 		params.setResSubPath(subIdent);
 		
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
 		if(selectedTab == completeArchiveTab) {
-			params.setArchiveType(ArchiveType.COMPLETE);
+			params.setArchiveTypes(List.of(ArchiveType.COMPLETE));
 		} else if(selectedTab == partialArchiveTab) {
-			params.setArchiveType(ArchiveType.PARTIAL);
+			params.setArchiveTypes(List.of(ArchiveType.PARTIAL));
 		} else if(selectedTab == ongoingTab) {
 			params.setOngoingExport(true);
-		} else if(selectedTab == this.onlyAdministratorsTab) {
-			params.setOnlyAdministrators(true);
+		} else if(selectedTab == onlyAdministratorsTab) {
+			params.setOnlyAdministrators3(Boolean.TRUE);
 		}
 
 		return params;
@@ -261,6 +271,13 @@ public class ExportsAdminListController extends FormBasicController {
 		if(source == tableEl) {
 			if(event instanceof FlexiTableFilterTabEvent fte && FlexiTableFilterTabEvent.SELECT_FILTER_TAB.equals(fte.getCommand())) {
 				loadModel();
+			} else if(event instanceof SelectionEvent se && "entry".equals(se.getCommand())) {
+				ExportRow row = tableModel.getObject(se.getIndex());
+				if(row == null) {
+					loadModel();
+				} else {
+					doOpenRepositoryEntry(ureq, row);
+				}
 			}
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
@@ -316,6 +333,12 @@ public class ExportsAdminListController extends FormBasicController {
 			resource = new VFSMediaResource(archive);
 		}
 		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private void doOpenRepositoryEntry(UserRequest ureq, ExportRow row) {
+		String businessPath = "[RepositoryEntry:" + row.getRepositoryEntryKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		
 	}
 	
 	protected void doOpenMetadata(UserRequest ureq, ExportRow row) {

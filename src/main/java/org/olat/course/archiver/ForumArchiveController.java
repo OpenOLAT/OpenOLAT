@@ -68,8 +68,8 @@ public class ForumArchiveController extends GenericArchiveController {
 	 * @param withOptions Allow to configure the archive options
 	 * @param nodeTypes   The node types to export
 	 */
-	public ForumArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, boolean withOptions, CourseNode... nodeTypes) {
-		super(ureq, wControl, ores, withOptions, nodeTypes);
+	public ForumArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, boolean withOptions, CourseNode nodeType) {
+		super(ureq, wControl, ores, withOptions, nodeType);
 	}
 
 	@Override

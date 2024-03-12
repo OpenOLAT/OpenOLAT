@@ -29,6 +29,7 @@ import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.export.ExportMetadata;
 import org.olat.core.commons.services.export.ExportTask;
 import org.olat.core.commons.services.export.model.ExportInfos;
+import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
@@ -76,7 +77,8 @@ public class ExportManagerTest extends OlatTestCase {
 		ICourse course = CourseFactory.loadCourse(entry);
 		CourseNode courseNode = course.getRunStructure().getRootNode();
 		
-		List<ExportInfos> infos = exportManager.getResultsExport(entry, courseNode.getIdent());
+		SearchExportMetadataParameters params = new SearchExportMetadataParameters(List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
+		List<ExportInfos> infos = exportManager.getResultsExport(entry, courseNode.getIdent(), params);
 		Assert.assertNotNull(infos);
 		Assert.assertTrue(infos.isEmpty());
 	}

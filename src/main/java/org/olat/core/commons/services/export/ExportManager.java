@@ -44,7 +44,7 @@ public interface ExportManager {
 	
 	VFSContainer getExportContainer(RepositoryEntry entry, String resSubPath);
 	
-	List<ExportInfos> getResultsExport(RepositoryEntry entry, String resSubPath);
+	List<ExportInfos> getResultsExport(RepositoryEntry entry, String resSubPath, SearchExportMetadataParameters params);
 	
 	List<ExportInfos> getResultsExport(SearchExportMetadataParameters searchParams);
 	

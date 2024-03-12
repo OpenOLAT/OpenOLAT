@@ -100,6 +100,13 @@ public class ExportRow {
 		return metadata;
 	}
 	
+	public Long getRepositoryEntryKey() {
+		if(metadata != null && metadata.getEntry() != null) {
+			return metadata.getEntry().getKey();
+		}
+		return null;
+	}
+	
 	public String getRepositoryEntryDisplayname() {
 		if(metadata != null && metadata.getEntry() != null) {
 			return metadata.getEntry().getDisplayname();
@@ -127,6 +134,9 @@ public class ExportRow {
 	}
 	
 	public String getDescription() {
+		if(metadata != null) {
+			return metadata.getDescription();
+		}
 		return export == null ? null : export.getDescription();
 	}
 	

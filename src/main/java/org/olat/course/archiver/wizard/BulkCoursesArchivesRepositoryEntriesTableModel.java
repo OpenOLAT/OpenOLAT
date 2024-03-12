@@ -66,7 +66,7 @@ implements SortableFlexiTableDataModel<ArchiveRepositoryEntryRow>  {
 			case title: return row.getDisplayName();
 			case status: return row.getStatus();
 			case externalRef: return row.getExternalRef();
-			case numOfArchives: return row.getNumOfArchives();
+			case numOfCompleteArchives: return row.getNumOfArchives();
 			case statusArchives: return row;
 			case typeArchive: return row.getArchiveTypeEl();
 			default: return "ERROR";
@@ -78,7 +78,7 @@ implements SortableFlexiTableDataModel<ArchiveRepositoryEntryRow>  {
 		title("table.header.entry.title"),
 		status("table.header.entry.status"),
 		externalRef("table.header.entry.external.ref"),
-		numOfArchives("table.header.num.archives"),
+		numOfCompleteArchives("table.header.num.complete.archives"),
 		statusArchives("table.header.status.archives"),
 		typeArchive("table.header.type.archive");
 		

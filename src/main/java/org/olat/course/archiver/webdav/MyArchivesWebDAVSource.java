@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.export.model.ExportInfos;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
@@ -102,7 +103,7 @@ public class MyArchivesWebDAVSource extends MergeSource {
 	private List<VFSItem> getExports() {
 		try {
 			ExportManager exportManager = CoreSpringFactory.getImpl(ExportManager.class);
-			SearchExportMetadataParameters params = new SearchExportMetadataParameters();
+			SearchExportMetadataParameters params = new SearchExportMetadataParameters(List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
 			params.setCreator(identity);
 			List<ExportInfos> exportsList = exportManager.getResultsExport(params);
 			List<VFSItem> items = new ArrayList<>(exportsList.size());

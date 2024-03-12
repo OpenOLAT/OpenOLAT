@@ -157,20 +157,19 @@ public class ExportMetadataDAO {
 		  .append(" left join fetch v.olatResource as res")
 		  .append(" left join fetch exp.creator creator")
 		  .append(" left join fetch creator.user creatorUsr")
-		  .append(" left join fetch exp.metadata vfsMetadata");
+		  .append(" left join fetch exp.metadata vfsMetadata")
+		  .and().append("exp.archiveType").in(params.getArchiveTypesArray());
+		
 		if(params.hasRepositoryEntries()) {
 			sb.and().append("v.key in :entryKeys");
 		}
 		if(StringHelper.containsNonWhitespace(params.getResSubPath())) {
 			sb.and().append("exp.subIdent=:resSubPath");
 		}
-		if(params.getArchiveType() != null) {
-			sb.and().append("exp.archiveType=:archiveType");
-		}
 		if(params.isOngoingExport()) {
 			sb.and().append("task.statusStr").in(TaskStatus.newTask, TaskStatus.inWork);
 		}
-		if(params.isOnlyAdministrators()) {
+		if(params.getOnlyAdministrators() != null) {
 			sb.and().append("exp.onlyAdministrators=:onlyAdministrators");
 		}
 		if(params.getCreator() != null) {
@@ -188,11 +187,8 @@ public class ExportMetadataDAO {
 		if(StringHelper.containsNonWhitespace(params.getResSubPath())) {
 			query.setParameter("resSubPath", params.getResSubPath());
 		}
-		if(params.getArchiveType() != null) {
-			query.setParameter("archiveType", params.getArchiveType());
-		}
-		if(params.isOnlyAdministrators()) {
-			query.setParameter("onlyAdministrators", Boolean.TRUE);
+		if(params.getOnlyAdministrators() != null) {
+			query.setParameter("onlyAdministrators", params.getOnlyAdministrators());
 		}
 		if(params.getCreator() != null) {
 			query.setParameter("creatorKey", params.getCreator().getKey());

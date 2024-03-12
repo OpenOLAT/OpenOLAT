@@ -82,7 +82,7 @@ public class GenericArchiveController extends FormBasicController {
 	private final ArchiveOptions options;
 	private final boolean withOptions;
 	protected final OLATResourceable ores;
-	private final CourseNode[] nodeTypes;
+	private final CourseNode nodeType;
 
 	/**
 	 * Constructor for the assessment tool controller.
@@ -93,10 +93,10 @@ public class GenericArchiveController extends FormBasicController {
 	 * @param options Allow to configure the archive options
 	 * @param nodeTypes The node types to export
 	 */
-	public GenericArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, boolean withOptions,  CourseNode... nodeTypes) {
+	public GenericArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, boolean withOptions,  CourseNode nodeType) {
 		super(ureq, wControl, "nodechoose");
 		this.ores = ores;
-		this.nodeTypes = nodeTypes;
+		this.nodeType = nodeType;
 		this.withOptions = withOptions;
 		options = new ArchiveOptions();
 		initForm(ureq);
@@ -105,11 +105,10 @@ public class GenericArchiveController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("nodeType", nodeTypes[0].getType());
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("nodeType", nodeType.getType());
 			String cssClass = CourseNodeFactory.getInstance()
-					.getCourseNodeConfigurationEvenForDisabledBB(nodeTypes[0].getType()).getIconCSSClass();
+					.getCourseNodeConfigurationEvenForDisabledBB(nodeType.getType()).getIconCSSClass();
 			layoutCont.contextPut("iconCss", cssClass);
 
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -144,8 +143,7 @@ public class GenericArchiveController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == tableEl) {
-			if (event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if (event instanceof SelectionEvent se) {
 				if ("select".equals(se.getCommand())) {
 					AssessmentNodeData nodeData = nodeTableModel.getObject(se.getIndex());
 					doSelectNode(ureq, nodeData);
@@ -233,11 +231,7 @@ public class GenericArchiveController extends FormBasicController {
 	}
 	
 	protected boolean matchTypes(CourseNode courseNode) {
-		boolean match = false;
-		for(CourseNode nodeType:nodeTypes) {
-			match |= courseNode.getType().equals(nodeType.getType());
-		}
-		return match;
+		return courseNode.getType().equals(nodeType.getType());
 	}
 	
 	private void doMultiSelectNodes(UserRequest ureq) {

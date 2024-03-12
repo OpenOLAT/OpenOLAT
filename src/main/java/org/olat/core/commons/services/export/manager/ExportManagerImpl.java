@@ -197,25 +197,29 @@ public class ExportManagerImpl implements ExportManager {
 	}
 
 	@Override
-	public List<ExportInfos> getResultsExport(RepositoryEntry courseEntry, String resSubPath) {
+	public List<ExportInfos> getResultsExport(RepositoryEntry courseEntry, String resSubPath, SearchExportMetadataParameters params) {
 		List<ExportInfos> exports = new ArrayList<>();
 		
 		Set<String> archiveNames = new HashSet<>();
-		SearchExportMetadataParameters params = new SearchExportMetadataParameters(courseEntry, resSubPath);
+		params.setRepositoryEntries(List.of(courseEntry));
+		params.setResSubPath(resSubPath);
+		
 		List<ExportMetadata> exportMetadataList = exportMetadataDao.searchMetadatas(params);
 		for(ExportMetadata data:exportMetadataList) {
 			exports.add(new ExportInfos(data));
 			archiveNames.add(data.getFilename());
 		}
 		
-		VFSContainer exportContainer = getExportContainer(courseEntry, resSubPath);
-		if(exportContainer != null) {
-			List<VFSItem> zipItems = exportContainer.getItems(new ZIPLeafFilter());
-			for(VFSItem zipItem:zipItems) {
-				if(!archiveNames.contains(zipItem.getName()) && zipItem instanceof VFSLeaf zipLeaf) {
-					VFSMetadata metadata = vfsRepositoryService.getMetadataFor(zipLeaf);
-					ExportInfos resultsExport = new ExportInfos(zipLeaf, metadata);
-					exports.add(resultsExport);
+		if(params.getArchiveTypes().contains(ArchiveType.QTI21)) {
+			VFSContainer exportContainer = getExportContainer(courseEntry, resSubPath);
+			if(exportContainer != null) {
+				List<VFSItem> zipItems = exportContainer.getItems(new ZIPLeafFilter());
+				for(VFSItem zipItem:zipItems) {
+					if(!archiveNames.contains(zipItem.getName()) && zipItem instanceof VFSLeaf zipLeaf) {
+						VFSMetadata metadata = vfsRepositoryService.getMetadataFor(zipLeaf);
+						ExportInfos resultsExport = new ExportInfos(zipLeaf, metadata);
+						exports.add(resultsExport);
+					}
 				}
 			}
 		}

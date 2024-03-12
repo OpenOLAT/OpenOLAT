@@ -99,11 +99,17 @@ public class MyArchivesController extends ExportsListController {
 	public SearchExportMetadataParameters getSearchParams() {
 		SearchExportMetadataParameters params = super.getSearchParams();
 		params.setCreator(getIdentity());
+		if(!isAdministrator) {
+			params.setOnlyAdministrators3(Boolean.FALSE);
+		}
+		
 		String selectedKey = archiveScopes.getSelectedKey();
 		if(COMPLETE_ARCHIVES.equals(selectedKey)) {
-			params.setArchiveType(ArchiveType.COMPLETE);
+			params.setArchiveTypes(List.of(ArchiveType.COMPLETE));
 		} else if(PARTIAL_ARCHIVES.equals(selectedKey)) {
-			params.setArchiveType(ArchiveType.PARTIAL);
+			params.setArchiveTypes(List.of(ArchiveType.PARTIAL));
+		} else {
+			params.setArchiveTypes(List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
 		}
 		return params;
 	}

@@ -33,6 +33,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.export.ExportMetadata;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
@@ -79,7 +80,8 @@ public class ExportArchivesWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		SearchExportMetadataParameters params = new SearchExportMetadataParameters(entry, null);
+		SearchExportMetadataParameters params = new SearchExportMetadataParameters(entry, null,
+				List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
 		List<ExportMetadata> metadataList = exportManager.searchMetadata(params);
 		
 		ExportMetadataVOes metadataVoes = new ExportMetadataVOes();

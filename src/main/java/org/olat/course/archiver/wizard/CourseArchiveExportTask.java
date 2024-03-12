@@ -303,7 +303,7 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 
 			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			List<ContextEntry> cEntries = BusinessControlFactory.getInstance()
-					.createCEListFromString("[RepositoryEntry:" + entry.getKey() + "][Participants:0][Export:0]");
+					.createCEListFromString("[RepositoryEntry:" + entry.getKey() + "][Archives:0]");
 			String url = BusinessControlFactory.getInstance().getAsURIString(cEntries, true);
 
 			String[] args = {

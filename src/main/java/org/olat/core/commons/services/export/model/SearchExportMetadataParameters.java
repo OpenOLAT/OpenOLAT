@@ -38,15 +38,16 @@ public class SearchExportMetadataParameters {
 	private List<RepositoryEntryRef> repositoryEntries;
 	
 	private String resSubPath;
-	private ArchiveType archiveType;
+	private List<ArchiveType> archiveTypes;
 	private boolean ongoingExport;
-	private boolean onlyAdministrators;
+	private Boolean onlyAdministrators;
 	
-	public SearchExportMetadataParameters() {
-		//
+	public SearchExportMetadataParameters(List<ArchiveType> archiveTypes) {
+		this.archiveTypes = archiveTypes;
 	}
 	
-	public SearchExportMetadataParameters(RepositoryEntryRef entry, String resSubPath) {
+	public SearchExportMetadataParameters(RepositoryEntryRef entry, String resSubPath, List<ArchiveType> archiveTypes) {
+		this.archiveTypes = archiveTypes;
 		if(entry != null) {
 			repositoryEntries = new ArrayList<>(2);
 			repositoryEntries.add(entry);
@@ -82,12 +83,16 @@ public class SearchExportMetadataParameters {
 		this.resSubPath = resSubPath;
 	}
 
-	public ArchiveType getArchiveType() {
-		return archiveType;
+	public List<ArchiveType> getArchiveTypes() {
+		return archiveTypes;
+	}
+	
+	public ArchiveType[] getArchiveTypesArray() {
+		return archiveTypes == null ? new ArchiveType[0] : archiveTypes.toArray(new ArchiveType[archiveTypes.size()]);
 	}
 
-	public void setArchiveType(ArchiveType archiveType) {
-		this.archiveType = archiveType;
+	public void setArchiveTypes(List<ArchiveType> archiveTypes) {
+		this.archiveTypes = archiveTypes;
 	}
 
 	public boolean isOngoingExport() {
@@ -98,11 +103,11 @@ public class SearchExportMetadataParameters {
 		this.ongoingExport = ongoingExport;
 	}
 
-	public boolean isOnlyAdministrators() {
+	public Boolean getOnlyAdministrators() {
 		return onlyAdministrators;
 	}
 
-	public void setOnlyAdministrators(boolean onlyAdministrators) {
+	public void setOnlyAdministrators3(Boolean onlyAdministrators) {
 		this.onlyAdministrators = onlyAdministrators;
 	}
 }

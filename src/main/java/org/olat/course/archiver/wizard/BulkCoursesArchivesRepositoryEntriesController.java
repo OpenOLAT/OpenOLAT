@@ -87,7 +87,7 @@ public class BulkCoursesArchivesRepositoryEntriesController extends StepFormBasi
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ArchivesCols.status,
 				new AccessRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ArchivesCols.externalRef));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ArchivesCols.numOfArchives));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ArchivesCols.numOfCompleteArchives));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ArchivesCols.statusArchives,
 				new ArchiveRepositoryEntryStatusRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ArchivesCols.typeArchive));
@@ -121,7 +121,7 @@ public class BulkCoursesArchivesRepositoryEntriesController extends StepFormBasi
 		Map<Long,ArchiveRepositoryEntryRow> repoEntryKeyToRow = rows.stream()
 				.collect(Collectors.toMap(ArchiveRepositoryEntryRow::getKey, r -> r, (u, v) -> u));
 		
-		SearchExportMetadataParameters params = new SearchExportMetadataParameters();
+		SearchExportMetadataParameters params = new SearchExportMetadataParameters(List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
 		params.setRepositoryEntries(new ArrayList<>(entries));
 		List<ExportInfos> infosList = exportManager.getResultsExport(params);
 		
@@ -143,8 +143,10 @@ public class BulkCoursesArchivesRepositoryEntriesController extends StepFormBasi
 					row.getArchiveTypeEl().select(ArchiveType.NONE.name(), true);
 					row.getArchiveTypeEl().setEnabled(false);
 				}
-				
+
 				if(metadata.getArchiveType() == ArchiveType.COMPLETE) {
+					row.incrementNumOfCompleteArchives();
+					row.getArchiveTypeEl().select(ArchiveType.NONE.name(), true);
 					row.setCompleteArchive(true);
 				}
 			}
