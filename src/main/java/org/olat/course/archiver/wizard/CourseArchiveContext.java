@@ -19,6 +19,7 @@
  */
 package org.olat.course.archiver.wizard;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,6 +29,8 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.tree.TreeVisitor;
+import org.olat.course.CourseFactory;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.DialogCourseNode;
@@ -91,13 +94,13 @@ public class CourseArchiveContext {
 		boolean isOresInstitutionalManager = roles.isLearnResourceManager()
 				&& repositoryService.hasRoleExpanded(identity, courseEntry, OrganisationRoles.learnresourcemanager.name());
 		context.administrator = isAdministrator;
-		context.allowedLogAuthors = isOresOwner || isOresInstitutionalManager;
+		context.allowedLogAuthors = isOresOwner || isOresInstitutionalManager || isAdministrator;
 		context.allowedLogUsers = isAdministrator;
-		context.allowedLogStatistics = isOresOwner || isOresInstitutionalManager;
+		context.allowedLogStatistics = isOresOwner || isOresInstitutionalManager || isAdministrator;
 		
 		options.setLogFilesAuthors(context.allowedLogAuthors);
 		options.setLogFilesUsers(context.allowedLogUsers);
-		options.setLogFilesStatistics(false);
+		options.setLogFilesStatistics(!context.allowedLogUsers);
 		
 		return context;
 	}
@@ -139,9 +142,21 @@ public class CourseArchiveContext {
 	}
 	
 	public boolean hasCustomization() {
-		List<CourseNode> nodes = getCourseNodes();
+		List<CourseNode> nodes;
+		if(getArchiveOptions().getArchiveType() == ArchiveType.COMPLETE) {
+			CourseNode rootNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getRootNode();
+			nodes = new ArrayList<>();
+			new TreeVisitor(node -> {
+				if(node instanceof CourseNode cNode && acceptCourseElement(cNode)) {
+					nodes.add(cNode);
+				}
+			}, rootNode, true).visitAll();
+		} else {
+			nodes = getCourseNodes();
+		}
+		
 		if(nodes == null || nodes.isEmpty()) {
-			return true;
+			return false;
 		}
 		
 		Optional<CourseNode> node = nodes.stream()

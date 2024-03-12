@@ -172,7 +172,8 @@ public class CourseArchiveListController extends ExportsListController implement
 		}
 		return params;
 	}
-	
+
+	@Override
 	protected void doConfirmCancel(UserRequest ureq, ExportRow row) {
 		String[] args = { StringHelper.escapeHtml(row.getTitle()) };
 		String title = translate("confirm.course.cancel.title", args);

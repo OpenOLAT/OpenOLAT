@@ -191,7 +191,7 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 			LogSettings logSetting = LogSettings.valueOf(logEl.getSelectedKey());
 			archiveOptions.setLogSettings(logSetting);
 			archiveOptions.setLogFiles(true);
-			archiveOptions.setLogFilesAuthors(logSetting == LogSettings.PERSONALISED);
+			archiveOptions.setLogFilesAuthors(true);
 			archiveOptions.setLogFilesUsers(logSetting == LogSettings.PERSONALISED);	
 			archiveOptions.setLogFilesStatistics(true);
 			archiveOptions.setCourseChat(true);

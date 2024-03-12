@@ -61,11 +61,14 @@ public class CourseArchiveCourseElementsController extends StepFormBasicControll
 	private CourseArchiveElementTableModel tableModel;
 	
 	private final CourseArchiveContext archiveContext;
+	private final CourseArchiveStepsListener stepsListener;
 	
 	public CourseArchiveCourseElementsController(UserRequest ureq, WindowControl wControl,
-			CourseArchiveContext archiveContext, StepsRunContext runContext, Form rootForm) {
+			CourseArchiveContext archiveContext, StepsRunContext runContext, Form rootForm,
+			CourseArchiveStepsListener stepsListener) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "select_nodes");
 		this.archiveContext = archiveContext;
+		this.stepsListener = stepsListener;
 		
 		initForm(ureq);
 		loadModel();
@@ -139,13 +142,22 @@ public class CourseArchiveCourseElementsController extends StepFormBasicControll
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		tableEl.clearError();
-		if((archiveContext.getCourseNodes() == null || archiveContext.getCourseNodes().isEmpty())
-				&& tableEl.getMultiSelectedIndex().isEmpty()) {
+		if(atLeastOneSelectable() && tableEl.getMultiSelectedIndex().isEmpty()
+				&& (archiveContext.getCourseNodes() == null || archiveContext.getCourseNodes().isEmpty())) {
 			tableEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		return allOk;
+	}
+	
+	private boolean atLeastOneSelectable() {
+		for(int i=tableModel.getRowCount(); i-->0; ) {
+			if(tableModel.isSelectable(i)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override
@@ -159,7 +171,9 @@ public class CourseArchiveCourseElementsController extends StepFormBasicControll
 			}
 		}
 		archiveContext.setCourseNodes(nodes);
-		if(archiveContext.getCourseNodes() != null && !archiveContext.getCourseNodes().isEmpty()) {
+		if(!atLeastOneSelectable() || (archiveContext.getCourseNodes() != null && !archiveContext.getCourseNodes().isEmpty())) {
+			stepsListener.onStepsChanged(ureq);
+			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
 			tableEl.setErrorKey("form.legende.mandatory");

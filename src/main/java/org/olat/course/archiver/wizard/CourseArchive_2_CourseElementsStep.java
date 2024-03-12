@@ -19,6 +19,7 @@
  */
 package org.olat.course.archiver.wizard;
 
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -40,9 +41,19 @@ public class CourseArchive_2_CourseElementsStep extends BasicStep {
 	public CourseArchive_2_CourseElementsStep(UserRequest ureq, CourseArchiveContext archiveContext) {
 		super(ureq);
 		this.archiveContext = archiveContext;
-		
-		setNextStep(new CourseArchive_3_SettingsStep(ureq, archiveContext));
+		setNextStep(ureq);
 		setI18nTitleAndDescr("wizard.course.element.title", "wizard.course.element.title");
+	}
+	
+	private void setNextStep(UserRequest ureq) {
+		if((archiveContext.getArchiveOptions().getArchiveType() == ArchiveType.COMPLETE && archiveContext.isAdministrator())
+				|| archiveContext.hasCustomization()) {
+			setNextStep(new CourseArchive_3_SettingsStep(ureq, archiveContext));
+		} else if(archiveContext.getArchiveOptions().getArchiveType() == ArchiveType.PARTIAL) {
+			setNextStep(new CourseArchive_4_OtherObjectsStep(ureq, archiveContext));
+		} else {
+			setNextStep(new CourseArchive_5_OverviewStep(ureq, archiveContext));
+		}
 	}
 	
 	@Override
@@ -53,7 +64,8 @@ public class CourseArchive_2_CourseElementsStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext stepsRunContext, Form form) {
-		return new CourseArchiveCourseElementsController(ureq, wControl, archiveContext, stepsRunContext, form );
+		return new CourseArchiveCourseElementsController(ureq, wControl, archiveContext, stepsRunContext, form,
+				this::setNextStep);
 	}
 
 }

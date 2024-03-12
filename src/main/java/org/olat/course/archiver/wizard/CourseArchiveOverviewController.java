@@ -100,7 +100,7 @@ public class CourseArchiveOverviewController extends StepFormBasicController {
 			uifactory.addStaticTextElement("archive.objects", "archive.objects", archiveObjects, formLayout);
 		}
 		
-		if(archiveOptions.isLogFilesUsers() || archiveOptions.isLogFilesStatistics()) {
+		if(archiveOptions.isLogFilesUsers()) {
 			String adminOnly = translate("access.admin.only");
 			uifactory.addStaticTextElement("access.admin", adminOnly, formLayout);
 		}

@@ -48,8 +48,11 @@ public class CourseArchive_1_ArchiveTypeStep extends BasicStep {
 	private void setNextStep(UserRequest ureq) {
 		if(archiveContext.getArchiveOptions().getArchiveType() == ArchiveType.PARTIAL) {
 			setNextStep(new CourseArchive_2_CourseElementsStep(ureq, archiveContext));
-		} else {
+		} else if((archiveContext.getArchiveOptions().getArchiveType() == ArchiveType.COMPLETE && archiveContext.isAdministrator())
+				|| archiveContext.hasCustomization()) {
 			setNextStep(new CourseArchive_3_SettingsStep(ureq, archiveContext));
+		} else {
+			setNextStep(new CourseArchive_5_OverviewStep(ureq, archiveContext));
 		}
 	}
 	
