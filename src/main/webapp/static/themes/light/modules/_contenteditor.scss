@@ -113,7 +113,61 @@
 		margin-left: 0;
 		margin-right: 0;
 
-		&.o_alert_box_type_note, &.o_alert_box_color_lightgray {
+		&.o_alert_box_type_note {
+			border-color: $o-box-note-color;
+			background-color: $o-box-note-bg;
+
+			> .o_container_block > .o_container_block_alert > .o_alert_icon {
+				color: $o-box-note-color;
+			}
+		}
+
+		&.o_alert_box_type_info {
+			border-color: $o-box-info-color;
+			background-color: $o-box-info-bg;
+
+			> .o_container_block > .o_container_block_alert > .o_alert_icon {
+				color: $o-box-info-color;
+			}
+		}
+
+		&.o_alert_box_type_tip {
+			border-color: $o-box-tip-color;
+			background-color: $o-box-tip-bg;
+
+			> .o_container_block > .o_container_block_alert > .o_alert_icon {
+				color: $o-box-tip-color;
+			}
+		}
+
+		&.o_alert_box_type_warning {
+			border-color: $o-box-warning-color;
+			background-color: $o-box-warning-bg;
+
+			> .o_container_block > .o_container_block_alert > .o_alert_icon {
+				color: $o-box-warning-color;
+			}
+		}
+
+		&.o_alert_box_type_error {
+			border-color: $o-box-error-color;
+			background-color: $o-box-error-bg;
+
+			> .o_container_block > .o_container_block_alert > .o_alert_icon {
+				color: $o-box-error-color;
+			}
+		}
+
+		&.o_alert_box_type_success {
+			border-color: $o-box-success-color;
+			background-color: $o-box-success-bg;
+
+			> .o_container_block > .o_container_block_alert > .o_alert_icon {
+				color: $o-box-success-color;
+			}
+		}
+
+		&.o_alert_box_color_lightgray {
 			border-color: $o-color-light-gray;
 			background-color: $o-color-light-gray-bg;
 
@@ -122,7 +176,7 @@
 			}
 		}
 
-		&.o_alert_box_type_info, &.o_alert_box_color_lightblue {
+		&.o_alert_box_color_lightblue {
 			border-color: $o-color-light-blue;
 			background-color: $o-color-light-blue-bg;
 
@@ -131,7 +185,7 @@
 			}
 		}
 
-		&.o_alert_box_type_tip, &.o_alert_box_color_purple {
+		&.o_alert_box_color_purple {
 			border-color: $o-color-purple;
 			background-color: $o-color-purple-bg;
 
@@ -140,7 +194,7 @@
 			}
 		}
 
-		&.o_alert_box_type_warning, &.o_alert_box_color_yellow {
+		&.o_alert_box_color_yellow {
 			border-color: $o-color-yellow;
 			background-color: $o-color-yellow-bg;
 
@@ -149,7 +203,7 @@
 			}
 		}
 
-		&.o_alert_box_type_error, &.o_alert_box_color_red {
+		&.o_alert_box_color_red {
 			border-color: $o-color-red;
 			background-color: $o-color-red-bg;
 
@@ -158,7 +212,7 @@
 			}
 		}
 
-		&.o_alert_box_type_success, &.o_alert_box_color_lightgreen {
+		&.o_alert_box_color_lightgreen {
 			border-color: $o-color-light-green;
 			background-color: $o-color-light-green-bg;
 
