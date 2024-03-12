@@ -25,6 +25,8 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.ContainerSettings;
+import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
+import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.jpa.CodePart;
 import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -203,7 +205,7 @@ public class FragmentRendererHelper {
 	}
 
 	public static boolean isCollapsible(PageElement pageElement) {
-		return isCollapsible(getAlertBoxSettings(pageElement));
+		return isCollapsible(getAlertBoxSettingsIfActive(pageElement));
 	}
 
 	public static boolean isCollapsible(ContainerSettings containerSettings) {
@@ -291,5 +293,28 @@ public class FragmentRendererHelper {
 			return layoutSettings;
 		}
 		return BlockLayoutSettings.getPredefined();
+	}
+
+	public static boolean needsSelectionFrame(PageElement element) {
+		if (element instanceof Image image) {
+			return needsSelectionFrame(image.getImageSettings());
+		}
+		if (element instanceof MediaPart mediaPart) {
+			if (mediaPart.getImageSettings() != null) {
+				return needsSelectionFrame(mediaPart.getImageSettings());
+			}
+		}
+		return false;
+	}
+
+	public static boolean needsSelectionFrame(ImageSettings imageSettings) {
+		if (imageSettings != null) {
+			ImageHorizontalAlignment alignment = imageSettings.getAlignment();
+			if (alignment != null) {
+				return alignment == ImageHorizontalAlignment.leftfloat ||
+						alignment == ImageHorizontalAlignment.rightfloat;
+			}
+		}
+		return false;
 	}
 }
