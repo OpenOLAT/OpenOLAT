@@ -1,13 +1,33 @@
 <div class="o_folder">
 	<div class="o_folder_navigation">
-		<div class="o_folder_view_selection">
+		<div class="o_folder_view_selection #if($searchView)o_folder_search_view #end">
+			<div class="btn-group o_folder_view_group">
+				$r.render("view.folder")
+				$r.render("view.file")
+			</div>
+			#if($r.available("search") && $r.visible("search"))
+				$r.render("search")
+			#end
+			#if($r.available("view.search") && $r.visible("view.search"))
+				$r.render("view.search")
+			#end
+			<div class="o_folder_quick_search">
+				#if($r.available("quicksearch") && $r.visible("quicksearch"))
+					<div class="input-group">
+						$r.render("quicksearch")
+						<span class="input-group-btn">$r.render("quickSearchButton")</span>
+					</div>
+				#end
+			</div>
 		</div>
 		<div class="o_folder_cmds">
 			#if($r.available("subscription") && $r.visible("subscription"))
-				$r.render("subscription")
+				<div class="o_folder_noti_toggle">
+					$r.render("subscription")
+				</div>
 			#end
 			#if($r.available("add") && $r.visible("add"))
-				<div class="btn-group">
+				<div class="btn-group o_folder_create_group">
 					$r.render("add")
 					$r.render("create.dropdown")
 				</div>

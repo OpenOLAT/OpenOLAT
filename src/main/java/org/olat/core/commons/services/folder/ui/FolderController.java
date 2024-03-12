@@ -64,6 +64,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
@@ -154,6 +155,11 @@ public class FolderController extends FormBasicController implements Activateabl
 	private static final String CMD_UNZIP = "unzip";
 	private static final String CMD_DELETE = "delete";
 	
+	private FormLink viewFolderLink;
+	private FormLink viewFileLink;
+	private FormLink viewSearchLink;
+	private TextElement quickSearchEl;
+	private FormLink quickSearchButton;
 	private FormLink uploadLink;
 	private DropdownItem createDropdown;
 	private FormLink createDocumentLink;
@@ -198,6 +204,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private final boolean webdavEnabled;
 	private boolean versionsEnabled;
 	private final Formatter formatter;
+	private FolderView folderView;
 	private int counter = 0;
 	
 	@Autowired
@@ -247,6 +254,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		initForm(ureq);
+		doOpenView(ureq, FolderView.folder);
 	}
 
 	@Override
@@ -255,6 +263,27 @@ public class FolderController extends FormBasicController implements Activateabl
 		formLayout.add(new ComponentWrapperElement(folderBreadcrumb));
 		folderBreadcrumb.setToolbarEnabled(false);
 		folderBreadcrumb.pushController(rootContainer.getName(), null, "/");
+		
+		viewFolderLink = uifactory.addFormLink("view.folder", formLayout, Link.BUTTON);
+		viewFolderLink.setIconLeftCSS("o_icon o_icon-lg o_filetype_folder");
+		viewFolderLink.setTitle(translate("view.folder.title"));
+		
+		viewFileLink = uifactory.addFormLink("view.file", formLayout, Link.BUTTON);
+		viewFileLink.setIconLeftCSS("o_icon o_icon-lg o_filetype_file");
+		viewFileLink.setTitle(translate("view.file.title"));
+		
+		viewSearchLink = uifactory.addFormLink("view.search", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
+		viewSearchLink.setIconLeftCSS("o_icon o_icon-lg o_icon_search");
+		viewSearchLink.setElementCssClass("o_folder_view_search");
+		viewSearchLink.setTitle(translate("view.search.title"));
+		
+		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
+		quickSearchEl.setPlaceholderKey("enter.search.term", null);
+		quickSearchEl.setDomReplacementWrapperRequired(false);
+		
+		quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
+		quickSearchButton.setDomReplacementWrapperRequired(false);
 		
 		uploadLink = uifactory.addFormLink("add", formLayout, Link.BUTTON);
 		uploadLink.setIconLeftCSS("o_icon o_icon_upload");
@@ -296,9 +325,6 @@ public class FolderController extends FormBasicController implements Activateabl
 		quotaBar = new QuotaBar("quota", null, getLocale());
 		formLayout.add(new ComponentWrapperElement(quotaBar));
 		updateQuotaBarUI(ureq);
-		
-		doShowFolderView(ureq);
-		updateCommandUI(ureq);
 	}
 
 	private void updateCommandUI(UserRequest ureq) {
@@ -329,8 +355,37 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		return false;
 	}
+	
+	private void doOpenView(UserRequest ureq, FolderView view) {
+		this.folderView = view;
+		
+		switch (view) {
+		case folder -> doOpenFolderView(ureq);
+		default -> doOpenFolderView(ureq);
+		}
+		
+		updateViewUI();
+	}
+	
+	private void updateViewUI() {
+		if (FolderView.folder == folderView) {
+			viewFolderLink.setElementCssClass("active");
+		} else {
+			viewFolderLink.setElementCssClass(null);
+		}
+		if (FolderView.file == folderView) {
+			viewFileLink.setElementCssClass("active");
+		} else {
+			viewFileLink.setElementCssClass(null);
+		}
+		
+		flc.contextPut("searchView", FolderView.search == folderView);
+		if (FolderView.search == folderView) {
+			quickSearchEl.setFocus(true);
+		}
+	}
 
-	private void doShowFolderView(UserRequest ureq) {
+	private void doOpenFolderView(UserRequest ureq) {
 		folderBreadcrumb.setVisible(true);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -377,6 +432,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		initBulkLinks();
 		
 		loadModel(ureq);
+	}
+	
+	private void doQuickSearch() {
+		
 	}
 
 	private void initFilters() {
@@ -628,10 +687,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		VFSItem vfsItem = rootContainer.resolve(path);
 		if (vfsItem instanceof VFSContainer) {
 			updateCurrentContainer(ureq, path);
-			doShowFolderView(ureq);
+			doOpenFolderView(ureq);
 		} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
 			updateCurrentContainer(ureq, vfsLeaf.getParentContainer());
-			doShowFolderView(ureq);
+			doOpenFolderView(ureq);
 		}
 	}
 	
@@ -680,6 +739,16 @@ public class FolderController extends FormBasicController implements Activateabl
 					doDownload(ureq, row);
 				}
 			}
+		} else if (viewFolderLink == source) {
+			doOpenView(ureq, FolderView.folder);
+		} else if (viewFileLink == source) {
+			doOpenView(ureq, FolderView.file);
+		} else if (viewSearchLink == source) {
+			doOpenView(ureq, FolderView.search);
+		} else if(quickSearchEl == source) {
+			doQuickSearch();
+		} else if(quickSearchButton == source) {
+			doQuickSearch();
 		} else if (uploadLink == source) {
 			doUpload(ureq);
 		} else if (createDocumentLink == source) {
