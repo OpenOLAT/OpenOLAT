@@ -285,6 +285,10 @@ img.b_float_left {
 	float: left;
 	margin: 0 2em 2em 0;
 }
+figure:has(img.b_float_left) {
+	float: left;
+	margin: 0 2em 0 0;
+}
 img.b_float_left_clear {
 	clear: both;
 	margin: 0 2em 2em 0;
@@ -294,21 +298,47 @@ img.b_float_right {
 	float: right;
 	margin: 0 0 2em 2em;
 }
+figure:has(img.b_float_right) {
+	float: right;
+	margin: 0 0 0 2em;
+}
 img.b_float_right_clear {
 	clear: both;
 	display: block;
 	margin: 0 0 2em auto;
+}
+figure:has(img.b_float_right_clear) {
+	clear: both;
+	display: block;
+	margin: 0;
+	img.b_float_right_clear {
+		margin: 0 0 0 auto;
+		display: block;
+	}
+	figcaption {
+		text-align: right;
+	}
 }
 img.b_float_left_clear_nomargin {
 	float: left;
 	display: block;
 	margin: 0 0 0 0;
 }
-img.b_centered {
+img.b_centered:not(figure) {
 	clear: both;
 	display: block;
 	margin: 0 auto 2em auto;
 }
+figure:has(img.b_centered) {
+	clear: both;
+	display: block;
+	margin: 0;
+	img.b_centered {
+		margin: 0 auto;
+		display: block;
+	}
+}
+
 img.b_circle {
 	border-radius: 50%;
 }
