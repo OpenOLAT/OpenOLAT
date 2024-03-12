@@ -504,8 +504,9 @@ public class MediaUIHelper {
 			boolean iconVisible = customVisible && checkBoxesEl.isKeySelected(withIconKey);
 			iconEl.setVisible(iconVisible);
 
-			boolean collapsibleVisible = visible && StringHelper.containsNonWhitespace(titleEl.getValue());
-			checkBoxesEl.setVisible(collapsibleKey, collapsibleVisible);
+			boolean collapsibleEnabled = StringHelper.containsNonWhitespace(titleEl.getValue());
+			checkBoxesEl.setVisible(collapsibleKey, visible);
+			checkBoxesEl.setEnabled(collapsibleKey, collapsibleEnabled);
 		}
 	}
 }
