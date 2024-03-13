@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.CodeSettings;
 import org.olat.modules.ceditor.model.ImageSettings;
@@ -41,21 +42,21 @@ public class BlockLayoutClassFactory {
 		if (settings == null) {
 			return getPredefinedCssClass(inForm);
 		}
-		return buildClass(settings.getLayoutSettings(), inForm);
+		return buildClass(settings.getLayoutSettings(), settings.getAlertBoxSettings(), inForm);
 	}
 
 	public static String buildClass(ImageSettings settings, boolean inForm) {
 		if (settings == null) {
 			return getPredefinedCssClass(inForm);
 		}
-		return buildClass(settings.getLayoutSettings(), inForm);
+		return buildClass(settings.getLayoutSettings(), settings.getAlertBoxSettings(), inForm);
 	}
 
 	public static String buildClass(MathSettings settings, boolean inForm) {
 		if (settings == null) {
 			return getPredefinedCssClass(inForm);
 		}
-		return buildClass(settings.getLayoutSettings(), inForm);
+		return buildClass(settings.getLayoutSettings(), settings.getAlertBoxSettings(), inForm);
 	}
 
 	public static String buildClass(PageElement pageElement, boolean inForm) {
@@ -79,21 +80,21 @@ public class BlockLayoutClassFactory {
 		if (settings == null) {
 			return getPredefinedCssClass(inForm);
 		}
-		return buildClass(settings.getLayoutSettings(), inForm);
+		return buildClass(settings.getLayoutSettings(), settings.getAlertBoxSettings(), inForm);
 	}
 
 	public static String buildClass(TableSettings settings, boolean inForm) {
 		if (settings == null) {
 			return getPredefinedCssClass(inForm);
 		}
-		return buildClass(settings.getLayoutSettings(), inForm);
+		return buildClass(settings.getLayoutSettings(), settings.getAlertBoxSettings(), inForm);
 	}
 
 	public static String buildClass(TextSettings settings, boolean inForm) {
 		if (settings == null) {
 			return getPredefinedCssClass(inForm);
 		}
-		return buildClass(settings.getLayoutSettings(), inForm);
+		return buildClass(settings.getLayoutSettings(), settings.getAlertBoxSettings(), inForm);
 	}
 
 	public static String buildClass(TitleSettings settings, boolean inForm) {
@@ -112,5 +113,10 @@ public class BlockLayoutClassFactory {
 			return getPredefinedCssClass(inForm);
 		}
 		return blockLayoutSettings.getCssClass(inForm);
+	}
+
+	private static String buildClass(BlockLayoutSettings blockLayoutSettings, AlertBoxSettings alertBoxSettings, boolean inForm) {
+		String prefix = alertBoxSettings != null && alertBoxSettings.isShowAlertBox() ? "o_alert_mode " : "";
+		return prefix + buildClass(blockLayoutSettings, inForm);
 	}
 }

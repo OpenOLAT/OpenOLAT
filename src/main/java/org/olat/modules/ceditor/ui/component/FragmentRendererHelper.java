@@ -144,10 +144,8 @@ public class FragmentRendererHelper {
 		boolean collapsible = showTitle && alertBoxSettings.isCollapsible();
 
 		if (showAlertHeader) {
-			sb.append("<div style='padding-top: 0; padding-bottom: 0;' class='o_container_block o_alert_header");
-			if (layoutSettings != null) {
-				sb.append(" ").append(layoutSettings.getCssClass(inForm));
-			}
+			sb.append("<div class='o_container_block o_alert_header");
+			sb.append(" o_in_form", inForm);
 			sb.append("' style='grid-column: 1 / -1;'>");
 			sb.append("<div class='o_container_block_alert'>");
 			if (showIcon) {
