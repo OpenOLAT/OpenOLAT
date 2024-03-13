@@ -19,7 +19,11 @@
  */
 package org.olat.core.commons.services.folder.ui;
 
+import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +43,10 @@ import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.folder.ui.FolderDataModel.FolderCols;
 import org.olat.core.commons.services.folder.ui.component.QuotaBar;
 import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ui.LicenseRenderer;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -151,6 +158,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private static final String FILTER_INITIALIZED_BY = "filter.initialized.by";
 	private static final String FILTER_MODIFIED_DATE = "filter.modified.date";
 	private static final String FILTER_TITLE = "filter.title";
+	private static final String FILTER_STATUS = "filter.status";
+	private static final String FILTER_LICENSE = "filter.license";
 	private static final String CMD_FOLDER = "folder";
 	private static final String CMD_PATH = "path";
 	private static final String CMD_DOWNLOAD = "download";
@@ -229,6 +238,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private WebDAVModule webDAVModule;
 	@Autowired
 	private LicenseModule licenseModule;
+	@Autowired
+	private LicenseService licenseService;
 	@Autowired
 	private FolderLicenseHandler licenseHandler;
 	@Autowired
@@ -393,6 +404,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		flc.contextPut("searchView", FolderView.search == folderView);
 		if (FolderView.search == folderView) {
 			quickSearchEl.setFocus(true);
+		} else {
+			quickSearchEl.setValue(null);
 		}
 	}
 
@@ -455,8 +468,12 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 	}
 	
-	private void doQuickSearch() {
-		
+	private void doQuickSearch(UserRequest ureq) {
+		if (FolderView.search != folderView) {
+			doOpenView(ureq, FolderView.search);
+		} else {
+			loadModel(ureq);
+		}
 	}
 
 	private void initFilters() {
@@ -488,6 +505,24 @@ public class FolderController extends FormBasicController implements Activateabl
 				translate("from"), translate("to"), getLocale()));
 		
 		filters.add(new FlexiTableTextFilter(translate("table.title"), FILTER_TITLE, true));
+		
+		SelectionValues statusValues = new SelectionValues();
+		statusValues.add(SelectionValues.entry(FolderStatus.locked.name(), translate("status.locked")));
+		statusValues.add(SelectionValues.entry(FolderStatus.editing.name(), translate("status.editing")));
+		statusValues.sort(SelectionValues.VALUE_ASC);
+		filters.add(new FlexiTableMultiSelectionFilter(translate("table.status"), FILTER_STATUS, statusValues, false));
+		
+		if (licensesEnabled) {
+			SelectionValues licenseValues = new SelectionValues();
+			List<LicenseType> activeLicenseTypes = licenseService.loadActiveLicenseTypes(licenseHandler);
+			activeLicenseTypes.forEach(licenseType -> {
+				licenseValues.add(entry(
+						String.valueOf(licenseType.getKey()),
+						StringHelper.escapeHtml(LicenseUIFactory.translate(licenseType, getLocale()))));
+			});
+			licenseValues.sort(VALUE_ASC);
+			filters.add(new FlexiTableMultiSelectionFilter(translate("table.license"), FILTER_LICENSE, licenseValues, false));
+		}
 		
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -559,38 +594,44 @@ public class FolderController extends FormBasicController implements Activateabl
 		List<FolderRow> rows = new ArrayList<>(items.size());
 		for (VFSItem vfsItem : items) {
 			FolderRow row = new FolderRow(vfsItem);
-			VFSMetadata metadata = metadatas.get(vfsItem.getName());
-			row.setMetadata(metadata);
+			VFSMetadata vfsMetadata = metadatas.get(vfsItem.getName());
+			row.setMetadata(vfsMetadata);
 			
 			String iconCssClass = vfsItem instanceof VFSContainer
 					? "o_filetype_folder"
 					: CSSHelper.createFiletypeIconCssClassFor(vfsItem.getName());
 			row.setIconCssClass(iconCssClass);
-			row.setTitle(FolderUIFactory.getDisplayName(vfsItem));
-			row.setCreatedBy(FolderUIFactory.getCreatedBy(userManager, vfsItem));
-			row.setLastModifiedDate(FolderUIFactory.getLastModifiedDate(vfsItem));
-			row.setLastModifiedBy(FolderUIFactory.getLastModifiedBy(userManager, vfsItem));
+			row.setTitle(FolderUIFactory.getDisplayName(vfsMetadata, vfsItem));
+			row.setCreatedBy(FolderUIFactory.getCreatedBy(userManager, vfsMetadata));
+			row.setLastModifiedDate(FolderUIFactory.getLastModifiedDate(vfsMetadata, vfsItem));
+			row.setLastModifiedBy(FolderUIFactory.getLastModifiedBy(userManager, vfsMetadata));
 			row.setModified(FolderUIFactory.getModified(formatter, row.getLastModifiedDate(), row.getLastModifiedBy()));
-			row.setFileSuffix(FolderUIFactory.getFileSuffix(vfsItem));
-			row.setTranslatedType(FolderUIFactory.getTranslatedType(getTranslator(), vfsItem));
-			row.setSize(FolderUIFactory.getSize(vfsItem));
+			row.setFileSuffix(FolderUIFactory.getFileSuffix(vfsMetadata, vfsItem));
+			row.setTranslatedType(FolderUIFactory.getTranslatedType(getTranslator(), vfsMetadata, vfsItem));
+			row.setSize(FolderUIFactory.getSize(vfsMetadata, vfsItem));
 			row.setTranslatedSize(FolderUIFactory.getTranslatedSize(getTranslator(), vfsItem, row.getSize()));
 			if (versionsEnabled) {
-				row.setVersions(FolderUIFactory.getVersions(vfsItem));
+				row.setVersions(FolderUIFactory.getVersions(vfsMetadata));
 			}
 			if (licensesEnabled) {
-				row.setLicense(vfsRepositoryService.getLicense(vfsItem.getMetaInfo()));
+				row.setLicense(vfsRepositoryService.getLicense(vfsMetadata));
+				if (row.getLicense() != null) {
+					row.setTranslatedLicense(LicenseUIFactory.translate(row.getLicense().getLicenseType(), getLocale()));
+				}
 			}
-			forgeStatus(row);
-			forgeThumbnail(ureq, row);
 			forgeTitleLink(row);
 			forgeFilePath(row);
-			forgeToolsLink(row);
+			forgeStatus(row);
 			
 			rows.add(row);
 		}
 		
 		applyFilters(rows);
+		rows.forEach(row -> {
+			forgeThumbnail(ureq, row);
+			forgeToolsLink(row);
+		});
+		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 		
@@ -626,11 +667,13 @@ public class FolderController extends FormBasicController implements Activateabl
 				labels = "<div class=\"o_folder_label o_folder_label_elements\"><i class=\"o_icon o_filetype_file\"> </i> " + row.getTranslatedSize() + "</div>";
 			}
 		} else {
-			LockInfo lock = vfsLockManager.getLock(row.getVfsItem());
+			LockInfo lock = vfsLockManager.getLockInfo(row.getVfsItem(), row.getMetadata());
 			if (lock != null && lock.getLockedBy() != null && lock.isCollaborationLock()) {
+				row.setStatus(FolderStatus.editing);
 				translatedStatus = translate("status.editing");
 				labels = "<div class=\"o_folder_label o_folder_label_editing\"><i class=\"o_icon o_icon_user\"> </i> " + translatedStatus + "</div>";
 			} else if (lock != null) {
+				row.setStatus(FolderStatus.locked);
 				translatedStatus = translate("status.locked");
 				labels = "<div class=\"o_folder_label o_folder_label_locked\"><i class=\"o_icon o_icon_locked\"> </i> " + translatedStatus + "</div>";
 			}
@@ -640,8 +683,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void forgeThumbnail(UserRequest ureq, FolderRow row) {
-		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf && isThumbnailAvailable(vfsLeaf)) {
-			VFSLeaf thumbnail = getThumbnail(vfsLeaf);
+		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf && isThumbnailAvailable(row.getMetadata(), vfsLeaf)) {
+			VFSLeaf thumbnail = getThumbnail(row.getMetadata(), vfsLeaf);
 			if (thumbnail != null) {
 				row.setThumbnailAvailable(true);
 				VFSMediaMapper thumbnailMapper = new VFSMediaMapper(thumbnail);
@@ -651,18 +694,18 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 	}
 	
-	private boolean isThumbnailAvailable(VFSLeaf vfsLeaf) {
-		if (isAudio(vfsLeaf)) {
+	private boolean isThumbnailAvailable(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
+		if (isAudio(vfsMetadata)) {
 			return true;
 		}
 		if (vfsLeaf.getSize() == 0) {
 			return false;
 		}
-		return vfsRepositoryService.isThumbnailAvailable(vfsLeaf, vfsLeaf.getMetaInfo());
+		return vfsRepositoryService.isThumbnailAvailable(vfsLeaf, vfsMetadata);
 	}
 
-	private VFSLeaf getThumbnail(VFSLeaf vfsLeaf) {
-		if (isAudio(vfsLeaf)) {
+	private VFSLeaf getThumbnail(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
+		if (isAudio(vfsMetadata)) {
 			return vfsRepositoryService.getLeafFor(avModule.getAudioWaveformUrl());
 		}
 		return FlexiTableRendererType.classic == tableEl.getRendererType()
@@ -670,8 +713,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				: vfsRepositoryService.getThumbnail(vfsLeaf, 1000, 650, false);
 	}
 	
-	private boolean isAudio(VFSLeaf vfsLeaf) {
-		if ("m4a".equalsIgnoreCase(FileUtils.getFileSuffix(vfsLeaf.getRelPath()))) {
+	private boolean isAudio(VFSMetadata vfsMetadata) {
+		if ("m4a".equalsIgnoreCase(FileUtils.getFileSuffix(vfsMetadata.getFilename()))) {
 			return true;
 		}
 		return false;
@@ -742,6 +785,19 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		}
 		
+		if (FolderView.search == folderView) {
+			String searchValue = quickSearchEl.getValue();
+			if (StringHelper.containsNonWhitespace(searchValue)) {
+				List<String> searchValues = Arrays.stream(searchValue.toLowerCase().split(" ")).filter(StringHelper::containsNonWhitespace).toList();
+				rows.removeIf(row -> 
+						containsNot(searchValues, row.getCreatedBy()) &&
+						containsNot(searchValues, row.getTitle()) &&
+						containsNot(searchValues, row.getDescription()) &&
+						containsNot(searchValues, row.getFilename())
+						);
+			}
+		}
+		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		if (filters == null || filters.isEmpty()) return;
 		
@@ -778,7 +834,28 @@ public class FolderController extends FormBasicController implements Activateabl
 					rows.removeIf(row -> row.getTitle() == null || row.getTitle().toLowerCase().indexOf(valueLower) < 0);
 				}
 			}
+			if (FILTER_STATUS == filter.getFilter()) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty()) {
+					rows.removeIf(row -> row.getStatus() == null || !values.contains(row.getStatus().name()));
+				}
+			}
+			if (FILTER_LICENSE == filter.getFilter()) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty()) {
+					List<Long> licenseTypeKeys = values.stream().map(Long::valueOf).toList();
+					rows.removeIf(row -> row.getLicense() == null || !licenseTypeKeys.contains(row.getLicense().getLicenseType().getKey()));
+				}
+			}
 		}
+	}
+
+	private boolean containsNot(List<String> searchValues, String candidate) {
+		if (StringHelper.containsNonWhitespace(candidate)) {
+			String candidateLowerCase = candidate.toLowerCase();
+			return searchValues.stream().noneMatch(searchValue -> candidateLowerCase.indexOf(searchValue) >= 0);
+		}
+		return true;
 	}
 
 	@Override
@@ -848,9 +925,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		} else if (viewSearchLink == source) {
 			doOpenView(ureq, FolderView.search);
 		} else if (quickSearchEl == source) {
-			doQuickSearch();
+			doQuickSearch(ureq);
 		} else if (quickSearchButton == source) {
-			doQuickSearch();
+			doQuickSearch(ureq);
 		} else if (uploadLink == source) {
 			doUpload(ureq);
 		} else if (createDocumentLink == source) {
@@ -1008,7 +1085,7 @@ public class FolderController extends FormBasicController implements Activateabl
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		doQuickSearch(ureq);
 	}
 	
 	public void updateCurrentContainer(UserRequest ureq, VFSContainer container) {
@@ -1512,7 +1589,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (isItemNotAvailable(ureq, row, true)) return;
 		
 		VFSItem vfsItem = row.getVfsItem();
-		if (!hasVersion(vfsItem) || !canEdit(vfsItem)) {
+		if (!hasVersion(row.getMetadata(), vfsItem) || !canEdit(vfsItem)) {
 			return;
 		}
 		
@@ -1528,10 +1605,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		cmc.activate();
 	}
 	
-	private boolean hasVersion(VFSItem vfsItem) {
+	private boolean hasVersion(VFSMetadata vfsMetadata, VFSItem vfsItem) {
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
 			if (vfsVersionModule.isEnabled() && vfsLeaf.canVersion() == VFSConstants.YES) {
-				return vfsLeaf.getMetaInfo().getRevisionNr() > 1;
+				return vfsMetadata.getRevisionNr() > 1;
 			}
 		}
 		return false;
@@ -1907,7 +1984,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				addLink("metadata", CMD_METADATA, "o_icon o_icon-fw o_icon_metadata");
 				divider = true;
 			}
-			if (hasVersion(vfsItem) && canEdit(vfsItem)) {
+			if (hasVersion(row.getMetadata(), vfsItem) && canEdit(vfsItem)) {
 				addLink("versions", CMD_VERSION, "o_icon o_icon-fw o_icon_version");
 				divider = true;
 			}

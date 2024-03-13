@@ -20,9 +20,13 @@
 package org.olat.core.commons.services.folder.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.folder.ui.FolderDataModel.FolderCols;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -137,14 +141,23 @@ public class FolderSelectionController extends FormBasicController {
 	
 	private void loadModel(UserRequest ureq) {
 		List<VFSItem> items = currentContainer.getItems(vfsFilter);
-		List<FolderRow> rows = new ArrayList<>(items.size());
 		
+		String relPath = currentContainer.getRelPath();
+		Map<String, VFSMetadata> metadatas = Collections.emptyMap();
+		if (relPath != null) {
+			List<VFSMetadata> m = vfsRepositoryService.getChildren(relPath);
+			metadatas = m.stream().collect(Collectors.toMap(VFSMetadata::getFilename, v -> v, (u, v) -> u));
+		}
+		
+		List<FolderRow> rows = new ArrayList<>(items.size());
 		for (VFSItem vfsItem : items) {
 			FolderRow row = new FolderRow(vfsItem);
+			VFSMetadata vfsMetadata = metadatas.get(vfsItem.getName());
+			row.setMetadata(vfsMetadata);
 			
-			row.setTitle(FolderUIFactory.getDisplayName(vfsItem));
-			row.setLastModifiedDate(FolderUIFactory.getLastModifiedDate(vfsItem));
-			row.setTranslatedType(FolderUIFactory.getTranslatedType(getTranslator(), vfsItem));
+			row.setTitle(FolderUIFactory.getDisplayName(vfsMetadata, vfsItem));
+			row.setLastModifiedDate(FolderUIFactory.getLastModifiedDate(vfsMetadata, vfsItem));
+			row.setTranslatedType(FolderUIFactory.getTranslatedType(getTranslator(), vfsMetadata, vfsItem));
 			
 			forgeThumbnail(ureq, row);
 			forgeTitleLink(row);

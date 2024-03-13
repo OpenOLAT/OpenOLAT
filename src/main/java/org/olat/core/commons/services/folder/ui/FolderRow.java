@@ -44,6 +44,7 @@ public class FolderRow {
 	private String modified;
 	private String fileSuffix;
 	private String translatedType;
+	private FolderStatus status;
 	private String translatedStatus;
 	private String labels;
 	private Long size;
@@ -51,6 +52,7 @@ public class FolderRow {
 	private String filePath;
 	private Long versions;
 	private License license;
+	private String translatedLicense;
 	private boolean thumbnailAvailable;
 	private String thumbnailUrl;
 	private FormItem titleItem;
@@ -72,6 +74,20 @@ public class FolderRow {
 
 	public void setMetadata(VFSMetadata metadata) {
 		this.metadata = metadata;
+	}
+	
+	public String getFilename() {
+		if (metadata != null) {
+			return metadata.getFilename();
+		}
+		if (vfsItem != null) {
+			vfsItem.getName();
+		}
+		return null;
+	}
+	
+	public String getDescription() {
+		return metadata != null? metadata.getComment(): null;
 	}
 
 	public String getIconCssClass() {
@@ -138,6 +154,14 @@ public class FolderRow {
 		this.translatedType = translatedType;
 	}
 
+	public FolderStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(FolderStatus status) {
+		this.status = status;
+	}
+
 	public String getTranslatedStatus() {
 		return translatedStatus;
 	}
@@ -192,6 +216,14 @@ public class FolderRow {
 	
 	public void setLicense(License license) {
 		this.license = license;
+	}
+
+	public String getTranslatedLicense() {
+		return translatedLicense;
+	}
+
+	public void setTranslatedLicense(String translatedLicense) {
+		this.translatedLicense = translatedLicense;
 	}
 
 	public boolean isThumbnailAvailable() {

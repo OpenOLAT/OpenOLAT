@@ -43,8 +43,7 @@ import org.olat.user.UserManager;
  */
 public class FolderUIFactory {
 	
-	public static String getDisplayName(VFSItem vfsItem) {
-		VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
+	public static String getDisplayName(VFSMetadata vfsMetadata, VFSItem vfsItem) {
 		if (vfsMetadata != null) {
 			String title = vfsMetadata.getTitle();
 			if (StringHelper.containsNonWhitespace(title)) {
@@ -55,21 +54,17 @@ public class FolderUIFactory {
 		return vfsItem.getName();
 	}
 
-	public static String getCreatedBy(UserManager userManager, VFSItem vfsItem) {
-		if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
-			if (vfsMetadata != null) {
-				Identity fileInitializedBy = vfsMetadata.getFileInitializedBy();
-				if (fileInitializedBy != null) {
-					return userManager.getUserDisplayName(fileInitializedBy.getKey());
-				}
+	public static String getCreatedBy(UserManager userManager, VFSMetadata vfsMetadata) {
+		if (vfsMetadata != null && !vfsMetadata.isDirectory()) {
+			Identity fileInitializedBy = vfsMetadata.getFileInitializedBy();
+			if (fileInitializedBy != null) {
+				return userManager.getUserDisplayName(fileInitializedBy.getKey());
 			}
 		}
 		return null;
 	}
 
-	public static Date getLastModifiedDate(VFSItem vfsItem) {
-		VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
+	public static Date getLastModifiedDate(VFSMetadata vfsMetadata, VFSItem vfsItem) {
 		if (vfsMetadata != null) {
 			Date fileLastModified = vfsMetadata.getFileLastModified();
 			if (fileLastModified != null) {
@@ -79,8 +74,7 @@ public class FolderUIFactory {
 		return new Date(vfsItem.getLastModified());
 	}
 
-	public static String getLastModifiedBy(UserManager userManager, VFSItem vfsItem) {
-		VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
+	public static String getLastModifiedBy(UserManager userManager, VFSMetadata vfsMetadata) {
 		if (vfsMetadata != null) {
 			Identity fileLastModifiedBy = vfsMetadata.getFileLastModifiedBy();
 			if (fileLastModifiedBy != null) {
@@ -101,9 +95,8 @@ public class FolderUIFactory {
 		return modified;
 	}
 
-	private static String getFilename(VFSLeaf vfsLeaf) {
+	private static String getFilename(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
 		String filename = null;
-		VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
 		if (vfsMetadata != null) {
 			filename = vfsMetadata.getFilename();
 		}
@@ -118,9 +111,9 @@ public class FolderUIFactory {
 		return filename;
 	}
 
-	public static String getFileSuffix(VFSItem vfsItem) {
+	public static String getFileSuffix(VFSMetadata vfsMetadata, VFSItem vfsItem) {
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			String filename = getFilename(vfsLeaf);
+			String filename = getFilename(vfsMetadata, vfsLeaf);
 			if (StringHelper.containsNonWhitespace(filename)) {
 				String fileSuffix = FileUtils.getFileSuffix(filename);
 				if (StringHelper.containsNonWhitespace(fileSuffix)) {
@@ -131,11 +124,11 @@ public class FolderUIFactory {
 		return null;
 	}
 
-	public static String getTranslatedType(Translator translator, VFSItem vfsItem) {
+	public static String getTranslatedType(Translator translator, VFSMetadata vfsMetadata, VFSItem vfsItem) {
 		if (vfsItem instanceof VFSContainer vfsContainer) {
 			return translator.translate("type.container");
 		} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			String filename = getFilename(vfsLeaf);
+			String filename = getFilename(vfsMetadata, vfsLeaf);
 			if (StringHelper.containsNonWhitespace(filename)) {
 				String fileSuffix = FileUtils.getFileSuffix(filename);
 				if (StringHelper.containsNonWhitespace(fileSuffix)) {
@@ -147,11 +140,10 @@ public class FolderUIFactory {
 		return null;
 	}
 
-	public static Long getSize(VFSItem vfsItem) {
+	public static Long getSize(VFSMetadata vfsMetadata, VFSItem vfsItem) {
 		if (vfsItem instanceof VFSContainer vfsContainer) {
 			return Long.valueOf(vfsContainer.getItems(new VFSSystemItemFilter()).size());
 		} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
 			if (vfsMetadata != null) {
 				return vfsMetadata.getFileSize();
 			}
@@ -160,23 +152,19 @@ public class FolderUIFactory {
 	}
 
 	public static String getTranslatedSize(Translator translator, VFSItem vfsItem, Long size) {
-		if (vfsItem instanceof VFSContainer vfsContainer) {
-			int numFiles = vfsContainer.getItems(new VFSSystemItemFilter()).size();
-			return translator.translate("elements", String.valueOf(numFiles));
-		} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			if (size != null) {
+		if (size != null) {
+			if (vfsItem instanceof VFSContainer vfsContainer) {
+				return translator.translate("elements", String.valueOf(size));
+			} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
 				return Formatter.formatBytes(size);
+				}
 			}
-		}
 		return null;
 	}
 
-	public static Long getVersions(VFSItem vfsItem) {
-		if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
-			if (vfsMetadata != null) {
-				return vfsMetadata.getRevisionNr();
-			}
+	public static Long getVersions(VFSMetadata vfsMetadata) {
+		if (vfsMetadata != null && !vfsMetadata.isDirectory()) {
+			return vfsMetadata.getRevisionNr();
 		}
 		return null;
 	}

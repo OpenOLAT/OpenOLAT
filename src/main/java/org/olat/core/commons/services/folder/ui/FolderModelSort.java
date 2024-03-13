@@ -48,6 +48,7 @@ public class FolderModelSort extends SortableFlexiTableModelDelegate<FolderRow> 
 			case title: Collections.sort(rows, (r1, r2) -> compareString(r1.getTitle(), r2.getTitle())); break;
 			case status: Collections.sort(rows, (r1, r2) -> compareString(r1.getTranslatedStatus(), r2.getTranslatedStatus())); break;
 			case path: Collections.sort(rows, (r1, r2) -> compareString(r1.getFilePath(), r2.getFilePath())); break;
+			case license: Collections.sort(rows, (r1, r2) -> compareString(r1.getTranslatedLicense(), r2.getTranslatedLicense())); break;
 			default: {
 				super.sort(rows);
 			}

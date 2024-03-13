@@ -252,14 +252,8 @@ public class VFSLockManagerImpl implements VFSLockManager {
     	return lockInfo;
 	}
 	
-	/**
-	 * The method doesn't reload the metadata if they are specified.
-	 * 
-	 * @param item The file
-	 * @param metadata
-	 * @return The lock information or null
-	 */
-	private LockInfo getLockInfo(VFSItem item, VFSMetadata metadata) {
+	@Override
+	public LockInfo getLockInfo(VFSItem item, VFSMetadata metadata) {
 		final File file = extractFile(item);
 		if(file == null) {
 			log.debug("Lock only real file: {}", item);

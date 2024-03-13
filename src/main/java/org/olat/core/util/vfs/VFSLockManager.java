@@ -71,6 +71,15 @@ public interface VFSLockManager {
 	public LockInfo getLock(VFSItem item);
 	
 	/**
+	 * The method doesn't reload the metadata if they are specified.
+	 * 
+	 * @param item The file
+	 * @param metadata
+	 * @return The lock information or null
+	 */
+	public LockInfo getLockInfo(VFSItem item, VFSMetadata metadata);
+	
+	/**
 	 * 
 	 * @param item
 	 * @param identity
