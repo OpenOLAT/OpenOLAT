@@ -42,12 +42,10 @@ public class DayUnit extends UnitCB {
 		super();
 	}
 
-	/**
-	 * @see com.neemsoft.jmep.UnitCB#apply(java.lang.Object)
-	 */
+	@Override
 	public Object apply(Object arg0) {
-		if (arg0 instanceof Integer) return new Double(((Integer) arg0).intValue() * DAYMILLIS);
-		if (arg0 instanceof Double) return new Double(((Double) arg0).doubleValue() * DAYMILLIS);
+		if (arg0 instanceof Integer) return Double.valueOf(((Integer) arg0).intValue() * DAYMILLIS);
+		if (arg0 instanceof Double) return Double.valueOf(((Double) arg0).doubleValue() * DAYMILLIS);
 		return null;
 	}
 

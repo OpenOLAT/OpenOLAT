@@ -39,7 +39,7 @@ public class MailContextShortName implements ShortName {
 	private String contextName;
 	
 	public MailContextShortName(String contextName) {
-		this(contextName, new HashSet<String>());
+		this(contextName, new HashSet<>());
 	}
 	
 	public MailContextShortName(String contextName, Set<String> businessPaths) {

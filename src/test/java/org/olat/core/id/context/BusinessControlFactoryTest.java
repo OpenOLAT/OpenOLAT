@@ -47,11 +47,11 @@ public class BusinessControlFactoryTest {
 		Assert.assertNotNull(entries.get(1).getOLATResourceable());
 		Assert.assertNotNull(entries.get(2).getOLATResourceable());
 		
-		Assert.assertEquals(new Long(0l), entries.get(0).getOLATResourceable().getResourceableId());
+		Assert.assertEquals(Long.valueOf(0l), entries.get(0).getOLATResourceable().getResourceableId());
 		Assert.assertEquals("QPool", entries.get(0).getOLATResourceable().getResourceableTypeName());
-		Assert.assertEquals(new Long(340819968l), entries.get(1).getOLATResourceable().getResourceableId());
+		Assert.assertEquals(Long.valueOf(340819968l), entries.get(1).getOLATResourceable().getResourceableId());
 		Assert.assertEquals("QItemCollection", entries.get(1).getOLATResourceable().getResourceableTypeName());
-		Assert.assertEquals(new Long(294649898l), entries.get(2).getOLATResourceable().getResourceableId());
+		Assert.assertEquals(Long.valueOf(294649898l), entries.get(2).getOLATResourceable().getResourceableId());
 		Assert.assertEquals("QuestionItem", entries.get(2).getOLATResourceable().getResourceableTypeName());
 	}
 	
@@ -64,7 +64,7 @@ public class BusinessControlFactoryTest {
 		Assert.assertNotNull(entries.get(0).getOLATResourceable());
 		
 		OLATResourceable ores = entries.get(0).getOLATResourceable();
-		Assert.assertEquals(new Long(0), ores.getResourceableId());
+		Assert.assertEquals(Long.valueOf(0), ores.getResourceableId());
 		Assert.assertEquals("path=/Pflanzenschutz/Gesetzliches", ores.getResourceableTypeName());
 	}
 	
@@ -77,7 +77,7 @@ public class BusinessControlFactoryTest {
 		Assert.assertNotNull(entries.get(0).getOLATResourceable());
 		
 		OLATResourceable ores = entries.get(0).getOLATResourceable();
-		Assert.assertEquals(new Long(0), ores.getResourceableId());
+		Assert.assertEquals(Long.valueOf(0), ores.getResourceableId());
 		Assert.assertEquals("path=/Pflanzenschutz/Gesetzliches", ores.getResourceableTypeName());
 	}
 	
@@ -93,11 +93,11 @@ public class BusinessControlFactoryTest {
 		
 		//check every value
 		Assert.assertEquals("RepositoryEntry", entries.get(0).getOLATResourceable().getResourceableTypeName());
-		Assert.assertEquals(new Long(408649729l), entries.get(0).getOLATResourceable().getResourceableId());
+		Assert.assertEquals(Long.valueOf(408649729l), entries.get(0).getOLATResourceable().getResourceableId());
 		Assert.assertEquals("CourseNode", entries.get(1).getOLATResourceable().getResourceableTypeName());
-		Assert.assertEquals(new Long(93480746431333l), entries.get(1).getOLATResourceable().getResourceableId());
+		Assert.assertEquals(Long.valueOf(93480746431333l), entries.get(1).getOLATResourceable().getResourceableId());
 		Assert.assertEquals("path=/Dru34567/Test: double point", entries.get(2).getOLATResourceable().getResourceableTypeName());
-		Assert.assertEquals(new Long(0l), entries.get(2).getOLATResourceable().getResourceableId());
+		Assert.assertEquals(Long.valueOf(0l), entries.get(2).getOLATResourceable().getResourceableId());
 	}
 
 }

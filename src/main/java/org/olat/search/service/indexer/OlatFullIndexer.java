@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.LucenePackage;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -58,12 +59,11 @@ import org.apache.lucene.index.LogMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchService;
-import org.olat.search.model.OlatDocument;
+import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
 /**
@@ -262,13 +262,13 @@ public class OlatFullIndexer {
 			}
 			
 			log.info("Close index writer executor");
-			fullIndexerStatus.setIndexSize(indexWriter.maxDoc());
+			fullIndexerStatus.setIndexSize(indexWriter.getDocStats().maxDoc);
 			//shutdown the index writer thread
 			indexerWriterExecutor.submit(new CloseIndexCallable());
 			indexerWriterExecutor.shutdown();
 			indexerWriterExecutor.awaitTermination(1, TimeUnit.MINUTES);
 		} catch (IOException e) {
-			log.warn("Can not create IndexWriter, indexname=" + tempIndexPath, e);
+			log.warn("Can not create IndexWriter, indexname={}", tempIndexPath, e);
 		} finally {
 			DBFactory.getInstance().commitAndCloseSession();
 			log.debug("doIndex: commit & close session");
@@ -299,12 +299,12 @@ public class OlatFullIndexer {
 	 */
 	public void run() {
 		try {
-			log.info("full indexing starts... Lucene-version:" + LucenePackage.get().getImplementationVersion());
+			log.info("full indexing starts... Lucene-version:{}", LucenePackage.get().getImplementationVersion());
 			fullIndexerStatus.indexingStarted();
 			doIndex();
 			index.indexingIsDone();
 			fullIndexerStatus.indexingFinished();
-			log.info("full indexing done in " + fullIndexerStatus.getIndexingTime() + "ms");
+			log.info("full indexing done in {}ms", fullIndexerStatus.getIndexingTime());
 			
 			//created because the index is deleted and copied
 			IndexerEvent event = new IndexerEvent(IndexerEvent.INDEX_CREATED);
@@ -312,22 +312,22 @@ public class OlatFullIndexer {
 			
 			//OLAT-5630 - dump more infos about the indexer run - for analysis later
 			FullIndexerStatus status = getStatus();
-			log.info("full indexing summary: started:           "+status.getFullIndexStartedAt());
-			log.info("full indexing summary: counter:           "+status.getDocumentCount());
-			log.info("full indexing summary: index.per.minute:  "+status.getIndexPerMinute());
-			log.info("full indexing summary: finished:          "+status.getLastFullIndexDateString());
-			log.info("full indexing summary: time:              "+status.getIndexingTime()+" ms");
-			log.info("full indexing summary: size:              "+status.getIndexSize());
+			log.info("full indexing summary: started:           {}", status.getFullIndexStartedAt());
+			log.info("full indexing summary: counter:           {}", status.getDocumentCount());
+			log.info("full indexing summary: index.per.minute:  {}", status.getIndexPerMinute());
+			log.info("full indexing summary: finished:          {}", status.getLastFullIndexDateString());
+			log.info("full indexing summary: time:              {}", status.getIndexingTime()+" ms");
+			log.info("full indexing summary: size:              {}", status.getIndexSize());
 			
-			log.info("full indexing summary: document counters: "+status.getDocumentCounters());
-			log.info("full indexing summary: file type counters:"+status.getFileTypeCounters());
-			log.info("full indexing summary: excluded counter:  "+status.getExcludedDocumentCount());
+			log.info("full indexing summary: document counters: {}", status.getDocumentCounters());
+			log.info("full indexing summary: file type counters:{}", status.getFileTypeCounters());
+			log.info("full indexing summary: excluded counter:  {}", status.getExcludedDocumentCount());
 
 		} catch(InterruptedException iex) {
-			log.info("FullIndexer was interrupted ;" + iex.getMessage());
+			log.info("FullIndexer was interrupted ;{}", iex.getMessage());
 		} catch(Throwable ex) {
 			try {
-				log.error("Error during full-indexing:" + ex.getMessage() , ex);
+				log.error("Error during full-indexing:{}", ex.getMessage(), ex);
 			} catch (NullPointerException nex) {
 				// no logging available (shut down) => do nothing
 			}
@@ -373,7 +373,7 @@ public class OlatFullIndexer {
 	}
 	
 	private void incrementFileTypeCounter(Document document) {
-		String fileType = document.get(OlatDocument.FILETYPE_FIELD_NAME);
+		String fileType = document.get(AbstractOlatDocument.FILETYPE_FIELD_NAME);
 		if ( (fileType != null) && (!fileType.equals(""))) {
 			int intValue = 0;
 			if (fileTypeCounters.containsKey(fileType)) {
@@ -386,7 +386,7 @@ public class OlatFullIndexer {
 	}
 
 	private void incrementDocumentTypeCounter(Document document) {
-		String documentType = document.get(OlatDocument.DOCUMENTTYPE_FIELD_NAME);
+		String documentType = document.get(AbstractOlatDocument.DOCUMENTTYPE_FIELD_NAME);
 		int intValue = 0;
 		if (documentCounters.containsKey(documentType)) {
 		  Integer docCounter = documentCounters.get(documentType);
@@ -472,7 +472,7 @@ public class OlatFullIndexer {
 				sleepDocumentCounter = 0;
 				Thread.sleep(indexInterval);
 			} else if (stopIndexing) {
-				throw new InterruptedException("Do stop indexing at element=" + indexWriter.maxDoc());
+				throw new InterruptedException("Do stop indexing at element=" + indexWriter.getDocStats().maxDoc);
 			}
 			countIndexPerMinute();
 			return Boolean.TRUE;
@@ -487,8 +487,7 @@ public class OlatFullIndexer {
         private final String namePrefix;
 
         IndexerThreadFactory(String prefix) {
-            SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            group = Thread.currentThread().getThreadGroup();
             namePrefix = "index-" + prefix + "-" +
                           poolNumber.getAndIncrement() +
                          "-thread-";

@@ -118,7 +118,7 @@ public class OAICompiledRequest {
     }
 
     private Matcher<String> in(final String... possibilities) {
-        return new TypeSafeMatcher<String>() {
+        return new TypeSafeMatcher<>() {
             @Override
             protected boolean matchesSafely(String item) {
                 for (String possibility : possibilities)

@@ -85,7 +85,7 @@ public class Wiki implements WikiContainer, Serializable {
 	
 	protected Wiki(VFSContainer wikiRootContainer) {
 		if(wikiRootContainer == null) throw new AssertException("null values are not allowed for the wiki constructor!");
-		wikiPages = Collections.synchronizedMap(new HashMap<String, WikiPage>());
+		wikiPages = Collections.synchronizedMap(new HashMap<>());
 		this.diffService = WikiManager.getInstance().getDiffService();
 		versionsContainer = VFSManager.getOrCreateContainer(wikiRootContainer, WikiManager.VERSION_FOLDER_NAME);
 		pageContainer = VFSManager.getOrCreateContainer(wikiRootContainer, WikiManager.WIKI_RESOURCE_FOLDER_NAME);

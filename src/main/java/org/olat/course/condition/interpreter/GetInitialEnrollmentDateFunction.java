@@ -55,9 +55,7 @@ public class GetInitialEnrollmentDateFunction extends AbstractFunction {
 		super(userCourseEnv);
 	}
 
-	/**
-	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
-	 */
+	@Override
 	public Object call(Object[] inStack) {
 		/*
 		 * argument check
@@ -105,12 +103,13 @@ public class GetInitialEnrollmentDateFunction extends AbstractFunction {
 			return Double.valueOf(firstTimeMillis);
 		} else {
 			// what to do in case of no date available??? -> return date in the future
-			return new Double(Double.POSITIVE_INFINITY);
+			return Double.valueOf(Double.POSITIVE_INFINITY);
 		}
 	}
 
+	@Override
 	protected Object defaultValue() {
-		return new Double(Double.MIN_VALUE);
+		return Double.valueOf(Double.MIN_VALUE);
 	}
 
 }

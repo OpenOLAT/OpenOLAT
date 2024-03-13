@@ -99,11 +99,9 @@ public class GetAttemptsFunction extends AbstractFunction {
 		return am.getNodeAttempts(node, identity);
 	}
 
-	/**
-	 * @see org.olat.course.condition.interpreter.AbstractFunction#defaultValue()
-	 */
+	@Override
 	protected Object defaultValue() {
-		return new Integer(Integer.MIN_VALUE);
+		return Integer.valueOf(Integer.MIN_VALUE);
 	}
 
 }

@@ -79,7 +79,7 @@ public class DocumentPoolManagerImpl implements DocumentPoolManager {
 		List<Long> competenceKeys = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Long.class)
 			.setFlushMode(FlushModeType.COMMIT)//don't flush for this query
-			.setParameter("taxonomyKey", new Long(taxonomyKey))
+			.setParameter("taxonomyKey", Long.valueOf(taxonomyKey))
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("lostFoundIds", taxonomyModule.getLostAndFoundsIdentifiers())
 			.setFirstResult(0)

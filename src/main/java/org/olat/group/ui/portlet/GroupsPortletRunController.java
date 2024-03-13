@@ -350,7 +350,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 
 		@Override
 		public Object createCopyWithEmptyList() {
-			return new GroupTableDataModel(new ArrayList<PortletEntry<BusinessGroupEntry>>());
+			return new GroupTableDataModel(new ArrayList<>());
 		}
   }
 
@@ -394,7 +394,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 
 		@Override
 		public GroupsManualSortingTableDataModel createCopyWithEmptyList() {
-			return new GroupsManualSortingTableDataModel(new ArrayList<PortletEntry<BusinessGroupEntry>>());
+			return new GroupsManualSortingTableDataModel(new ArrayList<>());
 		}
 	}
 	

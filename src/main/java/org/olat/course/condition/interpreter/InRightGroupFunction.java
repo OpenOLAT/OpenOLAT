@@ -97,7 +97,7 @@ public class InRightGroupFunction extends AbstractFunction {
 		
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
 		if(StringHelper.isLong(groupName)) {
-			Long groupKey = new Long(groupName);
+			Long groupKey = Long.valueOf(groupName);
 			return cgm.isIdentityInGroup(ident, groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 		}
 

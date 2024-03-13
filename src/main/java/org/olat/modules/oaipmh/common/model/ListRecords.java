@@ -18,7 +18,7 @@ import org.olat.modules.oaipmh.common.xml.XmlWriter;
 
 public class ListRecords implements Verb {
 
-	protected List<Record> records = new ArrayList<Record>();
+	protected List<Record> records = new ArrayList<>();
 	protected ResumptionToken resumptionToken;
 
 	public List<Record> getRecords() {

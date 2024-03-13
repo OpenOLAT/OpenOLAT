@@ -185,11 +185,11 @@ public class LanguageIdentifier {
                 NGramProfile profile = ngrams[j].getProfile();
                 Float pScore = scores.get(profile);
                 if (pScore == null) {
-                    pScore = new Float(0);
+                    pScore = Float.valueOf(0);
                 }
                 float plScore = pScore.floatValue();
                 plScore += ngrams[j].getFrequency() + searched.getFrequency();
-                scores.put(profile, new Float(plScore));
+                scores.put(profile, Float.valueOf(plScore));
                 if (plScore > topscore) {
                     topscore = plScore;
                     lang = profile.getName();

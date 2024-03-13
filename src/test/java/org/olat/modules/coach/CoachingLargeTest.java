@@ -221,7 +221,7 @@ public class CoachingLargeTest extends OlatTestCase {
 		
 		repositoryService.addRole(coach, re, GroupRoles.coach.name());
 		if(!coachToCourseMap.containsKey(coachKey)) {
-			coachToCourseMap.put(coachKey, new ArrayList<Long>());
+			coachToCourseMap.put(coachKey, new ArrayList<>());
 		}
 		coachToCourseMap.get(coachKey).add(re.getKey());
 	}
@@ -231,13 +231,13 @@ public class CoachingLargeTest extends OlatTestCase {
 		
 		businessGroupRelationDao.addRole(coach, group, GroupRoles.coach.name());
 		if(!coachToCourseMap.containsKey(coachKey)) {
-			coachToCourseMap.put(coachKey, new ArrayList<Long>());
+			coachToCourseMap.put(coachKey, new ArrayList<>());
 		}
 		coachToCourseMap.get(coachKey).add(re.getKey());
 		
 		//GROUPS
 		if(!coachToGroupCourseMap.containsKey(coachKey)) {
-			coachToGroupCourseMap.put(coachKey, new ArrayList<Long>());
+			coachToGroupCourseMap.put(coachKey, new ArrayList<>());
 		}
 		coachToGroupCourseMap.get(coachKey).add(group.getKey());
 	}
@@ -245,7 +245,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	private void addStudentToCourse(Identity student, RepositoryEntry re) {
 		repositoryService.addRole(student, re, GroupRoles.participant.name());
 		if(!studentToCourseMap.containsKey(student)) {
-			studentToCourseMap.put(student, new ArrayList<RepositoryEntry>());
+			studentToCourseMap.put(student, new ArrayList<>());
 		}
 		studentToCourseMap.get(student).add(re);
 	}
@@ -253,7 +253,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	private void addStudentToGroupCourse(Identity student, BusinessGroup group, RepositoryEntry re) {
 		businessGroupRelationDao.addRole(student, group, GroupRoles.participant.name());
 		if(!studentToCourseMap.containsKey(student)) {
-			studentToCourseMap.put(student, new ArrayList<RepositoryEntry>());
+			studentToCourseMap.put(student, new ArrayList<>());
 		}
 		studentToCourseMap.get(student).add(re);
 	}

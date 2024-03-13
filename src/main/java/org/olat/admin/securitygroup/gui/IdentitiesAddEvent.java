@@ -53,7 +53,7 @@ public class IdentitiesAddEvent extends Event {
 	
 
 	public IdentitiesAddEvent(Identity addIdentity) {
-		this(new ArrayList<Identity>());
+		this(new ArrayList<>());
 		addIdentities.add(addIdentity);
 	}
 	

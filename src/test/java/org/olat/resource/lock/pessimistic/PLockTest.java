@@ -106,7 +106,7 @@ public class PLockTest extends OlatTestCase {
 		assertNotNull(pc);
 		dbInstance.closeSession();
 
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
 		final CountDownLatch finishCount = new CountDownLatch(2);
 
 		// thread 1
@@ -198,7 +198,7 @@ public class PLockTest extends OlatTestCase {
 				PLock p2 = pessimisticLockManager.findOrPersistPLock("blublu");
 				assertNotNull(p2);
 				long p2Acquired = System.nanoTime();
-				holder.add(new Long(p2Acquired));
+				holder.add(Long.valueOf(p2Acquired));
 				dbInstance.closeSession();
 				
 			}}).start();
@@ -238,7 +238,7 @@ public class PLockTest extends OlatTestCase {
 				PLock p2 = pessimisticLockManager.findOrPersistPLock("blibli");
 				assertNotNull(p2);
 				long p2Acquired = System.nanoTime();
-				holder.add(new Long(p2Acquired));
+				holder.add(Long.valueOf(p2Acquired));
 				dbInstance.closeSession();
 				
 			}}).start();
@@ -283,7 +283,7 @@ public class PLockTest extends OlatTestCase {
 		 */
 		
 	
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
 		final CountDownLatch finishCount = new CountDownLatch(2);
 		// t1
 		new Thread(new Runnable() {

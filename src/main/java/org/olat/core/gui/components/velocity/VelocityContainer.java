@@ -163,14 +163,13 @@ public class VelocityContainer extends Container implements VelocityComponent {
 	 * @deprecated Rather use panels to swap views
 	 * @param page The page to set
 	 */
+	@Deprecated
 	public void setPage(String page) {
 		this.page = page.intern(); //prevent thousands of same strings
 		setDirty(true);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
-	 */
+	@Override
 	public String getExtendedDebugInfo() {
 		return "page:"+page+" "+super.getExtendedDebugInfo();
 	}

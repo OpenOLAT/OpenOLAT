@@ -101,7 +101,7 @@ public class UserEfficiencyStatementTableDataModel implements TableDataModel<Use
 
 	@Override
 	public UserEfficiencyStatementTableDataModel createCopyWithEmptyList() {
-		return new UserEfficiencyStatementTableDataModel(new ArrayList<UserEfficiencyStatement>());
+		return new UserEfficiencyStatementTableDataModel(new ArrayList<>());
 	}
 	
 	public static enum Columns {

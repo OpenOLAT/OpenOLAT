@@ -72,7 +72,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 		Taxonomy taxonomy = null;
 		String taxonomyTreeKey = documentPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyTreeKey)) {
-			taxonomy = taxonomyDao.loadByKey(new Long(taxonomyTreeKey));
+			taxonomy = taxonomyDao.loadByKey(Long.valueOf(taxonomyTreeKey));
 		}
 		
 		if(taxonomy == null) {
@@ -260,7 +260,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 	private Taxonomy getDocumentPoolTaxonomy() {
 		String taxonomyTreeKey = documentPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyTreeKey)) {
-			return taxonomyDao.loadByKey(new Long(taxonomyTreeKey));
+			return taxonomyDao.loadByKey(Long.valueOf(taxonomyTreeKey));
 		}
 		return null;
 	}

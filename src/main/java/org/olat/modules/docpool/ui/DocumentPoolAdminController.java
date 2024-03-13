@@ -149,7 +149,7 @@ public class DocumentPoolAdminController extends BasicController implements Acti
 		
 		if(StringHelper.containsNonWhitespace(docPoolModule.getTaxonomyTreeKey())) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Types"), null);
-			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(new Long(docPoolModule.getTaxonomyTreeKey())));
+			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(Long.valueOf(docPoolModule.getTaxonomyTreeKey())));
 			permissionsCtrl = new DocumentPoolAdminPermissionsController(ureq, bwControl, taxonomy);
 			listenTo(permissionsCtrl);
 			mainVC.put("segmentCmp", permissionsCtrl.getInitialComponent());

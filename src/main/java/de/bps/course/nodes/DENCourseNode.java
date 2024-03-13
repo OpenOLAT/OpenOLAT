@@ -22,7 +22,6 @@ package de.bps.course.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -149,7 +148,7 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 		cpm.deleteNodeProperties(this, CONF_CANCEL_ENROLL_ENABLED);
 		DENManager denManager = DENManager.getInstance();
 		//empty List as first argument, so all dates for this course node are going to delete
-		denManager.persistDENSettings(new ArrayList<KalendarEvent>(), course, this);
+		denManager.persistDENSettings(new ArrayList<>(), course, this);
 	}
 
 }

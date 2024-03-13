@@ -76,6 +76,7 @@ public interface Coordinator {
 	 * If you like to have a service which only runs on one node there is a concept called singleton services.
 	 * See the UpgradeManager spring config for an example.
 	 */
+	@Deprecated(since="7.0")
 	public Integer getNodeId();
 	
 	/**
@@ -85,6 +86,7 @@ public interface Coordinator {
 	 * @deprecated
 	 * @return true if OLAT runs in cluster mode
 	 */
+	@Deprecated(since="7.0")
 	public boolean isClusterMode();
 
 }

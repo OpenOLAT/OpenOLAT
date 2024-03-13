@@ -271,7 +271,7 @@ public class TableController extends BasicController {
 		contentVc.contextPut(VC_VAR_HAS_TABLE_SEARCH, Boolean.FALSE);
 		
 		//sorters
-		contentVc.contextPut("hasSorters", new Boolean(tableConfig.isSortingEnabled()));
+		contentVc.contextPut("hasSorters", Boolean.valueOf(tableConfig.isSortingEnabled()));
 		tableSort = new TableSort("tableSort", table);
 		contentVc.put("tableSort", tableSort);
 		

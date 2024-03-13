@@ -92,7 +92,7 @@ public class GetAverageScoreFunction extends AbstractFunction {
 		}
 		
 		Float score = evalAverageScore(childIds);
-		return new Double(score);
+		return Double.valueOf(score);
 	}
 	
 	/**
@@ -133,7 +133,7 @@ public class GetAverageScoreFunction extends AbstractFunction {
 
 	@Override
 	protected Object defaultValue() {
-		return new Double(Double.MIN_VALUE);
+		return Double.valueOf(Double.MIN_VALUE);
 	}
 
 }

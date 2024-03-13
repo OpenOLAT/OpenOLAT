@@ -245,7 +245,7 @@ public class TACourseNode extends GenericCourseNode {
 		// Check if any group exist make sense only with dropbox, scoring or solution
 		Boolean hasDropbox  = (Boolean) getModuleConfiguration().get(CONF_DROPBOX_ENABLED);
 	  if (hasDropbox == null) {
-	    hasDropbox = new Boolean(false);
+	    hasDropbox = Boolean.valueOf(false);
 	   }
 	  Boolean hasReturnbox = (Boolean) getModuleConfiguration().get(CONF_RETURNBOX_ENABLED);
 	  if(hasReturnbox == null) {

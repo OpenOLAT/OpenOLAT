@@ -286,7 +286,7 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 	 * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#getComparator(org.olat.core.gui.control.generic.portal.SortingCriteria)
 	 */
 	protected Comparator<Note> getComparator(final SortingCriteria criteria) {
-		return new Comparator<Note>(){			
+		return new Comparator<>(){			
 			public int compare(final Note note1, final Note note2) {	
 				int comparisonResult = 0;
 			  if(criteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	

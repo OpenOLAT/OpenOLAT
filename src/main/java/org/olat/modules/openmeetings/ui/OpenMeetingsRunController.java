@@ -173,7 +173,7 @@ public class OpenMeetingsRunController extends BasicController {
 			} else {
 				mainVC.contextRemove("roomComment");
 			}
-			mainVC.contextPut("roomClosed", new Boolean(closed));
+			mainVC.contextPut("roomClosed", Boolean.valueOf(closed));
 		}
 	}
 

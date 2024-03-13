@@ -10,25 +10,24 @@
 
 package org.olat.modules.oaipmh.common.services.impl;
 
-import org.olat.modules.oaipmh.common.oaidc.Element;
-import org.olat.modules.oaipmh.common.oaidc.Field;
-import org.olat.modules.oaipmh.common.oaidc.OAIDCMetadata;
-import org.olat.modules.oaipmh.common.services.api.MetadataSearch;
+import static org.apache.commons.lang3.StringUtils.join;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.lang3.StringUtils.join;
+import org.olat.modules.oaipmh.common.oaidc.Element;
+import org.olat.modules.oaipmh.common.oaidc.Field;
+import org.olat.modules.oaipmh.common.oaidc.OAIDCMetadata;
 
-public class MetadataSearchImpl extends AbstractMetadataSearcher<String> implements MetadataSearch<String> {
+public class MetadataSearchImpl extends AbstractMetadataSearcher<String> {
 
     public MetadataSearchImpl(OAIDCMetadata metadata) {
         super(metadata);
     }
 
     protected void consume(List<String> newNames, Element element) {
-        List<String> names = new ArrayList<String>(newNames);
+        List<String> names = new ArrayList<>(newNames);
         names.add(element.getName());
 
         if (!element.getFields().isEmpty()) {
@@ -50,7 +49,7 @@ public class MetadataSearchImpl extends AbstractMetadataSearcher<String> impleme
 
     private void add(String name, String value) {
         if (!index.containsKey(name))
-            index.put(name, new ArrayList<String>());
+            index.put(name, new ArrayList<>());
 
         index.get(name).add(value);
     }

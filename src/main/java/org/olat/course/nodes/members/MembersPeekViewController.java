@@ -84,7 +84,7 @@ public class MembersPeekViewController extends BasicController {
 		
 		tableController.addColumnDescriptor(new DefaultColumnDescriptor("members.type", 0, null, ureq.getLocale()));
 		tableController.addColumnDescriptor(new DefaultColumnDescriptor("members.count", 1, null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
-		tableController.setTableDataModel(new DefaultTableDataModel<Row>(entries) {
+		tableController.setTableDataModel(new DefaultTableDataModel<>(entries) {
 			@Override
 			public int getColumnCount() {
 				return 2;

@@ -18,7 +18,7 @@ import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 import org.olat.modules.oaipmh.common.xml.XmlWriter;
 
 public class ListMetadataFormats implements Verb {
-	protected List<MetadataFormat> metadataFormats = new ArrayList<MetadataFormat>();
+	protected List<MetadataFormat> metadataFormats = new ArrayList<>();
 
 	public List<MetadataFormat> getMetadataFormats() {
 		return this.metadataFormats;

@@ -25,7 +25,7 @@ import org.olat.modules.oaipmh.common.xml.XmlWriter;
 public class OAIPMH implements XmlWritable {
 	public static final String NAMESPACE_URI = "http://www.openarchives.org/OAI/2.0/";
 	public static final String SCHEMA_LOCATION = "http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd";
-	private final List<Error> errors = new ArrayList<Error>();
+	private final List<Error> errors = new ArrayList<>();
 	private Date responseDate = new Date();
 	private Request request;
 	private Verb verb;

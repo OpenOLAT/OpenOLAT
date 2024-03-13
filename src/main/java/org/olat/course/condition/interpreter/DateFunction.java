@@ -45,9 +45,7 @@ public class DateFunction extends AbstractFunction {
 		super(userCourseEnv);
 	}
 
-	/**
-	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
-	 */
+	@Override
 	public Object call(Object[] inStack) {
 		Date d = new Date();
 		/*
@@ -72,10 +70,11 @@ public class DateFunction extends AbstractFunction {
 		/*
 		 * the real function evaluation which is used during run time
 		 */
-		return new Double(d.getTime());
+		return Double.valueOf(d.getTime());
 	}
 
+	@Override
 	protected Object defaultValue() {
-		return new Double(new Date().getTime());
+		return Double.valueOf(new Date().getTime());
 	}
 }

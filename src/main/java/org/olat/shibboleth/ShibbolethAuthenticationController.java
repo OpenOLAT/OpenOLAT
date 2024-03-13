@@ -156,7 +156,7 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		if (cookies != null) {
 			for (int i = 0; i < cookies.length; i++) {
 				if (log.isDebugEnabled()) {
-					log.debug("found cookie with name: " + cookies[i].getName() + " and value: " + cookies[i].getValue());
+					log.debug("found cookie with name: {} and value: {}", cookies[i].getName(), cookies[i].getValue());
 				}
 				if (cookies[i].getName().equals(IDP_HOMESITE_COOKIE)) {
 					cookie = cookies[i];
@@ -184,11 +184,11 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		try {
 			cookie = new Cookie(IDP_HOMESITE_COOKIE, URLEncoder.encode(homeSite, "utf-8"));
 			cookie.setHttpOnly(true);
+			cookie.setMaxAge(100 * 24 * 60 * 60); // 100 days lifetime
+			cookie.setPath(WebappHelper.getServletContextPath());
+			ureq.getHttpResp().addCookie(cookie);
 		} catch (UnsupportedEncodingException e) {/* utf-8 is always present */}
-		cookie.setMaxAge(100 * 24 * 60 * 60); // 100 days lifetime
-		cookie.setPath(WebappHelper.getServletContextPath());
-		cookie.setComment("cookie for preselection of AAI homesite");
-		ureq.getHttpResp().addCookie(cookie);
+		
 	}
 
 }

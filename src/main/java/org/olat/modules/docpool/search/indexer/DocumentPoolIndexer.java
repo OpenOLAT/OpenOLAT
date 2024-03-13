@@ -35,7 +35,6 @@ import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.search.indexer.TaxonomyLibraryIndexer;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +45,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("documentPoolIndexer")
-public class DocumentPoolIndexer extends TaxonomyLibraryIndexer implements InitializingBean {
+public class DocumentPoolIndexer extends TaxonomyLibraryIndexer {
 	
 	@Autowired
 	private DocumentPoolModule documentPoolModule;
@@ -61,7 +60,7 @@ public class DocumentPoolIndexer extends TaxonomyLibraryIndexer implements Initi
 			throws IOException, InterruptedException {
 		String taxonomyTreeKey = documentPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyTreeKey)) {
-			Long taxonomyKey = new Long(taxonomyTreeKey);
+			Long taxonomyKey = Long.valueOf(taxonomyTreeKey);
 			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(taxonomyKey));
 
 			OLATResourceable docPoolOres = OresHelper.createOLATResourceableInstanceWithoutCheck(getSupportedTypeName(), 0l);

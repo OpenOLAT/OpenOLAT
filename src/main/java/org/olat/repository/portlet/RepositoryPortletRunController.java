@@ -262,7 +262,7 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 */
 	@Override
 	protected Comparator<RepositoryEntry> getComparator(final SortingCriteria criteria) {
-		return new Comparator<RepositoryEntry>(){	
+		return new Comparator<>(){	
 			@Override
 			public int compare(final RepositoryEntry repoEntry1, final RepositoryEntry repoEntry2) {
 				int comparisonResult = 0;

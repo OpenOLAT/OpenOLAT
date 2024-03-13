@@ -31,8 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.TimeZone;
 
-import jakarta.servlet.http.Cookie;
-
 
 /**
  * General purpose request parsing and encoding utility methods.
@@ -54,58 +52,6 @@ public final class RequestUtil {
         format.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
-
-    /**
-     * Encode a cookie as per RFC 2109.  The resulting string can be used
-     * as the value for a <code>Set-Cookie</code> header.
-     *
-     * @param cookie The cookie to encode.
-     * @return A string following RFC 2109.
-     */
-    public static String encodeCookie(Cookie cookie) {
-
-        StringBuilder buf = new StringBuilder( cookie.getName() );
-        buf.append("=");
-        buf.append(cookie.getValue());
-
-        if (cookie.getComment() != null) {
-            buf.append("; Comment=\"");
-            buf.append(cookie.getComment());
-            buf.append("\"");
-        }
-
-        if (cookie.getDomain() != null) {
-            buf.append("; Domain=\"");
-            buf.append(cookie.getDomain());
-            buf.append("\"");
-        }
-
-        if (cookie.getMaxAge() >= 0) {
-            buf.append("; Max-Age=\"");
-            buf.append(cookie.getMaxAge());
-            buf.append("\"");
-        }
-
-        if (cookie.getPath() != null) {
-            buf.append("; Path=\"");
-            buf.append(cookie.getPath());
-            buf.append("\"");
-        }
-
-        if (cookie.getSecure()) {
-            buf.append("; Secure");
-        }
-
-        if (cookie.getVersion() > 0) {
-            buf.append("; Version=\"");
-            buf.append(cookie.getVersion());
-            buf.append("\"");
-        }
-
-        return (buf.toString());
-    }
-
-
     /**
      * Filter the specified message string for characters that are sensitive
      * in HTML.  This avoids potential attacks caused by including JavaScript
@@ -118,7 +64,7 @@ public final class RequestUtil {
         if (message == null)
             return (null);
 
-        char content[] = new char[message.length()];
+        char[] content = new char[message.length()];
         message.getChars(0, message.length(), content, 0);
         StringBuilder result = new StringBuilder(content.length + 50);
         for (int i = 0; i < content.length; i++) {

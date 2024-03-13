@@ -357,7 +357,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 						StatusDescription sd = allSds[i];
 						if (sd != StatusDescription.NOERROR) {
 							if (!statusDescs.containsKey(key)) {
-								statusDescs.put(key, new ArrayList<StatusDescription>());
+								statusDescs.put(key, new ArrayList<>());
 							}
 							List<StatusDescription> sds = statusDescs.get(key);
 							sds.add(sd);

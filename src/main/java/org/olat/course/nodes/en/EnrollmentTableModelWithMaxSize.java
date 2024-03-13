@@ -160,7 +160,7 @@ public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<Enrol
 
 	@Override
 	public Object createCopyWithEmptyList() {
-		return new EnrollmentTableModelWithMaxSize(new ArrayList<EnrollmentRow>(), trans, identity, cancelEnrollEnabled, maxEnrolCount);
+		return new EnrollmentTableModelWithMaxSize(new ArrayList<>(), trans, identity, cancelEnrollEnabled, maxEnrolCount);
 	}
 
 	/**

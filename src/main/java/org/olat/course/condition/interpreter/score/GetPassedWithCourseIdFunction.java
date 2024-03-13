@@ -75,7 +75,7 @@ public class GetPassedWithCourseIdFunction extends AbstractFunction {
 		try{
 			Object arg = inStack[0];
 			if(arg instanceof Number) {
-				courseRepoEntryKey = new Long(((Number)arg).longValue());
+				courseRepoEntryKey = Long.valueOf(((Number)arg).longValue());
 			} else if(arg instanceof String) {
 				courseRepoEntryKey = Long.decode((String)arg) ;
 			} else {

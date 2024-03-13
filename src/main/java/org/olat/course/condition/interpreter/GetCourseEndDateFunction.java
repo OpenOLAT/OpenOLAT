@@ -61,12 +61,12 @@ public class GetCourseEndDateFunction extends AbstractFunction {
 			return end;
 		} else {
 			// what to do in case of no date available??? -> return date in the future
-			return new Double(Double.POSITIVE_INFINITY);
+			return Double.valueOf(Double.POSITIVE_INFINITY);
 		}
 	}
 
 	@Override
 	protected Object defaultValue() {
-		return new Double(Double.MIN_VALUE);
+		return Double.valueOf(Double.MIN_VALUE);
 	}
 }

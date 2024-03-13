@@ -159,12 +159,12 @@ class DummyDateFunction extends AbstractFunction {
 	@Override
 	public Object call(Object[] inStack) {		
 		// return allways true, because it is a dummy implementation without condition
-		return new Double(0);
+		return Double.valueOf(0);
 	}
 
 	@Override
 	protected Object defaultValue() {
-		return new Double(0);
+		return Double.valueOf(0);
 	}
 }
 
@@ -231,12 +231,9 @@ class DummyVariable extends AbstractVariable {
 		super(userCourseEnv);
 	}
 	
-	/**
-	 * @see com.neemsoft.jmep.VariableCB#getValue()
-	 */
 	@Override
 	public Object getValue() {
-		return new Double(0);
+		return Double.valueOf(0);
 	}
 
 }

@@ -87,8 +87,8 @@ public class CoordinatorTest extends OlatTestCase {
 	@Test
 	public void testDoInSyncWithSyncerExecutor() {
 
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
+		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<>(1));
 	
 		final CountDownLatch finishCount = new CountDownLatch(2);
 		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testDoInSync", Long.valueOf("123"));
@@ -195,8 +195,8 @@ public class CoordinatorTest extends OlatTestCase {
 	@Test
 	public void testDoInSyncWithSyncerCallback() {
 
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
+		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<>(1));
 	
 		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testDoInSync", Long.valueOf("123"));
 		final CountDownLatch finishCount = new CountDownLatch(2);

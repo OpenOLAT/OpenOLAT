@@ -69,7 +69,7 @@ public class BusListenerInfo implements Serializable {
 	
 	public void addEntry(String derivedString, int cnt) {
 		synchronized(listenersCnt) {//cluster_ok
-			listenersCnt.put(derivedString, new Integer(cnt));
+			listenersCnt.put(derivedString, Integer.valueOf(cnt));
 		}
 	}
 	

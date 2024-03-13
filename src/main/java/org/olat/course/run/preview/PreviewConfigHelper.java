@@ -35,8 +35,6 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.group.BusinessGroup;
-import org.olat.group.area.BGArea;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -52,7 +50,7 @@ public class PreviewConfigHelper {
 	public static CourseEnvironment getPreviewCourseEnvironment(boolean isCoach, boolean isCourseAdmin, ICourse course) {
 		//generateEnvironment();
 		final RepositoryEntry courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		final CourseGroupManager cgm = new PreviewCourseGroupManager(courseResource, new ArrayList<BusinessGroup>(), new ArrayList<BGArea>(), isCoach, isCourseAdmin);
+		final CourseGroupManager cgm = new PreviewCourseGroupManager(courseResource, new ArrayList<>(), new ArrayList<>(), isCoach, isCourseAdmin);
 		final UserNodeAuditManager auditman = new PreviewAuditManager();
 		final AssessmentManager am = new PreviewAssessmentManager();
 		final CoursePropertyManager cpm = new PreviewCoursePropertyManager();

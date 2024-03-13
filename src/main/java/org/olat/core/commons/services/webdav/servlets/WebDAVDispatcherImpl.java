@@ -719,7 +719,7 @@ public class WebDAVDispatcherImpl
         generatedXML.writeXMLHeader();
         generatedXML.writeElement("D", DEFAULT_NAMESPACE, "multistatus", XMLWriter.OPENING);
         
-        parseProperties( req, generatedXML, path, 32, new Vector<String>());
+        parseProperties( req, generatedXML, path, 32, new Vector<>());
 
         generatedXML.writeElement("D", "multistatus", XMLWriter.CLOSING);
         generatedXML.sendData();

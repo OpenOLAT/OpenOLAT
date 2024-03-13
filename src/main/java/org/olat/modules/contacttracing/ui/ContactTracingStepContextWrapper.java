@@ -45,7 +45,7 @@ public class ContactTracingStepContextWrapper {
     }
 
     public List<ContactTracingLocation> getLocations() {
-        return locations != null ? locations : new ArrayList<ContactTracingLocation>();
+        return locations != null ? locations : new ArrayList<>();
     }
 
     public void setLocations(List<ContactTracingLocation> locations) {

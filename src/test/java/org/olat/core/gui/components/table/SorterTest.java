@@ -42,7 +42,7 @@ public class SorterTest {
 	public void testDateAndTimeStampsSort() {
 		//use the comparator method of the default column descriptor
 		final DefaultColumnDescriptor cd = new DefaultColumnDescriptor("test", 1, "test", Locale.ENGLISH);
-		Comparator<Date> comparator = new Comparator<Date>() {
+		Comparator<Date> comparator = new Comparator<>() {
 			@Override
 			public int compare(Date o1, Date o2) {
 				return cd.compareDateAndTimestamps(o1, o2);

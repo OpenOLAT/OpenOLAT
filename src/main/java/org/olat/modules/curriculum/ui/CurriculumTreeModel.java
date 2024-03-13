@@ -51,11 +51,11 @@ public class CurriculumTreeModel extends GenericTreeModel implements InsertionTr
 	private final List<CurriculumElement> sources;
 	
 	public CurriculumTreeModel() {
-		this(null, new ArrayList<CurriculumElement>());
+		this(null, new ArrayList<>());
 	}
 	
 	public CurriculumTreeModel(Curriculum curriculum) {
-		this(curriculum, new ArrayList<CurriculumElement>());
+		this(curriculum, new ArrayList<>());
 	}
 
 	public CurriculumTreeModel(Curriculum curriculum, List<CurriculumElement> sources) {

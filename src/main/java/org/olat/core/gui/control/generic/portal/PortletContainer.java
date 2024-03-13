@@ -182,25 +182,25 @@ public class PortletContainer extends BasicController implements PortletContaine
 
 	@Override
 	public void setCanMoveDown(boolean canMoveDown) {
-		toolboxContainer.contextPut("canDown", new Boolean(canMoveDown));
+		toolboxContainer.contextPut("canDown", Boolean.valueOf(canMoveDown));
 		moveDownLink.setEnabled(canMoveDown);
 	}
 
 	@Override
 	public void setCanMoveLeft(boolean canMoveLeft) {
-		toolboxContainer.contextPut("canLeft", new Boolean(canMoveLeft));
+		toolboxContainer.contextPut("canLeft", Boolean.valueOf(canMoveLeft));
 		moveLeftLink.setEnabled(canMoveLeft);
 	}
 
 	@Override
 	public void setCanMoveRight(boolean canMoveRight) {
-		toolboxContainer.contextPut("canRight", new Boolean(canMoveRight));
+		toolboxContainer.contextPut("canRight", Boolean.valueOf(canMoveRight));
 		moveRightLink.setEnabled(canMoveRight);
 	}
 
 	@Override
 	public void setCanMoveUp(boolean canMoveUp) {		
-		toolboxContainer.contextPut("canUp", new Boolean(canMoveUp));
+		toolboxContainer.contextPut("canUp", Boolean.valueOf(canMoveUp));
 		moveUpLink.setEnabled(canMoveUp);
 	}
 

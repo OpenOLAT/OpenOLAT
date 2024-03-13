@@ -45,7 +45,7 @@ public class BGUserManagementGroupTableDataModel extends DefaultTableDataModel<I
 	private final List<Identity> waitingList = new ArrayList<>();
 	
 	public BGUserManagementGroupTableDataModel(Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
-		super(new ArrayList<Identity>());
+		super(new ArrayList<>());
 		setLocale(locale);		
 		this.userPropertyHandlers = userPropertyHandlers;
 	}

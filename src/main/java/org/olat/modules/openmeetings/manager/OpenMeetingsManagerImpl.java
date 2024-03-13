@@ -184,7 +184,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 				roomIdToResourceName.put(roomId, prop.getGroup().getName());
 			} else if("CourseModule".equals(prop.getResourceTypeName())) {
 				if(!resourceIdToRoomIds.containsKey(prop.getResourceTypeId())) {
-					resourceIdToRoomIds.put(prop.getResourceTypeId(), new ArrayList<Long>());
+					resourceIdToRoomIds.put(prop.getResourceTypeId(), new ArrayList<>());
 				}
 				resourceIdToRoomIds.get(prop.getResourceTypeId()).add(roomId);
 			}

@@ -91,7 +91,7 @@ public class IsLearningGroupFullFunction extends AbstractFunction {
 		 */
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
 		if(StringHelper.isLong(groupName)) {
-			Long groupKey = new Long(groupName);
+			Long groupKey = Long.valueOf(groupName);
 			return cgm.isBusinessGroupFull(groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 		}
 		

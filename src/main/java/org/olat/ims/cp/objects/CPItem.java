@@ -441,6 +441,7 @@ public class CPItem extends DefaultElement implements CPNode {
 	 * 
 	 * @deprecated
 	 */
+	@Deprecated(since="7.0")
 	public void setNewUniqueIDrev() {
 		identifier = CodeHelper.getGlobalForeverUniqueID();
 		for (Iterator<CPItem> it = items.iterator(); it.hasNext();) {

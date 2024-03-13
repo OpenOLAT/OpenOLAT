@@ -101,7 +101,7 @@ abstract class AbstractStatisticUpdateManagerTest extends OlatTestCase {
 			return null;
 		}
 		AtomicInteger counter = node.get(date);
-		return counter == null ? null : new Integer(counter.get());	
+		return counter == null ? null : Integer.valueOf(counter.get());	
 	}
 	
 	protected void updateStatistics() {

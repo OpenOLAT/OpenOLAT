@@ -78,7 +78,7 @@ public class BusinessGroupImportExport {
 		OLATGroupExport root = new OLATGroupExport();
 		// export areas
 		root.setAreas(new AreaCollection());
-		root.getAreas().setGroups(new ArrayList<Area>());
+		root.getAreas().setGroups(new ArrayList<>());
 		for (BGArea area : areas) {
 			Area newArea = new Area();
 			newArea.setKey(area.getKey());
@@ -89,7 +89,7 @@ public class BusinessGroupImportExport {
 
 		// export groups
 		root.setGroups(new GroupCollection());
-		root.getGroups().setGroups(new ArrayList<Group>());
+		root.getGroups().setGroups(new ArrayList<>());
 		for (BusinessGroup group : groups) {
 			String groupName = null;
 			Group newGroup = exportGroup(fExportFile, group, groupName);
@@ -151,7 +151,7 @@ public class BusinessGroupImportExport {
 
 		// export membership
 		List<BGArea> bgAreas = areaManager.findBGAreasOfBusinessGroup(group);
-		newGroup.setAreaRelations(new ArrayList<String>());
+		newGroup.setAreaRelations(new ArrayList<>());
 		for (BGArea areaRelation : bgAreas) {
 			newGroup.getAreaRelations().add(areaRelation.getName());
 		}

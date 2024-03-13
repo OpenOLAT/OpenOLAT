@@ -219,7 +219,7 @@ public class FolderComponent extends AbstractComponent {
 	private void sort(String col) {
 		currentSortOrder = col;
 		if (col.equals(SORT_NAME)) {																										// sort after file name?
-			comparator = new Comparator<VFSItem>() {
+			comparator = new Comparator<>() {
 				@Override
 				public int compare(VFSItem o1, VFSItem o2) {
 					if (sortAsc) {
@@ -248,7 +248,7 @@ public class FolderComponent extends AbstractComponent {
 				}
 			};
 		} else if (col.equals(SORT_DATE)) {																							// sort after modification date (if same, then name)
-			comparator = new Comparator<VFSItem>() {
+			comparator = new Comparator<>() {
 				@Override
 				public int compare(VFSItem o1, VFSItem o2) {
 					if      (o1.getLastModified() < o2.getLastModified()) return ((sortAsc) ? -1 :  1);			
@@ -260,7 +260,7 @@ public class FolderComponent extends AbstractComponent {
 				}
 			};
 		} else	if (col.equals(SORT_SIZE)) {																						// sort after file size, folders always on top
-			comparator = new Comparator<VFSItem>() {
+			comparator = new Comparator<>() {
 				@Override
 				public int compare(VFSItem o1, VFSItem o2) {
 					VFSLeaf leaf1 = null;
@@ -282,7 +282,7 @@ public class FolderComponent extends AbstractComponent {
 				}
 			};
 		} else if (col.equals(SORT_REV)) {																							// sort after revision number, folders always on top
-			comparator = new Comparator<VFSItem>() {
+			comparator = new Comparator<>() {
 				@Override
 				public int compare(VFSItem o1, VFSItem o2) {
 					return o1.getName().compareTo(o2.getName());

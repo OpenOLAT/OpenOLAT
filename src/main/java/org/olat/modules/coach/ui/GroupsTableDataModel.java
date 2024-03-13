@@ -120,7 +120,7 @@ public class GroupsTableDataModel implements TableDataModel<GroupStatEntry> {
 
 	@Override
 	public GroupsTableDataModel createCopyWithEmptyList() {
-		return new GroupsTableDataModel(new ArrayList<GroupStatEntry>());
+		return new GroupsTableDataModel(new ArrayList<>());
 	}
 	
 	public enum Columns {

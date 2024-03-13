@@ -50,16 +50,12 @@ public class BGAreaTableModel extends DefaultTableDataModel<BGArea> {
 		super(owned);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+	@Override
 	public int getColumnCount() {
 		return COLUMN_COUNT;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
+	@Override
 	public Object getValueAt(int row, int col) {
 		BGArea area = getObject(row);
 		switch (col) {
@@ -77,7 +73,7 @@ public class BGAreaTableModel extends DefaultTableDataModel<BGArea> {
 
 	@Override
 	public BGAreaTableModel createCopyWithEmptyList() {
-		return new BGAreaTableModel(new ArrayList<BGArea>());
+		return new BGAreaTableModel(new ArrayList<>());
 	}
 	
 	

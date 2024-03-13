@@ -51,11 +51,11 @@ public class NowVariable extends AbstractVariable {
 	public Object getValue() {
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if(cev!=null) {
-			return new Double(0);
+			return Double.valueOf(0);
 		}
 		CourseEnvironment ce = getUserCourseEnv().getCourseEnvironment();
 		long time = ce.getCurrentTimeMillis();
-		return new Double(time);
+		return Double.valueOf(time);
 	}
 
 }

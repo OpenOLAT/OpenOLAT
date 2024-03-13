@@ -382,16 +382,16 @@ public class COCourseNode extends AbstractAccessableCourseNode {
             mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL, false);
             mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE, false);
             mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ASSIGNED, false);
-            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, new ArrayList<Long>());
+            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, new ArrayList<>());
             mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP, null);
             mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA, null);
-            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, new ArrayList<Long>());
+            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, new ArrayList<>());
             mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL, false);
             mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE, false);
             mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP, null);
-            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, new ArrayList<Long>());
+            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, new ArrayList<>());
             mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA, null);
-            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, new ArrayList<Long>());
+            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, new ArrayList<>());
             mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS, false);
         }
     }

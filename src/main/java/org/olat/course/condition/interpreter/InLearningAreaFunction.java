@@ -88,7 +88,7 @@ public class InLearningAreaFunction extends AbstractFunction {
 		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
 		if(StringHelper.isLong(areaName)) {
-			Long areaKey = new Long(areaName);
+			Long areaKey = Long.valueOf(areaName);
 			return cgm.isIdentityInLearningArea(ident,areaKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 		}
 		

@@ -46,6 +46,7 @@ public class Util {
 	 * @param clazz
 	 * @return the package name
 	 */
+	@Deprecated
 	public static String getPackageName(Class<?> clazz) {
 		return clazz.getPackage().getName();
 	}

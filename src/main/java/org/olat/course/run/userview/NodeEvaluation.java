@@ -43,7 +43,7 @@ public class NodeEvaluation extends GenericNode {
 	private boolean visible = false;
 
 	public void putAccessStatus(String capabilityName, boolean mayAccess) {
-		accesses.put(capabilityName, new Boolean(mayAccess));
+		accesses.put(capabilityName, Boolean.valueOf(mayAccess));
 	}
 	
 	public boolean oldStyleConditionsOk(){

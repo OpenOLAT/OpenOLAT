@@ -49,9 +49,7 @@ public class GetInitialCourseLaunchDateFunction extends AbstractFunction {
 		super(userCourseEnv);
 	}
 
-	/**
-	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
-	 */
+	@Override
 	public Object call(Object[] inStack) {
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if(cev != null) {
@@ -65,11 +63,12 @@ public class GetInitialCourseLaunchDateFunction extends AbstractFunction {
 			return Double.valueOf(infos.getInitialLaunch().getTime());
 		} else {
 			// what to do in case of no date available??? -> return date in the future
-			return new Double(Double.POSITIVE_INFINITY);
+			return Double.valueOf(Double.POSITIVE_INFINITY);
 		}
 	}
 
+	@Override
 	protected Object defaultValue() {
-		return new Double(Double.MIN_VALUE);
+		return Double.valueOf(Double.MIN_VALUE);
 	}
 }

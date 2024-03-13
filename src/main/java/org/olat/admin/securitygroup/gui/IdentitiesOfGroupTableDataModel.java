@@ -81,7 +81,7 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<Group
 	
 	@Override
 	public IdentitiesOfGroupTableDataModel createCopyWithEmptyList() {
-		return new IdentitiesOfGroupTableDataModel(new ArrayList<GroupMemberView>(), getLocale(), userPropertyHandlers);
+		return new IdentitiesOfGroupTableDataModel(new ArrayList<>(), getLocale(), userPropertyHandlers);
 	}
 	
 	/**

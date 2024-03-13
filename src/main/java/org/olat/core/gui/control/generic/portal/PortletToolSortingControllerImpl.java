@@ -167,11 +167,11 @@ public class PortletToolSortingControllerImpl<T> extends BasicController
 
 	
 	public void setConfigManualSorting(boolean configManualSorting) {		
-		mainVC.contextPut("hasManualSorting", new Boolean(configManualSorting));		
+		mainVC.contextPut("hasManualSorting", Boolean.valueOf(configManualSorting));		
 	}
 	
 	public void setConfigAutoSorting(boolean configAutoSorting) {		
-		mainVC.contextPut("hasAutoSorting", new Boolean(configAutoSorting));		
+		mainVC.contextPut("hasAutoSorting", Boolean.valueOf(configAutoSorting));		
 	}
 
 	@Override

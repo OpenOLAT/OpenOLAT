@@ -190,8 +190,8 @@ public class OLATResourceManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testConcurrentFindOrPersistResourceable() {
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final List<OLATResource> statusList = Collections.synchronizedList(new ArrayList<OLATResource>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
+		final List<OLATResource> statusList = Collections.synchronizedList(new ArrayList<>(1));
 		final String resourceName = UUID.randomUUID().toString();
 		final CountDownLatch doneSignal = new CountDownLatch(2);
 		

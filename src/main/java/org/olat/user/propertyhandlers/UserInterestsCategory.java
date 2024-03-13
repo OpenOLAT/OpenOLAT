@@ -40,7 +40,7 @@ public class UserInterestsCategory {
 	 * Default constructor.
 	 */
 	public UserInterestsCategory() {
-		setSubcategories(new ArrayList<UserInterestsCategory>());
+		setSubcategories(new ArrayList<>());
 	}
 	
 	public String getId() {

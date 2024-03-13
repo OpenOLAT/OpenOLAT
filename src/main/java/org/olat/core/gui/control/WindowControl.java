@@ -50,6 +50,7 @@ public interface WindowControl {
 	 * @deprecated todo merge with pushAsModalDialog (pb)
 	 * @param comp
 	 */
+	@Deprecated
 	public void pushToMainArea(Component comp);
 
 	/**

@@ -108,7 +108,7 @@ public class RepositoryConfiguration {
 
 	public RepositoryConfiguration withCompression(String compression) {
 		if (compressions == null)
-			compressions = new ArrayList<String>();
+			compressions = new ArrayList<>();
 		compressions.add(compression);
 		return this;
 	}

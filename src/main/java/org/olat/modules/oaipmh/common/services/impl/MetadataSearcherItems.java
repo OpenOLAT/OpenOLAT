@@ -11,16 +11,15 @@
 package org.olat.modules.oaipmh.common.services.impl;
 
 
-import org.olat.modules.oaipmh.common.oaidc.Element;
-import org.olat.modules.oaipmh.common.oaidc.Field;
-import org.olat.modules.oaipmh.common.oaidc.MetadataItem;
-import org.olat.modules.oaipmh.common.oaidc.OAIDCMetadata;
-import org.olat.modules.oaipmh.common.services.api.MetadataSearch;
+import static org.apache.commons.lang3.StringUtils.join;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.lang3.StringUtils.join;
+import org.olat.modules.oaipmh.common.oaidc.Element;
+import org.olat.modules.oaipmh.common.oaidc.Field;
+import org.olat.modules.oaipmh.common.oaidc.MetadataItem;
+import org.olat.modules.oaipmh.common.oaidc.OAIDCMetadata;
 
 /**
  * An implementation whose searches return {@link MetadataItem} elements.
@@ -28,7 +27,7 @@ import static org.apache.commons.lang3.StringUtils.join;
  *
  * @author mmalmeida
  */
-public class MetadataSearcherItems extends AbstractMetadataSearcher<MetadataItem> implements MetadataSearch<MetadataItem> {
+public class MetadataSearcherItems extends AbstractMetadataSearcher<MetadataItem> {
 
     public MetadataSearcherItems(OAIDCMetadata metadata) {
         super(metadata);
@@ -36,7 +35,7 @@ public class MetadataSearcherItems extends AbstractMetadataSearcher<MetadataItem
 
     @Override
     protected void consume(List<String> newNames, Element element) {
-        List<String> names = new ArrayList<String>(newNames);
+        List<String> names = new ArrayList<>(newNames);
         names.add(element.getName());
 
         if (!element.getFields().isEmpty()) {
@@ -52,7 +51,7 @@ public class MetadataSearcherItems extends AbstractMetadataSearcher<MetadataItem
 
     private void add(String name, List<Field> fields) {
         if (!index.containsKey(name))
-            index.put(name, new ArrayList<MetadataItem>());
+            index.put(name, new ArrayList<>());
 
         MetadataItem newElement = new MetadataItem();
         for (Field field : fields) {

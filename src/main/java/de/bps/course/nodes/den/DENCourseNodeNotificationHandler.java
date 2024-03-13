@@ -79,19 +79,19 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 		// can't be loaded when already deleted
 		try {
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
-				Long courseId = new Long(p.getData());
+				Long courseId = Long.valueOf(p.getData());
 				final ICourse course = loadCourseFromId(courseId);
 				if (courseStatus(course)) {
 					final List<DENCourseNode> denNodes = getCourseDENNodes(course);
 					final Translator trans = Util.createPackageTranslator(DENCourseNodeNotificationHandler.class, locale);
 
 					String cssClass = new DENCourseNodeConfiguration().getIconCSSClass();
-					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(trans.translate("notifications.header", new String[]{course.getCourseTitle()}), cssClass), null);
+					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(trans.translate("notifications.header", course.getCourseTitle()), cssClass), null);
 					SubscriptionListItem subListItem;
 
 					for (DENCourseNode denNode : denNodes) {
 						String changer = "";
-						String desc = trans.translate("notifications.entry", new String[] { denNode.getLongTitle(), changer });
+						String desc = trans.translate("notifications.entry", denNode.getLongTitle(), changer);
 
 						Date modDate = new Date();
 						subListItem = new SubscriptionListItem(desc, null, null, modDate, cssClass);
@@ -102,7 +102,7 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 				si = notificationsManager.getNoSubscriptionInfo();
 			}
 		} catch (Exception e) {
-			log.error("Error creating enrollment notifications for subscriber: " + subscriber.getKey(), e);
+			log.error("Error creating enrollment notifications for subscriber: {}", subscriber.getKey(), e);
 			checkPublisher(p);
 			si = notificationsManager.getNoSubscriptionInfo();
 		}
@@ -171,7 +171,7 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 			Translator trans = Util.createPackageTranslator(DENCourseNodeNotificationHandler.class, locale);
 			return trans.translate("notifications.header", getDisplayName(subscriber.getPublisher()));
 		} catch (Exception e) {
-			log.error("Error while creating assessment notifications for subscriber: " + subscriber.getKey(), e);
+			log.error("Error while creating assessment notifications for subscriber: {}", subscriber.getKey(), e);
 			checkPublisher(subscriber.getPublisher());
 			return "-";
 		}

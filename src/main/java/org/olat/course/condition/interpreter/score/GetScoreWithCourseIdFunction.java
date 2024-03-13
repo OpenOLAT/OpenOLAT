@@ -53,9 +53,7 @@ public class GetScoreWithCourseIdFunction extends AbstractFunction {
 		super(userCourseEnv);
 	}
 
-	/**
-	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
-	 */
+	@Override
 	public Object call(Object[] inStack) {
 		if (inStack.length > 2) {//need > 2 for compatibility reason
 			return handleException(new ArgumentParseException(ArgumentParseException.NEEDS_FEWER_ARGUMENTS, name, "", "error.fewerargs",
@@ -83,15 +81,13 @@ public class GetScoreWithCourseIdFunction extends AbstractFunction {
 		Float score = es.getScore();
 		if (score == null) return defaultValue();
 		// finally check existing value
-		return new Double(score.doubleValue());
+		return Double.valueOf(score.doubleValue());
 		
 	}
 
-	/**
-	 * @see org.olat.course.condition.interpreter.AbstractFunction#defaultValue()
-	 */
+	@Override
 	protected Object defaultValue() {
-		return new Double(Double.MIN_VALUE);
+		return Double.valueOf(Double.MIN_VALUE);
 	}
 
 }

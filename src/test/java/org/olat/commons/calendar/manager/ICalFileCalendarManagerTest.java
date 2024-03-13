@@ -706,8 +706,8 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		final String TEST_EVENT_SUBJECT_2 = "testEvent2";
 		
 		final Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-2-");	
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
+		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<>(1));
 
 		final CountDownLatch doneSignal = new CountDownLatch(2);
 
@@ -809,8 +809,8 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		final String TEST_EVENT_SUBJECT_2_UPDATED = "testUpdatedEvent2";
 		
 		final Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-3-");	
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
+		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<>(1));
 
 		// Generate event for update
 		Kalendar cal = calendarManager.getPersonalCalendar(test).getKalendar();
@@ -923,8 +923,8 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		final String TEST_EVENT_SUBJECT_2 = "testEvent2";
 		
 		final Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-1-");
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
+		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
+		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<>(1));
 
 		// Generate event for update
 		Kalendar cal = calendarManager.getPersonalCalendar(test).getKalendar();

@@ -210,7 +210,7 @@ public class GlossaryItemManager {
 		if (glossaryFile == null) {
 			// create an empty file on the fly and initialize it
 			glossaryFile = folderContainingGlossary.createChildLeaf(GLOSSARY_FILENAME);
-			saveToFile(glossaryFile, new ArrayList<GlossaryItem>());
+			saveToFile(glossaryFile, new ArrayList<>());
 		}
 		return glossaryFile;
 	}

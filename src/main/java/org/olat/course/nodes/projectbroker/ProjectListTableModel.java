@@ -181,7 +181,7 @@ public class ProjectListTableModel extends DefaultTableDataModel<Project> {
 	}
 
 	public Object createCopyWithEmptyList() {
-		ProjectListTableModel copy = new ProjectListTableModel(new ArrayList<Project>(), identity, translator, moduleConfig, numberOfCustomFieldInTable, numberOfEventInTable, nbrSelectedProjects, isParticipantInAnyProject);
+		ProjectListTableModel copy = new ProjectListTableModel(new ArrayList<>(), identity, translator, moduleConfig, numberOfCustomFieldInTable, numberOfEventInTable, nbrSelectedProjects, isParticipantInAnyProject);
 		return copy;
 	}
 

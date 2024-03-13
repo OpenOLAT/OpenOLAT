@@ -281,7 +281,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 	 * @return a Comparator for the input sortingCriteria
 	 */
 	protected Comparator<Bookmark> getComparator(final SortingCriteria sortingCriteria) {
-		return new Comparator<Bookmark>(){			
+		return new Comparator<>(){			
 			public int compare(final Bookmark bookmark1, final Bookmark bookmark2) {	
 				int comparisonResult = 0;
 			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	

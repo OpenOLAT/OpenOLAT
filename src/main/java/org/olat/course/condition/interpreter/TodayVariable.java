@@ -51,19 +51,17 @@ public class TodayVariable extends AbstractVariable {
 		super(userCourseEnv);
 	}
 	
-	/**
-	 * @see com.neemsoft.jmep.VariableCB#getValue()
-	 */
+	@Override
 	public Object getValue() {
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if(cev!=null) {
-			return new Double(0);
+			return Double.valueOf(0);
 		}
 		CourseEnvironment ce = getUserCourseEnv().getCourseEnvironment();
 		long time = ce.getCurrentTimeMillis();
 		Date date = new Date(time);
 		Date day = DateUtils.truncate(date, Calendar.DATE);
-		Double dDay = new Double(day.getTime());
+		Double dDay = Double.valueOf(day.getTime());
 		return dDay;
 	}
 

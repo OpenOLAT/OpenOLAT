@@ -181,7 +181,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 		log.info("userCourseEnv=" + userCourseEnv);
 		log.info("userCourseEnv.getCourseEnvironment()=" + userCourseEnv.getCourseEnvironment());
 		enrollmentManager.doEnroll(userCourseEnv, wg1Roles, bgWithWaitingList, enNode, coursePropertyManager, new WindowControlMocker(), testTranslator,
-				new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());	
+				new ArrayList<>()/*enrollableGroupNames*/, new ArrayList<>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());	
 		assertTrue("Enrollment failed, user='wg1'", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
 		int participantsCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.participant.name());
 		assertTrue("Wrong number of participants," + participantsCounter , participantsCounter == 1);
@@ -191,7 +191,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 		userCourseEnv = new UserCourseEnvironmentImpl(ienv, cenv);
 		coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 		enrollmentManager.doEnroll(userCourseEnv, wg2Roles, bgWithWaitingList, enNode, coursePropertyManager, new WindowControlMocker(),testTranslator,
-				new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());	
+				new ArrayList<>()/*enrollableGroupNames*/, new ArrayList<>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());	
 		assertTrue("Enrollment failed, user='wg2'", businessGroupService.isIdentityInBusinessGroup(wg2,bgWithWaitingList));	
 		assertTrue("Enrollment failed, user='wg1'", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
 		participantsCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.participant.name());
@@ -202,7 +202,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 		userCourseEnv = new UserCourseEnvironmentImpl(ienv, cenv);
 		coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 		enrollmentManager.doEnroll(userCourseEnv, wg3Roles, bgWithWaitingList, enNode, coursePropertyManager, new WindowControlMocker(), testTranslator,
-				new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());		
+				new ArrayList<>()/*enrollableGroupNames*/, new ArrayList<>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());		
 		assertFalse("Wrong enrollment, user='wg3' is in PartipiciantGroup, must be on waiting-list", businessGroupService.isIdentityInBusinessGroup(wg3,bgWithWaitingList));	
 		assertFalse("Wrong enrollment, user='wg3' is in PartipiciantGroup, must be on waiting-list", businessGroupService.hasRoles(wg3, bgWithWaitingList, GroupRoles.participant.name()));
 		assertTrue("Wrong enrollment, user='wg3' must be on waiting-list", businessGroupService.hasRoles(wg3, bgWithWaitingList, GroupRoles.waiting.name()));
@@ -343,7 +343,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 
 				sleep(Math.round(new Random().nextDouble() * 100l));
 				enrollmentManager.doEnroll(userCourseEnv, Roles.userRoles(), group, enNode, coursePropertyManager,  new WindowControlMocker(), testTranslator,
-						new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, courseGroupManager);
+						new ArrayList<>()/*enrollableGroupNames*/, new ArrayList<>()/*enrollableAreaNames*/, courseGroupManager);
 				DBFactory.getInstance().commit();
 			} catch (Exception e) {
 				log.error("", e);

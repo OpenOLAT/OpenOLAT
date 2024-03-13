@@ -46,8 +46,8 @@ public class MonthUnit extends UnitCB {
 	 * @see com.neemsoft.jmep.UnitCB#apply(java.lang.Object)
 	 */
 	public Object apply(Object arg0) {
-		if (arg0 instanceof Integer) return new Double(((Integer) arg0).intValue() * MONTHMILLIS);
-		if (arg0 instanceof Double) return new Double(((Double) arg0).doubleValue() * MONTHMILLIS);
+		if (arg0 instanceof Integer) return Double.valueOf(((Integer) arg0).intValue() * MONTHMILLIS);
+		if (arg0 instanceof Double) return Double.valueOf(((Double) arg0).doubleValue() * MONTHMILLIS);
 		return null;
 	}
 

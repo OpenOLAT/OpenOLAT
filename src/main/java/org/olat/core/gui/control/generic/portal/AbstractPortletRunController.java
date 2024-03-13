@@ -161,7 +161,7 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
 		Hashtable<Long,Integer> persistableMap = new Hashtable<>(); 
 		Iterator<PortletEntry<T>> listIterator = sortedItems.iterator();
 		for(int i=0; listIterator.hasNext(); i++) {
-			persistableMap.put(listIterator.next().getKey(),new Integer(i)); 
+			persistableMap.put(listIterator.next().getKey(), Integer.valueOf(i)); 
 		}
 		return persistableMap;
 	}
@@ -248,7 +248,7 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
 	 * @return
 	 */
 	protected Comparator<PortletEntry<T>> getPortletEntryComparator(final Map<Long,Integer> sortedItems) {
-		return new Comparator<PortletEntry<T>>(){			
+		return new Comparator<>(){			
 			public int compare(final PortletEntry<T> portletEntry1, final PortletEntry<T> portletEntry2) {
 				int comparisonResult = 0;
 				Integer portletEntry1Index = sortedItems.get(portletEntry1.getKey());

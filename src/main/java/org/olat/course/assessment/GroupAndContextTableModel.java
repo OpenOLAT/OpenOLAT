@@ -84,6 +84,6 @@ public class GroupAndContextTableModel extends DefaultTableDataModel<BusinessGro
 
 	@Override
 	public Object createCopyWithEmptyList() {
-		return new GroupAndContextTableModel(new ArrayList<BusinessGroup>());
+		return new GroupAndContextTableModel(new ArrayList<>());
 	}
 }
