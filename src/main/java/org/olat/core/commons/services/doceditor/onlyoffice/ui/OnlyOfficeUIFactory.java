@@ -36,7 +36,7 @@ class OnlyOfficeUIFactory {
 		if(el.isEnabled() && el.isVisible()) {
 			String value = el.getValue();
 			if (!StringHelper.containsNonWhitespace(value)) {
-				el.setErrorKey("form.mandatory.hover", null);
+				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
@@ -52,10 +52,10 @@ class OnlyOfficeUIFactory {
 				try {
 					int intVal = Integer.parseInt(val);
 					if (intVal < 0) {
-						el.setErrorKey("error.positive.integer", null);
+						el.setErrorKey("error.positive.integer");
 					}
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.positive.integer", null);
+					el.setErrorKey("error.positive.integer");
 					allOk = false;
 				}
 			}

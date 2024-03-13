@@ -85,7 +85,7 @@ public class GeneratorCreationController extends FormBasicController {
 		
 		providerEl.clearError();
 		if (!providerEl.isOneSelected()) {
-			providerEl.setErrorKey("form.mandatory.hover", null);
+			providerEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		}
 		

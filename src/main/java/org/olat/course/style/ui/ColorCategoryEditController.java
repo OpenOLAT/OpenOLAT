@@ -140,17 +140,17 @@ public class ColorCategoryEditController extends FormBasicController {
 			identifierEl.clearError();
 			String identifier = identifierEl.getValue();
 			if (!StringHelper.containsNonWhitespace(identifier)) {
-				identifierEl.setErrorKey("form.legende.mandatory", null);
+				identifierEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if (!courseStyleService.isColorCategoryIdentifierAvailable(identifier)) {
-				identifierEl.setErrorKey("error.color.category.identifier.not.available", null);
+				identifierEl.setErrorKey("error.color.category.identifier.not.available");
 				allOk &= false;
 			}
 		}
 		
 		cssClassEl.clearError();
 		if (!StringHelper.containsNonWhitespace(cssClassEl.getValue())) {
-			cssClassEl.setErrorKey("form.legende.mandatory", null);
+			cssClassEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} 
 		

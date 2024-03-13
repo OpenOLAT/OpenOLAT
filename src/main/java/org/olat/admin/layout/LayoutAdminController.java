@@ -202,7 +202,7 @@ public class LayoutAdminController extends FormBasicController {
 				URL url = new URL(value);
 				allOk &= StringHelper.containsNonWhitespace(url.getHost());
 			} catch (MalformedURLException e) {
-				el.setErrorKey("linkUrl.invalid", null);
+				el.setErrorKey("linkUrl.invalid");
 				showError("linkUrl.invalid");
 				allOk &= false;
 			}

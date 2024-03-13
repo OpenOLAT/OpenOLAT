@@ -70,7 +70,7 @@ public class GoogleAnalyticsConfigFormController extends FormBasicController {
 		
 		// show error when not configured as the tracking ID is mandatory
 		if(!googleAnalyticsSPI.isValid()) {
-			analyticsTrackingIdEl.setErrorKey("form.legende.mandatory", null);
+			analyticsTrackingIdEl.setErrorKey("form.legende.mandatory");
 		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -84,7 +84,7 @@ public class GoogleAnalyticsConfigFormController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);		
 		analyticsTrackingIdEl.clearError();
 		if(!StringHelper.containsNonWhitespace(analyticsTrackingIdEl.getValue())) {
-			analyticsTrackingIdEl.setErrorKey("form.legende.mandatory", null);
+			analyticsTrackingIdEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		return allOk;

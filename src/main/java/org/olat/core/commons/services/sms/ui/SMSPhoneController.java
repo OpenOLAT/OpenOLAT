@@ -101,10 +101,10 @@ public class SMSPhoneController extends FormBasicController implements SupportsA
 		phoneEl.clearError();
 		if(phoneEl.isVisible()) {
 			if(!StringHelper.containsNonWhitespace(phoneEl.getValue())) {
-				phoneEl.setErrorKey("form.legende.mandatory", null);
+				phoneEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(!messageService.validate(phoneEl.getValue())) {
-				phoneEl.setErrorKey("error.phone.invalid", null);
+				phoneEl.setErrorKey("error.phone.invalid");
 				allOk &= false;
 			}
 		}
@@ -113,10 +113,10 @@ public class SMSPhoneController extends FormBasicController implements SupportsA
 		if(tokenEl.isVisible()) {
 			String tokenValue = tokenEl.getValue();
 			if(!StringHelper.containsNonWhitespace(tokenValue)) {
-				tokenEl.setErrorKey("form.legende.mandatory", null);
+				tokenEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(sentToken == null || !sentToken.equals(tokenValue)) {
-				tokenEl.setErrorKey("error.invalid.token", null);
+				tokenEl.setErrorKey("error.invalid.token");
 				allOk &= false;
 			}
 		}
@@ -132,12 +132,12 @@ public class SMSPhoneController extends FormBasicController implements SupportsA
 				tokenEl.setVisible(true);
 				
 				sentToken = messageService.generateToken();
-				String msg = translate("sms.token", new String[]{ sentToken });
+				String msg = translate("sms.token", sentToken);
 				messageService.sendMessage(msg, phoneEl.getValue(), getIdentity());
 			} catch (SimpleMessageException e) {
 				phoneEl.setVisible(true);
 				tokenEl.setVisible(false);
-				phoneEl.setErrorKey("error.phone.invalid", null);
+				phoneEl.setErrorKey("error.phone.invalid");
 			}
 		} else if(tokenEl.isVisible()) {
 			User user = getIdentity().getUser();

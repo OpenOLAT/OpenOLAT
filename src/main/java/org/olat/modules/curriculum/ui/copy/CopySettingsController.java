@@ -108,7 +108,7 @@ public class CopySettingsController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(!resourcesEl.isOneSelected()) {
-			resourcesEl.setErrorKey("form.legende.mandatory", null);
+			resourcesEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

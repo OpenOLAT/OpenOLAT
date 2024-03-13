@@ -74,13 +74,13 @@ public class WebSMSConfigurationController extends AbstractSMSConfigurationContr
 		
 		usernameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(usernameEl.getValue())) {
-			usernameEl.setErrorKey("form.legende.mandatory", null);
+			usernameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		passwordEl.clearError();
 		if(!StringHelper.containsNonWhitespace(passwordEl.getValue())) {
-			passwordEl.setErrorKey("form.legende.mandatory", null);
+			passwordEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!PLACEHOLDER.equals(passwordEl.getValue())) {
 			replacedValue = passwordEl.getValue();

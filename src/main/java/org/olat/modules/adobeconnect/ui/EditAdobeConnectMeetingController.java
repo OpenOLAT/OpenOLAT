@@ -171,10 +171,10 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 		
 		nameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (nameEl.getValue().contains("&")) {
-			nameEl.setErrorKey("form.invalidchar.noamp", null);
+			nameEl.setErrorKey("form.invalidchar.noamp");
 			allOk &= false;
 		}
 		
@@ -182,11 +182,11 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 		endDateEl.clearError();
 		if(!permanentEl.isAtLeastSelected(1)) {
 			if(startDateEl.getDate() == null) {
-				startDateEl.setErrorKey("form.legende.mandatory", null);
+				startDateEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			if(endDateEl.getDate() == null) {
-				endDateEl.setErrorKey("form.legende.mandatory", null);
+				endDateEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
@@ -194,7 +194,7 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 				Date start = startDateEl.getDate();
 				Date end = endDateEl.getDate();
 				if(end.before(start)) {
-					endDateEl.setErrorKey("error.start.after.end", null);
+					endDateEl.setErrorKey("error.start.after.end");
 					allOk &= false;
 				}
 			}
@@ -209,7 +209,7 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 		boolean allOk = true;
 		el.clearError();
 		if(StringHelper.containsNonWhitespace(el.getValue()) && !StringHelper.isLong(el.getValue())) {
-			el.setErrorKey("form.error.nointeger", null);
+			el.setErrorKey("form.error.nointeger");
 			allOk &= false;
 		}
 		return allOk;

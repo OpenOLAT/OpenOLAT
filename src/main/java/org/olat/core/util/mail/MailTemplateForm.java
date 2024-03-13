@@ -115,12 +115,12 @@ public class MailTemplateForm extends FormBasicController {
 		bodyElem.clearError();
 		if (mandatoryEmail || sendMail.isSelected(0)) {
 			if (subjectElem.getValue().trim().length() == 0) {
-				subjectElem.setErrorKey("mailtemplateform.error.emptyfield", null);
+				subjectElem.setErrorKey("mailtemplateform.error.emptyfield");
 				allOk &= false;
 			}
 			
 			if (bodyElem.getValue().trim().length() == 0) {
-				bodyElem.setErrorKey("mailtemplateform.error.emptyfield", null);
+				bodyElem.setErrorKey("mailtemplateform.error.emptyfield");
 				allOk &= false;
 			}
 		}

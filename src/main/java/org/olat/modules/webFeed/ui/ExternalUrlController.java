@@ -109,13 +109,13 @@ public class ExternalUrlController extends FormBasicController {
 					validUrl = true;
 					break;
 				case NO_ENCLOSURE:
-					externalFeedUrlEl.setErrorKey("feed.form.feedurl.invalid.no_media", null);
+					externalFeedUrlEl.setErrorKey("feed.form.feedurl.invalid.no_media");
 					break;
 				case NOT_FOUND:
-					externalFeedUrlEl.setErrorKey("feed.form.feedurl.invalid.not_found", null);
+					externalFeedUrlEl.setErrorKey("feed.form.feedurl.invalid.not_found");
 					break;
 				case MALFORMED:
-					externalFeedUrlEl.setErrorKey("feed.form.feedurl.invalid", null);
+					externalFeedUrlEl.setErrorKey("feed.form.feedurl.invalid");
 					break;
 			}
 		}

@@ -238,13 +238,13 @@ public class OpencastConfigController extends FormBasicController {
 		boolean seriesSelected = displayEl.isOneSelected() && displayEl.getSelectedKey().equals(DISPLAY_KEY_SERIES);
 		if (seriesSelected) {
 			if (!StringHelper.containsNonWhitespace(seriesEl.getValue())) {
-				seriesEl.setErrorKey("form.legende.mandatory", null);
+				seriesEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 				identifierEl.setValue("");
 			}
 		} else {
 			if (!StringHelper.containsNonWhitespace(eventEl.getValue())) {
-				eventCont.setErrorKey("form.legende.mandatory", null);
+				eventCont.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 				identifierEl.setValue("");
 			}

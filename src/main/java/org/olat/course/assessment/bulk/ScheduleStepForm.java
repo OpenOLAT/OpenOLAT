@@ -99,16 +99,16 @@ public class ScheduleStepForm extends StepFormBasicController {
 
 		scheduleTypeEl.clearError();
 		if(!scheduleTypeEl.isOneSelected()) {
-			scheduleTypeEl.setErrorKey("form.legende.mandatory", null);
+			scheduleTypeEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		} else if( scheduleTypeEl.isOneSelected() && scheduleTypeEl.isSelected(1)) {
 			scheduleDateChooser.clearError();
 			Date scheduleDate = scheduleDateChooser.getDate();
 			if(scheduleDate == null) {
-				scheduleDateChooser.setErrorKey("form.legende.mandatory", null);
+				scheduleDateChooser.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			} else if(Calendar.getInstance().getTime().compareTo(scheduleDate) > 0) {
-				scheduleDateChooser.setErrorKey("schedule.error.past", null);
+				scheduleDateChooser.setErrorKey("schedule.error.past");
 				allOk = false;
 			}
 		}

@@ -264,15 +264,15 @@ public class ImpressumAdminController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(textElement.getValue())) {
 			if (isMail) {
 				if (!EmailAddressValidator.isValidEmailAddress(textElement.getValue())) {
-					textElement.setErrorKey("input.wrong.mail", null);
+					textElement.setErrorKey("input.wrong.mail");
 					return false;
 				}
 			} if(lenght != -1 && textElement.getValue().length() > lenght) {
-				textElement.setErrorKey("input.toolong", new String[]{ String.valueOf(lenght) });
+				textElement.setErrorKey("input.toolong", String.valueOf(lenght));
 				return false;
 			}
 		} else if (textElement.isMandatory()) {
-			textElement.setErrorKey("form.legende.mandatory", null);
+			textElement.setErrorKey("form.legende.mandatory");
 			return false;
 		}
 

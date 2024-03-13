@@ -156,10 +156,10 @@ public class EducationalTypeEditController extends FormBasicController {
 			identifierEl.clearError();
 			String identifier = identifierEl.getValue();
 			if (!StringHelper.containsNonWhitespace(identifier)) {
-				identifierEl.setErrorKey("form.legende.mandatory", null);
+				identifierEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if (!repositoryManager.isEducationalTypeIdentifierAvailable(identifier)) {
-				identifierEl.setErrorKey("error.educational.identifier.not.available", null);
+				identifierEl.setErrorKey("error.educational.identifier.not.available");
 				allOk &= false;
 			}
 		}

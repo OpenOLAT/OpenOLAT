@@ -107,17 +107,17 @@ public class MarkController extends FormBasicController {
 
 		String tooltip;
 		if(stat == null) {
-			tooltip = getTranslator().translate("mark.no_stat", null);
+			tooltip = getTranslator().translate("mark.no_stat");
 		} else {
 			Integer countI = stat.getCount();
 			if (mark!=null && mark.getCreator().equalsByPersistableKey(getIdentity())){
 				if (countI == 1) {
 					tooltip = getTranslator().translate("mark.stat.self.only");
 				} else {
-					tooltip = getTranslator().translate("mark.stat.self", new String[]{ new Integer(countI-1).toString() });
+					tooltip = getTranslator().translate("mark.stat.self", Integer.toString(countI - 1));
 				}
 			} else {
-				tooltip = getTranslator().translate("mark.stat", new String[]{ countI.toString() });
+				tooltip = getTranslator().translate("mark.stat", countI.toString());
 			}
 		}
 		

@@ -83,11 +83,11 @@ public class QualityAdminGeneralController extends FormBasicController {
 		fromNameEl.clearError();
 		if (StringHelper.containsNonWhitespace(fromEmailEl.getValue())) {
 			if (!MailHelper.isValidEmailAddress(fromEmailEl.getValue())) {
-				fromEmailEl.setErrorKey("error.email.invalid", null);
+				fromEmailEl.setErrorKey("error.email.invalid");
 				allOk = false;
 			}
 		} else if (StringHelper.containsNonWhitespace(fromNameEl.getValue())) {
-			fromNameEl.setErrorKey("error.email.name.no.address", null);
+			fromNameEl.setErrorKey("error.email.name.no.address");
 			allOk = false;
 		}
 		

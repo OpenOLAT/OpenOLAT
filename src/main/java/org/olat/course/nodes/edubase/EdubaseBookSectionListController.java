@@ -131,12 +131,12 @@ public class EdubaseBookSectionListController extends FormBasicController {
 		for (BookSectionWrapper bookSectionWrapper: bookSectionWrappers) {
 			String bookId = bookSectionWrapper.getBookIdEl().getValue();
 			if(!StringHelper.containsNonWhitespace(bookId)) {
-				bookSectionWrapper.getBookIdEl().setErrorKey("form.legende.mandatory", null);
+				bookSectionWrapper.getBookIdEl().setErrorKey("form.legende.mandatory");
 				allOk = false;
 			} else {
 				boolean isValidBookId = edubaseManager.validateBookId(bookId);
 				if (!isValidBookId) {
-					bookSectionWrapper.getBookIdEl().setErrorKey("form.error.wrong.section.id", null);
+					bookSectionWrapper.getBookIdEl().setErrorKey("form.error.wrong.section.id");
 					allOk = false;
 				}
 			}
@@ -158,7 +158,7 @@ public class EdubaseBookSectionListController extends FormBasicController {
 					Integer intValue = Integer.parseInt(value);
 					if (intValue <= 0) throw new AssertException("negativ number");
 				} catch(Exception e) {
-					el.setErrorKey("form.error.wrong.int", null);
+					el.setErrorKey("form.error.wrong.int");
 					allOk = false;
 				}
 			}
@@ -174,7 +174,7 @@ public class EdubaseBookSectionListController extends FormBasicController {
 			Integer from = Integer.parseInt(fromEl.getValue());
 			Integer to = Integer.parseInt(toEl.getValue());
 			if (from > 0 && to > 0 && from > to) {
-				toEl.setErrorKey("form.error.page.to.higher.from", null);
+				toEl.setErrorKey("form.error.page.to.higher.from");
 				allOk = false;
 			}
 		} catch (Exception e) {

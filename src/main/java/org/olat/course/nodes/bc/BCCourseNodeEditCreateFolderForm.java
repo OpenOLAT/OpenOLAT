@@ -68,7 +68,7 @@ public class BCCourseNodeEditCreateFolderForm extends FormBasicController {
 		
 		createPath.clearError();
 		if(!StringHelper.containsNonWhitespace(createPath.getValue())) {
-			createPath.setErrorKey("form.legende.mandatory", null);
+			createPath.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

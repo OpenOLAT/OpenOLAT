@@ -235,7 +235,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 			
 			boolean jwtSecretOk = validateIsMandatory(jwtSecretEl);
 			if (jwtSecretOk && !onlyOfficeSecurityService.isValidSecret(jwtSecretEl.getValue())) {
-				jwtSecretEl.setErrorKey("admin.jwt.secret.invalid", null);
+				jwtSecretEl.setErrorKey("admin.jwt.secret.invalid");
 				jwtSecretOk = false;
 			}
 			allOk &= jwtSecretOk;

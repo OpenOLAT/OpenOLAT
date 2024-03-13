@@ -130,14 +130,14 @@ public class DocumentPoolAdminConfigurationController extends  FormBasicControll
 		
 		taxonomyTreeEl.clearError();
 		if(enableEl.isAtLeastSelected(1) && (!taxonomyTreeEl.isOneSelected() || !StringHelper.isLong(taxonomyTreeEl.getSelectedKey()))) {
-			taxonomyTreeEl.setErrorKey("form.legende.mandatory", null);
+			taxonomyTreeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		webDAVMountPointEl.clearError();
 		if(enableEl.isAtLeastSelected(1)) {
 			if(!StringHelper.containsNonWhitespace(webDAVMountPointEl.getValue())) {
-				webDAVMountPointEl.setErrorKey("form.legende.mandatory", null);
+				webDAVMountPointEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

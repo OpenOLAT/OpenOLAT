@@ -197,16 +197,16 @@ public class ReminderAdminController extends FormBasicController {
 			try {
 				int val = Integer.parseInt(value);
 				if(val < 0) {
-					textEl.setErrorKey("text.element.error.minvalue", new String[]{ "0" });
+					textEl.setErrorKey("text.element.error.minvalue", "0");
 				} else if(val > max) {
-					textEl.setErrorKey("text.element.error.maxvalue", new String[]{ Integer.toString(max) });
+					textEl.setErrorKey("text.element.error.maxvalue", Integer.toString(max));
 				}
 			} catch (NumberFormatException e) {
-				textEl.setErrorKey("integer.element.int.error", null);
+				textEl.setErrorKey("integer.element.int.error");
 				allOk &= false;
 			}
 		} else {
-			textEl.setErrorKey("form.legende.mandatory", null);
+			textEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

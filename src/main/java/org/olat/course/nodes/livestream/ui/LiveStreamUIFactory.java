@@ -36,7 +36,7 @@ class LiveStreamUIFactory {
 		if(el.isEnabled() && el.isVisible()) {
 			String val = el.getValue();
 			if (!StringHelper.containsNonWhitespace(val)) {
-				el.setErrorKey("form.mandatory.hover", null);
+				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
@@ -53,11 +53,11 @@ class LiveStreamUIFactory {
 				try {
 					Integer.parseInt(val);
 				} catch (NumberFormatException e) {
-					el.setErrorKey("form.error.wrong.int", null);
+					el.setErrorKey("form.error.wrong.int");
 					allOk = false;
 				}
 			} else if (mandatory) {
-				el.setErrorKey("form.mandatory.hover", null);
+				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}

@@ -86,7 +86,7 @@ public class BeforeDateRuleEditor extends RuleEditorFragment {
 		if(!beforeEl.validate()) {
 			allOk &= false;
 		} else if(beforeEl.getDate() == null) {
-			beforeEl.setErrorKey("form.mandatory.hover", null);
+			beforeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		

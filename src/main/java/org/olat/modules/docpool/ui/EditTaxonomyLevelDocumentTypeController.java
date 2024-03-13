@@ -149,7 +149,7 @@ public class EditTaxonomyLevelDocumentTypeController extends FormBasicController
 			try {
 				Integer.parseInt(teachCanReadParentLevelsEl.getValue());
 			} catch (NumberFormatException e) {
-				teachCanReadParentLevelsEl.setErrorKey("error.integer", null);
+				teachCanReadParentLevelsEl.setErrorKey("error.integer");
 				allOk &= false;
 			}
 		}

@@ -197,7 +197,7 @@ public class SystemRegistrationAdminController extends FormBasicController {
 			webSiteDescription.setVisible(publishWebSiteSelection.isSelected(0));
 		} else if (source == email && addToAnnounceListSelection.isSelected(0)) {
 			if (!MailHelper.isValidEmailAddress(email.getValue()) || !StringHelper.containsNonWhitespace(email.getValue())) {
-				email.setErrorKey("registration.email.error", null);
+				email.setErrorKey("registration.email.error");
 			}
 		}
 		// Now collect temporary valid data

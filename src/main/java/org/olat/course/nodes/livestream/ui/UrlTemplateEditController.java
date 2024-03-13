@@ -82,14 +82,14 @@ public class UrlTemplateEditController extends FormBasicController {
 		
 		nameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		url1El.clearError();
 		url2El.clearError();
 		if (!StringHelper.containsNonWhitespace(url1El.getValue()) && !StringHelper.containsNonWhitespace(url2El.getValue())) {
-			url1El.setErrorKey("form.legende.mandatory", null);
+			url1El.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			allOk &= validateUrl(url1El);
@@ -106,7 +106,7 @@ public class UrlTemplateEditController extends FormBasicController {
 			try {
 				new URL(textEl.getValue()).toURI();
 			} catch(Exception e) {
-				textEl.setErrorKey("error.url.not.valid", null);
+				textEl.setErrorKey("error.url.not.valid");
 				allOk &= false;
 			}
 		}

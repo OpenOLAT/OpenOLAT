@@ -86,7 +86,7 @@ public class DateRuleEditor extends RuleEditorFragment {
 		if(!afterEl.validate()) {
 			allOk &= false;
 		} else if(afterEl.getDate() == null) {
-			afterEl.setErrorKey("form.mandatory.hover", null);
+			afterEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		

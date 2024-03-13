@@ -192,7 +192,7 @@ public class Card2BrainAdminController extends FormBasicController {
 		boolean allOk = true;
 		
 		if (!StringHelper.containsNonWhitespace(textElement.getValue())) {
-			textElement.setErrorKey(FORM_MISSING_MANDATORY, null);
+			textElement.setErrorKey(FORM_MISSING_MANDATORY);
 			allOk &= false;
 		}
 		

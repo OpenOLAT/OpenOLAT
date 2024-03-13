@@ -111,13 +111,13 @@ public class CourseDisclaimerConsentController extends FormBasicController {
 			disc1check1.clearError();
 			if (!disc1check1.getSelectedKeys().contains(onKeys[0])) {
 				allOk &= false;
-				disc1check1.setErrorKey("course.disclaimer.error", null);
+				disc1check1.setErrorKey("course.disclaimer.error");
 			}
 			if (disc1check2 != null) {
 				disc1check2.clearError();
 				if (!disc1check2.getSelectedKeys().contains(onKeys[0])) {
 					allOk &= false;
-					disc1check2.setErrorKey("course.disclaimer.error", null);
+					disc1check2.setErrorKey("course.disclaimer.error");
 				}
 			} 
 		}
@@ -126,13 +126,13 @@ public class CourseDisclaimerConsentController extends FormBasicController {
 			disc2check1.clearError();
 			if (!disc2check1.getSelectedKeys().contains(onKeys[0])) {
 				allOk &= false;
-				disc2check1.setErrorKey("course.disclaimer.error", null);
+				disc2check1.setErrorKey("course.disclaimer.error");
 			}
 			if (disc2check2 != null) { 
 				disc2check2.clearError();
 				if(!disc2check2.getSelectedKeys().contains(onKeys[0])) {
 					allOk &= false;
-					disc2check2.setErrorKey("course.disclaimer.error", null);
+					disc2check2.setErrorKey("course.disclaimer.error");
 				}
 			}
 		}

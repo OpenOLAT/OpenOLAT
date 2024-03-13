@@ -123,7 +123,7 @@ public class PassedExceptionalObligationController extends FormBasicController
 		if (courseNodeEl != null) {
 			courseNodeEl.clearError();
 			if (!courseNodeEl.isOneSelected()) {
-				courseNodeEl.setErrorKey("form.legende.mandatory", null);
+				courseNodeEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -131,10 +131,10 @@ public class PassedExceptionalObligationController extends FormBasicController
 		if (statusEl != null) {
 			statusEl.clearError();
 			if (!statusEl.isAtLeastSelected(1)) {
-				statusEl.setErrorKey("form.legende.mandatory", null);
+				statusEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if (statusEl.isAtLeastSelected(3)) {
-				statusEl.setErrorKey("error.passed.status.selction", null);
+				statusEl.setErrorKey("error.passed.status.selction");
 				allOk &= false;
 			}
 		}

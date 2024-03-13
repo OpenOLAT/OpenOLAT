@@ -128,7 +128,7 @@ public class AddCurriculumElementUserSelectionController extends StepFormBasicCo
 		
 		curriculumElementEl.clearError();
 		if (!curriculumElementEl.isOneSelected()) {
-			curriculumElementEl.setErrorKey("form.legende.mandatory", null);
+			curriculumElementEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

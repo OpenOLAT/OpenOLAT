@@ -111,7 +111,7 @@ public class PasswordConditionEditController extends FormBasicController {
 		passwordField.clearError();
 		if(passwordSwitch.isAtLeastSelected(1)){
 			if(!StringHelper.containsNonWhitespace(passwordField.getValue())) {
-				passwordField.setErrorKey("password.error", null);
+				passwordField.setErrorKey("password.error");
 				valid = false;
 			}
 		} else {

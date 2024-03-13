@@ -71,13 +71,13 @@ public class OpenMeetingsGuestController extends FormBasicController {
 		String firstName = firstNameEl.getValue();
 		firstNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(firstName)) {
-			firstNameEl.setErrorKey("form.legende.mandatory", null);
+			firstNameEl.setErrorKey("form.legende.mandatory");
 		}
 		
 		String lastName = lastNameEl.getValue();
 		lastNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(lastName)) {
-			lastNameEl.setErrorKey("form.legende.mandatory", null);
+			lastNameEl.setErrorKey("form.legende.mandatory");
 		}
 		return super.validateFormLogic(ureq);
 	}

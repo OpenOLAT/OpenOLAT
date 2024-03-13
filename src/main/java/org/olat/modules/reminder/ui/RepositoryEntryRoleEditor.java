@@ -89,7 +89,7 @@ public class RepositoryEntryRoleEditor extends RuleEditorFragment {
 		
 		roleEl.clearError();
 		if(!roleEl.isOneSelected()) {
-			roleEl.setErrorKey("form.mandatory.hover", null);
+			roleEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		

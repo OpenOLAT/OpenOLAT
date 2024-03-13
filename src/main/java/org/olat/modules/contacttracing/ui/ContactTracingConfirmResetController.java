@@ -74,7 +74,7 @@ public class ContactTracingConfirmResetController extends FormBasicController {
 
         if (!confirmationEl.isSelected(0)) {
             allOk = false;
-            confirmationEl.setErrorKey("contact.tracing.reset.mandatory", null);
+            confirmationEl.setErrorKey("contact.tracing.reset.mandatory");
         }
 
         return allOk;

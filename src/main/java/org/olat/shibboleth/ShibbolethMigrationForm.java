@@ -69,10 +69,10 @@ public class ShibbolethMigrationForm extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		if (!securityManager.checkCredentials(authentication, password.getValue())) {
 			if (loginModule.registerFailedLoginAttempt(login.getValue())) {
-				password.setErrorKey("smf.error.blocked", null);
+				password.setErrorKey("smf.error.blocked");
 				log.info(Tracing.M_AUDIT, "Too many failed login attempts for {}. Login blocked.", login.getValue());
 			} else {
-				password.setErrorKey("smf.error.password", null);
+				password.setErrorKey("smf.error.password");
 				log.info(Tracing.M_AUDIT, "Invalid password in ShibbolethMigration for login: {}", login.getValue());
 			}
 			return false;

@@ -222,7 +222,7 @@ public class MediaSiteAdminController extends FormBasicController {
 		textElement.clearError();
 		
 		if (!StringHelper.containsNonWhitespace(textElement.getValue())) {
-			textElement.setErrorKey("form.legende.mandatory", null);
+			textElement.setErrorKey("form.legende.mandatory");
 			return false;
 		}
 		

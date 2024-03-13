@@ -242,7 +242,7 @@ public class OpencastAdminController extends FormBasicController {
 		boolean allOk = true;
 		
 		if (!StringHelper.containsNonWhitespace(textElement.getValue())) {
-			textElement.setErrorKey("form.legende.mandatory", null);
+			textElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

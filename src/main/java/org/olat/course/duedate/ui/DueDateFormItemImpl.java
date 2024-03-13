@@ -152,7 +152,7 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 		if (relative) {
 			String val = textEl.getValue();
 			if(StringHelper.containsNonWhitespace(val) && !StringHelper.isLong(val)) {
-				setErrorKey("form.error.nointeger", null);
+				setErrorKey("form.error.nointeger");
 				return false;
 			}
 		}
@@ -161,7 +161,7 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 	
 	private boolean validateAbsoluteDate() {
 		if (!absoluteDateEl.validate()) {
-			setErrorKey("form.error.date", null);
+			setErrorKey("form.error.date");
 			return false;
 		}
 		return true;

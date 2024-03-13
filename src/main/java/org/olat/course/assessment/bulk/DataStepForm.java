@@ -209,7 +209,7 @@ public class DataStepForm extends StepFormBasicController {
 			returnFileEl.clearError();
 			if(returnFileEl.getUploadFile() != null && returnFileEl.getUploadFile().exists()
 					&& !ZipUtil.isReadable(returnFileEl.getUploadFile())) {
-				returnFileEl.setErrorKey("error.zip", null);
+				returnFileEl.setErrorKey("error.zip");
 				allOk &= false;
 			}
 		}

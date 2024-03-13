@@ -95,7 +95,7 @@ public class BusinessGroupRoleEditor extends RuleEditorFragment {
 			groupEl.select(selectedKey, true);
 		}
 		if(StringHelper.containsNonWhitespace(currentKey) && selectedKey == null) {
-			groupEl.setErrorKey("error.group.not.found", null);
+			groupEl.setErrorKey("error.group.not.found");
 		}
 		return ruleCont;
 	}
@@ -106,7 +106,7 @@ public class BusinessGroupRoleEditor extends RuleEditorFragment {
 		
 		groupEl.clearError();
 		if(!groupEl.isOneSelected()) {
-			groupEl.setErrorKey("form.mandatory.hover", null);
+			groupEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 	

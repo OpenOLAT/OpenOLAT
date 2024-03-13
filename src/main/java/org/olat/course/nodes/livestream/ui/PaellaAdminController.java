@@ -68,7 +68,7 @@ public class PaellaAdminController extends FormBasicController {
 		
 		configEl.clearError();
 		if (!StringHelper.containsNonWhitespace(configEl.getValue())) {
-			configEl.setErrorKey("form.legende.mandatory", null);
+			configEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

@@ -222,7 +222,7 @@ class PublishStepCatalog extends BasicStep {
 			boolean allOk = true;
 			catalogBox.clearError();
 			if(catalogBox.isOneSelected() && catalogBox.isSelected(0) && isDeleteLinksEmpty()) {
-				catalogBox.setErrorKey("publish.catalog.error", null);
+				catalogBox.setErrorKey("publish.catalog.error");
 				allOk &= false;
 			}
 			return allOk && super.validateFormLogic(ureq);

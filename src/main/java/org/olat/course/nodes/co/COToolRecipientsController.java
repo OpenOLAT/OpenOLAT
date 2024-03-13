@@ -114,7 +114,7 @@ public class COToolRecipientsController extends FormBasicController {
 		
 		recipientsEl.clearError();
 		if (!recipientsEl.isAtLeastSelected(1)) {
-			recipientsEl.setErrorKey("tool.recipients.mandatory", null);
+			recipientsEl.setErrorKey("tool.recipients.mandatory");
 			allOk = false;
 		}
 		

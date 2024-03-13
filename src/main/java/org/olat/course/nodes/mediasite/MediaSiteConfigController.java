@@ -160,7 +160,7 @@ public class MediaSiteConfigController extends FormBasicController {
 		if (!StringHelper.containsNonWhitespace(presentationUrlElement.getValue())) {
 			allOk &= false;
 			
-			presentationUrlElement.setErrorKey("form.legende.mandatory", null);
+			presentationUrlElement.setErrorKey("form.legende.mandatory");
 		}
 		
 		return allOk;

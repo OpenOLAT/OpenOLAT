@@ -161,10 +161,10 @@ public class Card2BrainConfigController extends FormBasicController {
 		boolean allOk = true;
 
 		if (!StringHelper.containsNonWhitespace(alias)) {
-			flashcardAliasEl.setErrorKey(FORM_MISSING_MANDATORY, null);
+			flashcardAliasEl.setErrorKey(FORM_MISSING_MANDATORY);
 			allOk &= false;
 		} else if (!card2BrainManager.checkSetOfFlashcards(alias)) {
-			flashcardAliasEl.setErrorKey("edit.warning.aliasCheckFailed", null);
+			flashcardAliasEl.setErrorKey("edit.warning.aliasCheckFailed");
 			allOk &= false;
 		}
 
@@ -176,11 +176,11 @@ public class Card2BrainConfigController extends FormBasicController {
 
 		if (isPrivateLoginActivated()) {
 			if (!StringHelper.containsNonWhitespace(privateKeyEl.getValue())) {
-				privateKeyEl.setErrorKey(FORM_MISSING_MANDATORY, null);
+				privateKeyEl.setErrorKey(FORM_MISSING_MANDATORY);
 				allOk &= false;
 			}
 			if (!StringHelper.containsNonWhitespace(privateSecretEl.getValue())) {
-				privateSecretEl.setErrorKey(FORM_MISSING_MANDATORY, null);
+				privateSecretEl.setErrorKey(FORM_MISSING_MANDATORY);
 				allOk &= false;
 			}
 		}

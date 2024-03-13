@@ -88,27 +88,27 @@ public class NewPseudonymController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(value)) {
 			List<Pseudonym> pseudonyms = forumManager.getPseudonyms(value);
 			if(pseudonyms.size() > 0) {
-				pseudonymEl.setErrorKey("error.pseudonym", null);
+				pseudonymEl.setErrorKey("error.pseudonym");
 				allOk &= false;
 			} else if(forumManager.isPseudonymInUseInForums(value)) {
-				pseudonymEl.setErrorKey("error.pseudonym", null);
+				pseudonymEl.setErrorKey("error.pseudonym");
 				allOk &= false;
 			}
 			
 			if(allOk) {
 				List<IdentityShort> sameValues = securityManager.searchIdentityShort(value, 2);
 				if(sameValues.size() > 0) {
-					pseudonymEl.setErrorKey("error.pseudonym", null);
+					pseudonymEl.setErrorKey("error.pseudonym");
 					allOk &= false;
 				}
 			}
 		} else {
-			pseudonymEl.setErrorKey("form.legende.mandatory", null);
+			pseudonymEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		if(!StringHelper.containsNonWhitespace(password)) {
-			passwordEl.setErrorKey("form.legende.mandatory", null);
+			passwordEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

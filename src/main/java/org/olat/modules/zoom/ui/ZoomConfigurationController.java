@@ -164,7 +164,7 @@ public class ZoomConfigurationController extends FormBasicController {
         profilesTableEl.clearError();
         if (enabled) {
             if (profilesTableModel.getRowCount() == 0) {
-                profilesTableEl.setErrorKey("zoom.profiles.mandatory", null);
+                profilesTableEl.setErrorKey("zoom.profiles.mandatory");
                 valid = false;
             }
         }

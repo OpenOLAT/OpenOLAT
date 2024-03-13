@@ -100,15 +100,15 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 			ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
 			if (!validationResult.isValid()) {
 				String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
-				usernameEl.setErrorKey("error.username.invalid", new String[] { descriptions });
+				usernameEl.setErrorKey("error.username.invalid", descriptions);
 				allOk &= false;
 			} else if(!isNickNameValid(username)) {
 
-				usernameEl.setErrorKey("sm.error.username_in_use", null);
+				usernameEl.setErrorKey("sm.error.username_in_use");
 				allOk &= false;
 			}
 		} else {
-			usernameEl.setErrorKey("form.legende.mandatory", null);
+			usernameEl.setErrorKey("form.legende.mandatory");
 			return false;
 		} 
 		

@@ -127,10 +127,10 @@ public class SystemImageEditController extends FormBasicController {
 			uploadEl.clearError();
 			if (uploadEl.isVisible()) {
 				if (uploadEl.getUploadFile() == null) {
-					uploadEl.setErrorKey("form.legende.mandatory", null);
+					uploadEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				} else if (courseStyleService.existsSystemImage(uploadEl.getUploadFileName())) {
-					uploadEl.setErrorKey("error.system.image.exists", null);
+					uploadEl.setErrorKey("error.system.image.exists");
 					allOk &= false;
 				}
 			}

@@ -101,7 +101,7 @@ public class QualityAdminSuggestionController extends FormBasicController {
 			emailAddressesEl.clearError();
 			List<String> emailAddresses = getEmailAddresses(emailAddressesStr);
 			if (!QualityUIFactory.validateEmailAdresses(emailAddresses)) {
-				emailAddressesEl.setErrorKey("error.email.invalid", null);
+				emailAddressesEl.setErrorKey("error.email.invalid");
 				allOk &= false;
 			}
 		}

@@ -391,14 +391,14 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		easyCurriculumElementCoachesSelectionList.clearError();
 		if(sendToCoaches()) {
 			if(!coachesChoice.isOneSelected()){
-				coachesChoice.setErrorKey("error.no.choice.specified", null);
+				coachesChoice.setErrorKey("error.no.choice.specified");
 				isOK &= false;
 			} else if(MEMEBER_KEY_GROUP.equals(coachesChoice.getSelectedKey()) && isEmpty(easyAreaCoachSelectionList) && isEmpty(easyGroupCoachSelectionList)) {
-				easyAreaCoachSelectionList.setErrorKey("error.no.group.specified", null);
-				easyGroupCoachSelectionList.setErrorKey("error.no.group.specified", null);
+				easyAreaCoachSelectionList.setErrorKey("error.no.group.specified");
+				easyGroupCoachSelectionList.setErrorKey("error.no.group.specified");
 				isOK &= false;
 			} else if(MEMEBER_KEY_CURRICULUM_ELEMENT.equals(coachesChoice.getSelectedKey()) && isEmpty(easyCurriculumElementCoachesSelectionList)) {
-				easyCurriculumElementCoachesSelectionList.setErrorKey("error.no.curriculum.element.specified", null);
+				easyCurriculumElementCoachesSelectionList.setErrorKey("error.no.curriculum.element.specified");
 				isOK &= false;
 			}
 		}
@@ -409,14 +409,14 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		easyCurriculumElementParticipantsSelectionList.clearError();
 		if(sendToPartips()) {
 			if(!participantsChoice.isOneSelected()) {
-				participantsChoice.setErrorKey("error.no.choice.specified", null);
+				participantsChoice.setErrorKey("error.no.choice.specified");
 				isOK &= false;
 			} else if(MEMEBER_KEY_GROUP.equals(participantsChoice.getSelectedKey()) && isEmpty(easyAreaParticipantsSelectionList) &&  isEmpty(easyGroupParticipantsSelectionList)) {
-				easyAreaParticipantsSelectionList.setErrorKey("error.no.group.specified", null);
-				easyGroupParticipantsSelectionList.setErrorKey("error.no.group.specified", null);
+				easyAreaParticipantsSelectionList.setErrorKey("error.no.group.specified");
+				easyGroupParticipantsSelectionList.setErrorKey("error.no.group.specified");
 				isOK &= false;
 			} else if(MEMEBER_KEY_CURRICULUM_ELEMENT.equals(participantsChoice.getSelectedKey()) && isEmpty(easyCurriculumElementParticipantsSelectionList)) {
-				easyCurriculumElementParticipantsSelectionList.setErrorKey("error.no.curriculum.element.specified", null);
+				easyCurriculumElementParticipantsSelectionList.setErrorKey("error.no.curriculum.element.specified");
 				isOK &= false;
 			}
 		}

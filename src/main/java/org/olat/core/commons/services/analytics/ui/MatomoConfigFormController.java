@@ -71,16 +71,16 @@ public class MatomoConfigFormController extends FormBasicController {
 		
 		siteIdEl.clearError();
 		if(!StringHelper.containsNonWhitespace(siteIdEl.getValue())) {
-			siteIdEl.setErrorKey("form.legende.mandatory", null);
+			siteIdEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!StringHelper.isLong(siteIdEl.getValue())) {
-			siteIdEl.setErrorKey("form.error.nointeger", null);
+			siteIdEl.setErrorKey("form.error.nointeger");
 			allOk &= false;
 		}
 		
 		trackerUrlEl.clearError();
 		if(!StringHelper.containsNonWhitespace(trackerUrlEl.getValue())) {
-			trackerUrlEl.setErrorKey("form.legende.mandatory", null);
+			trackerUrlEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

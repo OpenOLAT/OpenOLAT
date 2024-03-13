@@ -580,14 +580,14 @@ public class QualityUIFactory {
 				try {
 					int value = Integer.parseInt(val);
 					if(min > value) {
-						el.setErrorKey("error.number.greater", new String[] {String.valueOf(min)});
+						el.setErrorKey("error.number.greater", String.valueOf(min));
 						allOk = false;
 					} else if(max < value) {
-						el.setErrorKey("error.number.lower", new String[] {String.valueOf(max)});
+						el.setErrorKey("error.number.lower", String.valueOf(max));
 						allOk = false;
 					}
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.wrong.number", null);
+					el.setErrorKey("error.wrong.number");
 					allOk = false;
 				}
 			}
@@ -605,14 +605,14 @@ public class QualityUIFactory {
 				try {
 					long value = Long.parseLong(val);
 					if(min > value) {
-						el.setErrorKey("error.number.greater", new String[] {String.valueOf(min)});
+						el.setErrorKey("error.number.greater", String.valueOf(min));
 						allOk = false;
 					} else if(max < value) {
-						el.setErrorKey("error.number.lower", new String[] {String.valueOf(max)});
+						el.setErrorKey("error.number.lower", String.valueOf(max));
 						allOk = false;
 					}
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.wrong.number", null);
+					el.setErrorKey("error.wrong.number");
 					allOk = false;
 				}
 			}
@@ -630,14 +630,14 @@ public class QualityUIFactory {
 				try {
 					double value = Double.parseDouble(val);
 					if(min > value) {
-						el.setErrorKey("error.wrong.number", null);
+						el.setErrorKey("error.wrong.number");
 						allOk = false;
 					} else if(max < value) {
-						el.setErrorKey("error.wrong.number", null);
+						el.setErrorKey("error.wrong.number");
 						allOk = false;
 					}
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.wrong.number", null);
+					el.setErrorKey("error.wrong.number");
 					allOk = false;
 				}
 			}
@@ -651,7 +651,7 @@ public class QualityUIFactory {
 		if(el.isEnabled() && el.isVisible()) {
 			String value = el.getValue();
 			if (!StringHelper.containsNonWhitespace(value)) {
-				el.setErrorKey("form.mandatory.hover", null);
+				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
@@ -663,7 +663,7 @@ public class QualityUIFactory {
 		el.clearError();
 		if(el.isEnabled() && el.isVisible()) {
 			if (!el.isOneSelected()) {
-				el.setErrorKey("form.mandatory.hover", null);
+				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
@@ -675,7 +675,7 @@ public class QualityUIFactory {
 		el.clearError();
 		if(el.isEnabled() && el.isVisible()) {
 			if (!el.isAtLeastSelected(1)) {
-				el.setErrorKey("form.mandatory.hover", null);
+				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
@@ -687,7 +687,7 @@ public class QualityUIFactory {
 		el.clearError();
 		if(el.isEnabled() && el.isVisible()) {
 			if (el.getSelectedKeys().isEmpty()) {
-				el.setErrorKey("form.mandatory.hover", null);
+				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
@@ -699,7 +699,7 @@ public class QualityUIFactory {
 		el.clearError();
 		if(el.isEnabled() && el.isVisible()) {
 			if (el.getDate() == null) {
-				el.setErrorKey("form.mandatory.hover", null);
+				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}

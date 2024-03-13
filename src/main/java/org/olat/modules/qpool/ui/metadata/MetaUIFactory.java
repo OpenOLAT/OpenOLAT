@@ -123,7 +123,7 @@ public class MetaUIFactory {
 		if(enabled) {
 			String value = el.getValue();
 			if(mandatory && !StringHelper.containsNonWhitespace(value)) {
-				el.setErrorKey("form.mandatory.hover", null);
+				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			} else if (value != null && value.length() > maxLength) {
 				String[] lengths = new String[]{ Integer.toString(maxLength), Integer.toString(value.length())};
@@ -144,14 +144,14 @@ public class MetaUIFactory {
 				try {
 					double value = Integer.parseInt(val);
 					if(min > value) {
-						el.setErrorKey("error.wrongInteger", null);
+						el.setErrorKey("error.wrongInteger");
 						allOk = false;
 					} else if(max < value) {
-						el.setErrorKey("error.wrongInteger", null);
+						el.setErrorKey("error.wrongInteger");
 						allOk = false;
 					}
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.wrongInteger", null);
+					el.setErrorKey("error.wrongInteger");
 					allOk = false;
 				}
 			}
@@ -169,14 +169,14 @@ public class MetaUIFactory {
 				try {
 					double value = Double.parseDouble(val);
 					if(min > value) {
-						el.setErrorKey("error.wrongFloat", null);
+						el.setErrorKey("error.wrongFloat");
 						allOk = false;
 					} else if(max < value) {
-						el.setErrorKey("error.wrongFloat", null);
+						el.setErrorKey("error.wrongFloat");
 						allOk = false;
 					}
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.wrongFloat", null);
+					el.setErrorKey("error.wrongFloat");
 					allOk = false;
 				}
 			}
@@ -189,7 +189,7 @@ public class MetaUIFactory {
 		
 		el.clearError();
 		if(enabled && !el.isOneSelected()) {
-			el.setErrorKey("form.mandatory.hover", null);
+			el.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		return allOk;

@@ -66,13 +66,13 @@ public class BulksSMSConfigurationController extends AbstractSMSConfigurationCon
 		
 		tokenIdEl.clearError();
 		if(!StringHelper.containsNonWhitespace(tokenIdEl.getValue())) {
-			tokenIdEl.setErrorKey("form.legende.mandatory", null);
+			tokenIdEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		tokenSecretEl.clearError();
 		if(!StringHelper.containsNonWhitespace(tokenSecretEl.getValue())) {
-			tokenSecretEl.setErrorKey("form.legende.mandatory", null);
+			tokenSecretEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

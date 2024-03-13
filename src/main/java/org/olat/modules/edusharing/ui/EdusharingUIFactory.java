@@ -47,7 +47,7 @@ public class EdusharingUIFactory {
 		if(el.isEnabled() && el.isVisible()) {
 			String value = el.getValue();
 			if (!StringHelper.containsNonWhitespace(value)) {
-				el.setErrorKey("form.mandatory.hover", null);
+				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
@@ -64,14 +64,14 @@ public class EdusharingUIFactory {
 				try {
 					int value = Integer.parseInt(val);
 					if(min > value) {
-						el.setErrorKey("error.wrong.number", null);
+						el.setErrorKey("error.wrong.number");
 						allOk = false;
 					} else if(max < value) {
-						el.setErrorKey("error.wrong.number", null);
+						el.setErrorKey("error.wrong.number");
 						allOk = false;
 					}
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.wrong.number", null);
+					el.setErrorKey("error.wrong.number");
 					allOk = false;
 				}
 			}

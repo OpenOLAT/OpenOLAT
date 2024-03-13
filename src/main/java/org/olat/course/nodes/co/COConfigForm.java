@@ -167,7 +167,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 		boolean isOK = super.validateFormLogic(ureq);
 		
 		if (!sendToCoaches() && !sendToPartips() && !wantEmail.isSelected(0) && !sendToOwners()) {
-			recipentsContainer.setErrorKey("no.recipents.specified", null);
+			recipentsContainer.setErrorKey("no.recipents.specified");
 			isOK = false;
 		}
 		
@@ -185,7 +185,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 		if (wantEmail.isSelected(0) &&
 				(emailAdress == null || emailAdress.length == 0|| "".equals(emailAdress[0]))) {
 			// otherwise the entry field shows that no e-mails are specified
-			teArElEmailToAdresses.setErrorKey("email.not.specified", null);
+			teArElEmailToAdresses.setErrorKey("email.not.specified");
 			isOK = false;
 		}
 		
@@ -196,7 +196,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 				String eAd = emailAdress[i].trim();
 				boolean emailok = MailHelper.isValidEmailAddress(eAd);
 				if (!emailok) {
-					teArElEmailToAdresses.setErrorKey("email.not.valid", null);
+					teArElEmailToAdresses.setErrorKey("email.not.valid");
 					isOK = false;
 				}
 				eList.add(eAd);

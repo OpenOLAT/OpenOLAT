@@ -97,7 +97,7 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 				elementEl.select(elementId, true);
 			} else {
 				elementEl.enableNoneSelection(translator.translate("element.deleted"));
-				ruleCont.setErrorKey("error.element.not.available", null);
+				ruleCont.setErrorKey("error.element.not.available");
 			}
 		} else if (elementEl.getKeys().length > 0) {
 			elementEl.select(elementEl.getKeys()[0], true);
@@ -129,7 +129,7 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 		
 		ruleCont.clearError();
 		if (!elementEl.isOneSelected()) {
-			ruleCont.setErrorKey("form.legende.mandatory", null);
+			ruleCont.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

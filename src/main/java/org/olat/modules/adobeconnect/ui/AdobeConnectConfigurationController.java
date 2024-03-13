@@ -213,7 +213,7 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 		if(moduleEnabled.isAtLeastSelected(1)) {
 			providerEl.clearError();
 			if(!providerEl.isOneSelected()) {
-				providerEl.setErrorKey("form.legende.mandatory", null);
+				providerEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
@@ -236,28 +236,28 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 				URI uri = new URI(url);
 				uri.getHost();
 			} catch(Exception e) {
-				urlEl.setErrorKey("error.url.invalid", null);
+				urlEl.setErrorKey("error.url.invalid");
 				allOk &= false;
 			}
 		} else {
-			urlEl.setErrorKey("form.legende.mandatory", null);
+			urlEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		String login = loginEl.getValue();
 		loginEl.clearError();
 		if(!StringHelper.containsNonWhitespace(login)) {
-			loginEl.setErrorKey("form.legende.mandatory", null);
+			loginEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(login.length() >= 255) {
-			loginEl.setErrorKey("form.error.toolong", new String[] { "255" });
+			loginEl.setErrorKey("form.error.toolong", "255");
 			allOk &= false;
 		}
 		
 		String password = passwordEl.getValue();
 		passwordEl.clearError();
 		if(!StringHelper.containsNonWhitespace(password)) {
-			passwordEl.setErrorKey("form.legende.mandatory", null);
+			passwordEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -271,7 +271,7 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 			boolean ok = checkConnection(errors);
 			if(!ok || errors.hasErrors()) {
 				passwordEl.setValue("");
-				urlEl.setErrorKey("error.customerDoesntExist", null);
+				urlEl.setErrorKey("error.customerDoesntExist");
 				allOk &= false;
 			}
 		} catch (Exception e) {
@@ -332,7 +332,7 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 			CollaborationToolsFactory.getInstance().initAvailableTools();
 		} catch (URISyntaxException e) {
 			logError("", e);
-			urlEl.setErrorKey("error.url.invalid", null);
+			urlEl.setErrorKey("error.url.invalid");
 		}
 	}
 	

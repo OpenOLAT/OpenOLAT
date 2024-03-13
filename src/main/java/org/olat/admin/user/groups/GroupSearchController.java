@@ -285,7 +285,7 @@ public class GroupSearchController extends StepFormBasicController {
 		List<Long> partGroups = getCheckedParticipantKeys();
 		boolean result = !ownerGroups.isEmpty() || !partGroups.isEmpty();
 		if (!result) {
-			errorComp.setErrorKey("error.choose.one", null);
+			errorComp.setErrorKey("error.choose.one");
 		}
 		return result;
 	}

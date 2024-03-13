@@ -176,7 +176,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 		if(userNameColumnEl != null) {
 			userNameColumnEl.clearError();
 			if(!userNameColumnEl.isOneSelected()) {
-				userNameColumnEl.setErrorKey("form.legende.mandatory", null);
+				userNameColumnEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

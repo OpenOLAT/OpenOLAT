@@ -242,7 +242,7 @@ public class GeneratorConfigController extends FormBasicController {
 		allOk &= validateIsMandatory(organisationsEl);
 		
 		if (formEntry == null) {
-			evaFormNotChoosen.setErrorKey("form.mandatory.hover", null);
+			evaFormNotChoosen.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		}
 		

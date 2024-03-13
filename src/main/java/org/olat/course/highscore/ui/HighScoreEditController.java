@@ -237,7 +237,7 @@ public class HighScoreEditController extends FormBasicController {
 		
 		if (allowHighScore.isSelected(0) && (!showPosition.isSelected(0) && !showPodium.isSelected(0)
 				&& !showListing.isSelected(0) && !showHistogram.isSelected(0))) {
-			allowHighScore.setErrorKey("highscore.error.noselection", null);
+			allowHighScore.setErrorKey("highscore.error.noselection");
 		} else {
 			allowHighScore.clearError();
 		}

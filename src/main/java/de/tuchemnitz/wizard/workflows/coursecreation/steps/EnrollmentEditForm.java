@@ -117,14 +117,14 @@ public class EnrollmentEditForm extends FormBasicController {
 		// create group count textbox
 		groupCount = uifactory.addTextElement("groupCount", "en.groupcount", 3, courseConfig.getGroupCount().toString(), formLayout);
 		groupCount.setLabel("en.groupcount", null);
-		groupCount.setErrorKey("cce.enrollment.error.groupcount", null);
+		groupCount.setErrorKey("cce.enrollment.error.groupcount");
 		groupCount.setRegexMatchCheck("\\d*", "cce.enrollment.error.groupcount");
 		groupCount.showError(false);
 		
 		String subCount = courseConfig.getSubscriberCount() == null ? "25" : courseConfig.getSubscriberCount().toString();
 		subscriberCount = uifactory.addTextElement("subscriberCount", "en.subscribercount",
 					3, subCount, formLayout);
-		subscriberCount.setErrorKey("cce.enrollment.error.subscribercount", null);
+		subscriberCount.setErrorKey("cce.enrollment.error.subscribercount");
 		subscriberCount.showError(false);
 
 		accessLimit = uifactory.addCheckboxesVertical("accessLimit", formLayout, keys, values, 1);
@@ -174,11 +174,11 @@ public class EnrollmentEditForm extends FormBasicController {
 			try {
 				Integer.parseInt(groupCountStr);
 			} catch (NumberFormatException e) {
-				groupCount.setErrorKey("form.error.nointeger", null);
+				groupCount.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		} else {
-			groupCount.setErrorKey("form.mandatory.hover", null);
+			groupCount.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
@@ -187,7 +187,7 @@ public class EnrollmentEditForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Integer groupCountInt = new Integer(groupCount.getValue());
+		Integer groupCountInt = Integer.valueOf(groupCount.getValue());
 		// minimum of one group
 		if (groupCountInt <= 0) {
 			groupCountInt = 1;
@@ -195,7 +195,7 @@ public class EnrollmentEditForm extends FormBasicController {
 		courseConfig.setGroupCount(groupCountInt);
 		String s = subscriberCount.getValue().trim();
 		if (s.length() > 0) {
-			courseConfig.setSubscriberCount(new Integer(s));
+			courseConfig.setSubscriberCount(Integer.valueOf(s));
 		}
 		courseConfig.setEnableAccessLimit(accessLimit.isAtLeastSelected(1));
 		Collection<String> selectedCourseElements = courseElements.getSelectedKeys();

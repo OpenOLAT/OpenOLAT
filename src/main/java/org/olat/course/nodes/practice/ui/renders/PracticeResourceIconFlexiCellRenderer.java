@@ -42,7 +42,8 @@ public class PracticeResourceIconFlexiCellRenderer extends AbstractCSSIconFlexiC
 					   FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		List<Object> cellValues = new ArrayList<>();
 		if (cellValue.toString().contains(",")) {
-			cellValues = Arrays.asList(cellValue.toString().split(","));
+			Object[] valuesArray = cellValue.toString().split(",");
+			cellValues = Arrays.asList(valuesArray);
 		}
 		if (cellValues.isEmpty()) {
 			target.append("<span><i class=\"o_icon ")

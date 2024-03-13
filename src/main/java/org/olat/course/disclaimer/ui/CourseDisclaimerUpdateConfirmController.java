@@ -121,7 +121,7 @@ public class CourseDisclaimerUpdateConfirmController extends FormBasicController
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
-			acknowledgeEl.setErrorKey("dialog.confirm.error", null);
+			acknowledgeEl.setErrorKey("dialog.confirm.error");
 			allOk &= false;
 		}
 		

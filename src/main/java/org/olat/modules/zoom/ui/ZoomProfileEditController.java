@@ -150,14 +150,14 @@ public class ZoomProfileEditController extends FormBasicController {
             for (String mailDomain : mailDomains) {
                 if (StringHelper.containsNonWhitespace(mailDomain)) {
                     if (mailDomain.contains("@")) {
-                        mailDomainsEl.setErrorKey("zoom.profile.mailDomains.invalid", null);
+                        mailDomainsEl.setErrorKey("zoom.profile.mailDomains.invalid");
                         return false;
                     }
                     try {
                         String urlStringFromDomain = "https://" + mailDomain;
                         new URL(urlStringFromDomain).toURI();
                     } catch (Exception e) {
-                        mailDomainsEl.setErrorKey("zoom.profile.mailDomains.invalid", null);
+                        mailDomainsEl.setErrorKey("zoom.profile.mailDomains.invalid");
                         return false;
                     }
                 }

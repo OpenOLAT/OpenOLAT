@@ -90,7 +90,7 @@ public class DurationConfirmationController extends FormBasicController {
 			}
 		}
 		if (!allOk) {
-			el.setErrorKey(i18nKey, null);
+			el.setErrorKey(i18nKey);
 		}
 		return allOk;
 	}
