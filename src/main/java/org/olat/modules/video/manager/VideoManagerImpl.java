@@ -1799,7 +1799,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 			return null;
 		}
 
-		String thumbnailUrl = oembedJson.getString("thumbnail_url");
+		String thumbnailUrl = oembedJson.optString("thumbnail_url");
 		if (!StringHelper.containsNonWhitespace(thumbnailUrl)) {
 			log.info("Could not find thumbnail_url in oEmbed data '{}' for url '{}'", oembedUrl, url);
 			return null;
