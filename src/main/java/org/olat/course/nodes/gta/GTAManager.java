@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.model.DueDate;
@@ -526,5 +527,8 @@ public interface GTAManager {
 	
 	public void log(String step, SubmitEvent event, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
 			CourseEnvironment courseEnv, GTACourseNode cNode, Role by);
+	
+	public void logIfChanged(Date newDueDate, Date dueDate, String dueDateName, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup, 
+			CourseEnvironment courseEnv, GTACourseNode cNode, Role by, Formatter formatter);
 
 }

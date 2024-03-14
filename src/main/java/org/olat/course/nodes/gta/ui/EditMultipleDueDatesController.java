@@ -200,15 +200,23 @@ public class EditMultipleDueDatesController extends FormBasicController {
 		for (Task task : tasks) {
 			TaskDueDate dueDates = gtaManager.getDueDatesTask(task);
 			if (assignmentDueDateEl.isEnabled()) {
+				gtaManager.logIfChanged(assignmentDueDateEl.getDate(), dueDates.getAssignmentDueDate(), "Assignment", task,
+						getIdentity(), task.getIdentity(), task.getBusinessGroup(), courseEnv, gtaNode, Role.coach, formatter);
 				dueDates.setAssignmentDueDate(assignmentDueDateEl.getDate());
 			}
 			if (submissionDueDateEl.isEnabled()) {
+				gtaManager.logIfChanged(submissionDueDateEl.getDate(), dueDates.getSubmissionDueDate(), "Submission", task,
+						getIdentity(), task.getIdentity(), task.getBusinessGroup(), courseEnv, gtaNode, Role.coach, formatter);
 				dueDates.setSubmissionDueDate(submissionDueDateEl.getDate());
 			}
 			if (revisionDueDateEl.isEnabled()) {
+				gtaManager.logIfChanged(revisionDueDateEl.getDate(), dueDates.getRevisionsDueDate(), "Revision", task,
+						getIdentity(), task.getIdentity(), task.getBusinessGroup(), courseEnv, gtaNode, Role.coach, formatter);
 				dueDates.setRevisionsDueDate(revisionDueDateEl.getDate());
 			}
 			if (solutionDueDateEl.isEnabled()) {
+				gtaManager.logIfChanged(solutionDueDateEl.getDate(), dueDates.getSolutionDueDate(), "Solution", task,
+						getIdentity(), task.getIdentity(), task.getBusinessGroup(), courseEnv, gtaNode, Role.coach, formatter);
 				dueDates.setSolutionDueDate(solutionDueDateEl.getDate());
 			}
 			dueDates = gtaManager.updateTaskDueDate(dueDates);
