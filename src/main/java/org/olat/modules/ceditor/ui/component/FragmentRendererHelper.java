@@ -351,6 +351,23 @@ public class FragmentRendererHelper {
 		return alignment == ImageHorizontalAlignment.leftfloat || alignment == ImageHorizontalAlignment.rightfloat;
 	}
 
+	private static ImageHorizontalAlignment getHorizontalAlignment(PageElement element) {
+		if (element instanceof Image image) {
+			return getHorizontalAlignment(image.getImageSettings());
+		}
+		if (element instanceof MediaPart mediaPart) {
+			return getHorizontalAlignment(mediaPart.getImageSettings());
+		}
+		return null;
+	}
+
+	private static ImageHorizontalAlignment getHorizontalAlignment(ImageSettings imageSettings) {
+		if (imageSettings == null) {
+			return null;
+		}
+		return imageSettings.getAlignment();
+	}
+
 	public static void renderSelectionFrame(StringOutput sb, String dispatchId, PageElement element) {
 		if (!needsSelectionFrame(element)) {
 			return;
@@ -366,19 +383,22 @@ public class FragmentRendererHelper {
 			return;
 		}
 		boolean alertDivPresent = needsAbsolutePositionAlertDiv(element);
+		boolean leftFloat = ImageHorizontalAlignment.leftfloat.equals(getHorizontalAlignment(element));
+		int xOffset = leftFloat ? -4 : 4;
 
+		sb.append("var xOffset = " + xOffset + ";\n", alertDivPresent);
+		sb.append("var frameDiv = jQuery('#").append(frameId(dispatchId)).append("');\n");
+		sb.append("var imageDiv = frameDiv.parent().find('div.o_image');\n");
 		sb.append("setTimeout(() => {\n");
-		sb.append(" var frameDiv = jQuery('#").append(frameId(dispatchId)).append("');\n");
-		sb.append(" var imageDiv = frameDiv.parent().find('div.o_image');\n");
 		sb.append(" frameDiv.width(imageDiv.innerWidth() - 4);\n", !alertDivPresent);
-		sb.append(" frameDiv.width(imageDiv.innerWidth());\n", alertDivPresent);
+		sb.append(" frameDiv.width(imageDiv.innerWidth() + 4);\n", alertDivPresent);
 		sb.append(" frameDiv.height(imageDiv.innerHeight() - 4);\n", !alertDivPresent);
 		sb.append(" frameDiv.height(imageDiv.innerHeight() + 40);\n", alertDivPresent);
 		sb.append(" var top = imageDiv.position().top + 'px';\n");
 		sb.append(" var left = imageDiv.position().left + 'px';\n", !alertDivPresent);
-		sb.append(" var left = (imageDiv.position().left - 4) + 'px';\n", alertDivPresent);
+		sb.append(" var left = (imageDiv.position().left - 4 + xOffset) + 'px';\n", alertDivPresent);
 		sb.append(" frameDiv.css({top: top, left: left});\n");
-		sb.append("}, 200);\n");
+		sb.append("}, 250);\n");
 	}
 
 	private static String frameId(String dispatchId) {
@@ -391,7 +411,7 @@ public class FragmentRendererHelper {
 		}
 		sb.append("<div id='")
 				.append(alertDivId(dispatchId)).append("' ");
-		sb.append("style='position: absolute; z-index: 1; width: 80px; height: 20px;' >");
+		sb.append("style='position: absolute; z-index: 1;' >");
 		renderAlertHeader(sb, fragmentId, getAlertBoxSettings(element), numberOfItems, inForm, true);
 		sb.append("</div>");
 	}
@@ -406,18 +426,21 @@ public class FragmentRendererHelper {
 		}
 		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(element);
 		String alertDivCss = alertBoxSettings.getType().getCssClass(alertBoxSettings.getColor());
+		boolean leftFloat = ImageHorizontalAlignment.leftfloat.equals(getHorizontalAlignment(element));
+		int xOffset = leftFloat ? -4 : 4;
+		sb.append("var alertDiv = jQuery('#").append(alertDivId(dispatchId)).append("');\n");
+		sb.append("var parentDiv = alertDiv.parent();\n");
+		sb.append("parentDiv.css({border: 'none', backgroundColor: 'unset'});\n");
+		sb.append("var xOffset = ").append(xOffset).append(";\n");
+		sb.append("var imageDiv = parentDiv.find('div.o_image');\n");
 		sb.append("setTimeout(() => {\n");
-		sb.append(" var alertDiv = jQuery('#").append(alertDivId(dispatchId)).append("');\n");
-		sb.append(" var parentDiv = alertDiv.parent();\n");
-		sb.append(" var imageDiv = parentDiv.find('div.o_image');\n");
-		sb.append(" alertDiv.width(imageDiv.innerWidth() - 4);\n");
+		sb.append(" alertDiv.width(imageDiv.innerWidth());\n");
 		sb.append(" alertDiv.height(imageDiv.innerHeight() - 4 + 40);\n");
 		sb.append(" var top = imageDiv.position().top + 'px';\n");
-		sb.append(" var left = imageDiv.position().left + 'px';\n");
-		sb.append(" parentDiv.css({border: 'none', backgroundColor: 'unset'});\n");
+		sb.append(" var left = (imageDiv.position().left + xOffset) + 'px';\n");
 		sb.append(" alertDiv.css({top: top, left: left});\n");
 		sb.append(" alertDiv.addClass('o_alert_div o_alert_box_active ").append(alertDivCss).append("');\n");
-		sb.append(" imageDiv.css({position: 'relative', zIndex: 2, marginTop: '40px'});\n");
-		sb.append("}, 200);\n");
+		sb.append(" imageDiv.css({position: 'relative', zIndex: 2, marginTop: '40px', marginLeft: (xOffset + 'px'), marginRight: (-xOffset + 'px')});\n");
+		sb.append("}, 250);\n");
 	}
 }
