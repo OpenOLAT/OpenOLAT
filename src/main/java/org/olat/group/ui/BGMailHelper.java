@@ -265,7 +265,7 @@ public class BGMailHelper {
 				body = body.replace("$courselist", trans.translate("notification.mail.no.ressource"));
 			}
 		} else {
-			infos = new BGMailTemplateInfos("", "", "", "", "");
+			infos = new BGMailTemplateInfos("", "", "", "", "", "");
 		}
 		
 		return new BGMailTemplate(subject, body, overrideIdentity, infos, actor, trans);
@@ -289,20 +289,21 @@ public class BGMailHelper {
 			courseList = learningResources.toString();
 		}
 
+		String groupUrl = null;
 		String groupNameWithUrl = null;
 		String groupDescription = null;
 		if(group != null) {
+			groupUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[BusinessGroup:" + group.getKey() + "]");
+			
 			// get group name and description
 			StringBuilder sb = new StringBuilder();
 			sb.append(group.getName() == null ? "" : StringHelper.escapeHtml(group.getName()))
-			         .append(" (")
-			         .append(BusinessControlFactory.getInstance().getURLFromBusinessPathString("[BusinessGroup:" + group.getKey() + "]"))
-			         .append(")\n");
+			         .append(" (").append(groupUrl).append(")\n");
 			groupNameWithUrl = sb.toString();
 	
 			String description;
-			if(group instanceof BusinessGroup) {
-				description = ((BusinessGroup)group).getDescription(); 
+			if(group instanceof BusinessGroup businessGroup) {
+				description = businessGroup.getDescription(); 
 			} else {
 				description = CoreSpringFactory.getImpl(BusinessGroupDAO.class).loadDescription(group.getKey());
 			}
@@ -324,18 +325,20 @@ public class BGMailHelper {
 			}
 		}
 		
-		return new BGMailTemplateInfos(StringHelper.escapeHtml(group.getName()), groupNameWithUrl, groupDescription, courseList, reactionTime);
+		return new BGMailTemplateInfos(StringHelper.escapeHtml(group.getName()), groupUrl, groupNameWithUrl, groupDescription, courseList, reactionTime);
 	}
 	
 	public static final class BGMailTemplateInfos {
 		private final String groupName;
+		private final String groupUrl;
 		private final String groupNameWithUrl;
 		private final String groupDescription;
 		private final String courseList;
 		private final String reactionTime;
 		
-		public BGMailTemplateInfos(String groupName, String groupNameWithUrl, String groupDescription, String courseList, String reactionTime) {
+		public BGMailTemplateInfos(String groupName, String groupUrl, String groupNameWithUrl, String groupDescription, String courseList, String reactionTime) {
 			this.groupName = groupName;
+			this.groupUrl = groupUrl;
 			this.groupNameWithUrl = groupNameWithUrl;
 			this.groupDescription = groupDescription;
 			this.courseList = courseList;
@@ -345,6 +348,11 @@ public class BGMailHelper {
 		public String getGroupName() {
 			if(groupName == null) return "";
 			return groupName;
+		}
+		
+		public String getGroupUrl() {
+			if(groupUrl == null) return "";
+			return groupUrl;
 		}
 		
 		public String getGroupNameWithUrl() {
@@ -369,7 +377,8 @@ public class BGMailHelper {
 	}
 	
 	public static class BGMailTemplate extends MailTemplate {
-		
+
+		private static final String GROUP_URL = "groupUrl";
 		private static final String GROUP_NAME = "groupName";
 		private static final String GROUP_DESCRIPTION = "groupDescription";
 		private static final String COURSE_LIST = "courseList";
@@ -452,6 +461,8 @@ public class BGMailHelper {
 			// Put variables from greater context
 			context.put(GROUP_NAME, infos.getGroupNameWithUrl());
 			context.put("groupname", infos.getGroupNameWithUrl());
+			context.put(GROUP_URL, infos.getGroupUrl());
+			context.put("groupurl", infos.getGroupUrl());
 			context.put(GROUP_DESCRIPTION, infos.getGroupDescription());
 			context.put("groupdescription", infos.getGroupDescription());
 			if(StringHelper.containsNonWhitespace(infos.getCourseList())) {

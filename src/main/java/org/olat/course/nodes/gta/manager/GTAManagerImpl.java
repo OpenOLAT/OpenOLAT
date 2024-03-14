@@ -55,6 +55,7 @@ import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
@@ -2123,6 +2124,20 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			return taskToLock;
 		}
 		return null;
+	}
+	
+	@Override
+	public void logIfChanged(Date newDueDate, Date dueDate, String dueDateName, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup, 
+			CourseEnvironment courseEnv, GTACourseNode cNode, Role by, Formatter formatter) {
+		if (newDueDate != null && !newDueDate.equals(dueDate)) {
+			//step + " of " + taskName + ": " + operationText
+			log("Extend deadline", getOperationText(dueDateName, newDueDate, formatter), assignedTask,
+					actor, assessedIdentity, assessedGroup, courseEnv, cNode, Role.coach);
+		}
+	}
+	
+	private String getOperationText(String dueDateName, Date extendedDueDate, Formatter formatter) {
+		return dueDateName + ": "  + formatter.formatDateAndTime(extendedDueDate);
 	}
 
 	@Override
