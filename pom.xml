@@ -66,20 +66,20 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.1.4</org.springframework.version>
+		<org.springframework.version>6.1.5</org.springframework.version>
 		<org.hibernate.version>6.4.4.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
-		<org.glassfish.jaxb.runtime>4.0.4</org.glassfish.jaxb.runtime>
-		<apache.cxf>4.0.3</apache.cxf>
+		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
+		<apache.cxf>4.0.4</apache.cxf>
 		<apache.pdfbox>3.0.1</apache.pdfbox>
 		<apache.poi>5.2.5</apache.poi>
-		<apache.log4j>2.23.0</apache.log4j>
+		<apache.log4j>2.23.1</apache.log4j>
 		<org.slf4j>2.0.12</org.slf4j>
 		<org.bouncycastle>1.77</org.bouncycastle>
 		<io.jsonwebtoken>0.12.5</io.jsonwebtoken>
 		<io.undertow>2.3.12.Final</io.undertow>
-		<jackson.version>2.16.1</jackson.version>
-		<swagger.ui.version>5.11.8</swagger.ui.version>
+		<jackson.version>2.17.0</jackson.version>
+		<swagger.ui.version>5.11.10</swagger.ui.version>
 		<com.mysql.version>8.3.0</com.mysql.version>
 		<org.postgresql.version>42.7.2</org.postgresql.version>
 		<org.infinispan.version>14.0.25.Final</org.infinispan.version>
@@ -87,7 +87,7 @@
 		<version.selenium>4.18.1</version.selenium>
 		<activemq.artemis.version>2.32.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
-		<jakarta.xml.bind-api>4.0.1</jakarta.xml.bind-api>
+		<jakarta.xml.bind-api>4.0.2</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.1</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.30</qtiworks.version>
 		
@@ -2460,7 +2460,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>33.0.0-jre</version>
+			<version>33.1.0-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>
