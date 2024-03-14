@@ -974,4 +974,27 @@ public class Formatter {
 		return dateString;
 	}
 	
+	public static String addReference(Translator translator, String value, String reference) {
+		return addReference(translator, value, reference, null);
+	}
+	
+	public static String addReference(Translator translator, String value, String reference, String iconCss) {
+		String result = "";
+		if (StringHelper.containsNonWhitespace(iconCss)) {
+			result = "<i class='"
+					+ iconCss
+					+ "'></i> ";
+		}	
+		result += value;
+		if (StringHelper.containsNonWhitespace(reference)) {
+			result = result
+					+ " "
+					+ translator.translate("reference.separator")
+					+ " <small>"
+					+ reference
+					+ "</small>";
+		}
+		return result;
+	}
+	
 }

@@ -311,11 +311,9 @@ public class DataCollectionListController extends FormBasicController
 	public void forgeTopicItem(DataCollectionRow row) {
 		if (row.getTopicRepositoryKey() != null ) {
 			FormLink link = uifactory.addFormLink("topic_" + row.getKey(), CMD_TOPIC, "", null, null, Link.NONTRANSLATED);
-			String topic = row.getTopic();
-			if (StringHelper.containsNonWhitespace(row.getTopicRepositoryExternalRef())) {
-				topic += " (" + row.getTopicRepositoryExternalRef() + ")";
-			}
-			link.setI18nKey(StringHelper.escapeHtml(topic));
+			link.setI18nKey(Formatter.addReference(getTranslator(),
+					StringHelper.escapeHtml(row.getTopic()),
+					StringHelper.escapeHtml(row.getTopicRepositoryExternalRef())));
 			String businessPath = "[RepositoryEntry:" + row.getTopicRepositoryKey() + "]";
 			row.setTopicBusinessPath(businessPath);
 			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
@@ -324,11 +322,9 @@ public class DataCollectionListController extends FormBasicController
 			row.setTopicItem(link);
 		} else if (row.getTopicCurriculumElementKey() != null ) {
 			FormLink link = uifactory.addFormLink("topic_" + row.getKey(), CMD_TOPIC, "", null, null, Link.NONTRANSLATED);
-			String topic = row.getTopic();
-			if (StringHelper.containsNonWhitespace(row.getTopicCurriculumElementIdentifier())) {
-				topic += " (" + row.getTopicCurriculumElementIdentifier() + ")";
-			}
-			link.setI18nKey(StringHelper.escapeHtml(topic));
+			link.setI18nKey(Formatter.addReference(getTranslator(),
+					StringHelper.escapeHtml(row.getTopic()),
+					StringHelper.escapeHtml(row.getTopicCurriculumElementIdentifier())));
 			String businessPath = "[CurriculumAdmin:0][Curriculum:" + row.getTopicCurriculumElementCurriculumKey() + "][CurriculumElement:" + row.getTopicCurriculumElementKey() + "]";
 			row.setTopicBusinessPath(businessPath);
 			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);

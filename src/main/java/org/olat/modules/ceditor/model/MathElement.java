@@ -64,6 +64,6 @@ public interface MathElement extends PageElement {
 		if (mathSettings != null && mathSettings.getLayoutSettings() != null) {
 			return css + mathSettings.getLayoutSettings().getCssClass(false);
 		}
-		return css;
+		return css + BlockLayoutSettings.getPredefined().getCssClass(false);
 	}
 }

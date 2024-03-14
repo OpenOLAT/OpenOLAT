@@ -27,7 +27,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.AlertBoxType;
-import org.olat.modules.ceditor.model.BlockLayoutSettings;
 
 /**
  * 
@@ -60,7 +59,6 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 
 		URLBuilder fragmentUbu = ubu.createCopyFor(cmp);
 		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
-		BlockLayoutSettings layoutSettings = FragmentRendererHelper.getLayoutSettings(cmp.getElement());
 		AlertBoxSettings alertBoxSettings = FragmentRendererHelper.getAlertBoxSettingsIfActive(cmp.getElement());
 		AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
 		String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
@@ -71,12 +69,7 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		sb.append(" class='o_page_fragment_edit o_fragment_edited' data-oo-page-fragment='").append(cmp.getComponentName());
 		sb.append("'>");
 
-		if (needsSelectionFrame) {
-			String frameId = "o_c" + cmp.getDispatchID() + "_frame";
-			sb.append("<div id='")
-					.append(frameId).append("' class='o_fragment_selection_frame'")
-					.append("></div>");
-		}
+		FragmentRendererHelper.renderSelectionFrame(sb, cmp.getDispatchID(), cmp.getElement());
 
 		// Tools
 		renderTools(renderer, sb, cmp, fragmentUbu, translator, renderResult, args);
@@ -90,7 +83,9 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		}
 		sb.append("'>");
 
-		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), layoutSettings, alertBoxSettings, 1, cmp.isInForm());
+		int numberOfItems = 1;
+		FragmentRendererHelper.renderAbsolutePositionAlertDiv(sb, cmp.getComponentName(), cmp.getDispatchID(), cmp.getElement(), numberOfItems, cmp.isInForm());
+		FragmentRendererHelper.renderAlertHeaderWithAbsolutePositionCheck(sb, cmp.getComponentName(), cmp.getElement(), numberOfItems, cmp.isInForm());
 
 		boolean collapsible = FragmentRendererHelper.isCollapsible(cmp.getElement());
 		if (collapsible) {
@@ -121,18 +116,8 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		  .append("jQuery(function() {\n")
 		  .append(" jQuery('.o_page_content_editor').ceditor('editFragment');\n");
 
-		if (needsSelectionFrame) {
-			String frameId = "o_c" + cmp.getDispatchID() + "_frame";
-			sb.append("setTimeout(() => {\n");
-			sb.append(" var imageDiv = jQuery('#").append("o_cce").append(cmp.getDispatchID()).append(" div.o_image');\n");
-			sb.append(" var frameDiv = jQuery('#").append(frameId).append("');\n");
-			sb.append(" frameDiv.width(imageDiv.innerWidth() - 4);\n");
-			sb.append(" frameDiv.height(imageDiv.innerHeight() - 4);\n");
-			sb.append(" var top = imageDiv.position().top + 'px';\n");
-			sb.append(" var left = imageDiv.position().left + 'px';\n");
-			sb.append(" frameDiv.css({top: top, left: left});\n");
-			sb.append("}, 50);\n");
-		}
+		FragmentRendererHelper.renderSelectionFrameJavaScript(sb, cmp.getDispatchID(), cmp.getElement());
+		FragmentRendererHelper.renderAbsolutePositionAlertDivScript(sb, cmp.getDispatchID(), cmp.getElement());
 
 		sb.append("});\n");
 		sb.append("</script>");
@@ -172,7 +157,6 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 
 		URLBuilder fragmentUbu = ubu.createCopyFor(cmp);
 		Renderer fr = Renderer.getInstance(cmp, translator, fragmentUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
-		BlockLayoutSettings layoutSettings = FragmentRendererHelper.getLayoutSettings(cmp.getElement());
 		AlertBoxSettings alertBoxSettings = FragmentRendererHelper.getAlertBoxSettingsIfActive(cmp.getElement());
 		AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
 		String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
@@ -186,7 +170,9 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		}
 		sb.append("'>");
 
-		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), layoutSettings, alertBoxSettings, 1, cmp.isInForm());
+		int numberOfItems = 1;
+		FragmentRendererHelper.renderAbsolutePositionAlertDiv(sb, cmp.getComponentName(), cmp.getDispatchID(), cmp.getElement(), numberOfItems, cmp.isInForm());
+		FragmentRendererHelper.renderAlertHeaderWithAbsolutePositionCheck(sb, cmp.getComponentName(), cmp.getElement(), numberOfItems, cmp.isInForm());
 
 		Component editorCmp = cmp.getEditorPageElementComponent();
 		Component viewCmp = cmp.getViewPageElementComponent();
@@ -207,5 +193,14 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 			sb.append("</div>");
 		}
 		sb.append("</div>");
+
+		sb.append("<script>\n")
+				.append("\"use strict\";\n")
+				.append("jQuery(function() {\n");
+
+		FragmentRendererHelper.renderAbsolutePositionAlertDivScript(sb, cmp.getDispatchID(), cmp.getElement());
+
+		sb.append("});\n");
+		sb.append("</script>");
 	}
 }

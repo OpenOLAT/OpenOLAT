@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
@@ -134,7 +135,10 @@ public class PreviewConfigurationController extends FormBasicController {
 	}
 
 	private void addTopicItem(FormItemContainer formLayout) {
-		String topic = StringHelper.escapeHtml(getTopic(preview));
+		String topic = Formatter.addReference(getTranslator(),
+				StringHelper.escapeHtml(getTopic(preview)),
+				StringHelper.escapeHtml(getTopicRef(preview)),
+				getTopicIcon(preview));
 		if (preview.getTopicRepositoryEntry() != null ) {
 			FormLink link = uifactory.addFormLink("topic", CMD_TOPIC, "", translate("data.collection.topic.custom.text"), formLayout, Link.NONTRANSLATED);
 			link.setI18nKey(topic);
@@ -152,7 +156,7 @@ public class PreviewConfigurationController extends FormBasicController {
 			link.setUrl(url);
 			link.setUserObject(businessPath);
 		} else {
-			uifactory.addStaticTextElement("data.collection.topic.custom.text", getTopic(preview), formLayout);
+			uifactory.addStaticTextElement("data.collection.topic.custom.text", topic, formLayout);
 		}
 	}
 	
@@ -162,26 +166,28 @@ public class PreviewConfigurationController extends FormBasicController {
 		case IDENTIY -> userManager.getUserDisplayName(preview.getTopicIdentity().getKey());
 		case ORGANISATION -> preview.getTopicOrganisation().getDisplayName();
 		case CURRICULUM -> preview.getTopicCurriculum().getDisplayName();
-		case CURRICULUM_ELEMENT -> getTopicOfCurriculumElement(preview);
-		case REPOSITORY -> getTopicOfRepository(preview);
+		case CURRICULUM_ELEMENT -> preview.getTopicCurriculumElement().getDisplayName();
+		case REPOSITORY -> preview.getTopicRepositoryEntry().getDisplayname();
 		default -> null;
 		};
 	}
 
-	private String getTopicOfCurriculumElement(QualityPreview preview) {
-		String topic = preview.getTopicCurriculumElement().getDisplayName();
-		if (StringHelper.containsNonWhitespace(preview.getTopicCurriculumElement().getIdentifier())) {
-			topic += " (" + preview.getTopicCurriculumElement().getIdentifier() + ")";
-		}
-		return topic;
+	private String getTopicRef(QualityPreview preview) {
+		return switch (preview.getTopicType()) {
+		case CURRICULUM_ELEMENT -> preview.getTopicCurriculumElement().getIdentifier();
+		case REPOSITORY -> preview.getTopicRepositoryEntry().getExternalRef();
+		default -> null;
+		};
 	}
 	
-	private String getTopicOfRepository(QualityPreview preview) {
-		String topic = preview.getTopicRepositoryEntry().getDisplayname();
-		if (StringHelper.containsNonWhitespace(preview.getTopicRepositoryEntry().getExternalRef())) {
-			topic += " (" + preview.getTopicRepositoryEntry().getExternalRef() + ")";
-		}
-		return topic;
+	private String getTopicIcon(QualityPreview preview) {
+		return switch (preview.getTopicType()) {
+		case IDENTIY -> "o_icon o_icon_user";
+		case CURRICULUM -> "o_icon o_icon_curriculum";
+		case CURRICULUM_ELEMENT -> "o_icon o_icon_curriculum_element";
+		case REPOSITORY -> "o_icon o_course_icon";
+		default -> null;
+		};
 	}
 
 	public void setReadOnly(boolean blacklisted) {

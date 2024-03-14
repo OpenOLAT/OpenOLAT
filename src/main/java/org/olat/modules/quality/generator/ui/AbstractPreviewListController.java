@@ -348,6 +348,7 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 			row.setTranslatedStatus(getTranslatedStatus(row.getStatus()));
 			row.setTopicType(translate(preview.getTopicType().getI18nKey()));
 			row.setTopic(getTopic(preview));
+			row.setTopicRef(getTopicRef(preview));
 			if (preview.getTopicRepositoryEntry() != null) {
 				row.setTopicRepositoryKey(preview.getTopicRepositoryEntry().getKey());
 			}
@@ -376,13 +377,11 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 			PreviewRow row = new PreviewRow(dataCollection);
 			row.setTranslatedStatus(getTranslatedStatus(row.getStatus()));
 			
-			String topic = dataCollection.getTopic();
 			if (StringHelper.containsNonWhitespace(dataCollection.getTopicRepositoryExternalRef())) {
-				topic += " (" + dataCollection.getTopicRepositoryExternalRef() + ")";
+				row.setTopicRef(dataCollection.getTopicRepositoryExternalRef());
 			} else if (StringHelper.containsNonWhitespace(dataCollection.getTopicCurriculumElementIdentifier())) {
-				topic += " (" + dataCollection.getTopicCurriculumElementIdentifier() + ")";
+				row.setTopicRef(dataCollection.getTopicCurriculumElementIdentifier());
 			}
-			row.setTopic(topic);
 			
 			rows.add(row);
 		}
@@ -456,7 +455,13 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 			if (PreviewFilter.topic.name() == filter.getFilter()) {
 				if (StringHelper.containsNonWhitespace(filter.getValue())) {
 					String lowerCaseValue = filter.getValue().toLowerCase();
-					rows.removeIf(row -> row.getTopic().toLowerCase().indexOf(lowerCaseValue) < 0);
+					rows.removeIf(row -> {
+						boolean notFound = row.getTopic().toLowerCase().indexOf(lowerCaseValue) < 0;
+						if (notFound && row.getTopicRef() != null) {
+							notFound = row.getTopicRef().toLowerCase().indexOf(lowerCaseValue) < 0;
+						}
+						return notFound;
+					});
 				}
 			}
 			if (PreviewFilter.status.name() == filter.getFilter()) {
@@ -484,26 +489,18 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		case IDENTIY -> userManager.getUserDisplayName(preview.getTopicIdentity().getKey());
 		case ORGANISATION -> preview.getTopicOrganisation().getDisplayName();
 		case CURRICULUM -> preview.getTopicCurriculum().getDisplayName();
-		case CURRICULUM_ELEMENT -> getTopicOfCurriculumElement(preview);
-		case REPOSITORY -> getTopicOfRepository(preview);
+		case CURRICULUM_ELEMENT -> preview.getTopicCurriculumElement().getDisplayName();
+		case REPOSITORY -> preview.getTopicRepositoryEntry().getDisplayname();
 		default -> null;
 		};
 	}
 
-	private String getTopicOfCurriculumElement(QualityPreview preview) {
-		String topic = preview.getTopicCurriculumElement().getDisplayName();
-		if (StringHelper.containsNonWhitespace(preview.getTopicCurriculumElement().getIdentifier())) {
-			topic += " (" + preview.getTopicCurriculumElement().getIdentifier() + ")";
-		}
-		return topic;
-	}
-	
-	private String getTopicOfRepository(QualityPreview preview) {
-		String topic = preview.getTopicRepositoryEntry().getDisplayname();
-		if (StringHelper.containsNonWhitespace(preview.getTopicRepositoryEntry().getExternalRef())) {
-			topic += " (" + preview.getTopicRepositoryEntry().getExternalRef() + ")";
-		}
-		return topic;
+	private String getTopicRef(QualityPreview preview) {
+		return switch (preview.getTopicType()) {
+		case CURRICULUM_ELEMENT -> preview.getTopicCurriculumElement().getIdentifier();
+		case REPOSITORY -> preview.getTopicRepositoryEntry().getExternalRef();
+		default -> null;
+		};
 	}
 
 	private void appendTopicCurriculumElementCurriculumKeys(List<PreviewRow> rows) {
@@ -527,7 +524,9 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 		for (PreviewRow row : rows) {
 			if (row.getTopicRepositoryKey() != null ) {
 				FormLink link = uifactory.addFormLink("topic_" + counter++, CMD_TOPIC, "", null, null, Link.NONTRANSLATED);
-				link.setI18nKey(StringHelper.escapeHtml(row.getTopic()));
+				link.setI18nKey(Formatter.addReference(getTranslator(),
+						StringHelper.escapeHtml(row.getTopic()),
+						StringHelper.escapeHtml(row.getTopicRef())));
 				String businessPath = "[RepositoryEntry:" + row.getTopicRepositoryKey() + "]";
 				row.setTopicBusinessPath(businessPath);
 				String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
@@ -536,7 +535,9 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 				row.setTopicItem(link);
 			} else if (row.getTopicCurriculumElementKey() != null ) {
 				FormLink link = uifactory.addFormLink("topic_" + counter++, CMD_TOPIC, "", null, null, Link.NONTRANSLATED);
-				link.setI18nKey(StringHelper.escapeHtml(row.getTopic()));
+				link.setI18nKey(Formatter.addReference(getTranslator(),
+						StringHelper.escapeHtml(row.getTopic()),
+						StringHelper.escapeHtml(row.getTopicRef())));
 				String businessPath = "[CurriculumAdmin:0][Curriculum:" + row.getTopicCurriculumElementCurriculumKey() + "][CurriculumElement:" + row.getTopicCurriculumElementKey() + "]";
 				row.setTopicBusinessPath(businessPath);
 				String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
