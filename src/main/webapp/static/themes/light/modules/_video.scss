@@ -525,6 +525,16 @@
     max-height: 360px;
     overflow-y: auto;
     background: $o-video-controls-bg;
+
+	.mejs__chapters-selector-list-item {
+		margin-bottom: 0;
+	}
+
+	.mejs__chapters-selector-label {
+		line-height: 28px;
+		padding-top: 0;
+		margin-bottom: 0;
+	}
 }
 
 .o_video_download_btn {
