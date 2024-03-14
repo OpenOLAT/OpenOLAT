@@ -43,6 +43,7 @@ public class PreviewRow {
 	private final Date deadline;
 	private String topicType;
 	private String topic;
+	private String topicRef;
 	private Long topicRepositoryKey;
 	private Long topicCurriculumElementKey;
 	private Long topicCurriculumElementCurriculumKey;
@@ -134,6 +135,14 @@ public class PreviewRow {
 		this.topic = topic;
 	}
 	
+	public String getTopicRef() {
+		return topicRef;
+	}
+
+	public void setTopicRef(String topicRef) {
+		this.topicRef = topicRef;
+	}
+
 	public Long getTopicRepositoryKey() {
 		return topicRepositoryKey;
 	}
