@@ -130,18 +130,30 @@ public class FragmentRendererHelper {
 	}
 
 	public static void renderAlertHeader(StringOutput sb, String fragmentId, ContainerSettings settings, boolean inForm) {
-		renderAlertHeader(sb, fragmentId, null, settings.getAlertBoxSettings(), settings.getNumOfBlocks(), inForm);
+		renderAlertHeader(sb, fragmentId, settings.getAlertBoxSettings(), settings.getNumOfBlocks(), inForm);
 	}
 
-	public static void renderAlertHeader(StringOutput sb, String fragmentId, BlockLayoutSettings layoutSettings,
-										 AlertBoxSettings alertBoxSettings, int numberOfItems, boolean inForm) {
+	public static void renderAlertHeaderWithAbsolutePositionCheck(StringOutput sb, String fragmentId, PageElement element, int numberOfItems, boolean inForm) {
+		if (needsAbsolutePositionAlertDiv(element)) {
+			return;
+		}
+		renderAlertHeader(sb, fragmentId, getAlertBoxSettings(element), numberOfItems, inForm);
+	}
+
+	public static void renderAlertHeader(StringOutput sb, String fragmentId, AlertBoxSettings alertBoxSettings,
+										 int numberOfItems, boolean inForm) {
+		renderAlertHeader(sb, fragmentId, alertBoxSettings, numberOfItems, inForm, false);
+	}
+
+	public static void renderAlertHeader(StringOutput sb, String fragmentId, AlertBoxSettings alertBoxSettings,
+										 int numberOfItems, boolean inForm, boolean disableCollapsible) {
 		boolean showAlert = alertBoxSettings != null && alertBoxSettings.isShowAlertBox();
 		String title = showAlert ? alertBoxSettings.getTitle() : null;
 		String iconCssClass = showAlert ? alertBoxSettings.getIconCssClass() : null;
 		boolean showTitle = StringHelper.containsNonWhitespace(title);
 		boolean showIcon = showAlert && alertBoxSettings.isWithIcon() && iconCssClass != null;
 		boolean showAlertHeader = showTitle || showIcon;
-		boolean collapsible = showTitle && alertBoxSettings.isCollapsible();
+		boolean collapsible = !disableCollapsible && showTitle && alertBoxSettings.isCollapsible();
 
 		if (showAlertHeader) {
 			sb.append("<div class='o_container_block o_alert_header");
@@ -298,14 +310,12 @@ public class FragmentRendererHelper {
 			return needsSelectionFrame(image.getImageSettings());
 		}
 		if (element instanceof MediaPart mediaPart) {
-			if (mediaPart.getImageSettings() != null) {
-				return needsSelectionFrame(mediaPart.getImageSettings());
-			}
+			return needsSelectionFrame(mediaPart.getImageSettings());
 		}
 		return false;
 	}
 
-	public static boolean needsSelectionFrame(ImageSettings imageSettings) {
+	private static boolean needsSelectionFrame(ImageSettings imageSettings) {
 		if (imageSettings != null) {
 			ImageHorizontalAlignment alignment = imageSettings.getAlignment();
 			if (alignment != null) {
@@ -314,5 +324,100 @@ public class FragmentRendererHelper {
 			}
 		}
 		return false;
+	}
+
+	public static boolean needsAbsolutePositionAlertDiv(PageElement element) {
+		if (element instanceof Image image) {
+			return needsAbsolutePositionAlertDiv(image.getImageSettings());
+		}
+		if (element instanceof MediaPart mediaPart) {
+			return needsAbsolutePositionAlertDiv(mediaPart.getImageSettings());
+		}
+		return false;
+	}
+
+	private static boolean needsAbsolutePositionAlertDiv(ImageSettings imageSettings) {
+		if (imageSettings == null) {
+			return false;
+		}
+		ImageHorizontalAlignment alignment = imageSettings.getAlignment();
+		if (alignment == null) {
+			return false;
+		}
+		AlertBoxSettings alertBoxSettings = imageSettings.getAlertBoxSettings();
+		if (alertBoxSettings == null || !alertBoxSettings.isShowAlertBox()) {
+			return false;
+		}
+		return alignment == ImageHorizontalAlignment.leftfloat || alignment == ImageHorizontalAlignment.rightfloat;
+	}
+
+	public static void renderSelectionFrame(StringOutput sb, String dispatchId, PageElement element) {
+		if (!needsSelectionFrame(element)) {
+			return;
+		}
+
+		sb.append("<div id='")
+				.append(frameId(dispatchId)).append("' class='o_fragment_selection_frame'")
+				.append("></div>");
+	}
+
+	public static void renderSelectionFrameJavaScript(StringOutput sb, String dispatchId, PageElement element) {
+		if (!needsSelectionFrame(element)) {
+			return;
+		}
+		boolean alertDivPresent = needsAbsolutePositionAlertDiv(element);
+
+		sb.append("setTimeout(() => {\n");
+		sb.append(" var frameDiv = jQuery('#").append(frameId(dispatchId)).append("');\n");
+		sb.append(" var imageDiv = frameDiv.parent().find('div.o_image');\n");
+		sb.append(" frameDiv.width(imageDiv.innerWidth() - 4);\n", !alertDivPresent);
+		sb.append(" frameDiv.width(imageDiv.innerWidth());\n", alertDivPresent);
+		sb.append(" frameDiv.height(imageDiv.innerHeight() - 4);\n", !alertDivPresent);
+		sb.append(" frameDiv.height(imageDiv.innerHeight() + 40);\n", alertDivPresent);
+		sb.append(" var top = imageDiv.position().top + 'px';\n");
+		sb.append(" var left = imageDiv.position().left + 'px';\n", !alertDivPresent);
+		sb.append(" var left = (imageDiv.position().left - 4) + 'px';\n", alertDivPresent);
+		sb.append(" frameDiv.css({top: top, left: left});\n");
+		sb.append("}, 200);\n");
+	}
+
+	private static String frameId(String dispatchId) {
+		return "o_c" + dispatchId + "_frame";
+	}
+
+	public static void renderAbsolutePositionAlertDiv(StringOutput sb, String fragmentId, String dispatchId, PageElement element, int numberOfItems, boolean inForm) {
+		if (!needsAbsolutePositionAlertDiv(element)) {
+			return;
+		}
+		sb.append("<div id='")
+				.append(alertDivId(dispatchId)).append("' ");
+		sb.append("style='position: absolute; z-index: 1; width: 80px; height: 20px;' >");
+		renderAlertHeader(sb, fragmentId, getAlertBoxSettings(element), numberOfItems, inForm, true);
+		sb.append("</div>");
+	}
+
+	private static String alertDivId(String dispatchId) {
+		return "o_c" + dispatchId + "_alert_div";
+	}
+
+	public static void renderAbsolutePositionAlertDivScript(StringOutput sb, String dispatchId, PageElement element) {
+		if (!needsAbsolutePositionAlertDiv(element)) {
+			return;
+		}
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(element);
+		String alertDivCss = alertBoxSettings.getType().getCssClass(alertBoxSettings.getColor());
+		sb.append("setTimeout(() => {\n");
+		sb.append(" var alertDiv = jQuery('#").append(alertDivId(dispatchId)).append("');\n");
+		sb.append(" var parentDiv = alertDiv.parent();\n");
+		sb.append(" var imageDiv = parentDiv.find('div.o_image');\n");
+		sb.append(" alertDiv.width(imageDiv.innerWidth() - 4);\n");
+		sb.append(" alertDiv.height(imageDiv.innerHeight() - 4 + 40);\n");
+		sb.append(" var top = imageDiv.position().top + 'px';\n");
+		sb.append(" var left = imageDiv.position().left + 'px';\n");
+		sb.append(" parentDiv.css({border: 'none', backgroundColor: 'unset'});\n");
+		sb.append(" alertDiv.css({top: top, left: left});\n");
+		sb.append(" alertDiv.addClass('o_alert_div o_alert_box_active ").append(alertDivCss).append("');\n");
+		sb.append(" imageDiv.css({position: 'relative', zIndex: 2, marginTop: '40px'});\n");
+		sb.append("}, 200);\n");
 	}
 }

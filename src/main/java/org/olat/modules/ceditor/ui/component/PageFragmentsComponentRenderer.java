@@ -35,7 +35,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.AlertBoxType;
-import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.ContainerLayout;
@@ -109,7 +108,6 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			renderContainer(renderer, sb, fragment, containerElement, elementIdToFragments, ubu, translator, renderResult,
 					inForm, args);
 		} else {
-			BlockLayoutSettings layoutSettings = FragmentRendererHelper.getLayoutSettings(element);
 			AlertBoxSettings alertBoxSettings = FragmentRendererHelper.getAlertBoxSettingsIfActive(element);
 			AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
 			String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
@@ -120,7 +118,9 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("'>");
 
-			FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), layoutSettings, alertBoxSettings, 1, inForm);
+			int numberOfItems = 1;
+			FragmentRendererHelper.renderAbsolutePositionAlertDiv(sb, fragment.getComponentName(), fragment.getComponent().getDispatchID(), element, numberOfItems, inForm);
+			FragmentRendererHelper.renderAlertHeaderWithAbsolutePositionCheck(sb, fragment.getComponentName(), element, numberOfItems, inForm);
 
 			boolean collapsible = FragmentRendererHelper.isCollapsible(element);
 			if (collapsible) {
@@ -138,6 +138,15 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 				sb.append("</div>");
 			}
 			sb.append("</div>");
+
+			sb.append("<script>\n")
+					.append("\"use strict\";\n")
+					.append("jQuery(function() {\n");
+
+			FragmentRendererHelper.renderAbsolutePositionAlertDivScript(sb, fragment.getComponent().getDispatchID(), element);
+
+			sb.append("});\n");
+			sb.append("</script>");
 		}
 		fragment.getComponent().setDirty(false);
 		
