@@ -144,6 +144,7 @@ public class EditDueDatesController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		TaskDueDate dueDates = gtaManager.getDueDatesTask(task);
+		log(assignmentDueDateEl.getDate(), submissionDueDateEl.getDate(), revisionDueDateEl.getDate(), solutionDueDateEl.getDate(), dueDates);
 		dueDates.setAssignmentDueDate(assignmentDueDateEl.getDate());	
 		dueDates.setSubmissionDueDate(submissionDueDateEl.getDate());	
 		dueDates.setRevisionsDueDate(revisionDueDateEl.getDate());
@@ -163,6 +164,19 @@ public class EditDueDatesController extends FormBasicController {
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private void log(Date newAssignmentDueDate, Date newSubmissionDueDate, Date newRevisionDueDate, Date newSolutionDueDate, TaskDueDate currentDueDates) {
+		getLogger().debug("log: newAssignmentDueDate={}, newSubmissionDueDate={}, newRevisionDueDate={}, newSolutionDueDate={}",
+				newAssignmentDueDate, newSubmissionDueDate, newRevisionDueDate, newSolutionDueDate);
+		gtaManager.logIfChanged(newAssignmentDueDate, currentDueDates.getAssignmentDueDate(), "Assignment", task,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach, formatter);
+		gtaManager.logIfChanged(newSubmissionDueDate, currentDueDates.getSubmissionDueDate(), "Submission", task,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach, formatter);
+		gtaManager.logIfChanged(newRevisionDueDate, currentDueDates.getRevisionsDueDate(), "Revision", task,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach, formatter);
+		gtaManager.logIfChanged(newSolutionDueDate, currentDueDates.getSolutionDueDate(), "Solution", task,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach, formatter);
 	}
 
 	@Override
