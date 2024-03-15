@@ -283,6 +283,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		folderBreadcrumb = new TooledStackedPanel("folderBreadcrumb", getTranslator(), this);
 		formLayout.add(new ComponentWrapperElement(folderBreadcrumb));
 		folderBreadcrumb.setToolbarEnabled(false);
+		folderBreadcrumb.getRootLink().setVisible(true);
+		folderBreadcrumb.getBackLink().setVisible(false);
 		folderBreadcrumb.pushController(rootContainer.getName(), null, "/");
 		
 		viewFolderLink = uifactory.addFormLink("view.folder", formLayout, Link.BUTTON);

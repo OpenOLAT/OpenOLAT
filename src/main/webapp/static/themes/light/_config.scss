@@ -279,7 +279,7 @@ $o-toolbar-tools-margin-bottom-sm	: 4px !default;
 $o-toolbar-tools-margin-top-xs		: 6px !default;
 $o-toolbar-tools-margin-bottom-xs	: 4px !default;
 $o-toolbar-close-color				: $brand-danger !default;
-$o-toolbar-breadcrumb-bg-color		: $panel-default-heading-bg !default;
+$o-toolbar-breadcrumb-bg-color		: white !default;
 $o-toolbar-breadcrumb-font-size 	: ceil(($font-size-base * 0.75)) !default;
 $o-toolbar-breadcrumb-line-height	: floor(($o-toolbar-breadcrumb-font-size * $line-height-base)) !default;
 $o-toolbar-nav-link-color			: $o-toolbar-link-color !default; 

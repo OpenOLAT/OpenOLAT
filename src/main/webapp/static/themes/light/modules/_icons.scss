@@ -58,6 +58,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_bookmark_add { @include o-add-icon('bookmark', false);  color: $o-bookmark-color;}
 .o_icon_bookmark_header { @include o-add-icon('bookmark');}
 .o_icon_branch { @include o-add-icon('code-fork');}
+.o_icon_breadcrumb_more { @include o-add-icon('ellipsis');}
+.o_icon_breadcrumb_root { @include o-add-icon('house');}
 .o_icon_browse { @include o-add-icon('search-plus');} 
 .o_icon_brush { @include o-add-icon('paint-brush');}
 .o_icon_browsercheck { @include o-add-icon('thumbs-up');}

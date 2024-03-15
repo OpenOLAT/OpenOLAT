@@ -39,10 +39,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -59,6 +61,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 	
 	protected final List<Link> stack = new ArrayList<>(3);
 	
+	protected final Link rootLink;
 	protected final Link backLink;
 	protected final Link closeLink;
 	protected final BreadcrumbBar breadcrumbBar;
@@ -82,6 +85,14 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		
 		String barId = getDispatchID().concat("_bbar");
 		breadcrumbBar = new BreadcrumbBar(barId);
+		
+		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
+		rootLink = LinkFactory.createCustomLink("root", "root", "\u00A0", Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
+		rootLink.setIconLeftCSS("o_icon o_icon_breadcrumb_root");
+		rootLink.setTitle(getTranslator().translate("root.goto"));
+		rootLink.setAriaLabel(getTranslator().translate("root.goto"));
+		rootLink.setAccessKey("h");
+		rootLink.setVisible(false);
 		
 		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
 		backLink = LinkFactory.createCustomLink("back", "back", "\u00A0", Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
@@ -156,6 +167,11 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		return backLink;
 	}
 	
+
+	public Link getRootLink() {
+		return rootLink;
+	}
+	
 	public Link getCloseLink() {
 		return closeLink;
 	}
@@ -217,7 +233,9 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 	protected void doDispatchRequest(UserRequest ureq) {
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
 		if(cmd != null) {
-			if(backLink.getCommand().equals(cmd)) {
+			if(rootLink.getCommand().equals(cmd)) {
+				dispatchEvent(ureq, rootLink, null);
+			} else if(backLink.getCommand().equals(cmd)) {
 				dispatchEvent(ureq, backLink, null);
 			} else if(closeLink.getCommand().equals(cmd)) {
 				dispatchEvent(ureq, closeLink, null);
@@ -227,6 +245,10 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
+		if (source.equals(rootLink)) {
+			source = stack.get(0);
+		}
+		
 		boolean closeEvent = source.equals(closeLink);
 		boolean backEvent = source.equals(backLink);
 		if (backEvent || closeEvent) {
@@ -500,7 +522,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		}
 
 		Link link = LinkFactory.createLink("crumb_" + stack.size(), (Translator)null, this);
-		link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
+		link.setCustomDisplayText(StringHelper.escapeHtml(Formatter.truncate(displayName, 40)));
 		if(StringHelper.containsNonWhitespace(iconLeftCss)) {
 			link.setIconLeftCSS(iconLeftCss);
 		}
@@ -633,7 +655,9 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		protected void doDispatchRequest(UserRequest ureq) {
 			String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
 			if(cmd != null) {
-				if(backLink.getCommand().equals(cmd)) {
+				if(rootLink.getCommand().equals(cmd)) {
+					dispatchEvent(ureq, rootLink, null);
+				}if(backLink.getCommand().equals(cmd)) {
 					dispatchEvent(ureq, backLink, null);
 				} else if(closeLink.getCommand().equals(cmd)) {
 					dispatchEvent(ureq, closeLink, null);
@@ -645,9 +669,18 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		public ComponentRenderer getHTMLRendererSingleton() {
 			return BAR_RENDERER;
 		}
+		
+		@Override
+		public void validate(UserRequest ureq, ValidationResult vr) {
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.breadcrumb.js");
+			super.validate(ureq, vr);
+		}
 
 		@Override
 		public Component getComponent(String name) {
+			if(rootLink.getComponentName().equals(name)) {
+				return rootLink;
+			}
 			if(backLink.getComponentName().equals(name)) {
 				return backLink;
 			}
@@ -665,6 +698,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		@Override
 		public Iterable<Component> getComponents() {
 			List<Component> cmps = new ArrayList<>(3 + stack.size());
+			cmps.add(rootLink);
 			cmps.add(backLink);
 			cmps.add(closeLink);
 			for(Link crumb:stack) {

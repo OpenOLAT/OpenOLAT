@@ -48,18 +48,55 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 		List<Link> breadCrumbs = panel.getBreadCrumbs();
 
 		if (breadCrumbs.size() > panel.getInvisibleCrumb()) {
-			sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='o_breadcrumb'>")
+			String id = "o_c" + source.getDispatchID();
+			sb.append("<div id='").append(id).append("' class='o_breadcrumb'>")
 			  .append("<ol class='breadcrumb'>");
 	
+			Link rootLink = panel.getRootLink();
 			Link backLink = panel.getBackLink();
 			int numOfCrumbs = breadCrumbs.size();
-			if(backLink.isVisible() && numOfCrumbs > panel.getInvisibleCrumb()) {
-				sb.append("<li class='o_breadcrumb_back'>");
-				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
+			if((rootLink.isVisible() || backLink.isVisible()) && numOfCrumbs > panel.getInvisibleCrumb()) {
+				if (rootLink.isVisible()) {
+					sb.append("<li class='o_breadcrumb_root'>");
+					rootLink.getHTMLRendererSingleton().render(renderer, sb, rootLink, ubu, translator, renderResult, args);
+					sb.append("</li>");
+				}
+				if (backLink.isVisible()) {
+					sb.append("<li class='o_breadcrumb_back'>");
+					backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
+					sb.append("</li>");
+				}
+				
+				// Button to open the menu
+				sb.append("<li class='o_breadcrumb_more'");
+				sb.append(" id='").append(id).append("_more'");
+				sb.append(">");
+				sb.append("<a href='#' class='dropdown-toggle'");
+				sb.append(" data-toggle='dropdown'");
+				sb.append(" role='button'");
+				sb.append(" id='").append(id).append("_dd'");
+				sb.append(">");
+				sb.append("<i class='o_icon o_icon_breadcrumb_more'>&nbsp;</i>");
+				sb.append("</a>");
+				// Menu
+				sb.append("<ul class='o_breadcrumb_menu dropdown-menu'");
+				sb.append(" id='").append(id).append("_dm'");
+				sb.append(" role='menu'>");
+				for (Link menuCrumb : breadCrumbs) {
+					sb.append("<li class='o_breadcrumb_menu_item'>");
+					renderer.render(menuCrumb, sb, args);
+					sb.append("</li>");
+				}
+				sb.append("</ul>");
 				sb.append("</li>");
 				
-				for(Link crumb:breadCrumbs) {
-					sb.append("<li>");
+				for (int i = 0; i < breadCrumbs.size(); i++) {
+					Link crumb = breadCrumbs.get(i);
+					sb.append("<li class='o_breadcrumb_crumb o_display_none");
+					if (i == breadCrumbs.size()-1) {
+						sb.append(" o_last_crumb");
+					}
+					sb.append("'>");
 					renderer.render(crumb, sb, args);
 					sb.append("</li>");
 				}
@@ -72,6 +109,13 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 				sb.append("</li>");				
 			}
 			sb.append("</ol>");
+			
+			sb.append("<script>\n")
+			  .append("\"use strict\";\n")
+			  .append("jQuery(function() {\n")
+			  .append(" jQuery('#").append(id).append("').oobreadcrumb();\n")
+			  .append("});\n")
+			  .append("</script>");
 		} else {
 			sb.append("<div id='o_c").append(source.getDispatchID()).append("'>");
 			
