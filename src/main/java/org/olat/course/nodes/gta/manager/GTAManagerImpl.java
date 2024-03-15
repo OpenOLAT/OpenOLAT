@@ -2127,15 +2127,32 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 	
 	@Override
-	public void logIfChanged(Date newDueDate, Date dueDate, String dueDateName, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup, 
+	public void logIfChanged(Date newDueDate, Date dueDate, TaskProcess step, Task assignedTask, Identity actor,
+			Identity assessedIdentity, BusinessGroup assessedGroup, 
 			CourseEnvironment courseEnv, GTACourseNode cNode, Role by, Formatter formatter) {
-		if (newDueDate != null && !newDueDate.equals(dueDate)) {
+		if (step != null && newDueDate != null && !newDueDate.equals(dueDate)) {
 			//step + " of " + taskName + ": " + operationText
-			dueDateName = (dueDateName == null) ? "-" : dueDateName.toLowerCase();
+			String stepName = (step == TaskProcess.submit) ? "submission" : step.name();
+			if(dueDate == null) {
+				RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+				DueDate defaultDueDate = getDefaultDueDate(step, assignedTask,  assessedIdentity, assessedGroup, courseEntry, cNode);
+				dueDate = defaultDueDate == null ? null : defaultDueDate.getDueDate();
+			}
 			String dueDateStr = (dueDate == null) ? "-" : formatter.formatDateAndTime(dueDate);
 			String operation = "Standard date " + dueDateStr + " to "  + formatter.formatDateAndTime(newDueDate);
-			log("Deadline extension for " + dueDateName, operation, assignedTask, actor, assessedIdentity, assessedGroup,
+			log("Deadline extension for " + stepName, operation, assignedTask, actor, assessedIdentity, assessedGroup,
 					courseEnv, cNode, Role.coach);
+		}
+	}
+	
+	private DueDate getDefaultDueDate(TaskProcess step, Task assignedTask, Identity assessedIdentity, BusinessGroup assessedGroup,
+			RepositoryEntry entry, GTACourseNode cNode) {
+		switch(step) {
+			case submit: return getSubmissionDueDate(assignedTask, assessedIdentity, assessedGroup, cNode, entry, true);
+			case assignment: return getAssignmentDueDate(assignedTask, assessedIdentity, assessedGroup, cNode, entry, true);
+			case revision: return assignedTask == null ? null : new DueDate(false, assignedTask.getRevisionsDueDate(), null, assignedTask.getRevisionsDueDate());
+			case solution: return getSolutionDueDate(assignedTask, assessedIdentity, assessedGroup, cNode, entry, true);
+			default: return null;
 		}
 	}
 
