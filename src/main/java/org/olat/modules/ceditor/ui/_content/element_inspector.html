@@ -18,6 +18,15 @@ jQuery(function() {
 				if(fragmentEl.classList.contains("o_page_container_edit")) {
 					top += 26;
 				}
+				var inspectorHeight = jInspector.height();
+				if (inspectorHeight < window.innerHeight) {
+					if (top < 0) {
+						top = 0;
+					}
+					if ((top + inspectorHeight) > window.innerHeight) {
+						top = window.innerHeight - inspectorHeight;
+					}
+				}
 				jInspector.css("top", top + "px");
 			}
 		}
