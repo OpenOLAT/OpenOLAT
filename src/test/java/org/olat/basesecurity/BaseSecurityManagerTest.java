@@ -34,7 +34,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.commons.calendar.CalendarUtils;
@@ -48,6 +47,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Encoder;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.LoginModule;
@@ -904,22 +904,55 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	public void reactivatedIdentity() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-login-0");
 		((IdentityImpl)id).setStatus(Identity.STATUS_INACTIVE);
-		((IdentityImpl)id).setInactivationDate(new Date());
-		((IdentityImpl)id).setInactivationEmailDate(new Date());
-		((IdentityImpl)id).setReactivationDate(new Date());
+		
+		Date now = new Date();
+		((IdentityImpl)id).setInactivationDate(now);
+		((IdentityImpl)id).setInactivationEmailDate(now);
+		((IdentityImpl)id).setReactivationDate(now);
+		((IdentityImpl)id).setExpirationDate(DateUtils.addDays(now, -5));
+		((IdentityImpl)id).setExpirationEmailDate(DateUtils.addDays(now, -5));
 		id = dbInstance.getCurrentEntityManager().merge(id);
 		dbInstance.commitAndCloseSession();
 		
-		Identity reactivatedIdentity = securityManager.reactivatedIdentity(id);
+		Identity reactivatedIdentity = securityManager.reactivatedIdentity(id, false);
 		Assert.assertNull(reactivatedIdentity.getInactivationDate());
 		Assert.assertNull(reactivatedIdentity.getReactivationDate());
 		Assert.assertNull(((IdentityImpl)reactivatedIdentity).getInactivationEmailDate());
+		Assert.assertNotNull(reactivatedIdentity.getExpirationDate());
+		Assert.assertNotNull(((IdentityImpl)reactivatedIdentity).getExpirationEmailDate());
 		dbInstance.commitAndCloseSession();
 		
 		Identity reloadedIdentity = securityManager.loadIdentityByKey(id.getKey());
 		Assert.assertNull(reloadedIdentity.getInactivationDate());
 		Assert.assertNull(reloadedIdentity.getReactivationDate());
 		Assert.assertNull(((IdentityImpl)reloadedIdentity).getInactivationEmailDate());
+		Assert.assertEquals(Identity.STATUS_ACTIV, reloadedIdentity.getStatus());
+	}
+	
+	@Test
+	public void reactivatedIdentityWithExpirationDate() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-login-0");
+		((IdentityImpl)id).setStatus(Identity.STATUS_INACTIVE);
+		Date now = new Date();
+		((IdentityImpl)id).setInactivationDate(now);
+		((IdentityImpl)id).setInactivationEmailDate(now);
+		((IdentityImpl)id).setReactivationDate(now);
+		((IdentityImpl)id).setExpirationDate(DateUtils.addDays(now, -5));
+		((IdentityImpl)id).setExpirationEmailDate(DateUtils.addDays(now, -5));
+		id = dbInstance.getCurrentEntityManager().merge(id);
+		dbInstance.commitAndCloseSession();
+		
+		Identity reactivatedIdentity = securityManager.reactivatedIdentity(id, true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(id, reactivatedIdentity);
+
+		Identity reloadedIdentity = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertNull(reloadedIdentity.getInactivationDate());
+		Assert.assertNull(reloadedIdentity.getReactivationDate());
+		Assert.assertNull(((IdentityImpl)reloadedIdentity).getInactivationEmailDate());
+		Assert.assertNull(reloadedIdentity.getExpirationDate());
+		Assert.assertNull(((IdentityImpl)reloadedIdentity).getExpirationEmailDate());
+		Assert.assertEquals(Identity.STATUS_ACTIV, reloadedIdentity.getStatus());
 	}
 	
 	/**
@@ -937,7 +970,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		
 		for(int i=0; i<5; i++) {
 			securityManager.setIdentityLastLogin(id);
-			securityManager.reactivatedIdentity(id);
+			securityManager.reactivatedIdentity(id, false);
 		}
 		
 		Identity reloadedIdentity = securityManager.loadIdentityByKey(id.getKey());

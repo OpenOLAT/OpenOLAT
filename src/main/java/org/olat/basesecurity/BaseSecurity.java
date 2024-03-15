@@ -539,9 +539,10 @@ public interface BaseSecurity {
 	 * set to inactive again.
 	 * 
 	 * @param identity the identity to reactivate
+	 * @param withExpiration true, reset the expiration date too
 	 * @return The merged identity
 	 */
-	public Identity reactivatedIdentity(Identity identity);
+	public Identity reactivatedIdentity(Identity identity, boolean withExpiration);
 	
 	/**
 	 * Set the date of the last login
