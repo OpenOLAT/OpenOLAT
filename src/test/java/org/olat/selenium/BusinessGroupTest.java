@@ -120,8 +120,7 @@ public class BusinessGroupTest extends Deployments {
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to groups
 		String groupName = "Group-1-" + UUID.randomUUID();
@@ -145,8 +144,7 @@ public class BusinessGroupTest extends Deployments {
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		//tools
 		participantLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 		
 		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
 		participantNavBar
@@ -178,8 +176,7 @@ public class BusinessGroupTest extends Deployments {
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to groups
 		String groupName = "Group-1-" + UUID.randomUUID();
@@ -287,8 +284,7 @@ public class BusinessGroupTest extends Deployments {
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to groups
 		String groupName = "Group-1-" + UUID.randomUUID();
@@ -322,8 +318,7 @@ public class BusinessGroupTest extends Deployments {
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		//tools
 		participantLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 		//groups
 		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
 		participantNavBar
@@ -340,8 +335,7 @@ public class BusinessGroupTest extends Deployments {
 		LoginPage studentLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		//tools
 		studentLoginPage
-			.loginAs(student.getLogin(), student.getPassword())
-			.resume();
+			.loginAs(student.getLogin(), student.getPassword());
 		//groups
 		NavigationPage studentNavBar = NavigationPage.load(participantBrowser);
 		studentNavBar
