@@ -112,6 +112,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		OAuthUser oauthUser = registration.getOauthUser();
 		
 		usernameEl = uifactory.addTextElement("username",  "user.login", 128, "", formLayout);
+		usernameEl.setEnabled(oauthLoginModule.isAllowChangeOfUsername());
 		usernameEl.setMandatory(true);
 		if(StringHelper.containsNonWhitespace(oauthUser.getNickName())) {
 			usernameEl.setValue(oauthUser.getNickName());
