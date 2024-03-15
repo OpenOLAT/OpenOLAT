@@ -762,7 +762,7 @@ public class UserWebService {
 		
 		Identity updatedIdentity;
 		if(lifecycle.getExpirationDate() == null && lifecycle.getInactivationDate() == null) {
-			updatedIdentity = securityManager.reactivatedIdentity(retrievedIdentity);
+			updatedIdentity = securityManager.reactivatedIdentity(retrievedIdentity, true);
 		} else if(lifecycle.getExpirationDate() != null) {
 			updatedIdentity = securityManager.saveIdentityExpirationDate(retrievedIdentity, lifecycle.getExpirationDate(), getIdentity(request));
 		} else {

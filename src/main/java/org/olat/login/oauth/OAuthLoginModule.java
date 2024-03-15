@@ -61,6 +61,9 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private boolean skipDisclaimerDialog;
 	private boolean skipRegistrationDialog;
 	
+	@Value("${oauth.registration.username.allowChanges:true}")
+	private boolean allowChangeOfUsername;
+	
 	private boolean linkedInEnabled;
 	private String linkedInApiKey;
 	private String linkedInApiSecret;
@@ -415,6 +418,10 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setSkipRegistrationDialog(boolean skipRegistrationDialog) {
 		this.skipRegistrationDialog = skipDisclaimerDialog;
 		setStringProperty(SKIP_REGISTRATION_DIALOG, skipRegistrationDialog ? "true" : "false", true);
+	}
+	
+	public boolean isAllowChangeOfUsername() {
+		return allowChangeOfUsername;
 	}
 
 	public boolean isLinkedInEnabled() {

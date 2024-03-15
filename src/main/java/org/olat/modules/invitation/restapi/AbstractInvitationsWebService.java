@@ -80,7 +80,7 @@ public abstract class AbstractInvitationsWebService {
 		}
 		
 		if(identity.getStatus().intValue() == Identity.STATUS_INACTIVE) {
-			identity = securityManager.reactivatedIdentity(identity);
+			identity = securityManager.reactivatedIdentity(identity, false);
 		}
 		if(identity != null && !identity.getStatus().equals(Identity.STATUS_PERMANENT)
 				&& (expirationInHours != null || expirationDate != null)) {

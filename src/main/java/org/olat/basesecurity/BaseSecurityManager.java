@@ -1184,13 +1184,17 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 	
 	@Override
-	public Identity reactivatedIdentity(Identity identity) {
+	public Identity reactivatedIdentity(Identity identity, boolean withExpiration) {
 		IdentityImpl reloadedIdentity = loadForUpdate(identity);
 		if(reloadedIdentity != null) {
 			reloadedIdentity.setStatus(Identity.STATUS_ACTIV);
 			reloadedIdentity.setInactivationDate(null);
 			reloadedIdentity.setInactivationEmailDate(null);
 			reloadedIdentity.setReactivationDate(null);
+			if(withExpiration) {
+				reloadedIdentity.setExpirationDate(null);
+				reloadedIdentity.setExpirationEmailDate(null);
+			}
 		}
 		dbInstance.commit();
 		return reloadedIdentity;

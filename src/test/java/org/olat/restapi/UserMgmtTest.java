@@ -47,6 +47,10 @@ import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriBuilder;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -66,6 +70,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.collaboration.CollaborationTools;
@@ -132,10 +137,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response.Status;
-import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * 
@@ -767,8 +768,14 @@ public class UserMgmtTest extends OlatRestTestCase {
 		// Create an inactive user
 		IdentityWithLogin identityLogin = JunitTestHelper.createAndPersistRndUser("rest-life-user-2");
 		Identity identity = identityLogin.getIdentity();
-		dbInstance.commit();
-		securityManager.saveIdentityStatus(identity, Identity.STATUS_INACTIVE, identity);
+		((IdentityImpl)identity).setStatus(Identity.STATUS_INACTIVE);
+		Date now = new Date();
+		((IdentityImpl)identity).setInactivationDate(now);
+		((IdentityImpl)identity).setInactivationEmailDate(now);
+		((IdentityImpl)identity).setReactivationDate(now);
+		((IdentityImpl)identity).setExpirationDate(DateUtils.addDays(now, -5));
+		((IdentityImpl)identity).setExpirationEmailDate(DateUtils.addDays(now, -5));
+		identity = dbInstance.getCurrentEntityManager().merge(identity);
 		dbInstance.commitAndCloseSession();
 		
 		UserLifecycleVO lifecycleVo = new  UserLifecycleVO();

@@ -528,7 +528,7 @@ public interface GTAManager {
 	public void log(String step, SubmitEvent event, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
 			CourseEnvironment courseEnv, GTACourseNode cNode, Role by);
 	
-	public void logIfChanged(Date newDueDate, Date dueDate, String dueDateName, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup, 
+	public void logIfChanged(Date newDueDate, Date dueDate, TaskProcess step, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup, 
 			CourseEnvironment courseEnv, GTACourseNode cNode, Role by, Formatter formatter);
 
 }
