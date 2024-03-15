@@ -2131,13 +2131,12 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			CourseEnvironment courseEnv, GTACourseNode cNode, Role by, Formatter formatter) {
 		if (newDueDate != null && !newDueDate.equals(dueDate)) {
 			//step + " of " + taskName + ": " + operationText
-			log("Extend deadline", getOperationText(dueDateName, newDueDate, formatter), assignedTask,
-					actor, assessedIdentity, assessedGroup, courseEnv, cNode, Role.coach);
+			dueDateName = (dueDateName == null) ? "-" : dueDateName.toLowerCase();
+			String dueDateStr = (dueDate == null) ? "-" : formatter.formatDateAndTime(dueDate);
+			String operation = "Standard date " + dueDateStr + " to "  + formatter.formatDateAndTime(newDueDate);
+			log("Deadline extension for " + dueDateName, operation, assignedTask, actor, assessedIdentity, assessedGroup,
+					courseEnv, cNode, Role.coach);
 		}
-	}
-	
-	private String getOperationText(String dueDateName, Date extendedDueDate, Formatter formatter) {
-		return dueDateName + ": "  + formatter.formatDateAndTime(extendedDueDate);
 	}
 
 	@Override
