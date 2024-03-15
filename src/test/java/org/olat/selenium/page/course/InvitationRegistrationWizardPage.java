@@ -50,6 +50,12 @@ public class InvitationRegistrationWizardPage {
 			int lastIndex = body.indexOf('\n', index + 1);
 			String link = body.substring(index, lastIndex);
 			link = link.replace("=", "").replace("3D", "=");
+			int spaceIndex = link.indexOf(' ');
+			// Check if they are 2 links because of the HTML link
+			if(spaceIndex > 0 && link.lastIndexOf("http") != link.indexOf("http")) {
+				link = link.substring(0, spaceIndex);
+			}
+			
 			return link;
 		}
 		return null;

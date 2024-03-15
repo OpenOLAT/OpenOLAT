@@ -84,6 +84,8 @@ public class GroupsPage {
 		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
+		By nameFocusBy = By.cssSelector(".o_sel_group_edit_title input[type='text']:focus");
+		OOGraphene.waitElement(nameFocusBy, browser);
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");
 		browser.findElement(nameBy).sendKeys(name);
 		OOGraphene.tinymce(description, browser);
