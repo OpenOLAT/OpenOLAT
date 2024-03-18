@@ -23,7 +23,6 @@ import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
-import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.HTMLRawElement;
 import org.olat.modules.ceditor.model.ParagraphElement;
@@ -61,9 +60,6 @@ public class ComponentsFactory {
 	}
 
 	public static String getCssClass(HTMLElement htmlElement, boolean inForm) {
-		if (htmlElement.getTextSettings() != null && htmlElement.getTextSettings().getLayoutSettings() != null) {
-			return htmlElement.getTextSettings().getLayoutSettings().getCssClass(inForm);
-		}
-		return BlockLayoutSettings.getPredefined().getCssClass(inForm);
+		return BlockLayoutClassFactory.buildClass(htmlElement.getTextSettings(), inForm);
 	}
 }

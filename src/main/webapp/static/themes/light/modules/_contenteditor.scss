@@ -140,6 +140,15 @@
 			}
 		}
 
+		&.o_alert_box_type_important {
+			border-color: $o-box-important-color;
+			background-color: $o-box-important-bg;
+
+			> .o_container_block > .o_container_block_alert > .o_alert_icon {
+				color: $o-box-important-color;
+			}
+		}
+
 		&.o_alert_box_type_warning {
 			border-color: $o-box-warning-color;
 			background-color: $o-box-warning-bg;
@@ -1689,6 +1698,17 @@ table.o_ce_table {
 			}
 			&.o_ce_layout_large_left {
 				padding-left: $o-ce-padding-large;
+			}
+		}
+
+		&.o_alert_mode {
+			&:not(.o_ce_layout_custom) {
+				&.o_in_form {
+					padding-top: $o-ce-padding-compact;
+				}
+				&:not(.o_in_form) {
+					padding-top: $o-ce-padding-normal;
+				}
 			}
 		}
 	}
