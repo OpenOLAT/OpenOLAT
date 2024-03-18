@@ -93,7 +93,7 @@ import org.olat.repository.RepositoryManager;
 public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	
 	private static final Logger log = Tracing.createLoggerFor(PortfolioCourseNode.class);
-	private static final int CURRENT_CONFIG_VERSION = 2;
+	private static final int CURRENT_CONFIG_VERSION = 3;
 	
 	public static final String EDIT_CONDITION_ID = "editportfolio";
 	
@@ -112,9 +112,17 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
 		
 		ModuleConfiguration config = getModuleConfiguration();
+		int version = config.getConfigurationVersion();
 		if (isNewNode) {
 			MSCourseNode.initDefaultConfig(config);
-		} 
+		}
+		if (version < 3) {
+			if (getInstruction().isBlank()) {
+				setInstruction(config.getStringValue("node_text"));
+			} else {
+				setInstruction(getInstruction().concat(config.getStringValue("node_text")));
+			}
+		}
 		config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 	}
 	

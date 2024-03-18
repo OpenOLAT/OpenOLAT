@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,13 +14,12 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.ui.shared;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -32,7 +31,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -43,6 +41,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -80,12 +82,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 15.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SharedBindersController extends FormBasicController implements Activateable2 {
 	
-	protected static final String USER_PROPS_ID = PortfolioHomeController.class.getCanonicalName();
+	public static final String USER_PROPS_ID = PortfolioHomeController.class.getCanonicalName();
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	
@@ -103,7 +105,7 @@ public class SharedBindersController extends FormBasicController implements Acti
 	private PortfolioService portfolioService;
 	@Autowired
 	private BaseSecurityModule securityModule;
-	
+
 	public SharedBindersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, "shared_with_me");
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
@@ -117,6 +119,7 @@ public class SharedBindersController extends FormBasicController implements Acti
 
 		initForm(ureq);
 		loadModel(null);
+		initFiltersPresets(ureq);
 	}
 	
 	@Override
@@ -127,15 +130,13 @@ public class SharedBindersController extends FormBasicController implements Acti
 		SortKey defaultSortKey = null;
 		// followed by the users fields
 		int colPos = USER_PROPS_OFFSET;
-		for (int i = 0; i < userPropertyHandlers.size(); i++) {
-			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			String propName = userPropertyHandler.getName();
-			if(defaultSortKey == null) {
+			if (defaultSortKey == null) {
 				defaultSortKey = new SortKey(propName, true);
 			}
 			
-			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
+			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID, userPropertyHandler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName));
 			colPos++;
 		}
@@ -174,19 +175,21 @@ public class SharedBindersController extends FormBasicController implements Acti
 			options.setDefaultOrderBy(defaultSortKey);
 		}
 		tableEl.setSortSettings(options);
-
-		List<FlexiTableFilter> tableFilters = new ArrayList<>();
-		tableFilters.add(new FlexiTableFilter(translate("filter.sections.open"), SharedBindersDataModel.EMPTY_SECTIONS, "o_icon o_sections_open"));
-		tableFilters.add(FlexiTableFilter.SPACER);
-		tableFilters.add(new FlexiTableFilter(translate("filter.show.all"), "all", true));
-		tableEl.setFilters("Filters", tableFilters, false);
-		tableEl.setSelectedFilterKey(SharedBindersDataModel.EMPTY_SECTIONS);
 	}
 	
 	private void loadModel(String searchString) {
 		List<AssessedBinder> assessedBinders = portfolioService.searchSharedBindersWith(getIdentity(), searchString);
 		List<SharedItemRow> rows = new ArrayList<>(assessedBinders.size());
 		for(AssessedBinder assessedBinder:assessedBinders) {
+			// check if any filter is applied and if then skip this row, instead of adding it to the table
+			if (tableEl.getSelectedFilterTab() != null
+					&& (tableEl.getSelectedFilterTab().getId().equals(SharedBindersDataModel.NEW_TAB_ID)
+					&& assessedBinder.getNumOfNewlyPublishedPages() < 1
+					|| (tableEl.getSelectedFilterTab().getId().equals(SharedBindersDataModel.EMPTY_SECTIONS)
+					&& assessedBinder.getNumOfOpenSections() < 1))) {
+				continue;
+			}
+
 			SharedItemRow row = new SharedItemRow(assessedBinder.getAssessedIdentity(), userPropertyHandlers, getLocale());
 			row.setBinderTitle(assessedBinder.getBinderTitle());
 			row.setBinderKey(assessedBinder.getBinderKey());
@@ -196,7 +199,7 @@ public class SharedBindersController extends FormBasicController implements Acti
 			row.setRecentLaunch(assessedBinder.getRecentLaunch());
 			List<AssessedBinderSection> sections = assessedBinder.getSections();
 			if(sections != null && sections.size() > 1) {
-				Collections.sort(sections, new AssessedBinderSectionComparator());
+				sections.sort(new AssessedBinderSectionComparator());
 			}
 			row.setSections(sections);
 			row.setNumOfOpenSections(assessedBinder.getNumOfOpenSections());
@@ -210,6 +213,29 @@ public class SharedBindersController extends FormBasicController implements Acti
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();
+	}
+
+	private void initFiltersPresets(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		// filter: show all
+		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithFilters(SharedBindersDataModel.ALL_TAB_ID, translate("filter.show.all"),
+				TabSelectionBehavior.clear, List.of());
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+
+		FlexiFiltersTab openTab = FlexiFiltersTabFactory.tabWithFilters(SharedBindersDataModel.EMPTY_SECTIONS, translate("filter.sections.open"),
+				TabSelectionBehavior.clear, List.of());
+		openTab.setFiltersExpanded(true);
+		tabs.add(openTab);
+
+		FlexiFiltersTab newTab = FlexiFiltersTabFactory.tabWithFilters(SharedBindersDataModel.NEW_TAB_ID, translate("filter.show.new"),
+				TabSelectionBehavior.clear, List.of());
+		newTab.setFiltersExpanded(true);
+		tabs.add(newTab);
+
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 	
 	@Override
@@ -249,8 +275,7 @@ public class SharedBindersController extends FormBasicController implements Acti
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(stackPanel == source) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
+			if(event instanceof PopEvent pe) {
 				if(pe.getController() == binderCtrl && binderCtrl != null) {
 					stackPanel.popUserObject(new SharedBinderAuthor(binderCtrl.getBinder().getKey()));
 				}
@@ -273,8 +298,7 @@ public class SharedBindersController extends FormBasicController implements Acti
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				SharedItemRow row = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
@@ -285,9 +309,10 @@ public class SharedBindersController extends FormBasicController implements Acti
 				} else if("leave".equals(cmd)) {
 					doConfirmLeaveBinder(ureq, row);
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
-				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
+			} else if(event instanceof FlexiTableSearchEvent se) {
 				loadModel(se.getSearch());
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				loadModel(null);
 			} else if("ONCLICK".equals(event.getCommand())) {
 				String row = ureq.getParameter("select-section");
 				String expand = ureq.getParameter("expand-section");
@@ -296,7 +321,6 @@ public class SharedBindersController extends FormBasicController implements Acti
 				} else if(StringHelper.containsNonWhitespace(expand)) {
 					doExpandSections(ureq);
 				}
-				
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -331,12 +355,12 @@ public class SharedBindersController extends FormBasicController implements Acti
 				int sectionIndex = Integer.parseInt(sectionParam);
 				AssessedBinderSection section = itemRow.getSections().get(sectionIndex);
 
-				Activateable2 activeateable = doSelectBinder(ureq, itemRow);
-				if(activeateable != null) {
+				Activateable2 activatable = doSelectBinder(ureq, itemRow);
+				if(activatable != null) {
 					List<ContextEntry> entries = new ArrayList<>(2);
 					entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("Entries", 0l)));
 					entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("Section", section.getSectionKey())));
-					activeateable.activate(ureq, entries, null);
+					activatable.activate(ureq, entries, null);
 				}
 			}
 		} catch (Exception e) {
@@ -401,28 +425,15 @@ public class SharedBindersController extends FormBasicController implements Acti
 			return c;
 		}
 	}
-	
-	private static final class SharedBinderAuthor {
-		
-		private final Long binderKey;
-		
-		public SharedBinderAuthor(Long binderKey) {
-			this.binderKey = binderKey;
-		}
 
-		@Override
-		public int hashCode() {
-			return binderKey.hashCode();
-		}
-
+	protected record SharedBinderAuthor(Long binderKey) {
 		@Override
 		public boolean equals(Object obj) {
-			if(this == obj) {
+			if (this == obj) {
 				return true;
 			}
-			if(obj instanceof SharedBinderAuthor) {
-				SharedBinderAuthor spa = (SharedBinderAuthor)obj;
-				return binderKey.equals(spa.binderKey);
+			if (obj instanceof SharedBinderAuthor sba) {
+				return binderKey.equals(sba.binderKey);
 			}
 			return false;
 		}

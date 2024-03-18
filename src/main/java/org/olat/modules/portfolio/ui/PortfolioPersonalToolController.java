@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.ui;
@@ -37,7 +37,7 @@ import org.olat.home.ReusableHomeController;
 /**
  * 
  * Initial date: 06.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class PortfolioPersonalToolController extends BasicController implements Activateable2, ReusableHomeController {
@@ -64,7 +64,7 @@ public class PortfolioPersonalToolController extends BasicController implements 
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries.size() > 0) {
+		if(!entries.isEmpty()) {
 			String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Portfolio".equalsIgnoreCase(resName) || "PortfolioV2".equalsIgnoreCase(resName)) {
 				entries = entries.subList(1, entries.size());

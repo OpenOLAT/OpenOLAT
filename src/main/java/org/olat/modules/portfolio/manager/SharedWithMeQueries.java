@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.manager;
@@ -53,7 +53,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 16.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -263,7 +263,7 @@ public class SharedWithMeQueries {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", member.getKey())
 				.getResultList();
-		if(objects.size() > 0) {
+		if(!objects.isEmpty()) {
 			Set<Long> sectionKeys = new HashSet<>();
 			Map<Long,AssessedBinder> keyToBinder = binders.stream().collect(Collectors.toMap (b -> b.getBinderKey(), b -> b));
 

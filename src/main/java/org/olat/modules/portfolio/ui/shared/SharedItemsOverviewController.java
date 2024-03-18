@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.ui.shared;
@@ -47,13 +47,15 @@ import org.olat.modules.portfolio.ui.PortfolioHomeController;
 /**
  * 
  * Initial date: 11 janv. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SharedItemsOverviewController extends BasicController implements Activateable2 {
 
 	private final VelocityContainer mainVC;
-	private final Link favoriteLink, bindersLink, pagesLink;
+	private final Link favoriteLink;
+	private final Link bindersLink;
+	private final Link pagesLink;
 	private final SegmentViewComponent segmentView;
 	private final TooledStackedPanel stackPanel;
 	
@@ -129,8 +131,7 @@ public class SharedItemsOverviewController extends BasicController implements Ac
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == favoriteLink) {
@@ -178,7 +179,7 @@ public class SharedItemsOverviewController extends BasicController implements Ac
 			filters.add(PageStatus.inRevision);
 			filters.add(PageStatus.published);
 
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Pages", 0l), null);
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Pages", 0L), null);
 			pagesCtrl = new SharedPagesController(ureq, swControl, stackPanel,
 					searchParams, filters, PageStatus.published);
 			listenTo(pagesCtrl);
@@ -192,7 +193,7 @@ public class SharedItemsOverviewController extends BasicController implements Ac
 	
 	public SharedBindersController doOpenBinders(UserRequest ureq) {
 		if(bindersCtrl == null) {
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Binders", 0l), null);
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Binders", 0L), null);
 			bindersCtrl = new SharedBindersController(ureq, swControl, stackPanel);
 			listenTo(bindersCtrl);
 		} else {

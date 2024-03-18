@@ -40,7 +40,6 @@ public class PortfolioCourseNodeConfiguration extends AbstractCourseNodeConfigur
 
 	public static final String MAP_KEY = "map-key";
 	public static final String REPO_SOFT_KEY = "repo-soft-key";
-	public static final String NODE_TEXT = "node_text";
 	
 	private PortfolioCourseNodeConfiguration() {
 		super();

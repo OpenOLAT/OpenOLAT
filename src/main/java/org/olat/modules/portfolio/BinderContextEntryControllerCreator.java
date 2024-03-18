@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio;
@@ -40,7 +40,7 @@ import org.olat.modules.portfolio.model.BinderRefImpl;
 /**
  * 
  * Initial date: 11.07.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class BinderContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
@@ -93,24 +93,24 @@ public class BinderContextEntryControllerCreator extends DefaultContextEntryCont
 		Long binderKey = mainEntry.getOLATResourceable().getResourceableId();
 		BinderRef binder = new BinderRefImpl(binderKey);
 		
-		List<ContextEntry> rewritedEntries = new ArrayList<>();
+		List<ContextEntry> rewrittenEntries = new ArrayList<>();
 		OLATResourceable homeRes = OresHelper.createOLATResourceableInstance("HomeSite", identity.getKey());
-		rewritedEntries.add(BusinessControlFactory.getInstance().createContextEntry(homeRes));
-		rewritedEntries.add(BusinessControlFactory.getInstance()
-				.createContextEntry(OresHelper.createOLATResourceableInstance("PortfolioV2", 0l)));
+		rewrittenEntries.add(BusinessControlFactory.getInstance().createContextEntry(homeRes));
+		rewrittenEntries.add(BusinessControlFactory.getInstance()
+				.createContextEntry(OresHelper.createOLATResourceableInstance("PortfolioV2", 0L)));
 		if(portfolioService.isMember(binder, identity, ContentRoles.owner.name())) {
-			rewritedEntries.add(BusinessControlFactory.getInstance()
-					.createContextEntry(OresHelper.createOLATResourceableInstance("MyBinders", 0l)));	
+			rewrittenEntries.add(BusinessControlFactory.getInstance()
+					.createContextEntry(OresHelper.createOLATResourceableInstance("MyBinders", 0L)));
 		} else if(portfolioService.isMember(binder, identity, ContentRoles.coach.name(), ContentRoles.reviewer.name())) {
-			rewritedEntries.add(BusinessControlFactory.getInstance()
-					.createContextEntry(OresHelper.createOLATResourceableInstance("SharedWithMe", 0l)));
+			rewrittenEntries.add(BusinessControlFactory.getInstance()
+					.createContextEntry(OresHelper.createOLATResourceableInstance("SharedWithMe", 0L)));
 		}
 	
-		rewritedEntries.add(mainEntry);//Binder
+		rewrittenEntries.add(mainEntry);//Binder
 		if(entries != null && !entries.isEmpty()) {
-			rewritedEntries.addAll(entries);//more details
+			rewrittenEntries.addAll(entries);//more details
 		}
 		// -> HomeSite
-		return new TabContext("", homeRes, rewritedEntries);
+		return new TabContext("", homeRes, rewrittenEntries);
 	}
 }

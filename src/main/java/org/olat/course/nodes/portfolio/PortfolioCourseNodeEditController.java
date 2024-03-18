@@ -53,7 +53,6 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	
 	private final VelocityContainer configContent;
 	private final PortfolioConfigForm configForm;
-	private final PortfolioTextForm textForm;
 	private final Component scoringContent;
 	private final MSEditFormController scoringController;
 	private final HighScoreEditController highScoreNodeConfigController;
@@ -76,12 +75,9 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 				translate("grading.configuration.title"), "manual_user/learningresources/Portfolio_assignment_Grading/");
 		scoringContent = scoringController.getInitialComponent();
 		listenTo(scoringController);
-		textForm = new PortfolioTextForm(ureq, wControl, node);
-		listenTo(textForm);
 		
 		configContent = createVelocityContainer("edit");
 		configContent.put("configForm", configForm.getInitialComponent());
-		configContent.put("textForm", textForm.getInitialComponent());
 		
 		//highscore
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config, course);
@@ -117,15 +113,6 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 				configContent.setDirty(true);
 			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(ureq, event);
-			}
-		} else if (source == textForm) {
-			if (event == Event.DONE_EVENT) {
-				textForm.getUpdatedConfig();
-				configForm.setDirtyFromOtherForm(false);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			} else if (event == Event.CHANGED_EVENT) {
-				// disable modification in other forms!
-				configForm.setDirtyFromOtherForm(true);
 			}
 		} else if (source == scoringController) {
 			if (event == Event.CANCELLED_EVENT) {

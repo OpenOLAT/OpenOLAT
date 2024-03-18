@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.ui.shared;
@@ -36,13 +36,16 @@ import org.olat.modules.portfolio.model.SharedItemRow;
 /**
  * 
  * Initial date: 15.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SharedBindersDataModel extends DefaultFlexiTableDataModel<SharedItemRow>
 	implements SortableFlexiTableDataModel<SharedItemRow>, FilterableFlexiTableModel {
-	
-	protected static final String EMPTY_SECTIONS = "sections-empty";
+
+	public static final String ALL_TAB_ID = "showAll";
+	public static final String NEW_TAB_ID = "showNew";
+	public static final String EMPTY_SECTIONS = "sections-empty";
+
 	
 	private final Locale locale;
 	private List<SharedItemRow> backups;
@@ -57,8 +60,8 @@ public class SharedBindersDataModel extends DefaultFlexiTableDataModel<SharedIte
 		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
 		if(SharedBindersDataModel.EMPTY_SECTIONS.equals(key)) {
 			List<SharedItemRow> filteredRows = backups.stream()
-						.filter(r -> r.getNumOfOpenSections() > 0)
-						.collect(Collectors.toList());
+					.filter(r -> r.getNumOfOpenSections() > 0)
+					.toList();
 			super.setObjects(filteredRows);
 		} else {
 			super.setObjects(backups);
@@ -82,20 +85,20 @@ public class SharedBindersDataModel extends DefaultFlexiTableDataModel<SharedIte
 	@Override
 	public Object getValueAt(SharedItemRow itemRow, int col) {
 		if(col >= 0 && col < ShareItemCols.values().length) {
-			switch(ShareItemCols.values()[col]) {
-				case binderKey: return itemRow.getBinderKey();
-				case binderName: return itemRow.getBinderTitle();
-				case courseName: return itemRow.getEntryDisplayName();
-				case openSections: return itemRow.getNumOfOpenSections();
-				case selectSections: return itemRow;
-				case grading: return itemRow.getAssessmentEntry();
-				case lastModified: return itemRow.getLastModified();
-				case recentLaunch: return itemRow.getRecentLaunch();
-				case draftPage: return itemRow.getNumOfDraftPages();
-				case inRevisionPage: return itemRow.getNumOfInRevisionPages();
-				case closedPage: return itemRow.getNumOfClosedPages();
-				case newlyPublishedPage: return itemRow.getNumOfNewlyPublishedPages();
-			}
+			return switch (ShareItemCols.values()[col]) {
+				case binderKey -> itemRow.getBinderKey();
+				case binderName -> itemRow.getBinderTitle();
+				case courseName -> itemRow.getEntryDisplayName();
+				case openSections -> itemRow.getNumOfOpenSections();
+				case selectSections -> itemRow;
+				case grading -> itemRow.getAssessmentEntry();
+				case lastModified -> itemRow.getLastModified();
+				case recentLaunch -> itemRow.getRecentLaunch();
+				case draftPage -> itemRow.getNumOfDraftPages();
+				case inRevisionPage -> itemRow.getNumOfInRevisionPages();
+				case closedPage -> itemRow.getNumOfClosedPages();
+				case newlyPublishedPage -> itemRow.getNumOfNewlyPublishedPages();
+			};
 		}
 		
 		int propPos = col - SharedBindersController.USER_PROPS_OFFSET;

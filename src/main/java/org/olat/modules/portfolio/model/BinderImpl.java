@@ -320,8 +320,7 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof BinderImpl) {
-			BinderImpl binder = (BinderImpl)obj;
+		if(obj instanceof BinderImpl binder) {
 			return key != null && key.equals(binder.getKey());
 		}
 		return false;

@@ -86,7 +86,6 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.ceditor.ContentElement;
 import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.grade.ui.GradeUIFactory;
@@ -106,6 +105,7 @@ import org.olat.modules.portfolio.ui.ImageMapper;
 import org.olat.modules.portfolio.ui.InvitationEditRightsController;
 import org.olat.modules.portfolio.ui.InvitationEmailController;
 import org.olat.modules.portfolio.ui.event.AccessRightsEvent;
+import org.olat.modules.portfolio.ui.shared.SharedBindersCourseNodeController;
 import org.olat.modules.portfolio.ui.wizard.AccessRightsContext;
 import org.olat.modules.portfolio.ui.wizard.AddMember_1_ChooseMemberStep;
 import org.olat.modules.portfolio.ui.wizard.AddMember_1_CourseMemberChoiceStep;
@@ -117,7 +117,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * <P>
  * Initial Date:  6 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
@@ -126,10 +126,9 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 
 	private Binder copyBinder;
 	private Binder templateBinder;
-	
+
 	private final PortfolioCourseNode courseNode;
-	private final ModuleConfiguration config;
-	
+
 	private FormLink newMapLink;
 	private FormLink selectMapLink;
 	private FormLayoutContainer assessmentInfosContainer;
@@ -141,6 +140,9 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 	private AccessRightsEditController editAccessRightsCtrl;
 	private InvitationEmailController addInvitationEmailCtrl;
 	private CloseableModalController cmc;
+
+	private static final Boolean sharedMeOpen = Boolean.TRUE;
+	private static final Boolean sharedByOpen = Boolean.TRUE;
 
 	private final UserCourseEnvironment userCourseEnv;
 	private final AssessmentConfig assessmentConfig;
@@ -160,14 +162,13 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 	private InvitationModule invitationModule;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
+
 	public PortfolioCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			PortfolioCourseNode courseNode) {
 		super(ureq, wControl, "run");
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 
 		this.courseNode = courseNode;
-		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
 		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
 
@@ -202,36 +203,30 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 	public boolean isDownloadEnabled() {
 		return true;
 	}
-	
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String assessmentPage = velocity_root + "/assessment_infos.html";
 		assessmentInfosContainer = FormLayoutContainer.createCustomFormLayout("assessmentInfos", getTranslator(), assessmentPage);
 		assessmentInfosContainer.setVisible(false);
 		formLayout.add(assessmentInfosContainer);
-		
+
 		VelocityContainer mainVC = ((FormLayoutContainer) formLayout).getFormItemComponent();
-		
+
 		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv,
 					courseNode, this.mainForm);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
-				mainVC.put("highScore", highScoreComponent);							
+				mainVC.put("highScore", highScoreComponent);
 			}
 		}
 
-		Object text = config.get(PortfolioCourseNodeConfiguration.NODE_TEXT);
-		String explanation = text instanceof String stringText ? stringText : "";
-		if(StringHelper.containsNonWhitespace(explanation)) {
-			flc.contextPut("explanation", StringHelper.truncateText(explanation));
-		}
-		
 		if(templateBinder != null) {
 			updateUI(ureq);
 		}
 	}
-	
+
 	protected void updateUI(UserRequest ureq) {
 		if(templateBinder != null) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -244,7 +239,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			String maxScoreLabel = translate("assessment.minmax.value.plural", "0", AssessmentHelper.getRoundedScore(assessmentEval.getMaxScore()));
 			flc.contextPut("maxScore", maxScoreLabel);
 		}
-		
+
 		if(copyBinder == null || copyBinder.getBinderStatus() == BinderStatus.deleted) {
 			updateEmptyUI(ureq);
 		} else {
@@ -258,7 +253,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			newMapLink.setVisible(copyBinder == null || copyBinder.getBinderStatus() == BinderStatus.deleted);
 		}
 	}
-	
+
 	private void updateEmptyUI(UserRequest ureq) {
 		if(templateBinder != null) {
 			updateBinderData(ureq, templateBinder);
@@ -281,9 +276,10 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			flc.contextPut("imageName", portfolioService.getPosterImageLeaf(binder).getName());
 		}
 		// put binder information into context
+		flc.contextPut("instructions", courseNode.getInstruction());
 		flc.contextPut("portfolioTitle", title);
 	}
-	
+
 	private void updateSelectedUI(UserRequest ureq) {
 		if(selectMapLink == null) {
 			selectMapLink = uifactory.addFormLink("select", "open.portfolio", "open.portfolio", flc, Link.BUTTON);
@@ -292,7 +288,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 		} else {
 			selectMapLink.setVisible(true);
 		}
-		
+
 		if(copyBinder != null) {
 			flc.contextRemove("portfolioDesc");
 			flc.remove("map.new");
@@ -337,12 +333,13 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 		}
 		flc.contextPut("isSharedWithCoach", accessRights.stream().anyMatch(ar -> ar.getRole().equals(ContentRoles.coach)));
 		flc.contextPut("accessRightsRows", accessRightsRows);
+		flc.contextPut("sharedByOpen", sharedByOpen);
 
 		initAddAccessRightsTools();
-
 		updateAssessmentInfos(ureq, copyBinder.getReturnDate());
-
 		assessmentParticipantViewCtrl.setBinderInformation(copyBinder);
+
+		doOpenBinders(ureq);
 	}
 
 	public void initAddAccessRightsTools() {
@@ -380,14 +377,14 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			}
 		}
 	}
-	
+
 	private void updateAssessmentInfos(UserRequest ureq, Date returnDate) {
 		if(userCourseEnv.isParticipant() && (returnDate != null || copyBinder != null)) {
 			if (panelInfo == null) {
 				panelInfo = new PanelInfo(PortfolioCourseNodeRunController.class,
 						"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
 			}
-			
+
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 			assessmentParticipantViewCtrl = null;
 			if (Mode.none != assessmentConfig.getScoreMode() || Mode.none != assessmentConfig.getPassedMode()) {
@@ -396,11 +393,19 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 				listenTo(assessmentParticipantViewCtrl);
 				assessmentInfosContainer.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 			}
-			
+
 			assessmentInfosContainer.setVisible(true);
 		} else {
 			assessmentInfosContainer.setVisible(false);
 		}
+	}
+
+	private void doOpenBinders(UserRequest ureq) {
+		flc.contextPut("sharedMeOpen", sharedMeOpen);
+		SharedBindersCourseNodeController sharedBindersCourseNodeController = new SharedBindersCourseNodeController(ureq, getWindowControl(), mainForm, courseNode.getIdent());
+		listenTo(sharedBindersCourseNodeController);
+		flc.contextPut("shareBinderSize", sharedBindersCourseNodeController.getModel().getObjects());
+		flc.add("shareBinder", sharedBindersCourseNodeController.getInitialFormItem());
 	}
 
 	private void cleanUp() {
@@ -497,11 +502,11 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 					return;
 				}
 			}
-			
+
 			updateUI(ureq);
 		} else if (source == selectMapLink) {
 			String resourceUrl;
-			 if(copyBinder != null) {
+			if(copyBinder != null) {
 				resourceUrl = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MyBinders:0][Binder:" + copyBinder.getKey() + "]";
 			} else {
 				return;
@@ -673,7 +678,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			showError("invitation.mail.failure");
 		}
 	}
-	
+
 	private void doRestore() {
 		copyBinder = portfolioService.getBinderByKey(copyBinder.getKey());
 		copyBinder.setBinderStatus(BinderStatus.open);
@@ -746,5 +751,5 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			return explanation;
 		}
 	}
-	
+
 }
