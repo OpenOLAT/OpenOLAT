@@ -990,7 +990,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			link.setUserObject(row);
 			row.setTitleItem(link);
 		} else {
-			StaticTextElement titleItem = uifactory.addStaticTextElement("title_" + counter++, "", flc);
+			StaticTextElement titleItem = uifactory.addStaticTextElement("title_" + counter++, null, "", flc);
 			titleItem.setDomWrapperElement(DomWrapperElement.span);
 			titleItem.setStaticFormElement(false);
 			row.setTitleItem(titleItem);
