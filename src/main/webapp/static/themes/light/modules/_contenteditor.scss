@@ -1700,6 +1700,17 @@ table.o_ce_table {
 				padding-left: $o-ce-padding-large;
 			}
 		}
+
+		&.o_alert_mode {
+			&:not(.o_ce_layout_custom) {
+				&.o_in_form {
+					padding-top: $o-ce-padding-compact;
+				}
+				&:not(.o_in_form) {
+					padding-top: $o-ce-padding-normal;
+				}
+			}
+		}
 	}
 
 	/* Padding and margin overrides for the outside edges (editor and run) */
