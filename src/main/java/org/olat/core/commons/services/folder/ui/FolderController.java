@@ -697,17 +697,14 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private boolean isThumbnailAvailable(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
-		if (isAudio(vfsMetadata)) {
+		if (isAudio(vfsMetadata, vfsLeaf)) {
 			return true;
-		}
-		if (vfsLeaf.getSize() == 0) {
-			return false;
 		}
 		return vfsRepositoryService.isThumbnailAvailable(vfsLeaf, vfsMetadata);
 	}
 
 	private VFSLeaf getThumbnail(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
-		if (isAudio(vfsMetadata)) {
+		if (isAudio(vfsMetadata, vfsLeaf)) {
 			return vfsRepositoryService.getLeafFor(avModule.getAudioWaveformUrl());
 		}
 		return FlexiTableRendererType.classic == tableEl.getRendererType()
@@ -715,8 +712,11 @@ public class FolderController extends FormBasicController implements Activateabl
 				: vfsRepositoryService.getThumbnail(vfsLeaf, 1000, 650, false);
 	}
 	
-	private boolean isAudio(VFSMetadata vfsMetadata) {
-		if ("m4a".equalsIgnoreCase(FileUtils.getFileSuffix(vfsMetadata.getFilename()))) {
+	private boolean isAudio(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
+		String filename = vfsMetadata != null
+				? vfsMetadata.getFilename()
+				: vfsLeaf.getName();
+		if ("m4a".equalsIgnoreCase(FileUtils.getFileSuffix(filename))) {
 			return true;
 		}
 		return false;
@@ -1609,7 +1609,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private boolean hasVersion(VFSMetadata vfsMetadata, VFSItem vfsItem) {
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			if (vfsVersionModule.isEnabled() && vfsLeaf.canVersion() == VFSConstants.YES) {
+			if (vfsVersionModule.isEnabled() && vfsLeaf.canVersion() == VFSConstants.YES && vfsMetadata != null) {
 				return vfsMetadata.getRevisionNr() > 1;
 			}
 		}
