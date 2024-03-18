@@ -30,6 +30,7 @@ public enum AlertBoxType {
 	note("alert.box.type.note", "lightgray", "o_alert_box_type_note", "o_icon_lightbulb"),
 	info("alert.box.type.info", "lightblue", "o_alert_box_type_info", "o_icon_circle_info"),
 	tip("alert.box.type.tip", "purple", "o_alert_box_type_tip", "o_icon_hand_point_up"),
+	important("alert.box.type.important", "lightblue", "o_alert_box_type_important", "o_icon_circle_exclamation"),
 	warning("alert.box.type.warning", "yellow", "o_alert_box_type_warning", "o_icon_triangle_exclamation"),
 	error("alert.box.type.error", "red", "o_alert_box_type_error", "o_icon_circle_xmark"),
 	success("alert.box.type.success", "lightgreen", "o_alert_box_type_success", "o_icon_circle_check"),
