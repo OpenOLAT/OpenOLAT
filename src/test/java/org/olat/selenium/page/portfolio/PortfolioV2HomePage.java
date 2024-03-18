@@ -125,9 +125,8 @@ public class PortfolioV2HomePage {
 	 * @return The list of binders
 	 */
 	public BindersPage clickToolbarCrumbBinders() {
-		By crumbBindersBy = By.xpath("//ol[@class='breadcrumb']/li[3]/a");
+		By crumbBindersBy = By.xpath("//ol[@class='breadcrumb']/li[@class='o_breadcrumb_crumb'][2]/a");
 		browser.findElement(crumbBindersBy).click();
-		OOGraphene.waitBusy(browser);
 		By listBindersBy = By.id("o_my_binders_list");
 		OOGraphene.waitElement(listBindersBy, browser);
 		return new BindersPage(browser);
