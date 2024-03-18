@@ -848,7 +848,8 @@ public class PortfolioV2Test extends Deployments {
 			.contentEditor()
 			.openElementsChooser(1, 2)
 			.addImage("Blue is the new black", imageFile)
-			.assertOnImage(imageFile);
+			.assertOnImage(imageFile)
+			.closeInspector();
 		// close the editor and check
 		entry
 			.closeEditor()

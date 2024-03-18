@@ -78,5 +78,15 @@ public class ContentViewPage {
 		OOGraphene.waitElement(citationBy, 5, browser);
 		return this;
 	}
+	
+	public ContentViewPage closeInspector() {
+		By closeBy = By.cssSelector(".element_inspector .o_ceditor_inspector_header a.close");
+		OOGraphene.waitElement(closeBy, browser);
+		browser.findElement(closeBy).click();
+
+		By inspectorBy = By.cssSelector("div.element_inspector>div.o_ceditor_inspector");
+		OOGraphene.waitElementDisappears(inspectorBy, 5, browser);
+		return this;
+	}
 
 }
