@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,13 +14,12 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -56,7 +55,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
-import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -77,7 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 5 Jun 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class RepositoryEntryDetailsMetadataController extends FormBasicController {
@@ -112,8 +110,6 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	@Autowired
 	private EfficiencyStatementManager effManager;
 	@Autowired
-	private UserCourseInformationsManager userCourseInfosManager;
-	@Autowired
 	private UserRatingsDAO userRatingsDao;
 	@Autowired
 	private MarkManager markManager;
@@ -135,8 +131,7 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		int counter = 0;
-		if (formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if (formLayout instanceof FormLayoutContainer layoutCont) {
 
 			layoutCont.contextPut("v", entry);
 			layoutCont.contextPut("guestOnly", Boolean.valueOf(guestOnly));
@@ -237,16 +232,12 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 			layoutCont.contextPut("passed", passed);
 			layoutCont.contextPut("failed", failed);
 			layoutCont.contextPut("score", score);
-			
-			Date recentLaunch = userCourseInfosManager.getRecentLaunchDate(entry.getOlatResource(), getIdentity());
-			layoutCont.contextPut("recentLaunch", recentLaunch);
 		}
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if ("category".equals(cmd)) {
 				Long categoryKey = (Long)link.getUserObject();
@@ -263,8 +254,7 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 			} else if ("leave".equals(cmd)) {
 				doConfirmLeave(ureq);
 			}
-		} else if (ratingEl == source && event instanceof RatingFormEvent) {
-			RatingFormEvent ratingEvent = (RatingFormEvent)event;
+		} else if (ratingEl == source && event instanceof RatingFormEvent ratingEvent) {
 			doRating(ratingEvent.getRating());
 		}
 		super.formInnerEvent(ureq, source, event);

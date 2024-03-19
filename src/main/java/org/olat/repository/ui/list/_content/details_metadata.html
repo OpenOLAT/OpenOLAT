@@ -96,12 +96,6 @@
 		</div> 
 		#end
 
-		#if($recentLaunch)
-		<div class="o_recent">
-			<strong>$r.translate("cif.lastusage"):</strong>
-			$r.formatDateAndTime($recentLaunch)
-		</div>
-		#end
 		#if($groups && $groups.size() > 0)
 		<div class="o_groups">
 			<strong>$r.translate("cif.groups"):</strong>
