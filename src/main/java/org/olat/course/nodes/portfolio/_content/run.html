@@ -5,13 +5,14 @@ $r.render("assessmentInfos")
 <fieldset class="o_block_top o_start_info_box">
 	<legend>$r.translate("info.coach.title")</legend>
 	<div class="o_note">
-		<h4>$r.translate("instructions.title")</h4>
-		<p>$instructions</p>
+		#if ($instructions)
+			<h4>$r.translate("instructions.title")</h4>
+			<p>$instructions</p>
+		#end
 		<h4>$r.translate("info.box.title")</h4>
 		#if ($maxScore)
 			<p><i class="o_icon o_icon-fw o_icon_assessment_tool"> </i> $maxScore</p>
 		#end
-		<p><i class="o_icon o_icon-fw o_ep_icon"> </i> $r.translate("info.coach.title"): $portfolioTitle</p>
 		<div class="o_portfolio_cn_preview o_rendertype_custom">
 			<div class="panel panel-default o_binder o_portfolio_assignments panel-imagebg o_portfolio_entry" style="background-image:url('$image/$imageName');">
 				<div class="panel-heading">
