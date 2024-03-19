@@ -652,7 +652,10 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void loadItemsAndChildren(List<VFSItem> allItems, VFSContainer vfsContainer) {
 		List<VFSItem> items = vfsContainer.getItems(vfsFilter);
-		allItems.addAll(items);
+		List<VFSItem> visibleItems = FolderView.file == folderView
+				? items.stream().filter(item -> item instanceof VFSLeaf).toList()
+				: items;
+		allItems.addAll(visibleItems);
 		
 		items.forEach(item -> {
 			if (item instanceof VFSContainer childContainer) {
