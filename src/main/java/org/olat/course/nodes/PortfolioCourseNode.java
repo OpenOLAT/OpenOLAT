@@ -39,6 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
@@ -117,10 +118,11 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 			MSCourseNode.initDefaultConfig(config);
 		}
 		if (version < 3) {
-			if (getInstruction().isBlank()) {
+			String instructions = getInstruction();
+			if (!StringHelper.containsNonWhitespace(instructions)) {
 				setInstruction(config.getStringValue("node_text"));
 			} else {
-				setInstruction(getInstruction().concat(config.getStringValue("node_text")));
+				setInstruction(instructions.concat(config.getStringValue("node_text")));
 			}
 		}
 		config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
