@@ -527,6 +527,7 @@ public class AccessConfigurationController extends FormBasicController {
 			infos.setOffer(offer);
 			infos.setOfferOrganisations(offerOrganisations);
 			forgeCatalogInfos(infos);
+			cont.contextPut("offer", infos);
 			if (!readOnly) {
 				forgeLinks(infos);
 			}

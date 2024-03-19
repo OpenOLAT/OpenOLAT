@@ -133,8 +133,8 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.status));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.clientId));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.ram));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.cpu));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.ram));
 
 		FlexiCellRenderer applicationsRenderer = new StaticFlexiCellRenderer(CMD_SHOW_APPLICATIONS, new TextFlexiCellRenderer(EscapeMode.antisamy));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(

@@ -35,6 +35,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.ims.lti13.DeploymentConfigurationPermission;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.ui.LTI13ResourceAccessController;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
@@ -100,9 +101,12 @@ public class AuthoringEditAccessController extends BasicController {
 		}
 		initAccessShare(ureq, mainVC);
 		initAccessOffers(ureq, mainVC);
+		// LTI13 is restricted. Only if it is activated for all groups or activated for course owners with author role
+		boolean isLTI13AccessAllowed = lti13Module.getDeploymentRepositoryEntryOwnerPermission() == DeploymentConfigurationPermission.allResources
+				|| entry.isLTI13DeploymentByOwnerWithAuthorRightsEnabled();
 		// check if lti Module is enabled and if entry is a course
 		// an LTI release only makes sense in a course OO-7664
-		if(lti13Module.isEnabled() && entry.getOlatResource().getResourceableTypeName().equals("CourseModule")) {
+		if(lti13Module.isEnabled() && isLTI13AccessAllowed && entry.getOlatResource().getResourceableTypeName().equals("CourseModule")) {
 			initLTI13Access(ureq, mainVC);
 		}
 		initAccessOverview(ureq, mainVC);
