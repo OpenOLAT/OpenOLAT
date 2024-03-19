@@ -70,7 +70,7 @@ public class JupyterHubsTableModel extends DefaultFlexiTableDataModel<JupyterHub
 				return "";
 			}
 			case applications -> {
-				return row.getNumberOfApplications() + "<br>" + row.getNumberOfParticipants();
+				return row.getNumberOfApplications() + " / " + row.getNumberOfParticipants();
 			}
 			case tools -> { return row.getToolLink(); }
 			default -> { return "ERROR"; }
