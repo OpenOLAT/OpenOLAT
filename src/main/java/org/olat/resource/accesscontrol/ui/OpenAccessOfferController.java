@@ -19,27 +19,25 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationNameComparator;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
@@ -57,7 +55,7 @@ public class OpenAccessOfferController extends FormBasicController {
 	private static final String CATALOG_WEB = "web";
 	
 	private TextElement descEl;
-	private MultipleSelectionElement organisationsEl;
+	private MultiSelectionFilterElement organisationsEl;
 	private MultipleSelectionElement catalogEl;
 
 	private final Offer offer;
@@ -143,18 +141,10 @@ public class OpenAccessOfferController extends FormBasicController {
 			}
 		}
 		
-		Collections.sort(organisations, new OrganisationNameComparator(getLocale()));
-		
-		SelectionValues orgSV = new SelectionValues();
-		organisations.forEach(org -> orgSV.add(entry(org.getKey().toString(), org.getDisplayName())));
-		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "offer.organisations", formLayout,
-				orgSV.keys(), orgSV.values(), null, null);
+		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.organisations", formLayout, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
-		for (Organisation offerOrganisation : offerOrganisations) {
-			if (organisationsEl.getKeys().contains(offerOrganisation.getKey().toString())) {
-				organisationsEl.select(offerOrganisation.getKey().toString(), true);
-			}
-		}
+		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}
 	
 	@Override
