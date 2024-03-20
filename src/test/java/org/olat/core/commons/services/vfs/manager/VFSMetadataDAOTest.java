@@ -303,9 +303,9 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		Assert.assertNotNull(metadata1);
 		Assert.assertNotNull(metadata2);
 
-		List<String> relativePaths = vfsMetadataDao.getRelativePaths(Collections.singletonList(relativePath));
+		List<String> relativePaths = vfsMetadataDao.getRelativePaths(relativePath);
 		Assert.assertEquals(1, relativePaths.size());
-		relativePaths = vfsMetadataDao.getRelativePaths(Collections.singletonList("/bcroot/course/" + uuid1));
+		relativePaths = vfsMetadataDao.getRelativePaths("/bcroot/course/" + uuid1);
 		Assert.assertEquals(2, relativePaths.size());
 	}
 }
