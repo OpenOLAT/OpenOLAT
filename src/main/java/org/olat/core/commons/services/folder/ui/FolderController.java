@@ -748,7 +748,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			selectionEl.setStaticFormElement(false);
 			row.setSelectionItem(selectionEl);
 			
-			FormItem titleEl = uifactory.addStaticTextElement("title_" + counter++, null, row.getTitle(), flc);
+			StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, row.getTitle(), flc);
+			titleEl.setStaticFormElement(false);
 			row.setTitleItem(titleEl);
 		}
 	}

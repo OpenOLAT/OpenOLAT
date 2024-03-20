@@ -42,9 +42,9 @@ public class FolderIconRenderer implements FlexiCellRenderer {
 			if (folderRow.isThumbnailAvailable()) {
 				target.append("<img src=\"").append(folderRow.getThumbnailUrl()).append("\" alt=\"\"/>");
 			} else {
-				target.append("<div class=\"o_folder_row_thumbnail_icon\"><i class=\"o_icon ")
-				.append(folderRow.getIconCssClass())
-				.append("\"></i></div>");
+				target.append("<div class=\"o_folder_row_thumbnail_icon\"><i class=\"o_icon ");
+				target.append(folderRow.getIconCssClass());
+				target.append("\"></i></div>");
 			}
 			target.append("</div>");
 		}

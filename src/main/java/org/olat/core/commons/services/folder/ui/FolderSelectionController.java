@@ -34,19 +34,23 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -64,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class FolderSelectionController extends FormBasicController {
+public class FolderSelectionController extends FormBasicController implements FlexiTableCssDelegate {
 	
 	private static final String CMD_FOLDER = "folder";
 	
@@ -131,6 +135,7 @@ public class FolderSelectionController extends FormBasicController {
 		dataModel = new FolderDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), flc);
 		tableEl.setAndLoadPersistedPreferences(ureq, "folder.selection");
+		tableEl.setCssDelegate(this);
 		tableEl.sort(FolderCols.title.name(), true);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -155,6 +160,10 @@ public class FolderSelectionController extends FormBasicController {
 			VFSMetadata vfsMetadata = metadatas.get(vfsItem.getName());
 			row.setMetadata(vfsMetadata);
 			
+			String iconCssClass = vfsItem instanceof VFSContainer
+					? "o_filetype_folder"
+					: CSSHelper.createFiletypeIconCssClassFor(vfsItem.getName());
+			row.setIconCssClass(iconCssClass);
 			row.setTitle(FolderUIFactory.getDisplayName(vfsMetadata, vfsItem));
 			row.setLastModifiedDate(FolderUIFactory.getLastModifiedDate(vfsMetadata, vfsItem));
 			row.setTranslatedType(FolderUIFactory.getTranslatedType(getTranslator(), vfsMetadata, vfsItem));
@@ -212,9 +221,30 @@ public class FolderSelectionController extends FormBasicController {
 			link.setUserObject(row);
 			row.setTitleItem(link);
 		} else {
-			FormItem staticEl = uifactory.addStaticTextElement("title_" + counter++, null, row.getTitle(), flc);
-			row.setTitleItem(staticEl);
+			StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, row.getTitle(), flc);
+			titleEl.setStaticFormElement(false);
+			row.setTitleItem(titleEl);
 		}
+	}
+	
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		FolderRow row = dataModel.getObject(pos);
+		String cssClass = null;
+		if (row.getVfsItem() instanceof VFSLeaf) {
+			cssClass = "o_folder_muted_row";
+		}
+		return cssClass;
 	}
 	
 	@Override
