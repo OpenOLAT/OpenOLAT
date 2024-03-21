@@ -89,10 +89,7 @@ public class SurveyEditorPage extends ContentEditorPage {
 		OOGraphene.waitBusy(browser);
 		browser.findElement(choiceBy).sendKeys(choice);
 		OOGraphene.waitBusy(browser);
-		
 		return this;
 	}
-	
-
 
 }

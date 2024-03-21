@@ -90,7 +90,7 @@ public class ContentEditorPage extends ContentViewPage {
 
 		new Select(browser.findElement(titleSize)).selectByValue(Integer.toString(size));
 		OOGraphene.waitBusy(browser);
-		By selectedSize = By.xpath("//div[@class='o_ceditor_inspector']//select[@id='o_fioheading_size_SELBOX']/option[@value='" + size +"'][@selected='selected']");
+		By selectedSize = By.cssSelector("div.o_ceditor_inspector select#o_fioheading_size_SELBOX:focus>option[value='" + size +"'][selected='selected']");
 		OOGraphene.waitElement(selectedSize, browser);
 		
 		return this;
@@ -198,8 +198,9 @@ public class ContentEditorPage extends ContentViewPage {
 	private ContentEditorPage closeEditFragment(By containerBy) {
 		// Move the focus, important
 		new Actions(browser)
-			.moveToElement(browser.findElement(containerBy), 0, 0)
-			.click().perform();
+			.moveToElement(browser.findElement(containerBy), -25, 0)
+			.click()
+			.perform();
 		
 		OOGraphene.waitBusy(browser);
 		try {

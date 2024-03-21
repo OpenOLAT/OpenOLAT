@@ -53,7 +53,7 @@ public class LecturesRepositoryPage {
 	 * @return
 	 */
 	public CoursePageFragment clickToolbarRootCrumb() {
-		By toolbarBackBy = By.xpath("//ol[@class='breadcrumb']/li[@class='o_breadcrumb_crumb'][1]/a");
+		By toolbarBackBy = By.xpath("//ol[@class='breadcrumb']/li[contains(@class,'o_first_crumb')]/a");
 		browser.findElement(toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
 		return new CoursePageFragment(browser);
