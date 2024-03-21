@@ -46,11 +46,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.login.webauthn.ui.PasskeyListController;
 import org.olat.login.webauthn.ui.SendRecoveryKeyToUserForm;
+import org.olat.user.ui.identity.UserOpenOlatAuthenticationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -94,6 +96,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	public UserOpenOlatAuthenticationAdminController(UserRequest ureq, WindowControl wControl, Identity identityToModify,
 			boolean canResetPassword, boolean canSendPasswordLink) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(UserOpenOlatAuthenticationController.class, getLocale(), getTranslator()));
 		this.identityToModify = identityToModify;
 		this.canResetPassword = canResetPassword;
 		this.canSendPasswordLink = canSendPasswordLink;
