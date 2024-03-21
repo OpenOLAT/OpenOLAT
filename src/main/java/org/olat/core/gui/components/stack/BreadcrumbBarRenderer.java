@@ -30,6 +30,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 
 /**
  * 
@@ -49,21 +50,21 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 
 		if (breadCrumbs.size() > panel.getInvisibleCrumb()) {
 			String id = "o_c" + source.getDispatchID();
-			sb.append("<div id='").append(id).append("' class='o_breadcrumb'>")
+			sb.append("<div id='").append(id).append("' class='o_breadcrumb_bar o_breadcrumb'>")
 			  .append("<ol class='breadcrumb'>");
 	
 			Link rootLink = panel.getRootLink();
 			Link backLink = panel.getBackLink();
 			int numOfCrumbs = breadCrumbs.size();
 			if((rootLink.isVisible() || backLink.isVisible()) && numOfCrumbs > panel.getInvisibleCrumb()) {
-				if (rootLink.isVisible()) {
-					sb.append("<li class='o_breadcrumb_root'>");
-					rootLink.getHTMLRendererSingleton().render(renderer, sb, rootLink, ubu, translator, renderResult, args);
-					sb.append("</li>");
-				}
 				if (backLink.isVisible()) {
 					sb.append("<li class='o_breadcrumb_back'>");
 					backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
+					sb.append("</li>");
+				}
+				if (rootLink.isVisible()) {
+					sb.append("<li class='o_breadcrumb_root'>");
+					rootLink.getHTMLRendererSingleton().render(renderer, sb, rootLink, ubu, translator, renderResult, args);
 					sb.append("</li>");
 				}
 				
@@ -93,12 +94,23 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 				for (int i = 0; i < breadCrumbs.size(); i++) {
 					Link crumb = breadCrumbs.get(i);
 					sb.append("<li class='o_breadcrumb_crumb o_display_none");
-					if (i == breadCrumbs.size()-1) {
+					if (i == 0) {
+						sb.append(" o_first_crumb");
+					} else if (i == breadCrumbs.size()-1) {
+						crumb.setEnabled(false);
 						sb.append(" o_last_crumb");
 					}
 					sb.append("'>");
+					
+					String displayText = crumb.getCustomDisplayText();
+					crumb.setTitle(displayText);
+					crumb.setCustomDisplayText(Formatter.truncate(displayText, 40));
 					renderer.render(crumb, sb, args);
+					crumb.setTitle(null);
+					crumb.setCustomDisplayText(displayText);
+					
 					sb.append("</li>");
+					crumb.setEnabled(true);
 				}
 			}
 			
@@ -118,12 +130,12 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 			  .append("</script>");
 		} else {
 			sb.append("<div id='o_c").append(source.getDispatchID()).append("'>");
-			
-			for(Link breadCrumb:breadCrumbs) {
-				breadCrumb.setDirty(false);
-			}
 		}
 		
+		breadCrumbs.forEach(crumb -> crumb.setDirty(false));
+		if(panel.getRootLink() != null) {
+			panel.getRootLink().setDirty(false);
+		}
 		if(panel.getBackLink() != null) {
 			panel.getBackLink().setDirty(false);
 		}

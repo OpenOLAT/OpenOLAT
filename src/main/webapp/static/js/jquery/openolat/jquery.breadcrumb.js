@@ -95,6 +95,10 @@
 				// If all crumbs still have enough space, another one is added ...
 				this.showMoreCrumbs(numVisibleCrumbs + 1);
 			} else {
+				// ... (show at least the last crumb) ...
+				if ((visibleIndex + 1) == this.elements.crumbs.length) {
+					visibleIndex--;
+				}
 				// ... else the number of visible crumbs ...
 				this.elements.crumbs.each(function(index, value) {
 					if (index > visibleIndex) {

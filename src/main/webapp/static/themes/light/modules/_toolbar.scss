@@ -17,10 +17,7 @@
 
 	.o_breadcrumb {
 	  	@include clearfix();
-		padding-right: 10px;
 		.breadcrumb {
-			display: flex;
-			
 			margin-bottom: 0;
 			padding: 5px 9px;
 			background-color: $o-toolbar-breadcrumb-bg-color;
@@ -28,33 +25,8 @@
 			line-height: $o-toolbar-breadcrumb-line-height;
 	    	border-radius: 0; // reset from default breadcrumb style
 	    	@include border-top-radius($o-toolbar-border-radius); // don't hide background
-	    	
-			>li {
-				white-space: nowrap;
-				@include o-add-icon-font();
-				+ li:before {
-					padding: 0 5px;
-					color: $text-color;
-					content: "#{$fa-var-chevron-right}";
-				}
-				&.o_breadcrumb_more {
-					&:before {
-						content: none;
-					}
-				}
-				&.o_last_crumb {
-					a {
-						color: $text-color;
-						font-weight: bold;
-					}
-				}
-			}	
-			.o_display_none {
-				display: none;
-			}
 
 			.o_breadcrumb_close {
-				margin-left: auto;
 				a {
 					line-height: $o-toolbar-breadcrumb-line-height;
 					color: $o-toolbar-close-color;
@@ -71,6 +43,14 @@
 				&:before {
 					content: none;
 				}
+			}
+		}
+	}
+	
+	&:not(:has(.o_tools_container)) {
+		.o_breadcrumb {
+			.breadcrumb {
+				background-color: transparent;
 			}
 		}
 	}

@@ -44,7 +44,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -92,7 +91,6 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		rootLink.setTitle(getTranslator().translate("root.goto"));
 		rootLink.setAriaLabel(getTranslator().translate("root.goto"));
 		rootLink.setAccessKey("h");
-		rootLink.setVisible(false);
 		
 		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
 		backLink = LinkFactory.createCustomLink("back", "back", "\u00A0", Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
@@ -521,8 +519,8 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 			}
 		}
 
-		Link link = LinkFactory.createLink("crumb_" + stack.size(), (Translator)null, this);
-		link.setCustomDisplayText(StringHelper.escapeHtml(Formatter.truncate(displayName, 40)));
+		Link link = LinkFactory.createLink("crumb_" + stack.size(), getTranslator(), this, Link.NONTRANSLATED);
+		link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
 		if(StringHelper.containsNonWhitespace(iconLeftCss)) {
 			link.setIconLeftCSS(iconLeftCss);
 		}
