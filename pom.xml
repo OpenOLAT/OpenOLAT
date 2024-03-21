@@ -71,7 +71,7 @@
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.4</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.3</apache.cxf>
-		<apache.pdfbox>3.0.0</apache.pdfbox>
+		<apache.pdfbox>3.0.2</apache.pdfbox>
 		<apache.poi>5.2.5</apache.poi>
 		<apache.log4j>2.22.1</apache.log4j>
 		<org.slf4j>2.0.11</org.slf4j>
