@@ -48,6 +48,10 @@ public class ProjArtefactSearchParams {
 		return artefactKeys;
 	}
 	
+	public void setArtefactKeys(Collection<Long> artefactKeys) {
+		this.artefactKeys = artefactKeys;
+	}
+
 	public void setArtefacts(Collection<? extends ProjArtefactRef> artefacts) {
 		this.artefactKeys = artefacts.stream().map(ProjArtefactRef::getKey).collect(Collectors.toSet());
 	}

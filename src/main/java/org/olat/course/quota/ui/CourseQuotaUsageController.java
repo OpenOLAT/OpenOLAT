@@ -149,6 +149,18 @@ public class CourseQuotaUsageController extends FormBasicController
 		initForm(ureq);
 	}
 
+	private static ProgressBar getProgressBarPF(CourseQuotaUsageRow participantBoxRow, Quota quota) {
+		ProgressBar currentlyUsedBar = new ProgressBar(CUR_USED_PROGRESS_BAR);
+		currentlyUsedBar.setLabelAlignment(ProgressBar.LabelAlignment.none);
+		currentlyUsedBar.setMax(100);
+		currentlyUsedBar.setActual((float) participantBoxRow.getTotalUsedSize() / (float) quota.getQuotaKB() * 100);
+		ProgressBar.BarColor barColor = currentlyUsedBar.getActual() < 80
+				? ProgressBar.BarColor.primary
+				: ProgressBar.BarColor.danger;
+		currentlyUsedBar.setBarColor(barColor);
+		return currentlyUsedBar;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -229,7 +241,8 @@ public class CourseQuotaUsageController extends FormBasicController
 		// load filterTabs, depending on search/tabs
 		loadFilterTabs(filtersTab, searchString);
 
-		List<String> vfsMetadataList = vfsRepositoryService.getRelativePaths(relPathToRow.keySet().stream().toList());
+		String relPathSearchString = "course/" + entry.getOlatResource().getResourceableId();
+		List<String> vfsMetadataList = vfsRepositoryService.getRelativePaths(relPathSearchString);
 		for (Map.Entry<String, CourseQuotaUsageRow> relativePath : relPathToRow.entrySet()) {
 			// for some courseNodes relPath can be null, because not relevant e.g. PageCourseNode
 			int numOfFiles = (int) vfsMetadataList
@@ -400,134 +413,140 @@ public class CourseQuotaUsageController extends FormBasicController
 
 	private void setTreeStructure(CourseNode parentNode, CourseNode childNode, int depth) {
 		CourseQuotaUsageRow row = subIdentToRow.get(childNode.getIdent());
+		if (row == null) {
+			return;
+		}
+		nodeNames.add(childNode.getIdent());
 
-		if (row != null) {
-			nodeNames.add(childNode.getIdent());
-			CourseQuotaUsageRow parentRow = subIdentToRow.get(parentNode.getIdent());
-			row.setParent(parentRow);
-			if (parentRow != null) {
-				parentRow.incrementNumberOfChildren();
-			}
+		linkParentChild(row, parentNode);
 
-			// set values for nodesWithFiles
-			if (childNode instanceof CourseNodeWithFiles nodeWithFiles) {
-				CourseEnvironment courseEnvironment = CourseFactory.loadCourse(entry).getCourseEnvironment();
-				// remove dedicated folderElements, which are inside courseFolder
-				if (nodeWithFiles.isStorageInCourseFolder()) {
-					courseQuotaUsageRows.remove(row);
-					if (row.getParent() != null) {
-						((CourseQuotaUsageRow) row.getParent()).decrementNumberOfChildren();
-					}
-				} else {
-					Quota quota = nodeWithFiles.getQuota(getIdentity(), roles, entry, quotaManager);
-					// set quota values if available
-					if (quota != null) {
-						ProgressBar currentlyUsedBar = setProgressBar(quota);
+		if (childNode instanceof CourseNodeWithFiles nodeWithFiles) {
+			processCourseNodeWithFiles(nodeWithFiles, row, childNode.getIdent());
+		}
 
-						row.setElementQuota(quota);
-						if (!(nodeWithFiles instanceof PFCourseNode)) {
-							row.setCurUsed(currentlyUsedBar);
-						}
-						if (nodeWithFiles.isStorageExtern()) {
-							FormLink externalLink = uifactory.addFormLink(EXTERNAL_LINK + childNode.getIdent(), CMD_EXTERNAL, "table.column.external.link", null, flc, Link.LINK);
-							row.setExternal(externalLink);
-						}
-					}
-					row.setTotalUsedSize(nodeWithFiles.getUsageKb(courseEnvironment));
+		recursivelySetChildren(childNode, depth);
+		cleanupRows(row);
+	}
 
-					String relPath = nodeWithFiles.getRelPath(courseEnvironment);
-					if (relPath != null && relPath.length() > 1) {
-						row.setRelPath(relPath.substring(1));
-					}
+	private void linkParentChild(CourseQuotaUsageRow row, CourseNode parentNode) {
+		CourseQuotaUsageRow parentRow = subIdentToRow.get(parentNode.getIdent());
+		row.setParent(parentRow);
+		if (parentRow != null) {
+			parentRow.incrementNumberOfChildren();
+		}
+	}
 
-					// only special use cases should be set via interface
-					// e.g. file dialog: counting happens through element count
-					Integer numOfFiles = nodeWithFiles.getNumOfFiles(courseEnvironment);
-					row.setNumOfFiles(numOfFiles);
-					relPathToRow.put(row.getRelPath(), row);
-
-					// build up participant folder structure with return/drop boxes
-					if (nodeWithFiles instanceof PFCourseNode pfCourseNode) {
-						List<VFSItem> participantsInPF = VFSManager.olatRootContainer(relPath, null).getItems();
-						List<LocalFolderImpl> participantFolders = participantsInPF.stream().map(p -> VFSManager.olatRootContainer(p.getRelPath(), null)).toList();
-						List<String> participants = pfManager.getParticipants(getIdentity(), courseEnvironment, true).stream().map(p -> p.getKey().toString()).toList();
-
-						for (VFSItem participant : participantsInPF) {
-							CourseQuotaUsageRow participantFolderRow =
-									new CourseQuotaUsageRow(
-											participant.getRelPath(),
-											UserManager.getInstance().getUserDisplayName(Long.valueOf(participant.getName())) + (!participants.contains(participant.getName()) ? " " + translate("course.quota.pf.former") : ""),
-											"bc",
-											null,
-											null);
-							participantFolderRow.setTotalUsedSize(VFSManager.getUsageKB(participantFolders.stream().filter(pf -> pf.getRelPath().equals(participant.getRelPath())).findFirst().orElse(null)));
-							participantFolderRow.setParent(relPathToRow.get(pfCourseNode.getRelPath(courseEnvironment).substring(1)));
-							relPathToRow.get(pfCourseNode.getRelPath(courseEnvironment).substring(1)).incrementNumberOfChildren();
-							courseQuotaUsageRows.add(participantFolderRow);
-							relPathToRow.put(participant.getRelPath().substring(1), participantFolderRow);
-							subIdentToRow.put(participantFolderRow.getSubIdent(), participantFolderRow);
-							nodeNames.add(participantFolderRow.getSubIdent());
-
-							List<VFSItem> dropReturnBoxes = ((LocalFolderImpl) participant).getItems();
-
-							for (VFSItem pfBox : dropReturnBoxes) {
-								CourseQuotaUsageRow participantPfBoxRow =
-										new CourseQuotaUsageRow(
-												pfBox.getRelPath(),
-												pfBox.getName().contains("dropbox") ? translate("pf.dropbox") : translate("pf.returnbox"),
-												"bc",
-												null,
-												null);
-								participantPfBoxRow.setTotalUsedSize(VFSManager.getUsageKB(VFSManager.olatRootContainer(pfBox.getRelPath())));
-								participantPfBoxRow.setParent(participantFolderRow);
-								participantFolderRow.incrementNumberOfChildren();
-								courseQuotaUsageRows.add(participantPfBoxRow);
-								relPathToRow.put(pfBox.getRelPath().substring(1), participantPfBoxRow);
-								subIdentToRow.put(participantPfBoxRow.getSubIdent(), participantPfBoxRow);
-
-								// set quota and progressbar for drop- and returnBox
-								if (quota != null) {
-									participantPfBoxRow.setElementQuota(quota);
-
-									ProgressBar currentlyUsedBar = new ProgressBar(CUR_USED_PROGRESS_BAR);
-									currentlyUsedBar.setLabelAlignment(ProgressBar.LabelAlignment.none);
-									currentlyUsedBar.setMax(100);
-									currentlyUsedBar.setActual((float) participantPfBoxRow.getTotalUsedSize() / (float) quota.getQuotaKB() * 100);
-									ProgressBar.BarColor barColor = currentlyUsedBar.getActual() < 80
-											? ProgressBar.BarColor.primary
-											: ProgressBar.BarColor.danger;
-									currentlyUsedBar.setBarColor(barColor);
-
-									participantPfBoxRow.setCurUsed(currentlyUsedBar);
-								}
-								nodeNames.add(participantPfBoxRow.getSubIdent());
-							}
-
-						}
-					}
+	private void processCourseNodeWithFiles(CourseNodeWithFiles nodeWithFiles, CourseQuotaUsageRow row, String childNodeIdent) {
+		CourseEnvironment courseEnvironment = CourseFactory.loadCourse(entry).getCourseEnvironment();
+		// remove dedicated folderElements, which are inside courseFolder
+		if (nodeWithFiles.isStorageInCourseFolder()) {
+			removeFromCourseFolder(row);
+		} else {
+			Quota quota = nodeWithFiles.getQuota(getIdentity(), roles, entry, quotaManager);
+			// set quota values if available
+			if (quota != null) {
+				row.setElementQuota(quota);
+				ProgressBar currentlyUsedBar = setProgressBar(quota);
+				if (!(nodeWithFiles instanceof PFCourseNode)) {
+					row.setCurUsed(currentlyUsedBar);
+				}
+				if (nodeWithFiles.isStorageExtern()) {
+					FormLink externalLink = uifactory.addFormLink(EXTERNAL_LINK + childNodeIdent, CMD_EXTERNAL, "table.column.external.link", null, flc, Link.LINK);
+					row.setExternal(externalLink);
 				}
 			}
+			setRowInformation(nodeWithFiles, row, courseEnvironment);
+			if (nodeWithFiles instanceof PFCourseNode pfCourseNode) {
+				handlePFCourseNode(pfCourseNode, courseEnvironment, quota);
+			}
+		}
+	}
 
-			// recursively set child/parent relation, starting at bottom of tree - 'youngest' child
-			for (int i = 0; i < childNode.getChildCount(); i++) {
-				setTreeStructure(childNode, (CourseNode) childNode.getChildAt(i), ++depth);
+	private void removeFromCourseFolder(CourseQuotaUsageRow row) {
+		courseQuotaUsageRows.remove(row);
+		if (row.getParent() != null) {
+			((CourseQuotaUsageRow) row.getParent()).decrementNumberOfChildren();
+		}
+	}
+
+	private void setRowInformation(CourseNodeWithFiles nodeWithFiles, CourseQuotaUsageRow row, CourseEnvironment courseEnvironment) {
+		row.setTotalUsedSize(nodeWithFiles.getUsageKb(courseEnvironment));
+		String relPath = nodeWithFiles.getRelPath(courseEnvironment);
+		if (relPath != null && relPath.length() > 1) {
+			row.setRelPath(relPath.substring(1));
+		}
+		// only special use cases should be set via interface
+		// e.g. file dialog: counting happens through element count
+		Integer numOfFiles = nodeWithFiles.getNumOfFiles(courseEnvironment);
+		row.setNumOfFiles(numOfFiles);
+		relPathToRow.put(row.getRelPath(), row);
+	}
+
+	private void handlePFCourseNode(PFCourseNode pfCourseNode, CourseEnvironment courseEnvironment, Quota quota) {
+		// build up participant folder structure with return/drop boxes
+		List<VFSItem> participantsInPF = VFSManager.olatRootContainer(pfCourseNode.getRelPath(courseEnvironment), null).getItems();
+		List<LocalFolderImpl> participantFolders = participantsInPF.stream().map(p -> VFSManager.olatRootContainer(p.getRelPath(), null)).toList();
+		List<String> participants = pfManager.getParticipants(getIdentity(), courseEnvironment, true).stream().map(p -> p.getKey().toString()).toList();
+
+		for (VFSItem participant : participantsInPF) {
+			CourseQuotaUsageRow participantFolderRow =
+					new CourseQuotaUsageRow(
+							participant.getRelPath(),
+							UserManager.getInstance().getUserDisplayName(Long.valueOf(participant.getName())) + (!participants.contains(participant.getName()) ? " " + translate("course.quota.pf.former") : ""),
+							"bc",
+							null,
+							null);
+			participantFolderRow.setTotalUsedSize(VFSManager.getUsageKB(participantFolders.stream().filter(pf -> pf.getRelPath().equals(participant.getRelPath())).findFirst().orElse(null)));
+			participantFolderRow.setParent(relPathToRow.get(pfCourseNode.getRelPath(courseEnvironment).substring(1)));
+			relPathToRow.get(pfCourseNode.getRelPath(courseEnvironment).substring(1)).incrementNumberOfChildren();
+			courseQuotaUsageRows.add(participantFolderRow);
+			relPathToRow.put(participant.getRelPath().substring(1), participantFolderRow);
+			subIdentToRow.put(participantFolderRow.getSubIdent(), participantFolderRow);
+			nodeNames.add(participantFolderRow.getSubIdent());
+
+			List<VFSItem> dropReturnBoxes = ((LocalFolderImpl) participant).getItems();
+
+			for (VFSItem pfBox : dropReturnBoxes) {
+				CourseQuotaUsageRow participantPfBoxRow =
+						new CourseQuotaUsageRow(
+								pfBox.getRelPath(),
+								pfBox.getName().contains("dropbox") ? translate("pf.dropbox") : translate("pf.returnbox"),
+								"bc",
+								null,
+								null);
+				participantPfBoxRow.setTotalUsedSize(VFSManager.getUsageKB(VFSManager.olatRootContainer(pfBox.getRelPath())));
+				participantPfBoxRow.setParent(participantFolderRow);
+				participantFolderRow.incrementNumberOfChildren();
+				courseQuotaUsageRows.add(participantPfBoxRow);
+				relPathToRow.put(pfBox.getRelPath().substring(1), participantPfBoxRow);
+				subIdentToRow.put(participantPfBoxRow.getSubIdent(), participantPfBoxRow);
+
+				// set quota and progressbar for drop- and returnBox
+				if (quota != null) {
+					participantPfBoxRow.setElementQuota(quota);
+					ProgressBar currentlyUsedBar = getProgressBarPF(participantPfBoxRow, quota);
+					participantPfBoxRow.setCurUsed(currentlyUsedBar);
+				}
+				nodeNames.add(participantPfBoxRow.getSubIdent());
 			}
 
-			// remove every element which has no quota data and is not a structure
-			if (row.getTotalUsedSize() == null
-					&& !row.getType().equals("st")
-					&& row.getNumOfChildren() < 1
-					&& courseQuotaUsageRows.remove(row)
-					&& row.getParent() != null) {
-				((CourseQuotaUsageRow) row.getParent()).decrementNumberOfChildren();
-			}
-			// remove empty structures
-			if (row.getType().equals("st")
-					&& row.getNumOfChildren() < 1
-					&& courseQuotaUsageRows.remove(row)
-					&& row.getParent() != null) {
-				((CourseQuotaUsageRow) row.getParent()).decrementNumberOfChildren();
-			}
+		}
+	}
+
+	private void recursivelySetChildren(CourseNode node, int depth) {
+		for (int i = 0; i < node.getChildCount(); i++) {
+			setTreeStructure(node, (CourseNode) node.getChildAt(i), depth + 1);
+		}
+	}
+
+	private void cleanupRows(CourseQuotaUsageRow row) {
+		// remove every element which has no quota data and is not a structure
+		// and remove empty structures
+		if ((row.getTotalUsedSize() == null || row.getType().equals("st"))
+				&& row.getNumOfChildren() < 1
+				&& courseQuotaUsageRows.remove(row)
+				&& row.getParent() != null) {
+			((CourseQuotaUsageRow) row.getParent()).decrementNumberOfChildren();
 		}
 	}
 

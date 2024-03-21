@@ -19,6 +19,13 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -28,14 +35,6 @@ import org.olat.core.util.DateUtils;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * 
@@ -208,7 +207,7 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		String uuid = UUID.randomUUID().toString();
 		String relativePath = "/bcroot/hello/world/";
 		String filename = uuid + ".pdf";
-		String uri = "file:///Users/frentix/Documents/bcroot/hello/world/image.jpg";;
+		String uri = "file:///Users/frentix/Documents/bcroot/hello/world/image.jpg";
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(uuid, relativePath, filename, new Date(), 18l, false, uri, "file", null);
 		dbInstance.commitAndCloseSession();
 		metadata.setExpirationDate(DateUtils.addDays(new Date(), -1));
@@ -303,9 +302,9 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		Assert.assertNotNull(metadata1);
 		Assert.assertNotNull(metadata2);
 
-		List<String> relativePaths = vfsMetadataDao.getRelativePaths(Collections.singletonList(relativePath));
+		List<String> relativePaths = vfsMetadataDao.getRelativePaths(relativePath);
 		Assert.assertEquals(1, relativePaths.size());
-		relativePaths = vfsMetadataDao.getRelativePaths(Collections.singletonList("/bcroot/course/" + uuid1));
+		relativePaths = vfsMetadataDao.getRelativePaths("/bcroot/course/" + uuid1);
 		Assert.assertEquals(2, relativePaths.size());
 	}
 }

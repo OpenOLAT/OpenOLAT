@@ -156,6 +156,12 @@ public class ProjArtefactDAO {
 	}
 	
 	public List<ProjArtefact> loadQuickSearchArtefacts(ProjProjectRef project, Identity identity) {
+		return dbInstance.isMySQL()
+				? loadQuickSearchArtefactsMySql(project, identity)
+				: loadQuickSearchArtefactsPg(project, identity);
+	}
+
+	private List<ProjArtefact> loadQuickSearchArtefactsPg(ProjProjectRef project, Identity identity) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select artefact");
 		sb.append("  from projartefact artefact");
@@ -190,6 +196,51 @@ public class ProjArtefactDAO {
 				.setParameter("identityKey", identity.getKey())
 				.setMaxResults(6)
 				.getResultList();
+	}
+	
+	/*
+	 * Needed for MySQL Version < 8 (or e.g. MariaDB 10) and Hibernate >= 6.4.
+	 * For MySQL >= 8 loadQuickSearchArtefactsPg could be used.
+	 */
+	private List<ProjArtefact> loadQuickSearchArtefactsMySql(ProjProjectRef project, Identity identity) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select activity.artefact.key as artefactKey");
+		sb.append("  from projactivity activity");
+		sb.append("       inner join activity.artefact artefact");
+		sb.and().append("activity.project.key = :projectKey");
+		sb.and().append("activity.artefact.key is not null");
+		sb.and().append("activity.doer.key = :identityKey");
+		sb.and().append("activity.action").in(ProjActivity.QUICK_START_ACTIONS);
+		sb.and().append("artefact.project.key = :projectKey");
+		sb.and().append("artefact.status = '").append(ProjectStatus.active.name()).append("'");
+		sb.and();
+		sb.append("(");
+		sb.append("artefact.creator.key = :identityKey");
+		sb.append(" or ");
+		sb.append("artefact.baseGroup.key in (");
+		sb.append("select membership.group.key");
+		sb.append("  from bgroupmember as membership");
+		sb.append(" where membership.group.key = artefact.baseGroup.key");
+		sb.append("   and membership.identity.key = :identityKey");
+		sb.append(")");
+		sb.append(")");
+		sb.append(" group by activity.artefact.key");
+		sb.orderBy().append(" max(activity.creationDate) desc");
+		
+		List<Long> artefactKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("projectKey", project.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setMaxResults(6)
+				.getResultList();
+		if (artefactKeys.isEmpty()) {
+			return List.of();
+		}
+		
+		ProjArtefactSearchParams artefactSearchParams = new ProjArtefactSearchParams();
+		artefactSearchParams.setArtefactKeys(artefactKeys);
+		
+		return loadArtefacts(artefactSearchParams);
 	}
 
 }

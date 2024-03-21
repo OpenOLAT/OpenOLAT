@@ -107,12 +107,12 @@ public interface VFSRepositoryService {
 	public List<VFSMetadata> getMostDownloaded(VFSMetadata ancestorMetadata, int maxResults);
 
 	/**
-	 * Get full relativePaths of elements/files, which match to given relativePaths
+	 * Get full relativePaths of elements/files, which matches the given relPathsSearchString
 	 *
-	 * @param relativePaths
+	 * @param relPathsSearchString
 	 * @return list of matched relativePaths
 	 */
-	public List<String> getRelativePaths(List<String> relativePaths);
+	public List<String> getRelativePaths(String relPathsSearchString);
 	
 	/**
 	 * 

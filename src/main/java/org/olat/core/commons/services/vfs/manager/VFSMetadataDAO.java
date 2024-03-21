@@ -269,36 +269,23 @@ public class VFSMetadataDAO {
 	}
 
 	/**
-	 * Get full relativePaths of elements/files, which match to given relativePaths
+	 * Get full relativePaths of elements/files, which matches the given relPathsSearchString
 	 *
-	 * @param relativePaths
+	 * @param relPathsSearchString
 	 * @return list of matched relativePaths
 	 */
-	public List<String> getRelativePaths(List<String> relativePaths) {
+	public List<String> getRelativePaths(String relPathsSearchString) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.append("select metadata.relativePath from filemetadata metadata");
-		qb.and().append("(");
-		boolean or = false;
-		for (int i = 0; i < relativePaths.size(); i++) {
-			if (or) {
-				qb.append(" or ");
-			}
-			qb.append("metadata.relativePath like :relativePath").append(String.valueOf(i));
-			or = true;
-		}
-		qb.append(")");
-
 		qb.and().append("metadata.directory=false");
+		qb.and().append("(");
+		qb.append("metadata.relativePath like '").append(relPathsSearchString).append("%')");
 
-		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
-				.createQuery(qb.toString(), String.class);
-		for (int i = 0; i < relativePaths.size(); i++) {
-			query.setParameter("relativePath" + i, relativePaths.get(i) + "%");
-		}
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager().createQuery(qb.toString(), String.class);
 
 		return query.getResultList();
 	}
-	
+
 	/**
 	 * This is an exact match to find the direct children of a specific
 	 * directory.

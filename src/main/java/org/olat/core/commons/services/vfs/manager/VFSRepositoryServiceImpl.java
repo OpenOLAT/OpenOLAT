@@ -439,8 +439,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
-	public List<String> getRelativePaths(List<String> relativePaths) {
-		return metadataDao.getRelativePaths(relativePaths);
+	public List<String> getRelativePaths(String relPathsSearchString) {
+		return metadataDao.getRelativePaths(relPathsSearchString);
 	}
 
 	/**
