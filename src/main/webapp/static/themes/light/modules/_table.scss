@@ -168,12 +168,12 @@
 					// Case 1: If the expanded row is hovered ...
 					&:hover {
 						// ... darken the expanded row...
-						td {
+						>td {
 							background-color: darken($o-table-details-bg,10%);
 						}
 						// ... and the details row.
 						+.o_table_row_details {
-							td {
+							>td {
 								background-color: darken($o-table-details-bg,10%);
 							}
 						}
@@ -181,14 +181,14 @@
 					// Case 2: If the details row is hovered ...
 					&:has(+.o_table_row_details:hover) {
 						// ... darken the expanded row...
-						td {
+						>td {
 							background-color: darken($o-table-details-bg,10%);
 						}
 					}
 				}
 				// ... and the details row.
 				&.o_table_row_details:hover {
-					td {
+					>td {
 						background-color: darken($o-table-details-bg,10%);
 					}
 				}
