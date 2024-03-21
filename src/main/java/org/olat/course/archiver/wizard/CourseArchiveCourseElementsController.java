@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -170,13 +171,41 @@ public class CourseArchiveCourseElementsController extends StepFormBasicControll
 				nodes.add(row.getCourseNode());
 			}
 		}
+		
+		List<CourseNode> currentCourseNodes = archiveContext.getCourseNodes();
+		
 		archiveContext.setCourseNodes(nodes);
 		if(!atLeastOneSelectable() || (archiveContext.getCourseNodes() != null && !archiveContext.getCourseNodes().isEmpty())) {
-			stepsListener.onStepsChanged(ureq);
-			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+			if(hasCourseNodesChanges(currentCourseNodes, nodes)) {
+				stepsListener.onStepsChanged(ureq);
+				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+			}
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
 			tableEl.setErrorKey("form.legende.mandatory");
 		}
+	}
+	
+	private boolean hasCourseNodesChanges(List<CourseNode> currentCourseNodes, List<CourseNode> nodes) {
+		if(currentCourseNodes == null && nodes == null) {
+			return false;
+		}
+		if((currentCourseNodes == null && nodes != null && !nodes.isEmpty())
+				|| (nodes == null && currentCourseNodes != null && !currentCourseNodes.isEmpty())) {
+			return true;
+		}
+		if(currentCourseNodes != null && nodes != null) {
+			List<String> currentIds = currentCourseNodes.stream()
+					.map(CourseNode::getIdent).collect(Collectors.toList());
+			List<String> ids = nodes.stream()
+					.map(CourseNode::getIdent).collect(Collectors.toList());
+			
+			List<String> restCurrentIds = new ArrayList<>(currentIds);
+			restCurrentIds.removeAll(ids);
+			List<String> restIds = new ArrayList<>(ids);
+			restIds.removeAll(currentIds);
+			return !restCurrentIds.isEmpty() || !restIds.isEmpty();		
+		}
+		return true;
 	}
 }

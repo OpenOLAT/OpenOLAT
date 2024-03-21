@@ -24,7 +24,7 @@
 				<span class="o_export_expiration o_labeled">$r.translate("row.expiration.days", $expirationInDays)</span>
 			#end
 			</div>
-			<h5>$r.render($row.downloadLink)</h5>
+			<h5>$r.render($row.downloadLink)#if(${row.isOnlyAdministrators()}) <i class="o_icon o_icon_locked"> </i>#end</h5>
 			<span>$r.translate("row.zip") | $r.formatBytes($row.archiveSize) #if($r.isNotEmpty($row.type)) | ${row.type}#end | $creationDate - $r.translate("row.created.by", $creatorFullName)</span>
 		#end
 	</div>

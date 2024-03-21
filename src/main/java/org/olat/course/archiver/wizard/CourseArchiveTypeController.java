@@ -85,9 +85,11 @@ public class CourseArchiveTypeController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		ArchiveType type = ArchiveType.valueOf(typeEl.getSelectedKey());
-		archiveOptions.setArchiveType(type);
-		stepsListener.onStepsChanged(ureq);
-		fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+		if(archiveOptions.getArchiveType() != type) {
+			archiveOptions.setArchiveType(type);
+			stepsListener.onStepsChanged(ureq);
+			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

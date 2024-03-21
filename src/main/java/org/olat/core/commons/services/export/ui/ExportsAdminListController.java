@@ -225,7 +225,7 @@ public class ExportsAdminListController extends FormBasicController {
 		} else if(selectedTab == ongoingTab) {
 			params.setOngoingExport(true);
 		} else if(selectedTab == onlyAdministratorsTab) {
-			params.setOnlyAdministrators3(Boolean.TRUE);
+			params.setOnlyAdministrators(Boolean.TRUE);
 		}
 
 		return params;

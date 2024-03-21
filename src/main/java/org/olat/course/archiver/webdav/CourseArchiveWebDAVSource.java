@@ -23,11 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.export.model.ExportInfos;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.MergeSource;
@@ -50,10 +52,12 @@ public class CourseArchiveWebDAVSource extends MergeSource {
 	private List<VFSItem> exports;
 	private boolean initialized = false;
 	private final RepositoryEntry courseRe;
+	private final IdentityEnvironment identityEnv;
 	
-	public CourseArchiveWebDAVSource(RepositoryEntry courseRe) {
+	public CourseArchiveWebDAVSource(RepositoryEntry courseRe, IdentityEnvironment identityEnv) {
 		super(null, "_archives");
 		this.courseRe = courseRe;
+		this.identityEnv = identityEnv;
 	}
 	
 	public boolean isEmpty() {
@@ -105,6 +109,10 @@ public class CourseArchiveWebDAVSource extends MergeSource {
 			ExportManager exportManager = CoreSpringFactory.getImpl(ExportManager.class);
 			SearchExportMetadataParameters params = new SearchExportMetadataParameters(courseRe, null,
 					List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
+			if(identityEnv != null && !identityEnv.getRoles().hasSomeRoles(OrganisationRoles.administrator)) {
+				params.setOnlyAdministrators(Boolean.FALSE);
+			}
+			
 			List<ExportInfos> exportsList = exportManager.getResultsExport(params);
 			List<VFSItem> items = new ArrayList<>(exportsList.size());
 			for(ExportInfos export:exportsList) {

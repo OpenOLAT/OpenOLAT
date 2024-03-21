@@ -79,8 +79,8 @@ public class MergedCourseContainer extends MergeSource {
 	@Override
 	protected void init() {
 		ICourse course = CourseFactory.loadCourse(courseId);
-		if(course instanceof PersistingCourseImpl) {
-			init((PersistingCourseImpl)course);
+		if(course instanceof PersistingCourseImpl persistedCourse) {
+			init(persistedCourse);
 		}
 	}
 	
@@ -134,7 +134,7 @@ public class MergedCourseContainer extends MergeSource {
 		}
 
 		if(options.withArchives()) {
-			CourseArchiveWebDAVSource archivesContainer = new CourseArchiveWebDAVSource(courseRe);
+			CourseArchiveWebDAVSource archivesContainer = new CourseArchiveWebDAVSource(courseRe, identityEnv);
 			if (!archivesContainer.isEmpty()) {
 				addContainer(archivesContainer);
 			}

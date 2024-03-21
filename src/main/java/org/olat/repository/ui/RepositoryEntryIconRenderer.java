@@ -53,11 +53,9 @@ public class RepositoryEntryIconRenderer implements CustomCellRenderer, FlexiCel
 
 	public String getIconCssClass(Object val) {
 		String cssClass = null;
-		if (val instanceof RepositoryEntry) {
-			RepositoryEntry re = (RepositoryEntry)val;
+		if (val instanceof RepositoryEntry re) {
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
-		} else if(val instanceof RepositoryEntryShort) {
-			RepositoryEntryShort re = (RepositoryEntryShort)val;
+		} else if(val instanceof RepositoryEntryShort re) {
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 		}
 		return cssClass == null ? "" : cssClass;
@@ -81,13 +79,11 @@ public class RepositoryEntryIconRenderer implements CustomCellRenderer, FlexiCel
 			String type = "";
 			String cssClass = "";
 			boolean managed = false;
-			if(val instanceof RepositoryEntryShort) {
-				RepositoryEntryShort re = (RepositoryEntryShort)val;
+			if(val instanceof RepositoryEntryShort re) {
 				cssClass = RepositoyUIFactory.getIconCssClass(re);
 				String typeName = re.getResourceType();
 				type = NewControllerFactory.translateResourceableTypeName(typeName, locale);
-			} else if (val instanceof RepositoryEntry) {
-				RepositoryEntry re = (RepositoryEntry)val;
+			} else if (val instanceof RepositoryEntry re) {
 				cssClass = RepositoyUIFactory.getIconCssClass(re);
 				managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
 				String typeName = re.getOlatResource().getResourceableTypeName();

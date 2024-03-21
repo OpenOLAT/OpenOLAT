@@ -43,6 +43,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
  * 
@@ -70,12 +71,11 @@ public class CourseArchiveOverviewController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		RepositoryEntry courseEntry = archiveContext.getCourseEntry();
-		
-		String displayName = StringHelper.escapeHtml(courseEntry.getDisplayname());
-		uifactory.addStaticTextElement("course.displayname", displayName, formLayout);
-		String externalRef = StringHelper.escapeHtml(courseEntry.getExternalRef());
-		StaticTextElement externalRefEl = uifactory.addStaticTextElement("course.external.ref", externalRef, formLayout);
-		externalRefEl.setVisible(StringHelper.containsNonWhitespace(externalRef));
+		String title = Formatter.addReference(getTranslator(),
+				StringHelper.escapeHtml(StringHelper.escapeHtml(courseEntry.getDisplayname())),
+				StringHelper.escapeHtml(StringHelper.escapeHtml(courseEntry.getExternalRef())),
+				"o_icon_" + RepositoyUIFactory.getIconCssClass(courseEntry));
+		uifactory.addStaticTextElement("course.displayname", title, formLayout);
 		
 		String archiveType;
 		if(archiveOptions.getArchiveType() == ArchiveType.COMPLETE) {

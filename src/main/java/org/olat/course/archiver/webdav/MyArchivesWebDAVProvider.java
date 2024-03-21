@@ -45,6 +45,6 @@ public class MyArchivesWebDAVProvider implements WebDAVProvider {
 
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
-		return new MyArchivesWebDAVSource(identityEnv.getIdentity());
+		return new MyArchivesWebDAVSource(identityEnv);
 	}
 }

@@ -107,7 +107,7 @@ public class SearchExportMetadataParameters {
 		return onlyAdministrators;
 	}
 
-	public void setOnlyAdministrators3(Boolean onlyAdministrators) {
+	public void setOnlyAdministrators(Boolean onlyAdministrators) {
 		this.onlyAdministrators = onlyAdministrators;
 	}
 }

@@ -100,7 +100,7 @@ public class MyArchivesController extends ExportsListController {
 		SearchExportMetadataParameters params = super.getSearchParams();
 		params.setCreator(getIdentity());
 		if(!isAdministrator) {
-			params.setOnlyAdministrators3(Boolean.FALSE);
+			params.setOnlyAdministrators(Boolean.FALSE);
 		}
 		
 		String selectedKey = archiveScopes.getSelectedKey();

@@ -208,7 +208,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		SearchExportMetadataParameters params = new SearchExportMetadataParameters(entry, subIdent,
 				List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL, ArchiveType.QTI21));
 		if(!isAdministrator) {
-			params.setOnlyAdministrators3(Boolean.FALSE);
+			params.setOnlyAdministrators(Boolean.FALSE);
 		}
 		return params;
 	}

@@ -37,6 +37,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
  * 
@@ -64,14 +65,11 @@ public class ExportInfosController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(entry != null) {
-			String displayName = StringHelper.escapeHtml(entry.getDisplayname());
-			entryLink = uifactory.addFormLink("details.entry.title", displayName, "details.entry.title", formLayout, Link.LINK | Link.NONTRANSLATED);
-			entryLink.setIconLeftCSS("o_icon o_CourseModule_icon");
-			
-			String ref = StringHelper.escapeHtml(entry.getExternalRef());
-			if(StringHelper.containsNonWhitespace(ref)) {
-				uifactory.addStaticTextElement("details.entry.external.ref", ref, formLayout);
-			}
+			String title = Formatter.addReference(getTranslator(),
+					StringHelper.escapeHtml(StringHelper.escapeHtml(entry.getDisplayname())),
+					StringHelper.escapeHtml(StringHelper.escapeHtml(entry.getExternalRef())),
+					"o_icon_" + RepositoyUIFactory.getIconCssClass(entry));
+			entryLink = uifactory.addFormLink("details.entry.title", title, "details.entry.title", formLayout, Link.LINK | Link.NONTRANSLATED);
 		}
 
 		String title = StringHelper.escapeHtml(exportRow.getTitle());
