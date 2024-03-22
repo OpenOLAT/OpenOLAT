@@ -159,8 +159,14 @@ public class QTI21DeleteDataController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		boolean canDelete = !identities.isEmpty();
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			String msg = translate("delete.all.data.text", Integer.toString(identities.size()));
+			String msg;
+			if(canDelete) {
+				msg = translate("delete.all.data.text", Integer.toString(identities.size()));
+			} else {
+				msg = translate("delete.nothing.data.text", Integer.toString(identities.size()));
+			}
 			layoutCont.contextPut("msg", msg);
 		}
 		
@@ -170,12 +176,11 @@ public class QTI21DeleteDataController extends FormBasicController {
 		
 		String[] onValues = new String[]{ translate("delete.all.data.confirmation") };
 		acknowledgeEl = uifactory.addCheckboxesHorizontal("acknowledge", "confirmation", confirmCont, onKeys, onValues);
-		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		confirmCont.add(buttonsCont);
+		acknowledgeEl.setVisible(canDelete);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, confirmCont);
 		FormSubmit deleteButton = uifactory.addFormSubmitButton("delete.all.data", buttonsCont);
 		deleteButton.setElementCssClass("btn-danger");
+		deleteButton.setVisible(canDelete);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
