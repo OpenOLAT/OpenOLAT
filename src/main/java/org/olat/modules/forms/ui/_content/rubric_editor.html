@@ -20,9 +20,7 @@
 <div class="o_evaluation_editor_form $blockLayoutClass">
 	$r.render("settings")
 	
-	#if($r.isNotEmpty($stepLabels))
 	<div class="row">
-	
 		<div class="$colLabelButtons">
 			<div class="pull-right">
 				#if($showEnd)
@@ -36,23 +34,24 @@
 				#end
 			</div>
 		</div>
-	
-		<div class="form-horizontal">
-			<label class="control-label $colLabelLabel o_evaluation_step_label">$r.translate("rubric.column.label")</label>
-		</div>
 		
-		<div class="$colLabelSpace"></div>
-		
-		<div class="$colLabelValue"><div class="form-inline">
-			#foreach($stepLabel in $stepLabels)
-				<div class="o_evaluation_step_labels" style="width:${stepInPercent}%;">
-					$r.render($stepLabel.stepLabelEl, "minimal")
-					
-				</div>
-			#end
-		</div> </div>
+		#if($r.isNotEmpty($stepLabels))
+			<div class="form-horizontal">
+				<label class="control-label $colLabelLabel o_evaluation_step_label">$r.translate("rubric.column.label")</label>
+			</div>
+			
+			<div class="$colLabelSpace"></div>
+			
+			<div class="$colLabelValue"><div class="form-inline">
+				#foreach($stepLabel in $stepLabels)
+					<div class="o_evaluation_step_labels" style="width:${stepInPercent}%;">
+						$r.render($stepLabel.stepLabelEl, "minimal")
+						
+					</div>
+				#end
+			</div> </div>
+		#end
 	</div>
-	#end
 
 	#foreach($slider in $sliders)
 	<div class="row o_slider_editor">
