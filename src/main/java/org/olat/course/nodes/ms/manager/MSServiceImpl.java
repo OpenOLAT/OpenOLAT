@@ -281,6 +281,10 @@ public class MSServiceImpl implements MSService {
 		for (AbstractElement element : form.getElements()) {
 			if (Rubric.TYPE.equals(element.getType())) {
 				Rubric rubric = (Rubric) element;
+				if (rubric.getSliders() == null || rubric.getSliders().isEmpty()) {
+					continue;
+				}
+				
 				float rubricSumMin = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, true))
 						.getTotalStatistic()
 						.getSum().floatValue();
@@ -362,9 +366,7 @@ public class MSServiceImpl implements MSService {
 		if (session == null) return null;
 		
 		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());
-		Function<Rubric, RubricStatistic> rubricFunction = rubric -> {
-			return evaluationFormManager.getRubricStatistic(rubric, SessionFilterFactory.create(session));
-		};
+		Function<Rubric, RubricStatistic> rubricFunction = rubric -> evaluationFormManager.getRubricStatistic(rubric, SessionFilterFactory.create(session));
 		return calculateScoreBySum(form, rubricFunction);
 	}
 
@@ -389,9 +391,7 @@ public class MSServiceImpl implements MSService {
 		if (session == null) return null;
 
 		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());
-		Function<Rubric, RubricStatistic> rubricFunction = rubric -> {
-			return evaluationFormManager.getRubricStatistic(rubric, SessionFilterFactory.create(session));
-		};
+		Function<Rubric, RubricStatistic> rubricFunction = rubric -> evaluationFormManager.getRubricStatistic(rubric, SessionFilterFactory.create(session));
 		return calculateScoreByAvg(form, rubricFunction);
 	}
 	
