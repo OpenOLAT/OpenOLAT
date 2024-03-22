@@ -223,16 +223,16 @@
 	            					<inputDir>${project.build.directory}/generated-webapp/static</inputDir>
 									<includes>
 										<include>js/fullcalendar/main.min.css</include>
-										<include>js/tagify/tagify.min.css</include>
+										<include>js/tagify/tagify.css</include>
 										<include>js/jquery/cropper/cropper.min.css</include>
-										<include>js/jquery/sliderpips/jquery-ui-slider-pips.min.css</include>
+										<include>js/jquery/sliderpips/jquery-ui-slider-pips.css</include>
 										<include>js/jquery/ui/jquery-ui-1.13.2.custom.min.css</include>
 										<include>js/dragula/dragula.min.css</include>
 										<include>js/swiper/swiper-bundle.min.css</include>
 									</includes>
 									<aggregations>
 										<aggregation>
-											<withoutCompress>true</withoutCompress>
+											<withoutCompress>false</withoutCompress>
 											<outputFile>${project.basedir}/src/main/webapp/static/js/js.plugins.min.css</outputFile>
 										</aggregation>
 									</aggregations>			
