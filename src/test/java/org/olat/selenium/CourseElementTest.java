@@ -2246,7 +2246,7 @@ public class CourseElementTest extends Deployments {
 			.addLayout(ContainerLayout.block_1_1lcols)
 			.openElementsChooser(1, 1)
 			.addTitle(title)
-			.setTitleSize(3)
+			.setTitleSize(3, false)
 			.closeEditFragmentOfPage()
 			.assertOnTitle(title, 3);
 		
@@ -2292,9 +2292,9 @@ public class CourseElementTest extends Deployments {
 			.addLayout(ContainerLayout.block_3rows)
 			.openElementsChooser(1, 1)
 			.addTitle("My survey")
-			.setTitleSize(1)
+			.setTitleSize(2, true)
 			.closeEditFragmentOfResource()
-			.assertOnTitle("My survey", 1);
+			.assertOnTitle("My survey", 2);
 		
 		surveyEditor
 			.openElementsChooser(1, 2)

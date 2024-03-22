@@ -837,7 +837,7 @@ public class PortfolioV2Test extends Deployments {
 			.addLayout(ContainerLayout.block_1_1lcols)
 			.openElementsChooser(1, 1)
 			.addTitle(title)
-			.setTitleSize(3)
+			.setTitleSize(3, false)
 			.closeEditFragmentOfPage()
 			.assertOnTitle(title, 3);
 		

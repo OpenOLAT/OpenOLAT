@@ -333,6 +333,7 @@ public class AssessmentToolPage {
 	public CoursePageFragment clickToolbarRootCrumb() {
 		By toolbarBackBy = By.xpath("//ol[@class='breadcrumb']/li[contains(@class,'o_first_crumb')]/a");
 		OOGraphene.waitElement(toolbarBackBy, browser);
+		OOGraphene.scrollTop(browser);
 		browser.findElement(toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
 		return new CoursePageFragment(browser);

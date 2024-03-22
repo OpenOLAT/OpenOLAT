@@ -84,13 +84,13 @@ public class ContentEditorPage extends ContentViewPage {
 	 * @param size A value between 1 and 6
 	 * @return
 	 */
-	public ContentEditorPage setTitleSize(int size) {
+	public ContentEditorPage setTitleSize(int size, boolean waitFocus) {
 		By titleSize = By.xpath("//div[@class='o_ceditor_inspector']//select[@id='o_fioheading_size_SELBOX']");
 		OOGraphene.waitElement(titleSize, browser);
 
 		new Select(browser.findElement(titleSize)).selectByValue(Integer.toString(size));
 		OOGraphene.waitBusy(browser);
-		By selectedSize = By.cssSelector("div.o_ceditor_inspector select#o_fioheading_size_SELBOX:focus>option[value='" + size +"'][selected='selected']");
+		By selectedSize = By.cssSelector("div.o_ceditor_inspector select#o_fioheading_size_SELBOX" + (waitFocus ? ":focus" : "") + ">option[value='" + size +"'][selected='selected']");
 		OOGraphene.waitElement(selectedSize, browser);
 		
 		return this;
