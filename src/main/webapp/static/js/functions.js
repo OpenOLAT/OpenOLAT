@@ -2089,16 +2089,34 @@ function o_removeIframe(id) {
  * presses the "ignore button" (Code that executes the original action the user initiated)
  */
 function o_showFormDirtyDialog(onIgnoreCallback) {
-	// open our form-dirty dialog
+	// try to know if the user is still authenticated, open our form-dirty dialog
 	o_scrollToElement('#o_top');
-	jQuery("#o_form_dirty_message").modal('show');
-	jQuery("#o_form_dirty_message .o_form_dirty_ignore").on("click", function() {
-		// Remove dialog and all listeners for dirty button
-		jQuery("#o_form_dirty_message").modal('hide');
-		jQuery("#o_form_dirty_message .o_form_dirty_ignore").off();
-		// Execute the ignore callback with original user action
-		onIgnoreCallback();
-	});
+
+	let targetUrl = o_info.serverUri + "/sessionchecker/";
+	jQuery.ajax(targetUrl,{
+		type:'POST',
+		cache: false,
+		dataType: 'json',
+		success: function(responseData, textStatus, jqXHR) {
+			jQuery("#o_form_dirty_message").modal('show');
+			jQuery("#o_form_dirty_message .o_form_dirty_ignore").on("click", function() {
+				// Remove dialog and all listeners for dirty button
+				jQuery("#o_form_dirty_message").modal('hide');
+				jQuery("#o_form_dirty_message .o_form_dirty_ignore").off();
+				// Execute the ignore callback with original user action
+				onIgnoreCallback();
+			});
+		},
+		error: function() {
+			let msg1 = o_info.oo_noresponse.replace("reload.html", window.document.location.href);
+			let msg2 = o_info.oo_noresponse_unsaved_data.replace("back.html", "javascript:;");
+			showMessageBox('warn', o_info.oo_noresponse_title, msg1 + msg2, undefined);
+			jQuery("#myFunctionalModal a.o_button_ghost").on("click", function() {
+				jQuery('#myFunctionalModal').remove();
+				jQuery('.modal-backdrop').remove();
+			});
+		}
+	})
 	return false;
 }
 
@@ -2372,8 +2390,8 @@ function o_XHRNFEvent(targetUrl) {
 function o_onXHRError(jqXHR, textStatus, errorThrown) {
 	o_afterserver();
 	if(401 == jqXHR.status) {
-		var msg = o_info.oo_noresponse.replace("reload.html", window.document.location.href);
-		showMessageBox('error', o_info.oo_noresponse_title, msg, undefined);
+		let msg = o_info.oo_noresponse.replace("reload.html", window.document.location.href);
+		showMessageBox('warn', o_info.oo_noresponse_title, msg, undefined);
 	} else if(window.console) {
 		console.log('Error status 2', jqXHR.status, textStatus, errorThrown, jqXHR.responseText);
 		console.log(jqXHR);
@@ -2382,11 +2400,11 @@ function o_onXHRError(jqXHR, textStatus, errorThrown) {
 
 function o_pushState(historyPointId, title, url) {
 	try {
-		var data = new Object();
+		let data = new Object();
 		data['businessPath'] = url;
 		data['historyPointId'] = historyPointId;
 		
-		var pUrl = url;// allow 2 domain like frentix.com and www.frentix.com
+		let pUrl = url;// allow 2 domain like frentix.com and www.frentix.com
 		if(url != null && !(url.lastIndexOf("http", 0) === 0) && !(url.lastIndexOf("https", 0) === 0)) {
 			pUrl = window.location.protocol + "//" + window.location.host + url;
 			url = o_info.serverUri + url;
@@ -2723,7 +2741,7 @@ function showMessageBox(type, title, message, buttonCallback) {
 		showInfoBox(title, message);
 		return null;
 	} else {
-		var cssype = '';
+		let cssype = '';
 		if("warn" == type) {
 			cssype = 'alert-warning';
 		} else if("error" == type) {
@@ -2731,14 +2749,14 @@ function showMessageBox(type, title, message, buttonCallback) {
 		} else {
 			cssype = 'alert-info';
 		}
-		var content = '<div id="myFunctionalModal" class="modal o-modal-' + cssype + ' fade" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">';
+		let content = '<div id="myFunctionalModal" class="modal o-modal-' + cssype + ' fade" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">';
 		content += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
         content += '<h4 class="modal-title">' + title + '</h4></div>';	
 		content += '<div class="modal-body alert ' + cssype + '"><p>' + message + '</p></div></div></div></div>';
 		jQuery('#myFunctionalModal').remove();
 		jQuery('body').append(content);
 		               
-		var msg = jQuery('#myFunctionalModal').modal('show').on('hidden.bs.modal', function (e) {
+		let msg = jQuery('#myFunctionalModal').modal('show').on('hidden.bs.modal', function (e) {
 			jQuery('#myFunctionalModal').remove();
 		});
 		o_scrollToElement('#o_top');

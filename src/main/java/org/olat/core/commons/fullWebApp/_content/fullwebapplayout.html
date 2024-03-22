@@ -30,10 +30,9 @@ o_info.lastClickTime = new Date().getTime();
 o_info.drop = true;
 ## olat layout specific
 o_info.o_baseURI = "$r.staticLink("")";
-o_info.i18n_noresponse_title = "$r.escapeDoubleQuotes($r.translate("server.no.response.title"))";
-o_info.i18n_noresponse = "$r.escapeDoubleQuotes($r.translate("server.no.response"))";
 o_info.oo_noresponse_title = "$r.escapeJavaScript($r.translateWithPackage("org.olat.login","timeout.title"))";
 o_info.oo_noresponse = "$r.escapeJavaScript($r.translateWithPackage("org.olat.login","timeout.message"))";
+o_info.oo_noresponse_unsaved_data = "$r.escapeJavaScript($r.translateWithPackage("org.olat.login","timeout.message.unsaved.data"))";
 ## edu-sharing
 #if($edusharingEnabled)
 o_info.edusharing_enabled = true;

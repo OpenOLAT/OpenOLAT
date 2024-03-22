@@ -119,6 +119,9 @@
 				<entry key="/badge/">
 					<ref bean="openBadgesBean" />
 				</entry>
+				<entry key="/sessionchecker/">
+					<ref bean="sessioncheckerbean" />
+				</entry>
 			</map>
 		</property>
 	</bean>
