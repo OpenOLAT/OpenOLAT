@@ -479,6 +479,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		SliderRow row = forgeSliderRow(slider);
 		sliders.add(row);
 		setUpDownVisibility();
+		flc.contextPut("noSliderError", Boolean.FALSE);
 		flc.setDirty(true);
 	}
 	
@@ -493,6 +494,10 @@ public class RubricEditorController extends FormBasicController implements PageE
 			if (i == sliders.size() -1) {
 				sliderRow.getDownButton().setEnabled(false);
 			}
+			sliderRow.getDeleteButton().setEnabled(true);
+		}
+		if (sliders.size() == 1) {
+			sliders.get(0).getDeleteButton().setEnabled(false);
 		}
 	}
 
@@ -514,28 +519,34 @@ public class RubricEditorController extends FormBasicController implements PageE
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		for(SliderRow row:sliders) {
-			TextElement weightEl = row.getWeightEl();
-			weightEl.clearError();
-			if (isInvalidInteger(weightEl.getValue(), 0, 1000)) {
-				weightEl.setErrorKey("error.wrong.int");
-				allOk = false;
-			}
-			if (restrictedEdit) {
-				row.getStartLabelEl().clearError();
-				row.getEndLabelEl().clearError();
-				if (row.getEndLabelEl().isVisible()) {
-					if (!StringHelper.containsNonWhitespace(row.getStartLabelEl().getValue()) && !StringHelper.containsNonWhitespace(row.getEndLabelEl().getValue()) ) {
+		if (sliders.isEmpty()) {
+			flc.contextPut("noSliderError", Boolean.TRUE);
+			allOk &= false;
+		} else {
+			flc.contextPut("noSliderError", Boolean.FALSE);
+			for(SliderRow row:sliders) {
+				TextElement weightEl = row.getWeightEl();
+				weightEl.clearError();
+				if (isInvalidInteger(weightEl.getValue(), 0, 1000)) {
+					weightEl.setErrorKey("error.wrong.int");
+					allOk &= false;
+				}
+				if (restrictedEdit || sliders.size() == 1) {
+					row.getStartLabelEl().clearError();
+					row.getEndLabelEl().clearError();
+					if (row.getEndLabelEl().isVisible()) {
+						if (!StringHelper.containsNonWhitespace(row.getStartLabelEl().getValue()) && !StringHelper.containsNonWhitespace(row.getEndLabelEl().getValue()) ) {
+							row.getStartLabelEl().setErrorKey("form.legende.mandatory");
+							allOk &= false;
+						}
+					} else if (!StringHelper.containsNonWhitespace(row.getStartLabelEl().getValue())) {
 						row.getStartLabelEl().setErrorKey("form.legende.mandatory");
-						allOk = false;
+						allOk &= false;
 					}
-				} else if (!StringHelper.containsNonWhitespace(row.getStartLabelEl().getValue())) {
-					row.getStartLabelEl().setErrorKey("form.legende.mandatory");
-					allOk = false;
 				}
 			}
 		}
-
+		
 		return allOk;
 	}
 

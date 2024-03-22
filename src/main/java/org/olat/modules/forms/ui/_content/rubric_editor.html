@@ -86,6 +86,11 @@
 	#end
 	</div>
 	#end
+	#if($noSliderError)
+		<div class="o_error">
+			$r.translate("error.no.sliders")
+		</div>
+	#end
 	<div class="o_button_group">
 		$r.render("save_${postfix}")
 		#if($r.available("add.slider.${postfix}"))
