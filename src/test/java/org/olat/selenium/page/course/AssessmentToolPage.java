@@ -331,11 +331,17 @@ public class AssessmentToolPage {
 	 * @return
 	 */
 	public CoursePageFragment clickToolbarRootCrumb() {
-		By toolbarBackBy = By.xpath("//ol[@class='breadcrumb']/li[contains(@class,'o_first_crumb')]/a");
-		OOGraphene.waitElement(toolbarBackBy, browser);
-		OOGraphene.scrollTop(browser);
-		browser.findElement(toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
+		try {
+			OOGraphene.scrollTop(browser);
+			By toolbarBackBy = By.xpath("//ol[@class='breadcrumb']/li[contains(@class,'o_first_crumb')]/a");
+			OOGraphene.waitElement(toolbarBackBy, browser);
+			
+			browser.findElement(toolbarBackBy).click();
+			OOGraphene.waitBusy(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Assessment root crumb", browser);
+			throw e;
+		}
 		return new CoursePageFragment(browser);
 	}
 }

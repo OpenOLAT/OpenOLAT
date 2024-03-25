@@ -1608,8 +1608,7 @@ public class CourseTest extends Deployments {
 		
 		//participant search the course
 		LoginPage.load(reiBrowser, deploymentUrl)
-			.loginAs(rei)
-			.resume();
+			.loginAs(rei);
 		NavigationPage reiNavBar = NavigationPage.load(reiBrowser);
 		reiNavBar
 			.openMyCourses()
