@@ -48,6 +48,11 @@ a.o_chelp,
 	z-index: 7;
 }
 
+/* Session timeout */
+#myFunctionalModal p>a.btn.btn-primary {
+	margin-top: 15px;
+}
+
 /* drawing */
 .o_draw_circle {
 	border: $o-drawing-border-width solid $o-drawing-border-color;
