@@ -2092,7 +2092,7 @@ function o_showFormDirtyDialog(onIgnoreCallback) {
 	// try to know if the user is still authenticated, open our form-dirty dialog
 	o_scrollToElement('#o_top');
 
-	let targetUrl = o_info.serverUri + "/sessionchecker/";
+	let targetUrl = o_info.serverUri + o_info.serverContext + "/sessionchecker/";
 	jQuery.ajax(targetUrl,{
 		type:'POST',
 		cache: false,

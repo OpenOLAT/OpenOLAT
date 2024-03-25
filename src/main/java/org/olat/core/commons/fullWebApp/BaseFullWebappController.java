@@ -102,6 +102,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -361,6 +362,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// init with no bookmark (=empty bc)
 		mainVc.contextPut("o_bc", "");
 		mainVc.contextPut("o_serverUri", Settings.createServerURI());
+		mainVc.contextPut("o_serverContext", WebappHelper.getServletContextPath());
 		
 		
 		// the current language; used e.g. by screenreaders
