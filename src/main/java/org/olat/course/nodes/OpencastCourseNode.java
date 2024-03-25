@@ -25,9 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -84,15 +82,7 @@ public class OpencastCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
-		Controller runCtrl;
-		if (userCourseEnv.isCourseReadOnly()) {
-			Translator trans = Util.createPackageTranslator(OpencastCourseNode.class, ureq.getLocale());
-			String title = trans.translate("freezenoaccess.title");
-			String message = trans.translate("freezenoaccess.message");
-			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-		} else {
-			runCtrl = new OpencastRunController(ureq, wControl, this, userCourseEnv);
-		}
+		Controller runCtrl = new OpencastRunController(ureq, wControl, this, userCourseEnv);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);
 	}
