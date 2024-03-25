@@ -20,12 +20,15 @@
 package org.olat.commons.coordinate.cluster.jms;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.core.config.FileDeploymentManager;
 import org.apache.activemq.artemis.core.config.impl.FileConfiguration;
 import org.apache.activemq.artemis.core.config.impl.LegacyJMSConfiguration;
 import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnector;
+import org.apache.activemq.artemis.core.server.Bindable;
+import org.apache.activemq.artemis.core.server.Queue;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -64,6 +67,17 @@ public class OpenOlatEmbeddedActiveMQ extends EmbeddedActiveMQ {
 
 	public void setPersistenceEnabled(boolean persistenceEnabled) {
 		this.persistenceEnabled = persistenceEnabled;
+	}
+	
+	public long getMessageCount() {
+		AtomicLong counter = new AtomicLong();
+		activeMQServer.getPostOffice().getAllBindings().forEach(binding -> {
+			Bindable b = binding.getBindable();
+			if(b instanceof Queue queue) {
+				counter.addAndGet(queue.getMessageCount());
+			}
+		});
+		return counter.get();
 	}
 
 	@Override
