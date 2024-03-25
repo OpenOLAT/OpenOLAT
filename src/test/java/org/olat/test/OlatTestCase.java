@@ -34,13 +34,16 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.olat.commons.coordinate.cluster.jms.OpenOlatEmbeddedActiveMQ;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.helpers.Settings;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;
@@ -93,7 +96,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	public void printBanner() {
 		timestamp = System.nanoTime();
 		log.info("Method run: " + currentTestName.getMethodName() + "(" + this.getClass().getCanonicalName() + ")");
-		
+
 		if(started) {
 			return;
 		}
@@ -143,6 +146,12 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		}
 	}
 	
+	@AfterClass
+	public static void waitMessageAreConsumed() {
+		OpenOlatEmbeddedActiveMQ mq = CoreSpringFactory.getImpl(OpenOlatEmbeddedActiveMQ.class);
+		waitForCondition(() -> mq.getMessageCount() <= 0, 10000);
+	}
+
 	@SuppressWarnings("unchecked")
 	private void printOlatLocalProperties() {
 		Resource overwritePropertiesRes = new ClassPathResource("olat.local.properties");
@@ -162,7 +171,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		
 	}
 	
-	protected boolean waitForCondition(final Callable<Boolean> condition, final int timeoutInMilliseconds) {
+	protected static boolean waitForCondition(final Callable<Boolean> condition, final int timeoutInMilliseconds) {
 		final CountDownLatch countDown = new CountDownLatch(1);
 		final AtomicBoolean result = new AtomicBoolean(false);
 		
