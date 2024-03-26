@@ -401,12 +401,18 @@ public class BigBlueButtonMeetingDAO {
 			sb.and().append("meeting.businessGroup.key=:businessGroupKey");
 		}
 		if(guestOnly) {
-			sb.and().append("meeting.guest=true");
+			sb.and()
+			  .append("(meeting.guest=true or (meeting.endDate<:now and exists (select record from bigbluebuttonrecording as record")
+			  .append(" where record.meeting.key=meeting.key and record.publishTo like :guestFlag")
+			  .append(")))");
 		}
 		
 		TypedQuery<BigBlueButtonMeeting> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), BigBlueButtonMeeting.class);
-		
+		if(guestOnly) {
+			query.setParameter("now", new Date(), TemporalType.TIMESTAMP);
+			query.setParameter("guestFlag", "%guest%");
+		}
 		if(entry != null) {
 			query.setParameter("entryKey", entry.getKey());
 			if(StringHelper.containsNonWhitespace(subIdent)) {

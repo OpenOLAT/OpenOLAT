@@ -233,7 +233,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		guestJoinButton = uifactory.addFormLink("meeting.guest.join.button", formLayout, Link.BUTTON);
 		guestJoinButton.setElementCssClass("btn btn-lg btn-default o_sel_bbb_guest_join");
 		guestJoinButton.setNewWindow(true, true, true);
-		guestJoinButton.setVisible(!ended && guest);
+		guestJoinButton.setVisible(!ended && guest && meeting.isGuest());
 		
 		SelectionValues acknowledgeKeyValue = new SelectionValues();
 		acknowledgeKeyValue.add(SelectionValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
@@ -426,7 +426,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		if(!guestJoinButton.isVisible()) {
 			guestJoinButton.setVisible(accessible && !disabled && guest);
 		}
-		guestJoinButton.setEnabled(!readOnly && accessible && !disabled && guest);
+		guestJoinButton.setEnabled(!readOnly && accessible && !disabled && guest && meeting.isGuest());
 		
 		if(uploadButton != null) {
 			boolean slidesEditable = isSlidesEditable();
@@ -449,7 +449,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			} else {
 				flc.contextPut("notStarted", Boolean.FALSE);
 				joinButton.setEnabled(!readOnly && !guest);
-				guestJoinButton.setEnabled(!readOnly && guest);
+				guestJoinButton.setEnabled(!readOnly && guest && meeting.isGuest());
 			}
 		} else if(isEnded) {
 			flc.contextPut("notStarted", Boolean.FALSE);
