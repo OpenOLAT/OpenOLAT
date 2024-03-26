@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
@@ -220,11 +219,6 @@ public class ExportsListController extends FormBasicController implements FlexiT
 			exports = exportManager.getResultsExport(params);
 		} else {
 			exports = exportManager.getResultsExport(entry, subIdent, params);
-		}
-		if(!admin) {
-			exports = exports.stream()
-					.filter(exp -> getIdentity().equals(exp.getCreator()))
-					.collect(Collectors.toList());
 		}
 		
 		List<ExportRow> rows = new ArrayList<>(exports.size());

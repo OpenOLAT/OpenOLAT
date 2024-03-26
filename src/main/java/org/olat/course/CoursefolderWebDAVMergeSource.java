@@ -93,18 +93,18 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		NoTermContainer noTermContainer = new NoTermContainer(namingAndGrouping);
 		
 		List<RepositoryEntry> editorEntries = repositoryManager.queryByOwner(getIdentity(), true, null, "CourseModule");
-		appendCourses(editorEntries, containers, terms, noTermContainer, namingAndGrouping, true);
+		appendCourses(editorEntries, containers, terms, noTermContainer, namingAndGrouping);
 		
 		//add courses as participant and coaches
 		if(webDAVModule.isEnableLearnersParticipatingCourses()) {
 			List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsParticipantAndCoach(getIdentity(), "CourseModule");
-			appendCourses(entries, containers, terms, noTermContainer, namingAndGrouping, false);
+			appendCourses(entries, containers, terms, noTermContainer, namingAndGrouping);
 		}
 		
 		//add bookmarked courses
 		if(webDAVModule.isEnableLearnersBookmarksCourse()) {
 			List<RepositoryEntry> bookmarkedEntries = repositoryManager.getLearningResourcesAsBookmarkedMember(getIdentity(), identityEnv.getRoles(), "CourseModule", 0, -1);
-			appendCourses(bookmarkedEntries, containers, terms, noTermContainer, namingAndGrouping, false);
+			appendCourses(bookmarkedEntries, containers, terms, noTermContainer, namingAndGrouping);
 		}
 
 		if (useSemestersTerms || useCurriculumElementsTerms) {
@@ -134,7 +134,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 	
 	private void appendCourses(List<RepositoryEntry> courseEntries, List<VFSContainer> containers,
 			Map<String, VFSContainer> terms, NoTermContainer noTermContainer,
-			NamingAndGrouping namingAndGrouping, boolean editor) {	
+			NamingAndGrouping namingAndGrouping) {	
 		
 		// Add all found repo entries to merge source
 		int count = 0;
@@ -146,14 +146,14 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 			if(namingAndGrouping.isUseFinished() && re.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				String courseTitle = getCourseTitle(re, namingAndGrouping.isPrependReference());
 				String name = namingAndGrouping.getFinishedUniqueName(courseTitle);
-				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
+				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, identityEnv);
 				noTermContainer.addToFinished(cfContainer);
 			} else if (namingAndGrouping.isUseSemesterTerms() || namingAndGrouping.isUseCurriculumElementsTerms()) {
-				appendCoursesWithTerms(re, containers, noTermContainer, terms, namingAndGrouping, editor);
+				appendCoursesWithTerms(re, containers, noTermContainer, terms, namingAndGrouping);
 			} else {
 				String courseTitle = getCourseTitle(re, namingAndGrouping.isPrependReference());
 				String name = namingAndGrouping.getContainersUniqueName(courseTitle);
-				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
+				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, identityEnv);
 				addContainerToList(cfContainer, containers);
 			}
 			if(++count % 5 == 0) {
@@ -163,7 +163,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 	}
 	
 	private void appendCoursesWithTerms(RepositoryEntry re, List<VFSContainer> containers, NoTermContainer noTermContainer,
-			Map<String, VFSContainer> terms, NamingAndGrouping namingAndGrouping, boolean editor) {
+			Map<String, VFSContainer> terms, NamingAndGrouping namingAndGrouping) {
 		RepositoryEntryLifecycle lc = re.getLifecycle();
 		
 		boolean termed = false;
@@ -179,7 +179,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 
 			String courseTitle = getCourseTitle(re, namingAndGrouping.isPrependReference());
 			String name = namingAndGrouping.getTermUniqueName(termSoftKey, courseTitle);
-			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
+			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, identityEnv);
 			termContainer.getItems().add(cfContainer);
 			termed = true;
 		}
@@ -187,7 +187,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		if(namingAndGrouping.isUseManaged() && re.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 			String courseTitle = getCourseTitle(re, namingAndGrouping.isPrependReference());
 			String name = namingAndGrouping.getNoTermUniqueName(courseTitle);
-			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
+			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, identityEnv);
 			noTermContainer.add(re, cfContainer);
 			termed = true;
 		} else if(namingAndGrouping.isUseCurriculumElementsTerms() && namingAndGrouping.hasCurriculumElements(re)) {
@@ -203,7 +203,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 
 				String courseTitle = getCourseTitle(re, false);
 				String name = namingAndGrouping.getTermUniqueName(termSoftKey, courseTitle);
-				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
+				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, identityEnv);
 				termContainer.getItems().add(cfContainer);
 				termed = true;
 			}
@@ -213,7 +213,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 			// no semester term found, add to no-term folder
 			String courseTitle = getCourseTitle(re, namingAndGrouping.isPrependReference());
 			String name = namingAndGrouping.getNoTermUniqueName(courseTitle);
-			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
+			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, identityEnv);
 			noTermContainer.add(re, cfContainer);
 		}
 	}

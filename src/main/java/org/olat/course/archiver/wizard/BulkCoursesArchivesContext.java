@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.commons.services.export.ArchiveType;
+import org.olat.core.id.Roles;
 import org.olat.course.archiver.wizard.CourseArchiveContext.LogSettings;
 import org.olat.repository.RepositoryEntry;
 
@@ -44,7 +45,7 @@ public class BulkCoursesArchivesContext {
 		this.archiveOptions = archiveOptions;
 	}
 	
-	public static final BulkCoursesArchivesContext defaultValues(List<RepositoryEntry> entries) {
+	public static final BulkCoursesArchivesContext defaultValues(List<RepositoryEntry> entries, Roles roles) {
 		CourseArchiveOptions options = new CourseArchiveOptions();
 		options.setArchiveType(ArchiveType.COMPLETE);
 		options.setLogSettings(LogSettings.ANONYMOUS);
@@ -60,10 +61,11 @@ public class BulkCoursesArchivesContext {
 		options.setCourseResults(true);
 		options.setCourseChat(true);
 		
+		boolean isAdministrator = roles.isAdministrator();
 		options.setLogFilesAuthors(true);
-		options.setLogFilesUsers(true);
-		options.setLogFilesStatistics(false);
-		
+		options.setLogFilesUsers(isAdministrator);
+		options.setLogFilesStatistics(!isAdministrator);
+	
 		return new BulkCoursesArchivesContext(options, entries);
 	}
 	

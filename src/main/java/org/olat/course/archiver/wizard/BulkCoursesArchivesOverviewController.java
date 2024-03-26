@@ -85,7 +85,7 @@ public class BulkCoursesArchivesOverviewController extends StepFormBasicControll
 		}
 		uifactory.addStaticTextElement("archive.types", archiveType, formLayout);
 
-		if(archiveOptions.isLogFilesUsers() || archiveOptions.isLogFilesStatistics()) {
+		if(archiveOptions.isLogFilesUsers()) {
 			String adminOnly = translate("access.admin.only");
 			uifactory.addStaticTextElement("access.admin", adminOnly, formLayout);
 		}

@@ -20,8 +20,6 @@
 package org.olat.course;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
@@ -55,23 +53,18 @@ public class MergedCourseContainer extends MergeSource {
 	private static final Logger log = Tracing.createLoggerFor(MergedCourseContainer.class);
 	
 	private final Long courseId;
+	private final boolean fullAccess;
 	private boolean courseReadOnly = false;
 	private boolean overrideReadOnly = false;
 	private final IdentityEnvironment identityEnv;
 	private final CourseContainerOptions options;
 	
-	public MergedCourseContainer(Long courseId, String name) {
-		this(courseId, name, null, CourseContainerOptions.all(), false);
-	}
-	
-	public MergedCourseContainer(Long courseId, String name, IdentityEnvironment identityEnv) {
-		this(courseId, name, identityEnv, CourseContainerOptions.all(), false);
-	}
-	
-	public MergedCourseContainer(Long courseId, String name, IdentityEnvironment identityEnv, CourseContainerOptions options, boolean overrideReadOnly) {
+	public MergedCourseContainer(Long courseId, String name, IdentityEnvironment identityEnv,
+			boolean fullAccess, CourseContainerOptions options, boolean overrideReadOnly) {
 		super(null, name);
 		this.options = options;
 		this.courseId = courseId;
+		this.fullAccess = fullAccess;
 		this.identityEnv = identityEnv;
 		this.overrideReadOnly = overrideReadOnly;
 	}
@@ -93,36 +86,34 @@ public class MergedCourseContainer extends MergeSource {
 			setLocalSecurityCallback(new ReadOnlyCallback());
 		}
 		
-		if(options.withCourseFolder()) {
-			if(identityEnv == null) {
-				VFSContainer courseContainer = persistingCourse.getIsolatedCourseFolder();
-				if(courseReadOnly) {
-					courseContainer.setLocalSecurityCallback(new ReadOnlyCallback());
-				}
-				addContainersChildren(courseContainer, true);
-			} else {
-				RepositoryEntrySecurity reSecurity = RepositoryManager.getInstance()
-						.isAllowed(identityEnv.getIdentity(), identityEnv.getRoles(), courseRe);
-				if(reSecurity.isEntryAdmin()) {
-					VFSContainer courseContainer = persistingCourse.getIsolatedCourseFolder();
-					if(courseReadOnly) {
-						courseContainer.setLocalSecurityCallback(new ReadOnlyCallback());
-					}
-					addContainersChildren(courseContainer, true);
-				}
+		boolean entryAdmin = false;
+		RepositoryEntrySecurity reSecurity = null;
+		if(identityEnv != null) {
+			reSecurity = RepositoryManager.getInstance()
+					.isAllowed(identityEnv.getIdentity(), identityEnv.getRoles(), courseRe);
+			entryAdmin = reSecurity.isEntryAdmin();
+		} else if(fullAccess) {
+			entryAdmin = true;
+		}
+
+		if(options.withCourseFolder() && entryAdmin) {
+			VFSContainer courseContainer = persistingCourse.getIsolatedCourseFolder();
+			if(courseReadOnly) {
+				courseContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 			}
+			addContainersChildren(courseContainer, true);
 		}
 		
 		if(options.withSharedResource()) {
-			initSharedFolder(persistingCourse);
+			initSharedFolder(persistingCourse, entryAdmin);
 		}
 		
 		if(options.withCourseDocuments()) {
-			initCourseDocuments(persistingCourse);
+			initCourseDocuments(persistingCourse, entryAdmin);
 		}
 		
 		if(options.withCoachFolder()) {
-			initCoachFolder(persistingCourse);
+			initCoachFolder(persistingCourse, reSecurity, entryAdmin);
 		}
 			
 		// add all course building blocks of type BC to a virtual folder
@@ -133,7 +124,7 @@ public class MergedCourseContainer extends MergeSource {
 			}
 		}
 
-		if(options.withArchives()) {
+		if(options.withArchives() && identityEnv != null) {
 			CourseArchiveWebDAVSource archivesContainer = new CourseArchiveWebDAVSource(courseRe, identityEnv);
 			if (!archivesContainer.isEmpty()) {
 				addContainer(archivesContainer);
@@ -148,16 +139,12 @@ public class MergedCourseContainer extends MergeSource {
 	 * 
 	 * @param persistingCourse
 	 */
-	private void initSharedFolder(PersistingCourseImpl persistingCourse) {
+	private void initSharedFolder(PersistingCourseImpl persistingCourse, boolean entryAdmin) {
 		CourseConfig courseConfig = persistingCourse.getCourseConfig();
 		String sfSoftkey = courseConfig.getSharedFolderSoftkey();
 		if (StringHelper.containsNonWhitespace(sfSoftkey) && !CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(sfSoftkey)) {
-			RepositoryEntry re = persistingCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-			
-			if(identityEnv == null || repositoryService.hasRoleExpanded(identityEnv.getIdentity(), re,
-					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
-					GroupRoles.owner.name())) {
+			if(entryAdmin) {
+				RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 				OLATResource sharedResource = repositoryService.loadRepositoryEntryResourceBySoftKey(sfSoftkey);
 				if (sharedResource != null) {
 					VFSContainer sharedFolder = SharedFolderManager.getInstance().getSharedFolder(sharedResource);
@@ -173,7 +160,7 @@ public class MergedCourseContainer extends MergeSource {
 		}
 	}
 	
-	private void initCourseDocuments(PersistingCourseImpl persistingCourse) {
+	private void initCourseDocuments(PersistingCourseImpl persistingCourse, boolean entryAdmin) {
 		if (!persistingCourse.getCourseConfig().isDocumentsEnabled()) return;
 		// Don't add a linked resource folder
 		if (StringHelper.containsNonWhitespace(persistingCourse.getCourseConfig().getDocumentsPath())) return;
@@ -181,23 +168,26 @@ public class MergedCourseContainer extends MergeSource {
 		VFSContainer documentsContainer = CourseDocumentsFactory.getFileContainer(persistingCourse.getCourseBaseContainer());
 		if (documentsContainer != null) {
 			VFSSecurityCallback securityCallback = null;
-			if (identityEnv == null) {
+			if (entryAdmin) {
 				if (courseReadOnly) {
 					securityCallback = CourseDocumentsFactory.createReadOnlyCallback(null);
 				} else {
 					securityCallback = CourseDocumentsFactory.createReadWriteCallback(null,
 							CourseDocumentsFactory.getFileDirectory(persistingCourse.getCourseBaseContainer()));
 				}
-			} else {
+			} else if(identityEnv != null) {
 				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
 				securityCallback = CourseDocumentsFactory.getSecurityCallback(userCourseEnv);
 			}
-			documentsContainer.setLocalSecurityCallback(securityCallback);
-			addContainer(new NamedContainerImpl("_documents", documentsContainer));
+			
+			if(securityCallback != null) {
+				documentsContainer.setLocalSecurityCallback(securityCallback);
+				addContainer(new NamedContainerImpl("_documents", documentsContainer));
+			}
 		}
 	}
 	
-	private void initCoachFolder(PersistingCourseImpl persistingCourse) {
+	private void initCoachFolder(PersistingCourseImpl persistingCourse, RepositoryEntrySecurity reSecurity, boolean entryAdmin) {
 		if (!persistingCourse.getCourseConfig().isCoachFolderEnabled()) return;
 		// Don't add a linked resource folder
 		if (StringHelper.containsNonWhitespace(persistingCourse.getCourseConfig().getCoachFolderPath())) return;
@@ -205,21 +195,19 @@ public class MergedCourseContainer extends MergeSource {
 		VFSContainer documentsContainer = CoachFolderFactory.getFileContainer(persistingCourse.getCourseBaseContainer());
 		if (documentsContainer != null) {
 			VFSSecurityCallback securityCallback = null;
-			if (identityEnv == null) {
+			if (entryAdmin) {
 				if (courseReadOnly) {
 					securityCallback = CoachFolderFactory.createReadOnlyCallback(null);
 				} else {
 					securityCallback = CoachFolderFactory.createReadWriteCallback(null,
 							CoachFolderFactory.getFileDirectory(persistingCourse.getCourseBaseContainer()));
 				}
-			} else {
+			} else if (reSecurity.isCoach()) {
 				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
-				if (userCourseEnv.isCoach()) {
-					securityCallback = CoachFolderFactory.getSecurityCallback(userCourseEnv);
-				} else {
-					// Do not show the folder to participants
-					return;
-				}
+				securityCallback = CoachFolderFactory.getSecurityCallback(userCourseEnv);
+			} else {
+				// Do not show the folder to participants
+				return;
 			}
 			documentsContainer.setLocalSecurityCallback(securityCallback);
 			addContainer(new NamedContainerImpl("_coachdocuments", documentsContainer));

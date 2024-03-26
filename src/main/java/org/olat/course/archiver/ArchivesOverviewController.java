@@ -47,7 +47,7 @@ public class ArchivesOverviewController extends BasicController {
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
-	private MyArchivesController myArchivesCtrl;
+	private ArchivesController myArchivesCtrl;
 	private ArchivesAdminManagementController archivesManagementCtrl;
 	
 	@Autowired
@@ -90,7 +90,7 @@ public class ArchivesOverviewController extends BasicController {
 	
 	private void doOpenMyArchives(UserRequest ureq) {
 		if(myArchivesCtrl == null) {
-			myArchivesCtrl = new MyArchivesController(ureq, getWindowControl(), false);
+			myArchivesCtrl = new ArchivesController(ureq, getWindowControl(), false);
 			listenTo(myArchivesCtrl);
 		}
 		mainVC.put("segmentCmp", myArchivesCtrl.getInitialComponent());

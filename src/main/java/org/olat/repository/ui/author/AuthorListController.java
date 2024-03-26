@@ -1756,7 +1756,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				.toList();
 		
 		List<RepositoryEntry> repositoryEntries = repositoryService.loadByKeys(repositoryEntryKeys);
-		BulkCoursesArchivesContext context = BulkCoursesArchivesContext.defaultValues(repositoryEntries);
+		BulkCoursesArchivesContext context = BulkCoursesArchivesContext.defaultValues(repositoryEntries, roles);
 		
 		Step start = new BulkCoursesArchives_1_RepositoryEntriesStep(ureq, context);
 		BulkCoursesArchivesFinishStepCallback finish = new BulkCoursesArchivesFinishStepCallback(context);

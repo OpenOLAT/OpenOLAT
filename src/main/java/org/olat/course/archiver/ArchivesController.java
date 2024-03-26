@@ -47,7 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MyArchivesController extends ExportsListController {
+public class ArchivesController extends ExportsListController {
 	
 	private static final String ALL_ARCHIVES = "All";
 	private static final String COMPLETE_ARCHIVES = "Complete";
@@ -58,7 +58,7 @@ public class MyArchivesController extends ExportsListController {
 	@Autowired
 	private WebDAVModule webDAVModule;
 	
-	public MyArchivesController(UserRequest ureq, WindowControl wControl, boolean admin) {
+	public ArchivesController(UserRequest ureq, WindowControl wControl, boolean admin) {
 		super(ureq, wControl, null, CourseArchiveListController.COURSE_ARCHIVE_SUB_IDENT,
 				admin, new ExportsListSettings(false), "my_export_list");
 	}
@@ -98,7 +98,6 @@ public class MyArchivesController extends ExportsListController {
 	@Override
 	public SearchExportMetadataParameters getSearchParams() {
 		SearchExportMetadataParameters params = super.getSearchParams();
-		params.setCreator(getIdentity());
 		if(!isAdministrator) {
 			params.setOnlyAdministrators(Boolean.FALSE);
 		}

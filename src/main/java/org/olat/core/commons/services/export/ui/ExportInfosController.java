@@ -68,7 +68,7 @@ public class ExportInfosController extends FormBasicController {
 			String title = Formatter.addReference(getTranslator(),
 					StringHelper.escapeHtml(StringHelper.escapeHtml(entry.getDisplayname())),
 					StringHelper.escapeHtml(StringHelper.escapeHtml(entry.getExternalRef())),
-					"o_icon_" + RepositoyUIFactory.getIconCssClass(entry));
+					"o_icon " + RepositoyUIFactory.getIconCssClass(entry));
 			entryLink = uifactory.addFormLink("details.entry.title", title, "details.entry.title", formLayout, Link.LINK | Link.NONTRANSLATED);
 		}
 

@@ -37,7 +37,8 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 	
 	private RepositoryEntry entry;
 	private VFSContainer parentContainer;
-	private IdentityEnvironment identityEnv;
+	
+	private final IdentityEnvironment identityEnv;
 	
 	public CoursefolderWebDAVNamedContainer(String courseTitle, RepositoryEntry entry, IdentityEnvironment identityEnv) {
 		super(courseTitle, null);

@@ -161,7 +161,8 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	@Override
 	public VFSContainer getCourseFolderContainer() {
 		// add local course folder's children as read/write source and any sharedfolder as subfolder
-		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle());
+		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), null,
+				true, CourseContainerOptions.all(), false);
 		courseFolderContainer.init(this);
 		return courseFolderContainer;
 	}
@@ -170,7 +171,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	public VFSContainer getCourseFolderContainer(CourseContainerOptions options) {
 		// add local course folder's children as read/write source and any sharedfolder as subfolder
 		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), null,
-				options, false);
+				true, options, false);
 		courseFolderContainer.init(this);
 		return courseFolderContainer;
 	}
@@ -179,7 +180,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	public VFSContainer getCourseFolderContainer(boolean overrideReadOnly) {
 		// add local course folder's children as read/write source and any sharedfolder as subfolder
 		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), null,
-				CourseContainerOptions.all(), overrideReadOnly);
+				true, CourseContainerOptions.all(), overrideReadOnly);
 		courseFolderContainer.init(this);
 		return courseFolderContainer;
 	}
@@ -187,7 +188,8 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	@Override
 	public VFSContainer getCourseFolderContainer(IdentityEnvironment identityEnv) {
 		// add local course folder's children as read/write source and any sharedfolder as subfolder
-		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), identityEnv);
+		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), identityEnv,
+				false, CourseContainerOptions.all(), false);
 		courseFolderContainer.init(this);
 		return courseFolderContainer;
 	}
