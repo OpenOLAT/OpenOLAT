@@ -888,7 +888,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
 		RepositoryEntry courseRe = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		if (!userCourseEnv.isParticipant() && courseNode instanceof IQTESTCourseNode) {
+		if (!userCourseEnv.isParticipant() && (courseNode instanceof IQTESTCourseNode || courseNode instanceof IQSELFCourseNode)) {
 			boolean authorMode = !ureq.getUserSession().getRoles().isGuestOnly();
 			displayCtrl = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
 					testEntry, courseRe, courseNode.getIdent(), deliveryOptions, overrideOptions, scoreScale, true, authorMode, true);
