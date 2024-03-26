@@ -67,6 +67,34 @@ public class FlexiFiltersTabFactory {
 	 * @param id The id of the tab, will be used for the business path
 	 * @param label The label of the tab
 	 * @param selectionBehavior Behavior if the tab is selected
+	 * @param implicitValueFilters a list of filters and theirs values, the filters
+	 * 		will be implicit, always selected and invisible to the user.
+	 * @param defaultValueFilters a list of filters and theirs values, the filters
+	 * 		will be explicit, selected and visible to the user which can change them.
+	 * @return The configuration of a tab
+	 */
+	public static FlexiFiltersTab tabWithImplicitAndDefaultFilters(String id, String label,
+			TabSelectionBehavior selectionBehavior, List<FlexiTableFilterValue> implicitValueFilters,
+			List<FlexiTableFilterValue> defaultValueFilters) {
+		FlexiFiltersTabImpl preset = new FlexiFiltersTabImpl(id, label, selectionBehavior);
+		
+		List<String> implicitFilters = new ArrayList<>(implicitValueFilters.size());
+		for(FlexiTableFilterValue implicitValueFilter:implicitValueFilters) {
+			implicitFilters.add(implicitValueFilter.getFilter());
+		}
+		preset.setImplicitFilters(implicitFilters);
+		
+		List<FlexiTableFilterValue> filterValues = new ArrayList<>(implicitValueFilters);
+		filterValues.addAll(defaultValueFilters);
+		preset.setDefaultFiltersValues(filterValues);
+		return preset;
+	}
+	
+	/**
+	 * 
+	 * @param id The id of the tab, will be used for the business path
+	 * @param label The label of the tab
+	 * @param selectionBehavior Behavior if the tab is selected
 	 * @param valueFilters a list of filters and theirs values, the filters
 	 * 		will be explicit, selected and visible to the user which can change them.
 	 * @return The configuration of a tab

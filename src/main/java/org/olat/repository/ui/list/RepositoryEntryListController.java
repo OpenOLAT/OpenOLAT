@@ -111,6 +111,7 @@ import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
 import org.olat.repository.ui.list.DefaultRepositoryEntryDataSource.FilterButton;
+import org.olat.repository.ui.list.DefaultRepositoryEntryDataSource.FilterStatus;
 import org.olat.repository.ui.list.RepositoryEntryDataModel.Cols;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -316,8 +317,10 @@ public class RepositoryEntryListController extends FormBasicController
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		// bookmarks
 		if(!guestOnly) {
-			bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Bookmarks", translate("search.mark"),
-					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.MARKED, "marked")));
+			bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitAndDefaultFilters("Bookmarks", translate("search.mark"),
+					TabSelectionBehavior.reloadData,
+					List.of(FlexiTableFilterValue.valueOf(FilterButton.MARKED, "marked")),
+					List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, List.of(FilterStatus.PREPARATION.name(), FilterStatus.ACTIVE.name(), FilterStatus.CLOSED.name()))));
 			bookmarkTab.setElementCssClass("o_sel_mycourses_fav");
 			tabs.add(bookmarkTab);
 		}
@@ -325,7 +328,7 @@ public class RepositoryEntryListController extends FormBasicController
 		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.active"),
 				TabSelectionBehavior.reloadData, List.of(
 						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
-						FlexiTableFilterValue.valueOf(FilterButton.STATUS, "active")));
+						FlexiTableFilterValue.valueOf(FilterButton.STATUS, FilterStatus.ACTIVE.name())));
 		myTab.setElementCssClass("o_sel_mycourses_my");
 		tabs.add(myTab);
 		
@@ -346,12 +349,12 @@ public class RepositoryEntryListController extends FormBasicController
 		FlexiFiltersTab prepTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Preparation", translate("search.preparation"),
 				TabSelectionBehavior.reloadData, List.of(
 						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
-						FlexiTableFilterValue.valueOf(FilterButton.STATUS, "preparation")));
+						FlexiTableFilterValue.valueOf(FilterButton.STATUS, FilterStatus.PREPARATION.name())));
 		prepTab.setElementCssClass("o_sel_mycourses_preparation");
 		tabs.add(prepTab);
 		
 		FlexiFiltersTab closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Closed", translate("search.courses.closed"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, "closed"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, FilterStatus.CLOSED.name()),
 						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
 		closedTab.setElementCssClass("o_sel_mycourses_closed");
 		tabs.add(closedTab);
@@ -408,10 +411,10 @@ public class RepositoryEntryListController extends FormBasicController
 		
 		// life-cycle
 		SelectionValues lifecycleValues = new SelectionValues();
-		lifecycleValues.add(SelectionValues.entry("preparation", translate("cif.resources.status.preparation")));
-		lifecycleValues.add(SelectionValues.entry("active", translate("cif.resources.status.active")));
-		lifecycleValues.add(SelectionValues.entry("closed", translate("cif.resources.status.closed")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"),
+		lifecycleValues.add(SelectionValues.entry(FilterStatus.PREPARATION.name(), translate("cif.resources.status.preparation")));
+		lifecycleValues.add(SelectionValues.entry(FilterStatus.ACTIVE.name(), translate("cif.resources.status.active")));
+		lifecycleValues.add(SelectionValues.entry(FilterStatus.CLOSED.name(), translate("cif.resources.status.closed")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
 				FilterButton.STATUS.name(), lifecycleValues, true));
 		
 		// authors / owners
