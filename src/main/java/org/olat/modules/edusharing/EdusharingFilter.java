@@ -64,13 +64,13 @@ public class EdusharingFilter implements Filter {
 		if (edusharingModule.isEnabled()) {
 			// Get all edu-sharing elements from html
 			List<EdusharingHtmlElement> htmlElements = htmlService.parse(original);
-			Map<String, EdusharingHtmlElement> htmlIdentifierToElement = htmlElements.stream().collect(Collectors.toMap(u -> u.getIdentifier(), u -> u));
+			Map<String, EdusharingHtmlElement> htmlIdentifierToElement = htmlElements.stream().collect(Collectors.toMap(EdusharingHtmlElement::getIdentifier, u -> u));
 			Set<String> htmlIdentifiers = htmlIdentifierToElement.keySet();
 			log.debug("edu-sharing filter identifiers in html: " + htmlIdentifiers.toString());
 			
 			// Get all usages from database
 			List<EdusharingUsage> usages = edusharingService.loadUsages(provider.getOlatResourceable(), provider.getSubPath());
-			Map<String, EdusharingUsage> usageIdentifierToUsage = usages.stream().collect(Collectors.toMap(u -> u.getIdentifier(), u -> u));
+			Map<String, EdusharingUsage> usageIdentifierToUsage = usages.stream().collect(Collectors.toMap(EdusharingUsage::getIdentifier, u -> u));
 			Set<String> usageIdentifiers = usageIdentifierToUsage.keySet();
 			log.debug("edu-sharing filter identifiers in database: " + usageIdentifiers.toString());
 			

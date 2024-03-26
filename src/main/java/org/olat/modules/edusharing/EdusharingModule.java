@@ -69,6 +69,7 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	private String h5pResizerUrl;
 	@Value("${edusharing.ticket.valid.seconds:10}")
 	private int ticketValidSeconds;
+	// It's not soap anymore but used for REST
 	private KeyPair soapKeys;
 	private String soapPublicKey;
 	private String soapPrivateKey;
@@ -76,18 +77,8 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	private PublicKey repoPublicKey;
 	private String repoPublicKeyString;
 	
-	@Value("${edusharing.auth.key.userid:userid}")
-	private String authKeyUseriId;
-	@Value("${edusharing.auth.key.lastname:lastname}")
-	private String authKeyLastname;
-	@Value("${edusharing.auth.key.firstname:firstname}")
-	private String authKeyFirstname;
-	@Value("${edusharing.auth.key.email:email}")
-	private String authKeyEmail;
 	@Value("${edusharing.auth.affiliation.id}")
 	private String authAffiliationId;
-	@Value("${edusharing.auth.affiliation.name}")
-	private String authAffiliationName;
 	
 	@Value("${edusharing.user.identifier.key:username}")
 	private String userIdentifierKey;
@@ -269,28 +260,8 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 		return userIdentifierKey;
 	}
 
-	public String getAuthKeyUseriId() {
-		return authKeyUseriId;
-	}
-
-	public String getAuthKeyLastname() {
-		return authKeyLastname;
-	}
-
-	public String getAuthKeyFirstname() {
-		return authKeyFirstname;
-	}
-
-	public String getAuthKeyEmail() {
-		return authKeyEmail;
-	}
-
 	public String getAuthAffiliationId() {
 		return authAffiliationId;
-	}
-
-	public String getAuthAffiliationName() {
-		return authAffiliationName;
 	}
 	
 }

@@ -20,6 +20,7 @@
 package org.olat.modules.edusharing;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.edusharing.model.Usages;
 
 /**
  * 
@@ -33,7 +34,7 @@ public interface EdusharingClient {
 
 	public String createTicket(Identity identity) throws EdusharingException;
 	
-	public boolean validateTicket(String ticket) throws EdusharingException;
+	public boolean validateTicket(Ticket ticket) throws EdusharingException;
 	
 	public EdusharingResponse getPreview(GetPreviewParameter parameter) throws EdusharingException;
 	
@@ -41,8 +42,10 @@ public interface EdusharingClient {
 	
 	public String getRenderUrl(GetRenderedParameter parameter);
 
-	public void createUsage(CreateUsageParameter parameter) throws EdusharingException;
+	public void createUsage(Ticket ticket, CreateUsageParameter parameter) throws EdusharingException;
 	
-	public void deleteUsage(DeleteUsageParameter parameter) throws EdusharingException;
+	public Usages getUsages(Ticket ticket, NodeIdentifier nodeIdentifier) throws EdusharingException;
+	
+	public void deleteUsage(Ticket ticket, NodeIdentifier nodeIdentifier, String usageId) throws EdusharingException;
 
 }

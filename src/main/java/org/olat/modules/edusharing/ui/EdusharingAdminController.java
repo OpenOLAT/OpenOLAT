@@ -273,7 +273,7 @@ public class EdusharingAdminController extends FormBasicController {
 	
 	private void doTest() {
 		try {
-			Ticket ticket = edusharingService.createTicket(getIdentity());
+			Ticket ticket = edusharingService.getTicket(getIdentity());
 			if (ticket != null) {
 				showInfo("admin.test.successful");
 				return;

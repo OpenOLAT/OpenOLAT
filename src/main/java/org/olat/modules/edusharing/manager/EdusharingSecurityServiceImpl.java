@@ -33,6 +33,7 @@ import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.edusharing.EdusharingException;
 import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.modules.edusharing.EdusharingSecurityService;
@@ -63,15 +64,15 @@ public class EdusharingSecurityServiceImpl implements EdusharingSecurityService 
 	}
 	
 	@Override
-	public EdusharingSignature createSignature() throws EdusharingException {
-		String soapAppId = edusharinModule.getAppId();
+	public EdusharingSignature createSignature(String data) throws EdusharingException {
+		String appId = edusharinModule.getAppId();
 		String timeStamp = Long.toString(System.currentTimeMillis());
-		String signData = soapAppId + timeStamp;
+		String signData = appId + StringHelper.blankIfNull(data) + timeStamp;
 		
 		PrivateKey privateKey = edusharinModule.getSoapKeys().getPrivate();
 		byte[] signatur = sign(privateKey, signData);
 		signatur = new Base64().encode(signatur);
-		return new EdusharingSignatureImpl(soapAppId, timeStamp, signData, new String(signatur));
+		return new EdusharingSignatureImpl(appId, timeStamp, signData, new String(signatur));
 	}
 	
 	@Override

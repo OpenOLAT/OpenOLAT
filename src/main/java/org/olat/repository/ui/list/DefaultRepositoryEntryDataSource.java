@@ -21,7 +21,9 @@ package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
@@ -62,7 +64,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 
 	private final RepositoryEntryDataSourceUIFactory uifactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
-	private final RepositoryEntryStatusEnum[] baseEntryStatus;
+	private RepositoryEntryStatusEnum[] baseEntryStatus;
 	
 	private final ACService acService;
 	private final AccessControlModule acModule;
@@ -163,16 +165,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				searchParams.setMembershipMandatory(StringHelper.containsNonWhitespace(ownedValue) || searchParams.isMembershipOnly());
 				break;
 			case STATUS:
-				String value = ((FlexiTableExtendedFilter)filter).getValue();
-				if("closed".equals(value)) {
-					searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {RepositoryEntryStatusEnum.closed });
-				} else if("active".equals(value)) {
-					searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {RepositoryEntryStatusEnum.published });
-				} else if("preparation".equals(value)) {
-					searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToCoachPublished());
-				} else {
-					searchParams.setEntryStatus(baseEntryStatus);
-				}
+				setStatusFilter((FlexiTableExtendedFilter)filter);
 				break;
 			case DATES:
 				List<String> filterVals = ((FlexiTableMultiSelectionFilter)filter).getValues();
@@ -197,6 +190,30 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		}
 	}
 	
+	private void setStatusFilter(FlexiTableExtendedFilter filter) {
+		List<String> values = filter.getValues();
+		Set<RepositoryEntryStatusEnum> status = new HashSet<>();
+		if(values == null || values.isEmpty()) {
+			searchParams.setEntryStatus(baseEntryStatus);
+		} else {
+			for(String val:values) {
+				switch(FilterStatus.valueOf(val)) {
+					case CLOSED:
+						status.add(RepositoryEntryStatusEnum.closed);
+						break;
+					case ACTIVE:
+						status.add(RepositoryEntryStatusEnum.published);
+						break;
+					case PREPARATION:
+						Collections.addAll(status, RepositoryEntryStatusEnum.preparationToCoachPublished());
+						break;
+				}
+			}
+			RepositoryEntryStatusEnum[] statusArr = status.toArray(new RepositoryEntryStatusEnum[status.size()]);
+			searchParams.setEntryStatus(statusArr);
+		}
+	}
+	
 	public enum FilterButton {
 		MARKED,
 		OWNED,
@@ -206,6 +223,12 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		DATES,
 		EDUCATIONALTYPE,
 		AUTHORS
+	}
+	
+	public enum FilterStatus {
+		PREPARATION,
+		ACTIVE,
+		CLOSED
 	}
 
 	private List<RepositoryEntryRow> processViewModel(List<RepositoryEntryMyView> repoEntries) {

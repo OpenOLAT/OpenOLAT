@@ -19,16 +19,16 @@
  */
 package org.olat.modules.edusharing.manager;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.edu_sharing.webservices.types.KeyValue;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.edusharing.EdusharingModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * 
@@ -41,6 +41,8 @@ class EdusharingUserFactory {
 	
 	@Autowired
 	private EdusharingModule edusharingModule;
+	
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 	
 	String getUserIdentifier(Identity identity) {
 		String identifier;
@@ -64,57 +66,29 @@ class EdusharingUserFactory {
 	 *
 	 * @return
 	 */
-	List<KeyValue> getSSOData(Identity identity) {
-		List<KeyValue> ssoData = new ArrayList<>();
-		
-		// mandatory
-		KeyValue userId = new KeyValue();
-		userId.setKey(edusharingModule.getAuthKeyUseriId());
-		userId.setValue(getUserIdentifier(identity));
-		ssoData.add(userId);
+	JsonNode getUserProfile(Identity identity) {
+		ObjectNode userProfile = objectMapper.createObjectNode();
 		
 		// optional
 		User user = identity.getUser();
 		
-		if (StringHelper.containsNonWhitespace(edusharingModule.getAuthKeyLastname())
-				&& StringHelper.containsNonWhitespace(user.getLastName())) {
-			KeyValue lastname = new KeyValue();
-			lastname.setKey(edusharingModule.getAuthKeyLastname());
-			lastname.setValue(user.getLastName());
-			ssoData.add(lastname);
+		if (StringHelper.containsNonWhitespace(user.getLastName())) {
+			userProfile.put("lastName", user.getLastName());
 		}
 		
-		if (StringHelper.containsNonWhitespace(edusharingModule.getAuthKeyFirstname())
-				&& StringHelper.containsNonWhitespace(user.getFirstName())) {
-			KeyValue firstname = new KeyValue();
-			firstname.setKey(edusharingModule.getAuthKeyFirstname());
-			firstname.setValue(user.getFirstName());
-			ssoData.add(firstname);
+		if (StringHelper.containsNonWhitespace(user.getFirstName())) {
+			userProfile.put("firstName", user.getFirstName());
 		}
-
-		if (StringHelper.containsNonWhitespace(edusharingModule.getAuthKeyEmail())
-				&& StringHelper.containsNonWhitespace(user.getEmail())) {
-			KeyValue email = new KeyValue();
-			email.setKey(edusharingModule.getAuthKeyEmail());
-			email.setValue(user.getEmail());
-			ssoData.add(email);
+		
+		if (StringHelper.containsNonWhitespace(user.getEmail())) {
+			userProfile.put("email", user.getEmail());
 		}
-
+		
 		if (StringHelper.containsNonWhitespace(edusharingModule.getAuthAffiliationId())) {
-			KeyValue affiliationId = new KeyValue();
-			affiliationId.setKey("affiliation");
-			affiliationId.setValue(edusharingModule.getAuthAffiliationId());
-			ssoData.add(affiliationId);
-		}
-
-		if (StringHelper.containsNonWhitespace(edusharingModule.getAuthAffiliationName())) {
-			KeyValue affiliationName = new KeyValue();
-			affiliationName.setKey("affiliationname");
-			affiliationName.setValue(edusharingModule.getAuthAffiliationName());
-			ssoData.add(affiliationName);
+			userProfile.put("primaryAffiliation", edusharingModule.getAuthAffiliationId());
 		}
 		
-		return ssoData;
+		return userProfile;
 	}
 
 }

@@ -231,8 +231,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 					VFSContainer lastStorage = lostAndFound.createChildContainer(dir);
 					if(lastStorage == null) {
 						VFSItem storageItem = lostAndFound.resolve(dir);
-						if(storageItem instanceof VFSContainer) {
-							lastStorage = (VFSContainer)storageItem;
+						if(storageItem instanceof VFSContainer storageContainer) {
+							lastStorage = storageContainer;
 						} else {
 							lastStorage = lostAndFound.createChildContainer(UUID.randomUUID().toString());
 						}
@@ -283,6 +283,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 		taxonomyRelationsDao.replaceQuestionItem(taxonomyLevel, mergeTo);
 		// Curriculum elements
 		curriculumElementToTaxonomyLevelDao.replace(taxonomyLevel, mergeTo);
+		// Repository entries
+		repositoryEntryToTaxonomyLevelDao.replace(taxonomyLevel, mergeTo);
 	}
 
 	@Override

@@ -20,6 +20,7 @@
 package org.olat.repository.manager;
 
 import static org.olat.test.JunitTestHelper.random;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 import java.util.List;
@@ -169,5 +170,23 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(re, entries.get(0));
 	}
+	
+	@Test
+	public void replaceTaxonomyLevel() {
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
+				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, null);
 
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-306", "Leveled taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-7", random(), "My taxonomy level n.7", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-8", random(), "My taxonomy level n.8", "A basic level", null, null, null, null, taxonomy);
+		repositoryEntryToTaxonomyLevelDao.createRelation(re, level1);
+		dbInstance.commitAndCloseSession();
+		
+		repositoryEntryToTaxonomyLevelDao.replace(level1, level2);
+		dbInstance.commitAndCloseSession();
+		
+		List<TaxonomyLevel> levels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(re);
+		assertThat(levels).hasSize(1)
+			.containsExactly(level2);
+	}
 }

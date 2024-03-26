@@ -19,17 +19,17 @@
  */
 package org.olat.modules.edusharing.manager;
 
-import org.edu_sharing.webservices.authbyapp.AuthenticationException;
-import org.edu_sharing.webservices.usage2.Usage2Exception_Exception;
 import org.olat.core.id.Identity;
 import org.olat.modules.edusharing.CreateUsageParameter;
-import org.olat.modules.edusharing.DeleteUsageParameter;
 import org.olat.modules.edusharing.EdusharingClient;
 import org.olat.modules.edusharing.EdusharingException;
 import org.olat.modules.edusharing.EdusharingProperties;
 import org.olat.modules.edusharing.EdusharingResponse;
 import org.olat.modules.edusharing.GetPreviewParameter;
 import org.olat.modules.edusharing.GetRenderedParameter;
+import org.olat.modules.edusharing.NodeIdentifier;
+import org.olat.modules.edusharing.Ticket;
+import org.olat.modules.edusharing.model.Usages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +45,7 @@ public class EdusharingClientImpl implements EdusharingClient {
 	@Autowired
 	private EdusharingHttpClient httpClient;
 	@Autowired
-	private EdusharingSoapClient soapClient;
+	private EdusharingRestClient restClient;
 
 	@Override
 	public EdusharingProperties getRepoConfig() throws EdusharingException {
@@ -54,20 +54,12 @@ public class EdusharingClientImpl implements EdusharingClient {
 
 	@Override
 	public String createTicket(Identity identity) throws EdusharingException {
-		try {
-			return soapClient.createTicket(identity);
-		} catch (AuthenticationException e) {
-			throw new EdusharingException(e);
-		}
+		return restClient.createTicket(identity);
 	}
 
 	@Override
-	public boolean validateTicket(String ticket) throws EdusharingException {
-		try {
-			return soapClient.valdateTicket(ticket);
-		} catch (AuthenticationException e) {
-			throw new EdusharingException(e);
-		}
+	public boolean validateTicket(Ticket ticket) throws EdusharingException {
+		return restClient.validateTicket(ticket);
 	}
 
 	@Override
@@ -94,21 +86,22 @@ public class EdusharingClientImpl implements EdusharingClient {
 	}
 
 	@Override
-	public void createUsage(CreateUsageParameter parameter) throws EdusharingException {
+	public void createUsage(Ticket ticket, CreateUsageParameter parameter) throws EdusharingException {
 		try {
-			soapClient.createUsage(parameter);
-		} catch (Usage2Exception_Exception e) {
+			restClient.createUsage(ticket, parameter);
+		} catch (Exception e) {
 			throw new EdusharingException(e);
 		}
 	}
+	
+	@Override
+	public Usages getUsages(Ticket ticket, NodeIdentifier nodeIdentifier) throws EdusharingException {
+		return restClient.getUsages(ticket, nodeIdentifier);
+	}
 
 	@Override
-	public void deleteUsage(DeleteUsageParameter parameter) throws EdusharingException {
-		try {
-			soapClient.deleteUsage(parameter);
-		} catch (Usage2Exception_Exception e) {
-			throw new EdusharingException(e);
-		}
+	public void deleteUsage(Ticket ticket, NodeIdentifier nodeIdentifier, String usageId) throws EdusharingException {
+		restClient.deleteUsage(ticket, nodeIdentifier, usageId);
 	}
 
 }
