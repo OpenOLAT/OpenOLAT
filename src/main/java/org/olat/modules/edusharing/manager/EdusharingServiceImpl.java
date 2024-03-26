@@ -22,8 +22,11 @@ package org.olat.modules.edusharing.manager;
 import java.security.KeyPair;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+
+import jakarta.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.helpers.Settings;
@@ -31,8 +34,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.course.style.CourseStyleService;
 import org.olat.modules.edusharing.CreateUsageParameter;
-import org.olat.modules.edusharing.DeleteUsageParameter;
 import org.olat.modules.edusharing.EdusharingClient;
 import org.olat.modules.edusharing.EdusharingConversionService;
 import org.olat.modules.edusharing.EdusharingException;
@@ -51,6 +56,8 @@ import org.olat.modules.edusharing.NodeIdentifier;
 import org.olat.modules.edusharing.Ticket;
 import org.olat.modules.edusharing.model.EdusharingErrorResponse;
 import org.olat.modules.edusharing.model.TicketImpl;
+import org.olat.modules.edusharing.model.Usage;
+import org.olat.modules.edusharing.model.Usages;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +86,15 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 	private EdusharingSecurityService securityService;
 	@Autowired
 	private EdusharingUserFactory userFactory;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
+	
+	private CacheWrapper<Long, Ticket> ticketCache;
+	
+	@PostConstruct
+	public void initCache() {
+		ticketCache = coordinatorManager.getCoordinator().getCacher().getCache(CourseStyleService.class.getSimpleName(), "edusharingTicket");
+	}
 
 	@Override
 	public Properties getConfigForRegistration() {
@@ -110,24 +126,39 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 	public EdusharingProperties getEdusharingRepoConfig() throws EdusharingException {
 		return client.getRepoConfig();
 	}
-
+	
 	@Override
-	public Ticket createTicket(Identity identity) throws EdusharingException {
-		String tooken = client.createTicket(identity);
-		TicketImpl ticket = new TicketImpl(tooken);
-		ticket.setLastValidation(LocalDateTime.now());
+	public Ticket getTicket(Identity identity) {
+		Ticket ticket = null;
+		try {
+			ticket = ticketCache.get(identity.getKey());
+			if (ticket != null) {
+				ticket = validateTicket(ticket).orElse(createTicket(identity));
+			} else {
+				ticket = createTicket(identity);
+			}
+		} catch (Exception e) {
+			log.error("Error while getting edu-sharing ticket", e);
+		}
 		return ticket;
 	}
 
-	@Override
-	public Optional<Ticket> validateTicket(Ticket ticket) {
+	private Ticket createTicket(Identity identity) throws EdusharingException {
+		String tooken = client.createTicket(identity);
+		TicketImpl ticket = new TicketImpl(tooken);
+		ticket.setLastValidation(LocalDateTime.now());
+		ticketCache.put(identity.getKey(), ticket);
+		return ticket;
+	}
+
+	private Optional<Ticket> validateTicket(Ticket ticket) {
 		try {
 			// Ticket is younger than the valid time, we must not check.
-			if (ticket.getLastValidation().plusSeconds(edusharingModule.getTicketValidSeconds()).isBefore(LocalDateTime.now())) {
+			if (ticket.getLastValidation().plusSeconds(edusharingModule.getTicketValidSeconds()).isAfter(LocalDateTime.now())) {
 				return Optional.of(ticket);
 			}
 			
-			boolean valid = client.validateTicket(ticket.getTooken());
+			boolean valid = client.validateTicket(ticket);
 			if (valid) {
 				if (ticket instanceof TicketImpl) {
 					TicketImpl ticketImpl = (TicketImpl) ticket;
@@ -165,7 +196,7 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 		String heightChecked = height != null? height: usage.getHeight();
 		NodeIdentifier nodeIdentifier = conversionService.toNodeIdentifier(usage.getObjectUrl());
 		String courseId = conversionService.toEdusharingCourseId(usage.getOlatResourceable());
-		EdusharingSignature signature = securityService.createSignature();
+		EdusharingSignature signature = securityService.createSignature(null);
 		String userIdentifier = userFactory.getUserIdentifier(viewer);
 		String encryptedUserIdentifier = securityService.encrypt(edusharingModule.getRepoPublicKey(), userIdentifier);
 		
@@ -197,7 +228,7 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 
 		NodeIdentifier nodeIdentifier = conversionService.toNodeIdentifier(usage.getObjectUrl());
 		String courseId = conversionService.toEdusharingCourseId(usage.getOlatResourceable());
-		EdusharingSignature signature = securityService.createSignature();
+		EdusharingSignature signature = securityService.createSignature(null);
 		String userIdentifier = userFactory.getUserIdentifier(viewer);
 		String encryptedUserIdentifier = securityService.encrypt(edusharingModule.getRepoPublicKey(), userIdentifier);
 		String encryptedTicket = securityService.encrypt(edusharingModule.getRepoPublicKey(), ticket.getTooken());
@@ -228,13 +259,14 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 				element.getIdentifier(),
 				element.getObjectUrl(),
 				userFactory.getUserIdentifier(identity),
-				conversionService.toEdusharingCourseId(ores)
+				conversionService.toEdusharingCourseId(ores),
+				conversionService.toNodeIdentifier(element.getObjectUrl())
 				);
-		client.createUsage(parameter);
+		client.createUsage(getTicket(identity), parameter);
 		EdusharingUsage usage = usageDao.create(identity, element, ores, provider.getSubPath());
 		
-		log.debug("edu-sharing usage created for identifier: "+ element.getIdentifier() + ", resType="
-				+ ores.getResourceableTypeName() + ", resId=" + ores.getResourceableId());
+		log.debug("edu-sharing usage created for identifier: {}, resType={}, resId={}",
+				element.getIdentifier(), ores.getResourceableTypeName(), ores.getResourceableId());
 		return usage;
 	}
 
@@ -253,16 +285,33 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 		EdusharingUsage usage = usageDao.loadByIdentifier(identifier);
 		if (usage == null) return;
 		
-		String userIdentifier = identity != null
-				? userFactory.getUserIdentifier(identity)
-				: null;
-
-		deleteUsage(usage, userIdentifier);
+		deleteUsage(usage);
 	}
 	
 	@Override
-	public void deleteUsage(EdusharingUsage usage) throws EdusharingException {
-		deleteUsage(usage, null);
+	public void deleteUsage(EdusharingUsage usage) {
+		NodeIdentifier nodeIdentifier = conversionService.toNodeIdentifier(usage.getObjectUrl());
+		Usages edusharingUsages = client.getUsages(getTicket(usage.getIdentity()), nodeIdentifier);
+		if (edusharingUsages != null && edusharingUsages.getUsages() != null) {
+			for (Usage edusharingUsage : edusharingUsages.getUsages()) {
+				// usages matches the edusharingUsage
+				// https://github.com/edu-sharing/php-auth-plugin/blob/22a0b79578e2f866cbdec30c45a07e017ed463d7/src/EduSharing/EduSharingNodeHelper.php#L98C17-L98C165
+				if (Objects.equals(edusharingUsage.getResourceId(), usage.getIdentifier())
+						&& Objects.equals(edusharingUsage.getAppId(), edusharingModule.getAppId()) 
+						&& Objects.equals(edusharingUsage.getCourseId(), conversionService.toEdusharingCourseId(usage.getOlatResourceable()))) {
+					try {
+						// The nodeId of the usage is the usageId!
+						client.deleteUsage(getTicket(usage.getIdentity()), nodeIdentifier, edusharingUsage.getNodeId());
+					} catch (Exception e) {
+						log.warn("edu-sharing usage deletion failed for identifier: {}, usageId: {}",
+								usage.getIdentifier(), edusharingUsage.getNodeId());
+					}
+				}
+			}
+		}
+		
+		log.debug("edu-sharing usage deleted for identifier: {}", usage.getIdentifier());
+		usageDao.delete(usage);
 	}
 	
 	@Override
@@ -274,29 +323,8 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 	public void deleteUsages(OLATResourceable ores, String subPath) throws EdusharingException {
 		List<EdusharingUsage> usages = usageDao.loadByResoureable(ores, subPath);
 		for (EdusharingUsage usage : usages) {
-			deleteUsage(usage, null);
+			deleteUsage(usage);
 		}
-	}
-
-	private void deleteUsage(EdusharingUsage usage, String userIdentifier) {
-		try {
-			tryDeleteUsage(usage, userIdentifier);
-		} catch (Exception e) {
-			log.warn("edu-sharing usage deleted failed for identifier: " + usage.getIdentifier());
-		}
-	}
-
-	private void tryDeleteUsage(EdusharingUsage usage, String userIdentifier) {
-		DeleteUsageParameter parameter = new DeleteUsageParameter(
-				usage.getIdentifier(),
-				usage.getObjectUrl(),
-				userIdentifier,
-				conversionService.toEdusharingCourseId(usage.getOlatResourceable())
-				);
-		client.deleteUsage(parameter);
-		log.debug("edu-sharing usage deleted for identifier: " + usage.getIdentifier());
-		
-		usageDao.delete(usage);
 	}
 
 	@Override

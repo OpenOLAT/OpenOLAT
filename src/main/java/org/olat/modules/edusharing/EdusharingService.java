@@ -20,7 +20,6 @@
 package org.olat.modules.edusharing;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 import org.olat.core.id.Identity;
@@ -48,15 +47,7 @@ public interface EdusharingService {
 	 */
 	public EdusharingProperties getEdusharingRepoConfig() throws EdusharingException;
 	
-	public Ticket createTicket(Identity identity) throws EdusharingException;
-	
-	/**
-	 * Validated the ticket token and updates the time of the ticket if the validation was successful.
-	 * 
-	 * @param ticket
-	 * @return the valid ticket or empty optional if validation failed
-	 */
-	public Optional<Ticket> validateTicket(Ticket ticket);
+	public Ticket getTicket(Identity identity);
 	
 	public EdusharingResponse getPreview(Ticket ticket, String objectUrl) throws EdusharingException;
 

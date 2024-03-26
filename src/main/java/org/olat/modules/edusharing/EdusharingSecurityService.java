@@ -31,7 +31,7 @@ import java.security.PublicKey;
  */
 public interface EdusharingSecurityService {
 
-	public EdusharingSignature createSignature() throws EdusharingException;
+	public EdusharingSignature createSignature(String data) throws EdusharingException;
 	
 	public byte[] sign(PrivateKey privateKey, String data) throws EdusharingException;
 

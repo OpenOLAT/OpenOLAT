@@ -36,7 +36,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
-import org.edu_sharing.webservices.authbyapp.AuthenticationException;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -45,7 +44,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.modules.edusharing.model.SearchResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,9 +175,9 @@ public class EdusharingDispatcher implements Dispatcher {
 				"UTF-8");
 	}
 	
-	private void redirectToSearch(UserRequest ureq, HttpServletResponse response) throws AuthenticationException {
+	private void redirectToSearch(UserRequest ureq, HttpServletResponse response) {
 		String language = LocaleNegotiator.getPreferedLocale(ureq).getLanguage();
-		Ticket ticket = getTicket(ureq.getUserSession());
+		Ticket ticket = edusharingService.getTicket(ureq.getIdentity());
 		
 		String reurl = ureq.getParameter("reurl");
 		if (!StringHelper.containsNonWhitespace(reurl)) {
@@ -230,7 +228,7 @@ public class EdusharingDispatcher implements Dispatcher {
 		log.debug("edu-sharing preview url: " + ureq.getHttpReq().getRequestURL() + "?" + ureq.getHttpReq().getQueryString());
 		
 		String objectUrl = ureq.getParameter("objectUrl");
-		Ticket ticket = getTicket(ureq.getUserSession());
+		Ticket ticket = edusharingService.getTicket(ureq.getIdentity());
 		
 		try (EdusharingResponse edusharingResponse = edusharingService.getPreview(ticket, objectUrl)) {
 			response.setStatus(edusharingResponse.getStatus());
@@ -266,7 +264,7 @@ public class EdusharingDispatcher implements Dispatcher {
 		log.debug("edu-sharing go to url: " + ureq.getHttpReq().getRequestURL() + "?" + ureq.getHttpReq().getQueryString());
 		
 		String identifier = ureq.getParameter("identifier");
-		Ticket ticket = getTicket(ureq.getUserSession());
+		Ticket ticket = edusharingService.getTicket(ureq.getIdentity());
 		Identity viewer = ureq.getUserSession().getIdentity();
 		String language = LocaleNegotiator.getPreferedLocale(ureq).getLanguage();
 		String url = edusharingService.getRenderAsWindowUrl(ticket, viewer, identifier, language);
@@ -276,20 +274,6 @@ public class EdusharingDispatcher implements Dispatcher {
 		}
 		log.debug("edu-sharing go to " + url);
 		DispatcherModule.redirectTo(response, url);
-	}
-	
-	private Ticket getTicket(UserSession usess) throws AuthenticationException {
-		Ticket ticket = null;
-		Object ticketObject = usess.getEntry("edusharing-ticket");
-		if (ticketObject instanceof Ticket) {
-			ticket = (Ticket) ticketObject;
-			ticket = edusharingService.validateTicket(ticket)
-					.orElse(edusharingService.createTicket(usess.getIdentity()));
-		} else {
-			ticket = edusharingService.createTicket(usess.getIdentity());
-		}
-		usess.putEntry("edusharing-ticket", ticket);
-		return ticket;
 	}
 	
 	private static long stream(InputStream input, OutputStream output) throws IOException {

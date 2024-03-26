@@ -37,12 +37,14 @@ public class CreateUsageParameter {
 	private int distinctPersons;
 	private String version;
 	private String xmlParams;
+	private NodeIdentifier nodeIdentifier;
 	
-	public CreateUsageParameter(String resourceId, String eduRef, String user, String courseId) {
+	public CreateUsageParameter(String resourceId, String eduRef, String user, String courseId, NodeIdentifier nodeIdentifier) {
 		this.resourceId = resourceId;
 		this.eduRef = eduRef;
 		this.user = user;
 		this.courseId = courseId;
+		this.nodeIdentifier = nodeIdentifier;
 	}
 
 	public String getResourceId() {
@@ -107,5 +109,13 @@ public class CreateUsageParameter {
 
 	public void setXmlParams(String xmlParams) {
 		this.xmlParams = xmlParams;
+	}
+
+	public NodeIdentifier getNodeIdentifier() {
+		return nodeIdentifier;
+	}
+
+	public void setNodeIdentifier(NodeIdentifier nodeIdentifier) {
+		this.nodeIdentifier = nodeIdentifier;
 	}
 }
