@@ -143,6 +143,15 @@ public class RepositoryEntryToTaxonomyLevelDAO {
 				.getResultList();
 	}
 	
+	public int replace(TaxonomyLevel source, TaxonomyLevel target) {
+		String q = "update repositoryentrytotaxonomylevel rel set rel.taxonomyLevel.key=:targetLevelKey where rel.taxonomyLevel.key=:sourceLevelKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("sourceLevelKey", source.getKey())
+				.setParameter("targetLevelKey", target.getKey())
+				.executeUpdate();
+	}
+	
 	public void deleteRelation(RepositoryEntryRef entry, TaxonomyLevelRef taxonomyLevel) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rel from repositoryentrytotaxonomylevel rel")
