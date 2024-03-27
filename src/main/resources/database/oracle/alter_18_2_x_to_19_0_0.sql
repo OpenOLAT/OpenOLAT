@@ -27,3 +27,6 @@ create index idx_export_to_task_idx on o_ex_export_metadata(fk_task);
 create index idx_export_sub_ident_idx on o_ex_export_metadata(e_sub_ident);
 alter table o_ex_export_metadata add constraint export_to_vfsdata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
 create index idx_export_to_vfsdata_idx on o_ex_export_metadata(fk_metadata);
+
+-- Content Editor
+alter table o_ce_page_part add column p_storage_path varchar(255);

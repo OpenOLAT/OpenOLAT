@@ -23,3 +23,6 @@ alter table o_ex_export_metadata add constraint export_to_entry_idx foreign key 
 alter table o_ex_export_metadata add constraint export_to_creator_idx foreign key (fk_creator) references o_bs_identity (id);
 alter table o_ex_export_metadata add constraint export_to_task_idx foreign key (fk_task) references o_ex_task (id);
 alter table o_ex_export_metadata add constraint export_to_vfsdata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
+
+-- Content Editor
+alter table o_ce_page_part add column p_storage_path varchar(255);

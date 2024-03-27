@@ -2580,6 +2580,7 @@ create table o_ce_page_part (
    p_content CLOB,
    p_flow varchar2(32 char),
    p_layout_options CLOB,
+   p_storage_path varchar(255),
    fk_media_id number(20),
    fk_page_body_id number(20),
    fk_form_entry_id number(20) default null,

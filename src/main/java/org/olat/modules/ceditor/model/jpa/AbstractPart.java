@@ -78,7 +78,10 @@ public abstract class AbstractPart implements Persistable, ModifiedInfo, CreateI
 	private String flow;
 	@Column(name="p_layout_options", nullable=true, insertable=true, updatable=true)
 	private String layoutOptions;
-	
+
+	@Column(name="p_storage_path", nullable=true, insertable=true, updatable=true)
+	private String storagePath;
+
 	@ManyToOne(targetEntity=PageBodyImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_page_body_id", nullable=true, insertable=true, updatable=true)
 	private PageBody body;
@@ -151,6 +154,16 @@ public abstract class AbstractPart implements Persistable, ModifiedInfo, CreateI
 	}
 
 	@Override
+	public String getStoragePath() {
+		return storagePath;
+	}
+
+	@Override
+	public void setStoragePath(String storagePath) {
+		this.storagePath = storagePath;
+	}
+
+	@Override
 	public Flow getPartFlow() {
 		return StringHelper.containsNonWhitespace(flow) ? Flow.valueOf(flow) : null;
 	}
@@ -176,6 +189,7 @@ public abstract class AbstractPart implements Persistable, ModifiedInfo, CreateI
 		part.setContent(getContent());
 		part.setLayoutOptions(getLayoutOptions());
 		part.setPartFlow(getPartFlow());
+		part.setStoragePath(getStoragePath());
 	}
 
 	@Override

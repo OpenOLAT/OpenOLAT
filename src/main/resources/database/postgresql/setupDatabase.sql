@@ -2443,6 +2443,7 @@ create table o_ce_page_part (
    p_content text,
    p_flow varchar(32),
    p_layout_options text,
+   p_storage_path varchar(255),
    fk_media_id int8,
    fk_page_body_id int8,
    fk_form_entry_id int8 default null,

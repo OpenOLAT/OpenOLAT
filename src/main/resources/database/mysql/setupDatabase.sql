@@ -2659,6 +2659,7 @@ create table o_ce_page_part (
    p_content mediumtext,
    p_flow varchar(32),
    p_layout_options mediumtext,
+   p_storage_path varchar(255),
    fk_media_id bigint,
    fk_page_body_id bigint,
    fk_form_entry_id bigint default null,

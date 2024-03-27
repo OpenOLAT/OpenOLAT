@@ -36,7 +36,11 @@ public interface PagePart extends PageElement {
 	String getLayoutOptions();
 	
 	void setLayoutOptions(String options);
-	
+
+	String getStoragePath();
+
+	void setStoragePath(String storagePath);
+
 	Flow getPartFlow();
 	
 	void setPartFlow(Flow flow);
