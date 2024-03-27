@@ -22,11 +22,13 @@ package org.olat.core.commons.services.taskexecutor.manager;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.TemporalType;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
@@ -120,6 +122,26 @@ public class PersistentTaskDAO {
 				.createQuery(sb.toString(), Task.class)
 				.setParameter("resSubPath", resSubPath)
 				.getResultList();
+	}
+	
+
+	public boolean hasRunningTasks(List<OLATResource> resources) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select task.key from extask task where task.resource.key in :resourceKeys and task.statusStr in :taskStatus");
+		
+		List<Long> resourceKeys = resources.stream()
+				.map(OLATResource::getKey)
+				.collect(Collectors.toList());
+		List<String> runningStatus = List.of(TaskStatus.newTask.name(), TaskStatus.inWork.name());
+		
+		List<Long> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKeys", resourceKeys)
+				.setParameter("taskStatus", runningStatus)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return results != null && !results.isEmpty() && results.get(0) != null && results.get(0).longValue() > 0l;
 	}
 	
 	public PersistentTask loadTaskById(Long taskKey) {

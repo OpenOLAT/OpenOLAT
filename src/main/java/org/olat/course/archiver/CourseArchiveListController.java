@@ -28,6 +28,8 @@ import org.olat.core.commons.services.export.model.SearchExportMetadataParameter
 import org.olat.core.commons.services.export.ui.ExportRow;
 import org.olat.core.commons.services.export.ui.ExportsListController;
 import org.olat.core.commons.services.export.ui.ExportsListSettings;
+import org.olat.core.commons.services.taskexecutor.Task;
+import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -185,14 +187,23 @@ public class CourseArchiveListController extends ExportsListController implement
 	private void doNewArchive(UserRequest ureq) {
 		removeAsListenerAndDispose(courseArchiveWizard);
 		
-		Roles roles = ureq.getUserSession().getRoles();
-		CourseArchiveContext context = CourseArchiveContext.defaultValues(entry, getIdentity(), roles, repositoryService);
-		
-		Step start = new CourseArchive_1_ArchiveTypeStep(ureq, context);
-		CourseArchiveFinishStepCallback finish = new CourseArchiveFinishStepCallback(context);
-		courseArchiveWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("wizard.course.archive.title"), "");
-		listenTo(courseArchiveWizard);
-		getWindowControl().pushAsModalDialog(courseArchiveWizard.getInitialComponent());
+		List<Task> tasks = taskExecutorManager.getTasks(getRepositoryEntry().getOlatResource());
+		boolean hasRunningTask = tasks.stream()
+				.anyMatch(task -> task.getStatus() == TaskStatus.newTask || task.getStatus() == TaskStatus.inWork);
+		if(hasRunningTask) {
+			String title = translate("warning.running.archive.title");
+			String text = translate("warning.running.archive.text");
+			getWindowControl().setWarning(title, text);
+		} else {
+			Roles roles = ureq.getUserSession().getRoles();
+			CourseArchiveContext context = CourseArchiveContext.defaultValues(entry, getIdentity(), roles, repositoryService);
+			
+			Step start = new CourseArchive_1_ArchiveTypeStep(ureq, context);
+			CourseArchiveFinishStepCallback finish = new CourseArchiveFinishStepCallback(context);
+			courseArchiveWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("wizard.course.archive.title"), "");
+			listenTo(courseArchiveWizard);
+			getWindowControl().pushAsModalDialog(courseArchiveWizard.getInitialComponent());
+		}
 	}
 	
 	private void postDoNewArchive() {

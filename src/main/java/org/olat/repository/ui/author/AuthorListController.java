@@ -50,6 +50,7 @@ import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -189,6 +190,7 @@ import org.olat.repository.ui.author.AuthoringEntryDataSource.AuthorSourceFilter
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryController;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
 import org.olat.repository.wizard.RepositoryWizardProvider;
+import org.olat.resource.OLATResource;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
@@ -310,6 +312,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private OAIPmhModule oaiPmhModule;
 	@Autowired
 	private CourseNodeService courseNodeService;
+	@Autowired
+	protected TaskExecutorManager taskExecutorManager;
 
 	public AuthorListController(UserRequest ureq, WindowControl wControl, SearchAuthorRepositoryEntryViewParams searchParams, AuthorListConfiguration configuration) {
 		super(ureq, wControl, "entries");
@@ -1754,16 +1758,25 @@ public class AuthorListController extends FormBasicController implements Activat
 		List<Long> repositoryEntryKeys = rows.stream()
 				.map(AuthoringEntryRow::getKey)
 				.toList();
-		
 		List<RepositoryEntry> repositoryEntries = repositoryService.loadByKeys(repositoryEntryKeys);
-		BulkCoursesArchivesContext context = BulkCoursesArchivesContext.defaultValues(repositoryEntries, roles);
-		
-		Step start = new BulkCoursesArchives_1_RepositoryEntriesStep(ureq, context);
-		BulkCoursesArchivesFinishStepCallback finish = new BulkCoursesArchivesFinishStepCallback(context);
-		coursesArchivesWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("wizard.bulk.courses.archives.title"), "");
-		listenTo(coursesArchivesWizard);
-		getWindowControl().pushAsModalDialog(coursesArchivesWizard.getInitialComponent());
+		List<OLATResource> resources = repositoryEntries.stream()
+				.map(RepositoryEntry::getOlatResource)
+				.toList();
+		boolean hasRunningTasks = taskExecutorManager.hasRunningTasks(resources);
+		if(hasRunningTasks) {
+			String title = translate("warning.running.archive.title");
+			String text = translate("warning.running.archive.text");
+			getWindowControl().setWarning(title, text);
+		} else {
+			BulkCoursesArchivesContext context = BulkCoursesArchivesContext.defaultValues(repositoryEntries, roles);
+			
+			Step start = new BulkCoursesArchives_1_RepositoryEntriesStep(ureq, context);
+			BulkCoursesArchivesFinishStepCallback finish = new BulkCoursesArchivesFinishStepCallback(context);
+			coursesArchivesWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+					translate("wizard.bulk.courses.archives.title"), "");
+			listenTo(coursesArchivesWizard);
+			getWindowControl().pushAsModalDialog(coursesArchivesWizard.getInitialComponent());
+		}
 	}
 	
 	private void doCompleteCoursesArchives() {

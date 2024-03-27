@@ -117,9 +117,16 @@ public interface WindowControl {
 	public void setError(String string);
 
 	/**
-	 * @param string
+	 * @param text The text in the warning message
 	 */
-	public void setWarning(String string);
+	public void setWarning(String text);
+	
+	/**
+	 * 
+	 * @param title The title of the warning message
+	 * @param text The text of the warning message
+	 */
+	public void setWarning(String title, String text);
 	
 	/**
 	 * 

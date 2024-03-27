@@ -111,7 +111,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	@Autowired
 	private CoordinatorManager coordinatorManager;
 	@Autowired
-	private TaskExecutorManager taskExecutorManager;
+	protected TaskExecutorManager taskExecutorManager;
 	
 	public ExportsListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent, boolean admin,
 			ExportsListSettings options) {
@@ -201,6 +201,10 @@ public class ExportsListController extends FormBasicController implements FlexiT
 			}
 		}
 		return cmps;
+	}
+	
+	public RepositoryEntry getRepositoryEntry() {
+		return entry;
 	}
 	
 	public SearchExportMetadataParameters getSearchParams() {

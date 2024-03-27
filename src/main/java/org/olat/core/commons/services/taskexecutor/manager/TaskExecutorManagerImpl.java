@@ -242,8 +242,8 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	
 	private Queue getExecutorsQueue(Runnable runnable) {
 		Queue queue = Queue.standard;
-		if(runnable instanceof TaskRunnable) {
-			queue = ((TaskRunnable)runnable).getExecutorsQueue();
+		if(runnable instanceof TaskRunnable runnableTask) {
+			queue = runnableTask.getExecutorsQueue();
 		}
 		return queue;
 	}
@@ -261,6 +261,11 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	@Override
 	public List<Task> getTasks(String resSubPath) {
 		return persistentTaskDao.findTasksBySubPath(resSubPath);
+	}
+	
+	@Override
+	public boolean hasRunningTasks(List<OLATResource> resources) {
+		return persistentTaskDao.hasRunningTasks(resources);
 	}
 
 	@Override

@@ -116,12 +116,17 @@ public class WindowControlMocker implements WindowControl{
 	}
 
 	@Override
-	public void setError(String string) {
+	public void setError(String text) {
 		//
 	}
 
 	@Override
-	public void setWarning(String string) {
+	public void setWarning(String text) {
+		//
+	}
+	
+	@Override
+	public void setWarning(String title, String text) {
 		//
 	}
 

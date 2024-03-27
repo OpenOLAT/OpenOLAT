@@ -133,8 +133,13 @@ public class LocalWindowControl implements WindowControl {
 	}
 
 	@Override
-	public void setWarning(String string) {
-		origWControl.setWarning(string);
+	public void setWarning(String text) {
+		origWControl.setWarning(text);
+	}
+
+	@Override
+	public void setWarning(String title, String text) {
+		origWControl.setWarning(title, text);
 	}
 
 	@Override

@@ -114,6 +114,8 @@ public interface TaskExecutorManager extends Executor {
 	public List<Task> getTasks(String resSubPath);
 	
 	public List<Identity> getModifiers(Task task);
+
+	public boolean hasRunningTasks(List<OLATResource> resources);
 	
 	public Task cancel(Task task);
 	

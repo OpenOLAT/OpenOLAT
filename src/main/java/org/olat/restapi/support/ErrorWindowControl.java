@@ -118,6 +118,11 @@ public class ErrorWindowControl implements WindowControl {
 	public void setWarning(String string) {
 		this.warning = string;
 	}
+	
+	@Override
+	public void setWarning(String title, String text) {
+		this.warning = text;
+	}
 
 	@Override
 	public WindowControlInfo getWindowControlInfo() {

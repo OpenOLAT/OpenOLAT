@@ -157,6 +157,15 @@ class BaseFullWebappWindowControl implements WindowControl {
 	}
 
 	@Override
+	public void setWarning(String title, String warning) {
+		webappCtrl.getGUIMessage().setWarn(warning);
+		webappCtrl.getGUIMessage().setTitle(title);
+		VelocityContainer msgVc = webappCtrl.getGUIMsgVc();
+		msgVc.setDirty(true);
+		webappCtrl.getGUIMsgPanel().setContent(msgVc);
+	}
+
+	@Override
 	public WindowControlInfo getWindowControlInfo() {
 		return wci;
 	}
