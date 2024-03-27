@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.mode;
@@ -32,37 +32,34 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.model.EnhancedStatus;
 
 /**
- * 
  * Initial date: 08.01.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class ModeStatusCellRenderer implements FlexiCellRenderer {
-	
+
 	private final AssessmentModeHelper helper;
-	
+
 	public ModeStatusCellRenderer(Translator translator) {
 		helper = new AssessmentModeHelper(translator);
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object cellValue,
-			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+					   int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 
-		if(cellValue instanceof Status) {
-			Status status = (Status)cellValue;
+		if (cellValue instanceof Status status) {
 			render(status, null, sb);
-		} else if(cellValue instanceof EnhancedStatus) {
-			EnhancedStatus enStatus = (EnhancedStatus)cellValue;
+		} else if (cellValue instanceof EnhancedStatus enStatus) {
 			renderWarning(enStatus.getWarnings(), sb);
 			render(enStatus.getStatus(), enStatus.getEndStatus(), sb);
 		}
 	}
-	
+
 	private void renderWarning(List<String> warnings, StringOutput sb) {
-		if(warnings != null && !warnings.isEmpty()) {
+		if (warnings != null && !warnings.isEmpty()) {
 			sb.append("<i class='o_icon o_icon_warn' title='");
-			for(String warning:warnings) {
+			for (String warning : warnings) {
 				sb.append(warning).append(" ");
 			}
 			sb.append("'> </i> ");
@@ -71,8 +68,19 @@ public class ModeStatusCellRenderer implements FlexiCellRenderer {
 
 	private void render(Status status, EndStatus endStatus, StringOutput sb) {
 		String title = helper.getStatusLabel(status);
-		sb.append("<span title='").append(title).append("'><i class='o_icon ").append(status.cssClass()).append("'> </i>")
-		  .append(" <i class='o_icon o_icon_disadvantage_compensation'> </i>", EndStatus.withoutDisadvantage == endStatus)
-		  .append("</span>");
+		String statusClass = "o_labeled_light o_qti_assessment_mode o_assessment_status_" + status.name();
+		sb.append("<span class='").append(statusClass).append("'").append("title='").append(title).append("'><i class='o_icon o_icon-fw ").append(status.cssClass()).append("'> </i> ")
+				.append("<span>").append(title).append("</span>")
+				.append(" <i class='o_icon o_icon_disadvantage_compensation'> </i>", EndStatus.withoutDisadvantage == endStatus)
+				.append("</span>");
+	}
+
+	public void renderStatus(Status status, EndStatus endStatus, StringOutput sb) {
+		String title = helper.getStatusLabel(status);
+		String statusClass = "o_qti_assessment_mode o_mode_label o_assessment_status_" + status.name();
+		sb.append("<span class='").append(statusClass).append("'").append("title='").append(title).append("'><i class='o_icon o_icon-fw ").append(status.cssClass()).append("'> </i> ")
+				.append("<span>").append(title).append("</span>")
+				.append(" <i class='o_icon o_icon_disadvantage_compensation'> </i>", EndStatus.withoutDisadvantage == endStatus)
+				.append("</span>");
 	}
 }

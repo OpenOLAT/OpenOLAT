@@ -745,11 +745,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_mi_qtiupload { @include o-add-icon('upload');}
 .o_mi_qtiinlinechoice { @include o-add-icon('caret-down');}
 
-.o_as_mode_none { }
-.o_as_mode_leadtime { @include o-add-icon('clock', false);}
-.o_as_mode_assessment { @include o-add-icon('play');}
-.o_as_mode_followup { @include o-add-icon('ban');}
-.o_as_mode_closed { @include o-add-icon('minus');}
+.o_as_mode_none { @include o-add-icon('clock'); }
+.o_as_mode_leadtime { @include o-add-icon('hourglass-end');}
+.o_as_mode_assessment { @include o-add-icon('spinner'); }
+.o_as_mode_followup { @include o-add-icon('hourglass-end');}
+.o_as_mode_closed { @include o-add-icon('circle-minus');}
 .o_as_mode_stop { @include o-add-icon('stop');}
 
 .o_icon_qti_notPresented { @include o-add-icon('circle', false); color: $o-qti-status-notPresented-color;}

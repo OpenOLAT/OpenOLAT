@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.mode;
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.AssessmentMode;
@@ -46,7 +47,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 /**
  * 
  * Initial date: 13 juin 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeHelper {
@@ -82,10 +83,10 @@ public class AssessmentModeHelper {
 		String[] args = new String[] {
 			formatter.formatDate(begin),				// 0
 			formatter.formatTimeShort(begin),			// 1
-			formatter.formatDate(end),				// 0
-			formatter.formatTimeShort(end),				// 2
-			Integer.toString(mode.getLeadTime()),		// 3
-			Integer.toString(mode.getFollowupTime())	// 4
+			formatter.formatDate(end),					// 2
+			formatter.formatTimeShort(end),				// 3
+			Integer.toString(mode.getLeadTime()),		// 4
+			Integer.toString(mode.getFollowupTime())	// 5
 		};
 		
 		String i18nKey;
@@ -96,6 +97,70 @@ public class AssessmentModeHelper {
 		}
 		return translator.translate(i18nKey, args);
 	}
+
+	public String getBeginEndTooltip(AssessmentMode mode) {
+		Date begin = mode.getBeginWithLeadTime();
+		Date end = mode.getEnd();
+		Formatter formatter = Formatter.getInstance(translator.getLocale());
+
+		String[] args = new String[] {
+				formatter.formatDate(begin),																										// 0
+				formatter.formatTimeShort(begin),																									// 1
+				formatter.formatDate(end),																											// 2
+				formatter.formatTimeShort(end),																										// 3
+				mode.isManualBeginEnd() ? translator.translate("mode.beginend.manual") : translator.translate("mode.beginend.automatic")	// 4
+		};
+
+		String i18nKey;
+		if(DateUtils.isSameDay(begin, end)) {
+			i18nKey = "date.and.time.text.same.day.tooltip";
+		} else {
+			i18nKey = "date.and.time.text.tooltip";
+		}
+
+		return translator.translate(i18nKey, args);
+	}
+
+	public String getLeadFollowupTime(AssessmentMode mode) {
+		String[] args = new String[] {
+				Integer.toString(mode.getLeadTime()),		// 0
+				Integer.toString(mode.getFollowupTime()),	// 1
+		};
+
+		return translator.translate("lead.follow.up.time", args);
+	}
+
+	public String getModeState(AssessmentMode mode) {
+		Date begin = mode.getBeginWithLeadTime();
+		Date end = mode.getEndWithFollowupTime();
+		Formatter formatter = Formatter.getInstance(translator.getLocale());
+
+		String start;
+		String stop;
+		if(CalendarUtils.isSameDay(begin, end)) {
+			start = formatter.formatTimeShort(begin);
+			stop = formatter.formatTimeShort(end);
+		} else {
+			start = formatter.formatDateAndTime(begin);
+			stop = formatter.formatDateAndTime(end);
+		}
+
+		String i18nKey = "";
+		String param = "";
+		if (mode.getStatus().equals(Status.assessment) || mode.getStatus().equals(Status.leadtime)) {
+			i18nKey = "mode.active";
+			param = start;
+		} else if (mode.getStatus().equals(Status.followup)) {
+			i18nKey = "mode.followup.end";
+			param = stop;
+		} else if (mode.getStatus().equals(Status.end)) {
+			i18nKey = "mode.ended";
+			param = stop;
+		}
+
+		return translator.translate(i18nKey, param);
+	}
+
 	
 	/**
 	 * The method synchronize the elements but you need to merge the assessment mode afterwards.

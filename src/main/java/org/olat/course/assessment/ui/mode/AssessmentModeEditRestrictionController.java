@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.mode;
@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 24 janv. 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeEditRestrictionController extends FormBasicController {
@@ -87,7 +87,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 	private List<String> elementNames;
 	private String startElementKey;
 	
-	private RepositoryEntry entry;
+	private final RepositoryEntry entry;
 	private AssessmentMode assessmentMode;
 	private final OLATResourceable courseOres;
 	
@@ -275,15 +275,14 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 			} else {
 				String title = translate("confirm.status.change.title");
 	
-				String text;
-				switch(nextStatus) {
-					case none: text = translate("confirm.status.change.none"); break;
-					case leadtime: text = translate("confirm.status.change.leadtime"); break;
-					case assessment: text = translate("confirm.status.change.assessment"); break;
-					case followup: text = translate("confirm.status.change.followup"); break;
-					case end: text = translate("confirm.status.change.end"); break;
-					default: text = "ERROR";
-				}
+				String text = switch (nextStatus) {
+					case none -> translate("confirm.status.change.none");
+					case leadtime -> translate("confirm.status.change.leadtime");
+					case assessment -> translate("confirm.status.change.assessment");
+					case followup -> translate("confirm.status.change.followup");
+					case end -> translate("confirm.status.change.end");
+					default -> "ERROR";
+				};
 				confirmCtrl = activateOkCancelDialog(ureq, title, text, confirmCtrl);
 			}
 		}
@@ -299,7 +298,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		if(elementRestrictions) {
 			StringBuilder sb = new StringBuilder();
 			for(String elementKey:elementKeys) {
-				if(sb.length() > 0) sb.append(",");
+				if(StringHelper.containsNonWhitespace(sb.toString())) sb.append(",");
 				sb.append(elementKey);
 			}
 			assessmentMode.setElementList(sb.toString());

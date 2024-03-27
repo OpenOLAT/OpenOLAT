@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,14 +14,13 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.tool;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
@@ -34,11 +33,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentMode;
@@ -48,7 +51,9 @@ import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.course.assessment.ui.mode.AssessmentModeListController;
 import org.olat.course.assessment.ui.mode.ChangeAssessmentModeEvent;
+import org.olat.course.assessment.ui.mode.ModeStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.lecture.LectureService;
@@ -58,13 +63,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 25 févr. 2021<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class StopAssessmentWarningController extends BasicController implements GenericEventListener {
 
 	
 	private Link stopAssessmentMode;
+	private Link infoLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
 
@@ -74,6 +80,8 @@ public class StopAssessmentWarningController extends BasicController implements 
 	
 	private CloseableModalController cmc;
 	private ConfirmStopAssessmentModeController stopCtrl;
+	private CloseableCalloutWindowController eventCalloutCtrl;
+	private AssessmentModeDetailsController assessmentModeDetailsCtrl;
 	
 	@Autowired
 	private LectureService lectureService;
@@ -117,11 +125,11 @@ public class StopAssessmentWarningController extends BasicController implements 
 		// filter closed assessment mode
 		modes = modes.stream()
 				.filter(m -> !(Status.end.equals(m.getStatus()) && EndStatus.all.equals(m.getEndStatus())))
-				.collect(Collectors.toList());
+				.toList();
 		
 		if(modes.size() == 1) {
 			AssessmentMode mode = modes.get(0);
-			assessmemntModeMessageFormatting(mode, mainVC);
+			assessmentModeMessageFormatting(mode, mainVC);
 			if(canStopAssessmentMode(mode)) {
 				String modeName = mode.getName();
 				String label = translate("assessment.tool.stop", StringHelper.escapeHtml(modeName));
@@ -135,7 +143,10 @@ public class StopAssessmentWarningController extends BasicController implements 
 				stopAssessmentMode.setUserObject(mode);
 			}
 		} else if(modes.size() > 1) {
-			assessmemntModeMessageFormatting(modes, mainVC);
+			if (stopAssessmentMode != null) {
+				stopAssessmentMode.setVisible(false);
+			}
+			assessmentModeMessageFormatting(mainVC);
 		} else if(stackPanel != null) {
 			stackPanel.removeMessageComponent();
 		}
@@ -202,6 +213,8 @@ public class StopAssessmentWarningController extends BasicController implements 
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(stopAssessmentMode == source) {
 			doConfirmStop(ureq, (AssessmentMode)stopAssessmentMode.getUserObject());
+		} else if (infoLink == source) {
+			doOpenEventCallout(ureq, (AssessmentMode)infoLink.getUserObject());
 		}
 	}
 
@@ -215,15 +228,37 @@ public class StopAssessmentWarningController extends BasicController implements 
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if (eventCalloutCtrl == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(assessmentModeDetailsCtrl);
+		removeAsListenerAndDispose(eventCalloutCtrl);
 		removeControllerListener(stopCtrl);
 		removeAsListenerAndDispose(cmc);
+		assessmentModeDetailsCtrl = null;
+		eventCalloutCtrl = null;
 		stopCtrl = null;
 		cmc = null;
+	}
+
+	private void doOpenEventCallout(UserRequest ureq, AssessmentMode mode) {
+		if (eventCalloutCtrl != null && assessmentModeDetailsCtrl != null) return;
+
+		removeAsListenerAndDispose(eventCalloutCtrl);
+		removeAsListenerAndDispose(assessmentModeDetailsCtrl);
+
+		assessmentModeDetailsCtrl = new AssessmentModeDetailsController(ureq, getWindowControl(), mode);
+		listenTo(assessmentModeDetailsCtrl);
+
+		Component eventCmp = assessmentModeDetailsCtrl.getInitialComponent();
+		eventCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), eventCmp, infoLink.getDispatchID(),
+				null, true, "o_cal_event_callout");
+		listenTo(eventCalloutCtrl);
+		eventCalloutCtrl.activate();
 	}
 
 	private boolean canStopAssessmentMode(AssessmentMode mode) {
@@ -239,7 +274,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 		return false;
 	}
 	
-	private void assessmemntModeMessageFormatting(AssessmentMode mode, VelocityContainer warn) {
+	private void assessmentModeMessageFormatting(AssessmentMode mode, VelocityContainer warn) {
 		Formatter formatter = Formatter.getInstance(getLocale());
 		
 		Date begin = mode.getBeginWithLeadTime();
@@ -253,101 +288,41 @@ public class StopAssessmentWarningController extends BasicController implements 
 			start = formatter.formatDateAndTime(begin);
 			stop = formatter.formatDateAndTime(end);
 		}
-		
+
+		infoLink = LinkFactory.createLink("mode_info", "mode_info", "CMD_SCORE_DESC", "<i class='o_icon o_icon_info'> </i>", null, null, this, Link.NONTRANSLATED);
+		infoLink.setUserObject(mode);
+		StringOutput status = new StringOutput();
+		ModeStatusCellRenderer modeStatusCellRenderer = new ModeStatusCellRenderer(Util.createPackageTranslator(AssessmentModeListController.class, getLocale()));
+		modeStatusCellRenderer.renderStatus(mode.getStatus(), null, status);
+
 		String[] args = new String[] {
-				StringHelper.escapeHtml(mode.getName()),
 				start,
 				stop,
-				Integer.toString(mode.getFollowupTime())
-			};
+				formatter.formatDateAndTime(mode.getEndWithFollowupTime()),
+				mode.isManualBeginEnd() ? translate("mode.beginend.manual") : translate("mode.beginend.automatic")
+		};
 		
 		String i18nMessage;
-		if(mode.isManualBeginEnd() && mode.getFollowupTime() > 0) {
-			i18nMessage = "assessment.mode.now.manual.followup";
-		} else if(mode.isManualBeginEnd()) {
-			i18nMessage = "assessment.mode.now.manual";
-		} else if(mode.getFollowupTime() > 0) {
-			i18nMessage = "assessment.mode.now.auto.followup";
+		if (mode.getLeadTime() > 0) {
+			i18nMessage = "assessment.mode.now.leadtime";
+		} else if (mode.getFollowupTime() > 0) {
+			i18nMessage = "assessment.mode.now.followup";
 		} else {
-			i18nMessage = "assessment.mode.now.auto";
-		}
-		String message = translate(i18nMessage, args);
-		warn.contextPut("message", message);
-	}
-		
-	private void assessmemntModeMessageFormatting(List<AssessmentMode> modes, VelocityContainer warn) {	
-		Date begin = getBeginOfModes(modes);
-		Date end = getEndOfModes(modes);
-		
-		long numOfManualModes = modes.stream()
-				.filter(AssessmentMode::isManualBeginEnd)
-				.count();
-		int followUp = getMaxFollowUp(modes);
-
-		String start;
-		String stop;
-		Formatter formatter = Formatter.getInstance(getLocale());
-		if(CalendarUtils.isSameDay(begin, end)) {
-			start = formatter.formatTimeShort(begin);
-			stop = formatter.formatTimeShort(end);
-		} else {
-			start = formatter.formatDateAndTime(begin);
-			stop = formatter.formatDateAndTime(end);
-		}
-		String[] args = new String[] { "", start, stop, Integer.toString(followUp) };// mimic other args
-		
-		boolean fullManual = numOfManualModes == modes.size();
-		boolean mixed = numOfManualModes > 0 && numOfManualModes != modes.size();
-
-		String i18nMessage;
-		if(fullManual && followUp > 0) {
-			i18nMessage = "assessment.mode.several.now.manual.followup";
-		} else if(fullManual) {
-			i18nMessage = "assessment.mode.several.now.manual";
-		} else if(mixed && followUp > 0) {
-			i18nMessage = "assessment.mode.several.now.mixed.followup";
-		} else if(mixed) {
-			i18nMessage = "assessment.mode.several.now.mixed";
-		} else if(followUp > 0) {// full auto
-			i18nMessage = "assessment.mode.several.now.auto.followup";
-		} else {
-			i18nMessage = "assessment.mode.several.now.auto";
+			i18nMessage = "assessment.mode.now";
 		}
 
 		String message = translate(i18nMessage, args);
+		warn.put("infoLink", infoLink);
+		warn.contextPut("title", status + "&nbsp;\"" + StringHelper.escapeHtml(mode.getName()) + "\"");
 		warn.contextPut("message", message);
 	}
-	
-	private int getMaxFollowUp(List<AssessmentMode> modes) {
-		int followUp = 0;
-		for(AssessmentMode mode:modes) {
-			if(mode.getFollowupTime() > followUp) {
-				followUp = mode.getFollowupTime();
-			}
-		}
-		return followUp;
-	}
-	
-	private Date getBeginOfModes(List<AssessmentMode> modes) {
-		Date start = null;
-		for(AssessmentMode mode:modes) {
-			Date begin = mode.getBeginWithLeadTime();
-			if(start == null || (begin != null && begin.before(start))) {
-				start = begin;
-			}
-		}
-		return start;
-	}
-	
-	private Date getEndOfModes(List<AssessmentMode> modes) {
-		Date stop = null;
-		for(AssessmentMode mode:modes) {
-			Date end = mode.getEnd();
-			if(stop == null || (end != null && end.after(stop))) {
-				stop = end;
-			}
-		}
-		return stop;
+		
+	private void assessmentModeMessageFormatting(VelocityContainer warn) {
+		warn.contextRemove("title");
+		String assessmentToolUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey() + "/assessmentToolv2/0";
+		String i18nMessage = "assessment.mode.several";
+		String message = translate(i18nMessage, assessmentToolUrl);
+		warn.contextPut("message", message);
 	}
 	
 	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {

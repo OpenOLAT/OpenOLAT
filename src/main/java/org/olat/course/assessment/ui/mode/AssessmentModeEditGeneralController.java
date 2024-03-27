@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.mode;
@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.mode;
 import java.util.Date;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -54,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 24 janv. 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeEditGeneralController extends FormBasicController {
@@ -72,7 +74,7 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 	private CloseableModalController cmc;
 	private DialogBoxController confirmCtrl;
 	
-	private RepositoryEntry entry;
+	private final RepositoryEntry entry;
 	private AssessmentMode assessmentMode;
 	private final OLATResourceable courseOres;
 	
@@ -144,6 +146,7 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		beginEl.setMandatory(true);
 		beginEl.setEnabled((status == Status.none || status == Status.leadtime)
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.begin));
+		beginEl.addActionListener(FormEvent.ONCHANGE);
 		
 		int leadTime = assessmentMode.getLeadTime();
 		if(leadTime < 0) {
@@ -192,6 +195,13 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == beginEl && validateFormItem(ureq, beginEl) && endEl.isEmpty()) {
+			endEl.setDate(beginEl.getDate());
+		}
 	}
 
 	@Override
@@ -265,15 +275,14 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 			} else {
 				String title = translate("confirm.status.change.title");
 	
-				String text;
-				switch(nextStatus) {
-					case none: text = translate("confirm.status.change.none"); break;
-					case leadtime: text = translate("confirm.status.change.leadtime"); break;
-					case assessment: text = translate("confirm.status.change.assessment"); break;
-					case followup: text = translate("confirm.status.change.followup"); break;
-					case end: text = translate("confirm.status.change.end"); break;
-					default: text = "ERROR";
-				}
+				String text = switch (nextStatus) {
+					case none -> translate("confirm.status.change.none");
+					case leadtime -> translate("confirm.status.change.leadtime");
+					case assessment -> translate("confirm.status.change.assessment");
+					case followup -> translate("confirm.status.change.followup");
+					case end -> translate("confirm.status.change.end");
+					default -> "ERROR";
+				};
 				confirmCtrl = activateOkCancelDialog(ureq, title, text, confirmCtrl);
 			}
 		}
@@ -291,24 +300,12 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		assessmentMode.setDescription(descriptionEl.getValue());
 		
 		assessmentMode.setBegin(beginEl.getDate());
-		if(leadTimeEl.getIntValue() > 0) {
-			assessmentMode.setLeadTime(leadTimeEl.getIntValue());
-		} else {
-			assessmentMode.setLeadTime(0);
-		}
+		assessmentMode.setLeadTime(Math.max(leadTimeEl.getIntValue(), 0));
 		
 		assessmentMode.setEnd(endEl.getDate());
-		if(followupTimeEl.getIntValue() > 0) {
-			assessmentMode.setFollowupTime(followupTimeEl.getIntValue());
-		} else {
-			assessmentMode.setFollowupTime(0);
-		}
-		
-		if(startModeEl.isOneSelected() && startModeEl.isSelected(1)) {
-			assessmentMode.setManualBeginEnd(true);
-		} else {
-			assessmentMode.setManualBeginEnd(false);
-		}
+		assessmentMode.setFollowupTime(Math.max(followupTimeEl.getIntValue(), 0));
+
+		assessmentMode.setManualBeginEnd(startModeEl.isOneSelected() && startModeEl.isSelected(1));
 
 		//mode need to be persisted for the following relations
 		if(assessmentMode.getKey() == null) {

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.mode;
@@ -36,15 +36,25 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -75,7 +85,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 12.12.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeListController extends FormBasicController implements GenericEventListener {
@@ -88,9 +98,11 @@ public class AssessmentModeListController extends FormBasicController implements
 	
 	private Controller editCtrl;
 	private CloseableModalController cmc;
+	private ToolsController toolsCtrl;
 	private DialogBoxController startDialogBox;
 	private DialogBoxController deleteDialogBox;
 	private ConfirmStopAssessmentModeController stopCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private final RepositoryEntry entry;
 	private final AssessmentModeSecurityCallback secCallback;
@@ -110,6 +122,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		
 		initForm(ureq);
 		loadModel();
+		initFiltersPresets(ureq);
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
@@ -126,8 +139,8 @@ public class AssessmentModeListController extends FormBasicController implements
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		boolean canEditassessmentMode = secCallback.canEditAssessmentMode();
-		if(canEditassessmentMode) {
+		boolean canEditAssessmentMode = secCallback.canEditAssessmentMode();
+		if(canEditAssessmentMode) {
 			addLink = uifactory.addFormLink("add", "add", "add.mode", null, formLayout, Link.BUTTON);
 			addLink.setElementCssClass("o_sel_assessment_mode_add");
 			addLink.setIconLeftCSS("o_icon o_icon_add");
@@ -142,15 +155,16 @@ public class AssessmentModeListController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mode));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.leadTime, new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.followupTime, new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target, new TargetAudienceCellRenderer(getTranslator())));
 		
 		if(secCallback.canStartStopAssessment()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("start", Cols.start.ordinal(), "start",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start", "btn btn-default btn-sm", "o_icon o_icon-fw o_as_mode_assessment"), null)));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("stop", Cols.stop.ordinal(), "stop",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("stop"), "stop"), null)));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("start.exam", Cols.start.ordinal(), "start",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start", "btn btn-default btn-sm", "o_icon o_icon-fw o_icon_status_in_progress"), null)));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("stop.exam", Cols.stop.ordinal(), "stop",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("finish"), "stop","btn btn-default btn-sm", "o_icon o_icon-fw o_as_mode_stop"), null)));
 		}
 		
 		DefaultFlexiColumnModel configSebCol = new DefaultFlexiColumnModel("table.header.config.seb", Cols.configSeb.ordinal(), "configSeb",
@@ -161,28 +175,40 @@ public class AssessmentModeListController extends FormBasicController implements
 		
 		if(secCallback.canEditAssessmentMode()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("copy", translate("copy"), "copy"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.actions", Cols.toolsLink.ordinal(), "copy",
+					new ToolsCellRenderer("table.header.actions", "copy")));
 		}
 		
 		model = new AssessmentModeListModel(columnsModel, getTranslator(), assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		
-		tableEl.setMultiSelect(canEditassessmentMode);
-		tableEl.setSelectAllEnable(canEditassessmentMode);
-		if(canEditassessmentMode && deleteLink != null) {
+		tableEl.setMultiSelect(canEditAssessmentMode);
+		tableEl.setSelectAllEnable(canEditAssessmentMode);
+		tableEl.setSearchEnabled(true);
+		if(canEditAssessmentMode && deleteLink != null) {
 			tableEl.addBatchButton(deleteLink);
 		}
+		initFiltersPresets(ureq);
 	}
 	
 	private void loadModel() {
-		List<AssessmentMode> modes = assessmentModeMgr.getAssessmentModeFor(entry);
+		List<AssessmentMode> modes = new ArrayList<>(assessmentModeMgr.getAssessmentModeFor(entry));
+		// remove filtered assessment modes
+		modes.removeIf(mode -> isExcludedByStatusFilter(mode.getStatus()) || isExcludedBySearchString(mode));
+
 		model.setObjects(modes);
 		tableEl.reloadData();
-		// don't show table and button if there is nothing
-		tableEl.setVisible(!modes.isEmpty());
 		if(deleteLink != null) {
 			deleteLink.setVisible(!modes.isEmpty());
 		}
+	}
+
+	private boolean isExcludedBySearchString(AssessmentMode mode) {
+		return StringHelper.containsNonWhitespace(tableEl.getQuickSearchString()) && !mode.getName().toLowerCase().contains(tableEl.getQuickSearchString().toLowerCase());
+	}
+
+	private boolean isExcludedByStatusFilter(Status modeStatus) {
+		return tableEl.getSelectedFilterTab() != null && !tableEl.getSelectedFilterTab().getId().equals("all") && !tableEl.getSelectedFilterTab().getId().equals(modeStatus.name());
 	}
 
 	@Override
@@ -232,8 +258,12 @@ public class AssessmentModeListController extends FormBasicController implements
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(stopCtrl);
 		removeAsListenerAndDispose(cmc);
+		toolsCalloutCtrl = null;
+		toolsCtrl = null;
 		stopCtrl = null;
 		cmc = null;
 	}
@@ -241,8 +271,7 @@ public class AssessmentModeListController extends FormBasicController implements
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == toolbarPanel) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
+			if(event instanceof PopEvent pe) {
 				if(pe.getController() == editCtrl) {
 					loadModel();
 				}
@@ -263,19 +292,18 @@ public class AssessmentModeListController extends FormBasicController implements
 			} else {
 				List<AssessmentMode> rows = new ArrayList<>(index.size());
 				for(Integer i:index) {
-					rows.add(model.getObject(i.intValue()));
+					rows.add(model.getObject(i));
 				}
 				doConfirmDelete(ureq, rows);
 			}
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if (event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				AssessmentMode row = model.getObject(se.getIndex());
 				if("edit".equals(cmd)) {
 					doEdit(ureq, row);
 				} else if("copy".equals(cmd)) {
-					doCopy(ureq, row);
+					doOpenTools(ureq, row);
 				} else if("start".equals(cmd)) {
 					doConfirmStart(ureq, row);
 				} else if("stop".equals(cmd)) {
@@ -283,14 +311,54 @@ public class AssessmentModeListController extends FormBasicController implements
 				} else if("configSeb".equals(cmd)) {
 					doDownloadConfigSeb(ureq, row);
 				}
+			} else if (event instanceof FlexiTableSearchEvent
+					|| event instanceof FlexiTableFilterTabEvent) {
+				loadModel();
 			}
+
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doOpenTools(UserRequest ureq, AssessmentMode mode) {
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), mode);
+		listenTo(toolsCtrl);
+
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), "o-tools-" + mode.getKey(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private List<Status> getDistinctModeStatus() {
+		return model.getObjects().stream()
+				.map(AssessmentMode::getStatus)
+				.distinct()
+				.toList();
+	}
+
+	private void initFiltersPresets(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithFilters("all", translate("all"),
+				TabSelectionBehavior.clear, List.of());
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+
+		for (Status modeStatus : getDistinctModeStatus()) {
+			AssessmentModeHelper helper = new AssessmentModeHelper(getTranslator());
+			FlexiFiltersTab filterStatus = FlexiFiltersTabFactory.tabWithFilters(modeStatus.name(), helper.getStatusLabel(modeStatus),
+					TabSelectionBehavior.clear, List.of());
+			tabs.add(filterStatus);
+		}
+
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 
 	private void doAdd(UserRequest ureq) {
@@ -307,7 +375,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		for(AssessmentMode mode:modeToDelete) {
 			if(mode == null) continue;
 			
-			if(sb.length() > 0) sb.append(", ");
+			if(StringHelper.containsNonWhitespace(sb.toString())) sb.append(", ");
 			sb.append(mode.getName());
 			
 			Status status = mode.getStatus();
@@ -431,5 +499,53 @@ public class AssessmentModeListController extends FormBasicController implements
 			resource = new NotFoundMediaResource();
 		}
 		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+
+	private static class ToolsCellRenderer extends StaticFlexiCellRenderer {
+
+		public ToolsCellRenderer(String label, String action) {
+			super(null, action, false, false, null, "o_icon o_icon_actions o_icon-fw o_icon-lg", label);
+		}
+
+		@Override
+		protected String getId(Object cellValue, int row, FlexiTableComponent source) {
+			AssessmentMode assessmentMode = (AssessmentMode) source.getFormItem().getTableDataModel().getObject(row);
+			return "o-tools-" + assessmentMode.getKey();
+		}
+	}
+
+	private class ToolsController extends BasicController {
+
+		private final Link copyLink;
+		private final AssessmentMode assessmentMode;
+
+		protected ToolsController(UserRequest ureq, WindowControl wControl, AssessmentMode assessmentMode) {
+			super(ureq, wControl);
+			this.assessmentMode = assessmentMode;
+
+			VelocityContainer mainVC = createVelocityContainer("tools");
+
+			List<String> links = new ArrayList<>();
+			mainVC.contextPut("links", links);
+			copyLink = LinkFactory.createLink("duplicate", "copy", getTranslator(), mainVC, this, Link.LINK);
+			copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+			mainVC.put("duplicate", copyLink);
+			links.add("duplicate");
+
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if (source == copyLink) {
+				close();
+				doCopy(ureq, assessmentMode);
+			}
+		}
+
+		private void close() {
+			toolsCalloutCtrl.deactivate();
+			cleanUp();
+		}
 	}
 }

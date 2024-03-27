@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.tool;
@@ -30,7 +30,7 @@ import org.olat.course.assessment.ui.tool.component.AssessmentModeProgressionIte
 /**
  * 
  * Initial date: 13 juin 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeOverviewRow {
@@ -44,12 +44,14 @@ public class AssessmentModeOverviewRow {
 	private final boolean endSoon;
 	private final long endInMilliSeconds;
 	private final AssessmentMode assessmentMode;
+	private final String assessmentModeRendered;
 	
-	public AssessmentModeOverviewRow(AssessmentMode assessmentMode, boolean today, boolean endSoon, long endInMilliSeconds) {
+	public AssessmentModeOverviewRow(AssessmentMode assessmentMode, boolean today, boolean endSoon, long endInMilliSeconds, String assessmentModeRendered) {
 		this.today = today;
 		this.endSoon = endSoon;
 		this.assessmentMode = assessmentMode;
 		this.endInMilliSeconds = endInMilliSeconds;
+		this.assessmentModeRendered = assessmentModeRendered;
 		id = "m" + CodeHelper.getRAMUniqueID();
 	}
 	
@@ -75,6 +77,10 @@ public class AssessmentModeOverviewRow {
 	
 	public AssessmentMode getAssessmentMode() {
 		return assessmentMode;
+	}
+
+	public String getAssessmentModeRendered() {
+		return assessmentModeRendered;
 	}
 	
 	public AssessmentModeProgressionItem getWaitBarItem() {

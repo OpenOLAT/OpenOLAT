@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,12 +14,13 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.mode;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ import org.olat.repository.ui.author.copy.wizard.additional.AssessmentModeCopyIn
 /**
  * 
  * Initial date: 12.12.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> implements SortableFlexiTableDataModel<AssessmentMode> {
@@ -75,24 +76,25 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		
 	@Override
 	public Object getValueAt(AssessmentMode mode, int col) {
-		switch(COLS[col]) {
-			case status: return getStatus(mode);
-			case course: return mode.getRepositoryEntry().getDisplayname();
-			case externalId: return mode.getRepositoryEntry().getExternalId();
-			case externalRef: return mode.getRepositoryEntry().getExternalRef();
-			case name: return mode.getName();
-			case begin: return mode.getBegin();
-			case end: return mode.getEnd();
-			case leadTime: return mode.getLeadTime();
-			case followupTime: return mode.getFollowupTime();
-			case target: return mode.getTargetAudience();
-			case start: return canStart(mode);
-			case stop: return canStop(mode);
-			case endChooser: return getDateChooser(mode, col);
-			case beginChooser: return getDateChooser(mode, col);
-			case configSeb: return Boolean.valueOf(hasSafeExamBrowserConfiguration(mode));
-			default: return "ERROR";
-		}
+		return switch (COLS[col]) {
+			case status -> getStatus(mode);
+			case course -> mode.getRepositoryEntry().getDisplayname();
+			case externalId -> mode.getRepositoryEntry().getExternalId();
+			case externalRef -> mode.getRepositoryEntry().getExternalRef();
+			case name -> mode.getName();
+			case begin -> mode.getBegin();
+			case end -> mode.getEnd();
+			case mode ->
+					mode.isManualBeginEnd() ? translator.translate("mode.beginend.manual") : translator.translate("mode.beginend.automatic");
+			case leadTime -> mode.getLeadTime();
+			case followupTime -> mode.getFollowupTime();
+			case target -> mode.getTargetAudience();
+			case start -> canStart(mode);
+			case stop -> canStop(mode);
+			case beginChooser, endChooser -> getDateChooser(mode, col);
+			case configSeb -> Boolean.valueOf(hasSafeExamBrowserConfiguration(mode));
+			default -> "ERROR";
+		};
 	}
 	
 	private boolean hasSafeExamBrowserConfiguration(AssessmentMode mode) {
@@ -124,7 +126,8 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		if(canStart) {
 			canStart = coordinationService.canStart(mode);
 		}
-		return canStart;
+		// second condition: Show button only if Begin <= today
+		return canStart && mode.getBeginWithLeadTime().before(new Date());
 	}
 	
 	private boolean canStop(AssessmentMode mode) {
@@ -202,6 +205,7 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		name("table.header.name"),
 		begin("table.header.begin"),
 		end("table.header.end"),
+		mode("mode.beginend"),
 		leadTime("table.header.leadTime"),
 		followupTime("table.header.followupTime"),
 		target("table.header.target"),
@@ -209,7 +213,8 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		stop(""),
 		beginChooser("table.header.begin"),
 		endChooser("table.header.end"),
-		configSeb("table.header.config.seb");
+		configSeb("table.header.config.seb"),
+		toolsLink("table.header.actions");
 		
 		private final String i18nKey;
 		

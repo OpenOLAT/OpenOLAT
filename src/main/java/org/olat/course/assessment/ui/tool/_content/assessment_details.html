@@ -1,0 +1,9 @@
+<div style="display: flex; align-items: center;">
+    <b><h4>$title</h4></b>&nbsp;-&nbsp;<div class="text-muted">$modeState</div>
+</div>
+<div class="text-muted">$beginEnd</div>
+<div class="text-muted">$leadFollowUpTime</div>
+<br>
+#if($r.isNotNull("modeItem"))
+    <p>$r.render("modeItem")</p>
+#end

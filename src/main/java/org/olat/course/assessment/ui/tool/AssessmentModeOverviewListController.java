@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.tool;
@@ -50,6 +50,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -94,7 +95,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * coaches.
  * 
  * Initial date: 15 déc. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeOverviewListController extends FormBasicController implements FlexiTableComponentDelegate, GenericEventListener {
@@ -115,7 +116,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
-	private AssessmentModeManager asssessmentModeManager;
+	private AssessmentModeManager assessmentModeManager;
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	@Autowired
@@ -195,7 +196,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			List<LectureBlock> lectures = lectureService.getLectureBlocks(courseEntry, getIdentity());
 			Set<Long> teachedLectures = lectures.stream().map(LectureBlock::getKey).collect(Collectors.toSet());
 	
-			List<AssessmentMode> modes = asssessmentModeManager.getPlannedAssessmentMode(courseEntry, today, until);
+			List<AssessmentMode> modes = assessmentModeManager.getPlannedAssessmentMode(courseEntry, today, until);
 			List<AssessmentModeOverviewRow> rows = new ArrayList<>();
 			for(AssessmentMode mode:modes) {
 				rows.add(forgeRow(mode, today, teachedLectures));
@@ -215,10 +216,11 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		long now = cal.getTimeInMillis();
 		cal.setTime(mode.getEnd());
 		long endInMillseconds = cal.getTimeInMillis() - now;
-		boolean endSoon = (endInMillseconds < (5l * 60l * 1000l))
+		boolean endSoon = (endInMillseconds < (5L * 60L * 1000L))
 				&& (mode.getStatus() == Status.assessment || mode.getStatus() == Status.followup);
-		
-		AssessmentModeOverviewRow row = new AssessmentModeOverviewRow(mode, isToday, endSoon, endInMillseconds);
+
+		String assessmentModeRendered = getAssessmentModeRendered(mode);
+		AssessmentModeOverviewRow row = new AssessmentModeOverviewRow(mode, isToday, endSoon, endInMillseconds, assessmentModeRendered);
 		
 		LectureBlock block = mode.getLectureBlock();
 		boolean allowToStartStop = assessmentCallback.canStartStopAllAssessments()
@@ -227,22 +229,24 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		if(mode.isManualBeginEnd() && allowToStartStop) {
 			if(assessmentModeCoordinationService.canStart(mode)) {
 				String id = "start_" + (++count);
-				FormLink startButton = uifactory.addFormLink(id, "start", "start", null, flc, Link.BUTTON_SMALL);
+				FormLink startButton = uifactory.addFormLink(id, "start", "assessment.tool.start", null, flc, Link.BUTTON_SMALL);
 				startButton.setDomReplacementWrapperRequired(false);
-				startButton.setIconLeftCSS("o_icon o_icon-fw o_as_mode_assessment");
+				startButton.setIconLeftCSS("o_icon o_icon-fw o_icon_status_in_progress");
 				startButton.setUserObject(row);
+				startButton.setPrimary(true);
 				flc.add(id, startButton);
 				forgeStatistics(mode, row);
 				row.setActionButton(startButton);
 			} else if(assessmentModeCoordinationService.canStop(mode)) {
 				String id = "end_" + (++count);
-				FormLink endButton = uifactory.addFormLink(id, "end", "end", null, flc, Link.BUTTON_SMALL);
+				FormLink endButton = uifactory.addFormLink(id, "end", "assessment.tool.stop", null, flc, Link.BUTTON_SMALL);
 				endButton.setDomReplacementWrapperRequired(false);
 				endButton.setIconLeftCSS("o_icon o_icon-fw o_as_mode_stop");
 				if(assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode)) {
 					endButton.setIconRightCSS("o_icon o_icon-fw o_icon_disadvantage_compensation");
 				}
 				endButton.setUserObject(row);
+				endButton.setPrimary(true);
 				flc.add(id, endButton);
 				forgeStatistics(mode, row);
 				row.setActionButton(endButton);
@@ -254,6 +258,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		} else {
 			row.setWaitBarItem(null);
 		}
+
 		
 		String elements = mode.getElementList();
 		if(StringHelper.containsNonWhitespace(elements)) {
@@ -276,6 +281,13 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		}
 
 		return row;
+	}
+
+	public String getAssessmentModeRendered(AssessmentMode mode) {
+		StringOutput status = new StringOutput();
+		ModeStatusCellRenderer modeStatusCellRenderer = new ModeStatusCellRenderer(Util.createPackageTranslator(AssessmentModeListController.class, getLocale()));
+		modeStatusCellRenderer.renderStatus(mode.getStatus(), null, status);
+		return status.toString();
 	}
 	
 	private void forgeStatistics(AssessmentMode mode, AssessmentModeOverviewRow row) {
@@ -396,7 +408,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 	}
 
 	private void doStart(AssessmentModeOverviewRow row) {
-		AssessmentMode mode = asssessmentModeManager.getAssessmentModeById(row.getAssessmentMode().getKey());
+		AssessmentMode mode = assessmentModeManager.getAssessmentModeById(row.getAssessmentMode().getKey());
 		if(mode == null) {
 			showWarning("warning.assessment.mode.already.deleted");
 		} else {
@@ -410,7 +422,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 	private void doConfirmStop(UserRequest ureq, AssessmentModeOverviewRow row) {
 		if(guardModalController(stopCtrl)) return;
 
-		AssessmentMode mode = asssessmentModeManager.getAssessmentModeById(row.getAssessmentMode().getKey());
+		AssessmentMode mode = assessmentModeManager.getAssessmentModeById(row.getAssessmentMode().getKey());
 		if(mode == null) {
 			showWarning("warning.assessment.mode.already.deleted");
 			loadModel();

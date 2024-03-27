@@ -383,6 +383,116 @@ span.o_qti_gaptext_score_alternative {
 	}
 }
 
+/* Assessment mode states */
+.o_qti_assessment_mode {
+
+	&.o_mode_label {
+		padding: 5px 10px;
+		border-radius: 5px;
+		border: solid;
+		font-weight: bold;
+	}
+
+	&.o_mode_frame_outer {
+		padding: 10px 10px 0 10px;
+		border-radius: 5px;
+	}
+
+	.o_mode_frame_inner {
+		padding: 10px;
+		border: solid;
+		border-radius: 5px;
+
+		&.o_assessment_status_none {
+			background-color: $o-assessment-inspection-scheduled-color-bg;
+			border-color: $o-assessment-inspection-scheduled-color;
+		}
+
+		&.o_assessment_status_leadtime {
+			background-color: $o-assessment-inspection-inprogress-color-bg;
+			border-color: $o-assessment-inspection-inprogress-color;
+		}
+
+		&.o_assessment_status_assessment {
+			background-color: $o-assessment-inspection-active-color-bg;
+			border-color: $o-assessment-inspection-active-color;
+		}
+
+		&.o_assessment_status_followup {
+			background-color: $o-assessment-inspection-cancelled-color-bg;
+			border-color: $o-assessment-inspection-cancelled-color;
+		}
+
+		&.o_assessment_status_end {
+			background-color: $o-assessment-inspection-withdrawn-color-bg;
+			border-color: $o-assessment-inspection-withdrawn-color;
+		}
+	}
+
+	&.o_assessment_status_none {
+		background-color: $o-assessment-inspection-scheduled-color;
+		border-color: $o-assessment-inspection-scheduled-color;
+		color: $o_assessment-mode-status-color-bright;
+	}
+
+	&.o_assessment_status_leadtime {
+		background-color: $o-assessment-inspection-inprogress-color;
+		border-color: $o-assessment-inspection-inprogress-color;
+		color: $o_assessment-mode-status-color-bright;
+	}
+
+	&.o_assessment_status_assessment {
+		background-color: $o-assessment-inspection-active-color;
+		border-color: $o-assessment-inspection-active-color;
+		color: $o_assessment-mode-status-color-bright;
+	}
+
+	&.o_assessment_status_followup {
+		background-color: $o-assessment-inspection-cancelled-color;
+		border-color: $o-assessment-inspection-cancelled-color;
+		color: $o_assessment-mode-status-color-bright;
+	}
+
+	&.o_assessment_status_end {
+		background-color: $o-assessment-inspection-withdrawn-color;
+		border-color: $o-assessment-inspection-withdrawn-color;
+		color: $o_assessment-mode-status-color-bright;
+	}
+}
+
+/* Status light style, mainly for in-table renderings */
+.o_labeled_light {
+	&.o_assessment_status_none {
+		background-color: $o_assessment-mode-status-color-bright;
+		border-color: $o-assessment-inspection-scheduled-color;
+		color: $o-assessment-inspection-scheduled-color;
+	}
+
+	&.o_assessment_status_leadtime {
+		background-color: $o_assessment-mode-status-color-bright;
+		border-color: $o-assessment-inspection-inprogress-color;
+		color: $o-assessment-inspection-inprogress-color;
+	}
+
+	&.o_assessment_status_assessment {
+		background-color: $o_assessment-mode-status-color-bright;
+		border-color: $o-assessment-inspection-active-color;
+		color: $o-assessment-inspection-active-color;
+	}
+
+	&.o_assessment_status_followup {
+		background-color: $o_assessment-mode-status-color-bright;
+		border-color: $o-assessment-inspection-cancelled-color;
+		color: $o-assessment-inspection-cancelled-color;
+	}
+
+	&.o_assessment_status_end {
+		background-color: $o_assessment-mode-status-color-bright;
+		border-color: $o-assessment-inspection-withdrawn-color;
+		color: $o-assessment-inspection-withdrawn-color;
+	}
+}
+
 
 /* Drawing */
 .o_draw_circle.o_qti_hotspot_correct, .o_draw_rectangle.o_qti_hotspot_correct {

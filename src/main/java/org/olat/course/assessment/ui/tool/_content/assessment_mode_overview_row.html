@@ -1,24 +1,41 @@
-<div id="$row.id" class="o_assessment_mode_row #if($r.isTrue(${row.isEndSoon()})) o_assessment_end_soon #end #if($r.isTrue(${row.isToday()})) o_assessment_today #end clearfix">
-	<h4>$r.escapeHtml($row.name) <small>${helper.getBeginEndDate($row.assessmentMode)}</small></h4>
-	#if($r.isNotNull($row.waitBarItem))
-	<p>$r.render($row.waitBarItem)</p>
-	#end
-	<p>$r.translate("table.header.assessmentStatus"): <span><i class="o_icon o_icon-fw $helper.getCssClass($row.assessmentMode)"> </i> ${helper.getStatusLabel($row.assessmentMode)}</span> #if($r.isNotNull($row.actionButtonName)) $r.render($row.actionButton) #end</p>
-	#set($elementLinks = ${row.getElementLinkNames()})
-	#if($r.isNotEmpty($elementLinks))
-	<ul class="list-unstyled">
-		#foreach($elementLink in $elementLinks)
-		<li>$r.render($elementLink)</li>
+<div class="o_qti_assessment_mode o_mode_frame_outer">
+	<div class="o_mode_frame_inner o_assessment_status_${helper.getStatus($row.assessmentMode).name()}">
+		<h4>
+			<i class='o_icon o_icon_assessment_mode'>  </i> $r.escapeHtml($row.name)
+			#if(!$row.assessmentMode.getStatus().name().equals("none"))
+				<small class="text-muted">&nbsp;-&nbsp;${helper.getModeState($row.assessmentMode)}</small>
+			#end
+			<small class="pull-right">$row.getAssessmentModeRendered()</small>
+		</h4>
+		<div class="text-muted">${helper.getBeginEndTooltip($row.assessmentMode)}</div>
+		<div class="text-muted">${helper.getLeadFollowupTime($row.assessmentMode)}</div>
+		<br>
+		#if($r.isNotNull($row.waitBarItem))
+			<p>$r.render($row.waitBarItem)</p>
 		#end
-	</ul>
-	#end
-	#if($r.isNotNull($row) && ${row.getEndInMilliSeconds()} > 300000)
-	<script>
-	jQuery(function() {
-		setTimeout(function() {
-			jQuery('#${row.id}').addClass('o_assessment_end_soon');
-		}, ($row.endInMilliSeconds - 300000));
-	});
-	</script>
-	#end
+		<div style="display: flex; justify-content: center;">
+			#if($r.isNotNull($row.actionButtonName))
+				$r.render($row.actionButton)
+			#end
+		</div>
+
+		#set($elementLinks = ${row.getElementLinkNames()})
+		#if($r.isNotEmpty($elementLinks))
+			<ul class="list-unstyled">
+				#foreach($elementLink in $elementLinks)
+				<li>$r.render($elementLink)</li>
+				#end
+			</ul>
+		#end
+
+		#if($r.isNotNull($row) && ${row.getEndInMilliSeconds()} > 300000)
+		<script>
+			jQuery(function() {
+				setTimeout(function() {
+					jQuery('#${row.id}').addClass('o_assessment_end_soon');
+				}, ($row.endInMilliSeconds - 300000));
+			});
+		</script>
+		#end
+	</div>
 </div>
