@@ -41,13 +41,16 @@ public class HeaderCommandsController extends BasicController {
 	private Link importLink;
 	private Link exportLink;
 	private Link exportAllLink;
-	private final Link deleteLink;
+	private Link deleteLink;
 
-	protected HeaderCommandsController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false, false);
+	public HeaderCommandsController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, false, false, true);
 	}
 
-	protected HeaderCommandsController(UserRequest ureq, WindowControl wControl, boolean withImport, boolean withExport) {
+	public HeaderCommandsController(UserRequest ureq, WindowControl wControl, boolean withImport, boolean withExport) {
+		this(ureq, wControl, withImport, withExport, true);
+	}
+	public HeaderCommandsController(UserRequest ureq, WindowControl wControl, boolean withImport, boolean withExport, boolean withDelete) {
 		super(ureq, wControl);
 
 		VelocityContainer mainVC = createVelocityContainer("header_commands");
@@ -71,13 +74,14 @@ public class HeaderCommandsController extends BasicController {
 			mainVC.put("exportAll", exportAllLink);
 		}
 
-		deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this,
-				Link.LINK);
-		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
-		mainVC.put("delete", deleteLink);
+		if (withDelete) {
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this,
+					Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			mainVC.put("delete", deleteLink);
+		}
 
 		putInitialPanel(mainVC);
-
 	}
 
 	@Override
@@ -94,7 +98,9 @@ public class HeaderCommandsController extends BasicController {
 	}
 
 	public void setCanDelete(boolean canDelete) {
-		deleteLink.setEnabled(canDelete);
+		if (deleteLink != null) {
+			deleteLink.setEnabled(canDelete);
+		}
 	}
 
 	public void setCanExport(boolean canExport) {
