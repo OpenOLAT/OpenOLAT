@@ -22,10 +22,8 @@ package org.olat.admin.user.bulkChange;
 import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.velocity.context.Context;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -35,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,7 +47,6 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
@@ -73,7 +69,6 @@ class UserBulkChangeStep00 extends BasicStep {
 	
 	private static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
 	private static final String usageIdentifyerForAllProperties = ProfileFormController.class.getCanonicalName();
-	
 
 	private List<Identity> identitiesToEdit;
 	private final UserBulkChanges userBulkChanges;
@@ -83,7 +78,7 @@ class UserBulkChangeStep00 extends BasicStep {
 		this.identitiesToEdit = toEdit;
 		this.userBulkChanges = userBulkChanges;
 		setI18nTitleAndDescr("step0.description", null);
-		setNextStep(new UserBulkChangeStep01(ureq, userBulkChanges));
+		setNextStep(new UserBulkChangeStep00a(ureq, userBulkChanges));
 	}
 
 	@Override
@@ -103,8 +98,6 @@ class UserBulkChangeStep00 extends BasicStep {
 		private final boolean isAdministrativeUser;
 		private final SyntaxValidator syntaxValidator;
 		
-		@Autowired
-		private I18nManager i18nManager;
 		@Autowired
 		private UserManager userManager;
 		@Autowired
@@ -132,32 +125,20 @@ class UserBulkChangeStep00 extends BasicStep {
 			for (MultipleSelectionElement checkbox:checkBoxes) {
 				if (checkbox.isSelected(0)) {
 					FormItem formItem = (FormItem)checkbox.getUserObject();
-					// first get the values from the hardcoded items
-					if (formItem.getName().equals(UserBulkChangeManager.LANG_IDENTIFYER)) {
-						SingleSelection selectField = (SingleSelection) formItem;
-						attributeChangeMap.put(UserBulkChangeManager.LANG_IDENTIFYER, selectField.getSelectedKey());						
-					} else if (formItem.getName().equals(UserBulkChangeManager.CRED_IDENTIFYER)) {
-						TextElement propertyField = (TextElement) formItem;
-						attributeChangeMap.put(UserBulkChangeManager.CRED_IDENTIFYER, propertyField.getValue());						
-					}					
-					// second get the values from all configured user properties
-					else {
-						// find corresponding user property handler
-						for (UserPropertyHandler propertyHanlder : userPropertyHandlers) {
-							if (propertyHanlder.getName().equals(formItem.getName())) {
-								String inputText;
-								if (formItem instanceof DateChooser) {
-									// special case: don't use getStringValue, this would encode
-									// the date with the date formatter, use raw text input value
-									// instead
-									DateChooser dateItem = (DateChooser) formItem;	
-									inputText = dateItem.getValue();
-								} else {
-									inputText = propertyHanlder.getStringValue(formItem);
-								}
-
-								attributeChangeMap.put(formItem.getName(), inputText);
+					// find corresponding user property handler
+					for (UserPropertyHandler propertyHanlder : userPropertyHandlers) {
+						if (propertyHanlder.getName().equals(formItem.getName())) {
+							String inputText;
+							if (formItem instanceof DateChooser dateItem) {
+								// special case: don't use getStringValue, this would encode
+								// the date with the date formatter, use raw text input value
+								// instead
+								inputText = dateItem.getValue();
+							} else {
+								inputText = propertyHanlder.getStringValue(formItem);
 							}
+
+							attributeChangeMap.put(formItem.getName(), inputText);
 						}
 					}
 				}
@@ -177,8 +158,7 @@ class UserBulkChangeStep00 extends BasicStep {
 					Context vcContext = ubcMan.getDemoContext(getTranslator());
 					validChange = true;
 					FormItem formItem = (FormItem)checkbox.getUserObject();
-					if (formItem instanceof TextElement) {
-						TextElement propertyField = (TextElement) formItem;
+					if (formItem instanceof TextElement propertyField) {
 						String inputFieldValue = propertyField.getValue();
 
 						// check validity of velocity-variables by using default values from
@@ -212,7 +192,7 @@ class UserBulkChangeStep00 extends BasicStep {
 							ValidationResult validationResult = syntaxValidator.validate(password);
 							if (!validationResult.isValid()) {
 								String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
-								propertyField.setErrorKey("error.password", new String[] { descriptions });
+								propertyField.setErrorKey("error.password", descriptions);
 								return false;
 							}
 						}
@@ -226,9 +206,8 @@ class UserBulkChangeStep00 extends BasicStep {
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-			if(source instanceof MultipleSelectionElement && source.getUserObject() instanceof FormItem) {
-				MultipleSelectionElement checkbox = (MultipleSelectionElement)source;
-				FormItem item = (FormItem)checkbox.getUserObject();
+			if(source instanceof MultipleSelectionElement checkbox
+					&& checkbox.getUserObject() instanceof FormItem item) {
 				item.setVisible(checkbox.isAtLeastSelected(1));
 			}
 			super.formInnerEvent(ureq, source, event);
@@ -236,52 +215,20 @@ class UserBulkChangeStep00 extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setFormTitle("title");
+			setFormTitle("step0.description");
 			// text description of this Step
 			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step0.html");
 			formLayout.add(textContainer);
-			textContainer.contextPut("userPropertyHandlers", userManager.getUserPropertyHandlersFor(
-					usageIdentifyerForAllProperties, isAdministrativeUser));
-
+			textContainer.contextPut("userPropertyHandlers", userManager
+					.getUserPropertyHandlersFor(usageIdentifyerForAllProperties, isAdministrativeUser));
+			textContainer.contextPut("message", translate("step0.content", Integer.toString(identitiesToEdit.size())));
+			
 			// Main layout is a vertical layout without left side padding. To format
 			// the checkboxes properly we need a default layout for the remaining form
 			// elements
 			FormItemContainer innerFormLayout = FormLayoutContainer.createDefaultFormLayout("innerFormLayout", getTranslator());
 			innerFormLayout.setElementCssClass("o_sel_user_attributes");
 			formLayout.add(innerFormLayout);
-
-			// add input field for password
-			MultipleSelectionElement passwordCheckEl = uifactory.addCheckboxesHorizontal("checkboxPWD", "form.name.pwd", innerFormLayout, new String[] { "changePWD" }, new String[] { "" });
-			passwordCheckEl.select("changePWD", false);
-			passwordCheckEl.addActionListener(FormEvent.ONCLICK);
-			TextElement passwordTextEl = uifactory.addTextElement(UserBulkChangeManager.CRED_IDENTIFYER, "password", null, 127, null, innerFormLayout);
-			passwordTextEl.setDisplaySize(35);
-			passwordTextEl.setLabel(null, null);
-			passwordTextEl.setVisible(false);
-			checkBoxes.add(passwordCheckEl);
-			passwordCheckEl.setUserObject(passwordTextEl);
-
-			// add SingleSelect for language
-			Map<String, String> locdescs = i18nManager.getEnabledLanguagesTranslated();
-			Set<String> lkeys = locdescs.keySet();
-			String[] languageKeys = new String[lkeys.size()];
-			String[] languageValues = new String[lkeys.size()];
-			// fetch languages
-			int p = 0;
-			for (Iterator<String> iter = lkeys.iterator(); iter.hasNext();) {
-				String key = iter.next();
-				languageKeys[p] = key;
-				languageValues[p] = locdescs.get(key);
-				p++;
-			}
-			MultipleSelectionElement languageCheckEl = uifactory.addCheckboxesHorizontal("checkboxLang", "form.name.language", innerFormLayout, new String[] { "changeLang" }, new String[] { "" });
-			languageCheckEl.select("changeLang", false);
-			languageCheckEl.addActionListener(FormEvent.ONCLICK);
-			SingleSelection languageSelectionEl = uifactory.addDropdownSingleselect(UserBulkChangeManager.LANG_IDENTIFYER, null, innerFormLayout, languageKeys, languageValues, null);
-			languageSelectionEl.setLabel(null, null);
-			languageSelectionEl.setVisible(false);
-			checkBoxes.add(languageCheckEl);
-			languageCheckEl.setUserObject(languageSelectionEl);
 
 			// add checkboxes/formitems for userProperties defined in
 			// src/serviceconfig/org/olat/_spring/olat_userconfig.xml -> Key:

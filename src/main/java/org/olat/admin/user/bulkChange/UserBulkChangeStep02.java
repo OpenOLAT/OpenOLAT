@@ -54,6 +54,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -140,7 +141,7 @@ class UserBulkChangeStep02 extends BasicStep {
 			FormLayoutContainer formLayoutVertical = FormLayoutContainer.createVerticalFormLayout("vertical", getTranslator());
 			formLayout.add(formLayoutVertical);
 
-			setFormTitle("title");
+			setFormTitle("step2.description");
 
 			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step2.html");
 			formLayoutVertical.add(textContainer);
@@ -164,7 +165,8 @@ class UserBulkChangeStep02 extends BasicStep {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.added", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.removed", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.status", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
-
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.identity.expiration.date", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
+			
 			OverviewModel tableDataModel = new OverviewModel(mergedDataChanges, tableColumnModel);
 			FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
 			tableEl.setElementCssClass("o_sel_users_overview");
@@ -197,6 +199,11 @@ class UserBulkChangeStep02 extends BasicStep {
 			List<Identity> selectedIdentities = userBulkChanges.getIdentitiesToEdit();
 			Map<String, String> attributeChangeMap = userBulkChanges.getAttributeChangeMap();
 			Map<OrganisationRoles, String> roleChangeMap = userBulkChanges.getRoleChangeMap();
+			
+			String expirationDate = "";
+			if(userBulkChanges.getExpirationDate() != null) {
+				expirationDate = Formatter.getInstance(getLocale()).formatDate(userBulkChanges.getExpirationDate());
+			}
 
 			// loop over users to be edited:
 			for (Identity identity : selectedIdentities) {
@@ -272,7 +279,8 @@ class UserBulkChangeStep02 extends BasicStep {
 	
 				// add column with status
 				userDataArray.add(statusToLabel(userBulkChanges.getStatus()));
-
+				// add column with expiration date
+				userDataArray.add(expirationDate);
 				// add each user:
 				mergedDataChanges.add(userDataArray);
 			}

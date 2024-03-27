@@ -89,9 +89,10 @@ public class GroupSearchController extends StepFormBasicController {
 	private FormLayoutContainer tableCont;
 	private GroupTableDataModel tableDataModel;
 	
+	private String infoMessage;
+	private String lastSearchValue;
 	private GroupChanges groupChanges;
 	
-	private String lastSearchValue;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -106,22 +107,25 @@ public class GroupSearchController extends StepFormBasicController {
 	}	
 	
 	// constructor for use in steps-wizzard
-	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext, GroupChanges groupChanges, boolean finishByFinish) {
+	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext, GroupChanges groupChanges,
+			String infoMessage, boolean finishByFinish) {
 		super(ureq, wControl, form, stepsRunContext, LAYOUT_VERTICAL, "resulttable");
 		Translator pT = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), getTranslator());
 		this.finishByFinish = finishByFinish;
 		this.groupChanges = groupChanges;
+		this.infoMessage = infoMessage;
 		flc.setTranslator(pT);
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("group.search.description");
+		if(StringHelper.containsNonWhitespace(infoMessage)) {
+			setFormTranslatedInfo(infoMessage);
+		} else {
+			setFormInfo("group.search.description");
+		}
+		
 		formLayout.setElementCssClass("o_sel_groups_search");
 
 		search = uifactory.addTextElement("search.field", "search.field", 100, "", formLayout);

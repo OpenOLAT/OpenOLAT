@@ -65,6 +65,6 @@ public class ImportStep02 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		return new GroupSearchController(ureq, windowControl, form, stepsRunContext, null, mandatoryEmail);
+		return new GroupSearchController(ureq, windowControl, form, stepsRunContext, null, null, mandatoryEmail);
 	}
 }

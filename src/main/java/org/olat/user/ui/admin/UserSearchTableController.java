@@ -242,7 +242,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.inactivationDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.expirationDate, dateRenderer));
 		if(userModule.isUserAutomaticDeactivation()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.daysToInactivation));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.daysToInactivation));
 		}
 		if(userModule.isUserAutomaticDeletion()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.daysToDeletion));
@@ -704,7 +704,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 					List<String> notUpdatedIdentities = new ArrayList<>();
 					if (!attributeChangeMap.isEmpty() || !roleChangeMap.isEmpty()
 							|| !ownGroups.isEmpty() || !partGroups.isEmpty()
-							|| userBulkChanges.getStatus() != null){
+							|| userBulkChanges.getStatus() != null
+							|| userBulkChanges.getExpirationDate() != null) {
 						Roles actingRoles = uureq.getUserSession().getRoles();
 						Identity actingIdentity = uureq.getIdentity();
 						userBulkChangesManager.changeSelectedIdentities(identities, userBulkChanges, notUpdatedIdentities,

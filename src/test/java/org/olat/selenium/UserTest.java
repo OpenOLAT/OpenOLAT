@@ -1115,6 +1115,7 @@ public class UserTest extends Deployments {
 		attributesWizard
 			.assertOnAttributes()
 			.changeAttribute("firstName", newFirstName)
+			.nextToOtherSettings()
 			.nextToRoles()
 			.changeRoles(OrganisationRoles.author.name(), true)
 			.nextToGroups()

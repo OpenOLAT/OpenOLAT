@@ -55,6 +55,7 @@ class UserBulkChangeStep01a extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(final UserRequest ureq, final WindowControl windowControl, final StepsRunContext stepsRunContext, final Form form) {
-		return new GroupSearchController(ureq, windowControl, form, stepsRunContext, userBulkChanges, false);
+		String infos = getTranslator().translate("step1a.content", Integer.toString(userBulkChanges.getNumOfIdentitiesToEdit()));
+		return new GroupSearchController(ureq, windowControl, form, stepsRunContext, userBulkChanges, infos, false);
 	}
 }

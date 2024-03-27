@@ -54,6 +54,13 @@ public class UserAttributesWizardPage {
 		return this;
 	}
 	
+	public UserAttributesWizardPage nextToOtherSettings() {
+		OOGraphene.nextStep(browser);
+		By settingsBy = By.cssSelector("fieldset.o_sel_user_settings");
+		OOGraphene.waitElement(settingsBy, browser);
+		return this;
+	}
+	
 	public UserAttributesWizardPage nextToRoles() {
 		OOGraphene.nextStep(browser);
 		By rolesBy = By.cssSelector("fieldset.o_sel_user_roles");

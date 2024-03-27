@@ -19,6 +19,7 @@
  */
 package org.olat.admin.user.bulkChange;
 
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +48,8 @@ public class UserBulkChanges extends GroupChanges {
 	private Integer status;
 	private boolean sendLoginDeniedEmail;
 	
+	private Date expirationDate;
+	
 	private OrganisationRef organisation;
 	
 	public UserBulkChanges(OrganisationRef organisation) {
@@ -71,6 +74,10 @@ public class UserBulkChanges extends GroupChanges {
 
 	public List<Identity> getIdentitiesToEdit() {
 		return identitiesToEdit;
+	}
+	
+	public int getNumOfIdentitiesToEdit() {
+		return identitiesToEdit == null ? 0 : identitiesToEdit.size();
 	}
 
 	public void setIdentitiesToEdit(List<Identity> identitiesToEdit) {
@@ -101,5 +108,11 @@ public class UserBulkChanges extends GroupChanges {
 		this.sendLoginDeniedEmail = sendLoginDeniedEmail;
 	}
 
+	public Date getExpirationDate() {
+		return expirationDate;
+	}
 
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
+	}
 }

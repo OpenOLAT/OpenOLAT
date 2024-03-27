@@ -84,6 +84,7 @@ public class UserBulkChangeManager implements InitializingBean {
 
 	protected static final String CRED_IDENTIFYER = "password";
 	protected static final String LANG_IDENTIFYER = "language";
+	protected static final String EXPIRATION_IDENTIFYER = "expiration";
 	
 	@Autowired
 	private DB dbInstance;
@@ -240,6 +241,10 @@ public class UserBulkChangeManager implements InitializingBean {
 				changedIdentities.add(identity);
 				log.info(Tracing.M_AUDIT, "User::{} successfully changed account data for user::{} in bulk change",
 						actingIdentity.getKey(), identity.getKey());
+			}
+			
+			if(userBulkChanges.getExpirationDate() != null) {
+				securityManager.saveIdentityExpirationDate(identity, userBulkChanges.getExpirationDate(), actingIdentity);
 			}
 
 			// commit changes for this user

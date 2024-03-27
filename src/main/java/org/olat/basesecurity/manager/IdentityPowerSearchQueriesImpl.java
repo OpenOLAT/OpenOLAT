@@ -624,7 +624,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				sb.append(" order by ident.creationDate ").append(orderBy.isAsc() ? "asc" : "desc");
 				break;
 			case "lastLogin":
-				sb.append(" order by ident.lastLogin ").append(orderBy.isAsc() ? "asc" : "desc");
+				sb.append(" order by ident.lastLogin ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
 				break;
 			case "inactivationDate":
 				sb.append(" order by ident.inactivationDate ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
@@ -638,6 +638,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				break;
 			case "status":
 				sb.append(" order by ident.status ").append(orderBy.isAsc() ? "asc" : "desc");
+				break;
+			case "daysToDeletion":
+			case "daysToInactivation":
+				//sb.append(" order by case when ident.expirationDate > ident.reactivationDate then ident.reactivationDate else ident.expirationDate end nulls last");
+				sb.append(" order by ident.lastLogin ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
 				break;
 			default:
 				sb.append(" order by lower(user.").append(orderBy.getKey()).append(") ").append(orderBy.isAsc() ? "asc" : "desc");

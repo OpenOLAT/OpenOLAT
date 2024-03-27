@@ -660,6 +660,14 @@ public abstract class FormBasicController extends BasicController {
 		}
 	}
 	
+	protected void setFormTranslatedInfo(String text) {
+		if (text == null) {
+			flc.contextRemove("off_info");
+		} else {
+			flc.contextPut("off_info", text);
+		}
+	}
+	
 	protected void setFormInfoHelp(String url) {
 		if (url == null) {
 			flc.contextRemove("off_info_help_url");

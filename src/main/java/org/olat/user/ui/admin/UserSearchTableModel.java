@@ -157,9 +157,6 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 
 		@Override
 		public String sortKey() {
-			if(daysToInactivation == this || daysToDeletion == this) {
-				return lastLogin.name();
-			}
 			return name();
 		}
 	}

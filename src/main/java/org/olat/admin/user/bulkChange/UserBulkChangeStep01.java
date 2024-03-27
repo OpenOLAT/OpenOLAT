@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.admin.user.UserAdminController;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -35,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -45,11 +43,9 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.Roles;
-import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -85,15 +81,10 @@ class UserBulkChangeStep01 extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
 		return new UserBulkChangeStepForm01(ureq, windowControl, form, stepsRunContext);
 	}
-	
-
 
 	private final class UserBulkChangeStepForm01 extends StepFormBasicController {
 
-		private SingleSelection setStatus;
 		private SingleSelection organisationEl;
-		private MultipleSelectionElement chkStatus;
-		private MultipleSelectionElement sendLoginDeniedEmail;
 		private final List<RoleChange> roleChanges = new ArrayList<>();
 		
 		private int counter = 0;
@@ -122,8 +113,8 @@ class UserBulkChangeStep01 extends BasicStep {
 			boolean validChange = userBulkChanges.isValidChange();
 			Map<OrganisationRoles, String> roleChangeMap = userBulkChanges.getRoleChangeMap();
 			for(RoleChange change:roleChanges) {
-				if(change.getSet().isOneSelected()) {
-					roleChangeMap.put(change.getRole(), change.getSet().getSelectedKey());
+				if(change.set().isOneSelected()) {
+					roleChangeMap.put(change.role(), change.set().getSelectedKey());
 					validChange = true;
 				}
 			}
@@ -133,36 +124,18 @@ class UserBulkChangeStep01 extends BasicStep {
 				userBulkChanges.setOrganisation(new OrganisationRefImpl(organisationkey));
 			}
 
-			if (chkStatus != null && chkStatus.isAtLeastSelected(1)) {
-				userBulkChanges.setStatus(Integer.parseInt(setStatus.getSelectedKey()));
-				// also check dependent send-email checkbox
-				if (sendLoginDeniedEmail != null) {
-					userBulkChanges.setSendLoginDeniedEmail(sendLoginDeniedEmail.isSelected(0));				
-				}
-				validChange = true;
-			}
-			
 			userBulkChanges.setValidChange(validChange);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {	
-			if(chkStatus == source || setStatus == source) {
-				setStatus.setVisible(chkStatus.isAtLeastSelected(1));
-				boolean loginDenied = chkStatus.isAtLeastSelected(1) && setStatus.isOneSelected()
-						&& Integer.toString(Identity.STATUS_LOGIN_DENIED).equals(setStatus.getSelectedKey());
-				sendLoginDeniedEmail.setVisible(loginDenied);
-			} else if(source instanceof MultipleSelectionElement
-					&& ((MultipleSelectionElement)source).getUserObject() instanceof RoleChange) {
-				MultipleSelectionElement check = (MultipleSelectionElement)source;
-				RoleChange change = (RoleChange)check.getUserObject();
-				change.getSet().setVisible(change.getCheck().isAtLeastSelected(1));
-			} else if(source instanceof SingleSelection
-					&& ((SingleSelection)source).getUserObject() instanceof RoleChange) {
-				SingleSelection actionEl = (SingleSelection)source;
-				RoleChange change = (RoleChange)actionEl.getUserObject();
-				if(OrganisationRoles.user.equals(change.getRole())) {
+			if(source instanceof MultipleSelectionElement check
+					&& check.getUserObject() instanceof RoleChange change) {
+				change.set().setVisible(change.check().isAtLeastSelected(1));
+			} else if(source instanceof SingleSelection actionEl
+					&& actionEl.getUserObject() instanceof RoleChange change) {
+				if(OrganisationRoles.user.equals(change.role())) {
 					if(actionEl.isOneSelected() && "remove".equals(actionEl.getSelectedKey())) {
 						actionEl.setWarningKey("warning.remove.user");
 					} else {
@@ -197,17 +170,14 @@ class UserBulkChangeStep01 extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setFormTitle("step1.title");
-
-			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), velocity_root + "/step1.html");
-			formLayout.add(textContainer);
+			setFormTitle("step1.description");
+			setFormInfo("step1.content", new String[] { Integer.toString(userBulkChanges.getNumOfIdentitiesToEdit()) });
 
 			// Main layout is a vertical layout without left side padding. To format
 			// the checkboxes properly we need a default layout for the remaining form
 			// elements
-			FormItemContainer innerFormLayout = FormLayoutContainer.createDefaultFormLayout("innerFormLayout", getTranslator());
+			FormItemContainer innerFormLayout = uifactory.addDefaultFormLayout("innerFormLayout", null, formLayout);
 			innerFormLayout.setElementCssClass("o_sel_user_roles");
-			formLayout.add(innerFormLayout);
 			
 			if(userBulkChanges.getOrganisation() == null) {
 				SelectionValues orgKeyValues = getOrganisationKeyValues(ureq);
@@ -244,40 +214,6 @@ class UserBulkChangeStep01 extends BasicStep {
 					initRole(role, innerFormLayout);
 				}
 			}
-
-			// status
-			if (roles.isAdministrator() || roles.isRolesManager()) {
-				chkStatus = uifactory.addCheckboxesHorizontal("Status", "table.role.status", innerFormLayout, onKeys, onValues);
-				chkStatus.select("Status", false);
-				chkStatus.addActionListener(FormEvent.ONCLICK);
-
-				// Pay attention: if status changes in Identity-statics this
-				// may lead to missing status
-				// implement methods in SystemRolesAndRightsController.java
-				setTranslator(Util.createPackageTranslator(UserAdminController.class, getLocale()));
-				String[] statusKeys = {
-						Integer.toString(Identity.STATUS_ACTIV),
-						Integer.toString(Identity.STATUS_PERMANENT),
-						Integer.toString(Identity.STATUS_INACTIVE),
-						Integer.toString(Identity.STATUS_LOGIN_DENIED),
-						Integer.toString(Identity.STATUS_PENDING)
-					};
-				String[] statusValues = {
-						translate("rightsForm.status.activ"),
-						translate("rightsForm.status.permanent"),
-						translate("rightsForm.status.inactive"),
-						translate("rightsForm.status.login_denied"),
-						translate("rightsForm.status.pending")
-					};
-
-				setStatus = uifactory.addDropdownSingleselect("setStatus",null, innerFormLayout, statusKeys, statusValues, null);
-				setStatus.setVisible(false);
-				setStatus.addActionListener(FormEvent.ONCHANGE);
-
-				sendLoginDeniedEmail = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", innerFormLayout, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")});
-				sendLoginDeniedEmail.setLabel(null, null);
-				sendLoginDeniedEmail.setVisible(false);
-			}
 		}
 		
 		private SelectionValues getOrganisationKeyValues(UserRequest ureq) {
@@ -295,27 +231,7 @@ class UserBulkChangeStep01 extends BasicStep {
 		}
 	}
 	
-	private static final class RoleChange {
-		private final MultipleSelectionElement check;
-		private final SingleSelection set;
-		private final OrganisationRoles role;
-		
-		public RoleChange(MultipleSelectionElement check, SingleSelection set, OrganisationRoles role) {
-			this.check = check;
-			this.set = set;
-			this.role = role;
-		}
-
-		public MultipleSelectionElement getCheck() {
-			return check;
-		}
-
-		public SingleSelection getSet() {
-			return set;
-		}
-
-		public OrganisationRoles getRole() {
-			return role;
-		}
+	private record RoleChange(MultipleSelectionElement check, SingleSelection set, OrganisationRoles role) {
+		//
 	}
 }
