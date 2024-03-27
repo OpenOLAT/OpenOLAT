@@ -494,10 +494,15 @@ public class RubricEditorController extends FormBasicController implements PageE
 			if (i == sliders.size() -1) {
 				sliderRow.getDownButton().setEnabled(false);
 			}
-			sliderRow.getDeleteButton().setEnabled(true);
+			if (sliderRow.getDeleteButton() != null) {
+				sliderRow.getDeleteButton().setEnabled(true);
+			}
 		}
 		if (sliders.size() == 1) {
-			sliders.get(0).getDeleteButton().setEnabled(false);
+			FormLink deleteButton = sliders.get(0).getDeleteButton();
+			if (deleteButton != null) {
+				deleteButton.setEnabled(false);
+			}
 		}
 	}
 
