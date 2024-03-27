@@ -604,6 +604,14 @@ a.o_orderby, a.o_orderby:hover {
 	}
 }
 
+.o_table_filters_wrapper + .o_table_toolbar {
+	margin-top: 2px;
+}
+
+.o_table_tabs + .o_table_toolbar {
+	margin-top: 20px;
+}
+
 .o_table_toolbar {
 	display: flex;
 	align-items: center;
