@@ -81,7 +81,7 @@
 		<property name="iconCssClass" value="o_icon o_icon-fw o_bc_icon" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.core.commons.modules.bc.FolderRunController"/>
+				<property name="className" value="org.olat.home.PersonalFolderController"/>
 			</bean>
 		</property>
 		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />

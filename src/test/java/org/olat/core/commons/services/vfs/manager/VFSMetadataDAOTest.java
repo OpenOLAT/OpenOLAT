@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.test.JunitTestHelper;
@@ -306,5 +307,36 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, relativePaths.size());
 		relativePaths = vfsMetadataDao.getRelativePaths("/bcroot/course/" + uuid1);
 		Assert.assertEquals(2, relativePaths.size());
+	}
+	
+	@Test
+	public void testGetDecendents() {
+		String uuid1 = UUID.randomUUID().toString();
+		String uuid2 = UUID.randomUUID().toString();
+		String parentPath = "/bcroot/course/" + uuid1;
+		String relativePath = parentPath + "/hello";
+		String relativePathTwo = parentPath + "/helloWorld";
+		String fileName1 = uuid1 + ".mp4";
+		String fileName2 = uuid2 + ".mp3";
+		String uri1 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName1;
+		String uri2 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName2;
+		
+		List<VFSMetadata> allItemsBeforeTests = vfsMetadataDao.getMetadatas(relativePath);
+		for (VFSMetadata item : allItemsBeforeTests) {
+			vfsMetadataDao.removeMetadata(item);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		VFSMetadata container = vfsMetadataDao.createMetadata(uuid1, "/bcroot/course", uuid1, new Date(), 100L, true, uri1, "file", null);
+		VFSMetadata container1 = vfsMetadataDao.createMetadata(uuid1, parentPath, "hello", new Date(), 100L, true, uri1, "file", container);
+		VFSMetadata container2 = vfsMetadataDao.createMetadata(uuid1, parentPath, "helloWorld", new Date(), 100L, true, uri1, "file", container);
+		vfsMetadataDao.createMetadata(uuid1, relativePath, fileName1, new Date(), 100L, false, uri1, "file", container1);
+		VFSMetadataImpl metadata2 = (VFSMetadataImpl)vfsMetadataDao.createMetadata(uuid1, relativePathTwo, fileName2, new Date(), 100L, false, uri2, "file", container2);
+		metadata2.setDeleted(true);
+		vfsMetadataDao.updateMetadata(metadata2);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSMetadata> descendants = vfsMetadataDao.getDescendants(container);
+		Assert.assertEquals(4, descendants.size());
 	}
 }

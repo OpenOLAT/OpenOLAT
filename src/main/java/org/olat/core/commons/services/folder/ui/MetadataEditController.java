@@ -127,6 +127,7 @@ public class MetadataEditController extends FormBasicController {
 			return;
 		}
 		
+		vfsRepositoryService.updateMetadata(metadata);
 		if (fileRenamed) {
 			VFSContainer container = vfsItem.getParentContainer();
 			if (container.resolve(fileName) != null) {
@@ -140,7 +141,6 @@ public class MetadataEditController extends FormBasicController {
 				return;
 			}
 		}
-		vfsRepositoryService.updateMetadata(metadata);
 	}
 
 }

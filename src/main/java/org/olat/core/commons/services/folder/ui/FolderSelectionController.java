@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.folder.ui.FolderDataModel.FolderCols;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSMetadataContainer;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -52,6 +53,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -145,7 +147,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 	}
 	
 	private void loadModel(UserRequest ureq) {
-		List<VFSItem> items = currentContainer.getItems(vfsFilter);
+		List<VFSItem> items = getCachedContainer(currentContainer).getItems(vfsFilter);
 		
 		String relPath = currentContainer.getRelPath();
 		Map<String, VFSMetadata> metadatas = Collections.emptyMap();
@@ -176,6 +178,13 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private VFSContainer getCachedContainer(VFSContainer vfsContainer) {
+		if (VFSConstants.YES == vfsContainer.canMeta()) {
+			return new VFSMetadataContainer(vfsRepositoryService, true, vfsContainer);
+		}
+		return vfsContainer;
 	}
 	
 	private void forgeThumbnail(UserRequest ureq, FolderRow row) {

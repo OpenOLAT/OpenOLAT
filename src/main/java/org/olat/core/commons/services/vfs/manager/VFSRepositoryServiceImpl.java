@@ -423,6 +423,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public List<VFSMetadata> getChildren(VFSMetadataRef parentMetadata) {
 		return metadataDao.getMetadatas(parentMetadata);
 	}
+	
+	@Override
+	public List<VFSMetadata> getDescendants(VFSMetadata parentMetadata) {
+		return metadataDao.getDescendants(parentMetadata);
+	}
 
 	@Override
 	public List<VFSMetadata> getNewest(VFSMetadata ancestorMetadata, int maxResults) {

@@ -71,6 +71,16 @@ public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 	public List<VFSItem> getItems(VFSItemFilter filter) {
 		return getItems();
 	}
+	
+	@Override
+	public VFSStatus canDescendants() {
+		return VFSConstants.NO;
+	}
+	
+	@Override
+	public List<VFSItem> getDescendants(VFSItemFilter filter) {
+		return List.of();
+	}
 
 	@Override
 	public boolean isInPath(String path) {

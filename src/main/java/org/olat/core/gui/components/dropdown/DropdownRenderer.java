@@ -153,8 +153,9 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 
 			boolean wantSpacer = false;
 			for(Component component:components) {
-				if(component instanceof Spacer) {
+				if(component instanceof Spacer spacer) {
 					wantSpacer = true;
+					spacer.setDirty(false);
 				} else if(component.isVisible()) {
 					if(wantSpacer) {
 						sb.append("<li class='divider'></li>");

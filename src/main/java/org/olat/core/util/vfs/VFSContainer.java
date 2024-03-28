@@ -52,6 +52,14 @@ public interface VFSContainer extends VFSItem {
 	 */
 	public List<VFSItem> getItems(VFSItemFilter filter);
 	
+	public VFSStatus canDescendants();
+	
+	/**
+	 * @param filter 
+	 * @return flat list of all items regardless of their sub-level.
+	 */
+	public List<VFSItem> getDescendants(VFSItemFilter filter);
+	
 	/**
 	 * copy either a file or a folder to this folder.
 	 * e.g. this folder is based at /bla/blu, copying source bli (from /whatever/bli) 

@@ -229,6 +229,21 @@ public class VFSMetadataDAO {
 			.getResultList();
 	}
 	
+	public List<VFSMetadata> getDescendants(VFSMetadata parentMetadata) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select metadata");
+		sb.append("  from filemetadata metadata");
+		sb.append("       left join fetch metadata.licenseType as licenseType");
+		sb.and().append("metadata.key != :parentKey");
+		sb.and().append("metadata.relativePath like :relativePath");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), VFSMetadata.class)
+			.setParameter("parentKey", parentMetadata.getKey())
+			.setParameter("relativePath", parentMetadata.getRelativePath() + "/" + parentMetadata.getFilename() + "%")
+			.getResultList();
+	}
+	
 	public List<VFSMetadata> getExpiredMetadatas(Date reference) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")

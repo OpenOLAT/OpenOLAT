@@ -135,6 +135,30 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	}
 
 	@Override
+	public VFSStatus canDescendants() {
+		return canMeta();
+	}
+	
+	@Override
+	public List<VFSItem> getDescendants(VFSItemFilter filter) {
+		List<VFSItem> allItems = new ArrayList<>();
+		loadItemsAndChildren(allItems, this, filter);
+		return allItems;
+		
+	}
+	
+	private void loadItemsAndChildren(List<VFSItem> allItems, VFSContainer vfsContainer, VFSItemFilter vfsFilter) {
+		List<VFSItem> items = vfsContainer.getItems(vfsFilter);
+		allItems.addAll(items);
+		
+		items.forEach(item -> {
+			if (item instanceof VFSContainer childContainer) {
+				loadItemsAndChildren(allItems, childContainer, vfsFilter);
+			}
+		});
+	}
+
+	@Override
 	public void setDefaultItemFilter(VFSItemFilter defaultFilter){
 		this.defaultFilter = defaultFilter;
 	}

@@ -52,6 +52,7 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSMetadataContainer;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
@@ -253,13 +254,14 @@ public class FolderController extends FormBasicController implements Activateabl
 		super(ureq, wControl, "folder");
 		setTranslator(Util.createPackageTranslator(ProjectUIFactory.class, getLocale(), getTranslator()));
 		this.rootContainer = rootContainer;
-		this.currentContainer = rootContainer;
 		this.config = config;
 		this.licensesEnabled = licenseModule.isEnabled(licenseHandler);
 		this.webdavEnabled = config.isDisplayWebDAVLink() && webDAVModule.isEnabled() && webDAVModule.isLinkEnabled()
 				&& ureq.getUserSession().getRoles().isGuestOnly();
-		reloadVersionsEnabled();
 		this.formatter = Formatter.getInstance(getLocale());
+		
+		setCurrentContainer(rootContainer);
+		reloadVersionsEnabled();
 		
 		VFSSecurityCallback secCallback = VFSManager.findInheritedSecurityCallback(rootContainer);
 		if (secCallback != null) {
@@ -276,6 +278,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		initForm(ureq);
 		doOpenView(ureq, FolderView.folder);
+		updateCommandUI(ureq);
 	}
 
 	@Override
@@ -350,6 +353,9 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void updateCommandUI(UserRequest ureq) {
+		boolean canDecendants = VFSConstants.YES == currentContainer.canDescendants();
+		viewFileLink.setVisible(canDecendants);
+		
 		boolean canEditCurrentContainer = canEdit(currentContainer);
 		uploadLink.setVisible(canEditCurrentContainer);
 		createDropdown.setVisible(canEditCurrentContainer);
@@ -381,11 +387,12 @@ public class FolderController extends FormBasicController implements Activateabl
 	private void doOpenView(UserRequest ureq, FolderView view) {
 		this.folderView = view;
 		if (FolderView.folder != folderView) {
-			currentContainer = rootContainer;
+			setCurrentContainer(rootContainer);
 		}
 		
 		doOpenFolderView(ureq);
 		updateViewUI();
+		updateCommandUI(ureq);
 	}
 	
 	private void updateViewUI() {
@@ -472,6 +479,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private void doQuickSearch(UserRequest ureq) {
 		if (FolderView.search != folderView) {
 			doOpenView(ureq, FolderView.search);
+			updateCommandUI(ureq);
 		} else {
 			loadModel(ureq);
 		}
@@ -641,7 +649,7 @@ public class FolderController extends FormBasicController implements Activateabl
 
 	private List<VFSItem> loadItems() {
 		if (FolderView.folder == folderView) {
-			return currentContainer.getItems(vfsFilter);
+			return getCachedContainer(currentContainer).getItems(vfsFilter);
 		}
 		
 		List<VFSItem> allItems = new ArrayList<>();
@@ -650,17 +658,36 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void loadItemsAndChildren(List<VFSItem> allItems, VFSContainer vfsContainer) {
-		List<VFSItem> items = vfsContainer.getItems(vfsFilter);
+		boolean descendantsLoaded = false;
+		List<VFSItem> items = null;
+		VFSContainer cachedContainer = getCachedContainer(vfsContainer);
+		if (VFSConstants.YES == cachedContainer.canDescendants()) {
+			items = cachedContainer.getDescendants(vfsFilter);
+			descendantsLoaded = true;
+		}
+		
+		if (items == null) {
+			items = vfsContainer.getItems(vfsFilter);
+		}
 		List<VFSItem> visibleItems = FolderView.file == folderView
 				? items.stream().filter(item -> item instanceof VFSLeaf).toList()
 				: items;
 		allItems.addAll(visibleItems);
 		
-		items.forEach(item -> {
-			if (item instanceof VFSContainer childContainer) {
-				loadItemsAndChildren(allItems, childContainer);
-			}
-		});
+		if (!descendantsLoaded) {
+			items.forEach(item -> {
+				if (item instanceof VFSContainer childContainer) {
+					loadItemsAndChildren(allItems, childContainer);
+				}
+			});
+		}
+	}
+	
+	private VFSContainer getCachedContainer(VFSContainer vfsContainer) {
+		if (VFSConstants.YES == vfsContainer.canMeta()) {
+			return new VFSMetadataContainer(vfsRepositoryService, true, vfsContainer);
+		}
+		return vfsContainer;
 	}
 
 	private void forgeStatus(FolderRow row) {
@@ -754,12 +781,12 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void forgeFilePath(FolderRow row) {
-		VFSItem parent = row.getVfsItem().getParentContainer();
-		if (parent == null) {
+		VFSItem container = row.getVfsItem().getParentContainer();
+		if (container == null) {
 			return;
 		}
 		
-		String filePath =  VFSManager.getRelativeItemPath(parent, rootContainer, null);
+		String filePath =  VFSManager.getRelativeItemPath(container, rootContainer, null);
 		row.setFilePath(filePath);
 		
 		if (FolderView.folder != folderView) {
@@ -1109,9 +1136,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		VFSItem vfsItem = rootContainer.resolve(path);
 		if (vfsItem instanceof VFSContainer vfsContainer) {
-			currentContainer = vfsContainer;
+			setCurrentContainer(vfsContainer);
 		} else {
-			currentContainer = rootContainer;
+			setCurrentContainer(rootContainer);
 			path = "/";
 		}
 		
@@ -1121,6 +1148,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		bulkEmailButton.setVisible(config.getEmailFilter().canEmail(path));
 		loadModel(ureq);
 		updatePathResource(ureq, path);
+	}
+	
+	private void setCurrentContainer(VFSContainer currentContainer) {
+		this.currentContainer = getCachedContainer(currentContainer);
 	}
 	
 	private void reloadVersionsEnabled() {
@@ -1378,10 +1409,13 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private boolean canEdit(VFSItem vfsItem) {
-		VFSContainer parentContainer = vfsItem.getParentContainer();
-		if (parentContainer != null) {
-			return parentContainer.canWrite() == VFSConstants.YES;
+		if (vfsItem instanceof VFSLeaf) {
+			VFSContainer parentContainer = vfsItem.getParentContainer();
+			if (parentContainer != null) {
+				return parentContainer.canWrite() == VFSConstants.YES;
+			}
 		}
+		
 		return vfsItem.canWrite() == VFSConstants.YES;
 	}
 	
@@ -1910,9 +1944,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
 		if (inheritingContainer != null) {
 			quota = inheritingContainer.getLocalSecurityCallback().getQuota();
-			if (quota == null || Quota.UNLIMITED == quota.getQuotaKB()) {
-				// Just a little optimization to avoid file system calls.
-				// The quota is neither checked nor displayed.
+			if (quota != null && Quota.UNLIMITED != quota.getQuotaKB()) {
 				actualUsage = VFSManager.getUsageKB(inheritingContainer);
 			}
 		}

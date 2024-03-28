@@ -1,10 +1,16 @@
 <div class="o_folder">
 	<div class="o_folder_navigation">
 		<div class="o_folder_view_selection #if($searchView)o_folder_search_view #end">
-			<div class="btn-group o_folder_view_group">
-				$r.render("view.folder")
-				$r.render("view.file")
-			</div>
+			#if($r.available("view.folder") && $r.visible("view.folder") && $r.available("view.file") && $r.visible("view.file"))
+				<div class="btn-group o_folder_view_group">
+					$r.render("view.folder")
+					$r.render("view.file")
+				</div>
+			#elseif($r.available("view.folder") && $r.visible("view.folder"))
+				<div class="o_folder_view_group">
+					$r.render("view.folder")
+				</div>
+			#end
 			#if($r.available("search") && $r.visible("search"))
 				$r.render("search")
 			#end

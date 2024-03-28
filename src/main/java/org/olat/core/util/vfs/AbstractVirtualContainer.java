@@ -26,6 +26,8 @@
 
 package org.olat.core.util.vfs;
 
+import java.util.List;
+
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
@@ -54,6 +56,16 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	 */
 	public AbstractVirtualContainer() {
 		this.name = null;
+	}
+	
+	@Override
+	public VFSStatus canDescendants() {
+		return VFSConstants.NO;
+	}
+	
+	@Override
+	public List<VFSItem> getDescendants(VFSItemFilter filter) {
+		return List.of();
 	}
 
 	@Override
