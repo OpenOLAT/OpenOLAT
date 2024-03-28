@@ -59,6 +59,7 @@ import org.olat.modules.ceditor.model.QuizSettings;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.ui.SelectItemController;
@@ -223,6 +224,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 			cleanUp();
 			if (event instanceof QItemViewEvent qItemViewEvent) {
 				if ("select-item".equals(event.getCommand())) {
+					doImport(ureq, qItemViewEvent.getItemList());
 				}
 			}
 			updateUI();
@@ -334,11 +336,12 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		List<QItemType> itemTypes = questionPoolService.getAllItemTypes();
 		List<QItemType> excludedItemTypes = new ArrayList<>();
 		for (QItemType qItemType : itemTypes) {
-			if (qItemType.getType().equalsIgnoreCase(QuestionType.DRAWING.name())
-					|| qItemType.getType().equalsIgnoreCase(QuestionType.ESSAY.name())
-					|| qItemType.getType().equalsIgnoreCase(QuestionType.UPLOAD.name())) {
-				excludedItemTypes.add(qItemType);
+			if (qItemType.getType().equalsIgnoreCase(QuestionType.SC.name())
+					|| qItemType.getType().equalsIgnoreCase(QuestionType.MC.name())
+					|| qItemType.getType().equalsIgnoreCase(QuestionType.INLINECHOICE.name())) {
+				continue;
 			}
+			excludedItemTypes.add(qItemType);
 		}
 
 		selectItemController = new SelectItemController(ureq, getWindowControl(), QTI21Constants.QTI_21_FORMAT,
@@ -351,16 +354,23 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		listenTo(cmc);
 	}
 
+	private void doImport(UserRequest ureq, List<QuestionItemView> questionItems) {
+		QuizSettings quizSettings = quizPart.getSettings();
+		List<QuizQuestion> questions = quizSettings.getQuestions();
+		int maxNumberToImport = MAX_NUMBER_OF_QUESTIONS - questions.size();
+		List<QuizQuestion> importedQuestions = contentEditorQti.importQuestions(quizPart, questionItems,
+				maxNumberToImport, getLocale());
+		questions.addAll(importedQuestions);
+
+		storeSettings(ureq, quizSettings);
+	}
+
 	private void doNewQuestion(UserRequest ureq, QuizQuestion quizQuestion) {
 		QuizSettings quizSettings = quizPart.getSettings();
 		List<QuizQuestion> questions = quizSettings.getQuestions();
 		questions.add(quizQuestion);
-		quizPart.setSettings(quizSettings);
-		quizPart = (QuizPart) store.savePageElement(quizPart);
-		dbInstance.commit();
-		loadModel();
 
-		fireEvent(ureq, new ChangePartEvent(quizPart));
+		storeSettings(ureq, quizSettings);
 
 		doEditQuestion(ureq, quizQuestion);
 	}
@@ -377,6 +387,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 
 	private void doDeleteQuestion(UserRequest ureq, QuizQuestion quizQuestion) {
 		QuizSettings quizSettings = quizPart.getSettings();
+		contentEditorQti.deleteQuestion(quizPart, quizQuestion);
 		List<QuizQuestion> newQuestions = quizSettings.getQuestions().stream()
 				.filter(q -> !q.getId().equals(quizQuestion.getId())).collect(Collectors.toList());
 		quizSettings.setQuestions(newQuestions);

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,9 +39,12 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilderFactory;
+import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.modules.ceditor.model.QuizQuestion;
 import org.olat.modules.ceditor.model.QuizSettings;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
+import org.olat.modules.qpool.QuestionItemFull;
+import org.olat.modules.qpool.QuestionItemView;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +65,8 @@ public class ContentEditorQti {
 	private ContentEditorFileStorage contentEditorFileStorage;
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private QTI21QPoolServiceProvider qti21QPoolServiceProvider;
 
 	public String generateStoragePath(QuizPart quizPart) {
 		String id = quizPart.getKey() != null ? quizPart.getId() : null;
@@ -222,6 +228,36 @@ public class ContentEditorQti {
 		} catch (IOException e) {
 			logger.warn("Failed to delete the questions directory '{}': e", questionsDir.toPath().toString(), e);
 		}
+	}
+
+	public List<QuizQuestion> importQuestions(QuizPart quizPart, List<QuestionItemView> questionItems, int maxNumberToImport, Locale locale) {
+		List<QuizQuestion> quizQuestions = new ArrayList<>();
+		File targetQuestionsDirectory = contentEditorFileStorage.getFile(quizPart.getStoragePath());
+		for (QuestionItemView questionItem : questionItems) {
+			QuestionItemFull questionItemFull = qti21QPoolServiceProvider.getFullQuestionItem(questionItem);
+			String id = IdentifierGenerator.newAsString(questionItemFull.getType().getType());
+			File targetQuestionDirectory = new File(targetQuestionsDirectory, id);
+			targetQuestionDirectory.mkdir();
+			try {
+				AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(questionItemFull, locale, targetQuestionDirectory);
+				File targetFile = new File(targetQuestionDirectory, id + ".xml");
+				qtiService.persistAssessmentObject(targetFile, assessmentItem);
+
+				QuizQuestion quizQuestion = new QuizQuestion();
+				quizQuestion.setId(id);
+				quizQuestion.setTitle(assessmentItem.getTitle());
+				quizQuestion.setType(QTI21QuestionType.getTypeRelax(assessmentItem).name());
+				quizQuestion.setXmlFilePath(contentEditorFileStorage.getRelativePath(targetFile));
+
+				quizQuestions.add(quizQuestion);
+				if (quizQuestions.size() >= maxNumberToImport) {
+					break;
+				}
+			} catch (IOException e) {
+				logger.error("Failed to import question '{}': {}", questionItemFull.getTitle(), e);
+			}
+		}
+		return quizQuestions;
 	}
 
 	public record QuizQuestionStorageInfo(File questionDirectory, VFSContainer questionContainer,
