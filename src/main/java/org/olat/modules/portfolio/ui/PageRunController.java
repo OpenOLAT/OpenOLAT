@@ -93,6 +93,7 @@ import org.olat.modules.ceditor.handler.EvaluationFormHandler;
 import org.olat.modules.ceditor.handler.HTMLRawPageElementHandler;
 import org.olat.modules.ceditor.handler.MathPageElementHandler;
 import org.olat.modules.ceditor.handler.ParagraphPageElementHandler;
+import org.olat.modules.ceditor.handler.QuizElementHandler;
 import org.olat.modules.ceditor.handler.SpacerElementHandler;
 import org.olat.modules.ceditor.handler.TablePageElementHandler;
 import org.olat.modules.ceditor.handler.TitlePageElementHandler;
@@ -889,6 +890,13 @@ public class PageRunController extends BasicController implements TooledControll
 			CodeElementHandler codeElementHandler = new CodeElementHandler();
 			handlers.add(codeElementHandler);
 			creationHandlers.add(codeElementHandler);
+
+			// handler for quiz
+			QuizElementHandler quizElementHandler = new QuizElementHandler();
+			handlers.add(quizElementHandler);
+			if (settings.isCanCreateQuiz()) {
+				creationHandlers.add(quizElementHandler);
+			}
 
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {

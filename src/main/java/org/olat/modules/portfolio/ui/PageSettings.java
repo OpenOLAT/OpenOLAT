@@ -41,12 +41,17 @@ public class PageSettings {
 	private RepositoryEntry baseRepositoryEntry;
 	private CustomLinkTreeModel linkTreeModel;
 	private CustomLinkTreeModel toolLinkTreeModel;
-	
+	private boolean canCreateQuiz;
+
 	private PageSettings() {
 		//
 	}
-	
+
 	public static PageSettings full(RepositoryEntry baseRepositoryEntry) {
+		return full(baseRepositoryEntry, false);
+	}
+
+	public static PageSettings full(RepositoryEntry baseRepositoryEntry, boolean canCreateQuiz) {
 		PageSettings settings = new PageSettings();
 		settings.setWithCategories(true);
 		settings.setWithTaxonomy(true);
@@ -55,9 +60,10 @@ public class PageSettings {
 		settings.setWithMediaCenterPreview(false);
 		settings.setMetadataHeader(MetadataHeader.FULL);
 		settings.setBaseRepositoryEntry(baseRepositoryEntry);
+		settings.setCanCreateQuiz(canCreateQuiz);
 		return settings;
 	}
-	
+
 	public static PageSettings reduced(RepositoryEntry baseRepositoryEntry,
 			CustomLinkTreeModel linkTreeModel,  CustomLinkTreeModel toolLinkTreeModel,
 			boolean withTitle, boolean withImportContent) {
@@ -70,6 +76,7 @@ public class PageSettings {
 		settings.setWithMediaCenterPreview(true);
 		settings.setMetadataHeader(MetadataHeader.REDUCED);
 		settings.setBaseRepositoryEntry(baseRepositoryEntry);
+		settings.setCanCreateQuiz(true);
 		settings.setLinkTreeModel(linkTreeModel);
 		settings.setToolLinkTreeModel(toolLinkTreeModel);
 		return settings;
@@ -85,6 +92,7 @@ public class PageSettings {
 		settings.setWithMediaCenterPreview(false);
 		settings.setMetadataHeader(MetadataHeader.NONE);
 		settings.setBaseRepositoryEntry(baseRepositoryEntry);
+		settings.setCanCreateQuiz(true);
 		return settings;
 	}
 	
@@ -168,6 +176,13 @@ public class PageSettings {
 		this.toolLinkTreeModel = toolLinkTreeModel;
 	}
 
+	public void setCanCreateQuiz(boolean canCreateQuiz) {
+		this.canCreateQuiz = canCreateQuiz;
+	}
+
+	public boolean isCanCreateQuiz() {
+		return canCreateQuiz;
+	}
 
 
 	public enum MetadataHeader {
