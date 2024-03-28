@@ -74,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QuizEditorController extends FormBasicController implements PageElementEditorController {
 
-
+	private static final int MAX_NUMBER_OF_QUESTIONS = 20;
 	private static final String UP_ACTION = "up";
 	private static final String DOWN_ACTION = "down";
 	private static final String EDIT_ACTION = "edit";
@@ -225,12 +225,14 @@ public class QuizEditorController extends FormBasicController implements PageEle
 				if ("select-item".equals(event.getCommand())) {
 				}
 			}
+			updateUI();
 		} else if (newQuestionController == source) {
 			QuizQuestion quizQuestion = newQuestionController.getQuizQuestion();
 			ccwc.deactivate();
 			cleanUp();
 			if (event == FormEvent.DONE_EVENT) {
 				doNewQuestion(ureq, quizQuestion);
+				updateUI();
 			}
 		} else if (editQuestionController == source) {
 			QuizQuestion quizQuestion = editQuestionController.getQuizQuestion();
@@ -238,6 +240,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 			cleanUp();
 			if (event == FormEvent.DONE_EVENT) {
 				doSaveQuestion(ureq, quizQuestion);
+				updateUI();
 			}
 		} else if (toolsController == source) {
 			QuestionRow questionRow = toolsController.getRow();
@@ -250,6 +253,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 			} else if (ToolsController.DUPLICATE_EVENT == event) {
 				doDuplicateQuestion(ureq, questionRow.getQuizQuestion());
 			}
+			updateUI();
 		}
 		super.event(ureq, source, event);
 	}
@@ -283,6 +287,11 @@ public class QuizEditorController extends FormBasicController implements PageEle
 
 	private void updateUI() {
 		flc.contextPut("title", quizPart.getSettings().getTitle());
+		addQuestionButton.setEnabled(canAddQuestions());
+	}
+
+	private boolean canAddQuestions() {
+		return quizPart.getSettings().getQuestions().size() < MAX_NUMBER_OF_QUESTIONS;
 	}
 
 	private void doAddQuestion(UserRequest ureq) {
@@ -309,7 +318,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 	}
 
 	private void doCommands(UserRequest ureq) {
-		commandsController = new HeaderCommandsController(ureq, getWindowControl(), true, true, false);
+		commandsController = new HeaderCommandsController(ureq, getWindowControl(), canAddQuestions(), true, false);
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
 				commandsButton.getFormDispatchId(), "", true, "");
@@ -443,12 +452,12 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		//
 	}
 
-	private static class ToolsController extends BasicController {
+	private class ToolsController extends BasicController {
 		private static final Event EDIT_EVENT = new Event("edit");
 		private static final Event DUPLICATE_EVENT = new Event("duplicate");
 		private static final Event DELETE_EVENT = new Event("delete");
 		private final Link editLink;
-		private final Link duplicateLink;
+		private Link duplicateLink;
 		private final Link deleteLink;
 		private final QuestionRow row;
 
@@ -463,9 +472,11 @@ public class QuizEditorController extends FormBasicController implements PageEle
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			mainVC.put("edit", editLink);
 
-			duplicateLink = LinkFactory.createLink("duplicate", "duplicate", getTranslator(), mainVC, this, Link.LINK);
-			duplicateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_duplicate");
-			mainVC.put("duplicate", duplicateLink);
+			if (canAddQuestions()) {
+				duplicateLink = LinkFactory.createLink("duplicate", "duplicate", getTranslator(), mainVC, this, Link.LINK);
+				duplicateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_duplicate");
+				mainVC.put("duplicate", duplicateLink);
+			}
 
 			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");

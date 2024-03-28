@@ -1,6 +1,8 @@
 <ul class="o_dropdown list-unstyled">
 	<li>$r.render("edit")</li>
+	#if($r.available("duplicate"))
 	<li>$r.render("duplicate")</li>
+	#end
 	<li class="divider"></li>
 	<li>$r.render("delete")</li>
 </ul>
