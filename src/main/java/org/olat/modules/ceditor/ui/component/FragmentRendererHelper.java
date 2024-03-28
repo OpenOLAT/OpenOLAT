@@ -31,6 +31,7 @@ import org.olat.modules.ceditor.model.jpa.CodePart;
 import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
+import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.forms.model.xml.Disclaimer;
 import org.olat.modules.forms.model.xml.FileUpload;
@@ -103,6 +104,11 @@ public class FragmentRendererHelper {
 		if (element instanceof Table table) {
 			if (table.getTableSettings() != null) {
 				return table.getTableSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof QuizPart quizPart) {
+			if (quizPart.getSettings() != null) {
+				return quizPart.getSettings().getAlertBoxSettings();
 			}
 		}
 		if (element instanceof Rubric rubric) {

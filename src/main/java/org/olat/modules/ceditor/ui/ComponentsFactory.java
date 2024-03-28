@@ -19,6 +19,11 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import java.io.File;
+
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.util.CodeHelper;
@@ -26,6 +31,7 @@ import org.olat.core.util.Formatter;
 import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.HTMLRawElement;
 import org.olat.modules.ceditor.model.ParagraphElement;
+import org.olat.modules.ceditor.model.StoredData;
 
 /**
  * 
@@ -61,5 +67,17 @@ public class ComponentsFactory {
 
 	public static String getCssClass(HTMLElement htmlElement, boolean inForm) {
 		return BlockLayoutClassFactory.buildClass(htmlElement.getTextSettings(), inForm);
+	}
+
+	public static ImageComponent getImageComponent(UserRequest ureq, StoredData storedData) {
+		if (storedData == null) {
+			return null;
+		}
+		File mediaDir = new File(FolderConfig.getCanonicalRoot(), storedData.getStoragePath());
+		File mediaVersionFile = new File(mediaDir, storedData.getRootFilename());;
+		ImageComponent imageComponent = new ImageComponent(ureq.getUserSession(), "image");
+		imageComponent.setDivImageWrapper(false);
+		imageComponent.setMedia(mediaVersionFile);
+		return imageComponent;
 	}
 }

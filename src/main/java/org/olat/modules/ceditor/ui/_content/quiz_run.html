@@ -1,0 +1,15 @@
+<div id="$r.getCId()" class="o_page_run_quiz $blockLayoutClass">
+	#if($r.available("image"))
+	<div class="o_background_image_wrapper">
+		$r.render("image")
+	#else
+	<div class="o_background_placeholder">
+		<img src='$r.staticLink("/images/media/transparent_16_9.png")' />
+	#end
+		<div class="o_quiz_intro_panel">
+			<div class="o_quiz_intro_title">$r.escapeHtml($title)</div>
+			<div class="o_quiz_intro_description">$r.escapeHtml($description)</div>
+			<div class="o_quiz_intro_start_button">$r.render("quiz.start")</div>
+		</div>
+	</div>
+</div>

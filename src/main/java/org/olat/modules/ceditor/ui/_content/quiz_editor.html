@@ -1,0 +1,10 @@
+<div id="$r.getCId()" class="o_page_edit_quiz $blockLayoutClass">
+	<div class="o_quiz_edit_header">
+		<div class="o_quiz_title">$r.escapeHtml($title)</div>
+		<div class="o_quiz_add_question">$r.render("addQuestion")</div>
+		<div class="o_quiz_commands">$r.render("commands")</div>
+	</div>
+	<div class="o_quiz_questions">
+		$r.render("quiz.questions")
+	</div>
+</div>

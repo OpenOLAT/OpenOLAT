@@ -26,6 +26,7 @@ import org.olat.modules.ceditor.model.CodeSettings;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.MathSettings;
 import org.olat.modules.ceditor.model.MediaSettings;
+import org.olat.modules.ceditor.model.QuizSettings;
 import org.olat.modules.ceditor.model.TableSettings;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.model.TitleSettings;
@@ -37,6 +38,13 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class BlockLayoutClassFactory {
+
+	public static String buildClass(QuizSettings settings, boolean inForm) {
+		if (settings == null) {
+			return getPredefinedCssClass(inForm);
+		}
+		return buildClass(settings.getLayoutSettings(), inForm);
+	}
 
 	public static String buildClass(CodeSettings settings, boolean inForm) {
 		if (settings == null) {

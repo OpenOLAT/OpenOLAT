@@ -1,0 +1,19 @@
+<style>
+	.form-control.o_file_name {
+		padding-top: 0;
+		padding-bottom: 0;
+		padding-right: 4px;
+		float: none;
+		max-width: 140px;
+	}
+
+	.form-control.o_file_name p {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+</style>
+<div class="input-group">
+	<div class="form-control o_file_name">$r.render("imageName")</div>
+	<span class="input-group-addon">$r.render("chooseImageLink")</span>
+</div>
