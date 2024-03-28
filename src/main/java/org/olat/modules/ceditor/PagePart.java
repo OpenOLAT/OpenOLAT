@@ -48,4 +48,6 @@ public interface PagePart extends PageElement {
 	PagePart copy();
 
 	boolean afterCopy();
+
+	void beforeDelete();
 }

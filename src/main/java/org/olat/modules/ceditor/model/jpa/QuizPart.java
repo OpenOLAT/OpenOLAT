@@ -120,4 +120,14 @@ public class QuizPart extends AbstractPart implements QuizElement {
 
 		return true;
 	}
+
+	@Override
+	public void beforeDelete() {
+		ContentEditorQti contentEditorQti = CoreSpringFactory.getImpl(ContentEditorQti.class);
+
+		for (QuizQuestion question : getSettings().getQuestions()) {
+			contentEditorQti.deleteQuestion(this, question);
+		}
+		contentEditorQti.deleteQuestionsDirectory(this);
+	}
 }

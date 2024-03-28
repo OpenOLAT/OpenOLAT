@@ -171,7 +171,7 @@ public class ContentEditorQti {
 		try {
 			Files.copy(sourceQuestionFile.toPath(), clonedQuestionFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
-			logger.error("Failed to clone question XML '{}'.", sourceQuestionFile.toPath().toString());
+			logger.error("Failed to clone question XML '{}': {}", sourceQuestionFile.toPath().toString(), e);
 		}
 
 		QuizQuestion clonedQuizQuestion = new QuizQuestion();
@@ -193,9 +193,35 @@ public class ContentEditorQti {
 		try {
 			Files.copy(sourceQuestionFile.toPath(), targetQuestionFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
-			logger.error("Failed to clone question XML '{}'.", sourceQuestionFile.toPath().toString());
+			logger.error("Failed to clone question XML '{}': {}", sourceQuestionFile.toPath().toString(), e);
 		}
 		return contentEditorFileStorage.getRelativePath(targetQuestionFile);
+	}
+
+	public void deleteQuestion(QuizPart quizPart, QuizQuestion quizQuestion) {
+		File questionFile = contentEditorFileStorage.getFile(quizQuestion.getXmlFilePath());
+		try {
+			Files.deleteIfExists(questionFile.toPath());
+		} catch (IOException e) {
+			logger.error("Failed to delete question XML '{}': {}", questionFile.toPath().toString(), e);
+		}
+
+		File questionsDir = contentEditorFileStorage.getFile(quizPart.getStoragePath());
+		File questionDir = new File(questionsDir, quizQuestion.getId());
+		try {
+			Files.deleteIfExists(questionDir.toPath());
+		} catch (IOException e) {
+			logger.error("Failed to delete question directory '{}': {}", questionDir.toPath().toString(), e);
+		}
+	}
+
+	public void deleteQuestionsDirectory(QuizPart quizPart) {
+		File questionsDir = contentEditorFileStorage.getFile(quizPart.getStoragePath());
+		try {
+			Files.deleteIfExists(questionsDir.toPath());
+		} catch (IOException e) {
+			logger.warn("Failed to delete the questions directory '{}': e", questionsDir.toPath().toString(), e);
+		}
 	}
 
 	public record QuizQuestionStorageInfo(File questionDirectory, VFSContainer questionContainer,
