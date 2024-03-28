@@ -842,7 +842,10 @@ public class PageRunController extends BasicController implements TooledControll
 			// handler for source code
 			CodeElementHandler codeElementHandler = new CodeElementHandler();
 			handlers.add(codeElementHandler);
-			
+			// handler for quiz
+			QuizElementHandler quizElementHandler = new QuizElementHandler();
+			handlers.add(quizElementHandler);
+
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
 				if(mediaHandler instanceof PageElementHandler pageHandler) {
