@@ -56,6 +56,7 @@ public class ContentEditorFileStorage implements InitializingBean {
 	private File binderPostersDirectory;
 	private File mediaDirectory;
 	private File assignmentDirectory;
+	private File questionsDirectory;
 	
 	@Override
 	public void afterPropertiesSet() {
@@ -70,6 +71,7 @@ public class ContentEditorFileStorage implements InitializingBean {
 		pagesPostersDirectory = new File(postersDirectory, "pages");
 		mediaDirectory = new File(rootDirectory, "artefacts");
 		assignmentDirectory = new File(rootDirectory, "assignments");
+		questionsDirectory = new File(rootDirectory, "questions");
 	}
 	
 	public File getRootDirectory() {
@@ -80,7 +82,11 @@ public class ContentEditorFileStorage implements InitializingBean {
 		Path relPath = bcrootDirectory.toPath().relativize(file.toPath());
 		return relPath.toString();
 	}
-	
+
+	public File getFile(String relativePath) {
+		return new File(bcrootDirectory, relativePath);
+	}
+
 	public File generateBinderSubDirectory() {
 		String cleanUuid = UUID.randomUUID().toString().replace("-", "");
 		String firstToken = cleanUuid.substring(0, 2).toLowerCase();
@@ -227,6 +233,20 @@ public class ContentEditorFileStorage implements InitializingBean {
 		String cleanUuid = UUID.randomUUID().toString().replace("-", "");
 		String firstToken = cleanUuid.substring(0, 2).toLowerCase();
 		File dir = new File(mediaDirectory, firstToken);
+		if(!dir.exists()) {
+			dir.mkdirs();
+		}
+		return dir;
+	}
+
+	public File generateQuestionsSubDirectory() {
+		return generateSubDirectory(questionsDirectory);
+	}
+
+	private File generateSubDirectory(File parentDirectory) {
+		String cleanUuid = UUID.randomUUID().toString().replace("-", "");
+		String firstToken = cleanUuid.substring(0, 2).toLowerCase();
+		File dir = new File(parentDirectory, firstToken);
 		if(!dir.exists()) {
 			dir.mkdirs();
 		}
