@@ -149,9 +149,12 @@ public class PageDAO {
 		boolean deleteBody = oldBody.getUsage() <= 1;
 		if(deleteBody) {
 			oldBody = loadPageBodyByKey(oldBody.getKey());
-			for (PagePart pagePart : oldBody.getParts()) {
+
+			List<PagePart> pageParts = getParts(oldBody);
+			for (PagePart pagePart : pageParts) {
 				pagePart.beforeDelete();
 			}
+
 			String partQ = "delete from cepagepart part where part.body.key=:bodyKey";
 			dbInstance.getCurrentEntityManager()
 					.createQuery(partQ)
@@ -941,14 +944,16 @@ public class PageDAO {
 		int usage = getCountSharedPageBody(page);
 		boolean deleteBody = usage <= 1;
 		if(deleteBody) {
-			for (PagePart pagePart : body.getParts()) {
-				pagePart.beforeDelete();
-			}
 			String partQ = "delete from cepagepart part where part.body.key=:bodyKey";
 			parts = dbInstance.getCurrentEntityManager()
 					.createQuery(partQ)
 					.setParameter("bodyKey", body.getKey())
 					.executeUpdate();
+
+			List<PagePart> pageParts = getParts(body);
+			for (PagePart pagePart : pageParts) {
+				pagePart.beforeDelete();
+			}
 		}
 		
 		String assignmentQ = "delete from pfassignment assignment where assignment.page.key=:pageKey";
