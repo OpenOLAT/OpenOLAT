@@ -30,6 +30,7 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 
 /**
  * 
@@ -333,10 +334,14 @@ public class AssessmentToolPage {
 	public CoursePageFragment clickToolbarRootCrumb() {
 		try {
 			OOGraphene.scrollTop(browser);
-			By toolbarBackBy = By.xpath("//ol[@class='breadcrumb']/li[contains(@class,'o_first_crumb')]/a");
-			OOGraphene.waitElement(toolbarBackBy, browser);
+			if(browser instanceof ChromeDriver) {
+				OOGraphene.takeScreenshot("Assessment root crumb before", browser);
+			}
+
+			By firstCrumbBy = By.cssSelector("ol.breadcrumb>li:not(.o_display_none).o_first_crumb>a");
+			OOGraphene.waitElement(firstCrumbBy, browser);
+			browser.findElement(firstCrumbBy).click();
 			
-			browser.findElement(toolbarBackBy).click();
 			OOGraphene.waitBusy(browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Assessment root crumb", browser);
