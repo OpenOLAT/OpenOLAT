@@ -34,6 +34,8 @@ import org.olat.modules.ceditor.model.ImageSize;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
 import org.olat.modules.ceditor.model.MathSettings;
 import org.olat.modules.ceditor.model.MediaSettings;
+import org.olat.modules.ceditor.model.QuizQuestion;
+import org.olat.modules.ceditor.model.QuizSettings;
 import org.olat.modules.ceditor.model.TableColumn;
 import org.olat.modules.ceditor.model.TableContent;
 import org.olat.modules.ceditor.model.TableRow;
@@ -61,7 +63,8 @@ public class ContentEditorXStream {
 				TableContent.class, TableRow.class, TableColumn.class, TableSettings.class,
 				CodeSettings.class, CodeLanguage.class,
 				BlockLayoutSettings.class, MediaSettings.class, MathSettings.class,
-				AlertBoxSettings.class
+				AlertBoxSettings.class,
+				QuizSettings.class, QuizQuestion.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 
@@ -89,6 +92,9 @@ public class ContentEditorXStream {
 		xstream.alias("mathsettings", MathSettings.class);
 
 		xstream.alias("alertboxsettings", AlertBoxSettings.class);
+
+		xstream.alias("quizsettings", QuizSettings.class);
+		xstream.alias("quizquestion", QuizQuestion.class);
 	}
 	
 	public static String toXml(Object obj) {

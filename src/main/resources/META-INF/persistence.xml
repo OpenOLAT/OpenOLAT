@@ -200,6 +200,7 @@
 		<class>org.olat.modules.ceditor.model.jpa.HTMLPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.MathPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.ParagraphPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.QuizPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.ContainerPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.TitlePart</class>
 		<class>org.olat.modules.ceditor.model.jpa.MediaPart</class>

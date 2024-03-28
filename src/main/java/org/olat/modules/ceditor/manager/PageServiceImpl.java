@@ -77,6 +77,7 @@ import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.PageImpl;
+import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaVersion;
@@ -205,6 +206,9 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 		for(PagePart part:parts) {
 			PagePart newPart = part.copy();
 			copyBody = pageDao.persistPart(copyBody, newPart);
+			if (newPart.afterCopy()) {
+				newPart = pageDao.merge(newPart);
+			}
 			mapKeys.put(part.getKey().toString(), newPart.getKey().toString());
 		}
 
@@ -375,6 +379,12 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 			// Prevent lazy loading issues
 			Media media = mediaPart.getMedia();
 			if(media != null) {
+				media.getMetadataXml();
+			}
+		}
+		if (mergedPart instanceof QuizPart quizPart) {
+			Media media = quizPart.getBackgroundImageMedia();
+			if (media != null) {
 				media.getMetadataXml();
 			}
 		}

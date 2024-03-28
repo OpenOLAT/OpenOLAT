@@ -43,6 +43,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.PageBodyImpl;
 import org.olat.modules.ceditor.model.jpa.PageImpl;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
+import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.model.jpa.SpacerPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.ceditor.model.jpa.TitlePart;
@@ -73,7 +74,7 @@ public class PageXStream {
 				MediaVersion.class, MediaVersionImpl.class, MediaVersionMetadata.class, MediaVersionMetadataImpl.class,
 				ContainerPart.class, EvaluationFormPart.class,  HTMLPart.class, MathPart.class,
 				MediaPart.class, SpacerPart.class, TablePart.class, TitlePart.class, ParagraphPart.class,
-				CodePart.class,
+				CodePart.class, QuizPart.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.aliasType("page", PageImpl.class);
@@ -97,7 +98,7 @@ public class PageXStream {
 		xstream.omitField(MediaImpl.class, "versions");
 		xstream.aliasType("mediaVersion", MediaVersionImpl.class);
 		xstream.omitField(MediaVersionImpl.class, "metadata");
-		
+		xstream.aliasType("quizPart", QuizPart.class);
 	}
 	
 	public static final Page fromPath(Path path)
