@@ -99,7 +99,8 @@ public class AssessmentItemEditorController extends BasicController implements A
 
 	private final AssessmentItemRef itemRef;
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
-	
+	private final AssessmentItemEditorSettings settings;
+
 	private TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
@@ -130,11 +131,23 @@ public class AssessmentItemEditorController extends BasicController implements A
 	private QPoolService qpoolService;
 	@Autowired
 	private AssessmentService assessmentService;
-	
+
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
-			ResolvedAssessmentItem resolvedAssessmentItem,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit, boolean readOnly) {
+										  ResolvedAssessmentItem resolvedAssessmentItem,
+										  File rootDirectory, VFSContainer rootContainer, File itemFile,
+										  boolean restrictedEdit, boolean readOnly) {
+		this(ureq, wControl, resolvedAssessmentItem, rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly,
+				AssessmentItemEditorSettings.standard());
+	}
+
+	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
+										  ResolvedAssessmentItem resolvedAssessmentItem,
+										  File rootDirectory, VFSContainer rootContainer, File itemFile,
+										  boolean restrictedEdit, boolean readOnly,
+										  AssessmentItemEditorSettings settings
+	) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentItemDisplayController.class, ureq.getLocale()));
+		this.settings = settings;
 		this.itemRef = null;
 		this.itemFile = itemFile;
 		this.rootDirectory = rootDirectory;
@@ -156,23 +169,35 @@ public class AssessmentItemEditorController extends BasicController implements A
 			mainVC.put("tabbedpane", tabbedPane);
 	
 			initItemEditor(ureq);
-			
-			displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
-			listenTo(displayCtrl);
-			displayTabPosition = tabbedPane.addTab(translate("preview"), "o_sel_assessment_item_preview", displayCtrl);
-		
-			solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
-			listenTo(solutionCtrl);
-			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), "o_sel_assessment_item_solution", solutionCtrl);
+
+			if (settings.isWithPreview()) {
+				displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+				listenTo(displayCtrl);
+				displayTabPosition = tabbedPane.addTab(translate("preview"), "o_sel_assessment_item_preview", displayCtrl);
+
+				solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+				listenTo(solutionCtrl);
+				solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), "o_sel_assessment_item_solution", solutionCtrl);
+			}
 		}
 		
 		putInitialPanel(mainVC);
 	}
-	
+
+	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
+										  ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef,
+										  ManifestMetadataBuilder metadataBuilder, File rootDirectory,
+										  VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
+		this(ureq, wControl, testEntry, resolvedAssessmentItem, itemRef, metadataBuilder, rootDirectory, rootContainer,
+				itemFile, restrictedEdit, AssessmentItemEditorSettings.standard());
+	}
+
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, ManifestMetadataBuilder metadataBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit,
+			AssessmentItemEditorSettings settings) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentItemDisplayController.class, ureq.getLocale()));
+		this.settings = settings;
 		this.itemRef = itemRef;
 		this.metadataBuilder = metadataBuilder;
 		this.itemFile = itemFile;
@@ -204,17 +229,19 @@ public class AssessmentItemEditorController extends BasicController implements A
 			}
 
 			initItemEditor(ureq);
-			
-			AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, Boolean.TRUE, testEntry);
-			displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
-					resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
-			listenTo(displayCtrl);
-			displayTabPosition = tabbedPane.addTab(translate("preview"), "o_sel_assessment_item_preview", displayCtrl);
 
-			solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
-			listenTo(solutionCtrl);
-			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), "o_sel_assessment_item_solution", solutionCtrl);
-			
+			if (settings.isWithPreview()) {
+				AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, Boolean.TRUE, testEntry);
+				displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
+						resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
+				listenTo(displayCtrl);
+				displayTabPosition = tabbedPane.addTab(translate("preview"), "o_sel_assessment_item_preview", displayCtrl);
+
+				solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+				listenTo(solutionCtrl);
+				solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), "o_sel_assessment_item_solution", solutionCtrl);
+			}
+
 			if(poolEditor != null ) {
 				tabbedPane.addTab(translate("form.pool"), poolEditor);
 			}
@@ -316,16 +343,20 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, itemFile, rootDirectory,
-				restrictedEdit, readOnly, false);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, itemFile, rootDirectory,
+					restrictedEdit, readOnly, false);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), scItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.choice"), "o_sel_assessment_item_choice", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return scItemBuilder;
 	}
@@ -335,16 +366,20 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new MultipleChoiceEditorController(ureq, getWindowControl(), mcItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, itemFile, rootDirectory,
-				restrictedEdit, readOnly, true);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, itemFile, rootDirectory,
+					restrictedEdit, readOnly, true);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), mcItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.choice"), "o_sel_assessment_item_choice", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return mcItemBuilder;
 	}
@@ -354,15 +389,19 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new KPrimEditorController(ureq, getWindowControl(), kprimItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit, readOnly);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit, readOnly);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), kprimItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.kprim"), "o_sel_assessment_item_kprim", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return kprimItemBuilder;
 	}
@@ -372,16 +411,20 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new MatchEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory, true,
-				restrictedEdit, readOnly, true);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory, true,
+					restrictedEdit, readOnly, true);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.match"), "o_sel_assessment_item_match", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return matchItemBuilder;
 	}
@@ -391,9 +434,11 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new MatchEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory, true,
-				restrictedEdit, readOnly, true);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory, true,
+					restrictedEdit, readOnly, true);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
@@ -410,16 +455,20 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new TrueFalseEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory,false,
-				restrictedEdit, readOnly, false);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory, false,
+					restrictedEdit, readOnly, false);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.matchtruefalse"), "o_sel_assessment_item_truefalse", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return matchItemBuilder;
 	}
@@ -429,16 +478,20 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new FIBEditorController(ureq, getWindowControl(), fibItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new FIBScoreController(ureq, getWindowControl(), fibItemBuilder, itemRef,
-				restrictedEdit, readOnly);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new FIBScoreController(ureq, getWindowControl(), fibItemBuilder, itemRef,
+					restrictedEdit, readOnly);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), fibItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.fib"), "o_sel_assessment_item_fib", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return fibItemBuilder;
 	}
@@ -448,16 +501,20 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new HotspotEditorController(ureq, getWindowControl(), hotspotItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new HotspotChoiceScoreController(ureq, getWindowControl(), hotspotItemBuilder, itemRef, itemFile,
-				restrictedEdit, readOnly);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new HotspotChoiceScoreController(ureq, getWindowControl(), hotspotItemBuilder, itemRef, itemFile,
+					restrictedEdit, readOnly);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), hotspotItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.hotspot"), "o_sel_assessment_item_hotspot", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return hotspotItemBuilder;
 	}
@@ -467,15 +524,19 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new EssayEditorController(ureq, getWindowControl(), essayItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef, restrictedEdit, readOnly);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef, restrictedEdit, readOnly);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), essayItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.lobFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.essay"), "o_sel_assessment_item_essay", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return essayItemBuilder;
 	}
@@ -485,15 +546,19 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new UploadEditorController(ureq, getWindowControl(), uploadItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit, readOnly);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit, readOnly);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), uploadItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.lobFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.upload"), "o_sel_assessment_item_upload", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return uploadItemBuilder;
 	}
@@ -503,15 +568,19 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new DrawingEditorController(ureq, getWindowControl(), uploadItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit, readOnly);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit, readOnly);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), uploadItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.lobFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.drawing"), "o_sel_assessment_item_drawing", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return uploadItemBuilder;
 	}
@@ -521,16 +590,20 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new HottextEditorController(ureq, getWindowControl(), hottextItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), hottextItemBuilder, itemRef, itemFile, rootDirectory,
-				restrictedEdit, readOnly, true);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), hottextItemBuilder, itemRef, itemFile, rootDirectory,
+					restrictedEdit, readOnly, true);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), hottextItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 
 		tabbedPane.addTab(translate("form.hottext"), "o_sel_assessment_item_hottext", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return hottextItemBuilder;
 	}
@@ -540,15 +613,19 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new OrderEditorController(ureq, getWindowControl(), orderItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new OrderScoreController(ureq, getWindowControl(), orderItemBuilder, itemRef, restrictedEdit, readOnly);
-		listenTo(scoreEditor);
+		if (settings.isWithScore()) {
+			scoreEditor = new OrderScoreController(ureq, getWindowControl(), orderItemBuilder, itemRef, restrictedEdit, readOnly);
+			listenTo(scoreEditor);
+		}
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), orderItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 
 		tabbedPane.addTab(translate("form.order"), "o_sel_assessment_item_order", itemEditor);
-		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		if (settings.isWithScore()) {
+			tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		}
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return orderItemBuilder;
 	}
@@ -565,12 +642,15 @@ public class AssessmentItemEditorController extends BasicController implements A
 		listenTo(feedbackEditor);
 
 		tabbedPane.addTab(translate("form.inlinechoice"), "o_sel_assessment_item_inlinechoice", itemEditor);
-		tabbedPane.addTabControllerCreator(ureq, translate("form.score"), "o_sel_assessment_item_score", uureq -> {
-			removeAsListenerAndDispose(scoreEditor);
-			scoreEditor = new InlineChoiceScoreController(uureq, getWindowControl(), inlineChoiceItemBuilder, itemRef, restrictedEdit, readOnly);
-			listenTo(scoreEditor);
-			return scoreEditor;
-		}, true);
+		if (settings.isWithScore()) {
+			tabbedPane.addTabControllerCreator(ureq, translate("form.score"), "o_sel_assessment_item_score", uureq -> {
+				removeAsListenerAndDispose(scoreEditor);
+				scoreEditor = new InlineChoiceScoreController(uureq, getWindowControl(), inlineChoiceItemBuilder, itemRef, restrictedEdit, readOnly);
+				listenTo(scoreEditor);
+				return scoreEditor;
+			}, true);
+		}
+
 		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return inlineChoiceItemBuilder;
 	}
@@ -623,7 +703,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 				removeAsListenerAndDispose(solutionCtrl);
 				
 				solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
-				listenTo(displayCtrl);
+				listenTo(solutionCtrl);
 				tabbedPane.replaceTab(solutionTabPosition, solutionCtrl);
 			}
 		}

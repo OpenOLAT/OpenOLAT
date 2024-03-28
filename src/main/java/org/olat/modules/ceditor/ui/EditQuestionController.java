@@ -28,6 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
+import org.olat.ims.qti21.ui.editor.AssessmentItemEditorSettings;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.modules.ceditor.manager.ContentEditorQti;
 import org.olat.modules.ceditor.model.QuizQuestion;
@@ -73,7 +74,7 @@ public class EditQuestionController extends BasicController {
 				storageInfo.questionFile().toURI(), storageInfo.questionDirectory());
 		itemEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(),
 				resolvedAssessmentItem, storageInfo.questionDirectory(), storageInfo.questionContainer(),
-				storageInfo.questionFile(), false, false);
+				storageInfo.questionFile(), false, false, AssessmentItemEditorSettings.reduced());
 		listenTo(itemEditorCtrl);
 	}
 
