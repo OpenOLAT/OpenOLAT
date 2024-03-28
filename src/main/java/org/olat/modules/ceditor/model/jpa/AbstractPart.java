@@ -193,6 +193,11 @@ public abstract class AbstractPart implements Persistable, ModifiedInfo, CreateI
 	}
 
 	@Override
+	public boolean afterCopy() {
+		return false;
+	}
+
+	@Override
 	public int hashCode() {
 		return key == null ? 2396 : key.hashCode();
 	}
