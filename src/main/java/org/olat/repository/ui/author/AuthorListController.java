@@ -190,7 +190,6 @@ import org.olat.repository.ui.author.AuthoringEntryDataSource.AuthorSourceFilter
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryController;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
 import org.olat.repository.wizard.RepositoryWizardProvider;
-import org.olat.resource.OLATResource;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
@@ -1759,24 +1758,14 @@ public class AuthorListController extends FormBasicController implements Activat
 				.map(AuthoringEntryRow::getKey)
 				.toList();
 		List<RepositoryEntry> repositoryEntries = repositoryService.loadByKeys(repositoryEntryKeys);
-		List<OLATResource> resources = repositoryEntries.stream()
-				.map(RepositoryEntry::getOlatResource)
-				.toList();
-		boolean hasRunningTasks = taskExecutorManager.hasRunningTasks(resources);
-		if(hasRunningTasks) {
-			String title = translate("warning.running.archive.title");
-			String text = translate("warning.running.archive.text");
-			getWindowControl().setWarning(title, text);
-		} else {
-			BulkCoursesArchivesContext context = BulkCoursesArchivesContext.defaultValues(repositoryEntries, roles);
-			
-			Step start = new BulkCoursesArchives_1_RepositoryEntriesStep(ureq, context);
-			BulkCoursesArchivesFinishStepCallback finish = new BulkCoursesArchivesFinishStepCallback(context);
-			coursesArchivesWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-					translate("wizard.bulk.courses.archives.title"), "");
-			listenTo(coursesArchivesWizard);
-			getWindowControl().pushAsModalDialog(coursesArchivesWizard.getInitialComponent());
-		}
+		BulkCoursesArchivesContext context = BulkCoursesArchivesContext.defaultValues(repositoryEntries, roles);
+		
+		Step start = new BulkCoursesArchives_1_RepositoryEntriesStep(ureq, context);
+		BulkCoursesArchivesFinishStepCallback finish = new BulkCoursesArchivesFinishStepCallback(context);
+		coursesArchivesWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("wizard.bulk.courses.archives.title"), "");
+		listenTo(coursesArchivesWizard);
+		getWindowControl().pushAsModalDialog(coursesArchivesWizard.getInitialComponent());
 	}
 	
 	private void doCompleteCoursesArchives() {
