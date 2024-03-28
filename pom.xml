@@ -79,7 +79,7 @@
 		<io.jsonwebtoken>0.12.5</io.jsonwebtoken>
 		<io.undertow>2.3.12.Final</io.undertow>
 		<jackson.version>2.17.0</jackson.version>
-		<swagger.ui.version>5.12.0</swagger.ui.version>
+		<swagger.ui.version>5.12.2</swagger.ui.version>
 		<com.mysql.version>8.3.0</com.mysql.version>
 		<org.postgresql.version>42.7.3</org.postgresql.version>
 		<org.infinispan.version>14.0.25.Final</org.infinispan.version>
@@ -2007,7 +2007,7 @@
 		<dependency>
 			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
 			<artifactId>owasp-java-html-sanitizer</artifactId>
-			<version>20220608.1</version>
+			<version>20240325.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.css</groupId>
@@ -2215,7 +2215,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.14.3</version>
+			<version>1.15.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
@@ -2452,6 +2452,7 @@
 			<artifactId>gson</artifactId>
 			<version>2.10.1</version>
 		</dependency>
+		<!-- Used by microsoft graph -->
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
