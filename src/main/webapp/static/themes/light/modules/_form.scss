@@ -684,13 +684,13 @@ form .o_form, form.o_form {
 		.o_realchooser {
 			&:hover,
 			&:focus {
-				&+.o_dnd .btn {
+					&+script+.o_dnd .btn {
 					color: $btn-default-color;
-				    background-color: darken($btn-default-bg, 10%);
+				    background-color: darken($btn-default-bg, 5%);
 				}
 			}
 			/* same highlight style as in bootstrap form-control-focus mixin */
-			&:focus +.o_dnd .btn {
+			&:focus+script+.o_dnd .btn {
 				$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
 				border-color: $input-border-focus;
 				outline: 0;
@@ -700,6 +700,12 @@ form .o_form, form.o_form {
 	}
 	&.panel-placeholder:hover {
 		border-color: darken($o-panel-placeholder-border-color, 10%);
+		.o_dnd .btn {
+			$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
+			border-color: $input-border-focus;
+			outline: 0;
+			@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
+		}
 	}
 }
 /* hide error icon for file element - clash with file element controls */

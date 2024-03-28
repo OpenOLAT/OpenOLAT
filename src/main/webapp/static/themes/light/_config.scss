@@ -31,15 +31,26 @@
 @import "functions";
 
 /* bootstrap default is very white, use just a little bit more than just white */
-$btn-default-bg					: #fcfcfc !default;
+$btn-default-color				: #333 !default;
+$btn-default-bg					: #f8f8f8 !default;
+$btn-default-border				: #d4d4d4 !default;
 $dropdown-bg					: #fcfcfc !default; 
 $panel-bg						: #fcfcfc !default;
 $pagination-bg					: #fcfcfc !default;
 $pagination-active-color 		: #fcfcfc !default;
 $list-group-bg					: #fcfcfc !default;
 
-$input-bg						: #fcfcfc !default; 
-$input-bg-disabled				: #fafafa !default; /* lighter than default bootstrap */
+$input-bg						: #fff !default; 
+$input-border					: $btn-default-border !default;
+$input-bg-disabled				: #fafafa !default;
+$input-group-addon-bg			: $btn-default-bg !default;
+$input-group-addon-border-color	: $btn-default-border !default;
+
+/* pagination is must a special button, same style */
+$pagination-color				: $btn-default-color !default;
+$pagination-bg					: $btn-default-bg !default;
+$pagination-border				: $btn-default-border !default;
+$pagination-disabled-border		: $btn-default-border !default;
 
 /* a11y optimizations */
 $text-color						: #333 !default;
@@ -429,9 +440,9 @@ $o-coursesite-rowelem-space-sm	: 8px 	!default;
 $o-coursesite-rowelem-width-xs 	: 75px !default;
 $o-coursesite-rowelem-height-xs : 50px !default;
 $o-coursesite-rowelem-space-xs	: 0px 	!default;
-$o-coursesite-rowelem-border 	: #ccc !default; /* same as button default border */
+$o-coursesite-rowelem-border 	: $btn-default-border !default; 
 $o-coursesite-rowelem-border-radius : $border-radius-base !default;
-$o-coursesite-rowelem-bg		: #fcfcfc !default;
+$o-coursesite-rowelem-bg		: #fff !default;
 $o-coursesite-catalog-space 	: $padding-large-vertical * 2 !default;
 $o-coursesite-catalog-space-sm 	: $padding-large-vertical !default;
 $o-coursesite-catalog-space-xs 	: $padding-xs-vertical !default;
