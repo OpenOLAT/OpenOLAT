@@ -99,10 +99,10 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	@Test
 	public void getReadyToInactivateIdentities() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-1");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -910));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -910), null, null);
 
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-1");
-		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -710));
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -710), null, null);
 		dbInstance.commitAndCloseSession();
 		
 		Date beforeDate = DateUtils.addDays(new Date(), -900);
@@ -126,7 +126,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	@Test
 	public void getReadyToInactivateIdentitiesExcludeGuest() {
 		Identity guestId = securityManager.getAndUpdateAnonymousUserForLanguage(Locale.FRENCH);
-		identityDao.setIdentityLastLogin(guestId, DateUtils.addDays(new Date(), -910));
+		identityDao.setIdentityLastLogin(guestId, DateUtils.addDays(new Date(), -910), null, null);
 
 		Date beforeDate = DateUtils.addDays(new Date(), -900);
 		Date reactivationDateLimite = DateUtils.addDays(new Date(), -30);
@@ -137,11 +137,11 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	@Test
 	public void getIdentitiesToInactivate() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-3");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -905));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -905), null, null);
 		securityManager.saveIdentityStatus(id1, Identity.STATUS_PENDING, null);
 
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-4");
-		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -908));
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -908), null, null);
 		securityManager.saveIdentityStatus(id2, Identity.STATUS_PERMANENT, null);
 
 		dbInstance.commitAndCloseSession();
@@ -168,13 +168,13 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	@Test
 	public void getIdentitiesToDelete() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-5");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205), null, null);
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_INACTIVE, null);
 		((IdentityImpl)id1).setInactivationDate(DateUtils.addDays(new Date(), -240));
 		id1 = identityDao.saveIdentity(id1);
 
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-6");
-		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -1308));
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -1308), null, null);
 		id2 = securityManager.saveIdentityStatus(id2, Identity.STATUS_PERMANENT, null);
 
 		dbInstance.commitAndCloseSession();
@@ -196,13 +196,13 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	@Test
 	public void getReadyToDeleteIdentities() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-7");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205), null, null);
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_INACTIVE, null);
 		((IdentityImpl)id1).setInactivationDate(DateUtils.addDays(new Date(), -240));// fake inactivation date
 		id1 = identityDao.saveIdentity(id1);
 
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-8");
-		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -1308));
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -1308), null, null);
 		id2 = securityManager.saveIdentityStatus(id2, Identity.STATUS_PENDING, null);
 
 		dbInstance.commitAndCloseSession();
@@ -289,14 +289,14 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-26");
 		((IdentityImpl)id1).setExpirationDate( DateUtils.addDays(new Date(), -25));
 		id1 = identityDao.saveIdentity(id1);
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -25));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -25), null, null);
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-27");
 		((IdentityImpl)id2).setExpirationDate( DateUtils.addDays(new Date(), 1));
 		id2 = identityDao.saveIdentity(id2);
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-28");
 		((IdentityImpl)id3).setExpirationDate( DateUtils.addDays(new Date(), -5));
 		((IdentityImpl)id3).setExpirationEmailDate( DateUtils.addDays(new Date(), -15));
-		identityDao.setIdentityLastLogin(id3, DateUtils.addDays(new Date(), -1));
+		identityDao.setIdentityLastLogin(id3, DateUtils.addDays(new Date(), -1), null, null);
 		id3 = identityDao.saveIdentity(id3);
 		dbInstance.commitAndCloseSession();
 		
@@ -331,11 +331,11 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		Date now = new Date();
 		// inactivation long due
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-41");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -910));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -910), null, null);
 		dbInstance.commitAndCloseSession();
 		// last login within limit
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-42");
-		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -510));
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -510), null, null);
 		dbInstance.commitAndCloseSession();
 		
 		id1 = securityManager.loadIdentityByKey(id1.getKey());
@@ -357,7 +357,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		
 		// someone play
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-43");
-		identityDao.setIdentityLastLogin(id, DateUtils.addDays(new Date(), -910));
+		identityDao.setIdentityLastLogin(id, DateUtils.addDays(new Date(), -910), null, null);
 		dbInstance.commitAndCloseSession();
 		id = securityManager.saveIdentityStatus(id, Identity.STATUS_INACTIVE, null);
 		id = securityManager.saveIdentityStatus(id, Identity.STATUS_ACTIV, null);
@@ -378,7 +378,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		
 		// someone play
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-44");
-		identityDao.setIdentityLastLogin(id, DateUtils.addDays(new Date(), -410));
+		identityDao.setIdentityLastLogin(id, DateUtils.addDays(new Date(), -410), null, null);
 		dbInstance.commitAndCloseSession();
 		id = securityManager.saveIdentityStatus(id, Identity.STATUS_INACTIVE, null);
 		id = securityManager.saveIdentityStatus(id, Identity.STATUS_ACTIV, null);
@@ -398,7 +398,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		userModule.setMailCopyAfterDeactivation(null);
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-12");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205), null, null);
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, null);
 		// Artificially mail in past
 		((IdentityImpl)id1).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
@@ -425,7 +425,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		userModule.setMailCopyAfterDeactivation("copy@openolat.org");
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-cc-12");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205), null, null);
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, null);
 		// Artificially mail in past
 		((IdentityImpl)id1).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
@@ -451,7 +451,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		userModule.setNumberOfDayBeforeDeactivationMail(30);
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-1");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -910));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -910), null, null);
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_INACTIVE, id1);
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, id1);
 		dbInstance.commitAndCloseSession();
@@ -475,15 +475,15 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		userModule.setNumberOfDayBeforeDeactivationMail(30);
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-9");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205), null, null);
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, null);
 
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-10");
-		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -708));
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -708), null, null);
 		id2 = securityManager.saveIdentityStatus(id2, Identity.STATUS_PENDING, null);
 
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-11");
-		identityDao.setIdentityLastLogin(id3, DateUtils.addDays(new Date(), -1708));
+		identityDao.setIdentityLastLogin(id3, DateUtils.addDays(new Date(), -1708), null, null);
 		id3 = securityManager.saveIdentityStatus(id3, Identity.STATUS_PERMANENT, null);
 
 		dbInstance.commitAndCloseSession();
@@ -587,11 +587,11 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		idWithoutLogin = securityManager.saveIdentityStatus(idWithoutLogin, Identity.STATUS_ACTIV, null);
 
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-21");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -600));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -600), null, null);
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, null);
 
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-22");
-		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -600));
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -600), null, null);
 		id2 = securityManager.saveIdentityStatus(id2, Identity.STATUS_PENDING, null);
 		
 		dbInstance.commitAndCloseSession();
@@ -637,7 +637,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		userModule.setNumberOfDayBeforeDeactivationMail(30);
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-31");
-		identityDao.setIdentityLastLogin(id, DateUtils.addDays(new Date(), -180));
+		identityDao.setIdentityLastLogin(id, DateUtils.addDays(new Date(), -180), null, null);
 		id = securityManager.saveIdentityStatus(id, Identity.STATUS_INACTIVE, null);
 		id = securityManager.saveIdentityStatus(id, Identity.STATUS_ACTIV, null);
 		dbInstance.commitAndCloseSession();
@@ -664,14 +664,14 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		Assert.assertTrue(userModule.isUserAutomaticDeletion());
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-11");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205), null, null);
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_INACTIVE, null);
 		((IdentityImpl)id1).setInactivationDate(DateUtils.addDays(new Date(), -1000));
 		((IdentityImpl)id1).setInactivationEmailDate(DateUtils.addDays(new Date(), -1030));
 		id1 = identityDao.saveIdentity(id1);
 
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-12");
-		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -1308));
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -1308), null, null);
 		id2 = securityManager.saveIdentityStatus(id2, Identity.STATUS_PENDING, null);
 
 		dbInstance.commitAndCloseSession();
@@ -729,24 +729,24 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 	@Test
 	public void deleteIdentitiesProcess() {
 		Identity staleIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-14");
-		identityDao.setIdentityLastLogin(staleIdentity, DateUtils.addDays(new Date(), -1205));
+		identityDao.setIdentityLastLogin(staleIdentity, DateUtils.addDays(new Date(), -1205), null, null);
 		staleIdentity = securityManager.saveIdentityStatus(staleIdentity, Identity.STATUS_ACTIV, null);
 		
 		Identity readyToInactivate = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-14");
-		identityDao.setIdentityLastLogin(readyToInactivate, DateUtils.addDays(new Date(), -1205));
+		identityDao.setIdentityLastLogin(readyToInactivate, DateUtils.addDays(new Date(), -1205), null, null);
 		readyToInactivate = securityManager.saveIdentityStatus(readyToInactivate, Identity.STATUS_ACTIV, null);
 		((IdentityImpl)readyToInactivate).setInactivationEmailDate(DateUtils.addDays(new Date(), -1030));
 		readyToInactivate = identityDao.saveIdentity(readyToInactivate);
 		
 		Identity readyToDelete = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-15");
-		identityDao.setIdentityLastLogin(readyToDelete, DateUtils.addDays(new Date(), -1205));
+		identityDao.setIdentityLastLogin(readyToDelete, DateUtils.addDays(new Date(), -1205), null, null);
 		readyToDelete = securityManager.saveIdentityStatus(readyToDelete, Identity.STATUS_INACTIVE, null);
 		((IdentityImpl)readyToDelete).setInactivationDate(DateUtils.addDays(new Date(), -1000));
 		((IdentityImpl)readyToDelete).setInactivationEmailDate(DateUtils.addDays(new Date(), -1030));
 		readyToDelete = identityDao.saveIdentity(readyToDelete);
 		
 		Identity deleteMailSent = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-16");
-		identityDao.setIdentityLastLogin(deleteMailSent, DateUtils.addDays(new Date(), -1205));
+		identityDao.setIdentityLastLogin(deleteMailSent, DateUtils.addDays(new Date(), -1205), null, null);
 		deleteMailSent = securityManager.saveIdentityStatus(deleteMailSent, Identity.STATUS_INACTIVE, null);
 		((IdentityImpl)deleteMailSent).setInactivationDate(DateUtils.addDays(new Date(), -1000));
 		((IdentityImpl)deleteMailSent).setInactivationEmailDate(DateUtils.addDays(new Date(), -1030));
@@ -754,7 +754,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		deleteMailSent = identityDao.saveIdentity(deleteMailSent);
 
 		Identity pendingUser = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-17");
-		identityDao.setIdentityLastLogin(pendingUser, DateUtils.addDays(new Date(), -1308));
+		identityDao.setIdentityLastLogin(pendingUser, DateUtils.addDays(new Date(), -1308), null, null);
 		pendingUser = securityManager.saveIdentityStatus(pendingUser, Identity.STATUS_PENDING, null);
 
 		dbInstance.commitAndCloseSession();
@@ -832,11 +832,11 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		idWithoutLogin = securityManager.saveIdentityStatus(idWithoutLogin, Identity.STATUS_ACTIV, null);
 
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-31");
-		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -750));
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -750), null, null);
 		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, null);
 
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-32");
-		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -782));
+		identityDao.setIdentityLastLogin(id2, DateUtils.addDays(new Date(), -782), null, null);
 		id2 = securityManager.saveIdentityStatus(id2, Identity.STATUS_PENDING, null);
 		
 		dbInstance.commitAndCloseSession();

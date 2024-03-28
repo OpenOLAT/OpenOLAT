@@ -89,6 +89,9 @@ public class IdentityImpl implements Identity {
 	private int status;
 
 	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="plannedinactivationdate", nullable=true, insertable=true, updatable=true)
+	private Date plannedInactivationDate;
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="inactivationdate", nullable=true, insertable=true, updatable=true)
 	private Date inactivationDate;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -104,6 +107,9 @@ public class IdentityImpl implements Identity {
 	@Column(name="expirationemaildate", nullable=true, insertable=true, updatable=true)
 	private Date expirationEmailDate;
 
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="planneddeletiondate", nullable=true, insertable=true, updatable=true)
+	private Date plannedDeletionDate;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="deleteddate", nullable=true, insertable=true, updatable=true)
 	private Date deletedDate;
@@ -224,6 +230,15 @@ public class IdentityImpl implements Identity {
 		this.status = status == null ? 0 : status.intValue();
 	}
 
+	@Override
+	public Date getPlannedDeletionDate() {
+		return plannedDeletionDate;
+	}
+
+	public void setPlannedDeletionDate(Date plannedDeletionDate) {
+		this.plannedDeletionDate = plannedDeletionDate;
+	}
+
 	public Date getDeletedDate() {
 		return deletedDate;
 	}
@@ -248,12 +263,22 @@ public class IdentityImpl implements Identity {
 		this.deletedBy = deletedBy;
 	}
 
+	@Override
 	public Date getDeletionEmailDate() {
 		return deletionEmailDate;
 	}
 
 	public void setDeletionEmailDate(Date deletionEmailDate) {
 		this.deletionEmailDate = deletionEmailDate;
+	}
+
+	@Override
+	public Date getPlannedInactivationDate() {
+		return plannedInactivationDate;
+	}
+
+	public void setPlannedInactivationDate(Date plannedInactivationDate) {
+		this.plannedInactivationDate = plannedInactivationDate;
 	}
 
 	@Override

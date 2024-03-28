@@ -62,6 +62,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTablePeriodFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -127,6 +128,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	public static final String LOGIN_DENIED_TAB_ID = "LoginDenied";
 	public static final String FILTER_STATUS = "status";
 	public static final String FILTER_ORGANISATIONS = "organisations";
+	public static final String FILTER_INACTIVATION_IN_DATE = "inactivation.in";
+	public static final String FILTER_INACTIVATION_SINCE_DATE = "inactivation.since";
 	
 	private Link nextLink;
 	private Link previousLink;
@@ -241,9 +244,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		DateFlexiCellRenderer dateRenderer = new DateFlexiCellRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.inactivationDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.expirationDate, dateRenderer));
-		if(userModule.isUserAutomaticDeactivation()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.daysToInactivation));
-		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.daysToInactivation));
 		if(userModule.isUserAutomaticDeletion()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.daysToDeletion));
 		}
@@ -338,6 +339,11 @@ public class UserSearchTableController extends FormBasicController implements Ac
 					FILTER_ORGANISATIONS, organisationsValues, true));
 		}
 		
+		filters.add(new FlexiTablePeriodFilter(translate("filter.inactivation.in"),
+				FILTER_INACTIVATION_IN_DATE, true, getLocale()));
+		filters.add(new FlexiTablePeriodFilter(translate("filter.inactivation.since"),
+				FILTER_INACTIVATION_SINCE_DATE, true, getLocale()));
+
 		if(!filters.isEmpty()) {
 			tableEl.setFilters(true, filters, false, false);
 		}

@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.group.ui.lifecycle.TranslationBundle;
+import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserModule;
 import org.olat.user.manager.lifecycle.LifecycleMailTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +94,8 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	
 	@Autowired
 	private UserModule userModule;
+	@Autowired
+	private TaskExecutorManager taskExecutorManager;
 	
 	public UserAdminLifecycleConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -418,6 +423,8 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		}
 		userModule.setMailCopyAfterDeletion(formatAndCheckMails(copyMailAfterDeletionEl.getValue()));
 		userModule.setMailCopyBeforeDeletion(formatAndCheckMails(copyMailBeforeDeletionEl.getValue()));
+		
+		taskExecutorManager.execute(new UpdatePlannedInactivationDates());
 	}
 	
 	/**
@@ -463,5 +470,14 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), translatorCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private static final class UpdatePlannedInactivationDates implements Runnable {
+
+		@Override
+		public void run() {
+			CoreSpringFactory.getImpl(UserLifecycleManager.class)
+				.updatePlannedInactivationDates();
+		}
 	}
 }

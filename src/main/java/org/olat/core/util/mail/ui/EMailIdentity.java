@@ -85,6 +85,11 @@ public class EMailIdentity implements Identity {
 	}
 	
 	@Override
+	public Date getPlannedInactivationDate() {
+		return null;
+	}
+
+	@Override
 	public Date getInactivationDate() {
 		return null;
 	}
@@ -96,6 +101,11 @@ public class EMailIdentity implements Identity {
 	
 	@Override
 	public Date getExpirationDate() {
+		return null;
+	}
+	
+	@Override
+	public Date getPlannedDeletionDate() {
 		return null;
 	}
 

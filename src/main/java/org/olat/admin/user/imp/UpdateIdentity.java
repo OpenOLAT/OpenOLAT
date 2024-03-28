@@ -121,6 +121,11 @@ public class UpdateIdentity implements Identity {
 	}
 	
 	@Override
+	public Date getPlannedInactivationDate() {
+		return null;
+	}
+	
+	@Override
 	public Date getInactivationDate() {
 		return identity.getInactivationDate();
 	}
@@ -133,6 +138,11 @@ public class UpdateIdentity implements Identity {
 	@Override
 	public Date getExpirationDate() {
 		return expirationDate;
+	}
+	
+	@Override
+	public Date getPlannedDeletionDate() {
+		return null;
 	}
 	
 	@Override

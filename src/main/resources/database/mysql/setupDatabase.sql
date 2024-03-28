@@ -203,14 +203,17 @@ create table if not exists o_bs_identity (
    deleteddate datetime,
    deletedroles varchar(1024),
    deletedby varchar(128),
+   plannedinactivationdate datetime,
    inactivationdate datetime,
    inactivationemaildate datetime,
    expirationdate datetime,
    expirationemaildate datetime,
    reactivationdate datetime,
+   planneddeletiondate datetime,
    deletionemaildate datetime,
    primary key (id)
 );
+
 create table o_bs_relation_role (
    id bigint not null auto_increment,
    creationdate datetime not null,

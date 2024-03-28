@@ -38,7 +38,11 @@ public interface UserLifecycleManager {
 	
 	public Date getDateUntilDeactivation(IdentityLifecycle identity);
 	
+	public Date getDateUntilDeactivation(IdentityLifecycle identity, Date login);
+	
 	public long getDaysUntilDeletion(IdentityLifecycle identity, Date referenceDate);
+
+	public Date getDateUntilDeletion(IdentityLifecycle identity);
 	
 	/**
 	 * Check if there are identities which expiration dates are .
@@ -64,5 +68,8 @@ public interface UserLifecycleManager {
 	 * @return true: delete was successful; false: delete could not finish
 	 */
 	public boolean deleteIdentity(Identity identity, Identity doer);
+	
+	
+	public boolean updatePlannedInactivationDates();
 
 }

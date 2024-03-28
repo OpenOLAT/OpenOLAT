@@ -216,11 +216,13 @@ CREATE TABLE o_bs_identity (
   deleteddate date,
   deletedroles varchar(1024),
   deletedby varchar(128),
+  plannedinactivationdate date,
   inactivationdate date,
   inactivationemaildate date,
   expirationdate date,
   expirationemaildate date,
   reactivationdate date,
+  planneddeletiondate date,
   deletionemaildate date,
   CONSTRAINT u_o_bs_identity UNIQUE (name),
   PRIMARY KEY (id)

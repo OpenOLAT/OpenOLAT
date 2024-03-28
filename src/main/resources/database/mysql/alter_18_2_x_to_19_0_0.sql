@@ -26,3 +26,7 @@ alter table o_ex_export_metadata add constraint export_to_vfsdata_idx foreign ke
 
 -- Content Editor
 alter table o_ce_page_part add column p_storage_path varchar(255);
+
+-- Identity
+alter table o_bs_identity add column plannedinactivationdate datetime;
+alter table o_bs_identity add column planneddeletiondate datetime;

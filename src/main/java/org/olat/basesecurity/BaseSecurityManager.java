@@ -79,6 +79,7 @@ import org.olat.login.LoginModule;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserImpl;
+import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -109,6 +110,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private UserLifecycleManager userLifecycleManager;
 	@Autowired
 	private AuthenticationHistoryDAO authenticationHistoryDao;
 	@Autowired
@@ -372,6 +375,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			user.setProperty(UserConstants.NICKNAME, nickName);
 		}
 		iimpl.setExpirationDate(expirationDate);
+		iimpl.setPlannedInactivationDate(userLifecycleManager.getDateUntilDeactivation(iimpl));
+		iimpl.setPlannedDeletionDate(userLifecycleManager.getDateUntilDeletion(iimpl));
 		dbInstance.getCurrentEntityManager().persist(user);
 		if(StringHelper.containsNonWhitespace(legacyName)) {
 			iimpl.setName(legacyName);
@@ -1157,6 +1162,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 					|| status.equals(Identity.STATUS_LOGIN_DENIED)) {
 				reloadedIdentity.setInactivationDate(null);
 			}
+			reloadedIdentity.setPlannedInactivationDate(userLifecycleManager.getDateUntilDeactivation(reloadedIdentity));
+			reloadedIdentity.setPlannedDeletionDate(userLifecycleManager.getDateUntilDeletion(reloadedIdentity));
 			reloadedIdentity = (IdentityImpl)identityDao.saveIdentity(reloadedIdentity);
 		}
 		dbInstance.commit();
@@ -1177,6 +1184,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			} else {
 				reloadedIdentity.setExpirationDate(expirationDate);
 			}
+
+			reloadedIdentity.setPlannedInactivationDate(userLifecycleManager.getDateUntilDeactivation(reloadedIdentity));
+			reloadedIdentity.setPlannedDeletionDate(userLifecycleManager.getDateUntilDeletion(reloadedIdentity));
 			reloadedIdentity = (IdentityImpl)identityDao.saveIdentity(reloadedIdentity);
 		}
 		dbInstance.commit();
@@ -1195,6 +1205,10 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 				reloadedIdentity.setExpirationDate(null);
 				reloadedIdentity.setExpirationEmailDate(null);
 			}
+			
+			reloadedIdentity.setPlannedInactivationDate(userLifecycleManager.getDateUntilDeactivation(reloadedIdentity));
+			reloadedIdentity.setPlannedDeletionDate(userLifecycleManager.getDateUntilDeletion(reloadedIdentity));
+			reloadedIdentity = (IdentityImpl)identityDao.saveIdentity(reloadedIdentity);
 		}
 		dbInstance.commit();
 		return reloadedIdentity;
@@ -1215,6 +1229,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			}
 
 			reloadedIdentity.setDeletedRoles(deletedRoleBuffer.toString());
+			reloadedIdentity.setPlannedInactivationDate(userLifecycleManager.getDateUntilDeactivation(reloadedIdentity));
+			reloadedIdentity.setPlannedDeletionDate(userLifecycleManager.getDateUntilDeletion(reloadedIdentity));
 			reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
 			dbInstance.commit();
 		}
@@ -1239,8 +1255,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 
 	@Override
-	public void setIdentityLastLogin(IdentityRef identity) {
-		identityDao.setIdentityLastLogin(identity, new Date());
+	public void setIdentityLastLogin(Identity identity) {
+		Date now = new Date();
+		Date plannedInactivationDate = userLifecycleManager.getDateUntilDeactivation(identity, now);
+		Date plannedDeletitionDate = userLifecycleManager.getDateUntilDeletion(identity);
+		identityDao.setIdentityLastLogin(identity, now, plannedInactivationDate, plannedDeletitionDate);
 		dbInstance.commit();
 	}
 	

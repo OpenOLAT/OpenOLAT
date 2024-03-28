@@ -165,6 +165,11 @@ public final class PreviewIdentity implements Identity, User {
 	}
 
 	@Override
+	public Date getPlannedInactivationDate() {
+		return null;
+	}
+
+	@Override
 	public Date getInactivationDate() {
 		return null;
 	}
@@ -176,6 +181,11 @@ public final class PreviewIdentity implements Identity, User {
 
 	@Override
 	public Date getExpirationDate() {
+		return null;
+	}
+	
+	@Override
+	public Date getPlannedDeletionDate() {
 		return null;
 	}
 	

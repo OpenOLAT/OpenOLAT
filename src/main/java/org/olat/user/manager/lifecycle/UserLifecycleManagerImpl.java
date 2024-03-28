@@ -36,6 +36,7 @@ import jakarta.persistence.TypedQuery;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -76,6 +77,8 @@ import org.springframework.stereotype.Service;
 public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	
 	private static final Logger log = Tracing.createLoggerFor(UserLifecycleManagerImpl.class);
+	
+	private static final int UPDATE_BATCH_SIZE = 10000;
 	
 	@Autowired
 	private DB dbInstance;
@@ -127,23 +130,33 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		if(lastLogin == null) {
 			lastLogin = identity.getCreationDate();
 		}
-		
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DATE, userModule.getNumberOfInactiveDayBeforeDeactivation());
-		Date deactivationDate = cal.getTime();
-		
-		Date reactivationDate = identity.getReactivationDate();
-		if(reactivationDate != null ) {
-			cal.setTime(reactivationDate);
-			cal.add(Calendar.DATE, userModule.getNumberOfInactiveDayBeforeDeactivation());
-			Date reDeactivationDate = cal.getTime();
-			if(reDeactivationDate.before(deactivationDate)) {
-				deactivationDate = reDeactivationDate;
-			}
-		}
+		return getDateUntilDeactivation(identity, lastLogin);
+	}
 
-		if(identity.getExpirationDate() != null && identity.getExpirationDate().before(deactivationDate)) {
-			deactivationDate = identity.getExpirationDate();
+	@Override
+	public Date getDateUntilDeactivation(IdentityLifecycle identity, Date lastLogin) {
+		Date deactivationDate = null;
+		Integer status = identity.getStatus();
+		
+		if(Identity.STATUS_ACTIV.equals(status) || Identity.STATUS_PENDING.equals(status) || Identity.STATUS_LOGIN_DENIED.equals(status)) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(lastLogin);
+			cal.add(Calendar.DATE, userModule.getNumberOfInactiveDayBeforeDeactivation());
+			deactivationDate = cal.getTime();
+			
+			Date reactivationDate = identity.getReactivationDate();
+			if(reactivationDate != null ) {
+				cal.setTime(reactivationDate);
+				cal.add(Calendar.DATE, userModule.getNumberOfInactiveDayBeforeDeactivation());
+				Date reDeactivationDate = cal.getTime();
+				if(reDeactivationDate.before(deactivationDate)) {
+					deactivationDate = reDeactivationDate;
+				}
+			}
+	
+			if(identity.getExpirationDate() != null && identity.getExpirationDate().before(deactivationDate)) {
+				deactivationDate = identity.getExpirationDate();
+			}
 		}
 		return deactivationDate;
 	}
@@ -164,7 +177,20 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		} 
 		return days > 0l ? days : 1l;
 	}
-	
+
+	@Override
+	public Date getDateUntilDeletion(IdentityLifecycle identity) {
+		if(identity == null || identity.getInactivationDate() == null
+				|| Identity.STATUS_DELETED.equals(identity.getStatus())) {
+			return null;
+		}
+		
+		Calendar cal = Calendar.getInstance();
+		long days = getDaysUntilDeletion(identity, cal.getTime());
+		cal.add(Calendar.DATE, (int)days);
+		return cal.getTime();
+	}
+
 	public List<Identity> getIdentitiesByExpirationDateToEmail(Date referenceDate) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
@@ -282,16 +308,22 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	
 	public Identity setIdentityInactivationMail(Identity identity) {
 		((IdentityImpl)identity).setInactivationEmailDate(new Date());
+		((IdentityImpl)identity).setPlannedInactivationDate(getDateUntilDeactivation(identity));
+		((IdentityImpl)identity).setPlannedDeletionDate(getDateUntilDeletion(identity));
 		return identityDao.saveIdentity(identity);
 	}
 	
 	public Identity setIdentityDeletionMail(Identity identity) {
 		((IdentityImpl)identity).setDeletionEmailDate(new Date());
+		((IdentityImpl)identity).setPlannedInactivationDate(getDateUntilDeactivation(identity));
+		((IdentityImpl)identity).setPlannedDeletionDate(getDateUntilDeletion(identity));
 		return identityDao.saveIdentity(identity);
 	}
 	
 	public Identity setIdentityExpirationMail(Identity identity) {
 		((IdentityImpl)identity).setExpirationEmailDate(new Date());
+		((IdentityImpl)identity).setPlannedInactivationDate(getDateUntilDeactivation(identity));
+		((IdentityImpl)identity).setPlannedDeletionDate(getDateUntilDeletion(identity));
 		return identityDao.saveIdentity(identity);
 	}
 
@@ -382,15 +414,15 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		boolean sendMailBeforeDeletion = userModule.isMailBeforeDeletion() && numOfDaysBeforeEmail > 0;
 		if(sendMailBeforeDeletion) {
 			int days = numOfDaysBeforeDeletion - numOfDaysBeforeEmail;
-			String[] i18nParams = new String[] { Integer.toString(days) };
+			String i18nParam = Integer.toString(days);
 			Date lastLoginDate = getDate(days);
 			List<Identity> identities = getReadyToDeleteIdentities(lastLoginDate);
 			if(!identities.isEmpty()) {
 				for(Identity identity:identities) {
 					if(identity.getLastLogin() != null) {
 
-						sendEmail(identity, "mail.before.deletion.subject", i18nParams, "mail.before.deletion.body", i18nParams, "before deletion", false);
-						sendEmailCopy(userModule.getMailCopyBeforeDeletion(), "mail.before.deletion.subject", i18nParams, "mail.before.deletion.body", i18nParams, "before deletion", identity);
+						sendEmail(identity, "mail.before.deletion.subject", "mail.before.deletion.body", i18nParam, "before deletion", false);
+						sendEmailCopy(userModule.getMailCopyBeforeDeletion(), "mail.before.deletion.subject", "mail.before.deletion.body", i18nParam, "before deletion", identity);
 						identity = setIdentityDeletionMail(identity);
 						vetoed.add(identity);
 					}
@@ -494,25 +526,26 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	}	
 	
 	private void sendEmail(Identity identity, String subjectI18nKey, String bodyI18nKey, String type, boolean externalOnly) {
-		sendEmail(identity, subjectI18nKey, null, bodyI18nKey, null, type, externalOnly);
+		sendEmail(identity, subjectI18nKey, bodyI18nKey, "", type, externalOnly);
 	}
 	
-	private void sendEmail(Identity identity, String subjectI18nKey, String[] subjectParams, String bodyI18nKey, String[] bodyParams, String type, boolean externalOnly) {
+	private void sendEmail(Identity identity, String subjectI18nKey, String bodyI18nKey, String additionalParam, String type, boolean externalOnly) {
 		String language = identity.getUser().getPreferences().getLanguage();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
 		Translator translator = Util.createPackageTranslator(UserAdminLifecycleConfigurationController.class, locale);
 		
-		String subject = translator.translate(subjectI18nKey, subjectParams);
-		String body = translator.translate(bodyI18nKey, bodyParams);
+		String subject = translator.translate(subjectI18nKey, additionalParam);
+		String body = translator.translate(bodyI18nKey, additionalParam);
 		LifecycleMailTemplate template = new LifecycleMailTemplate(subject, body, locale);
 		
 		sendUserEmailTo(identity, template, type, externalOnly);
 	}
 	
 	private void sendEmailCopy(List<String> receivers, String subjectI18nKey, String bodyI18nKey, String type, Identity identity) {
-		sendEmailCopy(receivers, subjectI18nKey, null, bodyI18nKey, null, type, identity);
-	}	
-	private void sendEmailCopy(List<String> receivers, String subjectI18nKey, String[] subjectParams, String bodyI18nKey, String[] bodyParams, String type, Identity identity) {
+		sendEmailCopy(receivers, subjectI18nKey, bodyI18nKey, "", type, identity);
+	}
+	
+	private void sendEmailCopy(List<String> receivers, String subjectI18nKey, String bodyI18nKey, String additionalParam, String type, Identity identity) {
 		if (receivers == null || receivers.isEmpty()) {
 			return;
 		}
@@ -521,12 +554,13 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		Translator translator = Util.createPackageTranslator(UserAdminLifecycleConfigurationController.class, locale);
 		User user = identity.getUser();
 		
-		String subject = translator.translate(subjectI18nKey);
-		String body = translator.translate("mail.copy.addition", new String[] {
+		String subject = translator.translate(subjectI18nKey, additionalParam);
+		String body = translator.translate("mail.copy.addition",
 				StringHelper.escapeHtml(user.getFirstName()),
 				StringHelper.escapeHtml(user.getLastName()),
-				StringHelper.escapeHtml(user.getEmail())
-				}) + translator.translate(bodyI18nKey);
+				StringHelper.escapeHtml(user.getEmail()),
+				additionalParam);
+		body += translator.translate(bodyI18nKey);
 		LifecycleMailTemplate template = new LifecycleMailTemplate(subject, body, locale);
 		
 		for (String receiver : receivers) {
@@ -566,6 +600,59 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			mailManager.sendExternMessage(bundle, result, true);
 		}
 		log.info(Tracing.M_AUDIT, "User lifecycle {} send copy regarding identity={} to email={}", type, identity.getKey(), receiver);
+	}
+	
+	@Override
+	public boolean updatePlannedInactivationDates() {
+		try {
+			log.info("Start updating planned inactivation date of identities.");
+			
+			int counter = 0;
+			List<Identity> identities;
+			do {
+				identities = getIdentities(counter, UPDATE_BATCH_SIZE);
+				for(int i=0; i<identities.size(); i++) {
+					Identity identity = identities.get(i);
+					Date plannedInactivation = getDateUntilDeactivation(identity);
+					Date plannedDeletion = getDateUntilDeletion(identity);
+					updatePlannedDates(identity, plannedInactivation, plannedDeletion);
+					if(i % 25 == 0) {
+						dbInstance.commitAndCloseSession();
+					}
+				}
+				counter += identities.size();
+				log.info(Tracing.M_AUDIT, "Updated identities: {} total processed ({})", identities.size(), counter);
+				dbInstance.commitAndCloseSession();
+			} while (identities.size() == UPDATE_BATCH_SIZE);
+
+			log.info("Update of planned inactivation date of identities finished.");
+			return true;
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
+	
+	private void updatePlannedDates(IdentityRef identity, Date plannedInactivationDate, Date plannedDeletionDate) {
+		String query = "update bidentitylastlogin set plannedInactivationDate=:plannedInactivationDate, plannedDeletionDate=:plannedDeletionDate where key=:identityKey";
+		dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("plannedInactivationDate", plannedInactivationDate)
+				.setParameter("plannedDeletionDate", plannedDeletionDate)
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+	}
+	
+	private List<Identity> getIdentities(int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" order by ident.key");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
 	}
 	
 	private Date getDate(int days) {

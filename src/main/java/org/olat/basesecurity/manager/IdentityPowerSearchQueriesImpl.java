@@ -107,9 +107,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		  .append(" ident.creationDate as ident_cDate,")
 		  .append(" ident.lastLogin as ident_lDate,")
 		  .append(" ident.status as ident_Status,")
+		  .append(" ident.plannedInactivationDate as ident_planiDate,")
 		  .append(" ident.inactivationDate as ident_iDate,")
 		  .append(" ident.reactivationDate as ident_rDate,")
 		  .append(" ident.expirationDate as ident_eDate,")
+		  .append(" ident.plannedDeletionDate as ident_plandeDate,")
 		  .append(" ident.deletionEmailDate as ident_deDate,");
 		writeUserProperties("user", sb, userPropertyHandlers);
 		sb.append(" user.key as ident_user_id")
@@ -134,9 +136,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			Date creationDate = (Date)rawObject[pos++];
 			Date lastLogin = (Date)rawObject[pos++];
 			Integer status = (Integer)rawObject[pos++];
+			Date plannedInactivationDate = (Date)rawObject[pos++];
 			Date inactivationDate = (Date)rawObject[pos++];
 			Date reactivationDate = (Date)rawObject[pos++];
 			Date expirationDate = (Date)rawObject[pos++];
+			Date plannedDeletionDate = (Date)rawObject[pos++];
 			Date deletionEmailDate = (Date)rawObject[pos++];
 
 			String[] userProperties = new String[numOfProperties];
@@ -145,7 +149,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			}
 			
 			IdentityPropertiesRow row = new IdentityPropertiesRow(identityKey, creationDate, lastLogin, status,
-					inactivationDate, reactivationDate, expirationDate, deletionEmailDate,
+					plannedInactivationDate, inactivationDate, reactivationDate,
+					expirationDate, plannedDeletionDate, deletionEmailDate,
 					userPropertyHandlers, userProperties, locale);
 			rows.add(row);
 			rowsKeys.add(identityKey);
@@ -609,6 +614,14 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" ident.lastLogin <= :lastloginBefore ");
 		}
+		if(params.getExpireIn() != null) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" ident.plannedInactivationDate <= :expireIn");
+		}
+		if(params.getExpiredSince() != null) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" ident.inactivationDate >= :expiredSince");
+		}
 		return needsAnd;
 	}
 	
@@ -639,10 +652,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			case "status":
 				sb.append(" order by ident.status ").append(orderBy.isAsc() ? "asc" : "desc");
 				break;
-			case "daysToDeletion":
 			case "daysToInactivation":
-				//sb.append(" order by case when ident.expirationDate > ident.reactivationDate then ident.reactivationDate else ident.expirationDate end nulls last");
-				sb.append(" order by ident.lastLogin ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
+				sb.append(" order by ident.plannedInactivationDate ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
+				break;
+			case "daysToDeletion":
+				sb.append(" order by ident.plannedDeletionDate ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
 				break;
 			default:
 				sb.append(" order by lower(user.").append(orderBy.getKey()).append(") ").append(orderBy.isAsc() ? "asc" : "desc");
@@ -758,6 +772,12 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		}
 		if(params.getUserLoginBefore() != null){
 			dbq.setParameter("lastloginBefore", params.getUserLoginBefore(), TemporalType.TIMESTAMP);
+		}
+		if(params.getExpireIn() != null) {
+			dbq.setParameter("expireIn", params.getExpireIn(), TemporalType.TIMESTAMP);
+		}
+		if(params.getExpiredSince() != null) {
+			dbq.setParameter("expiredSince", params.getExpiredSince(), TemporalType.TIMESTAMP);
 		}
 		
 		if(params.getExactStatusList() != null && !params.getExactStatusList().isEmpty()) {

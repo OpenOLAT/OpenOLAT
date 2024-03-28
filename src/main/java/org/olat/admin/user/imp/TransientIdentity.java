@@ -131,6 +131,11 @@ public class TransientIdentity implements Identity, User {
 	public Integer getStatus() {
 		return null;
 	}
+	
+	@Override
+	public Date getPlannedInactivationDate() {
+		return null;
+	}
 
 	@Override
 	public Date getInactivationDate() {
@@ -149,6 +154,11 @@ public class TransientIdentity implements Identity, User {
 	
 	public void setExpirationDate(Date expirationDate) {
 		this.expirationDate = expirationDate;
+	}
+	
+	@Override
+	public Date getPlannedDeletionDate() {
+		return null;
 	}
 
 	@Override

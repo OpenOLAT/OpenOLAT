@@ -549,7 +549,7 @@ public interface BaseSecurity {
 	 * @param identity
 	 * @return
 	 */
-	public void setIdentityLastLogin(IdentityRef identity);
+	public void setIdentityLastLogin(Identity identity);
 	
 	/**
 	 * Set the identity name. 

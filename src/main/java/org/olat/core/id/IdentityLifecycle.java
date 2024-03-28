@@ -41,12 +41,15 @@ public interface IdentityLifecycle {
 	 */
 	public Date getLastLogin();
 	
+	public Date getPlannedInactivationDate();
 
 	public Date getInactivationDate();
 	
 	public Date getReactivationDate();
 	
 	public Date getExpirationDate();
+	
+	public Date getPlannedDeletionDate();
 	
 	public Date getDeletionEmailDate();
 

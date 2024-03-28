@@ -39,10 +39,12 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 	private final Integer status;
 	private final Date lastLogin;
 	private final Date creationDate;
+	private final Date plannedInactivationDate;
 	private final Date inactivationDate;
 	private final Date reactivationDate;
 	private final Date expirationDate;
 	private final Date deletionEmailDate;
+	private final Date plannedDeletionDate;
 	
 	private List<OrganisationWithParents> organisations;
 
@@ -51,22 +53,27 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 		status = identity.getStatus();
 		lastLogin = identity.getLastLogin();
 		creationDate = identity.getCreationDate();
+		plannedInactivationDate = identity.getPlannedInactivationDate();
 		inactivationDate = identity.getInactivationDate();
 		reactivationDate = identity.getReactivationDate();
 		expirationDate = identity.getExpirationDate();
+		plannedDeletionDate = identity.getPlannedDeletionDate();
 		deletionEmailDate = identity.getDeletionEmailDate();
 	}
 	
 	public IdentityPropertiesRow(Long identityKey, Date creationDate, Date lastLogin, Integer status,
-			Date inactivationDate, Date reactivationDate, Date expirationDate, Date deletionEmailDate,
+			Date plannedInactivationDate, Date inactivationDate, Date reactivationDate,
+			Date expirationDate, Date plannedDeletionDate, Date deletionEmailDate,
 			List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale) {
 		super(identityKey, userPropertyHandlers, identityProps, locale);
 		this.status = status;
 		this.creationDate = creationDate;
-		this.lastLogin = lastLogin;	
+		this.lastLogin = lastLogin;
+		this.plannedInactivationDate = plannedInactivationDate;
 		this.inactivationDate = inactivationDate;
 		this.reactivationDate = reactivationDate;
 		this.expirationDate = expirationDate;
+		this.plannedDeletionDate = plannedDeletionDate;
 		this.deletionEmailDate = deletionEmailDate;
 	}
 	
@@ -86,6 +93,11 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 	}
 
 	@Override
+	public Date getPlannedInactivationDate() {
+		return plannedInactivationDate;
+	}
+
+	@Override
 	public Date getInactivationDate() {
 		return inactivationDate;
 	}
@@ -98,6 +110,11 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 	@Override
 	public Date getExpirationDate() {
 		return expirationDate;
+	}
+	
+	@Override
+	public Date getPlannedDeletionDate() {
+		return plannedDeletionDate;
 	}
 
 	@Override

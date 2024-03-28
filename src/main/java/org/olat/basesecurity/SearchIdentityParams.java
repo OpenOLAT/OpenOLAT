@@ -58,6 +58,8 @@ public class SearchIdentityParams {
 	private Date createdBefore;
 	private Date userLoginAfter;
 	private Date userLoginBefore;
+	private Date expireAfter;
+	private Date expiredSince;
 	private Integer status;
 	private List<Integer> exactStatusList;
 	private List<Integer> excludeStatusList;
@@ -428,6 +430,22 @@ public class SearchIdentityParams {
 		this.withoutEfficiencyStatements = withoutEfficiencyStatements;
 	}
 	
+	public Date getExpireIn() {
+		return expireAfter;
+	}
+
+	public void setExpireIn(Date date) {
+		this.expireAfter = date;
+	}
+
+	public Date getExpiredSince() {
+		return expiredSince;
+	}
+
+	public void setExpiredSince(Date expiredSince) {
+		this.expiredSince = expiredSince;
+	}
+
 	public static record AuthProviders(String[] providers, boolean noAuthentication, boolean noOpenOlatAuthentication) {
 
 		public boolean hasAuthProviders() {

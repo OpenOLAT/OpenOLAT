@@ -792,12 +792,22 @@ public class NodeRightServiceImplTest {
 			}
 
 			@Override
+			public Date getPlannedInactivationDate() {
+				return null;
+			}
+
+			@Override
 			public Date getInactivationDate() {
 				return null;
 			}
 
 			@Override
 			public Date getReactivationDate() {
+				return null;
+			}
+			
+			@Override
+			public Date getPlannedDeletionDate() {
 				return null;
 			}
 

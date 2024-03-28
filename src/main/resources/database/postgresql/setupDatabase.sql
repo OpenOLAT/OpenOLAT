@@ -200,11 +200,13 @@ create table o_bs_identity (
    deleteddate timestamp,
    deletedroles varchar(1024),
    deletedby varchar(128),
+   plannedinactivationdate timestamp,
    inactivationdate timestamp,
    inactivationemaildate timestamp,
    expirationdate timestamp,
    expirationemaildate timestamp,
    reactivationdate timestamp,
+   planneddeletiondate timestamp,
    deletionemaildate timestamp,
    primary key (id)
 );

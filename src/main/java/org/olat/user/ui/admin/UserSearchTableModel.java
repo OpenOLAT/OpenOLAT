@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
-import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.lecture.ui.TeacherRollCallController;
 import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserModule;
@@ -97,27 +97,30 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		}
 		return null;
 	}
-	
+
 	private Date getLastLogin(IdentityPropertiesRow userRow) {
 		if(guestsKeys.contains(userRow.getIdentityKey())) {
 			return null;
 		}
 		return userRow.getLastLogin();
 	}
-	
+
 	private Long getDaysToInactivation(IdentityPropertiesRow userRow) {
-		if((userRow.getStatus().equals(Identity.STATUS_ACTIV)
-					|| userRow.getStatus().equals(Identity.STATUS_PENDING)
-					|| userRow.getStatus().equals(Identity.STATUS_LOGIN_DENIED))
-				&& (userRow.getExpirationDate() != null || userRow.getReactivationDate() != null || !guestsKeys.contains(userRow.getIdentityKey()))) {
-			return lifecycleManager.getDaysUntilDeactivation(userRow, now);
+		Date date = userRow.getPlannedInactivationDate();
+		if(date != null && !guestsKeys.contains(userRow.getIdentityKey())) {
+			long days = DateUtils.countDays(now, date);
+			if(days <= 0) {
+				days = 1;
+			}
+			return days;
 		}
 		return null;
 	}
 	
 	private Long getDaysToDeletion(IdentityPropertiesRow userRow) {
-		if(userModule.isUserAutomaticDeletion() && userRow.getInactivationDate() != null) {
-			return lifecycleManager.getDaysUntilDeletion(userRow, now);
+		Date date = userRow.getPlannedDeletionDate();
+		if(date != null && !guestsKeys.contains(userRow.getIdentityKey())) {
+			return DateUtils.countDays(now, date);
 		}
 		return null;
 	}

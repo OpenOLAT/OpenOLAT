@@ -30,3 +30,7 @@ create index idx_export_to_vfsdata_idx on o_ex_export_metadata(fk_metadata);
 
 -- Content Editor
 alter table o_ce_page_part add column p_storage_path varchar(255);
+
+-- Identity
+alter table o_bs_identity add column plannedinactivationdate timestamp;
+alter table o_bs_identity add column planneddeletiondate timestamp;

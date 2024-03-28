@@ -258,10 +258,12 @@ public class IdentityDAO {
 		}
 	}
 	
-	public void setIdentityLastLogin(IdentityRef identity, Date lastLogin) {
+	public void setIdentityLastLogin(IdentityRef identity, Date lastLogin, Date plannedInactivationDate, Date plannedDeletionDate) {
 		dbInstance.getCurrentEntityManager()
 				.createNamedQuery("updateIdentityLastLogin")
 				.setParameter("identityKey", identity.getKey())
+				.setParameter("plannedInactivationDate", plannedInactivationDate)
+				.setParameter("plannedDeletionDate", plannedDeletionDate)
 				.setParameter("now", lastLogin)
 				.executeUpdate();
 	}

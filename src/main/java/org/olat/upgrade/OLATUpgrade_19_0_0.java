@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -38,9 +39,12 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_19.0.0";
 
 	private static final String UPDATE_FOLDER_USER_TOOL = "UPDATED FOLDER USER TOOL";
+	private static final String PLANNED_INACTIVATION_DATE_IDENTITY = "PLANNED INACTIVATION DATE IDENTITY";
 	
  	@Autowired
  	private UserToolsModule userToolsModule;
+	@Autowired
+	private UserLifecycleManager userLifecycleManager;
 
 	public OLATUpgrade_19_0_0() {
 		super();
@@ -63,6 +67,7 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 
 		boolean allOk = true;
 		allOk &= updatePasswordUserTool(upgradeManager, uhd);
+		allOk &= updatePlannedInactivationDates(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -99,6 +104,16 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
-	
+	private boolean updatePlannedInactivationDates(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		
+		if (!uhd.getBooleanDataValue(PLANNED_INACTIVATION_DATE_IDENTITY)) {
+			allOk &= userLifecycleManager.updatePlannedInactivationDates();
+			uhd.setBooleanDataValue(PLANNED_INACTIVATION_DATE_IDENTITY, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		
+		return allOk;
+	}
 	
 }
