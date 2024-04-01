@@ -422,9 +422,16 @@
 		.o_tools_segments.o_tools_segments_alone {
 			margin-top: 1.5em;
 		}
-		.o_tool span {
-			max-width: 10em;
-			@include text-overflow();	
+		.o_tool {
+			span {
+				max-width: 10em;
+				@include text-overflow();	
+			}
+			&.o_quick_add span { /* reset overflow rule from above for quick-add */
+				max-width: unset;
+				overflow: unset;
+				text-overflow: unset;
+			}
 		}
 		.o_tools_segments .o_tool span {
 			display: block;
