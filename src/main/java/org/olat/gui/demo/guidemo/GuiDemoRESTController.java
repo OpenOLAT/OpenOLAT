@@ -57,7 +57,7 @@ public class GuiDemoRESTController extends BasicController {
 		// is loaded on-demand on first use.
 		// If you want to load it from within the project, simply use a relative path notation like in this example: 
 		// JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/jquery/list.js/1.5.0/list.min.js" }, null);
-		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js" }, null);
+		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js" }, null);
 		vcMain.put("jsAdder", js);
 	}
 

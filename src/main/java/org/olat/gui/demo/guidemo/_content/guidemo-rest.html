@@ -15,11 +15,11 @@
 	</p>
 
 	## DOM container for example 1)	
-	<h3>OpenOLAT License fetched via REST API</h3>
+	<h3>OpenOlat version information fetched via REST API</h3>
 	<p>
-		Path: <code>$r.relLink("restapi/api/copyright")</code>
+		Path: <code>$r.relLink("restapi/system/release")</code>
 	<p>
-	<pre style="height: 200px; overflow: scroll;" class="o_small" id="o_guidemo_version">loading...</pre>
+	<textarea style="height: 200px; width: 100%" class="o_small" id="o_guidemo_version">loading...</textarea>
 
 
 	## DOM container for example 2)
@@ -41,7 +41,7 @@
 <script>
 /* <![CDATA[ */ 
 	
-	/* OpenOLAT REST API URL for this server */
+	/* OpenOlat REST API URL for this server */
 	var restAPI ='$r.relLink("restapi")';
 	
 	/* Helper function to read from REST API with simple error handling */
@@ -54,14 +54,14 @@
 		    dataType:dataType,
 		    cache: false,
 			error: function(result) {
-				console.error('Error while reading from OpenOLAT REST API with URL::' + restAPI + ' and key::' + queryPath);
+				console.error('Error while reading from OpenOlat REST API with URL::' + restAPI + ' and key::' + queryPath);
 				console.log(result);
 			}
 		}).done(callback);
 	}
 	
 	/* Example 1: get the copyright */
-	readFromREST('/api/copyright', function(data) {
+	readFromREST('/system/release', function(data) {
 		jQuery('#o_guidemo_version').html(data);	
 	}, 'html');
 	
