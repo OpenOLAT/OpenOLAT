@@ -506,7 +506,7 @@ public class UserTest extends Deployments {
 		String folderUrl = deploymentUrl.toString() + "auth/HomeSite/" + user.getKey() + "/userfolder/0";
 		browser.get(folderUrl);
 		new UserToolsPage(browser)
-			.assertOnFolder();
+			.assertOnFolderV2();
 	}
 	
 	/**

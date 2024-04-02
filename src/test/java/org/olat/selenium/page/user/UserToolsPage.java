@@ -76,9 +76,9 @@ public class UserToolsPage {
 	 * Check if we see the calendar.
 	 * @return
 	 */
-	public FolderPage assertOnFolder() {
+	public FolderPage assertOnFolderV2() {
 		return new FolderPage(browser)
-			.assertOnFolderCmp();
+			.assertOnFolderV2();
 	}
 	
 	/**

@@ -198,6 +198,11 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 	}
 
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		// Only update end date if needed, not the whole container
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == beginEl && validateFormItem(ureq, beginEl) && endEl.isEmpty()) {
 			endEl.setDate(beginEl.getDate());

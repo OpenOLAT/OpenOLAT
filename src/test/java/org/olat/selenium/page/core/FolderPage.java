@@ -55,6 +55,12 @@ public class FolderPage {
 		return this;
 	}
 	
+	public FolderPage assertOnFolderV2() {
+		By folderCmpBy = By.cssSelector(".o_folder .o_folder_table");
+		OOGraphene.waitElement(folderCmpBy, browser);
+		return this;
+	}
+	
 	public FolderPage createDirectory(String name) {
 		By newFolderBy = By.className("b_bc_newfolder");
 		browser.findElement(newFolderBy).click();

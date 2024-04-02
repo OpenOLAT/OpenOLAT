@@ -663,24 +663,27 @@ public class OOGraphene {
 		String dateText = formatDate(date, locale);
 		By dateBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_day");
 		browser.findElement(dateBy).sendKeys(dateText);
+		OOGraphene.waitBusy(browser);
 		
-		By timeBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_ms");
-		List<WebElement> timeEls = browser.findElements(timeBy);
-		Assert.assertNotNull(timeEls);
-		Assert.assertEquals(2, timeEls.size());
+		By hourBy = By.xpath("//div[contains(@class,'" + seleniumCssClass + "')]//input[contains(@class,'o_date_ms')][1]");
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		int hour = cal.get(Calendar.HOUR_OF_DAY);
 		int minute = cal.get(Calendar.MINUTE);
-		timeEls.get(0).click();
-		timeEls.get(0).clear();
-		timeEls.get(0).sendKeys(Integer.toString(hour));
-		timeEls.get(1).clear();
-		timeEls.get(1).sendKeys(Integer.toString(minute));
+		browser.findElement(hourBy).click();
 		
 		By datePickerBy = By.id("ui-datepicker-div");
 		waitElementDisappears(datePickerBy, 5, browser);
+		
+		browser.findElement(hourBy).clear();
+		browser.findElement(hourBy).sendKeys(Integer.toString(hour));
+		OOGraphene.waitBusy(browser);
+		
+		By minuteBy = By.xpath("//div[contains(@class,'" + seleniumCssClass + "')]//input[contains(@class,'o_date_ms')][2]");
+		browser.findElement(minuteBy).clear();
+		browser.findElement(minuteBy).sendKeys(Integer.toString(minute));
+		OOGraphene.waitBusy(browser);
 	}
 	
 	public static String formatDate(Date date, Locale locale) {
