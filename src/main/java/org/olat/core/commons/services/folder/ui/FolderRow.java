@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 
 /**
@@ -76,6 +77,16 @@ public class FolderRow {
 		this.metadata = metadata;
 	}
 	
+	public boolean isDirectory() {
+		if (metadata != null) {
+			return metadata.isDirectory();
+		}
+		if (vfsItem != null) {
+			return vfsItem instanceof VFSContainer;
+		}
+		return false;
+	}
+
 	public String getFilename() {
 		if (metadata != null) {
 			return metadata.getFilename();

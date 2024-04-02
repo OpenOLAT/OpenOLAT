@@ -108,7 +108,7 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 	.o_rendertype_custom {
 		.o_folder_table {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+			grid-template-columns: repeat(auto-fill, minmax(207px, 1fr));
 			gap: 10px;
 		}
 		.o_folder_card {
@@ -147,6 +147,9 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 					.o_icon {
 						font-size: 80px;
 						color: $o-folder-card-thumbnail-icon-color;
+						&.o_filetype_folder {
+							color: $o-folder-card-thumbnail-folder-icon-color;
+						}
 					}
 				}
 			}

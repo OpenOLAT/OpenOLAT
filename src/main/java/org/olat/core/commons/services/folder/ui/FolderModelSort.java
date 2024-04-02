@@ -19,7 +19,7 @@
  */
 package org.olat.core.commons.services.folder.ui;
 
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -39,19 +39,41 @@ public class FolderModelSort extends SortableFlexiTableModelDelegate<FolderRow> 
 	public FolderModelSort(SortKey orderBy, SortableFlexiTableDataModel<FolderRow> tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
 	}
+	
+	@Override
+	public List<FolderRow> sort() {
+		List<FolderRow> rows = getUnsortedRows();
+		sort(rows);
+		return rows;
+	}
 
 	@Override
 	protected void sort(List<FolderRow> rows) {
+		// Folders are always on top!
+		// Then sort by column (asc or desc)
+		
+		Comparator<FolderRow> columnComparator = getColumnComparator();
+		if (!isAsc()) {
+			columnComparator = columnComparator.reversed();
+		}
+		Comparator<FolderRow> comparator = Comparator
+				.comparing(FolderRow::isDirectory).reversed()
+				.thenComparing(columnComparator);
+		
+		rows.sort(comparator);
+	}
+	
+	private Comparator<FolderRow> getColumnComparator() {
 		int columnIndex = getColumnIndex();
 		FolderCols column = FolderDataModel.COLS[columnIndex];
-		switch(column) {
-			case title: Collections.sort(rows, (r1, r2) -> compareString(r1.getTitle(), r2.getTitle())); break;
-			case status: Collections.sort(rows, (r1, r2) -> compareString(r1.getTranslatedStatus(), r2.getTranslatedStatus())); break;
-			case path: Collections.sort(rows, (r1, r2) -> compareString(r1.getFilePath(), r2.getFilePath())); break;
-			case license: Collections.sort(rows, (r1, r2) -> compareString(r1.getTranslatedLicense(), r2.getTranslatedLicense())); break;
-			default: {
-				super.sort(rows);
-			}
-		}
+		
+		return switch(column) {
+			case title -> (r1, r2) -> compareString(r1.getTitle(), r2.getTitle());
+			case status -> (r1, r2) -> compareString(r1.getTranslatedStatus(), r2.getTranslatedStatus());
+			case path -> (r1, r2) -> compareString(r1.getFilePath(), r2.getFilePath());
+			case license -> (r1, r2) -> compareString(r1.getTranslatedLicense(), r2.getTranslatedLicense());
+			default -> new DefaultComparator();
+		};
 	}
+	
 }
