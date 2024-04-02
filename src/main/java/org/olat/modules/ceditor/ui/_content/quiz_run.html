@@ -1,4 +1,5 @@
 <div id="$r.getCId()" class="o_page_run_quiz $blockLayoutClass">
+  #if($showIntro)
 	#if($r.available("image"))
 	<div class="o_background_image_wrapper">
 		$r.render("image")
@@ -12,4 +13,10 @@
 			<div class="o_quiz_intro_start_button">$r.render("quiz.start")</div>
 		</div>
 	</div>
+  #end
+  #if($showQuiz)
+    <div class="o_quiz">
+		$r.render("quiz")
+	</div>
+  #end
 </div>

@@ -843,7 +843,7 @@ public class PageRunController extends BasicController implements TooledControll
 			CodeElementHandler codeElementHandler = new CodeElementHandler();
 			handlers.add(codeElementHandler);
 			// handler for quiz
-			QuizElementHandler quizElementHandler = new QuizElementHandler();
+			QuizElementHandler quizElementHandler = new QuizElementHandler(settings.getBaseRepositoryEntry(), settings.getSubIdent());
 			handlers.add(quizElementHandler);
 
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
@@ -895,7 +895,7 @@ public class PageRunController extends BasicController implements TooledControll
 			creationHandlers.add(codeElementHandler);
 
 			// handler for quiz
-			QuizElementHandler quizElementHandler = new QuizElementHandler();
+			QuizElementHandler quizElementHandler = new QuizElementHandler(settings.getBaseRepositoryEntry(), settings.getSubIdent());
 			handlers.add(quizElementHandler);
 			if (settings.isCanCreateQuiz()) {
 				creationHandlers.add(quizElementHandler);

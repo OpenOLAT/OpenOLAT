@@ -42,6 +42,7 @@ public class PageSettings {
 	private CustomLinkTreeModel linkTreeModel;
 	private CustomLinkTreeModel toolLinkTreeModel;
 	private boolean canCreateQuiz;
+	private String subIdent;
 
 	private PageSettings() {
 		//
@@ -182,6 +183,14 @@ public class PageSettings {
 
 	public boolean isCanCreateQuiz() {
 		return canCreateQuiz;
+	}
+
+	public void setSubIdent(String subIdent) {
+		this.subIdent = subIdent;
+	}
+
+	public String getSubIdent() {
+		return subIdent;
 	}
 
 

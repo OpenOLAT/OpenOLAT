@@ -48,6 +48,7 @@ import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.ceditor.ui.QuizEditorController;
 import org.olat.modules.ceditor.ui.QuizInspectorController;
 import org.olat.modules.ceditor.ui.QuizRunController;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2024-03-11<br>
@@ -57,7 +58,12 @@ import org.olat.modules.ceditor.ui.QuizRunController;
 public class QuizElementHandler implements PageElementHandler, PageElementStore<QuizElement>,
 		SimpleAddPageElementHandler, ComponentEventListener {
 
-	public QuizElementHandler() {
+	private final RepositoryEntry entry;
+	private final String subIdent;
+
+	public QuizElementHandler(RepositoryEntry entry, String subIdent) {
+		this.entry = entry;
+		this.subIdent = subIdent;
 	}
 
 	@Override
@@ -77,8 +83,8 @@ public class QuizElementHandler implements PageElementHandler, PageElementStore<
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
-	if (element instanceof QuizPart quizPart) {
-			return new QuizRunController(ureq, wControl, quizPart, options.isEditable());
+		if (element instanceof QuizPart quizPart) {
+			return new QuizRunController(ureq, wControl, quizPart, options.isEditable(), entry, subIdent);
 		}
 		return null;
 	}
