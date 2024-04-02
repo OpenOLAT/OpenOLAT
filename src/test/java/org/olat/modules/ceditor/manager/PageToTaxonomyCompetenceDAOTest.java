@@ -44,6 +44,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -74,6 +75,8 @@ public class PageToTaxonomyCompetenceDAOTest extends OlatTestCase {
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDAO;
+	@Autowired
+	private UserLifecycleManager userLifecycleManager;
 	@Autowired
 	private TaxonomyCompetenceDAO taxonomyCompetenceDAO;
 	@Autowired 
@@ -163,4 +166,37 @@ public class PageToTaxonomyCompetenceDAOTest extends OlatTestCase {
 		competences = pageService.getRelatedCompetences(page, true);
 		Assert.assertEquals(2, competences.size());
 	}
+	
+	@Test
+	public void deleteUser() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("page-to-tax-2");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("page-to-tax-3");
+		BinderImpl binder = binderDao.createAndPersist("Binder p2", "A binder with a page", null, null);
+		Section section = binderDao.createSection("Section", "First section", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		Page page = pageDao.createAndPersist("New page", "A brand new short lived page.", null, null, true, reloadedSection, null);
+		dbInstance.commitAndCloseSession();
+		
+		Taxonomy taxonomy = taxonomyService.createTaxonomy("taxonomy", "taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDAO.createTaxonomyLevel("l1", random(), "level1", null, null, null, null, null, taxonomy);
+		TaxonomyCompetence competence1 = taxonomyCompetenceDAO.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level, id1, null);
+		pageToTaxonomyCompetenceDAO.createRelation(page, competence1);
+		TaxonomyCompetence competence2 = taxonomyCompetenceDAO.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level, id2, null);
+		pageToTaxonomyCompetenceDAO.createRelation(page, competence2);
+		dbInstance.commitAndCloseSession();
+		
+		List<TaxonomyCompetence> competences = pageService.getRelatedCompetences(page, true);
+		Assert.assertEquals(2, competences.size());
+		
+		// delete the user
+		boolean deleted = userLifecycleManager.deleteIdentity(id1, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertTrue(deleted);
+		
+		List<TaxonomyCompetence> competencesAfter = pageService.getRelatedCompetences(page, true);
+		Assert.assertEquals(1, competencesAfter.size());
+	}
+	
 }
