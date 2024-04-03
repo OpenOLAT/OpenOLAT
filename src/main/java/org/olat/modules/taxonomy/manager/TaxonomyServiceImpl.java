@@ -489,6 +489,7 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		pageToTaxonomyCompetenceDAO.deleteRelationsToCompetences(identity);
 		taxonomyCompetenceDao.deleteCompetences(identity);
 	}
 }

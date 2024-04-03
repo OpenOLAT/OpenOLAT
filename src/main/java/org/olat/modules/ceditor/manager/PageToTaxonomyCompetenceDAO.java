@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import jakarta.persistence.Tuple;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.Identity;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageToTaxonomyCompetence;
 import org.olat.modules.ceditor.model.jpa.PageToTaxonomyCompetenceImpl;
@@ -217,5 +219,16 @@ public class PageToTaxonomyCompetenceDAO {
 						tuple -> ((Long) tuple.get("competenceCount")),
 						(level1, level2) -> level1, 
 						LinkedHashMap::new));
+	}
+	
+	public int deleteRelationsToCompetences(Identity identity) {
+		// First page to competence relation
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("delete from cepagetotaxonomycompetence as rel where rel.taxonomyCompetence.key in (select competence.key from ctaxonomycompetence as competence")
+		  .append(" where competence.identity.key=:identityKey)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
 	}
 }
