@@ -482,7 +482,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		loadModel(ureq);
 		
-		if (FolderView.file == folderView) {
+		if (FolderView.file == folderView || FolderView.search == folderView) {
 			initFilters();
 			initFilterTabs(ureq);
 		}
