@@ -1,5 +1,13 @@
 <div class="o_card o_folder_card">
-	<div class="o_folder_card_thumbnail" onClick="$f.ffXHREvent("select_file","$row.key");" role="link">
+	#if($row.isOpenable())
+		#if($row.isOpenInNewWindow())
+			<div class="o_folder_card_thumbnail o_folder_openable" onClick="$f.openFfXHREvent(false, false, false), 'oo-opennewwindow-oo', 'true', 'oo-opennewwindow-target', '_blank', 'open','$row.key');" role="link">
+		#else
+			<div class="o_folder_card_thumbnail o_folder_openable" onClick="$f.ffXHREvent("open","$row.key");" role="link">
+		#end
+	#else
+		<div class="o_folder_card_thumbnail">
+	#end
 		<div class="o_folder_card_img">
 			#if($row.isThumbnailAvailable())
 				<img src="${row.getThumbnailUrl()}" alt=""/>

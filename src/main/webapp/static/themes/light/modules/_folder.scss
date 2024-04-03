@@ -115,7 +115,9 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 			overflow: hidden;
 			
 			.o_folder_card_thumbnail {
-				cursor: pointer;
+				&.o_folder_openable {
+					cursor: pointer;
+				}
 				height: 172px;
 				position: relative;
 				background-color: #fcfcfc;

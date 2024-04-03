@@ -37,6 +37,7 @@ public class FolderRow {
 	
 	private final VFSItem vfsItem;
 	private VFSMetadata metadata;
+	private Long key;
 	private String iconCssClass;
 	private String title;
 	private String createdBy;
@@ -56,6 +57,8 @@ public class FolderRow {
 	private String translatedLicense;
 	private boolean thumbnailAvailable;
 	private String thumbnailUrl;
+	private boolean openable;
+	private boolean openInNewWindow;
 	private FormItem titleItem;
 	private FormItem selectionItem;
 	private FormItem filePathItem;
@@ -85,6 +88,14 @@ public class FolderRow {
 			return vfsItem instanceof VFSContainer;
 		}
 		return false;
+	}
+
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
 	}
 
 	public String getFilename() {
@@ -251,6 +262,22 @@ public class FolderRow {
 
 	public void setThumbnailUrl(String thumbnailUrl) {
 		this.thumbnailUrl = thumbnailUrl;
+	}
+
+	public boolean isOpenable() {
+		return openable;
+	}
+
+	public void setOpenable(boolean openable) {
+		this.openable = openable;
+	}
+
+	public boolean isOpenInNewWindow() {
+		return openInNewWindow;
+	}
+
+	public void setOpenInNewWindow(boolean openInNewWindow) {
+		this.openInNewWindow = openInNewWindow;
 	}
 
 	public FormItem getTitleItem() {

@@ -62,6 +62,11 @@ class CreateDocumentConfig implements Function<VFSLeaf, DocEditorConfigs> {
 	}
 	
 	private HTMLEditorConfig getHtmlEditorConfig(VFSLeaf vfsLeaf) {
+		return getHtmlEditorConfig(rootContainer, currentContainer, currentContainerPath, customLinkTreeModel, vfsLeaf);
+	}
+	
+	public static HTMLEditorConfig getHtmlEditorConfig(VFSContainer rootContainer, VFSContainer currentContainer,
+			String currentContainerPath, CustomLinkTreeModel customLinkTreeModel, VFSLeaf vfsLeaf) {
 		// start HTML editor with the folders root folder as base and the file
 		// path as a relative path from the root directory. But first check if the
 		// root directory is wirtable at all (e.g. not the case in users personal

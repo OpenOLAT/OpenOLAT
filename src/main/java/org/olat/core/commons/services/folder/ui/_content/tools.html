@@ -1,4 +1,10 @@
 <ul class="o_dropdown list-unstyled">
+	#if($r.available("open.button"))
+		<li>$r.render("open.button")</li>
+	#end
+	#if($r.available("file.open"))
+		<li>$r.render("file.open")</li>
+	#end
 	#if($r.available("download"))
 		<li>$r.render("download")</li>
 	#end

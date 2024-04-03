@@ -30,13 +30,20 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
@@ -111,6 +118,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -162,6 +170,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private static final String FILTER_STATUS = "filter.status";
 	private static final String FILTER_LICENSE = "filter.license";
 	private static final String CMD_FOLDER = "folder";
+	private static final String CMD_FILE = "file";
 	private static final String CMD_PATH = "path";
 	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_COPY = "copy";
@@ -207,6 +216,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private CreateDocumentController createDocumentCtrl;
 	private CreateFolderController createFolderCtrl;
 	private RecordAVController recordAVController;
+	private Controller docEditorCtrl;
 	private WebDAVController webdavCtrl;
 	private Controller quotaEditCtrl;
 	private FolderSelectionController copySelectFolderCtrl;
@@ -245,6 +255,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FolderLicenseHandler licenseHandler;
 	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private DocEditorService docEditorService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -605,6 +617,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			FolderRow row = new FolderRow(vfsItem);
 			VFSMetadata vfsMetadata = metadatas.get(vfsItem.getName());
 			row.setMetadata(vfsMetadata);
+			row.setKey(Long.valueOf(counter++));
 			
 			String iconCssClass = vfsItem instanceof VFSContainer
 					? "o_filetype_folder"
@@ -628,7 +641,7 @@ public class FolderController extends FormBasicController implements Activateabl
 					row.setTranslatedLicense(LicenseUIFactory.translate(row.getLicense().getLicenseType(), getLocale()));
 				}
 			}
-			forgeTitleLink(row);
+			forgeTitleLink(ureq, row);
 			forgeFilePath(row);
 			forgeStatus(row);
 			
@@ -751,8 +764,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		return false;
 	}
 	
-	private void forgeTitleLink(FolderRow row) {
+	private void forgeTitleLink(UserRequest ureq, FolderRow row) {
 		if (row.getVfsItem() instanceof VFSContainer) {
+			row.setOpenable(true);
+			
 			FormLink selectionLink = uifactory.addFormLink("select_" + counter++, CMD_FOLDER, "", null, flc, Link.LINK + Link.NONTRANSLATED);
 			FormLink titleLink = uifactory.addFormLink("title_" + counter++, CMD_FOLDER, "", null, null, Link.NONTRANSLATED);
 			
@@ -767,16 +782,45 @@ public class FolderController extends FormBasicController implements Activateabl
 			row.setSelectionItem(selectionLink);
 			row.setTitleItem(titleLink);
 		} else {
-			String iconCSS = CSSHelper.getIcon(CSSHelper.createFiletypeIconCssClassFor(row.getVfsItem().getName()));
-			String selectionText = iconCSS + " " + row.getTitle();
-			StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, selectionText, flc);
-			selectionEl.setElementCssClass("o_nowrap");
-			selectionEl.setStaticFormElement(false);
-			row.setSelectionItem(selectionEl);
-			
-			StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, row.getTitle(), flc);
-			titleEl.setStaticFormElement(false);
-			row.setTitleItem(titleEl);
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+					ureq.getUserSession().getRoles(), row.getVfsItem(), row.getMetadata(), true,
+					DocEditorService.modesEditView(canEdit(row.getVfsItem())));
+			if (editorInfo.isEditorAvailable()) {
+				row.setOpenable(true);
+				
+				FormLink selectionEl = uifactory.addFormLink("file_" +  counter++, CMD_FILE, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+				FormLink titleEl = uifactory.addFormLink("file_" +  counter++, CMD_FILE, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+				
+				selectionEl.setElementCssClass("o_link_plain");
+				
+				String iconCSS = CSSHelper.getIcon(CSSHelper.createFiletypeIconCssClassFor(row.getVfsItem().getName()));
+				String selectionText = iconCSS + " " + StringHelper.escapeHtml(row.getTitle());
+				selectionEl.setI18nKey(selectionText);
+				titleEl.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
+				
+				selectionEl.setUserObject(row);
+				titleEl.setUserObject(row);
+				
+				if (editorInfo.isNewWindow()) {
+					selectionEl.setNewWindow(true, true, false);
+					titleEl.setNewWindow(true, true, false);
+					row.setOpenInNewWindow(true);
+				}
+				
+				row.setSelectionItem(selectionEl);
+				row.setTitleItem(titleEl);
+			} else {
+				String iconCSS = CSSHelper.getIcon(CSSHelper.createFiletypeIconCssClassFor(row.getVfsItem().getName()));
+				String selectionText = iconCSS + " " + StringHelper.escapeHtml(row.getTitle());
+				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, selectionText, flc);
+				selectionEl.setElementCssClass("o_nowrap");
+				selectionEl.setStaticFormElement(false);
+				row.setSelectionItem(selectionEl);
+				
+				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), flc);
+				titleEl.setStaticFormElement(false);
+				row.setTitleItem(titleEl);
+			}
 		}
 	}
 	
@@ -902,6 +946,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
 			updateCurrentContainer(ureq, vfsLeaf.getParentContainer());
 			doOpenFolderView(ureq);
+			doOpenFileInLightbox(ureq, vfsLeaf);
 		}
 	}
 	
@@ -928,6 +973,13 @@ public class FolderController extends FormBasicController implements Activateabl
 					String parentPath = relativePath.substring(0, relativePath.lastIndexOf("/"));
 					updateCurrentContainer(ureq, parentPath);
 				}
+			}
+		} else if ("ONCLICK".equals(event.getCommand())) {
+			String rowKey = ureq.getParameter("open");
+			if (StringHelper.isLong(rowKey)) {
+				Long key = Long.valueOf(rowKey);
+				doOpenItem(ureq, key);
+				return;
 			}
 		}
 		super.event(ureq, source, event);
@@ -992,7 +1044,9 @@ public class FolderController extends FormBasicController implements Activateabl
 				doOpenFolder(ureq, folderRow);
 			} else if (CMD_PATH.equals(link.getCmd()) && link.getUserObject() instanceof FolderRow folderRow) {
 				doOpenPath(ureq, folderRow);
-			}
+			} else if (CMD_FILE.equals(link.getCmd()) && link.getUserObject() instanceof FolderRow folderRow) {
+				doOpenFile(ureq, folderRow);
+			} 
 		}
 		
 		super.formInnerEvent(ureq, source, event);
@@ -1021,6 +1075,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 			loadModel(ureq);
 			cmc.deactivate();
+			cleanUp();
+		} else if(docEditorCtrl == source) {
 			cleanUp();
 		} else if (webdavCtrl == source) {
 			loadModel(ureq);
@@ -1087,6 +1143,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		removeAsListenerAndDispose(createDocumentCtrl);
 		removeAsListenerAndDispose(createFolderCtrl);
 		removeAsListenerAndDispose(recordAVController);
+		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(webdavCtrl);
 		removeAsListenerAndDispose(quotaEditCtrl);
 		removeAsListenerAndDispose(metadataCtrl);
@@ -1102,6 +1159,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		createDocumentCtrl = null;
 		createFolderCtrl = null;
 		recordAVController = null;
+		docEditorCtrl = null;
 		webdavCtrl = null;
 		quotaEditCtrl = null;
 		metadataCtrl = null;
@@ -1302,7 +1360,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private void doRecordAudio(UserRequest ureq) {
 		if (guardModalController(recordAVController)) return;
 		if (!canEdit(currentContainer)) {
-			showWarning("error.cannot.record.autio");
+			showWarning("error.cannot.record.audio");
 			updateCommandUI(ureq);
 		}
 		
@@ -1320,6 +1378,61 @@ public class FolderController extends FormBasicController implements Activateabl
 				recordAVController.getInitialComponent(), true, translate("record.audio"), true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doOpenItem(UserRequest ureq, Long rowKey) {
+		Optional<FolderRow> firstRow = dataModel.getObjects().stream()
+			.filter(row -> rowKey.equals(row.getKey()))
+			.findFirst();
+		if (firstRow.isPresent()) {
+			FolderRow row = firstRow.get();
+			if (row.isDirectory()) {
+				doOpenFolder(ureq, row);
+			} else {
+				doOpenFile(ureq, row);
+			}
+		}
+	}
+
+	private void doOpenFile(UserRequest ureq, FolderRow row) {
+		if (isItemNotAvailable(ureq, row, true)) return;
+		
+		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf) {
+			VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
+			List<Mode> modes = DocEditorService.modesEditView(canEdit(vfsLeaf));
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+					ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata, vfsMetadata != null, modes);
+			if (editorInfo.isEditorAvailable()) {
+				doOpenFile(ureq, vfsLeaf, modes);
+			} else {
+				showWarning("error.cannot.open.leaf");
+			}
+		}
+	}
+
+	private void doOpenFile(UserRequest ureq, VFSLeaf vfsLeaf, List<Mode> modes) {
+		String currentContainerPath = VFSManager.getRelativeItemPath(currentContainer, rootContainer, "/");
+		HTMLEditorConfig htmlEditorConfig = CreateDocumentConfig.getHtmlEditorConfig(rootContainer, currentContainer,
+				currentContainerPath, config.getCustomLinkTreeModel(), vfsLeaf);
+				
+		DocEditorConfigs configs = DocEditorConfigs.builder()
+				.withFireSavedEvent(true)
+				.addConfig(htmlEditorConfig)
+				.build(vfsLeaf);
+		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs, modes);
+		docEditorCtrl = listenTo(docEditorOpenInfo.getController());
+	}
+	
+	private void doOpenFileInLightbox(UserRequest ureq, VFSLeaf vfsLeaf) {
+		if (isItemNotAvailable(ureq, vfsLeaf, false)) return;
+		
+		VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
+		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+				ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
+				vfsMetadata != null, DocEditorService.MODES_VIEW);
+		if (editorInfo.isEditorAvailable() && !editorInfo.isNewWindow()) {
+			doOpenFile(ureq, vfsLeaf, DocEditorService.MODES_VIEW);
+		}
 	}
 
 	private void doShowWebdav(UserRequest ureq) {
@@ -2009,6 +2122,26 @@ public class FolderController extends FormBasicController implements Activateabl
 			
 			boolean divider = false;
 			VFSItem vfsItem = row.getVfsItem();
+		
+			if (row.isDirectory()) {
+				addLink("open.button", CMD_FOLDER, "o_icon o_icon-fw o_icon_preview");
+			}
+			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+				Roles roles = ureq.getUserSession().getRoles();
+				VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
+				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+						vfsMetadata, vfsMetadata != null, DocEditorService.modesEditView(canEdit(vfsItem)));
+				if (editorInfo.isEditorAvailable()) {
+					Link link = LinkFactory.createLink("file.open", CMD_FILE, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
+					link.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
+					link.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+					link.setUserObject(row);
+					if (editorInfo.isNewWindow()) {
+						link.setNewWindow(true, true);
+					}
+				}
+			}
+			
 			addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download");
 			
 			if (canCopy(vfsItem)) {
@@ -2057,7 +2190,11 @@ public class FolderController extends FormBasicController implements Activateabl
 			if (source instanceof Link) {
 				Link link = (Link)source;
 				String cmd = link.getCommand();
-				if (CMD_DOWNLOAD.equals(cmd)) {
+				if (CMD_FOLDER.equals(cmd)) {
+					doOpenFolder(ureq, row);
+				} else if (CMD_FILE.equals(cmd)) {
+					doOpenFile(ureq, row);
+				} else if (CMD_DOWNLOAD.equals(cmd)) {
 					doDownload(ureq, row);
 				} else if (CMD_MOVE.equals(cmd)) {
 					doMoveSelectFolder(ureq, row);
