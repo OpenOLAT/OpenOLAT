@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -511,8 +510,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == membersTable) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				MemberRow row = memberListModel.getObject(se.getIndex());
 				if(TABLE_ACTION_IM.equals(cmd)) {
@@ -520,10 +518,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				} else if(TABLE_ACTION_EDIT.equals(cmd)) {
 					openEdit(ureq, row);
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
+			} else if(event instanceof FlexiTableSearchEvent se) {
 				String cmd = event.getCommand();
 				if(FlexiTableReduceEvent.SEARCH.equals(cmd) || FlexiTableReduceEvent.QUICK_SEARCH.equals(cmd)) {
-					FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
 					String search = se.getSearch();
 					doSearch(search);
 				} else if(FormEvent.RESET.getCommand().equals(cmd)) {
@@ -543,8 +540,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		} else if(removeButton == source) {
 			List<MemberRow> selectedItems = getMultiSelectedRows();
 			doConfirmRemoveMembers(ureq, selectedItems);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
 				MemberRow row = (MemberRow)link.getUserObject();
@@ -605,8 +601,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		} else if(source == editSingleMemberCtrl) {
 			cmc.deactivate();
 			cleanUpPopups();
-			if(event instanceof MemberPermissionChangeEvent) {
-				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
+			if(event instanceof MemberPermissionChangeEvent e) {
 				doConfirmChangePermission(ureq, e, null);
 			}
 		} else if(confirmSendMailChangesBox == source) {
@@ -681,13 +676,15 @@ public abstract class AbstractMemberListController extends FormBasicController i
 						return;
 					}
 				}
-				
+
 				List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
-				leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids, repoEntry != null);
+				leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids,
+						members.stream().map(MemberRow::getMembership).toList(), repoEntry, members, null);
 				listenTo(leaveDialogBox);
-				
+
+				String modalTitle = members.size() > 1 ? translate("remove.title.course.bulk") : translate("remove.title.course");
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(),
-						true, translate("edit.member"));
+						true, modalTitle);
 				cmc.activate();
 				listenTo(cmc);
 			} else {
@@ -918,7 +915,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 								fullGroup = businessGroupService.loadBusinessGroup(group.getKey());
 								groupsMap.put(group.getKey(), fullGroup);
 							}
-							
+
 							List<Identity> identitiesToGraduate = graduatesMap.get(fullGroup);
 							if(identitiesToGraduate == null) {
 								 identitiesToGraduate = new ArrayList<>();
@@ -999,7 +996,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			if(rolesValues != null && !rolesValues.isEmpty()) {
 				List<GroupRoles> roles = rolesValues.stream()
 						.map(GroupRoles::valueOf)
-						.collect(Collectors.toList());
+						.toList();
 				return roles.toArray(new GroupRoles[roles.size()]);	
 			}
 		}
@@ -1014,7 +1011,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			if(originValues != null && !originValues.isEmpty()) {
 				List<Origin> roles = originValues.stream()
 						.map(Origin::valueOf)
-						.collect(Collectors.toList());
+						.toList();
 				return EnumSet.copyOf(roles);
 			}
 		}
@@ -1029,7 +1026,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			if(userTypesValues != null && !userTypesValues.isEmpty()) {
 				List<UserType> roles = userTypesValues.stream()
 						.map(UserType::valueOf)
-						.collect(Collectors.toList());
+						.toList();
 				return EnumSet.copyOf(roles);
 			}
 		}
@@ -1230,8 +1227,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if(source instanceof Link) {
-				Link link = (Link)source;
+			if(source instanceof Link link) {
 				String cmd = link.getCommand();
 				if(TABLE_ACTION_GRADUATE.equals(cmd)) {
 					doConfirmGraduate(ureq, Collections.singletonList(row));

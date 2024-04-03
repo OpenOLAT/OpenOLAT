@@ -98,8 +98,7 @@ public class CurriculumMemberRow implements IdentityRef, CompletionStats {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumMemberRow) {
-			CurriculumMemberRow row = (CurriculumMemberRow)obj;
+		if(obj instanceof CurriculumMemberRow row) {
 			return identity != null && identity.equals(row.getIdentity());
 		}
 		return false;

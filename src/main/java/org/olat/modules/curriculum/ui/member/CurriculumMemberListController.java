@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.curriculum.ui.member;
@@ -22,7 +22,6 @@ package org.olat.modules.curriculum.ui.member;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -71,6 +70,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.MemberListController;
+import org.olat.group.ui.main.CourseMembership;
 import org.olat.group.ui.main.EditMembershipController;
 import org.olat.group.ui.main.EditSingleMembershipController;
 import org.olat.group.ui.main.MemberLeaveConfirmationController;
@@ -101,7 +101,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 19 oct. 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CurriculumMemberListController extends FormBasicController implements Activateable2 {
@@ -118,8 +118,8 @@ public class CurriculumMemberListController extends FormBasicController implemen
 	private final TooledStackedPanel toolbarPanel;
 	
 	private int counter = 0;
-	private boolean membersManaged;
-	private boolean overrideManaged = false;
+	private final boolean membersManaged;
+	private final boolean overrideManaged = false;
 	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -289,8 +289,8 @@ public class CurriculumMemberListController extends FormBasicController implemen
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(searchForm == source) {
-			if(event instanceof SearchMembersEvent) {
-				loadModel(((SearchMembersEvent)event).getSearchParameters());
+			if(event instanceof SearchMembersEvent searchMembersEvent) {
+				loadModel(searchMembersEvent.getSearchParameters());
 			}
 		} else if (source == contactCtrl) {
 			if(cmc != null) {
@@ -307,15 +307,13 @@ public class CurriculumMemberListController extends FormBasicController implemen
 			}
 		} else if(editMembersCtrl == source) {
 			cmc.deactivate();
-			if(event instanceof MemberPermissionChangeEvent) {
-				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
+			if(event instanceof MemberPermissionChangeEvent e) {
 				doApplyMemberships(ureq, editMembersCtrl.getMembers(), e);
 			}
 			cleanUp();
 		} else if(editSingleMemberCtrl == source) {
 			cmc.deactivate();
-			if(event instanceof MemberPermissionChangeEvent) {
-				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
+			if(event instanceof MemberPermissionChangeEvent e) {
 				doApplyMemberships(ureq, List.of(editSingleMemberCtrl.getMember()), e);
 			}
 			cleanUp();
@@ -365,16 +363,14 @@ public class CurriculumMemberListController extends FormBasicController implemen
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if("select".equals(cmd)) {
 					doSelect(ureq, tableModel.getObject(se.getIndex()), se.getIndex());
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
+			} else if(event instanceof FlexiTableSearchEvent se) {
 				String cmd = event.getCommand();
 				if(FlexiTableReduceEvent.SEARCH.equals(event.getCommand()) || FlexiTableReduceEvent.QUICK_SEARCH.equals(event.getCommand())) {
-					FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
 					loadModel(se.getSearch());
 				} else if(FormEvent.RESET.getCommand().equals(cmd)) {
 					reloadModel();
@@ -386,8 +382,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 			doConfirmRemoveSelectedMembers(ureq);
 		} else if(editButton == source) {
 			doEditMemberships(ureq, getSelectedIdentityKeys());
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if("tools".equals(link.getCmd()) && link.getUserObject() instanceof CurriculumMemberRow) {
 				doOpenTools(ureq, (CurriculumMemberRow)link.getUserObject(), link);
 			}	
@@ -471,26 +466,36 @@ public class CurriculumMemberListController extends FormBasicController implemen
 		
 		toolbarPanel.pushController(fullname, contactCtrl);
 	}
+
+	private List<CourseMembership> getSelectedCourseMemberships() {
+		return tableEl.getMultiSelectedIndex().stream()
+				.map(index -> tableModel.getObject(index.intValue()))
+				.map(CurriculumMemberRow::getMembership)
+				.toList();
+	}
 	
 	private final void doConfirmRemoveMember(UserRequest ureq, CurriculumMemberRow member) {
-		doConfirmRemoveMembers(ureq, Collections.singletonList(member.getIdentity().getKey()));
+		doConfirmRemoveMembers(ureq, Collections.singletonList(member.getIdentity().getKey()), Collections.singletonList(member.getMembership()));
 	}
 	
 	private final void doConfirmRemoveSelectedMembers(UserRequest ureq) {
+		List<CourseMembership> memberships = getSelectedCourseMemberships();
 		List<Long> identityKeys = getSelectedIdentityKeys();
-		doConfirmRemoveMembers(ureq, identityKeys);
+		doConfirmRemoveMembers(ureq, identityKeys, memberships);
 	}
 	
-	private final void doConfirmRemoveMembers(UserRequest ureq, List<Long> memberKeys) {
+	private final void doConfirmRemoveMembers(UserRequest ureq, List<Long> memberKeys, List<CourseMembership> memberships) {
 		if(memberKeys.isEmpty()) {
 			showWarning("error.select.one.user");
 		} else {
 			List<Identity> ids = securityManager.loadIdentityByKeys(memberKeys);
-			leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids, false);
+			leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids, memberships, null, null, curriculumElement);
 			listenTo(leaveDialogBox);
-			
+
+			String modalTitle = ids.size() > 1 ? translate("remove.title.bulk") : translate("remove.title");
+
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(),
-					true, translate("edit.member"));
+					true, modalTitle);
 			cmc.activate();
 			listenTo(cmc);
 		}
@@ -558,7 +563,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 			.map(index -> tableModel.getObject(index.intValue()))
 			.map(CurriculumMemberRow::getIdentity)
 			.map(Identity::getKey)
-			.collect(Collectors.toList());
+			.toList();
 	}
 	
 	private void doSendMail(UserRequest ureq) {
@@ -623,8 +628,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if(source instanceof Link) {
-				Link link = (Link)source;
+			if(source instanceof Link link) {
 				String cmd = link.getCommand();
 				if("home".equals(cmd)) {
 					doOpenVisitingCard(ureq, row);

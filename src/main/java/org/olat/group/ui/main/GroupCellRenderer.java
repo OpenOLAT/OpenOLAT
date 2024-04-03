@@ -40,8 +40,8 @@ public class GroupCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof MemberRow) {
-			render(target, (MemberRow) cellValue);
+		if (cellValue instanceof MemberRow memberRow) {
+			render(target, memberRow);
 		}
 	}
 	

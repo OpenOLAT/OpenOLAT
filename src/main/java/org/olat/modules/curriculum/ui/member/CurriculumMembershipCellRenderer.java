@@ -44,8 +44,8 @@ public class CurriculumMembershipCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if (cellValue instanceof CourseMembership) {
-			render(target, (CourseMembership) cellValue);
+		if (cellValue instanceof CourseMembership courseMembership) {
+			render(target, courseMembership);
 		}
 	}
 	

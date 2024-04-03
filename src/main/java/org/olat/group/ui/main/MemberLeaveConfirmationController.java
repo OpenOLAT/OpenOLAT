@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,51 +14,82 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.group.ui.main;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticListElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.group.BusinessGroupModule;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementShort;
+import org.olat.modules.curriculum.ui.CurriculumComposerController;
+import org.olat.modules.curriculum.ui.member.CurriculumMembershipCellRenderer;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
- * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class MemberLeaveConfirmationController extends FormBasicController {
-	
-	private static final String[] keys = { "mail" };
-	
-	private final List<Identity> identities;
+
+	private static final Logger log = Tracing.createLoggerFor(MemberLeaveConfirmationController.class);
+
+	private FormLink confirmLink;
 	private MultipleSelectionElement mailEl;
-	
+
+	private static final String[] keys = {"mail"};
+	private final List<Identity> identities;
+	private final List<CourseMembership> memberships;
 	private final boolean withinCourse;
-	
+	private final boolean isBulkAction;
+
+	private final RepositoryEntry entry;
+	private final List<MemberRow> members;
+	private final CurriculumElement curriculumElement;
+
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BusinessGroupModule groupModule;
-	
-	public MemberLeaveConfirmationController(UserRequest ureq, WindowControl wControl, List<Identity> identities, boolean withinCourse) {
+
+	public MemberLeaveConfirmationController(UserRequest ureq, WindowControl wControl, List<Identity> identities,
+											 List<CourseMembership> memberships, RepositoryEntry entry, List<MemberRow> members,
+											 CurriculumElement curriculumElement) {
 		super(ureq, wControl, "confirm_delete");
 		this.identities = identities;
-		this.withinCourse = withinCourse;
+		this.memberships = memberships;
+		this.withinCourse = entry != null;
+		this.entry = entry;
+		this.members = members;
+		this.curriculumElement = curriculumElement;
+		this.isBulkAction = identities.size() > 1;
 		initForm(ureq);
 	}
 
@@ -68,42 +99,257 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if (formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("withinCourse", withinCourse);
 		}
-		
-		if(identities != null && formLayout instanceof FormLayoutContainer) {
-			StringBuilder sb = new StringBuilder(identities.size() * 25);
-			for(Identity id:identities) {
-				if(sb.length() > 0) sb.append(" / ");
-				sb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(id)));
+
+		if (identities != null && formLayout instanceof FormLayoutContainer formLayoutCont) {
+			String externalRef;
+			if (withinCourse) {
+				externalRef = entry.getExternalRef() != null ? " - " + entry.getExternalRef() : "";
+			} else {
+				externalRef = curriculumElement.getExternalId() != null ? " - " + curriculumElement.getExternalId() : "";
 			}
-			((FormLayoutContainer)formLayout).contextPut("identities", sb.toString());
+
+			String msg = constructMessage(externalRef);
+			formLayoutCont.contextPut("msg", msg);
+			// only available if there are members from a group
+			constructGroupMsg(formLayoutCont);
 		}
-		
+
 		boolean mandatoryEmail = groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
 		FormLayoutContainer optionsCont = FormLayoutContainer.createDefaultFormLayout("options", getTranslator());
 		formLayout.add(optionsCont);
 		formLayout.add("options", optionsCont);
 		String[] values = new String[] {
-				translate("remove.send.mail")
+				identities != null && identities.size() > 1 ? translate("remove.send.mail.bulk") : translate("remove.send.mail")
 		};
+
+		// if it's a bulk action, then construct a list of members with their roles
+		if (isBulkAction) {
+			List<String> memberValues = new ArrayList<>();
+			if (withinCourse) {
+				for (MemberRow member : members) {
+					memberValues.add(StringHelper.escapeHtml(userManager.getUserDisplayName(member.getIdentityKey()) + " (" + getRolesRendered(member, null) + ")"));
+				}
+			} else if (identities != null) {
+				for (int i = 0; i < identities.size(); i++) {
+					memberValues.add(StringHelper.escapeHtml(userManager.getUserDisplayName(identities.get(i)) + " (" + getRolesRendered(null, memberships.get(i)) + ")"));
+				}
+			}
+
+
+			StaticListElement memberValuesEl = uifactory.addStaticListElement("member.values", null, memberValues, optionsCont);
+			memberValuesEl.setLabel(translate("members"), null, false);
+			memberValuesEl.setShowAllI18nKey("remove.members.bulk.show.all");
+		}
+
 		mailEl = uifactory.addCheckboxesHorizontal("typ", "remove.send.mail.label", optionsCont, keys, values);
 		mailEl.select(keys[0], true);
 		mailEl.setEnabled(!mandatoryEmail);
 
-		uifactory.addFormSubmitButton("confirm.leave", formLayout);
+		confirmLink = uifactory.addFormLink("confirm.leave", formLayout, Link.BUTTON);
+		confirmLink.setElementCssClass("btn-danger");
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
-	
+
+	private String constructMessage(String externalRef) {
+		String msg;
+		if (isBulkAction) {
+			String[] args = new String[]{
+					String.valueOf(identities.size()),
+					withinCourse ? StringHelper.escapeHtml(entry.getDisplayname()) : StringHelper.escapeHtml(curriculumElement.getDisplayName()),
+					externalRef
+			};
+			msg = translate(withinCourse ? "dialog.modal.bg.remove.course.text.bulk" : "dialog.modal.bg.remove.text.bulk", args);
+		} else {
+			String[] args = new String[]{
+					StringHelper.escapeHtml(userManager.getUserDisplayName(identities.get(0))),
+					getRolesRendered(members != null ? members.get(0) : null, memberships.get(0)),
+					withinCourse ? StringHelper.escapeHtml(entry.getDisplayname()) : StringHelper.escapeHtml(curriculumElement.getDisplayName()),
+					externalRef
+			};
+			msg = translate(withinCourse ? "dialog.modal.bg.remove.course.text" : "dialog.modal.bg.remove.text", args);
+		}
+		return msg;
+	}
+
+	private void constructGroupMsg(FormLayoutContainer formLayoutCont) {
+		boolean hasBusinessGroupMember = memberships.stream().anyMatch(CourseMembership::isBusinessGroupMember);
+
+		if (hasBusinessGroupMember) {
+			String groupMsg;
+			if (isBulkAction) {
+				// generic message for bulk actions
+				groupMsg = translate("remove.group.member.bulk");
+			} else {
+				// individual actions, the message depends on specific member details. Not relevant for curriculum
+				// hence members won't be null
+				groupMsg = translate("remove.group.member", getGroupsRendered(members.get(0)));
+			}
+			formLayoutCont.contextPut("groupMsg", groupMsg);
+		}
+	}
+
+	/**
+	 * Renders the roles of an identity
+	 *
+	 * @param member The member whose roles are to be rendered, may be null if not within course
+	 * @param membership The course membership, may be null if within course (because not needed)
+	 * @return String representation of the rendered roles.
+	 */
+	private String getRolesRendered(MemberRow member, CourseMembership membership) {
+		StringBuilder resultBuilder = new StringBuilder();
+		try (StringOutput roleOutput = new StringOutput()) {
+			if (withinCourse) {
+				renderCourseRoles(roleOutput, member);
+			} else {
+				renderCurriculumRoles(roleOutput, membership);
+			}
+			resultBuilder.append(roleOutput);
+		} catch (Exception e) {
+			log.error("Error rendering roles", e);
+		}
+		return resultBuilder.toString();
+	}
+
+	private void renderCourseRoles(StringOutput sb, MemberRow member) {
+		boolean and = false;
+		Translator translator = Util.createPackageTranslator(CourseRoleCellRenderer.class, getLocale());
+		CourseMembership membership = member.getMembership();
+
+		// default repository entry group
+		if (membership.isRepositoryEntryOwner()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.repo.owner"));
+		}
+		if (membership.isRepositoryEntryCoach()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.repo.tutor"));
+		}
+		if (membership.isRepositoryEntryParticipant()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.repo.participant"));
+		}
+
+		// business groups
+		if (membership.isBusinessGroupCoach()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.group.tutor"));
+			if (isBulkAction) {
+				sb.append(" " + getGroupsRendered(member));
+			}
+		}
+		if (membership.isBusinessGroupParticipant()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.group.participant"));
+			if (isBulkAction) {
+				sb.append(" " + getGroupsRendered(member));
+			}
+		}
+
+		// curriculum
+		if (membership.isCurriculumElementParticipant()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.curriculum.participant"));
+		}
+		if (membership.isCurriculumElementCoach()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.curriculum.coach"));
+		}
+		if (membership.isCurriculumElementOwner()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.curriculum.owner"));
+		}
+
+		if (membership.isWaiting()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.group.waiting"));
+		}
+		if (membership.isPending()) {
+			and = and(sb, and);
+			// if reservation exists, then add additional information to pending role: If it is pending for a participant or coach
+			if (membership.getResourceReservation() != null) {
+				if (membership.getResourceReservation().getType().equals(BusinessGroupService.GROUP_PARTICIPANT)) {
+					sb.append(translator.translate("role.group.participant"));
+				} else if (membership.getResourceReservation().getType().equals(BusinessGroupService.GROUP_COACH)) {
+					sb.append(translator.translate("role.group.tutor"));
+				}
+				sb.append(" ");
+			}
+
+			sb.append(translator.translate("role.pending"));
+		}
+		if (membership.isExternalUser()) {
+			sb.append(" ").append(translator.translate("role.external.user"));
+		}
+	}
+
+	private void renderCurriculumRoles(StringOutput sb, CourseMembership membership) {
+		Translator curriculumTranslator = Util.createPackageTranslator(CurriculumComposerController.class, getLocale());
+		CurriculumMembershipCellRenderer roleRenderer = new CurriculumMembershipCellRenderer(curriculumTranslator);
+		roleRenderer.render(null, sb, membership, 0, null, null, null);
+	}
+
+	private boolean and(StringOutput sb, boolean and) {
+		if (and) sb.append(", ");
+		return true;
+	}
+
+	private String getGroupsRendered(MemberRow member) {
+		StringBuilder resultBuilder = new StringBuilder();
+		try (StringOutput groupOutput = new StringOutput()) {
+			renderGroups(groupOutput, member);
+			resultBuilder.append(groupOutput);
+		} catch (Exception e) {
+			log.error("Error rendering groups", e);
+		}
+		return resultBuilder.toString();
+	}
+
+	private void renderGroups(StringOutput sb, MemberRow member) {
+		boolean and = false;
+		List<BusinessGroupShort> groups = member.getGroups();
+		if (groups != null && !groups.isEmpty()) {
+			for (BusinessGroupShort group : groups) {
+				and = and(sb, and);
+				sb.append("\"");
+				if (group.getName() == null && group.getKey() != null) {
+					sb.append(group.getKey());
+				} else {
+					sb.append(StringHelper.escapeHtml(group.getName()));
+				}
+				sb.append("\"");
+			}
+		}
+
+		List<CurriculumElementShort> curriculumElements = member.getCurriculumElements();
+		if (curriculumElements != null && !curriculumElements.isEmpty()) {
+			for (CurriculumElementShort curEl : curriculumElements) {
+				and = and(sb, and);
+				if (curEl.getDisplayName() == null && curEl.getKey() != null) {
+					sb.append(curEl.getKey());
+				} else {
+					sb.append(StringHelper.escapeHtml(curEl.getDisplayName()));
+				}
+			}
+		}
+	}
+
 	public boolean isSendMail() {
 		return mailEl.isSelected(0);
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (confirmLink == source && (validateFormLogic(ureq))) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
+		//
 	}
 
 	@Override

@@ -151,26 +151,16 @@ public class RepositoryMailing {
 	
 	public static MailTemplate getDefaultTemplate(Type type, RepositoryEntry re, Identity ureqIdentity) {
 		if(type == null) return null;
-		
-		switch(type) {
-			case addParticipant:
-				return createAddParticipantMailTemplate(re, ureqIdentity);
-			case addParticipantItself:
-				return createAddAutoParticipantMailTemplate(re, ureqIdentity);
-			case addTutor:
-				return createAddTutorMailTemplate(re, ureqIdentity);
-			case addOwner:
-				return createAddOwnerMailTemplate(re, ureqIdentity);
-			case removeParticipant:
-			case removeTutor:
-			case removeOwner:
-				return createRemoveMailTemplate(re, ureqIdentity);
-			case closeEntry:
-				return createCloseMailTemplate(re, ureqIdentity);
-			case deleteSoftEntry:
-				return createDeleteMailTemplate(re, ureqIdentity);
-		}
-		return null;
+
+		return switch (type) {
+			case addParticipant -> createAddParticipantMailTemplate(re, ureqIdentity);
+			case addParticipantItself -> createAddAutoParticipantMailTemplate(re, ureqIdentity);
+			case addTutor -> createAddTutorMailTemplate(re, ureqIdentity);
+			case addOwner -> createAddOwnerMailTemplate(re, ureqIdentity);
+			case removeParticipant, removeTutor, removeOwner -> createRemoveMailTemplate(re, ureqIdentity);
+			case closeEntry -> createCloseMailTemplate(re, ureqIdentity);
+			case deleteSoftEntry -> createDeleteMailTemplate(re, ureqIdentity);
+		};
 	}
 
 	public static void sendEmail(Identity ureqIdentity, Identity identity, RepositoryEntry re,
