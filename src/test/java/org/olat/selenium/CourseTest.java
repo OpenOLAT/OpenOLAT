@@ -1252,7 +1252,7 @@ public class CourseTest extends Deployments {
 			.save();
 		settings
 			.execution()
-			.setLifecycle(validFrom, validTo, Locale.GERMAN)
+			.setLifecycle(validFrom, validTo, "Zurich", Locale.GERMAN)
 			.save();
 		settings
 			.back();

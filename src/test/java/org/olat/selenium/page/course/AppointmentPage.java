@@ -30,7 +30,6 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.wildfly.common.Assert;
 
 /**
@@ -40,8 +39,6 @@ import org.wildfly.common.Assert;
  *
  */
 public class AppointmentPage {
-	
-	private static final By datePickerBy = By.id("ui-datepicker-div");
 	
 	private final WebDriver browser;
 	
@@ -85,22 +82,21 @@ public class AppointmentPage {
 		browser.findElement(recurringBy).click();
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_app_topic_recurring_day"), browser);
 		
-		By firstBy = By.cssSelector("div.o_sel_app_topic_recurring_first span.input-group-addon i");
+		By firstBy = By.cssSelector("div.o_sel_app_topic_recurring_first span.input-group-addon");
 		OOGraphene.waitElement(firstBy, browser);
 		browser.findElement(firstBy).click();
-		OOGraphene.waitElement(datePickerBy, browser);
-		if(browser instanceof FirefoxDriver) {	
-			OOGraphene.selectNextMonthInDatePicker(browser);
-			OOGraphene.selectDayInDatePicker(firstDay, browser);
-		} else {
-			Date firstDate = getRecurringDate(firstDay);
-			OOGraphene.date(firstDate, "o_sel_app_topic_recurring_first", browser);
-		}
+		
+		By firstDatePickerBy = By.cssSelector("div.o_sel_app_topic_recurring_first div.datepicker-dropdown.active");
+		OOGraphene.waitElement(firstDatePickerBy, browser);
+		OOGraphene.selectNextMonthInDatePicker(browser);
+		OOGraphene.selectDayInDatePicker(firstDay, browser);
 
 		By startHourBy = By.xpath("//div[contains(@class,'o_sel_app_topic_recurring_first')]//div[contains(@class,'o_first_ms')]/input[@type='text'][1]");
-		WebElement startHourEl = browser.findElement(startHourBy);
-		startHourEl.clear();
-		startHourEl.sendKeys(Integer.toString(startHour));
+		browser.findElement(startHourBy).click();
+		OOGraphene.waitElementDisappears(firstDatePickerBy, 5, browser);
+		
+		browser.findElement(startHourBy).clear();
+		browser.findElement(startHourBy).sendKeys(Integer.toString(startHour));
 		
 		By endHourBy = By.xpath("//div[contains(@class,'o_sel_app_topic_recurring_first')]//div[contains(@class,'o_second_ms')]/input[@type='text'][1]");
 		WebElement endHourEl = browser.findElement(endHourBy);
@@ -110,28 +106,15 @@ public class AppointmentPage {
 		By dayBy = By.xpath("//fieldset[contains(@class,'o_sel_app_topic_recurring_day')]//input[@name='appointments.recurring.days.of.week'][@value='" + day.name() + "']");
 		WebElement dayEl = browser.findElement(dayBy);
 		OOGraphene.check(dayEl, Boolean.TRUE);
-		OOGraphene.waitElementDisappears(datePickerBy, 5, browser);
 		
-		By lastBy = By.cssSelector("div.o_sel_app_topic_recurring_last span.input-group-addon i");
+		By lastBy = By.cssSelector("div.o_sel_app_topic_recurring_last span.input-group-addon");
 		browser.findElement(lastBy).click();
-		OOGraphene.waitElement(datePickerBy, browser);
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.selectNextMonthInDatePicker(browser);
-			OOGraphene.selectDayInDatePicker(lastDay, browser);
-		} else {
-			Date lastDate = getRecurringDate(lastDay);
-			OOGraphene.date(lastDate, "o_sel_app_topic_recurring_last", browser);	
-		}
+
+		By lastDatePickerBy = By.cssSelector("div.o_sel_app_topic_recurring_last div.datepicker-dropdown.active");
+		OOGraphene.waitElement(lastDatePickerBy, browser);
+		OOGraphene.selectDayInDatePicker(lastDay, browser);
 
 		return this;
-	}
-
-	private Date getRecurringDate(int day) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(new Date());
-		cal.add(Calendar.MONTH, 1);
-		cal.set(Calendar.DAY_OF_MONTH, day);
-		return cal.getTime();
 	}
 	
 	/**
@@ -140,7 +123,7 @@ public class AppointmentPage {
 	 * @return Itself
 	 */
 	public AppointmentPage saveTopic()  {
-		By saveBy = By.xpath("//div[contains(@class,'modal-dialog')]//fieldset//button[contains(@class,'btn-primary')]");
+		By saveBy = By.cssSelector("div.modal-dialog fieldset div.buttons button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;

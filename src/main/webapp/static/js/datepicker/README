@@ -1,0 +1,10 @@
+
+# Vanilla JS Datepicker version 1.3.4
+
+Github: https://github.com/mymth/vanillajs-datepicker
+
+Documentation: https://mymth.github.io/vanillajs-datepicker/#/
+
+Example: https://raw.githack.com/mymth/vanillajs-datepicker/v1.3.4/demo/bs5.html
+
+We use the standard CSS with some override in _thirdparty.scss

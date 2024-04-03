@@ -297,6 +297,7 @@ public class AppointmentCreateController extends FormBasicController {
 		recurringLastEl = uifactory.addDateChooser("appointments.recurring.last", null, formLayout);
 		recurringLastEl.setElementCssClass("o_sel_app_topic_recurring_last");
 		recurringLastEl.setMandatory(true);
+		recurringFirstEl.setPushDateValueTo(recurringLastEl);
 		
 		if (appointmentsService.isBigBlueButtonEnabled() || appointmentsService.isTeamsEnabled()) {
 			meetingSpacer = uifactory.addSpacerElement("meeting.spacer", formLayout, false);

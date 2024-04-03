@@ -135,21 +135,13 @@ public class CalendarPage {
 		new Select(recurrenceEl).selectByValue(recur);
 		OOGraphene.waitBusy(browser);
 		
-		By untilAltBy = By.cssSelector("div.o_sel_cal_entry_form div.o_sel_cal_until span.input-group-addon i");
+		By untilAltBy = By.cssSelector("div.o_sel_cal_entry_form div.o_sel_cal_until span.input-group-addon");
 		OOGraphene.waitElement(untilAltBy, browser);
 		browser.findElement(untilAltBy).click();
-		selectDayInDatePicker(day);
-		return this;
-	}
-	
-	private CalendarPage selectDayInDatePicker(int day) {
-		By datePickerBy = By.id("ui-datepicker-div");
+
+		By datePickerBy = By.cssSelector("div.o_sel_cal_until div.datepicker-dropdown.active");
 		OOGraphene.waitElement(datePickerBy, browser);
-		
-		By dayBy = By.xpath("//div[@id='ui-datepicker-div']//td//a[normalize-space(text())='" + day + "']");
-		OOGraphene.waitElement(dayBy, browser);
-		browser.findElement(dayBy).click();
-		OOGraphene.waitElementDisappears(datePickerBy, 5, browser);
+		OOGraphene.selectDayInDatePicker(day, browser);
 		return this;
 	}
 	

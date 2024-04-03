@@ -71,6 +71,13 @@ public class EditLectureBlockPage {
 	}
 	
 	public EditLectureBlockPage setDate(int day, int startHour, int startMinute, int endHour, int endMinute) {
+		By untilAltBy = By.cssSelector("fieldset.o_sel_repo_edit_lecture_form div.o_sel_repo_lecture_date span.input-group-addon");
+		browser.findElement(untilAltBy).click();
+		
+		By datePickerBy = By.cssSelector("div.o_sel_repo_lecture_date  div.datepicker-dropdown.active");
+		OOGraphene.waitElement(datePickerBy, browser);
+		OOGraphene.selectDayInDatePicker(day, browser);
+		
 		String firstDateMsXpath = "//fieldset[contains(@class,'o_sel_repo_edit_lecture_form')]//div[contains(@class,'o_date_ms')][contains(@class,'o_first_ms')]/input[@type='text']";
 		By startHourBy = By.xpath(firstDateMsXpath + "[1]");
 		setTimeField(startHourBy, startHour);
@@ -82,9 +89,6 @@ public class EditLectureBlockPage {
 		By endMinuteBy = By.xpath(secondDateMsXpath + "[2]");
 		setTimeField(endMinuteBy, endMinute);
 
-		By untilAltBy = By.cssSelector("fieldset.o_sel_repo_edit_lecture_form div.o_sel_repo_lecture_date span.input-group-addon i");
-		browser.findElement(untilAltBy).click();
-		selectDayInDatePicker(day);
 		return this;
 	}
 	
@@ -92,18 +96,6 @@ public class EditLectureBlockPage {
 		WebElement el = browser.findElement(startHourBy);
 		el.clear();
 		el.sendKeys(Integer.toString(value));
-	}
-	
-	private EditLectureBlockPage selectDayInDatePicker(int day) {
-		By datePickerBy = By.id("ui-datepicker-div");
-		OOGraphene.waitElement(datePickerBy, 5, browser);
-		
-		By dayBy = By.xpath("//div[@id='ui-datepicker-div']//td//a[normalize-space(text())='" + day + "']");
-		OOGraphene.waitElement(dayBy, 5, browser);
-		browser.findElement(dayBy).click();
-		
-		OOGraphene.waitElementDisappears(datePickerBy, 5, browser);
-		return this;
 	}
 	
 	public EditLectureBlockPage save() {

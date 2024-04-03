@@ -133,6 +133,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		
 		location = uifactory.addTextElement("cif.location", "cif.location", 255, repositoryEntry.getLocation(), formLayout);
 		location.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location) && !readOnly);
+		location.setElementCssClass("o_sel_repo_location");
 		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 

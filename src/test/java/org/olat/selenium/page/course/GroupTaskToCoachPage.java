@@ -116,7 +116,7 @@ public class GroupTaskToCoachPage {
 		OOGraphene.click(reviewBy, browser);
 		
 		OOGraphene.waitModalDialog(browser);
-		By okBy = By.xpath("//div[contains(@class,'modal-dialog')]//button");
+		By okBy = By.cssSelector("div.modal-dialog div.buttons button.btn.btn-primary");
 		browser.findElement(okBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

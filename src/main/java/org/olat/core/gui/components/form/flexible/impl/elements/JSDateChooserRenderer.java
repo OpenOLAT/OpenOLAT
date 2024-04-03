@@ -27,6 +27,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
@@ -123,78 +124,65 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			value = "";
 		}
 		
-		String triggerId = "trigger_".concat(jsdcc.getFormDispatchId());
 		Translator sourceTranslator = jsdcc.getElementTranslator();
 		Translator dateTranslator = Util.createPackageTranslator(JSDateChooserRenderer.class, translator.getLocale());
 
 		sb.append("<div class='form-group ").append(cssClass).append("'><div class='input-group o_date_picker'>");
 		renderTextElement(sb, receiverId, onChangeId, value, jsdcc, teC, maxlength);
 		//date chooser button
-		sb.append("<span class='input-group-addon'>")
-		  .append("<i class='o_icon o_icon_calendar' id=\"").append(triggerId).append("\" title=\"").appendHtmlEscaped(sourceTranslator.translate("calendar.choose")).append("\"")
-		  .append(" onclick=\"jQuery('#").append(receiverId).append("').datepicker('show');\"")
-		  .append(">\u00A0</i></span>")
+		sb.append("<span class='input-group-addon' id='trigger_").append(jsdcc.getFormDispatchId()).append("' onclick=\"document.getElementById('").append(receiverId).append("').datepicker.show();\">")
+		  .append("<i class='o_icon o_icon_calendar' title=\"").appendHtmlEscaped(sourceTranslator.translate("calendar.choose")).append("\">\u00A0</i></span>")
 		  .append("</div></div>");//input-group
 		if (jsdcc.isButtonsEnabled()) {
-			// date chooser javascript
-			sb.append("<script>\n")
-			.append("jQuery(function(){ jQuery('#").append(receiverId).append("').datepicker({\n")
-			.append("  dateFormat:'").append(format).append("',\n")
-			.append("  firstDay:1,\n")
-			.append("  showOn:'focus',\n")
-			.append("  showAnim: '',\n")
-			.append("  monthNames:[")
-			  .append("'").append(dateTranslator.translate("month.long.jan")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.feb")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.mar")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.apr")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.mai")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.jun")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.jul")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.aug")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.sep")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.oct")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.nov")).append("',")
-			  .append("'").append(dateTranslator.translate("month.long.dec")).append("'")
-			.append("],\n")
-			.append("  dayNamesMin:[")
-			  .append("'").append(dateTranslator.translate("day.short.so")).append("',")
-			  .append("'").append(dateTranslator.translate("day.short.mo")).append("',")
-			  .append("'").append(dateTranslator.translate("day.short.di")).append("',")
-			  .append("'").append(dateTranslator.translate("day.short.mi")).append("',")
-			  .append("'").append(dateTranslator.translate("day.short.do")).append("',")
-			  .append("'").append(dateTranslator.translate("day.short.fr")).append("',")
-			  .append("'").append(dateTranslator.translate("day.short.sa")).append("'")
-			.append("],\n")
-			.append("  showOtherMonths:true,\n");
-			
-
-			sb.append("  beforeShow:function(el, inst) {\n");
-			if(jsdcc.getFormItem().getDefaultValue() != null) {
-				String id = ((JSDateChooser)jsdcc.getFormItem().getDefaultValue()).getTextElementComponent().getFormDispatchId();
-				sb.append("    var defDate = jQuery('#").append(id).append("').datepicker('getDate');\n")
-				  .append("    jQuery('#").append(receiverId).append("').datepicker('option', 'defaultDate', defDate);\n");  
-			}
-			sb.append("    jQuery('#").append(receiverId).append("').attr('data-oo-validation','suspend');\n")
-			  .append("  },\n");
-
-			sb.append("  onSelect:function(){\n")
-			  .append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n")
-			  .append("    jQuery(this).focus();\n")
-			  .append("    jQuery(this).change();\n");
-			if(jsdcc.getFormItem().getPushDateValueTo() != null) {
-				String pushId = ((JSDateChooser)jsdcc.getFormItem().getPushDateValueTo()).getTextElementComponent().getFormDispatchId();
-				sb.append("    var val = jQuery('#").append(pushId).append("').val();\n")
-				  .append("    if(val == null || val === '') {\n")
-				  .append("      var cDate = jQuery('#").append(receiverId).append("').val();\n")
-				  .append("      jQuery('#").append(pushId).append("').val(cDate);\n")
-				  .append("    }");
-			}
-			sb.append("    jQuery('#").append(receiverId).append("').attr('data-oo-validation',null);\n")
-			  .append("  }\n")
-			  .append("})});")
-			  .append("\n</script>");
+			renderVanillaDatePicker(sb, jsdcc, te, receiverId, format, dateTranslator);
 		}
+	}
+	
+	private void renderVanillaDatePicker(StringOutput sb, JSDateChooserComponent jsdcc, TextElementImpl te, String receiverId, String format, Translator dateTranslator) {
+		Locale locale = dateTranslator.getLocale();
+		JSDateChooser jsdci = jsdcc.getFormItem();
+		
+		// date chooser javascript
+		sb.append("<script>\n")
+		  .append("\"use strict\";\n")
+		  .append("jQuery(function() {")
+		  .append(" const elem = document.getElementById('").append(receiverId).append("');")
+		  .append(" const datepicker = new Datepicker(elem, {\n")
+		  .append("  autohide: true,\n")
+		  .append("  format: '").append(format).append("',\n")
+		  .append("  language: '").append(locale.getLanguage()).append("'\n")
+		  .append(" });\n")
+		  .append(" elem.addEventListener('show', function() {\n")
+		  .append("  elem.setAttribute('data-oo-validation', 'suspend');\n");
+		
+		if(jsdci.getDefaultValue() instanceof JSDateChooser defaultValue) {
+			String id = defaultValue.getTextElementComponent().getFormDispatchId();
+			sb.append("  const focusedDate = document.getElementById('").append(id).append("').datepicker.getFocusedDate();\n")
+			  .append("  if(focusedDate !== undefined){ \n")
+			  .append("    datepicker.setFocusedDate(focusedDate);\n")
+			  .append("  }\n");
+		}
+		
+		sb.append(" });\n")
+		  .append(" elem.addEventListener('changeDate', function(date, viewDate) { ")
+		  .append("   setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n");
+		  
+		if(jsdci.getPushDateValueTo() instanceof JSDateChooser pushDateValueTo) {
+			String pushId = pushDateValueTo.getTextElementComponent().getFormDispatchId();
+			sb.append("   const pushEl = document.getElementById('").append(pushId).append("');\n")
+			  .append("   const val = jQuery(pushEl).val();\n")
+			  .append("   if(val == null || val === '') {\n")
+			  .append("     var cDate = datepicker.getDate();\n")
+			  .append("     pushEl.datepicker.setDate(cDate);\n")
+			  .append("   }\n");
+		} 
+		  
+		sb.append(" });\n")
+		  .append(" elem.addEventListener('hide', function() {\n")
+		  .append("  elem.setAttribute('data-oo-validation', null);\n")
+		  .append(" });\n")
+		  .append("});")
+		  .append("</script>");
 	}
 	
 	private void renderDateChooserDisabled(StringOutput sb, JSDateChooserComponent jsdcc, String value, String cssClass, int maxLength) {

@@ -223,6 +223,7 @@
 	            					<inputDir>${project.build.directory}/generated-webapp/static</inputDir>
 									<includes>
 										<include>js/fullcalendar/main.min.css</include>
+										<include>js/datepicker/datepicker.css</include>
 										<include>js/tagify/tagify.css</include>
 										<include>js/jquery/cropper/cropper.min.css</include>
 										<include>js/jquery/sliderpips/jquery-ui-slider-pips.css</include>

@@ -128,60 +128,25 @@
 }
 
 /*
- * datepicker
+ * Vanilla-JS Datepicker
  */
- 
-.ui-datepicker {
-	z-index: 2000 ! important;
-	@include box-shadow(0px 1px 5px -1px rgba(0,0,0,.15));
-	
-	.ui-widget-header {
-		.ui-corner-all, .ui-datepicker-next.ui-corner-all {
-			border: none !important;
-			background: #fff !important;
-		}
 
-		.ui-icon.ui-icon-circle-triangle-e {
-			@include o-add-icon('arrow-right');
-		}
-		.ui-icon.ui-icon-circle-triangle-w {
-			@include o-add-icon('arrow-left');
-		}		
-		.ui-icon.ui-icon-circle-triangle-e, .ui-icon.ui-icon-circle-triangle-w {
-			@include o-add-icon-font();
-			&:before {
-				color: black;
-			}
-			display:inline-block;
-			background-image:none;
-			background-position:0 0;
-			font-weight: normal;
-			text-indent:0;
-			color: white;
-		}
-		
-		.ui-datepicker .ui-datepicker-prev-hover, .ui-datepicker .ui-datepicker-next-hover {
-			top: 2px;
-		}
+.datepicker-dropdown.active {
+	font-size: 16px;
+	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+	
+	.dow, .datepicker-controls .button {
+		font-size: 14px;
+		height: 24px;
 	}
 	
-	.ui-state-default {
-		background: #eee;
+	.datepicker-view {
+		width: 252px;
 	}
-	
-	.ui-state-highlight, .ui-widget-content .ui-state-highlight {
-		border: 1px solid $btn-primary-border;
-		background: $btn-primary-bg;
-		color: $btn-primary-color;
+
+	.datepicker-cell {
+		height: 36px;
 	}
-}
-
-.ui-datepicker.ui-corner-all {
-	border-radius: $alert-border-radius;
-}
-
-.ui-datepicker.ui-widget-content {
-	border: 1px solid transparent;
 }
 
 /*

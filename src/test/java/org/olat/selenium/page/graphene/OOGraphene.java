@@ -23,7 +23,6 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -658,34 +657,6 @@ public class OOGraphene {
 		browser.findElement(dateBy).sendKeys(dateText);
 	}
 	
-	public static final void datetime(Date date, String seleniumCssClass, WebDriver browser) {
-		Locale locale = getLocale(browser);
-		String dateText = formatDate(date, locale);
-		By dateBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_day");
-		browser.findElement(dateBy).sendKeys(dateText);
-		OOGraphene.waitBusy(browser);
-		
-		By hourBy = By.xpath("//div[contains(@class,'" + seleniumCssClass + "')]//input[contains(@class,'o_date_ms')][1]");
-		
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		int hour = cal.get(Calendar.HOUR_OF_DAY);
-		int minute = cal.get(Calendar.MINUTE);
-		browser.findElement(hourBy).click();
-		
-		By datePickerBy = By.id("ui-datepicker-div");
-		waitElementDisappears(datePickerBy, 5, browser);
-		
-		browser.findElement(hourBy).clear();
-		browser.findElement(hourBy).sendKeys(Integer.toString(hour));
-		OOGraphene.waitBusy(browser);
-		
-		By minuteBy = By.xpath("//div[contains(@class,'" + seleniumCssClass + "')]//input[contains(@class,'o_date_ms')][2]");
-		browser.findElement(minuteBy).clear();
-		browser.findElement(minuteBy).sendKeys(Integer.toString(minute));
-		OOGraphene.waitBusy(browser);
-	}
-	
 	public static String formatDate(Date date, Locale locale) {
 		DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, locale);
 		df.setLenient(false);
@@ -702,13 +673,31 @@ public class OOGraphene {
 	 * 
 	 * @param browser The browser
 	 */
-	public static final void selectNextMonthInDatePicker(WebDriver browser) {
+	public static final void selectPreviousMonthInDatePicker(WebDriver browser) {
 		try {
-			By nextBy = By.cssSelector("#ui-datepicker-div div.ui-datepicker-header a.ui-datepicker-next");
+			By nextBy = By.cssSelector("div.datepicker-dropdown.active div.datepicker-header button.prev-button");
 			waitElement(nextBy, browser);
 			browser.findElement(nextBy).click();
+			waitingALittleBit();
 			waitElement(nextBy, browser);
-			waitElementDisappears(By.xpath("//div[@id='ui-datepicker-div']//td[contains(@class,'ui-datepicker-today')][not(contains(@class,'ui-state-disabled'))]"), 5, browser);
+		} catch (Exception e) {
+			takeScreenshot("Select next month", browser);
+			throw e;
+		}
+	}
+	
+	/**
+	 * Select the next month in the jQuery UI (need to be open).
+	 * 
+	 * @param browser The browser
+	 */
+	public static final void selectNextMonthInDatePicker(WebDriver browser) {
+		try {
+			By nextBy = By.cssSelector("div.datepicker-dropdown.active div.datepicker-header button.next-button");
+			waitElement(nextBy, browser);
+			browser.findElement(nextBy).click();
+			waitingALittleBit();
+			waitElement(nextBy, browser);
 		} catch (Exception e) {
 			takeScreenshot("Select next month", browser);
 			throw e;
@@ -723,10 +712,10 @@ public class OOGraphene {
 	 */
 	public static final void selectDayInDatePicker(int day, WebDriver browser) {
 		try {
-			By datePickerBy = By.id("ui-datepicker-div");
+			By datePickerBy = By.cssSelector("div.datepicker-dropdown.active");
 			waitElement(datePickerBy, browser);
 			
-			By dayBy = By.xpath("//div[@id='ui-datepicker-div']//td//a[normalize-space(text())='" + day + "']");
+			By dayBy = By.xpath("//div[contains(@class,'datepicker-dropdown')][contains(@class,'active')]//div[@class='days']//span[normalize-space(text())='" + day + "'][not(contains(@class,'prev'))]");
 			waitElement(dayBy, browser);
 			browser.findElement(dayBy).click();
 			

@@ -146,7 +146,7 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		beginEl.setMandatory(true);
 		beginEl.setEnabled((status == Status.none || status == Status.leadtime)
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.begin));
-		beginEl.addActionListener(FormEvent.ONCHANGE);
+		
 		
 		int leadTime = assessmentMode.getLeadTime();
 		if(leadTime < 0) {
@@ -165,6 +165,7 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		endEl.setDefaultValue(beginEl);
 		endEl.setMandatory(true);
 		endEl.setEnabled(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.end));
+		beginEl.setPushDateValueTo(endEl);
 		
 		int followupTime = assessmentMode.getFollowupTime();
 		if(followupTime < 0) {
@@ -200,13 +201,6 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		// Only update end date if needed, not the whole container
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == beginEl && validateFormItem(ureq, beginEl) && endEl.isEmpty()) {
-			endEl.setDate(beginEl.getDate());
-		}
 	}
 
 	@Override

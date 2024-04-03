@@ -26,6 +26,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.Date;
+import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -72,7 +73,18 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 		super.validate(ureq, vr);
 		
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.13.2.datepicker.min.js");
+		jsa.addRequiredStaticJsFile("js/datepicker/datepicker-full.min.js");
+		
+		Locale locale = ureq.getLocale();
+		String language = locale.getLanguage();
+		if("zh".equals(language)) {
+			if("TW".equals(locale.getVariant())) {
+				language += "-TW";
+			} else {
+				language += "-CN";
+			}
+		}
+		jsa.addRequiredStaticJsFile("js/datepicker/locales/" + language + ".js");
 	}
 
 	public Date getDate() {
@@ -151,6 +163,7 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 		return element.getExampleDateString();
 	}
 	
+	@Override
 	public JSDateChooser getFormItem() {
 		return element;
 	}

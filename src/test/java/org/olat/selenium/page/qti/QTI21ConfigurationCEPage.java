@@ -147,11 +147,13 @@ public class QTI21ConfigurationCEPage {
 			browser.findElement(untilAltBy).click();
 			OOGraphene.waitingALittleLonger();//SEL wait animation
 			
-			By todayBy = By.xpath("//div[@id='ui-datepicker-div']//td[contains(@class,'ui-datepicker-today')]/a");
+			By todayBy = By.cssSelector("div." + fieldClass + " div.datepicker-dropdown.active span.datepicker-cell.day.focused");
 			OOGraphene.waitElement(todayBy, browser);
-			
+
 			browser.findElement(todayBy).click();
-			OOGraphene.waitElementDisappears(todayBy, 5, browser);
+			
+			By activePickerBy = By.cssSelector("div." + fieldClass + " div.datepicker-dropdown.active");
+			OOGraphene.waitElementDisappears(activePickerBy, 5, browser);
 			OOGraphene.waitingLong();//SEL wait animation
 		
 			if(waitBusy) {

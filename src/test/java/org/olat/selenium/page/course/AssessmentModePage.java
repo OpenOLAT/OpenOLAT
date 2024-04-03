@@ -19,8 +19,10 @@
  */
 package org.olat.selenium.page.course;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -76,15 +78,42 @@ public class AssessmentModePage {
 		OOGraphene.waitElement(nameBy, browser);
 		browser.findElement(nameBy).sendKeys(name);
 		//begin
-		OOGraphene.datetime(begin, "o_sel_assessment_mode_begin", browser);
+		setDateTime(begin, "o_sel_assessment_mode_begin");
 		//end
-		OOGraphene.datetime(end, "o_sel_assessment_mode_end", browser);
+		setDateTime(end, "o_sel_assessment_mode_end");
 		//start mode
 		By startBy = By.cssSelector("div.o_sel_assessment_mode_start_mode select");
 		WebElement startEl = browser.findElement(startBy);
 		new Select(startEl).selectByValue(manual ? "manual" : "automatic");
 
 		return this;
+	}
+	
+	private final void setDateTime(Date date, String seleniumCssClass) {
+		Locale locale = OOGraphene.getLocale(browser);
+		String dateText = OOGraphene.formatDate(date, locale);
+		By dateBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_day");
+		browser.findElement(dateBy).clear();
+		browser.findElement(dateBy).sendKeys(dateText);
+		OOGraphene.waitBusy(browser);
+		
+		By hourBy = By.xpath("//div[contains(@class,'" + seleniumCssClass + "')]//input[contains(@class,'o_date_ms')][1]");
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		int hour = cal.get(Calendar.HOUR_OF_DAY);
+		int minute = cal.get(Calendar.MINUTE);
+		browser.findElement(hourBy).click();
+		
+		By datePickerBy = By.cssSelector("div." + seleniumCssClass + " div.datepicker-dropdown.active");
+		OOGraphene.waitElementDisappears(datePickerBy, 5, browser);
+		
+		browser.findElement(hourBy).clear();
+		browser.findElement(hourBy).sendKeys(Integer.toString(hour));
+		
+		By minuteBy = By.xpath("//div[contains(@class,'" + seleniumCssClass + "')]//input[contains(@class,'o_date_ms')][2]");
+		browser.findElement(minuteBy).clear();
+		browser.findElement(minuteBy).sendKeys(Integer.toString(minute));
 	}
 	
 	public AssessmentModePage audienceCourse() {

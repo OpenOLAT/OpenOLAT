@@ -40,7 +40,7 @@ public class RepositoryExecutionSettingsPage {
 		this.browser = browser;
 	}
 	
-	public RepositoryExecutionSettingsPage setLifecycle(Date validFrom, Date validTo, Locale locale) {
+	public RepositoryExecutionSettingsPage setLifecycle(Date validFrom, Date validTo, String location, Locale locale) {
 		//select private
 		By radioPrivateBy = By.cssSelector(".o_sel_repo_lifecycle_type input[type='radio'][value='private']");
 		browser.findElement(radioPrivateBy).click();
@@ -52,7 +52,11 @@ public class RepositoryExecutionSettingsPage {
 		
 		By validToBy = By.cssSelector(".o_sel_repo_lifecycle_validto .o_date_picker input[type='text']");
 		String validToStr = OOGraphene.formatDate(validTo, locale);
+		browser.findElement(validToBy).click();
 		browser.findElement(validToBy).sendKeys(validToStr);
+		
+		By locationBy = By.cssSelector(".o_sel_repo_location input[type='text']");
+		browser.findElement(locationBy).sendKeys(location);
 		
 		return this;
 	}

@@ -2590,17 +2590,17 @@ function o_ffSetFocusArray(focusArray) {
 // in the form or the last element focused by a user action 
 function o_ffSetFocus(type, formId, formItemId) {
 	
-	var applyFocus = function(el) {
-		var tagName = el.tagName;
-		var focusApplied = false;
-		var buttonWithFocus = tagName == "BUTTON" && el.classList.contains('o_can_have_focus');
+	let applyFocus = function(el) {
+		let tagName = el.tagName;
+		let focusApplied = false;
+		let buttonWithFocus = tagName == "BUTTON" && el.classList.contains('o_can_have_focus');
 		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION" || buttonWithFocus) {
 			
 			if(el.classList.contains('o_date_day')) {
-				var jLastEl = jQuery(el);
-				jLastEl.datepicker('option', 'showOn', '');
-				jLastEl.focus();
-				jLastEl.datepicker('option', 'showOn', 'focus');
+				const datepicker = el.datepicker;
+				datepicker.datepicker.setOptions({ showOnFocus: false });
+				jQuery(el).focus();
+				datepicker.datepicker.setOptions({ showOnFocus: true });
 				focusApplied = true;
 			} else if(!el.disabled) {
 				if(tagName == "INPUT"
@@ -2626,17 +2626,17 @@ function o_ffSetFocus(type, formId, formItemId) {
 		return focusApplied;
 	}
 	
-	var isInForm = function(formElementId, elementId) {
+	let isInForm = function(formElementId, elementId) {
 		return jQuery("#" + elementId).parents("#" + formElementId).length > 0;
 	}
 	
-	var isElementVisible = function(elementId) {
+	let isElementVisible = function(elementId) {
 		if(elementId == null || elementId === "") return false;
 		
-		var hidden = false;
+		let hidden = false;
 		jQuery("#" + elementId).parents().each(function(index, el) {
-			var jEl = jQuery(el);
-			var disp = jEl.css('display') === "none" && !jEl.hasClass("modal") && !jEl.hasClass("popover");
+			let jEl = jQuery(el);
+			let disp = jEl.css('display') === "none" && !jEl.hasClass("modal") && !jEl.hasClass("popover");
 			hidden |= disp;
 		});
 		return !hidden;
@@ -2656,8 +2656,8 @@ function o_ffSetFocus(type, formId, formItemId) {
 	//    - last focused element
 	//    - element with autofocus
 	
-	var autofocusEl = jQuery("#" + formId + " input[autofocus]");
-	var errItem = jQuery('#' + formId + ' .has-error .form-control');
+	let autofocusEl = jQuery("#" + formId + " input[autofocus]");
+	let errItem = jQuery('#' + formId + ' .has-error .form-control');
 	
 	var candidateFormItemId = "";
 	if (errItem.length > 0) { 
@@ -2673,9 +2673,9 @@ function o_ffSetFocus(type, formId, formItemId) {
 	// 4) Now set focus
 	var focused = false;
 	if (candidateFormItemId != "" && isElementVisible(candidateFormItemId)) {
-		var candidateEl = jQuery("#" + candidateFormItemId);
-		var numOfModals = jQuery(".modal.show").length + jQuery(".popover").length;
-		var numOfClosest = candidateEl.parents('.modal.show').length + candidateEl.parents('.popover').length;
+		let candidateEl = jQuery("#" + candidateFormItemId);
+		let numOfModals = jQuery(".modal.show").length + jQuery(".popover").length;
+		let numOfClosest = candidateEl.parents('.modal.show').length + candidateEl.parents('.popover').length;
 		if(numOfModals > 0 && numOfClosest == 0) {
 			// Modal dialog opens, but try to focus under it
 			focused = false;
