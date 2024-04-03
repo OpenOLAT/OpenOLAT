@@ -303,7 +303,7 @@ public class AssessmentTest extends Deployments {
 			.assessmentConfiguration()
 			.createAssessmentMode()
 			.editAssessment(assessmentName, begin, end, true)
-			.save()
+			.save(assessmentName)
 			.clickToolbarBack()
 			.assertAssessmentModeList()
 			.start(assessmentName)

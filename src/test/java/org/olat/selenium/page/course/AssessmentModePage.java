@@ -128,10 +128,11 @@ public class AssessmentModePage {
 	 * 
 	 * @return
 	 */
-	public AssessmentModePage save() {
+	public AssessmentModePage save(String assessmentModeTitle) {
 		By saveButtonBy = By.cssSelector(".o_sel_assessment_mode_edit_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
-		OOGraphene.waitBusy(browser);
+		By startBy = By.xpath("//fieldset/legend[text()[contains(.,'" + assessmentModeTitle + "')]]");
+		OOGraphene.waitElement(startBy, browser);
 		return this;
 	}
 	
