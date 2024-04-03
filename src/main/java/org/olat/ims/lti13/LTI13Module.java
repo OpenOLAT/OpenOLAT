@@ -208,7 +208,7 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 		
 		List<String> allowedRoles = getDeploymentRepositoryEntryRolesConfigurationList();
 		if((roles.isAdministrator() && allowedRoles.contains(OrganisationRoles.administrator.name()))
-				|| (roles.isGroupManager() && allowedRoles.contains(OrganisationRoles.groupmanager.name()))) {
+				|| (roles.isLearnResourceManager() && allowedRoles.contains(OrganisationRoles.learnresourcemanager.name()))) {
 			return true;
 		}
 		return roles.isAuthor() && (getDeploymentRepositoryEntryOwnerPermission() == DeploymentConfigurationPermission.allResources

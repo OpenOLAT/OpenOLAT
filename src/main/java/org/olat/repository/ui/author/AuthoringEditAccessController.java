@@ -101,9 +101,9 @@ public class AuthoringEditAccessController extends BasicController {
 		}
 		initAccessShare(ureq, mainVC);
 		initAccessOffers(ureq, mainVC);
-		// LTI13 is restricted. Only if it is activated for all groups or activated for course owners with author role
+		// LTI13 is restricted. Only if it is activated for all groups or activated for course owners with author role || administrator can always access that area
 		boolean isLTI13AccessAllowed = lti13Module.getDeploymentRepositoryEntryOwnerPermission() == DeploymentConfigurationPermission.allResources
-				|| entry.isLTI13DeploymentByOwnerWithAuthorRightsEnabled();
+				|| entry.isLTI13DeploymentByOwnerWithAuthorRightsEnabled() || ureq.getUserSession().getRoles().isAdministrator();
 		// check if lti Module is enabled and if entry is a course
 		// an LTI release only makes sense in a course OO-7664
 		if(lti13Module.isEnabled() && isLTI13AccessAllowed && entry.getOlatResource().getResourceableTypeName().equals("CourseModule")) {
