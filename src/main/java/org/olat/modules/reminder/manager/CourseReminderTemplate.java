@@ -138,10 +138,10 @@ public class CourseReminderTemplate extends MailTemplate {
 			vContext.put(COURSE_EXPENDITURE_WORK, entry.getExpenditureOfWork());
 			vContext.put(COURSE_EXPENDITURE_WORK.toLowerCase(), entry.getExpenditureOfWork());
 			if (entryLifecycle != null) {
-				vContext.put(COURSE_EXECUTION_PERIOD_START, formatter.formatDateAndTime(entryLifecycle.getValidFrom()));
-				vContext.put(COURSE_EXECUTION_PERIOD_START.toLowerCase(), formatter.formatDateAndTime(entryLifecycle.getValidFrom()));
-				vContext.put(COURSE_EXECUTION_PERIOD_END, formatter.formatDateAndTime(entryLifecycle.getValidTo()));
-				vContext.put(COURSE_EXECUTION_PERIOD_END.toLowerCase(), formatter.formatDateAndTime(entryLifecycle.getValidTo()));
+				vContext.put(COURSE_EXECUTION_PERIOD_START, formatter.formatDate(entryLifecycle.getValidFrom()));
+				vContext.put(COURSE_EXECUTION_PERIOD_START.toLowerCase(), formatter.formatDate(entryLifecycle.getValidFrom()));
+				vContext.put(COURSE_EXECUTION_PERIOD_END, formatter.formatDate(entryLifecycle.getValidTo()));
+				vContext.put(COURSE_EXECUTION_PERIOD_END.toLowerCase(), formatter.formatDate(entryLifecycle.getValidTo()));
 			}
 			vContext.put(COURSE_LOCATION, entry.getLocation());
 			vContext.put(COURSE_LOCATION.toLowerCase(), entry.getLocation());
