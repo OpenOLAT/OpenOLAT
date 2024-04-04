@@ -26,7 +26,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -38,6 +37,7 @@ import org.olat.core.gui.translator.Translator;
 public class AppointmentDataModel extends DefaultFlexiTableDataModel<AppointmentRow>
 implements SortableFlexiTableDataModel<AppointmentRow>{
 	
+	static final AppointmentCols[] COLS = AppointmentCols.values();
 	public static final String FILTER_ALL = "all";
 	public static final String FILTER_STATUS = "status";
 	public static final String FILTER_PARTICIPATED = "participated";
@@ -53,7 +53,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>{
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<AppointmentRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, translator.getLocale()).sort();
+		List<AppointmentRow> rows = new AppointmentSortDelegate(orderBy, this, translator.getLocale()).sort();
 		super.setObjects(rows);
 	}
 
@@ -74,8 +74,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>{
 			case details: return row.getAppointment().getDetails();
 			case maxParticipations: return row.getAppointment().getMaxParticipations();
 			case freeParticipations: return row.getFreeParticipations();
-			case numberOfParticipations: return row.getNumberOfParticipations();
-			case participants: return row.getParticipantsWrapper();
+			case participants: return row.getParticipationsEl();
 			case recordings: return row.getRecordingLinks();
 			case select: return row.getSelectLink();
 			case confirm: return row.getConfirmLink();
@@ -92,7 +91,6 @@ implements SortableFlexiTableDataModel<AppointmentRow>{
 		location("appointment.location"),
 		details("appointment.details"),
 		maxParticipations("appointment.max.participations"),
-		numberOfParticipations("appointment.number.of.participations"),
 		freeParticipations("appointment.free.participations"),
 		participants("participants"),
 		recordings("recordings"),

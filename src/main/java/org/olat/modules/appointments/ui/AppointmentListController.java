@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemList;
@@ -71,6 +72,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -113,6 +115,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private static final String FILTER_KEY_PARTICIPATED = "participated";
 	private static final String FILTER_KEY_PARTICIPATIONS_AVAILABLE = "participation.available";
 	private static final String CMD_MORE = "more";
+	private static final String CMD_SHOW_PARTICIPANTS = "show.participants";
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_ADD_USER = "add";
 	private static final String CMD_REMOVE = "remove";
@@ -141,6 +144,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private AppointmentEditController appointmentEditCtrl;
 	private AppointmentCreateController addAppointmentsCtrl;
 	private UserSearchController userSearchCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
+	private AppointmentParticipationsController participationsCtrl;
 	private ParticipationRemoveController removeCtrl;
 	private AppointmentDeleteController appointmentDeleteCtrl;
 
@@ -242,15 +247,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.maxParticipations));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.freeParticipations));
 		}
-		DefaultFlexiColumnModel numberOfParticipationsModel = new DefaultFlexiColumnModel(AppointmentCols.numberOfParticipations);
-		numberOfParticipationsModel.setDefaultVisible(false);
-		columnsModel.addFlexiColumnModel(numberOfParticipationsModel);
-		if (isParticipationVisible()) {
-			DefaultFlexiColumnModel participantsModel = new DefaultFlexiColumnModel(AppointmentCols.participants);
-			participantsModel.setCellRenderer(new ParticipationsRenderer());
-			participantsModel.setDefaultVisible(false);
-			columnsModel.addFlexiColumnModel(participantsModel);
-		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.participants));
 		if (appointmentsService.isBigBlueButtonEnabled()) {
 			DefaultFlexiColumnModel recordingsModel = new DefaultFlexiColumnModel(AppointmentCols.recordings);
 			recordingsModel.setExportable(false);
@@ -360,7 +357,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private void initSorters() {
 		List<FlexiTableSort> sorters = new ArrayList<>(2);
 		sorters.add(new FlexiTableSort(translate(AppointmentCols.start.i18nHeaderKey()), AppointmentCols.start.name()));
-		sorters.add(new FlexiTableSort(translate(AppointmentCols.numberOfParticipations.i18nHeaderKey()), AppointmentCols.numberOfParticipations.name()));
+		sorters.add(new FlexiTableSort(translate(AppointmentCols.participants.i18nHeaderKey()), AppointmentCols.participants.name()));
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
 		options.setDefaultOrderBy(new SortKey(AppointmentCols.start.name(), true));
 		tableEl.setSortSettings(options);
@@ -491,6 +488,19 @@ public abstract class AppointmentListController extends FormBasicController impl
 				.limit(limit)
 				.collect(Collectors.toList());
 		row.setParticipants(participants);
+		
+		String numOfParticipations = "<span class=\"o_nowrap\">" + translate("appointment.participations", String.valueOf(participants.size())) + "</span>";
+		if (isParticipationVisible() && !participants.isEmpty()) {
+			FormLink participationsEl = uifactory.addFormLink("participations_" + row.getKey(), CMD_SHOW_PARTICIPANTS,
+					numOfParticipations, null, null, Link.NONTRANSLATED);
+			participationsEl.setUserObject(row);
+			row.setParticipationsEl(participationsEl);
+		} else {
+			StaticTextElement participationsEl = uifactory.addStaticTextElement("participations_" + row.getKey(), null,
+					numOfParticipations, null);
+			participationsEl.setStaticFormElement(false);
+			row.setParticipationsEl(participationsEl);
+		}
 		
 		if (participations.size() > PARTICIPANTS_RENDER_LIMIT) {
 			String name = "more_" + row.getKey();
@@ -632,28 +642,23 @@ public abstract class AppointmentListController extends FormBasicController impl
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if (CMD_SELECT.equals(cmd)) {
-				AppointmentRow row = (AppointmentRow)link.getUserObject();
+			if (CMD_SELECT.equals(cmd) && link.getUserObject() instanceof AppointmentRow row) {
 				doToggleParticipation(ureq, row);
-			} else if (CMD_EDIT.equals(cmd)) {
-				AppointmentRow row = (AppointmentRow)link.getUserObject();
+			} else if (CMD_EDIT.equals(cmd) && link.getUserObject() instanceof AppointmentRow row) {
 				doEditAppointment(ureq, row.getAppointment());
-			} else if (CMD_DELETE.equals(cmd)) {
-				AppointmentRow row = (AppointmentRow)link.getUserObject();
+			} else if (CMD_DELETE.equals(cmd) && link.getUserObject() instanceof AppointmentRow row) {
 				doConfirmDeletion(ureq, row.getAppointment());
-			} else if (CMD_CONFIRM.equals(cmd)) {
-				AppointmentRow row = (AppointmentRow)link.getUserObject();
+			} else if (CMD_CONFIRM.equals(cmd) && link.getUserObject() instanceof AppointmentRow row) {
 				doConfirm(ureq, row.getAppointment());
-			} else if (CMD_ADD_USER.equals(cmd)) {
-				AppointmentRow row = (AppointmentRow)link.getUserObject();
+			} else if (CMD_SHOW_PARTICIPANTS.equals(cmd) && link.getUserObject() instanceof AppointmentRow row) {
+				doOpenParticipations(ureq, row, link);
+			} else if (CMD_ADD_USER.equals(cmd) && link.getUserObject() instanceof AppointmentRow row) {
 				doSelectUser(ureq, row.getAppointment());
-			} else if (CMD_REMOVE.equals(cmd)) {
-				AppointmentRow row = (AppointmentRow)link.getUserObject();
+			} else if (CMD_REMOVE.equals(cmd) && link.getUserObject() instanceof AppointmentRow row) {
 				doRemove(ureq, row.getAppointment());
-			} else if (CMD_EXPORT.equals(cmd)) {
-				AppointmentRow row = (AppointmentRow)link.getUserObject();
+			} else if (CMD_EXPORT.equals(cmd) && link.getUserObject() instanceof AppointmentRow row) {
 				doExportParticipations(ureq, row.getAppointment());
-			} else if (CMD_RECORDING.equals(cmd)) {
+			} else if (CMD_RECORDING.equals(cmd) && link.getUserObject() instanceof BigBlueButtonRecordingReference row) {
 				BigBlueButtonRecordingReference recordingReference = (BigBlueButtonRecordingReference)link.getUserObject();
 				doOpenRecording(ureq, recordingReference);
 			} 
@@ -693,6 +698,11 @@ public abstract class AppointmentListController extends FormBasicController impl
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (participationsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				calloutCtrl.deactivate();
+				cleanUp();
+			}
 		} else if (userSearchCtrl == source) {
 			Appointment appointment = (Appointment)userSearchCtrl.getUserObject();
 			if (event instanceof SingleIdentityChosenEvent) {
@@ -727,15 +737,19 @@ public abstract class AppointmentListController extends FormBasicController impl
 		removeAsListenerAndDispose(appointmentDeleteCtrl);
 		removeAsListenerAndDispose(addAppointmentsCtrl);
 		removeAsListenerAndDispose(appointmentEditCtrl);
+		removeAsListenerAndDispose(participationsCtrl);
 		removeAsListenerAndDispose(userSearchCtrl);
 		removeAsListenerAndDispose(removeCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		findingConfirmationCtrl = null;
 		appointmentDeleteCtrl = null;
 		addAppointmentsCtrl = null;
 		appointmentEditCtrl = null;
+		participationsCtrl = null;
 		userSearchCtrl = null;
 		removeCtrl = null;
+		calloutCtrl = null;
 		cmc = null;
 	}
 
@@ -938,6 +952,19 @@ public abstract class AppointmentListController extends FormBasicController impl
 			}
 		}
 		return cmps;
+	}
+	
+	private void doOpenParticipations(UserRequest ureq, AppointmentRow row, FormLink link) {
+		removeAsListenerAndDispose(participationsCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		
+		participationsCtrl = new AppointmentParticipationsController(ureq, getWindowControl(), row.getParticipants());
+		listenTo(participationsCtrl);
+
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				participationsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 }
