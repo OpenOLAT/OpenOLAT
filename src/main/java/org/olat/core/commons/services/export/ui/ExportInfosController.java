@@ -98,7 +98,7 @@ public class ExportInfosController extends FormBasicController {
 		}
 	
 		Formatter formatter = Formatter.getInstance(getLocale());
-		String creationDate = formatter.formatDate(exportRow.getCreationDate());
+		String creationDate = formatter.formatDateAndTime(exportRow.getCreationDate());
 		uifactory.addStaticTextElement("creation.date", creationDate, formLayout);
 		
 		String expirationDate = formatter.formatDate(exportRow.getExpirationDate());

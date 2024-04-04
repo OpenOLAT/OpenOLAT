@@ -3,7 +3,7 @@
 #end
 
 #set($creatorFullName = $r.escapeHtml($row.creatorFullName))
-#set($creationDate = $r.formatDate($row.creationDate))
+#set($creationDate = $r.formatDateAndTime($row.creationDate))
 #set($expirationInDays = $row.expirationInDays)
 <div class="o_export_card">
 	<div class="o_export_type">

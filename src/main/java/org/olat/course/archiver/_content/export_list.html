@@ -3,10 +3,10 @@
 	<div class="o_hint">$off_info#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end</div>
 	<fieldset>
 		<legend>$r.translate("course.archive.list.title")</legend>
-		<div class="o_button_group o_button_group_right">
+		$r.render("archive.scopes")
+		<div class="o_button_group o_button_group_right o_no_margin">
 			$r.render("course.archive.new")
 		</div>
-		$r.render("archive.scopes")
 		$r.render("list")
 	</fieldset>
 	
