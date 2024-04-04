@@ -343,6 +343,10 @@ $fa-css-prefix: "o_icon" !default;
 	}
 	&:after { position: absolute; top: 0; right: -14px; font-size: 100%;}
 }
+.o_icon_quiz_single_choice_correct { @include o-add-icon('check-circle');}
+.o_icon_quiz_single_choice_incorrect { @include o-add-icon('times-circle');}
+.o_icon_quiz_single_choice_off { @include o-add-icon('circle', false);}
+.o_icon_quiz_single_choice_on { @include o-add-icon('check-circle');}
 .o_icon_quota { @include o-add-icon('database');}
 .o_icon_quote_right { @include o-add-icon('quote-right');}
 .o_icon_qrcode { @include o-add-icon('qrcode');}
