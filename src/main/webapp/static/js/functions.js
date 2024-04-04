@@ -2764,6 +2764,20 @@ function showMessageBox(type, title, message, buttonCallback) {
 	}
 }
 
+function o_guiShowModal(selector) {
+	const dialog = document.querySelector(selector);
+	if(dialog != null && !dialog.open) {
+		dialog.showModal();
+	}
+}
+
+function o_guiCloseModal(selector) {
+	const dialog = document.querySelector(selector);
+	if(dialog != null && dialog.open) {
+		dialog.close();
+	}
+}
+
 function o_extraTinyDirty(editor) {
 	var dirty = editor.isDirty();
 	function o_extraTinyDirtyToggle(elm) {

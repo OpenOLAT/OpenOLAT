@@ -97,7 +97,7 @@ public class MembersWizardPage {
 		// select all
 		By selectAll = null;
 		try {
-			selectAll = By.xpath("//div[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
+			selectAll = By.xpath("//dialog[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
 			OOGraphene.waitElement(selectAll, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Search member selectall", browser);
@@ -105,7 +105,7 @@ public class MembersWizardPage {
 		}
 		browser.findElement(selectAll).click();
 		OOGraphene.waitBusy(browser);
-		By selectedAll = By.xpath("//div[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
+		By selectedAll = By.xpath("//dialog[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
 		OOGraphene.waitElement(selectedAll, browser);
 		return this;
 	}
@@ -132,9 +132,9 @@ public class MembersWizardPage {
 	}
 	
 	private MembersWizardPage searchMemberForm(UserVO user, boolean admin) {
-		if(browser instanceof ChromeDriver) {
+		if(browser instanceof ChromeDriver && !admin) {
 			By focusedFieldBy = By.cssSelector(".modal .o_form input:focus");
-			OOGraphene.waitElement(focusedFieldBy, browser);
+			//OOGraphene.waitElement(focusedFieldBy, browser);
 		}
 		//Search by username or first name
 		By firstFieldBy = By.xpath("//fieldset[contains(@class,'o_sel_usersearch_searchform')]//input[@type='text'][1]");

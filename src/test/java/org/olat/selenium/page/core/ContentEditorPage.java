@@ -47,7 +47,7 @@ public class ContentEditorPage extends ContentViewPage {
 		By addBy = By.cssSelector(".o_ce_add_main_btns>a.btn.o_sel_add_container_main");
 		OOGraphene.waitElement(addBy, browser);
 		browser.findElement(addBy).click();
-		By addCalloutBy = By.cssSelector("div.popover div.o_inspector_layouts");
+		By addCalloutBy = By.cssSelector("dialog.popover div.o_inspector_layouts");
 		OOGraphene.waitElement(addCalloutBy, browser);
 		
 		By newLayoutBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_inspector_layouts']//a/span/div[contains(@class,'" + layout.cssClass() + "')]");
@@ -63,7 +63,7 @@ public class ContentEditorPage extends ContentViewPage {
 		By addBy = By.xpath("//div[contains(@class,'o_page_container_edit')][" + container + "]//div[contains(@class,'o_page_container_slot')][" + slot + "]//a[contains(@class,'btn')][contains(@class,'o_page_add_in_container')]");
 		OOGraphene.waitElement(addBy, browser);
 		browser.findElement(addBy).click();
-		By addCalloutBy = By.cssSelector("div.popover div.o_sel_add_element_callout");
+		By addCalloutBy = By.cssSelector("dialog.popover div.o_sel_add_element_callout");
 		OOGraphene.waitElement(addCalloutBy, browser);
 		return this;
 	}
@@ -101,7 +101,7 @@ public class ContentEditorPage extends ContentViewPage {
 		browser.findElement(addImageBy).click();
 		OOGraphene.waitModalDialog(browser, "div.o_sel_ce_add_image");
 		
-		By uploadButtonBy = By.cssSelector("div.modal div.o_sel_ce_add_image a.o_sel_upload_image");
+		By uploadButtonBy = By.cssSelector("dialog.modal div.o_sel_ce_add_image a.o_sel_upload_image");
 		browser.findElement(uploadButtonBy).click();
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_ce_collect_image_form");
 		
@@ -126,7 +126,7 @@ public class ContentEditorPage extends ContentViewPage {
 		browser.findElement(addDocumentBy).click();
 		OOGraphene.waitModalDialog(browser, "div.o_sel_ce_add_file");
 		
-		By uploadButtonBy = By.cssSelector("div.modal div.o_sel_ce_add_file a.o_sel_upload_file");
+		By uploadButtonBy = By.cssSelector("dialog.modal div.o_sel_ce_add_file a.o_sel_upload_file");
 		browser.findElement(uploadButtonBy).click();
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_ce_collect_document_form");
 
@@ -152,7 +152,7 @@ public class ContentEditorPage extends ContentViewPage {
 		browser.findElement(addCitationBy).click();
 		OOGraphene.waitModalDialog(browser, "div.o_sel_ce_add_citation");
 		
-		By addButtonBy = By.cssSelector("div.modal div.o_sel_ce_add_citation a.o_sel_add_citation");
+		By addButtonBy = By.cssSelector("dialog.modal div.o_sel_ce_add_citation a.o_sel_add_citation");
 		browser.findElement(addButtonBy).click();
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_ce_collect_citation_form");
 		

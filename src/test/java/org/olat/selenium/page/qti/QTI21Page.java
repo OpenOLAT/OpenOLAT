@@ -1057,7 +1057,7 @@ public class QTI21Page {
 	 * Yes in a dialog box controller.
 	 */
 	private QTI21Page confirm() {
-		OOGraphene.waitBusyAndScrollTop(browser);
+		OOGraphene.waitBusy(browser);
 		// confirm
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-footer a");
 		OOGraphene.waitElement(confirmButtonBy, browser);

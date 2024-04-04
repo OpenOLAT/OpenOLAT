@@ -356,7 +356,7 @@ public class BinderPage {
 	 * Yes in a dialog box controller.
 	 */
 	protected void confirm() {
-		By confirmButtonBy = By.xpath("//div[contains(@class,'modal-dialo')]//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_0')]");
+		By confirmButtonBy = By.xpath("//div[contains(@class,'modal-dialog')]//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_0')]");
 		OOGraphene.waitElement(confirmButtonBy, 5, browser);
 		OOGraphene.waitBusyAndScrollTop(browser);
 		browser.findElement(confirmButtonBy).click();

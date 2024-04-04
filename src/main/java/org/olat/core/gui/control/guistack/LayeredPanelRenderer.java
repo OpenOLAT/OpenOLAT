@@ -56,5 +56,15 @@ class LayeredPanelRenderer extends PanelRenderer {
 			sb.append("</div>");
 			level++;
 		}
+		
+		sb.append("<script>\n")
+		  .append("\"use strict\";\n");
+		for (Component component : layers) {
+			sb.append("o_guiShowModal('#o_c").append(component.getDispatchID()).append(" dialog');\n");
+		}
+		for (String component : panel.getClosedPanels()) {
+			sb.append("o_guiCloseModal('#o_c").append(component).append(" dialog');\n");
+		}
+		sb.append("</script>");
 	}
 }

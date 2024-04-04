@@ -37,7 +37,6 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.util.ZIndexWrapper;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -94,7 +93,7 @@ public class GuiStackNiceImpl implements GuiStack {
 		}
 		
 		if (scrollToTop) {
-			wbo.sendCommandTo(CommandFactory.createScrollTop());
+			//wbo.sendCommandTo(CommandFactory.createScrollTop());
 		}
 		
 		int zindex = 900 + (modalLayers * 100) + 5;
@@ -142,7 +141,7 @@ public class GuiStackNiceImpl implements GuiStack {
 	
 	public void pushTopModalDialog(Component content, boolean scrollToTop) {
 		if (scrollToTop) {
-			wbo.sendCommandTo(CommandFactory.createScrollTop());
+			//wbo.sendCommandTo(CommandFactory.createScrollTop());
 		}
 
 		int zindex = 70000 + (topModalLayers * 100) + 5;

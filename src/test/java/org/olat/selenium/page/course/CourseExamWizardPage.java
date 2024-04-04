@@ -101,7 +101,7 @@ public class CourseExamWizardPage {
 		OOGraphene.waitElement(rowBy, browser);
 		browser.findElement(rowBy).click();
 		// Wait configuration
-		By infosBy = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_cnd_document')]/div/h4[text()[contains(.,'" + testTitle + "')]]");
+		By infosBy = By.xpath("//dialog[contains(@class,'modal')]//div[contains(@class,'o_cnd_document')]/div/h4[text()[contains(.,'" + testTitle + "')]]");
 		OOGraphene.waitElement(infosBy, browser);
 		
 		By courseElementTitleBy = By.cssSelector(".modal div.o_sel_course_wizard_element_title input[type='text']");
@@ -156,7 +156,7 @@ public class CourseExamWizardPage {
 	}
 	
 	public CourseExamWizardPage assertOnOverview(UserVO user) {
-		By userBy = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_wrapper')]//td[text()[contains(.,'" + user.getFirstName() + "')]]");
+		By userBy = By.xpath("//dialog[contains(@class,'modal')]//div[contains(@class,'o_table_wrapper')]//td[text()[contains(.,'" + user.getFirstName() + "')]]");
 		OOGraphene.waitElement(userBy, browser);
 		return this;
 	}

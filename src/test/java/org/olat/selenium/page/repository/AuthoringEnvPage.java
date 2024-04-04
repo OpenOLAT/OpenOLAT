@@ -151,11 +151,11 @@ public class AuthoringEnvPage {
 	 */
 	public RepositorySettingsPage fillCreateForm(String displayName) {
 		OOGraphene.waitModalDialog(browser);
-		By inputFocusBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input:focus");
+		By inputFocusBy = By.cssSelector("dialog.o_sel_author_create_popup div.o_sel_author_displayname input:focus");
 		OOGraphene.waitElement(inputFocusBy, browser);
-		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
+		By inputBy = By.cssSelector("dialog.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
-		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
+		By submitBy = By.cssSelector("dialog.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitElement(generaltabBy, browser);
@@ -172,17 +172,17 @@ public class AuthoringEnvPage {
 	public RepositorySettingsPage fillCreateCourseForm(String displayName, boolean learnPath) {
 		OOGraphene.waitModalDialog(browser);
 		if(browser instanceof ChromeDriver) {
-			By inputFocusBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input:focus");
+			By inputFocusBy = By.cssSelector("dialog.o_sel_author_create_popup div.o_sel_author_displayname input:focus");
 			OOGraphene.waitElement(inputFocusBy, browser);
 		}
-		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
+		By inputBy = By.cssSelector("dialog.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
 		// select node model for the course
 		String type = learnPath ? CourseModule.COURSE_TYPE_PATH : CourseModule.COURSE_TYPE_CLASSIC;
 		By typeBy = By.xpath("//div[contains(@class,'o_radio_cards') and contains(@class,'o_course_design')]//input[@name='course.design' and @value='" + type + "']");
 		browser.findElement(typeBy).click();
 		// create the course
-		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
+		By submitBy = By.cssSelector("dialog.o_sel_author_create_popup .o_sel_author_create_submit");
 		OOGraphene.click(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitElement(generaltabBy, browser);
@@ -197,9 +197,9 @@ public class AuthoringEnvPage {
 	 */
 	public void fillCreateFormAndStartWizard(String displayName, String courseType, Wizard wizard) {
 		OOGraphene.waitModalDialog(browser);
-		By inputFocusBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input:focus");
+		By inputFocusBy = By.cssSelector("dialog.modal.o_sel_author_create_popup div.o_sel_author_displayname input:focus");
 		OOGraphene.waitElement(inputFocusBy, browser);
-		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
+		By inputBy = By.cssSelector("dialog.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
 		// select node model for the course
 		By typeBy = By.xpath("//div[contains(@class,'o_radio_cards') and contains(@class,'o_course_design')]//input[@name='course.design' and @value='" + courseType + "']");

@@ -49,7 +49,7 @@ import org.openqa.selenium.virtualauthenticator.VirtualAuthenticatorOptions.Tran
 public class LoginPage {
 	
 	private static final String footerUserDivXPath = "//div[@id='o_footer_user']/span[@id='o_username']";
-	private static final String acknowledgeCheckboxXPath = "//div[contains(@class,'modal-dialog')]//fieldset[contains(@class,'o_disclaimer')]//input[@name='acknowledge_checkbox']";
+	private static final String acknowledgeCheckboxXPath = "//dialog//fieldset[contains(@class,'o_disclaimer')]//input[@name='acknowledge_checkbox']";
 	
 	public static final By loginFormBy = By.cssSelector("div.o_login_form");
 	private static final By authOrDisclaimerXPath = By.xpath(footerUserDivXPath + "|" + acknowledgeCheckboxXPath);
@@ -367,7 +367,6 @@ public class LoginPage {
 		if(resumes.size() > 0 && resumes.get(0).isDisplayed()) {
 			resumes.get(0).click();
 			OOGraphene.waitModalDialogDisappears(browser);
-			OOGraphene.waitElementAbsence(By.xpath("//div[contains(@class,'modal-backdrop')]"), 5, browser);
 		}
 		return this;
 	}

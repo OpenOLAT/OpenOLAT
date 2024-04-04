@@ -40,6 +40,9 @@ class LayeredPanel extends SimpleStackedPanel {
 	private static final ComponentRenderer LAYERED_RENDERER = new LayeredPanelRenderer();
 	private int startLayerIndex;
 	private int indexIncrement;
+	
+	
+	private final List<String> closedPanels = new ArrayList<>();
 
 	/**
 	 * Constructor
@@ -49,7 +52,7 @@ class LayeredPanel extends SimpleStackedPanel {
 	 * @param startLayer The z-index of the first layer in this panel
 	 * @param indexIncrement The difference of the z-index to the next layer
 	 */
-	public LayeredPanel(String name, String cssClass, int startLayer, int indexIncrement) {
+	LayeredPanel(String name, String cssClass, int startLayer, int indexIncrement) {
 		super(name);
 		setCssClass(cssClass);
 		this.startLayerIndex = startLayer;
@@ -77,6 +80,21 @@ class LayeredPanel extends SimpleStackedPanel {
 		synchronized(stackList) {
 			return new ArrayList<>(stackList);
 		}
+	}
+	
+	List<String> getClosedPanels() {
+		List<String> panels = new ArrayList<>(closedPanels);
+		closedPanels.clear();
+		return panels;
+	}
+
+	@Override
+	public Component popContent() {
+		Component poped = super.popContent();
+		if(poped != null) {
+			closedPanels.add(poped.getDispatchID());
+		}
+		return poped;
 	}
 
 	@Override

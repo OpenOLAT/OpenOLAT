@@ -52,28 +52,25 @@
 
 
 /* override */
-//like previous layout in openolat
-body .modal {
-	position: absolute;
-    overflow: visible;
-}
-
 body div.tooltip-inner {
 	max-width:400px;
 }
 
-body div.popover {
+body div.popover,
+body dialog.popover {
 	max-width:450px;
 	input {
 		max-width: 100%;
 	}
 }
 
-body div.popover.o_wide_popover {
+body div.popover.o_wide_popover,
+body dialog.popover.o_wide_popover {
 	max-width:650px;
 }
 
-body div.popover-title {
+body div.popover-title,
+body dialog.popover-title {
 	background-color: white;
 	font-weight: bold;
 }

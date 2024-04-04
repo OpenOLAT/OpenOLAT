@@ -10,13 +10,27 @@
 "use strict";
 jQuery(function() {
 	jQuery('#callout_layer_$r.getCId()').each(function(index, el) {
-		jQuery(el).parents('div.popover').next('div.o_callout_overlay').each(function(index2, el2) {
-			jQuery(el2).click(function() {
-				#if($r.isTrue($closeSubmit))
-					jQuery("#callout_layer_${r.getCId()} form").submit()
-				#else
-					$r.javaScriptCommand('close');
-				#end
+		jQuery(el).parents('dialog.popover').each(function(index2, el2) {
+			jQuery(el2).click(function(e) {
+				if (e.target.tagName !== 'DIALOG') {//This prevents issues with forms
+				       return;
+				}
+					
+				const rect = e.target.getBoundingClientRect();
+				const clickedInDialog = (
+					rect.top <= e.clientY &&
+					e.clientY <= rect.top + rect.height &&
+					rect.left <= e.clientX &&
+					e.clientX <= rect.left + rect.width
+				);
+
+				if (clickedInDialog === false) {
+					#if($r.isTrue($closeSubmit))
+						jQuery("#callout_layer_${r.getCId()} form").submit()
+					#else
+						$r.javaScriptCommand('close');
+					#end
+				}
 			});
 		});
 	});

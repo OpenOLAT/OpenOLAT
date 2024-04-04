@@ -1,22 +1,23 @@
-<div id="callout_$r.getCId()" class="popover in bottom #if($r.isTrue($wider))o_wide_popover #end" style="z-index:$zindexarea;">
+<dialog id="callout_$r.getCId()" class="popover in bottom #if($r.isTrue($wider))o_wide_popover #end style="z-index:$zindexarea;">
 	#if($arrow && $orientation == "bottom")<div class="arrow"></div>#end
 	#if($r.isNotEmpty($title))
 		<div class="popover-title">$r.escapeHtml($title)</div>
 	#end
 	<div class="popover-content">$r.render("cont")</div>
 	#if($arrow && $orientation == "bottom")<div class="arrow"></div>#end
-</div>
-<div id="callout_overlay_$r.getCId()" class="o_callout_overlay" style="z-index:$zindexoverlay;"></div>
+</dialog>
 <script>
 "use strict";
 jQuery(function() {
+	const elem = document.getElementById('callout_$r.getCId()');
+	elem.showModal();
+	
 	jQuery('#callout_$r.getCId()').each(function(index, el) {
 		var targetEl = jQuery('#$guimsgtarget,#o_c$guimsgtarget');
 		var targetOffset = targetEl.offset();
 		if(targetOffset) {
 			var callout = jQuery(el);
 			callout.css('display','block').css('z-index', o_info.zseed + 105);
-			jQuery('#callout_overlay_$r.getCId()').css('z-index', o_info.zseed + 103);
 			
 			var orientation = '${orientation}';
 			var arrow = $arrow;
@@ -58,7 +59,7 @@ jQuery(function() {
 					## add 15px for button size
 					## add 10px for a bit space at left side
 					callout.offset({
-						top: Math.round(targetOffset.top + targetEl.height() +  (arrow ? 25 : 15)) ,
+						top: Math.round(targetOffset.top + targetEl.height() +  (arrow ? 15 : 5)) ,
 						left: '10'
 					});
 					var percent = (targetOffset.left + targetEl.outerWidth()/2 + 15 + 10/2) / callout.outerWidth() * 100; 
@@ -68,7 +69,7 @@ jQuery(function() {
 					## add 15px for button size
 					## add 10px for a bit space at right side
 					callout.offset({
-						top: Math.round(targetOffset.top + targetEl.height() + (arrow ? 25 : 15)) ,
+						top: Math.round(targetOffset.top + targetEl.height() + (arrow ? 15 : 5)) ,
 						left: Math.round(docWidth - callout.outerWidth() - 10)
 					});
 					var percent = (1 - ((docWidth - targetOffset.left - targetEl.outerWidth()/2 - 15 - 10/2 ) / callout.outerWidth() )) * 100; 
@@ -77,7 +78,7 @@ jQuery(function() {
 				} else {
 					## standard case: show centered below element. -1 to compensate for the center of the triangle, best visual effort
 					callout.offset({
-						top: Math.round(targetOffset.top + targetEl.height() + (arrow ? 25 : 15)),
+						top: Math.round(targetOffset.top + targetEl.height() + (arrow ? 15 : 5)),
 						left: Math.round((targetOffset.left + (targetEl.outerWidth() / 2)) - callout.outerWidth()/2 -1)
 					});
 				}

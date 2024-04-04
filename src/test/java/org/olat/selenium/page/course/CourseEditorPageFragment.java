@@ -203,7 +203,7 @@ public class CourseEditorPageFragment {
 		browser.findElement(createNodeButton).click();
 		OOGraphene.waitModalDialog(browser);
 		
-		By nodeBy = By.cssSelector("div.modal-dialog div#o_course_editor_choose_nodetype a.o_sel_course_editor_node-" + nodeAlias);
+		By nodeBy = By.cssSelector("dialog div#o_course_editor_choose_nodetype a.o_sel_course_editor_node-" + nodeAlias);
 		OOGraphene.click(nodeBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return assertOnNodeTitle();
@@ -548,10 +548,10 @@ public class CourseEditorPageFragment {
 		}
 
 		OOGraphene.waitModalDialog(browser);
-		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
+		By inputBy = By.cssSelector("dialog.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		OOGraphene.waitElement(inputBy, browser);
 		browser.findElement(inputBy).sendKeys(resourceTitle);
-		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
+		By submitBy = By.cssSelector("dialog.modal.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
@@ -571,7 +571,7 @@ public class CourseEditorPageFragment {
 		OOGraphene.waitModalDialog(browser);
 		
 		//auto publish
-		By autoPublishBy = By.cssSelector("div.modal a.o_sel_course_quickpublish_auto");
+		By autoPublishBy = By.cssSelector("dialog.modal a.o_sel_course_quickpublish_auto");
 		browser.findElement(autoPublishBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);

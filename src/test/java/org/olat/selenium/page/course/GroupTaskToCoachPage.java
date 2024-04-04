@@ -160,7 +160,7 @@ public class GroupTaskToCoachPage {
 		OOGraphene.waitElement(uploadedBy, browser);
 		
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
-		OOGraphene.clickAndWait(saveButtonBy, browser);
+		OOGraphene.click(saveButtonBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		By correctionUploaded = By.xpath("//table[contains(@class,'table')]//tr/td//a[span/text()[contains(.,'" + correctionFile.getName() + "')]]");
 		OOGraphene.waitElement(correctionUploaded, browser);

@@ -69,7 +69,7 @@ public class OOGraphene {
 
 	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close.o_sel_info_close");
 	
-	public static final By wizardFooterBy = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'modal-footer')]");
+	public static final By wizardFooterBy = By.xpath("//dialog[contains(@class,'modal')]//div[contains(@class,'modal-footer')]");
 	public static final By wizardNextBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_next')]");
 	public static final By wizardFinishBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_finish') and not(contains(@class,'o_disabled'))]");
 	
@@ -90,16 +90,16 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static void waitModalDialog(WebDriver browser) {
-		waitBusyAndScrollTop(browser);
-		By modalBy = By.cssSelector("div.o_layered_panel div.modal-dialog div.modal-body");
+		waitBusy(browser);
+		By modalBy = By.cssSelector("div.o_layered_panel dialog div.modal-body");
 		new WebDriverWait(browser, driverTimeout)
 			.withTimeout(timeout).pollingEvery(poolingSlow)
 			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
 	}
 	
 	public static void waitModalDialog(WebDriver browser, String additionalCssSelector) {
-		waitBusyAndScrollTop(browser);
-		By modalBy = By.cssSelector("div.o_layered_panel div.modal-dialog div.modal-body " + additionalCssSelector);
+		waitBusy(browser);
+		By modalBy = By.cssSelector("div.o_layered_panel dialog div.modal-body " + additionalCssSelector);
 		new WebDriverWait(browser, driverTimeout)
 			.withTimeout(timeout).pollingEvery(poolingSlow)
 			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
@@ -112,8 +112,8 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static void waitModalWizard(WebDriver browser) {
-		waitBusyAndScrollTop(browser);
-		By modalBy = By.cssSelector("div.o_layered_panel div.modal-dialog div.modal-body");
+		waitBusy(browser);
+		By modalBy = By.cssSelector("div.o_layered_panel dialog div.modal-body");
 		new WebDriverWait(browser, driverTimeout)
 			.withTimeout(timeout).pollingEvery(poolingSlow)
 			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
@@ -124,7 +124,7 @@ public class OOGraphene {
 	}
 	
 	public static void waitModalDialogDisappears(WebDriver browser, Duration timeoutDuration) {
-		By modalBy = By.xpath("//div[contains(@class,'modal') and not(@id='o_form_dirty_message')][div/div[contains(@class,'modal-content')] or following-sibling::div[contains(@class,'modal-backdrop')]]");			
+		By modalBy = By.xpath("//dialog[contains(@class,'modal') and not(@id='o_form_dirty_message')][div/div[contains(@class,'modal-content')]]");			
 		waitModalDialogDisappears(browser, timeoutDuration, modalBy);
 	}
 	

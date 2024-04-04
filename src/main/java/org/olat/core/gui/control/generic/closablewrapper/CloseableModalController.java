@@ -133,7 +133,7 @@ public class CloseableModalController extends DefaultController implements Modal
 			closeIcon.setDomReplacementWrapperRequired(false);
 			closeIcon.setSuppressDirtyFormWarning(true);
 			// a11y: Set focus to close link and thus to the dialog itself
-			closeIcon.setFocus(true, true); 
+			// closeIcon.setFocus(true, true); 
 			if (closeButtonText == null && modalContent != null) {
 				// Use standard close text. use Translator from content as we have no access to
 				// the user locale here. 

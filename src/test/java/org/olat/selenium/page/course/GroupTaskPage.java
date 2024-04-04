@@ -152,7 +152,7 @@ public class GroupTaskPage {
 		OOGraphene.waitElement(uploadedBy, browser);
 		
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
-		OOGraphene.clickAndWait(saveButtonBy, browser);
+		OOGraphene.click(saveButtonBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
@@ -192,7 +192,7 @@ public class GroupTaskPage {
 	
 	public GroupTaskPage submitDocuments() {
 		By submitBy = By.cssSelector("#o_step_submit_content .o_sel_course_gta_submit_docs");
-		OOGraphene.clickAndWait(submitBy, browser);
+		OOGraphene.click(submitBy, browser);
 		
 		//confirm
 		confirmDialog();

@@ -1,4 +1,4 @@
-<div class="o_wizard modal show in" role="dialog" aria-modal="true" aria-labelledby="$r.getId('o_md_')"><div class="modal-dialog modal-lg o_modal_fullwidth #if($elementCssClass) $elementCssClass #end"><div class="modal-content">
+<dialog class="o_wizard dialog modal show in" role="dialog" aria-modal="true" aria-labelledby="$r.getId('o_md_')"><div class="modal-dialog #if($elementCssClass) $elementCssClass #end"><div class="modal-content">
 	<div class="modal-header">
 		<div class="pull-right o_modal_close">$r.render("closeIcon")</div>
 		#if($helpPage)
@@ -51,12 +51,8 @@
 		$r.render("finish")
 		$r.render("cancel")
 	</div>
-</div></div></div>
-<div class="modal-backdrop in"></div>
-## always show top of modal dialog when on long pages
+</div></div></dialog>
 <script>
-jQuery(function() {
-	jQuery('.o_wizard.modal.show.in > .modal-backdrop')
-		.css('height', 0).css('height', jQuery('.o_wizard.modal.show.in')[0].scrollHeight);
-});
+"use strict";
+o_guiShowModal('dialog.o_wizard.dialog');
 </script>
