@@ -1,6 +1,6 @@
 
 /*
- * Overwrite jquery ui dialog and datepicker
+ * Overwrite jquery ui dialog
  */
  
 @use "sass:list";
@@ -133,7 +133,10 @@
 
 .datepicker-dropdown.active {
 	font-size: 16px;
-	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+	
+	>.datepicker-picker {
+		box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+	}
 	
 	.dow, .datepicker-controls .button {
 		font-size: 14px;
