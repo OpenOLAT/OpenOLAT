@@ -757,9 +757,15 @@ body>li.o_assessmentitem_order_item  {
 		font-size: 0.8em;
 		line-height: 1.2em;
 		color: #fff;
-		
+
+		&.correct {
+			background-color: $o-qti-status-correct-color;
+		}
 		&.ended {
 		  background-color: $o-qti-status-ended-color;
+		}
+		&.incorrect {
+			background-color: $o-qti-status-incorrect-color;
 		}
 		&.invalid {
 		  background-color: $o-qti-status-invalid-color;

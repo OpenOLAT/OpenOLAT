@@ -760,7 +760,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qti_notPresented { @include o-add-icon('circle', false); color: $o-qti-status-notPresented-color;}
 .o_icon_qti_notAnswered { @include o-add-icon('play-circle'); color: $o-qti-status-notAnswered-color;}
 .o_icon_qti_answered { @include o-add-icon('check-circle'); color: $o-qti-status-answered-color;}
+.o_icon_qti_correct { @include o-add-icon('face-smile-beam'); color: $o-qti-status-correct-color;}
 .o_icon_qti_ended { @include o-add-icon('ban'); color: $o-qti-status-ended-color;}
+.o_icon_qti_incorrect { @include o-add-icon('face-frown-open'); color: $o-qti-status-incorrect-color;}
 .o_icon_qti_invalid { @include o-add-icon('exclamation-circle'); color: $o-qti-status-invalid-color;}
 .o_icon_qti_review { @include o-add-icon('eye'); color: $o-qti-status-review-color;}
 .o_icon_qti_reviewNotSeen,
