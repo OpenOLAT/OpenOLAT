@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,15 +14,15 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.mode;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -34,7 +34,7 @@ import org.olat.course.assessment.ui.mode.AssessmentModeListModel.Cols;
 /**
  * 
  * Initial date: 30.01.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeListModelSort extends SortableFlexiTableModelDelegate<AssessmentMode> {
@@ -47,11 +47,10 @@ public class AssessmentModeListModelSort extends SortableFlexiTableModelDelegate
 	protected void sort(List<AssessmentMode> rows) {
 		int columnIndex = getColumnIndex();
 		Cols column = Cols.values()[columnIndex];
-		switch(column) {
-			case status: Collections.sort(rows, new StatusComparator()); break;
-			default: {
-				super.sort(rows);
-			}
+		if (Objects.requireNonNull(column) == Cols.status) {
+			rows.sort(new StatusComparator());
+		} else {
+			super.sort(rows);
 		}
 	}
 	

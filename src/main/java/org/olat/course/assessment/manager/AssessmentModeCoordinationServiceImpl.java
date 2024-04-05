@@ -567,7 +567,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	public boolean canStart(AssessmentMode assessmentMode) {
 		boolean canStart;
 		Status status = assessmentMode.getStatus();
-		if(status == Status.assessment || status == Status.followup || status == Status.end) {
+		if(!DateUtils.isSameDay(assessmentMode.getBegin(), new Date()) || status == Status.assessment || status == Status.followup || status == Status.end) {
 			canStart = false;
 		} else {
 			canStart = true;

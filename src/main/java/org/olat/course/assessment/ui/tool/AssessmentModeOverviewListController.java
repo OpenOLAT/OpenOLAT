@@ -20,6 +20,7 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -68,6 +69,7 @@ import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessmentModeStatistics;
+import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.AssessmentModeHelper;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
@@ -195,8 +197,16 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			
 			List<LectureBlock> lectures = lectureService.getLectureBlocks(courseEntry, getIdentity());
 			Set<Long> teachedLectures = lectures.stream().map(LectureBlock::getKey).collect(Collectors.toSet());
-	
-			List<AssessmentMode> modes = assessmentModeManager.getPlannedAssessmentMode(courseEntry, today, until);
+
+			SearchAssessmentModeParams searchAssessmentModeParams = new SearchAssessmentModeParams();
+			List<Status> allModeStatus = new ArrayList<>(Arrays.stream(Status.class.getEnumConstants()).toList());
+			// exclude modes with status equals end
+			allModeStatus.removeIf(s -> s.equals(Status.end));
+			List<String> allModeStatusAsString = allModeStatus.stream().map(Enum::name).toList();
+			searchAssessmentModeParams.setAllowedModeStatus(allModeStatusAsString);
+			searchAssessmentModeParams.setRepositoryEntryKey(courseEntry.getKey());
+
+			List<AssessmentMode> modes = assessmentModeManager.findAssessmentMode(searchAssessmentModeParams);
 			List<AssessmentModeOverviewRow> rows = new ArrayList<>();
 			for(AssessmentMode mode:modes) {
 				rows.add(forgeRow(mode, today, teachedLectures));

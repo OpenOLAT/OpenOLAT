@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.tool;
@@ -29,7 +29,7 @@ import org.olat.course.assessment.model.EnhancedStatus;
 /**
  * 
  * Initial date: 15 déc. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeOverviewListTableModel extends DefaultFlexiTableDataModel<AssessmentModeOverviewRow> {
@@ -41,16 +41,16 @@ public class AssessmentModeOverviewListTableModel extends DefaultFlexiTableDataM
 	@Override
 	public Object getValueAt(int row, int col) {
 		AssessmentModeOverviewRow mode = getObject(row);
-		switch(ModeCols.values()[col]) {
-			case status: return new EnhancedStatus(mode.getAssessmentMode().getStatus(),
+		return switch (ModeCols.values()[col]) {
+			case status -> new EnhancedStatus(mode.getAssessmentMode().getStatus(),
 					mode.getAssessmentMode().getEndStatus(), Collections.emptyList());
-			case name: return mode.getAssessmentMode().getName();
-			case begin: return mode.getAssessmentMode().getBegin();
-			case end: return mode.getAssessmentMode().getEnd();
-			case leadTime: return mode.getAssessmentMode().getLeadTime();
-			case followupTime: return mode.getAssessmentMode().getFollowupTime();
-			default: return "ERROR";
-		}
+			case name -> mode.getAssessmentMode().getName();
+			case begin -> mode.getAssessmentMode().getBegin();
+			case end -> mode.getAssessmentMode().getEnd();
+			case leadTime -> mode.getAssessmentMode().getLeadTime();
+			case followupTime -> mode.getAssessmentMode().getFollowupTime();
+			default -> "ERROR";
+		};
 	}
 	
 	public enum ModeCols implements FlexiSortableColumnDef {

@@ -99,7 +99,7 @@ public class AssessmentModeHelper {
 	}
 
 	public String getBeginEndTooltip(AssessmentMode mode) {
-		Date begin = mode.getBeginWithLeadTime();
+		Date begin = mode.getBegin();
 		Date end = mode.getEnd();
 		Formatter formatter = Formatter.getInstance(translator.getLocale());
 

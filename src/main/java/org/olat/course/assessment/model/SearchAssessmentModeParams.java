@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,17 +14,18 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.model;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 
  * Initial date: 06.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SearchAssessmentModeParams {
@@ -41,6 +42,8 @@ public class SearchAssessmentModeParams {
 	private Boolean running;
 	
 	private Long repositoryEntryKey;
+
+	private List<String> allowedModeStatus;
 
 	public Date getDateFrom() {
 		return dateFrom;
@@ -112,5 +115,13 @@ public class SearchAssessmentModeParams {
 
 	public void setRepositoryEntryKey(Long repositoryEntryKey) {
 		this.repositoryEntryKey = repositoryEntryKey;
+	}
+
+	public List<String> getAllowedModeStatus() {
+		return allowedModeStatus;
+	}
+
+	public void setAllowedModeStatus(List<String> allowedModeStatus) {
+		this.allowedModeStatus = allowedModeStatus;
 	}
 }

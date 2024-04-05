@@ -161,6 +161,10 @@ public class AssessmentModeDAO {
 		if(params.getRepositoryEntryKey() != null) {
 			sb.and().append("mode.repositoryEntry.key=:entryKey");
 		}
+
+		if (params.getAllowedModeStatus() != null) {
+			sb.and().append("mode.statusString in :allowedModeStatus");
+		}
 		
 		sb.append(" order by mode.beginWithLeadTime desc ");
 
@@ -189,6 +193,9 @@ public class AssessmentModeDAO {
 		}
 		if(params.getRepositoryEntryKey() != null) {
 			query.setParameter("entryKey", params.getRepositoryEntryKey());
+		}
+		if (params.getAllowedModeStatus() != null) {
+			query.setParameter("allowedModeStatus", params.getAllowedModeStatus());
 		}
 		return query.getResultList();
 	}

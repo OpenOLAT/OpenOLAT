@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.manager;
@@ -71,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 12.12.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeManagerTest extends OlatTestCase {
@@ -1065,11 +1065,16 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		params.setDateTo(DateUtils.addDays(new Date(), -20));
 		params.setIdAndRefs(entry.getKey().toString());
 		params.setName("Mode");
-	
+		params.setAllowedModeStatus(List.of(Status.none.name()));
+
 		List<AssessmentMode> plannedModes = assessmentModeMgr.findAssessmentMode(params);
 		assertThat(plannedModes)
 			.isNotNull()
 			.containsAnyOf(mode);
+
+		params.setAllowedModeStatus(List.of(Status.assessment.name()));
+		List<AssessmentMode> emptyModes = assessmentModeMgr.findAssessmentMode(params);
+		assertThat(emptyModes).isEmpty();
 	}
 	
 	/**

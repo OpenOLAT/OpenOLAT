@@ -1481,42 +1481,41 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		}
 
 		String cmd = event.getCommand();
-		switch(cmd) {
-			case AssessmentModeNotificationEvent.STOP_WARNING:
-				lockResourceWarningMessage(event.getAssessementMode(), event.getExtraTimeInSeconds(getIdentity()));
-				break;
-			case AssessmentModeNotificationEvent.BEFORE:
-				if(asyncUnlockResource(event.getAssessementMode())) {
+		switch (cmd) {
+			case AssessmentModeNotificationEvent.STOP_WARNING ->
+					lockResourceWarningMessage(event.getAssessementMode(), event.getExtraTimeInSeconds(getIdentity()));
+			case AssessmentModeNotificationEvent.BEFORE -> {
+				if (asyncUnlockResource(event.getAssessementMode())) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
-				break;	
-			case AssessmentModeNotificationEvent.LEADTIME:
-				if(!usess.isCancelledLockRequest(event.getAssessementMode())
+			}
+			case AssessmentModeNotificationEvent.LEADTIME -> {
+				if (!usess.isCancelledLockRequest(event.getAssessementMode())
 						&& asyncLockResource(event.getAssessementMode())) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
-				break;
-			case AssessmentModeNotificationEvent.START_ASSESSMENT:
-				if(event.getAssessedIdentityKeys().contains(getIdentity().getKey())
+			}
+			case AssessmentModeNotificationEvent.START_ASSESSMENT -> {
+				if (event.getAssessedIdentityKeys().contains(getIdentity().getKey())
 						&& !usess.isCancelledLockRequest(event.getAssessementMode())) {
 					asyncLockResource(event.getAssessementMode());
 				}
-				break;
-			case AssessmentModeNotificationEvent.STOP_ASSESSMENT:
-				if(event.getAssessedIdentityKeys().contains(getIdentity().getKey())
+			}
+			case AssessmentModeNotificationEvent.STOP_ASSESSMENT -> {
+				if (event.getAssessedIdentityKeys().contains(getIdentity().getKey())
 						&& !usess.isCancelledLockRequest(event.getAssessementMode())
 						&& asyncLockResource(event.getAssessementMode())) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
-				break;
-			case AssessmentModeNotificationEvent.END:
-				if(event.getAssessedIdentityKeys().contains(getIdentity().getKey())
+			}
+			case AssessmentModeNotificationEvent.END -> {
+				if (event.getAssessedIdentityKeys().contains(getIdentity().getKey())
 						&& asyncUnlockResource(event.getAssessementMode())) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
-				break;
-			default: // Do nothing
-				break;
+			}
+			default -> { // Do nothing
+			}
 		}
 	}
 
@@ -1525,8 +1524,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		boolean hasSite = false;
 		if(sites != null && !sites.isEmpty()) {
 			for(SiteInstance site:sites) {
-				if(site.getClass().equals(type)) {
+				if (site.getClass().equals(type)) {
 					hasSite = true;
+					break;
 				}
 			}
 		}

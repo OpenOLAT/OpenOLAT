@@ -20,11 +20,13 @@
 package org.olat.course.assessment.ui.mode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.fullWebApp.LockRequest;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -38,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -188,6 +191,9 @@ public class AssessmentModeListController extends FormBasicController implements
 		if(canEditAssessmentMode && deleteLink != null) {
 			tableEl.addBatchButton(deleteLink);
 		}
+		tableEl.sort(new SortKey(Cols.begin.name(), false));
+		tableEl.setEmptyTableSettings("table.empty.message", null, "o_icon_assessment_mode", "add.mode", "o_icon_add", false);
+
 		initFiltersPresets(ureq);
 	}
 	
@@ -314,6 +320,8 @@ public class AssessmentModeListController extends FormBasicController implements
 			} else if (event instanceof FlexiTableSearchEvent
 					|| event instanceof FlexiTableFilterTabEvent) {
 				loadModel();
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doAdd(ureq);
 			}
 
 		}
@@ -335,11 +343,8 @@ public class AssessmentModeListController extends FormBasicController implements
 		//
 	}
 
-	private List<Status> getDistinctModeStatus() {
-		return model.getObjects().stream()
-				.map(AssessmentMode::getStatus)
-				.distinct()
-				.toList();
+	private List<Status> getAllModeStatus() {
+		return Arrays.stream(Status.class.getEnumConstants()).toList();
 	}
 
 	private void initFiltersPresets(UserRequest ureq) {
@@ -350,7 +355,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 
-		for (Status modeStatus : getDistinctModeStatus()) {
+		for (Status modeStatus : getAllModeStatus()) {
 			AssessmentModeHelper helper = new AssessmentModeHelper(getTranslator());
 			FlexiFiltersTab filterStatus = FlexiFiltersTabFactory.tabWithFilters(modeStatus.name(), helper.getStatusLabel(modeStatus),
 					TabSelectionBehavior.clear, List.of());
