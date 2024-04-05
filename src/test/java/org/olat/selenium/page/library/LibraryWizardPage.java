@@ -43,7 +43,7 @@ public class LibraryWizardPage {
 	}
 	
 	public LibraryWizardPage assertOnMetadata() {
-		By filenameBy = By.cssSelector("div.o_wizard .o_sel_new_filename");
+		By filenameBy = By.cssSelector("dialog.o_wizard .o_sel_new_filename");
 		OOGraphene.waitElement(filenameBy, browser);
 		return this;
 	}
@@ -55,19 +55,19 @@ public class LibraryWizardPage {
 	 */
 	public LibraryWizardPage nextFolders(String folder) {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_wizard div.o_tree.o_tree_root_visible"), browser);
+		OOGraphene.waitElement(By.cssSelector("dialog.o_wizard div.o_tree.o_tree_root_visible"), browser);
 		
-		By folderBy = By.xpath("//div[contains(@class,'o_wizard')]//span[contains(@class,'o_tree_link')][a/span[text()[contains(.,'" + folder + "')]]]/input[@type='checkbox']");
+		By folderBy = By.xpath("//dialog[contains(@class,'o_wizard')]//span[contains(@class,'o_tree_link')][a/span[text()[contains(.,'" + folder + "')]]]/input[@type='checkbox']");
 		WebElement folderEl = browser.findElement(folderBy);
 		OOGraphene.check(folderEl, Boolean.TRUE);
-		By rootBy = By.cssSelector("div.o_wizard span.o_tree_l0>input[type='checkbox']:indeterminate");
+		By rootBy = By.cssSelector("dialog.o_wizard span.o_tree_l0>input[type='checkbox']:indeterminate");
 		OOGraphene.waitElement(rootBy, browser);
 		return this;
 	}
 	
 	public LibraryWizardPage nextNotifications() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_wizard div.o_sel_notification_body textarea"), browser);
+		OOGraphene.waitElement(By.cssSelector("dialog.o_wizard div.o_sel_notification_body textarea"), browser);
 		return this;
 	}
 	

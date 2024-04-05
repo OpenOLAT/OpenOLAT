@@ -103,7 +103,7 @@ public class AssessmentModePage {
 		cal.setTime(date);
 		int hour = cal.get(Calendar.HOUR_OF_DAY);
 		int minute = cal.get(Calendar.MINUTE);
-		browser.findElement(hourBy).click();
+		browser.findElement(By.cssSelector(".o_sel_assessment_mode_name")).click();
 		
 		By datePickerBy = By.cssSelector("div." + seleniumCssClass + " div.datepicker-dropdown.active");
 		OOGraphene.waitElementDisappears(datePickerBy, 5, browser);
