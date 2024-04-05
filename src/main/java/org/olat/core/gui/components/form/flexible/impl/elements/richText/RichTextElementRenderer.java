@@ -254,6 +254,14 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			sb.append("    height: '").append(heightInPx).append("px',\n");
 		}
 		
+		sb.append("    init_instance_callback: function (editor) {\n")
+		  .append("      const dialogContainer = editor.editorContainer.closest('dialog');\n")
+		  .append("      if (dialogContainer) {\n")
+		  .append("        const auxElements = document.querySelectorAll('body > .tox-tinymce-aux');\n")
+		  .append("        if (auxElements.length) dialogContainer.append(auxElements[auxElements.length - 1]);\n")
+		  .append("      }\n")
+		  .append("    },\n");
+		
 		sb.append("    setup: function(ed){\n")
 		  .append("      ed.on('init', function(e) {\n")
 		  .append("        var updateDirty = function() {\n")

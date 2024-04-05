@@ -176,6 +176,10 @@ dialog.dialog {
 	.modal-dialog {
 		margin: 0 !important;
 	}
+	
+	&.o_modal_full_height {
+		height: 100vh;
+	}
 }
 
 dialog.popover {

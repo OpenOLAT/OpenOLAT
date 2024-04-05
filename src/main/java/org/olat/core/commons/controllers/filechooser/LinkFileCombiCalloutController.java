@@ -272,7 +272,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 										new VFSItemSuffixFilter(new String[] { "html", "htm" })))));
 						FileChooserController fileChooserCtr = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), zipContainer, filter, true);
 						fileChooserCtr.setShowTitle(true);
-						displayModal(fileChooserCtr);
+						displayModal(fileChooserCtr, null);
 						return;						
 					}
 				} else {
@@ -326,7 +326,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 			fileName = relFilePath.substring(folderFileIndex + 1);
 		}
 		FileCreatorController fileCreatorCtrl = new FileCreatorController(ureq, getWindowControl(), baseContainer, folderPath, fileName);
-		displayModal(fileCreatorCtrl);
+		displayModal(fileCreatorCtrl, null);
 	}
 	
 	private void doOpenSelect(UserRequest ureq) {
@@ -338,7 +338,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 		FileChooserController fileChooserCtrl = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), baseContainer, filter, true);
 		fileChooserCtrl.setShowTitle(true);
 		fileChooserCtrl.selectPath(relFilePath);
-		displayModal(fileChooserCtrl);
+		displayModal(fileChooserCtrl, null);
 	}
 	
 	private void doOpenImport(UserRequest ureq) {
@@ -350,7 +350,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 		}
 		FileUploadController fileUploadCtrl = new FileUploadController(getWindowControl(), baseContainer, ureq,
 				quotaLeftKB, quotaLeftKB, uploadMimeTypes, false, true, false, false, true, true, folderPath);
-		displayModal(fileUploadCtrl);
+		displayModal(fileUploadCtrl, null);
 	}
 	
 	private void doOpenWysiwygEditor(UserRequest ureq) {
@@ -374,7 +374,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 		HTMLEditorController wysiwygCtr = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq,
 				getWindowControl(), editorBaseContainer, editorRelPath, true, customLinkTreeModel,
 				courseToolLinkTreeModel, edusharingProvider);
-		displayModal(wysiwygCtr);
+		displayModal(wysiwygCtr, "o_modal_full_height");
 	}
 	
 	private void doShowPreview(UserRequest ureq) {
@@ -439,12 +439,13 @@ public class LinkFileCombiCalloutController extends BasicController {
 	 * Helper to setup the modal controller for the content and activate it
 	 * @param newModalContentController
 	 */
-	private void displayModal(Controller newModalContentController) {
+	private void displayModal(Controller newModalContentController, String dialogCss) {
 		if (newModalContentController == null) return;
 		
 		currentModalController = newModalContentController;
 		listenTo(currentModalController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), newModalContentController.getInitialComponent());
+		cmc.setCustomWindowCSS(dialogCss);
 		listenTo(cmc);
 		cmc.activate();
 	}
