@@ -196,17 +196,27 @@
 				 -moz-transition: all 0.7s ease 0s;
 				 -o-transition: all 0.7s ease 0s;
 				 transition: all 0.7s ease 0s;
-				&:focus {
-					width: 200px;
+				 @media (min-width: $screen-md-min) { 
+					&:focus {
+						width: 200px;
+					}
 				}
 			}
 			.tt-menu {
-				width: 200px;
+				width: 100px;
 				text-align: left;
 				margin-top: -6px;
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
+				/* make it lager when in focus */
+				 -webkit-transition: all 0.7s ease 0s;
+				 -moz-transition: all 0.7s ease 0s;
+				 -o-transition: all 0.7s ease 0s;
+				 transition: all 0.7s ease 0s;
+				 @media (min-width: $screen-md-min) { 
+					width: 200px;
+				}
 			}
 
 			.form-control, .tt-suggestion {
