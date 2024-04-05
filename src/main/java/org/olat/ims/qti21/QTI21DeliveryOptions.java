@@ -69,7 +69,8 @@ public class QTI21DeliveryOptions {
 	private boolean chatCoaches;
 	private boolean chatOwners;
 	private boolean canStartChat;
-	
+	private boolean pageMode;
+
 	public boolean isEnableCancel() {
 		return enableCancel;
 	}
@@ -363,6 +364,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.chatCoaches = false;
 		defaultSettings.chatOwners = false;
 		defaultSettings.canStartChat = false;
+		defaultSettings.pageMode = false;
 		return defaultSettings;
 	}
 	
@@ -394,6 +396,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.chatCoaches = false;
 		defaultSettings.chatOwners = false;
 		defaultSettings.canStartChat = false;
+		defaultSettings.pageMode = false;
 		return defaultSettings;
 	}
 	
@@ -425,6 +428,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.chatCoaches = false;
 		defaultSettings.chatOwners = false;
 		defaultSettings.canStartChat = false;
+		defaultSettings.pageMode = false;
 		return defaultSettings;
 	}
 
@@ -457,9 +461,18 @@ public class QTI21DeliveryOptions {
 		clone.chatCoaches = chatCoaches;
 		clone.chatOwners = chatOwners;
 		clone.canStartChat = canStartChat;
+		clone.pageMode = pageMode;
 		return clone;
 	}
-	
+
+	public boolean isPageMode() {
+		return pageMode;
+	}
+
+	public void setPageMode(boolean pageMode) {
+		this.pageMode = pageMode;
+	}
+
 	public enum TestType {
 		summative,
 		formative

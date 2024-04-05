@@ -72,7 +72,8 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	private URI assessmentObjectUri;
 	private ResourceLocator resourceLocator;
 	private CandidateSessionContext candidateSessionContext;
-	
+	private boolean pageMode;
+
 	public AssessmentObjectComponent(String name) {
 		super(name);
 		mathAssess = CoreSpringFactory.getImpl(QTI21Module.class).isMathAssessExtensionEnabled();
@@ -301,4 +302,11 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	@Override
 	public abstract AssessmentObjectComponentRenderer getHTMLRendererSingleton();
 
+	public boolean isPageMode() {
+		return pageMode;
+	}
+
+	public void setPageMode(boolean pageMode) {
+		this.pageMode = pageMode;
+	}
 }
