@@ -39,8 +39,10 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 
+import org.apache.velocity.context.Context;
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
 import uk.ac.ed.ph.jqtiplus.attribute.AttributeList;
 import uk.ac.ed.ph.jqtiplus.exception.QtiAttributeException;
@@ -49,12 +51,14 @@ import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
 import uk.ac.ed.ph.jqtiplus.node.test.VisibilityMode;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -757,5 +761,61 @@ public class AssessmentRenderFunctions {
 		}
 		return false;
 	}
-	
+
+	public static boolean isCorrectlyAnswered(ItemSessionState itemSessionState) {
+		if(itemSessionState.isResponded()) {
+			Value maxScore = itemSessionState.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER);
+			Value score = itemSessionState.getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
+			if(maxScore != null && maxScore.equals(score)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isIncorrectlyAnswered(ItemSessionState itemSessionState) {
+		if(itemSessionState.isResponded()) {
+			Value maxScore = itemSessionState.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER);
+			Value score = itemSessionState.getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
+			if(maxScore != null && !maxScore.equals(score)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static void addInteractionSpecificContextValues(QtiNode interaction, Context ctx, ItemSessionState itemSessionState, AssessmentObjectComponent component) {
+		if (interaction instanceof ChoiceInteraction) {
+			ctx.put("isPageMode", component.isPageMode());
+			if (component.isPageMode()) {
+				ctx.put("isAnswerCorrect", isCorrectlyAnswered(itemSessionState));
+				ctx.put("isShowPageModeSolution", component.isShowPageModeSolution());
+				if (component.isShowPageModeSolution()) {
+					ctx.put("isPageModeSolution", interaction.getAttributes().contains("pageModeSolution"));
+					if (component instanceof AssessmentItemComponent assessmentItemComponent) {
+						Identifier identifier = getSingleChoiceValue(assessmentItemComponent.getAssessmentItem());
+						if (identifier != null) {
+							ctx.put("singleChoiceSolution", identifier);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private static Identifier getSingleChoiceValue(AssessmentItem assessmentItem) {
+		if (assessmentItem == null) {
+			return null;
+		}
+		try {
+			List<FieldValue> fieldValues = assessmentItem.getNodeGroups().getResponseDeclarationGroup()
+					.getChildren().get(0).getCorrectResponse().getFieldValues();
+			if (fieldValues.get(0).getSingleValue() instanceof IdentifierValue identifierValue) {
+				return identifierValue.identifierValue();
+			}
+		} catch (Exception e) {
+			log.warn("Error trying to read single choice value", e);
+		}
+		return null;
+	}
 }

@@ -42,9 +42,11 @@ import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event;
 
+import uk.ac.ed.ph.jqtiplus.attribute.value.BooleanAttribute;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.BlockInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -56,6 +58,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
@@ -180,6 +183,9 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		if(component.isShowStatus()) {
 			renderItemStatus(renderer, sb, itemSessionState, translator);
 		}
+		if (component.isPageMode()) {
+			renderAnswerCorrectnessFeedback(sb, itemSessionState, translator);
+		}
 		if(component.isShowQuestionLevel()) {
 			renderQuestionLevels(component.getQuestionLevel(), component.getMaxQuestionLevel(), sb, translator);
 		}
@@ -192,6 +198,19 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		//render itemBody
 		assessmentItem.getItemBody().getBlocks().forEach((block)
 				-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
+
+		if (component.isShowPageModeSolution()) {
+			sb.append("<h4 class='itemTitle'>");
+			sb.append(StringHelper.escapeHtml(translator.translate("solution"))).append("</h4>");
+			BooleanAttribute pageModeSolution = new BooleanAttribute(assessmentItem, "pageModeSolution", true, false);
+			assessmentItem.getItemBody().getBlocks().forEach((block) -> {
+				if (block instanceof BlockInteraction) {
+					block.getAttributes().add(pageModeSolution);
+					renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator);
+					block.getAttributes().remove(pageModeSolution);
+				}
+			});
+		}
 
 		//comment
 		renderComment(renderer, sb, component, itemSessionState, translator);
@@ -206,21 +225,17 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 
 		//controls
 		sb.append("<div class='o_button_group o_assessmentitem_controls'>");
-		//submit button
-		AssessmentItemFormItem itemEl = component.getQtiItem();
-		if(component.isItemSessionOpen(itemSessionState, renderer.isSolutionMode())) {
-			Component submit = itemEl.getSubmitButton().getComponent();
-			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
-			submit.setDirty(false);
-		}
-		
+
+		renderShowSolutionButton(sb, component, itemSessionState, translator);
+		renderSubmitButton(renderer, sb, component, itemSessionState, ubu, translator);
+
 		boolean skipRendered = false;
 		if((itemSessionState.isResponded() || itemSessionState.getEndTime() != null)) {
 			if(isLobOnly(assessmentItem) && itemSessionState.isResponded()) {
 				String title = translator.translate("next.item");
 				renderControl(sb, component, title, false, "o_sel_next_question", new NameValuePair("cid", Event.next.name()));
-			} else if(isIncorrectlyAnswered(itemSessionState) || (!itemSessionState.isResponded() && itemSessionState.getEndTime() != null)) {
-				if(!willShowFeedback(component, assessmentItem)) {
+			} else if(AssessmentRenderFunctions.isIncorrectlyAnswered(itemSessionState) || (!itemSessionState.isResponded() && itemSessionState.getEndTime() != null)) {
+				if(!willShowFeedback(component, assessmentItem) && !component.isPageMode()) {
 					sb.append("<span class='o_sel_additional_feedback'><i class='o_icon o_icon-lg o_icon_failed'> </i></span> ");
 				}
 				
@@ -240,12 +255,14 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 					renderControl(sb, component, title, false, "o_sel_skip_question", new NameValuePair("cid", Event.skip.name()));
 					skipRendered = true;
 				}
+				if (component.isPageMode() && component.isShowPageModeSolution()) {
+					renderNextButton(sb, component, translator);
+				}
 			} else {
-				if(isCorrectlyAnswered(itemSessionState) && !willShowFeedback(component, assessmentItem)) {
+				if(AssessmentRenderFunctions.isCorrectlyAnswered(itemSessionState) && !willShowFeedback(component, assessmentItem) && !component.isPageMode()) {
 					sb.append("<span class='o_sel_additional_feedback'><i class='o_icon o_icon-lg o_icon_passed'> </i></span> ");
 				}
-				String title = translator.translate("next.item");
-				renderControl(sb, component, title, false, "o_sel_next_question", new NameValuePair("cid", Event.next.name()));
+				renderNextButton(sb, component, translator);
 			}
 		}
 		
@@ -258,7 +275,40 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		
 		sb.append("</div>"); // end wrapper
 	}
-	
+
+	private void renderShowSolutionButton(StringOutput sb, AssessmentItemComponent component, ItemSessionState itemSessionState, Translator translator) {
+		if (!component.isPageMode()) {
+			return;
+		}
+		if (component.isShowPageModeSolution()) {
+			return;
+		}
+		if (AssessmentRenderFunctions.isIncorrectlyAnswered(itemSessionState)) {
+			String title = translator.translate("assessment.solution.show");
+			renderControl(sb, component, title, false, "o_button_ghost o_sel_show_solution",
+					new NameValuePair("cid", Event.showSolution.name()));
+		}
+	}
+
+	private void renderSubmitButton(AssessmentRenderer renderer, StringOutput sb, AssessmentItemComponent component, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
+		if (component.isPageMode()) {
+			if (AssessmentRenderFunctions.isCorrectlyAnswered(itemSessionState) || component.isShowPageModeSolution()) {
+				return;
+			}
+		}
+		AssessmentItemFormItem itemEl = component.getQtiItem();
+		if (component.isItemSessionOpen(itemSessionState, renderer.isSolutionMode())) {
+			Component submit = itemEl.getSubmitButton().getComponent();
+			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
+			submit.setDirty(false);
+		}
+	}
+
+	private void renderNextButton(StringOutput sb, AssessmentItemComponent component, Translator translator) {
+		String title = component.isPageMode() ? translator.translate("assessment.test.nextQuestion") : translator.translate("next.item");
+		renderControl(sb, component, title, component.isPageMode(), "o_sel_next_question", new NameValuePair("cid", Event.next.name()));
+	}
+
 	private boolean willShowFeedback(AssessmentItemComponent component, AssessmentItem assessmentItem) {
 		if(component.isHideFeedbacks()) return false;
 		
@@ -282,33 +332,23 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		return true;
 	}
 	
-	private boolean isCorrectlyAnswered(ItemSessionState itemSessionState) {
-		if(itemSessionState.isResponded()) {
-			Value maxScore = itemSessionState.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER);
-			Value score = itemSessionState.getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
-			if(maxScore != null && maxScore.equals(score)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private boolean isIncorrectlyAnswered(ItemSessionState itemSessionState) {
-		if(itemSessionState.isResponded()) {
-			Value maxScore = itemSessionState.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER);
-			Value score = itemSessionState.getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
-			if(maxScore != null && !maxScore.equals(score)) {
-				return true;
-			}
-		}
-		return false;
-	}
-    
 	private void renderItemStatus(AssessmentRenderer renderer, StringOutput sb, ItemSessionState itemSessionState, Translator translator) {
 		if(renderer.isSolutionMode()) {
 			sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.modelSolution")).append("</span>");
 		} else {
 			super.renderItemStatus(sb, itemSessionState, null, translator);
+		}
+	}
+
+	private void renderAnswerCorrectnessFeedback(StringOutput sb, ItemSessionState itemSessionState, Translator translator) {
+		if (itemSessionState.isRespondedValidly()) {
+			if (itemSessionState.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER) instanceof FloatValue maxScore) {
+				if (itemSessionState.getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER) instanceof FloatValue score) {
+					String status = score.equals(maxScore) ? "correct" : "incorrect";
+					String i18nKey = "assessment.item.status.page." + status;
+					renderItemStatusMessage(status, i18nKey, sb, translator);
+				}
+			}
 		}
 	}
 	

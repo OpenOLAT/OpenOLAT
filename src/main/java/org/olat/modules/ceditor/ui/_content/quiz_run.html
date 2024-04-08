@@ -1,3 +1,170 @@
+<style>
+	.o_quiz {
+		border: 1px solid #cccccc;
+		border-radius: 4px;
+		background-color: #f2f2f2;
+		padding: 12px 20px 20px 20px;
+	}
+
+	.o_quiz_question {
+		border-radius: 4px;
+		background-color: #ffffff;
+		padding: 12px 20px 20px 20px;
+	}
+
+	.o_quiz_question h4.itemTitle {
+		padding: 0;
+		border: none;
+		background: unset;
+		font-weight: 400;
+		line-height: 32px;
+	}
+
+	.o_quiz_question .o_qti_item_body {
+		padding: 0;
+		border: none;
+		background: unset;
+	}
+
+	.o_page_run_quiz .o_quiz_question .o_assessmentitem_wrapper .o_qti_item_body {
+		background-color: unset;
+	}
+
+	.o_quiz_question tr.choiceinteraction td.control {
+		padding: 0;
+		vertical-align: middle;
+		border-color: rgb(70, 120, 178);
+		border-width: 1px;
+		border-top-left-radius: 4px;
+		border-bottom-left-radius: 4px;
+		border-top-style: solid;
+		border-bottom-style: solid;
+		border-left-style: solid;
+	}
+
+	.o_quiz_question tr.choiceinteraction td.choiceInteraction {
+		padding: 0;
+		line-height: 18px;
+		border-color: rgb(70, 120, 178);
+		border-width: 1px;
+		border-top-right-radius: 4px;
+		border-bottom-right-radius: 4px;
+		border-top-style: solid;
+		border-right-style: solid;
+		border-bottom-style: solid;
+		color: rgb(70, 120, 178);
+	}
+
+	.o_quiz_question tr.o_selected td.control, .o_quiz_question tr.o_selected td.choiceInteraction {
+		background-color: rgba(70, 120, 178, 0.1);
+		color: rgb(70, 120, 178);
+	}
+
+	.o_quiz_question tr.o_correct td.control, .o_quiz_question tr.o_correct td.choiceInteraction {
+		background-color: rgba(92, 184, 92, 0.1);
+		color: rgb(92, 184, 92);
+		border-color: rgb(92, 184, 92);
+	}
+
+	.o_quiz_question tr.o_incorrect td.control, .o_quiz_question tr.o_incorrect td.choiceInteraction {
+		background-color: rgba(214, 0, 28, 0.1);
+		color: rgb(214, 0, 28);
+		border-color: rgb(214, 0, 28);
+	}
+
+	.o_quiz_question tr.choiceinteraction td.choiceInteraction p {
+		margin: 0;
+	}
+
+	.o_quiz_question tr.choiceinteraction.o_correct td.choiceInteraction p {
+	}
+
+	.o_quiz_question tr.choiceinteraction.o_incorrect td.choiceInteraction p {
+	}
+
+	.o_quiz_question tr.choiceinteraction td.choiceInteraction label {
+		margin: 0;
+		padding: 11px 10px 11px 0;
+		width: 100%;
+	}
+
+	.o_quiz_question tr.choiceinteraction td.control label {
+		margin: 0;
+		padding: 11px 7px 11px 10px;
+		width: 100%;
+	}
+
+	.o_quiz_question .choiceInteraction table {
+		border-collapse: separate;
+		border-spacing: 0 4px;
+	}
+
+	.o_quiz_question tr.choiceinteraction {
+		height: 40px;
+	}
+
+	.o_quiz_question input[type="radio"] {
+		display: none;
+	}
+
+	.o_quiz_question .choiceInteraction input + i  {
+		display: unset;
+	}
+
+	.o_quiz_question td i:before {
+		color: rgb(70, 120, 178);
+	}
+
+	.o_quiz_question .o_correct td i:before {
+		color: rgb(92, 184, 92);
+	}
+
+	.o_quiz_question .o_incorrect td i:before {
+		color: rgb(214, 0, 28);
+	}
+
+	.o_quiz_question .o_assessmentitem_wrapper .itemTitle .o_qti_item_meta {
+		margin-top: 8px;
+	}
+
+	.o_quiz_progress_label {
+		font-size: 12px;
+	}
+
+	.o_quiz_progress {
+		padding-bottom: 12px;
+		position: relative;
+	}
+
+	.o_quiz_progress .o_progress {
+		display: inline-block;
+		width: 100%;
+	}
+
+	.o_quiz_progress .o_progress .o_progress-sm {
+		height: 10px;
+		background-color: white;
+		border: 1px solid #ccc;
+	}
+
+	.o_quiz_progress .o_progress_label_wrapper {
+		display: none;
+	}
+
+	.o_quiz_question .o_button_group.o_assessmentitem_controls {
+		background: unset;
+		border: unset;
+		margin: unset;
+		padding: unset;
+		padding-top: 16px;
+	}
+
+	.o_quiz_question .o_assessmentitem_controls .o_sel_show_solution span::before {
+		content: unset;
+	}
+
+</style>
+
 <div id="$r.getCId()" class="o_page_run_quiz $blockLayoutClass">
   #if($showIntro)
 	#if($r.available("image"))
@@ -16,7 +183,15 @@
   #end
   #if($showQuiz)
     <div class="o_quiz">
-		$r.render("quiz")
+		<div class="o_quiz_progress_label">
+			$r.translate("quiz.question.header", $questionNumber, $numberOfQuestions)
+		</div>
+		<div class="o_quiz_progress">
+			$r.render("progressBar")
+		</div>
+		<div class="o_quiz_question">
+			$r.render("question")
+		</div>
 	</div>
   #end
 </div>

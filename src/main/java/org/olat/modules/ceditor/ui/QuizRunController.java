@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -39,6 +40,7 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.DefaultAssessmentSessionAuditLogger;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
+import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.ceditor.PageRunElement;
@@ -66,8 +68,10 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private boolean showIntro = true;
 	private AssessmentItemDisplayController assessmentItemDisplayController;
 	private final AssessmentSessionAuditLogger candidateAuditLogger = new DefaultAssessmentSessionAuditLogger();
-	private RepositoryEntry entry;
-	private String subIdent;
+	private final RepositoryEntry entry;
+	private final String subIdent;
+	private int questionIndex;
+	private ProgressBar progressBar;
 
 	@Autowired
 	private ContentEditorQti contentEditorQti;
@@ -80,6 +84,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 							 RepositoryEntry entry, String subIdent) {
 		super(ureq, wControl);
 		this.quizPart = quizPart;
+		questionIndex = 0;
 		this.editable = editable;
 		this.entry = entry;
 		this.subIdent = subIdent;
@@ -123,6 +128,20 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 	private void updateQuizUI(UserRequest ureq) {
 		mainVC.contextPut("showQuiz", true);
+
+		mainVC.contextPut("questionNumber", questionIndex + 1);
+		mainVC.contextPut("questionIndex", questionIndex);
+		mainVC.contextPut("numberOfQuestions", getNumberOfQuestions());
+
+		if (progressBar == null) {
+			progressBar = new ProgressBar("progress", 100, 0.0f, (float) getNumberOfQuestions(), null);
+			progressBar.setWidthInPercent(true);
+			progressBar.setLabelAlignment(ProgressBar.LabelAlignment.none);
+			progressBar.setRenderSize(ProgressBar.RenderSize.small);
+			mainVC.put("progressBar", progressBar);
+		}
+
+		progressBar.setActual(questionIndex);
 	}
 
 	private String substituteVariables(String text) {
@@ -148,6 +167,12 @@ public class QuizRunController extends BasicController implements PageRunElement
 				setBlockLayoutClass(quizPart.getSettings());
 				updateUI(ureq);
 			}
+		} else if (assessmentItemDisplayController == source) {
+			if (event instanceof QTIWorksAssessmentItemEvent qtiWorksAssessmentItemEvent) {
+				if (QTIWorksAssessmentItemEvent.Event.next.name().equals(qtiWorksAssessmentItemEvent.getCommand())) {
+					doNext(ureq);
+				}
+			}
 		}
 	}
 
@@ -162,11 +187,25 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 	private void doStart(UserRequest ureq) {
 		List<QuizQuestion> questions = quizPart.getSettings().getQuestions();
-		if (questions.isEmpty()) {
+		if (questionIndex >= questions.size()) {
 			return;
 		}
 
-		QuizQuestion quizQuestion = questions.get(0);
+		doStart(ureq, questions.get(questionIndex));
+	}
+
+	private void doNext(UserRequest ureq) {
+		List<QuizQuestion> questions = quizPart.getSettings().getQuestions();
+		if ((questionIndex + 1) >= questions.size()) {
+			return;
+		}
+		questionIndex++;
+
+		doStart(ureq, questions.get(questionIndex));
+	}
+
+	private void doStart(UserRequest ureq, QuizQuestion quizQuestion) {
+		updateUI(ureq);
 
 		ContentEditorQti.QuizQuestionStorageInfo storageInfo = contentEditorQti.getStorageInfo(quizPart, quizQuestion);
 		URI assessmentItemUri = storageInfo.questionFile().toURI();
@@ -177,12 +216,13 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 		boolean authorMode = true;
 		QTI21DeliveryOptions deliveryOptions = QTI21DeliveryOptions.defaultSettings();
+		deliveryOptions.setPageMode(true);
 		assessmentItemDisplayController = new AssessmentItemDisplayController(ureq, getWindowControl(),
 				entry, subIdent, entry, assessmentEntry, authorMode, resolvedAssessmentItem,
 				storageInfo.questionDirectory(), storageInfo.questionFile(), quizQuestion.getId(), deliveryOptions,
 				this, candidateAuditLogger);
-
-		mainVC.put("quiz", assessmentItemDisplayController.getInitialComponent());
+		listenTo(assessmentItemDisplayController);
+		mainVC.put("question", assessmentItemDisplayController.getInitialComponent());
 	}
 
 	@Override

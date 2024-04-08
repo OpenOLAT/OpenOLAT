@@ -323,6 +323,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			case solution:
 				requestSolution(ureq);
 				break;
+			case showSolution:
+				qtiWorksCtrl.qtiEl.getComponent().showPageModeSolution();
+				break;
 			case response:
 				handleResponses(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
 				break;
@@ -1097,7 +1100,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	protected void finishCandidateSession(AssessmentResult assessmentResult, final Date currentTimestamp) {
 		candidateSession = qtiService.finishItemSession(candidateSession, assessmentResult, currentTimestamp);
 	}
-	
+
 	/**
 	 * QtiWorks manage the form tag itself.
 	 * 
@@ -1136,7 +1139,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			qtiEl.setShowQuestionLevel(true);
 			qtiEl.setShowStatus(false);
 		}
-		
+
 		public void setSubmitI18nKey(String i18nKey) {
 			qtiEl.getSubmitButton().setI18nKey(i18nKey, null);
 		}
@@ -1150,11 +1153,16 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			mainForm.setMultipartEnabled(true);
 
 			FormSubmit submit = uifactory.addFormSubmitButton("submit", formLayout);
+			if (deliveryOptions.isPageMode()) {
+				submit.setI18nKey("submit.check.page", null);
+			}
 			qtiEl = new AssessmentItemFormItem("qtirun", submit);
 			qtiEl.setEnableBack(deliveryOptions.isEnableAssessmentItemBack());
 			qtiEl.setEnableResetHard(deliveryOptions.isEnableAssessmentItemResetHard());
 			qtiEl.setEnableResetSoft(deliveryOptions.isEnableAssessmentItemResetSoft());
 			qtiEl.setEnableSkip(deliveryOptions.isEnableAssessmentItemSkip());
+			qtiEl.getComponent().setPageMode(deliveryOptions.isPageMode());
+			qtiEl.setShowStatus(!deliveryOptions.isPageMode());
 			formLayout.add("qtirun", qtiEl);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());

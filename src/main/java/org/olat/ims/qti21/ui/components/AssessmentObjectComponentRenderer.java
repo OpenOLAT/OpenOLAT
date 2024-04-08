@@ -250,7 +250,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 
 	}
 	
-	private void renderItemStatusMessage(String status, String i18nKey, StringOutput sb, Translator translator) {
+	protected void renderItemStatusMessage(String status, String i18nKey, StringOutput sb, Translator translator) {
 		String title = translator.translate(i18nKey);
 		sb.append("<span class='o_assessmentitem_status ").append(status).append(" ' title=\"").append(StringHelper.escapeHtml(title))
 		.append("\"><i class='o_icon o_icon-fw o_icon_qti_").append(status).append("'> </i><span>").append(title).append("</span></span>");
@@ -1030,6 +1030,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		ctx.put("isCorrectionSolution", component.isCorrectionSolution());
 		ctx.put("isSolutionMode", renderer.isSolutionMode());
 		ctx.put("isOffline", renderer.isOffline());
+		AssessmentRenderFunctions.addInteractionSpecificContextValues(interaction, ctx, itemSessionState, component);
 
 		Renderer fr = Renderer.getInstance(component, translator, ubu, new RenderResult(), renderer.getGlobalSettings(), renderer.getRenderer().getCsrfToken());
 		AssessmentRenderer fHints = renderer.newHints(fr);

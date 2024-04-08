@@ -48,6 +48,7 @@ public class QTIWorksAssessmentItemEvent extends FormEvent {
 		deleteResponse("delete-response", "delete-response"),
 		close("close", "close"),//ok
 		solution("solution", "solution"),
+		showSolution("show-solution", "show-solution"),
 		resetsoft("reset-soft","reset-soft"),
 		resethard("reset-hard","reset-hard"),
 		exit("exit", "exit"),

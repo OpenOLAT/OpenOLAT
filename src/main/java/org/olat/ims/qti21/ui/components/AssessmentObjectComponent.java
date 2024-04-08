@@ -73,6 +73,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	private ResourceLocator resourceLocator;
 	private CandidateSessionContext candidateSessionContext;
 	private boolean pageMode;
+	private boolean showPageModeSolution;
 
 	public AssessmentObjectComponent(String name) {
 		super(name);
@@ -308,5 +309,18 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 
 	public void setPageMode(boolean pageMode) {
 		this.pageMode = pageMode;
+	}
+
+	public boolean isShowPageModeSolution() {
+		return showPageModeSolution;
+	}
+
+	public void setShowPageModeSolution(boolean showPageModeSolution) {
+		this.showPageModeSolution = showPageModeSolution;
+	}
+
+	public void showPageModeSolution() {
+		setShowPageModeSolution(true);
+		setDirty(true);
 	}
 }

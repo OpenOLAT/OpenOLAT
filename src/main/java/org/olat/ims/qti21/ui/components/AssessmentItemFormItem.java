@@ -27,6 +27,7 @@ import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.deleteResp
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.next;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resethard;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resetsoft;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.showSolution;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.skip;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.solution;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.timesUp;
@@ -168,6 +169,9 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 				switch(QTIWorksAssessmentItemEvent.Event.valueOf(cmd)) {
 					case solution:
 						event = new QTIWorksAssessmentItemEvent(solution, this);
+						break;
+					case showSolution:
+						event = new QTIWorksAssessmentItemEvent(showSolution, this);
 						break;
 					case resethard:
 						event = new QTIWorksAssessmentItemEvent(resethard, this);
