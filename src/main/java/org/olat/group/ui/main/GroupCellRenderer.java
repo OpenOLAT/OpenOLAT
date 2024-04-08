@@ -20,6 +20,8 @@
 package org.olat.group.ui.main;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -49,6 +51,12 @@ public class GroupCellRenderer implements FlexiCellRenderer {
 		boolean and = false;
 		List<BusinessGroupShort> groups = member.getGroups();
 		if(groups != null && !groups.isEmpty()) {
+			// get distinct groups by key, otherwise one group will be rendered multiple times
+			groups = groups.stream()
+					.collect(Collectors.toMap(BusinessGroupShort::getKey, Function.identity(), (existing, replacement) -> existing))
+					.values()
+					.stream()
+					.toList();
 			for(BusinessGroupShort group:groups) {
 				and = and(sb, and);
 				if(group.getName() == null && group.getKey() != null) {

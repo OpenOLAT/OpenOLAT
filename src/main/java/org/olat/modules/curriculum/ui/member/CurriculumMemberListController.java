@@ -489,7 +489,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 			showWarning("error.select.one.user");
 		} else {
 			List<Identity> ids = securityManager.loadIdentityByKeys(memberKeys);
-			leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids, memberships, null, null, curriculumElement);
+			leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids, memberships, null, null, null, curriculumElement);
 			listenTo(leaveDialogBox);
 
 			String modalTitle = ids.size() > 1 ? translate("remove.title.bulk") : translate("remove.title");

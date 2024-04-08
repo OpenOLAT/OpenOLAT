@@ -21,6 +21,9 @@ package org.olat.group.ui.main;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
@@ -42,6 +45,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
@@ -71,6 +76,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 	private final boolean isBulkAction;
 
 	private final RepositoryEntry entry;
+	private final BusinessGroup businessGroup;
 	private final List<MemberRow> members;
 	private final CurriculumElement curriculumElement;
 
@@ -78,15 +84,18 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BusinessGroupModule groupModule;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	public MemberLeaveConfirmationController(UserRequest ureq, WindowControl wControl, List<Identity> identities,
-											 List<CourseMembership> memberships, RepositoryEntry entry, List<MemberRow> members,
-											 CurriculumElement curriculumElement) {
+											 List<CourseMembership> memberships, RepositoryEntry entry, BusinessGroup businessGroup,
+											 List<MemberRow> members, CurriculumElement curriculumElement) {
 		super(ureq, wControl, "confirm_delete");
 		this.identities = identities;
 		this.memberships = memberships;
 		this.withinCourse = entry != null;
 		this.entry = entry;
+		this.businessGroup = businessGroup;
 		this.members = members;
 		this.curriculumElement = curriculumElement;
 		this.isBulkAction = identities.size() > 1;
@@ -104,17 +113,21 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		}
 
 		if (identities != null && formLayout instanceof FormLayoutContainer formLayoutCont) {
-			String externalRef;
+			String externalRef = "";
 			if (withinCourse) {
 				externalRef = entry.getExternalRef() != null ? " - " + entry.getExternalRef() : "";
-			} else {
+			} else if (curriculumElement != null) {
 				externalRef = curriculumElement.getExternalId() != null ? " - " + curriculumElement.getExternalId() : "";
+			} else if (businessGroup != null) {
+				externalRef = businessGroup.getExternalId() != null ? " - " + businessGroup.getExternalId() : "";
 			}
 
 			String msg = constructMessage(externalRef);
 			formLayoutCont.contextPut("msg", msg);
 			// only available if there are members from a group
-			constructGroupMsg(formLayoutCont);
+			if (businessGroup == null) {
+				constructGroupMsg(formLayoutCont);
+			}
 		}
 
 		boolean mandatoryEmail = groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
@@ -128,13 +141,13 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		// if it's a bulk action, then construct a list of members with their roles
 		if (isBulkAction) {
 			List<String> memberValues = new ArrayList<>();
-			if (withinCourse) {
+			if (withinCourse || businessGroup != null) {
 				for (MemberRow member : members) {
-					memberValues.add(StringHelper.escapeHtml(userManager.getUserDisplayName(member.getIdentityKey()) + " (" + getRolesRendered(member, null) + ")"));
+					memberValues.add(StringHelper.escapeHtml(userManager.getUserDisplayName(member.getIdentityKey()) + " (" + StringHelper.unescapeHtml(getRolesRendered(member, null) + ")")));
 				}
 			} else if (identities != null) {
 				for (int i = 0; i < identities.size(); i++) {
-					memberValues.add(StringHelper.escapeHtml(userManager.getUserDisplayName(identities.get(i)) + " (" + getRolesRendered(null, memberships.get(i)) + ")"));
+					memberValues.add(StringHelper.escapeHtml(userManager.getUserDisplayName(identities.get(i)) + " (" + StringHelper.unescapeHtml(getRolesRendered(null, memberships.get(i)) + ")")));
 				}
 			}
 
@@ -154,23 +167,46 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 	}
 
 	private String constructMessage(String externalRef) {
+		String[] args;
 		String msg;
+		String msgTranslationKey;
+		String displayName = "";
+		if (withinCourse) {
+			displayName = StringHelper.escapeHtml(entry.getDisplayname());
+		} else if (curriculumElement != null) {
+			displayName = StringHelper.escapeHtml(curriculumElement.getDisplayName());
+		} else if (businessGroup != null) {
+			displayName = StringHelper.escapeHtml(businessGroup.getName());
+		}
 		if (isBulkAction) {
-			String[] args = new String[]{
+			args = new String[]{
 					String.valueOf(identities.size()),
-					withinCourse ? StringHelper.escapeHtml(entry.getDisplayname()) : StringHelper.escapeHtml(curriculumElement.getDisplayName()),
+					displayName,
 					externalRef
 			};
-			msg = translate(withinCourse ? "dialog.modal.bg.remove.course.text.bulk" : "dialog.modal.bg.remove.text.bulk", args);
+			if (withinCourse) {
+				msgTranslationKey = "dialog.modal.bg.remove.course.text.bulk";
+			} else if (curriculumElement != null) {
+				msgTranslationKey = "dialog.modal.bg.remove.cur.text.bulk";
+			} else {
+				msgTranslationKey = "dialog.modal.bg.remove.text.bulk";
+			}
 		} else {
-			String[] args = new String[]{
+			args = new String[]{
 					StringHelper.escapeHtml(userManager.getUserDisplayName(identities.get(0))),
 					getRolesRendered(members != null ? members.get(0) : null, memberships.get(0)),
-					withinCourse ? StringHelper.escapeHtml(entry.getDisplayname()) : StringHelper.escapeHtml(curriculumElement.getDisplayName()),
+					displayName,
 					externalRef
 			};
-			msg = translate(withinCourse ? "dialog.modal.bg.remove.course.text" : "dialog.modal.bg.remove.text", args);
+			if (withinCourse) {
+				msgTranslationKey = "dialog.modal.bg.remove.course.text";
+			} else if (curriculumElement != null) {
+				msgTranslationKey = "dialog.modal.bg.remove.cur.text";
+			} else {
+				msgTranslationKey = "dialog.modal.bg.remove.text";
+			}
 		}
+		msg = translate(msgTranslationKey, args);
 		return msg;
 	}
 
@@ -185,7 +221,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 			} else {
 				// individual actions, the message depends on specific member details. Not relevant for curriculum
 				// hence members won't be null
-				groupMsg = translate("remove.group.member", getGroupsRendered(members.get(0)));
+				groupMsg = translate("remove.group.member", getGroupsRendered(members.get(0), null));
 			}
 			formLayoutCont.contextPut("groupMsg", groupMsg);
 		}
@@ -201,7 +237,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 	private String getRolesRendered(MemberRow member, CourseMembership membership) {
 		StringBuilder resultBuilder = new StringBuilder();
 		try (StringOutput roleOutput = new StringOutput()) {
-			if (withinCourse) {
+			if (withinCourse || businessGroup != null) {
 				renderCourseRoles(roleOutput, member);
 			} else {
 				renderCurriculumRoles(roleOutput, membership);
@@ -236,15 +272,15 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		if (membership.isBusinessGroupCoach()) {
 			and = and(sb, and);
 			sb.append(translator.translate("role.group.tutor"));
-			if (isBulkAction) {
-				sb.append(" " + getGroupsRendered(member));
+			if (isBulkAction && businessGroup == null) {
+				sb.append(" " + getGroupsRendered(member, true));
 			}
 		}
 		if (membership.isBusinessGroupParticipant()) {
 			and = and(sb, and);
 			sb.append(translator.translate("role.group.participant"));
-			if (isBulkAction) {
-				sb.append(" " + getGroupsRendered(member));
+			if (isBulkAction && businessGroup == null) {
+				sb.append(" " + getGroupsRendered(member, false));
 			}
 		}
 
@@ -296,10 +332,10 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		return true;
 	}
 
-	private String getGroupsRendered(MemberRow member) {
+	private String getGroupsRendered(MemberRow member, Boolean isCoach) {
 		StringBuilder resultBuilder = new StringBuilder();
 		try (StringOutput groupOutput = new StringOutput()) {
-			renderGroups(groupOutput, member);
+			renderGroups(groupOutput, member, isCoach);
 			resultBuilder.append(groupOutput);
 		} catch (Exception e) {
 			log.error("Error rendering groups", e);
@@ -307,19 +343,43 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		return resultBuilder.toString();
 	}
 
-	private void renderGroups(StringOutput sb, MemberRow member) {
+	private void renderGroups(StringOutput sb, MemberRow member, Boolean isCoach) {
 		boolean and = false;
 		List<BusinessGroupShort> groups = member.getGroups();
 		if (groups != null && !groups.isEmpty()) {
+			groups = groups.stream()
+					.collect(Collectors.toMap(BusinessGroupShort::getKey, Function.identity(), (existing, replacement) -> existing))
+					.values()
+					.stream()
+					.toList();
+			// Pre-process identities into a Map for quick access
+			Map<Long, Identity> identityMap = identities.stream()
+					.collect(Collectors.toMap(Identity::getKey, Function.identity()));
 			for (BusinessGroupShort group : groups) {
-				and = and(sb, and);
-				sb.append("\"");
-				if (group.getName() == null && group.getKey() != null) {
-					sb.append(group.getKey());
-				} else {
-					sb.append(StringHelper.escapeHtml(group.getName()));
+				// Default to true if isCoach is null
+				boolean renderCondition = isCoach == null;
+				if (isCoach != null) {
+					// get identity object of member
+					Identity identity = identityMap.get(member.getIdentityKey());
+					// to pass it for getting businessGroupMembership for that identity with a given group, only one possible
+					// because first parameter only gets one groupKey
+					BusinessGroupMembership bgMembership = businessGroupService.getBusinessGroupMembership(List.of(group.getKey()), identity).get(0);
+					renderCondition = (isCoach && bgMembership.isOwner()) || (!isCoach && bgMembership.isParticipant() || bgMembership.isWaiting());
 				}
-				sb.append("\"");
+				// will be true, if it is not a bulk action, so isCoach == null
+				// or that member is coach in current looped group
+				// or that member is participant in current looped group
+				// or that member is waiting for current looped group
+				if (renderCondition) {
+					and = and(sb, and);
+					sb.append("\"");
+					if (group.getName() == null && group.getKey() != null) {
+						sb.append(group.getKey());
+					} else {
+						sb.append(StringHelper.escapeHtml(group.getName()));
+					}
+					sb.append("\"");
+				}
 			}
 		}
 

@@ -119,10 +119,10 @@ public class BusinessGroupUserDataManager implements UserDataDeletable, UserData
 			List<BusinessGroupMembershipInfos> memberships = businessGroupDao.getMemberships(identity);
 			for(BusinessGroupMembershipInfos membership:memberships) {
 				Row row = sheet.newRow();
-				row.addCell(0, membership.getRole());
-				row.addCell(1, membership.getBusinessGroupName());
-				row.addCell(2, membership.getCreationDate(), workbook.getStyles().getDateTimeStyle());
-				row.addCell(3, membership.getLastModified(), workbook.getStyles().getDateTimeStyle());
+				row.addCell(0, membership.role());
+				row.addCell(1, membership.businessGroupName());
+				row.addCell(2, membership.creationDate(), workbook.getStyles().getDateTimeStyle());
+				row.addCell(3, membership.lastModified(), workbook.getStyles().getDateTimeStyle());
 			}
 		} catch (IOException e) {
 			log.error("Unable to export xlsx", e);

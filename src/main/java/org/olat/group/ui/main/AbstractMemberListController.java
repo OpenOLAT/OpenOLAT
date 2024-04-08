@@ -101,6 +101,7 @@ import org.olat.course.member.wizard.MembersContext;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupModule;
+import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.MemberViewQueries;
@@ -552,6 +553,20 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+
+	private int countLinkedGroupRepoEntries(List<MemberRow> members) {
+		// Collect distinct group keys from members
+		List<Long> distinctGroupKeys = members.stream()
+				.flatMap(m -> m.getGroups().stream())
+				.map(BusinessGroupRef::getKey)
+				.distinct()
+				.toList();
+		// two database calls could be improved (if necessary) by a count query
+		// Load business groups
+		List<BusinessGroup> businessGroups = businessGroupService.loadBusinessGroups(distinctGroupKeys);
+		// find repository entries connected to those groups and return the size
+		return businessGroupService.findRepositoryEntries(businessGroups, 0, -1).size();
+	}
 	
 	private List<MemberRow> getMultiSelectedRows() {
 		Set<Integer> selections = membersTable.getMultiSelectedIndex();
@@ -654,6 +669,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	}
 	
 	protected final void doConfirmRemoveMembers(UserRequest ureq, List<MemberRow> members) {
+		// if that member is a member of a shared group, then removing is not allowed
+		if (countLinkedGroupRepoEntries(members) > 1) {
+			showWarning("remove.shared.group.entries");
+			return;
+		}
+
 		if(members.isEmpty()) {
 			showWarning("error.select.one.user");
 		} else {
@@ -679,10 +700,15 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 				List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
 				leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids,
-						members.stream().map(MemberRow::getMembership).toList(), repoEntry, members, null);
+						members.stream().map(MemberRow::getMembership).toList(), repoEntry, businessGroup, members, null);
 				listenTo(leaveDialogBox);
 
-				String modalTitle = members.size() > 1 ? translate("remove.title.course.bulk") : translate("remove.title.course");
+				String modalTitle;
+				if (businessGroup != null) {
+					modalTitle = members.size() > 1 ? translate("remove.title.group.bulk") : translate("remove.title.group");
+				} else {
+					modalTitle = members.size() > 1 ? translate("remove.title.course.bulk") : translate("remove.title.course");
+				}
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(),
 						true, modalTitle);
 				cmc.activate();

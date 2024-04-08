@@ -148,7 +148,7 @@ public class MemberInfoController extends FormBasicController {
 			String firstTime = formatter.formatDate(courseInfos.getInitialLaunch());
 			membershipCreationEl = uifactory.addStaticTextElement("firstTime", "course.membership.creation", firstTime, resourceInfosContainer);
 		} else if(businessGroupInfos != null) {
-			String creation = formatter.formatDate(businessGroupInfos.getCreationDate());
+			String creation = formatter.formatDate(businessGroupInfos.creationDate());
 			membershipCreationEl = uifactory.addStaticTextElement("firstTime", "group.membership.creation", creation, resourceInfosContainer);
 		}
 		
@@ -165,7 +165,7 @@ public class MemberInfoController extends FormBasicController {
 				uifactory.addStaticTextElement("lastTime", "course.lastTime", lastVisit, resourceInfosContainer);
 				uifactory.addStaticTextElement("numOfVisits", "course.numOfVisits", numOfVisits, resourceInfosContainer);
 			} else if(businessGroupInfos != null) {
-				String lastVisit = formatter.formatDate(businessGroupInfos.getLastModified());	
+				String lastVisit = formatter.formatDate(businessGroupInfos.lastModified());
 				uifactory.addStaticTextElement("lastTime", "course.lastTime", lastVisit, resourceInfosContainer);
 			}
 		}
