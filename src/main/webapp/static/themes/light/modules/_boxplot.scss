@@ -1,0 +1,68 @@
+@use 'sass:color';
+/* 
+Box plot statistical data representation 
+
+The implementation is meant to be displayed in a very compact way fitting into
+the standard height of text or a table. 
+*/
+
+svg.o_bp {
+	/* overflow in case the default stroke width of the axis is larger than 1 */
+	overflow: visible;
+
+	/* Axis defining the full range, consisting of the vertical start element, the horizontal line and the vertical end element */
+	.o_bp_a_s, .o_bp_a_e, .o_bp_a_l {
+		stroke: $o-box-plot-axis-color;
+	}
+	
+	/* The values put on the axis: 
+	- Value range consisting of the vertical start element (Whisker), the horizontal line and the vertical end element (Whisker)
+	- A cross representing the average 
+	*/
+				
+	.o_bp_v_s, .o_bp_v_e, .o_bp_v_l, .o_bp_v_a, .o_bp_v_m {
+		stroke: $o-box-plot-values-color;
+		stroke-width: 2;
+	}
+
+	/*
+	if enough data samples available: 
+	- The box representing the interquartile range
+	- A line in the box representing the median 
+	*/
+	.o_bp_v_b {
+		fill: $o-box-plot-quartile-fill;
+	}
+	
+	
+	/* Color variations */
+	&.o_rubric_insufficient {
+		.o_bp_v_s, .o_bp_v_e, .o_bp_v_l, .o_bp_v_a, .o_bp_v_m {
+			stroke: $o-evaluation-insufficient-color;
+		}
+		.o_bp_v_b {
+			fill:  $o-evaluation-insufficient-fill;
+		}
+	}
+	
+	&.o_rubric_neutral {
+		.o_bp_v_s, .o_bp_v_e, .o_bp_v_l, .o_bp_v_a, .o_bp_v_m {
+			stroke: $o-evaluation-neutral-color;
+		}
+		.o_bp_v_b {
+			fill:  $o-evaluation-neutral-fill;
+		}
+	}
+	&.o_rubric_sufficient {
+			.o_bp_v_s, .o_bp_v_e, .o_bp_v_l, .o_bp_v_a, .o_bp_v_m {
+			stroke: $o-evaluation-sufficient-color;
+		}
+		.o_bp_v_b {
+			fill:  $o-evaluation-sufficient-fill;
+		}
+	}
+	
+}
+
+
+

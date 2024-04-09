@@ -1,0 +1,122 @@
+<h2>$r.translate("GuiDemoProgressBarController.menu.title.alt")</h2>
+
+<h3>Simple usage with min/max and average data</h3>
+<h4>Most simple usage with standard width</h4>
+<pre><code class="small">BoxPlot BoxPlot("simple", 140, 10, 100, 70, null);
+</code></pre>
+$r.render("simple")
+
+<h4>Same data but displayed on larger width</h4>
+<pre><code class="small">BoxPlot wider = new BoxPlot("wider", 160, 10, 100, 70, null);
+wider.setWidth(250);
+</code></pre>
+$r.render("larger")
+
+<h4>Same data but scaling to fit surrounding element</h4>
+<pre><code class="small">BoxPlot responsive = new BoxPlot("responsive", 160, 10, 100, 70, null);
+responsive.setResponsiveScaling(true);
+</code></pre>
+$r.render("responsive")
+
+<h4>Not the same data, with scale max is larger but displayed still in the default 160px box</h4>
+<pre><code class="small">BoxPlot larger = new BoxPlot("larger", 500, 10, 100, 70, null);
+</code></pre>
+$r.render("larger")
+
+<h4>Same data as before, with scale max is larger displayed in a matching sized 500px box</h4>
+<pre><code class="small">BoxPlot largerWider = new BoxPlot("largerWider", 500, 10, 100, 70, null);
+largerWider.setWidth(500);
+</code></pre>
+$r.render("largerWider")
+
+<h4>Rendering with CSS styling</h4>
+<pre><code class="small">BoxPlot color1 = new BoxPlot("color1", 160, 10, 100, 70, "o_rubric_insufficient");
+</code></pre>
+$r.render("color1")
+<pre><code class="small">BoxPlot color2 = new BoxPlot("color2", 160, 10, 100, 70, "o_rubric_neutral");
+</code></pre>
+$r.render("color2")
+<pre><code class="small">BoxPlot color3 = new BoxPlot("color3", 160, 10, 100, 70, "o_rubric_sufficient");
+</code></pre>
+$r.render("color3")
+
+
+<h3>Simple usage with min/max and average data</h3>
+
+<pre><code class="small">BoxPlot full1 = new BoxPlot("full1", 160, 10, 140, 30, 50, 90, 85, "o_rubric_insufficient");
+</code></pre>
+$r.render("full1")
+<pre><code class="small">BoxPlot full2 = new BoxPlot("full2", 250, 10, 140, 30, 50, 90, 85, "o_rubric_neutral");
+full2.setWidth(250);
+</code></pre>
+$r.render("full2")
+<pre><code class="small">BoxPlot full3 = new BoxPlot("full3", 160, 10, 140, 30, 50, 90, 85, "o_rubric_sufficient");
+full3.setResponsiveScaling(true);;
+</code></pre>
+$r.render("full3")
+
+
+<h3>Edge cases</h3>
+<pre><code class="small"></code>BoxPlot edge1 = new BoxPlot("edge1", 160, 0, 160, 80, null);
+</code></pre>
+$r.render("edge1")
+
+<pre><code class="small"></code>BoxPlot edge2 = new BoxPlot("edge2", 160, 0, 160, 80, 0, 160, 80, null);
+</code></pre>
+$r.render("edge2")
+		
+<pre><code class="small"></code>BoxPlot edge3 = new BoxPlot("edge3", 160, 0, 5, 2, null);
+</code></pre>
+$r.render("edge3")
+		
+<pre><code class="small"></code>BoxPlot edge4 = new BoxPlot("edge4", 160, 0, 120, 60, 0, 100, 40, null);
+</code></pre>
+$r.render("edge4")
+		
+<pre><code class="small"></code>BoxPlot edge5 = new BoxPlot("edge5", 160, 35, 35, 35, null);		
+</code></pre>
+$r.render("edge5")	
+
+
+<h3>Table</h3>
+Simulated table
+
+<div class="o_table_wrapper"><div class="o_scrollable_wrapper"><div class="o_scrollable">
+<table class="o_table table table-striped table-condensed table-hover">
+<thead>
+	<tr><th>One</th><th>Two</th><th>Three</th><th>One</th><th>Two</th><th>Three</th></tr>
+</thead>
+<tbody>
+
+<tr>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">Ipsum0</td>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">$r.render("edge4")</td>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">Ipsum0</td>
+</tr>
+<tr>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">Ipsum0</td>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">$r.render("color3")</td>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">Ipsum0</td>
+</tr>
+<tr>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">Ipsum0</td>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">$r.render("full1")</td>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">Ipsum0</td>
+</tr>
+<tr>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">Ipsum0</td>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">$r.render("simple")</td>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">Ipsum0</td>
+</tr>
+<tr>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">Ipsum0</td>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">$r.render("edge4")</td>
+	<td class="text-left o_dnd_label">Flexi Lorem0</td><td class="text-left ">Ipsum0</td>
+</tr>
+
+</tbody>
+</table>
+</div></div></div>
+
+
+		
