@@ -158,6 +158,11 @@
 		margin-left: 0;
 		margin-right: 0;
 
+		&.o_apply_background_color {
+			padding-top: $o-ce-padding-compact;
+			padding-bottom: $o-ce-padding-compact;
+		}
+
 		&.o_alert_box_type_note {
 			border-color: $o-box-note-color;
 			background-color: $o-box-note-bg;
@@ -489,7 +494,7 @@
 }
 
 /* Editor mode of content editor */
-.o_page_content_editor .o_page_layout {
+.o_page_content_editor .o_page_layout:not(.o_apply_background_color) {
 	&.o_container_block_1_cols {
 		>div:nth-last-child(2) {
 			border-bottom: $o-editor-layout-inner-h-border;
