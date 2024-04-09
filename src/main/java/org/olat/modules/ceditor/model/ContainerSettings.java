@@ -40,6 +40,7 @@ public class ContainerSettings {
 	private ContainerLayout type;
 	private List<ContainerColumn> columns;
 	private AlertBoxSettings alertBoxSettings;
+	private GeneralStyleSettings generalStyleSettings;
 
 	public ContainerLayout getType() {
 		return type == null ? ContainerLayout.ofColumn(numOfColumns, columns) : type;
@@ -94,6 +95,14 @@ public class ContainerSettings {
 			return null;
 		}
 		return alertBoxSettings;
+	}
+
+	public GeneralStyleSettings getGeneralStyleSettings() {
+		return generalStyleSettings;
+	}
+
+	public void setGeneralStyleSettings(GeneralStyleSettings generalStyleSettings) {
+		this.generalStyleSettings = generalStyleSettings;
 	}
 
 	public int getNumOfColumns() {

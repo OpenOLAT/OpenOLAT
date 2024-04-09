@@ -22,6 +22,7 @@ package org.olat.modules.forms.model.xml;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.model.GeneralStyleSettings;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 
@@ -41,8 +42,8 @@ public class FormXStream {
 	static {
 		Class<?>[] types = new Class[] { AlertBoxSettings.class, BlockLayoutSettings.class, Choice.class, Choices.class,
 				ChoiceSelectedCondition.class, Container.class, Disclaimer.class, FileStoredData.class,
-				FileUpload.class, Form.class, HTMLParagraph.class, HTMLRaw.class, Image.class, ImageSettings.class,
-				InformationType.class, MultipleChoice.class, Rubric.class, Rule.class, ScaleType.class,
+				FileUpload.class, Form.class, GeneralStyleSettings.class, HTMLParagraph.class, HTMLRaw.class, Image.class,
+				ImageSettings.class, InformationType.class, MultipleChoice.class, Rubric.class, Rule.class, ScaleType.class,
 				SessionInformations.class, SingleChoice.class, Slider.class, Spacer.class, StepLabel.class, Table.class,
 				TextInput.class, Title.class, VisibilityAction.class
 
@@ -58,6 +59,7 @@ public class FormXStream {
 		xstream.alias("fileStoredData", FileStoredData.class);
 		xstream.alias("fileupload", FileUpload.class);
 		xstream.alias("form", Form.class);
+		xstream.alias("generalstylesettings", GeneralStyleSettings.class);
 		xstream.alias("image", Image.class);
 		xstream.alias("imageSettgins", ImageSettings.class);
 		xstream.alias("informationType", InformationType.class);
