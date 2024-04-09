@@ -23,8 +23,11 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.AlertBoxType;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
+import org.olat.modules.ceditor.model.GeneralStyleSettings;
 import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.jpa.CodePart;
@@ -133,6 +136,52 @@ public class FragmentRendererHelper {
 			return sessionInformation.getAlertBoxSettings();
 		}
 		return null;
+	}
+
+	public static void renderContainerLayoutClasses(StringOutput sb, ContainerSettings settings) {
+		AlertBoxSettings alertBoxSettings = settings.getAlertBoxSettingsIfActive();
+		boolean showAlert = alertBoxSettings != null;
+		AlertBoxType alertBoxType = showAlert ? alertBoxSettings.getType() : null;
+		String alertBoxColor = showAlert ? alertBoxSettings.getColor() : null;
+		ContainerLayout layout = settings.getType();
+		GeneralStyleSettings generalStyleSettings = settings.getGeneralStyleSettings();
+		boolean applyBackgroundColor = generalStyleSettings != null && generalStyleSettings.getBackgroundColor() != null;
+		boolean applyLayoutSpacing = generalStyleSettings != null && generalStyleSettings.isShowSpacing();
+
+		sb.append(" o_page_layout ").append(layout.cssClass());
+
+		if (showAlert) {
+			sb.append(" o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor));
+		}
+		if (applyLayoutSpacing) {
+			sb.append(" o_apply_layout_spacing");
+		}
+		if (applyBackgroundColor) {
+			sb.append(" o_apply_background_color");
+		}
+	}
+
+	public static void renderContainerBlockDivOpen(StringOutput sb, String mainDivClass, ContainerSettings settings,
+												   boolean collapsible, String fragmentName) {
+		GeneralStyleSettings generalStyleSettings = settings.getGeneralStyleSettings();
+		boolean withBackgroundColor = generalStyleSettings != null && generalStyleSettings.getBackgroundColor() != null;
+
+		sb.append("<div class='").append(mainDivClass);
+
+		if (withBackgroundColor) {
+			sb.append(" ").append("o_color_background_10 ").append("o_color_").append(generalStyleSettings.getBackgroundColor());
+		}
+
+		if (collapsible) {
+			sb.append(" collapse in").append(buildCollapsibleClass(fragmentName));
+		}
+		sb.append("'");
+
+		if (collapsible) {
+			sb.append(" aria-expanded='true'");
+		}
+
+		sb.append(">");
 	}
 
 	public static void renderAlertHeader(StringOutput sb, String fragmentId, ContainerSettings settings, boolean inForm) {

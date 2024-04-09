@@ -31,8 +31,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.ceditor.model.AlertBoxSettings;
-import org.olat.modules.ceditor.model.AlertBoxType;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.PageEditorUIFactory;
@@ -60,16 +58,14 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 
 		Renderer fr = Renderer.getInstance(cmp, translator, containerUbu, new RenderResult(), renderer.getGlobalSettings(), renderer.getCsrfToken());
 		ContainerSettings settings = cmp.getContainerSettings();
-		AlertBoxSettings alertBoxSettings = settings.getAlertBoxSettingsIfActive();
-		AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
-		String alertBoxColor = alertBoxSettings != null ? alertBoxSettings.getColor() : null;
-		
+
 		// Container with editor elements
 		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("'")
 		  .append(" data-oo-page-fragment='").append(cmp.getComponentName()).append("'")
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")
 		  .append(" data-oo-content-editor-url='").append(fr.getUrlBuilder().getJavascriptURI()).append("'")
-		  .append(" class='o_page_fragment_edit o_page_container_edit o_page_drop ").append(" o_fragment_edited ", cmp.isEditMode()).append("'>");
+		  .append(" class='o_page_fragment_edit o_page_container_edit o_page_drop ")
+		  .append(" o_fragment_edited ", cmp.isEditMode()).append("'>");
 		// Tools
 		renderTools(fr, sb, cmp, containerUbu, translator, renderResult, args);
 		
@@ -78,11 +74,9 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		  .append(" data-oo-page-fragment='").append(cmp.getComponentName()).append("'")
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")
 		  .append(" data-oo-content-editor-url='").append(fr.getUrlBuilder().getJavascriptURI()).append("'")
-		  .append(" class='o_container_part o_page_layout ");
-		if (alertBoxType != null ) {
-			sb.append("o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor)).append(" ");
-		}
-		sb.append(settings.getType().cssClass()).append("'>");
+		  .append(" class='o_container_part");
+		FragmentRendererHelper.renderContainerLayoutClasses(sb, settings);
+		sb.append("'>");
 		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), settings, cmp.isInForm());
 		renderContainer(renderer, sb, cmp, containerUbu, translator, renderResult, args);
 		sb.append("</div>");
@@ -152,13 +146,8 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 				.append(">");
 
 		boolean collapsible = FragmentRendererHelper.isCollapsible(cmp.getContainerSettings());
-		if (collapsible) {
-			sb.append("<div class='o_page_container_slot-inner collapse in ")
-					.append(FragmentRendererHelper.buildCollapsibleClass(cmp.getComponentName()))
-					.append("' aria-expanded='true'>");
-		} else {
-			sb.append("<div class='o_page_container_slot-inner'>");
-		}
+		FragmentRendererHelper.renderContainerBlockDivOpen(sb, "o_page_container_slot-inner",
+				cmp.getContainerSettings(), collapsible, cmp.getComponentName());
 
 		if(column != null) {
 			for(String elementId:column.getElementIds()) {

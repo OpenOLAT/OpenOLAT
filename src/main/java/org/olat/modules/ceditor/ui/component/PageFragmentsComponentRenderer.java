@@ -37,7 +37,6 @@ import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.AlertBoxType;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
-import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.model.PageFragment;
 
@@ -155,19 +154,14 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 	private void renderContainer(Renderer renderer, StringOutput sb, PageFragment fragment, ContainerElement container,
 								 Map<String, PageFragment> elementIdToFragments, URLBuilder ubu, Translator translator,
 								 RenderResult renderResult, boolean inForm, String[] args) {
-		
-		ContainerSettings settings =  container.getContainerSettings();
-		AlertBoxSettings alertBoxSettings = settings.getAlertBoxSettingsIfActive();
-		boolean showAlert = alertBoxSettings != null;
-		AlertBoxType alertBoxType = showAlert ? alertBoxSettings.getType() : null;
-		String alertBoxColor = showAlert ? alertBoxSettings.getColor() : null;
-		ContainerLayout layout = settings.getType();
 
-		sb.append("<div class='o_page_layout ").append(fragment.getCssClass()).append(" ").append(layout.cssClass());
-		if (showAlert) {
-			sb.append(" ").append("o_alert_box_active ").append(alertBoxType.getCssClass(alertBoxColor));
-		}
+		ContainerSettings settings =  container.getContainerSettings();
+
+		sb.append("<div class='");
+		sb.append(fragment.getCssClass());
+		FragmentRendererHelper.renderContainerLayoutClasses(sb, settings);
 		sb.append("'>");
+
 		FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), settings, inForm);
 		renderContainerLayout(renderer, sb, fragment.getComponentName(), settings, elementIdToFragments, ubu, translator, renderResult, inForm, args);
 		sb.append("</div>");
@@ -182,13 +176,8 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 		int numOfBlocks = settings.getNumOfBlocks();
 		boolean collapsible = FragmentRendererHelper.isCollapsible(settings);
 		for(int i=0; i<numOfBlocks; i++) {
-			if (collapsible) {
-				sb.append("<div class='o_container_block collapse in ")
-						.append(FragmentRendererHelper.buildCollapsibleClass(fragmentName))
-						.append("' aria-expanded='true'>");
-			} else {
-				sb.append("<div class='o_container_block'>");
-			}
+			FragmentRendererHelper.renderContainerBlockDivOpen(sb, "o_container_block", settings,
+					collapsible, fragmentName);
 
 			if (i < columns.size()) {
 				ContainerColumn column = columns.get(i);
