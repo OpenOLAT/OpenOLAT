@@ -31,6 +31,8 @@ public interface ColorPickerElement extends FormItem {
 
 	void setNonSelectedText(String text);
 
+	void setAllowUnselect(boolean allowUnselect);
+
 	Color getColor();
 
 	void setResetButtonId(String resetButtonId);

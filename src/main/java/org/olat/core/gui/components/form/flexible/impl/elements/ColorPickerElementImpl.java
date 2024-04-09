@@ -39,6 +39,7 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	private String nonSelectedText;
 	private String resetButtonId;
 	private boolean dropUp;
+	private boolean allowUnselect;
 
 	public ColorPickerElementImpl(String name, List<Color> colors) {
 		super(name);
@@ -55,6 +56,15 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	@Override
 	public void setNonSelectedText(String nonSelectedText) {
 		this.nonSelectedText = nonSelectedText;
+	}
+
+	public boolean isAllowUnselect() {
+		return allowUnselect;
+	}
+
+	@Override
+	public void setAllowUnselect(boolean allowUnselect) {
+		this.allowUnselect = allowUnselect;
 	}
 
 	public Color getColor() {
