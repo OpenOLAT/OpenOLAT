@@ -59,6 +59,7 @@ import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.model.BlockLayoutSpacing;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
+import org.olat.modules.ceditor.model.GeneralStyleSettings;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.PageElementTarget;
@@ -75,6 +76,7 @@ public class MediaUIHelper {
 
 	public static final String withIconKey = "withIcon";
 	public static final String collapsibleKey = "collapsible";
+	public static final String spacingKey = "spacing";
 
 	private MediaUIHelper() {
 		//
@@ -162,7 +164,35 @@ public class MediaUIHelper {
 		}
 		return null;
 	}
-	
+
+	public static GeneralStyleComponents addGeneralStyleSettings(FormLayoutContainer formLayout, Translator translator,
+																 FormUIFactory uifactory, GeneralStyleSettings generalStyleSettings,
+																 ColorService colorService, Locale locale) {
+		FormLayoutContainer generalStyleLayout = FormLayoutContainer.createVerticalFormLayout("generalStyleLayout", translator);
+		generalStyleLayout.setFormTitle(translator.translate("tab.general"));
+		formLayout.add(generalStyleLayout);
+
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorService.getColors(), locale);
+		ColorPickerElement backgroundColorEl = uifactory.addColorPickerElement("background", "background", generalStyleLayout,
+				colors);
+		backgroundColorEl.setNonSelectedText(translator.translate("background.none"));
+		backgroundColorEl.setAllowUnselect(true);
+		backgroundColorEl.addActionListener(FormEvent.ONCHANGE);
+		if (generalStyleSettings.getBackgroundColor() != null) {
+			backgroundColorEl.setColor(generalStyleSettings.getBackgroundColor());
+		}
+
+		SelectionValues checkBoxKV = new SelectionValues();
+		checkBoxKV.add(SelectionValues.entry(spacingKey, translator.translate("show.spacing")));
+		MultipleSelectionElement spacingCheckBoxEl = uifactory.addCheckboxesVertical("grid.checkbox", "spacing",
+				generalStyleLayout, checkBoxKV.keys(), checkBoxKV.values(),1);
+		spacingCheckBoxEl.setAjaxOnly(true);
+		spacingCheckBoxEl.addActionListener(FormEvent.ONCHANGE);
+		spacingCheckBoxEl.select(spacingKey, generalStyleSettings.isShowSpacing());
+
+		return new GeneralStyleComponents(backgroundColorEl, spacingCheckBoxEl);
+	}
+
 	public record MediaTabComponents (StaticTextElement nameEl, SingleSelection versionEl, FormLink mediaCenterLink) {
 		//
 	}
@@ -507,6 +537,17 @@ public class MediaUIHelper {
 			boolean collapsibleEnabled = StringHelper.containsNonWhitespace(titleEl.getValue());
 			checkBoxesEl.setVisible(collapsibleKey, visible);
 			checkBoxesEl.setEnabled(collapsibleKey, collapsibleEnabled);
+		}
+	}
+
+	public record GeneralStyleComponents(ColorPickerElement backgroundColorEl, MultipleSelectionElement spacingCheckBoxEl) {
+		public boolean matches(FormItem source) {
+			return source == backgroundColorEl || source == spacingCheckBoxEl;
+		}
+
+		public void sync(GeneralStyleSettings generalStyleSettings) {
+			generalStyleSettings.setBackgroundColor(backgroundColorEl.getColor() != null ? backgroundColorEl.getColor().id() : null);
+			generalStyleSettings.setShowSpacing(spacingCheckBoxEl.isKeySelected(spacingKey));
 		}
 	}
 }

@@ -17,37 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.elements;
-
-import org.olat.core.gui.components.form.flexible.FormItem;
+package org.olat.modules.ceditor.model;
 
 /**
- * Initial date: 2023-03-23<br>
+ * Initial date: 2024-04-08<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface ColorPickerElement extends FormItem {
-	void setColor(String color);
+public class GeneralStyleSettings {
+	boolean showSpacing;
+	String backgroundColor;
 
-	void setNonSelectedText(String text);
+	public boolean isShowSpacing() {
+		return showSpacing;
+	}
 
-	void setAllowUnselect(boolean allowUnselect);
+	public void setShowSpacing(boolean showSpacing) {
+		this.showSpacing = showSpacing;
+	}
 
-	Color getColor();
+	public String getBackgroundColor() {
+		return backgroundColor;
+	}
 
-	void setResetButtonId(String resetButtonId);
+	public void setBackgroundColor(String backgroundColor) {
+		this.backgroundColor = backgroundColor;
+	}
 
-	void setDomReplacementWrapperRequired(boolean required);
-
-	boolean isDropUp();
-
-	void setDropUp(boolean dropUp);
-
-	/**
-	 *
-	 * @param id
-	 * @param translatedName
-	 * @param cssClass
-	 */
-	record Color(String id, String translatedName, String cssClass) { }
+	public static GeneralStyleSettings getPredefined() {
+		GeneralStyleSettings generalStyleSettings = new GeneralStyleSettings();
+		generalStyleSettings.setShowSpacing(false);
+		generalStyleSettings.setBackgroundColor(null);
+		return generalStyleSettings;
+	}
 }

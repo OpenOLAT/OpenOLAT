@@ -39,6 +39,9 @@ import org.olat.core.util.StringHelper;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class ColorPickerRenderer extends DefaultComponentRenderer {
+
+	private static final String UNSELECT_KEY = "__color_unselect__";
+
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 								Translator translator, RenderResult renderResult, String[] args) {
@@ -91,37 +94,14 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append(buttonId).append("'>");
 
 		for (ColorPickerElement.Color color : colors) {
-			sb.append("<li data-color='").append(color.id()).append("'");
-			if (selectedColor != null && color.id().equals(selectedColor.id())) {
-				sb.append(" class='o_selected'");
-			}
-			sb.append(">");
-			sb.append("<a tabindex='0' role='button' aria-pressed='false' class='dropdown-item o_color_picker_link' ");
+			boolean selected = selectedColor != null && color.id().equals(selectedColor.id());
+			renderColorItem(sb, inputId, dropdownId, buttonId, colorPickerEl, color.id(), color.translatedName(),
+					color.cssClass(), selected);
+		}
 
-			String updateFunctionCall = "o_cp_set_color('" + color.id() + "', '" +
-					color.translatedName() + "', '" +
-					buttonId + "', '" +
-					inputId + "', '" +
-					dropdownId + "', '" +
-					colorPickerEl.getRootForm().getDispatchFieldId() + "', '" +
-					color.cssClass() + "'); ";
-			String submitFunctionCall = getRawJSFor(colorPickerEl.getRootForm(), inputId, colorPickerEl.getAction()) + "; ";
-			submitFunctionCall = "setTimeout(function() { " + submitFunctionCall + " }, 0);";
-			String functionCall = updateFunctionCall + submitFunctionCall;
-			sb.append("onclick=\"").append(functionCall).append("\" ");
-			sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(functionCall)
-					.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
-			sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(functionCall).append("\"");
-
-			sb.append(">");
-
-			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
-					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(color.cssClass())
-					.append("'>").append("</i>");
-			sb.append("<span>").append(color.translatedName()).append("</span>");
-
-			sb.append("</a>");
-			sb.append("</li>");
+		if (colorPickerEl.isAllowUnselect() && selectedColor != null && StringHelper.containsNonWhitespace(colorPickerEl.getNonSelectedText())) {
+			renderColorItem(sb, inputId, dropdownId, buttonId, colorPickerEl, UNSELECT_KEY,
+					colorPickerEl.getNonSelectedText(), "o_color_unselect", false);
 		}
 
 		sb.append("</ul>"); // dropdown-menu
@@ -146,6 +126,42 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 			sb.append("jQuery('#").append(colorPickerEl.getResetButtonId()).append("').on('click', function() { o_info.lastFormFocusEl = '").append(buttonId).append("'; });\n");
 		}
 		sb.append("</script>");
+	}
+
+	private void renderColorItem(StringOutput sb, String inputId, String dropdownId, String buttonId,
+								 ColorPickerElementImpl colorPickerEl, String colorId, String colorName,
+								 String colorCss, boolean selected) {
+		sb.append("<li data-color='").append(colorId).append("'");
+		if (selected) {
+			sb.append(" class='o_selected'");
+		}
+		sb.append(">");
+		sb.append("<a tabindex='0' role='button' aria-pressed='false' class='dropdown-item o_color_picker_link' ");
+
+		String updateFunctionCall = "o_cp_set_color('" + colorId + "', '" +
+				colorName + "', '" +
+				buttonId + "', '" +
+				inputId + "', '" +
+				dropdownId + "', '" +
+				colorPickerEl.getRootForm().getDispatchFieldId() + "', '" +
+				colorCss + "'); ";
+		String submitFunctionCall = getRawJSFor(colorPickerEl.getRootForm(), inputId, colorPickerEl.getAction()) + "; ";
+		submitFunctionCall = "setTimeout(function() { " + submitFunctionCall + " }, 0);";
+		String functionCall = updateFunctionCall + submitFunctionCall;
+		sb.append("onclick=\"").append(functionCall).append("\" ");
+		sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(functionCall)
+				.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
+		sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(functionCall).append("\"");
+
+		sb.append(">");
+
+		sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
+				.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(colorCss)
+				.append("'>").append("</i>");
+		sb.append("<span>").append(colorName).append("</span>");
+
+		sb.append("</a>");
+		sb.append("</li>");
 	}
 
 	private String getRawJSFor(Form form, String formItemDispatchId, int action) {

@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormItemList;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Participation;
-import org.olat.modules.appointments.ui.ParticipationsRenderer.ParticipantsWrapper;
 
 /**
  * 
@@ -54,6 +53,7 @@ public class AppointmentRow {
 	private Boolean showNumberOfParticipations;
 	private Integer numberOfParticipations;
 	private Integer freeParticipations;
+	private FormItem participationsEl;
 	private FormItem dayEl;
 	private String selectionCSS;
 	private FormItemList recordingLinks;
@@ -83,10 +83,6 @@ public class AppointmentRow {
 
 	public List<String> getParticipants() {
 		return participants;
-	}
-
-	public ParticipantsWrapper getParticipantsWrapper() {
-		return participants != null? new ParticipantsWrapper(participants): null;
 	}
 
 	public void setParticipants(List<String> participants) {
@@ -195,6 +191,14 @@ public class AppointmentRow {
 
 	public void setFreeParticipations(Integer freeParticipations) {
 		this.freeParticipations = freeParticipations;
+	}
+
+	public FormItem getParticipationsEl() {
+		return participationsEl;
+	}
+
+	public void setParticipationsEl(FormItem participationsEl) {
+		this.participationsEl = participationsEl;
 	}
 
 	public FormItem getDayEl() {
