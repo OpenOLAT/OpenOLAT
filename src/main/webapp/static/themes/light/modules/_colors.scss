@@ -46,6 +46,45 @@
 	}
 }
 
+.o_color_background_10 {
+	&.o_color_lightgray {
+		background-color: $o-color-light-gray-bg;
+	}
+	&.o_color_yellow {
+		background-color: $o-color-yellow-bg;
+	}
+	&.o_color_orange {
+		background-color: $o-color-orange-bg;
+	}
+	&.o_color_brown {
+		background-color: $o-color-brown-bg;
+	}
+	&.o_color_red {
+		background-color: $o-color-red-bg;
+	}
+	&.o_color_orchid {
+		background-color: $o-color-orchid-bg;
+	}
+	&.o_color_purple {
+		background-color: $o-color-purple-bg;
+	}
+	&.o_color_lightblue {
+		background-color: $o-color-light-blue-bg;
+	}
+	&.o_color_cobaltblue {
+		background-color: $o-color-cobalt-blue-bg;
+	}
+	&.o_color_darkblue {
+		background-color: $o-color-dark-blue-bg;
+	}
+	&.o_color_lightgreen {
+		background-color: $o-color-light-green-bg;
+	}
+	&.o_color_seagreen {
+		background-color: $o-color-sea-green-bg;
+	}
+}
+
 .o_color_border {
 	&.o_color_lightgray {
 		border-color: $o-darker-color-light-gray;
