@@ -41,6 +41,7 @@ import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
+import org.olat.modules.ceditor.model.GeneralStyleSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 
@@ -59,12 +60,13 @@ public class ContainerInspectorController extends FormBasicController implements
 	private ContainerElement container;
 	private final PageElementStore<ContainerElement> store;
 	private List<FormLink> layoutLinks;
-	
+	private MediaUIHelper.GeneralStyleComponents generalStyleComponents;
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private ColorService colorService;
-	
+
 	public ContainerInspectorController(UserRequest ureq, WindowControl wControl, ContainerElement container,
 			PageElementStore<ContainerElement> store) {
 		super(ureq, wControl, "tabs_inspector");
@@ -108,6 +110,9 @@ public class ContainerInspectorController extends FormBasicController implements
 		formLayout.add(styleCont);
 		tabbedPane.addTab(getTranslator().translate("tab.style"), styleCont);
 
+		generalStyleComponents = MediaUIHelper.addGeneralStyleSettings(styleCont, getTranslator(), uifactory,
+				getGeneralStyleSettings(container.getContainerSettings()), colorService, getLocale());
+
 		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory,
 				getAlertBoxSettings(container.getContainerSettings()), colorService, getLocale());
 	}
@@ -118,6 +123,8 @@ public class ContainerInspectorController extends FormBasicController implements
 			doSetLayout(ureq, containerLayout);
 		} else if (alertBoxComponents.matches(source)) {
 			doChangeAlertBoxSettings(ureq);
+		} else if (generalStyleComponents.matches(source)) {
+			doChangeGeneralStyleSettings(ureq);
 		}
 	}
 
@@ -153,10 +160,30 @@ public class ContainerInspectorController extends FormBasicController implements
 		fireEvent(ureq, new ChangePartEvent(container));
 	}
 
+	private void doChangeGeneralStyleSettings(UserRequest ureq) {
+		ContainerSettings settings = container.getContainerSettings();
+
+		GeneralStyleSettings generalStyleSettings = getGeneralStyleSettings(settings);
+		generalStyleComponents.sync(generalStyleSettings);
+		settings.setGeneralStyleSettings(generalStyleSettings);
+
+		container.setLayoutOptions(ContentEditorXStream.toXml(settings));
+		container = store.savePageElement(container);
+		dbInstance.commit();
+		fireEvent(ureq, new ChangePartEvent(container));
+	}
+
 	private AlertBoxSettings getAlertBoxSettings(ContainerSettings containerSettings) {
 		if (containerSettings.getAlertBoxSettings() != null) {
 			return containerSettings.getAlertBoxSettings();
 		}
 		return AlertBoxSettings.getPredefined();
+	}
+
+	private GeneralStyleSettings getGeneralStyleSettings(ContainerSettings containerSettings) {
+		if (containerSettings.getGeneralStyleSettings() != null) {
+			return containerSettings.getGeneralStyleSettings();
+		}
+		return GeneralStyleSettings.getPredefined();
 	}
 }
