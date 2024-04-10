@@ -75,7 +75,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 		  .append(" data-oo-page-element-id='").append(cmp.getElementId()).append("'")
 		  .append(" data-oo-content-editor-url='").append(fr.getUrlBuilder().getJavascriptURI()).append("'")
 		  .append(" class='o_container_part");
-		FragmentRendererHelper.renderContainerLayoutClasses(sb, settings);
+		FragmentRendererHelper.renderContainerLayoutClasses(sb, settings, false);
 		sb.append("'>");
 		FragmentRendererHelper.renderAlertHeader(sb, cmp.getComponentName(), settings, cmp.isInForm());
 		renderContainer(renderer, sb, cmp, containerUbu, translator, renderResult, args);

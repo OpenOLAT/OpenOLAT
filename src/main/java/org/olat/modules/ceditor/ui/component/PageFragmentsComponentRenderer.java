@@ -78,15 +78,17 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 					}
 				}
 			}
-			
+
+			Set<String> spacingElementIds = FragmentRendererHelper.getContainerElementIdsWithSpacingAfter(cmp);
+
 			for(PageFragment fragment:fragments) {
 				if(!containerized.contains(fragment)) {
-					render(renderer, sb, fragment, elementIdToFragments, ubu, translator, renderResult, cmp.isInForm(), args);
+					render(renderer, sb, fragment, spacingElementIds, elementIdToFragments, ubu, translator, renderResult, cmp.isInForm(), args);
 				}
 			}
 		}
 	}
-	
+
 	protected void renderEmptyState(StringOutput sb, Translator translator) {
 			sb.append("<div class=\"o_empty_state\"");
 			sb.append("><div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon o_page_icon'></i></div>")
@@ -94,7 +96,7 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 			sb.append("</div>");
 		}
 	
-	private void render(Renderer renderer, StringOutput sb, PageFragment fragment, Map<String,
+	private void render(Renderer renderer, StringOutput sb, PageFragment fragment, Set<String> spacingElementIds, Map<String,
 			PageFragment> elementIdToFragments, URLBuilder ubu, Translator translator, RenderResult renderResult,
 						boolean inForm, String[] args) {
 		PageElement element = fragment.getPageElement();
@@ -105,7 +107,7 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 
 		if(element instanceof ContainerElement containerElement) {
 			renderContainer(renderer, sb, fragment, containerElement, elementIdToFragments, ubu, translator, renderResult,
-					inForm, args);
+					spacingElementIds.contains(containerElement.getId()), inForm, args);
 		} else {
 			AlertBoxSettings alertBoxSettings = FragmentRendererHelper.getAlertBoxSettingsIfActive(element);
 			AlertBoxType alertBoxType = alertBoxSettings != null ? alertBoxSettings.getType() : null;
@@ -153,13 +155,14 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 	
 	private void renderContainer(Renderer renderer, StringOutput sb, PageFragment fragment, ContainerElement container,
 								 Map<String, PageFragment> elementIdToFragments, URLBuilder ubu, Translator translator,
-								 RenderResult renderResult, boolean inForm, String[] args) {
+								 RenderResult renderResult, boolean applyLayoutSpacingAfter, boolean inForm,
+								 String[] args) {
 
 		ContainerSettings settings =  container.getContainerSettings();
 
 		sb.append("<div class='");
 		sb.append(fragment.getCssClass());
-		FragmentRendererHelper.renderContainerLayoutClasses(sb, settings);
+		FragmentRendererHelper.renderContainerLayoutClasses(sb, settings, applyLayoutSpacingAfter);
 		sb.append("'>");
 
 		FragmentRendererHelper.renderAlertHeader(sb, fragment.getComponentName(), settings, inForm);
@@ -184,7 +187,7 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 				for(String elementId:column.getElementIds()) {
 					PageFragment fragment = elementIdToFragments.get(elementId);
 					if(fragment != null) {
-						render(renderer, sb, fragment,  elementIdToFragments, ubu, translator, renderResult, inForm, args);
+						render(renderer, sb, fragment, Set.of(), elementIdToFragments, ubu, translator, renderResult, inForm, args);
 					}
 				}
 			}
