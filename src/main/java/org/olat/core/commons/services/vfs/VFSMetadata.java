@@ -19,12 +19,12 @@
  */
 package org.olat.core.commons.services.vfs;
 
+import java.util.Date;
+
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
-
-import java.util.Date;
 
 /**
  * 
@@ -42,6 +42,10 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	int TRANSCODING_STATUS_TIMEOUT = -4;
 
 	public boolean isDeleted();
+	
+	public Identity getDeletedBy();
+	
+	public Date getDeletedDate();
 	
 	public String getUuid();
 	

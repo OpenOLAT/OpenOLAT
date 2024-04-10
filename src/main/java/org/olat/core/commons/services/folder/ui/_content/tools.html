@@ -29,6 +29,9 @@
 	#if($r.available("unzip"))
 		<li>$r.render("unzip")</li>
 	#end
+	#if($r.available("restore"))
+		<li>$r.render("restore")</li>
+	#end
 	#if($r.available("delete"))
 		<li class="divider"></li>
 		<li>$r.render("delete")</li>

@@ -490,6 +490,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_tool_pdf { @include o-add-icon('file-pdf', false);}
 .o_icon_tools { @include o-add-icon('wrench');}
 .o_icon_top { @include o-add-icon('chevron-up');}
+.o_icon_trash { @include o-add-icon('trash-can', false);}
 .o_icon_triangle_exclamation { @include o-add-icon('triangle-exclamation');}
 .o_icon_translation_item { @include o-add-icon('file-code', false);}
 .o_icon_translation_package { @include o-add-icon('folder-open', false);}

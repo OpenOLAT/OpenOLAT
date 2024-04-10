@@ -83,6 +83,8 @@ public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> imple
 		createdBy("created.by"),
 		lastModifiedDate("modified.date"),
 		lastModifiedBy("modified.by"),
+		deletedDate("deleted.date"),
+		deletedBy("deleted.by"),
 		type("table.type"),
 		status("table.status"),
 		size("table.size"),

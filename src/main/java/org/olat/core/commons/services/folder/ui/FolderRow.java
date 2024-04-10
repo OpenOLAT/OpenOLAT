@@ -44,6 +44,9 @@ public class FolderRow {
 	private Date lastModifiedDate;
 	private String lastModifiedBy;
 	private String modified;
+	private boolean deleted;
+	private Date deletedDate;
+	private String deletedBy;
 	private String fileSuffix;
 	private String translatedType;
 	private FolderStatus status;
@@ -75,11 +78,11 @@ public class FolderRow {
 	public VFSMetadata getMetadata() {
 		return metadata;
 	}
-
+	
 	public void setMetadata(VFSMetadata metadata) {
 		this.metadata = metadata;
 	}
-	
+
 	public boolean isDirectory() {
 		if (metadata != null) {
 			return metadata.isDirectory();
@@ -158,6 +161,30 @@ public class FolderRow {
 
 	public void setModified(String modified) {
 		this.modified = modified;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	public String getDeletedBy() {
+		return deletedBy;
+	}
+
+	public void setDeletedBy(String deletedBy) {
+		this.deletedBy = deletedBy;
 	}
 
 	public String getFileSuffix() {

@@ -40,6 +40,8 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public interface VFSRepositoryService {
 	
+	public static final String TRASH_NAME = "._ootrash";
+	
 	public VFSMetadata getMetadataFor(VFSItem path);
 	
 	public VFSMetadata getMetadataFor(File file);
@@ -101,7 +103,7 @@ public interface VFSRepositoryService {
 	 */
 	public List<VFSMetadata> getChildren(VFSMetadataRef parentMetadata);
 	
-	public List<VFSMetadata> getDescendants(VFSMetadata parentMetadata);
+	public List<VFSMetadata> getDescendants(VFSMetadata parentMetadata, Boolean deleted);
 	
 	public void cleanMetadatas();
 	
@@ -129,11 +131,17 @@ public interface VFSRepositoryService {
 	
 	/**
 	 * The file is marked as deleted, but stay in the file system.
+	 * In other words: The file was moved to trash.
 	 * 
-	 * @param item The item to mark as deleted
-	 * @param author The person wo deleted the file
+	 * @param doer The person who deleted the file
+	 * @param undeletedMetadata The item loaded before the file was moved to trash
+	 * @param deletedFile The file in the trash
 	 */
-	public void markAsDeleted(VFSItem item, Identity author);
+	public void markAsDeleted(Identity doer, VFSMetadata undeletedMetadata, File deletedFile);
+
+	public void unmarkFromDeleted(Identity doer, VFSMetadata deletedMetadata, File restoredFile);
+	
+	public void cleanTrash(Identity identity, VFSMetadata vfsMetadata);
 	
 	/**
 	 * Delete the metadata (but not the file), the thumbnails and versions
@@ -356,6 +364,4 @@ public interface VFSRepositoryService {
 			Integer downloadCount, Long revisionCount,
 			Integer Size);
 	
-	
-
 }

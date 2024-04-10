@@ -2275,6 +2275,8 @@ create table o_vfs_metadata (
    lastmodified timestamp not null,
    f_uuid varchar(64) not null,
    f_deleted number default 0 not null,
+   f_deleted_date date,
+   fk_deleted_by int8,
    f_filename varchar(256) not null,
    f_relative_path varchar(2048) not null,
    f_directory number default 0,

@@ -11,6 +11,11 @@
 					$r.render("view.folder")
 				</div>
 			#end
+			#if($r.available("trash") && $r.visible("trash"))
+				<div class="o_folder_trash">
+					$r.render("trash")
+				</div>
+			#end
 			#if($r.available("search") && $r.visible("search"))
 				$r.render("search")
 			#end

@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -291,20 +292,34 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		String filename = file.getName();
 		VFSMetadata metadata = metadataDao.getMetadata(relativePath, filename, file.isDirectory());
 		if(metadata == null) {
-			String uuid = UUID.randomUUID().toString();
-			String uri = file.toURI().toString();
-			boolean directory = file.isDirectory();
-			long size = directory ? 0l : file.length();
-			
-			VFSMetadata parent = getMetadataFor(file.getParentFile());
-			metadata = metadataDao.createMetadata(uuid, relativePath, filename, new Date(), size, directory, uri, "file", parent);
+			metadata = createMetadata(file, relativePath, filename);
 		} else if(file.isFile() && !metadata.isInTranscoding()
-				&& (file.length() != metadata.getFileSize() || !file.exists() != metadata.isDeleted())) {
+				&& (file.length() != metadata.getFileSize() || isDeletedInconsistent(file, metadata))) {
 			AsyncFileSizeUpdateEvent event = new AsyncFileSizeUpdateEvent(relativePath, filename);
 			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, fileSizeSubscription);
 		}
 		dbInstance.commit();
 		return metadata;
+	}
+
+	private boolean isDeletedInconsistent(File file, VFSMetadata metadata) {
+		if (metadata.isDeleted()) {
+			// Files in trash are deleted and existing
+			if (metadata.getRelativePath().indexOf(VFSRepositoryService.TRASH_NAME) > -1) {
+				return false;
+			}
+		}
+		return !file.exists() != metadata.isDeleted();
+	}
+
+	public VFSMetadata createMetadata(File file, String relativePath, String filename) {
+		String uuid = UUID.randomUUID().toString();
+		String uri = file.toURI().toString();
+		boolean directory = file.isDirectory();
+		long size = directory ? 0l : file.length();
+		
+		VFSMetadata parent = getMetadataFor(file.getParentFile());
+		return metadataDao.createMetadata(uuid, relativePath, filename, new Date(), size, directory, uri, "file", parent);
 	}
 	
 	@Override
@@ -423,10 +438,10 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public List<VFSMetadata> getChildren(VFSMetadataRef parentMetadata) {
 		return metadataDao.getMetadatas(parentMetadata);
 	}
-	
+
 	@Override
-	public List<VFSMetadata> getDescendants(VFSMetadata parentMetadata) {
-		return metadataDao.getDescendants(parentMetadata);
+	public List<VFSMetadata> getDescendants(VFSMetadata parentMetadata, Boolean deleted) {
+		return metadataDao.getDescendants(parentMetadata, deleted);
 	}
 
 	@Override
@@ -598,24 +613,185 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			deleteMetadata(metadata);
 		}
 	}
-
+	
 	@Override
-	public void markAsDeleted(VFSItem item, Identity author) {
-		if(item.canMeta() != VFSConstants.YES) return;
+	public void markAsDeleted(Identity doer, VFSMetadata undeletedMetadata, File deletedFile) {
+		if (undeletedMetadata instanceof VFSMetadataImpl) {
+			VFSMetadataImpl metadata = (VFSMetadataImpl)undeletedMetadata;
+			
+			// Delete the metadata as long as the metadata have the original values (path, filename).
+			// It's easier to delete and recreate instead of moving.
+			deleteThumbnailsOfMetadata(metadata);
+			
+			moveRevisionsToTrash(metadata, deletedFile);
+			
+			if (!metadata.isDeleted() || metadata.getDeletedDate() == null) {
+				metadata.setDeletedBy(doer);
+				metadata.setDeleted(true);
+				metadata.setDeletedDate(new Date());
+				metadata = (VFSMetadataImpl)metadataDao.updateMetadata(metadata);
+				log.debug("File marked as deleted {} {}", undeletedMetadata, deletedFile);
+			}
+			
+			updateParent(metadata, deletedFile);
+		}
+	}
+	
+	@Override
+	public void unmarkFromDeleted(Identity doer, VFSMetadata deletedMetadata, File restoredFile) {
+		if (deletedMetadata instanceof VFSMetadataImpl) {
+			VFSMetadataImpl metadata = (VFSMetadataImpl)deletedMetadata;
+			deleteThumbnailsOfMetadata(metadata);
+			moveRevisionsFromTrash(metadata, restoredFile);
+			
+			if (metadata.isDeleted() || metadata.getDeletedDate() != null) {
+				metadata.setDeletedBy(null);
+				metadata.setDeleted(false);
+				metadata.setDeletedDate(null);
+				metadata = (VFSMetadataImpl)metadataDao.updateMetadata(metadata);
+				log.debug("File unmarked from deleted {} {}", deletedMetadata, restoredFile);
+			}
+			
+			updateParent(metadata, restoredFile);
+		}
+	}
+
+	private void updateParent(VFSMetadataImpl metadata, File file) {
+		String prevFilename = metadata.getFilename();
+		String filename = file.getName();
+		String prevUri = metadata.getUri();
+		String uri = file.toURI().toString();
+		String prevRelativePath = metadata.getRelativePath();
+		String relativePath = getRelativePath(file.getParentFile());
 		
-		VFSMetadataImpl metadata = (VFSMetadataImpl)getMetadataFor(item);
-		if(metadata != null) { // concurrent delete possible
-			metadata.setDeleted(true);
-			if(item instanceof VFSLeaf) {
-				VFSLeaf file = (VFSLeaf)item;
-				if(isThumbnailAvailable(file, metadata)) {
-					resetThumbnails(file);
-				}
-				if(file.canVersion() == VFSConstants.YES) {
-					addToRevisions(file, metadata, author, false, "", true);
+		if (!Objects.equals(prevFilename, filename)
+				|| !Objects.equals(prevUri, uri)
+				|| !Objects.equals(prevRelativePath, relativePath)) {
+			VFSMetadata parent = getMetadataFor(file.getParentFile());
+			metadata.setParent(parent);
+			
+			metadata.setFilename(filename);
+			metadata.setRelativePath(relativePath);
+			metadata.setUri(uri);
+			
+			VFSMetadata updatedMetadata = metadataDao.updateMetadata(metadata);
+			log.debug("File parent updated {} {}", updatedMetadata, file);
+			
+			updateChildrenPaths(updatedMetadata, updatedMetadata.isDirectory(), prevUri, uri, prevRelativePath, relativePath, filename, true);
+		}
+	}
+	
+	private void moveRevisionsToTrash(VFSMetadata metadata, File deletedFile) {
+		// Revisions have to be moved if file is directly in the trash folder
+		// The filename of the revision has to be renamed accordingly to the deleted file.
+		File parent = deletedFile.getParentFile();
+		if (parent == null || !VFSRepositoryService.TRASH_NAME.equals(parent.getName())) {
+			return;
+		}
+		
+		List<VFSRevision> revisions = getRevisions(metadata);
+		if (revisions == null || revisions.isEmpty()) {
+			return;
+		}
+		
+		Map<String, String> filenamePrevToNew = new HashMap<>(1);
+		for (VFSRevision revision : revisions) {
+			String prevRevFilename = metadata.getFilename();
+			String newRevFilename = filenamePrevToNew.get(prevRevFilename);
+			// Several revisions may have the same filename.
+			// Move the file once, but change the filename in all revisions.
+			if (newRevFilename != null) {
+				((VFSRevisionImpl)revision).setFilename(newRevFilename);
+				revisionDao.updateRevision(revision);
+			} else {
+				File revisionFile = getRevisionFile(revision);
+				if (revisionFile != null && revisionFile.exists()) {
+					newRevFilename = generateFilenameForRevision(deletedFile, revision.getRevisionNr(), revision.getRevisionTempNr());
+					File newRevFile = new File(parent, newRevFilename);
+					revisionFile.renameTo(newRevFile);
+					((VFSRevisionImpl)revision).setFilename(newRevFilename);
+					revisionDao.updateRevision(revision);
+					filenamePrevToNew.put(prevRevFilename, newRevFilename);
 				}
 			}
-			metadataDao.updateMetadata(metadata);
+		}
+	}
+	
+	private void moveRevisionsFromTrash(VFSMetadata metadata, File restoredFile) {
+		File parent = restoredFile.getParentFile();
+		if (parent == null || !metadata.getRelativePath().endsWith(VFSRepositoryService.TRASH_NAME)) {
+			return;
+		}
+		
+		List<VFSRevision> revisions = getRevisions(metadata);
+		if (revisions == null || revisions.isEmpty()) {
+			return;
+		}
+		
+		Map<String, String> filenamePrevToNew = new HashMap<>(1);
+		for (VFSRevision revision : revisions) {
+			String prevRevFilename = metadata.getFilename();
+			String newRevFilename = filenamePrevToNew.get(prevRevFilename);
+			// Several revisions may have the same filename.
+			// Move the file once, but change the filename in all revisions.
+			if (newRevFilename != null) {
+				((VFSRevisionImpl)revision).setFilename(newRevFilename);
+				revisionDao.updateRevision(revision);
+			} else {
+				File revisionFile = getRevisionFile(revision);
+				if (revisionFile != null && revisionFile.exists()) {
+					newRevFilename = generateFilenameForRevision(restoredFile, revision.getRevisionNr(), revision.getRevisionTempNr());
+					File newRevFile = new File(parent, newRevFilename);
+					revisionFile.renameTo(newRevFile);
+					((VFSRevisionImpl)revision).setFilename(newRevFilename);
+					revisionDao.updateRevision(revision);
+					filenamePrevToNew.put(prevRevFilename, newRevFilename);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void cleanTrash(Identity identity, VFSMetadata trashMetadata) {
+		if (trashMetadata == null || !trashMetadata.isDeleted()) {
+			return;
+		}
+		
+		log.debug("Clean trash {}", trashMetadata);
+		List<VFSMetadata> descendants = getDescendants(trashMetadata, null);
+		for (VFSMetadata vfsMetadata : descendants) {
+			// Is it a sub trash?
+			if (VFSRepositoryService.TRASH_NAME.equals(vfsMetadata.getFilename())) {
+				// Get the children in the sub trash ...
+				List<VFSMetadata> subtrashChildrenMetadatas = getChildren(vfsMetadata);
+				for (VFSMetadata subtrashChildMetadata : subtrashChildrenMetadatas) {
+					VFSItem itemInSubtrash = getItemFor(subtrashChildMetadata);
+					File fileInSubtrash = toFile(itemInSubtrash);
+					if (itemInSubtrash != null && fileInSubtrash.exists()) {
+						File parentDir = fileInSubtrash.getParentFile().getParentFile();
+						if (parentDir.exists()) {
+							// ... and move it to the parent directory.
+							// The parent directory is in a trash itself.
+							// before: dir1/.ootrash/dir2/dir3/.ootrash/file1.txt
+							//  after: dir1/.ootrash/dir2/dir3/file1.txt
+							VFSContainer parentContainer = new LocalFolderImpl(parentDir);
+							String filenameInParent = VFSManager.similarButNonExistingName(parentContainer, itemInSubtrash.getName(), "_");
+							File fileInParent = new File(parentDir, filenameInParent);
+							boolean renamed = fileInSubtrash.renameTo(fileInParent);
+							if (renamed) {
+								moveRevisionsFromTrash(subtrashChildMetadata, fileInParent);
+								updateParent((VFSMetadataImpl)subtrashChildMetadata, fileInParent);
+							}
+						}
+					}
+				}
+				
+				// Delete sub trash
+				VFSItem subtrashItem = getItemFor(vfsMetadata);
+				if (subtrashItem != null) {
+					subtrashItem.deleteSilently();
+				}
+			}
 		}
 	}
 
@@ -695,6 +871,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		
 		String prevUri = metadata.getUri();
+		String prevRelativePath = metadata.getRelativePath();
 		Path newFile = Paths.get(folderModule.getCanonicalRoot(), metadata.getRelativePath(), newName);
 		((VFSMetadataImpl)metadata).setFilename(newName);
 		String uri = newFile.toFile().toURI().toString();
@@ -712,16 +889,17 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		VFSMetadata updateMetadata = metadataDao.updateMetadata(metadata);
 		
-		updateChildrenPaths(updateMetadata, metadata.isDirectory(), prevUri, uri, metadata.getRelativePath(), metadata.getFilename());
+		updateChildrenPaths(updateMetadata, metadata.isDirectory(), prevUri, uri, prevRelativePath, metadata.getRelativePath(), metadata.getFilename(), false);
 		
 		return updateMetadata;
 	}
 
-	private void updateChildrenPaths(VFSMetadataRef metadata, boolean directory, String prevUri, String uri, String relativePath, String filename) {
+	private void updateChildrenPaths(VFSMetadataRef metadata, boolean directory, String prevUri, String uri,
+			String prevRelativePath, String relativePath, String filename, boolean updateDeleted) {
 		if (directory) {
 			List<VFSMetadata> children = metadataDao.getMetadatasOnly(metadata);
 			for(VFSMetadata child:children) {
-				if (!child.isDeleted()) {
+				if (updateDeleted || !child.isDeleted()) {
 					String childUri = child.getUri();
 					if (StringHelper.containsNonWhitespace(childUri) && childUri.startsWith(prevUri)) {
 						uri = uri.endsWith("/")? uri: uri + "/";
@@ -730,8 +908,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					}
 					
 					String childRelativePath = child.getRelativePath();
-					if (StringHelper.containsNonWhitespace(childRelativePath) && childRelativePath.startsWith(relativePath)) {
-						String childRelPathEnd = childRelativePath.substring(relativePath.length() + 1);
+					if (StringHelper.containsNonWhitespace(childRelativePath) && childRelativePath.startsWith(prevRelativePath)) {
+						String childRelPathEnd = childRelativePath.substring(prevRelativePath.length() + 1);
 						int nextSlash = childRelPathEnd.indexOf("/");
 						if (nextSlash > -1) {
 							childRelativePath = relativePath + "/" + filename + childRelPathEnd.substring(nextSlash);
@@ -744,7 +922,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					}
 					
 					metadataDao.updateMetadata(child);
-					updateChildrenPaths(child,  child.isDirectory(), prevUri, uri, relativePath, filename);
+					log.debug("File path of child updated {}", metadata);
+					updateChildrenPaths(child,  child.isDirectory(), prevUri, uri, prevRelativePath, relativePath, filename, updateDeleted);
 				}
 			}
 		}

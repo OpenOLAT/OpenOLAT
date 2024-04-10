@@ -10,6 +10,12 @@
 			display: flex;
 			column-gap: 5px;
 		}
+		.o_folder_trash {
+			display: block;
+		}
+		.o_folder_trash_menu_item {
+			display: none;
+		}
 		.o_folder_cmds {
 			justify-self: end;
 			
@@ -43,6 +49,13 @@
 		
 		@media (max-width: 540px) {
 			grid-template-columns: auto;
+			
+			.o_folder_trash {
+				display: none;
+			}
+			.o_folder_trash_menu_item {
+				display: block;
+			}
 			
 			.o_folder_view_search:not(:is(.o_folder_search_view *)) {
 				display: block;

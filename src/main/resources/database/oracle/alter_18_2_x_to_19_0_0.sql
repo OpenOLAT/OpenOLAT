@@ -34,3 +34,7 @@ alter table o_ce_page_part add column p_storage_path varchar(255);
 -- Identity
 alter table o_bs_identity add plannedinactivationdate date;
 alter table o_bs_identity add planneddeletiondate date;
+
+-- VFS
+alter table o_vfs_metadata add column f_deleted_date date;
+alter table o_vfs_metadata add column fk_deleted_by number(20);

@@ -84,6 +84,8 @@ public interface VFSItem {
 	 */
 	public VFSStatus delete();
 	
+	public VFSStatus restore(VFSContainer targetContainer);
+	
 	/**
 	 * Delete the items and by pass versioning if enabled
 	 * @return

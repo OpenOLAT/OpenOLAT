@@ -51,7 +51,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -158,14 +157,11 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		
 		List<FolderRow> rows = new ArrayList<>(items.size());
 		for (VFSItem vfsItem : items) {
-			FolderRow row = new FolderRow(vfsItem);
 			VFSMetadata vfsMetadata = metadatas.get(vfsItem.getName());
+			FolderRow row = new FolderRow(vfsItem);
 			row.setMetadata(vfsMetadata);
 			
-			String iconCssClass = vfsItem instanceof VFSContainer
-					? "o_filetype_folder"
-					: CSSHelper.createFiletypeIconCssClassFor(vfsItem.getName());
-			row.setIconCssClass(iconCssClass);
+			row.setIconCssClass(FolderUIFactory.getIconCssClass(vfsMetadata, vfsItem));
 			row.setTitle(FolderUIFactory.getDisplayName(vfsMetadata, vfsItem));
 			row.setLastModifiedDate(FolderUIFactory.getLastModifiedDate(vfsMetadata, vfsItem));
 			row.setTranslatedType(FolderUIFactory.getTranslatedType(getTranslator(), vfsMetadata, vfsItem));

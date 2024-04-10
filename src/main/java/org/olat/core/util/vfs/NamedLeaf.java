@@ -106,6 +106,11 @@ public class NamedLeaf implements VFSLeaf {
 	}
 
 	@Override
+	public VFSStatus restore(VFSContainer targetContainer) {
+		return delegate.delete();
+	}
+
+	@Override
 	public VFSStatus deleteSilently() {
 		return delegate.deleteSilently();
 	}

@@ -29,6 +29,7 @@ public enum FolderView {
 	
 	folder,
 	file,
+	trash,
 	search
 
 }

@@ -19,10 +19,25 @@
  */
 package org.olat.upgrade;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.tools.UserToolsModule;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,16 +50,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_19_0_0.class);
+	
+	private static final int BATCH_SIZE = 100;
 
 	private static final String VERSION = "OLAT_19.0.0";
 
 	private static final String UPDATE_FOLDER_USER_TOOL = "UPDATED FOLDER USER TOOL";
 	private static final String PLANNED_INACTIVATION_DATE_IDENTITY = "PLANNED INACTIVATION DATE IDENTITY";
+	private static final String VFS_DELETED_METADATA = "VFS DELETED METADATA";
 	
+	@Autowired
+	private DB dbInstance;
  	@Autowired
  	private UserToolsModule userToolsModule;
 	@Autowired
 	private UserLifecycleManager userLifecycleManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	public OLATUpgrade_19_0_0() {
 		super();
@@ -66,8 +88,10 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 		}
 
 		boolean allOk = true;
-		allOk &= updatePasswordUserTool(upgradeManager, uhd);
+		allOk &= updateFolderUserTool(upgradeManager, uhd);
 		allOk &= updatePlannedInactivationDates(upgradeManager, uhd);
+		// Should be the last one because it can take some time.
+		allOk &= updateVfsDeletedMetadata(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -78,10 +102,8 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 		}
 		return allOk;
 	}
-
 	
-	
-	private boolean updatePasswordUserTool(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+	private boolean updateFolderUserTool(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(UPDATE_FOLDER_USER_TOOL)) {
 			try {
@@ -114,6 +136,100 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 		}
 		
 		return allOk;
+	}
+	
+	private boolean updateVfsDeletedMetadata(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		
+		if (!uhd.getBooleanDataValue(VFS_DELETED_METADATA)) {
+			try {
+				log.info("Start migrating deleted vfs metadata.");
+				
+				int counter = 0;
+				List<VFSMetadata> metadatas;
+				do {
+					metadatas = getDeletedMetadata(BATCH_SIZE);
+					for(int i=0; i<metadatas.size(); i++) {
+						VFSMetadata metadata = metadatas.get(i);
+						migrateMetadata(metadata);
+						if(i % 25 == 0) {
+							dbInstance.commitAndCloseSession();
+						}
+					}
+					counter += metadatas.size();
+					log.info(Tracing.M_AUDIT, "Migrated of deleted vfs metadata: {} total processed ({})", metadatas.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while (metadatas.size() == BATCH_SIZE);
+
+				log.info("Migration of deleted vfs metadata finished.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(VFS_DELETED_METADATA, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		
+		return allOk;
+	}
+
+	private List<VFSMetadata> getDeletedMetadata(int maxResults) {
+		String query = """
+				select metadata from filemetadata as metadata 
+				where metadata.deleted = true
+				  and metadata.deletedDate is null""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, VFSMetadata.class)
+				.setMaxResults(maxResults)
+				.getResultList();
+	}
+	
+	private void migrateMetadata(VFSMetadata metadata) {
+		if (metadata.isDirectory()) {
+			finishMetadataMigration(metadata, "No migration of directory: {}");
+			return;
+		}
+		
+		VFSItem vfsItem = vfsRepositoryService.getItemFor(metadata);
+		if (vfsItem != null && vfsItem.exists()) {
+			// File still exists. Delete it again.
+			vfsItem.delete();
+			return;
+		}
+		
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		if (revisions.isEmpty()) {
+			finishMetadataMigration(metadata, "No migration of deleted file without revision: {}");
+			return;
+		}
+		
+		if (vfsItem instanceof VFSLeaf vfsLeaf) {
+			// The newest / highest revision
+			VFSRevision revision = revisions.get(revisions.size() -1);
+			File revisionFile = vfsRepositoryService.getRevisionFile(revision);
+			if (revisionFile.exists()) {
+				try (InputStream in = new FileInputStream(revisionFile);
+						BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE);) {
+					FileUtils.cpio(bis, vfsLeaf.getOutputStream(false), "Delete file migration");
+					vfsLeaf.delete();
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			}
+		}
+		
+		finishMetadataMigration(metadata, "Migration of deleted file not successfull: {}");
+	}
+
+	private void finishMetadataMigration(VFSMetadata metadata, String logMessage) {
+		VFSMetadataImpl vfsMetadata = (VFSMetadataImpl)vfsRepositoryService.getMetadata(metadata);
+		if (vfsMetadata.getDeletedDate() == null) {
+			vfsMetadata.setDeleted(true);
+			vfsMetadata.setDeletedDate(new Date());
+			metadata = vfsRepositoryService.updateMetadata(vfsMetadata);
+			log.info(logMessage, metadata.getRelativePath() + "/" + metadata.getFilename());
+		}
 	}
 	
 }

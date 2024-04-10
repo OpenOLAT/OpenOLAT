@@ -113,7 +113,7 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 				&& !bFile.startsWith(FolderConfig.getCanonicalVersionRootPath())
 				&& !bFile.startsWith(FolderConfig.getCanonicalTmpPath())
 				&& !bFile.startsWith(bcRoot.resolve("bulkassessment"))
-				&& !file.isHidden()
+				&& (!file.isHidden() || filename.equals(VFSRepositoryService.TRASH_NAME))
 				&& !filename.startsWith("._oo_")
 				&& !filename.equals("CourseConfig.xml")
 				&& !filename.equals(".DS_Store")

@@ -93,27 +93,20 @@ public class VFSMetadataItem implements VFSItem {
 	}
 	
 	@Override
+	public String getRelPath() {
+		if (getMetaInfo() == null) {
+			return null;
+		}
+		return "/" + getMetaInfo().getRelativePath() + "/" + getMetaInfo().getFilename();
+	}
+	
+	@Override
 	public boolean isSame(VFSItem vfsItem) {
 		if (vfsItem == null || getMetaInfo() == null) {
 			return false;
 		}
 		// Works for LocalFolderImpl. What about others?
 		return Objects.equals(VFSManager.appendLeadingSlash(getRelPath()), vfsItem.getRelPath());
-	}
-
-	@Override
-	public String getRelPath() {
-		if (getMetaInfo() == null) {
-			return null;
-		}
-		return getMetaInfo().getRelativePath() + "/" + getMetaInfo().getFilename();
-	}
-	
-	public boolean isInPath(String path) {
-		if (getMetaInfo() == null || getMetaInfo().getRelativePath() == null) {
-			return false;
-		}
-		return getMetaInfo().getRelativePath().startsWith(path);
 	}
 
 	@Override
@@ -140,6 +133,14 @@ public class VFSMetadataItem implements VFSItem {
 			return VFSConstants.SUCCESS;
 		}
 		return getItem().delete();
+	}
+
+	@Override
+	public VFSStatus restore(VFSContainer targetContainer) {
+		if (getItem() == null) {
+			return VFSConstants.NO;
+		}
+		return getItem().restore(targetContainer);
 	}
 
 	@Override

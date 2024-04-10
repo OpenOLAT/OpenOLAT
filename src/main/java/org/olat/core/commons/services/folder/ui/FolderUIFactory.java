@@ -23,7 +23,9 @@ import java.io.File;
 import java.util.Date;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -43,15 +45,30 @@ import org.olat.user.UserManager;
  */
 public class FolderUIFactory {
 	
+	public static String getIconCssClass(VFSMetadata vfsMetadata, VFSItem vfsItem) {
+		if (vfsMetadata != null && vfsMetadata.isDirectory()) {
+			return "o_filetype_folder";
+		} else if (vfsItem instanceof VFSContainer){
+			return "o_filetype_folder";
+		}
+		return CSSHelper.createFiletypeIconCssClassFor(getFilename(vfsMetadata, (VFSLeaf)vfsItem));
+	}
+	
 	public static String getDisplayName(VFSMetadata vfsMetadata, VFSItem vfsItem) {
 		if (vfsMetadata != null) {
-			String title = vfsMetadata.getTitle();
-			if (StringHelper.containsNonWhitespace(title)) {
-				return title;
+			if (StringHelper.containsNonWhitespace(vfsMetadata.getTitle())) {
+				return vfsMetadata.getTitle();
+			}
+			if (StringHelper.containsNonWhitespace(vfsMetadata.getFilename())) {
+				return vfsMetadata.getFilename();
 			}
 		}
 		
-		return vfsItem.getName();
+		if (vfsItem != null) {
+			return vfsItem.getName();
+		}
+		
+		return null;
 	}
 
 	public static String getCreatedBy(UserManager userManager, VFSMetadata vfsMetadata) {
@@ -71,7 +88,11 @@ public class FolderUIFactory {
 				return fileLastModified;
 			}
 		}
-		return new Date(vfsItem.getLastModified());
+		if (vfsItem != null) {
+			return new Date(vfsItem.getLastModified());
+		}
+		
+		return null;
 	}
 
 	public static String getLastModifiedBy(UserManager userManager, VFSMetadata vfsMetadata) {
@@ -93,6 +114,26 @@ public class FolderUIFactory {
 			}
 		}
 		return modified;
+	}
+
+	public static Date getDeletedDate(VFSMetadata vfsMetadata, VFSRevision vfsRevision) {
+		if (vfsMetadata != null && vfsMetadata.getDeletedDate() != null) {
+			return vfsMetadata.getDeletedDate();
+		}
+		if (vfsRevision != null && vfsRevision.getCreationDate() != null) {
+			return vfsRevision.getCreationDate();
+		}
+		return null;
+	}
+
+	public static String getDeletedBy(UserManager userManager, VFSMetadata vfsMetadata, VFSRevision vfsRevision) {
+		if (vfsMetadata != null && vfsMetadata.getDeletedBy() != null) {
+			return userManager.getUserDisplayName(vfsMetadata.getDeletedBy().getKey());
+		}
+		if (vfsRevision != null && vfsRevision.getFileInitializedBy() != null) {
+			return userManager.getUserDisplayName(vfsRevision.getFileInitializedBy().getKey());
+		}
+		return null;
 	}
 
 	private static String getFilename(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
@@ -125,18 +166,21 @@ public class FolderUIFactory {
 	}
 
 	public static String getTranslatedType(Translator translator, VFSMetadata vfsMetadata, VFSItem vfsItem) {
-		if (vfsItem instanceof VFSContainer vfsContainer) {
+		if (vfsMetadata != null && vfsMetadata.isDirectory()) {
 			return translator.translate("type.container");
-		} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			String filename = getFilename(vfsMetadata, vfsLeaf);
-			if (StringHelper.containsNonWhitespace(filename)) {
-				String fileSuffix = FileUtils.getFileSuffix(filename);
-				if (StringHelper.containsNonWhitespace(fileSuffix)) {
-					return translator.translate("type.leaf.suffix", fileSuffix.toLowerCase());
-				}
-				return translator.translate("type.leaf");
-			}
+		} else if (vfsItem instanceof VFSContainer){
+			return translator.translate("type.container");
 		}
+		
+		String filename = getFilename(vfsMetadata, (VFSLeaf)vfsItem);
+		if (StringHelper.containsNonWhitespace(filename)) {
+			String fileSuffix = FileUtils.getFileSuffix(filename);
+			if (StringHelper.containsNonWhitespace(fileSuffix)) {
+				return translator.translate("type.leaf.suffix", fileSuffix.toLowerCase());
+			}
+			return translator.translate("type.leaf");
+		}
+		
 		return null;
 	}
 

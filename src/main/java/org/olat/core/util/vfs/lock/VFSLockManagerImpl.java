@@ -255,7 +255,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	@Override
 	public LockInfo getLockInfo(VFSItem item, VFSMetadata metadata) {
 		final File file = extractFile(item);
-		if(file == null) {
+		if(file == null || !file.exists()) {
 			log.debug("Lock only real file: {}", item);
 			return null;// we only lock real files
 		}

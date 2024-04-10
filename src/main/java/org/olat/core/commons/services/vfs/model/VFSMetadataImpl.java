@@ -19,14 +19,7 @@
  */
 package org.olat.core.commons.services.vfs.model;
 
-import org.olat.basesecurity.IdentityImpl;
-import org.olat.core.commons.services.license.LicenseType;
-import org.olat.core.commons.services.license.model.LicenseTypeImpl;
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Persistable;
-import org.olat.core.util.StringHelper;
+import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,7 +33,15 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import java.util.Date;
+
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.model.LicenseTypeImpl;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -71,6 +72,11 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	private String uuid;
 	@Column(name="f_deleted", nullable=false, insertable=true, updatable=true)
 	private boolean deleted;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_deleted_by", nullable=true, insertable=true, updatable=true)
+	private Identity deletedBy;
+	@Column(name="f_deleted_date", nullable=true, insertable=true, updatable=true)
+	private Date deletedDate;
 	@Column(name="f_filename", nullable=false, insertable=true, updatable=true)
 	private String filename;
 	@Column(name="f_relative_path", nullable=false, insertable=true, updatable=true)
@@ -200,6 +206,24 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	}
 
 	@Override
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	@Override
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
+	public void setDeletedBy(Identity deletedBy) {
+		this.deletedBy = deletedBy;
+	}
+
+	@Override
 	public String getFilename() {
 		return filename;
 	}
@@ -231,6 +255,7 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 		return fileInitializedBy;
 	}
 	
+	@Override
 	public void setFileInitializedBy(Identity fileInitializedBy) {
 		this.fileInitializedBy = fileInitializedBy;
 	}
@@ -249,6 +274,7 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 		return transcodingStatus;
 	}
 
+	@Override
 	public boolean isInTranscoding() {
 		return transcodingStatus != null && transcodingStatus != VFSMetadata.TRANSCODING_STATUS_DONE;
 	}

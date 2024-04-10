@@ -336,7 +336,13 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		vfsMetadataDao.updateMetadata(metadata2);
 		dbInstance.commitAndCloseSession();
 		
-		List<VFSMetadata> descendants = vfsMetadataDao.getDescendants(container);
+		List<VFSMetadata> descendants = vfsMetadataDao.getDescendants(container, null);
 		Assert.assertEquals(4, descendants.size());
+		
+		descendants = vfsMetadataDao.getDescendants(container, Boolean.TRUE);
+		Assert.assertEquals(1, descendants.size());
+		
+		descendants = vfsMetadataDao.getDescendants(container, Boolean.FALSE);
+		Assert.assertEquals(3, descendants.size());
 	}
 }

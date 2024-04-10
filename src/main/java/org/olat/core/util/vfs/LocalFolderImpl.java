@@ -40,6 +40,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
@@ -283,29 +284,120 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			// We need to manually reload the new basefile and set it in our parent
 			super.setBasefile(new File(nf.getAbsolutePath()));
 			return VFSConstants.YES; 
-		} else {
-			return VFSConstants.NO;
 		}
+		return VFSConstants.NO;
 	}
 
 	@Override
 	public VFSStatus delete() {
-		if(!getBasefile().exists()) {
-			return VFSConstants.YES;  // already non-existent
+		File f = getBasefile();
+		if (!f.exists()) {
+			return VFSConstants.YES;
 		}
-		// we must empty the folders and subfolders first
+		File parentFile = f.getParentFile();
+		if (VFSRepositoryService.TRASH_NAME.equals(parentFile.getName())) {
+			return VFSConstants.YES;
+		}
+		
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		Identity doer = ThreadLocalUserActivityLogger.getLoggedIdentity();
+		VFSStatus status = null;
+		if (canMeta() == VFSConstants.YES) {
+			VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(this);
+			
+			if (!getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
+				File trashFile = new File(parentFile, VFSRepositoryService.TRASH_NAME);
+				if (!trashFile.exists()) {
+					trashFile.mkdirs();
+				}
+				
+				LocalFolderImpl trashContainer = new LocalFolderImpl(trashFile);
+				String filenameInTrash = VFSManager.similarButNonExistingName(trashContainer, f.getName(), "_");
+				File fileInTrash = new File(trashFile, filenameInTrash);
+				boolean renamed = f.renameTo(fileInTrash);
+				
+				if (renamed) {
+					super.setBasefile(new File(fileInTrash.getAbsolutePath()));
+					status = VFSConstants.YES;
+				} else {
+					status = VFSConstants.NO;
+				}
+			} else {
+				status = VFSConstants.NO;
+			}
+			
+			if (vfsMetadata != null) {
+				vfsRepositoryService.markAsDeleted(doer, vfsMetadata, getBasefile());
+			}
+		}
+		
 		List<VFSItem> children = getItems();
 		for (VFSItem child:children) {
 			child.delete();
 		}
 		
-		// Versioning makes a copy of the metadata, delete metadata after it
-		if(canMeta() == VFSConstants.YES) {
-			Identity identity = ThreadLocalUserActivityLogger.getLoggedIdentity();
-			CoreSpringFactory.getImpl(VFSRepositoryService.class).markAsDeleted(this, identity);
+		if (status != null) {
+			// Folder was moved to trash
+			VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(this);
+			vfsRepositoryService.cleanTrash(doer, vfsMetadata);
+			return status;
 		}
-		// now delete the directory itself
+		
 		return deleteBasefile();
+	}
+
+	@Override
+	public VFSStatus restore(VFSContainer targetContainer) {
+		if (targetContainer.canWrite() != VFSConstants.YES) {
+			return VFSConstants.NO;
+		}
+		if (canMeta() != VFSConstants.YES) {
+			return VFSConstants.NO;
+		}
+		File file = getBasefile();
+		if (!file.exists()) {
+			return VFSConstants.NO;
+		}
+		
+		// Not in trash
+		if (!getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
+			return VFSConstants.NO;
+		}
+		
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		Identity doer = ThreadLocalUserActivityLogger.getLoggedIdentity();
+		
+		VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(this);
+		if (vfsMetadata == null || !vfsMetadata.isDeleted()) {
+			return VFSConstants.NO;
+		}
+		
+		long usage = VFSManager.getUsageKB(this);
+		long quotaLeft = VFSManager.getQuotaLeftKB(targetContainer);
+		if (quotaLeft != Quota.UNLIMITED && quotaLeft < usage) {
+			return VFSConstants.ERROR_QUOTA_EXCEEDED;
+		}
+		
+		String restoredFilename = VFSManager.similarButNonExistingName(targetContainer, file.getName(), "_");
+		
+		if (targetContainer instanceof LocalFolderImpl localFolder) {
+			File folder = localFolder.getBasefile();
+			File fileRestored = new File(folder, restoredFilename);
+			boolean renamed = file.renameTo(fileRestored);
+			if (renamed) {
+				super.setBasefile(new File(fileRestored.getAbsolutePath()));
+			}
+			vfsRepositoryService.unmarkFromDeleted(doer, vfsMetadata, fileRestored);
+			
+			List<VFSItem> children = getItems();
+			for (VFSItem child : children) {
+				child.restore(targetContainer);
+			}
+			
+			return VFSConstants.YES;
+		}
+		
+		return VFSConstants.NO;
 	}
 
 	@Override
@@ -327,6 +419,8 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	}
 	
 	private VFSStatus deleteBasefile() {
+		log.debug("Delete basefile {}", this);
+		
 		VFSStatus status = VFSConstants.NO;
 		try {
 			// walk tree make sure the directory is deleted once all files,

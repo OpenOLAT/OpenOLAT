@@ -114,6 +114,11 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	}
 
 	@Override
+	public VFSStatus restore(VFSContainer targetContainer) {
+		return VFSConstants.NO;
+	}
+
+	@Override
 	public VFSStatus deleteSilently() {
 		return VFSConstants.NO;
 	}

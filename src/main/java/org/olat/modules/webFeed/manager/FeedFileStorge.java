@@ -238,7 +238,7 @@ public class FeedFileStorge {
 	public void deleteItemContainer(Item item) {
 		VFSContainer itemContainer = getOrCreateItemContainer(item);
 		if (itemContainer != null) {
-			itemContainer.delete();
+			itemContainer.deleteSilently();
 		}
 	}
 

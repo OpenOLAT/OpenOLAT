@@ -119,6 +119,11 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 	}
 
 	@Override
+	public VFSStatus restore(VFSContainer targetContainer) {
+		return VFSConstants.NO;
+	}
+
+	@Override
 	public VFSStatus deleteSilently() {
 		return VFSConstants.NO;
 	}

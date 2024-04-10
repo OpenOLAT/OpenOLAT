@@ -88,6 +88,14 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 	}
 	
 	@Override
+	public boolean isInPath(String path) {
+		if (getMetaInfo() == null || getMetaInfo().getRelativePath() == null) {
+			return false;
+		}
+		return getMetaInfo().getRelativePath().startsWith(path);
+	}
+	
+	@Override
 	public List<VFSItem> getItems() {
 		return getItems(null);
 	}
@@ -126,12 +134,12 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 			}
 			return getCachedItemsFlat(filter);
 		}
-		List<VFSMetadata> descendants = vfsRepositoryService.getDescendants(getMetaInfo());
+		List<VFSMetadata> descendants = vfsRepositoryService.getDescendants(getMetaInfo(), Boolean.FALSE);
 		return toItems(descendants, filter);
 	}
 
 	private void fillCache() {
-		List<VFSMetadata> metadatas = vfsRepositoryService.getDescendants(getMetaInfo());
+		List<VFSMetadata> metadatas = vfsRepositoryService.getDescendants(getMetaInfo(), Boolean.FALSE);
 		toItems(metadatas, TRUE_FILTER);
 	}
 	

@@ -41,6 +41,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
@@ -144,20 +145,108 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 			// We need to manually reload the new basefile
 			super.setBasefile(new File(nf.getAbsolutePath()));
 			return VFSConstants.YES; 
-		} else {
-			return VFSConstants.NO;
 		}
+		return VFSConstants.NO;
 	}
 
 	@Override
 	public VFSStatus delete() {
-		if(canMeta() == VFSConstants.YES) {
-			Identity identity = ThreadLocalUserActivityLogger.getLoggedIdentity();
-			CoreSpringFactory.getImpl(VFSRepositoryService.class).markAsDeleted(this, identity);
+		File file = getBasefile();
+		if (!file.exists()) {
+			return VFSConstants.YES;
 		}
+		
+		if (canMeta() == VFSConstants.YES) {
+			// Move to trash
+			
+			// File is already in trash
+			File parentFile = file.getParentFile();
+			if (VFSRepositoryService.TRASH_NAME.equals(parentFile.getName())) {
+				return VFSConstants.YES;
+			}
+			
+			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+			Identity doer = ThreadLocalUserActivityLogger.getLoggedIdentity();
+			
+			// Get the metadata before moving the file to the trash folder
+			VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(this);
+			
+			File fileInTrash = null;
+			if (!getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
+				File trashFile = new File(parentFile, VFSRepositoryService.TRASH_NAME);
+				if (!trashFile.exists()) {
+					trashFile.mkdirs();
+				}
+				
+				LocalFolderImpl trashContainer = new LocalFolderImpl(trashFile);
+				String filenameInTrash = VFSManager.similarButNonExistingName(trashContainer, file.getName(), "_");
+				fileInTrash = new File(trashFile, filenameInTrash);
+				boolean renamed = file.renameTo(fileInTrash);
+				
+				if (renamed) {
+					super.setBasefile(new File(fileInTrash.getAbsolutePath()));
+				}
+			} else {
+				fileInTrash = file;
+			}
+			
+			if (vfsMetadata != null) {
+				vfsRepositoryService.markAsDeleted(doer, vfsMetadata, fileInTrash);
+				return VFSConstants.YES;
+			}
+			return VFSConstants.NO;
+		}
+		
 		return deleteBasefile();
 	}
-	
+
+	@Override
+	public VFSStatus restore(VFSContainer targetContainer) {
+		if (targetContainer.canWrite() != VFSConstants.YES) {
+			return VFSConstants.NO;
+		}
+		if (canMeta() != VFSConstants.YES) {
+			return VFSConstants.NO;
+		}
+		File file = getBasefile();
+		if (!file.exists()) {
+			return VFSConstants.NO;
+		}
+		
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		Identity doer = ThreadLocalUserActivityLogger.getLoggedIdentity();
+		
+		VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(this);
+		if (vfsMetadata == null || !vfsMetadata.isDeleted()) {
+			return VFSConstants.NO;
+		}
+		
+		if (targetContainer instanceof LocalFolderImpl localFolder) {
+			long quotaLeft = VFSManager.getQuotaLeftKB(targetContainer);
+			if (quotaLeft != Quota.UNLIMITED && quotaLeft < (file.length() / 1024)) {
+				return VFSConstants.ERROR_QUOTA_EXCEEDED;
+			}
+			
+			File restoredFile;
+			if (getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
+				File folder = localFolder.getBasefile();
+				String restoredFilename = VFSManager.similarButNonExistingName(targetContainer, file.getName(), "_");
+				restoredFile = new File(folder, restoredFilename);
+				boolean renamed = file.renameTo(restoredFile);
+				if (renamed) {
+					super.setBasefile(new File(restoredFile.getAbsolutePath()));
+				}
+			} else {
+				restoredFile = file;
+			}
+			
+			vfsRepositoryService.unmarkFromDeleted(doer, vfsMetadata, restoredFile);
+			return VFSConstants.YES;
+		}
+		
+		return VFSConstants.NO;
+	}
+
 	@Override
 	public VFSStatus deleteSilently() {
 		if(canMeta() == VFSConstants.YES) {
