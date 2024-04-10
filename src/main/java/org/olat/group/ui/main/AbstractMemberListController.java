@@ -554,26 +554,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private int countLinkedGroupRepoEntries(List<MemberRow> members) {
-		// Collect distinct group keys from members
-		List<Long> distinctGroupKeys = members.stream()
-				.filter(m -> m != null && m.getGroups() != null) // null check for member and its groups
-				.flatMap(m -> m.getGroups().stream())
-				.map(BusinessGroupRef::getKey)
-				.distinct()
-				.toList();
-
-		if (!distinctGroupKeys.isEmpty()) {
-			// two database calls could be improved (if necessary) by a count query
-			// Load business groups
-			List<BusinessGroup> businessGroups = businessGroupService.loadBusinessGroups(distinctGroupKeys);
-			// find repository entries connected to those groups and return the size
-			return businessGroupService.findRepositoryEntries(businessGroups, 0, -1).size();
-		} else {
-			return 0;
-		}
-	}
-	
 	private List<MemberRow> getMultiSelectedRows() {
 		Set<Integer> selections = membersTable.getMultiSelectedIndex();
 		List<MemberRow> rows = new ArrayList<>(selections.size());
@@ -675,12 +655,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	}
 	
 	protected final void doConfirmRemoveMembers(UserRequest ureq, List<MemberRow> members) {
-		// if that member is a member of a shared group, then removing is not allowed
-		if (countLinkedGroupRepoEntries(members) > 1) {
-			showWarning("remove.shared.group.entries");
-			return;
-		}
-
 		if(members.isEmpty()) {
 			showWarning("error.select.one.user");
 		} else {

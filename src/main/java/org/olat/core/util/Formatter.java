@@ -973,6 +973,10 @@ public class Formatter {
 		}
 		return dateString;
 	}
+
+	public static String addReference(Translator translator, String reference) {
+		return addReference(translator, null, reference, null);
+	}
 	
 	public static String addReference(Translator translator, String value, String reference) {
 		return addReference(translator, value, reference, null);
@@ -984,8 +988,10 @@ public class Formatter {
 			result = "<i class='"
 					+ iconCss
 					+ "'></i> ";
-		}	
-		result += value;
+		}
+		if (StringHelper.containsNonWhitespace(value)) {
+			result += value;
+		}
 		if (StringHelper.containsNonWhitespace(reference)) {
 			result = result
 					+ " "

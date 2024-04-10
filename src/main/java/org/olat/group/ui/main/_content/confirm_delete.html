@@ -1,7 +1,8 @@
 <div class="o_warning_with_icon">
 	<p>$msg</p>
 	#if ($groupMsg)
-		<p>$groupMsg</p>
+		$groupMsg
+		$r.render("group.values")
 	#end
 </div>
 $r.render("options")

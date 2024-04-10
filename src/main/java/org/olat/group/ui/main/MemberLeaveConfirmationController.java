@@ -20,6 +20,7 @@
 package org.olat.group.ui.main;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -43,6 +44,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
@@ -115,11 +117,11 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		if (identities != null && formLayout instanceof FormLayoutContainer formLayoutCont) {
 			String externalRef = "";
 			if (withinCourse) {
-				externalRef = entry.getExternalRef() != null ? " - " + entry.getExternalRef() : "";
+				externalRef = entry.getExternalRef() != null ? entry.getExternalRef() : "";
 			} else if (curriculumElement != null) {
-				externalRef = curriculumElement.getExternalId() != null ? " - " + curriculumElement.getExternalId() : "";
+				externalRef = curriculumElement.getExternalId() != null ? curriculumElement.getExternalId() : "";
 			} else if (businessGroup != null) {
-				externalRef = businessGroup.getExternalId() != null ? " - " + businessGroup.getExternalId() : "";
+				externalRef = businessGroup.getExternalId() != null ? businessGroup.getExternalId() : "";
 			}
 
 			String msg = constructMessage(externalRef);
@@ -182,7 +184,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 			args = new String[]{
 					String.valueOf(identities.size()),
 					displayName,
-					externalRef
+					Formatter.addReference(getTranslator(), externalRef)
 			};
 			if (withinCourse) {
 				msgTranslationKey = "dialog.modal.bg.remove.course.text.bulk";
@@ -196,7 +198,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 					StringHelper.escapeHtml(userManager.getUserDisplayName(identities.get(0))),
 					getRolesRendered(members != null ? members.get(0) : null, memberships.get(0)),
 					displayName,
-					externalRef
+					Formatter.addReference(getTranslator(), externalRef)
 			};
 			if (withinCourse) {
 				msgTranslationKey = "dialog.modal.bg.remove.course.text";
@@ -215,14 +217,31 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 
 		if (hasBusinessGroupMember) {
 			String groupMsg;
+			StringBuilder groupsRendered = new StringBuilder();
 			if (isBulkAction) {
-				// generic message for bulk actions
-				groupMsg = translate("remove.group.member.bulk");
+				int groupMemberCount = 0;
+				for (MemberRow member : members) {
+					if (member.getMembership().isBusinessGroupMember()) {
+						groupsRendered.append(getGroupsRendered(member, null));
+						// append groups with delimiter ,  except for the last one
+						if (groupMemberCount < members.size() - 1) {
+							groupsRendered.append(", ");
+						}
+						groupMemberCount += 1;
+					}
+				}
+				groupMsg = translate("remove.group.member.bulk", String.valueOf(groupMemberCount));
 			} else {
 				// individual actions, the message depends on specific member details. Not relevant for curriculum
 				// hence members won't be null
-				groupMsg = translate("remove.group.member", getGroupsRendered(members.get(0), null));
+				groupMsg = translate("remove.group.member");
+				groupsRendered = getGroupsRendered(members.get(0), null);
 			}
+			// convert groupsRendered into a string list and get distinct values
+			List<String> groupValues = new ArrayList<>(Arrays.stream(groupsRendered.toString().split(", ")).map(r -> r.replace("\"", "")).distinct().toList());
+			StaticListElement groupValuesEl = uifactory.addStaticListElement("group.values", null, groupValues, formLayoutCont);
+			groupValuesEl.setShowAllI18nKey("remove.group.members.show.all");
+
 			formLayoutCont.contextPut("groupMsg", groupMsg);
 		}
 	}
@@ -256,54 +275,54 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 
 		// default repository entry group
 		if (membership.isRepositoryEntryOwner()) {
-			and = and(sb, and);
+			and = and(sb, and, "; ");
 			sb.append(translator.translate("role.repo.owner"));
 		}
 		if (membership.isRepositoryEntryCoach()) {
-			and = and(sb, and);
+			and = and(sb, and, "; ");
 			sb.append(translator.translate("role.repo.tutor"));
 		}
 		if (membership.isRepositoryEntryParticipant()) {
-			and = and(sb, and);
+			and = and(sb, and, "; ");
 			sb.append(translator.translate("role.repo.participant"));
 		}
 
 		// business groups
 		if (membership.isBusinessGroupCoach()) {
-			and = and(sb, and);
+			and = and(sb, and, "; ");
 			sb.append(translator.translate("role.group.tutor"));
 			if (isBulkAction && businessGroup == null) {
-				sb.append(" " + getGroupsRendered(member, true));
+				sb.append(" ").append(String.valueOf(getGroupsRendered(member, true)));
 			}
 		}
 		if (membership.isBusinessGroupParticipant()) {
-			and = and(sb, and);
+			and = and(sb, and, "; ");
 			sb.append(translator.translate("role.group.participant"));
 			if (isBulkAction && businessGroup == null) {
-				sb.append(" " + getGroupsRendered(member, false));
+				sb.append(" ").append(String.valueOf(getGroupsRendered(member, false)));
 			}
 		}
 
 		// curriculum
 		if (membership.isCurriculumElementParticipant()) {
-			and = and(sb, and);
+			and = and(sb, and, "; ");
 			sb.append(translator.translate("role.curriculum.participant"));
 		}
 		if (membership.isCurriculumElementCoach()) {
-			and = and(sb, and);
+			and = and(sb, and, "; ");
 			sb.append(translator.translate("role.curriculum.coach"));
 		}
 		if (membership.isCurriculumElementOwner()) {
-			and = and(sb, and);
+			and = and(sb, and, "; ");
 			sb.append(translator.translate("role.curriculum.owner"));
 		}
 
 		if (membership.isWaiting()) {
-			and = and(sb, and);
+			and = and(sb, and, "; ");
 			sb.append(translator.translate("role.group.waiting"));
 		}
 		if (membership.isPending()) {
-			and = and(sb, and);
+			and = and(sb, and, "; ");
 			// if reservation exists, then add additional information to pending role: If it is pending for a participant or coach
 			if (membership.getResourceReservation() != null) {
 				if (membership.getResourceReservation().getType().equals(BusinessGroupService.GROUP_PARTICIPANT)) {
@@ -327,12 +346,12 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		roleRenderer.render(null, sb, membership, 0, null, null, null);
 	}
 
-	private boolean and(StringOutput sb, boolean and) {
-		if (and) sb.append(", ");
+	private boolean and(StringOutput sb, boolean and, String delimiter) {
+		if (and) sb.append(delimiter);
 		return true;
 	}
 
-	private String getGroupsRendered(MemberRow member, Boolean isCoach) {
+	private StringBuilder getGroupsRendered(MemberRow member, Boolean isCoach) {
 		StringBuilder resultBuilder = new StringBuilder();
 		try (StringOutput groupOutput = new StringOutput()) {
 			renderGroups(groupOutput, member, isCoach);
@@ -340,7 +359,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		} catch (Exception e) {
 			log.error("Error rendering groups", e);
 		}
-		return resultBuilder.toString();
+		return resultBuilder;
 	}
 
 	private void renderGroups(StringOutput sb, MemberRow member, Boolean isCoach) {
@@ -358,12 +377,12 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 			for (BusinessGroupShort group : groups) {
 				// Default to true if isCoach is null
 				boolean renderCondition = isCoach == null;
+				// get identity object of member
+				Identity identity = identityMap.get(member.getIdentityKey());
+				// to pass it for getting businessGroupMembership for that identity with a given group, only one possible
+				// because first parameter only gets one groupKey
+				BusinessGroupMembership bgMembership = businessGroupService.getBusinessGroupMembership(List.of(group.getKey()), identity).get(0);
 				if (isCoach != null) {
-					// get identity object of member
-					Identity identity = identityMap.get(member.getIdentityKey());
-					// to pass it for getting businessGroupMembership for that identity with a given group, only one possible
-					// because first parameter only gets one groupKey
-					BusinessGroupMembership bgMembership = businessGroupService.getBusinessGroupMembership(List.of(group.getKey()), identity).get(0);
 					renderCondition = (isCoach && bgMembership.isOwner()) || (!isCoach && bgMembership.isParticipant() || bgMembership.isWaiting());
 				}
 				// will be true, if it is not a bulk action, so isCoach == null
@@ -371,7 +390,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 				// or that member is participant in current looped group
 				// or that member is waiting for current looped group
 				if (renderCondition) {
-					and = and(sb, and);
+					and = and(sb, and, ", ");
 					sb.append("\"");
 					if (group.getName() == null && group.getKey() != null) {
 						sb.append(group.getKey());
@@ -379,6 +398,21 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 						sb.append(StringHelper.escapeHtml(group.getName()));
 					}
 					sb.append("\"");
+					if (!isBulkAction && isCoach == null) {
+						Translator translator = Util.createPackageTranslator(CourseRoleCellRenderer.class, getLocale());
+						boolean hasBothRoles = bgMembership.isOwner() && bgMembership.isParticipant();
+						sb.append(" (");
+						if (bgMembership.isOwner()) {
+							sb.append(translator.translate("role.group.tutor"));
+						}
+						if (bgMembership.isParticipant()) {
+							if (hasBothRoles) {
+								and = and(sb, and, "; ");
+							}
+							sb.append(translator.translate("role.group.participant"));
+						}
+						sb.append(")");
+					}
 				}
 			}
 		}
@@ -386,7 +420,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		List<CurriculumElementShort> curriculumElements = member.getCurriculumElements();
 		if (curriculumElements != null && !curriculumElements.isEmpty()) {
 			for (CurriculumElementShort curEl : curriculumElements) {
-				and = and(sb, and);
+				and = and(sb, and, ", ");
 				if (curEl.getDisplayName() == null && curEl.getKey() != null) {
 					sb.append(curEl.getKey());
 				} else {
