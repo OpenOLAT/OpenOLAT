@@ -435,7 +435,10 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	
 	@Override
 	public List<MediaShare> getMediaShares(Media media, RepositoryEntry entry) {
-		return mediaRelationDao.getRepositoryEntryRelations(media);
+		if (entry == null) {
+			return mediaRelationDao.getRepositoryEntryRelations(media);
+		}
+		return mediaRelationDao.getRepositoryEntryRelations(media).stream().filter(mr -> entry.equals(mr.getRepositoryEntry())).toList();
 	}
 
 	@Override
