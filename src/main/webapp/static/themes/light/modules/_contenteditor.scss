@@ -1,5 +1,9 @@
 .o_page_layout {
 
+	&.o_apply_layout_spacing_after {
+		margin-bottom: 10px;
+	}
+
 	&.o_apply_layout_spacing {
 		&.o_container_block_1_cols {
 			grid-gap: 10px;

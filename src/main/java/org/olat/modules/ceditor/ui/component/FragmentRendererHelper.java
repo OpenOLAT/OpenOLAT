@@ -19,12 +19,17 @@
  */
 package org.olat.modules.ceditor.ui.component;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
 import org.olat.modules.ceditor.model.AlertBoxType;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
+import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.GeneralStyleSettings;
@@ -36,6 +41,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
+import org.olat.modules.ceditor.ui.model.PageFragment;
 import org.olat.modules.forms.model.xml.Disclaimer;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.HTMLParagraph;
@@ -138,7 +144,35 @@ public class FragmentRendererHelper {
 		return null;
 	}
 
-	public static void renderContainerLayoutClasses(StringOutput sb, ContainerSettings settings) {
+	public static Set<String> getContainerElementIdsWithSpacingAfter(PageFragmentsComponent pageFragmentsComponent) {
+		List<? extends PageFragment> fragments = pageFragmentsComponent.getFragments();
+		List<ContainerElement> containerElements = fragments.stream()
+				.filter(f -> f.getPageElement() instanceof ContainerElement)
+				.map(f -> (ContainerElement) f.getPageElement()).toList();
+		Set<String> containerIds = new HashSet<>();
+		for (int i = 0; i < (containerElements.size() - 1); i++) {
+			ContainerElement containerElement = containerElements.get(i);
+			ContainerElement containerElementAfter = containerElements.get(i + 1);
+			if (isContainerElementWithSpacing(containerElement) && isContainerElementWithSpacing(containerElementAfter)) {
+				containerIds.add(containerElement.getId());
+			}
+		}
+		return containerIds;
+	}
+
+	private static boolean isContainerElementWithSpacing(ContainerElement containerElement) {
+		ContainerSettings containerSettings = containerElement.getContainerSettings();
+		if (containerSettings == null) {
+			return false;
+		}
+		GeneralStyleSettings generalStyleSettings = containerSettings.getGeneralStyleSettings();
+		if (generalStyleSettings == null) {
+			return false;
+		}
+		return generalStyleSettings.getBackgroundColor() != null && generalStyleSettings.isShowSpacing();
+	}
+
+	public static void renderContainerLayoutClasses(StringOutput sb, ContainerSettings settings, boolean applyLayoutSpacingAfter) {
 		AlertBoxSettings alertBoxSettings = settings.getAlertBoxSettingsIfActive();
 		boolean showAlert = alertBoxSettings != null;
 		AlertBoxType alertBoxType = showAlert ? alertBoxSettings.getType() : null;
@@ -155,6 +189,9 @@ public class FragmentRendererHelper {
 		}
 		if (applyLayoutSpacing) {
 			sb.append(" o_apply_layout_spacing");
+		}
+		if (applyLayoutSpacingAfter) {
+			sb.append(" o_apply_layout_spacing_after");
 		}
 		if (applyBackgroundColor) {
 			sb.append(" o_apply_background_color");
