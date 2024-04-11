@@ -65,6 +65,8 @@ public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> imple
 		case createdBy: return row.getCreatedBy();
 		case lastModifiedDate: return row.getLastModifiedDate();
 		case lastModifiedBy: return row.getLastModifiedBy();
+		case deletedDate: return row.getDeletedDate();
+		case deletedBy: return row.getDeletedBy();
 		case type: return row.getTranslatedType();
 		case status: return row;
 		case size: return row.getTranslatedSize();

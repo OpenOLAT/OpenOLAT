@@ -213,6 +213,13 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 						BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE);) {
 					FileUtils.cpio(bis, vfsLeaf.getOutputStream(false), "Delete file migration");
 					vfsLeaf.delete();
+					VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
+					if (vfsMetadata.getDeletedDate() != null) {
+						((VFSMetadataImpl)vfsMetadata).setDeletedBy(revision.getFileInitializedBy());
+						vfsRepositoryService.updateMetadata(vfsMetadata);
+						// The deletedDate is set as of today because we do not want do delete a lot of
+						// files directly in the night after the update.
+					}
 				} catch (Exception e) {
 					log.error("", e);
 				}
