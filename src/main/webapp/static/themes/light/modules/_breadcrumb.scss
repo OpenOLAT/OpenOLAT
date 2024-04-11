@@ -42,6 +42,9 @@
 					color: $text-color;
 					content: "#{$fa-var-chevron-right}";
 				}
+				&.o_breadcrumb_back {
+					margin-right: 10px;
+				}
 				&.o_breadcrumb_root,
 				&.o_breadcrumb_more {
 					&:before {
