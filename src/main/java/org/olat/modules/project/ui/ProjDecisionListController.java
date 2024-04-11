@@ -70,6 +70,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -125,8 +126,8 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	
 	private CloseableModalController cmc;
 	private ProjDecisionEditController decisionEditCtrl;
-	private ProjConfirmationController deleteConfirmationCtrl;
-	private ProjConfirmationController bulkDeleteConfirmationCtrl;
+	private ConfirmationController deleteConfirmationCtrl;
+	private ConfirmationController bulkDeleteConfirmationCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
@@ -654,10 +655,10 @@ abstract class ProjDecisionListController extends FormBasicController implements
 			return;
 		}
 		
-		String message = translate("decision.delete.confirmation.message",
-				StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), decision)));
-		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"decision.delete.confirmation.confirm", "decision.delete.confirmation.button", true);
+		deleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("decision.delete.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), decision))),
+				translate("decision.delete.confirmation.confirm"),
+				translate("decision.delete.confirmation.button"), true);
 		deleteConfirmationCtrl.setUserObject(decision);
 		listenTo(deleteConfirmationCtrl);
 		
@@ -679,9 +680,10 @@ abstract class ProjDecisionListController extends FormBasicController implements
 			return;
 		}
 		
-		String message = translate("decision.bulk.delete.message", Integer.toString(selectedIndex.size()));
-		bulkDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"decision.bulk.delete.confirm", "decision.bulk.delete.button", true);
+		bulkDeleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("decision.bulk.delete.message", Integer.toString(selectedIndex.size())),
+				translate("decision.bulk.delete.confirm"),
+				translate("decision.bulk.delete.button"), true);
 		listenTo(bulkDeleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),

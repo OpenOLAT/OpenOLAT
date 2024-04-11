@@ -84,6 +84,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -162,7 +163,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private ProjAppointmentDeleteConfirmationController appointmentDeleteConfirmationCtrl;
 	private ProjMilestoneEditController milestoneEditCtrl;
 	private ProjMilestonePreviewController milestonePreviewCtrl;
-	private ProjConfirmationController milestoneDeleteConfirmationCtrl;
+	private ConfirmationController milestoneDeleteConfirmationCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
@@ -1179,9 +1180,11 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			return;
 		}
 		
-		String message = translate("appointment.delete.confirmation.message", ProjectUIFactory.getDisplayName(getTranslator(), appointment));
-		boolean recurring = StringHelper.containsNonWhitespace(appointment.getRecurrenceRule());
-		appointmentDeleteConfirmationCtrl = new ProjAppointmentDeleteConfirmationController(ureq, getWindowControl(), message, recurring);
+		appointmentDeleteConfirmationCtrl = new ProjAppointmentDeleteConfirmationController(ureq, getWindowControl(),
+				translate("appointment.delete.confirmation.message", ProjectUIFactory.getDisplayName(getTranslator(), appointment)),
+				translate("appointment.delete.confirmation.confirm"),
+				translate("appointment.delete.confirmation.button"),
+				StringHelper.containsNonWhitespace(appointment.getRecurrenceRule()));
 		appointmentDeleteConfirmationCtrl.setUserObject(kalendarEvent);
 		listenTo(appointmentDeleteConfirmationCtrl);
 		
@@ -1216,10 +1219,10 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			return;
 		}
 		
-		String message = translate("milestone.delete.confirmation.message",
-				StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), milestone)));
-		milestoneDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"milestone.delete.confirmation.confirm", "milestone.delete.confirmation.button", true);
+		milestoneDeleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("milestone.delete.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), milestone))),
+				translate("milestone.delete.confirmation.confirm"),
+				translate("milestone.delete.confirmation.button"), true);
 		milestoneDeleteConfirmationCtrl.setUserObject(milestone);
 		listenTo(milestoneDeleteConfirmationCtrl);
 		

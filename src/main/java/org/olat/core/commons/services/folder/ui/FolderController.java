@@ -117,6 +117,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.OLATResourceable;
@@ -149,8 +150,6 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.modules.audiovideorecording.AVModule;
-import org.olat.modules.project.ui.ProjConfirmationController;
-import org.olat.modules.project.ui.ProjectUIFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -229,8 +228,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private Controller metadataCtrl;
 	private RevisionListController revisonsCtrl;
 	private ZipConfirmationController zipConfirmationCtrl;
-	private ProjConfirmationController deleteSoftlyConfirmationCtrl;
-	private ProjConfirmationController deletePermanentlyConfirmationCtrl;
+	private ConfirmationController deleteSoftlyConfirmationCtrl;
+	private ConfirmationController deletePermanentlyConfirmationCtrl;
 	private FolderSelectionController restoreSelectFolderCtrl;
 	private SendDocumentsByEMailController emailCtrl;
 	
@@ -273,7 +272,6 @@ public class FolderController extends FormBasicController implements Activateabl
 
 	public FolderController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, FolderControllerConfig config) {
 		super(ureq, wControl, "folder");
-		setTranslator(Util.createPackageTranslator(ProjectUIFactory.class, getLocale(), getTranslator()));
 		this.rootContainer = rootContainer;
 		this.config = config;
 		this.licensesEnabled = licenseModule.isEnabled(licenseHandler);
@@ -2136,13 +2134,16 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
-		String message = translate("file.delete.softly.confirmation.message", StringHelper.escapeHtml(vfsItem.getName()));
-		deleteSoftlyConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message, null, "delete", true);
+		String messageKey = row.isDirectory()
+				? "delete.softly.confirmation.message.container"
+				: "delete.softly.confirmation.message.leaf";
+		deleteSoftlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+				translate(messageKey, StringHelper.escapeHtml(vfsItem.getName())), null, translate("delete"), true);
 		deleteSoftlyConfirmationCtrl.setUserObject(vfsItem);
 		listenTo(deleteSoftlyConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteSoftlyConfirmationCtrl.getInitialComponent(),
-				true, translate("file.delete.softly.title"), true);
+				true, translate("move.to.trash"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -2190,7 +2191,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		String message = vfsItem instanceof VFSLeaf
 				? translate("delete.permanently.confirmation.message.leaf", StringHelper.escapeHtml(vfsItem.getName()))
 				: translate("delete.permanently.confirmation.message.container", StringHelper.escapeHtml(vfsItem.getName()));
-		deletePermanentlyConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message, null, "delete", true);
+		deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message, null, translate("delete"), true);
 		deletePermanentlyConfirmationCtrl.setUserObject(vfsItem);
 		listenTo(deletePermanentlyConfirmationCtrl);
 		

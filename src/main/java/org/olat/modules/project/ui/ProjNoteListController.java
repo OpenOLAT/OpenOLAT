@@ -73,6 +73,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
@@ -138,8 +139,8 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	private CloseableModalController cmc;
 	private ProjNoteEditController noteCreateCtrl;
 	private ProjNoteController noteCtrl;
-	private ProjConfirmationController deleteConfirmationCtrl;
-	private ProjConfirmationController bulkDeleteConfirmationCtrl;
+	private ConfirmationController deleteConfirmationCtrl;
+	private ConfirmationController bulkDeleteConfirmationCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
@@ -720,10 +721,10 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			return;
 		}
 		
-		String message = translate("note.delete.confirmation.message",
-				StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), note)));
-		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"note.delete.confirmation.confirm", "note.delete.confirmation.button", true);
+		deleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("note.delete.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), note))),
+				translate("note.delete.confirmation.confirm"),
+				translate("note.delete.confirmation.button"), true);
 		deleteConfirmationCtrl.setUserObject(note);
 		listenTo(deleteConfirmationCtrl);
 		
@@ -746,9 +747,10 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			return;
 		}
 		
-		String message = translate("note.bulk.delete.message", Integer.toString(selectedIndex.size()));
-		bulkDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"note.bulk.delete.confirm", "note.bulk.delete.button", true);
+		bulkDeleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("note.bulk.delete.message", Integer.toString(selectedIndex.size())),
+				translate("note.bulk.delete.confirm"),
+				translate("note.bulk.delete.button"), true);
 		listenTo(bulkDeleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),

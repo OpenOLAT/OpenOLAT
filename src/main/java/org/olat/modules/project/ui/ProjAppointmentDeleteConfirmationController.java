@@ -26,6 +26,8 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -33,7 +35,7 @@ import org.olat.core.gui.control.WindowControl;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjAppointmentDeleteConfirmationController extends ProjConfirmationController {
+public class ProjAppointmentDeleteConfirmationController extends ConfirmationController {
 	
 	public enum Cascade {all, future, single}
 
@@ -41,8 +43,10 @@ public class ProjAppointmentDeleteConfirmationController extends ProjConfirmatio
 	
 	private final boolean reccurence;
 
-	public ProjAppointmentDeleteConfirmationController(UserRequest ureq, WindowControl wControl, String message, boolean reccurence) {
-		super(ureq, wControl, message, "appointment.delete.confirmation.confirm", null, "appointment.delete.confirmation.button", true, false);
+	public ProjAppointmentDeleteConfirmationController(UserRequest ureq, WindowControl wControl, String message,
+			String confirmation, String confirmButton, boolean reccurence) {
+		super(ureq, wControl, message, confirmation, confirmButton, true, false);
+		setTranslator(Util.createPackageTranslator(ConfirmationController.class, getLocale(), getTranslator()));
 		this.reccurence = reccurence;
 		initForm(ureq);
 	}

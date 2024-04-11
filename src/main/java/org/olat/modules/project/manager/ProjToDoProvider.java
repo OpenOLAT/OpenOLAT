@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -38,7 +39,6 @@ import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
-import org.olat.modules.project.ui.ProjConfirmationController;
 import org.olat.modules.project.ui.ProjToDoDetailController;
 import org.olat.modules.project.ui.ProjToDoEditController;
 import org.olat.modules.project.ui.ProjectBCFactory;
@@ -179,8 +179,10 @@ public class ProjToDoProvider implements ToDoProvider, ToDoContextFilter {
 	@Override
 	public Controller createDeleteConfirmationController(UserRequest ureq, WindowControl wControl, Locale locale, ToDoTask toDoTask) {
 		Translator translator = Util.createPackageTranslator(ProjectUIFactory.class, locale);
-		String message = translator.translate("todo.delete.confirmation.message", StringHelper.escapeHtml(ToDoUIFactory.getDisplayName(translator, toDoTask)));
-		return new ProjConfirmationController(ureq, wControl, message, "todo.delete.confirmation.confirm", "todo.delete.confirmation.button", true);
+		return new ConfirmationController(ureq, wControl,
+				translator.translate("todo.delete.confirmation.message", StringHelper.escapeHtml(ToDoUIFactory.getDisplayName(translator, toDoTask))),
+				translator.translate("todo.delete.confirmation.confirm"),
+				translator.translate("todo.delete.confirmation.button"), true);
 	}
 	
 }

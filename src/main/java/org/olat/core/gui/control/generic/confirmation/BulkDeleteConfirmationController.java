@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project.ui;
+package org.olat.core.gui.control.generic.confirmation;
 
 import java.util.List;
 
@@ -32,16 +32,15 @@ import org.olat.core.gui.control.WindowControl;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class ProjBulkDeleteConfirmationController extends ProjConfirmationController {
+public class BulkDeleteConfirmationController extends ConfirmationController {
 	
 	private final String label;
 	private final List<String> values;
 	private final String showAllI18nKey;
 
-	public ProjBulkDeleteConfirmationController(UserRequest ureq, WindowControl wControl, String message,
-			String confirmationI18nKey, String[] confimationI18nArgs, String confirmButtonI18nKey, String label,
-			List<String> values, String showAllI18nKey) {
-		super(ureq, wControl, message, confirmationI18nKey, confimationI18nArgs, confirmButtonI18nKey, true, false);
+	public BulkDeleteConfirmationController(UserRequest ureq, WindowControl wControl, String message,
+			String confirmation, String confirmButton, String label, List<String> values, String showAllI18nKey) {
+		super(ureq, wControl, message, confirmation, confirmButton, true, false);
 		this.label = label;
 		this.values = values;
 		this.showAllI18nKey = showAllI18nKey;

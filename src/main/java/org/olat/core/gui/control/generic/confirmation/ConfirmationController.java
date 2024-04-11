@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project.ui;
+package org.olat.core.gui.control.generic.confirmation;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -32,38 +32,41 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 
 /**
  * 
  * Initial date: 6 Dev 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.comm
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.comm
  *
  */
-public class ProjConfirmationController extends FormBasicController {
+public class ConfirmationController extends FormBasicController {
 	
 	private FormLink confirmLink;
 	private MultipleSelectionElement confirmationEl;
 	
 	private final String message;
-	private final String confirmationI18nKey;
-	private final String[] confimationI18nArgs;
-	private final String confirmButtonI18nKey;
+	private final String confirmation;
+	private final String confirmButton;
 	private final boolean confirmDanger;
 	private Object userObject;
 	
-	public ProjConfirmationController(UserRequest ureq, WindowControl wControl, String message,
-			String confirmationI18nKey, String confirmButtonI18nKey, boolean confirmDanger) { 
-		this(ureq, wControl, message, confirmationI18nKey, null, confirmButtonI18nKey, confirmDanger, true);
+	public ConfirmationController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
+			String confirmButton) {
+		this(ureq, wControl, message, confirmation, confirmButton, false);
 	}
 	
-	protected ProjConfirmationController(UserRequest ureq, WindowControl wControl, String message,
-			String confirmationI18nKey, String[] confimationI18nArgs, String confirmButtonI18nKey,
-			boolean confirmDanger, boolean init) {
-		super(ureq, wControl, "confirmation");
+	public ConfirmationController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
+			String confirmButton, boolean confirmDanger) {
+		this(ureq, wControl, message, confirmation, confirmButton, confirmDanger, true);
+	}
+
+	public ConfirmationController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
+			String confirmButton, boolean confirmDanger, boolean init) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.message = message;
-		this.confirmationI18nKey = confirmationI18nKey;
-		this.confimationI18nArgs = confimationI18nArgs;
-		this.confirmButtonI18nKey = confirmButtonI18nKey;
+		this.confirmation = confirmation;
+		this.confirmButton = confirmButton;
 		this.confirmDanger = confirmDanger;
 		
 		if (init) {
@@ -86,30 +89,32 @@ public class ProjConfirmationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layout = (FormLayoutContainer)formLayout;
-			layout.contextPut("message", message);
-			
-			FormLayoutContainer confirmCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
-			formLayout.add("confirm", confirmCont);
-			confirmCont.setRootForm(mainForm);
-			
-			initFormElements(confirmCont);
-			
-			if (StringHelper.containsNonWhitespace(confirmationI18nKey)) {
-				String[] acknowledge = new String[] { translate(confirmationI18nKey, confimationI18nArgs) };
-				confirmationEl = uifactory.addCheckboxesHorizontal("confirmation", "confirmation", confirmCont, new String[]{ "" }, acknowledge);
-			}
-			
-			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			confirmCont.add(buttonsCont);
-			confirmLink = uifactory.addFormLink(confirmButtonI18nKey, buttonsCont, Link.BUTTON);
-			if (confirmDanger) {
-				confirmLink.setElementCssClass("btn-danger");
-			}
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		FormLayoutContainer messageCont = FormLayoutContainer.createCustomFormLayout("messageCont", getTranslator(),
+				Util.getPackageVelocityRoot(ConfirmationController.class) + "/confirmation.html");
+		formLayout.add(messageCont);
+		messageCont.contextPut("message", message);
+		
+		FormLayoutContainer confirmCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
+		formLayout.add("confirm", confirmCont);
+		confirmCont.setRootForm(mainForm);
+		
+		initFormElements(confirmCont);
+		
+		if (StringHelper.containsNonWhitespace(confirmation)) {
+			confirmationEl = uifactory.addCheckboxesHorizontal("confirmation", "confirmation", confirmCont,
+					new String[] { "" }, new String[] { confirmation });
 		}
+		
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		confirmCont.add(buttonsCont);
+		confirmLink = uifactory.addFormLink("confirm", buttonsCont, Link.BUTTON + Link.NONTRANSLATED);
+		confirmLink.setI18nKey(confirmButton);
+		if (confirmDanger) {
+			confirmLink.setElementCssClass("btn-danger");
+		}
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
+	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);

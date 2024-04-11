@@ -83,6 +83,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.render.DomWrapperElement;
@@ -167,7 +168,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private StepsMainRunController toDoTaskEditWizardCtrl;
 	private Controller toDoTaskEditCtrl;
 	private Controller deleteConfirmationCtrl;
-	private ToDoConfirmationController bulkDeleteConfirmationCtrl;
+	private ConfirmationController bulkDeleteConfirmationCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 
@@ -1388,8 +1389,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		
 		String message = translate("task.bulk.delete.message", Integer.toString(selectedIndex.size()));
-		bulkDeleteConfirmationCtrl = new ToDoConfirmationController(ureq, getWindowControl(), message,
-				"task.bulk.delete.confirm", "task.bulk.delete.button", true);
+		bulkDeleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message,
+				translate("task.bulk.delete.confirm"), translate("task.bulk.delete.button"), true);
 		listenTo(bulkDeleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),

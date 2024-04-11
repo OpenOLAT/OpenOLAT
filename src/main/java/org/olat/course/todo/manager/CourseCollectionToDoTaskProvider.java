@@ -38,10 +38,12 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.todo.CourseToDoContextFilter;
 import org.olat.course.todo.CourseToDoService;
@@ -62,7 +64,6 @@ import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
-import org.olat.modules.todo.ui.ToDoDeleteCollectionConfirmationController;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.repository.RepositoryEntry;
@@ -201,7 +202,15 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 
 	@Override
 	public Controller createDeleteConfirmationController(UserRequest ureq, WindowControl wControl, Locale locale, ToDoTask toDoTask) {
-		return new ToDoDeleteCollectionConfirmationController(ureq, wControl, toDoTask);
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setCollectionKeys(List.of(toDoTask.getKey()));
+		Long toDoTaskCount = toDoService.getToDoTaskCount(searchParams);
+		
+		Translator translator = Util.createPackageTranslator(ToDoUIFactory.class, locale);
+		return new ConfirmationController(ureq, wControl,
+				translator.translate("task.delete.collection.conformation.message", StringHelper.escapeHtml(ToDoUIFactory.getDisplayName(translator, toDoTask)), String.valueOf(toDoTaskCount)),
+				translator.translate("task.delete.collection.confirmation.confirm"),
+				translator.translate("delete"), true);
 	}
 
 	@Override

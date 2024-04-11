@@ -81,6 +81,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
@@ -156,9 +158,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private ProjFileCreateController fileCreateCtrl;
 	private ProjFileEditController fileEditCtrl;
 	private ProjRecordAVController recordAVController;
-	private ProjConfirmationController deleteSoftlyConfirmationCtrl;
-	private ProjConfirmationController deletePermanentlyConfirmationCtrl;
-	private ProjConfirmationController bulkDeleteConfirmationCtrl;
+	private ConfirmationController deleteSoftlyConfirmationCtrl;
+	private ConfirmationController deletePermanentlyConfirmationCtrl;
+	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
 	private Controller docEditorCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -945,7 +947,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		}
 		
 		String message = translate("file.delete.softly.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file)));
-		deleteSoftlyConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message, null, "delete", true);
+		deleteSoftlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message, null, translate("delete"), true);
 		deleteSoftlyConfirmationCtrl.setUserObject(file);
 		listenTo(deleteSoftlyConfirmationCtrl);
 		
@@ -969,9 +971,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			return;
 		}
 		
-		String message = translate("file.delete.permanently.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file)));
-		deletePermanentlyConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"file.delete.permanently.confirmation.confirm", "delete", true);
+		deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+				translate("file.delete.permanently.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file))),
+				translate("file.delete.permanently.confirmation.confirm"),
+				translate("delete"), true);
 		deletePermanentlyConfirmationCtrl.setUserObject(file);
 		listenTo(deletePermanentlyConfirmationCtrl);
 		
@@ -1010,9 +1013,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				.sorted()
 				.toList();
 		
-		bulkDeleteConfirmationCtrl = new ProjBulkDeleteConfirmationController(ureq, getWindowControl(),
-				translate("file.bulk.delete.softly.message", String.valueOf(filesToDelete.size())), null, null,
-				"delete", translate("file.bulk.delete.softly.label"), filenames, "file.bulk.delete.softly.show.all");
+		bulkDeleteConfirmationCtrl = new BulkDeleteConfirmationController(ureq, getWindowControl(),
+				translate("file.bulk.delete.softly.message", String.valueOf(filesToDelete.size())), null, translate("delete"),
+				translate("file.bulk.delete.softly.label"), filenames, "file.bulk.delete.softly.show.all");
 		listenTo(bulkDeleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
@@ -1035,10 +1038,11 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				.sorted()
 				.toList();
 		
-		bulkDeleteConfirmationCtrl = new ProjBulkDeleteConfirmationController(ureq, getWindowControl(),
+		bulkDeleteConfirmationCtrl = new BulkDeleteConfirmationController(ureq, getWindowControl(),
 				translate("file.bulk.delete.permanently.message", String.valueOf(filesToDelete.size())),
-				"file.bulk.delete.permanently.confirm", new String[] { String.valueOf(filesToDelete.size()) }, "delete",
-				translate("file.bulk.delete.permanently.label"), filenames, "file.bulk.delete.permanently.show.all");
+				translate("file.bulk.delete.permanently.confirm", new String[] { String.valueOf(filesToDelete.size()) }),
+				translate("delete"), translate("file.bulk.delete.permanently.label"), filenames,
+				"file.bulk.delete.permanently.show.all");
 		listenTo(bulkDeleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),

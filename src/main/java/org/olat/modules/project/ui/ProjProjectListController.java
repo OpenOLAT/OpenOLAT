@@ -80,6 +80,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -167,11 +168,11 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private CloseableModalController cmc;
 	private ProjProjectEditController editCtrl;
 	private ProjProjectDashboardController projectCtrl;
-	private ProjConfirmationController doneConfirmationCtrl;
-	private ProjConfirmationController deleteConfirmationCtrl;
-	private ProjConfirmationController doneConfirmationBulkCtrl;
-	private ProjConfirmationController reopenConfirmationBulkCtrl;
-	private ProjConfirmationController deleteConfirmationBulkCtrl;
+	private ConfirmationController doneConfirmationCtrl;
+	private ConfirmationController deleteConfirmationCtrl;
+	private ConfirmationController doneConfirmationBulkCtrl;
+	private ConfirmationController reopenConfirmationBulkCtrl;
+	private ConfirmationController deleteConfirmationBulkCtrl;
 	private DialogBoxController reopenConfirmationCtrl;
 	private ProjMembersManagementController membersManagementCtrl;
 	private ToolsController toolsCtrl;
@@ -1048,10 +1049,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		}
 		
 		int numOfMembers = projectService.countMembers(project);
-		String message = translate(ProjectUIFactory.templateSuffix("project.set.status.done.message", project), Integer.toString(numOfMembers));
-		doneConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				ProjectUIFactory.templateSuffix("project.set.status.done.confirm", project),
-				ProjectUIFactory.templateSuffix("project.set.status.done.button", project), false);
+		doneConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+				translate(ProjectUIFactory.templateSuffix("project.set.status.done.message", project), Integer.toString(numOfMembers)),
+				translate(ProjectUIFactory.templateSuffix("project.set.status.done.confirm", project)),
+				translate(ProjectUIFactory.templateSuffix("project.set.status.done.button", project)));
 		doneConfirmationCtrl.setUserObject(project);
 		listenTo(doneConfirmationCtrl);
 		
@@ -1080,10 +1081,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		}
 		
 		int numOfMembers = projectService.countMembers(project);
-		String message = translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.message", project), Integer.toString(numOfMembers));
-		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				ProjectUIFactory.templateSuffix("project.set.status.deleted.confirm", project),
-				ProjectUIFactory.templateSuffix("project.set.status.deleted.button", project), true);
+		deleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.message", project), Integer.toString(numOfMembers)),
+				translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.confirm", project)),
+				translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.button", project)), true);
 		deleteConfirmationCtrl.setUserObject(project);
 		listenTo(deleteConfirmationCtrl);
 		
@@ -1144,9 +1145,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			return;
 		}
 		
-		String message = translate("project.set.status.done.bulk.message", Integer.toString(selectedIndex.size()));
-		doneConfirmationBulkCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.set.status.done.bulk.confirm", "project.set.status.done.bulk.button", false);
+		doneConfirmationBulkCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("project.set.status.done.bulk.message", Integer.toString(selectedIndex.size())),
+				translate("project.set.status.done.bulk.confirm"), 
+				translate("project.set.status.done.bulk.button"));
 		listenTo(doneConfirmationBulkCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), doneConfirmationBulkCtrl.getInitialComponent(),
@@ -1163,9 +1165,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			return;
 		}
 		
-		String message = translate("project.reopen.bulk.message", Integer.toString(selectedIndex.size()));
-		reopenConfirmationBulkCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.reopen.bulk.confirm", "project.reopen.bulk.button", false);
+		reopenConfirmationBulkCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("project.reopen.bulk.message", Integer.toString(selectedIndex.size())),
+				translate("project.reopen.bulk.confirm"),
+				translate("project.reopen.bulk.button"));
 		listenTo(reopenConfirmationBulkCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), reopenConfirmationBulkCtrl.getInitialComponent(),
@@ -1182,9 +1185,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			return;
 		}
 		
-		String message = translate("project.set.status.deleted.bulk.message", Integer.toString(selectedIndex.size()));
-		deleteConfirmationBulkCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.set.status.deleted.bulk.confirm", "project.set.status.deleted.bulk.button", true);
+		deleteConfirmationBulkCtrl = new ConfirmationController(ureq, getWindowControl(),
+				translate("project.set.status.deleted.bulk.message", Integer.toString(selectedIndex.size())),
+				translate("project.set.status.deleted.bulk.confirm"),
+				translate("project.set.status.deleted.bulk.button"), true);
 		listenTo(deleteConfirmationBulkCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationBulkCtrl.getInitialComponent(),

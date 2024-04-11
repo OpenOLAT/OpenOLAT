@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.OLATResourceable;
@@ -78,7 +79,7 @@ public class ProjNoteController extends FormBasicController {
 	private ProjNoteViewController noteViewCtrl;
 	private ProjNoteEditController noteEditCtrl;
 	private CloseableModalController cmc;
-	private ProjConfirmationController deleteConfirmationCtrl;
+	private ConfirmationController deleteConfirmationCtrl;
 	
 	private final ProjectBCFactory bcFactory;
 	private final ProjProjectSecurityCallback secCallback;
@@ -298,10 +299,10 @@ public class ProjNoteController extends FormBasicController {
 			return;
 		}
 		
-		String message = translate("note.delete.confirmation.message",
-				StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), note)));
-		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"note.delete.confirmation.confirm", "note.delete.confirmation.button", true);
+		deleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("note.delete.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), note))),
+				translate("note.delete.confirmation.confirm"),
+				translate("note.delete.confirmation.button"), true);
 		deleteConfirmationCtrl.setUserObject(note);
 		listenTo(deleteConfirmationCtrl);
 		

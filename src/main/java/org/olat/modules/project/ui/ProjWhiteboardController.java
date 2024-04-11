@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -76,7 +77,7 @@ public class ProjWhiteboardController extends BasicController implements Generic
 	private EmptyState emptyState;
 
 	private CloseableModalController cmc;
-	private ProjConfirmationController resetConfirmationCtrl;
+	private ConfirmationController resetConfirmationCtrl;
 
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
@@ -260,9 +261,10 @@ public class ProjWhiteboardController extends BasicController implements Generic
 		if (guardModalController(resetConfirmationCtrl)) return;
 		if (guardResetLocked()) return;
 		
-		String message = translate("whiteboard.reset.message");
-		resetConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"whiteboard.reset.confirm", "whiteboard.reset.button", false);
+		resetConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+				translate("whiteboard.reset.message"),
+				translate("whiteboard.reset.confirm"),
+				translate("whiteboard.reset.button"));
 		listenTo(resetConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
