@@ -277,7 +277,12 @@ public class BGMailHelper {
 			for (RepositoryEntryShort entry: repoEntries) {
 				String title = entry.getDisplayname();
 				String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
+				learningResources.append("- ");
+				learningResources.append(translator.translate("remove.course")).append(" ");
 				learningResources.append(title);
+				if (entry.getExternalRef() != null) {
+					learningResources.append(" ").append(translator.translate("reference.separator")).append(" ").append(entry.getExternalRef());
+				}
 				learningResources.append(" (");
 				learningResources.append(url);
 				learningResources.append(")\n");
@@ -298,7 +303,7 @@ public class BGMailHelper {
 			// get group name and description
 			StringBuilder sb = new StringBuilder();
 			sb.append(group.getName() == null ? "" : StringHelper.escapeHtml(group.getName()))
-			         .append(" (").append(groupUrl).append(")\n");
+			         .append(" (").append(groupUrl).append(")");
 			groupNameWithUrl = sb.toString();
 	
 			String description;
@@ -311,8 +316,7 @@ public class BGMailHelper {
 		}
 		
 		String reactionTime = "";
-		if(translator != null && group instanceof BusinessGroupLifecycle) {
-			BusinessGroupLifecycle bGroup = (BusinessGroupLifecycle)group;
+		if(translator != null && group instanceof BusinessGroupLifecycle bGroup) {
 			Date date = null;
 			if(bGroup.getGroupStatus() == BusinessGroupStatusEnum.active) {
 				date = CoreSpringFactory.getImpl(BusinessGroupLifecycleManager.class).getInactivationDate(bGroup);
@@ -347,7 +351,7 @@ public class BGMailHelper {
 		
 		public String getGroupName() {
 			if(groupName == null) return "";
-			return groupName;
+			return StringHelper.unescapeHtml(groupName);
 		}
 		
 		public String getGroupUrl() {
@@ -357,7 +361,7 @@ public class BGMailHelper {
 		
 		public String getGroupNameWithUrl() {
 			if(groupNameWithUrl == null) return "";
-			return groupNameWithUrl;
+			return StringHelper.unescapeHtml(groupNameWithUrl);
 		}
 		
 		public String getGroupDescription() {

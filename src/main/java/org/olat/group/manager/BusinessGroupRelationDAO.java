@@ -606,7 +606,7 @@ public class BusinessGroupRelationDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select new org.olat.group.model.BGRepositoryEntryShortImpl(v.key, v.displayname) from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		sb.append("select new org.olat.group.model.BGRepositoryEntryShortImpl(v.key, v.displayname, v.externalRef) from ").append(RepositoryEntry.class.getName()).append(" as v ")
 			.append(" inner join v.olatResource as ores ")
 			.append(" inner join v.groups as relGroup")
 			.append(" where exists (")

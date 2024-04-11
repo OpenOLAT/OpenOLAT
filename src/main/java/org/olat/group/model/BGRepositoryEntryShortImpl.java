@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.group.model;
@@ -28,7 +28,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
  * of courses in BGMailHelper
  * 
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class BGRepositoryEntryShortImpl implements Persistable, RepositoryEntryShort {
 	
@@ -36,14 +36,16 @@ public class BGRepositoryEntryShortImpl implements Persistable, RepositoryEntryS
 
 	private Long key;
 	private String displayname;
+	private String externalRef;
 	
 	public BGRepositoryEntryShortImpl() {
 		//
 	}
 	
-	public BGRepositoryEntryShortImpl(Long key, String displayname) {
+	public BGRepositoryEntryShortImpl(Long key, String displayname, String externalRef) {
 		setKey(key);
 		this.displayname = displayname;
+		this.externalRef = externalRef;
 	}
 
 	@Override
@@ -58,6 +60,11 @@ public class BGRepositoryEntryShortImpl implements Persistable, RepositoryEntryS
 	@Override
 	public String getDisplayname() {
 		return displayname;
+	}
+
+	@Override
+	public String getExternalRef() {
+		return externalRef;
 	}
 
 	@Override
