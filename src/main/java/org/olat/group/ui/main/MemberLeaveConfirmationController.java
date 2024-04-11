@@ -402,6 +402,9 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 						Translator translator = Util.createPackageTranslator(CourseRoleCellRenderer.class, getLocale());
 						boolean hasBothRoles = bgMembership.isOwner() && bgMembership.isParticipant();
 						sb.append(" (");
+						if (bgMembership.isWaiting()) {
+							sb.append(translator.translate("role.group.waiting"));
+						}
 						if (bgMembership.isOwner()) {
 							sb.append(translator.translate("role.group.tutor"));
 						}
