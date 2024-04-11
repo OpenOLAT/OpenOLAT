@@ -247,6 +247,18 @@ public class VFSMetadataDAO {
 			.getResultList();
 	}
 	
+	public List<VFSMetadata> getDeletedDateBeforeMetadatas(Date reference) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select metadata from filemetadata metadata")
+		  .append(" where metadata.deleted = true")
+		  .append("   and metadata.deletedDate <= :referenceDate");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), VFSMetadata.class)
+			.setParameter("referenceDate", reference, TemporalType.TIMESTAMP)
+			.getResultList();
+	}
+	
 	public List<VFSMetadata> getExpiredMetadatas(Date reference) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")

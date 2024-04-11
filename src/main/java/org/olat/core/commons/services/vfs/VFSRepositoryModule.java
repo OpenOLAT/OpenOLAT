@@ -42,9 +42,12 @@ import org.springframework.stereotype.Service;
 public class VFSRepositoryModule extends AbstractSpringModule {
 	
 	private static final String MIGRATED_VFS = "vfs.migrated";
+	private static final String TRASH_RETENTION_DAYS = "trash.retention.days";
 	
 	private boolean migrated;
 	
+	@Value("${vfs.trash.retention.days}")
+	private int trashRetentionDays;
 	@Value("${vfs.largefiles.upperborder}")
 	private long upperBorder;
 	@Value("${vfs.largefiles.lowerborder}")
@@ -74,6 +77,11 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 		String migratedObj = getStringPropertyValue(MIGRATED_VFS, true);
 		if(StringHelper.containsNonWhitespace(migratedObj)) {
 			migrated = "true".equals(migratedObj);
+		}
+		
+		String trashRetentionDaysObj = getStringPropertyValue(TRASH_RETENTION_DAYS, true);
+		if(StringHelper.isLong(trashRetentionDaysObj)) {
+			trashRetentionDays = Integer.valueOf(trashRetentionDays);
 		}
 	}
 	
@@ -121,6 +129,15 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 				? VFSConstants.YES : VFSConstants.NO;
 	}
 	
+	public int getTrashRetentionDays() {
+		return trashRetentionDays;
+	}
+
+	public void setTrashRetentionDays(int trashRetentionDays) {
+		this.trashRetentionDays = trashRetentionDays;
+		setStringProperty(TRASH_RETENTION_DAYS, String.valueOf(trashRetentionDays), true);
+	}
+
 	public long getUpperBorder() {
 		return upperBorder;
 	}

@@ -523,6 +523,14 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		dbInstance.commitAndCloseSession();
 	}
 
+	protected void deleteRetentionExceededPermanently(Date deletionDateBefore) {
+		List<VFSMetadata> retentionExceeded = metadataDao.getDeletedDateBeforeMetadatas(deletionDateBefore);
+		for (VFSMetadata metadata : retentionExceeded) {
+			VFSItem item = getItemFor(metadata);
+			item.deleteSilently();
+		}
+	}
+
 	protected void deleteExpiredFiles() {
 		List<VFSMetadata> expiredList = metadataDao.getExpiredMetadatas(new Date());
 		for(VFSMetadata metadata:expiredList) {

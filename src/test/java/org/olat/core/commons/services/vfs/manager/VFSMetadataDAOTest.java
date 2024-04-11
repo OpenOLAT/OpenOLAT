@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -201,6 +203,32 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 			Assert.assertTrue(vfsMetadata.getLastModified().compareTo(editedAtNewer) >= 0);
 			Assert.assertTrue(vfsMetadata.getLastModified().compareTo(editedAtOlder) <= 0);
 		}
+	}
+	
+	@Test
+	public void getDeletedDateBeforeMetadatas() {
+		Date referenceDate = DateUtils.addDays(new Date(), -0);
+		VFSMetadata metadata1 = vfsMetadataDao.createMetadata(random(), random(), random(), new Date(), 18l, false, random(), "file", null);
+		((VFSMetadataImpl)metadata1).setDeleted(true);
+		((VFSMetadataImpl)metadata1).setDeletedDate(DateUtils.addDays(referenceDate, -1));
+		vfsMetadataDao.updateMetadata(metadata1);
+		VFSMetadata metadata2 = vfsMetadataDao.createMetadata(random(), random(), random(), new Date(), 18l, false, random(), "file", null);
+		((VFSMetadataImpl)metadata2).setDeleted(true);
+		((VFSMetadataImpl)metadata2).setDeletedDate(DateUtils.addDays(referenceDate, 1));
+		vfsMetadataDao.updateMetadata(metadata2);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSMetadata> deletedMetadatas = vfsMetadataDao.getDeletedDateBeforeMetadatas(referenceDate);
+		dbInstance.commitAndCloseSession();
+		
+		for (VFSMetadata deletedMetadata : deletedMetadatas) {
+			Assert.assertTrue(deletedMetadata.isDeleted());
+			Assert.assertNotNull(deletedMetadata.getDeletedDate());
+			Assert.assertTrue(deletedMetadata.getDeletedDate().compareTo(referenceDate) <= 0);
+		}
+		
+		Assert.assertTrue(deletedMetadatas.stream().anyMatch(m -> m.getUuid().equals(metadata1.getUuid())));
+		Assert.assertFalse(deletedMetadatas.stream().anyMatch(m -> m.getUuid().equals(metadata2.getUuid())));
 	}
 	
 	@Test

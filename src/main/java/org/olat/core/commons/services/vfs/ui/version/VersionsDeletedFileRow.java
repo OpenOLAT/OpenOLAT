@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.vfs.ui.version;
 
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.id.Persistable;
 
@@ -40,7 +41,7 @@ public class VersionsDeletedFileRow {
 		revisionKey = revision instanceof Persistable ? ((Persistable)revision).getKey() : null;
 		revisionNr = revision.getRevisionNr();
 		size = revision.getSize();
-		relativePath = revision.getMetadata().getRelativePath();
+		relativePath = revision.getMetadata().getRelativePath().replace("/" + VFSRepositoryService.TRASH_NAME, "");
 		filename = revision.getMetadata().getFilename();
 	}
 	

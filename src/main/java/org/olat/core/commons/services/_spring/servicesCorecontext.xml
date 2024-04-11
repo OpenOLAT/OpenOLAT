@@ -181,6 +181,21 @@
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 	
+	<!-- VFS delete files permanently (delete trash) -->
+	<bean id="vfsDeletePermanentlyTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="vfsDeletePermanentlyJob.${cluster.singleton.services}" />
+		<property name="cronExpression" value="02 02 2 * * ?" />
+		<property name="startDelay" value="60000" />
+	</bean>
+
+	<bean id="vfsDeletePermanentlyJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.vfs.manager.VFSDeletePermanentlyJob" />
+	</bean>
+	
+	<bean id="vfsDeletePermanentlyJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
 	<!-- Expired files and exports -->
 	<bean id="vfsExpiredTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="vfsExpiredJob.${cluster.singleton.services}" />
