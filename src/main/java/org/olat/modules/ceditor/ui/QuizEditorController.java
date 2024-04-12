@@ -441,10 +441,11 @@ public class QuizEditorController extends FormBasicController implements PageEle
 
 	private void doSaveQuestion(UserRequest ureq, QuizQuestion quizQuestion) {
 		QuizSettings quizSettings = quizPart.getSettings();
-		List<QuizQuestion> newQuestions = quizSettings.getQuestions().stream()
-				.filter(q -> !q.getId().equals(quizQuestion.getId())).collect(Collectors.toList());
-		newQuestions.add(quizQuestion);
-		quizSettings.setQuestions(newQuestions);
+
+		List<QuizQuestion> quizQuestions = quizSettings.getQuestions();
+		int index = quizQuestions.indexOf(quizQuestion);
+		quizQuestions.remove(quizQuestion);
+		quizQuestions.add(index, quizQuestion);
 
 		storeSettings(ureq, quizSettings);
 	}

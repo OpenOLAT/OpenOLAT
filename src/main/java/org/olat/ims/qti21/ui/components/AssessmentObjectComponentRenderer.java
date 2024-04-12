@@ -253,7 +253,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	protected void renderItemStatusMessage(String status, String i18nKey, StringOutput sb, Translator translator) {
 		String title = translator.translate(i18nKey);
 		sb.append("<span class='o_assessmentitem_status ").append(status).append(" ' title=\"").append(StringHelper.escapeHtml(title))
-		.append("\"><i class='o_icon o_icon-fw o_icon_qti_").append(status).append("'> </i><span>").append(title).append("</span></span>");
+		.append("\"><i class='o_icon o_icon_qti_").append(status).append("'> </i> <span>").append(title).append("</span></span>");
 	}
 	
 	protected void renderControl(StringOutput sb, AssessmentObjectComponent component, String title, boolean primary, String cssClass, NameValuePair... pairs) {
