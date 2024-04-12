@@ -36,9 +36,11 @@ import org.olat.group.ui.main.CourseMembership;
 public class CurriculumMembershipCellRenderer implements FlexiCellRenderer {
 	
 	private final Translator translator;
+	private final String delimiter;
 	
-	public CurriculumMembershipCellRenderer(Translator translator) {
+	public CurriculumMembershipCellRenderer(Translator translator, String delimiter) {
 		this.translator = translator;
+		this.delimiter = delimiter;
 	}
 
 	@Override
@@ -76,7 +78,7 @@ public class CurriculumMembershipCellRenderer implements FlexiCellRenderer {
 	}
 	
 	private final boolean and(StringOutput sb, boolean and) {
-		if(and) sb.append(", ");
+		if(and) sb.append(delimiter);
 		return true;
 	}
 }

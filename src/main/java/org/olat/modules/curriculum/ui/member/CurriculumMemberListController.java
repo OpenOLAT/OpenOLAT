@@ -236,7 +236,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.progression, new ProgressRadialCellRenderer(BarColor.success)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.firstTime));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role, new CurriculumMembershipCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role, new CurriculumMembershipCellRenderer(getTranslator(), ", ")));
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(MemberCols.tools);
 		toolsCol.setSortable(false);

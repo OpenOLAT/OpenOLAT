@@ -463,8 +463,8 @@ public class BGMailHelper {
 				context.put("login", StringHelper.escapeHtml(identityForVariables.getUser().getProperty(UserConstants.EMAIL, locale)));
 			}
 			// Put variables from greater context
-			context.put(GROUP_NAME, infos.getGroupNameWithUrl());
-			context.put("groupname", infos.getGroupNameWithUrl());
+			context.put(GROUP_NAME, infos.getGroupName());
+			context.put("groupname", infos.getGroupName());
 			context.put(GROUP_URL, infos.getGroupUrl());
 			context.put("groupurl", infos.getGroupUrl());
 			context.put(GROUP_DESCRIPTION, infos.getGroupDescription());

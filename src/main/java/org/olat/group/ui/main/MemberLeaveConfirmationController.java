@@ -119,7 +119,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 			if (withinCourse) {
 				externalRef = entry.getExternalRef() != null ? entry.getExternalRef() : "";
 			} else if (curriculumElement != null) {
-				externalRef = curriculumElement.getExternalId() != null ? curriculumElement.getExternalId() : "";
+				externalRef = curriculumElement.getIdentifier() != null ? curriculumElement.getIdentifier() : "";
 			} else if (businessGroup != null) {
 				externalRef = businessGroup.getExternalId() != null ? businessGroup.getExternalId() : "";
 			}
@@ -342,7 +342,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 
 	private void renderCurriculumRoles(StringOutput sb, CourseMembership membership) {
 		Translator curriculumTranslator = Util.createPackageTranslator(CurriculumComposerController.class, getLocale());
-		CurriculumMembershipCellRenderer roleRenderer = new CurriculumMembershipCellRenderer(curriculumTranslator);
+		CurriculumMembershipCellRenderer roleRenderer = new CurriculumMembershipCellRenderer(curriculumTranslator, "; ");
 		roleRenderer.render(null, sb, membership, 0, null, null, null);
 	}
 
