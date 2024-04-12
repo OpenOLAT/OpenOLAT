@@ -1651,45 +1651,45 @@ table.o_ce_table {
 			tr.choiceinteraction {
 				height: 40px;
 
-				td.control {
+				td {
 					padding: 0;
-					vertical-align: middle;
 					border-color: $brand-primary;
 					border-width: 1px;
-					border-top-left-radius: $border-radius-base;
-					border-bottom-left-radius: $border-radius-base;
 					border-top-style: solid;
 					border-bottom-style: solid;
-					border-left-style: solid;
 
-					label {
-						margin: 0;
-						padding: 11px 7px 11px 10px;
-						width: 100%;
-					}
-				}
+					&.control {
+						vertical-align: middle;
+						border-top-left-radius: $border-radius-base;
+						border-bottom-left-radius: $border-radius-base;
+						border-left-style: solid;
 
-				td.choiceInteraction {
-					padding: 0;
-					line-height: 18px;
-					border-color: $brand-primary;
-					border-width: 1px;
-					border-top-right-radius: $border-radius-base;
-					border-bottom-right-radius: $border-radius-base;
-					border-top-style: solid;
-					border-right-style: solid;
-					border-bottom-style: solid;
-					color: $brand-primary;
-
-					p {
-						margin: 0;
+						label {
+							margin: 0;
+							padding: 11px 7px 11px 10px;
+							width: 100%;
+						}
 					}
 
-					label {
-						margin: 0;
-						padding: 11px 10px 11px 0;
+					&.choiceInteraction {
+						line-height: 18px;
+						border-top-right-radius: $border-radius-base;
+						border-bottom-right-radius: $border-radius-base;
+						border-right-style: solid;
+
 						width: 100%;
-						user-select: none;
+						color: $brand-primary;
+
+						p {
+							margin: 0;
+						}
+
+						label {
+							margin: 0;
+							padding: 11px 10px 11px 0;
+							width: 100%;
+							user-select: none;
+						}
 					}
 				}
 
@@ -1733,8 +1733,23 @@ table.o_ce_table {
 				display: none;
 			}
 
-			.o_assessmentitem_wrapper .itemTitle .o_qti_item_meta {
-				margin-top: 8px;
+			.o_assessmentitem_wrapper {
+				.itemTitle .o_qti_item_meta {
+					margin-top: 8px;
+				}
+
+				.modalFeedback {
+					h4 {
+						border: unset;
+						font-size: unset;
+						font-weight: unset;
+						padding: 8px 16px;
+
+						a:hover, a:focus {
+							text-decoration: none;
+						}
+					}
+				}
 			}
 
 			.o_button_group.o_assessmentitem_controls {
