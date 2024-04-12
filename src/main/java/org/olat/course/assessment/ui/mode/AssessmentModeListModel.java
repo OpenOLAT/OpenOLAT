@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
@@ -127,7 +128,7 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 			canStart = coordinationService.canStart(mode);
 		}
 		// second condition: Show button only if Begin <= today
-		return canStart && mode.getBeginWithLeadTime().before(new Date());
+		return canStart && mode.getBeginWithLeadTime().before(DateUtils.getEndOfDay(new Date()));
 	}
 	
 	private boolean canStop(AssessmentMode mode) {

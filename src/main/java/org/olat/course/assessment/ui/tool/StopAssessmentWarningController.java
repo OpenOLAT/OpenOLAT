@@ -21,6 +21,8 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
@@ -59,44 +61,43 @@ import org.olat.course.assessment.ui.mode.ChangeAssessmentModeEvent;
 import org.olat.course.assessment.ui.mode.ModeStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
  * Initial date: 25 févr. 2021<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class StopAssessmentWarningController extends BasicController implements GenericEventListener {
 
-	
 	private Link stopAssessmentMode;
 	private Link startAssessmentMode;
 	private Link infoLink;
+
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
-
 	private final RepositoryEntry courseEntry;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private List<AssessmentMode> assessmentModes;
-	
+
 	private CloseableModalController cmc;
 	private DialogBoxController startDialogBox;
 	private ConfirmStopAssessmentModeController stopCtrl;
 	private CloseableCalloutWindowController eventCalloutCtrl;
 	private AssessmentModeDetailsController assessmentModeDetailsCtrl;
-	
+
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
-	
+
 	public StopAssessmentWarningController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, List<AssessmentMode> modes, AssessmentToolSecurityCallback assessmentCallback) {
+										   RepositoryEntry courseEntry, List<AssessmentMode> modes, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.courseEntry = courseEntry;
@@ -105,77 +106,92 @@ public class StopAssessmentWarningController extends BasicController implements 
 		assessmentModes = modes;
 		assessmentModeMessage(modes);
 		putInitialPanel(mainVC);
-		
+
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-			.registerFor(this, getIdentity(), ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
+				.registerFor(this, getIdentity(), ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+				.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-			.deregisterFor(this, ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
+				.deregisterFor(this, ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+				.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 		super.doDispose();
 	}
-	
+
 	private void reloadAssessmentModeMessage() {
 		assessmentModes = assessmentModeManager.getCurrentAssessmentMode(courseEntry, new Date());
 		assessmentModeMessage(assessmentModes);
 	}
-	
+
 	private void assessmentModeMessage(List<AssessmentMode> modes) {
 		// filter closed assessment mode
 		modes = modes.stream()
 				.filter(m -> !(Status.end.equals(m.getStatus()) && EndStatus.all.equals(m.getEndStatus())))
 				.toList();
-		
-		if(modes.size() == 1) {
+
+		List<LectureBlock> lectures = lectureService.getLectureBlocks(courseEntry, getIdentity());
+		Set<Long> taughtLectures = lectures.stream().map(LectureBlock::getKey).collect(Collectors.toSet());
+
+		if (modes.size() == 1) {
 			AssessmentMode mode = modes.get(0);
+			LectureBlock block = mode.getLectureBlock();
+			boolean allowToStartStop = assessmentCallback.canStartStopAllAssessments()
+					|| (block != null && taughtLectures.contains(block.getKey()));
+
 			assessmentModeMessageFormatting(mode, mainVC);
-			if (assessmentModeCoordinationService.canStart(mode)) {
-				String label = translate("assessment.tool.start");
-				if (startAssessmentMode == null) {
-					startAssessmentMode = LinkFactory.createCustomLink("assessment.start", "start", label, Link.BUTTON_SMALL | Link.NONTRANSLATED, mainVC, this);
+			if (mode.isManualBeginEnd() && allowToStartStop) {
+				if (assessmentModeCoordinationService.canStart(mode)) {
+					String label = translate("assessment.tool.start");
+					if (startAssessmentMode == null) {
+						startAssessmentMode = LinkFactory.createCustomLink("assessment.start", "start", label, Link.BUTTON_SMALL | Link.NONTRANSLATED, mainVC, this);
+					}
+					startAssessmentMode.setIconLeftCSS("o_icon o_icon-fw o_icon_status_in_progress");
+					startAssessmentMode.setUserObject(mode);
+				} else if (canStopAssessmentMode(mode)) {
+					if (startAssessmentMode != null) {
+						startAssessmentMode.setVisible(false);
+					}
+					String label = translate("assessment.tool.stop");
+					if (stopAssessmentMode == null) {
+						stopAssessmentMode = LinkFactory.createCustomLink("assessment.stop", "stop", label, Link.BUTTON_SMALL | Link.NONTRANSLATED, mainVC, this);
+					}
+					stopAssessmentMode.setIconLeftCSS("o_icon o_icon-fw o_as_mode_stop");
+					if (assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode)) {
+						stopAssessmentMode.setIconRightCSS("o_icon o_icon-fw o_icon_disadvantage_compensation");
+					}
+					stopAssessmentMode.setUserObject(mode);
 				}
-				startAssessmentMode.setIconLeftCSS("o_icon o_icon-fw o_icon_status_in_progress");
-				startAssessmentMode.setUserObject(mode);
-			} else if(canStopAssessmentMode(mode)) {
-				String label = translate("assessment.tool.stop");
-				if(stopAssessmentMode == null) {
-					stopAssessmentMode = LinkFactory.createCustomLink("assessment.stop", "stop", label, Link.BUTTON_SMALL | Link.NONTRANSLATED, mainVC, this);
-				}
-				stopAssessmentMode.setIconLeftCSS("o_icon o_icon-fw o_as_mode_stop");
-				if(assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode)) {
-					stopAssessmentMode.setIconRightCSS("o_icon o_icon-fw o_icon_disadvantage_compensation");
-				}
-				stopAssessmentMode.setUserObject(mode);
 			}
 			mainVC.contextPut("modeStatus", mode.getStatus().name());
-		} else if(modes.size() > 1) {
+		} else if (modes.size() > 1) {
+			if (startAssessmentMode != null) {
+				startAssessmentMode.setVisible(false);
+			}
 			if (stopAssessmentMode != null) {
 				stopAssessmentMode.setVisible(false);
 			}
 			assessmentModeMessageFormatting(mainVC);
-		} else if(stackPanel != null) {
+		} else if (stackPanel != null) {
 			stackPanel.removeMessageComponent();
 		}
 	}
-	
+
 	@Override
 	public void event(Event event) {
-		if(event instanceof ChangeAssessmentModeEvent came) {
+		if (event instanceof ChangeAssessmentModeEvent came) {
 			processChangeAssessmentModeEvents(came);
-		} else if(event instanceof AssessmentModeNotificationEvent amne) {
+		} else if (event instanceof AssessmentModeNotificationEvent amne) {
 			processChangeAssessmentModeEvents(amne);
 		}
 	}
-	
+
 	private void processChangeAssessmentModeEvents(AssessmentModeNotificationEvent event) {
 		try {
-			if(event.getAssessementMode() instanceof TransientAssessmentMode aMode) {
+			if (event.getAssessementMode() instanceof TransientAssessmentMode aMode) {
 				processChangeAssessmentModeEvents(aMode.getModeKey(), aMode.getRepositoryEntryKey(),
 						aMode.getEnd(), aMode.getFollowupTime(), aMode.getStatus(), aMode.getEndStatus());
 			}
@@ -183,7 +199,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 			logError("", e);
 		}
 	}
-	
+
 	private void processChangeAssessmentModeEvents(ChangeAssessmentModeEvent event) {
 		try {
 			processChangeAssessmentModeEvents(event.getAssessmentModeKey(), event.getEntryKey(),
@@ -192,33 +208,33 @@ public class StopAssessmentWarningController extends BasicController implements 
 			logError("", e);
 		}
 	}
-	
+
 	private void processChangeAssessmentModeEvents(Long assessmentModeKey, Long entryKey,
-			Date end, int followUptime, Status status, EndStatus endStatus) {
+												   Date end, int followUptime, Status status, EndStatus endStatus) {
 		try {
 			List<AssessmentMode> currentModes = assessmentModes;
-			if(courseEntry.getKey().equals(entryKey)) {
-				if(currentModes != null && !currentModes.isEmpty()) {
-					for(AssessmentMode currentMode:currentModes) {
-						if(assessmentModeKey.equals(currentMode.getKey())) {
-							if(needReload(currentMode, end, followUptime, status, endStatus)) {
+			if (courseEntry.getKey().equals(entryKey)) {
+				if (currentModes != null && !currentModes.isEmpty()) {
+					for (AssessmentMode currentMode : currentModes) {
+						if (assessmentModeKey.equals(currentMode.getKey())) {
+							if (needReload(currentMode, end, followUptime, status, endStatus)) {
 								reloadAssessmentModeMessage();
 							}
 							return;
 						}
 					}
 				}
-				
+
 				reloadAssessmentModeMessage();
 			}
 		} catch (Exception e) {
 			logError("", e);
 		}
 	}
-	
+
 	private boolean needReload(AssessmentMode currentMode, Date end, int followUpTime, Status status, EndStatus endStatus) {
 		return currentMode == null || currentMode.getStatus() != status || currentMode.getEndStatus() != endStatus
-				|| !DateUtils.isSameDate(currentMode.getEnd(), end) || currentMode.getFollowupTime() != followUpTime ;
+				|| !DateUtils.isSameDate(currentMode.getEnd(), end) || currentMode.getFollowupTime() != followUpTime;
 	}
 
 	@Override
@@ -234,25 +250,25 @@ public class StopAssessmentWarningController extends BasicController implements 
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(startDialogBox == source) {
-			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+		if (startDialogBox == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				doStart((AssessmentMode) startDialogBox.getUserObject());
 				fireEvent(ureq, new AssessmentModeStatusEvent());
 			}
-		} else if(stopCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+		} else if (stopCtrl == source) {
+			if (event == Event.DONE_EVENT) {
 				doAfterStop(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		} else if (cmc == source) {
 			cleanUp();
 		} else if (eventCalloutCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(assessmentModeDetailsCtrl);
 		removeAsListenerAndDispose(eventCalloutCtrl);
@@ -281,10 +297,10 @@ public class StopAssessmentWarningController extends BasicController implements 
 	}
 
 	private boolean canStopAssessmentMode(AssessmentMode mode) {
-		if(mode.isManualBeginEnd()) {
-			if(assessmentCallback.canStartStopAllAssessments()) {
+		if (mode.isManualBeginEnd()) {
+			if (assessmentCallback.canStartStopAllAssessments()) {
 				return assessmentModeCoordinationService.canStop(mode);
-			} else if(mode.getLectureBlock() != null) {
+			} else if (mode.getLectureBlock() != null) {
 				List<Identity> teachers = lectureService.getTeachers(mode.getLectureBlock());
 				return teachers.contains(getIdentity())
 						&& assessmentModeCoordinationService.canStop(mode);
@@ -292,15 +308,15 @@ public class StopAssessmentWarningController extends BasicController implements 
 		}
 		return false;
 	}
-	
+
 	private void assessmentModeMessageFormatting(AssessmentMode mode, VelocityContainer warn) {
 		Formatter formatter = Formatter.getInstance(getLocale());
-		
+
 		Date begin = mode.getBegin();
 		Date end = mode.getEnd();
 		String start;
 		String stop;
-		if(CalendarUtils.isSameDay(begin, end)) {
+		if (CalendarUtils.isSameDay(begin, end)) {
 			start = formatter.formatTimeShort(begin);
 			stop = formatter.formatTimeShort(end);
 		} else {
@@ -308,19 +324,19 @@ public class StopAssessmentWarningController extends BasicController implements 
 			stop = formatter.formatDateAndTime(end);
 		}
 
-		infoLink = LinkFactory.createLink("mode_info", "mode_info", "CMD_SCORE_DESC", "<i class='o_icon o_icon_info'> </i>", null, null, this, Link.NONTRANSLATED);
+		infoLink = LinkFactory.createLink("mode_info", "mode_info", "CMD_SCORE_DESC", "<i class='o_icon o_icon_info_badge'> </i>", null, null, this, Link.NONTRANSLATED);
 		infoLink.setUserObject(mode);
 		StringOutput status = new StringOutput();
 		ModeStatusCellRenderer modeStatusCellRenderer = new ModeStatusCellRenderer(Util.createPackageTranslator(AssessmentModeListController.class, getLocale()));
 		modeStatusCellRenderer.renderStatus(mode.getStatus(), null, status);
 
-		String[] args = new String[] {
+		String[] args = new String[]{
 				start,
 				stop,
 				formatter.formatDateAndTime(mode.getEndWithFollowupTime()),
 				mode.isManualBeginEnd() ? translate("mode.beginend.manual") : translate("mode.beginend.automatic")
 		};
-		
+
 		String i18nMessage;
 		if (mode.getStatus().equals(Status.leadtime) && mode.getLeadTime() > 0) {
 			i18nMessage = "assessment.mode.now.leadtime";
@@ -332,10 +348,10 @@ public class StopAssessmentWarningController extends BasicController implements 
 
 		String message = translate(i18nMessage, args);
 		warn.put("infoLink", infoLink);
-		warn.contextPut("title", status + "&nbsp;\"" + StringHelper.escapeHtml(mode.getName()) + "\"");
+		warn.contextPut("title", status + "&nbsp;&nbsp;\"" + StringHelper.escapeHtml(mode.getName()) + "\"");
 		warn.contextPut("message", message);
 	}
-		
+
 	private void assessmentModeMessageFormatting(VelocityContainer warn) {
 		warn.contextRemove("title");
 		String assessmentToolUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey() + "/assessmentToolv2/0";
@@ -350,18 +366,18 @@ public class StopAssessmentWarningController extends BasicController implements 
 		startDialogBox = activateYesNoDialog(ureq, title, text, startDialogBox);
 		startDialogBox.setUserObject(mode);
 	}
-	
+
 	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {
-		if(guardModalController(stopCtrl)) return;
-		
+		if (guardModalController(stopCtrl)) return;
+
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
-		if(mode == null) {
+		if (mode == null) {
 			showWarning("warning.assessment.mode.already.deleted");
 			doAfterStop(ureq);
 		} else {
 			stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
 			listenTo(stopCtrl);
-	
+
 			String title = translate("confirm.stop.title");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), stopCtrl.getInitialComponent(), true, title, true);
 			cmc.activate();
@@ -370,7 +386,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 	}
 
 	private void doStart(AssessmentMode mode) {
-		if(mode == null) {
+		if (mode == null) {
 			showWarning("warning.assessment.mode.already.deleted");
 		} else {
 			assessmentModeCoordinationService.startAssessment(mode);
@@ -379,7 +395,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 		}
 		reloadAssessmentModeMessage();
 	}
-	
+
 	private void doAfterStop(UserRequest ureq) {
 		reloadAssessmentModeMessage();
 		fireEvent(ureq, new AssessmentModeStatusEvent());

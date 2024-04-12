@@ -522,6 +522,8 @@ public class AssessmentModeListController extends FormBasicController implements
 	private class ToolsController extends BasicController {
 
 		private final Link copyLink;
+		private final Link editLink;
+		private final Link deleteLink;
 		private final AssessmentMode assessmentMode;
 
 		protected ToolsController(UserRequest ureq, WindowControl wControl, AssessmentMode assessmentMode) {
@@ -532,10 +534,16 @@ public class AssessmentModeListController extends FormBasicController implements
 
 			List<String> links = new ArrayList<>();
 			mainVC.contextPut("links", links);
+			editLink = LinkFactory.createLink("edit.text", "edit", getTranslator(), mainVC, this, Link.LINK);
+			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			copyLink = LinkFactory.createLink("duplicate", "copy", getTranslator(), mainVC, this, Link.LINK);
 			copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
-			mainVC.put("duplicate", copyLink);
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
 			links.add("duplicate");
+			links.add("edit.text");
+			links.add("-");
+			links.add("delete");
 
 			putInitialPanel(mainVC);
 		}
@@ -545,6 +553,12 @@ public class AssessmentModeListController extends FormBasicController implements
 			if (source == copyLink) {
 				close();
 				doCopy(ureq, assessmentMode);
+			} else if (source == editLink) {
+				close();
+				doEdit(ureq, assessmentMode);
+			} else if (source == deleteLink) {
+				close();
+				doConfirmDelete(ureq, List.of(assessmentMode));
 			}
 		}
 
