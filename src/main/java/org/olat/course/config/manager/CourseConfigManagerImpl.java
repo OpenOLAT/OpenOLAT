@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
@@ -73,7 +73,7 @@ public class CourseConfigManagerImpl implements CourseConfigManager {
 	public boolean deleteConfigOf(ICourse course) {
 		VFSLeaf configFile = getConfigFile(course);
 		if (configFile != null) {
-			return configFile.delete() == VFSConstants.YES;
+			return configFile.delete() == VFSStatus.YES;
 		}
 		return false;
 	}
@@ -113,7 +113,7 @@ public class CourseConfigManagerImpl implements CourseConfigManager {
 		if (configFile == null) {
 			// create new config file
 			configFile = course.getCourseBaseContainer().createChildLeaf(COURSECONFIG_XML);
-		} else if(configFile.exists() && configFile.canVersion() == VFSConstants.YES) {
+		} else if(configFile.exists() && configFile.canVersion() == VFSStatus.YES) {
 			try(InputStream in = configFile.getInputStream()) {
 				CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(configFile, null, false, "", in);
 			} catch (Exception e) {

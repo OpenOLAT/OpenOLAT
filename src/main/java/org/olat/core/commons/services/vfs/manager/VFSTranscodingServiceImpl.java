@@ -29,7 +29,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -169,7 +169,7 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 
 	@Override
 	public void deleteMasterFile(VFSItem item) {
-		if (item != null && item.canMeta() == VFSConstants.YES) {
+		if (item != null && item.canMeta() == VFSStatus.YES) {
 			VFSMetadata metaInfo = item.getMetaInfo();
 			if (metaInfo != null && metaInfo.isTranscoded()) {
 				VFSContainer parentContainer = item.getParentContainer();

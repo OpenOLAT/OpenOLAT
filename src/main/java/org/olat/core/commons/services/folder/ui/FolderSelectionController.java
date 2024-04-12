@@ -52,7 +52,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -177,7 +177,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 	}
 	
 	private VFSContainer getCachedContainer(VFSContainer vfsContainer) {
-		if (VFSConstants.YES == vfsContainer.canMeta()) {
+		if (VFSStatus.YES == vfsContainer.canMeta()) {
 			return new VFSMetadataContainer(vfsRepositoryService, true, vfsContainer);
 		}
 		return vfsContainer;

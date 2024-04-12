@@ -33,7 +33,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ZipUtil;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSCollectingFilter;
@@ -106,7 +106,7 @@ public class FolderZipMediaResource implements MediaResource {
 		
 			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 			for (VFSItem vfsItem : filter.getAcceptedItems()) {
-				if (vfsItem instanceof VFSLeaf vfsLeaf && vfsLeaf.canMeta() == VFSConstants.YES) {
+				if (vfsItem instanceof VFSLeaf vfsLeaf && vfsLeaf.canMeta() == VFSStatus.YES) {
 					vfsRepositoryService.increaseDownloadCount(vfsLeaf);
 				}
 			}

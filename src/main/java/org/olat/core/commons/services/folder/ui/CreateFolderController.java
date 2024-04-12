@@ -34,7 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +109,7 @@ public class CreateFolderController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String name = textElementEl.getValue().trim();
 		VFSItem item = currentContainer.createChildContainer(name);
-		if (item instanceof VFSContainer && item.canMeta() == VFSConstants.YES) {
+		if (item instanceof VFSContainer && item.canMeta() == VFSStatus.YES) {
 			VFSMetadata metaInfo = item.getMetaInfo();
 			if (metaInfo instanceof VFSMetadataImpl metadata) {
 				metadata.setFileInitializedBy(getIdentity());

@@ -57,7 +57,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.Resourceable;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -930,7 +930,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	public void deleteImage(CatalogEntryRef entry) {
 		VFSLeaf imgFile =  getImage(entry);
 		if (imgFile != null) {
-			if(imgFile.canMeta() == VFSConstants.YES) {
+			if(imgFile.canMeta() == VFSStatus.YES) {
 				vfsRepositoryService.resetThumbnails(imgFile);
 			}
 			imgFile.delete();
@@ -940,7 +940,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	public boolean setImage(VFSLeaf newImageFile, CatalogEntryRef re, Identity savedBy) {
 		VFSLeaf currentImage = getImage(re);
 		if(currentImage != null) {
-			if(currentImage.canMeta() == VFSConstants.YES) {
+			if(currentImage.canMeta() == VFSStatus.YES) {
 				vfsRepositoryService.resetThumbnails(currentImage);
 			}
 			currentImage.delete();

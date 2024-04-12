@@ -59,7 +59,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -232,7 +232,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 		}
 		// Parse the content of the page
 		this.body = parsePage(fileLeaf);
-		if (edusharingProvider != null && edusharingModule.isEnabled() && fileLeaf.canMeta() == VFSConstants.YES) {
+		if (edusharingProvider != null && edusharingModule.isEnabled() && fileLeaf.canMeta() == VFSStatus.YES) {
 			this.edusharingProvider = edusharingProvider;
 			this.edusharingProvider.setSubPath(fileLeaf);
 		}
@@ -552,7 +552,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 		}
 		
 		// save the file
-		if(versionsEnabled && fileLeaf.canVersion() == VFSConstants.YES) {
+		if(versionsEnabled && fileLeaf.canVersion() == VFSStatus.YES) {
 			try(InputStream inStream = FileUtils.getInputStream(fileContent.toString(), charSet)) {
 				vfsRepositoryService.addVersion(fileLeaf, getIdentity(), false, "", inStream);
 			} catch(IOException e) {

@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.NamedLeaf;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -74,7 +73,7 @@ public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 	
 	@Override
 	public VFSStatus canDescendants() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 	
 	@Override
@@ -89,12 +88,12 @@ public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 
 	@Override
 	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override

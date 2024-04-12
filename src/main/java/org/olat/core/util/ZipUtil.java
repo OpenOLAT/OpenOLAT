@@ -69,7 +69,7 @@ import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.LocalImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -268,7 +268,7 @@ public class ZipUtil {
 								newEntry = createIn.createChildLeaf(name);
 								copy(oZip, newEntry, stats);
 								vfsRepositoryService.itemSaved(newEntry, identity);
-							} else if (newEntry.canVersion() == VFSConstants.YES) {
+							} else if (newEntry.canVersion() == VFSStatus.YES) {
 								vfsRepositoryService.addVersion(newEntry, identity, false, "", oZip);
 							}
 						} else {
@@ -391,7 +391,7 @@ public class ZipUtil {
 								if(!copyShielded(oZip, newEntry, stats)) {
 									return false;
 								}
-							} else if (newEntry.canVersion() == VFSConstants.YES) {
+							} else if (newEntry.canVersion() == VFSStatus.YES) {
 								vfsRepositoryService.addVersion(newEntry, identity, false, "", oZip);
 							}
 							vfsRepositoryService.itemSaved(newEntry, identity);
@@ -441,7 +441,7 @@ public class ZipUtil {
 	}
 	
 	private static void unzipMetadata(InputStream oZip, VFSLeaf newEntry) {
-		if(newEntry.canMeta() != VFSConstants.YES) {
+		if(newEntry.canMeta() != VFSStatus.YES) {
 			return;
 		}
 		
@@ -549,7 +549,7 @@ public class ZipUtil {
 			if (vfsSubpath == null || (vfsSubpath instanceof VFSLeaf)) {
 				vfsSubpath = currentPath.createChildContainer(nextSubpath);
 				if (vfsSubpath == null) return null;
-				if (identity != null && vfsSubpath.canMeta() == VFSConstants.YES) {
+				if (identity != null && vfsSubpath.canMeta() == VFSStatus.YES) {
 					VFSMetadata info = vfsSubpath.getMetaInfo();
 					if(info instanceof VFSMetadataImpl) {
 						((VFSMetadataImpl)info).setFileInitializedBy(identity);
@@ -701,7 +701,7 @@ public class ZipUtil {
 					copyShielded(leaf, out);
 					out.closeEntry();
 					
-					if(withMetadata && leaf.canMeta() == VFSConstants.YES) {
+					if(withMetadata && leaf.canMeta() == VFSStatus.YES) {
 						byte[] metadata = MetaInfoReader.toBinaries(leaf.getMetaInfo());
 						if(metadata != null && metadata.length > 0) {
 							ZipEntry metaEntry = new ZipEntry(currentPath + "/._oo_meta_".concat(vfsItem.getName()));

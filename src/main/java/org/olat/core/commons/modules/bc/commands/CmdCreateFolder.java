@@ -42,7 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +78,7 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 	@Override
 	public Controller execute(FolderComponent fc, UserRequest ureq, WindowControl wControl, Translator trans) {
 		this.setTranslator(trans);
-		if (fc.getCurrentContainer().canWrite() != VFSConstants.YES) {
+		if (fc.getCurrentContainer().canWrite() != VFSStatus.YES) {
 			throw new AssertException("Illegal attempt to create folder in: " + fc.getCurrentContainerPath());
 		}
 		this.folderComponent = fc;
@@ -130,7 +130,7 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 		String name = textElement.getValue();	
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
 		VFSItem item = currentContainer.createChildContainer(name);
-		if (item instanceof VFSContainer && item.canMeta() == VFSConstants.YES) {
+		if (item instanceof VFSContainer && item.canMeta() == VFSStatus.YES) {
 			// update meta data
 			VFSMetadata meta = item.getMetaInfo();
 			if (meta instanceof VFSMetadataImpl) {

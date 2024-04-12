@@ -43,7 +43,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaExceededException;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -101,19 +100,19 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			// read/write is not defined on item level, only on directory level
 			status = item.getParentContainer().canWrite();
 		}
-		return VFSConstants.YES.equals(status);
+		return VFSStatus.YES.equals(status);
 	}
 	
 	@Override
 	public boolean canRename(String name) {
 		VFSItem item = resolveFile(name);
-		return item != null && VFSConstants.YES.equals(item.canRename());
+		return item != null && VFSStatus.YES.equals(item.canRename());
 	}	
 
 	@Override
 	public boolean canDelete(String path) {
 		VFSItem item = resolveFile(path);
-		return item != null && VFSConstants.YES.equals(item.canDelete());
+		return item != null && VFSStatus.YES.equals(item.canDelete());
 	}
 
 	@Override
@@ -153,7 +152,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		} else if (parentItem instanceof VFSContainer) {
 			String name = path.substring(lastSlash + 1);
 			VFSContainer folder = (VFSContainer)parentItem;
-			if(folder.canWrite() == VFSConstants.YES) {
+			if(folder.canWrite() == VFSStatus.YES) {
 				VFSContainer dir = folder.createChildContainer(name);
 				return dir != null && dir.exists();
 			}
@@ -172,7 +171,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 				childLeaf = (VFSLeaf)file;
 				
 				//versioning
-				if(childLeaf.canVersion() == VFSConstants.YES) {
+				if(childLeaf.canVersion() == VFSStatus.YES) {
 					try(InputStream in=childLeaf.getInputStream()) {
 						CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(childLeaf, identity, false, "", in);
 					} catch(IOException e) {
@@ -221,7 +220,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			}
 		}
 		
-		if(identity != null && childLeaf.canMeta() == VFSConstants.YES) {
+		if(identity != null && childLeaf.canMeta() == VFSStatus.YES) {
 			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 			VFSMetadata metadata;
 			if(movedFrom instanceof VFSResource && ((VFSResource)movedFrom).getItem() instanceof VFSLeaf) {
@@ -302,7 +301,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		if(resource instanceof VFSResource) {
 			VFSResource vfsResource = (VFSResource)resource;
 			VFSItem item = vfsResource.getItem();
-			if (item != null && VFSConstants.YES.equals(item.canDelete())) {
+			if (item != null && VFSStatus.YES.equals(item.canDelete())) {
 				VFSStatus status;
 				boolean helpFile = isClientHelpFile(item);
 				if(helpFile) {
@@ -310,7 +309,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 				} else {
 					status = item.delete();
 				}
-				deleted = (status == VFSConstants.YES || status == VFSConstants.SUCCESS);
+				deleted = (status == VFSStatus.YES || status == VFSStatus.SUCCESS);
 			}
 		}
 		return deleted;

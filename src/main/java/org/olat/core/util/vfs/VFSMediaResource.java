@@ -122,7 +122,7 @@ public class VFSMediaResource implements MediaResource {
 	@Override
 	public Long getSize() {
 		long size = getLeaf().getSize();
-		return (size == VFSConstants.UNDEFINED) ? null : Long.valueOf(size);
+		return (size == VFSStatus.UNDEFINED) ? null : Long.valueOf(size);
 	}
 
 	@Override
@@ -133,7 +133,7 @@ public class VFSMediaResource implements MediaResource {
 	@Override
 	public Long getLastModified() {
 		long lastModified = getLeaf().getLastModified();
-		return (lastModified == VFSConstants.UNDEFINED) ? null : Long.valueOf(lastModified);
+		return (lastModified == VFSStatus.UNDEFINED) ? null : Long.valueOf(lastModified);
 	}
 
 	@Override

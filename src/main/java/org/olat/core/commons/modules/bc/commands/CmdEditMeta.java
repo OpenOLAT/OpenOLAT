@@ -49,7 +49,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockApplicationType;
@@ -176,7 +176,7 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 						getWindowControl().setError(translator.translate("TargetNameAlreadyUsed"));
 						status = FolderCommandStatus.STATUS_FAILED;
 					} else {
-						if(VFSConstants.NO.equals(currentItem.rename(fileName))) {
+						if(VFSStatus.NO.equals(currentItem.rename(fileName))) {
 							getWindowControl().setError(translator.translate("FileRenameFailed", new String[]{fileName}));
 							status = FolderCommandStatus.STATUS_FAILED;
 						}

@@ -70,7 +70,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -227,7 +227,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		long fileSize = 0l;
 		for (VFSLeaf file : files) {
 			VFSMetadata infos = null;
-			if (file.canMeta() == VFSConstants.YES) {
+			if (file.canMeta() == VFSStatus.YES) {
 				infos = file.getMetaInfo();
 			}
 			// subject

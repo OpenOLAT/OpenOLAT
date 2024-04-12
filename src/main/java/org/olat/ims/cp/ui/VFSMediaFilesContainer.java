@@ -22,7 +22,6 @@ package org.olat.ims.cp.ui;
 import java.util.List;
 
 import org.olat.core.util.vfs.AbstractVirtualContainer;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSStatus;
@@ -102,7 +101,7 @@ public class VFSMediaFilesContainer extends AbstractVirtualContainer implements 
 
 	@Override
 	public VFSStatus canWrite() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 	
 	@Override

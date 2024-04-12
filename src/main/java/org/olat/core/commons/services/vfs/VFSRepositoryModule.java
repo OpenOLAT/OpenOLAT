@@ -26,7 +26,6 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -96,7 +95,7 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 
 	public static final VFSStatus canVersion(File file) {
 		VFSStatus canMeta = canMeta(file);
-		if(canMeta == VFSConstants.YES) {
+		if(canMeta == VFSStatus.YES) {
 			// version only works with metadata but not in: portfolio, scorm, forum...
 			Path bFile = file.toPath();
 			Path bcRoot = FolderConfig.getCanonicalRootPath();
@@ -107,7 +106,7 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 					&& !bFile.startsWith(bcRoot.resolve("qtiassessment"))
 					&& !bFile.startsWith(bcRoot.resolve("transcodedVideos"))
 					&& !bFile.startsWith(bcRoot.resolve("qpool"))
-					? VFSConstants.YES : VFSConstants.NO;
+					? VFSStatus.YES : VFSStatus.NO;
 		}
 		return canMeta;
 	}
@@ -126,7 +125,7 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 				&& !filename.equals("CourseConfig.xml")
 				&& !filename.equals(".DS_Store")
 				&& !filename.equals("__MACOSX")
-				? VFSConstants.YES : VFSConstants.NO;
+				? VFSStatus.YES : VFSStatus.NO;
 	}
 	
 	public int getTrashRetentionDays() {

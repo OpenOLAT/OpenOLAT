@@ -82,7 +82,7 @@ public class VirtualContainer extends AbstractVirtualContainer {
 
 	@Override
 	public VFSStatus canWrite() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override

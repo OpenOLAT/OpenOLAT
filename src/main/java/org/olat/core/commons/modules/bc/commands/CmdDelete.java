@@ -44,7 +44,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockApplicationType;
@@ -136,8 +136,8 @@ public class CmdDelete extends BasicController implements FolderCommand {
 				}
 				for (String file : files) {
 					VFSItem item = currentContainer.resolve(file);
-					if (item != null && (item.canDelete() == VFSConstants.YES)) {
-						if (versionsEnabled && item.canVersion() == VFSConstants.YES) {
+					if (item != null && (item.canDelete() == VFSStatus.YES)) {
+						if (versionsEnabled && item.canVersion() == VFSStatus.YES) {
 							// Move to pub
 							item.delete();
 						} else {

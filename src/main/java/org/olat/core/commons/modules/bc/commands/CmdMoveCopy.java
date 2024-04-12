@@ -48,7 +48,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.folder.FolderTreeModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -101,7 +100,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 
 		selTree = new MenuTree(null, "seltree", this);
 		FolderTreeModel ftm = new FolderTreeModel(ureq.getLocale(), fc.getRootContainer(),
-				true, false, true, fc.getRootContainer().canWrite() == VFSConstants.YES, new EditableFilter());
+				true, false, true, fc.getRootContainer().canWrite() == VFSStatus.YES, new EditableFilter());
 		selTree.setTreeModel(ftm);
 		selectButton = LinkFactory.createButton(move ? "move" : "copy", main, this);
 		cancelButton = LinkFactory.createButton("cancel", main, this);
@@ -160,10 +159,10 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 			abortFailed(ureq, "failed");
 			return;
 		}
-		VFSStatus vfsStatus = VFSConstants.SUCCESS;
+		VFSStatus vfsStatus = VFSStatus.SUCCESS;
 		VFSContainer rootContainer = folderComponent.getRootContainer();
 		VFSItem vfsItem = rootContainer.resolve(selectedPath);
-		if (vfsItem == null || (vfsItem.canWrite() != VFSConstants.YES)) {
+		if (vfsItem == null || (vfsItem.canWrite() != VFSStatus.YES)) {
 			abortFailed(ureq, "failed");
 			return;
 		}
@@ -174,16 +173,16 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 		
 		for (VFSItem vfsSource:sources) {
 			VFSItem targetFile = target.resolve(vfsSource.getName());
-			if(vfsSource instanceof VFSLeaf && targetFile != null && targetFile.canVersion() == VFSConstants.YES) {
+			if(vfsSource instanceof VFSLeaf && targetFile != null && targetFile.canVersion() == VFSStatus.YES) {
 				//add a new version to the file
 				VFSLeaf sourceLeaf = (VFSLeaf)vfsSource;
 				vfsRepositoryService.addVersion(sourceLeaf, ureq.getIdentity(), false, "", sourceLeaf.getInputStream());
 			} else {
 				vfsStatus = target.copyFrom(vfsSource, ureq.getIdentity());
 			}
-			if (vfsStatus != VFSConstants.SUCCESS) {
+			if (vfsStatus != VFSStatus.SUCCESS) {
 				String errorKey = "failed";
-				if (vfsStatus == VFSConstants.ERROR_QUOTA_EXCEEDED)
+				if (vfsStatus == VFSStatus.ERROR_QUOTA_EXCEEDED)
 					errorKey = "QuotaExceeded";
 				abortFailed(ureq, errorKey);
 				return;
@@ -257,7 +256,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 				return null;
 			}
 			
-			if (vfsSource.canCopy() != VFSConstants.YES) {
+			if (vfsSource.canCopy() != VFSStatus.YES) {
 				getWindowControl().setError(translator.translate("FileMoveCopyFailed", new String[] {vfsSource.getName()}));
 				status = FolderCommandStatus.STATUS_FAILED;
 				fireEvent(ureq, FOLDERCOMMAND_FINISHED);

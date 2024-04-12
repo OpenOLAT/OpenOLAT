@@ -62,7 +62,7 @@ public class VFSTest extends OlatTestCase {
 		String filename = UUID.randomUUID() + ".txt";
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
 		VFSLeaf firstLeaf = testContainer.createChildLeaf(filename);
-		Assert.assertEquals(VFSConstants.YES, firstLeaf.canMeta());
+		Assert.assertEquals(VFSStatus.YES, firstLeaf.canMeta());
 		prepareFile(firstLeaf);
 		
 		VFSMetadata metaInfo = firstLeaf.getMetaInfo();
@@ -71,14 +71,14 @@ public class VFSTest extends OlatTestCase {
 		Assert.assertNotNull(vfsRepositoryService.updateMetadata(metaInfo));
 		
 		VFSContainer targetContainer = VFSManager.olatRootContainer(VFS_TEST_DIR + "/vfstarger" + UUID.randomUUID(), null);
-		Assert.assertEquals(VFSConstants.YES, targetContainer.canMeta());
+		Assert.assertEquals(VFSStatus.YES, targetContainer.canMeta());
 		targetContainer.copyFrom(firstLeaf, null);
 		
 		VFSItem copiedItem = targetContainer.resolve(filename);
 		Assert.assertTrue(copiedItem instanceof VFSLeaf);
 		
 		VFSLeaf copiedLeaf = (VFSLeaf)copiedItem;
-		Assert.assertEquals(VFSConstants.YES, copiedLeaf.canMeta());
+		Assert.assertEquals(VFSStatus.YES, copiedLeaf.canMeta());
 		
 		VFSMetadata copiedMetaInfo = copiedLeaf.getMetaInfo();
 		Assert.assertEquals("A comment", copiedMetaInfo.getComment());
@@ -90,7 +90,7 @@ public class VFSTest extends OlatTestCase {
 		String filename = UUID.randomUUID() + ".txt";
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
 		VFSLeaf firstLeaf = testContainer.createChildLeaf(filename);
-		Assert.assertEquals(VFSConstants.YES, firstLeaf.canMeta());
+		Assert.assertEquals(VFSStatus.YES, firstLeaf.canMeta());
 		prepareFile(firstLeaf);
 		
 		VFSMetadata metaInfo = firstLeaf.getMetaInfo();
@@ -100,7 +100,7 @@ public class VFSTest extends OlatTestCase {
 		
 		String newName = UUID.randomUUID() + ".txt";
 		VFSStatus renamedStatus = firstLeaf.rename(newName);
-		Assert.assertEquals(VFSConstants.YES, renamedStatus);
+		Assert.assertEquals(VFSStatus.YES, renamedStatus);
 		
 		VFSItem renamedItem = testContainer.resolve(newName);
 		Assert.assertTrue(renamedItem instanceof VFSLeaf);
@@ -119,7 +119,7 @@ public class VFSTest extends OlatTestCase {
 		testContainer = VFSManager.getOrCreateContainer(testContainer, UUID.randomUUID().toString());
 		
 		VFSLeaf firstLeaf = testContainer.createChildLeaf(filename);
-		Assert.assertEquals(VFSConstants.YES, firstLeaf.canMeta());
+		Assert.assertEquals(VFSStatus.YES, firstLeaf.canMeta());
 		prepareFile(firstLeaf);
 		
 		VFSMetadata metaInfo = firstLeaf.getMetaInfo();
@@ -130,12 +130,12 @@ public class VFSTest extends OlatTestCase {
 		// A second file
 		String newName = UUID.randomUUID() + ".txt";
 		VFSLeaf secondLeaf = testContainer.createChildLeaf(newName);
-		Assert.assertEquals(VFSConstants.YES, secondLeaf.canMeta());
+		Assert.assertEquals(VFSStatus.YES, secondLeaf.canMeta());
 		prepareFile(secondLeaf);
 		
 		// Rename the second file to the first one
 		VFSStatus renamedStatus = firstLeaf.rename(filename);
-		Assert.assertEquals(VFSConstants.YES, renamedStatus);
+		Assert.assertEquals(VFSStatus.YES, renamedStatus);
 		
 		VFSItem renamedItem = testContainer.resolve(filename);
 		Assert.assertTrue(renamedItem instanceof VFSLeaf);

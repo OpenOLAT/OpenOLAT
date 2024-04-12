@@ -36,7 +36,7 @@ import java.util.Locale;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
@@ -113,7 +113,7 @@ public class FolderTreeModel extends GenericTreeModel {
 				GenericTreeNode tChild = new GenericTreeNode(childName, filePath); // filePath is the information to be remembered later
 				tChild.setIconCssClass("o_filetype_folder");
 				tChild.setAltText(child.getName());
-				tChild.setAccessible(selectableFolders ? (child.canWrite() == VFSConstants.YES) : false);
+				tChild.setAccessible(selectableFolders ? (child.canWrite() == VFSStatus.YES) : false);
 				tParent.addChild(tChild);
 				boolean addedChildren = buildTree(tChild, (VFSContainer)child, filePath);
 				if (foldersOnly || addedChildren) {

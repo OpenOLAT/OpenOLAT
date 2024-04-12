@@ -86,7 +86,6 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -591,14 +590,14 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		Map<OLATResource, List<VideoTranscoding>> transcodingsByResource = getVideoTranscodingsByResource(videoMetas);
 
 		return videoMetas.stream()
-				.filter((m) -> getTranscodingForOptimization(m, transcodingsByResource.get(m.getVideoResource())) != null)
+				.filter(m -> getTranscodingForOptimization(m, transcodingsByResource.get(m.getVideoResource())) != null)
 				.count();
 	}
 
 	private Map<OLATResource, List<VideoTranscoding>> getVideoTranscodingsByResource(List<VideoMeta> videoMetas) {
 		List<OLATResource> olatResources = videoMetas.stream().map(VideoMeta::getVideoResource).toList();
 		Map<OLATResource, List<VideoTranscoding>> result = olatResources.stream()
-				.collect(Collectors.toMap(Function.identity(), (olatResource) -> new ArrayList<>()));
+				.collect(Collectors.toMap(Function.identity(), olatResource -> new ArrayList<>()));
 
 		List<VideoTranscoding> videoTranscodings = getAllVideoTranscodings();
 		for (VideoTranscoding videoTranscoding : videoTranscodings) {
@@ -615,13 +614,13 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 			return null;
 		}
 
-		if (transcodings.stream().anyMatch((vt) -> vt.getStatus() != VideoTranscoding.TRANSCODING_STATUS_DONE)) {
+		if (transcodings.stream().anyMatch(vt -> vt.getStatus() != VideoTranscoding.TRANSCODING_STATUS_DONE)) {
 			log.debug("Waiting to optimize: transcoding still in progress or failed for video {}",
 					videoMeta.getVideoResource().getResourceableId());
 			return null;
 		}
 		VideoTranscoding transcodingWithSameResolution = transcodings.stream()
-				.filter((vt) -> videoMeta.getWidth() == vt.getWidth() && videoMeta.getHeight() == vt.getHeight())
+				.filter(vt -> videoMeta.getWidth() == vt.getWidth() && videoMeta.getHeight() == vt.getHeight())
 				.findFirst().orElse(null);
 		if (transcodingWithSameResolution == null) {
 			log.debug("No transcoding for optimization with the required resolution {} found for video {}",
@@ -1306,11 +1305,11 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		VFSContainer container = getTranscodingContainer(videoResource);
 		VFSStatus deleteStatus;
 		if(container == null) {
-			deleteStatus = VFSConstants.YES;
+			deleteStatus = VFSStatus.YES;
 		} else {
 			deleteStatus = container.delete();
 		}
-		return deleteStatus == VFSConstants.YES;
+		return deleteStatus == VFSStatus.YES;
 	}
 	
 	@Override

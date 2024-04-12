@@ -47,7 +47,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -225,7 +225,7 @@ public class CreateDocumentController extends FormBasicController {
 	}
 	
 	private void updateMetadata() {
-		if (vfsLeaf != null && vfsLeaf.canMeta() == VFSConstants.YES) {
+		if (vfsLeaf != null && vfsLeaf.canMeta() == VFSStatus.YES) {
 			VFSMetadata meta = vfsLeaf.getMetaInfo();
 			meta.setTitle(titleEl.getValue());
 			if (metadataCtrl != null) {

@@ -36,7 +36,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.QueryException;
 import org.olat.search.SearchModule;
@@ -112,7 +112,7 @@ public class FileDocumentFactory {
 				if(timestamp != null) {
 					Date indexLastModification = DateTools.stringToDate(timestamp);
 					Date docLastModificationDate = new Date(leaf.getLastModified());
-					if(leaf.canMeta() == VFSConstants.YES) {
+					if(leaf.canMeta() == VFSStatus.YES) {
 						VFSMetadata metaInfo = leaf.getMetaInfo();
 						Date metaDate = metaInfo.getLastModified();
 						if(metaDate != null && metaDate.after(docLastModificationDate)) {

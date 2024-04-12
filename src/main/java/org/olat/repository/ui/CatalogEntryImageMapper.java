@@ -26,7 +26,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -63,7 +63,7 @@ public class CatalogEntryImageMapper implements Mapper {
 
 		MediaResource resource = null;
 		if(image instanceof  VFSLeaf) {
-			if(image.canMeta() == VFSConstants.YES) {
+			if(image.canMeta() == VFSStatus.YES) {
 				VFSLeaf thumbnail = vfsRepositoryService.getThumbnail((VFSLeaf)image, 180, 180, true);
 				if(thumbnail != null) {
 					resource = new VFSMediaResource(thumbnail);

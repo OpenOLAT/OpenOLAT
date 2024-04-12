@@ -55,7 +55,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -372,7 +372,7 @@ public class CourseResourceFolderWebService {
 				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 
-			if (existingVFSItem instanceof VFSLeaf && existingVFSItem.canVersion() == VFSConstants.YES) {
+			if (existingVFSItem instanceof VFSLeaf && existingVFSItem.canVersion() == VFSStatus.YES) {
 				VFSLeaf existingLeaf = (VFSLeaf)existingVFSItem;
 				vfsRepositoryService.addVersion(existingLeaf, ureq.getIdentity(), false, "REST upload", file);
 				newFile = existingLeaf;

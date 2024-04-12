@@ -35,7 +35,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.NamedContainerImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -95,7 +95,7 @@ public class LibraryMediaChooserController extends CustomMediaChooserController 
 		if(source == fileChooserController) {
 			if (event instanceof FileChoosenEvent) {
 				VFSItem item = FileChooserUIFactory.getSelectedItem((FileChoosenEvent)event);
-				if(item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+				if(item instanceof VFSLeaf && item.canMeta() == VFSStatus.YES) {
 					VFSMetadata info = item.getMetaInfo();
 					if(info != null) {
 						String url = Settings.getServerContextPathURI() + "/library/" + info.getUuid() + "/" + item.getName();

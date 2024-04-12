@@ -25,7 +25,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.MergeSource;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSStatus;
@@ -54,27 +53,27 @@ public abstract class WebDAVMergeSource extends MergeSource {
 	
 	@Override
 	public VFSStatus canWrite() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus canDelete() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 	
 	@Override
 	public VFSStatus canRename() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus canCopy() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus delete() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 	
 	@Override

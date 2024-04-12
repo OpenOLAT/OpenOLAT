@@ -36,7 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -140,7 +140,7 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	public MediaInformations getInformations(Object mediaObject) {
 		String title = null;
 		String description = null;
-		if (mediaObject instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES) {
+		if (mediaObject instanceof VFSLeaf leaf && leaf.canMeta() == VFSStatus.YES) {
 			VFSMetadata meta = leaf.getMetaInfo();
 			title = meta.getTitle();
 			description = meta.getComment();

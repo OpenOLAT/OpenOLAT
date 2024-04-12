@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockApplicationType;
@@ -136,7 +135,7 @@ public class MetadataEditController extends FormBasicController {
 			}
 			
 			VFSStatus rename = vfsItem.rename(fileName);
-			if (VFSConstants.NO.equals(rename)) {
+			if (VFSStatus.NO.equals(rename)) {
 				showError("error.metadata.not.saved");
 				return;
 			}

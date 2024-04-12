@@ -51,7 +51,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -264,7 +264,7 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		String filename = UUID.randomUUID() + ".txt";
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
 		VFSLeaf leaf = testContainer.createChildLeaf(filename);
-		Assert.assertEquals(VFSConstants.YES, leaf.canMeta());
+		Assert.assertEquals(VFSStatus.YES, leaf.canMeta());
 		copyTestTxt(leaf, "test.txt");
 		
 		VFSMetadata metaInfo = leaf.getMetaInfo();

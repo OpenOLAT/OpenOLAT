@@ -26,7 +26,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 
@@ -61,7 +61,7 @@ public class PosterMapper implements Mapper {
 			return new VFSMediaResource(poster);
 		}
 		
-		if(size != null && media != null && media.canMeta() == VFSConstants.YES) {
+		if(size != null && media != null && media.canMeta() == VFSStatus.YES) {
 			VFSLeaf thumbnail = CoreSpringFactory.getImpl(VFSRepositoryService.class)
 					.getThumbnail(media, size.getWidth(), size.getHeight(), true);
 			if(thumbnail != null) {

@@ -100,7 +100,7 @@ import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -511,7 +511,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 	@Override
 	public void itemSaved(VFSLeaf leaf, Identity savedBy) {
-		if(leaf == null || leaf.canMeta() != VFSConstants.YES) return; // nothing to do
+		if(leaf == null || leaf.canMeta() != VFSStatus.YES) return; // nothing to do
 		
 		String relativePath = getContainerRelativePath(leaf);
 		Date lastModified = new Date(leaf.getLastModified());
@@ -813,7 +813,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 	@Override
 	public void copyTo(VFSLeaf source, VFSLeaf target, VFSContainer parentTarget, Identity savedBy) {
-		if(source.canMeta() != VFSConstants.YES || target.canMeta() != VFSConstants.YES) return;
+		if(source.canMeta() != VFSStatus.YES || target.canMeta() != VFSStatus.YES) return;
 		
 		VFSMetadataImpl sourceMetadata = (VFSMetadataImpl)loadMetadata(toFile(source));
 		if(sourceMetadata != null) {
@@ -827,7 +827,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 							new Date(), targetFile.length(), false, targetFile.toURI().toString(), "file", parentMetadata);
 				}
 				targetMetadata.copyValues(sourceMetadata, true);
-				if(source.canVersion() == VFSConstants.YES || target.canVersion() == VFSConstants.YES) {
+				if(source.canVersion() == VFSStatus.YES || target.canVersion() == VFSStatus.YES) {
 					targetMetadata.setRevisionComment(sourceMetadata.getRevisionComment());
 					targetMetadata.setRevisionNr(sourceMetadata.getRevisionNr());
 					targetMetadata.setRevisionTempNr(sourceMetadata.getRevisionTempNr());
@@ -1618,7 +1618,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		if(vfsModule.isMigrated()) return;
 		
 		File directory = toFile(container);
-		if(VFSRepositoryModule.canMeta(directory) == VFSConstants.YES) {
+		if(VFSRepositoryModule.canMeta(directory) == VFSStatus.YES) {
 			try {
 				migrateDirectories(directory);
 			} catch (IOException e) {
@@ -1660,7 +1660,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
 				File directory = dir.toFile();
-				if(directory.isHidden() || VFSRepositoryModule.canMeta(directory) != VFSConstants.YES) {
+				if(directory.isHidden() || VFSRepositoryModule.canMeta(directory) != VFSStatus.YES) {
 					return FileVisitResult.SKIP_SUBTREE;
 				}
 				if(dir.getNameCount() > 50 || parentLine.size() > 50) {
@@ -1679,7 +1679,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				File f = file.toFile();
-				if(!f.isHidden() && VFSRepositoryModule.canMeta(f) == VFSConstants.YES) {
+				if(!f.isHidden() && VFSRepositoryModule.canMeta(f) == VFSStatus.YES) {
 					VFSMetadata metadata = migrateMetadata(file.toFile(), parentLine.getLast());
 					checkParentLine(metadata, parentLine.getLast());
 					

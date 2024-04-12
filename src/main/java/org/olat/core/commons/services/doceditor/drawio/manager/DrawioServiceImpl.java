@@ -46,7 +46,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
@@ -169,7 +169,7 @@ public class DrawioServiceImpl implements DrawioService {
 		
 		if (content.length > 0) {
 			try (ByteArrayInputStream contentStream = new ByteArrayInputStream(content)) {
-				if (access.isVersionControlled() && vfsLeaf.canVersion() == VFSConstants.YES) {
+				if (access.isVersionControlled() && vfsLeaf.canVersion() == VFSStatus.YES) {
 					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, true, "drawio", contentStream);
 				} else {
 					updated = VFSManager.copyContent(contentStream, vfsLeaf, identity);
@@ -189,7 +189,7 @@ public class DrawioServiceImpl implements DrawioService {
 	}
 	
 	private void saveStableVersion(VFSLeaf vfsLeaf, Identity identity) {
-		if (vfsLeaf.canVersion() == VFSConstants.YES && vfsLeaf.getMetaInfo().getRevisionTempNr() != null) {
+		if (vfsLeaf.canVersion() == VFSStatus.YES && vfsLeaf.getMetaInfo().getRevisionTempNr() != null) {
 			try {
 				File tmpFile = File.createTempFile("drawio", ".tmp");
 				FileUtils.bcopy(vfsLeaf.getInputStream(), tmpFile, "drawio");

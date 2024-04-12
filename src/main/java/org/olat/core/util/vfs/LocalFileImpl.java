@@ -128,10 +128,10 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 	public VFSStatus rename(String newname) {
 		File f = getBasefile();
 		if(!f.exists()) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		
-		if(canMeta() == VFSConstants.YES) {
+		if(canMeta() == VFSStatus.YES) {
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).rename(this, newname);
 		}
 
@@ -144,25 +144,25 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4094022
 			// We need to manually reload the new basefile
 			super.setBasefile(new File(nf.getAbsolutePath()));
-			return VFSConstants.YES; 
+			return VFSStatus.YES; 
 		}
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus delete() {
 		File file = getBasefile();
 		if (!file.exists()) {
-			return VFSConstants.YES;
+			return VFSStatus.YES;
 		}
 		
-		if (canMeta() == VFSConstants.YES) {
+		if (canMeta() == VFSStatus.YES) {
 			// Move to trash
 			
 			// File is already in trash
 			File parentFile = file.getParentFile();
 			if (VFSRepositoryService.TRASH_NAME.equals(parentFile.getName())) {
-				return VFSConstants.YES;
+				return VFSStatus.YES;
 			}
 			
 			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
@@ -192,9 +192,9 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 			
 			if (vfsMetadata != null) {
 				vfsRepositoryService.markAsDeleted(doer, vfsMetadata, fileInTrash);
-				return VFSConstants.YES;
+				return VFSStatus.YES;
 			}
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		
 		return deleteBasefile();
@@ -202,15 +202,15 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 
 	@Override
 	public VFSStatus restore(VFSContainer targetContainer) {
-		if (targetContainer.canWrite() != VFSConstants.YES) {
-			return VFSConstants.NO;
+		if (targetContainer.canWrite() != VFSStatus.YES) {
+			return VFSStatus.NO;
 		}
-		if (canMeta() != VFSConstants.YES) {
-			return VFSConstants.NO;
+		if (canMeta() != VFSStatus.YES) {
+			return VFSStatus.NO;
 		}
 		File file = getBasefile();
 		if (!file.exists()) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		
 		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
@@ -218,13 +218,13 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 		
 		VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(this);
 		if (vfsMetadata == null || !vfsMetadata.isDeleted()) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		
 		if (targetContainer instanceof LocalFolderImpl localFolder) {
 			long quotaLeft = VFSManager.getQuotaLeftKB(targetContainer);
 			if (quotaLeft != Quota.UNLIMITED && quotaLeft < (file.length() / 1024)) {
-				return VFSConstants.ERROR_QUOTA_EXCEEDED;
+				return VFSStatus.ERROR_QUOTA_EXCEEDED;
 			}
 			
 			File restoredFile;
@@ -241,15 +241,15 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 			}
 			
 			vfsRepositoryService.unmarkFromDeleted(doer, vfsMetadata, restoredFile);
-			return VFSConstants.YES;
+			return VFSStatus.YES;
 		}
 		
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus deleteSilently() {
-		if(canMeta() == VFSConstants.YES) {
+		if(canMeta() == VFSStatus.YES) {
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
 			CoreSpringFactory.getImpl(DB.class).commit();
 			
@@ -261,12 +261,12 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 	}
 	
 	private VFSStatus deleteBasefile() {
-		VFSStatus status = VFSConstants.NO;
+		VFSStatus status = VFSStatus.NO;
 		try {
 			if(!Files.deleteIfExists(getBasefile().toPath())) {
 				log.debug("Cannot delete base file because it doesn't exist: {}", this);
 			}
-			status = VFSConstants.YES;
+			status = VFSStatus.YES;
 		} catch(IOException e) {
 			log.error("Cannot delete base file: {}", this, e);
 		}

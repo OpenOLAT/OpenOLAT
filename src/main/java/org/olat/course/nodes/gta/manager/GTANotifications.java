@@ -45,7 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.io.SystemFilenameFilter;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseFactory;
@@ -863,7 +863,7 @@ class GTANotifications {
 	private String getAuthor(File file, VFSContainer container) {
 		String author = null;
 		VFSItem item = container.resolve(file.getName());
-		if(item.canMeta() == VFSConstants.YES) {
+		if(item.canMeta() == VFSStatus.YES) {
 			VFSMetadata info = item.getMetaInfo();
 			Identity identityKey = info.getFileInitializedBy();
 			if(identityKey != null) {

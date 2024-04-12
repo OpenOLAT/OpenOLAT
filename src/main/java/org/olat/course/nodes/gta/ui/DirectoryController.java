@@ -55,7 +55,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFileFilter;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -164,7 +164,7 @@ public class DirectoryController extends BasicController implements Activateable
 			
 			String createdBy = null;
 			String lastModified = format.formatDateAndTime(new Date(vfsLeaf.getLastModified()));
-			if(vfsLeaf.canMeta() == VFSConstants.YES) {
+			if(vfsLeaf.canMeta() == VFSStatus.YES) {
 				VFSMetadata metaInfo = vfsLeaf.getMetaInfo();
 				if(metaInfo != null && metaInfo.getFileInitializedBy() != null) {
 					createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());

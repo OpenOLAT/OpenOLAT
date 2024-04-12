@@ -114,7 +114,7 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 
 	@Override
 	public VFSStatus rename(String newname) {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override

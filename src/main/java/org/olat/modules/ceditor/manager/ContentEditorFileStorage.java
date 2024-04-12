@@ -29,7 +29,7 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
@@ -210,7 +210,7 @@ public class ContentEditorFileStorage implements InitializingBean {
 	public VFSMetadata getMediaRootItemMetadata(StoredData data) {
 		VFSContainer storageContainer = getMediaContainer(data);
 		VFSItem item = storageContainer.resolve(data.getRootFilename());
-		if(item != null && item.canMeta() == VFSConstants.YES) {
+		if(item != null && item.canMeta() == VFSStatus.YES) {
 			return item.getMetaInfo();
 		}
 		return null;

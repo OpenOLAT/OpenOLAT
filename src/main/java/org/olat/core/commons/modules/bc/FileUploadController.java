@@ -75,7 +75,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -433,7 +433,7 @@ public class FileUploadController extends FormBasicController {
 			if(FolderCommandStatus.STATUS_CANCELED == revisionListCtr.getStatus()) {
 				//don't want to delete revisions, clean the temporary file
 				doCancel(ureq);
-			} else if (existingVFSItem.canVersion() == VFSConstants.YES) {
+			} else if (existingVFSItem.canVersion() == VFSStatus.YES) {
 				doFinishRevisionList(ureq);
 			}
 		}
@@ -451,7 +451,7 @@ public class FileUploadController extends FormBasicController {
 	}
 	
 	private void doFinishOverwrite(UserRequest ureq) {
-		if (existingVFSItem.canVersion() == VFSConstants.YES) {
+		if (existingVFSItem.canVersion() == VFSStatus.YES) {
 			//new version
 			int maxNumOfRevisions = getMaxNumOfRevisionsOfExistingVFSItem();
 			if(maxNumOfRevisions == 0) {
@@ -497,7 +497,7 @@ public class FileUploadController extends FormBasicController {
 		}
 		
 		//ok, new version of the file
-		if(existingVFSItem instanceof VFSLeaf && existingVFSItem.canVersion() == VFSConstants.YES) {
+		if(existingVFSItem instanceof VFSLeaf && existingVFSItem.canVersion() == VFSStatus.YES) {
 			boolean ok = vfsRepositoryService.addVersion((VFSLeaf)existingVFSItem, ureq.getIdentity(), false, comment, newFile.getInputStream());
 			if(ok) {
 				newFile.deleteSilently();
@@ -629,7 +629,7 @@ public class FileUploadController extends FormBasicController {
 				if (locked) {
 					//the file is locked and cannot be overwritten
 					lockedFileDialog(ureq, renamedFilename);
-				} else if (existingVFSItem.canVersion() == VFSConstants.YES) {
+				} else if (existingVFSItem.canVersion() == VFSStatus.YES) {
 					uploadVersionedFile(ureq, renamedFilename);
 				} else {
 					askOverwriteOrRename(ureq, renamedFilename);
@@ -735,7 +735,7 @@ public class FileUploadController extends FormBasicController {
 	 * Internal helper to finish the upload and add metadata
 	 */
 	private void finishSuccessfullUpload(String filePath, VFSItem item, boolean forceMetadata, UserRequest ureq) {
-		if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+		if (item instanceof VFSLeaf && item.canMeta() == VFSStatus.YES) {
 			// create meta data
 			VFSMetadata meta = item.getMetaInfo();
 			if (metaDataCtr != null) {

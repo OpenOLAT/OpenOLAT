@@ -38,7 +38,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -119,7 +119,7 @@ public class TextEditorController extends FormBasicController {
 
 	private void doSave() {
 		String content = contentEl.getValue();
-		if (versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
+		if (versionControlled && vfsLeaf.canVersion() == VFSStatus.YES) {
 			try (InputStream inStream = FileUtils.getInputStream(content, encoding)) {
 				vfsRepositoryService.addVersion(vfsLeaf, getIdentity(), false, "", inStream);
 			} catch (IOException e) {

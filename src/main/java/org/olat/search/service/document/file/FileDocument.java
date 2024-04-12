@@ -33,7 +33,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
@@ -53,7 +53,7 @@ public abstract class FileDocument extends OlatDocument {
 	protected void init(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
 		// Load metadata for this file
 		VFSMetadata meta = null;
-		if (leaf.canMeta() == VFSConstants.YES) {
+		if (leaf.canMeta() == VFSStatus.YES) {
 			meta = leaf.getMetaInfo();
 		}
 		

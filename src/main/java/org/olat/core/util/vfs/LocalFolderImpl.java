@@ -171,7 +171,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	
 	@Override
 	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
-		VFSStatus status = VFSConstants.YES;
+		VFSStatus status = VFSStatus.YES;
 		for(VFSItem item:container.getItems(new VFSSystemItemFilter())) {
 			status = copyFrom(item, true, savedBy);
 		}
@@ -187,9 +187,9 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	 * @return
 	 */
 	private VFSStatus copyFrom(VFSItem source, boolean checkQuota, Identity savedBy) {
-		if (source.canCopy() != VFSConstants.YES) {
+		if (source.canCopy() != VFSStatus.YES) {
 			log.warn("Cannot copy file {} security denied", source);
-			return VFSConstants.NO_SECURITY_DENIED;
+			return VFSStatus.NO_SECURITY_DENIED;
 		}
 		
 		String sourcename = source.getName();
@@ -198,7 +198,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		// check if there is already an item with the same name...
 		if (resolve(sourcename) != null) {
 			log.warn("Cannot copy file {} name already used", sourcename);
-			return VFSConstants.ERROR_NAME_ALREDY_USED;
+			return VFSStatus.ERROR_NAME_ALREDY_USED;
 		}
 		
 		// add either file bla.txt or folder blu as a child of this folder
@@ -208,7 +208,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			// check if this is a containing container...
 			if (VFSManager.isSelfOrParent(sourcecontainer, this)) {
 				log.warn("Cannot copy file {}  overlapping", this);
-				return VFSConstants.ERROR_OVERLAPPING;
+				return VFSStatus.ERROR_OVERLAPPING;
 			}
 			
 			// "copy" the container means creating a folder with that name
@@ -219,7 +219,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			List<VFSItem> children = sourcecontainer.getItems(new VFSVersionsItemFilter());
 			for (VFSItem chd:children) {
 				VFSStatus status = rootcopyfolder.copyFrom(chd, false, savedBy);
-				if (status != VFSConstants.SUCCESS) {
+				if (status != VFSStatus.SUCCESS) {
 					log.warn("Cannot copy file {} with status {}", chd, status);
 				}
 			}
@@ -231,7 +231,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 				long quotaLeft = VFSManager.getQuotaLeftKB(this);
 				if(quotaLeft != Quota.UNLIMITED && quotaLeft < (s.getSize() / 1024)) {
 					log.warn("Cannot copy file {} quota exceeded {}", s, quotaLeft);
-					return VFSConstants.ERROR_QUOTA_EXCEEDED;
+					return VFSStatus.ERROR_QUOTA_EXCEEDED;
 				}
 			}
 			
@@ -239,12 +239,12 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			try(InputStream in=s.getInputStream()) {
 				FileUtils.bcopy(in, fTarget, "VFScopyFrom");
 			} catch (Exception e) {
-				return VFSConstants.ERROR_FAILED;
+				return VFSStatus.ERROR_FAILED;
 			}
 
-			if(s.canMeta() == VFSConstants.YES || s.canVersion() == VFSConstants.YES) {
+			if(s.canMeta() == VFSStatus.YES || s.canVersion() == VFSStatus.YES) {
 				VFSItem target = resolve(sourcename);
-				if(target instanceof VFSLeaf && (target.canMeta() == VFSConstants.YES || s.canVersion() == VFSConstants.YES)) {
+				if(target instanceof VFSLeaf && (target.canMeta() == VFSStatus.YES || s.canVersion() == VFSStatus.YES)) {
 					VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 					vfsRepositoryService.itemSaved( (VFSLeaf)target, savedBy);
 					vfsRepositoryService.copyTo(s, (VFSLeaf)target, this, savedBy);
@@ -253,15 +253,15 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		} else {
 			throw new RuntimeException("neither a leaf nor a container!");
 		}
-		return VFSConstants.SUCCESS;
+		return VFSStatus.SUCCESS;
 	}
 
 	@Override
 	public VFSStatus canWrite() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canWrite())
-			return VFSConstants.NO_SECURITY_DENIED;
-		return VFSConstants.YES;
+			return VFSStatus.NO_SECURITY_DENIED;
+		return VFSStatus.YES;
 	}
 	
 	@Override
@@ -283,26 +283,26 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4094022
 			// We need to manually reload the new basefile and set it in our parent
 			super.setBasefile(new File(nf.getAbsolutePath()));
-			return VFSConstants.YES; 
+			return VFSStatus.YES; 
 		}
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus delete() {
 		File f = getBasefile();
 		if (!f.exists()) {
-			return VFSConstants.YES;
+			return VFSStatus.YES;
 		}
 		File parentFile = f.getParentFile();
 		if (VFSRepositoryService.TRASH_NAME.equals(parentFile.getName())) {
-			return VFSConstants.YES;
+			return VFSStatus.YES;
 		}
 		
 		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 		Identity doer = ThreadLocalUserActivityLogger.getLoggedIdentity();
 		VFSStatus status = null;
-		if (canMeta() == VFSConstants.YES) {
+		if (canMeta() == VFSStatus.YES) {
 			VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(this);
 			
 			if (!getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
@@ -318,12 +318,12 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 				
 				if (renamed) {
 					super.setBasefile(new File(fileInTrash.getAbsolutePath()));
-					status = VFSConstants.YES;
+					status = VFSStatus.YES;
 				} else {
-					status = VFSConstants.NO;
+					status = VFSStatus.NO;
 				}
 			} else {
-				status = VFSConstants.NO;
+				status = VFSStatus.NO;
 			}
 			
 			if (vfsMetadata != null) {
@@ -348,20 +348,20 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 
 	@Override
 	public VFSStatus restore(VFSContainer targetContainer) {
-		if (targetContainer.canWrite() != VFSConstants.YES) {
-			return VFSConstants.NO;
+		if (targetContainer.canWrite() != VFSStatus.YES) {
+			return VFSStatus.NO;
 		}
-		if (canMeta() != VFSConstants.YES) {
-			return VFSConstants.NO;
+		if (canMeta() != VFSStatus.YES) {
+			return VFSStatus.NO;
 		}
 		File file = getBasefile();
 		if (!file.exists()) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		
 		// Not in trash
 		if (!getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		
 		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
@@ -369,13 +369,13 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		
 		VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(this);
 		if (vfsMetadata == null || !vfsMetadata.isDeleted()) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		
 		long usage = VFSManager.getUsageKB(this);
 		long quotaLeft = VFSManager.getQuotaLeftKB(targetContainer);
 		if (quotaLeft != Quota.UNLIMITED && quotaLeft < usage) {
-			return VFSConstants.ERROR_QUOTA_EXCEEDED;
+			return VFSStatus.ERROR_QUOTA_EXCEEDED;
 		}
 		
 		String restoredFilename = VFSManager.similarButNonExistingName(targetContainer, file.getName(), "_");
@@ -394,16 +394,16 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 				child.restore(targetContainer);
 			}
 			
-			return VFSConstants.YES;
+			return VFSStatus.YES;
 		}
 		
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus deleteSilently() {
 		if(!getBasefile().exists()) {
-			return VFSConstants.YES;  // already non-existent
+			return VFSStatus.YES;  // already non-existent
 		}
 		// we must empty the folders and subfolders first
 		List<VFSItem> children = getItems();
@@ -411,7 +411,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			child.deleteSilently(); 
 		}
 		
-		if(canMeta() == VFSConstants.YES) {
+		if(canMeta() == VFSStatus.YES) {
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
 		}
 		// now delete the directory itself
@@ -421,7 +421,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	private VFSStatus deleteBasefile() {
 		log.debug("Delete basefile {}", this);
 		
-		VFSStatus status = VFSConstants.NO;
+		VFSStatus status = VFSStatus.NO;
 		try {
 			// walk tree make sure the directory is deleted once all files,
 			// versions files and others are properly deleted
@@ -438,7 +438,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 					return FileVisitResult.CONTINUE;
 				}
 			});
-			status = VFSConstants.YES;
+			status = VFSStatus.YES;
 		} catch(IOException e) {
 			log.error("Cannot delete base file: " + this, e);
 		}

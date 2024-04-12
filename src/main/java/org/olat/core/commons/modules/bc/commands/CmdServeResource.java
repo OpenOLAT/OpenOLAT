@@ -49,7 +49,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -89,7 +89,7 @@ public class CmdServeResource implements FolderCommand {
 			// update download counter
 			if(vfsItem == null) {
 				folderComponent.updateChildren();
-			} else if (vfsItem instanceof VFSLeaf && vfsItem.canMeta() == VFSConstants.YES) {
+			} else if (vfsItem instanceof VFSLeaf && vfsItem.canMeta() == VFSStatus.YES) {
 				CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount((VFSLeaf)vfsItem);
 			}
 		}

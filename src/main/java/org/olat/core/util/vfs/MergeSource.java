@@ -185,13 +185,13 @@ public class MergeSource extends AbstractVirtualContainer {
 
 	@Override
 	public VFSStatus canWrite() {
-		if (rootWriteContainer == null) return VFSConstants.NO;
+		if (rootWriteContainer == null) return VFSStatus.NO;
 		return rootWriteContainer.canWrite();
 	}
 
 	@Override
 	public VFSContainer createChildContainer(String name) {
-		if (canWrite() != VFSConstants.YES) return null;
+		if (canWrite() != VFSStatus.YES) return null;
 		VFSContainer newContainer = rootWriteContainer.createChildContainer(name);
 		if (newContainer != null)	newContainer.setDefaultItemFilter(defaultFilter);
 		return newContainer;
@@ -199,7 +199,7 @@ public class MergeSource extends AbstractVirtualContainer {
 
 	@Override
 	public VFSLeaf createChildLeaf(String name) {
-		if (canWrite() != VFSConstants.YES) return null;
+		if (canWrite() != VFSStatus.YES) return null;
 		return rootWriteContainer.createChildLeaf(name);
 	}
 
@@ -210,7 +210,7 @@ public class MergeSource extends AbstractVirtualContainer {
 
 	@Override
 	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {
-		if (canWrite() != VFSConstants.YES) {
+		if (canWrite() != VFSStatus.YES) {
 			throw new AssertException("Cannot create child container in merge source if not writable.");
 		}
 		return rootWriteContainer.copyFrom(source, savedBy);
@@ -218,7 +218,7 @@ public class MergeSource extends AbstractVirtualContainer {
 
 	@Override
 	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
-		if (canWrite() != VFSConstants.YES) {
+		if (canWrite() != VFSStatus.YES) {
 			throw new AssertException("Cannot create child container in merge source if not writable.");
 		}
 		
@@ -300,12 +300,12 @@ public class MergeSource extends AbstractVirtualContainer {
 	
 	@Override
 	public VFSStatus canMeta() {
-		return rootWriteContainer == null ? VFSConstants.NO : rootWriteContainer.canVersion();
+		return rootWriteContainer == null ? VFSStatus.NO : rootWriteContainer.canVersion();
 	}
 
 	@Override
 	public VFSStatus canVersion() {
-		return rootWriteContainer == null ? VFSConstants.NO: rootWriteContainer.canVersion();
+		return rootWriteContainer == null ? VFSStatus.NO: rootWriteContainer.canVersion();
 	}
 
 	@Override

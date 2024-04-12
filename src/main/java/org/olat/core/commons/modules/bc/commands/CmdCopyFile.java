@@ -31,7 +31,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 
@@ -55,7 +55,7 @@ public class CmdCopyFile extends BasicController implements FolderCommand {
 	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
 		setTranslator(translator);
-		if (folderComponent.getCurrentContainer().canWrite() != VFSConstants.YES) {
+		if (folderComponent.getCurrentContainer().canWrite() != VFSStatus.YES) {
 			throw new AssertException("Illegal attempt to create file in: " + folderComponent.getCurrentContainerPath());
 		}
 		

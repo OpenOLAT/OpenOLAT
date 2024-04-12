@@ -48,7 +48,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -284,7 +284,7 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 				PORTRAIT_MASTER_FILENAME, PORTRAIT_BIG_FILENAME, PORTRAIT_SMALL_FILENAME,
 				WIDTH_PORTRAIT_BIG, WIDTH_PORTRAIT_SMALL);
 		VFSLeaf vfsPortrait = getLargestVFSPortrait(identity);
-		if(vfsPortrait != null && vfsPortrait.canMeta() == VFSConstants.YES) {
+		if(vfsPortrait != null && vfsPortrait.canMeta() == VFSStatus.YES) {
 			vfsRepositoryService.resetThumbnails(vfsPortrait);
 		}
 	}
@@ -294,7 +294,7 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 				LOGO_MASTER_FILENAME, LOGO_BIG_FILENAME, LOGO_SMALL_FILENAME,
 				WIDTH_LOGO_BIG, WIDTH_LOGO_SMALL);
 		VFSLeaf vfsLogo = getLargestVFSLogo(identity);
-		if(vfsLogo != null && vfsLogo.canMeta() == VFSConstants.YES) {
+		if(vfsLogo != null && vfsLogo.canMeta() == VFSStatus.YES) {
 			vfsRepositoryService.resetThumbnails(vfsLogo);
 		}
 	}

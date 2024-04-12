@@ -92,7 +92,7 @@ public class NamedLeaf implements VFSLeaf {
 	@Override
 	public VFSStatus canRename() {
 		// renaming is not supported
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override

@@ -33,7 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
@@ -88,7 +88,7 @@ public class ScormAssessmentManager {
 		VFSContainer scoDirectory = ScormDirectoryHelper.getScoDirectory(username, courseEnv, node);
 		if(scoDirectory == null) return true; //nothing to reset -> ok
 		
-		return (scoDirectory.delete() == VFSConstants.YES);
+		return (scoDirectory.delete() == VFSStatus.YES);
 	}
 	
 	//<OLATCE-289>

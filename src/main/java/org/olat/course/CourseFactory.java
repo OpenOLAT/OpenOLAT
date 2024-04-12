@@ -92,7 +92,6 @@ import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
@@ -462,7 +461,7 @@ public class CourseFactory {
 		VFSContainer fCourseBasePath = getCourseBaseContainer(res.getResourceableId());
 		VFSStatus status = fCourseBasePath.deleteSilently();
 		DBFactory.getInstance().commitAndCloseSession();
-		boolean deletionSuccessful = (status == VFSConstants.YES || status == VFSConstants.SUCCESS);
+		boolean deletionSuccessful = (status == VFSStatus.YES || status == VFSStatus.SUCCESS);
 		log.info("deleteCourse: finished deletion. res={}, deletion successful: {}, duration: {} ms.",
 				res, deletionSuccessful, (System.currentTimeMillis()-start));
 	}

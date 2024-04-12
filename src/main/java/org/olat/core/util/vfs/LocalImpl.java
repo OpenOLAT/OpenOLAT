@@ -68,29 +68,29 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	public VFSStatus canDelete() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canDelete())
-			return VFSConstants.NO_SECURITY_DENIED;
-		return (basefile.canWrite() ? VFSConstants.YES : VFSConstants.NO);
+			return VFSStatus.NO_SECURITY_DENIED;
+		return (basefile.canWrite() ? VFSStatus.YES : VFSStatus.NO);
 	}
 
 	@Override
 	public VFSStatus canCopy() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canCopy())
-			return VFSConstants.NO_SECURITY_DENIED;
-		return VFSConstants.YES;
+			return VFSStatus.NO_SECURITY_DENIED;
+		return VFSStatus.YES;
 	}
 
 	@Override
 	public VFSStatus canRename() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canWrite())
-			return VFSConstants.NO_SECURITY_DENIED;
-		return VFSConstants.YES;
+			return VFSStatus.NO_SECURITY_DENIED;
+		return VFSStatus.YES;
 	}
 
 	@Override
 	public VFSStatus canWrite() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
@@ -136,7 +136,7 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	public long getLastModified() {
 		long lm = basefile.lastModified();
 		// file returns zero -> we return -1 (see interface docu)
-		return lm == 0L? VFSConstants.UNDEFINED : lm;
+		return lm == 0L? VFSStatus.UNDEFINED : lm;
 	}
 	
 	@Override
@@ -146,12 +146,12 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	
 	@Override
 	public VFSStatus canVersion() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSMetadata getMetaInfo() {
-		if(canMeta() == VFSConstants.YES) {
+		if(canMeta() == VFSStatus.YES) {
 			return CoreSpringFactory.getImpl(VFSRepositoryService.class).getMetadataFor(getBasefile());
 		}
 		return null;

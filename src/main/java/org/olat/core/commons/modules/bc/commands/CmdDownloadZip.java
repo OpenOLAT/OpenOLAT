@@ -42,7 +42,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -188,7 +188,7 @@ public class CmdDownloadZip implements FolderCommand {
 					if (item != null) {
 						vfsFiles.add(item);
 						// update download counter
-						if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+						if (item instanceof VFSLeaf && item.canMeta() == VFSStatus.YES) {
 							vfsRepositoryService.increaseDownloadCount((VFSLeaf)item);
 						}
 					}

@@ -52,7 +52,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -490,7 +489,7 @@ public class DocumentConfigController extends BasicController {
 					showError("error.file.name.in.use");
 				} else {
 					VFSStatus renameStatus = documentSource.getVfsLeaf().rename(fileName);
-					if (VFSConstants.NO.equals(renameStatus)) {
+					if (VFSStatus.NO.equals(renameStatus)) {
 						showError("error.file.not.renamed");
 					} else {
 						documentSource = new DocumentSource(documentSource.getVfsLeaf());

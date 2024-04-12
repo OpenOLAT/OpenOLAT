@@ -26,7 +26,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
@@ -102,7 +102,7 @@ public class OLATUpgrade_18_0_4 extends OLATUpgrade {
 					for (Certificate certificate:certificates) {
 						if(certificate.getMetadata() == null) {
 							VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
-							if(certificateLeaf != null && certificateLeaf.canMeta() == VFSConstants.YES) {
+							if(certificateLeaf != null && certificateLeaf.canMeta() == VFSStatus.YES) {
 								VFSMetadata metadata = vfsRepositoryService.getMetadataFor(certificateLeaf);
 								((CertificateImpl)certificate).setMetadata(metadata);
 								dbInstance.getCurrentEntityManager().merge(certificate);

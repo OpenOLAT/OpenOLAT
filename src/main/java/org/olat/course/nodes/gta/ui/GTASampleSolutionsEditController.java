@@ -67,7 +67,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -212,7 +212,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			FormLink openLink = null;
 			FormLink toolsLink = null;
 			FormLink documentLink = null;
-			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSConstants.YES) {
+			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSStatus.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
 				if (metaInfo.getFileInitializedBy() != null) {
 					author = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());

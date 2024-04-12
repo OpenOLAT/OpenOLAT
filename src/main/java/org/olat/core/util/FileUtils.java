@@ -61,7 +61,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -582,7 +582,7 @@ public class FileUtils {
 	public static boolean deleteFile(File file) {
 		boolean deleted = false;
 		try {
-			if(VFSRepositoryModule.canMeta(file) == VFSConstants.YES) {
+			if(VFSRepositoryModule.canMeta(file) == VFSStatus.YES) {
 				CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(file);
 			}
 			deleted = Files.deleteIfExists(file.toPath());

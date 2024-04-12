@@ -36,7 +36,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -127,7 +127,7 @@ public class DrawioHandler extends AbstractMediaHandler implements PageElementSt
 		if(StringHelper.containsNonWhitespace(storagePath)) {
 			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 			VFSItem item = storageContainer.resolve(media.getRootFilename());
-			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES) {
+			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSStatus.YES) {
 				String fileSuffix = FileUtils.getFileSuffix(leaf.getName());
 				if ("svg".equalsIgnoreCase(fileSuffix)) {
 					thumbnail = leaf;
@@ -149,7 +149,7 @@ public class DrawioHandler extends AbstractMediaHandler implements PageElementSt
 	public MediaInformations getInformations(Object mediaObject) {
 		String title = null;
 		String description = null;
-		if (mediaObject instanceof VFSLeaf mediaFile && mediaFile.canMeta() == VFSConstants.YES) {
+		if (mediaObject instanceof VFSLeaf mediaFile && mediaFile.canMeta() == VFSStatus.YES) {
 			VFSMetadata meta = mediaFile.getMetaInfo();
 			title = meta.getTitle();
 			description = meta.getComment();

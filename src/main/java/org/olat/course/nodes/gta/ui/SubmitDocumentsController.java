@@ -71,7 +71,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.io.SystemFileFilter;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -295,7 +295,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			VFSItem item = documentsContainer.resolve(filename);
 			downloadLink.setTooltip("download");
 			downloadLink.setUserObject(item);
-			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSConstants.YES) {
+			if(item instanceof VFSLeaf vfsLeaf && item.canMeta() == VFSStatus.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
 				if(metaInfo != null) {
 					createdBy = userManager.getUserDisplayName(metaInfo.getFileInitializedBy());

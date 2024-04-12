@@ -35,7 +35,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -87,7 +87,7 @@ public class FolderManager {
 		if (relPath instanceof VFSLeaf) {
 			// is a file
 			VFSLeaf leaf = (VFSLeaf)relPath;
-			if(leaf.canMeta() == VFSConstants.YES) {
+			if(leaf.canMeta() == VFSStatus.YES) {
 				long lastModified = leaf.getLastModified();
 				if (lastModified > newerThan) {
 					VFSMetadata meta = leaf.getMetaInfo();

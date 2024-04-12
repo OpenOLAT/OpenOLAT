@@ -48,7 +48,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
@@ -108,7 +108,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		
 		setTranslator(trans);
 		currentContainer = folderComponent.getCurrentContainer();
-		if (currentContainer.canWrite() != VFSConstants.YES)
+		if (currentContainer.canWrite() != VFSStatus.YES)
 			throw new AssertException("Cannot write to selected folder.");
 		// mainVC is the main view
 		

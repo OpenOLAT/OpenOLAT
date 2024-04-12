@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 
@@ -49,28 +49,28 @@ public class VFSRepositoryModuleTest extends OlatTestCase {
     	File publicFolder = new File(file, "public");
     	
     	// Standard files
-    	Assert.assertEquals(VFSConstants.YES, VFSRepositoryModule.canMeta(new File(publicFolder, "Bonjour.docx")));
-    	Assert.assertEquals(VFSConstants.YES, VFSRepositoryModule.canMeta(new File(publicFolder, "Hello image.jpeg")));
-    	Assert.assertEquals(VFSConstants.YES, VFSRepositoryModule.canMeta(new File(publicFolder, "~Hello.tiff")));
+    	Assert.assertEquals(VFSStatus.YES, VFSRepositoryModule.canMeta(new File(publicFolder, "Bonjour.docx")));
+    	Assert.assertEquals(VFSStatus.YES, VFSRepositoryModule.canMeta(new File(publicFolder, "Hello image.jpeg")));
+    	Assert.assertEquals(VFSStatus.YES, VFSRepositoryModule.canMeta(new File(publicFolder, "~Hello.tiff")));
     	
     	// System files
-    	Assert.assertEquals(VFSConstants.NO, VFSRepositoryModule.canMeta(new File(publicFolder, ".DS_Store")));
-    	Assert.assertEquals(VFSConstants.NO, VFSRepositoryModule.canMeta(new File(publicFolder, "__MACOSX")));
+    	Assert.assertEquals(VFSStatus.NO, VFSRepositoryModule.canMeta(new File(publicFolder, ".DS_Store")));
+    	Assert.assertEquals(VFSStatus.NO, VFSRepositoryModule.canMeta(new File(publicFolder, "__MACOSX")));
 
     	// Hidden files
-    	Assert.assertEquals(VFSConstants.NO, VFSRepositoryModule.canMeta(new File(publicFolder, ".Hello.tiff")));
+    	Assert.assertEquals(VFSStatus.NO, VFSRepositoryModule.canMeta(new File(publicFolder, ".Hello.tiff")));
     	
     	// OpenOlat System files
-    	Assert.assertEquals(VFSConstants.NO, VFSRepositoryModule.canMeta(new File(publicFolder, "._oo_meta_image.jpg")));
-    	Assert.assertEquals(VFSConstants.NO, VFSRepositoryModule.canMeta(new File(publicFolder, "._oo_th_image.jpg")));
-    	Assert.assertEquals(VFSConstants.NO, VFSRepositoryModule.canMeta(new File(publicFolder, "._oo_vr_image.jpg")));
+    	Assert.assertEquals(VFSStatus.NO, VFSRepositoryModule.canMeta(new File(publicFolder, "._oo_meta_image.jpg")));
+    	Assert.assertEquals(VFSStatus.NO, VFSRepositoryModule.canMeta(new File(publicFolder, "._oo_th_image.jpg")));
+    	Assert.assertEquals(VFSStatus.NO, VFSRepositoryModule.canMeta(new File(publicFolder, "._oo_vr_image.jpg")));
     }
     
     @Test
     public void canMetaExternalFiles() throws IOException {
     	File file = File.createTempFile("external", "file");
 
-    	Assert.assertEquals(VFSConstants.NO, VFSRepositoryModule.canMeta(file));
+    	Assert.assertEquals(VFSStatus.NO, VFSRepositoryModule.canMeta(file));
     	
     	Files.deleteIfExists(file.toPath());
     }

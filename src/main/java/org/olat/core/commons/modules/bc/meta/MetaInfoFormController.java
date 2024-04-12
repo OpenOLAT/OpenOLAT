@@ -56,7 +56,7 @@ import org.olat.core.gui.control.generic.folder.FolderHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -201,7 +201,7 @@ public class MetaInfoFormController extends FormBasicController {
 		// filename
 		initialFilename = (item == null ? null : item.getName());
 		filename = uifactory.addTextElement("filename", "mf.filename", -1, initialFilename, formLayout);
-		filename.setEnabled(item == null || item.canRename() == VFSConstants.YES);
+		filename.setEnabled(item == null || item.canRename() == VFSStatus.YES);
 		filename.setMandatory(true);
 		filename.setVisible(showFilename);
 

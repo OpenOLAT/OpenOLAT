@@ -30,7 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -103,7 +103,7 @@ public class VideoViaUrlHandlerDelegate {
 
 		VFSContainer storageContainer = contentEditorFileStorage.getMediaContainer(mediaVersion);
 		VFSItem item = storageContainer.resolve(mediaVersion.getRootFilename());
-		return item instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES;
+		return item instanceof VFSLeaf leaf && leaf.canMeta() == VFSStatus.YES;
 	}
 
 	public Media createMedia(String title, String description, String altText, String streamingUrl, String businessPath,

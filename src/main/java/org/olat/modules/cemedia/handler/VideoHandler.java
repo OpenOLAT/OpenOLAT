@@ -39,7 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -166,7 +166,7 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 		if(StringHelper.containsNonWhitespace(storagePath)) {
 			VFSContainer storageContainer = fileStorage.getMediaContainer(mediaVersion);
 			VFSItem item = storageContainer.resolve(mediaVersion.getRootFilename());
-			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES) {
+			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSStatus.YES) {
 				if (leaf.getSize() > 0) {
 					thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getWidth(), size.getHeight(), true);
 				}
@@ -185,7 +185,7 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	public MediaInformations getInformations(Object mediaObject) {
 		String title = null;
 		String description = null;
-		if (mediaObject instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES) {
+		if (mediaObject instanceof VFSLeaf leaf && leaf.canMeta() == VFSStatus.YES) {
 			VFSMetadata meta = leaf.getMetaInfo();
 			title = meta.getTitle();
 			description = meta.getComment();

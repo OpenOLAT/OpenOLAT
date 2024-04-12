@@ -37,7 +37,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -382,7 +382,7 @@ public class ConvertToGTACourseNode {
 	private void convertMetada(VFSContainer source, VFSContainer target, String name, TaskDefinition taskDef, Solution solDef) {
 		VFSItem sourceItem = source.resolve(name);
 		VFSItem targetItem = target.resolve(name);
-		if(sourceItem.canMeta() == VFSConstants.YES && targetItem.canMeta() == VFSConstants.YES) {
+		if(sourceItem.canMeta() == VFSStatus.YES && targetItem.canMeta() == VFSStatus.YES) {
 			VFSMetadata metaSource = sourceItem.getMetaInfo();
 			VFSMetadata metaTarget = targetItem.getMetaInfo();
 			

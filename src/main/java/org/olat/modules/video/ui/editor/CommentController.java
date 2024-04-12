@@ -44,7 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -270,7 +270,7 @@ public class CommentController extends FormBasicController {
 			VFSContainer masterContainer = videoManager.getCommentMediaContainer(repositoryEntry.getOlatResource());
 			VFSItem item = masterContainer.resolve(comment.getFileName());
 			if (item instanceof VFSLeaf vfsLeaf) {
-				boolean inTranscoding = item.canMeta() == VFSConstants.YES && item.getMetaInfo() != null &&
+				boolean inTranscoding = item.canMeta() == VFSStatus.YES && item.getMetaInfo() != null &&
 						item.getMetaInfo().isInTranscoding();
 				if (inTranscoding) {
 					item = masterContainer.resolve(VFSTranscodingService.masterFilePrefix + comment.getFileName());

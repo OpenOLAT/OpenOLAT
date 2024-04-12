@@ -32,7 +32,7 @@ import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.JavaIOItem;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -151,7 +151,7 @@ public class VFSResource implements WebResource {
 	@Override
 	public void increaseDownloadCount() {
 		try {
-			if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+			if (item instanceof VFSLeaf && item.canMeta() == VFSStatus.YES) {
 				CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount((VFSLeaf)item);
 			}
 		} catch (Exception e) {

@@ -40,7 +40,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -315,7 +315,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		RichTextElementImpl te = teC.getFormItem();
 		RichTextConfiguration configuration = te.getEditorConfiguration();
 		VFSContainer baseContainer = configuration.getLinkBrowserBaseContainer();
-		if(baseContainer != null && baseContainer.canWrite() == VFSConstants.YES && te.getRootForm().isMultipartEnabled()) {
+		if(baseContainer != null && baseContainer.canWrite() == VFSStatus.YES && te.getRootForm().isMultipartEnabled()) {
 			StringOutput su = new StringOutput();
 			Component rootCmp = te.getRootForm().getInitialComponent();
 			URLBuilder rubu = ubu.createCopyFor(rootCmp);

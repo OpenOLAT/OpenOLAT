@@ -37,7 +37,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -70,7 +70,7 @@ public class RejectController extends FormBasicController {
 	public RejectController(UserRequest ureq, WindowControl wControl, VFSLeaf file) {
 		super (ureq, wControl);
 		this.file = file;
-		if(file.canMeta() == VFSConstants.YES) {
+		if(file.canMeta() == VFSStatus.YES) {
 			metaInfo = file.getMetaInfo();
 		} else {
 			throw new AssertException("Only file mith meta info are accepted");

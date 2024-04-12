@@ -49,7 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.members.Member;
@@ -193,7 +193,7 @@ public class MembersPrintController extends BasicController {
 					Long key = Long.parseLong(idKey);
 					Identity identity = securityManager.loadIdentityByKey(key);
 					VFSLeaf portrait = portraitManager.getLargestVFSPortrait(identity);
-					if(portrait.canMeta() == VFSConstants.YES) {
+					if(portrait.canMeta() == VFSStatus.YES) {
 						portrait = vfsRepositoryService.getThumbnail(portrait, 300, 300, false);
 					}
 					

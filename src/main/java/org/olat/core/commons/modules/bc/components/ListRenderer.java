@@ -63,7 +63,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.AbstractVirtualContainer;
 import org.olat.core.util.vfs.NamedContainerImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -151,7 +151,7 @@ public class ListRenderer {
 			sb.append("<div class=\"o_empty_state\">")
 				.append("<div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon o_icon_files'></i></div>")
 				.append("<h3 class=\"o_empty_msg\">").append(translator.translate("NoFiles")).append("</h3>");
-			if (currentContainer.canWrite() == VFSConstants.YES) {
+			if (currentContainer.canWrite() == VFSStatus.YES) {
 				sb.append("<div class=\"o_empty_hint\">").append(translator.translate("NoFiles.hint.readwrite")).append("</div>")
 					.append("<div class=\"o_empty_action\"><a class='btn btn-default btn-primary' ");
 				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "ul" ))
@@ -165,7 +165,7 @@ public class ListRenderer {
 			return;
 		}
 
-		boolean canVersion = vfsVersionModule.isEnabled() && currentContainer.canVersion() == VFSConstants.YES;
+		boolean canVersion = vfsVersionModule.isEnabled() && currentContainer.canVersion() == VFSStatus.YES;
 		String sortOrder = fc.getCurrentSortOrder();
 		boolean sortAsc = fc.isCurrentSortAsc();
 		String sortCss = (sortAsc ? "o_orderby_asc" : "o_orderby_desc");
@@ -262,14 +262,14 @@ public class ListRenderer {
 			boolean iframePostEnabled, boolean canContainerVersion, int pos) {
 	
 		// assume full access unless security callback tells us something different.
-		boolean canWrite = child.getParentContainer().canWrite() == VFSConstants.YES;
+		boolean canWrite = child.getParentContainer().canWrite() == VFSStatus.YES;
 		// special case: virtual folders are always read only. parent of child =! the current container
 		canWrite = canWrite && !(fc.getCurrentContainer() instanceof VirtualContainer);
 		boolean isAbstract = (child instanceof AbstractVirtualContainer);
 
 		long revisionNr = 0l;
 		boolean canVersion = false;// more are version visible
-		if(canContainerVersion && vfsVersionModule.isEnabled() && child.canVersion() == VFSConstants.YES) {
+		if(canContainerVersion && vfsVersionModule.isEnabled() && child.canVersion() == VFSStatus.YES) {
 			revisionNr = metadata == null ? 0 : metadata.getRevisionNr();
 			canVersion = revisionNr > 1;
 		}
@@ -459,7 +459,7 @@ public class ListRenderer {
 		// last modified
 		long lastModified = child.getLastModified();
 		sb.append("<span class='text-muted small'>");
-		if (lastModified != VFSConstants.UNDEFINED)
+		if (lastModified != VFSStatus.UNDEFINED)
 			sb.append(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, translator.getLocale()).format(new Date(lastModified)));
 		else
 			sb.append("-");

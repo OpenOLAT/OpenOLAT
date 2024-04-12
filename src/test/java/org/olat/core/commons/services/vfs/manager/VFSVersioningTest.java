@@ -45,7 +45,7 @@ import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -588,7 +588,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
 		Assert.assertNotEquals(0, byteCopied);
-		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		Assert.assertEquals(VFSStatus.YES, file.canMeta());
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-7");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-8");
@@ -621,7 +621,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
 		Assert.assertNotNull(revisions);
 		Assert.assertEquals(3, revisions.size());
-		Assert.assertEquals(VFSConstants.YES, retrievedFile.canMeta());
+		Assert.assertEquals(VFSStatus.YES, retrievedFile.canMeta());
 		
 		VFSRevision revision0 = revisions.get(0);
 		//we don't set an author for the original file
@@ -642,7 +642,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
 		Assert.assertNotEquals(0, byteCopied);
-		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		Assert.assertEquals(VFSStatus.YES, file.canMeta());
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
 		
@@ -677,7 +677,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
 		Assert.assertNotEquals(0, byteCopied);
-		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		Assert.assertEquals(VFSStatus.YES, file.canMeta());
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
 		
@@ -713,7 +713,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
 		Assert.assertNotEquals(0, byteCopied);
-		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		Assert.assertEquals(VFSStatus.YES, file.canMeta());
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-9");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-10");
@@ -772,7 +772,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
 		Assert.assertNotEquals(0, byteCopied);
-		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		Assert.assertEquals(VFSStatus.YES, file.canMeta());
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
 		
@@ -819,7 +819,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
 		Assert.assertNotEquals(0, byteCopied);
-		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		Assert.assertEquals(VFSStatus.YES, file.canMeta());
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
 		
@@ -882,7 +882,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		VFSLeaf file = container.createChildLeaf("PDF.pdf");
 		int byteCopied = copyTestTxt(file);
 		Assert.assertNotEquals(0, byteCopied);
-		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		Assert.assertEquals(VFSStatus.YES, file.canMeta());
 		VFSMetadata fileMeta = file.getMetaInfo();
 		Assert.assertNotNull(fileMeta);
 		dbInstance.commit();

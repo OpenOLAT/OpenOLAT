@@ -36,7 +36,7 @@ import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -69,7 +69,7 @@ public class CmdServeThumbnailResource implements FolderCommand {
 				vfsLeaf = (VFSLeaf)FolderCommandHelper.tryDoubleDecoding(ureq, folderComponent);
 			}
 			
-			if(vfsLeaf != null && vfsLeaf.canMeta() == VFSConstants.YES) {
+			if(vfsLeaf != null && vfsLeaf.canMeta() == VFSStatus.YES) {
 				VFSLeaf thumbnail = vfsRepositoryservice.getThumbnail(vfsLeaf, 200, 200, false);
 				if(thumbnail != null) {
 					mr = new VFSMediaResource(thumbnail);

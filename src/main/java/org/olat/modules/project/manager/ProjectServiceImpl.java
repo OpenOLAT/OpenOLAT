@@ -76,7 +76,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -1276,7 +1275,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			if (vfsItem instanceof VFSLeaf) {
 				VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
 				VFSStatus renamed = vfsLeaf.rename(filename);
-				if (VFSConstants.YES == renamed) {
+				if (VFSStatus.YES == renamed) {
 					filenameChanged = true;
 					reloadedFile = getFile(file);
 				}

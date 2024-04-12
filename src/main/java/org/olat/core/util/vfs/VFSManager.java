@@ -227,7 +227,7 @@ public class VFSManager {
 	 */
 	public static VFSContainer resolveOrCreateContainerFromPath(VFSContainer baseContainer, String relContainerPath) {		
 		VFSContainer resultContainer = baseContainer;
-		if (!VFSConstants.YES.equals(baseContainer.canWrite())) {
+		if (!VFSStatus.YES.equals(baseContainer.canWrite())) {
 			VFSItem resolvedPath = baseContainer.resolve(relContainerPath.trim());
 			if(resolvedPath instanceof VFSContainer) {
 				resultContainer = (VFSContainer)resolvedPath;
@@ -769,10 +769,10 @@ public class VFSManager {
 				successful = false;
 			}
 			
-			if (target.canMeta() == VFSConstants.YES) {
+			if (target.canMeta() == VFSStatus.YES) {
 				VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 				vfsRepositoryService.itemSaved(target, savedBy);
-				if (withMetadata && source.canMeta() == VFSConstants.YES) {
+				if (withMetadata && source.canMeta() == VFSStatus.YES) {
 					vfsRepositoryService.copyTo(source, target, target.getParentContainer(), savedBy);
 				}
 			}

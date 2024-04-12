@@ -44,7 +44,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.LocalImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
@@ -309,7 +309,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	public final boolean canLock(VFSItem item, VFSLockApplicationType type) {
 		if (item == null) return false;
 		
-		if(item.canMeta() == VFSConstants.YES) {
+		if(item.canMeta() == VFSStatus.YES) {
 			return true;
 		}
 		
@@ -426,7 +426,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
      */
 	@Override
 	public boolean unlock(VFSItem item, VFSLockApplicationType type) {
-		if (item != null && item.canMeta() == VFSConstants.YES) {
+		if (item != null && item.canMeta() == VFSStatus.YES) {
 			VFSMetadata info = item.getMetaInfo();
 			if(info == null) return false;
 			return unlock(item, info, type, null);
@@ -436,7 +436,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	
 	@Override
 	public boolean unlock(VFSItem item, LockResult result) {
-		if (item != null && item.canMeta() == VFSConstants.YES) {
+		if (item != null && item.canMeta() == VFSStatus.YES) {
 			VFSMetadata info = item.getMetaInfo();
 			if(info == null) return false;
 			return unlock(item, info, result.getType(), result.getToken());

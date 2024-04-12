@@ -47,7 +47,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -81,7 +81,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	public Controller execute(FolderComponent folderCmp, UserRequest ureq, WindowControl wControl,
 			Translator translator) {
 		this.folderCmp = folderCmp;
-		if (folderCmp.getCurrentContainer().canWrite() != VFSConstants.YES) {
+		if (folderCmp.getCurrentContainer().canWrite() != VFSStatus.YES) {
 			throw new AssertException("Illegal attempt to create file in: " + folderCmp.getCurrentContainerPath());
 		}
 		setTranslator(translator);
@@ -95,7 +95,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			return null;
 		}
 
-		boolean metaAvailable = folderCmp.getCurrentContainer().canMeta() == VFSConstants.YES;
+		boolean metaAvailable = folderCmp.getCurrentContainer().canMeta() == VFSStatus.YES;
 		Identity identity = getIdentity();
 		DocTemplates docTemplates = DocTemplates
 				.editables(identity, ureq.getUserSession().getRoles(), getLocale(), metaAvailable).build();

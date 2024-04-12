@@ -28,7 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -52,7 +52,7 @@ public class UploadController extends BasicController {
 		// Upload
 		fileUploadCtr = new FileUploadController(getWindowControl(), currentContainer, ureq,
 				folderQuota.getUploadLimitKB(), folderQuota.getRemainingQuotaKB(), null, false, true,
-				currentContainer.canMeta() == VFSConstants.YES, true, true, false);
+				currentContainer.canMeta() == VFSStatus.YES, true, true, false);
 		listenTo(fileUploadCtr);
 		mainVC.put("upload", fileUploadCtr.getInitialComponent());
 	}

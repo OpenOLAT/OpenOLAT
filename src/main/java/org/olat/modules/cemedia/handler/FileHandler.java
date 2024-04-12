@@ -44,7 +44,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -154,7 +154,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 		if(StringHelper.containsNonWhitespace(storagePath)) {
 			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 			VFSItem item = storageContainer.resolve(media.getRootFilename());
-			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES
+			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSStatus.YES
 					&& vfsRepositoryService.isThumbnailAvailable(leaf)) {
 				thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getWidth(), size.getHeight(), true);
 			}
@@ -172,7 +172,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	public MediaInformations getInformations(Object mediaObject) {
 		String title = null;
 		String description = null;
-		if (mediaObject instanceof VFSItem item && item.canMeta() == VFSConstants.YES) {
+		if (mediaObject instanceof VFSItem item && item.canMeta() == VFSStatus.YES) {
 			VFSMetadata meta = item.getMetaInfo();
 			title = meta.getTitle();
 			description = meta.getComment();

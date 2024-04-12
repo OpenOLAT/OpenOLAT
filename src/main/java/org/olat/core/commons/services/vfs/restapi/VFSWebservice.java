@@ -58,7 +58,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -72,9 +71,9 @@ import org.olat.restapi.support.vo.LinkVO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 public class VFSWebservice {
@@ -462,7 +461,7 @@ public class VFSWebservice {
 		}
 		
 		VFSStatus status = item.delete();
-		if(status == VFSConstants.YES) {
+		if(status == VFSStatus.YES) {
 			return Response.ok().build();
 		}
 		//need something better

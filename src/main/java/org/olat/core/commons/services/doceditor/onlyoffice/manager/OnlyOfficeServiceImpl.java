@@ -53,7 +53,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.httpclient.HttpClientService;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
@@ -340,7 +340,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			if (httpResponse.getStatusLine().getStatusCode() == 200) {
 				InputStream content = httpResponse.getEntity().getContent();
-				if (versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
+				if (versionControlled && vfsLeaf.canVersion() == VFSStatus.YES) {
 					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, false, "OnlyOffice", content);
 				} else {
 					updated = VFSManager.copyContent(content, vfsLeaf, identity);

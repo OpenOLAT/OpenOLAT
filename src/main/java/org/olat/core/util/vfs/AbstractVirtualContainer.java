@@ -60,7 +60,7 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	
 	@Override
 	public VFSStatus canDescendants() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 	
 	@Override
@@ -70,27 +70,27 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 
 	@Override
 	public VFSStatus canDelete() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus canRename() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus canCopy() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus copyFrom(VFSItem vfsItem, Identity savedBy) {
-		return VFSConstants.ERROR_FAILED;
+		return VFSStatus.ERROR_FAILED;
 	}
 
 	@Override
 	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
@@ -100,27 +100,27 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 
 	@Override
 	public long getLastModified() {
-		return VFSConstants.UNDEFINED;
+		return VFSStatus.UNDEFINED;
 	}
 
 	@Override
 	public VFSStatus rename(String newname) {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus delete() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus restore(VFSContainer targetContainer) {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus deleteSilently() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
@@ -135,12 +135,12 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 
 	@Override
 	public VFSStatus canMeta() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 	
 	@Override
 	public VFSStatus canVersion() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override

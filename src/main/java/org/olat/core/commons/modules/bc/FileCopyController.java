@@ -50,7 +50,7 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -137,7 +137,7 @@ public class FileCopyController extends LinkChooserController {
 			if (event instanceof ButtonClickedEvent) {
 				ButtonClickedEvent buttonClickedEvent = (ButtonClickedEvent) event;
 				if (buttonClickedEvent.getPosition() == 0) { //ok
-					if (existingVFSItem.canVersion() == VFSConstants.YES) {
+					if (existingVFSItem.canVersion() == VFSStatus.YES) {
 						//new version
 						int maxNumOfRevisions = versionsModule.getMaxNumberOfVersions();
 						if(maxNumOfRevisions == 0) {
@@ -253,7 +253,7 @@ public class FileCopyController extends LinkChooserController {
 				//don't want to delete revisions
 				fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
 			} else {
-				if (existingVFSItem.canVersion() == VFSConstants.YES) {
+				if (existingVFSItem.canVersion() == VFSStatus.YES) {
 
 					revisionListDialogBox.deactivate();
 	
@@ -313,7 +313,7 @@ public class FileCopyController extends LinkChooserController {
 					asList(translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
 			listenTo(lockedFileDialog);
 			lockedFileDialog.activate();
-		} else if (existingVFSItem.canVersion() == VFSConstants.YES) {
+		} else if (existingVFSItem.canVersion() == VFSStatus.YES) {
 
 			int maxNumOfRevisions = versionsModule.getMaxNumberOfVersions();
 			VFSMetadata metadata = vfsRepositoryService.getMetadataFor(existingVFSItem);

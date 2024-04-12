@@ -50,7 +50,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.Quota;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -79,7 +79,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		this.translator = trans;
 		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainer(), folderComponent.getCurrentContainerPath());
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
-		if (currentContainer.canWrite() != VFSConstants.YES)
+		if (currentContainer.canWrite() != VFSStatus.YES)
 			throw new AssertException("Cannot unzip to folder. Writing denied.");
 			
 	  //check if command is executed on a file containing invalid filenames or paths - checks if the resulting folder has a valid name
@@ -154,7 +154,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 			return Collections.emptyList();
 		}
 	
-		if(currentContainer.canVersion() != VFSConstants.YES) {
+		if(currentContainer.canVersion() != VFSStatus.YES) {
 			//this command don't overwrite existing folders
 			return Collections.emptyList();
 		}
@@ -181,7 +181,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		// we make a new folder with the same name as the zip file
 		String sZipContainer = name.substring(0, name.length() - 4);
 		
-		boolean versioning = currentContainer.canVersion() == VFSConstants.YES;
+		boolean versioning = currentContainer.canVersion() == VFSStatus.YES;
 		
 		VFSContainer zipContainer = currentContainer.createChildContainer(sZipContainer);
 		if (zipContainer == null) {
@@ -204,7 +204,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 				wControl.setError(translator.translate("unzip.alreadyexists", new String[] {sZipContainer}));
 				return false;
 			}
-		} else if (zipContainer.canMeta() == VFSConstants.YES) {
+		} else if (zipContainer.canMeta() == VFSStatus.YES) {
 			VFSMetadata info = zipContainer.getMetaInfo();
 			if(info instanceof VFSMetadataImpl) {
 				((VFSMetadataImpl)info).setFileInitializedBy(ureq.getIdentity());

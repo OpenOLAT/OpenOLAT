@@ -22,13 +22,12 @@ package org.olat.ims.cp.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.vfs.AbstractVirtualContainer;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -158,7 +157,7 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 
 	@Override
 	public VFSStatus canWrite() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override

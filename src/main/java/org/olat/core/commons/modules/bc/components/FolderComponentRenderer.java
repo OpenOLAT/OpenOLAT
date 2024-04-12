@@ -45,7 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 
@@ -95,19 +95,19 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 	private void renderList(StringOutput target, FolderComponent fc, URLBuilder ubu, Translator translator, boolean iframePostEnabled) {
 		
 		VFSContainer currentContainer = fc.getCurrentContainer();
-		boolean canWrite = currentContainer.canWrite() == VFSConstants.YES;
+		boolean canWrite = currentContainer.canWrite() == VFSStatus.YES;
 		boolean canCreateFolder = true;
 		if(currentContainer.getLocalSecurityCallback() != null && !currentContainer.getLocalSecurityCallback().canCreateFolder()) {
 			canCreateFolder = false;
 		}
 		
 		boolean canDelete = false;
-		boolean canVersion = vfsVersionModule.isEnabled() && fc.getCurrentContainer().canVersion() == VFSConstants.YES;
+		boolean canVersion = vfsVersionModule.isEnabled() && fc.getCurrentContainer().canVersion() == VFSStatus.YES;
 		boolean canMail = fc.isCanMail();
 		
 		List<VFSItem> children = fc.getCurrentContainerChildren();
 		for (VFSItem child:children) {
-			if (child.canDelete() == VFSConstants.YES) {
+			if (child.canDelete() == VFSStatus.YES) {
 				canDelete = true;
 				break;
 			}
@@ -166,7 +166,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					   .append("</a></li>");
 				}
 	
-				if ( fc.getCurrentContainer().canMeta() == VFSConstants.YES) {
+				if ( fc.getCurrentContainer().canMeta() == VFSStatus.YES) {
 					// option new file
 					target.append("<li><a class=\"b_bc_newfile\" ");
 					ubu.buildHrefAndOnclick(target, null, iframePostEnabled, false, false, new NameValuePair(VelocityContainer.COMMAND_ID, "cfile" ))

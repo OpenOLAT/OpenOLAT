@@ -40,7 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -113,7 +113,7 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		}
 		
 		VFSLeaf vfsLeaf = (VFSLeaf) currentItem;
-		boolean metaAvailable = vfsLeaf.canMeta() == VFSConstants.YES;
+		boolean metaAvailable = vfsLeaf.canMeta() == VFSStatus.YES;
 		if (metaAvailable) {
 			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 			vfsRepositoryService.increaseDownloadCount(vfsLeaf);

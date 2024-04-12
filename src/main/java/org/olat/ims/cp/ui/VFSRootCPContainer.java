@@ -25,7 +25,6 @@ import java.util.List;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.vfs.AbstractVirtualContainer;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -174,7 +173,7 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 
 	@Override
 	public VFSStatus canWrite() {
-		return VFSConstants.YES;
+		return VFSStatus.YES;
 	}
 
 	@Override

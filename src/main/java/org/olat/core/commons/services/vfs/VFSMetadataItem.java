@@ -22,7 +22,6 @@ package org.olat.core.commons.services.vfs;
 import java.util.Date;
 import java.util.Objects;
 
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
@@ -120,7 +119,7 @@ public class VFSMetadataItem implements VFSItem {
 	@Override
 	public VFSStatus rename(String newname) {
 		if (getItem() == null) {
-			return VFSConstants.ERROR_FAILED;
+			return VFSStatus.ERROR_FAILED;
 		}
 		VFSStatus vfsStatus = getItem().rename(newname);
 		reset();
@@ -130,7 +129,7 @@ public class VFSMetadataItem implements VFSItem {
 	@Override
 	public VFSStatus delete() {
 		if (getItem() == null) {
-			return VFSConstants.SUCCESS;
+			return VFSStatus.SUCCESS;
 		}
 		return getItem().delete();
 	}
@@ -138,7 +137,7 @@ public class VFSMetadataItem implements VFSItem {
 	@Override
 	public VFSStatus restore(VFSContainer targetContainer) {
 		if (getItem() == null) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		return getItem().restore(targetContainer);
 	}
@@ -146,7 +145,7 @@ public class VFSMetadataItem implements VFSItem {
 	@Override
 	public VFSStatus deleteSilently() {
 		if (getItem() == null) {
-			return VFSConstants.SUCCESS;
+			return VFSStatus.SUCCESS;
 		}
 		return getItem().deleteSilently();
 	}
@@ -170,7 +169,7 @@ public class VFSMetadataItem implements VFSItem {
 	@Override
 	public VFSStatus canCopy() {
 		if (getItem() == null) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		return getItem().canCopy();
 	}
@@ -178,7 +177,7 @@ public class VFSMetadataItem implements VFSItem {
 	@Override
 	public VFSStatus canWrite() {
 		if (getItem() == null) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		return getItem().canWrite();
 	}
@@ -186,7 +185,7 @@ public class VFSMetadataItem implements VFSItem {
 	@Override
 	public VFSStatus canRename() {
 		if (getItem() == null) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		return getItem().canRename();
 	}
@@ -194,7 +193,7 @@ public class VFSMetadataItem implements VFSItem {
 	@Override
 	public VFSStatus canDelete() {
 		if (getItem() == null) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		return getItem().canDelete();
 	}
@@ -221,13 +220,13 @@ public class VFSMetadataItem implements VFSItem {
 	
 	@Override
 	public VFSStatus canMeta() {
-		return VFSConstants.YES;
+		return VFSStatus.YES;
 	}
 	
 	@Override
 	public VFSStatus canVersion() {
 		if (getItem() == null) {
-			return VFSConstants.NO;
+			return VFSStatus.NO;
 		}
 		return getItem().canVersion();
 	}

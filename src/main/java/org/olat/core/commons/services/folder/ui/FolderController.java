@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderModule;
@@ -129,6 +130,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -139,7 +141,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -165,6 +166,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FolderController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 
+	private static final Logger log = Tracing.createLoggerFor(FolderController.class);
+			
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_FROM_ME = "FromMe";
 	private static final String TAB_ID_FOR_ME = "ForMe";
@@ -399,7 +402,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void updateCommandUI(UserRequest ureq) {
-		boolean canDecendants = VFSConstants.YES == currentContainer.canDescendants();
+		boolean canDecendants = VFSStatus.YES == currentContainer.canDescendants();
 		viewFileLink.setVisible(canDecendants);
 		trashLink.setVisible(canDecendants);
 		
@@ -427,7 +430,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		bulkZipButton.setVisible(!trashView && canEditCurrentContainer);
 		bulkEmailButton.setVisible(!trashView);
 		
-		boolean canDelete = VFSConstants.YES == currentContainer.canDelete();
+		boolean canDelete = VFSStatus.YES == currentContainer.canDelete();
 		bulkDeleteSoftlyButton.setVisible(!trashView && canDelete);
 		bulkDeletePermanentlyButton.setVisible(trashView && canDelete);
 	}
@@ -743,7 +746,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private VFSContainer getTopMostDescendantsContainer(VFSContainer vfsContainer) {
 		VFSContainer topMostDescendantsContainer = null;
 		
-		if (vfsContainer != null && VFSConstants.YES == vfsContainer.canDescendants()) {
+		if (vfsContainer != null && VFSStatus.YES == vfsContainer.canDescendants()) {
 			topMostDescendantsContainer = vfsContainer;
 			
 			VFSContainer parentDescendantsContainer = getTopMostDescendantsContainer(vfsContainer.getParentContainer());
@@ -798,7 +801,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		boolean descendantsLoaded = false;
 		List<VFSItem> items = null;
 		VFSContainer cachedContainer = getCachedContainer(vfsContainer);
-		if (VFSConstants.YES == cachedContainer.canDescendants()) {
+		if (VFSStatus.YES == cachedContainer.canDescendants()) {
 			items = cachedContainer.getDescendants(vfsFilter);
 			descendantsLoaded = true;
 		}
@@ -821,7 +824,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private VFSContainer getCachedContainer(VFSContainer vfsContainer) {
-		if (VFSConstants.YES == vfsContainer.canMeta()) {
+		if (VFSStatus.YES == vfsContainer.canMeta()) {
 			return new VFSMetadataContainer(vfsRepositoryService, true, vfsContainer);
 		}
 		return vfsContainer;
@@ -1412,7 +1415,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void reloadVersionsEnabled() {
-		versionsEnabled = vfsVersionModule.isEnabled() && rootContainer.canVersion() == VFSConstants.YES;
+		versionsEnabled = vfsVersionModule.isEnabled() && rootContainer.canVersion() == VFSStatus.YES;
 	}
 	
 	private void updateFolderBreadcrumpUI(UserRequest ureq, String path) {
@@ -1730,15 +1733,15 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (vfsItem instanceof VFSLeaf) {
 			VFSContainer parentContainer = vfsItem.getParentContainer();
 			if (parentContainer != null) {
-				return parentContainer.canWrite() == VFSConstants.YES;
+				return parentContainer.canWrite() == VFSStatus.YES;
 			}
 		}
 		
-		return vfsItem.canWrite() == VFSConstants.YES;
+		return vfsItem.canWrite() == VFSStatus.YES;
 	}
 	
 	private VFSContainer getTopMostEditableContainer(VFSContainer vfsContainer) {
-		if (vfsContainer != null && VFSConstants.YES == vfsContainer.canWrite()) {
+		if (vfsContainer != null && VFSStatus.YES == vfsContainer.canWrite()) {
 			VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer(vfsContainer.getParentContainer());
 			if (topMostDescendantsContainer != null) {
 				return topMostDescendantsContainer;
@@ -1803,36 +1806,36 @@ public class FolderController extends FormBasicController implements Activateabl
 				loadModel(ureq);
 				return;
 			}
-			if (itemToCopy.canCopy() != VFSConstants.YES) {
+			if (itemToCopy.canCopy() != VFSStatus.YES) {
 				showWarning("error.copy.other");
 				loadModel(ureq);
 				return;
 			}
 		}
 		
-		VFSStatus vfsStatus = VFSConstants.SUCCESS;
+		VFSStatus vfsStatus = VFSStatus.SUCCESS;
 		ListIterator<VFSItem> listIterator = itemsToCopy.listIterator();
-		while (listIterator.hasNext() && vfsStatus == VFSConstants.SUCCESS) {
+		while (listIterator.hasNext() && vfsStatus == VFSStatus.SUCCESS) {
 			VFSItem vfsItemToCopy = listIterator.next();
 			if (!isItemNotAvailable(ureq, targetContainer, false) && canCopy(vfsItemToCopy, null)) {
 				VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
-				if (vfsItemToCopy instanceof VFSLeaf sourceLeaf && targetItem != null && targetItem.canVersion() == VFSConstants.YES) {
+				if (vfsItemToCopy instanceof VFSLeaf sourceLeaf && targetItem != null && targetItem.canVersion() == VFSStatus.YES) {
 					boolean success = vfsRepositoryService.addVersion(sourceLeaf, ureq.getIdentity(), false, "", sourceLeaf.getInputStream());
 					if (!success) {
-						vfsStatus = VFSConstants.ERROR_FAILED;
+						vfsStatus = VFSStatus.ERROR_FAILED;
 					}
 				} else {
 					vfsStatus = targetContainer.copyFrom(vfsItemToCopy, getIdentity());
 				}
-				if (move && vfsStatus == VFSConstants.SUCCESS) {
+				if (move && vfsStatus == VFSStatus.SUCCESS) {
 					vfsItemToCopy.deleteSilently();
 				}
 			}
 		}
 		
-		if (vfsStatus == VFSConstants.ERROR_QUOTA_EXCEEDED) {
+		if (vfsStatus == VFSStatus.ERROR_QUOTA_EXCEEDED) {
 			showWarning("error.copy.quota.exceeded");
-		} else if (vfsStatus != VFSConstants.SUCCESS) {
+		} else if (vfsStatus != VFSStatus.SUCCESS) {
 			showWarning("error.copy");
 		}
 		
@@ -1886,7 +1889,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private boolean canCopy(VFSItem vfsItem, VFSMetadata vfsMetadata) {
-		return vfsItem != null && VFSConstants.YES == vfsItem.canCopy() && canEdit(vfsItem) && isNotDeleted(vfsMetadata);
+		return vfsItem != null && VFSStatus.YES == vfsItem.canCopy() && canEdit(vfsItem) && isNotDeleted(vfsMetadata);
 	}
 
 	private boolean hasMetadata(VFSItem item) {
@@ -1899,7 +1902,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				return false;
 			}
 		}
-		return item != null && item.canMeta() == VFSConstants.YES;
+		return item != null && item.canMeta() == VFSStatus.YES;
 	}
 
 	private boolean canEditMedatata(VFSItem vfsItem, VFSMetadata vfsMetadata) {
@@ -1975,7 +1978,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private boolean hasVersion(VFSMetadata vfsMetadata, VFSItem vfsItem) {
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			if (vfsVersionModule.isEnabled() && vfsLeaf.canVersion() == VFSConstants.YES && vfsMetadata != null) {
+			if (vfsVersionModule.isEnabled() && vfsLeaf.canVersion() == VFSStatus.YES && vfsMetadata != null) {
 				return vfsMetadata.getRevisionNr() > 1;
 			}
 		}
@@ -2114,7 +2117,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
-		if (unzipContainer.canMeta() == VFSConstants.YES) {
+		if (unzipContainer.canMeta() == VFSStatus.YES) {
 			VFSMetadata metaInfo = unzipContainer.getMetaInfo();
 			if (metaInfo instanceof VFSMetadataImpl metadata) {
 				metadata.setFileInitializedBy(getIdentity());
@@ -2229,7 +2232,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void doBulkConfirmDeleteSoftly(UserRequest ureq) {
 		if (guardModalController(deleteSoftlyConfirmationCtrl)) return;
-		if (VFSConstants.YES != currentContainer.canDelete()) {
+		if (VFSStatus.YES != currentContainer.canDelete()) {
 			return;
 		}
 		
@@ -2266,7 +2269,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void doBulkDeleteSoftly(UserRequest ureq) {
-		if (VFSConstants.YES != currentContainer.canDelete()) {
+		if (VFSStatus.YES != currentContainer.canDelete()) {
 			return;
 		}
 		
@@ -2349,7 +2352,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void doBulkConfirmDeletePermanently(UserRequest ureq) {
 		if (guardModalController(deletePermanentlyConfirmationCtrl)) return;
-		if (VFSConstants.YES != currentContainer.canDelete()) {
+		if (VFSStatus.YES != currentContainer.canDelete()) {
 			return;
 		}
 		
@@ -2393,7 +2396,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void doBulkDeletePermanently(UserRequest ureq) {
-		if (VFSConstants.YES != currentContainer.canDelete()) {
+		if (VFSStatus.YES != currentContainer.canDelete()) {
 			return;
 		}
 		
@@ -2423,7 +2426,7 @@ public class FolderController extends FormBasicController implements Activateabl
 
 	private boolean canDelete(VFSItem vfsItem) {
 		return vfsItem != null
-				&& vfsItem.canDelete() == VFSConstants.YES
+				&& vfsItem.canDelete() == VFSStatus.YES
 				&& !vfsLockManager.isLockedForMe(vfsItem, getIdentity(), VFSLockApplicationType.vfs, null);
 	}
 	
@@ -2444,7 +2447,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private boolean canViewTrash(VFSContainer vfsContainer) {
-		if (VFSConstants.YES == vfsContainer.canDelete()) {
+		if (VFSStatus.YES == vfsContainer.canDelete()) {
 			return true;
 		}
 		for (VFSItem vfsItem : vfsContainer.getItems()) {
@@ -2515,18 +2518,19 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
-		VFSStatus vfsStatus = VFSConstants.SUCCESS;
+		VFSStatus vfsStatus = VFSStatus.SUCCESS;
 		ListIterator<VFSItem> listIterator = itemsToCopy.listIterator();
-		while (listIterator.hasNext() && vfsStatus == VFSConstants.SUCCESS) {
+		while (listIterator.hasNext() && vfsStatus == VFSStatus.SUCCESS) {
 			VFSItem vfsItemToCopy = listIterator.next();
-			if (VFSConstants.SUCCESS == vfsStatus) {
+			if (VFSStatus.SUCCESS == vfsStatus) {
 				vfsStatus = vfsItemToCopy.restore((VFSContainer)reloadedTarget);
 			}
 		}
 		
-		if (vfsStatus == VFSConstants.ERROR_QUOTA_EXCEEDED) {
+		if (vfsStatus == VFSStatus.ERROR_QUOTA_EXCEEDED) {
 			showWarning("error.restore.quota.exceeded");
-		} else if (vfsStatus != VFSConstants.SUCCESS) {
+		} else if (vfsStatus != VFSStatus.SUCCESS) {
+			log.debug("Restore error {}", vfsStatus);
 			showWarning("error.restore");
 		}
 		

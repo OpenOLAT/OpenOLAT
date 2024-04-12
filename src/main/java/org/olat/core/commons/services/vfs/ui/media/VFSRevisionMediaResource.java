@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 
 /**
  * 
@@ -98,7 +98,7 @@ public class VFSRevisionMediaResource implements MediaResource {
 	@Override
 	public Long getSize() {
 		long size = revision.getSize();
-		return (size == VFSConstants.UNDEFINED) ? null : Long.valueOf(size);
+		return (size == VFSStatus.UNDEFINED) ? null : Long.valueOf(size);
 	}
 
 	@Override

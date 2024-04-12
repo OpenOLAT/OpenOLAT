@@ -48,7 +48,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.Quota;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -158,7 +158,7 @@ public class FileLinkChooserController extends BasicController {
 			}
 		}
 
-		if(fileUploadBase.canWrite() == VFSConstants.YES) {
+		if(fileUploadBase.canWrite() == VFSStatus.YES) {
 			long remainingSpace = Quota.UNLIMITED;
 			long uploadLimit = FolderConfig.getLimitULKB();
 			if( fileUploadBase.getLocalSecurityCallback() != null && fileUploadBase.getLocalSecurityCallback().getQuota() != null) {

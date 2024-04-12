@@ -33,7 +33,6 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.JavaIOItem;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -110,32 +109,32 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 
 	@Override
 	public VFSStatus rename(String newname) {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus delete() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus restore(VFSContainer targetContainer) {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus deleteSilently() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus canRename() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus canDelete() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
@@ -150,12 +149,12 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 
 	@Override
 	public VFSStatus canCopy() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus canWrite() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
@@ -170,12 +169,12 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 
 	@Override
 	public VFSStatus canMeta() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override
 	public VFSStatus canVersion() {
-		return VFSConstants.NO;
+		return VFSStatus.NO;
 	}
 
 	@Override

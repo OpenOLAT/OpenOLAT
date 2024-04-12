@@ -59,7 +59,7 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -651,7 +651,7 @@ public class FeedManagerImpl extends FeedManager {
 				item = item.resolve(fileName);
 			}
 			if (thumbnailSize != null && thumbnailSize.getHeight() > 0 && thumbnailSize.getWidth() > 0
-					&& item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+					&& item instanceof VFSLeaf && item.canMeta() == VFSStatus.YES) {
 				item = vfsRepositoryService.getThumbnail((VFSLeaf)item, thumbnailSize.getWidth(), thumbnailSize.getHeight(), false);
 			}
 			if (item instanceof VFSLeaf) {

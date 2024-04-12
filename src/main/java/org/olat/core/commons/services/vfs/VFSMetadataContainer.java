@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -120,7 +119,7 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 
 	@Override
 	public VFSStatus canDescendants() {
-		return VFSConstants.YES;
+		return VFSStatus.YES;
 	}
 
 	@Override
@@ -220,7 +219,7 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 			reset();
 			return vfsStatus;
 		}
-		return VFSConstants.ERROR_FAILED;
+		return VFSStatus.ERROR_FAILED;
 	}
 
 	@Override
@@ -230,7 +229,7 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 			reset();
 			return vfsStatus;
 		}
-		return VFSConstants.ERROR_FAILED;
+		return VFSStatus.ERROR_FAILED;
 	}
 
 	@Override

@@ -45,7 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ZipUtil;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -80,7 +80,7 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator trans) {
 		setTranslator(trans);
 		currentContainer = folderComponent.getCurrentContainer();
-		if (currentContainer.canWrite() != VFSConstants.YES) {
+		if (currentContainer.canWrite() != VFSStatus.YES) {
 			throw new AssertException("Cannot write to current folder.");
 		}
 		

@@ -56,7 +56,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -397,7 +397,7 @@ public class FolderComponent extends AbstractComponent {
 		}
 		
 		currentContainer = (VFSContainer)vfsItem;
-		if(currentContainer.canMeta() == VFSConstants.YES && !vfsRepositoryModule.isMigrated()) {
+		if(currentContainer.canMeta() == VFSStatus.YES && !vfsRepositoryModule.isMigrated()) {
 			VFSMetadata currentMetadata = vfsRepositoryService.getMetadataFor(currentContainer);
 			if(currentMetadata != null && !"migrated".equals(currentMetadata.getMigrated())) {
 				vfsRepositoryService.migrate(currentContainer, currentMetadata);
