@@ -1491,6 +1491,7 @@ table.o_ce_table {
 		margin: 24px 0 8px 0;
 		padding: 0;
 		background-color: inherit;
+		tab-size: 4;
 
 		code.hljs {
 			padding: 0 12px;
@@ -1549,6 +1550,10 @@ table.o_ce_table {
 .o_page_edit_code {
 	font-size: 12px;
 	min-height: 85px;
+
+	textarea {
+		tab-size: 4;
+	}
 
 	&.o_with_numbers {
 		margin: 12px 14px;
