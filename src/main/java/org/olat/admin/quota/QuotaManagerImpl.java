@@ -440,7 +440,7 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	public boolean hasMinimalRolesToEditquota(Roles roles) {
 		return roles.isAdministrator() || roles.isSystemAdmin()
 				|| roles.isRolesManager() || roles.isUserManager()
-				|| roles.isLearnResourceManager();
+				|| roles.isLearnResourceManager() || roles.isGroupManager();
 	}
 
 	@Override
@@ -453,7 +453,7 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 		if(path.startsWith("::DEFAULT")) {
 			return roles.isSystemAdmin();
 		} else if(path.startsWith("/cts/folders/BusinessGroup/")) {
-			return roles.isSystemAdmin() || roles.isAdministrator();
+			return roles.isSystemAdmin() || roles.isAdministrator() || roles.isGroupManager();
 		} else if(path.startsWith("/repository/")) {
 			return canEditRepositoryResources(path, identity, roles);
 		} else if(path.startsWith("/course/")) {
