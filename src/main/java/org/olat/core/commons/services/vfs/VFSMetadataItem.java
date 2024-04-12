@@ -54,7 +54,7 @@ public class VFSMetadataItem implements VFSItem {
 		this.secCallback = secCallback;
 	}
 	
-	protected VFSItem getItem() {
+	public VFSItem getItem() {
 		if (vfsItem == null) {
 			createItem();
 		}

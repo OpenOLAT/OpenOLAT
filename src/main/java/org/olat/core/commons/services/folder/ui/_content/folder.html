@@ -48,6 +48,9 @@
 			#end
 		</div>
 	</div>
+	#if($r.available("trashMessage") && $r.visible("trashMessage"))
+		$r.render("trashMessage")
+	#end
 	#if($r.available("folderBreadcrumb") && $r.visible("folderBreadcrumb"))
 		<div class="o_folder_breadcrumb">
 			$r.render("folderBreadcrumb")

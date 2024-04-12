@@ -33,6 +33,7 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSMetadataItem;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.commons.services.webdav.manager.VFSResource;
@@ -526,9 +527,12 @@ public class VFSLockManagerImpl implements VFSLockManager {
     }
     
     private File extractFile(VFSItem item) {
-    	if(item instanceof LocalImpl) {
-    		LocalImpl resource = (LocalImpl)item;
-			return resource.getBasefile();
+		VFSItem fileItem = item;
+		if (item instanceof VFSMetadataItem metadataItem) {
+			fileItem = metadataItem.getItem();
+		}
+		if (fileItem instanceof LocalImpl localItem) {
+			return localItem.getBasefile();
 		}
     	return null;
     }

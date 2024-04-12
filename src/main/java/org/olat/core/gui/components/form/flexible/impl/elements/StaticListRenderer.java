@@ -73,7 +73,7 @@ public class StaticListRenderer extends DefaultComponentRenderer {
 		// Show values
 		for (int i = 0; i < showNumValues; i++) {
 			sb.append("<li>");
-			sb.append(values.get(i));
+			sb.append(StringHelper.escapeHtml(values.get(i)));
 			sb.append("</li>");
 		}
 		
