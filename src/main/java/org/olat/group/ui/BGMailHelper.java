@@ -257,7 +257,7 @@ public class BGMailHelper {
 			List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);
 			infos = getTemplateInfos(group, repoEntries, trans);
 			subject = subject.replace("$groupname", infos.getGroupName());
-			body = body.replace("$groupname", infos.getGroupNameWithUrl());
+			body = body.replace("$groupname", infos.getGroupName());
 			body = body.replace("$groupdescription", infos.getGroupDescription());
 			if(StringHelper.containsNonWhitespace(infos.getCourseList())) {
 				body = body.replace("$courselist", infos.getCourseList());
@@ -418,8 +418,7 @@ public class BGMailHelper {
 		}
 		
 		public static final Collection<String> variableNames(boolean withActor) {
-			List<String> variableNames = new ArrayList<>();
-			variableNames.addAll(getStandardIdentityVariableNames());
+			List<String> variableNames = new ArrayList<>(getStandardIdentityVariableNames());
 			variableNames.add(GROUP_NAME);
 			variableNames.add(GROUP_DESCRIPTION);
 			variableNames.add(COURSE_LIST);
@@ -435,9 +434,8 @@ public class BGMailHelper {
 		
 		@Override
 		public Collection<String> getVariableNames() {
-			List<String> variableNames = new ArrayList<>();
-			variableNames.addAll(getStandardIdentityVariableNames());
-			if (StringHelper.containsNonWhitespace(infos.getGroupNameWithUrl())) {
+			List<String> variableNames = new ArrayList<>(getStandardIdentityVariableNames());
+			if (StringHelper.containsNonWhitespace(infos.getGroupName())) {
 				variableNames.add(GROUP_NAME);
 			}
 			if (StringHelper.containsNonWhitespace(infos.getGroupDescription())) {
