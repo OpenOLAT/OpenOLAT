@@ -1689,6 +1689,7 @@ table.o_ce_table {
 						margin: 0;
 						padding: 11px 10px 11px 0;
 						width: 100%;
+						user-select: none;
 					}
 				}
 
@@ -1728,7 +1729,7 @@ table.o_ce_table {
 				}
 			}
 
-			input[type="radio"] {
+			input[type="radio"], input[type="checkbox"] {
 				display: none;
 			}
 

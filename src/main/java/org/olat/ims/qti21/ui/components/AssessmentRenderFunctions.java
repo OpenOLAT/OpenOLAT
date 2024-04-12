@@ -793,9 +793,15 @@ public class AssessmentRenderFunctions {
 				if (component.isShowPageModeSolution()) {
 					ctx.put("isPageModeSolution", interaction.getAttributes().contains("pageModeSolution"));
 					if (component instanceof AssessmentItemComponent assessmentItemComponent) {
-						Identifier identifier = getSingleChoiceValue(assessmentItemComponent.getAssessmentItem());
-						if (identifier != null) {
-							ctx.put("singleChoiceSolution", identifier);
+						AssessmentItem assessmentItem = assessmentItemComponent.getAssessmentItem();
+						if (assessmentItem != null) {
+							ResponseDeclaration responseDeclaration = assessmentItem.getNodeGroups().getResponseDeclarationGroup().getChildren().get(0);
+							Cardinality cardinality = responseDeclaration.getAttributes().getCardinalityAttribute(ResponseDeclaration.ATTR_CARDINALITY_NAME).getValue();
+							if (cardinality.isMultiple()) {
+								putMultipleChoiceSolutions(ctx, responseDeclaration);
+							} else if (cardinality.isSingle()) {
+								putSingleChoiceSolution(ctx, responseDeclaration);
+							}
 						}
 					}
 				}
@@ -803,19 +809,18 @@ public class AssessmentRenderFunctions {
 		}
 	}
 
-	private static Identifier getSingleChoiceValue(AssessmentItem assessmentItem) {
-		if (assessmentItem == null) {
-			return null;
+	private static void putMultipleChoiceSolutions(Context ctx, ResponseDeclaration responseDeclaration) {
+		List<FieldValue> fieldValues = responseDeclaration.getCorrectResponse().getFieldValues();
+		List<Identifier> identifiers = fieldValues.stream().map(FieldValue::getSingleValue)
+				.filter(v -> v instanceof IdentifierValue).map(i -> ((IdentifierValue) i).identifierValue()).toList();
+		ctx.put("multipleChoiceSolutions", identifiers);
+	}
+
+	private static void putSingleChoiceSolution(Context ctx, ResponseDeclaration responseDeclaration) {
+		List<FieldValue> fieldValues = responseDeclaration.getCorrectResponse().getFieldValues();
+		if (fieldValues.get(0).getSingleValue() instanceof IdentifierValue identifierValue) {
+			Identifier identifier = identifierValue.identifierValue();
+			ctx.put("singleChoiceSolution", identifier);
 		}
-		try {
-			List<FieldValue> fieldValues = assessmentItem.getNodeGroups().getResponseDeclarationGroup()
-					.getChildren().get(0).getCorrectResponse().getFieldValues();
-			if (fieldValues.get(0).getSingleValue() instanceof IdentifierValue identifierValue) {
-				return identifierValue.identifierValue();
-			}
-		} catch (Exception e) {
-			log.warn("Error trying to read single choice value", e);
-		}
-		return null;
 	}
 }

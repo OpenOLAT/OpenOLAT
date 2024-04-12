@@ -62,23 +62,41 @@
 		
 		#foreach($simpleChoice in $visibleOrderedChoices)
 			#if($isPageMode)
+		        #if($r.isSingleChoice($interaction)) #set($single = true) #else #set($single = false) #end
 				#set($selected = $r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier))
 				#set($answerCorrectnessClass = "")
-				#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_off")
+				#if($single)
+					#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_off")
+				#else
+					#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_off")
+				#end
 				#if($isPageModeSolution)
 					#set($selected = false)
-					#if($simpleChoice.identifier.equals($singleChoiceSolution))
+					#if($singleChoiceSolution && $simpleChoice.identifier.equals($singleChoiceSolution))
 						#set($answerCorrectnessClass = "o_correct")
 						#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_correct")
+						#set($selected = true)
+					#end
+					#if($multipleChoiceSolutions && $multipleChoiceSolutions.contains($simpleChoice.identifier))
+						#set($answerCorrectnessClass = "o_correct")
+						#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_correct")
 						#set($selected = true)
 					#end
 				#else
 					#if($selected)
 						#if($isAnswerCorrect)
 							#set($answerCorrectnessClass = "o_correct")
-							#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_correct")
+							#if($single)
+								#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_correct")
+							#else
+								#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_correct")
+							#end
 						#else
-							#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_incorrect")
+							#if($single)
+								#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_incorrect")
+							#else
+								#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_incorrect")
+							#end
 							#set($answerCorrectnessClass = "o_incorrect")
 						#end
 					#end
@@ -158,10 +176,14 @@
 	"use strict";
 	jQuery(function() {
 		jQuery('td.control > input[type=radio]').change(function() {
-			jQuery('tr.choiceinteraction').removeClass('o_selected');
-			jQuery(`#${this.id}_choice`).addClass('o_selected');
-			jQuery('tr.choiceinteraction i.o_icon_quiz_single_choice_on').addClass('o_icon_quiz_single_choice_off').removeClass('o_icon_quiz_single_choice_on');
-			jQuery(`#${this.id}_choice i.o_icon_quiz_single_choice_off`).addClass('o_icon_quiz_single_choice_on').removeClass('o_icon_quiz_single_choice_off');
+			jQuery('tr.choiceinteraction').removeClass('o_selected'); // unselect all
+			jQuery(`#${this.id}_choice`).addClass('o_selected'); // select the one that was clicked / changed
+			jQuery('tr.choiceinteraction i.o_icon_quiz_single_choice_on').addClass('o_icon_quiz_single_choice_off').removeClass('o_icon_quiz_single_choice_on'); // uncheck all checked
+			jQuery(`#${this.id}_choice i.o_icon_quiz_single_choice_off`).addClass('o_icon_quiz_single_choice_on').removeClass('o_icon_quiz_single_choice_off'); // check the one that was clicked / changed
+		});
+		jQuery('td.control > input[type=checkbox]').change(function() {
+			jQuery(`#${this.id}_choice`).toggleClass('o_selected'); // toggle selection of the one that was clicked / changed
+			jQuery(`#${this.id}_choice i`).toggleClass('o_icon_quiz_multiple_choice_on').toggleClass('o_icon_quiz_multiple_choice_off'); // toggle checked state of the one that was clicked / changed
 		});
 	});
 </script>
