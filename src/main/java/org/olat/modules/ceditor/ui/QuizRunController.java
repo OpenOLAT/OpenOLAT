@@ -20,7 +20,9 @@
 package org.olat.modules.ceditor.ui;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -52,6 +54,7 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
 /**
@@ -65,13 +68,15 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private QuizPart quizPart;
 	private final boolean editable;
 	private Link startButton;
-	private boolean showIntro = true;
+	private Link retryButton;
+	private State state = State.intro;
 	private AssessmentItemDisplayController assessmentItemDisplayController;
 	private final AssessmentSessionAuditLogger candidateAuditLogger = new DefaultAssessmentSessionAuditLogger();
 	private final RepositoryEntry entry;
 	private final String subIdent;
 	private int questionIndex;
 	private ProgressBar progressBar;
+	private Map<String, Boolean> questionPassedState;
 
 	@Autowired
 	private ContentEditorQti contentEditorQti;
@@ -100,20 +105,17 @@ public class QuizRunController extends BasicController implements PageRunElement
 	}
 
 	private void updateUI(UserRequest ureq) {
-		mainVC.contextPut("showIntro", false);
-		mainVC.contextPut("showQuiz", false);
+		mainVC.contextPut("state", state.name());
 
-		if (showIntro) {
-			updateIntroUI(ureq);
-		} else {
-			updateQuizUI(ureq);
+		switch (state) {
+			case intro -> updateIntroUI(ureq);
+			case quiz -> updateQuizUI(ureq);
+			case result -> updateResultUI(ureq);
 		}
 	}
 
 	private void updateIntroUI(UserRequest ureq) {
-		if (quizPart.getBackgroundImageMedia() != null && quizPart.getBackgroundImageMediaVersion() != null) {
-			mainVC.put("image", ComponentsFactory.getImageComponent(ureq, quizPart.getBackgroundImageMediaVersion()));
-		}
+		updateImage(ureq);
 
 		mainVC.contextPut("title", quizPart.getSettings().getTitle());
 		mainVC.contextPut("description", substituteVariables(quizPart.getSettings().getDescription()));
@@ -122,17 +124,26 @@ public class QuizRunController extends BasicController implements PageRunElement
 		startButton.setPrimary(true);
 		startButton.setEnabled(!editable);
 		mainVC.put("quiz.start", startButton);
+	}
 
-		mainVC.contextPut("showIntro", true);
+	private void updateImage(UserRequest ureq) {
+		if (quizPart.getBackgroundImageMedia() != null && quizPart.getBackgroundImageMediaVersion() != null) {
+			if (mainVC.getComponent("image") == null) {
+				mainVC.put("image", ComponentsFactory.getImageComponent(ureq, quizPart.getBackgroundImageMediaVersion()));
+			}
+		}
 	}
 
 	private void updateQuizUI(UserRequest ureq) {
-		mainVC.contextPut("showQuiz", true);
-
 		mainVC.contextPut("questionNumber", questionIndex + 1);
 		mainVC.contextPut("questionIndex", questionIndex);
 		mainVC.contextPut("numberOfQuestions", getNumberOfQuestions());
 
+		updateProgressBar();
+		progressBar.setActual(questionIndex);
+	}
+
+	private void updateProgressBar() {
 		if (progressBar == null) {
 			progressBar = new ProgressBar("progress", 100, 0.0f, (float) getNumberOfQuestions(), null);
 			progressBar.setWidthInPercent(true);
@@ -140,8 +151,19 @@ public class QuizRunController extends BasicController implements PageRunElement
 			progressBar.setRenderSize(ProgressBar.RenderSize.small);
 			mainVC.put("progressBar", progressBar);
 		}
+	}
 
-		progressBar.setActual(questionIndex);
+	private void updateResultUI(UserRequest ureq) {
+		updateImage(ureq);
+		mainVC.contextPut("title", quizPart.getSettings().getTitle());
+		retryButton = LinkFactory.createButton("quiz.retry", mainVC, this);
+		retryButton.setIconLeftCSS("o_icon o_icon-fw o_icon_retry");
+		retryButton.setPrimary(true);
+		mainVC.contextPut("summary", translate("quiz.summary",
+				"" + getNumberOfPassedQuestions(), "" + getNumberOfQuestions()));
+		mainVC.put("quiz.retry", retryButton);
+		updateProgressBar();
+		progressBar.setActual(getNumberOfPassedQuestions());
 	}
 
 	private String substituteVariables(String text) {
@@ -157,6 +179,16 @@ public class QuizRunController extends BasicController implements PageRunElement
 			return 0;
 		}
 		return quizQuestions.size();
+	}
+
+	int getNumberOfPassedQuestions() {
+		int nbOfPassedQuestions = 0;
+		for (String key : questionPassedState.keySet()) {
+			if (questionPassedState.get(key)) {
+				nbOfPassedQuestions++;
+			}
+		}
+		return nbOfPassedQuestions;
 	}
 
 	@Override
@@ -179,32 +211,39 @@ public class QuizRunController extends BasicController implements PageRunElement
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (startButton == source) {
-			showIntro = false;
+			doStart(ureq);
+			updateUI(ureq);
+		} else if (retryButton == source) {
 			doStart(ureq);
 			updateUI(ureq);
 		}
 	}
 
 	private void doStart(UserRequest ureq) {
+		questionIndex = 0;
+		questionPassedState = new HashMap<>();
+
 		List<QuizQuestion> questions = quizPart.getSettings().getQuestions();
 		if (questionIndex >= questions.size()) {
 			return;
 		}
 
-		doStart(ureq, questions.get(questionIndex));
+		state = State.quiz;
+
+		doShowQuestion(ureq, questions.get(questionIndex));
 	}
 
 	private void doNext(UserRequest ureq) {
 		List<QuizQuestion> questions = quizPart.getSettings().getQuestions();
-		if ((questionIndex + 1) >= questions.size()) {
-			return;
+		if ((questionIndex + 1) < questions.size()) {
+			questionIndex++;
+			doShowQuestion(ureq, questions.get(questionIndex));
+		} else {
+			doShowResult(ureq);
 		}
-		questionIndex++;
-
-		doStart(ureq, questions.get(questionIndex));
 	}
 
-	private void doStart(UserRequest ureq, QuizQuestion quizQuestion) {
+	private void doShowQuestion(UserRequest ureq, QuizQuestion quizQuestion) {
 		updateUI(ureq);
 
 		ContentEditorQti.QuizQuestionStorageInfo storageInfo = contentEditorQti.getStorageInfo(quizPart, quizQuestion);
@@ -217,12 +256,18 @@ public class QuizRunController extends BasicController implements PageRunElement
 		boolean authorMode = true;
 		QTI21DeliveryOptions deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		deliveryOptions.setPageMode(true);
+		deliveryOptions.setLastQuestion(questionIndex >= (getNumberOfQuestions() - 1));
 		assessmentItemDisplayController = new AssessmentItemDisplayController(ureq, getWindowControl(),
 				entry, subIdent, entry, assessmentEntry, authorMode, resolvedAssessmentItem,
 				storageInfo.questionDirectory(), storageInfo.questionFile(), quizQuestion.getId(), deliveryOptions,
 				this, candidateAuditLogger);
 		listenTo(assessmentItemDisplayController);
 		mainVC.put("question", assessmentItemDisplayController.getInitialComponent());
+	}
+
+	private void doShowResult(UserRequest ureq) {
+		state = State.result;
+		updateUI(ureq);
 	}
 
 	@Override
@@ -236,7 +281,18 @@ public class QuizRunController extends BasicController implements PageRunElement
 	}
 
 	@Override
-	public void outcomes(AssessmentTestSession candidateSession, Float score, Boolean pass) {
-		//
+	public void outcomes(String resultIdentifier, AssessmentTestSession candidateSession, Float score, Boolean pass,
+						 SessionStatus sessionStatus) {
+		if (sessionStatus.equals(SessionStatus.FINAL)) {
+			if (StringHelper.containsNonWhitespace(resultIdentifier)) {
+				questionPassedState.put(resultIdentifier, score >= 1);
+			}
+		}
+	}
+
+	private enum State {
+		intro,
+		quiz,
+		result
 	}
 }

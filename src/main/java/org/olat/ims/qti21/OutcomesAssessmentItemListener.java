@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21;
 
+import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
+
 /**
  * 
  * Initial date: 11 déc. 2018<br>
@@ -30,12 +32,14 @@ public interface OutcomesAssessmentItemListener {
 	
 	/**
 	 * Update the outcomes.
-	 * 
-	 * @param score The score
-	 * @param pass Currently passed or failed (null is possible)
-	 * @param compeltion The number of questions answered measured against the number of questions in the test
+	 *
+	 * @param compeltion       The number of questions answered measured against the number of questions in the test
+	 * @param resultIdentifier An identifier that allows us to associate a result with a question
+	 * @param score            The score
+	 * @param pass             Currently passed or failed (null is possible)
+	 * @param sessionStatus    The QTI session status. Tells us if the result is final or not.
 	 */
-	public void outcomes(AssessmentTestSession candidateSession, Float score, Boolean pass);
+	public void outcomes(String resultIdentifier, AssessmentTestSession candidateSession, Float score, Boolean pass, SessionStatus sessionStatus);
 	
 
 }

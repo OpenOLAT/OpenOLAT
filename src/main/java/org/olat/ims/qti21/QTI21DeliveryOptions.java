@@ -70,6 +70,7 @@ public class QTI21DeliveryOptions {
 	private boolean chatOwners;
 	private boolean canStartChat;
 	private boolean pageMode;
+	private boolean lastQuestion;
 
 	public boolean isEnableCancel() {
 		return enableCancel;
@@ -365,6 +366,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.chatOwners = false;
 		defaultSettings.canStartChat = false;
 		defaultSettings.pageMode = false;
+		defaultSettings.lastQuestion = false;
 		return defaultSettings;
 	}
 	
@@ -397,6 +399,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.chatOwners = false;
 		defaultSettings.canStartChat = false;
 		defaultSettings.pageMode = false;
+		defaultSettings.lastQuestion = false;
 		return defaultSettings;
 	}
 	
@@ -429,6 +432,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.chatOwners = false;
 		defaultSettings.canStartChat = false;
 		defaultSettings.pageMode = false;
+		defaultSettings.lastQuestion = false;
 		return defaultSettings;
 	}
 
@@ -462,6 +466,7 @@ public class QTI21DeliveryOptions {
 		clone.chatOwners = chatOwners;
 		clone.canStartChat = canStartChat;
 		clone.pageMode = pageMode;
+		clone.lastQuestion = lastQuestion;
 		return clone;
 	}
 
@@ -471,6 +476,14 @@ public class QTI21DeliveryOptions {
 
 	public void setPageMode(boolean pageMode) {
 		this.pageMode = pageMode;
+	}
+
+	public void setLastQuestion(boolean lastQuestion) {
+		this.lastQuestion = lastQuestion;
+	}
+
+	public boolean isLastQuestion() {
+		return lastQuestion;
 	}
 
 	public enum TestType {

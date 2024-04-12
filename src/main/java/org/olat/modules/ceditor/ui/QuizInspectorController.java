@@ -106,10 +106,10 @@ public class QuizInspectorController extends FormBasicController implements Page
 		tabbedPane.addTab(getTranslator().translate("tab.quiz"), layoutCont);
 
 		titleEl = uifactory.addTextElement("title", 80, "", layoutCont);
-		titleEl.addActionListener(FormEvent.ONBLUR);
+		titleEl.addActionListener(FormEvent.ONCHANGE);
 
 		descriptionEl = uifactory.addTextAreaElement("description", "quiz.description", -1, -1, -1, false, false, null, layoutCont);
-		descriptionEl.addActionListener(FormEvent.ONBLUR);
+		descriptionEl.addActionListener(FormEvent.ONCHANGE);
 
 		String page = velocity_root + "/quiz_tab_image.html";
 		FormLayoutContainer searchLayout = FormLayoutContainer.createCustomFormLayout("image.search", getTranslator(), page);

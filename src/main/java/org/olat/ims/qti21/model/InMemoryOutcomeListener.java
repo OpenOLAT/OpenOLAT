@@ -26,6 +26,8 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesAssessmentItemListener;
 import org.olat.ims.qti21.OutcomesListener;
 
+import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
+
 /**
  * 
  * Initial date: 23.08.2016<br>
@@ -35,7 +37,7 @@ import org.olat.ims.qti21.OutcomesListener;
 public class InMemoryOutcomeListener implements OutcomesListener, OutcomesAssessmentItemListener {
 
 	@Override
-	public void outcomes(AssessmentTestSession candidateSession, Float score, Boolean pass) {
+	public void outcomes(String resultIdentifier, AssessmentTestSession candidateSession, Float score, Boolean pass, SessionStatus sessionStatus) {
 		//
 	}
 

@@ -54,6 +54,7 @@ import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
+import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
@@ -178,7 +179,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 	}
 
 	@Override
-	public void outcomes(AssessmentTestSession candidateSession, Float score, Boolean pass) {
+	public void outcomes(String resultIdentifier, AssessmentTestSession candidateSession, Float score, Boolean pass, SessionStatus sessionStatus) {
 		List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(candidateSession);
 		Map<String,AssessmentItemSession> itemSessionMap = new HashMap<>();
 		for(AssessmentItemSession itemSession:itemSessions) {

@@ -384,6 +384,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_restore { @include o-add-icon('thumbs-up');}
 .o_icon_results_visible { @include o-add-icon('eye');}
 .o_icon_results_hidden { @include o-add-icon('eye-slash');}
+.o_icon_retry { @include o-add-icon('rotate-right');}
 .o_icon_review_add { @include o-add-icon('plus-square');}
 .o_icon_review_added { @include o-add-icon('check');}
 .o_icon_review_remove { @include o-add-icon('minus-square');}

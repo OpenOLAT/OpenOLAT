@@ -305,7 +305,18 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 	}
 
 	private void renderNextButton(StringOutput sb, AssessmentItemComponent component, Translator translator) {
-		String title = component.isPageMode() ? translator.translate("assessment.test.nextQuestion") : translator.translate("next.item");
+		String title = "";
+		if (component.isPageMode()) {
+			if (component.isLastQuestion()) {
+				String icon = "<i class='o_icon o_icon-fw o_icon_score'> </i>&nbsp;";
+				title = icon + translator.translate("assessment.page.show.result");
+			} else {
+				title = translator.translate("assessment.test.nextQuestion");
+			}
+		} else {
+			title = translator.translate("next.item");
+		}
+
 		renderControl(sb, component, title, component.isPageMode(), "o_sel_next_question", new NameValuePair("cid", Event.next.name()));
 	}
 

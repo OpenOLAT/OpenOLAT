@@ -94,6 +94,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
+import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
@@ -205,7 +206,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	}
 
 	@Override
-	public void outcomes(AssessmentTestSession candidateSession, Float score, Boolean pass) {
+	public void outcomes(String resultIdentifier, AssessmentTestSession candidateSession, Float score, Boolean pass, SessionStatus sessionStatus) {
 		//
 	}
 

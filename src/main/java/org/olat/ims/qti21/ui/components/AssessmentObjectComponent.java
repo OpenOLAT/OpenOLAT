@@ -74,6 +74,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	private CandidateSessionContext candidateSessionContext;
 	private boolean pageMode;
 	private boolean showPageModeSolution;
+	private boolean lastQuestion;
 
 	public AssessmentObjectComponent(String name) {
 		super(name);
@@ -322,5 +323,13 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	public void showPageModeSolution() {
 		setShowPageModeSolution(true);
 		setDirty(true);
+	}
+
+	public void setLastQuestion(boolean lastQuestion) {
+		this.lastQuestion = lastQuestion;
+	}
+
+	public boolean isLastQuestion() {
+		return lastQuestion;
 	}
 }

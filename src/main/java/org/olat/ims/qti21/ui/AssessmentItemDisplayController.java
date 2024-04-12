@@ -72,6 +72,8 @@ import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
+import uk.ac.ed.ph.jqtiplus.attribute.enumerate.SessionStatusAttribute;
+import uk.ac.ed.ph.jqtiplus.attribute.value.StringAttribute;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
 import uk.ac.ed.ph.jqtiplus.exception.ResponseBindingException;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -79,6 +81,7 @@ import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
+import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationLevel;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
@@ -935,7 +938,15 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			}
 		}
 
-		outcomesListener.outcomes(candidateSession, score, pass);
+		String resultIdentifier = null;
+		SessionStatus sessionStatus = null;
+		if (itemResult.getAttributes().get(ItemResult.ATTR_IDENTIFIER_NAME) instanceof StringAttribute stringAttribute) {
+			resultIdentifier = stringAttribute.getComputedValue();
+		}
+		if (itemResult.getAttributes().get(ItemResult.ATTR_SESSION_STATUS_NAME) instanceof SessionStatusAttribute sessionStatusAttribute) {
+			sessionStatus = sessionStatusAttribute.getComputedValue();
+		}
+		outcomesListener.outcomes(resultIdentifier, candidateSession, score, pass, sessionStatus);
 	}
     
     public AssessmentResult computeItemAssessmentResult(UserRequest ureq) {
@@ -1162,6 +1173,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			qtiEl.setEnableResetSoft(deliveryOptions.isEnableAssessmentItemResetSoft());
 			qtiEl.setEnableSkip(deliveryOptions.isEnableAssessmentItemSkip());
 			qtiEl.getComponent().setPageMode(deliveryOptions.isPageMode());
+			qtiEl.getComponent().setLastQuestion(deliveryOptions.isLastQuestion());
 			qtiEl.setShowStatus(!deliveryOptions.isPageMode());
 			formLayout.add("qtirun", qtiEl);
 
