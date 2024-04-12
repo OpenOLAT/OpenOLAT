@@ -1072,9 +1072,9 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 			.isNotNull()
 			.containsAnyOf(mode);
 
-		params.setAllowedModeStatus(List.of(Status.assessment.name()));
-		List<AssessmentMode> emptyModes = assessmentModeMgr.findAssessmentMode(params);
-		assertThat(emptyModes).isEmpty();
+		params.setAllowedModeStatus(List.of(Status.end.name()));
+		List<AssessmentMode> excludeEndMode = assessmentModeMgr.findAssessmentMode(params);
+		assertThat(excludeEndMode).hasSize(plannedModes.size() - 1);
 	}
 	
 	/**
