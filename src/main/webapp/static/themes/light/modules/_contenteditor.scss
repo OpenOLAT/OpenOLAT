@@ -1567,6 +1567,14 @@ table.o_ce_table {
 
 /* Quiz */
 
+.o_page_layout.o_apply_background_color {
+	.o_page_run_quiz {
+		.o_background_placeholder {
+			background-color: unset;
+		}
+	}
+}
+
 .o_page_run_quiz {
 	.o_background_image_wrapper {
 		position: relative;
@@ -1577,7 +1585,7 @@ table.o_ce_table {
 	}
 	.o_background_placeholder {
 		position: relative;
-		background-color: lightgrey;
+		background-color: $o-qti-box-bg;
 
 		img {
 			width: 100%;
