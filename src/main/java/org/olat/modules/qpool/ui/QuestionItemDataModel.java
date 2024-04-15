@@ -40,6 +40,8 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 
 	private static final DecimalFormat THREE_DIGITS_FORMAT = new DecimalFormat("#.###");
 	
+	private static final Cols[] COLS = Cols.values();
+	
 	private final Translator translator;
 	
 	public QuestionItemDataModel(FlexiTableColumnModel columnModel, FlexiTableDataSourceDelegate<ItemRow> source, Translator translator) {
@@ -77,7 +79,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			return null;//don't break here
 		}
 		
-		switch(Cols.values()[col]) {
+		switch(COLS[col]) {
 			case key: return item.getKey();
 			case identifier: return item.getIdentifier();
 			case masterIdentifier: return item.getMasterIdentifier();
@@ -116,6 +118,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case editable: return item.isEditable() ? Boolean.TRUE : Boolean.FALSE;
 			case mark: return item.getMarkLink();
 			case license: return item.getLicense();
+			case language: return item.getLanguage();
 			default: return "-";
 		}
 	}
@@ -155,7 +158,8 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		license("rights.license"),
 		editable("editable"),
 		mark("mark"),
-		correctionTime("question.correctionTime");
+		correctionTime("question.correctionTime"),
+		language("general.language");
 		
 		private final String i18nKey;
 	

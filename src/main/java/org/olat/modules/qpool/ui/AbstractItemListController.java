@@ -197,6 +197,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.keywords));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.coverage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.additionalInformations));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.language));
 		if (getSecurityCallback().canUseTaxonomy()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxonomyLevel));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxonomyPath));
