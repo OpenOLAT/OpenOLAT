@@ -43,6 +43,7 @@ import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event;
 
 import uk.ac.ed.ph.jqtiplus.attribute.value.BooleanAttribute;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.AtomicBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
@@ -207,6 +208,12 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 				if (block instanceof BlockInteraction) {
 					block.getAttributes().add(pageModeSolution);
 					renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator);
+					block.getAttributes().remove(pageModeSolution);
+				} else if (block instanceof AtomicBlock atomicBlock) {
+					block.getAttributes().add(pageModeSolution);
+					atomicBlock.getInlines().forEach(ab -> ab.getAttributes().add(pageModeSolution));
+					renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator);
+					atomicBlock.getInlines().forEach(ab -> ab.getAttributes().remove(pageModeSolution));
 					block.getAttributes().remove(pageModeSolution);
 				}
 			});

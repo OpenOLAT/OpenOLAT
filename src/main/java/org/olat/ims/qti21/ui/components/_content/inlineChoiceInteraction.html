@@ -2,21 +2,47 @@
 #set($choices = $r.getVisibleOrderedChoices($interaction))
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
-<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<input data-name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <span class="$localName#if($r.isTrue($isOffline)) o_qti_offline#end"> 
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
 	<span class="o_error badResponse">$r.translate("error.choice")</span>
 	#end
     #if($r.isTrue($isOffline))
     	#foreach($choice in $choices)
-        	<input name="o_dummy_${responseIdentifier}" value="${choice.identifier}" type="radio" #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($responseValue,$choice.identifier)) checked #end><i></i>
+			#set($checked = "")
+			#if($r.valueContains($responseValue,$choice.identifier))
+				#set($checked = "checked")
+			#end
+        	<input name="o_dummy_${responseIdentifier}"
+				   value="${choice.identifier}"
+				   type="radio"
+				   #if($r.isItemSessionEnded()) disabled #end
+				   $checked><i></i>
         	$r.renderTextOrVariables($choice.getTextOrVariables())
         #end
     #else
 	<select id="oo_${responseIdentifier}" name="qtiworks_response_${responseIdentifier}">
-        <option value="" #if($r.isItemSessionEnded()) disabled #end>$r.translate("select.inline.choice")</option>
+		#set($disabled = "")
+		#if($isShowPageModeSolution)
+			#set($disabled = "disabled")
+		#else
+			#if($r.isItemSessionEnded())
+				#set($disabled = "disabled")
+			#end
+		#end
+        <option value="" $disabled>$r.translate("select.inline.choice")</option>
         #foreach($choice in $choices)
-        	<option value="${choice.identifier}" #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($responseValue,$choice.identifier)) selected #end>
+			#set($selected = "")
+			#if($isPageModeSolution)
+				#if($singleSolution && $choice.identifier.equals($singleSolution))
+					#set($selected = "selected")
+				#end
+			#else
+				#if($r.valueContains($responseValue,$choice.identifier))
+					#set($selected = "selected")
+				#end
+			#end
+        	<option value="${choice.identifier}" $disabled $selected>
         	$r.renderTextOrVariables($choice.getTextOrVariables())
         	</option>
         #end

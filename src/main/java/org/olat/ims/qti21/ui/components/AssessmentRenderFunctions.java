@@ -52,6 +52,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
@@ -806,6 +807,23 @@ public class AssessmentRenderFunctions {
 					}
 				}
 			}
+		} else if (interaction instanceof InlineChoiceInteraction) {
+			ctx.put("isPageMode", component.isPageMode());
+			if (component.isPageMode()) {
+				ctx.put("isAnswerCorrect", isCorrectlyAnswered(itemSessionState));
+				ctx.put("isShowPageModeSolution", component.isShowPageModeSolution());
+				if (component.isShowPageModeSolution()) {
+					boolean isPageModeSolution = interaction.getAttributes().contains("pageModeSolution");
+					ctx.put("isPageModeSolution", isPageModeSolution);
+					if (isPageModeSolution && component instanceof AssessmentItemComponent assessmentItemComponent) {
+						AssessmentItem assessmentItem = assessmentItemComponent.getAssessmentItem();
+						if (assessmentItem != null) {
+							ResponseDeclaration responseDeclaration = assessmentItem.getNodeGroups().getResponseDeclarationGroup().getChildren().get(0);
+							putSingleSolution(ctx, responseDeclaration);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -821,6 +839,14 @@ public class AssessmentRenderFunctions {
 		if (fieldValues.get(0).getSingleValue() instanceof IdentifierValue identifierValue) {
 			Identifier identifier = identifierValue.identifierValue();
 			ctx.put("singleChoiceSolution", identifier);
+		}
+	}
+
+	private static void putSingleSolution(Context ctx, ResponseDeclaration responseDeclaration) {
+		List<FieldValue> fieldValues = responseDeclaration.getCorrectResponse().getFieldValues();
+		if (fieldValues.get(0).getSingleValue() instanceof IdentifierValue identifierValue) {
+			Identifier identifier = identifierValue.identifierValue();
+			ctx.put("singleSolution", identifier);
 		}
 	}
 }
