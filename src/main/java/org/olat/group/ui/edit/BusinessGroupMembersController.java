@@ -174,16 +174,18 @@ public class BusinessGroupMembersController extends BasicController {
 		Integer currentParticipantSize = membersController.getMemberListModelSize();
 		Integer maxParticipants = businessGroup.getMaxParticipants();
 
-		// show warning if maximum size of waiting list is exceeded
-		// else show an information how much space is left
-		if (currentParticipantSize > maxParticipants) {
-			isOverbooked = true;
-			infoWarningText = translate("group.waiting.list.warning", String.valueOf(maxParticipants - currentParticipantSize), String.valueOf(maxParticipants));
-		} else {
-			infoWarningText = translate("group.waiting.list.info", String.valueOf(maxParticipants - currentParticipantSize), String.valueOf(maxParticipants));
+		if (maxParticipants != null) {
+			// show warning if maximum size of waiting list is exceeded
+			// else show an information how much space is left
+			if (currentParticipantSize > maxParticipants) {
+				isOverbooked = true;
+				infoWarningText = translate("group.waiting.list.warning", String.valueOf(maxParticipants - currentParticipantSize), String.valueOf(maxParticipants));
+			} else {
+				infoWarningText = translate("group.waiting.list.info", String.valueOf(maxParticipants - currentParticipantSize), String.valueOf(maxParticipants));
+			}
+			mainVC.contextPut("infoWarningText", infoWarningText);
+			mainVC.contextPut("isOverbooked", isOverbooked);
 		}
-		mainVC.contextPut("infoWarningText", infoWarningText);
-		mainVC.contextPut("isOverbooked", isOverbooked);
 	}
 
 	public BusinessGroup getGroup() {
