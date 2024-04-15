@@ -26,7 +26,6 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
@@ -132,10 +131,6 @@ public class MembersWizardPage {
 	}
 	
 	private MembersWizardPage searchMemberForm(UserVO user, boolean admin) {
-		if(browser instanceof ChromeDriver && !admin) {
-			By focusedFieldBy = By.cssSelector(".modal .o_form input:focus");
-			//OOGraphene.waitElement(focusedFieldBy, browser);
-		}
 		//Search by username or first name
 		By firstFieldBy = By.xpath("//fieldset[contains(@class,'o_sel_usersearch_searchform')]//input[@type='text'][1]");
 		OOGraphene.waitElement(firstFieldBy, browser);
