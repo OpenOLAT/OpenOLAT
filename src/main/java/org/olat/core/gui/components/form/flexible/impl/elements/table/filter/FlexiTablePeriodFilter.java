@@ -50,13 +50,13 @@ public class FlexiTablePeriodFilter extends FlexiTableFilter implements FlexiTab
 		if(val instanceof PeriodWithUnit period) {
 			value = period;
 		} else if(val instanceof Period period) {
-			value = new PeriodWithUnit(period, period.getDays(), ChronoUnit.DAYS);
+			value = new PeriodWithUnit(period, false, period.getDays(), ChronoUnit.DAYS);
 		} else if(val instanceof Number number) {
 			int valAsInt = number.intValue();
-			value = new PeriodWithUnit(Period.ofDays(valAsInt), valAsInt, ChronoUnit.DAYS);
+			value = new PeriodWithUnit(Period.ofDays(valAsInt), valAsInt < 0, Math.abs(valAsInt), ChronoUnit.DAYS);
 		} else if(val instanceof String string && StringHelper.isLong(string)) {
 			int valAsInt = Integer.parseInt(string);
-			value = new PeriodWithUnit(Period.ofDays(valAsInt), valAsInt, ChronoUnit.DAYS);
+			value = new PeriodWithUnit(Period.ofDays(valAsInt), valAsInt < 0, Math.abs(valAsInt), ChronoUnit.DAYS);
 		} else {
 			value = null;
 		}
@@ -140,7 +140,7 @@ public class FlexiTablePeriodFilter extends FlexiTableFilter implements FlexiTab
 		return new FlexiFilterPeriodController(ureq, wControl, this);
 	}
 	
-	public record PeriodWithUnit(Period period, int value, ChronoUnit unit) {
+	public record PeriodWithUnit(Period period, boolean past, int value, ChronoUnit unit) {
 		//
 	}
 }

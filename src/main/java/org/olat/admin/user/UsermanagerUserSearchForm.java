@@ -24,7 +24,9 @@
 */
 package org.olat.admin.user;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,6 +36,7 @@ import java.util.Map;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.SearchIdentityParams.AuthProviders;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.UserRequest;
@@ -44,9 +47,11 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -90,6 +95,10 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private DateChooser afterDate;
 	private DateChooser userLoginBefore;
 	private DateChooser userLoginAfter;
+	private TextElement userAccountExpirationInEl;
+	private TextElement userAccountExpirationSinceEl;
+	private SingleSelection userAccountExpirationInUnitEl;
+	private SingleSelection userAccountExpirationSinceUnitEl;
 	private FormLink searchButton;
 
 	
@@ -229,6 +238,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		params.setIdAndExternalIds(idVal);
 		params.setWithoutResources(isNoResources());
 		params.setWithoutEfficiencyStatements(isNoEfficiencyStatements());
+		params.setExpireIn(getExpireIn());
+		params.setExpiredSince(getExpiredSince());
 		return params;
 	}
 
@@ -249,6 +260,43 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 
 	protected Date getUserLoginAfter() {
 		return userLoginAfter.getDate();
+	}
+
+	protected Date getExpireIn() {
+		return getExpiration(userAccountExpirationInEl, userAccountExpirationInUnitEl, false);
+	}
+	
+	protected Date getExpiredSince() {
+		return getExpiration(userAccountExpirationSinceEl, userAccountExpirationSinceUnitEl, true);
+	}
+	
+	protected Date getExpiration(TextElement valueEl, SingleSelection unitEl, boolean past) {
+		String val = valueEl.getValue();
+		if(StringHelper.isLong(val)) {
+			int value = Integer.parseInt(val);
+			ChronoUnit unit = ChronoUnit.valueOf(unitEl.getSelectedKey());
+			Calendar cal = Calendar.getInstance();
+			int factor = past ? -1 : 1;
+			switch(unit) {
+				case DAYS:
+					cal.add(Calendar.DATE, factor * value);
+					break;
+				case WEEKS:
+					cal.add(Calendar.DATE, factor * value * 7);
+					break;
+				case MONTHS:
+					cal.add(Calendar.MONTH, factor * value);
+					break;
+				case YEARS:
+					cal.add(Calendar.YEAR, factor * value);
+					break;
+				default:
+					cal.add(Calendar.DATE, factor * value);
+					break;
+			}
+			return past ? CalendarUtils.startOfDay(cal.getTime()) : CalendarUtils.endOfDay(cal.getTime());
+		}
+		return null;
 	}
 
 	protected FormItem getItem(String name) {
@@ -434,7 +482,32 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		beforeDate = uifactory.addDateChooser("search.form.beforeDate", null, formLayout);
 		beforeDate.setValidDateCheck("error.search.form.no.valid.datechooser");
 		
+
 		uifactory.addSpacerElement("space5", formLayout, false);
+		
+		SelectionValues unitPK = new SelectionValues();
+		unitPK.add(SelectionValues.entry(ChronoUnit.DAYS.name(), translate("filter.day")));
+		unitPK.add(SelectionValues.entry(ChronoUnit.WEEKS.name(), translate("filter.week")));
+		unitPK.add(SelectionValues.entry(ChronoUnit.MONTHS.name(), translate("filter.month")));
+		unitPK.add(SelectionValues.entry(ChronoUnit.YEARS.name(), translate("filter.year")));
+		
+		FormLayoutContainer userAccountExpirationCont = uifactory.addInlineFormLayout("search.form.userAccountExpirationIn", "search.form.userAccountExpirationIn", formLayout);
+		userAccountExpirationInEl = uifactory.addTextElement("search.form.user.account.expiration.in", null, 5, "", userAccountExpirationCont);
+		userAccountExpirationInEl.setDomReplacementWrapperRequired(false);
+
+		userAccountExpirationInUnitEl = uifactory.addDropdownSingleselect("search.form.user.account.expiration.in.unit", null, userAccountExpirationCont, unitPK.keys(), unitPK.values());
+		userAccountExpirationInUnitEl.setDomReplacementWrapperRequired(false);
+		userAccountExpirationInUnitEl.select(ChronoUnit.DAYS.name(), true);
+
+		FormLayoutContainer userAccountExpirationSinceCont = uifactory.addInlineFormLayout("search.form.userAccountExpirationSince", "search.form.userAccountExpirationSince", formLayout);
+		userAccountExpirationSinceEl = uifactory.addTextElement("search.form.user.account.expiration.since", null, 5, "", userAccountExpirationSinceCont);
+		userAccountExpirationSinceEl.setDomReplacementWrapperRequired(false);
+
+		userAccountExpirationSinceUnitEl = uifactory.addDropdownSingleselect("search.form.user.account.expiration.since.unit", null, userAccountExpirationSinceCont, unitPK.keys(), unitPK.values());
+		userAccountExpirationSinceUnitEl.setDomReplacementWrapperRequired(false);
+		userAccountExpirationSinceUnitEl.select(ChronoUnit.DAYS.name(), true);
+
+		uifactory.addSpacerElement("space6", formLayout, false);
 		userLoginAfter = uifactory.addDateChooser("search.form.userLoginAfterDate", null, formLayout);
 		userLoginAfter.setValidDateCheck("error.search.form.no.valid.datechooser");
 		userLoginBefore = uifactory.addDateChooser("search.form.userLoginBeforeDate", null, formLayout);

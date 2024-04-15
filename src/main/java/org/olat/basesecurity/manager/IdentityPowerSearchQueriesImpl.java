@@ -614,13 +614,15 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" ident.lastLogin <= :lastloginBefore ");
 		}
-		if(params.getExpireIn() != null) {
+		if(params.getExpireIn() != null && params.getExpiredSince() != null) {
 			needsAnd = checkAnd(sb, needsAnd);
-			sb.append(" ident.plannedInactivationDate <= :expireIn");
-		}
-		if(params.getExpiredSince() != null) {
+			sb.append(" ident.plannedInactivationDate <= :expireIn and ident.inactivationDate >= :expiredSince");
+		} else if(params.getExpireIn() != null) {
 			needsAnd = checkAnd(sb, needsAnd);
-			sb.append(" ident.inactivationDate >= :expiredSince");
+			sb.append(" ident.plannedInactivationDate <= :expireIn and ident.inactivationDate is null");
+		} else if(params.getExpiredSince() != null) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" ident.plannedInactivationDate is null and ident.inactivationDate >= :expiredSince");
 		}
 		return needsAnd;
 	}

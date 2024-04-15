@@ -128,8 +128,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	public static final String LOGIN_DENIED_TAB_ID = "LoginDenied";
 	public static final String FILTER_STATUS = "status";
 	public static final String FILTER_ORGANISATIONS = "organisations";
-	public static final String FILTER_INACTIVATION_IN_DATE = "inactivation.in";
-	public static final String FILTER_INACTIVATION_SINCE_DATE = "inactivation.since";
+	public static final String FILTER_INACTIVATION_DATE = "inactivation.date";
 	
 	private Link nextLink;
 	private Link previousLink;
@@ -339,10 +338,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 					FILTER_ORGANISATIONS, organisationsValues, true));
 		}
 		
-		filters.add(new FlexiTablePeriodFilter(translate("filter.inactivation.in"),
-				FILTER_INACTIVATION_IN_DATE, true, getLocale()));
-		filters.add(new FlexiTablePeriodFilter(translate("filter.inactivation.since"),
-				FILTER_INACTIVATION_SINCE_DATE, true, getLocale()));
+		filters.add(new FlexiTablePeriodFilter(translate("filter.inactivation.date"),
+				FILTER_INACTIVATION_DATE, true, getLocale()));
 
 		if(!filters.isEmpty()) {
 			tableEl.setFilters(true, filters, false, false);

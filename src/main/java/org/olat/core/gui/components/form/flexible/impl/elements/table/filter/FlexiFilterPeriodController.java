@@ -50,6 +50,7 @@ public class FlexiFilterPeriodController extends FormBasicController {
 	
 	private TextElement valueEl;
 	private SingleSelection unitEl;
+	private SingleSelection pastEl;
 	private FormLink clearButton;
 	private FormLink updateButton;
 
@@ -65,8 +66,16 @@ public class FlexiFilterPeriodController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		SelectionValues pastPK = new SelectionValues();
+		pastPK.add(SelectionValues.entry("future", translate("filter.future")));
+		pastPK.add(SelectionValues.entry("past", translate("filter.past")));
+		pastEl = uifactory.addDropdownSingleselect("past", null, formLayout, pastPK.keys(), pastPK.values());
+		pastEl.setDomReplacementWrapperRequired(false);
+		
 		String val = filterPeriod == null ? "" : Integer.toString(filterPeriod.value());
 		valueEl = uifactory.addTextElement("value", null, 5, val, formLayout);
+		valueEl.setDisplaySize(5);
 		valueEl.setDomReplacementWrapperRequired(false);
 
 		SelectionValues unitPK = new SelectionValues();
@@ -145,13 +154,14 @@ public class FlexiFilterPeriodController extends FormBasicController {
 	
 	private PeriodWithUnit toPeriod() {
 		int value = Integer.parseInt(valueEl.getValue());
+		boolean past = pastEl.isOneSelected() && "past".equals(pastEl.getSelectedKey());
 		ChronoUnit unit = ChronoUnit.valueOf(unitEl.getSelectedKey());
 		return switch(unit) {
-			case DAYS -> new PeriodWithUnit(Period.ofDays(value), value, ChronoUnit.DAYS);
-			case WEEKS -> new PeriodWithUnit(Period.ofWeeks(value), value, ChronoUnit.WEEKS);
-			case MONTHS -> new PeriodWithUnit(Period.ofMonths(value), value, ChronoUnit.MONTHS);
-			case YEARS -> new PeriodWithUnit(Period.ofYears(value), value, ChronoUnit.YEARS);
-			default -> new PeriodWithUnit(Period.ofDays(value), value, ChronoUnit.DAYS);
+			case DAYS -> new PeriodWithUnit(Period.ofDays(value), past, value, ChronoUnit.DAYS);
+			case WEEKS -> new PeriodWithUnit(Period.ofWeeks(value), past, value, ChronoUnit.WEEKS);
+			case MONTHS -> new PeriodWithUnit(Period.ofMonths(value), past, value, ChronoUnit.MONTHS);
+			case YEARS -> new PeriodWithUnit(Period.ofYears(value), past, value, ChronoUnit.YEARS);
+			default -> new PeriodWithUnit(Period.ofDays(value), past, value, ChronoUnit.DAYS);
 		};
 	}
 }
