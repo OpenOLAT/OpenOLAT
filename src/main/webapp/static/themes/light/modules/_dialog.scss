@@ -240,12 +240,16 @@ body#o_body:has(dialog.dialog.modal.show) {
 	}
 }
 /* when page is in full-width mode, also apply to modal, e.g. for editors */
-body.o_width_full .modal .modal-dialog {
+body.o_width_full dialog.modal {
 	@media (min-width: $screen-sm-min) {
 		width: 90%;
 	}
 	@media (min-width: $screen-md-min) {
 		width: 80%;
+	}
+	
+	> .modal-dialog {
+		width: 100%;
 	}
 }
 
