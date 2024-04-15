@@ -148,8 +148,11 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("jQuery(function() {")
 		  .append(" const elem = document.getElementById('").append(receiverId).append("');")
 		  .append(" const datepicker = new Datepicker(elem, {\n")
-		  .append("  autohide: true,\n")
-		  .append("  format: '").append(format).append("',\n")
+		  .append("  autohide: true,\n");
+		if(StringHelper.containsNonWhitespace(jsdci.getContainerId())) {
+			sb.append("  container: '#o_c").append(jsdci.getContainerId()).append("',\n");
+		}
+		sb.append("  format: '").append(format).append("',\n")
 		  .append("  language: '").append(locale.getLanguage()).append("'\n")
 		  .append(" });\n")
 		  .append(" elem.addEventListener('show', function() {\n")

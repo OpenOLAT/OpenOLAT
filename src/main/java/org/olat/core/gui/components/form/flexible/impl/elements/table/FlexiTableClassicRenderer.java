@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
@@ -414,6 +415,9 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		Object cellValue = columnIndex >= 0 ? 
 				dataModel.getValueAt(row, columnIndex) : null;
 		if (cellValue instanceof FormItem formItem) {
+			if(formItem instanceof JSDateChooser dChooser) {
+				dChooser.setContainerId(ftC.getDispatchID());
+			}
 			renderFormItem(renderer, target, ubu, translator, renderResult, ftE, formItem);
 		} else if(cellValue instanceof Component cmp) {
 			cmp.setTranslator(translator);

@@ -76,6 +76,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	private DateChooser defaultDateValue;
 	private DateChooser copyDateValueTo;
 	private Date initialDate;
+	private String containerId;
 	
 	public JSDateChooser(String name, Locale locale) {
 		this(null, name, null, locale);
@@ -200,6 +201,14 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 			return Integer.parseInt(val);
 		}
 		return -1;
+	}
+
+	public String getContainerId() {
+		return containerId;
+	}
+
+	public void setContainerId(String containerId) {
+		this.containerId = containerId;
 	}
 
 	@Override
