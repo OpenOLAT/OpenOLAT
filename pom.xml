@@ -82,7 +82,7 @@
 		<swagger.ui.version>5.15.1</swagger.ui.version>
 		<com.mysql.version>8.3.0</com.mysql.version>
 		<org.postgresql.version>42.7.3</org.postgresql.version>
-		<org.infinispan.version>14.0.25.Final</org.infinispan.version>
+		<org.infinispan.version>15.0.1.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.19.1</version.selenium>
 		<activemq.artemis.version>2.33.0</activemq.artemis.version>
@@ -411,24 +411,12 @@
 				
 				<dependency>
 					<groupId>org.infinispan</groupId>
-					<artifactId>infinispan-core-jakarta</artifactId>
+					<artifactId>infinispan-core</artifactId>
 					<version>${org.infinispan.version}</version>
 					<exclusions>
 						<exclusion>
 							<groupId>org.jboss.logging</groupId>
 							<artifactId>jboss-logging</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.codehaus.woodstox</groupId>
-							<artifactId>woodstox-core-asl</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.codehaus.woodstox</groupId>
-							<artifactId>stax2-api</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.rhq.helpers</groupId>
-							<artifactId>rhq-pluginAnnotations</artifactId>
 						</exclusion>
 					</exclusions>
 				</dependency>
@@ -601,18 +589,6 @@
 							<groupId>org.jboss.logging</groupId>
 							<artifactId>jboss-logging</artifactId>
 						</exclusion>
-						<exclusion>
-							<groupId>org.codehaus.woodstox</groupId>
-							<artifactId>woodstox-core-asl</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.codehaus.woodstox</groupId>
-							<artifactId>stax2-api</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.rhq.helpers</groupId>
-							<artifactId>rhq-pluginAnnotations</artifactId>
-						</exclusion>
 					</exclusions>
 				</dependency>
 		
@@ -699,25 +675,13 @@
 				
 				<dependency>
 					<groupId>org.infinispan</groupId>
-					<artifactId>infinispan-core-jakarta</artifactId>
+					<artifactId>infinispan-core</artifactId>
 					<version>${org.infinispan.version}</version>
 					<scope>provided</scope>
 					<exclusions>
 						<exclusion>
 							<groupId>org.jboss.logging</groupId>
 							<artifactId>jboss-logging</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.codehaus.woodstox</groupId>
-							<artifactId>woodstox-core-asl</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.codehaus.woodstox</groupId>
-							<artifactId>stax2-api</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.rhq.helpers</groupId>
-							<artifactId>rhq-pluginAnnotations</artifactId>
 						</exclusion>
 					</exclusions>
 				</dependency>
@@ -2093,25 +2057,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-core-jakarta</artifactId>
+			<artifactId>infinispan-core</artifactId>
 			<version>${org.infinispan.version}</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>org.jboss.logging</groupId>
 					<artifactId>jboss-logging</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.woodstox</groupId>
-					<artifactId>woodstox-core-asl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.woodstox</groupId>
-					<artifactId>stax2-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.rhq.helpers</groupId>
-					<artifactId>rhq-pluginAnnotations</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
