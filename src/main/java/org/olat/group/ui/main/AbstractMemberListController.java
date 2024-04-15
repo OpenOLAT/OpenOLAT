@@ -1103,8 +1103,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		membersTable.reset(true, true, true);
 	}
 
-	public Integer getMemberListModelSize() {
-		return memberListModel.getRowCount();
+	public Long getMemberParticipantsSize() {
+		return memberListModel.getObjects().stream().filter(m -> m.getMembership().isBusinessGroupParticipant()).count();
 	}
 	
 	protected void forgeLinks(MemberRow row) {

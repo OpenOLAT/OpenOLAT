@@ -171,7 +171,7 @@ public class BusinessGroupMembersController extends BasicController {
 	private void reloadInformation() {
 		boolean isOverbooked = false;
 		String infoWarningText;
-		Integer currentParticipantSize = membersController.getMemberListModelSize();
+		Long currentParticipantSize = membersController.getMemberParticipantsSize();
 		Integer maxParticipants = businessGroup.getMaxParticipants();
 
 		if (maxParticipants != null) {
