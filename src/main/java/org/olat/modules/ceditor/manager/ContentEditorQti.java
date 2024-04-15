@@ -21,6 +21,7 @@ package org.olat.modules.ceditor.manager;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -39,6 +41,7 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilderFactory;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.modules.ceditor.model.QuizQuestion;
 import org.olat.modules.ceditor.model.QuizSettings;
@@ -50,6 +53,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.RootNodeLookup;
 
 /**
  * Initial date: 2024-03-26<br>
@@ -258,6 +263,19 @@ public class ContentEditorQti {
 			}
 		}
 		return quizQuestions;
+	}
+
+	public void exportQuestion(QuizPart quizPart, QuizQuestion question, Locale locale, Identity owner) {
+		File assessmentDirectory = contentEditorFileStorage.getFile(quizPart.getStoragePath());
+		File assessmentItemDirectory = new File(assessmentDirectory, question.getId());
+		File assessmentItemFile = new File(assessmentItemDirectory, question.getId() + ".xml");
+		URI assessmentKey = assessmentItemFile.toURI();
+		ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItem(assessmentKey, assessmentItemDirectory);
+		RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
+		AssessmentItem assessmentItem = rootNode.extractIfSuccessful();
+		File itemFile = new File(rootNode.getSystemId());
+		ManifestMetadataBuilder manifestMetadataBuilder = new ManifestMetadataBuilder();
+		qti21QPoolServiceProvider.importAssessmentItemRef(owner, assessmentItem, itemFile, manifestMetadataBuilder, locale);
 	}
 
 	public record QuizQuestionStorageInfo(File questionDirectory, VFSContainer questionContainer,

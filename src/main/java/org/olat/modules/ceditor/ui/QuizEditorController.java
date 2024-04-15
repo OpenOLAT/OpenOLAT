@@ -214,6 +214,8 @@ public class QuizEditorController extends FormBasicController implements PageEle
 			ccwc.deactivate();
 			if (HeaderCommandsController.IMPORT_EVENT == event) {
 				doImport(ureq);
+			} else if (HeaderCommandsController.EXPORT_ALL_EVENT == event) {
+				doExportAll(ureq);
 			}
 		} else if (ccwc == source) {
 			cleanUp();
@@ -320,7 +322,8 @@ public class QuizEditorController extends FormBasicController implements PageEle
 	}
 
 	private void doCommands(UserRequest ureq) {
-		commandsController = new HeaderCommandsController(ureq, getWindowControl(), canAddQuestions(), true, false);
+		commandsController = new HeaderCommandsController(ureq, getWindowControl(), canAddQuestions(),
+				false, true, false);
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
 				commandsButton.getFormDispatchId(), "", true, "");
@@ -363,6 +366,23 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		questions.addAll(importedQuestions);
 
 		storeSettings(ureq, quizSettings);
+	}
+
+	private void doExportAll(UserRequest ureq) {
+		QuizSettings quizSettings = quizPart.getSettings();
+		List<QuizQuestion> questions = quizSettings.getQuestions();
+		for (QuizQuestion question : questions) {
+			doExport(question);
+		}
+		if (questions.size() == 1) {
+			showInfo("quiz.export.pool.success.one");
+		} else {
+			showInfo("quiz.export.pool.success", Integer.toString(questions.size()));
+		}
+	}
+
+	private void doExport(QuizQuestion question) {
+		contentEditorQti.exportQuestion(quizPart, question, getLocale(), getIdentity());
 	}
 
 	private void doNewQuestion(UserRequest ureq, QuizQuestion quizQuestion) {

@@ -44,13 +44,14 @@ public class HeaderCommandsController extends BasicController {
 	private Link deleteLink;
 
 	public HeaderCommandsController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false, false, true);
+		this(ureq, wControl, false, false, false, true);
 	}
 
 	public HeaderCommandsController(UserRequest ureq, WindowControl wControl, boolean withImport, boolean withExport) {
-		this(ureq, wControl, withImport, withExport, true);
+		this(ureq, wControl, withImport, withExport, withExport, true);
 	}
-	public HeaderCommandsController(UserRequest ureq, WindowControl wControl, boolean withImport, boolean withExport, boolean withDelete) {
+	public HeaderCommandsController(UserRequest ureq, WindowControl wControl, boolean withImport, boolean withExportOne,
+									boolean withExportAll, boolean withDelete) {
 		super(ureq, wControl);
 
 		VelocityContainer mainVC = createVelocityContainer("header_commands");
@@ -62,12 +63,14 @@ public class HeaderCommandsController extends BasicController {
 			mainVC.put("import", importLink);
 		}
 
-		if (withExport) {
+		if (withExportOne) {
 			exportLink = LinkFactory.createLink("tools.export.pool", "export", getTranslator(), mainVC, this,
 					Link.LINK);
 			exportLink.setIconLeftCSS("o_icon o_icon-fw o_mi_qpool_import");
 			mainVC.put("export", exportLink);
+		}
 
+		if (withExportAll) {
 			exportAllLink = LinkFactory.createLink("tools.export.all.pool", "exportAll", getTranslator(), mainVC, this,
 					Link.LINK);
 			exportAllLink.setIconLeftCSS("o_icon o_icon-fw o_mi_qpool_import");
