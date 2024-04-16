@@ -113,6 +113,7 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement keycloakClientIdEl;
 	private TextElement keycloakClientSecretEl;
 	private TextElement keycloakEndpointEl;
+	private TextElement keycloakContextEl;
 	private TextElement keycloakRealmEl;
 	
 	private MultipleSelectionElement openIdConnectIFDefaultEl;
@@ -417,6 +418,10 @@ public class OAuthAdminController extends FormBasicController {
 		keycloakEndpointEl = uifactory.addTextElement("keycloak.endpoint", "keycloak.endpoint", 256, keycloakEndpoint, keycloakCont);
 		keycloakEndpointEl.setExampleKey("keycloak.endpoint.example", null);
 		keycloakEndpointEl.setMandatory(true);
+		
+		String keycloakContext = oauthModule.getKeycloakContext();
+		keycloakContextEl = uifactory.addTextElement("keycloak.context", "keycloak.context", 256, keycloakContext, keycloakCont);
+		keycloakContextEl.setExampleKey("keycloak.context.example", null);
 
 		String keycloakRealm = oauthModule.getKeycloakRealm();
 		keycloakRealmEl = uifactory.addTextElement("keycloak.realm", "keycloak.realm", 256, keycloakRealm, keycloakCont);
@@ -785,6 +790,7 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setKeycloakClientId(keycloakClientIdEl.getValue());
 			oauthModule.setKeycloakClientSecret(keycloakClientSecretEl.getValue());
 			oauthModule.setKeycloakEndpoint(keycloakEndpointEl.getValue());
+			oauthModule.setKeycloakContext(keycloakContextEl.getValue());
 			oauthModule.setKeycloakRootEnabled(keycloakDefaultEl.isAtLeastSelected(1));
 			oauthModule.setKeycloakRealm(keycloakRealmEl.getValue());
 		} else {
@@ -792,6 +798,7 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setKeycloakClientId("");
 			oauthModule.setKeycloakClientSecret("");
 			oauthModule.setKeycloakEndpoint("");
+			oauthModule.setKeycloakContext("");
 			oauthModule.setKeycloakRootEnabled(false);
 			oauthModule.setKeycloakRealm("");
 		}

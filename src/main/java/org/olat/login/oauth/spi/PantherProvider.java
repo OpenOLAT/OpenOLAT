@@ -32,7 +32,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.login.oauth.OAuthLoginModule;
-import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.OAuthUserCreator;
 import org.olat.login.oauth.model.OAuthUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +54,7 @@ import com.github.scribejava.core.oauth.OAuthService;
  *
  */
 @Service
-public class PantherProvider implements OAuthSPI, OAuthUserCreator {
+public class PantherProvider implements OAuthUserCreator {
 	
 	private static final Logger log = Tracing.createLoggerFor(PantherProvider.class);
 	
