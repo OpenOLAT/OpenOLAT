@@ -293,18 +293,20 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		setCurrentContainer(rootContainer);
 		reloadVersionsEnabled();
-		this.trashEnabled = canViewTrash(rootContainer);
+		reloadTrashEnabled();
 		
-		VFSSecurityCallback secCallback = VFSManager.findInheritedSecurityCallback(rootContainer);
-		if (secCallback != null) {
-			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
-			String data = rootContainer.getRelPath();
-			if (subsContext != null && data != null) {
-				String businessPath = wControl.getBusinessControl().getAsString();
-				PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(FolderModule.class), data, businessPath);
-				ContextualSubscriptionController subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, pdata);
-				listenTo(subscriptionCtrl);
-				flc.put("subscription", subscriptionCtrl.getInitialComponent());
+		if (config.isDisplaySubscription()) {
+			VFSSecurityCallback secCallback = VFSManager.findInheritedSecurityCallback(rootContainer);
+			if (secCallback != null) {
+				SubscriptionContext subsContext = secCallback.getSubscriptionContext();
+				String data = rootContainer.getRelPath();
+				if (subsContext != null && data != null) {
+					String businessPath = wControl.getBusinessControl().getAsString();
+					PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(FolderModule.class), data, businessPath);
+					ContextualSubscriptionController subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, pdata);
+					listenTo(subscriptionCtrl);
+					flc.put("subscription", subscriptionCtrl.getInitialComponent());
+				}
 			}
 		}
 		
@@ -404,7 +406,10 @@ public class FolderController extends FormBasicController implements Activateabl
 	private void updateCommandUI(UserRequest ureq) {
 		boolean canDecendants = VFSStatus.YES == currentContainer.canDescendants();
 		viewFileLink.setVisible(canDecendants);
-		trashLink.setVisible(canDecendants);
+		trashLink.setVisible(canViewTrash());
+		viewSearchLink.setVisible(config.isDisplaySearch());
+		quickSearchEl.setVisible(config.isDisplaySearch());
+		quickSearchButton.setVisible(config.isDisplaySearch());
 		
 		boolean canEditCurrentContainer = canEdit(currentContainer);
 		uploadLink.setVisible(canEditCurrentContainer);
@@ -416,7 +421,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		recordAudioLink.setVisible(canEditCurrentContainer && avModule.isAudioRecordingEnabled());
 		
 		webdavLink.setVisible(webdavEnabled);
-		quotaEditLink.setVisible(canEditQuota(ureq));
+		quotaEditLink.setVisible(config.isDisplayQuotaLink() && canEditQuota(ureq));
 		trashMenuLink.setVisible(canViewTrash());
 		cmdDropdown.setVisible(webdavLink.isVisible() || quotaEditLink.isVisible() || trashMenuLink.isVisible());
 		
@@ -430,9 +435,11 @@ public class FolderController extends FormBasicController implements Activateabl
 		bulkZipButton.setVisible(!trashView && canEditCurrentContainer);
 		bulkEmailButton.setVisible(!trashView);
 		
-		boolean canDelete = VFSStatus.YES == currentContainer.canDelete();
+		boolean canDelete = canDelete(currentContainer);
 		bulkDeleteSoftlyButton.setVisible(!trashView && canDelete);
 		bulkDeletePermanentlyButton.setVisible(trashView && canDelete);
+		
+		flc.setDirty(true);
 	}
 
 	private boolean canEditQuota(UserRequest ureq) {
@@ -447,7 +454,15 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void doOpenView(UserRequest ureq, FolderView view) {
 		this.folderView = view;
-		if (FolderView.folder != folderView && FolderView.trash != folderView) {
+		
+		if (FolderView.file == folderView) {
+			VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
+			if (topMostDescendantsContainer != null) {
+				setCurrentContainer(topMostDescendantsContainer);
+			} else {
+				setCurrentContainer(rootContainer);
+			}
+		} if (FolderView.search == folderView) {
 			setCurrentContainer(rootContainer);
 		}
 		
@@ -793,7 +808,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		List<VFSItem> allItems = new ArrayList<>();
-		loadItemsAndChildren(allItems, rootContainer);
+		loadItemsAndChildren(allItems, currentContainer);
 		return allItems;
 	}
 	
@@ -1226,6 +1241,9 @@ public class FolderController extends FormBasicController implements Activateabl
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (uploadCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
 			loadModel(ureq);
 			cmc.deactivate();
 			cleanUp();
@@ -1403,6 +1421,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		reloadVersionsEnabled();
+		reloadTrashEnabled();
 		updateFolderBreadcrumpUI(ureq, path);
 		updateCommandUI(ureq);
 		bulkEmailButton.setVisible(config.getEmailFilter().canEmail(path));
@@ -1414,8 +1433,17 @@ public class FolderController extends FormBasicController implements Activateabl
 		this.currentContainer = getCachedContainer(currentContainer);
 	}
 	
+	public String getCurrentPath() {
+		return VFSManager.getRelativeItemPath(currentContainer, rootContainer, null);
+	}
+	
 	private void reloadVersionsEnabled() {
 		versionsEnabled = vfsVersionModule.isEnabled() && rootContainer.canVersion() == VFSStatus.YES;
+	}
+	
+	private void reloadTrashEnabled() {
+		VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
+		trashEnabled = topMostDescendantsContainer != null && VFSStatus.YES == topMostDescendantsContainer.canDelete();
 	}
 	
 	private void updateFolderBreadcrumpUI(UserRequest ureq, String path) {
@@ -1425,6 +1453,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		for (int i = 1; i < pathParts.length; i++) {
 			String pathPart = pathParts[i];
 			ralativePath += "/" + pathPart;
+			VFSItem vfsItem = rootContainer.resolve(ralativePath);
+			if (vfsItem != null) {
+				pathPart = vfsItem.getName();
+			}
 			folderBreadcrumb.pushController(pathPart, null, ralativePath);
 		}
 	}
@@ -1841,6 +1873,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		loadModel(ureq);
 		markNews();
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doBulkCopySelectFolder(UserRequest ureq) {
@@ -2037,6 +2070,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		loadModel(ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doBulkZipConfirmation(UserRequest ureq) {
@@ -2127,6 +2161,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		markNews();
 		loadModel(ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	private boolean canUnzip(VFSItem vfsItem, VFSMetadata vfsMetadata) {
@@ -2228,11 +2263,12 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		markNews();
 		loadModel(ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doBulkConfirmDeleteSoftly(UserRequest ureq) {
 		if (guardModalController(deleteSoftlyConfirmationCtrl)) return;
-		if (VFSStatus.YES != currentContainer.canDelete()) {
+		if (!canDelete(currentContainer)) {
 			return;
 		}
 		
@@ -2269,7 +2305,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void doBulkDeleteSoftly(UserRequest ureq) {
-		if (VFSStatus.YES != currentContainer.canDelete()) {
+		if (!canDelete(currentContainer)) {
 			return;
 		}
 		
@@ -2296,6 +2332,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		markNews();
 		loadModel(ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doConfirmDeletePermanently(UserRequest ureq, FolderRow row) {
@@ -2348,11 +2385,12 @@ public class FolderController extends FormBasicController implements Activateabl
 		vfsItem.deleteSilently();
 		
 		loadModel(ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doBulkConfirmDeletePermanently(UserRequest ureq) {
 		if (guardModalController(deletePermanentlyConfirmationCtrl)) return;
-		if (VFSStatus.YES != currentContainer.canDelete()) {
+		if (canDelete(currentContainer)) {
 			return;
 		}
 		
@@ -2367,8 +2405,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				.filter(Objects::nonNull)
 				.map(row -> getUncachedItem(row.getVfsItem()))
 				.filter(Objects::nonNull)
-				.filter(item -> !isItemNotAvailable(ureq, item, false))
-				.filter(item -> !isNotDeleted(item.getMetaInfo()))
+				.filter(vfsIttem -> !isItemNotAvailable(ureq, vfsIttem, false))
+				.filter(vfsItem -> canDeletePermamently(vfsItem) && !isNotDeleted(vfsItem.getMetaInfo()))
 				.toList();
 		
 		if (selecteditems.isEmpty()) {
@@ -2410,8 +2448,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				.filter(Objects::nonNull)
 				.map(row -> getUncachedItem(row.getVfsItem()))
 				.filter(Objects::nonNull)
-				.filter(item -> !isItemNotAvailable(ureq, item, false))
-				.filter(item -> !isNotDeleted(item.getMetaInfo()))
+				.filter(vfsIttem -> !isItemNotAvailable(ureq, vfsIttem, false))
+				.filter(vfsItem -> canDeletePermamently(vfsItem) && !isNotDeleted(vfsItem.getMetaInfo()))
 				.toList();
 		
 		if (selecteditems.isEmpty()) {
@@ -2422,6 +2460,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		selecteditems.forEach(VFSItem::deleteSilently);
 		
 		loadModel(ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	private boolean canDelete(VFSItem vfsItem) {
@@ -2442,20 +2481,32 @@ public class FolderController extends FormBasicController implements Activateabl
 		return vfsMetadata == null || !vfsMetadata.isDeleted();
 	}
 	
-	private boolean canViewTrash() {
-		return trashEnabled;
-	}
-	
-	private boolean canViewTrash(VFSContainer vfsContainer) {
-		if (VFSStatus.YES == vfsContainer.canDelete()) {
-			return true;
+	private boolean canDeletePermamently(VFSItem vfsItem) {
+		VFSSecurityCallback secCallback = VFSManager.findInheritedSecurityCallback(vfsItem);
+		
+		if (secCallback == null) {
+			// Items in the trash are loaded flat. The parents are unknown.
+			VFSContainer trashRootContainer = getTopMostDescendantsContainer(currentContainer);
+			secCallback = VFSManager.findInheritedSecurityCallback(trashRootContainer);
 		}
-		for (VFSItem vfsItem : vfsContainer.getItems()) {
-			if (vfsItem instanceof VFSContainer vfsChildContainer && canViewTrash(vfsChildContainer)) {
+		
+		if (secCallback != null) {
+			if (secCallback.canDeleteRevisionsPermanently()) {
+				return true;
+			}
+			VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
+			if (vfsMetadata != null 
+					&& vfsMetadata.getFileInitializedBy() != null
+					&& getIdentity().getKey().equals(vfsMetadata.getFileInitializedBy().getKey())) {
 				return true;
 			}
 		}
+		
 		return false;
+	}
+	
+	private boolean canViewTrash() {
+		return trashEnabled;
 	}
 	
 	private void leaveTrash(UserRequest ureq) {
@@ -2529,13 +2580,14 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		if (vfsStatus == VFSStatus.ERROR_QUOTA_EXCEEDED) {
 			showWarning("error.restore.quota.exceeded");
-		} else if (vfsStatus != VFSStatus.SUCCESS) {
+		} else if (vfsStatus != VFSStatus.SUCCESS && vfsStatus != VFSStatus.YES) {
 			log.debug("Restore error {}", vfsStatus);
 			showWarning("error.restore");
 		}
 		
 		loadModel(ureq);
 		markNews();
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private boolean hasLockedChild(VFSContainer vfsContainer) {
@@ -2705,7 +2757,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				addLink("delete", CMD_DELETE, "o_icon o_icon-fw o_icon_delete_item");
 			}
 			
-			if (canDelete(vfsItem) && !isNotDeleted) {
+			if (canDeletePermamently(vfsItem) && !isNotDeleted) {
 				addLink("delete.permanently", CMD_DELETE_PERMANENTLY, "o_icon o_icon-fw o_icon_delete_item");
 			}
 			

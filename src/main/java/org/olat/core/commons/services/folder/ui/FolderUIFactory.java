@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.AbstractVirtualContainer;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -55,6 +56,10 @@ public class FolderUIFactory {
 	}
 	
 	public static String getDisplayName(VFSMetadata vfsMetadata, VFSItem vfsItem) {
+		if (vfsItem instanceof AbstractVirtualContainer virtualContainer) {
+			return virtualContainer.getName();
+		}
+		
 		if (vfsMetadata != null) {
 			if (StringHelper.containsNonWhitespace(vfsMetadata.getTitle())) {
 				return vfsMetadata.getTitle();

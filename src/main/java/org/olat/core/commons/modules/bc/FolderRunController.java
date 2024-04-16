@@ -515,10 +515,6 @@ public class FolderRunController extends BasicController implements Activateable
 			folderComponent.setCanMail(containerPath.startsWith("/public"));
 		}
 	}
-	
-	public void disableEditQuotaLink() {
-		editQuotaButton.setVisible(false);
-	}
 
 	private void enableDisableQuota(UserRequest ureq) {
 		//prevent a timing condition if the user logout while a thumbnail is generated

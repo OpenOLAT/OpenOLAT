@@ -31,6 +31,19 @@
 				margin-right: 10px;
 				float: unset;
 			}
+			.o_folder_cmds_more {
+				// Hide more menu if only trash item and large screen
+				display: none;
+				&:has(a:not(.o_folder_trash_menu_item)) {
+					display: block;
+				}
+				
+				// Push to right (on small screens) if no add button
+				margin-left: auto;
+			}
+			.o_folder_create_group ~ .o_folder_cmds_more {
+				margin-left: 0;
+			}
 		}
 		
 		.o_folder_view_group {
@@ -50,6 +63,11 @@
 		@media (max-width: 540px) {
 			grid-template-columns: auto;
 			
+			.o_folder_cmds {
+				.o_folder_cmds_more {
+					display: block;
+				}
+			}
 			.o_folder_trash {
 				display: none;
 			}

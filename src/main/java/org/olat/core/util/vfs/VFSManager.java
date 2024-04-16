@@ -545,7 +545,7 @@ public class VFSManager {
 			// Special case: check if this is a named container, see OLAT-3848
 			for (NamedContainerImpl namedRootChild : namedRootChilds) {
 				if (namedRootChild.isSame(tmpItem)) {
-					itemFileName = namedRootChild.getName();
+					itemFileName = namedRootChild.getDelegate().getName();
 				}
 			}
 			absPath = "/" + itemFileName + absPath;

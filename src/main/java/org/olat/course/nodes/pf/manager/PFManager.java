@@ -48,6 +48,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -522,7 +523,7 @@ public class PFManager {
 		
 		String baseContainerName = userManager.getUserDisplayName(identity);
 		
-		VirtualContainer namedCourseFolder = new VirtualContainer(baseContainerName);
+		MergeSource namedCourseFolder = new MergeSource(courseElementBaseContainer, baseContainerName);
 		namedCourseFolder.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 
 		VFSContainer dropContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ?
@@ -530,7 +531,7 @@ public class PFManager {
 				VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 
 		if (pfNode.hasParticipantBoxConfigured()){
-			namedCourseFolder.addItem(dropContainer);
+			namedCourseFolder.addContainer(dropContainer);
 		}
 		
 		VFSContainer returnContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ?
@@ -538,7 +539,7 @@ public class PFManager {
 				VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
 
 		if (pfNode.hasCoachBoxConfigured()){
-			namedCourseFolder.addItem(returnContainer);
+			namedCourseFolder.addContainer(returnContainer);
 		}
 
 		// Generate folders from template

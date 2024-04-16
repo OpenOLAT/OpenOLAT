@@ -19,8 +19,11 @@
  */
 package org.olat.course.nodes.pf.ui;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.FolderRunController.Mail;
+import java.util.List;
+
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -34,6 +37,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.PFCourseNode;
@@ -48,12 +54,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
 *
 */
-public class PFParticipantController extends BasicController {
+public class PFParticipantController extends BasicController {	
 	
 	private Link backLink;
 	private TimerComponent timerCmp;
 	private VelocityContainer mainVC;
-	private FolderRunController folderRunController;
+	private FolderController folderCtrl;
 	private ContextualSubscriptionController contextualSubscriptionCtr;
 	
 	private final PFView pfView;
@@ -62,6 +68,7 @@ public class PFParticipantController extends BasicController {
 	private final PFCourseNode pfNode;
 	private final CourseEnvironment courseEnv;
 	private final Identity assessedIdentity;
+	private final FolderControllerConfig folderConfig;
 
 	@Autowired
 	private PFManager pfManager;
@@ -89,6 +96,14 @@ public class PFParticipantController extends BasicController {
 			listenTo(contextualSubscriptionCtr);
 			mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());			
 		}
+		
+		folderConfig = FolderControllerConfig.builder()
+				.withDisplaySubscription(false)
+				.withDisplayWebDAVLinkEnabled(false)
+				.withDisplayQuotaLink(isCoach)
+				.withSearchEnabled(false)
+				.withMail(FolderEmailFilter.never)
+				.build();
 		
 		if(withBack) {
 			backLink = LinkFactory.createLinkBack(mainVC, this);
@@ -124,19 +139,20 @@ public class PFParticipantController extends BasicController {
 	}
 	
 	private void initFolderController(UserRequest ureq, String path) {
-		removeAsListenerAndDispose(folderRunController);
+		removeAsListenerAndDispose(folderCtrl);
 
 		VFSContainer frc = pfManager.provideParticipantFolder(pfNode, pfView, getTranslator(), courseEnv,
 				assessedIdentity, isCoach, readOnly);
-		folderRunController = new FolderRunController(frc, false, false, Mail.never, false, ureq, getWindowControl(), null, null, null);
+		folderCtrl = new FolderController(ureq, getWindowControl(), frc, folderConfig);
 
-		folderRunController.disableSubscriptionController();
-		if(!isCoach) {
-			folderRunController.disableEditQuotaLink();
+		if (StringHelper.containsNonWhitespace(path)) {
+			List<ContextEntry> entries = List.of(BusinessControlFactory.getInstance()
+					.createContextEntry(OresHelper.createOLATResourceableTypeWithoutCheck("path=" + path)));
+			folderCtrl.activate(ureq, entries, null);
+			
 		}
-		listenTo(folderRunController);
-		mainVC.put("folder", folderRunController.getInitialComponent());
-		folderRunController.activatePath(ureq, path);
+		listenTo(folderCtrl);
+		mainVC.put("folder", folderCtrl.getInitialComponent());
 	}
 
 	@Override
@@ -152,13 +168,13 @@ public class PFParticipantController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(folderRunController == source) {
+		if(folderCtrl == source) {
 			recalculatSecurityCallback(ureq);
 		}
 	}
 	
 	private void recalculatSecurityCallback(UserRequest ureq) {
-		String path = folderRunController.getCurrentContainerPath();
+		String path = folderCtrl.getCurrentPath();
 		initFolderController(ureq, path);
 	}
 

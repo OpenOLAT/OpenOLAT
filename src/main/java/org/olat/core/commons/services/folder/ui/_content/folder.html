@@ -44,7 +44,9 @@
 				</div>
 			#end
 			#if($r.available("cmds") && $r.visible("cmds"))
-				$r.render("cmds")
+				<div class="o_folder_cmds_more">
+					$r.render("cmds")
+				</div>
 			#end
 		</div>
 	</div>

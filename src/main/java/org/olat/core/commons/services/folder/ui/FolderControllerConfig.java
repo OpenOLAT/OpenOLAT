@@ -33,7 +33,9 @@ public class FolderControllerConfig {
 	
 	private static final FolderControllerConfig DEFAULT_CONFIG = new FolderControllerConfigBuilder().build();
 	
+	private final boolean displaySubscription;
 	private final boolean displayWebDAVLink;
+	private final boolean displayQuotaLink;
 	private final boolean displaySearch;
 	private final FolderEmailFilter emailFilter;
 	private final VFSItemFilter filter;
@@ -42,7 +44,9 @@ public class FolderControllerConfig {
 	private final String searchResourceUrl;
 	
 	private FolderControllerConfig(FolderControllerConfigBuilder builder) {
+		this.displaySubscription = builder.displaySubscription;
 		this.displayWebDAVLink = builder.displayWebDAVLink;
+		this.displayQuotaLink = builder.displayQuotaLink;
 		this.displaySearch = builder.displaySearch;
 		this.emailFilter = builder.emailFilter;
 		this.filter = builder.filter;
@@ -51,8 +55,20 @@ public class FolderControllerConfig {
 		this.searchResourceUrl = builder.searchResourceUrl;
 	}
 	
+	public boolean isDisplaySubscription() {
+		return displaySubscription;
+	}
+
 	public boolean isDisplayWebDAVLink() {
 		return displayWebDAVLink;
+	}
+
+	public boolean isDisplayQuotaLink() {
+		return displayQuotaLink;
+	}
+
+	public boolean isDisplaySearch() {
+		return displaySearch;
 	}
 
 	public FolderEmailFilter getEmailFilter() {
@@ -73,7 +89,9 @@ public class FolderControllerConfig {
 	
 	public static final class FolderControllerConfigBuilder {
 		
+		private boolean displaySubscription = true;
 		private boolean displayWebDAVLink = true;
+		private boolean displayQuotaLink = true;
 		private boolean displaySearch = true;
 		private String searchResourceUrl = null;
 		private FolderEmailFilter emailFilter = FolderEmailFilter.always;
@@ -82,11 +100,21 @@ public class FolderControllerConfig {
 		private VFSContainer externContainerForCopy = null;
 		
 		private FolderControllerConfigBuilder() {
-			
+			//
+		}
+		
+		public FolderControllerConfigBuilder withDisplaySubscription(boolean enabled) {
+			this.displaySubscription = enabled;
+			return this;
 		}
 		
 		public FolderControllerConfigBuilder withDisplayWebDAVLinkEnabled(boolean enabled) {
 			this.displayWebDAVLink = enabled;
+			return this;
+		}
+		
+		public FolderControllerConfigBuilder withDisplayQuotaLink(boolean enabled) {
+			this.displayQuotaLink = enabled;
 			return this;
 		}
 		

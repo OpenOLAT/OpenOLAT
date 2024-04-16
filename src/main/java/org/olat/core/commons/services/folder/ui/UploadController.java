@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.folder.ui;
 
 import org.olat.core.commons.modules.bc.FileUploadController;
+import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.services.folder.ui.component.QuotaBar;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -28,8 +29,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSStatus;
 
 /**
  * 
@@ -60,6 +61,9 @@ public class UploadController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == fileUploadCtr) {
+			if (event instanceof FolderEvent) {
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);

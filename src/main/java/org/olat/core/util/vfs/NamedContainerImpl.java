@@ -198,7 +198,7 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 
 	@Override
 	public boolean isSame(VFSItem vfsItem) {
-		return getDelegate().isSame(vfsItem);
+		return getDelegate().isSame(vfsItem instanceof NamedContainerImpl namedContainer ? namedContainer.getDelegate(): vfsItem);
 	}
 
 	@Override

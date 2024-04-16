@@ -34,6 +34,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
@@ -238,8 +239,12 @@ public class MergeSource extends AbstractVirtualContainer {
 		String nextPath = path.substring(childName.length() + 1);
 		// simple case
 		for (VFSContainer container:mergedContainers) {
-			if (container.getName().equals(childName)) {
-				VFSItem vfsItem = container.resolve(nextPath);
+			String delegateName = null;
+			if (container instanceof NamedContainerImpl namedContainer) {
+				delegateName = namedContainer.getDelegate().getName();
+			}
+			if (container.getName().equals(childName) || childName.equals(delegateName)) {
+				VFSItem vfsItem = StringHelper.containsNonWhitespace(nextPath)? container.resolve(nextPath): container;
 				// set default filter on resolved file if it is a container
 				if (vfsItem instanceof VFSContainer resolvedContainer) {
 					resolvedContainer.setDefaultItemFilter(defaultFilter);

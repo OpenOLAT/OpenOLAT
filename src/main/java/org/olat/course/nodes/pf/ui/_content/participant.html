@@ -9,7 +9,9 @@
 	<div class="$msgCssClass"><i class="o_icon o_icon-lg o_icon_time"> </i> #if($r.available("timer"))$r.render("timer")#end $msg</div>
 #end
 #if ($r.available("contextualSubscription"))
-	$r.render("contextualSubscription")
+	<div class="clearfix">
+		$r.render("contextualSubscription")
+	</div>
 #end
 $r.render("folder")
 </div>
