@@ -152,7 +152,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append(" var containerSelector =  null;")
 			  .append(" const dialogParent = jQuery('#").append(receiverId).append("').parents('.modal-dialog');\n")
-			  .append(" if(dialogParent.length == 1 && dialogParent.height() < 1400) {\n")
+			  .append(" if(dialogParent.length == 1 && dialogParent.height() < 400) {\n")
 			  .append("   containerSelector = '#' + dialogParent.get(0).getAttribute('id');\n")
 			  .append(" }\n");
 		}
