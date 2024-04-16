@@ -145,11 +145,11 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 			List<String> memberValues = new ArrayList<>();
 			if (withinCourse || businessGroup != null) {
 				for (MemberRow member : members) {
-					memberValues.add(StringHelper.escapeHtml(userManager.getUserDisplayName(member.getIdentityKey()) + " (" + StringHelper.unescapeHtml(getRolesRendered(member, null) + ")")));
+					memberValues.add(userManager.getUserDisplayName(member.getIdentityKey()) + " (" + StringHelper.unescapeHtml(getRolesRendered(member, null) + ")"));
 				}
 			} else if (identities != null) {
 				for (int i = 0; i < identities.size(); i++) {
-					memberValues.add(StringHelper.escapeHtml(userManager.getUserDisplayName(identities.get(i)) + " (" + StringHelper.unescapeHtml(getRolesRendered(null, memberships.get(i)) + ")")));
+					memberValues.add(userManager.getUserDisplayName(identities.get(i)) + " (" + StringHelper.unescapeHtml(getRolesRendered(null, memberships.get(i)) + ")"));
 				}
 			}
 
@@ -355,7 +355,7 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 		StringBuilder resultBuilder = new StringBuilder();
 		try (StringOutput groupOutput = new StringOutput()) {
 			renderGroups(groupOutput, member, isCoach);
-			resultBuilder.append(groupOutput);
+			resultBuilder.append(StringHelper.unescapeHtml(groupOutput.toString()));
 		} catch (Exception e) {
 			log.error("Error rendering groups", e);
 		}
