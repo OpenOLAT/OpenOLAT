@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.login.oauth.model.OAuthAttributeMapping;
 import org.olat.login.oauth.model.OAuthAttributesMapping;
@@ -50,12 +51,17 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private static final String KEYCLOAK_ENABLED = "keycloakEnabled";
 	private static final String KEYCLOAK_ROOT_ENABLED = "keycloakRootEnabled";
 	private static final String KEYCLOAK_ENDPOINT = "keycloakEndpoint";
+	private static final String KEYCLOAK_CONTEXT = "keycloakContext";
 	private static final String KEYCLOAK_REALM = "keycloakRealm";
 	private static final String KEYCLOAK_CLIENT_ID = "keycloakClientId";
 	private static final String KEYCLOAK_CLIENT_SECRET = "keycloakClientSecret";
+
+	private static final String KEYCLOAK_CONTEXT_EMPTY = "keycloak-empty-ontext";
 	
 	private static final String SKIP_DISCLAIMER_DIALOG = "skip.disclaimer.dialog";
 	private static final String SKIP_REGISTRATION_DIALOG = "skip.registration.dialog";
+	
+	
 	
 	private boolean allowUserCreation;
 	private boolean skipDisclaimerDialog;
@@ -137,6 +143,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private String keycloakClientSecret;
 	@Value("${oauth.keycloak.endpoint}")
 	private String keycloakEndpoint;
+	@Value("${oauth.keycloak.context}")
+	private String keycloakContext;
 	@Value("${oauth.keycloak.realm}")
 	private String keycloakRealm;
 	
@@ -244,6 +252,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		String keycloakRootEnabledObj = getStringPropertyValue(KEYCLOAK_ROOT_ENABLED, Boolean.toString(keycloakRootEnabled));
 		keycloakRootEnabled = "true".equals(keycloakRootEnabledObj);
 		keycloakEndpoint = getStringPropertyValue(KEYCLOAK_ENDPOINT, keycloakEndpoint);
+		keycloakContext = getStringPropertyValue(KEYCLOAK_CONTEXT, keycloakContext);
 		keycloakRealm = getStringPropertyValue(KEYCLOAK_REALM, keycloakRealm);
 		keycloakClientId = getStringPropertyValue(KEYCLOAK_CLIENT_ID, keycloakClientId);
 		keycloakClientSecret = getStringPropertyValue(KEYCLOAK_CLIENT_SECRET, keycloakClientSecret);
@@ -260,8 +269,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		Set<Object> allPropertyKeys = getPropertyKeys();
 		List<OAuthSPI> otherOAuthSPies = new ArrayList<>();
 		for(Object propertyKey:allPropertyKeys) {
-			if(propertyKey instanceof String) {
-				String key = (String)propertyKey;
+			if(propertyKey instanceof String key) {
 				if(key.startsWith(OPEN_ID_IF_START_MARKER) && key.endsWith(OPEN_ID_IF_END_MARKER)) {
 					OAuthSPI spi = getAdditionalOpenIDConnectIF(key);
 					otherOAuthSPies.add(spi);
@@ -802,6 +810,15 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		setStringProperty(KEYCLOAK_ENDPOINT, url, true);
 	}
 	
+	public String getKeycloakContext() {
+		return KEYCLOAK_CONTEXT_EMPTY.equals(keycloakContext) ? "" : keycloakContext;
+	}
+	
+	public void setKeycloakContext(String context) {
+		keycloakContext = StringHelper.containsNonWhitespace(context) ? context : KEYCLOAK_CONTEXT_EMPTY;
+		setStringProperty(KEYCLOAK_CONTEXT, keycloakContext, true);
+	}
+	
 	public String getKeycloakRealm() {
 		return keycloakRealm;
 	}
@@ -933,8 +950,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		
 		Set<Object> allPropertyKeys = getPropertyKeys();
 		for(Object propertyKey:allPropertyKeys) {
-			if(propertyKey instanceof String) {
-				String key = (String)propertyKey;
+			if(propertyKey instanceof String key) {
 				if(key.startsWith(prefix)) {
 					String external = key.substring(prefix.length());
 					int index = external.indexOf('.') + 1;

@@ -20,6 +20,8 @@
 package org.olat.login.oauth.spi;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.logging.log4j.Logger;
@@ -50,6 +52,8 @@ import com.github.scribejava.core.oauth.OAuthService;
 public class KeycloakProvider implements OAuthSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(KeycloakProvider.class);
+
+	private static final ConcurrentMap<String, OpenOlatKeycloakAPi> INSTANCES = new ConcurrentHashMap<>();
 	
 	@Value("${oauth.keycloak.attributename.useridentifyer:sub}")
 	private String idAttributeName;
@@ -110,7 +114,7 @@ public class KeycloakProvider implements OAuthSPI {
 		return new ServiceBuilder(oauthModule.getKeycloakClientId())
                 .apiSecret(oauthModule.getKeycloakClientSecret())
                 .callback(oauthModule.getCallbackUrl())
-                .build(KeycloakApi.instance(oauthModule.getKeycloakEndpoint(), oauthModule.getKeycloakRealm()));
+                .build(instance(oauthModule.getKeycloakEndpoint(), oauthModule.getKeycloakContext(), oauthModule.getKeycloakRealm()));
 	}
 	
 	@Override
@@ -153,5 +157,29 @@ public class KeycloakProvider implements OAuthSPI {
 	@Override
 	public String getIssuerIdentifier() {
 		return oauthModule.getKeycloakEndpoint();
+	}
+
+    public static OpenOlatKeycloakAPi instance(String baseUrl, String context, String realm) {
+        final String defaultBaseUrlWithRealm =  baseUrl + (baseUrl.endsWith("/") ? "" : "/")
+        		+ context + (context.endsWith("/") || context.isEmpty() ? "" : "/") + "realms/" + realm;
+
+        //java8: switch to ConcurrentMap::computeIfAbsent
+        OpenOlatKeycloakAPi api = INSTANCES.get(defaultBaseUrlWithRealm);
+        if (api == null) {
+            api = new OpenOlatKeycloakAPi(defaultBaseUrlWithRealm);
+            final OpenOlatKeycloakAPi alreadyCreatedApi = INSTANCES.putIfAbsent(defaultBaseUrlWithRealm, api);
+            if (alreadyCreatedApi != null) {
+                return alreadyCreatedApi;
+            }
+        }
+        return api;
+    }
+	
+	public static class OpenOlatKeycloakAPi extends KeycloakApi {
+		
+	    protected OpenOlatKeycloakAPi(String baseUrlWithRealm) {
+	        super(baseUrlWithRealm);
+	    }
+
 	}
 }
