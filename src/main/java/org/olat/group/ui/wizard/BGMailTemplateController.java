@@ -200,7 +200,8 @@ public class BGMailTemplateController extends FormBasicController {
 
 		// default template evaluated
 		MailContent mailContent = mailManager.evaluateTemplate(template);
-		String content = "<strong>" + StringHelper.escapeHtml(mailContent.getSubject()) + "</strong><br><br>" + StringHelper.xssScan(Formatter.escWithBR(mailContent.getBody()));
+		String mailBody = mailContent.getBody() != null && !StringHelper.isHtml(mailContent.getBody()) ? Formatter.escWithBR(mailContent.getBody()).toString() : mailContent.getBody();
+		String content = "<strong>" + StringHelper.escapeHtml(mailContent.getSubject()) + "</strong><br><br>" + StringHelper.xssScan(mailBody);
 		defaultTemplateEl.setValue(content);
 
 		if(ccSenderAllowed) {
