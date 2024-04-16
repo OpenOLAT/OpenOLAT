@@ -637,10 +637,12 @@ public class QualityServiceImpl
 	public void deleteContextsAndParticipations(Collection<QualityContextRef> contextRefs) {
 		for (QualityContextRef contextRef: contextRefs) {
 			QualityContext context = contextDao.loadByKey(contextRef);
-			EvaluationFormParticipationRef participationRef = context.getEvaluationFormParticipation();
-			deleteContext(contextRef);
-			if (!contextDao.hasContexts(participationRef)) {
-				evaluationFormManager.deleteParticipations(Collections.singletonList(participationRef));
+			if (context != null) {
+				EvaluationFormParticipationRef participationRef = context.getEvaluationFormParticipation();
+				deleteContext(contextRef);
+				if (!contextDao.hasContexts(participationRef)) {
+					evaluationFormManager.deleteParticipations(Collections.singletonList(participationRef));
+				}
 			}
 		}
 	}
