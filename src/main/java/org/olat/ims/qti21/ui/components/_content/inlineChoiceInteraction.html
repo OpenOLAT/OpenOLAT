@@ -2,7 +2,7 @@
 #set($choices = $r.getVisibleOrderedChoices($interaction))
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
-<input data-name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <span class="$localName#if($r.isTrue($isOffline)) o_qti_offline#end"> 
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
 	<span class="o_error badResponse">$r.translate("error.choice")</span>
