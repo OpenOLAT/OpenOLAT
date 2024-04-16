@@ -62,6 +62,8 @@ public class NewQuestionItemCalloutController extends BasicController {
 		List<String> links = new ArrayList<>();
 		addLink("quiz.question.sc", QTI21QuestionType.sc, links);
 		addLink("quiz.question.mc", QTI21QuestionType.mc, links);
+		addLink("quiz.question.fib", QTI21QuestionType.fib, links);
+		addLink("quiz.question.numerical", QTI21QuestionType.numerical, links);
 		addLink("quiz.question.inlinechoice", QTI21QuestionType.inlinechoice, links);
 
 		mainVC.contextPut("links", links);

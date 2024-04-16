@@ -341,6 +341,8 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		for (QItemType qItemType : itemTypes) {
 			if (qItemType.getType().equalsIgnoreCase(QuestionType.SC.name())
 					|| qItemType.getType().equalsIgnoreCase(QuestionType.MC.name())
+					|| qItemType.getType().equalsIgnoreCase(QuestionType.FIB.name())
+					|| qItemType.getType().equalsIgnoreCase(QuestionType.NUMERICAL.name())
 					|| qItemType.getType().equalsIgnoreCase(QuestionType.INLINECHOICE.name())) {
 				continue;
 			}
