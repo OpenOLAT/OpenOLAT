@@ -1348,15 +1348,14 @@ public class CourseElementTest extends Deployments {
 			.openParticipantFolder(participant.getFirstName());
 		FolderPage directory = folder
 			.openReturnBox()
-			.assertOnEmptyFolder()
-			.uploadFile(coachImageFile)
-			.assertOnFile(coachImageFile.getName());
+			.assertOnEmptyFolderCard()
+			.uploadFileCard(coachImageFile)
+			.assertOnFileCard(coachImageFile.getName());
 		
 		// The participant come in
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		participantLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 		
 		// The participant find the course
 		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
@@ -1368,26 +1367,26 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment participantCourse = CoursePageFragment.getCourse(participantBrowser);
 		participantCourse
 			.tree()
-			.selectWithTitle(participantFolderTitle);
+			.assertWithTitleSelected(participantFolderTitle);
 		ParticipantFolderPage participantFolder = new ParticipantFolderPage(participantBrowser);
 		participantFolder
 			.openReturnBox()
-			.assertOnFile(coachImageFile.getName())
+			.assertOnFileCard(coachImageFile.getName())
 			.selectRootDirectory();
 		// Participant upload a file in its drop box
 		URL participantImageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
 		File participantImageFile = new File(participantImageUrl.toURI());
 		participantFolder
 			.openDropBox()
-			.assertOnEmptyFolder()
-			.uploadFile(participantImageFile)
-			.assertOnFile(participantImageFile.getName());
+			.assertOnEmptyFolderCard()
+			.uploadFileCard(participantImageFile)
+			.assertOnFileCard(participantImageFile.getName());
 		
 		//Author check the image in the participant drop box
 		directory
 			.selectRootDirectory();
 		folder.openDropBox()
-			.assertOnFile(participantImageFile.getName());
+			.assertOnFileCard(participantImageFile.getName());
 	}
 	
 

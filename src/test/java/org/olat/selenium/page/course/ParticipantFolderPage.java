@@ -59,22 +59,18 @@ public class ParticipantFolderPage {
 	}
 	
 	public FolderPage openReturnBox() {
-		By returnBoxBy = By.xpath("//div[@class='o_briefcase_folder']//table/tbody/tr[1]/td/a[i[contains(@class,'o_filetype_folder')]]");
-		OOGraphene.waitElement(returnBoxBy, browser);
-		browser.findElement(returnBoxBy).click();
-		OOGraphene.waitBusy(browser);
-		return new FolderPage(browser);
+		return openBox(1);
 	}
 	
 	public FolderPage openDropBox() {
-		By returnBoxBy = By.xpath("//div[@class='o_briefcase_folder']//table/tbody/tr[2]/td/a[i[contains(@class,'o_filetype_folder')]]");
+		return openBox(2);
+	}
+	private FolderPage openBox(int xPathIndex) {
+		By returnBoxBy = By.xpath("//div[contains(@class,'o_table_flexi')]/div[contains(@class,'o_folder_table')]//div[@class='o_folder_row'][" + xPathIndex + "]//h4/a");
 		OOGraphene.waitElement(returnBoxBy, browser);
 		browser.findElement(returnBoxBy).click();
 		OOGraphene.waitBusy(browser);
 		return new FolderPage(browser);
 	}
-	
-
-	
 
 }

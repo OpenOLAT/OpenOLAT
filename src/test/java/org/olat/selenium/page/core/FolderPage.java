@@ -29,7 +29,6 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 
 /**
  * 
@@ -150,6 +149,30 @@ public class FolderPage {
 		return this;
 	}
 	
+	
+	public FolderPage uploadFileCard(File file) {
+		try {
+			By newFileBy = By.cssSelector(".o_folder_create_group>a.btn");
+			OOGraphene.waitElement(newFileBy, browser);
+			browser.findElement(newFileBy).click();
+			OOGraphene.waitModalDialog(browser);
+			
+			By inputBy = By.cssSelector("div.modal-dialog div.o_fileinput input[type='file']");
+			OOGraphene.uploadFile(inputBy, file, browser);
+			By uploadedBy = By.cssSelector("div.modal-dialog div.o_sel_file_uploaded");
+			OOGraphene.waitElementSlowly(uploadedBy, 5, browser);
+			OOGraphene.waitingALittleBit();
+			
+			By saveButtonBy = By.cssSelector("div.o_sel_upload_buttons button.btn-primary");
+			OOGraphene.click(saveButtonBy, browser);
+			OOGraphene.waitModalDialogDisappears(browser);
+		} catch (Error | Exception e) {
+			OOGraphene.takeScreenshot("uploadFile", browser);
+			throw e;
+		}
+		return this;
+	}
+	
 	public FolderPage unzipFile(String filename) {
 		By unzipBy = By.xpath("//button[contains(@onclick,'o_TableMultiActionEvent') and contains(@onclick,'actionunzip')]");
 		browser.findElement(unzipBy).click();
@@ -168,21 +191,8 @@ public class FolderPage {
 	}
 	
 	public FolderPage selectRootDirectory() {
-		By rootBy = By.xpath("//div[@class='o_briefcase_folder']//ol[@class='breadcrumb']/li[1]/a");
+		By rootBy = By.xpath("//div[@class='o_folder_breadcrumb']//ol/li[@class='o_breadcrumb_root']/a");
 		OOGraphene.waitElement(rootBy, browser);
-		
-		// tooltip of the image sometimes appears and block the click
-		By tooltipBy = By.cssSelector("div.tooltip-inner");
-		WebElement rootEl = browser.findElement(rootBy);
-		List<WebElement> tooltipEls = browser.findElements(tooltipBy);
-		if(tooltipEls.size() > 0) {
-			new Actions(browser)
-				.moveToElement(rootEl)
-				.build()
-				.perform();
-			OOGraphene.waitElementDisappears(tooltipBy, 5, browser);
-		}
-		
 		browser.findElement(rootBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -194,9 +204,23 @@ public class FolderPage {
 		return this;
 	}
 	
+	public FolderPage assertOnFileCard(String filename) {
+		By fileBy = By.xpath("//div[contains(@class,'o_folder_table')]//h4/a/span[contains(text(),'" + filename + "')]");
+		OOGraphene.waitElement(fileBy, browser);
+		return this;
+	}
+	
 	public FolderPage assertOnEmptyFolder() {
 		By emptyBy = By.cssSelector(".o_table_wrapper .o_empty_state .o_empty_msg");
 		OOGraphene.waitElement(emptyBy, browser);
 		return this;
 	}
+
+	public FolderPage assertOnEmptyFolderCard() {
+		By emptyBy = By.cssSelector(".o_folder .o_folder_table .o_empty_state .o_empty_msg");
+		OOGraphene.waitElement(emptyBy, browser);
+		return this;
+	}
+	
+	
 }
