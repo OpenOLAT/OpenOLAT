@@ -235,8 +235,7 @@ public class PortfolioV2Test extends Deployments {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		String courseTitle = "Collect-Forum-" + UUID.randomUUID();
 		String forumTitle = ("Forum-" + UUID.randomUUID()).substring(0, 24);
@@ -262,7 +261,7 @@ public class PortfolioV2Test extends Deployments {
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
 		course
 			.tree()
-			.selectWithTitle(forumTitle);
+			.assertWithTitleSelected(forumTitle);
 		
 		String mediaTitle = "A post";
 		
@@ -356,8 +355,7 @@ public class PortfolioV2Test extends Deployments {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-With-Blog-" + UUID.randomUUID().toString();
@@ -389,7 +387,7 @@ public class PortfolioV2Test extends Deployments {
 			.clickToolbarBack();
 		course
 			.tree()
-			.selectWithTitle(blogNodeTitle);
+			.assertWithTitleSelected(blogNodeTitle);
 		
 		String postTitle = "Post-EP-" + UUID.randomUUID();
 		String postSummary = "Some explanations to tease people";
