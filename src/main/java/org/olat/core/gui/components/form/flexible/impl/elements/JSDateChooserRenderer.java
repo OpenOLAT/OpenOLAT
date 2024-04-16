@@ -145,14 +145,24 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		// date chooser javascript
 		sb.append("<script>\n")
 		  .append("\"use strict\";\n")
-		  .append("jQuery(function() {")
-		  .append(" const elem = document.getElementById('").append(receiverId).append("');")
-		  .append(" const datepicker = new Datepicker(elem, {\n")
-		  .append("  autohide: true,\n");
+		  .append("jQuery(function() {\n");
+
 		if(StringHelper.containsNonWhitespace(jsdci.getContainerId())) {
-			sb.append("  container: '#o_c").append(jsdci.getContainerId()).append("',\n");
+			sb.append(" const containerSelector = '#o_c").append(jsdci.getContainerId()).append("';\n");
+		} else {
+			sb.append(" var containerSelector =  null;")
+			  .append(" const dialogParent = jQuery('#").append(receiverId).append("').parents('.modal-dialog');\n")
+			  .append(" if(dialogParent.length == 1 && dialogParent.height() < 1400) {\n")
+			  .append("   containerSelector = '#' + dialogParent.get(0).getAttribute('id');\n")
+			  .append(" }\n");
 		}
-		sb.append("  format: '").append(format).append("',\n")
+		
+		sb.append(" const elem = document.getElementById('").append(receiverId).append("');")
+		  .append(" const datepicker = new Datepicker(elem, {\n")
+		  .append("  autohide: true,\n")
+		  .append("  orientation: 'auto',\n")
+		  .append("  container: containerSelector,\n")
+		  .append("  format: '").append(format).append("',\n")
 		  .append("  language: '").append(locale.getLanguage()).append("'\n")
 		  .append(" });\n")
 		  .append(" elem.addEventListener('show', function() {\n")

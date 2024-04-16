@@ -1,5 +1,5 @@
 <dialog class="dialog modal show $!windowCssClass" id='$r.getId("o_closablewapper_")' role="dialog" aria-modal="true" #if ($title) aria-labelledby="$r.getId('o_md_')" #end>
-	<div class="modal-dialog modal-lg"><div class="modal-content">
+	<div id='$r.getId("o_modal_dialog_")' class="modal-dialog modal-lg"><div class="modal-content">
 	<div class="modal-header">
 		#if ($r.available("closeIcon"))
 			$r.render("closeIcon")

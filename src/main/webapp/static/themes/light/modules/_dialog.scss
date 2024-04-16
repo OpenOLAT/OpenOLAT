@@ -151,13 +151,11 @@ div.o_callout_overlay {
 
 // Modal
 dialog.dialog {
-	overflow-x: hidden;
-	overflow-y: auto;
-	padding: 0;
-	background: white;
-	border-radius: 6px;
-	border: 1px solid $modal-content-border-color;
-	box-shadow: 0 5px 15px rgba(0,0,0,.5);
+	
+	padding: 20px 10px;
+	border: none;
+	background: rgba(0,0,0,.0);
+	height: 100vh;
 	
 	&.o_wizard {
 		width: 80%;
@@ -166,19 +164,15 @@ dialog.dialog {
 			width: 100%;
 		}
 	}
-
-	.modal-content {
-		border: none;
-		-webkit-box-shadow: none;
-		box-shadow: none;
-	}
 	
 	.modal-dialog {
 		margin: 0 !important;
-	}
-	
-	&.o_modal_full_height {
-		height: 100vh;
+		
+		.modal-content {
+			overflow-x: hidden;
+			overflow-y: auto;
+			max-height: calc(96vh - 40px);
+		}
 	}
 }
 
