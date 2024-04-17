@@ -50,6 +50,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.manager.ContentEditorQti;
@@ -402,9 +403,23 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		listenTo(editQuestionController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				editQuestionController.getInitialComponent(), true, translate("add.quiz"));
+				editQuestionController.getInitialComponent(), displayAsOverlay(quizQuestion), translate("add.quiz"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+
+	private boolean displayAsOverlay(QuizQuestion quizQuestion) {
+		QTI21QuestionType type = QTI21QuestionType.safeValueOf(quizQuestion.getType());
+		if (type != null) {
+			// Opening a text gap or numerical gap question as overlay leads to layer changes in the
+			// guistackmodalpanel (which holds both tiny and the gap value input popup). This is not a problem as
+			// such, but since we set the value in tiny by JS, we first execute the JS and then re-render the
+			// entire modal stack.
+			if (type == QTI21QuestionType.fib || type == QTI21QuestionType.numerical) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void doDeleteQuestion(UserRequest ureq, QuizQuestion quizQuestion) {
