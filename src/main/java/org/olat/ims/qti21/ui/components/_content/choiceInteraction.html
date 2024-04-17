@@ -26,18 +26,87 @@
 	#end
 
 	#foreach($simpleChoice in $visibleOrderedChoices)
-	<div class="form-group o_qti_item_choice_option_flow">
-		<div #if($r.isSingleChoice($interaction)) class="radio" #else class="check" #end ><label for="oo_$r.toString($simpleChoice.identifier)">
-		#if($r.classContains($interaction,"choiceright"))
-	 		<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span>
+		#if($isPageMode)
+			#set($single = $r.isSingleChoice($interaction))
+			#set($selected = $r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier))
+			#set($disabled = ($r.isItemSessionEnded() || $isShowPageModeSolution))
+			#set($answerCorrectnessClass = "")
+			#if($single)
+				#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_off")
+			#else
+				#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_off")
+			#end
+			#if($isPageModeSolution)
+				#set($selected = false)
+				#if($singleChoiceSolution && $simpleChoice.identifier.equals($singleChoiceSolution))
+					#set($answerCorrectnessClass = "o_correct")
+					#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_correct")
+					#set($selected = true)
+				#end
+				#if($multipleChoiceSolutions && $multipleChoiceSolutions.contains($simpleChoice.identifier))
+					#set($answerCorrectnessClass = "o_correct")
+					#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_correct")
+					#set($selected = true)
+				#end
+			#else
+				#if($selected)
+					#if($isAnswerCorrect)
+						#set($answerCorrectnessClass = "o_correct")
+						#if($single)
+							#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_correct")
+						#else
+							#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_correct")
+						#end
+					#else
+						#if($single)
+							#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_incorrect")
+						#else
+							#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_incorrect")
+						#end
+						#set($answerCorrectnessClass = "o_incorrect")
+					#end
+				#end
+			#end
+
+			#set($isRight = ($r.classContains($interaction,"choiceright")))
+			<div id="oo_$r.toString($simpleChoice.identifier)_choice"
+				 class="form-group o_qti_item_choice_option_flow #if($selected) o_selected $answerCorrectnessClass#end #if($isRight) o_input_right #end">
+				<div #if($single) class="radio" #else class="check" #end>
+					#if(!$disabled)
+						<label for="oo_$r.toString($simpleChoice.identifier)">
+					#else
+						<label>
+					#end
+					#if($r.classContains($interaction,"choiceright"))
+						<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span>
+					#end
+					<input id="oo_$r.toString($simpleChoice.identifier)"
+						   name="qtiworks_response_${responseIdentifier}"
+						   value="$r.toString($simpleChoice.identifier)"
+						   #if($single) type="radio" #else type="checkbox" #end
+						   #if($disabled) disabled #end
+						   #if($selected) checked #end /><i class="$iconClass"> </i>
+					$r.appendFlexiFormDirtyForCheckbox("oo_$r.toString($simpleChoice.identifier)")
+					#if(!$r.classContains($interaction,"choiceright"))
+						<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span>
+					#end
+					</label>
+				</div>
+			</div>
+		#else <!-- if(!$isPageMode) -->
+			<div class="form-group o_qti_item_choice_option_flow">
+				<div #if($r.isSingleChoice($interaction)) class="radio" #else class="check" #end ><label for="oo_$r.toString($simpleChoice.identifier)">
+					#if($r.classContains($interaction,"choiceright"))
+					<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span>
+					#end
+					<input id="oo_$r.toString($simpleChoice.identifier)" name="qtiworks_response_${responseIdentifier}" value="$r.toString($simpleChoice.identifier)" #if($r.isSingleChoice($interaction)) type="radio" #else type="checkbox" #end #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier)) checked #end /><i> </i>
+					$r.appendFlexiFormDirtyForCheckbox("oo_$r.toString($simpleChoice.identifier)")
+					#if(!$r.classContains($interaction,"choiceright"))
+					<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span>
+					#end
+				</label></div>
+			</div>
 		#end
-			<input id="oo_$r.toString($simpleChoice.identifier)" name="qtiworks_response_${responseIdentifier}" value="$r.toString($simpleChoice.identifier)" #if($r.isSingleChoice($interaction)) type="radio" #else type="checkbox" #end #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier)) checked #end /><i> </i>
-			$r.appendFlexiFormDirtyForCheckbox("oo_$r.toString($simpleChoice.identifier)")
-	 	#if(!$r.classContains($interaction,"choiceright"))
-	 		<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span>
-	 	#end
-	 	</label></div>
-	 </div>
 	#end
 #else	
 	<table>
@@ -101,20 +170,29 @@
 						#end
 					#end
 				#end
+
+				#set($isRight = ($r.classContains($interaction,"choiceright")))
 				<tr id="oo_$r.toString($simpleChoice.identifier)_choice"
-					class="choiceinteraction #if($selected) o_selected $answerCorrectnessClass#end">
+					class="choiceinteraction #if($selected) o_selected $answerCorrectnessClass#end #if($isRight) o_input_right #end">
+					#set($disabled = ($r.isItemSessionEnded() || $isShowPageModeSolution))
 					#if($r.classContains($interaction,"choiceright"))
 						<td class="choiceInteraction">
-							<label for="oo_$r.toString($simpleChoice.identifier)">$r.renderFlowStatics($simpleChoice.getFlowStatics())</label>
+							#if(!$disabled)
+							<label for="oo_$r.toString($simpleChoice.identifier)">
+							#else
+							<label>
+							#end
+								$r.renderFlowStatics($simpleChoice.getFlowStatics())
+							</label>
 						</td>
 					#end
 					<td class="control">
-						#set($disabled = ($r.isItemSessionEnded() || $isShowPageModeSolution))
 						<input id="oo_$r.toString($simpleChoice.identifier)"
 							   name="qtiworks_response_${responseIdentifier}"
 							   value="$r.toString($simpleChoice.identifier)"
 							   #if($r.isSingleChoice($interaction)) type="radio" #else type="checkbox" #end
-							   #if($disabled) disabled #end #if($selected) checked #end />
+							   #if($disabled) disabled #end
+							   #if($selected) checked #end />
 						#if(!$disabled)
 							<label for="oo_$r.toString($simpleChoice.identifier)">
 						#else
@@ -182,6 +260,11 @@
 			jQuery(`#${this.id}_choice i.o_icon_quiz_single_choice_off`).addClass('o_icon_quiz_single_choice_on').removeClass('o_icon_quiz_single_choice_off'); // check the one that was clicked / changed
 		});
 		jQuery('td.control > input[type=checkbox]').change(function() {
+			jQuery(`#${this.id}_choice`).toggleClass('o_selected'); // toggle selection of the one that was clicked / changed
+			jQuery(`#${this.id}_choice i`).toggleClass('o_icon_quiz_multiple_choice_on').toggleClass('o_icon_quiz_multiple_choice_off'); // toggle checked state of the one that was clicked / changed
+		});
+		jQuery('div.o_qti_item_choice_option_flow input[type=radio]').change();
+		jQuery('div.o_qti_item_choice_option_flow input[type=checkbox]').change(function() {
 			jQuery(`#${this.id}_choice`).toggleClass('o_selected'); // toggle selection of the one that was clicked / changed
 			jQuery(`#${this.id}_choice i`).toggleClass('o_icon_quiz_multiple_choice_on').toggleClass('o_icon_quiz_multiple_choice_off'); // toggle checked state of the one that was clicked / changed
 		});

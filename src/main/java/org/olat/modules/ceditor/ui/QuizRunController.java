@@ -140,7 +140,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 		mainVC.contextPut("numberOfQuestions", getNumberOfQuestions());
 
 		updateProgressBar();
-		progressBar.setActual(questionIndex);
+		progressBar.setActual(questionIndex + 1);
 	}
 
 	private void updateProgressBar() {
