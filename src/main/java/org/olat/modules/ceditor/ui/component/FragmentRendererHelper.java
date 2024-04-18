@@ -210,7 +210,7 @@ public class FragmentRendererHelper {
 		}
 
 		if (collapsible) {
-			sb.append(" collapse in").append(buildCollapsibleClass(fragmentName));
+			sb.append(" collapse in ").append(buildCollapsibleClass(fragmentName));
 		}
 		sb.append("'");
 
