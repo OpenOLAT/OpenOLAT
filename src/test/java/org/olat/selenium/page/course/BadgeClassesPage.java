@@ -109,8 +109,9 @@ public class BadgeClassesPage {
 		return this;
 	}
 	
-	public BadgeClassesPage details(String description) {		
-		By descriptionBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_description div.milkdown div[contenteditable=true]");
+	public BadgeClassesPage details(String description) {
+		By descriptionBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_description div.milkdown div.ProseMirror.editor[contenteditable=true]");
+		OOGraphene.waitElement(descriptionBy, browser);
 		browser.findElement(descriptionBy).sendKeys(description);
 		return this;
 	}

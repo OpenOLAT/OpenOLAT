@@ -77,6 +77,7 @@ public class InfoMessageCEPage {
 	 * @return This page
 	 */
 	public InfoMessageCEPage next() {
+		OOGraphene.scrollBottom(By.cssSelector("dialog.dialog .modal-body"), browser);
 		OOGraphene.nextStep(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_info_contact"), browser);
 		return this;

@@ -230,7 +230,7 @@ public class QTI21Page {
 		By imgBy = By.xpath("//div[contains(@class,'graphicOrderInteraction')]");
 		OOGraphene.waitElement(imgBy, browser);
 		if(browser instanceof FirefoxDriver) {
-			OOGraphene.scrollTo(imgBy, browser);
+			OOGraphene.scrollBottom(imgBy, browser);
 		}
 		return this;
 	}
@@ -411,7 +411,7 @@ public class QTI21Page {
 	public QTI21Page moveToAssociateItems() {
 		By associateItemsBy = By.xpath("//div[@class='association'][3]");
 		OOGraphene.waitElement(associateItemsBy, browser);
-		OOGraphene.scrollTo(associateItemsBy, browser);
+		OOGraphene.scrollBottom(associateItemsBy, browser);
 		return this;
 	}
 	
@@ -561,7 +561,7 @@ public class QTI21Page {
 		By canvasBy = By.xpath("//div[contains(@class,'selectPointInteraction')]/div/canvas");
 		OOGraphene.waitElement(canvasBy, browser);
 		if(browser instanceof FirefoxDriver) {
-			OOGraphene.scrollTo(canvasBy, browser);
+			OOGraphene.scrollBottom(canvasBy, browser);
 		}
 		
 		WebElement canvasEl = browser.findElement(canvasBy);
@@ -584,7 +584,7 @@ public class QTI21Page {
 		By itemBy = By.xpath("//div[contains(@class,'positionObjectStage')]//div[contains(@id,'object-item-')]");
 		OOGraphene.waitElement(itemBy, browser);
 		if(browser instanceof FirefoxDriver) {
-			OOGraphene.scrollTo(itemBy, browser);
+			OOGraphene.scrollBottom(itemBy, browser);
 		}
 		return this;
 	}

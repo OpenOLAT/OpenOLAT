@@ -136,7 +136,7 @@ public class EfficiencyStatementPage {
 		}
 		By collectBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td/a[contains(text(),'" + courseTitle + "')]]/td/a[contains(@onclick,'cmd.MEDIA')][i[contains(@class,'o_icon_eportfolio_add')]]");
 		OOGraphene.waitElement(collectBy, browser);
-		OOGraphene.scrollTo(collectBy, browser);
+		OOGraphene.scrollBottom(collectBy, browser);
 		browser.findElement(collectBy).click();
 		OOGraphene.waitModalDialog(browser);
 		OOGraphene.waitTinymce(browser);

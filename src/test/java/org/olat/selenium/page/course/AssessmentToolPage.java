@@ -102,7 +102,7 @@ public class AssessmentToolPage {
 		OOGraphene.waitElement(rowsBy, browser);
 		List<WebElement> rowEls = browser.findElements(rowsBy);
 		Assert.assertEquals(1, rowEls.size());
-		OOGraphene.scrollTo(rowsBy, browser);
+		OOGraphene.scrollBottom(rowsBy, browser);
 		browser.findElement(rowsBy).click();
 		OOGraphene.waitElement(By.cssSelector("div.o_assessment_panel"), browser);
 		return this;

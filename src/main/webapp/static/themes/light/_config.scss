@@ -894,6 +894,8 @@ $o-dialog-window-bg				: #fefefe !default;
 $o-dialog-window-bar-bg			: #eee !default;
 $o-dialog-header-color			: $brand-primary !default;
 $o-dialog-header-font-weight	: $headings-font-weight !default;
+$o-dialog-header-background		: #f8f8f8 !default;
+$o-dialog-footer-background		: $o-dialog-header-background !default;
 
 /* Instant messaging and chat */
 $o-im-chat-load-font-size		: $font-size-small !default;

@@ -222,6 +222,21 @@ body#o_body:has(dialog.dialog.modal.show) {
 			width: 80%;
 		}
 	}
+	/* make header and footer sticky to be always visible, specially in wizard */
+	.modal-header {
+		position: sticky;
+		top: 0;
+		background: $o-dialog-header-background;
+		box-shadow: 0 2px 2px $o-dialog-header-background;
+		z-index: 2;
+	}
+	.modal-footer {
+		position: sticky;
+		bottom: 0;
+		background: $o-dialog-footer-background;
+		box-shadow: 0 -2px 2px $o-dialog-header-background;
+	}
+	
 	.modal-header h4 {
 		color: $o-dialog-header-color;
 	  	font-weight: $o-dialog-header-font-weight;

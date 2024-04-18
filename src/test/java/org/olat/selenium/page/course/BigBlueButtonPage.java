@@ -159,6 +159,7 @@ public class BigBlueButtonPage {
 		OOGraphene.waitBusy(browser);
 		
 		By startBy = By.cssSelector("div.o_sel_bbb_recurring_meeting_start span.input-group-addon i");
+		OOGraphene.scrollBottom(startBy, browser);
 		browser.findElement(startBy).click();
 		OOGraphene.selectNextMonthInDatePicker(browser);
 		OOGraphene.selectDayInDatePicker(firstDay, browser);

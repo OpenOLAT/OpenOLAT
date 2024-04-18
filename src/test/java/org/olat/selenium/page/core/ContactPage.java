@@ -63,7 +63,7 @@ public class ContactPage {
 	
 	public ContactPage send() {
 		By buttonsBy = By.xpath("//div[contains(@class,'o_sel_contact_buttons')]");
-		OOGraphene.scrollTo(buttonsBy, browser);
+		OOGraphene.scrollBottom(buttonsBy, browser);
 
 		By sendBy = By.cssSelector("fieldset.o_sel_contact_form button.btn-primary");
 		browser.findElement(sendBy).click();

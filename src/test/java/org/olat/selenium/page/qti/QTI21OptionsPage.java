@@ -49,7 +49,7 @@ public class QTI21OptionsPage {
 		By resultsLevelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox']");
 		OOGraphene.waitElement(resultsLevelBy, browser);
 		
-		OOGraphene.scrollTo(By.className("o_sel_qti_show_results_options"), browser);
+		OOGraphene.scrollBottom(By.className("o_sel_qti_show_results_options"), browser);
 
 		if(options.isMetadata()) {
 			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='metadata']");

@@ -83,7 +83,7 @@ public class BinderPublicationPage {
 	public BinderPublicationPage fillAccessRights(String name, Boolean check) {
 		By checkBy = By.xpath("//div[contains(@class,'o_portfolio_rights')]//table//tr[td[contains(text(),'" + name + "')]]/td//input[@type='checkbox']");
 		WebElement checkEl = browser.findElement(checkBy);
-		OOGraphene.scrollTo(checkBy, browser);
+		OOGraphene.scrollBottom(checkBy, browser);
 		OOGraphene.check(checkEl, check);
 		OOGraphene.waitBusy(browser);
 		return this;

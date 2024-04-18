@@ -148,7 +148,7 @@ public class MembersWizardPage {
 			OOGraphene.takeScreenshot("Search member", browser);
 			throw e;
 		}
-		OOGraphene.waitBusyAndScrollTop(browser);
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

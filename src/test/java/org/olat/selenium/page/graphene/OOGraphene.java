@@ -363,7 +363,7 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 681;
 		if(move) {
-			scrollTo(buttonBy, browser);
+			scrollBottom(buttonBy, browser);
 		}
 		browser.findElement(buttonBy).click();
 	}
@@ -381,7 +381,7 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
-			scrollTo(buttonBy, browser);
+			scrollBottom(buttonBy, browser);
 			browser.findElement(buttonBy).click();
 			waitBusyAndScrollTop(browser);
 		} else {
@@ -403,10 +403,14 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
-			scrollTo(buttonBy, browser);
+			scrollBottom(buttonBy, browser);
 			waitElement(buttonBy, browser);
 		}
 		browser.findElement(buttonBy).click();
+	}
+	
+	public static void scrollTo(By by, WebDriver browser) {
+		scrollBottom(by, browser);
 	}
 	
 	/**
@@ -415,9 +419,14 @@ public class OOGraphene {
 	 * @param by The selector
 	 * @param browser The browser
 	 */
-	public static void scrollTo(By by, WebDriver browser) {
+	public static void scrollBottom(By by, WebDriver browser) {
 		WebElement element = browser.findElement(by);
-		((JavascriptExecutor)browser).executeScript("return arguments[0].scrollIntoView({behavior:\"auto\", block: \"end\"});", element);
+
+		String scrollBottom = """
+				var modal = arguments[0].closest('dialog.dialog .modal-content')?.scrollTo(0, 1024);\n
+				if(modal === undefined) { window.scrollTo(0, 1024); }
+				""";
+		((JavascriptExecutor)browser).executeScript(scrollBottom, element);
 		OOGraphene.waitingALittleLonger();
 	}
 
@@ -429,7 +438,7 @@ public class OOGraphene {
 	 */
 	public static void moveTo(By by, WebDriver browser) {
 		waitElementPresence(by, 5, browser);
-		scrollTo(by, browser);
+		scrollBottom(by, browser);
 	}
 	
 	/**
@@ -438,7 +447,9 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static void scrollTop(WebDriver browser) {
-		scrollTo(By.id("o_top"), browser);
+		String scrollTop = " window.scrollTo(0, 0);";
+		((JavascriptExecutor)browser).executeScript(scrollTop);
+		OOGraphene.waitingALittleLonger();
 	}
 	
 	public static final void waitTinymce(WebDriver browser) {

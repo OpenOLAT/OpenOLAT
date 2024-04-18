@@ -50,7 +50,7 @@ public class BookingPage {
 	 */
 	public BookingPage openAddDropMenu() {
 		By addDropMenuBy = By.className("o_sel_accesscontrol_create");
-		browser.findElement(addDropMenuBy).click();
+		OOGraphene.click(addDropMenuBy, browser);
 		return this;
 	}
 	
@@ -110,7 +110,7 @@ public class BookingPage {
 	
 	private BookingPage addFirstMethodByButton(String linkClassname) {
 		By addMethodBy = By.xpath("//fieldset[contains(@class,'o_ac_configuration')]//div[contains(@class,'o_sel_ac_add_first_methods')]//a[contains(@class,'" + linkClassname + "')]");
-		browser.findElement(addMethodBy).click();
+		OOGraphene.click(addMethodBy, browser);
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
