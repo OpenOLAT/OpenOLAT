@@ -788,16 +788,18 @@ public class AssessmentRenderFunctions {
 		return false;
 	}
 
-	public static void addInteractionSpecificContextValues(QtiNode interaction, Context ctx, ItemSessionState itemSessionState, AssessmentObjectComponent component) {
+	public static void addInteractionSpecificContextValues(QtiNode interaction, Context ctx,
+														   ItemSessionState itemSessionState,
+														   AssessmentObjectComponent component,
+														   boolean pageModeSolutionMode) {
 		if (component.isPageMode()) {
 			ctx.put("isPageMode", component.isPageMode());
 			if (component.isPageMode()) {
 				ctx.put("isAnswerCorrect", isCorrectlyAnswered(itemSessionState));
 				ctx.put("isShowPageModeSolution", component.isShowPageModeSolution());
 				if (component.isShowPageModeSolution()) {
-					boolean isPageModeSolution = interaction.getAttributes().contains("pageModeSolution");
-					ctx.put("isPageModeSolution", isPageModeSolution);
-					if (isPageModeSolution && component instanceof AssessmentItemComponent assessmentItemComponent) {
+					ctx.put("isPageModeSolution", pageModeSolutionMode);
+					if (pageModeSolutionMode && component instanceof AssessmentItemComponent assessmentItemComponent) {
 						AssessmentItem assessmentItem = assessmentItemComponent.getAssessmentItem();
 						if (assessmentItem != null) {
 							ResponseDeclarationGroup responseDeclarationGroup = assessmentItem.getNodeGroups().getResponseDeclarationGroup();

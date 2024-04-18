@@ -42,12 +42,9 @@ import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event;
 
-import uk.ac.ed.ph.jqtiplus.attribute.value.BooleanAttribute;
-import uk.ac.ed.ph.jqtiplus.node.content.basic.AtomicBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.BlockInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -203,20 +200,10 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		if (component.isShowPageModeSolution()) {
 			sb.append("<h4 class='itemTitle'>");
 			sb.append(StringHelper.escapeHtml(translator.translate("solution"))).append("</h4>");
-			BooleanAttribute pageModeSolution = new BooleanAttribute(assessmentItem, "pageModeSolution", true, false);
-			assessmentItem.getItemBody().getBlocks().forEach((block) -> {
-				if (block instanceof BlockInteraction) {
-					block.getAttributes().add(pageModeSolution);
-					renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator);
-					block.getAttributes().remove(pageModeSolution);
-				} else if (block instanceof AtomicBlock atomicBlock) {
-					block.getAttributes().add(pageModeSolution);
-					atomicBlock.getInlines().forEach(ab -> ab.getAttributes().add(pageModeSolution));
-					renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator);
-					atomicBlock.getInlines().forEach(ab -> ab.getAttributes().remove(pageModeSolution));
-					block.getAttributes().remove(pageModeSolution);
-				}
-			});
+			setPageModeSolutionMode(true);
+			assessmentItem.getItemBody().getBlocks().forEach((block)
+					-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
+			setPageModeSolutionMode(false);
 		}
 
 		//comment
