@@ -79,7 +79,7 @@
 		<io.jsonwebtoken>0.12.5</io.jsonwebtoken>
 		<io.undertow>2.3.12.Final</io.undertow>
 		<jackson.version>2.17.0</jackson.version>
-		<swagger.ui.version>5.15.1</swagger.ui.version>
+		<swagger.ui.version>5.15.2-1</swagger.ui.version>
 		<com.mysql.version>8.3.0</com.mysql.version>
 		<org.postgresql.version>42.7.3</org.postgresql.version>
 		<org.infinispan.version>15.0.1.Final</org.infinispan.version>
@@ -1854,7 +1854,7 @@
 		<dependency>
 			<groupId>org.openolat.imscp</groupId>
 			<artifactId>manifest</artifactId>
-			<version>2.0.0</version>
+			<version>3.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.rometools</groupId>
@@ -2038,7 +2038,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.11.0</version>
+			<version>1.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.opencsv</groupId>
