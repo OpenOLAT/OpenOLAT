@@ -65,22 +65,19 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if(renderer == null) {
-			if(cellValue instanceof CertificateLight) {
-				renderExcel(target, (CertificateLight)cellValue);
-			} else if(cellValue instanceof CertificateLightPack) {
-				CertificateLightPack pack = (CertificateLightPack)cellValue;
+			if(cellValue instanceof CertificateLight certificate) {
+				renderExcel(target, certificate);
+			} else if(cellValue instanceof CertificateLightPack pack) {
 				renderExcel(target, pack.getCertificate());
 			}
-		} else if(cellValue instanceof CertificateLight) {
-			CertificateLight certificate = (CertificateLight)cellValue;
+		} else if(cellValue instanceof CertificateLight certificate) {
 			if(assessedIdentity == null) {
 				IdentityRef idRef = new IdentityRefImpl(certificate.getIdentityKey());
 				render(target, certificate, idRef, translator.getLocale());
 			} else {
 				render(target, certificate, assessedIdentity, translator.getLocale());
 			}
-		} else if(cellValue instanceof CertificateLightPack) {
-			CertificateLightPack pack = (CertificateLightPack)cellValue;
+		} else if(cellValue instanceof CertificateLightPack pack) {
 			render(target, pack.getCertificate(), pack.getIdentity(), translator.getLocale());	
 		}
 	}
