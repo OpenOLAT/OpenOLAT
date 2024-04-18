@@ -167,8 +167,10 @@ public class AppointmentListEditController extends AppointmentListController {
 			selectionCSS = selectionCSS + " o_time_normal";
 		}
 		row.setSelectionCSS(selectionCSS);
-
-		forgeEditLink(row);
+		
+		if (secCallback.canEditAppointment(organizers)) {
+			forgeEditLink(row);
+		}
 		
 		boolean addUser = freeParticipations == null || freeParticipations.intValue() > 0;
 		boolean removeUser = participations.size() > 0;
@@ -176,10 +178,10 @@ public class AppointmentListEditController extends AppointmentListController {
 			addUser = false;
 			removeUser = false;
 		}
-		if (addUser) {
+		if (addUser && secCallback.canEditAppointment(organizers)) {
 			forgeAddUserLink(row);
 		}
-		if (removeUser) {
+		if (removeUser && secCallback.canEditAppointment(organizers)) {
 			forgeRemoveUserLink(row);
 		}
 		
@@ -203,7 +205,9 @@ public class AppointmentListEditController extends AppointmentListController {
 			}
 		}
 		
-		forgeDeleteLink(row);
+		if (secCallback.canEditAppointment(organizers)) {
+			forgeDeleteLink(row);
+		}
 		
 		if (secCallback.canWatchRecording(organizers, participations)) {
 			forgeRecordingReferencesLinks(row, recordingReferences);

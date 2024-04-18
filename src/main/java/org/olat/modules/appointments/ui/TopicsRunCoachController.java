@@ -514,37 +514,41 @@ public class TopicsRunCoachController extends FormBasicController {
 		dropdown.setExpandContentHeight(true); 
 		wrapper.setToolsName(toolsName);
 		
-		FormLink editorLink = uifactory.addFormLink("edit_" + counter++, CMD_EDIT, "edit.topic", null, flc, Link.LINK);
-		editorLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
-		editorLink.setUserObject(wrapper.getTopic());
-		dropdown.addElement(editorLink);
-		
-		FormLink groupLink = uifactory.addFormLink("group_" + counter++, CMD_GROUPS, "edit.groups", null, flc, Link.LINK);
-		groupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-		groupLink.setUserObject(wrapper.getTopic());
-		dropdown.addElement(groupLink);
+		if (secCallback.canEditTopic(wrapper.getOrganizers())) {
+			FormLink editorLink = uifactory.addFormLink("edit_" + counter++, CMD_EDIT, "edit.topic", null, flc, Link.LINK);
+			editorLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			editorLink.setUserObject(wrapper.getTopic());
+			dropdown.addElement(editorLink);
+			
+			FormLink groupLink = uifactory.addFormLink("group_" + counter++, CMD_GROUPS, "edit.groups", null, flc, Link.LINK);
+			groupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+			groupLink.setUserObject(wrapper.getTopic());
+			dropdown.addElement(groupLink);
+		}
 		
 		FormLink exportLink = uifactory.addFormLink("export_" + counter++, CMD_EXPORT, "export.participations", null, flc, Link.LINK);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		exportLink.setUserObject(wrapper.getTopic());
 		dropdown.addElement(exportLink);
 		
-		if (hasMeetings) {
-			FormLink syncRecordingsLink = uifactory.addFormLink("sync_" + counter++, CMD_SYNC, "sync.recordings", null, flc, Link.LINK);
-			syncRecordingsLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
-			syncRecordingsLink.setUserObject(wrapper.getTopic());
-			dropdown.addElement(syncRecordingsLink);
+		if (secCallback.canEditTopic(wrapper.getOrganizers())) {
+			if (hasMeetings) {
+				FormLink syncRecordingsLink = uifactory.addFormLink("sync_" + counter++, CMD_SYNC, "sync.recordings", null, flc, Link.LINK);
+				syncRecordingsLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
+				syncRecordingsLink.setUserObject(wrapper.getTopic());
+				dropdown.addElement(syncRecordingsLink);
+			}
+			
+			FormLink duplicateLink = uifactory.addFormLink("dup_" + counter++, CMD_DUPLICATE, "duplicate.topic", null, flc, Link.LINK);
+			duplicateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_duplicate");
+			duplicateLink.setUserObject(wrapper.getTopic());
+			dropdown.addElement(duplicateLink);
+			
+			FormLink deleteLink = uifactory.addFormLink("delete_" + counter++, CMD_DELETE, "delete.topic", null, flc, Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
+			deleteLink.setUserObject(wrapper.getTopic());
+			dropdown.addElement(deleteLink);
 		}
-		
-		FormLink duplicateLink = uifactory.addFormLink("dup_" + counter++, CMD_DUPLICATE, "duplicate.topic", null, flc, Link.LINK);
-		duplicateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_duplicate");
-		duplicateLink.setUserObject(wrapper.getTopic());
-		dropdown.addElement(duplicateLink);
-		
-		FormLink deleteLink = uifactory.addFormLink("delete_" + counter++, CMD_DELETE, "delete.topic", null, flc, Link.LINK);
-		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
-		deleteLink.setUserObject(wrapper.getTopic());
-		dropdown.addElement(deleteLink);
 	}
 	
 	@Override
