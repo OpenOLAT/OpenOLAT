@@ -200,10 +200,10 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		if (component.isShowPageModeSolution()) {
 			sb.append("<h4 class='itemTitle'>");
 			sb.append(StringHelper.escapeHtml(translator.translate("solution"))).append("</h4>");
-			setPageModeSolutionMode(true);
+			renderer.setPageModeSolutionMode(true);
 			assessmentItem.getItemBody().getBlocks().forEach((block)
 					-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
-			setPageModeSolutionMode(false);
+			renderer.setPageModeSolutionMode(false);
 		}
 
 		//comment

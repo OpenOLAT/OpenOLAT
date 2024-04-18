@@ -201,15 +201,6 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	private static final Logger log = Tracing.createLoggerFor(AssessmentObjectComponentRenderer.class);
 	private static final String velocity_root = Util.getPackageVelocityRoot(AssessmentObjectComponentRenderer.class);
 	private static final URI ctopXsltUri = URI.create("classpath:/org/olat/ims/qti21/ui/components/_content/ctop.xsl");
-	private boolean pageModeSolutionMode;
-
-	public void setPageModeSolutionMode(boolean pageModeSolutionMode) {
-		this.pageModeSolutionMode = pageModeSolutionMode;
-	}
-
-	public boolean isPageModeSolutionMode() {
-		return pageModeSolutionMode;
-	}
 
 	protected void renderExploded(StringOutput sb, Translator translator) {
 		sb.append("<div class='o_error'>").append(translator.translate("exploded.msg")).append("</div>");
@@ -1040,7 +1031,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		ctx.put("isCorrectionSolution", component.isCorrectionSolution());
 		ctx.put("isSolutionMode", renderer.isSolutionMode());
 		ctx.put("isOffline", renderer.isOffline());
-		addInteractionSpecificContextValues(interaction, ctx, itemSessionState, component, isPageModeSolutionMode());
+		addInteractionSpecificContextValues(interaction, ctx, itemSessionState, component, renderer.isPageModeSolutionMode());
 
 		Renderer fr = Renderer.getInstance(component, translator, ubu, new RenderResult(), renderer.getGlobalSettings(), renderer.getRenderer().getCsrfToken());
 		AssessmentRenderer fHints = renderer.newHints(fr);
