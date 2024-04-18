@@ -109,7 +109,7 @@ public class PublisherPageFragment {
 	 */
 	public PublisherPageFragment selectAccess(UserAccess access) {
 		By publishStatusBy = By.id("o_fiopublishedStatus_SELBOX");
-		OOGraphene.scrollTo(publishStatusBy, browser);
+		OOGraphene.waitElement(publishStatusBy, browser);
 		WebElement publishStatusEl = browser.findElement(publishStatusBy);
 		Select publishStatusSelect = new Select(publishStatusEl);
 		publishStatusSelect.selectByValue("published");
