@@ -164,6 +164,7 @@ public abstract class AbstractTopicController extends FormBasicController {
 				organizerEl.select(organizerKey.toString(), true);
 			}
 		}
+		organizerEl.setVisible(!organizerCandidates.isEmpty());
 		
 		initButtons(formLayout, ureq);
 	}

@@ -272,6 +272,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			if(resourceKey.equals(statement.getResourceKey())) {
 				CertificateLight certificate = certificatesManager.getCertificateLightById(certificateKey);
 				statement.setCertificate(certificate);
+				tableEl.getComponent().setDirty(true);
 				break;
 			}
 		}

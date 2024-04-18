@@ -558,8 +558,6 @@ public class AssessmentTest extends Deployments {
 			.passE4()
 			.assertOnCourseAssessmentTestScore(4);
 		
-		OOGraphene.waitingALittleLonger();
-				
 		//open the efficiency statements
 		UserToolsPage reiUserTools = new UserToolsPage(browser);
 		reiUserTools
@@ -655,8 +653,6 @@ public class AssessmentTest extends Deployments {
 		QTI21Page.getQTI21Page(browser)
 			.passE4()
 			.assertOnCourseAssessmentTestScore(4);
-		
-		OOGraphene.waitingALittleLonger();
 		
 		//open the efficiency statements
 		String certificateTitle = zipTitle;

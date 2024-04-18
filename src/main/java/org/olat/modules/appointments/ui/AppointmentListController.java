@@ -215,7 +215,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			formLayout.add("topButtons", topButtons);
 			topButtons.setElementCssClass("o_button_group o_button_group_right");
 			
-			if (secCallback.canEditAppointment(organizers)) {
+			if (secCallback.canEditTopic(organizers)) {
 				addAppointmentsDropdown = uifactory.addDropdownMenu("add.appointment", "add.appointment", topButtons, getTranslator());
 				addAppointmentsDropdown.setOrientation(DropdownOrientation.right);
 				
