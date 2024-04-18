@@ -187,14 +187,18 @@ public class URLBuilder {
 	}
 	
 	public StringOutput buildHrefAndOnclick(StringOutput sb, boolean ajaxEnabled, NameValuePair... commands) {
-		return buildHrefAndOnclick(sb, null, null, ajaxEnabled, true, true, commands);
+		return buildHrefAndOnclick(sb, null, null, ajaxEnabled, true, true, false, commands);
 	}
 	
 	public StringOutput buildHrefAndOnclick(StringOutput sb, String urlEnding, boolean ajaxEnabled, boolean dirtyCheck, boolean pushState, NameValuePair... commands) {
-		return buildHrefAndOnclick(sb, null, urlEnding, ajaxEnabled, dirtyCheck, pushState, commands);	
+		return buildHrefAndOnclick(sb, null, urlEnding, ajaxEnabled, dirtyCheck, pushState, false, commands);	
 	}
 	
 	public StringOutput buildHrefAndOnclick(StringOutput sb, String bPathUrl, String urlEnding, boolean ajaxEnabled, boolean dirtyCheck, boolean pushState, NameValuePair... commands) {
+		return buildHrefAndOnclick(sb, bPathUrl, urlEnding, ajaxEnabled, dirtyCheck, pushState, false, commands);	
+	}
+	
+	public StringOutput buildHrefAndOnclick(StringOutput sb, String bPathUrl, String urlEnding, boolean ajaxEnabled, boolean dirtyCheck, boolean pushState, boolean clickMarker, NameValuePair... commands) {
 		sb.append(" href=\"");
 		if(ajaxEnabled) {
 			if(StringHelper.containsNonWhitespace(bPathUrl)) {
@@ -206,6 +210,10 @@ public class URLBuilder {
 			buildURI(sb, AJAXFlags.MODE_NORMAL, commands);
 		}
 		sb.append("\" onclick=\"");
+		if(clickMarker) {
+			// Add a volatile marker which will disappear after the DOM replacement (for Selenium)
+			sb.append("this.classList.add('o_sel_click');");
+		}
 		if(ajaxEnabled) {
 			String escapedUrlEnding = StringHelper.escapeJavaScript(urlEnding);
 			buildXHREvent(sb, escapedUrlEnding, dirtyCheck, pushState, commands).append(" return false;");

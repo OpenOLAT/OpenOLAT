@@ -319,7 +319,7 @@ public class AssessmentTest extends Deployments {
 		//go to the test
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(testNodeTitle);
 		//pass the test
 		QTI21Page.getQTI21Page(ryomouBrowser)
@@ -333,7 +333,7 @@ public class AssessmentTest extends Deployments {
 		//go to the test
 		CoursePageFragment kanuTestCourse = new CoursePageFragment(kanuBrowser);
 		kanuTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(testNodeTitle);
 		//pass the test
 		QTI21Page.getQTI21Page(kanuBrowser)
@@ -693,7 +693,7 @@ public class AssessmentTest extends Deployments {
 		//go to the test
 		CoursePageFragment certification2Course = new CoursePageFragment(browser);
 		certification2Course
-			.clickTree()
+			.tree()
 			.selectWithTitle("Struktur 3")
 			.assertWithTitleSelected("Struktur 3")
 			.assertWithTitle("Test 3")
@@ -1311,7 +1311,7 @@ public class AssessmentTest extends Deployments {
 		//go to the group task
 		CoursePageFragment kanuTestCourse = new CoursePageFragment(participantBrowser);
 		kanuTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		URL submit1Url = JunitTestHelper.class.getResource("file_resources/submit_1.txt");
@@ -1328,7 +1328,7 @@ public class AssessmentTest extends Deployments {
 		
 		//back to author
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		GroupTaskToCoachPage groupToCoach = new GroupTaskToCoachPage(browser);
 		groupToCoach
@@ -1342,12 +1342,12 @@ public class AssessmentTest extends Deployments {
 		
 		//participant check if they passed
 		kanuTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		kanuTask.assertPassed();
 		
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		ryomouTask.assertPassed();
 	}
@@ -1484,7 +1484,7 @@ public class AssessmentTest extends Deployments {
 		
 		//back to author
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
@@ -1502,7 +1502,7 @@ public class AssessmentTest extends Deployments {
 		URL revisionUrl = JunitTestHelper.class.getResource("file_resources/submit_3.txt");
 		File revisionFile = new File(revisionUrl.toURI());
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		ryomouTask
 			.submitRevisedFile(revisionFile)
@@ -1510,7 +1510,7 @@ public class AssessmentTest extends Deployments {
 		
 		//back to author
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		participantToCoach
 			.selectIdentitiesToCoach()
@@ -1523,7 +1523,7 @@ public class AssessmentTest extends Deployments {
 		
 		//participant checks she passed the task
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		ryomouTask
 			.assertPassed()
@@ -1649,7 +1649,7 @@ public class AssessmentTest extends Deployments {
 		
 		//back to author
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
@@ -1667,7 +1667,7 @@ public class AssessmentTest extends Deployments {
 		URL revisionUrl = JunitTestHelper.class.getResource("file_resources/submit_3.txt");
 		File revisionFile = new File(revisionUrl.toURI());
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		ryomouTask
 			.submitRevisedFile(revisionFile)
@@ -1675,7 +1675,7 @@ public class AssessmentTest extends Deployments {
 		
 		//back to author
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		participantToCoach
 			.selectIdentitiesToCoach()
@@ -1968,7 +1968,7 @@ public class AssessmentTest extends Deployments {
 		//go to the group task
 		CoursePageFragment kanuCourse = new CoursePageFragment(browser);
 		kanuCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(assessmentNodeTitle);
 		
 		//Kanu -> failed
@@ -2112,7 +2112,7 @@ public class AssessmentTest extends Deployments {
 		
 		//back to author
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
@@ -2127,7 +2127,7 @@ public class AssessmentTest extends Deployments {
 		
 		//participant checks she passed the task
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		ryomouTask
 			.assertPassed()
@@ -2244,7 +2244,7 @@ public class AssessmentTest extends Deployments {
 		
 		//back to author
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
@@ -2262,7 +2262,7 @@ public class AssessmentTest extends Deployments {
 		URL revisionUrl = JunitTestHelper.class.getResource("file_resources/revision_1.txt");
 		File revisionFile = new File(revisionUrl.toURI());
 		participantTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		participantTask
 			.submitRevisedFile(revisionFile)
@@ -2270,7 +2270,7 @@ public class AssessmentTest extends Deployments {
 		
 		//back to author
 		coursePage
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		participantToCoach
 			.selectIdentitiesToCoach()
@@ -2280,7 +2280,7 @@ public class AssessmentTest extends Deployments {
 		
 		//participant checks she passed the task
 		participantTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		participantTask
 			.assertRevisionDone();
@@ -2479,7 +2479,7 @@ public class AssessmentTest extends Deployments {
 		//go to the group task
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(browser);
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(browser);
@@ -2606,7 +2606,7 @@ public class AssessmentTest extends Deployments {
 		//go to the group task
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(browser);
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(browser);
