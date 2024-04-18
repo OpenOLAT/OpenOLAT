@@ -318,8 +318,8 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			}
 		}
 		
-		boolean insertionSource = (tree.getTreeModel() instanceof InsertionTreeModel
-				&& ((InsertionTreeModel)tree.getTreeModel()).isSource(curRoot));
+		boolean insertionSource = (tree.getTreeModel() instanceof InsertionTreeModel insertionTreeModel)
+				&& insertionTreeModel.isSource(curRoot);
 		if(insertionSource) {
 			target.append(" o_insertion_source");
 		}
@@ -343,7 +343,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		// Build menu item URI
 		target.append("<a ");	
 		boolean dirtyCheck = tree.getMenuTreeItem() == null || !tree.getMenuTreeItem().isNoDirtyCheckOnClick();
-		ubu.buildHrefAndOnclick(target, null, iframePostEnabled, dirtyCheck, true,
+		ubu.buildHrefAndOnclick(target, null, null, iframePostEnabled, dirtyCheck, true, true,
 				new NameValuePair(COMMAND_ID, COMMAND_TREENODE_CLICKED),
 				new NameValuePair(NODE_IDENT, curRoot.getIdent()));
 		

@@ -61,8 +61,7 @@ public class MenuTreePageFragment {
 			OOGraphene.waitingALittleBit();
 			browser.findElement(rootNodeBy).click();
 		}
-		OOGraphene.waitBusy(browser);
-		By rootNodeActiveBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l0')][contains(@class,'active')]/a");
+		By rootNodeActiveBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l0')][contains(@class,'active')]/a[not(contains(@class,'o_click'))]");
 		OOGraphene.waitElement(rootNodeActiveBy, browser);
 		return this;
 	}
@@ -78,7 +77,7 @@ public class MenuTreePageFragment {
 			browser.findElement(linkBy).click();
 		}
 		OOGraphene.waitBusyAndScrollTop(browser);
-		By activeLinkBy = By.xpath("//div[contains(@class,'o_tree')]//li[contains(@class,'active')]/div/span[contains(@class,'o_tree_link')][contains(@class,'active')]/a[span[contains(text(),'" + title + "')]]");
+		By activeLinkBy = By.xpath("//div[contains(@class,'o_tree')]//li[contains(@class,'active')]/div/span[contains(@class,'o_tree_link')][contains(@class,'active')]/a[not(contains(@class,'o_click'))][span[contains(text(),'" + title + "')]]");
 		OOGraphene.waitElement(activeLinkBy, browser);
 		return this;
 	}
