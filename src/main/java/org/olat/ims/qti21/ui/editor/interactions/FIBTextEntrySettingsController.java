@@ -294,25 +294,8 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		for(AlternativeRow row:alternativeRows) {
 			TextEntryAlternative alternative = row.getAlternative();
 			String val = row.getAlternativeEl().getValue();
-			int indexSeparator = val.indexOf(';');
-			// Don't split single ;, or &auml;
-			if(alternativeRows.size() == 1 && indexSeparator >= 0 && val.length() > 1 && indexSeparator != val.length() - 1) {
-				String[] valArr = val.split("[;]");
-				for(int i=0;i<valArr.length; i++) {
-					if(i==0) {
-						alternative.setAlternative(StringUtilities.trim(valArr[i]));
-						alternatives.add(alternative);
-					} else {
-						TextEntryAlternative newAlternative = new TextEntryAlternative();
-						newAlternative.setAlternative(StringUtilities.trim(valArr[i]));
-						newAlternative.setScore(alternative.getScore());
-						alternatives.add(newAlternative);
-					}
-				}
-			} else {
-				alternative.setAlternative(StringUtilities.trim(val));
-				alternatives.add(alternative);
-			}
+			alternative.setAlternative(StringUtilities.trim(val));
+			alternatives.add(alternative);
 		}
 		interaction.setAlternatives(alternatives);
 		interaction.setCaseSensitive(caseSensitiveEl.isAtLeastSelected(1));
@@ -338,9 +321,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		listenTo(alternativesCalloutCtrl);
 		alternativesCalloutCtrl.activate();
 	}
-	
 
-	
 	public class AlternativeRow {
 		
 		private final TextElement alternativeEl;
