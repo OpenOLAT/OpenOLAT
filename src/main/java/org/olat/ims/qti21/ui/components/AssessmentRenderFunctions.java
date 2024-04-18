@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,7 @@ import org.apache.velocity.context.Context;
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
 import uk.ac.ed.ph.jqtiplus.attribute.AttributeList;
 import uk.ac.ed.ph.jqtiplus.exception.QtiAttributeException;
+import uk.ac.ed.ph.jqtiplus.group.item.response.declaration.ResponseDeclarationGroup;
 import uk.ac.ed.ph.jqtiplus.node.ForeignElement;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
@@ -54,6 +56,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
@@ -786,28 +789,7 @@ public class AssessmentRenderFunctions {
 	}
 
 	public static void addInteractionSpecificContextValues(QtiNode interaction, Context ctx, ItemSessionState itemSessionState, AssessmentObjectComponent component) {
-		if (interaction instanceof ChoiceInteraction) {
-			ctx.put("isPageMode", component.isPageMode());
-			if (component.isPageMode()) {
-				ctx.put("isAnswerCorrect", isCorrectlyAnswered(itemSessionState));
-				ctx.put("isShowPageModeSolution", component.isShowPageModeSolution());
-				if (component.isShowPageModeSolution()) {
-					ctx.put("isPageModeSolution", interaction.getAttributes().contains("pageModeSolution"));
-					if (component instanceof AssessmentItemComponent assessmentItemComponent) {
-						AssessmentItem assessmentItem = assessmentItemComponent.getAssessmentItem();
-						if (assessmentItem != null) {
-							ResponseDeclaration responseDeclaration = assessmentItem.getNodeGroups().getResponseDeclarationGroup().getChildren().get(0);
-							Cardinality cardinality = responseDeclaration.getAttributes().getCardinalityAttribute(ResponseDeclaration.ATTR_CARDINALITY_NAME).getValue();
-							if (cardinality.isMultiple()) {
-								putMultipleChoiceSolutions(ctx, responseDeclaration);
-							} else if (cardinality.isSingle()) {
-								putSingleChoiceSolution(ctx, responseDeclaration);
-							}
-						}
-					}
-				}
-			}
-		} else if (interaction instanceof InlineChoiceInteraction) {
+		if (component.isPageMode()) {
 			ctx.put("isPageMode", component.isPageMode());
 			if (component.isPageMode()) {
 				ctx.put("isAnswerCorrect", isCorrectlyAnswered(itemSessionState));
@@ -818,13 +800,39 @@ public class AssessmentRenderFunctions {
 					if (isPageModeSolution && component instanceof AssessmentItemComponent assessmentItemComponent) {
 						AssessmentItem assessmentItem = assessmentItemComponent.getAssessmentItem();
 						if (assessmentItem != null) {
-							ResponseDeclaration responseDeclaration = assessmentItem.getNodeGroups().getResponseDeclarationGroup().getChildren().get(0);
-							putSingleSolution(ctx, responseDeclaration);
+							ResponseDeclarationGroup responseDeclarationGroup = assessmentItem.getNodeGroups().getResponseDeclarationGroup();
+							putSolution(interaction, ctx, responseDeclarationGroup);
 						}
 					}
 				}
 			}
 		}
+	}
+
+	private static void putSolution(QtiNode interaction, Context ctx, ResponseDeclarationGroup responseDeclarationGroup) {
+		if (interaction instanceof ChoiceInteraction) {
+			ResponseDeclaration responseDeclaration = responseDeclarationGroup.getChildren().get(0);
+			Cardinality cardinality = responseDeclaration.getAttributes().getCardinalityAttribute(ResponseDeclaration.ATTR_CARDINALITY_NAME).getValue();
+			if (cardinality.isMultiple()) {
+				putMultipleChoiceSolutions(ctx, responseDeclaration);
+			} else if (cardinality.isSingle()) {
+				putSingleChoiceSolution(ctx, responseDeclaration);
+			}
+		} else if (interaction instanceof InlineChoiceInteraction) {
+			putSingleSolution(ctx, responseDeclarationGroup.getChildren().get(0));
+		} else if (interaction instanceof TextEntryInteraction) {
+			putSolutions(ctx, responseDeclarationGroup);
+		}
+	}
+
+	private static void putSolutions(Context ctx, ResponseDeclarationGroup responseDeclarationGroup) {
+		Map<String, String> solutions = new HashMap<>();
+		for (ResponseDeclaration responseDeclaration : responseDeclarationGroup.getResponseDeclarations()) {
+			String key = responseDeclaration.getAttributes().getIdentifierAttribute(ResponseDeclaration.ATTR_IDENTIFIER_NAME).getValue().toString();
+			String value = responseDeclaration.getCorrectResponse().getFieldValues().get(0).getSingleValue().toQtiString();
+			solutions.put("oo" + key, value);
+		}
+		ctx.put("solutions", solutions);
 	}
 
 	private static void putMultipleChoiceSolutions(Context ctx, ResponseDeclaration responseDeclaration) {

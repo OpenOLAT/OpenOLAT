@@ -263,7 +263,12 @@
 			jQuery(`#${this.id}_choice`).toggleClass('o_selected'); // toggle selection of the one that was clicked / changed
 			jQuery(`#${this.id}_choice i`).toggleClass('o_icon_quiz_multiple_choice_on').toggleClass('o_icon_quiz_multiple_choice_off'); // toggle checked state of the one that was clicked / changed
 		});
-		jQuery('div.o_qti_item_choice_option_flow input[type=radio]').change();
+		jQuery('div.o_qti_item_choice_option_flow input[type=radio]').change(function() {
+			jQuery('.o_qti_item_choice_option_flow').removeClass('o_selected'); // unselect all
+			jQuery(`#${this.id}_choice`).addClass('o_selected'); // select the one that was clicked / changed
+			jQuery('.o_qti_item_choice_option_flow i.o_icon_quiz_single_choice_on').addClass('o_icon_quiz_single_choice_off').removeClass('o_icon_quiz_single_choice_on'); // uncheck all checked
+			jQuery(`#${this.id}_choice i.o_icon_quiz_single_choice_off`).addClass('o_icon_quiz_single_choice_on').removeClass('o_icon_quiz_single_choice_off'); // check the one that was clicked / changed
+		});
 		jQuery('div.o_qti_item_choice_option_flow input[type=checkbox]').change(function() {
 			jQuery(`#${this.id}_choice`).toggleClass('o_selected'); // toggle selection of the one that was clicked / changed
 			jQuery(`#${this.id}_choice i`).toggleClass('o_icon_quiz_multiple_choice_on').toggleClass('o_icon_quiz_multiple_choice_off'); // toggle checked state of the one that was clicked / changed
