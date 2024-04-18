@@ -104,15 +104,15 @@ public class BadgeClassesPage {
 	public BadgeClassesPage nextToDetails() {
 		OOGraphene.nextStep(browser);
 		
-		By customizationBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_name");
+		By customizationBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_name input");
 		OOGraphene.waitElement(customizationBy, browser);
 		return this;
 	}
 	
 	public BadgeClassesPage details(String description) {
-		By descriptionBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_description div.milkdown div.ProseMirror.editor[contenteditable=true]");
+		By descriptionBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_description");
 		OOGraphene.waitElement(descriptionBy, browser);
-		browser.findElement(descriptionBy).sendKeys(description);
+		OOGraphene.markdown(descriptionBy, description, browser);
 		return this;
 	}
 	
@@ -137,6 +137,7 @@ public class BadgeClassesPage {
 		
 		By selectBy = By.id("o_fioform_condition_new_SELBOX");
 		OOGraphene.waitElement(selectBy, browser);
+		OOGraphene.scrollBottom(selectBy, browser);
 		
 		WebElement selectEl = browser.findElement(selectBy);
 		new Select(selectEl).selectByValue("coursePassed");

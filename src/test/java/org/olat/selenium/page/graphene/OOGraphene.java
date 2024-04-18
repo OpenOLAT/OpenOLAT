@@ -447,8 +447,7 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static void scrollTop(WebDriver browser) {
-		String scrollTop = " window.scrollTo(0, 0);";
-		((JavascriptExecutor)browser).executeScript(scrollTop);
+		((JavascriptExecutor)browser).executeScript("window.scrollTo(0, 0);");
 		OOGraphene.waitingALittleLonger();
 	}
 	
@@ -522,6 +521,18 @@ public class OOGraphene {
 		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
 			.pollingEvery(polling)
 			.until(new TinyMCELoadedByIdPredicate(tinyId));
+	}
+	
+	public static void markdown(By by, String text, WebDriver browser) {
+		By milkdownBy = By.cssSelector("div.milkdown div.ProseMirror.editor[contenteditable=true]");
+		waitElement(milkdownBy, browser);
+		
+		String insert = """
+				arguments[0].querySelector("input[type='hidden']").setAttribute("value",arguments[1]);\n
+				arguments[0].querySelector("div.milkdown>div.editor p").append(arguments[1]);
+				""";
+		WebElement element = browser.findElement(by);
+		((JavascriptExecutor)browser).executeScript(insert, element, text);
 	}
 	
 	/**
