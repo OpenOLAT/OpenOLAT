@@ -182,12 +182,15 @@ public class BGMailTemplateController extends FormBasicController {
 		mailContentSelection.addActionListener(FormEvent.ONCHANGE);
 		mailContentSelection.setEnabled(customizingAvailable);
 
+		// default template evaluated
+		MailContent mailContent = mailManager.evaluateTemplate(template);
 		if(customizingAvailable) {
-			subjectElem = uifactory.addTextElement("subjectElem", "mailtemplateform.subject", 128, template.getSubjectTemplate(), formLayout);
+			String subject = mailContent.getSubject();
+			subjectElem = uifactory.addTextElement("subjectElem", "mailtemplateform.subject", 128, subject, formLayout);
 			subjectElem.setDisplaySize(60);
 			subjectElem.setMandatory(true);
-		
-			String body = template.getBodyTemplate();
+
+			String body = mailContent.getBody();
 			if(body != null && !StringHelper.isHtml(body)) {
 				body = Formatter.escWithBR(body).toString();
 			}
@@ -198,8 +201,6 @@ public class BGMailTemplateController extends FormBasicController {
 
 		defaultTemplateEl = uifactory.addStaticTextElement("defaultTemplate", "mailtemplateform.defaultTemplate", null, formLayout);
 
-		// default template evaluated
-		MailContent mailContent = mailManager.evaluateTemplate(template);
 		String mailBody = mailContent.getBody() != null && !StringHelper.isHtml(mailContent.getBody()) ? Formatter.escWithBR(mailContent.getBody()).toString() : mailContent.getBody();
 		String content = "<strong>" + StringHelper.escapeHtml(mailContent.getSubject()) + "</strong><br><br>" + StringHelper.xssScan(mailBody);
 		defaultTemplateEl.setValue(content);
