@@ -540,8 +540,8 @@ public class AssessmentModeListController extends FormBasicController implements
 			copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
-			links.add("duplicate");
 			links.add("edit.text");
+			links.add("duplicate");
 			links.add("-");
 			links.add("delete");
 

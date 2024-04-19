@@ -167,6 +167,14 @@ public class StopAssessmentWarningController extends BasicController implements 
 				}
 			}
 			mainVC.contextPut("modeStatus", mode.getStatus().name());
+			if (mode.getStatus().equals(Status.followup)) {
+				if (startAssessmentMode != null) {
+					startAssessmentMode.setVisible(false);
+				}
+				if (stopAssessmentMode != null) {
+					stopAssessmentMode.setVisible(false);
+				}
+			}
 		} else if (modes.size() > 1) {
 			if (startAssessmentMode != null) {
 				startAssessmentMode.setVisible(false);
@@ -334,7 +342,8 @@ public class StopAssessmentWarningController extends BasicController implements 
 				start,
 				stop,
 				formatter.formatDateAndTime(mode.getEndWithFollowupTime()),
-				mode.isManualBeginEnd() ? translate("mode.beginend.manual") : translate("mode.beginend.automatic")
+				mode.isManualBeginEnd() ? translate("mode.beginend.manual") : translate("mode.beginend.automatic"),
+				formatter.formatTimeShort(mode.getEndWithFollowupTime())
 		};
 
 		String i18nMessage;

@@ -163,7 +163,8 @@ public class AssessmentModeDAO {
 		}
 
 		if (params.getAllowedModeStatus() != null) {
-			sb.and().append("mode.statusString in :allowedModeStatus or mode.endWithFollowupTime>=current_date");
+			sb.and().append("(mode.statusString in :allowedModeStatus")
+					.append(" or mode.endWithFollowupTime>=current_date)");
 		}
 		
 		sb.append(" order by mode.beginWithLeadTime desc ");

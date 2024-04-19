@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.tool;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -196,7 +197,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			searchParams.setEndDate(until);
 			
 			List<LectureBlock> lectures = lectureService.getLectureBlocks(courseEntry, getIdentity());
-			Set<Long> teachedLectures = lectures.stream().map(LectureBlock::getKey).collect(Collectors.toSet());
+			Set<Long> taughtLectures = lectures.stream().map(LectureBlock::getKey).collect(Collectors.toSet());
 
 			SearchAssessmentModeParams searchAssessmentModeParams = new SearchAssessmentModeParams();
 			List<Status> allModeStatus = new ArrayList<>(Arrays.stream(Status.class.getEnumConstants()).toList());
@@ -209,8 +210,66 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			List<AssessmentMode> modes = assessmentModeManager.findAssessmentMode(searchAssessmentModeParams);
 			List<AssessmentModeOverviewRow> rows = new ArrayList<>();
 			for(AssessmentMode mode:modes) {
-				rows.add(forgeRow(mode, today, teachedLectures));
+				rows.add(forgeRow(mode, today, taughtLectures));
 			}
+
+			// sort entries by status primarily and then by desired dates (OO-7499)
+			// elements are already pre-ordered by mode.beginWithLeadTime (in query)
+			rows.sort(new Comparator<>() {
+				@Override
+				public int compare(AssessmentModeOverviewRow o1, AssessmentModeOverviewRow o2) {
+					// Compare by status
+					int statusComparison = Integer.compare(getAssignedValue(o1.getAssessmentMode().getStatus()), getAssignedValue(o2.getAssessmentMode().getStatus()));
+
+					// If status are different, return the comparison result based on status
+					if (statusComparison != 0) {
+						return statusComparison;
+					} else {
+						// If status are the same, compare by date
+						if (o1.getAssessmentMode().getStatus().equals(Status.leadtime)
+								|| o1.getAssessmentMode().getStatus().equals(Status.none)) {
+							return compareByBeginDateAsc(o1.getAssessmentMode(), o2.getAssessmentMode());
+						} else if (o1.getAssessmentMode().getStatus().equals(Status.assessment)) {
+							return compareByDateStatusAssessment(o1.getAssessmentMode(), o2.getAssessmentMode());
+						} else if (o1.getAssessmentMode().getStatus().equals(Status.followup)) {
+							return compareByDateStatusFollowup(o1.getAssessmentMode(), o2.getAssessmentMode());
+						} else {
+							return compareByDateStatusEnd(o1.getAssessmentMode(), o2.getAssessmentMode());
+						}
+					}
+				}
+
+				private static int getAssignedValue(Status mode) {
+					return switch (mode) {
+						case leadtime -> 0;
+						case assessment -> 1;
+						case followup -> 2;
+						case none -> 3;
+						case end -> 4;
+					};
+				}
+
+				// Status Preparation time & Scheduled: Sort by start asc
+				private static int compareByBeginDateAsc(AssessmentMode mode1, AssessmentMode mode2) {
+					return mode1.getBegin().compareTo(mode2.getBegin());
+				}
+
+				// Status In progress: Sort by end asc
+				private static int compareByDateStatusAssessment(AssessmentMode mode1, AssessmentMode mode2) {
+					return mode1.getEnd().compareTo(mode2.getEnd());
+				}
+
+				// Status Follow-up: Sort by end + follow-up asc
+				private static int compareByDateStatusFollowup(AssessmentMode mode1, AssessmentMode mode2) {
+					return mode1.getEndWithFollowupTime().compareTo(mode2.getEndWithFollowupTime());
+				}
+
+				// Status End: Sort by end desc
+				private static int compareByDateStatusEnd(AssessmentMode mode1, AssessmentMode mode2) {
+					return mode2.getEnd().compareTo(mode1.getEnd());
+				}
+			});
+
 			model.setObjects(rows);
 			tableEl.reset(true, true, true);
 		}

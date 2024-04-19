@@ -121,6 +121,12 @@ public class SearchAssessmentModeParams {
 		return allowedModeStatus;
 	}
 
+	/**
+	 * If certain status is not allowed:
+	 * Setting this param will consider by "or" mode.endWithFollowupTime>=current_date inside the query
+	 *
+	 * @param allowedModeStatus list of allowedModeStatus as strings, those will be considered for the result
+	 */
 	public void setAllowedModeStatus(List<String> allowedModeStatus) {
 		this.allowedModeStatus = allowedModeStatus;
 	}
