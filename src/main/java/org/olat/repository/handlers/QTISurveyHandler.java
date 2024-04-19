@@ -44,6 +44,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
@@ -98,7 +99,7 @@ public class QTISurveyHandler extends QTIHandler {
 
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+			RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file, String filename) {
 		return null;
 	}
 	
@@ -109,7 +110,7 @@ public class QTISurveyHandler extends QTIHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
 		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
 	}
 

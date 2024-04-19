@@ -74,6 +74,7 @@ import org.olat.course.editor.NodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -427,13 +428,17 @@ public class CoursesWebService {
 				String organisation = partsReader.getValue("organisationkey");
 				String externalId = partsReader.getValue("externalId");
 				String externalRef = partsReader.getValue("externalRef");
+				String withLinkedReferences = partsReader.getValue("withLinkedReferences");
 				Long organisationKey = null;
 				if(StringHelper.isLong(organisation)) {
 					organisationKey = Long.valueOf(organisation);
 				}
 				
+				RepositoryEntryImportExportLinkEnum withReferences = RepositoryEntryImportExportLinkEnum
+						.secureValueOf(withLinkedReferences, RepositoryEntryImportExportLinkEnum.WITH_REFERENCE);
+				
 				ICourse course = importCourse(ureq, identity, tmpFile, displayName, softKey, externalId, externalRef,
-						accessStatus, organisationKey);
+						accessStatus, withReferences, organisationKey);
 				CourseVO vo = ObjectFactory.get(course);
 				return Response.ok(vo).build();
 			}
@@ -463,7 +468,8 @@ public class CoursesWebService {
 	}
 
 	private ICourse importCourse(UserRequest ureq, Identity identity, File fCourseImportZIP, String displayName,
-			String softKey, String externalId, String externalRef, RepositoryEntryStatusEnum status, Long organisationKey) {
+			String softKey, String externalId, String externalRef, RepositoryEntryStatusEnum status,
+			RepositoryEntryImportExportLinkEnum withResources, Long organisationKey) {
 
 		log.info("REST Import course {} START", displayName);
 		if(!StringHelper.containsNonWhitespace(displayName)) {
@@ -486,9 +492,13 @@ public class CoursesWebService {
 				throw new WebApplicationException(Status.FORBIDDEN);
 			}
 		}
+		
+		if(withResources == null) {
+			withResources = RepositoryEntryImportExportLinkEnum.WITH_REFERENCE;
+		}
 
 		RepositoryHandler handler = handlerFactory.getRepositoryHandler(CourseModule.getCourseTypeName());
-		RepositoryEntry re = handler.importResource(identity, null, displayName, null, true, organisation, Locale.ENGLISH, fCourseImportZIP, null);
+		RepositoryEntry re = handler.importResource(identity, null, displayName, null, withResources, organisation, Locale.ENGLISH, fCourseImportZIP, null);
 		if(StringHelper.containsNonWhitespace(softKey)) {
 			re.setSoftkey(softKey);
 		}

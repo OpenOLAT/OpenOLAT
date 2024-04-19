@@ -61,6 +61,7 @@ import org.olat.fileresource.types.GlossaryResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.repository.ErrorList;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -129,7 +130,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+			RepositoryEntryImportExportLinkEnum withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		GlossaryManager glossaryManager = CoreSpringFactory.getImpl(GlossaryManager.class);
 		GlossaryResource glossaryResource = glossaryManager.createGlossary();
@@ -224,7 +225,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
 		return CoreSpringFactory.getImpl(GlossaryManager.class).getAsMediaResource(res);
 	}
 

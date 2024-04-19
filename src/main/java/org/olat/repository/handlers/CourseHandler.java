@@ -111,8 +111,9 @@ import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
-import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -249,7 +250,7 @@ public class CourseHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
-			String description, boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+			String description, RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file, String filename) {
 
 		OLATResource newCourseResource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, file);
@@ -275,12 +276,22 @@ public class CourseHandler implements RepositoryHandler {
 		
 		//import references
 		CourseEditorTreeNode rootNode = (CourseEditorTreeNode)course.getEditorTreeModel().getRootNode();
-		importReferences(rootNode, course, initialAuthor, organisation, locale, withReferences);
-		if(withReferences && course.getCourseConfig().hasCustomSharedFolder()) {
-			importSharedFolder(course, initialAuthor, organisation);
+		importReferences(rootNode, course, initialAuthor, organisation, locale, withLinkedReferences);
+		
+		if(course.getCourseConfig().hasCustomSharedFolder()) {
+			if(withLinkedReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE) {
+				importSharedFolder(course, initialAuthor, organisation);
+			} else if(withLinkedReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+				importSharedFolderReference(course);
+			}
 		}
-		if(withReferences && course.getCourseConfig().hasGlossary()) {
-			importGlossary(course, initialAuthor, organisation);
+		
+		if(course.getCourseConfig().hasGlossary()) {
+			if(withLinkedReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE) {
+				importGlossary(course, initialAuthor, organisation);
+			} else if(withLinkedReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+				importGlossaryReference(course);
+			}
 		}
 
 		// create group management / import groups
@@ -395,6 +406,18 @@ public class CourseHandler implements RepositoryHandler {
 			.addReference(importedRepositoryEntry.getOlatResource(), course, SharedFolderManager.SHAREDFOLDERREF);		
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
+
+	private void importSharedFolderReference(ICourse course) {
+		// Set the shared folder reference
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		String softKey = courseConfig.getSharedFolderSoftkey();
+		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		RepositoryEntry sharedFolder = repositoryManager.lookupRepositoryEntryBySoftkey(softKey, false);
+		if(sharedFolder != null) {
+			CoreSpringFactory.getImpl(ReferenceManager.class)
+				.addReference(sharedFolder.getOlatResource(), course, SharedFolderManager.SHAREDFOLDERREF);
+		}
+	}
 	
 	private void importGlossary(ICourse course, Identity owner, Organisation organisation) {
 		GlossaryManager gm = CoreSpringFactory.getImpl(GlossaryManager.class);
@@ -429,7 +452,19 @@ public class CourseHandler implements RepositoryHandler {
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 	
-	private void importReferences(CourseEditorTreeNode node, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	private void importGlossaryReference(ICourse course) {
+		// Set the shared folder reference
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		String softKey = courseConfig.getGlossarySoftKey();
+		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		RepositoryEntry glossary = repositoryManager.lookupRepositoryEntryBySoftkey(softKey, false);
+		if(glossary != null) {
+			CoreSpringFactory.getImpl(ReferenceManager.class)
+				.addReference(glossary.getOlatResource(), course, SharedFolderManager.SHAREDFOLDERREF);
+		}
+	}
+	
+	private void importReferences(CourseEditorTreeNode node, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		node.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, owner, organisation, locale, withReferences);
 
 		for (int i = 0; i<node.getChildCount(); i++) {
@@ -707,8 +742,8 @@ public class CourseHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
-		return new CourseExportMediaResource(res);
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
+		return new CourseExportMediaResource(res, withLinkedResource);
 	}
 	
 	@Override

@@ -98,6 +98,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
@@ -446,7 +447,7 @@ public class TACourseNode extends GenericCourseNode {
 	}
 
 	@Override
-	public void exportNode(File fExportDirectory, ICourse course) {
+	public void exportNode(File fExportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withResource) {
 		// export the tasks
 		File fTaskFolder = new File(FolderConfig.getCanonicalRoot(), TACourseNode.getTaskFolderPathRelToFolderRoot(course, this));
 		File fNodeExportDir = new File(fExportDirectory, getIdent());
@@ -461,7 +462,7 @@ public class TACourseNode extends GenericCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		//import tasks
 		File fNodeImportDir = new File(importDirectory, getIdent());
 		File fTaskfolderDir = new File(FolderConfig.getCanonicalRoot() + getTaskFolderPathRelToFolderRoot(course, this));

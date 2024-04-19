@@ -60,6 +60,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.fileresource.types.ImageFileResource;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -504,7 +505,8 @@ public class JunitTestHelper {
 					.getRepositoryHandler(CourseModule.getCourseTypeName());
 			OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
 			Organisation defOrganisation = organisationService.getDefaultOrganisation();
-			RepositoryEntry re = courseHandler.importResource(initialAuthor, null, displayname, "A course", true, defOrganisation, Locale.ENGLISH, courseFile, null);
+			RepositoryEntry re = courseHandler.importResource(initialAuthor, null, displayname, "A course",
+					RepositoryEntryImportExportLinkEnum.WITH_REFERENCE, defOrganisation, Locale.ENGLISH, courseFile, null);
 			
 			ICourse course = CourseFactory.loadCourse(re);
 			CourseFactory.publishCourse(course, status, initialAuthor, Locale.ENGLISH);

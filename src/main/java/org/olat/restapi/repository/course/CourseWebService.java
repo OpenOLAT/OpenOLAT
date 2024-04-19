@@ -96,6 +96,7 @@ import org.olat.modules.lecture.restapi.LectureBlocksWebService;
 import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.modules.vitero.restapi.ViteroBookingWebService;
 import org.olat.repository.ErrorList;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -654,7 +655,7 @@ public class CourseWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
-	public Response getRepoFileById(@Context HttpServletRequest request) {
+	public Response getRepoFileById(@QueryParam("withLinkedResources") String withLinkedResources, @Context HttpServletRequest request) {
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if (re == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -686,7 +687,9 @@ public class CourseWebService {
 		try {
 			lockResult = typeToDownload.acquireLock(ores, identity);
 			if (lockResult == null || (lockResult.isSuccess() && !isAlreadyLocked)) {
-				MediaResource mr = typeToDownload.getAsMediaResource(ores);
+				RepositoryEntryImportExportLinkEnum resources = RepositoryEntryImportExportLinkEnum
+						.secureValueOf(withLinkedResources, RepositoryEntryImportExportLinkEnum.WITH_REFERENCE);
+				MediaResource mr = typeToDownload.getAsMediaResource(ores, resources);
 				if (mr != null) {
 					repositoryService.incrementDownloadCounter(re);
 					if(mr instanceof StreamingOutput) {

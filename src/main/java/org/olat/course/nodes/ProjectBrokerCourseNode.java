@@ -107,6 +107,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
@@ -528,7 +529,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation,
-			Locale locale, boolean withReferences) {
+			Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		super.importNode(importDirectory, course, owner, organisation, locale, withReferences);
 	}
 	
@@ -564,7 +565,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void exportNode(File exportDirectory, ICourse course) {
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withResource) {
 		// initialize managers
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);

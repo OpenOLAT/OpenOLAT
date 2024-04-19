@@ -65,6 +65,7 @@ import org.olat.course.style.ImageSource;
 import org.olat.course.style.TeaserImageStyle;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -343,7 +344,7 @@ public interface CourseNode extends INode, ShortName {
 	 *          put. This directory must exist prior to calling this method.
 	 * @param course
 	 */
-	public void exportNode(File exportDirectory, ICourse course);
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences);
 
 	/**
 	 * Import a course node's data. The import directory is the root of the
@@ -363,7 +364,7 @@ public interface CourseNode extends INode, ShortName {
 	 * @return Controller for user driven import, or null after all import tasks
 	 *         have finished.
 	 */
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences);
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences);
 	
 	/**
 	 * Remap the node to the context of the course after import and apply changes from the copy wizard

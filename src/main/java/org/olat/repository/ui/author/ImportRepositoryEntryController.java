@@ -51,6 +51,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -271,8 +272,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 			String displayname = displaynameEl.getValue();
 			File uploadedFile = uploadFileEl.getUploadFile();
 			String uploadedFilename = uploadFileEl.getUploadFileName();
-			boolean withReferences = referencesEl.isAtLeastSelected(1);
-			
+			RepositoryEntryImportExportLinkEnum withReferences = referencesEl.isAtLeastSelected(1) ? RepositoryEntryImportExportLinkEnum.WITH_REFERENCE : RepositoryEntryImportExportLinkEnum.NONE;
 			importedEntry = handler.importResource(getIdentity(), null, displayname,
 					"", withReferences, organisation, getLocale(), uploadedFile, uploadedFilename);
 			

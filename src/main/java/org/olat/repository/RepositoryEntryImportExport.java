@@ -79,7 +79,7 @@ public class RepositoryEntryImportExport {
 	
 	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryImportExport.class);
 
-	private static final String CONTENT_FILE = "repo.zip";
+	public static final String CONTENT_FILE = "repo.zip";
 	public static final String PROPERTIES_FILE = "repo.xml";
 	private static final String PROP_ROOT = "RepositoryEntryProperties";
 	private static final String PROP_SOFTKEY = "Softkey";
@@ -87,6 +87,9 @@ public class RepositoryEntryImportExport {
 	private static final String PROP_DISPLAYNAME = "DisplayName";
 	private static final String PROP_DECRIPTION = "Description";
 	private static final String PROP_INITIALAUTHOR = "InitialAuthor";
+	private static final String PROP_EXTERNAL_ID = "ExternalID";
+	private static final String PROP_EXTERNAL_REF = "ExternalRef";
+	private static final String PROP_RESOURCE_TYPE = "ResourceType";
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
@@ -101,6 +104,9 @@ public class RepositoryEntryImportExport {
 		xstream.aliasField(PROP_DISPLAYNAME, RepositoryEntryImport.class, "displayname");
 		xstream.aliasField(PROP_DECRIPTION, RepositoryEntryImport.class, "description");
 		xstream.aliasField(PROP_INITIALAUTHOR, RepositoryEntryImport.class, "initialAuthor");
+		xstream.aliasField(PROP_EXTERNAL_ID, RepositoryEntryImport.class, "externalId");
+		xstream.aliasField(PROP_EXTERNAL_REF, RepositoryEntryImport.class, "initialAuthor");
+		xstream.aliasField(PROP_RESOURCE_TYPE, RepositoryEntryImport.class, "resourceType");
 		xstream.omitField(RepositoryEntryImport.class, "outer-class");
 		xstream.omitField(RepositoryEntry.class, "educationalType");
 		xstream.ignoreUnknownElements();
@@ -151,6 +157,16 @@ public class RepositoryEntryImportExport {
 		return exportDoExportContent();
 	}
 	
+	public boolean exportDoExport(RepositoryEntryImportExportLinkEnum withResource) {
+		if(withResource == RepositoryEntryImportExportLinkEnum.NONE) return false;
+
+		exportDoExportProperties();
+		if(withResource == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE) {
+			return exportDoExportContent();
+		}
+		return true;
+	}
+	
 	public boolean exportDoExport(String zipPath, ZipOutputStream zout) {
 		exportDoExportProperties(zipPath, zout);
 		return exportDoExportContent(zipPath, zout);
@@ -174,9 +190,9 @@ public class RepositoryEntryImportExport {
 
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		VFSLeaf movie = repositoryService.getIntroductionMovie(re);
-		if(movie instanceof LocalFileImpl) {
-			imp.setMovieName(movie.getName());
-			ZipUtil.addFileToZip(ZipUtil.concat(zipPath, movie.getName()), ((LocalFileImpl)movie).getBasefile(), zout);
+		if(movie instanceof LocalFileImpl localMovie) {
+			imp.setMovieName(localMovie.getName());
+			ZipUtil.addFileToZip(ZipUtil.concat(zipPath, localMovie.getName()), localMovie.getBasefile(), zout);
 		}
 		
 		try(ShieldOutputStream fOut = new ShieldOutputStream(zout)) {
@@ -241,7 +257,7 @@ public class RepositoryEntryImportExport {
 	public boolean exportDoExportContent() {
 		// export resource
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
-		MediaResource mr = rh.getAsMediaResource(re.getOlatResource());
+		MediaResource mr = rh.getAsMediaResource(re.getOlatResource(), RepositoryEntryImportExportLinkEnum.WITH_REFERENCE);
 		try(FileOutputStream fOut = new FileOutputStream(new File(baseDirectory, CONTENT_FILE));
 				InputStream in = mr.getInputStream()) {
 			if(in == null) {
@@ -262,7 +278,7 @@ public class RepositoryEntryImportExport {
 	public boolean exportDoExportContent(String zipPath, ZipOutputStream zout) {
 		// export resource
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
-		MediaResource mr = rh.getAsMediaResource(re.getOlatResource());
+		MediaResource mr = rh.getAsMediaResource(re.getOlatResource(), RepositoryEntryImportExportLinkEnum.WITH_REFERENCE);
 		try(OutputStream fOut = new ShieldOutputStream(zout);
 				InputStream in = mr.getInputStream()) {
 			zout.putNextEntry(new ZipEntry(ZipUtil.concat(zipPath, CONTENT_FILE)));
@@ -396,6 +412,15 @@ public class RepositoryEntryImportExport {
 		return (RepositoryEntryImport)XStreamHelper.readObject(xstream, inputFile);
 	}
 	
+	public static RepositoryEntryImport readFromXml(Path inputFile) {
+		try(InputStream in = Files.newInputStream(inputFile)) {
+			return (RepositoryEntryImport)xstream.fromXML(in);
+		} catch(Exception e1) {
+			log.error("", e1);
+		}
+		return null;
+	}
+	
 	/**
 	 * Get the repo entry import metadata from the given path. E.g. usefull
 	 * when reading from an unzipped archive.
@@ -487,6 +512,20 @@ public class RepositoryEntryImportExport {
 		return repositoryProperties.getImageName();
 	}
 	
+	public String getExternalId() {
+		if(!propertiesLoaded) {
+			loadConfiguration();
+		}
+		return repositoryProperties.getExternalId();
+	}
+	
+	public String getExternalRef() {
+		if(!propertiesLoaded) {
+			loadConfiguration();
+		}
+		return repositoryProperties.getExternalRef();
+	}
+	
 	public static class RepositoryEntryImport {
 		
 		private Long key;
@@ -496,6 +535,11 @@ public class RepositoryEntryImportExport {
 		private String description;
 		private String teaser;
 		private String initialAuthor;
+		
+		private String externalId;
+		private String externalRef;
+		
+		private String resourceType;
 		
 		private String authors;
 		private String mainLanguage;
@@ -526,6 +570,11 @@ public class RepositoryEntryImportExport {
 			description = re.getDescription();
 			teaser = re.getTeaser();
 			initialAuthor = re.getInitialAuthor();
+			
+			resourceType = re.getOlatResource().getResourceableTypeName();
+			
+			externalId = re.getExternalId();
+			externalRef = re.getExternalRef();
 			
 			authors = re.getAuthors();
 			mainLanguage = re.getMainLanguage();
@@ -567,6 +616,30 @@ public class RepositoryEntryImportExport {
 			this.softkey = softkey;
 		}
 		
+		public String getExternalId() {
+			return externalId;
+		}
+
+		public void setExternalId(String externalId) {
+			this.externalId = externalId;
+		}
+
+		public String getExternalRef() {
+			return externalRef;
+		}
+
+		public void setExternalRef(String externalRef) {
+			this.externalRef = externalRef;
+		}
+
+		public String getResourceType() {
+			return resourceType;
+		}
+
+		public void setResourceType(String resourceType) {
+			this.resourceType = resourceType;
+		}
+
 		public String getResourcename() {
 			return resourcename;
 		}

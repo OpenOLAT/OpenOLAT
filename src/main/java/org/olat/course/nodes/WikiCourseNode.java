@@ -84,6 +84,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.wiki.Wiki;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiToZipUtils;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -369,23 +370,26 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void exportNode(File exportDirectory, ICourse course) {
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
 		RepositoryEntry re = WikiEditController.getWikiReference(getModuleConfiguration(), false);
-		if (re == null) return;
-		File fExportDirectory = new File(exportDirectory, getIdent());
-		fExportDirectory.mkdirs();
-		RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
-		reie.exportDoExport();
+		if (re != null && (withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE || withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY)) {
+			File fExportDirectory = new File(exportDirectory, getIdent());
+			fExportDirectory.mkdirs();
+			RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
+			reie.exportDoExport();
+		}
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
-		if(withReferences && rie.anyExportedPropertiesAvailable()) {
+		if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE && rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(WikiResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
+				rie.getDescription(), RepositoryEntryImportExportLinkEnum.NONE, organisation, locale, rie.importGetExportedFile(), null);
 			WikiEditController.setWikiRepoReference(re, getModuleConfiguration());
+		} else if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			// Do nothing, keep the reference
 		} else {
 			WikiEditController.removeWikiReference(getModuleConfiguration());
 		}

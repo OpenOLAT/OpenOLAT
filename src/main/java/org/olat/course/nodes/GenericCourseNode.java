@@ -115,6 +115,7 @@ import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.grade.GradeService;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
@@ -505,9 +506,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	/**
 	 * Generic interface implementation. May be overriden by specific node's
 	 * implementation.
-	 * 
-	 * @see org.olat.course.nodes.CourseNode#archiveNodeData(java.util.Locale,
-	 *      org.olat.course.ICourse, java.util.zip.ZipOutputStream, String charset)
 	 */
 	@Override
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
@@ -522,15 +520,15 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void exportNode(File exportDirectory, ICourse course) {
-	// nothing to do in default implementation
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
+		// nothing to do in default implementation
 	}
 
 	/**
 	 * Implemented by specialized node
 	 */
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		// nothing to do in default implementation
 	}
 

@@ -67,6 +67,7 @@ import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.repository.ErrorList;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -135,7 +136,7 @@ public class WikiHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+			RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file, String filename) {
 		WikiResource wikiResource = new WikiResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);
 		File rootDirectory = WikiManager.getInstance().getWikiRootContainer(resource).getBasefile();
@@ -246,7 +247,7 @@ public class WikiHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
 		VFSContainer rootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(res);
 		VFSLeaf wikiZip = WikiToZipUtils.getWikiAsZip(rootContainer);
 		return new VFSMediaResource(wikiZip);

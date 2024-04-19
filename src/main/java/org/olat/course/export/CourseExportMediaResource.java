@@ -74,6 +74,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.reminder.ReminderService;
 import org.olat.modules.sharedfolder.SharedFolderManager;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
@@ -91,9 +92,11 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 	private static Logger log = Tracing.createLoggerFor(CourseExportMediaResource.class);
 	
 	private final OLATResourceable resource;
+	private final RepositoryEntryImportExportLinkEnum withLinkedReferences;
 	
-	public CourseExportMediaResource(OLATResourceable resource) {
+	public CourseExportMediaResource(OLATResourceable resource, RepositoryEntryImportExportLinkEnum withLinkedReferences) {
 		this.resource = resource;
+		this.withLinkedReferences = withLinkedReferences;
 	}
 
 	@Override
@@ -249,11 +252,11 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 
 		// export shared folder
 		CourseConfig config = sourceCourse.getCourseConfig();
-		if (config.hasCustomSharedFolder()) {
+		if (config.hasCustomSharedFolder() && withLinkedReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE) {
 			exportSharedFolder(config, sourceCourse, zout);
 		}
 		// export glossary
-		if (config.hasGlossary()) {
+		if (config.hasGlossary() && withLinkedReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE) {
 			exportGlossary(config, sourceCourse, fExportedDataDir, zout);
 		}
 		
@@ -405,7 +408,7 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 		try {
 			nodeExportDataDir.mkdir();
 			
-			courseNode.exportNode(nodeExportDataDir, sourceCourse);
+			courseNode.exportNode(nodeExportDataDir, sourceCourse, withLinkedReferences);
 			ZipUtil.addDirectoryToZip(nodeExportDataDir.toPath(), ICourse.EXPORTED_DATA_FOLDERNAME, zout);
 		} catch (Exception e) {
 			log.error("", e);

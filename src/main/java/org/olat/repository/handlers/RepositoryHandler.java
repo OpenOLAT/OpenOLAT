@@ -45,6 +45,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.ErrorList;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.author.CreateEntryController;
@@ -110,14 +111,14 @@ public interface RepositoryHandler {
 	 * @param initialAuthorAlt
 	 * @param displayname
 	 * @param description
-	 * @param withReferences   if true import references
+	 * @param withLinkedReferences Specify if the linked resources need to be imported, find by soft key or not at all
 	 * @param locale
 	 * @param file
 	 * @param filename
 	 * @return
 	 */
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
-			String description, boolean withReferences, Organisation organisation, Locale locale, File file,
+			String description, RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file,
 			String filename);
 
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
@@ -243,7 +244,7 @@ public interface RepositoryHandler {
 	 * @param res The OLAT resource
 	 * @return MediaResource delivering resourceable.
 	 */
-	public MediaResource getAsMediaResource(OLATResourceable res);
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource);
 
 	/**
 	 * Called if the repository entry referencing the given Resourceable will be

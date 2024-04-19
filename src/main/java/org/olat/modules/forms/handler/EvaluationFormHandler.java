@@ -73,6 +73,7 @@ import org.olat.modules.forms.ui.EvaluationFormEditorController;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.EvaluationFormRuntimeController;
 import org.olat.repository.ErrorList;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -165,7 +166,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+			RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file, String filename) {
 		
 		EvaluationFormResource ores = new EvaluationFormResource();
 		OLATResource resource = olatResourceManager.createAndPersistOLATResourceInstance(ores);
@@ -264,7 +265,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable)
 	 */
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
 		File unzippedDir = FileResourceManager.getInstance().unzipFileResource(res);
 		String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(res.getResourceableId());
 		return new ZippedDirectoryMediaResource(displayName, unzippedDir);

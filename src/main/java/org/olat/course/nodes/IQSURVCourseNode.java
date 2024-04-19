@@ -57,6 +57,7 @@ import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
@@ -173,7 +174,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	@Override
-	public void exportNode(File exportDirectory, ICourse course) {
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repositorySoftKey == null) return; // nothing to export
 		// self healing
@@ -183,10 +184,12 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 			IQEditController.removeIQReference(getModuleConfiguration());
 			return;
 		}
-		File fExportDirectory = new File(exportDirectory, getIdent());
-		fExportDirectory.mkdirs();
-		RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
-		reie.exportDoExport();
+		if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE || withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			File fExportDirectory = new File(exportDirectory, getIdent());
+			fExportDirectory.mkdirs();
+			RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
+			reie.exportDoExport(withReferences);
+		}
 	}
 
 	/**

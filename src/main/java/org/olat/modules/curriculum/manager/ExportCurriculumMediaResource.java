@@ -49,6 +49,7 @@ import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef;
 import org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRefs;
 import org.olat.modules.curriculum.model.CurriculumImpl;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -168,7 +169,7 @@ public class ExportCurriculumMediaResource implements MediaResource {
 		OLATResourceable ores = entry.getOlatResource();
 		RepositoryHandler handler = handlerFactory.getRepositoryHandler(entry);
 		
-		MediaResource mr = handler.getAsMediaResource(ores);
+		MediaResource mr = handler.getAsMediaResource(ores, RepositoryEntryImportExportLinkEnum.NONE);
 		zout.putNextEntry(new ZipEntry("repo_" + entry.getKey() + ".zip"));
 
 		try(OutputStream out=new ShieldOutputStream(zout);

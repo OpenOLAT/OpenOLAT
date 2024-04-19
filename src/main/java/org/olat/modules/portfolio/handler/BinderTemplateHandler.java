@@ -61,6 +61,7 @@ import org.olat.modules.portfolio.ui.BinderPickerController;
 import org.olat.modules.portfolio.ui.BinderRuntimeController;
 import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
 import org.olat.repository.ErrorList;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRuntimeType;
@@ -131,7 +132,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+			RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file, String filename) {
 		
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
@@ -242,7 +243,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable)
 	 */
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
 		RepositoryEntry templateEntry = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
 		Binder template = CoreSpringFactory.getImpl(PortfolioService.class)
 				.getBinderByResource(templateEntry.getOlatResource());

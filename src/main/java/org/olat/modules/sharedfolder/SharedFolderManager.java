@@ -26,20 +26,29 @@
 package org.olat.modules.sharedfolder;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.ZippedContainerMediaResource;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.PathUtils;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SharedFolderSecurityCallback;
 import org.olat.resource.OLATResource;
@@ -50,7 +59,8 @@ import org.olat.resource.OLATResourceManager;
  * @author Alexander Schneider
  */
 public class SharedFolderManager {
-	
+
+	private static final Logger log = Tracing.createLoggerFor(SharedFolderManager.class);
 	public static final String SHAREDFOLDERREF = "sharedfolderref";
 
 	private static final SharedFolderManager INSTANCE = new SharedFolderManager();
@@ -89,13 +99,30 @@ public class SharedFolderManager {
 		}
 		return rootFolderImpl;
 	}
+	
+	public static ResourceEvaluation evaluate(File file, String filename) {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		try {
+			RepoXMLFilter visitor = new RepoXMLFilter();
+			Path fPath = PathUtils.visit(file, filename, visitor);
+			
+			if(visitor.isValid()) {
+				RepositoryEntryImport importExportData = visitor.importExportData();
+				if(importExportData != null) {
+					eval.setValid(true);
+					eval.setDisplayname(importExportData.getDisplayname());
+					eval.setDescription(importExportData.getDescription());
+				}
+			}
+			PathUtils.closeSubsequentFS(fPath);
+		} catch (IOException | IllegalArgumentException e) {
+			log.error("", e);
+		}
+		return eval;
+	}
 
 	public MediaResource getAsMediaResource(OLATResourceable res) {
-		String exportFileName = res.getResourceableId() + ".zip";
-		VFSContainer sharedFolder = getSharedFolder(res);
-		// do intermediate commit to avoid transaction timeout
-		DBFactory.getInstance().intermediateCommit();
-		return new ZippedContainerMediaResource(exportFileName, sharedFolder, true);
+		return new SharedFolderMediaResource(res);
 	}
 
 	public boolean exportSharedFolder(String sharedFolderSoftkey, String path, ZipOutputStream zout) {
@@ -133,5 +160,29 @@ public class SharedFolderManager {
 	public boolean validate(File f) {
 		String name = f.getName();
 		return name.equals(FOLDER_NAME) || name.equals(FOLDER_NAME + ".zip");
+	}
+	
+	private static class RepoXMLFilter extends SimpleFileVisitor<Path> {
+		private boolean sharedFolder;
+		private RepositoryEntryImport importExportData;
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+			String filename = file.getFileName().toString();
+			if(RepositoryEntryImportExport.PROPERTIES_FILE.equals(filename)) {
+				importExportData = RepositoryEntryImportExport.readFromXml(file);
+				sharedFolder = SharedFolderFileResource.TYPE_NAME.equals(importExportData.getResourceType());
+			}
+			return sharedFolder ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+		}
+		
+		public boolean isValid() {
+			return sharedFolder;
+		}
+		
+		public RepositoryEntryImport importExportData() {
+			return importExportData;
+		}
 	}
 }
