@@ -25,10 +25,14 @@
 
 package org.olat.group;
 
+import java.util.Locale;
+
 import org.olat.collaboration.CollaborationManager;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.group.ui.BGControllerFactory;
 /**
  * 
  * Description:<br>
@@ -55,6 +59,21 @@ public class GroupfoldersWebDAVProvider implements WebDAVProvider {
 	@Override
 	public String getMountPoint() {
 		return MOUNTPOINT;
+	}
+	
+	@Override
+	public String getIconCss() {
+		return "o_icon_group";
+	}
+
+	@Override
+	public String getName(Locale locale) {
+		return Util.createPackageTranslator(BGControllerFactory.class, locale).translate("webdav.name");
+	}
+
+	@Override
+	public String getDescription(Locale locale) {
+		return Util.createPackageTranslator(BGControllerFactory.class, locale).translate("webdav.description");
 	}
 
 	@Override

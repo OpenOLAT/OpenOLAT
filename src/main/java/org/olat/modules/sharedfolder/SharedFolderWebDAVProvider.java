@@ -26,9 +26,11 @@
 package org.olat.modules.sharedfolder;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
@@ -76,12 +78,24 @@ public class SharedFolderWebDAVProvider implements WebDAVProvider {
 		publiclyReadableFolders = repositoryEntryKeys;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.webdav.WebDAVProvider#getMountPoint()
-	 */
 	@Override
 	public String getMountPoint() {
 		return "sharedfolders";
+	}
+	
+	@Override
+	public String getIconCss() {
+		return "o_FileResource-SHAREDFOLDER_icon";
+	}
+
+	@Override
+	public String getName(Locale locale) {
+		return Util.createPackageTranslator(SharedFolderDisplayController.class, locale).translate("webdav.name");
+	}
+
+	@Override
+	public String getDescription(Locale locale) {
+		return Util.createPackageTranslator(SharedFolderDisplayController.class, locale).translate("webdav.description");
 	}
 	
 	@Override
@@ -89,9 +103,6 @@ public class SharedFolderWebDAVProvider implements WebDAVProvider {
 		return identityEnv != null;
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.webdav.WebDAVProvider#getContainer(org.olat.core.id.Identity)
-	 */
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
 		return new SharedFolderWebDAVMergeSource(identityEnv.getIdentity(), publiclyReadableFolders);

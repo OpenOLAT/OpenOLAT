@@ -22,12 +22,13 @@ package org.olat.core.commons.services.folder.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.Set;
 
 import org.olat.core.commons.services.folder.ui.FolderDataModel.FolderCols;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataContainer;
+import org.olat.core.commons.services.vfs.VFSMetadataItem;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -39,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
@@ -52,12 +52,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.audiovideorecording.AVModule;
@@ -73,16 +72,15 @@ public class FolderSelectionController extends FormBasicController implements Fl
 	
 	private static final String CMD_FOLDER = "folder";
 	
-	private TooledStackedPanel folderBreadcrumb;
+	private TooledStackedPanel stackedPanel;
 	private FolderDataModel dataModel;
 	private FlexiTableElement tableEl;
 
 	private final VFSContainer rootContainer;
 	private VFSContainer currentContainer;
 	private VFSItemFilter vfsFilter = new VFSSystemItemFilter();
-	private final List<VFSItem> itemsToCopy;
-	private final String submitButtonI18nKey;
-	private Object userObject;
+	private final FileBrowserSelectionMode selectionMode;
+	private final String submitButtonText;
 	private int counter = 0;
 	
 	@Autowired
@@ -90,41 +88,25 @@ public class FolderSelectionController extends FormBasicController implements Fl
 	@Autowired
 	private AVModule avModule;
 
-	public FolderSelectionController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
-			VFSContainer currentContainer, List<VFSItem> itemsToCopy, String submitButtonI18nKey) {
+	public FolderSelectionController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
+			VFSContainer rootContainer, VFSContainer currentContainer, FileBrowserSelectionMode selectionMode,
+			String submitButtonText) {
 		super(ureq, wControl, "folder_selection");
+		this.stackedPanel = stackedPanel;
+		if (stackedPanel != null) {
+			stackedPanel.addListener(this);
+		}
 		this.rootContainer = rootContainer;
-		this.itemsToCopy = itemsToCopy;
-		this.submitButtonI18nKey = submitButtonI18nKey;
+		this.selectionMode = selectionMode;
+		this.submitButtonText = submitButtonText;
 		
 		initForm(ureq);
 		
 		updateCurrentContainer(ureq, currentContainer);
 	}
-	
-	public List<VFSItem> getItemsToCopy() {
-		return itemsToCopy;
-	}
-	
-	public VFSContainer getSelectedContainer() {
-		return currentContainer;
-	}
-
-	public Object getUserObject() {
-		return userObject;
-	}
-
-	public void setUserObject(Object userObject) {
-		this.userObject = userObject;
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		folderBreadcrumb = new TooledStackedPanel("folderBreadcrumb", getTranslator(), this);
-		formLayout.add(new ComponentWrapperElement(folderBreadcrumb));
-		folderBreadcrumb.setToolbarEnabled(false);
-		folderBreadcrumb.pushController(rootContainer.getName(), null, "/");
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel iconCol = new DefaultFlexiColumnModel(FolderCols.icon, new FolderIconRenderer());
 		iconCol.setExportable(false);
@@ -141,24 +123,17 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton(submitButtonI18nKey, buttonsCont);
+		uifactory.addFormSubmitButton("submit", "submit", "noTransOnlyParam", new String[] {submitButtonText}, buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	private void loadModel(UserRequest ureq) {
 		List<VFSItem> items = getCachedContainer(currentContainer).getItems(vfsFilter);
 		
-		String relPath = currentContainer.getRelPath();
-		Map<String, VFSMetadata> metadatas = Collections.emptyMap();
-		if (relPath != null) {
-			List<VFSMetadata> m = vfsRepositoryService.getChildren(relPath);
-			metadatas = m.stream().collect(Collectors.toMap(VFSMetadata::getFilename, v -> v, (u, v) -> u));
-		}
-		
 		List<FolderRow> rows = new ArrayList<>(items.size());
 		for (VFSItem vfsItem : items) {
-			VFSMetadata vfsMetadata = metadatas.get(vfsItem.getName());
 			FolderRow row = new FolderRow(vfsItem);
+			VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
 			row.setMetadata(vfsMetadata);
 			
 			row.setIconCssClass(FolderUIFactory.getIconCssClass(vfsMetadata, vfsItem));
@@ -174,13 +149,28 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+		
+		boolean multiSelect = FileBrowserSelectionMode.sourceMulti == selectionMode && isAnyChildCopyable();
+		tableEl.setMultiSelect(multiSelect);
 	}
 	
+	private boolean isAnyChildCopyable() {
+		return dataModel.getObjects().stream().anyMatch(row -> VFSStatus.YES == row.getVfsItem().canCopy());
+	}
+
 	private VFSContainer getCachedContainer(VFSContainer vfsContainer) {
 		if (VFSStatus.YES == vfsContainer.canMeta()) {
 			return new VFSMetadataContainer(vfsRepositoryService, true, vfsContainer);
 		}
 		return vfsContainer;
+	}
+	
+	private VFSItem getUncachedItem(VFSItem item) {
+		if (item instanceof VFSMetadataItem cachedItem) {
+			return cachedItem.getItem();
+		}
+		
+		return item;
 	}
 	
 	private void forgeThumbnail(UserRequest ureq, FolderRow row) {
@@ -259,12 +249,11 @@ public class FolderSelectionController extends FormBasicController implements Fl
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == folderBreadcrumb) {
+		if (source == stackedPanel) {
 			if (event instanceof PopEvent popEvent) {
 				Object userObject = popEvent.getUserObject();
-				if (userObject instanceof String relativePath) {
-					String parentPath = relativePath.substring(0, relativePath.lastIndexOf("/"));
-					updateCurrentContainer(ureq, parentPath);
+				if (userObject instanceof VFSContainer vfsContainer) {
+					updateCurrentContainer(ureq, vfsContainer.getParentContainer());
 				}
 			}
 		}
@@ -284,13 +273,37 @@ public class FolderSelectionController extends FormBasicController implements Fl
 	}
 
 	@Override
+	protected void doDispose() {
+		if (stackedPanel != null) {
+			stackedPanel.removeListener(this);
+		}
+		super.doDispose();
+	}
+
+	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
+		List<VFSItem> items;
+		if (FileBrowserSelectionMode.sourceMulti == selectionMode) {
+			Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+			if (selectedIndex == null || selectedIndex.isEmpty()) {
+				items = List.of();
+			} else {
+				items = selectedIndex.stream()
+					.map(index -> dataModel.getObject(index.intValue()))
+					.filter(Objects::nonNull)
+					.map(row -> getUncachedItem(row.getVfsItem()))
+					.filter(Objects::nonNull)
+					.toList();
+			}
+		} else {
+			items = List.of(getUncachedItem(currentContainer));
+		}
+		fireEvent(ureq, new FileBrowserSelectionEvent(items));
 	}
 
 	private void doOpenFolder(UserRequest ureq, FolderRow folderRow) {
@@ -303,42 +316,31 @@ public class FolderSelectionController extends FormBasicController implements Fl
 	}
 	
 	public void updateCurrentContainer(UserRequest ureq, VFSContainer container) {
-		String relativePath = VFSManager.getRelativeItemPath(container, rootContainer, "/");
-		updateCurrentContainer(ureq, relativePath);
-	}
-	
-	public void updateCurrentContainer(UserRequest ureq, String relativePath) {
-		String path = relativePath;
-		if (path == null) {
-			path = "/";
-		}
-		if (!path.startsWith("/")) {
-			path = "/" + path;
-		}
+		currentContainer = container;
+		List<VFSContainer> parents = new ArrayList<>(1);
+		getParentsToRoot(parents, container);
 		
-		VFSItem vfsItem = rootContainer.resolve(path);
-		if (vfsItem instanceof VFSContainer vfsContainer) {
-			currentContainer = vfsContainer;
-		} else {
-			currentContainer = rootContainer;
-			path = "/";
+		stackedPanel.popUpToController(this);
+		Collections.reverse(parents);
+		for (VFSContainer parent : parents) {
+			stackedPanel.pushController(parent.getName(), null, parent);
 		}
+		stackedPanel.setDirty(true);
 		
-		updateFolderBreadcrumpUI(ureq, path);
 		loadModel(ureq);
 	}
 	
-	private void updateFolderBreadcrumpUI(UserRequest ureq, String path) {
-		String[] pathParts = path.split("/");
-		String ralativePath = "";
-		folderBreadcrumb.popUpToRootController(ureq);
-		for (int i = 1; i < pathParts.length; i++) {
-			String pathPart = pathParts[i];
-			ralativePath += "/" + pathPart;
-			folderBreadcrumb.pushController(pathPart, null, ralativePath);
+	private void getParentsToRoot(List<VFSContainer> parents, VFSContainer container) {
+		if (container == rootContainer) {
+			return;
+		}
+		VFSContainer parentContainer = container.getParentContainer();
+		if (parentContainer != null) {
+			parents.add(container);
+			getParentsToRoot(parents, parentContainer);
 		}
 	}
-
+	
 	private boolean isItemNotAvailable(UserRequest ureq, FolderRow row, boolean showDeletedMessage) {
 		VFSItem vfsItem = row.getVfsItem();
 		if (!vfsItem.exists()) {

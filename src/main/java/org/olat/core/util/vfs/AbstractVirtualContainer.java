@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 
@@ -42,6 +43,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 public abstract class AbstractVirtualContainer implements VFSContainer {
 
 	private final String name;
+	private String iconCSS;
 	protected VFSItemFilter defaultFilter;
 
 	/**
@@ -51,6 +53,19 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 		this.name = name;
 	}
 	
+
+	@Override
+	public String getIconCSS() {
+		if (StringHelper.containsNonWhitespace(iconCSS)) {
+			return iconCSS;
+		}
+		return VFSContainer.super.getIconCSS();
+	}
+
+	public void setIconCSS(String iconCSS) {
+		this.iconCSS = iconCSS;
+	}
+
 	/**
 	 * constructor for anynomous types
 	 */

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -49,6 +50,9 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 	public VFSMetadataContainer(VFSRepositoryService vfsRepositoryService, boolean cached, VFSContainer wrappedContainer) {
 		this(vfsRepositoryService, cached, wrappedContainer.getMetaInfo(), wrappedContainer.getParentContainer(),
 				wrappedContainer.getLocalSecurityCallback(), wrappedContainer.getDefaultItemFilter());
+		if (wrappedContainer instanceof NamedContainerImpl namedContainer) {
+			this.namedContainerName = namedContainer.getName();
+		}
 	}
 
 	public VFSMetadataContainer(VFSRepositoryService vfsRepositoryService, boolean cached, VFSMetadata vfsMetadata,

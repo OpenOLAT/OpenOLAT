@@ -22,6 +22,7 @@ package org.olat.core.commons.services.vfs;
 import java.util.Date;
 import java.util.Objects;
 
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
@@ -41,6 +42,7 @@ public class VFSMetadataItem implements VFSItem {
 	private VFSMetadata vfsMetadata;
 	private VFSItem vfsItem;
 	private VFSSecurityCallback secCallback;
+	protected String namedContainerName;
 	
 	protected final VFSRepositoryService vfsRepositoryService;
 	
@@ -200,6 +202,9 @@ public class VFSMetadataItem implements VFSItem {
 
 	@Override
 	public String getName() {
+		if (StringHelper.containsNonWhitespace(namedContainerName)) {
+			return namedContainerName;
+		}
 		if (getMetaInfo() == null) {
 			return null;
 		}

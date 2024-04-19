@@ -26,11 +26,15 @@
 
 package org.olat.core.commons.modules.bc;
 
+import java.util.Locale;
+
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.home.PersonalFolderController;
 /**
  * 
  */
@@ -41,6 +45,21 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 	@Override
 	public String getMountPoint() {
 		return MOUNTPOINT;
+	}
+	
+	@Override
+	public String getIconCss() {
+		return "o_bc_icon";
+	}
+
+	@Override
+	public String getName(Locale locale) {
+		return Util.createPackageTranslator(PersonalFolderController.class, locale).translate("webdav.name");
+	}
+
+	@Override
+	public String getDescription(Locale locale) {
+		return Util.createPackageTranslator(PersonalFolderController.class, locale).translate("webdav.description");
 	}
 	
 	public VFSContainer getContainer(Identity identity, Roles roles) {

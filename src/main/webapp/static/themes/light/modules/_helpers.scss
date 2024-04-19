@@ -228,6 +228,42 @@
 	}
 }
 
+/* Mega button */
+.btn.o_button_mega {
+	height: $o-button-mega-height;
+	background-color: $o-button-mega-bg-color;
+	&:hover {
+		background-color: $o-button-mega-hover-bg-color;
+	}
+	
+	display: flex;
+	align-items: center;
+	column-gap: 10px;
+	i.o_icon {
+		width: $o-button-mega-icon-width;
+		min-width: $o-button-mega-icon-width;
+		max-width: $o-button-mega-icon-width;
+	}
+	>span {
+		display: grid;
+		justify-items: start;
+		align-items: center;
+		>div {
+			@extend %o_nowrap;
+			max-width: 100%;
+		}
+		.o_mega_headline {
+			font-weight: bold;
+		}
+	}
+}
+.o_mega_buttons {
+	@include list-unstyled;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(207px, 1fr));
+	gap: 10px;
+}
+
 /* Call to action button */
 .btn.o_button_call_to_action {
 	font-size: floor($font-size-base * 1.3);

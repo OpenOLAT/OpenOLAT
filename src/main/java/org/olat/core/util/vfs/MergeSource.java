@@ -70,6 +70,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	}
 	
 	protected void setMergedContainers(List<VFSContainer> mergedContainers) {
+		mergedContainers.forEach(container -> container.setParentContainer(this));
 		this.mergedContainers = mergedContainers;
 	}
 

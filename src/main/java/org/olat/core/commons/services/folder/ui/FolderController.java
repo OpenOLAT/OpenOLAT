@@ -199,6 +199,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FormLink quickSearchButton;
 	private FormLink uploadLink;
 	private DropdownItem createDropdown;
+	private FormLink addBrowserLink;
 	private FormLink createDocumentLink;
 	private FormLink createFolderLink;
 	private SpacerItem recordSpacer;
@@ -228,19 +229,20 @@ public class FolderController extends FormBasicController implements Activateabl
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CloseableModalController cmc;
 	private UploadController uploadCtrl;
+	private FileBrowserController addFromBrowserCtrl;
 	private CreateDocumentController createDocumentCtrl;
 	private CreateFolderController createFolderCtrl;
 	private RecordAVController recordAVController;
 	private Controller docEditorCtrl;
 	private WebDAVController webdavCtrl;
 	private Controller quotaEditCtrl;
-	private FolderSelectionController copySelectFolderCtrl;
+	private FolderTargetController copySelectFolderCtrl;
 	private Controller metadataCtrl;
 	private RevisionListController revisonsCtrl;
 	private ZipConfirmationController zipConfirmationCtrl;
 	private ConfirmationController deleteSoftlyConfirmationCtrl;
 	private ConfirmationController deletePermanentlyConfirmationCtrl;
-	private FolderSelectionController restoreSelectFolderCtrl;
+	private FolderTargetController restoreSelectFolderCtrl;
 	private SendDocumentsByEMailController emailCtrl;
 	
 	private final VFSContainer rootContainer;
@@ -362,12 +364,19 @@ public class FolderController extends FormBasicController implements Activateabl
 		createDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
 		createDropdown.setOrientation(DropdownOrientation.right);
 		
+		addBrowserLink = uifactory.addFormLink("browser.add", formLayout, Link.LINK);
+		addBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_file_browser");
+		createDropdown.addElement(addBrowserLink);
+		
+		recordSpacer = new SpacerItem("createSpace");
+		createDropdown.addElement(recordSpacer);
+		
 		createDocumentLink = uifactory.addFormLink("document.create", formLayout, Link.LINK);
-		createDocumentLink.setIconLeftCSS("o_icon o_icon_add");
+		createDocumentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		createDropdown.addElement(createDocumentLink);
 		
 		createFolderLink = uifactory.addFormLink("folder.create", formLayout, Link.LINK);
-		createFolderLink.setIconLeftCSS("o_icon o_icon_new_folder");
+		createFolderLink.setIconLeftCSS("o_icon o_icon-fw o_icon_new_folder");
 		createDropdown.addElement(createFolderLink);
 		
 		recordSpacer = new SpacerItem("recordSpace");
@@ -414,6 +423,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		boolean canEditCurrentContainer = canEdit(currentContainer);
 		uploadLink.setVisible(canEditCurrentContainer);
 		createDropdown.setVisible(canEditCurrentContainer);
+		addBrowserLink.setVisible(canEditCurrentContainer);
 		createDocumentLink.setVisible(canEditCurrentContainer);
 		createFolderLink.setVisible(canEditCurrentContainer);
 		recordSpacer.setVisible(canEditCurrentContainer && avModule.isRecordingEnabled());
@@ -1196,6 +1206,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			doQuickSearch(ureq);
 		} else if (uploadLink == source) {
 			doUpload(ureq);
+		} else if (addBrowserLink == source) {
+			doAddFromBrowser(ureq);
 		} else if (createDocumentLink == source) {
 			doCreateDocument(ureq);
 		} else if (createFolderLink == source) {
@@ -1243,6 +1255,13 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (uploadCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			loadModel(ureq);
+			cmc.deactivate();
+			cleanUp();
+		} else if (addFromBrowserCtrl == source) {
+			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
+				doCopyMove(ureq, false, currentContainer, selectionEvent.getVfsItems());
 			}
 			loadModel(ureq);
 			cmc.deactivate();
@@ -1296,10 +1315,12 @@ public class FolderController extends FormBasicController implements Activateabl
 			cleanUp();
 		} else if (copySelectFolderCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				doCopyMove(ureq,
-						(Boolean) copySelectFolderCtrl.getUserObject(),
-						copySelectFolderCtrl.getSelectedContainer(),
-						copySelectFolderCtrl.getItemsToCopy());
+				if (copySelectFolderCtrl.getUserObject() instanceof CopyUserObject copyUserObject) {
+					doCopyMove(ureq,
+							copyUserObject.move(),
+							copySelectFolderCtrl.getSelectedContainer(),
+							copyUserObject.itemsToCopy);
+				}
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -1335,7 +1356,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			cleanUp();
 		} else if (restoreSelectFolderCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				doRestore(ureq, restoreSelectFolderCtrl.getSelectedContainer(), restoreSelectFolderCtrl.getItemsToCopy());
+				if (copySelectFolderCtrl.getUserObject() instanceof CopyUserObject copyUserObject) {
+					doRestore(ureq, restoreSelectFolderCtrl.getSelectedContainer(), copyUserObject.itemsToCopy());
+				}
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -1356,6 +1379,7 @@ public class FolderController extends FormBasicController implements Activateabl
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(uploadCtrl);
+		removeAsListenerAndDispose(addFromBrowserCtrl);
 		removeAsListenerAndDispose(createDocumentCtrl);
 		removeAsListenerAndDispose(createFolderCtrl);
 		removeAsListenerAndDispose(recordAVController);
@@ -1374,6 +1398,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		uploadCtrl = null;
+		addFromBrowserCtrl = null;
 		createDocumentCtrl = null;
 		createFolderCtrl = null;
 		recordAVController = null;
@@ -1520,6 +1545,31 @@ public class FolderController extends FormBasicController implements Activateabl
 		cmc.activate();
 	}
 
+	private void doAddFromBrowser(UserRequest ureq) {
+		if (guardModalController(addFromBrowserCtrl)) return;
+		leaveTrash(ureq);
+		if (!canEdit(currentContainer)) {
+			showWarning("error.cannot.upload");
+			updateCommandUI(ureq);
+		}
+		
+		FolderQuota folderQuota = getFolderQuota(ureq);
+		if (folderQuota.isExceeded()) {
+			showWarning("error.upload.quota.exceeded");
+			return;
+		}
+		
+		removeAsListenerAndDispose(addFromBrowserCtrl);
+		addFromBrowserCtrl = new FileBrowserController(ureq, getWindowControl(), FileBrowserSelectionMode.sourceMulti,
+				folderQuota, translate("add"));
+		listenTo(addFromBrowserCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				addFromBrowserCtrl.getInitialComponent(), true, translate("browser.add"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doCreateDocument(UserRequest ureq) {
 		if (guardModalController(createDocumentCtrl)) return;
 		leaveTrash(ureq);
@@ -1800,14 +1850,13 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		removeAsListenerAndDispose(copySelectFolderCtrl);
-		
-		copySelectFolderCtrl = new FolderSelectionController(ureq, getWindowControl(), rootContainer, currentContainer,
-				List.of(vfsItem), submitI18nKey);
+		copySelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, currentContainer,
+				translate(submitI18nKey));
 		listenTo(copySelectFolderCtrl);
-		copySelectFolderCtrl.setUserObject(move);
+		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, List.of(vfsItem)));
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), copySelectFolderCtrl.getInitialComponent(),
-				true, translate(titleI18nKey), true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				copySelectFolderCtrl.getInitialComponent(), true, translate(titleI18nKey), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -1910,10 +1959,10 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
-		copySelectFolderCtrl = new FolderSelectionController(ureq, getWindowControl(), currentContainer,
-				currentContainer, itemsToCopy, submitI18nKey);
+		copySelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), currentContainer, currentContainer,
+				translate(submitI18nKey));
 		listenTo(copySelectFolderCtrl);
-		copySelectFolderCtrl.setUserObject(move);
+		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, itemsToCopy));
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				copySelectFolderCtrl.getInitialComponent(), true, translate(titleI18nKey), true);
@@ -1922,7 +1971,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private boolean canCopy(VFSItem vfsItem, VFSMetadata vfsMetadata) {
-		return vfsItem != null && VFSStatus.YES == vfsItem.canCopy() && canEdit(vfsItem) && isNotDeleted(vfsMetadata);
+		return vfsItem != null && VFSStatus.YES == vfsItem.canCopy() && isNotDeleted(vfsMetadata);
 	}
 
 	private boolean hasMetadata(VFSItem item) {
@@ -2546,9 +2595,11 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		}
 		
-		restoreSelectFolderCtrl = new FolderSelectionController(ureq, getWindowControl(), rootContainer, startContainer,
-				List.of(vfsItem), "restore");
+		restoreSelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, startContainer,
+				translate("restore"));
 		listenTo(restoreSelectFolderCtrl);
+		restoreSelectFolderCtrl.setUserObject(new CopyUserObject(true, List.of(vfsItem)));
+		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), restoreSelectFolderCtrl.getInitialComponent(),
 				true, translate( "restore"), true);
 		listenTo(cmc);
@@ -2829,5 +2880,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			return "o_folder_row";
 		}
 	}
+	
+	private static record CopyUserObject(Boolean move, List<VFSItem> itemsToCopy) {}
 
 }

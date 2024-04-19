@@ -402,6 +402,10 @@ $o-button-ghost-background-color			: transparent !default;
 $o-button-ghost-border-color				: transparent !default;
 $o-button-ghost-hover-background-color	: rgba($link-color, 0.1) !default;
 $o-button-ghost-hover-border-color		: $link-color !default;
+$o-button-mega-height					: 45px !default;
+$o-button-mega-bg-color					: #fff !default;
+$o-button-mega-hover-bg-color			: #e6e6e6 !default;
+$o-button-mega-icon-width				: 40px !default;
 
 /* Login page */
 $o-login-header-color			: $brand-primary !default;

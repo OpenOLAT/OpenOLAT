@@ -57,6 +57,7 @@ public class VirtualContainer extends AbstractVirtualContainer {
 	 * @param vfsItem
 	 */
 	public void addItem(VFSItem vfsItem) {
+		vfsItem.setParentContainer(this);
 		children.add(vfsItem);
 	}
 

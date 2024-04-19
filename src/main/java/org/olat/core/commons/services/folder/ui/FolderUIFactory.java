@@ -47,9 +47,9 @@ import org.olat.user.UserManager;
 public class FolderUIFactory {
 	
 	public static String getIconCssClass(VFSMetadata vfsMetadata, VFSItem vfsItem) {
-		if (vfsMetadata != null && vfsMetadata.isDirectory()) {
-			return "o_filetype_folder";
-		} else if (vfsItem instanceof VFSContainer){
+		if (vfsItem instanceof VFSContainer vfsContainer) {
+			return vfsContainer.getIconCSS();
+		} else if (vfsMetadata != null && vfsMetadata.isDirectory()) {
 			return "o_filetype_folder";
 		}
 		return CSSHelper.createFiletypeIconCssClassFor(getFilename(vfsMetadata, (VFSLeaf)vfsItem));
@@ -93,7 +93,7 @@ public class FolderUIFactory {
 				return fileLastModified;
 			}
 		}
-		if (vfsItem != null) {
+		if (vfsItem != null && vfsItem.getLastModified() > 0) {
 			return new Date(vfsItem.getLastModified());
 		}
 		

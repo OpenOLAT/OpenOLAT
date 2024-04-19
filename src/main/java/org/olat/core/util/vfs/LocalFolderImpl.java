@@ -48,9 +48,11 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSOrFilter;
+import org.olat.core.util.vfs.filters.VFSRevisionsAndThumbnailsFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
-import org.olat.core.util.vfs.filters.VFSVersionsItemFilter;
 
 /**
  * Description:<br>
@@ -65,6 +67,7 @@ import org.olat.core.util.vfs.filters.VFSVersionsItemFilter;
 public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	private static final Logger log = Tracing.createLoggerFor(LocalFolderImpl.class);
 
+	private String iconCSS;
 	private VFSItemFilter defaultFilter;
 	
 	/**
@@ -97,6 +100,18 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		if (!alreadyExists && !succesfullCreated) {
 			throw new AssertException("Cannot create directory of LocalFolderImpl with reason (exists= ): "+alreadyExists+" && created= "+succesfullCreated+") path: " + folderfile.getAbsolutePath());
 		}
+	}
+
+	@Override
+	public String getIconCSS() {
+		if (StringHelper.containsNonWhitespace(iconCSS)) {
+			return iconCSS;
+		}
+		return VFSContainer.super.getIconCSS();
+	}
+
+	public void setIconCSS(String iconCSS) {
+		this.iconCSS = iconCSS;
 	}
 
 	@Override
@@ -216,7 +231,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 
 			// create the folder
 			LocalFolderImpl rootcopyfolder = new LocalFolderImpl(new File(basefile, sourcename), this);
-			List<VFSItem> children = sourcecontainer.getItems(new VFSVersionsItemFilter());
+			List<VFSItem> children = sourcecontainer.getItems(new VFSOrFilter(List.of(new VFSRevisionsAndThumbnailsFilter(), new VFSSystemItemFilter())));
 			for (VFSItem chd:children) {
 				VFSStatus status = rootcopyfolder.copyFrom(chd, false, savedBy);
 				if (status != VFSStatus.SUCCESS) {
@@ -241,13 +256,13 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			} catch (Exception e) {
 				return VFSStatus.ERROR_FAILED;
 			}
-
-			if(s.canMeta() == VFSStatus.YES || s.canVersion() == VFSStatus.YES) {
-				VFSItem target = resolve(sourcename);
-				if(target instanceof VFSLeaf && (target.canMeta() == VFSStatus.YES || s.canVersion() == VFSStatus.YES)) {
+			
+			VFSItem target = resolve(sourcename);
+			if (target instanceof VFSLeaf vfsLeaf) {
+				if (vfsLeaf.canMeta() == VFSStatus.YES) {
 					VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-					vfsRepositoryService.itemSaved( (VFSLeaf)target, savedBy);
-					vfsRepositoryService.copyTo(s, (VFSLeaf)target, this, savedBy);
+					vfsRepositoryService.itemSaved(vfsLeaf, savedBy);
+					vfsRepositoryService.copyTo(s, vfsLeaf, this, savedBy);
 				}
 			}
 		} else {

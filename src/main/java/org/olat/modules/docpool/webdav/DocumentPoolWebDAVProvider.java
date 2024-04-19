@@ -19,11 +19,15 @@
  */
 package org.olat.modules.docpool.webdav;
 
+import java.util.Locale;
+
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.docpool.DocumentPoolModule;
+import org.olat.modules.docpool.ui.DocumentPoolMainController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +50,21 @@ public class DocumentPoolWebDAVProvider implements WebDAVProvider {
 			mountPoint = "docpool";
 		}
 		return mountPoint;
+	}
+	
+	@Override
+	public String getIconCss() {
+		return "o_icon_taxonomy";
+	}
+
+	@Override
+	public String getName(Locale locale) {
+		return Util.createPackageTranslator(DocumentPoolMainController.class, locale).translate("webdav.name");
+	}
+
+	@Override
+	public String getDescription(Locale locale) {
+		return Util.createPackageTranslator(DocumentPoolMainController.class, locale).translate("webdav.description");
 	}
 	
 	@Override

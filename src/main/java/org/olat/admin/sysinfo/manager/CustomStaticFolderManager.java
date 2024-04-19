@@ -20,11 +20,14 @@
 package org.olat.admin.sysinfo.manager;
 
 import java.io.File;
+import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.admin.sysinfo.SysinfoController;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -68,6 +71,21 @@ public class CustomStaticFolderManager implements InitializingBean, WebDAVProvid
 	@Override
 	public String getMountPoint() {
 		return MOUNT_POINT;
+	}
+	
+	@Override
+	public String getIconCss() {
+		return "o_filetype_folder";
+	}
+
+	@Override
+	public String getName(Locale locale) {
+		return Util.createPackageTranslator(SysinfoController.class, locale).translate("webdav.name");
+	}
+
+	@Override
+	public String getDescription(Locale locale) {
+		return Util.createPackageTranslator(SysinfoController.class, locale).translate("webdav.description");
 	}
 	
 	@Override

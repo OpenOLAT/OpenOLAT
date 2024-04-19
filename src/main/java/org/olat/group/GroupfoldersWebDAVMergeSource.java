@@ -143,6 +143,7 @@ class GroupfoldersWebDAVMergeSource extends WebDAVMergeSource {
 			secCallback = new ReadOnlyCallback();
 		}
 		grpContainer.setLocalSecurityCallback(secCallback);
+		grpContainer.setIconCSS("o_icon_group");
 		return grpContainer;
 	}
 	

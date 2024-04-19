@@ -102,6 +102,7 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 			String name = RequestUtil.normalizeFilename(taxonomyNode.getTitle());
 			VirtualContainer levelContainer = new VirtualContainer(name);
 			levelContainer.setLocalSecurityCallback(new DefaultVFSSecurityCallback());
+			levelContainer.setIconCSS(taxonomyNode.getIconCssClass());
 			
 			boolean hasDocuments = false;
 			if(taxonomyNode.getType() == TaxonomyTreeNodeType.templates) {
@@ -130,7 +131,9 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 		SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
 		TaxonomyVFSSecurityCallback secCallback = new TaxonomyVFSSecurityCallback(taxonomyNode, subscriptionCtx);
 		documents.setLocalSecurityCallback(secCallback);
-		return new NamedContainerImpl(taxonomyNode.getTitle(), documents);
+		NamedContainerImpl namedContainer = new NamedContainerImpl(taxonomyNode.getTitle(), documents);
+		namedContainer.setIconCSS("o_icon_taxonomy_templates");
+		return namedContainer;
 	}
 	
 	private VFSContainer addDocument(TaxonomyTreeNode taxonomyNode) {

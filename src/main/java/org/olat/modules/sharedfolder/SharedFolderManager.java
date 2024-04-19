@@ -85,6 +85,7 @@ public class SharedFolderManager {
 		LocalFolderImpl rootFolderImpl = (LocalFolderImpl)FileResourceManager.getInstance().getFileResourceRootImpl(res).resolve(SharedFolderManager.FOLDER_NAME);
 		if (rootFolderImpl != null) {
 			rootFolderImpl.setLocalSecurityCallback(new SharedFolderSecurityCallback(rootFolderImpl.getRelPath()));
+			rootFolderImpl.setIconCSS("o_FileResource-SHAREDFOLDER_icon");
 		}
 		return rootFolderImpl;
 	}

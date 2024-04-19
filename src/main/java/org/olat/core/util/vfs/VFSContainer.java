@@ -39,6 +39,10 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  * @author Felix Jost
  */
 public interface VFSContainer extends VFSItem {
+	
+	public default String getIconCSS() {
+		return "o_filetype_folder";
+	}
 
 	/**
 	 * @return a list of VFSItem containing 

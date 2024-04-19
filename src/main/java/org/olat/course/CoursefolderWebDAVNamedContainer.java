@@ -24,6 +24,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.repository.RepositoryEntry;
 
@@ -44,6 +45,7 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 		super(courseTitle, null);
 		this.entry = entry;
 		this.identityEnv = identityEnv;
+		setIconCSS("o_CourseModule_icon");
 	}
 	
 
@@ -73,7 +75,12 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 					super.setParentContainer(parentContainer);
 					parentContainer = null;
 				}
+			} catch (CorruptedCourseException e) {
+				// Avoid RS 
+				setDelegate(new VirtualContainer("ERROR"));
+				log.warn("Error loading course: {}", e.getMessage());
 			} catch (Exception e) {
+				setDelegate(new VirtualContainer("ERROR"));
 				log.error("Error loading course: {}", entry, e);
 			}
 		}

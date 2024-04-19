@@ -19,9 +19,13 @@
  */
 package org.olat.course.archiver.webdav;
 
+import java.util.Locale;
+
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.archiver.ArchivesController;
 
 /**
  * 
@@ -36,6 +40,21 @@ public class MyArchivesWebDAVProvider implements WebDAVProvider {
 	@Override
 	public String getMountPoint() {
 		return MOUNTPOINT;
+	}
+	
+	@Override
+	public String getIconCss() {
+		return "o_icon_coursearchive";
+	}
+
+	@Override
+	public String getName(Locale locale) {
+		return Util.createPackageTranslator(ArchivesController.class, locale).translate("webdav.name");
+	}
+
+	@Override
+	public String getDescription(Locale locale) {
+		return Util.createPackageTranslator(ArchivesController.class, locale).translate("webdav.description");
 	}
 	
 	@Override

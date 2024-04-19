@@ -26,23 +26,31 @@
 
 package org.olat.core.commons.services.webdav;
 
+import java.util.Locale;
+
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.vfs.VFSContainer;
 
 public interface WebDAVProvider {
 	
-	public boolean hasAccess(IdentityEnvironment identityEnv);
-
 	/**
 	 * Get a name under which this provider would like to list its container as at the root level of the WebDAV mount point
 	 */
 	public String getMountPoint();
 	
+	public String getIconCss();
+	
+	public String getName(Locale locale);
+
+	public String getDescription(Locale locale);
+
+	public boolean hasAccess(IdentityEnvironment identityEnv);
+
 	/**
 	 * Return the container which's content will be mounted under the name as provided by getMountPoint.
 	 * @param identity
 	 * @return
 	 */
 	public VFSContainer getContainer(IdentityEnvironment identityEnv);
-	
+
 }
