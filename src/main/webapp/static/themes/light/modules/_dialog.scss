@@ -176,6 +176,19 @@ dialog.dialog {
 	}
 }
 
+dialog.o-modal-alert-warning,
+dialog.o-modal-alert-danger,
+dialog.o-modal-alert-info {
+	padding: 20px 10px;
+	border: none;
+	background: rgba(0,0,0,.0);
+	height: 100vh;
+	
+	.modal-dialog {
+		margin: 0 !important;
+	}
+}
+
 dialog.popover {
 	margin: 0;
 	border: none;

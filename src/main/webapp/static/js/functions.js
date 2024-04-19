@@ -2749,18 +2749,30 @@ function showMessageBox(type, title, message, buttonCallback) {
 		} else {
 			cssype = 'alert-info';
 		}
-		let content = '<div id="myFunctionalModal" class="modal o-modal-' + cssype + ' fade" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">';
-		content += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
+		let content = '<dialog id="myFunctionalModal" class="modal o-modal-' + cssype + ' fade in show" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">';
+		content += '<div class="modal-header"><button type="button" class="close" aria-hidden="true" onclick="o_guiCloseModal(\'#myFunctionalModal\').remove();">&times;</button>';
         content += '<h4 class="modal-title">' + title + '</h4></div>';	
-		content += '<div class="modal-body alert ' + cssype + '"><p>' + message + '</p></div></div></div></div>';
+		content += '<div class="modal-body alert ' + cssype + '"><p>' + message + '</p></div></div></div></dialog>';
 		jQuery('#myFunctionalModal').remove();
 		jQuery('body').append(content);
-		               
-		let msg = jQuery('#myFunctionalModal').modal('show').on('hidden.bs.modal', function (e) {
-			jQuery('#myFunctionalModal').remove();
+		const dialog = o_guiShowModal('#myFunctionalModal')
+		dialog.addEventListener("click", function(e) {
+			if (e.target.tagName !== 'DIALOG') {//This prevents issues with forms
+				return;
+			}
+					
+			const rect = e.target.getBoundingClientRect();
+			const clickedInDialog = (
+				rect.top <= e.clientY
+					&& e.clientY <= rect.top + rect.height
+					&& rect.left <= e.clientX
+					&& e.clientX <= rect.left + rect.width
+			);
+			
+			dialog.close();
+			dialog.remove();
 		});
-		o_scrollToElement('#o_top');
-		return msg;
+		return dialog;
 	}
 }
 
@@ -2769,6 +2781,7 @@ function o_guiShowModal(selector) {
 	if(dialog != null && !dialog.open) {
 		dialog.showModal();
 	}
+	return dialog;
 }
 
 function o_guiCloseModal(selector) {
@@ -2776,6 +2789,7 @@ function o_guiCloseModal(selector) {
 	if(dialog != null && dialog.open) {
 		dialog.close();
 	}
+	return dialog;
 }
 
 function o_extraTinyDirty(editor) {
