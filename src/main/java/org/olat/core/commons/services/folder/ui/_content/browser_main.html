@@ -7,8 +7,19 @@
 	</div>
 #end
 #if($r.available("vfsSources") && $r.visible("vfsSources"))
-	<fieldset>
-		<legend>$vfsSourcesTitle</legend>
-		<div>$r.render("vfsSources")</div>
-	</fieldset>
+	<div class="o_block_large_bottom">
+		<fieldset>
+			<legend>$vfsSourcesTitle</legend>
+			<div>$r.render("vfsSources")</div>
+		</fieldset>
+	</div>
+#end
+
+#if($r.available("storages") && $r.visible("storages"))
+	<div class="o_block_large_bottom">
+		<fieldset>
+			<legend>$storagesTitle</legend>
+			<div>$r.render("storages")</div>
+		</fieldset>
+	</div>
 #end

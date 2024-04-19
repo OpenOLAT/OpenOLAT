@@ -38,6 +38,7 @@ public class FileBrowserMainController extends BasicController {
 
 	private FileBrowserUploadController uploadCtrl;
 	private FileBrowserMountPointsController vfsSourcesCtrl;
+	private FileBrowserStoragesController storageesCtrl;
 
 	public FileBrowserMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
 			FileBrowserSelectionMode selectionMode, FolderQuota folderQuota, String submitButtonText) {
@@ -57,6 +58,11 @@ public class FileBrowserMainController extends BasicController {
 		vfsSourcesCtrl = new FileBrowserMountPointsController(ureq, wControl, stackedPanel, selectionMode, submitButtonText);
 		listenTo(vfsSourcesCtrl);
 		mainVC.put("vfsSources", vfsSourcesCtrl.getInitialComponent());
+		
+		mainVC.contextPut("storagesTitle", translate("browser.storages.select.title"));
+		storageesCtrl = new FileBrowserStoragesController(ureq, wControl, stackedPanel);
+		listenTo(storageesCtrl);
+		mainVC.put("storages", storageesCtrl.getInitialComponent());
 	}
 
 	@Override
@@ -70,6 +76,9 @@ public class FileBrowserMainController extends BasicController {
 			fireEvent(ureq, event);
 		}
 		if (source == vfsSourcesCtrl) {
+			fireEvent(ureq, event);
+		}
+		if (source == storageesCtrl) {
 			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);

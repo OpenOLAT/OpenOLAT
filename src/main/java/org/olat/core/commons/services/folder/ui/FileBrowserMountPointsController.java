@@ -72,7 +72,7 @@ public class FileBrowserMountPointsController extends BasicController {
 		this.submitButtonText = submitButtonText;
 		this.identityEnv = new IdentityEnvironment(getIdentity(), ureq.getUserSession().getRoles());
 		
-		mainVC = createVelocityContainer("browser_mount_points");
+		mainVC = createVelocityContainer("browser_mega_buttons");
 		putInitialPanel(mainVC);
 		
 		List<Link> links = webdavModule.getWebDAVProviders().values().stream()
