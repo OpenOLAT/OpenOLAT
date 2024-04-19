@@ -23,10 +23,14 @@ import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.zip.ZipOutputStream;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -56,6 +60,7 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,6 +82,38 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class QuestionPoolWebService {
 	
 	private static final Logger log = Tracing.createLoggerFor(QuestionPoolWebService.class);
+
+	@Autowired
+	private QPoolService qpoolService;
+	
+	@GET
+	@Path("{itemKey}/file")
+	@Operation(summary = "Export a question", description = "Export a question")
+	@ApiResponse(responseCode = "200", description = "The QuestionItem packaged as a ZIP file", content = {
+			@Content(mediaType = "application/zip") })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
+	public Response getQuestionItemFile(@PathParam("itemKey") Long itemKey, @Context HttpServletRequest httpRequest,
+			@Context HttpServletResponse response) {
+		
+		if(!isQuestionPoolManager(httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		QuestionItem item = qpoolService.loadItemById(itemKey);
+		if(item == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		Set<String> names = new HashSet<>();
+		try(ZipOutputStream zout = new ZipOutputStream(response.getOutputStream())) {
+			qpoolService.exportItem(item, zout, Locale.ENGLISH, names);
+			return null;
+		} catch(Exception e) {
+			log.error("", e);
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+	}
 	
 	@PUT
 	@Operation(summary = "Put QuestionItem", description = "Put QuestionItem")
@@ -131,7 +168,6 @@ public class QuestionPoolWebService {
 	private QuestionItemVOes importQuestionItem(Identity owner, String filename, File tmpFile, String language, Identity executor) {
 		Locale locale = CoreSpringFactory.getImpl(I18nManager.class).getLocaleOrDefault(language);
 		
-		QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		List<QuestionItem> items = qpoolService.importItems(owner, locale, filename, tmpFile);
 		for (QuestionItem item: items) {
 			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(executor,
@@ -166,18 +202,17 @@ public class QuestionPoolWebService {
 		if(!isQuestionPoolManager(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		QPoolService poolService = CoreSpringFactory.getImpl(QPoolService.class);
-		QuestionItem item = poolService.loadItemById(itemKey);
+		QuestionItem item = qpoolService.loadItemById(itemKey);
 		if(item == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		List<QuestionItem> itemToDelete = Collections.singletonList(item);
-		poolService.deleteItems(itemToDelete);
+		qpoolService.deleteItems(itemToDelete);
 		Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
-		QuestionItemAuditLogBuilder builder = poolService.createAuditLogBuilder(identity,
+		QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(identity,
 				Action.DELETE_QUESTION_ITEM);
 		builder.withBefore(item);
-		poolService.persist(builder.create());
+		qpoolService.persist(builder.create());
 		
 		return Response.ok().build();
 	}
@@ -204,13 +239,11 @@ public class QuestionPoolWebService {
 		if(!isQuestionPoolManager(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-
-		QPoolService poolService = CoreSpringFactory.getImpl(QPoolService.class);
-		QuestionItem item = poolService.loadItemById(itemKey);
+		QuestionItem item = qpoolService.loadItemById(itemKey);
 		if(item == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		List<Identity> authorList = poolService.getAuthors(item);
+		List<Identity> authorList = qpoolService.getAuthors(item);
 		
 		int count = 0;
 		UserVO[] authors = new UserVO[authorList.size()];
@@ -245,12 +278,11 @@ public class QuestionPoolWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
-		QPoolService poolService = CoreSpringFactory.getImpl(QPoolService.class);
-		QuestionItem item = poolService.loadItemById(itemKey);
+		QuestionItem item = qpoolService.loadItemById(itemKey);
 		if(item == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		List<Identity> authorList = poolService.getAuthors(item);
+		List<Identity> authorList = qpoolService.getAuthors(item);
 		for(Identity author:authorList) {
 			if(author.getKey().equals(identityKey)) {
 				UserVO authorVo = UserVOFactory.get(author);
@@ -280,8 +312,7 @@ public class QuestionPoolWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
-		QPoolService poolService = CoreSpringFactory.getImpl(QPoolService.class);
-		QuestionItem item = poolService.loadItemById(itemKey);
+		QuestionItem item = qpoolService.loadItemById(itemKey);
 		if(item == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -294,7 +325,7 @@ public class QuestionPoolWebService {
 		
 		List<Identity> authors = Collections.singletonList(author);
 		List<QuestionItemShort> items = Collections.singletonList(item);
-		poolService.addAuthors(authors, items);
+		qpoolService.addAuthors(authors, items);
 		return Response.ok().build();
 	}
 	
@@ -319,8 +350,7 @@ public class QuestionPoolWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
-		QPoolService poolService = CoreSpringFactory.getImpl(QPoolService.class);
-		QuestionItem item = poolService.loadItemById(itemKey);
+		QuestionItem item = qpoolService.loadItemById(itemKey);
 		if(item == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -333,7 +363,7 @@ public class QuestionPoolWebService {
 		
 		List<Identity> authors = Collections.singletonList(author);
 		List<QuestionItemShort> items = Collections.singletonList(item);
-		poolService.removeAuthors(authors, items);
+		qpoolService.removeAuthors(authors, items);
 		return Response.ok().build();
 	}
 	
