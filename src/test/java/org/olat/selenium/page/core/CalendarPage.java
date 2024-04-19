@@ -178,7 +178,7 @@ public class CalendarPage {
 	public CalendarPage delete() {
 		By deleteBy = By.cssSelector("div.o_sel_cal_entry_form a.btn.o_sel_cal_delete");
 		OOGraphene.waitElement(deleteBy, 5, browser);
-		OOGraphene.clickAndWait(deleteBy, browser);
+		OOGraphene.click(deleteBy, browser);
 		return this;
 	}
 	

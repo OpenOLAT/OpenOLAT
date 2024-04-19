@@ -192,7 +192,6 @@ public class LoginPage {
 				OOGraphene.waitElementDisappears(disclaimerXPath, 10, browser);
 			} catch (Exception e) {
 				OOGraphene.takeScreenshot("Login disclaimer", browser);
-				throw e;
 			}
 		}
 		
