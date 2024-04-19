@@ -43,10 +43,13 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -56,6 +59,8 @@ import org.olat.modules.sharedfolder.SharedFolderEditorController;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -99,12 +104,12 @@ public class SharedFolderHandler implements RepositoryHandler {
 	
 	@Override
 	public boolean supportImport() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
-		return ResourceEvaluation.notValid();
+		return SharedFolderManager.evaluate(file, filename);
 	}
 
 	@Override
@@ -119,8 +124,23 @@ public class SharedFolderHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
-		return null;
+			RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file, String filename) {
+		SharedFolderManager sharedFolderManager = SharedFolderManager.getInstance();
+		SharedFolderFileResource sharedFolderResource = sharedFolderManager.createSharedFolder();
+		
+		VFSContainer sfContainer = sharedFolderManager.getSharedFolder(sharedFolderResource);
+		ZipUtil.unzipNonStrict(file, sfContainer, initialAuthor, false);
+		
+		VFSItem item = sfContainer.resolve(RepositoryEntryImportExport.PROPERTIES_FILE);
+		if(item instanceof VFSLeaf leaf) {
+			leaf.deleteSilently();
+		}
+		
+		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(sharedFolderResource);
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, initialAuthorAlt, SharedFolderFileResource.TYPE_NAME, displayname,
+				description, resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
+		DBFactory.getInstance().commit();
+		return re;
 	}
 	
 	@Override
@@ -146,7 +166,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 
 	@Override
 	public boolean supportsDownload() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -202,7 +222,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
 		return SharedFolderManager.getInstance().getAsMediaResource(res);
 	}
 
@@ -232,7 +252,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
 			errors.setError(translator.translate("details.delete.error.references",
-					new String[] { referencesSummary, entry.getDisplayname() }));
+					referencesSummary, entry.getDisplayname()));
 			return false;
 		}
 		return true;

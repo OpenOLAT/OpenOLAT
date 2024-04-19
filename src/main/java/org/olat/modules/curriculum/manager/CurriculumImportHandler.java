@@ -50,6 +50,7 @@ import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef;
 import org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRefs;
 import org.olat.modules.curriculum.model.CurriculumImpl;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -155,7 +156,7 @@ public class CurriculumImportHandler {
 				if(eval != null && eval.isValid()) {
 					importedEntry = handler.importResource(author, archivedRef.getRepositoryEntryInitialAuthor(),
 							archivedRef.getRepositoryEntryDisplayname(), archivedRef.getRepositoryEntryDescription(),
-							true, organisation, locale, tmpArchive, zipName);
+							RepositoryEntryImportExportLinkEnum.WITH_REFERENCE, organisation, locale, tmpArchive, zipName);
 					dbInstance.commit();
 					if("CourseModule".equals(importedEntry.getOlatResource().getResourceableTypeName())) {
 						ICourse course = CourseFactory.loadCourse(importedEntry);

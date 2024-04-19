@@ -1684,7 +1684,7 @@ public class AssessmentTest extends Deployments {
 		
 		//participant checks she passed the task
 		ryomouTestCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(gtaNodeTitle);
 		ryomouTask
 			.assertPassed();

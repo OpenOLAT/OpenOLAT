@@ -113,6 +113,7 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -377,7 +378,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void exportNode(File fExportDirectory, ICourse course) {
+	public void exportNode(File fExportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
 		//export the files
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		ModuleConfiguration config = getModuleConfiguration();
@@ -395,7 +396,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		ModuleConfiguration config = getModuleConfiguration();
 		CheckboxList list = (CheckboxList)config.get(CONFIG_KEY_CHECKBOX);

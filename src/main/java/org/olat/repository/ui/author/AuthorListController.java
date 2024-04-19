@@ -156,6 +156,7 @@ import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
@@ -1871,7 +1872,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		OLATResourceable ores = entry.getOlatResource();
 		
 		LockedRun run = () -> {
-			MediaResource mr = typeToDownload.getAsMediaResource(ores);
+			MediaResource mr = typeToDownload.getAsMediaResource(ores, RepositoryEntryImportExportLinkEnum.WITH_REFERENCE);
 			if(mr!=null) {
 				repositoryService.incrementDownloadCounter(entry);
 				ureq.getDispatchResult().setResultingMediaResource(mr);

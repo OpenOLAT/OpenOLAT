@@ -57,6 +57,7 @@ import org.olat.modules.edusharing.EdusharingHtmlElement;
 import org.olat.modules.edusharing.EdusharingProvider;
 import org.olat.modules.edusharing.EdusharingService;
 import org.olat.modules.edusharing.EdusharingUsage;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.settings.RepositoryEdusharingProvider;
@@ -198,7 +199,7 @@ public class EdusharingCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		postImportCopy(course, this, owner);
 	}
 	

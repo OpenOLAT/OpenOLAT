@@ -70,6 +70,7 @@ import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.manager.PageImportExportHelper;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
@@ -201,7 +202,7 @@ public class PageCourseNode extends AbstractAccessableCourseNode implements Cour
 	}
 	
 	@Override
-	public void exportNode(File fExportDirectory, ICourse course) {
+	public void exportNode(File fExportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
 		File fNodeExportDir = new File(fExportDirectory, getIdent());
 		fNodeExportDir.mkdirs();
 		
@@ -220,7 +221,7 @@ public class PageCourseNode extends AbstractAccessableCourseNode implements Cour
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		File fNodeImportDir = new File(importDirectory, getIdent());
 		File importPage = new File(fNodeImportDir, "page.zip");
 		

@@ -67,6 +67,7 @@ import org.olat.ims.cp.ui.CPRuntimeController;
 import org.olat.modules.cp.CPAssessmentProvider;
 import org.olat.modules.cp.CPDisplayController;
 import org.olat.modules.cp.PersistingAssessmentProvider;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -133,7 +134,7 @@ public class ImsCPHandler extends FileHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+			RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file, String filename) {
 
 		ImsCPFileResource cpResource = new ImsCPFileResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(cpResource);
@@ -175,7 +176,7 @@ public class ImsCPHandler extends FileHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
 		File unzippedDir = FileResourceManager.getInstance().unzipFileResource(res);
 		String displayName = CoreSpringFactory.getImpl(RepositoryManager.class)
 				.lookupDisplayNameByOLATResourceableId(res.getResourceableId());

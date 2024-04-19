@@ -72,6 +72,7 @@ import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -1221,7 +1222,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			lockResult = handler.acquireLock(ores, ureq.getIdentity());
 			if (lockResult == null
 					|| (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
-				MediaResource mr = handler.getAsMediaResource(ores);
+				MediaResource mr = handler.getAsMediaResource(ores, RepositoryEntryImportExportLinkEnum.WITH_REFERENCE);
 				if (mr != null) {
 					repositoryService.incrementDownloadCounter(entry);
 					ureq.getDispatchResult().setResultingMediaResource(mr);

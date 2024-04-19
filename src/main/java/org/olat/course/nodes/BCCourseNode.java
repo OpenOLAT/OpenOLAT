@@ -89,6 +89,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
@@ -221,7 +222,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode
 	}
 
 	@Override
-	public void exportNode(File exportDirectory, ICourse course) {
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
 		// this is the node folder, a folder with the node's ID, so we can just copy
 		// the contents over to the export folder
 		VFSContainer nodeContainer = VFSManager
@@ -233,7 +234,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		// the export has copies the files under the node's ID
 		File fFolderNodeData = new File(importDirectory, getIdent());
 		File fFolderNodeZip = new File(fFolderNodeData, "oonode.zip");

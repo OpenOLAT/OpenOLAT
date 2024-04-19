@@ -29,8 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
@@ -128,6 +128,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeService;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -519,7 +520,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	 * 
 	 */
 	@Override
-	public void exportNode(File fExportDirectory, ICourse course) {
+	public void exportNode(File fExportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withResource) {
 		File fNodeExportDir = new File(fExportDirectory, getIdent());
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		
@@ -549,7 +550,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	}
 	
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		File fNodeImportDir = new File(importDirectory, getIdent());
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		

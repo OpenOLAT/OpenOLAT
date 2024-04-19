@@ -97,6 +97,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.ErrorList;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -116,6 +117,8 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.references.ReferenceInfos;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
@@ -162,6 +165,8 @@ public class RepositoryEntryWebService {
 	private CoordinatorManager coordinator;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private ReferenceManager referenceManager;
 	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
@@ -265,6 +270,22 @@ public class RepositoryEntryWebService {
 		RepositoryEntryInvitationsWebService service = new RepositoryEntryInvitationsWebService(entry);
 		CoreSpringFactory.autowireObject(service);
 		return service;
+	}
+	
+	@GET
+	@Path("references")
+	@Operation(summary = "Get references", description = "Get references")
+	@ApiResponse(responseCode = "200", description = "The elements", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))) })	
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getReferences() {
+		List<ReferenceInfos> infos = referenceManager.getReferencesInfos(List.of(entry), null);
+		RepositoryEntryVO[] voArray = new RepositoryEntryVO[infos.size()];
+		for(int i=0; i<infos.size(); i++) {
+			voArray[i] =  RepositoryEntryVO.valueOf(infos.get(i).getEntry());
+		}
+		return Response.ok(voArray).build();
 	}
 	
 	@GET
@@ -611,7 +632,8 @@ public class RepositoryEntryWebService {
 	@ApiResponse(responseCode = "406", description = "Download of this resource is not possible")
 	@ApiResponse(responseCode = "409", description = "The resource is locked")
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
-	public Response getRepoFileById(@Context HttpServletRequest request, @Context HttpServletResponse response) {
+	public Response getRepoFileById(@QueryParam("withLinkedResources") String withLinkedResources,
+			@Context HttpServletRequest request, @Context HttpServletResponse response) {
 		RepositoryHandler typeToDownload = repositoryHandlerFactory.getRepositoryHandler(entry);
 		if (typeToDownload == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -640,7 +662,8 @@ public class RepositoryEntryWebService {
 		try {
 			lockResult = typeToDownload.acquireLock(ores, identity);
 			if (lockResult == null || (lockResult.isSuccess() && !isAlreadyLocked)) {
-				MediaResource mr = typeToDownload.getAsMediaResource(ores);
+				RepositoryEntryImportExportLinkEnum resources = RepositoryEntryImportExportLinkEnum.secureValueOf(withLinkedResources, RepositoryEntryImportExportLinkEnum.WITH_REFERENCE);
+				MediaResource mr = typeToDownload.getAsMediaResource(ores, resources);
 				if (mr != null) {
 					repositoryService.incrementDownloadCounter(entry);
 					InputStream in = mr.getInputStream();

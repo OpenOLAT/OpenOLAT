@@ -57,6 +57,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -191,7 +192,7 @@ public class CopyToRepositoryController extends FormBasicController {
 					
 				VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
 				String description = vfsMetadata != null? vfsMetadata.getComment(): null;
-				entry = repositoryHandler.importResource(getIdentity(), null, displayname, description, false, organisation, getLocale(), copy.toFile(), filename);
+				entry = repositoryHandler.importResource(getIdentity(), null, displayname, description, RepositoryEntryImportExportLinkEnum.NONE, organisation, getLocale(), copy.toFile(), filename);
 				Files.delete(tempDir);
 			} catch (Exception e) {
 				log.error("Copy document to repository failed.", e);

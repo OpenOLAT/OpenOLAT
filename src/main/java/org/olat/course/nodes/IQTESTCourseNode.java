@@ -157,6 +157,7 @@ import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.GradingService;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
@@ -595,7 +596,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	@Override
-	public void exportNode(File exportDirectory, ICourse course) {
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withResource) {
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repositorySoftKey == null) return; // nothing to export
 		//self healing
@@ -605,26 +606,30 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			IQEditController.removeIQReference(getModuleConfiguration());
 			return;
 		}
-		File fExportDirectory = new File(exportDirectory, getIdent());
-		fExportDirectory.mkdirs();
-		RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
-		reie.exportDoExport();
+		if(withResource == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE || withResource == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			File fExportDirectory = new File(exportDirectory, getIdent());
+			fExportDirectory.mkdirs();
+			RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
+			reie.exportDoExport(withResource);
+		}
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
-		if(withReferences && rie.anyExportedPropertiesAvailable()) {
+		if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE && rie.anyExportedPropertiesAvailable()) {
 			File file = rie.importGetExportedFile();
 			RepositoryHandler handlerQTI21 = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
 			if(handlerQTI21.acceptImport(file, "repo.zip").isValid()) {
 				RepositoryEntry re = handlerQTI21.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-						rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
+						rie.getDescription(), RepositoryEntryImportExportLinkEnum.NONE, organisation, locale, rie.importGetExportedFile(), null);
 				getModuleConfiguration().set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
 				IQEditController.setIQReference(re, getModuleConfiguration());
 			} else {
 				IQEditController.removeIQReference(getModuleConfiguration());
 			}
+		} else if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			// Do nothing, keep the reference
 		} else {
 			IQEditController.removeIQReference(getModuleConfiguration());
 		}

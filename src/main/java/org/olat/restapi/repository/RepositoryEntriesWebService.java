@@ -65,6 +65,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -339,6 +340,7 @@ public class RepositoryEntriesWebService {
 				String displayname = partsReader.getValue("displayname");
 				String externalId = partsReader.getValue("externalId");
 				String externalRef = partsReader.getValue("externalRef");
+				String withLinkedReferences = partsReader.getValue("withLinkedReferences");
 				String organisationKey = partsReader.getValue("organisationkey");
 				Organisation organisation = null;
 				if(StringHelper.containsNonWhitespace(organisationKey)) {
@@ -347,12 +349,15 @@ public class RepositoryEntriesWebService {
 					organisation = organisationService.getDefaultOrganisation();
 				}
 				
+				RepositoryEntryImportExportLinkEnum withReferences = RepositoryEntryImportExportLinkEnum
+						.secureValueOf(withLinkedReferences, RepositoryEntryImportExportLinkEnum.WITH_REFERENCE);
+				
 				boolean hasAdminRights = roles.hasSomeRoles(organisation,
 						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager,
 						OrganisationRoles.author);
 				if(hasAdminRights) {
 					RepositoryEntry re = importFileResource(identity, tmpFile, resourcename, displayname,
-							softkey, externalId, externalRef, status, organisation);
+							softkey, externalId, externalRef, status, withReferences, organisation);
 					RepositoryEntryVO vo = RepositoryEntryVO.valueOf(re);
 					return Response.ok(vo).build();
 				} else {
@@ -369,7 +374,8 @@ public class RepositoryEntriesWebService {
 	}
 	
 	private RepositoryEntry importFileResource(Identity identity, File fResource, String resourcename,
-			String displayname, String softkey, String externalId, String externalRef, RepositoryEntryStatusEnum status, Organisation organisation) {
+			String displayname, String softkey, String externalId, String externalRef, RepositoryEntryStatusEnum status,
+			RepositoryEntryImportExportLinkEnum withResource, Organisation organisation) {
 		try {
 			RepositoryHandler handler = null;
 			for(String type:handlerFactory.getSupportedTypes()) {
@@ -384,9 +390,12 @@ public class RepositoryEntriesWebService {
 			RepositoryEntry addedEntry = null;
 			if(handler != null) {
 				Locale locale = I18nModule.getDefaultLocale();
+				if(withResource == null) {
+					withResource = RepositoryEntryImportExportLinkEnum.WITH_REFERENCE;
+				}
 				
 				addedEntry = handler.importResource(identity, null, displayname,
-						"", true, organisation, locale, fResource, fResource.getName());
+						"", withResource, organisation, locale, fResource, fResource.getName());
 				
 				if(StringHelper.containsNonWhitespace(resourcename)) {
 					addedEntry.setResourcename(resourcename);

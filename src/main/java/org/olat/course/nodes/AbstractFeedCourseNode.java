@@ -74,6 +74,7 @@ import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -505,23 +506,29 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	}
 
 	@Override
-	public void exportNode(File exportDirectory, ICourse course) {
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withResource) {
 		RepositoryEntry re = getReferencedRepositoryEntry();
-		if (re == null) return;
-		// build current export ZIP for feed learning resource
-		FeedManager.getInstance().getFeedArchive(re.getOlatResource());
-		// trigger resource file export
-		File fExportDirectory = new File(exportDirectory, getIdent());
-		fExportDirectory.mkdirs();
-		RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
-		reie.exportDoExport();
+		if (re != null && (withResource == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE || withResource == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY)) {
+			// trigger resource file export
+			File fExportDirectory = new File(exportDirectory, getIdent());
+			fExportDirectory.mkdirs();
+			
+			if(withResource == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE) {
+				// build current export ZIP for feed learning resource
+				FeedManager.getInstance().getFeedArchive(re.getOlatResource());
+			}
+			RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
+			reie.exportDoExport(withResource);
+		}
 	}
 	
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
-		if(withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
+		if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(getResourceablTypeName());
 			importFeed(handler, importDirectory, owner, organisation, locale);
+		} else if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			// Do nothing, keep the reference
 		} else {
 			removeReference(getModuleConfiguration());
 		}
@@ -531,7 +538,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if (rie.anyExportedPropertiesAvailable()) {
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
+				rie.getDescription(), RepositoryEntryImportExportLinkEnum.NONE, organisation, locale, rie.importGetExportedFile(), null);
 			setReference(getModuleConfiguration(), re);
 		} else {
 			removeReference(getModuleConfiguration());

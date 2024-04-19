@@ -63,6 +63,7 @@ import org.olat.fileresource.types.PowerpointFileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SoundFileResource;
 import org.olat.fileresource.types.XlsFileResource;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -164,7 +165,7 @@ public class WebDocumentHandler extends FileHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+			RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file, String filename) {
 		
 		FileResource ores;
 		if (DocFileResource.TYPE_NAME.equals(supportedType) && DocFileResource.validate(filename)) {
@@ -220,7 +221,7 @@ public class WebDocumentHandler extends FileHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
 		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
 	}
 

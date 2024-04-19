@@ -57,6 +57,7 @@ import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedRuntimeController;
 import org.olat.modules.webFeed.ui.podcast.PodcastUIFactory;
 import org.olat.repository.ErrorList;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -127,7 +128,7 @@ public class PodcastHandler implements RepositoryHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+			RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file, String filename) {
 		
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(new PodcastFileResource());
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
@@ -186,7 +187,7 @@ public class PodcastHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
 		FeedManager manager = FeedManager.getInstance();
 		return manager.getFeedArchiveMediaResource(res);
 	}

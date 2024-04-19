@@ -65,6 +65,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryMyView;
@@ -153,7 +154,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
 						.getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry testEntry = courseHandler.importResource(author, null, "Test QTI 2.1", "", true, defOrganisation, Locale.ENGLISH, testFile, null);
+		RepositoryEntry testEntry = courseHandler.importResource(author, null, "Test QTI 2.1", "", RepositoryEntryImportExportLinkEnum.WITH_REFERENCE, defOrganisation, Locale.ENGLISH, testFile, null);
 		dbInstance.closeSession();
 		
 		RestConnection conn = new RestConnection();

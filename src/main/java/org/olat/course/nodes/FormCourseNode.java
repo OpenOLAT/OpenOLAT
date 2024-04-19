@@ -84,6 +84,7 @@ import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport.UserColumns;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.UserPropertiesColumns;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
@@ -213,25 +214,29 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void exportNode(File exportDirectory, ICourse course) {
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
 		RepositoryEntry re = getEvaluationForm(getModuleConfiguration());
 		if (re == null) return;
 		
-		File fExportDirectory = new File(exportDirectory, getIdent());
-		fExportDirectory.mkdirs();
-		RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
-		reie.exportDoExport();
+		if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE || withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			File fExportDirectory = new File(exportDirectory, getIdent());
+			fExportDirectory.mkdirs();
+			RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
+			reie.exportDoExport(withReferences);
+		}
 	}
 	
 	@Override
-	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
-		if(withReferences && rie.anyExportedPropertiesAvailable()) {
+		if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE && rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EvaluationFormResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
+				rie.getDescription(), RepositoryEntryImportExportLinkEnum.NONE, organisation, locale, rie.importGetExportedFile(), null);
 			setEvaluationFormReference(re, getModuleConfiguration());
 			postImportCopy(course, this);
+		} else if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			// Do nothing, keep the reference
 		} else {
 			removeEvaluationFormReference(getModuleConfiguration());
 		}

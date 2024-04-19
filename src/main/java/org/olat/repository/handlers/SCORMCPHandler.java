@@ -55,6 +55,7 @@ import org.olat.modules.scorm.ScormDisplayEnum;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.ScormRuntimeController;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -112,7 +113,7 @@ public class SCORMCPHandler extends FileHandler {
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
-			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+			RepositoryEntryImportExportLinkEnum withLinkedReferences, Organisation organisation, Locale locale, File file, String filename) {
 		
 		ScormCPFileResource scormResource = new ScormCPFileResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(scormResource);
@@ -154,7 +155,7 @@ public class SCORMCPHandler extends FileHandler {
 	}
 	
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res) {
+	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
 		File unzippedDir = FileResourceManager.getInstance().unzipFileResource(res);
 		String displayName = CoreSpringFactory.getImpl(RepositoryManager.class)
 				.lookupDisplayNameByOLATResourceableId(res.getResourceableId());

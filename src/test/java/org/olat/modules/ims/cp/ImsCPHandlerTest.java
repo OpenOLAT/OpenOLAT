@@ -33,6 +33,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsCPFileResource;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -58,7 +59,7 @@ public class ImsCPHandlerTest extends OlatTestCase {
 		File imsCpFile = new File(imsCpUrl.toURI());
 		
 		RepositoryHandler cpHandler = handlerFactory.getRepositoryHandler(ImsCPFileResource.TYPE_NAME);	
-		RepositoryEntry entry = cpHandler.importResource(author, null, "IMS CP", null, false, null, Locale.ENGLISH, imsCpFile, imsCpFile.getName());
+		RepositoryEntry entry = cpHandler.importResource(author, null, "IMS CP", null, RepositoryEntryImportExportLinkEnum.NONE, null, Locale.ENGLISH, imsCpFile, imsCpFile.getName());
 		Assert.assertNotNull(entry);
 		
 		File cpRoot = FileResourceManager.getInstance().unzipFileResource(entry.getOlatResource());
