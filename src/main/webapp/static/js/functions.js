@@ -1916,7 +1916,7 @@ function o_XHRSubmit(formNam) {
 	
 	o_info.submit=null;
 	o_info.preventOnchange=false;
-	var newWindow = o_info.newWindow;
+	let newWindow = o_info.newWindow;
 	o_info.newWindow = null;
 	if(o_info.linkbusy) {
 		if(newWindow !== "undefined" && newWindow != null) {
@@ -1925,27 +1925,28 @@ function o_XHRSubmit(formNam) {
 		return false;
 	}
 
+	let currentlyDirty = isFlexiFormDirty();
 	o_beforeserver();
-	var thisWindow = window;
-	var form = jQuery('#' + formNam);
-	var enctype = form.attr('enctype');
+	let thisWindow = window;
+	let form = jQuery('#' + formNam);
+	let enctype = form.attr('enctype');
 	if(enctype && enctype.indexOf("multipart") == 0) {
 		if (window.FormData && ("upload" in (jQuery.ajaxSettings.xhr())) && !('ActiveXObject' in window)) {
 			if(typeof tinymce !== 'undefined') {
 				tinymce.triggerSave(true,true);
 			}
 
-			var htmlForm = form[0];
+			let htmlForm = form[0];
 
 			// Send files via XHR and show upload progress
-			var formData = new FormData(htmlForm);
+			let formData = new FormData(htmlForm);
 
-			for (var i = 0; i < htmlForm.elements.length; i++) {
-				var formElement = htmlForm.elements[i];
+			for (let i = 0; i < htmlForm.elements.length; i++) {
+				let formElement = htmlForm.elements[i];
 				if (formElement.attributes['data-extra-form-data']) {
-					var id = formElement.attributes['id'].value;
-					var name = formElement.attributes['name'].value;
-					var extraFormDataValue = o_getExtraMultipartFormData(name);
+					let id = formElement.attributes['id'].value;
+					let name = formElement.attributes['name'].value;
+					let extraFormDataValue = o_getExtraMultipartFormData(name);
 					if (extraFormDataValue) {
 						formData.append(id, extraFormDataValue);
 						o_deleteExtraMultipartFormData(id);
@@ -1953,10 +1954,10 @@ function o_XHRSubmit(formNam) {
 				}
 			}
 
-			var targetUrl = form.attr("action");
+			const targetUrl = form.attr("action");
 			jQuery.ajax(targetUrl,{
 				xhr: function() {
-					var xhr = new window.XMLHttpRequest();						
+					const xhr = new window.XMLHttpRequest();						
 					xhr.upload.addEventListener("loadstart", o_XHRLoadstart, false);
 					xhr.upload.addEventListener("progress", o_XHRProgress, false);
 					xhr.upload.addEventListener("loadend", o_XHRLoadend, false);
@@ -1977,7 +1978,9 @@ function o_XHRSubmit(formNam) {
 						o_postInvoke(returnedData, thisWindow);
 					}
 				},
-				error: o_onXHRError
+				error: function(jqXHR, textStatus, errorThrown) {
+					o_onXHRError(jqXHR, textStatus, errorThrown, currentlyDirty);
+				}
 			});
 			return false;
 		} else {
@@ -1990,12 +1993,12 @@ function o_XHRSubmit(formNam) {
 		}
 	} else {
 		// Normal non-multipart forms
-		var data = form.serializeArray();
+		let data = form.serializeArray();
 		if(arguments.length > 1) {
-			var argLength = arguments.length;
-			for(var i=1; i<argLength; i=i+2) {
+			const argLength = arguments.length;
+			for(let i=1; i<argLength; i=i+2) {
 				if(argLength > i+1) {
-					var argData = new Object();
+					let argData = new Object();
 					argData["name"] = arguments[i];
 					argData["value"] = arguments[i+1];
 					data[data.length] = argData;
@@ -2003,7 +2006,7 @@ function o_XHRSubmit(formNam) {
 			}
 		}
 	
-		var actionUrl = form.attr("action");
+		const actionUrl = form.attr("action");
 		jQuery.ajax(actionUrl, {
 			type:'POST',
 			data: data,
@@ -2017,7 +2020,10 @@ function o_XHRSubmit(formNam) {
 					o_postInvoke(returnedData, thisWindow);
 				}
 			},
-			error: o_onXHRError
+			error: function(jqXHR, textStatus, errorThrown) {
+				o_onXHRError(jqXHR, textStatus, errorThrown, currentlyDirty);
+				
+			}
 		});
 		return false;
 	}
@@ -2108,7 +2114,6 @@ function o_showFormDirtyDialog(onIgnoreCallback) {
 			showMessageBox('warn', o_info.oo_noresponse_title, msg1 + msg2, undefined);
 			jQuery("#myFunctionalModal a.o_button_ghost").on("click", function() {
 				jQuery('#myFunctionalModal').remove();
-				jQuery('.modal-backdrop').remove();
 			});
 		}
 	})
@@ -2277,13 +2282,14 @@ function o_XHRScormEvent(targetUrl) {
 }
 
 function o_XHREvent(targetUrl, dirtyCheck, push) {
-	if(dirtyCheck && isFlexiFormDirty()) {
+	const currentlyDirty = isFlexiFormDirty();
+	if(dirtyCheck && currentlyDirty) {
 		// Copy function arguments and set the dirtyCheck to false for execution in callback.
 		// Note that the argument list is dynamic, there are potentially more arguments than
 		// listed in the function
-		var callbackArguments = Array.prototype.slice.call(arguments);
+		let callbackArguments = Array.prototype.slice.call(arguments);
 		callbackArguments[1] = false; 		
-		var onIgnoreCallback = function() {
+		let onIgnoreCallback = function() {
 			// fire original event when the "ok, delete anyway" button was pressed
 			o_XHREvent.apply(window, callbackArguments);
 		}
@@ -2298,12 +2304,12 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 	// The window.suppressOlatOnUnloadOnce works only once (needed in SCORM).
 	// o_beforeserver();
 
-	var data = new Object();
-	var openInNewWindow = false;
-	var openInNewWindowTarget = "_blank";
+	let data = new Object();
+	let openInNewWindow = false;
+	let openInNewWindowTarget = "_blank";
 	if(arguments.length > 3) {
-		var argLength = arguments.length;
-		for(var i=3; i<argLength; i=i+2) {
+		let argLength = arguments.length;
+		for(let i=3; i<argLength; i=i+2) {
 			if(argLength > i+1) {
 				data[arguments[i]] = arguments[i+1];
 				if(arguments[i] == "oo-opennewwindow-oo") {
@@ -2315,7 +2321,7 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 		}
 	}
 	
-	var targetWindow = null;
+	let targetWindow = null;
 	if(openInNewWindow) {
 		targetWindow = window.open("", openInNewWindowTarget);
 		targetWindow.blur();
@@ -2332,9 +2338,9 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 			try {
 				if(push) {
 					try {
-						var businessPath = responseData['businessPath'];
-						var documentTitle = responseData['documentTitle'];
-						var historyPointId = responseData['historyPointId'];
+						let businessPath = responseData['businessPath'];
+						let documentTitle = responseData['documentTitle'];
+						let historyPointId = responseData['historyPointId'];
 						if(businessPath) {
 							// catch separately - nothing must fail here!
 							o_pushState(historyPointId, documentTitle, businessPath);
@@ -2351,7 +2357,9 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 				o_afterserver(responseData);
 			}
 		},
-		error: o_onXHRError
+		error: function(jqXHR, textStatus, errorThrown) {
+			o_onXHRError(jqXHR, textStatus, errorThrown, currentlyDirty);
+		}
 	})
 	
 	return false;
@@ -2382,11 +2390,17 @@ function o_XHRNFEvent(targetUrl) {
 	})
 }
 
-function o_onXHRError(jqXHR, textStatus, errorThrown) {
+function o_onXHRError(jqXHR, textStatus, errorThrown, wasFlexiDirtyDirty) {
 	o_afterserver();
 	if(401 == jqXHR.status) {
 		let msg = o_info.oo_noresponse.replace("reload.html", window.document.location.href);
+		if(wasFlexiDirtyDirty) {
+			msg += o_info.oo_noresponse_unsaved_data.replace("back.html", "javascript:;");
+		}
 		showMessageBox('warn', o_info.oo_noresponse_title, msg, undefined);
+		jQuery("#myFunctionalModal a.o_button_ghost").on("click", function() {
+			jQuery('#myFunctionalModal').remove();
+		});
 	} else if(window.console) {
 		console.log('Error status 2', jqXHR.status, textStatus, errorThrown, jqXHR.responseText);
 		console.log(jqXHR);
