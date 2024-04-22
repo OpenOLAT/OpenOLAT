@@ -209,9 +209,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		} else if (source == nextButton) {
 			// submit and let current unsaved step do its work
 			flc.getRootForm().submitAndNext(ureq);
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
-			// the current step decides whether to proceed to the next step or
-			// not.
+			// the current step decides whether to proceed to the next step or not.
 		} else if (source == finishButton) {
 			// submit and let last unsaved step do its work
 			finishCycle = true;
@@ -224,7 +222,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		} else if (source == prevButton) {
 			lastEvent = StepsEvent.ACTIVATE_PREVIOUS;
 			doAfterDispatch = true;
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			int whichTitleClickedIndex = stepTitleLinks.indexOf(source);
 			if (whichTitleClickedIndex < 0) {

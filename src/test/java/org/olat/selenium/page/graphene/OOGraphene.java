@@ -333,7 +333,9 @@ public class OOGraphene {
 	}
 	
 	public static void nextStep(WebDriver browser) {
-		clickAndWait(wizardNextBy, browser);
+		OOGraphene.waitElement(wizardNextBy, browser);
+		browser.findElement(wizardNextBy).click();
+		waitBusy(browser);
 	}
 	
 
@@ -342,11 +344,12 @@ public class OOGraphene {
 	}
 	
 	public static void finishStep(WebDriver browser, boolean closeBlueMessage) {
-		moveAndClick(wizardFinishBy, browser);
+		OOGraphene.waitElement(wizardFinishBy, browser);
+		browser.findElement(wizardFinishBy).click();
 		if(closeBlueMessage) {
 			closeBlueMessageWindow(browser);
 		}
-		By wizardBy = By.cssSelector("div.o_layered_panel div.o_wizard");
+		By wizardBy = By.cssSelector("div.o_layered_panel dialog.o_wizard");
 		waitElementDisappears(wizardBy, 10, browser);
 		waitBusyAndScrollTop(browser);
 	}
