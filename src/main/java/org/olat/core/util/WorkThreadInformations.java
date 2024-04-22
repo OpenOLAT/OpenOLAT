@@ -20,17 +20,11 @@
 
 package org.olat.core.util;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.logging.log4j.Logger;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.LocalImpl;
-import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * 
@@ -43,24 +37,22 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class WorkThreadInformations {
 	
-	private static final Logger log = Tracing.createLoggerFor(WorkThreadInformations.class);
-	
 	private static final Map<String,String> works = new HashMap<>();
 	private static final List<String> longRunningTasks = new ArrayList<>();
 	
-	public synchronized static void setLongRunningTask(String taskDesc) {
+	public static synchronized void setLongRunningTask(String taskDesc) {
 		longRunningTasks.add(taskDesc);
 	}
 	
-	public synchronized static void unsetLongRunningTask(String taskDesc) {
+	public static synchronized void unsetLongRunningTask(String taskDesc) {
 		longRunningTasks.remove(taskDesc);
 	}
 	
-	public synchronized static List<String> getLongRunningTasks() {
+	public static synchronized List<String> getLongRunningTasks() {
 		return new ArrayList<>(longRunningTasks);
 	}
 	
-	public synchronized static void set(String message) {
+	public static synchronized void set(String message) {
 		String threadName = Thread.currentThread().getName();
 		if(StringHelper.containsNonWhitespace(message)) {
 			works.put(threadName, message);
@@ -69,36 +61,20 @@ public class WorkThreadInformations {
 		}
 	}
 	
-	public synchronized static void unset() {
+	public static synchronized void unset() {
 		String threadName = Thread.currentThread().getName();
 		works.remove(threadName);
 	}
 	
-	public synchronized static String get(String threadName) {
+	public static synchronized String get(String threadName) {
 		return works.get(threadName);
 	}
 	
-	public synchronized static void currentThreadNames(List<String> threadNames) {
+	public static synchronized void currentThreadNames(List<String> threadNames) {
 		for(Iterator<String> threadNameIt=works.keySet().iterator(); threadNameIt.hasNext(); ) {
 			if(!threadNames.contains(threadNameIt.next())) {
 				threadNameIt.remove();
 			}
-		}
-	}
-	
-	public static void setInfoFiles(String filePath, VFSLeaf leaf) {
-		try {
-			File file = new File(WebappHelper.getUserDataRoot(), "threadInfos");
-			if(!file.exists()) {
-				file.mkdirs();
-			}
-			if(leaf instanceof LocalImpl) {
-				filePath = ((LocalImpl)leaf).getBasefile().getAbsolutePath();
-			}
-			File infoFile = new File(file, Thread.currentThread().getName());
-			FileUtils.save(infoFile, filePath, "UTF-8");
-		} catch (Exception e) {
-			log.error("Cannot write info message about FolderIndexerWorker: " + filePath, e);
 		}
 	}
 }

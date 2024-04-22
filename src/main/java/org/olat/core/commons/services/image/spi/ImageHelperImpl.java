@@ -85,7 +85,6 @@ public class ImageHelperImpl extends AbstractImageHelper {
 
 	@Override
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, ImageOutputOptions options) {	
-		WorkThreadInformations.setInfoFiles(null, pdfFile);
 		WorkThreadInformations.set("Generate thumbnail VFSLeaf=" + pdfFile);
 		try(PDDocument document = PdfLoader.load(pdfFile)) {
 			PDFRenderer pdfRenderer = new PDFRenderer(document);

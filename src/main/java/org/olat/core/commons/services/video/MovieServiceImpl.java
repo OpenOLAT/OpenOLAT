@@ -288,7 +288,6 @@ public class MovieServiceImpl implements MovieService, InitializingBean, Thumbna
 		FinalSize size = null;
 		if(file instanceof LocalFileImpl && thumbnailFile instanceof LocalFileImpl) {
 			try {
-				WorkThreadInformations.setInfoFiles(null, file);
 				WorkThreadInformations.set("Generate thumbnail (video) VFSLeaf=" + file);
 				
 				File movieFile = ((LocalFileImpl)file).getBasefile();
