@@ -106,7 +106,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 		taxonomyTree.setRootVisible(true);
 		taxonomyTree.setTreeModel(builder.buildTreeModel());
 		
-		content = new TooledStackedPanel("taxonomy-stack", getTranslator(), this);
+		content = new TooledStackedPanel("taxonomy-stack", getTranslator(), this, "o_docpool_main_breadcrumb");
 		content.setNeverDisposeRootController(true);
 		content.setToolbarAutoEnabled(true);
 		
@@ -116,7 +116,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 			taxonomyTree.open((TreeNode)root.getChildAt(0));
 
 			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), taxonomyTree, content, "docpool");
-			columnLayoutCtr.addCssClassToMain("o_taxonomy");
+			columnLayoutCtr.addCssClassToMain("o_docpool");
 			listenTo(columnLayoutCtr); // auto dispose later
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			
@@ -128,7 +128,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 			VelocityContainer errorVC = createVelocityContainer("error");
 			errorVC.contextPut("message", translate("not.configured"));
 			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, errorVC, "docpool");
-			columnLayoutCtr.addCssClassToMain("o_taxonomy");
+			columnLayoutCtr.addCssClassToMain("o_docpool");
 			listenTo(columnLayoutCtr); // auto dispose later
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 		}

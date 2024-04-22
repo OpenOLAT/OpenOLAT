@@ -12,7 +12,16 @@
 			#if($row.isThumbnailAvailable())
 				<img src="${row.getThumbnailUrl()}" alt=""/>
 			#else
-				<div class="o_folder_row_thumbnail"><div class="o_folder_row_thumbnail_icon"><i class="o_icon $row.iconCssClass"></i></div></div>
+				<div class="o_folder_row_thumbnail">
+					<div class="o_folder_icon_container">
+						<div class="o_folder_row_thumbnail_icon"><i class="o_icon $row.iconCssClass"></i></div>
+							#if($row.getElementsLabel())
+							<div class="o_folder_elements_labels">
+								$row.getElementsLabel()
+							</div>
+						#end
+					</div>
+				</div>
 			#end
 		</div>
 	</div>
@@ -24,7 +33,7 @@
 	<div class="o_folder_card_meta">
 		<div class="o_flex_first_grow_base">
 			<div class="o_nowrap">
-				<h4 class="o_folder_card_title o_card_title">$r.render("$row.getSelectionItemName()")</h4>
+				<h4 class="o_folder_card_title o_card_title o_nowrap">$r.render("$row.getSelectionItemName()")</h4>
 			</div>
 			#if($row.getToolsLinkName())
 				$r.render($row.getToolsLinkName())

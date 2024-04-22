@@ -1,5 +1,10 @@
-.o_taxonomy div#o_main_toolbar.o_toolbar {
-	margin-top: 0px;
+.o_docpool {
+	.o_docpool_main_breadcrumb {
+		>.o_toolbar {
+			margin-top: 0px;
+			margin-bottom: 2em;
+		}
+	}
 }
 
 .o_taxonomy_level_overview {

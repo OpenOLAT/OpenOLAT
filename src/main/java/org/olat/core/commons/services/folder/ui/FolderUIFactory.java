@@ -181,9 +181,8 @@ public class FolderUIFactory {
 		if (StringHelper.containsNonWhitespace(filename)) {
 			String fileSuffix = FileUtils.getFileSuffix(filename);
 			if (StringHelper.containsNonWhitespace(fileSuffix)) {
-				return translator.translate("type.leaf.suffix", fileSuffix.toLowerCase());
+				return fileSuffix.toLowerCase();
 			}
-			return translator.translate("type.leaf");
 		}
 		
 		return null;

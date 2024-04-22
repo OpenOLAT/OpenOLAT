@@ -864,13 +864,14 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void forgeStatus(FolderRow row) {
-		String translatedStatus = null;
-		String labels = null;
 		if (row.getVfsItem() instanceof VFSContainer) {
 			if (StringHelper.containsNonWhitespace(row.getTranslatedSize())) {
-				labels = "<div class=\"o_folder_label o_folder_label_elements\"><i class=\"o_icon o_filetype_file\"> </i> " + row.getTranslatedSize() + "</div>";
+				String elementsLabel = "<div class=\"o_folder_label o_folder_label_elements\">" + row.getSize() + "</div>";
+				row.setElementsLabel(elementsLabel);
 			}
 		} else {
+			String translatedStatus = null;
+			String labels = null;
 			LockInfo lock = vfsLockManager.getLockInfo(row.getVfsItem(), row.getMetadata());
 			if (lock != null && lock.getLockedBy() != null && lock.isCollaborationLock()) {
 				row.setStatus(FolderStatus.editing);
@@ -881,9 +882,9 @@ public class FolderController extends FormBasicController implements Activateabl
 				translatedStatus = translate("status.locked");
 				labels = "<div class=\"o_folder_label o_folder_label_locked\"><i class=\"o_icon o_icon_locked\"> </i> " + translatedStatus + "</div>";
 			}
+			row.setTranslatedStatus(translatedStatus);
+			row.setLabels(labels);
 		}
-		row.setTranslatedStatus(translatedStatus);
-		row.setLabels(labels);
 	}
 	
 	private void forgeThumbnail(UserRequest ureq, FolderRow row) {
@@ -963,9 +964,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				
 				selectionEl.setElementCssClass("o_link_plain");
 				
-				String iconCSS = CSSHelper.getIcon(CSSHelper.createFiletypeIconCssClassFor(row.getVfsItem().getName()));
-				String selectionText = iconCSS + " " + StringHelper.escapeHtml(row.getTitle());
-				selectionEl.setI18nKey(selectionText);
+				selectionEl.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
 				titleEl.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
 				
 				selectionEl.setUserObject(row);
@@ -2864,13 +2863,16 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		@Override
 		public String getWrapperCssClass(FlexiTableRendererType type) {
-			return null;
+			return "o_table_rows_middle";
 		}
 		
 		@Override
 		public String getTableCssClass(FlexiTableRendererType type) {
+			if (FlexiTableRendererType.classic == type) {
+				return "o_table_middle o_table_nowrap";
+			}
 			if (FlexiTableRendererType.custom == type) {
-				return "o_folder_table o_block_top";
+				return "o_folder_table o_block_small_top";
 			}
 			return null;
 		}

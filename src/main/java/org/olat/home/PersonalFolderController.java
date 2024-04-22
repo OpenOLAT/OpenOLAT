@@ -27,6 +27,7 @@ import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
 import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -52,6 +53,9 @@ public class PersonalFolderController extends BasicController implements Activat
 	public PersonalFolderController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
+		VelocityContainer mainVC = createVelocityContainer("personal_folder");
+		putInitialPanel(mainVC);
+		
 		BriefcaseWebDAVMergeSource rootContainer = new BriefcaseWebDAVMergeSource(getIdentity(),
 				ureq.getUserSession().getRoles(), userManager.getUserDisplayName(getIdentity()));
 		FolderControllerConfig config = FolderControllerConfig.builder()
@@ -60,7 +64,7 @@ public class PersonalFolderController extends BasicController implements Activat
 				.build();
 		folderCtrl = new FolderController(ureq, wControl, rootContainer, config);
 		listenTo(folderCtrl);
-		putInitialPanel(folderCtrl.getInitialComponent());
+		mainVC.put("folder", folderCtrl.getInitialComponent());
 	}
 
 	@Override
