@@ -1085,14 +1085,10 @@ function showAjaxBusy() {
 
 function showAjaxSpinner() {
 	try {
-		//don't set 2 layers
-		if(jQuery('#o_ajax_busy_backdrop').length == 0) {
+		const busyBox = document.getElementById('o_ajax_busy');
+		if(!busyBox.open) {
 			jQuery('#o_body').addClass('o_ajax_busy');
-			jQuery('#o_ajax_busy').modal({show: true, backdrop: 'static', keyboard: 'false'});
-			// fix modal conflic with modal dialogs, make ajax busy appear always above modal dialogs
-			jQuery('#o_ajax_busy').after('<div id="o_ajax_busy_backdrop" class="modal-backdrop in"></div>');
-			jQuery('#o_ajax_busy>.modal-backdrop').remove();
-			jQuery('#o_ajax_busy_backdrop').css({'z-index' : 70041});
+			busyBox.showModal();
 		}
 	} catch (e) {
 		if(window.console) console.log(e);
@@ -1103,8 +1099,7 @@ function removeAjaxBusy() {
 	// try/catch because can fail in full page refresh situation when called before page DOM is ready
 	try {
 		jQuery('#o_body').removeClass('o_ajax_busy');
-		jQuery('#o_ajax_busy_backdrop').remove();
-		jQuery('#o_ajax_busy').modal('hide');
+		document.getElementById('o_ajax_busy').close();
 	} catch (e) {
 		if(window.console) console.log(e);
 	}
@@ -1216,10 +1211,10 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
        			let percentComplete = Math.floor(((loaded / totalFiles) * 100.0));
         		// only upldate UI once in a while, painting is a lot slower than progress updates
         		let now = Date.now();
-				if (now - o_info.ajaxBusyLastProgress > 100) {        			
+				if (now - o_info.ajaxBusyLastProgress > 100) {
 					o_info.ajaxBusyLastProgress = now;
-					jQuery('#o_ajax_busy .progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');        		
-					jQuery('#o_ajax_progress .o_progress_info').text(BFormatter.formatBytes(loaded) + '  /  ' + BFormatter.formatBytes(totalFiles));        	
+					jQuery('#o_ajax_busy .progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');
+					jQuery('#o_ajax_progress .o_progress_info').text(BFormatter.formatBytes(loaded) + '  /  ' + BFormatter.formatBytes(totalFiles));
 				}
 			}
     	}
@@ -2039,10 +2034,10 @@ function o_XHRProgress(evt) {
 		let percentComplete = Math.floor((evt.loaded / evt.total) * 100);
 		// only upldate UI once in a while, painting is a lot slower than progress updates
 		let now = Date.now();
-		if (now - o_info.ajaxBusyLastProgress > 100) {        			
+		if (now - o_info.ajaxBusyLastProgress > 100) {
 			o_info.ajaxBusyLastProgress = now;
-			jQuery('#o_ajax_busy .progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');        		
-			jQuery('#o_ajax_progress .o_progress_info').text(BFormatter.formatBytes(evt.loaded) + '  /  ' + BFormatter.formatBytes(evt.total));        	
+			jQuery('#o_ajax_busy .progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');
+			jQuery('#o_ajax_progress .o_progress_info').text(BFormatter.formatBytes(evt.loaded) + '  /  ' + BFormatter.formatBytes(evt.total));
 		}
 		if (percentComplete == 100) {
 			// Cleanup now, even when on server side something is still working

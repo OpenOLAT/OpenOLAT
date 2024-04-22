@@ -97,12 +97,6 @@ body .progress {
 	cursor: pointer;
 }
 
-/* make our statically created popup and our spinner works with Bootstrap 3.3.1 */
-#o_ajax_busy_backdrop  {
-	bottom: 0;
-	z-index:1020;
-}
-
 /* fix misplaced error icon */
 .form-control-feedback {
 	right: 0;
