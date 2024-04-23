@@ -30,6 +30,9 @@
 
 @import "functions";
 
+/* To add place for the scroll bar */
+$modal-lg						: 910px !default;
+
 /* bootstrap default is very white, use just a little bit more than just white */
 $btn-default-color				: #333 !default;
 $btn-default-bg					: #f8f8f8 !default;

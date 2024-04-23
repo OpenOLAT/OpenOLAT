@@ -59,6 +59,7 @@
 				@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
 				
 				margin-bottom: 0;
+				padding-top: 5px;
 				border: 1px solid $btn-default-border;
 				border-top-right-radius: 0;
 				border-bottom-right-radius: 0;
