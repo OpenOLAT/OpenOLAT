@@ -41,7 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -230,7 +230,7 @@ public class CatalogEntryEditController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == fileUpload) {
-			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				VFSLeaf img = catalogManager.getImage(catalogEntry);
 				if(fileUpload.getUploadFile() != null && fileUpload.getUploadFile() != fileUpload.getInitialFile()) {
 					fileUpload.reset();

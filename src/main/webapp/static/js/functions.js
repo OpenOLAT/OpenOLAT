@@ -1180,11 +1180,11 @@ function o_openTab(url) {
 
 function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 	function preventDefaults (e) {
-		e.preventDefault()
-		e.stopPropagation()
+		e.preventDefault();
+		e.stopPropagation();
 	}
 
-	function o_handleFiles(files) {	
+	function o_handleFiles(files, directory) {	
 		showAjaxSpinner();
 		
 		let htmlForm = document.getElementById(formName);
@@ -1235,6 +1235,9 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 			formData.append('dispatchevent', '4');
 			formData.delete('dispatchuri');
 			formData.append('dispatchuri', inputFileId);
+			if(directory != null) {
+				formData.append('upload-folder', directory);
+			}
 	
 			jQuery.ajax(targetUrl,{
 				xhr: function() {
@@ -1299,28 +1302,44 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 	}
 	
 	function handleDrop(e) {
+		let directory = jQuery(e.target)
+			.parents("*[data-upload-folder]")
+			.data('upload-folder');
 		let dt = e.dataTransfer;
 		let files = dt.files;
 		if(o_handleFilesValidate(files)) {
-			o_handleFiles(files);
+			o_handleFiles(files, directory);
+		}
+		e.stopPropagation();
+	}
+	
+	function handleFileOver(e) {
+		let directoryElement = jQuery(e.target)
+			.parents("*[data-upload-folder]");
+		if(directoryElement.length == 1) {
+			directoryElement.get(0).classList.add('o_dnd_over');
+			this.classList.remove('o_dnd_over');
+		} else {
+			this.classList.add('o_dnd_over');
 		}
 	}
 	
-	function handleFileOver() {
-		this.classList.add('o_dnd_over');
-	}
-	
-	function handleFileLeave() {
+	function handleFileLeave(e) {
+		jQuery(e.target).parents("*[data-upload-folder]")
+			.removeClass('o_dnd_over');
 		this.classList.remove('o_dnd_over');
 	}
 	
 	let dropAreaEl = document.getElementById(dropAreaId);
-  	dropAreaEl.addEventListener('dragover', handleFileOver, false);	
-  	dropAreaEl.addEventListener("dragleave", handleFileLeave, false);
-	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-  		dropAreaEl.addEventListener(eventName, preventDefaults, false);
-	});
-	dropAreaEl.addEventListener('drop', handleDrop, false);
+	if(dropAreaEl.dataset.drop !== 'true') {
+  		dropAreaEl.addEventListener('dragover', handleFileOver, false);	
+  		dropAreaEl.addEventListener("dragleave", handleFileLeave, false);
+		['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  			dropAreaEl.addEventListener(eventName, preventDefaults, false);
+		});
+		dropAreaEl.setAttribute('data-drop', 'true');
+		dropAreaEl.addEventListener('drop', handleDrop, false);
+	}
 }
 
 function o_handleFileFormatSize(size) {

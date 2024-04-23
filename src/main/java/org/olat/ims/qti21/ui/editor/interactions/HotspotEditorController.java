@@ -45,7 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -370,7 +370,7 @@ public class HotspotEditorController extends FormBasicController {
 			doOpenExtendedEditor(ureq);
 		} else if(backgroundEl == source) {
 			// upload in item directory;
-			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				if(backgroundEl.getUploadFile() != null && backgroundEl.getUploadFile() != backgroundEl.getInitialFile()) {
 					backgroundEl.reset();
 					if(initialBackgroundImage != null) {

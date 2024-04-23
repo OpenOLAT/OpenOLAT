@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
@@ -256,7 +256,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == fileUpload) {
-			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				fileUpload.clearError();
 				VFSLeaf img = repositoryManager.getImage(repositoryEntry);
 				if(fileUpload.getUploadFile() != null && fileUpload.getUploadFile() != fileUpload.getInitialFile()) {
@@ -271,7 +271,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 				flc.setDirty(true);	
 			}
 		} else if (source == movieUpload) {
-			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				movieUpload.clearError();
 				VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
 				if(movieUpload.getUploadFile() != null && movieUpload.getUploadFile() != movieUpload.getInitialFile()) {

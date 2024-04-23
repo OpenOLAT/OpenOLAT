@@ -45,7 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
@@ -784,9 +784,9 @@ public class PageMetadataEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		super.formInnerEvent(ureq, source, event);
 		if (imageUpload == source) {
-			if (event instanceof FileElementEvent) {
+			if (event instanceof DeleteFileElementEvent) {
 				String cmd = event.getCommand();
-				if (FileElementEvent.DELETE.equals(cmd)) {
+				if (DeleteFileElementEvent.DELETE.equals(cmd)) {
 					if(imageUpload.getUploadFile() != null) {
 						imageUpload.reset();
 					} else if(imageUpload.getInitialFile() != null) {

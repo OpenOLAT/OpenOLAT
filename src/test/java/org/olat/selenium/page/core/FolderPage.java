@@ -173,6 +173,15 @@ public class FolderPage {
 		return this;
 	}
 	
+	public FolderPage addFileCard(File file) {
+		By addFileBy = By.cssSelector(".o_folder_cmds .o_folder_create_group div.o_fileinput");
+		OOGraphene.waitElement(addFileBy, browser);
+		By inputFileBy = By.cssSelector(".o_folder_cmds .o_folder_create_group div.o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputFileBy, file, browser);
+		assertOnFileCard(file.getName());
+		return this;
+	}
+	
 	public FolderPage unzipFile(String filename) {
 		By unzipBy = By.xpath("//button[contains(@onclick,'o_TableMultiActionEvent') and contains(@onclick,'actionunzip')]");
 		browser.findElement(unzipBy).click();

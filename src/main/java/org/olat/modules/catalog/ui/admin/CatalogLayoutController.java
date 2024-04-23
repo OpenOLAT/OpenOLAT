@@ -39,7 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -137,8 +137,8 @@ public class CatalogLayoutController extends FormBasicController {
 		if (source == titleLink) {
 			doLauncherName(ureq);
 		} else if (headerBgImageEl == source) {
-			if (event instanceof FileElementEvent) {
-				if (FileElementEvent.DELETE.equals(event.getCommand())) {
+			if (event instanceof DeleteFileElementEvent) {
+				if (DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 					catalogModule.deleteHeaderBgImage();
 					headerBgImageEl.setInitialFile(null);
 					if (headerBgImageEl.getUploadFile() != null) {

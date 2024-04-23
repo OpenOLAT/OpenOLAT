@@ -39,7 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -201,7 +201,7 @@ public class DrawingEditorController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(backgroundEl == source) {
 			//upload in itemDirectory;
-			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				if(backgroundEl.getUploadFile() != null && backgroundEl.getUploadFile() != backgroundEl.getInitialFile()) {
 					backgroundEl.reset();
 					if(initialBackgroundImage != null) {

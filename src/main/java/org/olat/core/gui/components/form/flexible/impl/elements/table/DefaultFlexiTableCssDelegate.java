@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.List;
+
 /**
  * Implementation which always return null, mean to be sub classed.
  * 
@@ -41,5 +43,10 @@ public class DefaultFlexiTableCssDelegate implements FlexiTableCssDelegate {
 	@Override
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
 		return null;
+	}
+
+	@Override
+	public List<Data> getRowDataAttributes(int pos) {
+		return List.of();
 	}
 }

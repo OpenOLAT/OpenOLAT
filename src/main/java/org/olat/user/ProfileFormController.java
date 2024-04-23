@@ -44,7 +44,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -444,8 +444,8 @@ public class ProfileFormController extends FormBasicController {
 		} else if(confirmEmailInProcessButton == source) {
 			doConfirmEmailInProcess(ureq);
 		} else if (source == portraitUpload) {
-			if(event instanceof FileElementEvent) {
-				if(FileElementEvent.DELETE.equals(event.getCommand())) {
+			if(event instanceof DeleteFileElementEvent) {
+				if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 					portraitDeleted = true;
 					portraitUpload.setInitialFile(null);
 					if(portraitUpload.getUploadFile() != null) {
@@ -457,8 +457,8 @@ public class ProfileFormController extends FormBasicController {
 				flc.setDirty(true);
 			}
 		} else if (source == logoUpload) {
-			if(event instanceof FileElementEvent) {
-				if(FileElementEvent.DELETE.equals(event.getCommand())) {
+			if(event instanceof DeleteFileElementEvent) {
+				if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 					logoDeleted = true;
 					logoUpload.setInitialFile(null);
 					if(logoUpload.getUploadFile() != null) {

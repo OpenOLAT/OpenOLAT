@@ -30,15 +30,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FileElementEvent extends FormEvent {
+public class DeleteFileElementEvent extends FormEvent {
 
 	private static final long serialVersionUID = -767107043693286989L;
 	public static final String DELETE = "delete-file";
 	
 	private File file;
 	
-	public FileElementEvent(String command, FormItem source, File file, int action) {
-		super(command, source, action);
+	public DeleteFileElementEvent(FormItem source, File file, int action) {
+		super(DELETE, source, action);
 		this.file = file;
 	}
 

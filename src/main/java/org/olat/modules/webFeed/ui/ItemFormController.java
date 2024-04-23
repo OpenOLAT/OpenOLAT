@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -320,8 +320,8 @@ public abstract class ItemFormController extends FormBasicController {
 		} else if (source == file && event.wasTriggerdBy(FormEvent.ONCHANGE)) {
 			fileUploaded();
 		} else if (source == file
-				&& event instanceof FileElementEvent
-				&& FileElementEvent.DELETE.equals(event.getCommand())) {
+				&& event instanceof DeleteFileElementEvent
+				&& DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 			fileDeleted();
 		}
 	}

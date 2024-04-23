@@ -26,6 +26,8 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 
+import java.util.List;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate.Data;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
@@ -297,6 +300,15 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			target.append(" o_table_row_expanded");
 		}
 		target.append("'");
+		
+		if(ftC.getFormItem().getCssDelegate() != null) {
+			List<Data> dataAttributes = ftC.getFormItem().getCssDelegate().getRowDataAttributes(row);
+			if(dataAttributes != null) {
+				for(Data dataAttribute:dataAttributes) {
+					target.append(" data-").append(dataAttribute.name()).append("=\"").append(dataAttribute.value()).append("\"");
+				}
+			}
+		}
 
 		SelectionMode selectionMode = ftE.getSelectionMode();
 		if(selectionMode == SelectionMode.multi && ftE.isRowSelectionEnabled()) {

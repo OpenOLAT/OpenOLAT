@@ -134,11 +134,11 @@ public class FileElementImpl extends FormItemImpl
 		Form form = getRootForm();
 
 		String dispatchuri = form.getRequestParameter("dispatchuri");
+		String uploadDirectory = form.getRequestParameter("upload-folder");
 		if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())
 				&& "delete".equals(form.getRequestParameter("delete"))) {
 			File file = getFileByFilename(form.getRequestParameter("filename"));
-			getRootForm().fireFormEvent(ureq,
-					new FileElementEvent(FileElementEvent.DELETE, this, file, FormEvent.ONCLICK));
+			getRootForm().fireFormEvent(ureq, new DeleteFileElementEvent(this, file, FormEvent.ONCLICK));
 		}
 		Set<String> keys = form.getRequestMultipartFilesSet();
 		if (!keys.isEmpty() && keys.contains(component.getFormDispatchId())) {
@@ -192,6 +192,8 @@ public class FileElementImpl extends FormItemImpl
 			// Mark associated component dirty, that it gets rerendered
 			component.setDirty(true);
 			validate();
+			
+			getRootForm().fireFormEvent(ureq, new UploadFileElementEvent(this, tempUploadFile, uploadDirectory, FormEvent.ONCLICK));
 		}
 		
 		if(initialPreviewEl != null && initialFile != null) {

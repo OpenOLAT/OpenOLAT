@@ -39,7 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
@@ -277,9 +277,9 @@ public class BinderMetadataEditController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (fileUpload == source) {
-			if (event instanceof FileElementEvent) {
+			if (event instanceof DeleteFileElementEvent) {
 				String cmd = event.getCommand();
-				if (FileElementEvent.DELETE.equals(cmd)) {
+				if (DeleteFileElementEvent.DELETE.equals(cmd)) {
 					if(fileUpload.getUploadFile() != null) {
 						fileUpload.reset();
 					} else if(fileUpload.getInitialFile() != null) {

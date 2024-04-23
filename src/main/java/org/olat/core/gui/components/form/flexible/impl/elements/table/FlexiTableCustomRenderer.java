@@ -20,11 +20,14 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 
+import java.util.List;
+
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.impl.FormDecorator;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate.Data;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -156,7 +159,16 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 		} else {
 			sb.append("o_table_row row");
 		}
-		sb.append("'>");
+		sb.append("'");
+		if(ftC.getFormItem().getCssDelegate() != null) {
+			List<Data> dataAttributes = ftC.getFormItem().getCssDelegate().getRowDataAttributes(row);
+			if(dataAttributes != null) {
+				for(Data dataAttribute:dataAttributes) {
+					sb.append(" data-").append(dataAttribute.name()).append("=\"").append(dataAttribute.value()).append("\"");
+				}
+			}
+		}
+		sb.append(">");
 
 		FlexiTableElementImpl ftE = ftC.getFormItem();
 		VelocityContainer container = ftE.getRowRenderer();

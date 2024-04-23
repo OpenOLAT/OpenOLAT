@@ -35,7 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -90,7 +90,7 @@ public class GuiDemoFlexiForm extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == fileElement) {
-			if(event instanceof FileElementEvent fee && FileElementEvent.DELETE.equals(fee.getCommand())) {
+			if(event instanceof DeleteFileElementEvent fee && DeleteFileElementEvent.DELETE.equals(fee.getCommand())) {
 				fileElement.resetTempFile(fee.getFile());
 			}
 

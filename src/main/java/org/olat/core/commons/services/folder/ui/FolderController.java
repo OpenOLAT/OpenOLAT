@@ -22,6 +22,7 @@ package org.olat.core.commons.services.folder.ui;
 import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -78,6 +79,7 @@ import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -88,6 +90,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.UploadFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -224,6 +227,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FlexiFiltersTab tabForMe;
 	private FolderDataModel dataModel;
 	private FlexiTableElement tableEl;
+	private FileElement addFileEl;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -327,6 +331,10 @@ public class FolderController extends FormBasicController implements Activateabl
 			formLayout.add(trashMessageEl);
 		}
 		
+		addFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add.file", null, formLayout);
+		addFileEl.addActionListener(FormEvent.ONCHANGE);// Needed for selenium tests
+		addFileEl.setDragAndDropForm(true);
+		
 		folderBreadcrumb = new TooledStackedPanel("folderBreadcrumb", getTranslator(), this);
 		formLayout.add(new ComponentWrapperElement(folderBreadcrumb));
 		folderBreadcrumb.setToolbarEnabled(false);
@@ -424,6 +432,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		uploadLink.setVisible(canEditCurrentContainer);
 		createDropdown.setVisible(canEditCurrentContainer);
 		addBrowserLink.setVisible(canEditCurrentContainer);
+		addFileEl.setVisible(canEditCurrentContainer);
 		createDocumentLink.setVisible(canEditCurrentContainer);
 		createFolderLink.setVisible(canEditCurrentContainer);
 		recordSpacer.setVisible(canEditCurrentContainer && avModule.isRecordingEnabled());
@@ -538,7 +547,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(rendererType);
-		tableEl.setCssDelegate(FolderCssDelegate.DELEGATE);
+		tableEl.setCssDelegate(new FolderCssDelegate(dataModel));
 		VelocityContainer rowVC = createVelocityContainer("folder_row");
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
@@ -1191,6 +1200,10 @@ public class FolderController extends FormBasicController implements Activateabl
 					doDownload(ureq, row);
 				}
 			}
+		} else if(addFileEl == source) {
+			if(event instanceof UploadFileElementEvent ufee) {
+				doUploadFile(ureq, ufee.getFile(), ufee.getUploadFolder());
+			}
 		} else if (viewFolderLink == source) {
 			doOpenView(ureq, FolderView.folder);
 		} else if (viewFileLink == source) {
@@ -1567,6 +1580,20 @@ public class FolderController extends FormBasicController implements Activateabl
 				addFromBrowserCtrl.getInitialComponent(), true, translate("browser.add"), true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doUploadFile(UserRequest ureq, File uploadFile, String directory) {
+		if(uploadFile != null && uploadFile.exists()) {
+			VFSContainer container = currentContainer;
+			if(StringHelper.containsNonWhitespace(directory)) {
+				VFSItem dir = container.resolve(directory);
+				if(dir instanceof VFSContainer subContainer) {
+					container = subContainer;
+				}
+			}
+			addFileEl.moveUploadFileTo(container);
+			loadModel(ureq);
+		}
 	}
 	
 	private void doCreateDocument(UserRequest ureq) {
@@ -2857,10 +2884,14 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 	}
 	
-	private static final class FolderCssDelegate extends DefaultFlexiTableCssDelegate {
+	private final class FolderCssDelegate extends DefaultFlexiTableCssDelegate {
 		
-		private static final FolderCssDelegate DELEGATE = new FolderCssDelegate();
+		private final FolderDataModel dataModel;
 		
+		public FolderCssDelegate(FolderDataModel dataModel) {
+			this.dataModel = dataModel;
+		}
+
 		@Override
 		public String getWrapperCssClass(FlexiTableRendererType type) {
 			return "o_table_rows_middle";
@@ -2880,6 +2911,16 @@ public class FolderController extends FormBasicController implements Activateabl
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
 			return "o_folder_row";
+		}
+
+		@Override
+		public List<Data> getRowDataAttributes(int pos) {
+			FolderRow row = dataModel.getObject(pos);
+			if(row.isDirectory()) {
+				String filename = row.getFilename();
+				return List.of(new Data("upload-folder", filename));
+			}
+			return super.getRowDataAttributes(pos);
 		}
 	}
 	

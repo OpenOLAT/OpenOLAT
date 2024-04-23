@@ -40,7 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem.TabIndentation;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -389,7 +389,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == teaserImageEl) {
-			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				teaserImageEl.setInitialFile(null);
 				if (teaserImageEl.getUploadFile() != null) {
 					teaserImageEl.reset();
@@ -403,7 +403,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 				markDirty();
 			}
 		} else if (source == backgroundImageEl) {
-			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				backgroundImageEl.setInitialFile(null);
 				if (backgroundImageEl.getUploadFile() != null) {
 					backgroundImageEl.reset();

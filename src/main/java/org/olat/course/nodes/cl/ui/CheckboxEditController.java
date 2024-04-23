@@ -40,7 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -309,7 +309,7 @@ public class CheckboxEditController extends FormBasicController {
 		} else if(awardPointEl == source) {
 			pointsEl.setVisible(withScore && awardPointEl.isAtLeastSelected(1));
 		} else if(fileEl == source) {
-			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				if(fileEl.getInitialFile() != null) {
 					filesToDelete.add(fileEl.getInitialFile().getName());
 				}

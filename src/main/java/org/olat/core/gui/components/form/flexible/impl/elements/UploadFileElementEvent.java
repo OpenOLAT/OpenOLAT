@@ -17,31 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.impl.elements.table;
+package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.List;
+import java.io.File;
+
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
 /**
  * 
- * Initial date: 12.11.2015<br>
+ * Initial date: 22 avr. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface FlexiTableCssDelegate {
+public class UploadFileElementEvent extends FormEvent {
+
+	private static final long serialVersionUID = -767107043693286989L;
+	public static final String UPLOAD = "upload-file";
 	
-	public String getWrapperCssClass(FlexiTableRendererType type);
+	private File file;
+	private String uploadFolder;
 	
-	public String getTableCssClass(FlexiTableRendererType type);
-	
-	public String getRowCssClass(FlexiTableRendererType type, int pos);
-	
-	@SuppressWarnings("unused")
-	public default List<Data> getRowDataAttributes(int pos) {
-		return List.of();
-	}
-	
-	public record Data(String name, String value) {
-		//
+	public UploadFileElementEvent(FormItem source, File file, String uploadFolder, int action) {
+		super(UPLOAD, source, action);
+		this.file = file;
+		this.uploadFolder = uploadFolder;
 	}
 
+	public File getFile() {
+		return file;
+	}
+	
+	public String getUploadFolder() {
+		return uploadFolder;
+	}
 }

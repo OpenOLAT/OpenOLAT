@@ -44,7 +44,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -437,7 +437,7 @@ public class ProjProjectEditController extends FormBasicController {
 		} else if (source == templateEl) {
 			updateTemplateOrganisationUI();
 		} else if (source == avatarImageEl) {
-			if (FileElementEvent.DELETE.equals(event.getCommand())) {
+			if (DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				avatarImageEl.setInitialFile(null);
 				if (avatarImageEl.getUploadFile() != null) {
 					avatarImageEl.reset();
@@ -449,7 +449,7 @@ public class ProjProjectEditController extends FormBasicController {
 				markDirty();
 			}
 		} else if (source == backgroundImageEl) {
-			if (FileElementEvent.DELETE.equals(event.getCommand())) {
+			if (DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				backgroundImageEl.setInitialFile(null);
 				if (backgroundImageEl.getUploadFile() != null) {
 					backgroundImageEl.reset();

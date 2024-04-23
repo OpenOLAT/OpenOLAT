@@ -54,6 +54,48 @@
 			display: none;
 		}
 		
+		.o_folder_create_group {
+			.o_fileinput.o_area {
+				@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
+				
+				margin-bottom: 0;
+				border: 1px solid $btn-default-border;
+				border-top-right-radius: 0;
+				border-bottom-right-radius: 0;
+				border-right: none;
+				background-color: $btn-default-bg; 
+			}
+		
+			.o_filepreview, .o_filemeta {
+				display: none;
+			}
+			
+			.o_dnd {
+				.o_dnd_icon {
+					font-size: 1em;
+					color: black;
+					display: inline-block;
+					margin-right: 5px;
+				}
+				
+				.o_dnd_select {
+					display: inline-block;
+					margin: 0;
+					
+					button {
+						@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
+				
+						padding: 0;
+						border: none;
+					}
+				}
+				.o_dnd_info {
+					display: none;
+				}
+			
+			}
+		} 
+		
 		@media (max-width: 1024px) {
 			.o_folder_noti_toggle {
 				display: none;
@@ -140,6 +182,13 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 			grid-template-columns: repeat(auto-fill, minmax(207px, 1fr));
 			gap: 10px;
 		}
+		
+		.o_folder_row.o_dnd_over .o_card.o_folder_card {
+			border: 2px dashed $o-panel-placeholder-border-active-color;
+			border-radius: $o-card-border-radius;
+			margin: -1px;
+		}
+		
 		.o_folder_card {
 			overflow: hidden;
 			
@@ -200,6 +249,25 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 					line-height: 1.2;
 				}
 			}
+		}
+	}
+	
+	tr.o_folder_row.o_dnd_over {
+		td {
+			border-top: 2px dashed $o-panel-placeholder-border-active-color;
+			border-bottom: 2px dashed $o-panel-placeholder-border-active-color;
+			padding-top: 4px;
+			padding-bottom: 3px;
+		}
+		
+		td:first-child {
+			border-left: 2px dashed $o-panel-placeholder-border-active-color;
+			padding-left: 3px;
+		}
+		
+		td:last-child {
+			border-right: 2px dashed $o-panel-placeholder-border-active-color;
+			padding-right: 3px;
 		}
 	}
 }
