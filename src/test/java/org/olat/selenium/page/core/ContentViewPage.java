@@ -68,7 +68,7 @@ public class ContentViewPage {
 	
 	public ContentViewPage assertOnDocument(File file) {
 		String filename = file.getName();
-		By downloadLinkBy = By.xpath("//div[contains(@class,'o_media_file_infos')]/h5/a[contains(text(),'" + filename + "')]");
+		By downloadLinkBy = By.xpath("//div[contains(@class,'o_media_file_infos')]/h5/a[contains(@href,'" + filename + "')]");
 		OOGraphene.waitElement(downloadLinkBy, browser);
 		return this;
 	}

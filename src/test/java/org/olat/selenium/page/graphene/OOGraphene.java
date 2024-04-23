@@ -426,7 +426,7 @@ public class OOGraphene {
 		WebElement element = browser.findElement(by);
 
 		String scrollBottom = """
-				var modal = arguments[0].closest('dialog.dialog .modal-content')?.scrollTo(0, 1024);\n
+				var modal = arguments[0].closest('dialog.dialog .modal-body')?.scrollTo(0, 1024);\n
 				if(modal === undefined) { window.scrollTo(0, 1024); }
 				""";
 		((JavascriptExecutor)browser).executeScript(scrollBottom, element);

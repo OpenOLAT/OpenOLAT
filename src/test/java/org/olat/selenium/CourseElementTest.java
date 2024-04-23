@@ -378,7 +378,7 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.clickTree()
-			.selectWithTitle(wikiNodeTitle)
+			.assertWithTitleSelected(wikiNodeTitle)
 			// the course node select automatically the index page of the wiki
 			.assertWithTitleSelected("Index")
 			.selectWithTitle("Index");
@@ -517,7 +517,7 @@ public class CourseElementTest extends Deployments {
 		
 		CoursePageFragment userCourse = new CoursePageFragment(browser);
 		userCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(practiceNodeTitle);
 		
 		PracticePage practicePage = new PracticePage(browser);
@@ -2077,7 +2077,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		courseRuntime
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 		
 		SinglePage singlePage = new SinglePage(browser);
@@ -2245,14 +2245,14 @@ public class CourseElementTest extends Deployments {
 			.addLayout(ContainerLayout.block_1_1lcols)
 			.openElementsChooser(1, 1)
 			.addTitle(title)
-			.setTitleSize(3, false)
+			.setTitleSize(4, false)
 			.closeEditFragmentOfPage()
-			.assertOnTitle(title, 3);
+			.assertOnTitle(title, 4);
 		
 		page.closeEditor();
 		
 		new ContentViewPage(browser)
-			.assertOnTitle(title, 3);
+			.assertOnTitle(title, 4);
 	}
 	
 	
