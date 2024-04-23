@@ -47,6 +47,7 @@ public class DocumentConfigurationPage {
 	
 	public DocumentConfigurationPage uploadDocument(File file) {
 		By inputBy = By.xpath("//fieldset[contains(@class,'o_sel_document_settings_upload')]//div[contains(@class,'o_fileinput')]/input[@type='file']");
+		OOGraphene.waitElementPresence(inputBy, 5, browser);
 		OOGraphene.uploadFile(inputBy, file, browser);
 		return assertOnPreview(file.getName());
 	}

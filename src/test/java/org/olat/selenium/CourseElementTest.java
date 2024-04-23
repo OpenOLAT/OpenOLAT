@@ -320,7 +320,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(wikiNodeTitle)
 			.selectWithTitle("Index");
 		
@@ -1349,7 +1349,7 @@ public class CourseElementTest extends Deployments {
 		FolderPage directory = folder
 			.openReturnBox()
 			.assertOnEmptyFolderCard()
-			.uploadFileCard(coachImageFile)
+			.addFileCard(coachImageFile)
 			.assertOnFileCard(coachImageFile.getName());
 		
 		// The participant come in
@@ -1379,7 +1379,7 @@ public class CourseElementTest extends Deployments {
 		participantFolder
 			.openDropBox()
 			.assertOnEmptyFolderCard()
-			.uploadFileCard(participantImageFile)
+			.addFileCard(participantImageFile)
 			.assertOnFileCard(participantImageFile.getName());
 		
 		//Author check the image in the participant drop box
@@ -2016,7 +2016,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		courseRuntime
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 		
 		SinglePage singlePage = new SinglePage(browser);
@@ -2353,7 +2353,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(surveyNodeTitle);
 		
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -2370,7 +2370,7 @@ public class CourseElementTest extends Deployments {
 		//go to the group task
 		CoursePageFragment userCourse = new CoursePageFragment(browser);
 		userCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle(surveyNodeTitle);
 		
 		SurveyPage userSurvey = SurveyPage.loadPage(browser)
@@ -2641,7 +2641,7 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.clickTree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
 		String meetingName = "Teams meeting";
 		TeamsPage teams = new TeamsPage(browser);
@@ -2661,7 +2661,6 @@ public class CourseElementTest extends Deployments {
 		teams
 			.assertOnJoinDisabled();
 	}
-	
 	
 
 	/**
@@ -2703,9 +2702,8 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
-		
 
 		String meetingName = "Teams meeting";
 		TeamsPage teams = new TeamsPage(browser);
