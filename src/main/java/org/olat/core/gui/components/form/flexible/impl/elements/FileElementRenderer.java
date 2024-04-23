@@ -227,6 +227,9 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				sb.append("\" data-max-size=\"").append(fileElem.getMaxUploadSizeKB() * 1024l);
 			}
 			sb.append("\" class='form-control o_realchooser' tabindex='0' ");
+			if(fileElem.isMultiFileUpload()) {
+				sb.append("multiple ");
+			}
 			// Add on* event handlers
 
 			StringBuilder eventHandlers = FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction());

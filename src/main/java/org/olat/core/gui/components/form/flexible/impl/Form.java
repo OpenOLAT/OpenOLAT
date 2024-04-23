@@ -151,6 +151,7 @@ public class Form {
 	public static final String FORMID = "ofo_";
 	public static final String FORM_UNDEFINED="undefined";
 	public static final String FORM_CSRF = "_csrf";
+	private static final String MULTI_FILES_SEPARATOR = "_oo_";
 	
 	public static final int REQUEST_ERROR_NO_ERROR = -1;
 	public static final int REQUEST_ERROR_GENERAL = 1;
@@ -322,9 +323,9 @@ public class Form {
 	
 	private void doInitRequestMultipartDataParameter(UserRequest ureq) {
 		HttpServletRequest req = ureq.getHttpReq();
-		try {				
+		try {
 			for(Part part:req.getParts()) {
-				String name = part.getName();
+				String name = getNextName(part.getName());
 				String contentType = part.getContentType();
 				String fileName = getSubmittedFileName(part);
 				if(fileName != null && StringHelper.containsNonWhitespace(fileName)) {
@@ -348,6 +349,20 @@ public class Form {
 		} catch (IOException | ServletException e) {
 			log.error("", e);
 		}
+	}
+	
+	private String getNextName(String name) {
+		if(!requestMultipartFiles.containsKey(name)) {
+			return name;
+		}
+		
+		for(int i=1; i<100; i++) {
+			String next = name + MULTI_FILES_SEPARATOR + i;
+			if(!requestMultipartFiles.containsKey(next)) {
+				return next;
+			}
+		}
+		return name;
 	}
 	
 	private String getSubmittedFileName(Part part) {
@@ -596,6 +611,24 @@ public class Form {
 	public MultipartFileInfos getRequestMultipartFileInfos(String key) {
 		MultipartFileInfos infos = requestMultipartFiles.get(key);
 		return infos == null ? new MultipartFileInfos(null, null, -1l, null) : infos;
+	}
+	
+	public List<MultipartFileInfos> getRequestMultipartFileInfosList(String key) {
+		List<MultipartFileInfos> fileInfosList = new ArrayList<>(requestMultipartFiles.size());
+		
+		MultipartFileInfos fileInfos = requestMultipartFiles.get(key);
+		if(fileInfos != null) {
+			fileInfosList.add(fileInfos);
+		}
+		
+		String prefix = key + MULTI_FILES_SEPARATOR;
+		for(Map.Entry<String, MultipartFileInfos> fileInfosEntry:requestMultipartFiles.entrySet()) {
+			if(fileInfosEntry.getKey().startsWith(prefix)) {
+				fileInfosList.add(fileInfosEntry.getValue());
+			}
+		}
+		
+		return fileInfosList;
 	}
 
 	/**

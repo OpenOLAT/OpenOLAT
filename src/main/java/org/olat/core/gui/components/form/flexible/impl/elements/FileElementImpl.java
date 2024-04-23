@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElementInfos;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.id.Identity;
@@ -140,65 +141,78 @@ public class FileElementImpl extends FormItemImpl
 			File file = getFileByFilename(form.getRequestParameter("filename"));
 			getRootForm().fireFormEvent(ureq, new DeleteFileElementEvent(this, file, FormEvent.ONCLICK));
 		}
-		Set<String> keys = form.getRequestMultipartFilesSet();
-		if (!keys.isEmpty() && keys.contains(component.getFormDispatchId())) {
+		
+		List<MultipartFileInfos> list = form.getRequestMultipartFileInfosList(component.getFormDispatchId());
+		if (!list.isEmpty()) {
 			// Remove old files first
 			if (!multiFileUpload && !tempUploadFiles.isEmpty()) {
 				deleteTempUploadFiles();
 			}
-			// Move file from a temporary request scope location to a location
-			// with a
-			// temporary form item scope. The file must be moved later using the
-			// moveUploadFileTo() method to the final destination.
-			File tempUploadFile = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
-			File tmpRequestFile = form.getRequestMultipartFile(component.getFormDispatchId());
-			// Move file to internal temp location
-			boolean success = tmpRequestFile.renameTo(tempUploadFile);
-			if (!success) {
-				// try to move file by copying it, command above might fail
-				// when source and target are on different volumes
-				FileUtils.copyFileToFile(tmpRequestFile, tempUploadFile, true);
-			}
-
-			String uploadFilename = form.getRequestMultipartFileName(component.getFormDispatchId());
-			// prevent an issue with different operation systems and .
-			uploadFilename = FileUtils.cleanFilename(uploadFilename, maxFilenameLength);
-			// use mime-type from file name to have deterministic mime types
-			String uploadMimeType = WebappHelper.getMimeType(uploadFilename);
-			if (uploadMimeType == null) {
-				// use browser mime type as fallback if unknown
-				uploadMimeType = form.getRequestMultipartFileMimeType(component.getFormDispatchId());
-			}
-			if (uploadMimeType == null) {
-				// use application fallback for worst case
-				uploadMimeType = "application/octet-stream";
-			}
-
-			ImageFormItem previewEl = null;
-			if (preview && uploadMimeType != null
-					&& (uploadMimeType.startsWith("image/") || uploadMimeType.startsWith("video/"))
-					&& (!checkForMimeTypes || (isMimeTypeAllowed(uploadMimeType)))) {
-				VFSLeaf media = new LocalFileImpl(tempUploadFile);
-				
-				previewEl = new ImageFormItem(ureq.getUserSession(), getName() + "_PREVIEW");
-				previewEl.setRootForm(getRootForm());
-				previewEl.setMedia(media, uploadMimeType);
-				previewEl.setCropSelectionEnabled(cropSelectionEnabled);
-				previewEl.setMaxWithAndHeightToFitWithin(300, 200);
-				previewEl.setVisible(true);
-			}
 			
-			tempUploadFiles.add(new FileElementInfos(tempUploadFile, uploadFilename, tempUploadFile.length(), uploadMimeType, previewEl));
+			List<File> tempUploadFileList = new ArrayList<>(list.size());
+			for(MultipartFileInfos fileInfos:list) {
+				File tempUploadFile = evaluateFile(fileInfos, ureq.getUserSession());
+				tempUploadFileList.add(tempUploadFile);
+			}
+
 			// Mark associated component dirty, that it gets rerendered
 			component.setDirty(true);
 			validate();
 			
-			getRootForm().fireFormEvent(ureq, new UploadFileElementEvent(this, tempUploadFile, uploadDirectory, FormEvent.ONCLICK));
+			getRootForm().fireFormEvent(ureq, new UploadFileElementEvent(this, tempUploadFileList, uploadDirectory, FormEvent.ONCLICK));
 		}
 		
 		if(initialPreviewEl != null && initialFile != null) {
 			initialPreviewEl.setVisible(tempUploadFiles.isEmpty());
 		}
+	}
+	
+	private File evaluateFile(MultipartFileInfos fileInfos, UserSession usess) {
+		// Move file from a temporary request scope location to a location
+		// with a
+		// temporary form item scope. The file must be moved later using the
+		// moveUploadFileTo() method to the final destination.
+		File tempUploadFile = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
+		
+		// Move file to internal temp location
+		boolean success = fileInfos.file().renameTo(tempUploadFile);
+		if (!success) {
+			// try to move file by copying it, command above might fail
+			// when source and target are on different volumes
+			FileUtils.copyFileToFile(fileInfos.file(), tempUploadFile, true);
+		}
+
+		String uploadFilename = fileInfos.fileName();
+		// prevent an issue with different operation systems and .
+		uploadFilename = FileUtils.cleanFilename(uploadFilename, maxFilenameLength);
+		// use mime-type from file name to have deterministic mime types
+
+		String uploadMimeType = WebappHelper.getMimeType(uploadFilename);
+		if (uploadMimeType == null) {
+			// use browser mime type as fallback if unknown
+			uploadMimeType = fileInfos.contentType();
+		}
+		if (uploadMimeType == null) {
+			// use application fallback for worst case
+			uploadMimeType = "application/octet-stream";
+		}
+
+		ImageFormItem previewEl = null;
+		if (preview && uploadMimeType != null
+				&& (uploadMimeType.startsWith("image/") || uploadMimeType.startsWith("video/"))
+				&& (!checkForMimeTypes || (isMimeTypeAllowed(uploadMimeType)))) {
+			VFSLeaf media = new LocalFileImpl(tempUploadFile);
+			
+			previewEl = new ImageFormItem(usess, getName() + "_PREVIEW");
+			previewEl.setRootForm(getRootForm());
+			previewEl.setMedia(media, uploadMimeType);
+			previewEl.setCropSelectionEnabled(cropSelectionEnabled);
+			previewEl.setMaxWithAndHeightToFitWithin(300, 200);
+			previewEl.setVisible(true);
+		}
+		
+		tempUploadFiles.add(new FileElementInfos(tempUploadFile, uploadFilename, tempUploadFile.length(), uploadMimeType, previewEl));
+		return tempUploadFile;
 	}
 	
 	private File getFileByFilename(String filename) {

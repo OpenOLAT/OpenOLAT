@@ -336,6 +336,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		addFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add.file", null, formLayout);
 		addFileEl.addActionListener(FormEvent.ONCHANGE);// Needed for selenium tests
 		addFileEl.setDragAndDropForm(true);
+		addFileEl.setMultiFileUpload(true);
 		
 		folderBreadcrumb = new TooledStackedPanel("folderBreadcrumb", getTranslator(), this);
 		formLayout.add(new ComponentWrapperElement(folderBreadcrumb));
@@ -1189,7 +1190,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		} else if(addFileEl == source) {
 			if(event instanceof UploadFileElementEvent ufee) {
-				doUploadFile(ureq, ufee.getFile(), ufee.getUploadFolder());
+				doUploadFile(ureq, ufee.getFiles(), ufee.getUploadFolder());
 			}
 		} else if (viewFolderLink == source) {
 			doOpenView(ureq, FolderView.folder);
@@ -1569,8 +1570,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		cmc.activate();
 	}
 	
-	private void doUploadFile(UserRequest ureq, File uploadFile, String directory) {
-		if(uploadFile != null && uploadFile.exists()) {
+	private void doUploadFile(UserRequest ureq, List<File> uploadFiles, String directory) {
+		if(uploadFiles != null && !uploadFiles.isEmpty()) {
 			VFSContainer container = currentContainer;
 			if(StringHelper.containsNonWhitespace(directory)) {
 				VFSItem dir = container.resolve(directory);

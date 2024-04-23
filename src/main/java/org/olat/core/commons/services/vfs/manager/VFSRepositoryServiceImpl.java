@@ -954,12 +954,13 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		String relativePath = getContainerRelativePath(file);
 		if(relativePath != null) {
 			VFSThumbnailMetadata thumbnail = thumbnailDao.findThumbnail(relativePath, file.getName(), fill, maxWidth, maxHeight);
-			if(thumbnail == null) {
+			if(thumbnail == null
+					&& !Boolean.TRUE.equals(metadata.getCannotGenerateThumbnails())) {
 				thumbnailLeaf = generateThumbnail(file, metadata, fill, maxWidth, maxHeight);
 			} else {
 				VFSItem item = parentContainer.resolve(thumbnail.getFilename());
-				if(item instanceof VFSLeaf) {
-					thumbnailLeaf = (VFSLeaf)item;
+				if(item instanceof VFSLeaf leaf) {
+					thumbnailLeaf = leaf;
 				}
 			}
 		}
@@ -979,7 +980,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				if(metadata == null) {// fallback and generated the needed database entries
 					metadata = getMetadataFor(file);
 				}
-				if(isThumbnailAvailable(file, metadata)) {
+				if(isThumbnailAvailable(file, metadata)
+						&& !Boolean.TRUE.equals(metadata.getCannotGenerateThumbnails())) {
 					thumbnailLeaf = generateThumbnail(file, metadata, fill, maxWidth, maxHeight);
 				}
 			} else {
@@ -1021,6 +1023,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				}
 			}
 		}
+		
 		if(thumbnailLeaf != null && thumbnailService.isThumbnailPossible(thumbnailLeaf)) {
 			try {
 				FinalSize finalSize = thumbnailService.generateThumbnail(poster != null ? poster : file, thumbnailLeaf,
