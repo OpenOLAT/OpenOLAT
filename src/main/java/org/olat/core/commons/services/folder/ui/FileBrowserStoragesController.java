@@ -21,8 +21,6 @@ package org.olat.core.commons.services.folder.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -33,13 +31,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.modules.cemedia.MediaVersion;
-import org.olat.modules.cemedia.model.SearchMediaParameters.Access;
-import org.olat.modules.cemedia.ui.MediaCenterConfig;
-import org.olat.modules.cemedia.ui.MediaCenterController;
-import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -49,19 +40,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FileBrowserStoragesController extends BasicController {
 	
-	private static final MediaCenterConfig MEDIA_CENTER_CONFIG = new MediaCenterConfig(true, false, false, false, false,
-			false, null, MediaCenterController.ALL_TAB_ID, Access.DIRECT, null);
 	private static final String CMD_MEDIA_CENTER = "media";
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackedPanel;
 
-	private MediaCenterController mediaCenterCtrl;
+	private FileBrowserMediaCenterController mediaCenterCtrl;
 
 	private int counter = 0;
-	
-	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
 	
 	public FileBrowserStoragesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
 		super(ureq, wControl);
@@ -99,36 +85,17 @@ public class FileBrowserStoragesController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == mediaCenterCtrl) {
-			if (event instanceof MediaSelectionEvent mediaSelectionEvent) {
-				doFireMediaSelectionEvent(ureq, mediaSelectionEvent);
-			}
+			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void doOpenMediaCenter(UserRequest ureq) {
 		String title = translate("browser.storages.media");
-		mediaCenterCtrl = new MediaCenterController(ureq, getWindowControl(), stackedPanel, MEDIA_CENTER_CONFIG);
-		mediaCenterCtrl.setFormTranslatedTitle(title);
+		mediaCenterCtrl = new FileBrowserMediaCenterController(ureq, getWindowControl(), title);
 		listenTo(mediaCenterCtrl);
 		
 		stackedPanel.pushController(title, mediaCenterCtrl);
-	}
-
-	private void doFireMediaSelectionEvent(UserRequest ureq, MediaSelectionEvent mediaSelectionEvent) {
-		List<MediaVersion> versions = mediaSelectionEvent.getMedia().getVersions();
-		if (!versions.isEmpty()) {
-			VFSMetadata vfsMetadata = versions.get(0).getMetadata();
-			if (vfsMetadata != null) {
-				VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
-				if (vfsItem != null) {
-					fireEvent(ureq, new FileBrowserSelectionEvent(List.of(vfsItem)));
-					return;
-				}
-			}
-		}
-		
-		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 }

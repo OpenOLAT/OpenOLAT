@@ -24,6 +24,7 @@ import static org.olat.core.util.StringHelper.EMPTY;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -77,9 +78,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
-import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -132,9 +133,9 @@ import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
 import org.olat.modules.cemedia.ui.medias.AVAudioMediaController;
 import org.olat.modules.cemedia.ui.medias.AVVideoMediaController;
-import org.olat.modules.cemedia.ui.medias.CollectUrlVideoMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
+import org.olat.modules.cemedia.ui.medias.CollectUrlVideoMediaController;
 import org.olat.modules.cemedia.ui.medias.CreateDrawioMediaController;
 import org.olat.modules.cemedia.ui.medias.CreateFileMediaController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
@@ -212,6 +213,7 @@ public class MediaCenterController extends FormBasicController
 	private final boolean withUploadCard;
 	private final boolean withMediaSelection;
 	private final String preselectedType;
+	private final Collection<String> restrictedTypes;
 	private final DocTemplates editableFileTypes;
 	private final TooledStackedPanel stackPanel;
 	private final RepositoryEntry repositoryEntry;
@@ -247,7 +249,7 @@ public class MediaCenterController extends FormBasicController
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private VFSTranscodingService vfsTranscodingService;
-	
+
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, MediaCenterConfig config) {
 		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
 		this.stackPanel = stackPanel;
@@ -257,6 +259,7 @@ public class MediaCenterController extends FormBasicController
 		this.withUploadCard = config.withUploadCard();
 		this.withMediaSelection = config.withMediaSelection();
 		this.preselectedType = config.preselectedType();
+		this.restrictedTypes = config.restrictedTypes();
 		this.repositoryEntry = config.repositoryEntry();
 		roles = ureq.getUserSession().getRoles();
 		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
@@ -421,7 +424,9 @@ public class MediaCenterController extends FormBasicController
 			SelectionValues typesKV = new SelectionValues();
 			List<MediaHandler> handlers = mediaService.getMediaHandlers();
 			for(MediaHandler handler:handlers) {
-				typesKV.add(SelectionValues.entry(handler.getType(), translate("artefact." + handler.getType())));
+				if (isAvailable(handler)) {
+					typesKV.add(SelectionValues.entry(handler.getType(), translate("artefact." + handler.getType())));
+				}
 			}
 			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
 					FILTER_TYPES, typesKV, true);
@@ -545,6 +550,10 @@ public class MediaCenterController extends FormBasicController
 			default: tab = allTab; break;
 		}
 		tableEl.setSelectedFilterTab(ureq, tab);
+	}
+	
+	private boolean isAvailable(MediaHandler handler) {
+		return restrictedTypes == null || restrictedTypes.contains(handler.getType());
 	}
 	
 	@Override
@@ -674,6 +683,7 @@ public class MediaCenterController extends FormBasicController
 		if(preselectedType != null) {
 			params.setTypes(List.of(preselectedType));
 		} else {
+			params.setTypes(restrictedTypes);
 			FlexiTableFilter typeFilters = FlexiTableFilter.getFilter(filters, FILTER_TYPES);
 			if (typeFilters != null) {
 				List<String> filterValues = ((FlexiTableExtendedFilter)typeFilters).getValues();
@@ -1198,7 +1208,7 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	public void event(Event event) {
 		if (event instanceof VFSTranscodingDoneEvent doneEvent) {
-			model.getObjects().stream().filter((r) -> r.getTitle().contains(doneEvent.getFileName())).forEach((r) -> {
+			model.getObjects().stream().filter(r -> r.getTitle().contains(doneEvent.getFileName())).forEach(r -> {
 				MediaHandler handler = mediaService.getMediaHandler(r.getType());
 				VFSLeaf thumbnail = handler.getThumbnail(r.getVersion(), THUMBNAIL_SIZE);
 				r.setThumbnailAvailable(thumbnail != null);

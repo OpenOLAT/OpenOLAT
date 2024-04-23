@@ -44,7 +44,7 @@ public class ChooseImageController extends BasicController {
 	public ChooseImageController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		MediaCenterConfig mediaCenterConfig = new MediaCenterConfig(true, false, false,
-				true, true, true, "image",
+				true, true, true, "image", null,
 				MediaCenterController.ALL_TAB_ID, SearchMediaParameters.Access.DIRECT, null);
 		mediaCenterController = new MediaCenterController(ureq, wControl, null, mediaCenterConfig);
 		listenTo(mediaCenterController);

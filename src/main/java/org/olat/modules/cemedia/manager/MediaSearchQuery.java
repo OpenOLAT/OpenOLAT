@@ -24,6 +24,7 @@ import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQuery
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import jakarta.persistence.TypedQuery;
@@ -120,7 +121,7 @@ public class MediaSearchQuery {
 			  .append(" )");
 		}
 		
-		List<String> types = parameters.getTypes();
+		Collection<String> types = parameters.getTypes();
 		if(types != null && !types.isEmpty()) {
 			sb.and().append("media.type in (:types)");
 		}

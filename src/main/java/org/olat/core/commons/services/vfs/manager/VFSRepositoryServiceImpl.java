@@ -100,11 +100,11 @@ import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.version.RevisionFileImpl;
 import org.olat.core.util.vfs.version.VersionsFileImpl;
@@ -815,7 +815,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public void copyTo(VFSLeaf source, VFSLeaf target, VFSContainer parentTarget, Identity savedBy) {
 		if(source.canMeta() != VFSStatus.YES || target.canMeta() != VFSStatus.YES) return;
 		
-		VFSMetadataImpl sourceMetadata = (VFSMetadataImpl)loadMetadata(toFile(source));
+		VFSMetadata sourceMetadata = source.getMetaInfo();
 		if(sourceMetadata != null) {
 			File targetFile = toFile(target);
 			if(targetFile != null) {

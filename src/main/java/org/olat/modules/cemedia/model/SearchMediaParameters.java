@@ -19,6 +19,7 @@
  */
 package org.olat.modules.cemedia.model;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -36,7 +37,7 @@ public class SearchMediaParameters {
 	
 	private String searchString;
 	private String checksum;
-	private List<String> types;
+	private Collection<String> types;
 	private List<Long> tags;
 	private List<TaxonomyLevelRef> taxonomyLevelsRefs;
 	private String source;
@@ -113,11 +114,11 @@ public class SearchMediaParameters {
 		this.sharedWith = sharedWith;
 	}
 
-	public List<String> getTypes() {
+	public Collection<String> getTypes() {
 		return types;
 	}
 
-	public void setTypes(List<String> types) {
+	public void setTypes(Collection<String> types) {
 		this.types = types;
 	}
 
