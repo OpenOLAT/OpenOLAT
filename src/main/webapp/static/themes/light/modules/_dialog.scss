@@ -118,7 +118,7 @@ div.o_callout_overlay {
 		}
 		@media (min-width: $screen-sm-min) {
 		  // Automatically set modal's width for larger viewports
-		    width: $modal-md;
+		    width: 600px;
 		}
  	}
 }
@@ -235,19 +235,30 @@ body#o_body:has(dialog.dialog.modal.show) {
 			width: 80%;
 		}
 	}
+	.modal-content {
+		width: 100%;
+	  	height: 100%;
+	  	display: flex;
+	  	flex-direction: column;
+	}
 	/* make header and footer sticky to be always visible, specially in wizard */
 	.modal-header {
-		position: sticky;
-		top: 0;
+		flex-grow: 0;
+  		width: 100%;
+  		position: relative;
 		background: $o-dialog-header-background;
-		box-shadow: 0 2px 2px $o-dialog-header-background;
-		z-index: 2;
+		box-shadow: 0 4px 4px $o-dialog-header-background;
+	}
+	.modal-body {
+		flex-grow:1;
+		overflow-y: scroll; /* scroll only here in modal dialog */
 	}
 	.modal-footer {
-		position: sticky;
-		bottom: 0;
+		flex-grow: 0;
+		width: 100%;
+		position: relative;
 		background: $o-dialog-footer-background;
-		box-shadow: 0 -2px 2px $o-dialog-header-background;
+		box-shadow: 0 -4px 4px $o-dialog-header-background;
 	}
 	
 	.modal-header h4 {
@@ -255,6 +266,8 @@ body#o_body:has(dialog.dialog.modal.show) {
 	  	font-weight: $o-dialog-header-font-weight;
 		font-family: $headings-font-family;
 	  	line-height: $headings-line-height;
+	  	margin-top: 0;
+	  	margin-bottom: 0;
 	}
 	.o_modal_close {
 		/* make room for context-help in header */
