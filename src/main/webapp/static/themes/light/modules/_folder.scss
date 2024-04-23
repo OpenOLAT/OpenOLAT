@@ -218,6 +218,11 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 						height: auto;
 						max-width: 100%;
 					}
+					&.o_folder_card_img_top {
+						img {
+							top: 95%;
+						}
+					}
 				}
 				.o_folder_row_thumbnail {
 					height: 100%;

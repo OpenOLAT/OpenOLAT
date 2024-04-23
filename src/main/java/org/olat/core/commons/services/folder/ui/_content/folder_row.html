@@ -8,9 +8,9 @@
 	#else
 		<div class="o_folder_card_thumbnail">
 	#end
-		<div class="o_folder_card_img">
+		<div class="o_folder_card_img #if($row.isThumbnailTopVisible())o_folder_card_img_top#end">
 			#if($row.isThumbnailAvailable())
-				<img src="${row.getThumbnailUrl()}" alt=""/>
+				<img src="$row.getThumbnailUrl()/1000/650" alt=""/>
 			#else
 				<div class="o_folder_row_thumbnail">
 					<div class="o_folder_icon_container">

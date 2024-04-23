@@ -72,6 +72,8 @@ import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.vfs.ui.version.RevisionListController;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.ui.WebDAVController;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
@@ -134,7 +136,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -150,7 +151,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
@@ -287,6 +287,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private UserManager userManager;
 	@Autowired
 	private AVModule avModule;
+	@Autowired
+	private MapperService mapperService;
 
 	public FolderController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, FolderControllerConfig config) {
 		super(ureq, wControl, "folder");
@@ -721,7 +723,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		applyFilters(rows);
 		rows.forEach(row -> {
-			forgeThumbnail(ureq, row);
+			forgeThumbnail(row);
 			forgeToolsLink(row);
 		});
 		
@@ -896,42 +898,27 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 	}
 	
-	private void forgeThumbnail(UserRequest ureq, FolderRow row) {
-		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf && isThumbnailAvailable(row.getMetadata(), vfsLeaf)) {
-			VFSLeaf thumbnail = getThumbnail(row.getMetadata(), vfsLeaf);
-			if (thumbnail != null) {
-				row.setThumbnailAvailable(true);
-				VFSMediaMapper thumbnailMapper = new VFSMediaMapper(thumbnail);
-				String thumbnailUrl = registerCacheableMapper(ureq, null, thumbnailMapper);
-				row.setThumbnailUrl(thumbnailUrl);
-			}
+	private void forgeThumbnail(FolderRow row) {
+		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf && row.getMetadata() != null && isThumbnailAvailable(row.getMetadata(), vfsLeaf)) {
+			// One mapper per thumbnail per leaf version. The mapper is cached for 10 min or all users.
+			FolderThumbnailMapper thumbnailMapper = new FolderThumbnailMapper(vfsRepositoryService, avModule, row.getMetadata(), row.getVfsItem());
+			MapperKey mapperKey = mapperService.register(null, getThumbnailMapperId(row.getMetadata()), thumbnailMapper, 10);
+			
+			row.setThumbnailAvailable(true);
+			row.setThumbnailUrl(mapperKey.getUrl());
+			row.setThumbnailTopVisible(FolderUIFactory.isThumbnailTopVisible(row.getMetadata(), row.getVfsItem()));
 		}
 	}
 	
 	private boolean isThumbnailAvailable(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
-		if (isAudio(vfsMetadata, vfsLeaf)) {
+		if (FolderThumbnailMapper.isAudio(vfsMetadata, vfsLeaf)) {
 			return true;
 		}
 		return vfsRepositoryService.isThumbnailAvailable(vfsLeaf, vfsMetadata);
 	}
-
-	private VFSLeaf getThumbnail(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
-		if (isAudio(vfsMetadata, vfsLeaf)) {
-			return vfsRepositoryService.getLeafFor(avModule.getAudioWaveformUrl());
-		}
-		return FlexiTableRendererType.classic == tableEl.getRendererType()
-				? vfsRepositoryService.getThumbnail(vfsLeaf, 30, 30, false)
-				: vfsRepositoryService.getThumbnail(vfsLeaf, 1000, 650, false);
-	}
 	
-	private boolean isAudio(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
-		String filename = vfsMetadata != null
-				? vfsMetadata.getFilename()
-				: vfsLeaf.getName();
-		if ("m4a".equalsIgnoreCase(FileUtils.getFileSuffix(filename))) {
-			return true;
-		}
-		return false;
+	private String getThumbnailMapperId(VFSMetadata vfsMetadata) {
+		return vfsMetadata.getUuid() + Formatter.formatDatetimeFilesystemSave(vfsMetadata.getFileLastModified());
 	}
 	
 	private void forgeTitleLink(UserRequest ureq, FolderRow row) {

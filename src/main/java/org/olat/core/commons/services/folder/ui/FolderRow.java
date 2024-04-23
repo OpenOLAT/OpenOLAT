@@ -61,6 +61,7 @@ public class FolderRow {
 	private String translatedLicense;
 	private boolean thumbnailAvailable;
 	private String thumbnailUrl;
+	private boolean thumbnailTopVisible;
 	private boolean openable;
 	private boolean openInNewWindow;
 	private FormItem titleItem;
@@ -298,6 +299,14 @@ public class FolderRow {
 
 	public void setThumbnailUrl(String thumbnailUrl) {
 		this.thumbnailUrl = thumbnailUrl;
+	}
+
+	public boolean isThumbnailTopVisible() {
+		return thumbnailTopVisible;
+	}
+
+	public void setThumbnailTopVisible(boolean thumbnailTopVisible) {
+		this.thumbnailTopVisible = thumbnailTopVisible;
 	}
 
 	public boolean isOpenable() {
