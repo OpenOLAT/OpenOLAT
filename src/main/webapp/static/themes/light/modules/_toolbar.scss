@@ -47,7 +47,8 @@
 		}
 	}
 	
-	&:not(:has(.o_tools_container)) {
+	// Toolbar has no tools and no navigation (= breadcrumb only)
+	&:not(:has(.o_tools_container)):not(:has(+ .o_toolbar_navigation)) {
 		.o_breadcrumb {
 			.breadcrumb {
 				background-color: transparent;

@@ -481,13 +481,7 @@
 
 /* position without toolbar but with breadcrumb */
 .o_with_breadcrumb .o_course_progress {
-	top: $o-toolbar-breadcrumb-line-height + $o-toolbar-margin-top - 7px;
-	@media (max-width: $screen-sm-max) { 
-		top: $o-toolbar-breadcrumb-line-height + $o-toolbar-margin-top - 7px;
-	}
-	@media (max-width: $screen-xs-max) { 
-		top: $o-toolbar-breadcrumb-line-height + $o-toolbar-margin-top - 7px;
-	}
+	top: 7px;
 }
 /* position with breadcrumb and with toolbar */
 .o_with_breadcrumb.o_with_toolbar .o_course_progress {
