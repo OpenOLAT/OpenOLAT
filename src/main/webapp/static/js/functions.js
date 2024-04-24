@@ -2118,10 +2118,10 @@ function o_showFormDirtyDialog(onIgnoreCallback) {
 		cache: false,
 		dataType: 'json',
 		success: function(responseData, textStatus, jqXHR) {
-			jQuery("#o_form_dirty_message").modal('show');
+			jQuery("#o_form_dirty_message").addClass("show").get(0).showModal();
 			jQuery("#o_form_dirty_message .o_form_dirty_ignore").on("click", function() {
 				// Remove dialog and all listeners for dirty button
-				jQuery("#o_form_dirty_message").modal('hide');
+				o_guiCloseModal('#o_form_dirty_message').classList.remove('show');
 				jQuery("#o_form_dirty_message .o_form_dirty_ignore").off();
 				// Execute the ignore callback with original user action
 				onIgnoreCallback();
