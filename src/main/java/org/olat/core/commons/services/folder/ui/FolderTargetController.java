@@ -50,10 +50,11 @@ public class FolderTargetController extends BasicController {
 		stackedPanel.setToolbarEnabled(false);
 		putInitialPanel(stackedPanel);
 		
-		selectionCtrl = new FolderSelectionController(ureq, wControl, stackedPanel, rootContainer, currentContainer,
-				FileBrowserSelectionMode.targetSingle, submitButtonText);
+		selectionCtrl = new FolderSelectionController(ureq, wControl, stackedPanel, rootContainer, FileBrowserSelectionMode.targetSingle,
+				submitButtonText);
 		listenTo(selectionCtrl);
 		stackedPanel.pushController(rootContainer.getName(), selectionCtrl);
+		selectionCtrl.updateCurrentContainer(currentContainer);
 	}
 	
 	public Object getUserObject() {

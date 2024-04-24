@@ -339,7 +339,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 	@Override
 	public boolean popUpToController(Controller controller) {
 		int index = getIndex(controller);
-		if(index > 0 && index < stack.size() - 1) {
+		if(index >= 0 && index < stack.size() - 1) {
 			BreadCrumb popedCrumb = null;
 			for(int i=stack.size(); i-->(index+1); ) {
 				Link link = stack.remove(i);

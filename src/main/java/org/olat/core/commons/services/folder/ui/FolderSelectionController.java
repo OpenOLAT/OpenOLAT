@@ -30,6 +30,8 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataContainer;
 import org.olat.core.commons.services.vfs.VFSMetadataItem;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -51,11 +53,10 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -87,10 +88,11 @@ public class FolderSelectionController extends FormBasicController implements Fl
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private AVModule avModule;
+	@Autowired
+	private MapperService mapperService;
 
 	public FolderSelectionController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
-			VFSContainer rootContainer, VFSContainer currentContainer, FileBrowserSelectionMode selectionMode,
-			String submitButtonText) {
+			VFSContainer rootContainer, FileBrowserSelectionMode selectionMode, String submitButtonText) {
 		super(ureq, wControl, "folder_selection");
 		this.stackedPanel = stackedPanel;
 		if (stackedPanel != null) {
@@ -102,7 +104,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		
 		initForm(ureq);
 		
-		updateCurrentContainer(ureq, currentContainer);
+		updateCurrentContainer(rootContainer);
 	}
 
 	@Override
@@ -127,7 +129,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void loadModel(UserRequest ureq) {
+	private void loadModel() {
 		List<VFSItem> items = getCachedContainer(currentContainer).getItems(vfsFilter);
 		
 		List<FolderRow> rows = new ArrayList<>(items.size());
@@ -141,7 +143,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 			row.setLastModifiedDate(FolderUIFactory.getLastModifiedDate(vfsMetadata, vfsItem));
 			row.setTranslatedType(FolderUIFactory.getTranslatedType(getTranslator(), vfsMetadata, vfsItem));
 			
-			forgeThumbnail(ureq, row);
+			forgeThumbnail(row);
 			forgeTitleLink(row);
 			
 			rows.add(row);
@@ -173,40 +175,27 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		return item;
 	}
 	
-	private void forgeThumbnail(UserRequest ureq, FolderRow row) {
-		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf && isThumbnailAvailable(vfsLeaf)) {
-			VFSLeaf thumbnail = getThumbnail(vfsLeaf);
-			if (thumbnail != null) {
-				row.setThumbnailAvailable(true);
-				VFSMediaMapper thumbnailMapper = new VFSMediaMapper(thumbnail);
-				String thumbnailUrl = registerCacheableMapper(ureq, null, thumbnailMapper);
-				row.setThumbnailUrl(thumbnailUrl);
-			}
+	private void forgeThumbnail(FolderRow row) {
+		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf && row.getMetadata() != null && isThumbnailAvailable(row.getMetadata(), vfsLeaf)) {
+			// One mapper per thumbnail per leaf version. The mapper is cached for 10 min or all users.
+			FolderThumbnailMapper thumbnailMapper = new FolderThumbnailMapper(vfsRepositoryService, avModule, row.getMetadata(), row.getVfsItem());
+			MapperKey mapperKey = mapperService.register(null, getThumbnailMapperId(row.getMetadata()), thumbnailMapper, 10);
+			
+			row.setThumbnailAvailable(true);
+			row.setThumbnailUrl(mapperKey.getUrl());
+			row.setThumbnailTopVisible(FolderUIFactory.isThumbnailTopVisible(row.getMetadata(), row.getVfsItem()));
 		}
 	}
 	
-	private boolean isThumbnailAvailable(VFSLeaf vfsLeaf) {
-		if (isAudio(vfsLeaf)) {
+	private boolean isThumbnailAvailable(VFSMetadata vfsMetadata, VFSLeaf vfsLeaf) {
+		if (FolderThumbnailMapper.isAudio(vfsMetadata, vfsLeaf)) {
 			return true;
 		}
-		if (vfsLeaf.getSize() == 0) {
-			return false;
-		}
-		return vfsRepositoryService.isThumbnailAvailable(vfsLeaf, vfsLeaf.getMetaInfo());
-	}
-
-	private VFSLeaf getThumbnail(VFSLeaf vfsLeaf) {
-		if (isAudio(vfsLeaf)) {
-			return vfsRepositoryService.getLeafFor(avModule.getAudioWaveformUrl());
-		}
-		return vfsRepositoryService.getThumbnail(vfsLeaf, 30, 30, false);
+		return vfsRepositoryService.isThumbnailAvailable(vfsLeaf, vfsMetadata);
 	}
 	
-	private boolean isAudio(VFSLeaf vfsLeaf) {
-		if ("m4a".equalsIgnoreCase(FileUtils.getFileSuffix(vfsLeaf.getRelPath()))) {
-			return true;
-		}
-		return false;
+	private String getThumbnailMapperId(VFSMetadata vfsMetadata) {
+		return vfsMetadata.getUuid() + Formatter.formatDatetimeFilesystemSave(vfsMetadata.getFileLastModified());
 	}
 	
 	private void forgeTitleLink(FolderRow row) {
@@ -253,7 +242,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 			if (event instanceof PopEvent popEvent) {
 				Object userObject = popEvent.getUserObject();
 				if (userObject instanceof VFSContainer vfsContainer) {
-					updateCurrentContainer(ureq, vfsContainer.getParentContainer());
+					updateCurrentContainer(vfsContainer.getParentContainer());
 				}
 			}
 		}
@@ -265,7 +254,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			 if (CMD_FOLDER.equals(link.getCmd()) && link.getUserObject() instanceof FolderRow folderRow) {
-				doOpenFolder(ureq, folderRow);
+				doOpenFolder(folderRow);
 			}
 		}
 		
@@ -306,16 +295,16 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		fireEvent(ureq, new FileBrowserSelectionEvent(items));
 	}
 
-	private void doOpenFolder(UserRequest ureq, FolderRow folderRow) {
-		if (isItemNotAvailable(ureq, folderRow, true)) return;
+	private void doOpenFolder(FolderRow folderRow) {
+		if (isItemNotAvailable(folderRow, true)) return;
 		
 		if (folderRow.getVfsItem() instanceof VFSContainer vfsContainer) {
-			updateCurrentContainer(ureq, vfsContainer);
-			loadModel(ureq);
+			updateCurrentContainer(vfsContainer);
+			loadModel();
 		}
 	}
 	
-	public void updateCurrentContainer(UserRequest ureq, VFSContainer container) {
+	public void updateCurrentContainer(VFSContainer container) {
 		currentContainer = container;
 		List<VFSContainer> parents = new ArrayList<>(1);
 		getParentsToRoot(parents, container);
@@ -327,7 +316,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		}
 		stackedPanel.setDirty(true);
 		
-		loadModel(ureq);
+		loadModel();
 	}
 	
 	private void getParentsToRoot(List<VFSContainer> parents, VFSContainer container) {
@@ -341,7 +330,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		}
 	}
 	
-	private boolean isItemNotAvailable(UserRequest ureq, FolderRow row, boolean showDeletedMessage) {
+	private boolean isItemNotAvailable(FolderRow row, boolean showDeletedMessage) {
 		VFSItem vfsItem = row.getVfsItem();
 		if (!vfsItem.exists()) {
 			if (showDeletedMessage) {
@@ -350,7 +339,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 				} else {
 					showError("error.deleted.leaf");
 				}
-				loadModel(ureq);
+				loadModel();
 			}
 			return true;
 		}

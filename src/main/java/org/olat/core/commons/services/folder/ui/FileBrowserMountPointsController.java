@@ -111,7 +111,7 @@ public class FileBrowserMountPointsController extends BasicController {
 	private void doOpen(UserRequest ureq, WebDAVProvider provider) {
 		VFSContainer vfsContainer = provider.getContainer(identityEnv);
 		folderSelectionCtrl = new FolderSelectionController(ureq, getWindowControl(), stackedPanel, vfsContainer,
-				vfsContainer, selectionMode, submitButtonText);
+				selectionMode, submitButtonText);
 		listenTo(folderSelectionCtrl);
 		
 		stackedPanel.pushController(provider.getName(getLocale()), folderSelectionCtrl);
