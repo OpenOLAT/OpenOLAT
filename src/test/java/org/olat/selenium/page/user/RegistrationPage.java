@@ -112,29 +112,34 @@ public class RegistrationPage {
 	}
 	
 	public void finalizeRegistration(String firstName, String lastName, String login, String password) {
-		By firstNameBy = By.cssSelector(".o_sel_registration_firstName input[type='text']");
-		OOGraphene.waitElement(firstNameBy, browser);
-		browser.findElement(firstNameBy).sendKeys(firstName);
-		
-		By lastNameBy = By.cssSelector(".o_sel_registration_lastName input[type='text']");
-		browser.findElement(lastNameBy).sendKeys(lastName);
-		
-		By loginBy = By.cssSelector(".o_sel_registration_login input[type='text']");
-		browser.findElement(loginBy).sendKeys(login);
-		
-		By cred1By = By.cssSelector(".o_sel_registration_cred1 input[type='password']");
-		browser.findElement(cred1By).sendKeys(password);
-		By cred2By = By.cssSelector(".o_sel_registration_cred2 input[type='password']");
-		browser.findElement(cred2By).sendKeys(password);
-		
-		By finalizeBy = By.cssSelector(".o_sel_registration_2_form button.btn.btn-primary");
-		browser.findElement(finalizeBy).click();
-		OOGraphene.waitBusy(browser);
-		
-		By previewBy = By.id("o_preview_details");
-		OOGraphene.waitElement(previewBy, browser);
-		By toLoginBy = By.cssSelector("#o_main_center_content_inner a.btn.btn-primary");
-		browser.findElement(toLoginBy).click();
+		try {
+			By firstNameBy = By.cssSelector(".o_sel_registration_firstName input[type='text']");
+			OOGraphene.waitElement(firstNameBy, browser);
+			browser.findElement(firstNameBy).sendKeys(firstName);
+			
+			By lastNameBy = By.cssSelector(".o_sel_registration_lastName input[type='text']");
+			browser.findElement(lastNameBy).sendKeys(lastName);
+			
+			By loginBy = By.cssSelector(".o_sel_registration_login input[type='text']");
+			browser.findElement(loginBy).sendKeys(login);
+			
+			By cred1By = By.cssSelector(".o_sel_registration_cred1 input[type='password']");
+			browser.findElement(cred1By).sendKeys(password);
+			By cred2By = By.cssSelector(".o_sel_registration_cred2 input[type='password']");
+			browser.findElement(cred2By).sendKeys(password);
+			
+			By finalizeBy = By.cssSelector(".o_sel_registration_2_form button.btn.btn-primary");
+			browser.findElement(finalizeBy).click();
+			OOGraphene.waitBusy(browser);
+			
+			By previewBy = By.id("o_preview_details");
+			OOGraphene.waitElement(previewBy, browser);
+			By toLoginBy = By.cssSelector("#o_main_center_content_inner a.btn.btn-primary");
+			browser.findElement(toLoginBy).click();
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Finalize registration", browser);
+			throw e;
+		}
 	}
 
 }

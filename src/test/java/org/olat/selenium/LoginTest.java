@@ -25,12 +25,14 @@ import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.selenium.page.LoginPage;
@@ -55,6 +57,8 @@ import com.dumbster.smtp.SmtpMessage;
 @RunWith(Arquillian.class)
 public class LoginTest extends Deployments {
 
+	private static final Logger log = Tracing.createLoggerFor(LoginTest.class);
+	
 	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
@@ -282,6 +286,7 @@ public class LoginTest extends Deployments {
 
 		String registrationLink = registration.extractRegistrationLink(messages.get(0));
 		Assert.assertNotNull(registrationLink);
+		log.info("Registration link: {}", registrationLink);
 		
 		String login = "md_" + CodeHelper.getForeverUniqueID();
 		String password = "VerySecret#01";
