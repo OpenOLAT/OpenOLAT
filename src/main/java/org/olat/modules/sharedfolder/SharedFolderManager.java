@@ -48,6 +48,7 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SharedFolderSecurityCallback;
@@ -134,7 +135,7 @@ public class SharedFolderManager {
 
 		// export properties
 		RepositoryEntryImportExport reImportExport = new RepositoryEntryImportExport(re, null);
-		return reImportExport.exportDoExport(path, zout);
+		return reImportExport.exportDoExport(path, zout, RepositoryEntryImportExportLinkEnum.WITH_REFERENCE);
 	}
 	
 	public RepositoryEntryImportExport getRepositoryImportExport(File importDataDir) {

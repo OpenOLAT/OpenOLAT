@@ -472,7 +472,7 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 	private void exportCourseNodeWithRepositoryEntry(RepositoryEntry entry, CourseNode courseNode, ZipOutputStream zout) {
 		if(entry != null) {
 			RepositoryEntryImportExport reie = new RepositoryEntryImportExport(entry, null);
-			reie.exportDoExport(ZipUtil.concat(ICourse.EXPORTED_DATA_FOLDERNAME, courseNode.getIdent()), zout);
+			reie.exportDoExport(ZipUtil.concat(ICourse.EXPORTED_DATA_FOLDERNAME, courseNode.getIdent()), zout, withLinkedReferences);
 		}
 	}
 }
