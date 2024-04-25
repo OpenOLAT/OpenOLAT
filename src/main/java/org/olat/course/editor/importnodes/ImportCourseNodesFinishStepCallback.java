@@ -29,6 +29,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
@@ -70,18 +71,19 @@ public class ImportCourseNodesFinishStepCallback implements StepRunnerCallback {
 
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
 		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(targetEntry, importCourseContext.getEntry());
 		envMapper.setAuthor(ureq.getIdentity());
 		
-		importCourseFiles(envMapper);
+		importCourseFiles(envMapper, identityEnv);
 		importCourseNodes(ureq, envMapper);
 		return StepsMainRunController.DONE_MODIFIED;
 	}
 	
-	private void importCourseFiles(CourseEnvironmentMapper envMapper) {
+	private void importCourseFiles(CourseEnvironmentMapper envMapper, IdentityEnvironment identityEnv) {
 		List<ImportCourseFile> courseFolderFiles = importCourseContext.getCourseFolderFiles();
 		ICourse targetCourse = CourseFactory.loadCourse(importCourseContext.getTargetEntry());
-		VFSContainer targetCourseFolderCont = targetCourse.getCourseFolderContainer(CourseContainerOptions.courseFolder());
+		VFSContainer targetCourseFolderCont = targetCourse.getCourseFolderContainer(identityEnv, CourseContainerOptions.courseFolder(), false, true);
 		for(ImportCourseFile file:courseFolderFiles) {
 			if(file.getParent() == null) {
 				recursiveCopyCourseFolderFiles(file, targetCourseFolderCont, targetCourseFolderCont, envMapper);

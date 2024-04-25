@@ -54,6 +54,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
@@ -95,11 +96,12 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "select_nodes");
 		this.importCourseContext = importCourseContext;
 		
+		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
 		ICourse sourceCourse = CourseFactory.loadCourse(importCourseContext.getEntry());
-		sourceCourseFolderCont = sourceCourse.getCourseFolderContainer(CourseContainerOptions.courseFolder());
+		sourceCourseFolderCont = sourceCourse.getCourseFolderContainer(identityEnv, CourseContainerOptions.courseFolder(), false, true);
 
 		ICourse targetCourse = CourseFactory.loadCourse(importCourseContext.getTargetEntry());
-		targetCourseFolderCont = targetCourse.getCourseFolderContainer(CourseContainerOptions.courseFolder());
+		targetCourseFolderCont = targetCourse.getCourseFolderContainer(identityEnv, CourseContainerOptions.courseFolder(), false, true);
 		
 		initForm(ureq);
 		loadModel();

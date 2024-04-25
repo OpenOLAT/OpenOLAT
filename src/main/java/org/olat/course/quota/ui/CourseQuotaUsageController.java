@@ -74,6 +74,7 @@ import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.core.CourseElement;
 import org.olat.course.core.CourseElementSearchParams;
 import org.olat.course.core.CourseNodeService;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeWithFiles;
 import org.olat.course.nodes.PFCourseNode;
@@ -265,7 +266,7 @@ public class CourseQuotaUsageController extends FormBasicController
 	}
 
 	private void loadCourseFolder() {
-		VFSContainer courseFolderContainer = CourseFactory.loadCourse(entry).getCourseFolderContainer(identityEnvironment);
+		VFSContainer courseFolderContainer = CourseFactory.loadCourse(entry).getCourseFolderContainer(identityEnvironment, CourseContainerOptions.all(), false, true);
 		Quota courseFolderQuota = Objects.requireNonNull(VFSManager.findInheritedSecurityCallback(courseFolderContainer)).getQuota();
 		if (courseFolderQuota != null) {
 			// subIdent starting with 0, for the correct order in table

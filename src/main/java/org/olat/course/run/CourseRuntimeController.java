@@ -127,6 +127,7 @@ import org.olat.course.disclaimer.ui.CourseDisclaimerReviewController;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.QuickPublishEvent;
 import org.olat.course.editor.overview.OverviewController;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.learningpath.LearningPathService;
@@ -2396,12 +2397,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				removeCustomCSS();
 				// Folder for course with custom link model to jump to course nodes
 				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-				VFSContainer courseContainer;
-				if(overrideReadOnly) {
-					courseContainer = course.getCourseFolderContainer(overrideReadOnly);
-				} else {
-					courseContainer = course.getCourseFolderContainer();
-				}
+				VFSContainer courseContainer = course.getCourseFolderContainer(ureq.getUserSession().getIdentityEnvironment(),
+						CourseContainerOptions.all(), overrideReadOnly, true);
 				VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), courseContainer);
 				CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
 	

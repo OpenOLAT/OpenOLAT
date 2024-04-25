@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -994,7 +995,8 @@ public class CourseToolbarController extends FormBasicController {
 	}
 	
 	private void doSelectDocumentsFolder(UserRequest ureq) {
-		VFSContainer namedContainer = course.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
+		VFSContainer namedContainer = course.getCourseFolderContainer(identityEnv, CourseContainerOptions.withoutElements(), false, true);
 		
 		folderSelectCtrl = new BCCourseNodeEditChooseFolderForm(ureq, getWindowControl(), namedContainer);
 		listenTo(folderSelectCtrl);

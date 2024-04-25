@@ -26,6 +26,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -39,11 +40,13 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 	private RepositoryEntry entry;
 	private VFSContainer parentContainer;
 	
+	private final boolean entryAdmin;
 	private final IdentityEnvironment identityEnv;
 	
-	public CoursefolderWebDAVNamedContainer(String courseTitle, RepositoryEntry entry, IdentityEnvironment identityEnv) {
+	public CoursefolderWebDAVNamedContainer(String courseTitle, RepositoryEntry entry, IdentityEnvironment identityEnv, boolean entryAdmin) {
 		super(courseTitle, null);
 		this.entry = entry;
+		this.entryAdmin = entryAdmin;
 		this.identityEnv = identityEnv;
 		setIconCSS("o_CourseModule_icon");
 	}
@@ -69,7 +72,7 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 		if(super.getDelegate() == null) {
 			try {
 				ICourse course = CourseFactory.loadCourse(entry);
-				VFSContainer courseFolder = course.getCourseFolderContainer(identityEnv);
+				VFSContainer courseFolder = course.getCourseFolderContainer(identityEnv, CourseContainerOptions.all(), false, entryAdmin);
 				setDelegate(courseFolder);
 				if(parentContainer != null) {
 					super.setParentContainer(parentContainer);
