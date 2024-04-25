@@ -56,6 +56,17 @@
 							content: none;
 						}
 					}
+					// Truncate dropdown menu items
+					&.open {
+						>.o_breadcrumb_menu {
+							max-width: 90dvw;
+							>li {
+								a {
+									@extend %o_nowrap;
+								}
+							}
+						}
+					}
 				}
 				&.o_last_crumb {
 					a {
