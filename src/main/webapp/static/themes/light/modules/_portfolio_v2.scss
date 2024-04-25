@@ -168,17 +168,11 @@
 
 /* binder with assignments (binders created from course element */
 .o_binder.o_portfolio_assignments {
-	.panel-heading,
-	.panel-body {
-		border-left: 3px solid $o-portfolio-assignment-color;
-	}
+	border-left: 3px solid $o-portfolio-assignment-color;
 }
 /* an assignment in template edit mode*/ 
 .panel-default.o_portfolio_assignments {
-	.panel-heading,
-	.panel-body {
-		border-left: 3px solid $o-portfolio-assignment-color;
-	}
+	border-left: 3px solid $o-portfolio-assignment-color;
 }
 /* an assignment entry */
 .o_portfolio_page .o_portfolio_assignments .o_portfolio_page_body {

@@ -177,8 +177,7 @@ public class PageUserInformationsImpl implements Persistable, ModifiedInfo, Crea
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof PageUserInformationsImpl) {
-			PageUserInformationsImpl infos = (PageUserInformationsImpl)obj;
+		if(obj instanceof PageUserInformationsImpl infos) {
 			return key != null && key.equals(infos.getKey());
 		}
 		return false;

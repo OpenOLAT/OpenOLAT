@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="htts://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.tool;
@@ -115,6 +115,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -143,6 +144,8 @@ import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
 import org.olat.modules.assessment.ui.event.ParticipantTypeFilterEvent;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
@@ -161,6 +164,15 @@ import org.olat.modules.grading.GradingService;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.ui.AwardBadgesController;
+import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
+import org.olat.modules.portfolio.PageUserInformations;
+import org.olat.modules.portfolio.PageUserStatus;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionStatus;
+import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -178,7 +190,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * it to your need.
  * 
  * Initial date: 06.10.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class IdentityListCourseNodeController extends FormBasicController
@@ -257,13 +269,15 @@ public class IdentityListCourseNodeController extends FormBasicController
 	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
-	private GradeModule gradeModuel;
+	private GradeModule gradeModule;
 	@Autowired
 	private GradeService gradeService;
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	public IdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -378,8 +392,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("showTitle", showTitle);
 			layoutCont.contextPut("courseNodeTitle", courseNode.getShortTitle());
 			layoutCont.contextPut("courseNodeCssClass", CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
@@ -392,11 +405,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
 		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
-		for (int i = 0; i < userPropertyHandlers.size(); i++) {
-			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			boolean visible = userManager.isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			boolean visible = userManager.isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer, userPropertyHandler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, select, true, "userProp-" + colIndex));
-			if(!options.hasDefaultOrderBy()) {
+			if (!options.hasDefaultOrderBy()) {
 				options.setDefaultOrderBy(new SortKey("userProp-" + colIndex, true));
 			}
 			colIndex++;
@@ -405,6 +417,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		
 		initAssessmentColumns(columnsModel);
 		initStatusColumns(columnsModel);
+		if (courseNode instanceof PortfolioCourseNode) {
+			initPortfolioStatusDataColumns(columnsModel);
+		}
 		initModificationDatesColumns(columnsModel);
 		initExternalGradingColumns(columnsModel);
 		initCalloutColumns(columnsModel);
@@ -499,9 +514,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		// passed
 		if(Mode.none != assessmentConfig.getPassedMode()) {
 			SelectionValues passedValues = new SelectionValues();
-			passedValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Passed.passed.name(), translate("filter.passed")));
-			passedValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Passed.failed.name(), translate("filter.failed")));
-			passedValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Passed.notGraded.name(), translate("filter.nopassed")));
+			passedValues.add(SelectionValues.entry(Passed.passed.name(), translate("filter.passed")));
+			passedValues.add(SelectionValues.entry(Passed.failed.name(), translate("filter.failed")));
+			passedValues.add(SelectionValues.entry(Passed.notGraded.name(), translate("filter.nopassed")));
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.passed.label"),
 					AssessedIdentityListState.FILTER_PASSED, passedValues, true));
 		}
@@ -548,7 +563,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			SelectionValues assignedCoachValues = new SelectionValues();
 			assignedCoachValues.add(SelectionValues.entry("-1", translate("filter.coach.not.assigned")));
 			List<Identity> coaches = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name(), GroupRoles.coach.name());
-			Collections.sort(coaches, IdentityComporatorFactory.createLastnameFirstnameComporator());
+			coaches.sort(IdentityComporatorFactory.createLastnameFirstnameComporator());
 			for(Identity coach:coaches) {
 				assignedCoachValues.add(SelectionValues.entry(coach.getKey().toString(), userManager.getUserDisplayName(coach)));
 			}
@@ -636,7 +651,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility, new UserVisibilityCellRenderer(false)));
 			}
 			if(Mode.none != assessmentConfig.getScoreMode()) {
-				boolean hasGrade = gradeModuel.isEnabled() && assessmentConfig.hasGrade();
+				boolean hasGrade = gradeModule.isEnabled() && assessmentConfig.hasGrade();
 				if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 					if(assessmentConfig.getMinScore() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.min, new ScoreCellRenderer()));
@@ -680,6 +695,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if (assessmentConfig.hasStatus()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.assessmentStatus, new AssessmentStatusCellRenderer(getLocale())));
 		}
+	}
+
+	private void initPortfolioStatusDataColumns(FlexiTableColumnModel columnsModel) {
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfAuthorisedUsers));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfInProgressSections));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfNewEntries));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfInProgressEntries));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfPublishedEntries));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfInRevisionEntries));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.openBinder));
 	}
 	
 	protected void initModificationDatesColumns(FlexiTableColumnModel columnsModel) {
@@ -743,7 +768,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 
 	protected void initBulkApplyGradeTool(FormLayoutContainer formLayout) {
-		if (gradeModuel.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade() 
+		if (gradeModule.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade()
 				&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))) {
 			bulkApplyGradeButton = uifactory.addFormLink("bulk.apply.grade", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 			bulkApplyGradeButton.setElementCssClass("o_sel_assessment_apply_grade");
@@ -819,6 +844,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 		
 		boolean hasCallout = hasCalloutController();
+
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
@@ -840,6 +866,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 				AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, grader, assignedCoach,
 						currentStart, currentCompletion, toolsLink, userPropertyHandlers, getLocale());
 				toolsLink.setUserObject(row);
+
+				// only for portfolio course nodes
+				if (courseNode instanceof PortfolioCourseNode epCourseNode) {
+					loadPortfolioStatusData(row, assessedIdentity, epCourseNode.getIdent());
+				}
 				rows.add(row);
 			}
 		}
@@ -847,6 +878,67 @@ public class IdentityListCourseNodeController extends FormBasicController
 		usersTableModel.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();
+	}
+
+	private void loadPortfolioStatusData(AssessedIdentityElementRow row, Identity assessedIdentity, String subIdent) {
+		List<Binder> binders = portfolioService.getBinders(assessedIdentity, courseEntry, subIdent);
+		// Check if we have exactly one binder, otherwise exit early
+		// because assessedIdentity inside a courseEntry with a given subIdent should only contain one Binder
+		Binder binder = null;
+		if (binders.size() == 1) {
+			binder = binders.get(0);
+		}
+
+		if (binder != null) {
+			List<AccessRights> accessRights = portfolioService.getAccessRights(binder);
+			List<Section> sections = portfolioService.getSections(binder);
+
+			// Count non-owner authorized users
+			long numOfAuthorisedUsers = accessRights.stream()
+					.filter(ar -> !ar.getRole().equals(ContentRoles.owner))
+					.count();
+			row.setNumOfAuthorisedUsers(numOfAuthorisedUsers);
+
+			// Count sections in progress
+			Long numOfSectionsInProgress = sections.stream()
+					.filter(s -> s.getSectionStatus().equals(SectionStatus.inProgress))
+					.count();
+			row.setNumOfSectionsInProgress(numOfSectionsInProgress);
+
+			// Count published entries and entries in revision
+			long numOfEntriesPublished = sections.stream()
+					.flatMap(s -> s.getPages().stream())
+					.filter(p -> p.getPageStatus() == PageStatus.published)
+					.count();
+			long numOfEntriesInRevision = sections.stream()
+					.flatMap(s -> s.getPages().stream())
+					.filter(p -> p.getPageStatus() == PageStatus.inRevision)
+					.count();
+			row.setNumOfEntriesPublished(numOfEntriesPublished);
+			row.setNumOfEntriesInRevision(numOfEntriesInRevision);
+
+			// Fetch page user info and count new and in-process entries
+			List<PageUserInformations> userInfoList = portfolioService.getPageUserInfos(binder, assessedIdentity);
+
+			long numOfEntriesNew = userInfoList.stream()
+					.filter(u -> u.getStatus() == PageUserStatus.incoming)
+					.count();
+
+			long numOfEntriesInProgress = userInfoList.stream()
+					.filter(u -> u.getStatus() == PageUserStatus.inProcess)
+					.count();
+			row.setNumOfEntriesNew(numOfEntriesNew);
+			row.setNumOfEntriesInProgress(numOfEntriesInProgress);
+
+			List<AccessRights> accessRightsByIdentity = accessRights.stream().filter(ar -> ar.getIdentity().equals(getIdentity())).toList();
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCourseCoach(binder, accessRightsByIdentity);
+
+			if (secCallback.canAssess(binder)) {
+				FormLink openBinderLink = uifactory.addFormLink(String.valueOf(binder.getKey()), "open_binder", "open", null, flc, Link.BUTTON);
+				openBinderLink.setUserObject(row);
+				row.setOpenBinderLink(openBinderLink);
+			}
+		}
 	}
 	
 	private List<Identity> applyFilters(List<Identity> identities, Map<Long, AssessmentEntry> identityToEntry,
@@ -920,7 +1012,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				List<AssessmentEntryStatus> passed = filterValues.stream()
 						.filter(AssessmentEntryStatus::isValueOf)
 						.map(AssessmentEntryStatus::valueOf)
-						.collect(Collectors.toList());
+						.toList();
 				params.setAssessmentStatus(passed);
 			}
 		}
@@ -931,7 +1023,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			if (filterValues != null && !filterValues.isEmpty()) {
 				List<SearchAssessedIdentityParams.Passed> passed = filterValues.stream()
 						.map(SearchAssessedIdentityParams.Passed::valueOf)
-						.collect(Collectors.toList());
+						.toList();
 				params.setPassed(passed);
 			}
 		}
@@ -954,7 +1046,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			if (filterValues != null && !filterValues.isEmpty()) {
 				List<AssessmentObligation> assessmentObligations = filterValues.stream()
 						.map(AssessmentObligation::valueOf)
-						.collect(Collectors.toList());
+						.toList();
 				params.setAssessmentObligations(assessmentObligations);
 			}
 		}
@@ -1023,7 +1115,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			if (filterValues != null && !filterValues.isEmpty()) {
 				participantTypes = filterValues.stream()
 						.map(ParticipantType::valueOf)
-						.collect(Collectors.toList());
+						.toList();
 			}
 		}
 		return participantTypes;
@@ -1196,7 +1288,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 				}
 				cleanUp();
 			}
-		} else if (source == gradeScaleViewCtrl) {
+		} else if (source == gradeScaleViewCtrl
+				|| source == contactCtrl
+				|| source == awardBadgesCtrl) {
 			if(cmc != null) {
 				cmc.deactivate();
 			}
@@ -1205,16 +1299,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 			if(event == Event.CHANGED_EVENT) {
 				reload(ureq);
 			}
-		} else if (source == contactCtrl) {
-			if (cmc != null) {
-				cmc.deactivate();
-			}
-			cleanUp();
-		} else if (source == awardBadgesCtrl) {
-			if (cmc != null) {
-				cmc.deactivate();
-			}
-			cleanUp();
 		} else if(toolsCtrl == source) {
 			if(event instanceof ShowDetailsEvent sdEvent) {
 				doSelect(ureq, sdEvent.getAssessedIdentity());
@@ -1287,6 +1371,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		} else if(source instanceof FormLink link) {
 			if("tools".equals(link.getCmd())) {
 				doOpenTools(ureq, (AssessedIdentityElementRow)link.getUserObject(), link);
+			} else if("open_binder".equals(link.getCmd())) {
+				AssessedIdentityElementRow row = (AssessedIdentityElementRow) link.getUserObject();
+				doSelect(ureq, row);
 			}
 		}
 		

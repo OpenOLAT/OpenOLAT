@@ -6,13 +6,6 @@
 	$r.render("identityInfos")
 #end
 
-#if ($r.isNotEmpty($infoCoach))
-	<div class="o_course_run_disclaimer">
-		<h4>$r.translate("title.infocoach")</h4>
-		$r.xssScan($infoCoach)
-	</div>
-#end
-
 #if($r.available("details")) 
 	$r.render("details")
 #end

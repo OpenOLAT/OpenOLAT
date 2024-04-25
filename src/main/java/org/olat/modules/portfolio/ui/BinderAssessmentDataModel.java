@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.ui;
@@ -23,13 +23,15 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.modules.ceditor.PageStatus;
+import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.BinderAssessmentController.AssessmentSectionWrapper;
 
 /**
  * 
  * Initial date: 22.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class BinderAssessmentDataModel extends DefaultFlexiTableDataModel<AssessmentSectionWrapper> {
@@ -41,31 +43,59 @@ public class BinderAssessmentDataModel extends DefaultFlexiTableDataModel<Assess
 	@Override
 	public Object getValueAt(int row, int col) {
 		AssessmentSectionWrapper wrapper = getObject(row);
-		switch(AssessmentSectionCols.values()[col]) {
-			case sectionName: return wrapper.getSectionTitle();
-			case numOfPages: return wrapper.getNumOfPages();
-			case passed: {
-				if(wrapper.getPassedEl() != null) {
+		switch (AssessmentSectionCols.values()[col]) {
+			case sectionName -> {
+				return wrapper.getSectionTitle();
+			}
+			case numOfPages -> {
+				return wrapper.getNumOfPages();
+			}
+			case newEntries -> {
+				return wrapper.getPageUserStatusList().stream().filter(p -> p.equals(PageUserStatus.incoming)).count();
+			}
+			case inProgress -> {
+				return wrapper.getPageUserStatusList().stream().filter(p -> p.equals(PageUserStatus.inProcess)).count();
+			}
+			case done -> {
+				return wrapper.getPageUserStatusList().stream().filter(p -> p.equals(PageUserStatus.done)).count();
+			}
+			case draft -> {
+				return wrapper.getSection().getPages().stream().filter(p -> p.getPageStatus() != null && p.getPageStatus().equals(PageStatus.draft)).count();
+			}
+			case published -> {
+				return wrapper.getSection().getPages().stream().filter(p -> p.getPageStatus() != null &&  p.getPageStatus().equals(PageStatus.published)).count();
+			}
+			case inRevision -> {
+				return wrapper.getSection().getPages().stream().filter(p -> p.getPageStatus() != null &&  p.getPageStatus().equals(PageStatus.inRevision)).count();
+			}
+			case closed -> {
+				return wrapper.getSection().getPages().stream().filter(p -> p.getPageStatus() != null &&  p.getPageStatus().equals(PageStatus.closed)).count();
+			}
+			case passed -> {
+				if (wrapper.getPassedEl() != null) {
 					return wrapper.getPassedEl();
 				}
 				return wrapper.getPassed();
 			}
-			case score: {
-				if(wrapper.getScoreEl() != null) {
+			case score -> {
+				if (wrapper.getScoreEl() != null) {
 					return wrapper.getScoreEl();
 				}
 				return wrapper.getScore();
 			}
-			case changeStatus: {
+			case changeStatus -> {
 				FormLink changeButton = wrapper.getButton();
-				if(changeButton == null && wrapper.getSection() != null) {
+				if (changeButton == null && wrapper.getSection() != null) {
 					SectionStatus status = wrapper.getSection().getSectionStatus();
-					if(status == null) {
+					if (status == null) {
 						status = SectionStatus.notStarted;
 					}
 					return status;
 				}
 				return changeButton;
+			}
+			case openSection -> {
+				return wrapper.getSectionLink();
 			}
 		}
 		return null;
@@ -74,9 +104,17 @@ public class BinderAssessmentDataModel extends DefaultFlexiTableDataModel<Assess
 	public enum AssessmentSectionCols implements FlexiSortableColumnDef {
 		sectionName("table.header.section"),
 		numOfPages("table.header.numpages"),
+		newEntries("table.header.num.new.entries"),
+		inProgress("table.header.num.in.progress"),
+		done("table.header.num.done"),
+		draft("table.header.num.draft"),
+		published("table.header.num.published"),
+		inRevision("table.header.num.in.revision"),
+		closed("table.header.num.closed"),
 		passed("table.header.passed"),
 		score("table.header.score"),
-		changeStatus("table.header.change.status");
+		changeStatus("table.header.change.status"),
+		openSection("table.header.action.open.section");
 		
 		private final String i18nKey;
 		

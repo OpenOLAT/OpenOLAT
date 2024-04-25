@@ -1,19 +1,29 @@
 #if($noMap)
 	<div class="o_warning">$r.translate("no.map")</div>
 #else
-	<fieldset class="o_form form-horizontal" role="form">
-	<div class="form-group">
-		<label class="control-label col-sm-3">$r.translate("map.template")</label>
-		<div class="col-sm-9"><p class="form-control-static">$templateTitle</p></div>
-	</div>
-	<div class="form-group">
-		<label class="control-label col-sm-3">$r.translate("map.copyDate")</label>
-		<div class="col-sm-9"><p class="form-control-static">$copyDate</p></div>
-	</div>
-	<div class="form-group">
-		<label class="control-label col-sm-3">$r.translate("map.returnDate")</label>
-		<div class="col-sm-9"><p class="form-control-static">$returnDate</p></div>
-	</div>
+	<fieldset class="o_block_top o_start_info_box">
+		<div class="o_note">
+			#if ($r.isNotEmpty($infoCoach))
+			<div class="o_course_run_disclaimer">
+				<h4>$r.translate("title.infocoach")</h4>
+				$r.xssScan($infoCoach)
+			</div>
+			#end
+			<h4>$r.translate("map.template")</h4>
+			<div class="o_portfolio_cn_preview o_rendertype_custom">
+				<div class="panel panel-default o_portfolio_assignments panel-imagebg o_portfolio_entry" style="background-image:url('$image/$imageName');">
+					<div class="panel-heading">
+						<h4 class="panel-title">$templateTitle</h4>
+					</div>
+					<div class="panel-body">
+						<ul>
+							<li><span>$r.translate("map.copyDate"): $copyDate</span></li>
+							<li><span>$r.translate("map.returnDate"): $returnDate</span></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
 	</fieldset>
 	<div class="clearfix">
 		$r.render("assessment")

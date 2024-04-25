@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.ui;
@@ -32,7 +32,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.portfolio.PortfolioResultDetailsController;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -48,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * all sections.
  * 
  * Initial date: 28.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class PortfolioAssessmentDetailsController extends BasicController {
@@ -132,6 +134,19 @@ public class PortfolioAssessmentDetailsController extends BasicController {
 					secCallback, loadedBinder, config);
 			listenTo(assessmentCtrl);
 			mainVC.put("assessment", assessmentCtrl.getInitialComponent());
+
+			if (courseNode != null) {
+				ModuleConfiguration modConfig = courseNode.getModuleConfiguration();
+				String infoCoach = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
+				infoCoach = Formatter.formatLatexFormulas(infoCoach);
+				mainVC.contextPut("infoCoach", infoCoach);
+			}
+
+			if (portfolioService.getPosterImageLeaf(binder) != null) {
+				// put image information into context
+				mainVC.contextPut("image", registerCacheableMapper(ureq, "binder-cn", new ImageMapper(portfolioService.getPosterImageLeaf(binder))));
+				mainVC.contextPut("imageName", portfolioService.getPosterImageLeaf(binder).getName());
+			}
 		}
 	}
 	

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.ui;
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -49,6 +50,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
@@ -61,6 +64,8 @@ import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.PageUserInformations;
+import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -74,7 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 22.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class BinderAssessmentController extends FormBasicController {
@@ -82,22 +87,24 @@ public class BinderAssessmentController extends FormBasicController {
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] onValues = new String[] { "" };
 	
-	private Binder binder;
+	private final Binder binder;
 	private final BinderSecurityCallback secCallback;
 	
 	private int counter = 0;
 	private FormSubmit saveButton;
 	private FormCancel cancelButton;
 	private FlexiTableElement tableEl;
-	private FormLink saveAndDoneLink, reopenLink;
+	private FormLink saveAndDoneLink;
+	private FormLink reopenLink;
 	private BinderAssessmentDataModel model;
 	
 	private CloseableModalController cmc;
 	private SectionDatesEditController editSectionDatesCtrl;
 
-	private boolean withScore;
-	private boolean withPassed;
-	private Float minScore, maxScore;
+	private final boolean withScore;
+	private final boolean withPassed;
+	private final Float minScore;
+	private final Float maxScore;
 	private final String displayname;
 	
 	@Autowired
@@ -122,6 +129,13 @@ public class BinderAssessmentController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.sectionName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.numOfPages));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.newEntries));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.inProgress));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.done));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.draft));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.published));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.inRevision));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.closed));
 		if(withPassed) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.passed, new PassedCellRenderer(getLocale())));
 		}
@@ -129,7 +143,8 @@ public class BinderAssessmentController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.score, new ScoreCellRenderer()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.changeStatus, new SectionStatusCellRenderer(getTranslator())));
-		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.openSection));
+
 		model = new BinderAssessmentDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "section-list", model, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
@@ -179,6 +194,18 @@ public class BinderAssessmentController extends FormBasicController {
 				rows.add(row);
 			}
 			allClosed &= section.getSectionStatus() == SectionStatus.closed;
+			if (secCallback.canAssess(section)) {
+				FormLink sectionLink = uifactory.addFormLink(String.valueOf(section.getKey()), "open_section", "open", null, flc, Link.BUTTON);
+				row.setSectionLink(sectionLink);
+				sectionLink.setUserObject(row);
+			}
+		}
+
+		// create map with user information for grabbing PageUserStatus (coach status) of pages
+		Map<Long,PageUserInformations> userInfosToPage = new HashMap<>();
+		List<PageUserInformations> userInfoList = portfolioService.getPageUserInfos(binder, getIdentity());
+		for(PageUserInformations userInfo:userInfoList) {
+			userInfosToPage.put(userInfo.getPage().getKey(), userInfo);
 		}
 
 		List<Page> pages = portfolioService.getPages(binder);
@@ -186,6 +213,9 @@ public class BinderAssessmentController extends FormBasicController {
 			AssessmentSectionWrapper row = sectionToRows.get(page.getSection());
 			if(row != null) {
 				row.setNumOfPages(row.getNumOfPages() + 1);
+				if (!userInfosToPage.isEmpty()) {
+					row.getPageUserStatusList().add(userInfosToPage.get(page.getKey()).getStatus());
+				}
 			}
 		}
 		
@@ -278,8 +308,7 @@ public class BinderAssessmentController extends FormBasicController {
 			doSetBinderDone();
 			loadModel();
 			fireEvent(ureq, Event.CHANGED_EVENT);
-		} else if(source instanceof FormLink) {
-			FormLink button = (FormLink)source;
+		} else if(source instanceof FormLink button) {
 			String cmd = button.getCmd();
 			if("close".equals(cmd)) {
 				AssessmentSectionWrapper row = (AssessmentSectionWrapper)button.getUserObject();
@@ -291,6 +320,9 @@ public class BinderAssessmentController extends FormBasicController {
 				doReopen(ureq, row.getSection());
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if ("open_section".equals(cmd)) {
+				AssessmentSectionWrapper row = (AssessmentSectionWrapper)button.getUserObject();
+				doOpenSection(ureq, row.getSection());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -375,6 +407,14 @@ public class BinderAssessmentController extends FormBasicController {
 		
 		portfolioService.updateAssessmentSections(binder, changes, getIdentity());
 	}
+
+	private void doOpenSection(UserRequest ureq, Section section) {
+		String resourceUrl;
+		resourceUrl = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][SharedWithMe:0][Binder:" + binder.getKey() + "][Entries:0][Section:" + section.getKey() + "]";
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+		NewControllerFactory.getInstance().launch(ureq, bwControl);
+	}
 	
 	private void doClose(Section section) {
 		portfolioService.changeSectionStatus(section, SectionStatus.closed, getIdentity());
@@ -417,7 +457,9 @@ public class BinderAssessmentController extends FormBasicController {
 		private int numOfPages = 0;
 		private Section section;
 		private AssessmentSection assessmentSection;
-		
+		private List<PageUserStatus> pageUserStatusList = new ArrayList<>();
+
+		private FormLink sectionLink;
 		private FormLink button;
 		private TextElement scoreEl;
 		private MultipleSelectionElement passedEl;
@@ -463,6 +505,10 @@ public class BinderAssessmentController extends FormBasicController {
 			this.assessmentSection = assessmentSection;
 		}
 
+		public List<PageUserStatus> getPageUserStatusList() {
+			return pageUserStatusList;
+		}
+
 		public TextElement getScoreEl() {
 			return scoreEl;
 		}
@@ -477,6 +523,14 @@ public class BinderAssessmentController extends FormBasicController {
 
 		public void setPassedEl(MultipleSelectionElement passedEl) {
 			this.passedEl = passedEl;
+		}
+
+		public FormLink getSectionLink() {
+			return sectionLink;
+		}
+
+		public void setSectionLink(FormLink sectionLink) {
+			this.sectionLink = sectionLink;
 		}
 
 		public FormLink getButton() {

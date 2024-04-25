@@ -69,7 +69,7 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 	private static final String ORES_TYPE_PARTICIPANTS = "Participants";
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
 	
-	private Link contentLink;
+	private final Link contentLink;
 	private Link overviewLink;
 	private Link participantsLink;
 	private Link remindersLink;

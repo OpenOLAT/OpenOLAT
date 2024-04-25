@@ -54,13 +54,11 @@ public class SharedPageStatusCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue,
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof SharedPageRow) {
-			SharedPageRow pageRow = (SharedPageRow)cellValue;
+		if(cellValue instanceof SharedPageRow pageRow) {
 			PageStatus status = pageRow.getStatus();
 			PageUserStatus userStatus = pageRow.getUserStatus();
 			render(target, status, userStatus);
-		} else if(cellValue instanceof PortfolioElementRow) {
-			PortfolioElementRow elementRow = (PortfolioElementRow)cellValue;
+		} else if(cellValue instanceof PortfolioElementRow elementRow) {
 			if(elementRow.getPage() != null) {
 				PageStatus status = elementRow.getPageStatus();
 				PageUserStatus userStatus = elementRow.getUserInfosStatus();

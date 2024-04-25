@@ -35,8 +35,8 @@ public class SearchSharePagesParameters {
 	
 	private String searchString;
 	private boolean bookmarkOnly;
-	private List<PageStatus> excludedStatus = new ArrayList<>(6);
-	private List<PageUserStatus> excludedUserStatus = new ArrayList<>(6);
+	private final List<PageStatus> excludedStatus = new ArrayList<>(6);
+	private final List<PageUserStatus> excludedUserStatus = new ArrayList<>(6);
 
 	public boolean isBookmarkOnly() {
 		return bookmarkOnly;

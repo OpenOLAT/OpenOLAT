@@ -230,8 +230,7 @@ public class BinderPageListController extends AbstractPageListController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
 		
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			StringBuilder ownerSb = new StringBuilder();
 			for(Identity owner:owners) {
 				if(ownerSb.length() > 0) ownerSb.append(", ");

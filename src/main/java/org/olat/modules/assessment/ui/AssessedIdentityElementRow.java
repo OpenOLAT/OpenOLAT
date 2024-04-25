@@ -59,13 +59,20 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private AssessmentEntryStatus status;
 	private String graderFullName;
 	private String coachFullName;
+	private Long numOfAuthorisedUsers;
+	private Long numOfSectionsInProgress;
+	private Long numOfEntriesNew;
+	private Long numOfEntriesInProgress;
+	private Long numOfEntriesPublished;
+	private Long numOfEntriesInRevision;
 	
 	private Object details;
 	private Date initialCourseLaunchDate;
 	
-	private FormLink toolsLink;
-	private TimeElement currentStart;
-	private CompletionItem currentCompletion;
+	private final FormLink toolsLink;
+	private final TimeElement currentStart;
+	private final CompletionItem currentCompletion;
+	private FormLink openBinderLink;
 	
 	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, String graderFullName, String coachFullName,
 			TimeElement currentStart, CompletionItem currentCompletion, FormLink toolsLink,
@@ -212,5 +219,61 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public void setDetails(Object details) {
 		this.details = details;
+	}
+
+	public Long getNumOfAuthorisedUsers() {
+		return numOfAuthorisedUsers;
+	}
+
+	public void setNumOfAuthorisedUsers(Long numOfAuthorisedUsers) {
+		this.numOfAuthorisedUsers = numOfAuthorisedUsers;
+	}
+
+	public Long getNumOfSectionsInProgress() {
+		return numOfSectionsInProgress;
+	}
+
+	public void setNumOfSectionsInProgress(Long numOfSectionsInProgress) {
+		this.numOfSectionsInProgress = numOfSectionsInProgress;
+	}
+
+	public Long getNumOfEntriesNew() {
+		return numOfEntriesNew;
+	}
+
+	public void setNumOfEntriesNew(Long numOfEntriesNew) {
+		this.numOfEntriesNew = numOfEntriesNew;
+	}
+
+	public Long getNumOfEntriesInProgress() {
+		return numOfEntriesInProgress;
+	}
+
+	public void setNumOfEntriesInProgress(Long numOfEntriesInProgress) {
+		this.numOfEntriesInProgress = numOfEntriesInProgress;
+	}
+
+	public Long getNumOfEntriesPublished() {
+		return numOfEntriesPublished;
+	}
+
+	public void setNumOfEntriesPublished(Long numOfEntriesPublished) {
+		this.numOfEntriesPublished = numOfEntriesPublished;
+	}
+
+	public Long getNumOfEntriesInRevision() {
+		return numOfEntriesInRevision;
+	}
+
+	public void setNumOfEntriesInRevision(Long numOfEntriesInRevision) {
+		this.numOfEntriesInRevision = numOfEntriesInRevision;
+	}
+
+	public FormLink getOpenBinderLink() {
+		return openBinderLink;
+	}
+
+	public void setOpenBinderLink(FormLink openBinderLink) {
+		this.openBinderLink = openBinderLink;
 	}
 }

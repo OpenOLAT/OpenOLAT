@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.assessment.ui.tool;
@@ -44,7 +44,7 @@ import org.olat.repository.RepositoryEntry;
 /**
  * 
  * Initial date: 07.10.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel<AssessedIdentityElementRow>
@@ -104,41 +104,47 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	@Override
 	public Object getValueAt(AssessedIdentityElementRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
-			switch(COLS[col]) {
-				case attempts: return row.getAttempts();
-				case userVisibility: return row.getUserVisibility();
-				case score, weightedScore: return row;
-				case min: return minScore;
-				case max: return getMaxScore(row);
-				case cut: return cutValue;
-				case grade: return row;
-				case status: return "";
-				case passedOverriden: return row.getPassedOverriden();
-				case passed: return row.getPassed();
-				case numOfAssessmentDocs: {
-					if(row.getNumOfAssessmentDocs() <= 0) {
-						return null;
+			return switch (COLS[col]) {
+				case attempts -> row.getAttempts();
+				case userVisibility -> row.getUserVisibility();
+				case score, weightedScore, grade -> row;
+				case min -> minScore;
+				case max -> getMaxScore(row);
+				case cut -> cutValue;
+				case status -> "";
+				case passedOverriden -> row.getPassedOverriden();
+				case passed -> row.getPassed();
+				case numOfAssessmentDocs -> {
+					if (row.getNumOfAssessmentDocs() <= 0) {
+						yield null;
 					}
-					return row.getNumOfAssessmentDocs();
+					yield row.getNumOfAssessmentDocs();
 				}
-				case assessmentStatus: return row.getAssessmentStatus();
-				case currentCompletion: return row.getCurrentCompletion();
-				case currentRunStart: return row.getCurrentRunStart();
-				case certificate: return certificateMap.get(row.getIdentityKey());
-				case certificateValidity: {
+				case assessmentStatus -> row.getAssessmentStatus();
+				case currentCompletion -> row.getCurrentCompletion();
+				case currentRunStart -> row.getCurrentRunStart();
+				case certificate -> certificateMap.get(row.getIdentityKey());
+				case certificateValidity -> {
 					CertificateLight certificate = certificateMap.get(row.getIdentityKey());
-					return certificate == null ? null : certificate.getNextRecertificationDate();
+					yield certificate == null ? null : certificate.getNextRecertificationDate();
 				}
-				case initialLaunchDate: return row.getInitialCourseLaunchDate();
-				case lastModified: return row.getLastModified();
-				case lastUserModified: return row.getLastUserModified();
-				case lastCoachModified: return row.getLastCoachModified();
-				case externalGrader: return row.getGraderFullName();
-				case coachAssignment: return row.getCoachFullName();
-				case tools: return row.getToolsLink();
-				case details: return row.getDetails();
-				default: return "ERROR";
-			}
+				case initialLaunchDate -> row.getInitialCourseLaunchDate();
+				case lastModified -> row.getLastModified();
+				case lastUserModified -> row.getLastUserModified();
+				case lastCoachModified -> row.getLastCoachModified();
+				case externalGrader -> row.getGraderFullName();
+				case coachAssignment -> row.getCoachFullName();
+				case tools -> row.getToolsLink();
+				case details -> row.getDetails();
+				case numOfAuthorisedUsers -> row.getNumOfAuthorisedUsers();
+				case numOfInProgressSections -> row.getNumOfSectionsInProgress();
+				case numOfPublishedEntries -> row.getNumOfEntriesPublished();
+				case numOfInRevisionEntries -> row.getNumOfEntriesInRevision();
+				case numOfNewEntries -> row.getNumOfEntriesNew();
+				case numOfInProgressEntries -> row.getNumOfEntriesInProgress();
+				case openBinder -> row.getOpenBinderLink();
+				default -> "ERROR";
+			};
 		}
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
@@ -177,7 +183,14 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		cut("table.header.cut"),
 		externalGrader("table.header.external.grader"),
 		currentRunStart("table.header.run.start"),
-		coachAssignment("table.header.coach.assignment");
+		coachAssignment("table.header.coach.assignment"),
+		numOfAuthorisedUsers("table.header.num.authorised.users"),
+		numOfInProgressSections("table.header.num.inprogress.sections"),
+		numOfNewEntries("table.header.num.new.entries"),
+		numOfInProgressEntries("table.header.num.inprogress.entries"),
+		numOfPublishedEntries("table.header.num.published.entries"),
+		numOfInRevisionEntries("table.header.num.inrevision.entries"),
+		openBinder("table.header.action.open.binder");
 		
 		private final String i18nKey;
 		private final String icon;
