@@ -21,6 +21,7 @@ package org.olat.course.archiver.webdav;
 
 import java.util.Locale;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.Util;
@@ -59,7 +60,8 @@ public class MyArchivesWebDAVProvider implements WebDAVProvider {
 	
 	@Override
 	public boolean hasAccess(IdentityEnvironment identityEnv) {
-		return identityEnv != null;
+		return identityEnv != null && identityEnv.getRoles() != null && identityEnv.getRoles()
+				.hasSomeRoles(OrganisationRoles.author, OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator);
 	}
 
 	@Override

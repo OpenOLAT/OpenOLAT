@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.export.ArchiveType;
@@ -172,10 +173,24 @@ public class ExportMetadataDAO {
 		if(params.getOnlyAdministrators() != null) {
 			sb.and().append("exp.onlyAdministrators=:onlyAdministrators");
 		}
-		if(params.getCreator() != null) {
-			sb.and().append("creator.key=:creatorKey");
-		}
 		
+		if(params.getHasAdministrator() != null || params.getHasAuthor() != null) {
+			sb.and().append("(exists (select relpart from repoentrytogroup as relpart, bgroupmember as repoOwner")
+		      .append("   where relpart.entry.key=v.key and repoOwner.group.key=relpart.group.key")
+		      .append("   and repoOwner.role='").append(GroupRoles.owner.name()).append("'")
+		      .append("   and repoOwner.identity.key=:identityKey")
+		      .append(" )");
+			if(params.getHasAdministrator() != null) {
+				sb.append(" or exp.creator.key=:identityKey");
+				sb.append(")");
+			} else if(params.getHasAuthor() != null) {
+				sb.append(")");
+				if(params.getOnlyAdministrators() == null) {
+					sb.and().append("exp.onlyAdministrators=false");
+				}
+			}
+		}
+
 		TypedQuery<ExportMetadata> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), ExportMetadata.class);
 		if(params.hasRepositoryEntries()) {
@@ -190,8 +205,10 @@ public class ExportMetadataDAO {
 		if(params.getOnlyAdministrators() != null) {
 			query.setParameter("onlyAdministrators", params.getOnlyAdministrators());
 		}
-		if(params.getCreator() != null) {
-			query.setParameter("creatorKey", params.getCreator().getKey());
+		if(params.getHasAdministrator() != null ) {
+			query.setParameter("identityKey", params.getHasAdministrator().getKey());
+		} else if(params.getHasAuthor() != null) {
+			query.setParameter("identityKey", params.getHasAuthor().getKey());
 		}
 		return query.getResultList();
 	}

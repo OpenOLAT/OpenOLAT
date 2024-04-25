@@ -64,6 +64,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -90,6 +91,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	private final RepositoryEntry entry;
 	private final String subIdent;
 	private final boolean admin;
+	protected final Roles roles;
 	
 	private int count = 0;
 	private final DateFormatSymbols symbols;
@@ -125,6 +127,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		this.entry = entry;
 		this.options = options;
 		this.subIdent = subIdent;
+		roles = ureq.getUserSession().getRoles();
 		symbols = new DateFormatSymbols(getLocale());
 		isAdministrator = ureq.getUserSession().getRoles()
 				.hasSomeRoles(OrganisationRoles.administrator);

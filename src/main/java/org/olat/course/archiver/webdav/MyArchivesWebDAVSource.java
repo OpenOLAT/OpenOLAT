@@ -30,6 +30,7 @@ import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.export.model.ExportInfos;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.MergeSource;
@@ -105,10 +106,18 @@ public class MyArchivesWebDAVSource extends MergeSource {
 		try {
 			ExportManager exportManager = CoreSpringFactory.getImpl(ExportManager.class);
 			SearchExportMetadataParameters params = new SearchExportMetadataParameters(List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
-			if(identityEnv != null) {
-				params.setCreator(identityEnv.getIdentity());
-				if(!identityEnv.getRoles().hasSomeRoles(OrganisationRoles.administrator)) {
+			if(identityEnv != null && identityEnv.getRoles() != null) {
+				Roles roles = identityEnv.getRoles();
+				boolean hasAdministrativeRoles = roles.hasSomeRoles(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+				boolean isAuthor = roles.hasRole(OrganisationRoles.author);
+				
+				if(hasAdministrativeRoles) {
+					params.setHasAdministrator(identityEnv.getIdentity());
+				} else if(isAuthor) {
+					params.setHasAuthor(identityEnv.getIdentity());
 					params.setOnlyAdministrators(Boolean.FALSE);
+				} else {
+					return new ArrayList<>();
 				}
 			} else {
 				return new ArrayList<>();

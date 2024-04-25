@@ -34,7 +34,8 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public class SearchExportMetadataParameters {
 	
-	private IdentityRef creator;
+	private IdentityRef hasAuthor;
+	private IdentityRef hasAdministrator;
 	private List<RepositoryEntryRef> repositoryEntries;
 	
 	private String resSubPath;
@@ -67,12 +68,20 @@ public class SearchExportMetadataParameters {
 		this.repositoryEntries = repositoryEntries;
 	}
 
-	public IdentityRef getCreator() {
-		return creator;
+	public IdentityRef getHasAuthor() {
+		return hasAuthor;
 	}
 
-	public void setCreator(IdentityRef creator) {
-		this.creator = creator;
+	public void setHasAuthor(IdentityRef hasAuthor) {
+		this.hasAuthor = hasAuthor;
+	}
+
+	public IdentityRef getHasAdministrator() {
+		return hasAdministrator;
+	}
+
+	public void setHasAdministrator(IdentityRef hasAdministrator) {
+		this.hasAdministrator = hasAdministrator;
 	}
 
 	public String getResSubPath() {

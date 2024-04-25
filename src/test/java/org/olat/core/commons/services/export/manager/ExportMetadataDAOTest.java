@@ -33,6 +33,7 @@ import org.olat.core.commons.services.export.ExportMetadata;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +100,7 @@ public class ExportMetadataDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void searchMetadatasByresSubPath() {
+	public void searchMetadatasByResSubPath() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("exporter-1");
 		String title = "Some meta export";
 		String resSubPath = UUID.randomUUID().toString();
@@ -112,6 +113,49 @@ public class ExportMetadataDAOTest extends OlatTestCase {
 		assertThat(metadataList)
 			.hasSize(1)
 			.containsExactly(metadata);
+	}
+	
+	@Test
+	public void searchMetadatasAsAdministrator() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("exporter-1");
+		String title = "Some meta export";
+		String resSubPath = UUID.randomUUID().toString();
+		Date expirationDate = DateUtils.addDays(new Date(), 7);
+		ExportMetadata metadata = exportMetadataDao.createMetadata(title, null, null, ArchiveType.COMPLETE, expirationDate, true, null, resSubPath, id, null);
+		dbInstance.commit();
+		
+		SearchExportMetadataParameters params = new SearchExportMetadataParameters(null, null, List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
+		params.setHasAdministrator(id);
+		List<ExportMetadata> metadataList = exportMetadataDao.searchMetadatas(params);
+		assertThat(metadataList)
+			.hasSize(1)
+			.containsExactly(metadata);
+	}
+	
+	@Test
+	public void searchMetadatasAsAuthor() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("exporter-1");
+		
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(id);
+
+		String resSubPath = UUID.randomUUID().toString();
+		Date expirationDate = DateUtils.addDays(new Date(), 7);
+		
+		ExportMetadata metadataOnlyAdmins = exportMetadataDao.createMetadata("Export only admins", null, null, ArchiveType.COMPLETE, expirationDate, true, entry, resSubPath, id, null);
+		ExportMetadata myMetadataForAll = exportMetadataDao.createMetadata("Export for all", null, null, ArchiveType.COMPLETE, expirationDate, false, entry, resSubPath, id, null);
+		ExportMetadata metadataNoEntry = exportMetadataDao.createMetadata("Export for all", null, null, ArchiveType.COMPLETE, expirationDate, false, null, resSubPath, id, null);
+		dbInstance.commit();
+		
+		Assert.assertNotNull(metadataOnlyAdmins);
+		Assert.assertNotNull(myMetadataForAll);
+		Assert.assertNotNull(metadataNoEntry);
+		
+		SearchExportMetadataParameters params = new SearchExportMetadataParameters(null, null, List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
+		params.setHasAuthor(id);
+		List<ExportMetadata> metadataList = exportMetadataDao.searchMetadatas(params);
+		assertThat(metadataList)
+			.hasSize(1)
+			.containsExactly(myMetadataForAll);
 	}
 
 }

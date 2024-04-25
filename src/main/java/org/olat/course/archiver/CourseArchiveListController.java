@@ -22,6 +22,7 @@ package org.olat.course.archiver;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
@@ -49,7 +50,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -164,6 +164,12 @@ public class CourseArchiveListController extends ExportsListController implement
 	@Override
 	public SearchExportMetadataParameters getSearchParams() {
 		SearchExportMetadataParameters params = super.getSearchParams();
+		boolean hasAdministrativeRoles = roles
+				.hasSomeRoles(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+		if(hasAdministrativeRoles) {
+			params.setOnlyAdministrators(null);
+		}
+		
 		String selectedKey = archiveScopes.getSelectedKey();
 		if(COMPLETE_ARCHIVES.equals(selectedKey)) {
 			params.setArchiveTypes(List.of(ArchiveType.COMPLETE));
@@ -195,7 +201,6 @@ public class CourseArchiveListController extends ExportsListController implement
 			String text = translate("warning.running.archive.text");
 			getWindowControl().setWarning(title, text);
 		} else {
-			Roles roles = ureq.getUserSession().getRoles();
 			CourseArchiveContext context = CourseArchiveContext.defaultValues(entry, getIdentity(), roles, repositoryService);
 			
 			Step start = new CourseArchive_1_ArchiveTypeStep(ureq, context);

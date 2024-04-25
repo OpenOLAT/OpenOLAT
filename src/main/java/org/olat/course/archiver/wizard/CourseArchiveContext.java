@@ -95,7 +95,7 @@ public class CourseArchiveContext {
 				&& repositoryService.hasRoleExpanded(identity, courseEntry, OrganisationRoles.learnresourcemanager.name());
 		context.administrator = isAdministrator;
 		context.allowedLogAuthors = isOresOwner || isOresInstitutionalManager || isAdministrator;
-		context.allowedLogUsers = isAdministrator;
+		context.allowedLogUsers = isOresInstitutionalManager || isAdministrator;
 		context.allowedLogStatistics = isOresOwner || isOresInstitutionalManager || isAdministrator;
 		
 		options.setLogFilesAuthors(context.allowedLogAuthors);

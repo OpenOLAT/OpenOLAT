@@ -22,6 +22,7 @@ package org.olat.course.archiver;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
@@ -58,9 +59,9 @@ public class ArchivesController extends ExportsListController {
 	@Autowired
 	private WebDAVModule webDAVModule;
 	
-	public ArchivesController(UserRequest ureq, WindowControl wControl, boolean admin) {
+	public ArchivesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, CourseArchiveListController.COURSE_ARCHIVE_SUB_IDENT,
-				admin, new ExportsListSettings(false), "my_export_list");
+				false, new ExportsListSettings(false), "my_export_list");
 	}
 
 	@Override
@@ -98,8 +99,18 @@ public class ArchivesController extends ExportsListController {
 	@Override
 	public SearchExportMetadataParameters getSearchParams() {
 		SearchExportMetadataParameters params = super.getSearchParams();
-		if(!isAdministrator) {
+		
+		boolean hasAdministrativeRoles = roles
+				.hasSomeRoles(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+		if(!hasAdministrativeRoles) {
 			params.setOnlyAdministrators(Boolean.FALSE);
+			boolean hasAuthor  = roles.hasSomeRoles(OrganisationRoles.author);
+			if(hasAuthor) {
+				params.setHasAuthor(getIdentity());
+			}
+		} else {
+			params.setOnlyAdministrators(null);
+			params.setHasAdministrator(getIdentity());
 		}
 		
 		String selectedKey = archiveScopes.getSelectedKey();

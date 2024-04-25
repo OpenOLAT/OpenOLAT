@@ -90,7 +90,7 @@ public class ArchivesOverviewController extends BasicController {
 	
 	private void doOpenMyArchives(UserRequest ureq) {
 		if(myArchivesCtrl == null) {
-			myArchivesCtrl = new ArchivesController(ureq, getWindowControl(), false);
+			myArchivesCtrl = new ArchivesController(ureq, getWindowControl());
 			listenTo(myArchivesCtrl);
 		}
 		mainVC.put("segmentCmp", myArchivesCtrl.getInitialComponent());

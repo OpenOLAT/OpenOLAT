@@ -61,7 +61,7 @@ public class BulkCoursesArchivesContext {
 		options.setCourseResults(true);
 		options.setCourseChat(true);
 		
-		boolean isAdministrator = roles.isAdministrator();
+		boolean isAdministrator = roles.isAdministrator() || roles.isLearnResourceManager();
 		options.setLogFilesAuthors(true);
 		options.setLogFilesUsers(isAdministrator);
 		options.setLogFilesStatistics(!isAdministrator);
