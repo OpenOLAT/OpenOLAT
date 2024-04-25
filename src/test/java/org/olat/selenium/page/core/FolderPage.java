@@ -214,7 +214,7 @@ public class FolderPage {
 	}
 	
 	public FolderPage assertOnFileCard(String filename) {
-		By fileBy = By.xpath("//div[contains(@class,'o_folder_table')]//h4/a/span[contains(text(),'" + filename + "')]");
+		By fileBy = By.xpath("//div[contains(@class,'o_folder_table')]//h5/a/span[contains(text(),'" + filename + "')]");
 		OOGraphene.waitElement(fileBy, browser);
 		return this;
 	}
