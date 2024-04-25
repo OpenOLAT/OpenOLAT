@@ -167,9 +167,14 @@ public class RepositoryEntryImportExport {
 		return true;
 	}
 	
-	public boolean exportDoExport(String zipPath, ZipOutputStream zout) {
+	public boolean exportDoExport(String zipPath, ZipOutputStream zout, RepositoryEntryImportExportLinkEnum withResource) {
+		if(withResource == RepositoryEntryImportExportLinkEnum.NONE) return false;
+		
 		exportDoExportProperties(zipPath, zout);
-		return exportDoExportContent(zipPath, zout);
+		if(withResource == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE) {
+			return exportDoExportContent(zipPath, zout);
+		}
+		return true;
 	}
 	
 	public void exportDoExportProperties(String zipPath, ZipOutputStream zout) {

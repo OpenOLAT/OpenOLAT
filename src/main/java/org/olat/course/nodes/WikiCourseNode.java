@@ -376,7 +376,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 			File fExportDirectory = new File(exportDirectory, getIdent());
 			fExportDirectory.mkdirs();
 			RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
-			reie.exportDoExport();
+			reie.exportDoExport(withReferences);
 		}
 	}
 
