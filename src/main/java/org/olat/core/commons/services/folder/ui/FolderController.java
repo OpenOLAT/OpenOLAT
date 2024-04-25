@@ -115,6 +115,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.BreadCrumb;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.text.TextFactory;
@@ -129,7 +130,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -193,6 +194,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_DELETE_PERMANENTLY = "delete.permanently";
 	private static final String CMD_RESTORE = "restore";
+	private static final String CMD_CRUMB_PREFIX = "/oobc_";
 	
 	private FormLink viewFolderLink;
 	private FormLink viewFileLink;
@@ -200,7 +202,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FormLink viewSearchLink;
 	private TextElement quickSearchEl;
 	private FormLink quickSearchButton;
-	private FormLink uploadLink;
+	private FileElement addFileEl;
 	private DropdownItem createDropdown;
 	private FormLink addBrowserLink;
 	private FormLink createDocumentLink;
@@ -227,7 +229,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FlexiFiltersTab tabForMe;
 	private FolderDataModel dataModel;
 	private FlexiTableElement tableEl;
-	private FileElement addFileEl;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -250,6 +251,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private SendDocumentsByEMailController emailCtrl;
 	
 	private final VFSContainer rootContainer;
+	private final VFSMetadata rootMetadata;
 	private VFSContainer currentContainer;
 	private VFSItemFilter vfsFilter = new VFSSystemItemFilter();
 	private final FolderControllerConfig config;
@@ -293,6 +295,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	public FolderController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, FolderControllerConfig config) {
 		super(ureq, wControl, "folder");
 		this.rootContainer = rootContainer;
+		this.rootMetadata = rootContainer.getMetaInfo();
 		this.config = config;
 		this.licensesEnabled = licenseModule.isEnabled(licenseHandler);
 		this.webdavEnabled = config.isDisplayWebDAVLink() && webDAVModule.isEnabled() && webDAVModule.isLinkEnabled()
@@ -333,11 +336,6 @@ public class FolderController extends FormBasicController implements Activateabl
 			formLayout.add(trashMessageEl);
 		}
 		
-		addFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add.file", null, formLayout);
-		addFileEl.addActionListener(FormEvent.ONCHANGE);// Needed for selenium tests
-		addFileEl.setDragAndDropForm(true);
-		addFileEl.setMultiFileUpload(true);
-		
 		folderBreadcrumb = new TooledStackedPanel("folderBreadcrumb", getTranslator(), this);
 		formLayout.add(new ComponentWrapperElement(folderBreadcrumb));
 		folderBreadcrumb.setToolbarEnabled(false);
@@ -369,8 +367,11 @@ public class FolderController extends FormBasicController implements Activateabl
 		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
 		quickSearchButton.setDomReplacementWrapperRequired(false);
 		
-		uploadLink = uifactory.addFormLink("add", formLayout, Link.BUTTON);
-		uploadLink.setIconLeftCSS("o_icon o_icon_upload");
+		addFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add", null, formLayout);
+		addFileEl.addActionListener(FormEvent.ONCHANGE);// Needed for selenium tests
+		addFileEl.setChooseButtonLabel(translate("add"));
+		addFileEl.setDragAndDropForm(true);
+		addFileEl.setMultiFileUpload(true);
 		
 		createDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
 		createDropdown.setOrientation(DropdownOrientation.right);
@@ -432,10 +433,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		quickSearchButton.setVisible(config.isDisplaySearch());
 		
 		boolean canEditCurrentContainer = canEdit(currentContainer);
-		uploadLink.setVisible(canEditCurrentContainer);
+		addFileEl.setVisible(canEditCurrentContainer);
 		createDropdown.setVisible(canEditCurrentContainer);
 		addBrowserLink.setVisible(canEditCurrentContainer);
-		addFileEl.setVisible(canEditCurrentContainer);
 		createDocumentLink.setVisible(canEditCurrentContainer);
 		createFolderLink.setVisible(canEditCurrentContainer);
 		recordSpacer.setVisible(canEditCurrentContainer && avModule.isRecordingEnabled());
@@ -491,11 +491,29 @@ public class FolderController extends FormBasicController implements Activateabl
 		doOpenFolderView(ureq);
 		updateViewUI();
 		updateCommandUI(ureq);
+		
+		updateViewCrumb(view);
+	}
+
+	private void updateViewCrumb(FolderView view) {
+		if(!folderBreadcrumb.getBreadCrumbs().isEmpty()) {
+			Link lastCrumb = folderBreadcrumb.getBreadCrumbs().get(folderBreadcrumb.getBreadCrumbs().size() - 1);
+			if (lastCrumb.getUserObject() instanceof BreadCrumb breadCrumb && breadCrumb.getUserObject() instanceof String path) {
+				if (path.startsWith(CMD_CRUMB_PREFIX)) {
+					folderBreadcrumb.popContent();
+				}
+			}
+		}
+		if (FolderView.file == view) {
+			folderBreadcrumb.pushController(translate("view.file"), null, CMD_CRUMB_PREFIX + FolderView.file.name());
+		} else if (FolderView.search == view) {
+			folderBreadcrumb.pushController(translate("search"), null, CMD_CRUMB_PREFIX + FolderView.search.name());
+		} else if (FolderView.trash == view) {
+			folderBreadcrumb.pushController(translate("trash"), null, CMD_CRUMB_PREFIX + FolderView.trash.name());
+		}
 	}
 	
 	private void updateViewUI() {
-		folderBreadcrumb.setVisible(FolderView.folder == folderView);
-		
 		if (FolderView.folder == folderView) {
 			viewFolderLink.setElementCssClass("active");
 		} else {
@@ -555,6 +573,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
 		
+		updateEmptyMessage();
 		initBulkLinks();
 		
 		loadModel(ureq);
@@ -907,7 +926,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			
 			row.setThumbnailAvailable(true);
 			row.setThumbnailUrl(mapperKey.getUrl());
-			row.setThumbnailTopVisible(FolderUIFactory.isThumbnailTopVisible(row.getMetadata(), row.getVfsItem()));
+			if (FolderThumbnailMapper.isAudio(row.getMetadata(), vfsLeaf)) {
+				row.setThumbnailCss("o_folder_card_img_center");
+			}
 		}
 	}
 	
@@ -976,10 +997,9 @@ public class FolderController extends FormBasicController implements Activateabl
 				row.setSelectionItem(selectionEl);
 				row.setTitleItem(titleEl);
 			} else {
-				String iconCSS = CSSHelper.getIcon(CSSHelper.createFiletypeIconCssClassFor(row.getFilename()));
-				String selectionText = iconCSS + " " + StringHelper.escapeHtml(row.getTitle());
-				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, selectionText, flc);
+				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), flc);
 				selectionEl.setElementCssClass("o_nowrap");
+				selectionEl.setDomWrapperElement(DomWrapperElement.span);
 				selectionEl.setStaticFormElement(false);
 				row.setSelectionItem(selectionEl);
 				
@@ -992,7 +1012,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void forgeFilePath(FolderRow row) {
 		String filePath = null;
-		VFSMetadata rootMetadata = rootContainer.getMetaInfo();
 		if (rootMetadata != null && row.getMetadata() != null) {
 			String rowRelativePath = row.getMetadata().getRelativePath();
 			String rootRelativePath = rootMetadata.getRelativePath() + "/" + rootMetadata.getFilename();
@@ -1156,6 +1175,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			if (event instanceof PopEvent popEvent) {
 				Object userObject = popEvent.getUserObject();
 				if (userObject instanceof String relativePath) {
+					if (relativePath.startsWith(CMD_CRUMB_PREFIX)) {
+						doOpenView(ureq, FolderView.folder);
+					}
 					String parentPath = relativePath.substring(0, relativePath.lastIndexOf("/"));
 					updateCurrentContainer(ureq, parentPath);
 				}
@@ -1180,7 +1202,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				selectFilterTab(ureq, ((FlexiTableFilterTabEvent)event).getTab());
 				loadModel(ureq);
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
-				doUpload(ureq);
+				doAddFromBrowser(ureq);
 			} else if (event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				FolderRow row = dataModel.getObject(se.getIndex());
@@ -1204,8 +1226,6 @@ public class FolderController extends FormBasicController implements Activateabl
 			doQuickSearch(ureq);
 		} else if (quickSearchButton == source) {
 			doQuickSearch(ureq);
-		} else if (uploadLink == source) {
-			doUpload(ureq);
 		} else if (addBrowserLink == source) {
 			doAddFromBrowser(ureq);
 		} else if (createDocumentLink == source) {
@@ -1447,13 +1467,14 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		reloadVersionsEnabled();
 		reloadTrashEnabled();
+		updateEmptyMessage();
 		updateFolderBreadcrumpUI(ureq, path);
 		updateCommandUI(ureq);
 		bulkEmailButton.setVisible(config.getEmailFilter().canEmail(path));
 		loadModel(ureq);
 		updatePathResource(ureq, path);
 	}
-	
+
 	private void setCurrentContainer(VFSContainer currentContainer) {
 		this.currentContainer = getCachedContainer(currentContainer);
 	}
@@ -1469,6 +1490,14 @@ public class FolderController extends FormBasicController implements Activateabl
 	private void reloadTrashEnabled() {
 		VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
 		trashEnabled = topMostDescendantsContainer != null && VFSStatus.YES == topMostDescendantsContainer.canDelete();
+	}
+	
+	private void updateEmptyMessage() {
+		if (VFSStatus.YES == currentContainer.canWrite()) {
+			tableEl.setEmptyTableSettings("folder.empty", "folder.empty.hint.readwrite", "o_filetype_folder", "browser.add", "o_icon_file_browser", false);
+		} else {
+			tableEl.setEmptyTableSettings("folder.empty", "folder.empty.hint.readonly", "o_filetype_folder");
+		}
 	}
 	
 	private void updateFolderBreadcrumpUI(UserRequest ureq, String path) {
@@ -1518,31 +1547,6 @@ public class FolderController extends FormBasicController implements Activateabl
 			doOpenView(ureq, FolderView.folder);
 		}
 		updateCurrentContainer(ureq, parent);
-	}
-
-	private void doUpload(UserRequest ureq) {
-		if (guardModalController(uploadCtrl)) return;
-		leaveTrash(ureq);
-		if (!canEdit(currentContainer)) {
-			showWarning("error.cannot.upload");
-			updateCommandUI(ureq);
-		}
-		
-		FolderQuota folderQuota = getFolderQuota(ureq);
-		if (folderQuota.isExceeded()) {
-			showWarning("error.upload.quota.exceeded");
-			return;
-		}
-		
-		removeAsListenerAndDispose(uploadCtrl);
-		
-		uploadCtrl = new UploadController(ureq, getWindowControl(), currentContainer, folderQuota);
-		listenTo(uploadCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), uploadCtrl.getInitialComponent(),
-				true, translate("upload"), true);
-		listenTo(cmc);
-		cmc.activate();
 	}
 
 	private void doAddFromBrowser(UserRequest ureq) {
@@ -2529,7 +2533,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private boolean canDelete(VFSItem vfsItem) {
 		return vfsItem != null
 				&& vfsItem.canDelete() == VFSStatus.YES
-				&& !vfsLockManager.isLockedForMe(vfsItem, getIdentity(), VFSLockApplicationType.vfs, null);
+				&& !vfsLockManager.isLockedForMe(vfsItem, vfsItem.getMetaInfo(), getIdentity(), VFSLockApplicationType.vfs, null);
 	}
 	
 	private boolean canNotDeleteLeaf(VFSItem vfsItem) {

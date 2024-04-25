@@ -8,9 +8,10 @@
 	#else
 		<div class="o_folder_card_thumbnail">
 	#end
-		<div class="o_folder_card_img #if($row.isThumbnailTopVisible())o_folder_card_img_top#end">
+		<div class="o_folder_card_img #if($row.getThumbnailCss())$row.getThumbnailCss()#end">
 			#if($row.isThumbnailAvailable())
-				<img src="$row.getThumbnailUrl()/1000/650" alt=""/>
+				## 2x the max viewport (344 = 2 x $o-folder-card-thumbnail-height)
+				<img src="$row.getThumbnailUrl()/412/344" alt=""/>
 			#else
 				<div class="o_folder_row_thumbnail">
 					<div class="o_folder_icon_container">
@@ -33,7 +34,7 @@
 	<div class="o_folder_card_meta">
 		<div class="o_flex_first_grow_base">
 			<div class="o_nowrap">
-				<h4 class="o_folder_card_title o_card_title o_nowrap">$r.render("$row.getSelectionItemName()")</h4>
+				<h5 class="o_folder_card_title o_card_title o_nowrap">$r.render("$row.getSelectionItemName()")</h5>
 			</div>
 			#if($row.getToolsLinkName())
 				$r.render($row.getToolsLinkName())

@@ -113,6 +113,7 @@ public class FileElementImpl extends FormItemImpl
 	private String fileExampleKey;
 	private String[] fileExampleParams;
 	
+	private String chooseButtonLabel;
 	private String dndInformations;
 
 	private Identity savedBy;
@@ -418,6 +419,16 @@ public class FileElementImpl extends FormItemImpl
 	@Override
 	public void setDndInformations(String dndInformations) {
 		this.dndInformations = dndInformations;
+	}
+
+	@Override
+	public String getChooseButtonLabel() {
+		return chooseButtonLabel;
+	}
+
+	@Override
+	public void setChooseButtonLabel(String chooseButtonLabel) {
+		this.chooseButtonLabel = chooseButtonLabel;
 	}
 
 	@Override

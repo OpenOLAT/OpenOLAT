@@ -122,6 +122,7 @@ public class FolderSelectionController extends FormBasicController implements Fl
 		tableEl.setAndLoadPersistedPreferences(ureq, "folder.selection");
 		tableEl.setCssDelegate(this);
 		tableEl.sort(FolderCols.title.name(), true);
+		tableEl.setEmptyTableSettings("folder.empty", "folder.empty.hint.readonly", "o_filetype_folder");
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -183,7 +184,9 @@ public class FolderSelectionController extends FormBasicController implements Fl
 			
 			row.setThumbnailAvailable(true);
 			row.setThumbnailUrl(mapperKey.getUrl());
-			row.setThumbnailTopVisible(FolderUIFactory.isThumbnailTopVisible(row.getMetadata(), row.getVfsItem()));
+			if (FolderThumbnailMapper.isAudio(row.getMetadata(), vfsLeaf)) {
+				row.setThumbnailCss("o_folder_card_img_center");
+			}
 		}
 	}
 	

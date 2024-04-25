@@ -94,10 +94,6 @@ public class DocumentPoolLevelController extends BasicController implements Acti
 				folderCtrl = new FolderController(ureq, wControl, namedContainer, config);
 				listenTo(folderCtrl);
 				mainVC.put("folder", folderCtrl.getInitialComponent());
-				
-//				FolderRunController folderCtrl = new FolderRunController(namedContainer, true, true, true, ureq, getWindowControl());
-//				folderCtrl.setResourceURL("[DocumentPool:0][TaxonomyLevel:" + taxonomyLevel.getKey() + "]");
-//				mainVC.put("folder2", folderCtrl.getInitialComponent());
 			}
 		}
 		putInitialPanel(mainVC);

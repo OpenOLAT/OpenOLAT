@@ -261,11 +261,15 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			if(!StringHelper.containsNonWhitespace(dndInfo)) {
 				dndInfo = trans.translate("file.element.dnd.info");
 			}
+			String buttonLabel = fileElem.getChooseButtonLabel();
+			if(!StringHelper.containsNonWhitespace(buttonLabel)) {
+				buttonLabel = trans.translate("file.element.dnd.select");
+			}
 			sb.append("<div class='o_dnd' aria-hidden='true'>")
 			  .append("<div class='o_dnd_icon'><i class='o_icon o_icon o_icon_upload'></i></div>")
 			  .append("<div class='o_dnd_info'>").append(dndInfo).append("</div>")
 			  .append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>")
-			  .append(trans.translate("file.element.dnd.select")).append("</span></button></div>")
+			  .append(buttonLabel).append("</span></button></div>")
 			  .append("</div>");
 		}
 		

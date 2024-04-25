@@ -153,6 +153,10 @@ public interface FileElement extends FormMultipartItem {
 	
 	public void setDndInformations(String infos);
 	
+	public String getChooseButtonLabel();
+	
+	public void setChooseButtonLabel(String chooseButtonLabel);
+	
 	public boolean isShowInputIfFileUploaded();
 	
 	/**

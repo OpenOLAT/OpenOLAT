@@ -61,7 +61,7 @@ public class FolderRow {
 	private String translatedLicense;
 	private boolean thumbnailAvailable;
 	private String thumbnailUrl;
-	private boolean thumbnailTopVisible;
+	private String thumbnailCss;
 	private boolean openable;
 	private boolean openInNewWindow;
 	private FormItem titleItem;
@@ -301,12 +301,12 @@ public class FolderRow {
 		this.thumbnailUrl = thumbnailUrl;
 	}
 
-	public boolean isThumbnailTopVisible() {
-		return thumbnailTopVisible;
+	public String getThumbnailCss() {
+		return thumbnailCss;
 	}
 
-	public void setThumbnailTopVisible(boolean thumbnailTopVisible) {
-		this.thumbnailTopVisible = thumbnailTopVisible;
+	public void setThumbnailCss(String thumbnailCss) {
+		this.thumbnailCss = thumbnailCss;
 	}
 
 	public boolean isOpenable() {

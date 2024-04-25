@@ -60,6 +60,7 @@
 				
 				margin-bottom: 0;
 				padding-top: 5px;
+				padding-bottom: 5px;
 				border: 1px solid $btn-default-border;
 				border-top-right-radius: 0;
 				border-bottom-right-radius: 0;
@@ -143,7 +144,7 @@
 				width: 100%;
 				.o_folder_create_group {
 					flex-grow: 100;
-					>a {
+					>:first-child {
 						width: 100%;
 					}
 				}
@@ -197,30 +198,33 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 				&.o_folder_openable {
 					cursor: pointer;
 				}
-				height: 172px;
+				height: $o-folder-card-thumbnail-height;
 				position: relative;
 				background-color: #fcfcfc;
 				.o_folder_card_img {
-					left: -0.5%;
-					overflow: hidden;
-					position: absolute;
-					text-align: center;
-					top: 0;
 					transition: opacity 200ms ease-in-out;
-					width: 101%;
+					
+					text-align: center;
 					height: 100%;
+					
+					box-sizing: content-box;
+					border-radius: 3px 3px 0px 0px;
+					border-bottom: 1px solid 1px solid #ccc;
+					display: flex;
+					align-items: baseline;
+					width: inherit;
+					overflow: hidden;
+					
 					img {
-						position: absolute;
-						top: 50%;
-						left: 50%;
-						transform: translate(-50%, -50%);
-						width: auto;
-						height: auto;
-						max-width: 100%;
+						min-height: $o-folder-card-thumbnail-height;
+						width: 100%;
+						object-fit: cover;
+						object-position: top center;
 					}
-					&.o_folder_card_img_top {
+					&.o_folder_card_img_center {
 						img {
-							top: 95%;
+							max-height: $o-folder-card-thumbnail-height;
+							object-position: center;
 						}
 					}
 				}
@@ -238,8 +242,8 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 						}
 						.o_folder_elements_labels {
 							position: absolute;
-							bottom: 0px;
-							right: -5px;
+							bottom: 10px;
+							right: 7px;
 						}
 					}
 				}
@@ -251,7 +255,7 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 			}
 			.o_folder_card_meta {
 				padding: 10px;
-				h4 {
+				.o_folder_card_title {
 					line-height: 1.2;
 				}
 			}
@@ -305,9 +309,4 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 			vertical-align: top;
 		}
 	}
-}
-
-// Headers followed by a folder
-h2:has(~div .o_folder) {
-	margin-bottom: 1em;
 }

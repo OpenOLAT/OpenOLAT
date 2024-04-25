@@ -889,7 +889,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 /* first the default that is used as base class. will be overriden by following classes */
 .o_filetype_file,
 .o_filetype_ico { @include o-add-icon('file', false);}
-.o_filetype_folder { @include o-add-icon('folder', false);}
+.o_filetype_folder { @include o-add-icon('folder', true);}
 /* filesystem icons, mark important to override ext definitions */
 .o_filetype_zip,
 .o_filetype_gz,

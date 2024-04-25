@@ -21,12 +21,7 @@ package org.olat.core.commons.services.folder.ui;
 
 import java.io.File;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.doceditor.onlyoffice.manager.OnlyOfficeThumbnailSPI;
-import org.olat.core.commons.services.thumbnail.impl.PDFToThumbnail;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.gui.translator.Translator;
@@ -50,8 +45,6 @@ import org.olat.user.UserManager;
  *
  */
 public class FolderUIFactory {
-	
-	private static Set<String> THUMBNAIL_TOP_VISIBLE_SUFFIX;
 	
 	public static String getIconCssClass(VFSMetadata vfsMetadata, VFSItem vfsItem) {
 		if (vfsItem instanceof VFSContainer vfsContainer) {
@@ -222,19 +215,6 @@ public class FolderUIFactory {
 			return vfsMetadata.getRevisionNr();
 		}
 		return null;
-	}
-
-	public static boolean isThumbnailTopVisible(VFSMetadata vfsMetadata, VFSItem vfsItem) {
-		if (THUMBNAIL_TOP_VISIBLE_SUFFIX == null || THUMBNAIL_TOP_VISIBLE_SUFFIX.isEmpty()) {
-			THUMBNAIL_TOP_VISIBLE_SUFFIX = new HashSet<>(CoreSpringFactory.getImpl(OnlyOfficeThumbnailSPI.class).getExtensions());
-			THUMBNAIL_TOP_VISIBLE_SUFFIX.addAll(CoreSpringFactory.getImpl(PDFToThumbnail.class).getExtensions());
-		}
-		
-		String suffix = getFileSuffix(vfsMetadata, vfsItem);
-		if (THUMBNAIL_TOP_VISIBLE_SUFFIX.contains(suffix.toLowerCase())) {
-			return true;
-		}
-		return false;
 	}
 
 }
