@@ -835,9 +835,9 @@ public class PortfolioV2Test extends Deployments {
 			.addLayout(ContainerLayout.block_1_1lcols)
 			.openElementsChooser(1, 1)
 			.addTitle(title)
-			.setTitleSize(3)
+			.setTitleSize(4)
 			.closeEditFragmentOfPage()
-			.assertOnTitle(title, 3);
+			.assertOnTitle(title, 4);
 		
 		// add an image
 		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
@@ -851,7 +851,7 @@ public class PortfolioV2Test extends Deployments {
 		// close the editor and check
 		entry
 			.closeEditor()
-			.assertOnTitle(title, 3)
+			.assertOnTitle(title, 4)
 			.assertOnImage(imageFile);
 		
 		//reopen the editor and add a document
@@ -871,7 +871,7 @@ public class PortfolioV2Test extends Deployments {
 			.assertOnCitation(citation);
 		//close the editor and check all parts
 		entry.closeEditor()
-			.assertOnTitle(title, 3)
+			.assertOnTitle(title, 4)
 			.assertOnImage(imageFile)
 			.assertOnDocument(pdfFile)
 			.assertOnCitation(citation);

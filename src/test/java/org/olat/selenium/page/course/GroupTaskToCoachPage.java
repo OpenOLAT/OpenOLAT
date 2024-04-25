@@ -44,6 +44,12 @@ public class GroupTaskToCoachPage {
 		this.browser = browser;
 	}
 	
+	public GroupTaskToCoachPage assertOnVisitGreen() {
+		By visitedBy = By.cssSelector(".panel.o_assessment_stats .o_launch_list .o_icon.o_green_led");
+		OOGraphene.waitElement(visitedBy, browser);
+		return this;
+	}
+	
 	public GroupTaskToCoachPage selectBusinessGroupToCoach(String name) {
 		By selectBy = By.xpath("//table[contains(@class,'table')]//tr/td[contains(@class,'o_dnd_label')]/a[text()[contains(.,'" + name + "')]][contains(@onclick,'select')]");
 		OOGraphene.waitElement(selectBy, browser);

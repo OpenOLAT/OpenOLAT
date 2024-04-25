@@ -85,14 +85,16 @@ public class SurveyEditorPage extends ContentEditorPage {
 		
 		By choiceBy = By.xpath("//div[contains(@class,'o_evaluation_editor_form')]//table[contains(@class,'table-condensed')]/tbody/tr[" + pos + "]/td/div/input[@type='text']");
 		OOGraphene.waitElement(choiceBy, browser);
+		
+		// Clear and wait empty value
 		browser.findElement(choiceBy).clear();
 		OOGraphene.waitBusy(browser);
+		By emptyChoiceBy = By.xpath("//div[contains(@class,'o_evaluation_editor_form')]//table[contains(@class,'table-condensed')]/tbody/tr[" + pos + "]/td/div/input[@type='text'][string-length(@value)=0]");
+		OOGraphene.waitElement(emptyChoiceBy, browser);
+		
 		browser.findElement(choiceBy).sendKeys(choice);
 		OOGraphene.waitBusy(browser);
-		
 		return this;
 	}
-	
-
 
 }

@@ -2084,7 +2084,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		courseRuntime
-			.clickTree()
+			.tree()
 			.selectWithTitle(nodeTitle);
 		
 		SinglePage singlePage = new SinglePage(browser);
@@ -2252,14 +2252,14 @@ public class CourseElementTest extends Deployments {
 			.addLayout(ContainerLayout.block_1_1lcols)
 			.openElementsChooser(1, 1)
 			.addTitle(title)
-			.setTitleSize(3)
+			.setTitleSize(4)
 			.closeEditFragmentOfPage()
-			.assertOnTitle(title, 3);
+			.assertOnTitle(title, 4);
 		
 		page.closeEditor();
 		
 		new ContentViewPage(browser)
-			.assertOnTitle(title, 3);
+			.assertOnTitle(title, 4);
 	}
 	
 	

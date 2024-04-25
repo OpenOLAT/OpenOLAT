@@ -1714,7 +1714,6 @@ public class AssessmentTest extends Deployments {
 		WebDriver ryomouBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
 
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -1771,7 +1770,7 @@ public class AssessmentTest extends Deployments {
 		membersPage
 			.addMember()
 			.importList()
-			.setMembers(kanu, ryomou)
+			.setMembers(ryomou)
 			.nextUsers()
 			.nextOverview()
 			.nextPermissions()
@@ -1820,8 +1819,8 @@ public class AssessmentTest extends Deployments {
 		
 		//back to author
 		coursePage
-			.clickTree()
-			.assertWithTitleSelected(gtaNodeTitle);
+			.tree()
+			.selectWithTitle(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
 		participantToCoach
