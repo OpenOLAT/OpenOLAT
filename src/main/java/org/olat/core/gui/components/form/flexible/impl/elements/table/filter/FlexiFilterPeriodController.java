@@ -42,8 +42,8 @@ import org.olat.core.util.Util;
 
 /**
  * 
- * Initial date: 18 Nov 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 28 mars 2024<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public class FlexiFilterPeriodController extends FormBasicController {
@@ -68,8 +68,10 @@ public class FlexiFilterPeriodController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		SelectionValues pastPK = new SelectionValues();
-		pastPK.add(SelectionValues.entry("future", translate("filter.future")));
-		pastPK.add(SelectionValues.entry("past", translate("filter.past")));
+		String futureLabel = StringHelper.containsNonWhitespace(filter.getFutureLabel()) ? filter.getFutureLabel() : translate("filter.future");
+		String pastLabel = StringHelper.containsNonWhitespace(filter.getPastLabel()) ? filter.getPastLabel() : translate("filter.past");
+		pastPK.add(SelectionValues.entry("future", futureLabel));
+		pastPK.add(SelectionValues.entry("past", pastLabel));
 		pastEl = uifactory.addDropdownSingleselect("past", null, formLayout, pastPK.keys(), pastPK.values());
 		pastEl.setDomReplacementWrapperRequired(false);
 		

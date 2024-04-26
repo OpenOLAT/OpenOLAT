@@ -338,8 +338,10 @@ public class UserSearchTableController extends FormBasicController implements Ac
 					FILTER_ORGANISATIONS, organisationsValues, true));
 		}
 		
+		String futureLabel = translate("filter.expiration.future");
+		String pastLabel = translate("filter.expiration.past");	
 		filters.add(new FlexiTablePeriodFilter(translate("filter.inactivation.date"),
-				FILTER_INACTIVATION_DATE, true, getLocale()));
+				FILTER_INACTIVATION_DATE, futureLabel, pastLabel, true, getLocale()));
 
 		if(!filters.isEmpty()) {
 			tableEl.setFilters(true, filters, false, false);

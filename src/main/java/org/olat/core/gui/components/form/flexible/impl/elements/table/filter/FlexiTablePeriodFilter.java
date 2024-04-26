@@ -44,10 +44,19 @@ public class FlexiTablePeriodFilter extends FlexiTableFilter implements FlexiTab
 
 	private final Locale locale;
 	private PeriodWithUnit value;
+	private final String futureLabel;
+	private final String pastLabel;
 	
 	public FlexiTablePeriodFilter(String label, String filter, boolean defaultVisible, Locale locale) {
+		this(label, filter, null, null, defaultVisible, locale);
+	}
+	
+	public FlexiTablePeriodFilter(String label, String filter, String futureLabel, String pastLabel,
+			boolean defaultVisible, Locale locale) {
 		super(label, filter);
 		this.locale = locale;
+		this.futureLabel = futureLabel;
+		this.pastLabel = pastLabel;
 		setDefaultVisible(defaultVisible);
 	}
 	
@@ -57,6 +66,14 @@ public class FlexiTablePeriodFilter extends FlexiTableFilter implements FlexiTab
 	
 	public PeriodWithUnit getPeriodWithUnit() {
 		return value;
+	}
+
+	public String getFutureLabel() {
+		return futureLabel;
+	}
+
+	public String getPastLabel() {
+		return pastLabel;
 	}
 
 	@Override
