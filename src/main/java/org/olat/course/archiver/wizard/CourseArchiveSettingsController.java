@@ -21,6 +21,7 @@ package org.olat.course.archiver.wizard;
 
 import java.util.Collection;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -81,7 +82,8 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		customization = true;
 		bulkArchivesContext = bulkArchiveContext;
-		administrator = ureq.getUserSession().getRoles().isAdministrator();
+		administrator = ureq.getUserSession().getRoles()
+				.hasSomeRoles(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
 		archiveOptions = bulkArchivesContext.getArchiveOptions();
 		initForm(ureq);
 	}

@@ -93,7 +93,7 @@ public class CourseArchiveContext {
 		boolean isOresOwner = repositoryService.hasRole(identity, courseEntry, GroupRoles.owner.name());
 		boolean isOresInstitutionalManager = roles.isLearnResourceManager()
 				&& repositoryService.hasRoleExpanded(identity, courseEntry, OrganisationRoles.learnresourcemanager.name());
-		context.administrator = isAdministrator;
+		context.administrator = isOresInstitutionalManager || isAdministrator;
 		context.allowedLogAuthors = isOresOwner || isOresInstitutionalManager || isAdministrator;
 		context.allowedLogUsers = isOresInstitutionalManager || isAdministrator;
 		context.allowedLogStatistics = isOresOwner || isOresInstitutionalManager || isAdministrator;
