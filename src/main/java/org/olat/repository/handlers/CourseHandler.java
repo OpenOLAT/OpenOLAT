@@ -403,7 +403,7 @@ public class CourseHandler implements RepositoryHandler {
 		courseConfig.setSharedFolderSoftkey(importedRepositoryEntry.getSoftkey());
 		
 		CoreSpringFactory.getImpl(ReferenceManager.class)
-			.addReference(importedRepositoryEntry.getOlatResource(), course, SharedFolderManager.SHAREDFOLDERREF);		
+			.addReference(course, importedRepositoryEntry.getOlatResource(), SharedFolderManager.SHAREDFOLDERREF);		
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 
@@ -415,7 +415,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryEntry sharedFolder = repositoryManager.lookupRepositoryEntryBySoftkey(softKey, false);
 		if(sharedFolder != null) {
 			CoreSpringFactory.getImpl(ReferenceManager.class)
-				.addReference(sharedFolder.getOlatResource(), course, SharedFolderManager.SHAREDFOLDERREF);
+				.addReference(course, sharedFolder.getOlatResource(), SharedFolderManager.SHAREDFOLDERREF);
 		}
 	}
 	
@@ -448,7 +448,8 @@ public class CourseHandler implements RepositoryHandler {
 			// set the new glossary reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
 		courseConfig.setGlossarySoftKey(importedRepositoryEntry.getSoftkey());
-		CoreSpringFactory.getImpl(ReferenceManager.class).addReference(course, importedRepositoryEntry.getOlatResource(), GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER);			
+		CoreSpringFactory.getImpl(ReferenceManager.class)
+			.addReference(course, importedRepositoryEntry.getOlatResource(), GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER);			
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 	
@@ -460,7 +461,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryEntry glossary = repositoryManager.lookupRepositoryEntryBySoftkey(softKey, false);
 		if(glossary != null) {
 			CoreSpringFactory.getImpl(ReferenceManager.class)
-				.addReference(glossary.getOlatResource(), course, SharedFolderManager.SHAREDFOLDERREF);
+				.addReference(course, glossary.getOlatResource(), GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER);
 		}
 	}
 	

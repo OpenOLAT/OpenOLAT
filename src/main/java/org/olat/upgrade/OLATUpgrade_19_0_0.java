@@ -38,6 +38,17 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.config.CourseConfig;
+import org.olat.modules.glossary.GlossaryManager;
+import org.olat.modules.sharedfolder.SharedFolderManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.resource.references.Reference;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,12 +68,19 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 
 	private static final String UPDATE_FOLDER_USER_TOOL = "UPDATED FOLDER USER TOOL";
 	private static final String PLANNED_INACTIVATION_DATE_IDENTITY = "PLANNED INACTIVATION DATE IDENTITY";
+	private static final String COURSE_REFERENCES = "COURSES REFERENCES";
 	private static final String VFS_DELETED_METADATA = "VFS DELETED METADATA";
 	
 	@Autowired
 	private DB dbInstance;
  	@Autowired
  	private UserToolsModule userToolsModule;
+	@Autowired
+	private ReferenceManager referenceManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private UserLifecycleManager userLifecycleManager;
 	@Autowired
@@ -90,6 +108,7 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		allOk &= updateFolderUserTool(upgradeManager, uhd);
 		allOk &= updatePlannedInactivationDates(upgradeManager, uhd);
+		allOk &= updateCoursesReferences(upgradeManager, uhd);
 		// Should be the last one because it can take some time.
 		allOk &= updateVfsDeletedMetadata(upgradeManager, uhd);
 
@@ -136,6 +155,70 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 		}
 		
 		return allOk;
+	}
+	
+	private boolean updateCoursesReferences(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		
+		if (!uhd.getBooleanDataValue(COURSE_REFERENCES)) {
+			int counter = 0;
+			List<Long> courses = getCourseEntries();
+			for(Long courseKey:courses) {
+				RepositoryEntry courseEntry = repositoryService.loadByKey(courseKey);
+				try {
+					ICourse course = CourseFactory.loadCourse(courseEntry);
+					CourseConfig courseConfig = course.getCourseConfig();
+					checkReference(courseEntry, courseConfig.getGlossarySoftKey(), GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER);
+					checkReference(courseEntry, courseConfig.getSharedFolderSoftkey(), SharedFolderManager.SHAREDFOLDERREF);
+					if((++counter) % 25 == 0) {
+						log.info("Courses references check: {} / {}", counter, courses.size());
+						dbInstance.commitAndCloseSession();
+					}
+				} catch (CorruptedCourseException e) {
+					log.debug("Course corrupted: {}", courseEntry, e);
+				}
+			}
+			dbInstance.commitAndCloseSession();
+			log.info("Courses references check finished.");
+			
+			uhd.setBooleanDataValue(COURSE_REFERENCES, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		
+		return allOk;
+	}
+	
+	private void checkReference(RepositoryEntry courseEntry, String softKey, String type) {
+		if(!StringHelper.containsNonWhitespace(softKey)) {
+			return;
+		}
+		
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntryBySoftkey(softKey, false);
+		if(entry == null) {
+			return;
+		}
+
+		List<Reference> references = referenceManager.getReferences(courseEntry.getOlatResource(), entry.getOlatResource());
+		if(references.isEmpty()) {
+			referenceManager.addReference(courseEntry.getOlatResource(), entry.getOlatResource(), type);
+		}
+		
+		// Delete referecens from source Glossary/Shared folder to course
+		List<Reference> referencesToDelete = referenceManager.getReferences(entry.getOlatResource(), courseEntry.getOlatResource());
+		for(Reference referenceToDelete:referencesToDelete) {
+			referenceManager.delete(referenceToDelete);
+		}
+	}
+	
+	private List<Long> getCourseEntries() {
+		String sb = """
+			select re.key from repositoryentry re
+			inner join re.olatResource as ores
+			where ores.resName = 'CourseModule'
+			order by re.key asc""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb, Long.class)
+				.getResultList();
 	}
 	
 	private boolean updateVfsDeletedMetadata(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {

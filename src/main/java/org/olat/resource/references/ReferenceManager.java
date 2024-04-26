@@ -133,6 +133,19 @@ public class ReferenceManager {
 				.getResultList();
 	}
 	
+	public List<Reference> getReferences(OLATResourceable source, OLATResourceable target) {
+		Long sourceKey = getResourceKey(source);
+		Long targetKey = getResourceKey(target);
+		if (sourceKey == null || targetKey == null) {
+			return new ArrayList<>(0);
+		}
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("referencesBySourceAndTargetId", Reference.class)
+				.setParameter("sourceKey", sourceKey)
+				.setParameter("targetKey", targetKey)
+				.getResultList();
+	}
+	
 	public List<Reference> getReferencesTo(OLATResourceable target, String sourceResName) {
 		Long targetKey = getResourceKey(target);
 		if (targetKey == null) {
@@ -161,6 +174,18 @@ public class ReferenceManager {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("targetKey", targetKey)
+				.getResultList();
+	}
+	
+	public List<RepositoryEntry> getRepositoryReferencesFrom(OLATResourceable source) {
+		Long sourceKey = getResourceKey(source);
+		String sb = """
+				select v from repositoryentry as v
+				where v.olatResource in (select ref.target from references as ref where ref.source.key=:sourceKey)""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("sourceKey", sourceKey)
 				.getResultList();
 	}
 	
@@ -225,8 +250,8 @@ public class ReferenceManager {
 	
 	private Long getResourceKey(OLATResourceable resource) {
 		Long sourceKey;
-		if(resource instanceof OLATResource) {
-			sourceKey = ((OLATResource)resource).getKey();
+		if(resource instanceof OLATResource olatResource) {
+			sourceKey = olatResource.getKey();
 		} else {
 			OLATResource sourceImpl = olatResourceManager.findResourceable(resource);
 			if (sourceImpl == null) {
@@ -257,10 +282,10 @@ public class ReferenceManager {
 			if (source.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
 				try {
 					ICourse course = CourseFactory.loadCourse(source);
-					result.append(translator.translate("ref.course", new String[] { StringHelper.escapeHtml(course.getCourseTitle()) }));
+					result.append(translator.translate("ref.course", StringHelper.escapeHtml(course.getCourseTitle())));
 				} catch (Exception e) {
 					log.error("", e);
-					result.append(translator.translate("ref.course", new String[] { "<strike>" + source.getKey().toString() + "</strike>" }));
+					result.append(translator.translate("ref.course", "<strike>" + source.getKey().toString() + "</strike>"));
 				}
 			} else {
 				result.append(source.getKey().toString());

@@ -60,6 +60,7 @@ import jakarta.persistence.Version;
 @Table(name="o_references")
 @NamedQuery(name="referencesBySourceId", query="select v from references as v inner join fetch v.source as source inner join fetch v.target as target where source.key=:sourceKey")
 @NamedQuery(name="referencesByTargetId", query="select v from references as v inner join fetch v.source as source inner join fetch v.target as target where target.key=:targetKey")
+@NamedQuery(name="referencesBySourceAndTargetId", query="select v from references as v inner join fetch v.source as source inner join fetch v.target as target where source.key=:sourceKey and target.key=:targetKey")
 public class ReferenceImpl implements Persistable, Reference {
 
 	private static final long serialVersionUID = -6861263748211168112L;
