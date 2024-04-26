@@ -109,7 +109,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		moduleConfiguration = config;
 		courseNode = spCourseNode;
 		courseEnv = course.getCourseEnvironment();
-		courseFolderBaseContainer = course.getCourseFolderContainer(euce.getIdentityEnvironment(),
+		courseFolderBaseContainer = course.getCourseFolderContainer(ureq.getUserSession().getIdentityEnvironment(),
 				CourseContainerOptions.withoutElements(), false, true);
 
 		myContent = createVelocityContainer("edit");

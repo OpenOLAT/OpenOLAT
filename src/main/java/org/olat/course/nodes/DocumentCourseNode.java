@@ -129,7 +129,8 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		
-		VFSContainer courseFolderCont = course.getCourseFolderContainer(userCourseEnv.getIdentityEnvironment(), CourseContainerOptions.withoutElements(), false, true);
+		VFSContainer courseFolderCont = course.getCourseFolderContainer(ureq.getUserSession().getIdentityEnvironment(),
+				CourseContainerOptions.withoutElements(), false, true);
 		DocumentEditController editCtrl = new DocumentEditController(ureq, wControl, stackPanel, course, this, courseFolderCont);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, userCourseEnv, editCtrl);
