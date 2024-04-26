@@ -115,6 +115,14 @@ public class MergedCourseContainer extends MergeSource {
 	}
 	
 	@Override
+	public VFSContainer getRootWriteContainer() {
+		if(!initialized) {
+			init();
+		}
+		return super.getRootWriteContainer();
+	}
+
+	@Override
 	protected void init() {
 		initialized = true;
 		super.init();
