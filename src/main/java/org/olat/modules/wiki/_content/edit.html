@@ -2,7 +2,7 @@
 #if($isGuest)
 	<div class="o_warning">$r.translate("guest.no.edit")</div>
 #elseif(!$lockEntry.isSuccess())
-	<div class="o_warning">$r.translate("page.locked", [$page.getPageName(), $lockEntry.getOwner().getName()])</div>
+	<div class="o_warning">$r.translate("page.locked", [$page.getPageName(), $lockEntry.getOwner().getUser().getFirstName(), $lockEntry.getOwner().getUser().getLastName()])</div>
 #else
 	## normal edit workflow
 	#if ($r.available("versionDisplay"))
@@ -47,9 +47,7 @@
 				#end
   			</ul></div>
   			<script>
-			/* <![CDATA[ */
 			jQuery(function() { o_popover('wiki-button-link-insert','wiki-list-link-insert'); });
-			/* ]]> */
 			</script>
 		</div>
 		#end
@@ -62,9 +60,7 @@
 				#end
   			</ul></div>
   			<script>
-			/* <![CDATA[ */
 			jQuery(function() { o_popover('wiki-button-media-insert','wiki-list-media-insert'); });
-			/* ]]> */
 			</script>
 		</div>
 		#end
@@ -79,9 +75,7 @@
 	## set the form dirty if the user closed the preview button
 	#if($isDirty)
 	<script>
-	/* <![CDATA[ */
 	setFormDirty('${editformid}');
-	/* ]]> */
 	</script>
 	#end
 #end
