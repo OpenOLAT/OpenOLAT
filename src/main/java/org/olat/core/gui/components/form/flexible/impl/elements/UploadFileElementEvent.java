@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FileElementInfos;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
 /**
@@ -36,17 +37,23 @@ public class UploadFileElementEvent extends FormEvent {
 	private static final long serialVersionUID = -767107043693286989L;
 	public static final String UPLOAD = "upload-file";
 	
-	private List<File> files;
-	private String uploadFolder;
+	private final List<File> files;
+	private final List<FileElementInfos> uploadFilesInfos;
+	private final String uploadFolder;
 	
-	public UploadFileElementEvent(FormItem source, List<File> files, String uploadFolder, int action) {
+	public UploadFileElementEvent(FormItem source, List<File> files, List<FileElementInfos> uploadFilesInfos, String uploadFolder, int action) {
 		super(UPLOAD, source, action);
 		this.files = files;
+		this.uploadFilesInfos = uploadFilesInfos;
 		this.uploadFolder = uploadFolder;
 	}
 
 	public List<File> getFiles() {
 		return files;
+	}
+
+	public List<FileElementInfos> getUploadFilesInfos() {
+		return uploadFilesInfos;
 	}
 	
 	public String getUploadFolder() {

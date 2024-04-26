@@ -22,7 +22,6 @@ package org.olat.core.commons.services.folder.ui;
 import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -52,6 +51,7 @@ import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.folder.ui.FolderDataModel.FolderCols;
 import org.olat.core.commons.services.folder.ui.component.QuotaBar;
+import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -69,6 +69,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
+import org.olat.core.commons.services.vfs.model.VFSTransientMetadata;
 import org.olat.core.commons.services.vfs.ui.version.RevisionListController;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.ui.WebDAVController;
@@ -82,6 +83,7 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FileElementInfos;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -143,7 +145,10 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.mail.ui.SendDocumentsByEMailController;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.CopySourceLeaf;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.NamedLeaf;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
@@ -233,7 +238,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CloseableModalController cmc;
-	private UploadController uploadCtrl;
 	private FileBrowserController addFromBrowserCtrl;
 	private CreateDocumentController createDocumentCtrl;
 	private CreateFolderController createFolderCtrl;
@@ -242,6 +246,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private WebDAVController webdavCtrl;
 	private Controller quotaEditCtrl;
 	private FolderTargetController copySelectFolderCtrl;
+	private LicenseCheckController licenseCheckCtrl;
 	private Controller metadataCtrl;
 	private RevisionListController revisonsCtrl;
 	private ZipConfirmationController zipConfirmationCtrl;
@@ -263,6 +268,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FolderView folderView;
 	private int counter = 0;
 	
+	@Autowired
+	private FolderModule folderModule;
 	@Autowired
 	private VFSVersionModule vfsVersionModule;
 	@Autowired
@@ -1212,7 +1219,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		} else if(addFileEl == source) {
 			if(event instanceof UploadFileElementEvent ufee) {
-				doUploadFile(ureq, ufee.getFiles(), ufee.getUploadFolder());
+				doUploadFile(ureq, ufee.getUploadFilesInfos(), ufee.getUploadFolder());
 			}
 		} else if (viewFolderLink == source) {
 			doOpenView(ureq, FolderView.folder);
@@ -1272,20 +1279,14 @@ public class FolderController extends FormBasicController implements Activateabl
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (uploadCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-			loadModel(ureq);
+		if (addFromBrowserCtrl == source) {
 			cmc.deactivate();
-			cleanUp();
-		} else if (addFromBrowserCtrl == source) {
+			// No clean up. Uploaded, temporary files are deleted when controller is disposed.
+			// The clean up if no license check is needed.
 			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
 				doCopyMove(ureq, false, currentContainer, selectionEvent.getVfsItems());
 			}
 			loadModel(ureq);
-			cmc.deactivate();
-			cleanUp();
 		} else if (createDocumentCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				markNews();
@@ -1344,6 +1345,16 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (licenseCheckCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doCopyMove(ureq,
+					false,
+					licenseCheckCtrl.getTargetContainer(),
+					licenseCheckCtrl.getItemsToCopy(),
+					licenseCheckCtrl.getLicense());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (zipConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				doZip(ureq, zipConfirmationCtrl.getFileName(), zipConfirmationCtrl.getItemsToZip());
@@ -1398,7 +1409,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(addFromBrowserCtrl);
 		removeAsListenerAndDispose(createDocumentCtrl);
 		removeAsListenerAndDispose(createFolderCtrl);
@@ -1409,6 +1419,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		removeAsListenerAndDispose(metadataCtrl);
 		removeAsListenerAndDispose(revisonsCtrl);
 		removeAsListenerAndDispose(copySelectFolderCtrl);
+		removeAsListenerAndDispose(licenseCheckCtrl);
 		removeAsListenerAndDispose(zipConfirmationCtrl);
 		removeAsListenerAndDispose(emailCtrl);
 		removeAsListenerAndDispose(deleteSoftlyConfirmationCtrl);
@@ -1417,7 +1428,6 @@ public class FolderController extends FormBasicController implements Activateabl
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
-		uploadCtrl = null;
 		addFromBrowserCtrl = null;
 		createDocumentCtrl = null;
 		createFolderCtrl = null;
@@ -1428,6 +1438,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		metadataCtrl = null;
 		revisonsCtrl = null;
 		copySelectFolderCtrl = null;
+		licenseCheckCtrl = null;
 		zipConfirmationCtrl = null;
 		emailCtrl = null;
 		deleteSoftlyConfirmationCtrl = null;
@@ -1436,6 +1447,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
+		addFileEl.reset();
 	}
 
 	@Override
@@ -1574,8 +1586,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		cmc.activate();
 	}
 	
-	private void doUploadFile(UserRequest ureq, List<File> uploadFiles, String directory) {
-		if(uploadFiles != null && !uploadFiles.isEmpty()) {
+	private void doUploadFile(UserRequest ureq, List<FileElementInfos> uploadFilesInfos, String directory) {
+		if(uploadFilesInfos != null && !uploadFilesInfos.isEmpty()) {
 			VFSContainer container = currentContainer;
 			if(StringHelper.containsNonWhitespace(directory)) {
 				VFSItem dir = container.resolve(directory);
@@ -1583,11 +1595,14 @@ public class FolderController extends FormBasicController implements Activateabl
 					container = subContainer;
 				}
 			}
-			addFileEl.moveUploadFileTo(container);
-			loadModel(ureq);
+			
+			List<VFSItem> items = uploadFilesInfos.stream()
+					.map(infos -> (VFSItem)new NamedLeaf(infos.fileName(), new LocalFileImpl(infos.file())))
+					.toList();
+			doCopyMove(ureq, false, container, items);
 		}
 	}
-	
+
 	private void doCreateDocument(UserRequest ureq) {
 		if (guardModalController(createDocumentCtrl)) return;
 		leaveTrash(ureq);
@@ -1880,6 +1895,34 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void doCopyMove(UserRequest ureq, boolean move, VFSContainer targetContainer, List<VFSItem> itemsToCopy) {
+		if (licensesEnabled && folderModule.isForceLicenseCheck() && !move) {
+			int numMissingLicenses = 0;
+			for (VFSItem itemToCopy : itemsToCopy) {
+				if (isLicenseMissing(itemToCopy)) {
+					numMissingLicenses++;
+				}
+			}
+			
+			if (numMissingLicenses > 0) {
+				if (guardModalController(licenseCheckCtrl)) {
+					return;
+				}
+				licenseCheckCtrl = new LicenseCheckController(ureq, getWindowControl(), targetContainer, itemsToCopy, numMissingLicenses);
+				listenTo(licenseCheckCtrl);
+				
+				cmc = new CloseableModalController(getWindowControl(), translate("close"),
+						licenseCheckCtrl.getInitialComponent(), true, translate("license.check.title"), true);
+				listenTo(cmc);
+				cmc.activate();
+				return;
+			}
+		}
+		
+		doCopyMove(ureq, move, targetContainer, itemsToCopy, null);
+		cleanUp();
+	}
+
+	private void doCopyMove(UserRequest ureq, boolean move, VFSContainer targetContainer, List<VFSItem> itemsToCopy, License license) {
 		if (isItemNotAvailable(ureq, targetContainer, true)) return;
 		
 		if (!canEdit(targetContainer)) {
@@ -1917,6 +1960,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		while (listIterator.hasNext() && vfsStatus == VFSStatus.SUCCESS) {
 			VFSItem vfsItemToCopy = listIterator.next();
 			if (!isItemNotAvailable(ureq, targetContainer, false) && canCopy(vfsItemToCopy, null)) {
+				vfsItemToCopy = appendMissingLicense(vfsItemToCopy, license);
 				VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
 				if (vfsItemToCopy instanceof VFSLeaf sourceLeaf && targetItem != null && targetItem.canVersion() == VFSStatus.YES) {
 					boolean success = vfsRepositoryService.addVersion(sourceLeaf, ureq.getIdentity(), false, "", sourceLeaf.getInputStream());
@@ -1941,6 +1985,33 @@ public class FolderController extends FormBasicController implements Activateabl
 		loadModel(ureq);
 		markNews();
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private VFSItem appendMissingLicense(VFSItem vfsItem, License license) {
+		if (license != null && isLicenseMissing(vfsItem)) {
+			VFSLeaf itemWithLicense = (VFSLeaf)vfsItem;
+			VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
+			if (vfsMetadata == null) {
+				vfsMetadata = new VFSTransientMetadata();
+				itemWithLicense = new CopySourceLeaf(itemWithLicense, vfsMetadata);
+			}
+			vfsMetadata.setLicenseType(license.getLicenseType());
+			vfsMetadata.setLicenseTypeName(license.getLicenseType().getName());
+			vfsMetadata.setLicensor(license.getLicensor());
+			vfsMetadata.setLicenseText(LicenseUIFactory.getLicenseText(license));
+			return itemWithLicense;
+		}
+		return vfsItem;
+	}
+	
+	private boolean isLicenseMissing(VFSItem vfsItem) {
+		if (vfsItem instanceof VFSLeaf) {
+			VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
+			if (vfsMetadata == null || !StringHelper.containsNonWhitespace(vfsMetadata.getLicenseTypeName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private void doBulkCopySelectFolder(UserRequest ureq) {

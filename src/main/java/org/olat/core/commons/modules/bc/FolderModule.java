@@ -29,9 +29,9 @@ package org.olat.core.commons.modules.bc;
 import java.io.File;
 import java.nio.file.Path;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -50,6 +50,7 @@ public class FolderModule extends AbstractSpringModule {
 	private static final Logger log = Tracing.createLoggerFor(FolderModule.class);
 
 	private static final String CONFIG_FORCE_DOWNLOAD = "forceDownload";
+	private static final String CONFIG_FORCE_LICENSE_CHECK = "forceLicenseCheck";
 	
 	@Value("${folder.root}")
 	private String homesRoot;
@@ -65,6 +66,8 @@ public class FolderModule extends AbstractSpringModule {
 	private boolean sendDocToExtern;
 	@Value("${folder.force.download:true}")
 	private String forceDownload;
+	@Value("${folder.force.license.check:false}")
+	private boolean forceLicenseCheck;
 	
 	@Autowired
 	public FolderModule(CoordinatorManager coordinatorManager) {
@@ -118,6 +121,11 @@ public class FolderModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			forceDownload = enabled;
 		}
+		
+		String forceLicenseObj = getStringPropertyValue(CONFIG_FORCE_LICENSE_CHECK, true);
+		if (StringHelper.containsNonWhitespace(forceLicenseObj)) {
+			forceLicenseCheck = "true".equals(forceLicenseObj);
+		}
 	}
 
 	public boolean isForceDownload() {
@@ -129,6 +137,15 @@ public class FolderModule extends AbstractSpringModule {
 		setStringProperty(CONFIG_FORCE_DOWNLOAD, enabled, true);
 	}
 	
+	public boolean isForceLicenseCheck() {
+		return forceLicenseCheck;
+	}
+
+	public void setForceLicense(boolean forceLicenseCheck) {
+		this.forceLicenseCheck = forceLicenseCheck;
+		setBooleanProperty(CONFIG_FORCE_LICENSE_CHECK, forceLicenseCheck, true);
+	}
+
 	public String getCanonicalRoot() {
 		return FolderConfig.getCanonicalRoot();
 	}

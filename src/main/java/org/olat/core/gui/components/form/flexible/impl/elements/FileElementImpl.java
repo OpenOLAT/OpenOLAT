@@ -160,7 +160,8 @@ public class FileElementImpl extends FormItemImpl
 			component.setDirty(true);
 			validate();
 			
-			getRootForm().fireFormEvent(ureq, new UploadFileElementEvent(this, tempUploadFileList, uploadDirectory, FormEvent.ONCHANGE));
+			getRootForm().fireFormEvent(ureq, new UploadFileElementEvent(this, tempUploadFileList,
+					List.copyOf(tempUploadFiles), uploadDirectory, FormEvent.ONCHANGE));
 		}
 		
 		if(initialPreviewEl != null && initialFile != null) {

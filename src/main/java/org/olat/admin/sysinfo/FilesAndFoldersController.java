@@ -22,7 +22,7 @@ package org.olat.admin.sysinfo;
 import org.olat.admin.quota.QuotaController;
 import org.olat.core.commons.services.vfs.ui.management.VFSOverviewController;
 import org.olat.core.commons.services.vfs.ui.version.VFSTrashController;
-import org.olat.core.commons.services.vfs.ui.version.VersionSettingsForm;
+import org.olat.core.commons.services.vfs.ui.version.AdminConfigurationController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -45,7 +45,7 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class FilesAndFoldersController extends BasicController{
 	private final Link fileStatsLink;
-	private final Link versionsLink;
+	private final Link configurationLink;
 	private final Link quotaLink;
 	private final Link trashLink;
 	private final Link overviewLink;
@@ -53,7 +53,7 @@ public class FilesAndFoldersController extends BasicController{
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
-	private VersionSettingsForm versionsController;
+	private AdminConfigurationController configurationCtrl;
 	private LargeFilesController fileStats;
 	private QuotaController quotas;
 	private VFSTrashController trash;
@@ -69,8 +69,8 @@ public class FilesAndFoldersController extends BasicController{
 		overviewLink = LinkFactory.createLink("filesfolders.menu.overview", mainVC, this);
 		segmentView.addSegment(overviewLink, true);
 		
-		versionsLink = LinkFactory.createLink("filesfolders.menu.versions", mainVC, this);
-		segmentView.addSegment(versionsLink, false);
+		configurationLink = LinkFactory.createLink("configuration", mainVC, this);
+		segmentView.addSegment(configurationLink, false);
 		
 		quotaLink = LinkFactory.createLink("filesfolders.menu.quota", mainVC, this);
 		segmentView.addSegment(quotaLink, false);
@@ -94,8 +94,8 @@ public class FilesAndFoldersController extends BasicController{
 				SegmentViewEvent sve = (SegmentViewEvent)event;
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
-				if(clickedLink == versionsLink) {
-					doVersions(ureq);
+				if(clickedLink == configurationLink) {
+					doConfiguration(ureq);
 				} else if(clickedLink == fileStatsLink) {
 					doFileStats(ureq);
 				} else if(clickedLink == quotaLink) {
@@ -119,19 +119,19 @@ public class FilesAndFoldersController extends BasicController{
 			} else if (event == VFSOverviewController.OPEN_TRASH_EVENT) {
 				doTrash(ureq);
 			} else if (event == VFSOverviewController.OPEN_VERSIONS_EVENT) {
-				doVersions(ureq);
+				doConfiguration(ureq);
 			}
 		}
 		super.event(ureq, source, event);
 	}
 
-	private void doVersions(UserRequest ureq) {
-		if(versionsController == null) {
-			versionsController = new VersionSettingsForm(ureq, getWindowControl());
-			listenTo(versionsController);
+	private void doConfiguration(UserRequest ureq) {
+		if(configurationCtrl == null) {
+			configurationCtrl = new AdminConfigurationController(ureq, getWindowControl());
+			listenTo(configurationCtrl);
 		}
-		mainVC.put("segmentCmp", versionsController.getInitialComponent());
-		segmentView.select(versionsLink);
+		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
+		segmentView.select(configurationLink);
 	}
 	
 	private void doFileStats(UserRequest ureq) {

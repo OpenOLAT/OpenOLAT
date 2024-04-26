@@ -21,7 +21,6 @@ package org.olat.core.commons.services.vfs.ui.version;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,7 +62,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSItem;
@@ -82,14 +80,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VFSTrashController extends FormBasicController implements ProgressDelegate {
 	
-	private FormLink pruneLink;
 	private FormLink cleanUpLink;
 	private StaticTextElement orphanSizeEl;
-	private StaticTextElement versionsSizeEl;
 	
 	private CloseableModalController cmc;
 	private ProgressController progressCtrl;
-	private DialogBoxController confirmPruneHistoryBox;
 	private DialogBoxController confirmDeleteOrphansBox;
 	
 	private FormLink orphansDeleteButton;
@@ -126,17 +121,13 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		// Upper part
 		statsLayout.setFormTitle(translate("version.maintenance.title"));
 		
-		versionsSizeEl = uifactory.addStaticTextElement("version.size", "version.size", "", statsLayout);
 		orphanSizeEl = uifactory.addStaticTextElement("version.orphan.size", "version.orphan.size", "", statsLayout);
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		statsLayout.add(buttonsLayout);
 		
 		cleanUpLink = uifactory.addFormLink("version.clean.up", buttonsLayout, Link.BUTTON);
-		pruneLink = uifactory.addFormLink("version.prune.history", buttonsLayout, Link.BUTTON);
 		cleanUpLink.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_TRASHED));
-		pruneLink.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_REVISION));
-
 		
 		// Lower part
 		tableLayout.setFormTitle(translate("version.deletedFiles"));
@@ -163,8 +154,6 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 	}
 	
 	private void loadModel() {
-		long versionsSize = vfsRepositoryService.getRevisionsTotalSize();
-		versionsSizeEl.setValue(Formatter.formatBytes(versionsSize));
 		long versionsDeletedFiles = vfsRepositoryService.getRevisionsTotalSizeOfDeletedFiles();
 		orphanSizeEl.setValue(Formatter.formatBytes(versionsDeletedFiles));
 		
@@ -182,10 +171,6 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		if(source == confirmDeleteOrphansBox) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				doDeleteOrphans(ureq);
-			}
-		} else if(source == confirmPruneHistoryBox) {
-			if (DialogBoxUIFactory.isYesEvent(event)) {
-				doPruneHistory(ureq);
 			}
 		} else if(source == cmc) {
 			cleanup();
@@ -242,9 +227,6 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		if(source == cleanUpLink) {
 			String text = translate("confirm.delete.orphans");
 			confirmDeleteOrphansBox = activateYesNoDialog(ureq, null, text, confirmDeleteOrphansBox);
-		} else if(source == pruneLink) {
-			String text = translate("confirm.prune.history");
-			confirmPruneHistoryBox = activateYesNoDialog(ureq, null, text, confirmPruneHistoryBox);
 		} else if(orphansDeleteButton == source) {
 			doConfirmDelete(ureq);
 			loadModel();
@@ -333,52 +315,6 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		finished();
 	}
 	
-	private void doPruneHistory(UserRequest ureq) {
-		final int numOfVersions = getNumOfVersions();
-		final List<VFSMetadataRef> metadata = vfsRepositoryService.getMetadataWithMoreRevisionsThan(numOfVersions);
-		progressCtrl = new ProgressController(ureq, getWindowControl());
-		progressCtrl.setMessage(translate("version.prune.history"));
-		progressCtrl.setPercentagesEnabled(false);
-		progressCtrl.setUnitLabel("%");
-		progressCtrl.setMax(100.0f);
-		progressCtrl.setActual(0.0f);
-		listenTo(progressCtrl);
-
-		taskExecutorManager.execute(() -> {
-			waitASecond();
-			pruneRevisions(metadata, numOfVersions); 
-		});
-
-		synchronized(this) {
-			if(progressCtrl != null) {
-				String title = translate("version.prune.history");
-				cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(),
-						true, title, false);
-				cmc.activate();
-				listenTo(cmc);
-			}
-		}
-	}
-	
-	private void pruneRevisions(final List<VFSMetadataRef> metadata, final int numOfVersions) {
-		try {
-			final Identity actingIdentity = getIdentity();
-			int count = 0;
-			for(VFSMetadataRef data:metadata) {
-				List<VFSRevision> revs = vfsRepositoryService.getRevisions(data);
-				Collections.sort(revs, new AscendingRevisionNrComparator());
-				List<VFSRevision> toDelete = revs.subList(0, revs.size() - numOfVersions);
-				vfsRepositoryService.deleteRevisions(actingIdentity, toDelete);
-				dbInstance.commitAndCloseSession();
-				setActual((++count / (float)metadata.size()) * 100.0f);
-			}
-		} catch (Exception e) {
-			dbInstance.closeSession();
-			logError("", e);
-		}
-		finished();
-	}
-	
 	private final void waitASecond() {
 		try {
 			Thread.sleep(1000);
@@ -429,12 +365,4 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		cleanup();
 	}
 	
-	private static class AscendingRevisionNrComparator implements Comparator<VFSRevision> {
-		@Override
-		public int compare(VFSRevision o1, VFSRevision o2) {
-			int n1 = o1.getRevisionNr();
-			int n2 = o2.getRevisionNr();
-			return Integer.compare(n1, n2);
-		}
-	}
 }
