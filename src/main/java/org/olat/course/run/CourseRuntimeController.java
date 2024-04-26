@@ -2398,7 +2398,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				// Folder for course with custom link model to jump to course nodes
 				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				VFSContainer courseContainer = course.getCourseFolderContainer(ureq.getUserSession().getIdentityEnvironment(),
-						CourseContainerOptions.all(), overrideReadOnly, true);
+						CourseContainerOptions.all(), overrideReadOnly, Boolean.TRUE);
 				VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), courseContainer);
 				CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
 	

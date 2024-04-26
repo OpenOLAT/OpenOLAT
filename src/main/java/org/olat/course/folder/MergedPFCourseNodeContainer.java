@@ -34,6 +34,7 @@ import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -47,17 +48,17 @@ public class MergedPFCourseNodeContainer extends MergeSource {
 
 	private boolean initialized = false;
 	
-	private final Long courseId;
+	private final RepositoryEntry courseEntry;
 	private final PFCourseNode pfNode;
 	private final boolean admin;
 	private final boolean courseReadOnly;
 	private final IdentityEnvironment identityEnv;
 	
 	public MergedPFCourseNodeContainer(VFSContainer parentContainer, String folderName,
-			Long courseId, PFCourseNode pfNode,
+			RepositoryEntry courseEntry, PFCourseNode pfNode,
 			IdentityEnvironment identityEnv, boolean courseReadOnly, boolean admin) {
 		super(parentContainer, folderName);
-		this.courseId = courseId;
+		this.courseEntry = courseEntry;
 		this.pfNode = pfNode;
 		this.admin = admin;
 		this.courseReadOnly = courseReadOnly;
@@ -69,7 +70,7 @@ public class MergedPFCourseNodeContainer extends MergeSource {
 		if(initialized) return;
 
 		PFManager pfManager = CoreSpringFactory.getImpl(PFManager.class);
-		ICourse course = CourseFactory.loadCourse(courseId);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		if(admin) {
 			VFSContainer rootFolder = pfManager.provideAdminContainer(pfNode, course.getCourseEnvironment());
 			VFSContainer nodeContentContainer = new NamedContainerImpl(getName(), rootFolder);

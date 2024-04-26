@@ -110,7 +110,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		courseNode = spCourseNode;
 		courseEnv = course.getCourseEnvironment();
 		courseFolderBaseContainer = course.getCourseFolderContainer(ureq.getUserSession().getIdentityEnvironment(),
-				CourseContainerOptions.withoutElements(), false, true);
+				CourseContainerOptions.withoutElements(), false, Boolean.TRUE);
 
 		myContent = createVelocityContainer("edit");
 		myContent.contextPut("fieldSetLegend", translate(PANE_TAB_SPCONFIG));

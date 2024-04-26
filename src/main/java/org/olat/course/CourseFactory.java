@@ -66,6 +66,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -95,6 +96,8 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.callbacks.FullAccessWithLazyQuotaCallback;
+import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.config.CourseConfig;
@@ -105,6 +108,7 @@ import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.PublishProcess;
 import org.olat.course.editor.PublishSetInformations;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -368,6 +372,23 @@ public class CourseFactory {
 	public static ICourse loadCourse(OLATResourceable olatResource) {
 		Long resourceableId = olatResource.getResourceableId();
 		return loadCourse(resourceableId);
+	}
+	
+	public static VFSContainer loadIsolatedCourseFolder(RepositoryEntry courseEntry) {
+		Long resourceId = courseEntry.getOlatResource().getResourceableId();
+		String relPath = File.separator + PersistingCourseImpl.COURSE_ROOT_DIR_NAME + File.separator + resourceId.longValue() + File.separator + PersistingCourseImpl.COURSEFOLDER;
+		VFSContainer courseRootContainer = VFSManager.olatRootContainer(relPath, null);
+		
+		FullAccessWithQuotaCallback secCallback = new FullAccessWithLazyQuotaCallback(courseRootContainer.getRelPath(), QuotaConstants.IDENTIFIER_DEFAULT_COURSE);
+		courseRootContainer.setLocalSecurityCallback(secCallback);
+		return courseRootContainer;
+	}
+	
+	public static VFSContainer loadCourseContainer(RepositoryEntry courseEntry, IdentityEnvironment identityEnv, CourseContainerOptions options,
+			boolean overrideReadOnly, Boolean entryAdmin) {
+		// add local course folder's children as read/write source and any sharedfolder as subfolder
+		return new MergedCourseContainer(courseEntry, courseEntry.getDisplayname(), identityEnv,
+						entryAdmin, options, overrideReadOnly);
 	}
 
 	/**

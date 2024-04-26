@@ -74,15 +74,16 @@ public class MergedCourseElementDataContainer extends MergeSource {
 	
 	private static final Logger log = Tracing.createLoggerFor(MergedCourseElementDataContainer.class);
 	
-	private final Long courseId;
 	private boolean initialized = false;
 	private final boolean entryAdmin;
 	private final boolean courseReadOnly;
+	private final RepositoryEntry courseEntry;
 	private final IdentityEnvironment identityEnv;
 	
-	public MergedCourseElementDataContainer(Long courseId, IdentityEnvironment identityEnv, boolean courseReadOnly, boolean entryAdmin) {
+	public MergedCourseElementDataContainer(RepositoryEntry courseEntry, IdentityEnvironment identityEnv,
+			boolean courseReadOnly, boolean entryAdmin) {
 		super(null, "_courseelementdata");
-		this.courseId = courseId;
+		this.courseEntry = courseEntry;
 		this.entryAdmin = entryAdmin;
 		this.identityEnv = identityEnv;
 		this.courseReadOnly = courseReadOnly;
@@ -93,7 +94,7 @@ public class MergedCourseElementDataContainer extends MergeSource {
 			return getItems().isEmpty();
 		}
 		
-		ICourse course = CourseFactory.loadCourse(courseId);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		AtomicInteger count = new AtomicInteger(0);
 		if(identityEnv == null || entryAdmin) {
 			new TreeVisitor(node -> {
@@ -140,7 +141,7 @@ public class MergedCourseElementDataContainer extends MergeSource {
 	protected void init() {
 		if(initialized) return;
 		
-		ICourse course = CourseFactory.loadCourse(courseId);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		initialized = true;
 		init(course);
 	}
@@ -213,7 +214,7 @@ public class MergedCourseElementDataContainer extends MergeSource {
 						// add folder not to merge source. Use name and node id to have unique name
 						folderName = getFolderName(nodesContainer, pfNode, folderName);
 						MergedPFCourseNodeContainer courseNodeContainer = new MergedPFCourseNodeContainer(nodesContainer, folderName,
-								courseId, pfNode, identityEnv, courseReadOnly, false);					
+								courseEntry, pfNode, identityEnv, courseReadOnly, false);					
 						addFolders(course, courseNodeContainer, childTreeNode, userCourseEnv);
 						nodesContainer.addContainer(courseNodeContainer);
 						
@@ -270,7 +271,7 @@ public class MergedCourseElementDataContainer extends MergeSource {
 				// add folder not to merge source. Use name and node id to have unique name
 				folderName = getFolderName(nodesContainer, pfNode, folderName);
 				MergedPFCourseNodeContainer courseNodeContainer = new MergedPFCourseNodeContainer(nodesContainer, folderName,
-						courseId, pfNode, identityEnv, courseReadOnly, true);
+						courseEntry, pfNode, identityEnv, courseReadOnly, true);
 				nodesContainer.addContainer(courseNodeContainer);
 				// Do recursion for all children
 				addFoldersForAdmin(course, courseNodeContainer, child);

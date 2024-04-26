@@ -258,6 +258,7 @@ import org.junit.runners.Suite;
 	org.olat.course.config.ui.courselayout.CustomConfigManagerTest.class,
 	org.olat.course.groupsandrights.CourseGroupManagementTest.class,
 	org.olat.course.editor.PublishProcessTest.class,
+	org.olat.course.CourseContainerTest.class,
 	org.olat.course.CourseXStreamAliasesTest.class,
 	org.olat.course.wizard.CourseWizardServiceTest.class,
 	org.olat.modules.adobeconnect.manager.AdobeConnectProviderTest.class,

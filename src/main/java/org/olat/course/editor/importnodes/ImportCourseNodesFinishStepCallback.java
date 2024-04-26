@@ -83,7 +83,7 @@ public class ImportCourseNodesFinishStepCallback implements StepRunnerCallback {
 	private void importCourseFiles(CourseEnvironmentMapper envMapper, IdentityEnvironment identityEnv) {
 		List<ImportCourseFile> courseFolderFiles = importCourseContext.getCourseFolderFiles();
 		ICourse targetCourse = CourseFactory.loadCourse(importCourseContext.getTargetEntry());
-		VFSContainer targetCourseFolderCont = targetCourse.getCourseFolderContainer(identityEnv, CourseContainerOptions.courseFolder(), false, true);
+		VFSContainer targetCourseFolderCont = targetCourse.getCourseFolderContainer(identityEnv, CourseContainerOptions.courseFolder(), false, Boolean.TRUE);
 		for(ImportCourseFile file:courseFolderFiles) {
 			if(file.getParent() == null) {
 				recursiveCopyCourseFolderFiles(file, targetCourseFolderCont, targetCourseFolderCont, envMapper);

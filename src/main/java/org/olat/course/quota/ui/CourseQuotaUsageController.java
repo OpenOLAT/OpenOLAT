@@ -266,7 +266,7 @@ public class CourseQuotaUsageController extends FormBasicController
 	}
 
 	private void loadCourseFolder() {
-		VFSContainer courseFolderContainer = CourseFactory.loadCourse(entry).getCourseFolderContainer(identityEnvironment, CourseContainerOptions.all(), false, true);
+		VFSContainer courseFolderContainer = CourseFactory.loadCourse(entry).getCourseFolderContainer(identityEnvironment, CourseContainerOptions.all(), false, Boolean.TRUE);
 		Quota courseFolderQuota = Objects.requireNonNull(VFSManager.findInheritedSecurityCallback(courseFolderContainer)).getQuota();
 		if (courseFolderQuota != null) {
 			// subIdent starting with 0, for the correct order in table

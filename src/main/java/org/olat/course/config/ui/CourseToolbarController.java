@@ -577,7 +577,7 @@ public class CourseToolbarController extends FormBasicController {
 		}
 	}
 
-	private void doUpdateZoomConfig(boolean enableZoom, boolean updateZoom) {
+	private void doUpdateZoomConfig(boolean enableZoom) {
 		String subIdent = course.getResourceableId().toString();
 		if (enableZoom) {
 			ZoomProfile zoomProfile = zoomManager.getProfile(zoomProfileEl.getSelectedKey());
@@ -744,7 +744,7 @@ public class CourseToolbarController extends FormBasicController {
 		boolean enableZoom = zoomEl != null && zoomEl.isSelected(0);
 		boolean updateZoom = courseConfig.isZoomEnabled() != enableZoom;
 		courseConfig.setZoomEnabled(enableZoom && toolbarEnabled);
-		doUpdateZoomConfig(enableZoom, updateZoom);
+		doUpdateZoomConfig(enableZoom);
 
 		boolean enableBlog = blogEl.isSelected(0);
 		boolean updateBlog = courseConfig.isBlogEnabled() != enableBlog;
@@ -996,7 +996,7 @@ public class CourseToolbarController extends FormBasicController {
 	
 	private void doSelectDocumentsFolder(UserRequest ureq) {
 		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
-		VFSContainer namedContainer = course.getCourseFolderContainer(identityEnv, CourseContainerOptions.withoutElements(), false, true);
+		VFSContainer namedContainer = course.getCourseFolderContainer(identityEnv, CourseContainerOptions.withoutElements(), false, Boolean.TRUE);
 		
 		folderSelectCtrl = new BCCourseNodeEditChooseFolderForm(ureq, getWindowControl(), namedContainer);
 		listenTo(folderSelectCtrl);

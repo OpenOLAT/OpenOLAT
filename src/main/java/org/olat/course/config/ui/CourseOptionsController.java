@@ -687,7 +687,7 @@ public class CourseOptionsController extends FormBasicController {
 	private void doSelectDocumentsFolder(UserRequest ureq) {
 		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
 		ICourse course = CourseFactory.loadCourse(entry.getOlatResource().getResourceableId());
-		VFSContainer namedContainer = course.getCourseFolderContainer(identityEnv, CourseContainerOptions.withoutElements(), false, true);
+		VFSContainer namedContainer = course.getCourseFolderContainer(identityEnv, CourseContainerOptions.withoutElements(), false, Boolean.TRUE);
 		
 		folderSelectCtrl = new BCCourseNodeEditChooseFolderForm(ureq, getWindowControl(), namedContainer);
 		listenTo(folderSelectCtrl);

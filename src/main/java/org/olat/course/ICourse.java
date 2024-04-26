@@ -103,7 +103,7 @@ public interface ICourse extends OLATResourceable {
 	 * @return The aggregated course folder
 	 */
 	public VFSContainer getCourseFolderContainer(IdentityEnvironment identityEnv, CourseContainerOptions options,
-			boolean overrideReadOnly, boolean entryAdmin);
+			boolean overrideReadOnly, Boolean entryAdmin);
 	
 	public LocalFolderImpl getCourseExportDataDir();
 

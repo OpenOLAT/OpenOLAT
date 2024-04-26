@@ -98,10 +98,10 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		
 		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
 		ICourse sourceCourse = CourseFactory.loadCourse(importCourseContext.getEntry());
-		sourceCourseFolderCont = sourceCourse.getCourseFolderContainer(identityEnv, CourseContainerOptions.courseFolder(), false, true);
+		sourceCourseFolderCont = sourceCourse.getCourseFolderContainer(identityEnv, CourseContainerOptions.courseFolder(), false, Boolean.TRUE);
 
 		ICourse targetCourse = CourseFactory.loadCourse(importCourseContext.getTargetEntry());
-		targetCourseFolderCont = targetCourse.getCourseFolderContainer(identityEnv, CourseContainerOptions.courseFolder(), false, true);
+		targetCourseFolderCont = targetCourse.getCourseFolderContainer(identityEnv, CourseContainerOptions.courseFolder(), false, Boolean.TRUE);
 		
 		initForm(ureq);
 		loadModel();
