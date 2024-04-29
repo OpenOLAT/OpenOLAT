@@ -1565,6 +1565,35 @@ table.o_ce_table {
 	}
 }
 
+/* Gallery */
+.o_page_run_gallery, .o_page_edit_gallery {
+	.o_gallery_header {
+		display: flex;
+
+		.o_gallery_title {
+			display: inline-block;
+			margin-right: 4px;
+			font-weight: bold;
+			font-size: 18px;
+			line-height: 34px;
+			flex-grow: 1;
+		}
+
+		.o_gallery_buttons, .o_gallery_add_image {
+			margin-right: 4px;
+		}
+	}
+
+	.o_gallery_images {
+		margin-top: 4px;
+		padding: 2px;
+
+		.o_table_wrapper .o_col_sticky_right {
+			background-color: unset;
+		}
+	}
+}
+
 /* Editor and run mode of content editor */
 .o_page_layout {
 

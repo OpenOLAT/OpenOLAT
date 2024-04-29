@@ -90,6 +90,7 @@ import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.handler.CodeElementHandler;
 import org.olat.modules.ceditor.handler.ContainerHandler;
 import org.olat.modules.ceditor.handler.EvaluationFormHandler;
+import org.olat.modules.ceditor.handler.GalleryElementHandler;
 import org.olat.modules.ceditor.handler.HTMLRawPageElementHandler;
 import org.olat.modules.ceditor.handler.MathPageElementHandler;
 import org.olat.modules.ceditor.handler.ParagraphPageElementHandler;
@@ -845,6 +846,9 @@ public class PageRunController extends BasicController implements TooledControll
 			// handler for quiz
 			QuizElementHandler quizElementHandler = new QuizElementHandler(settings.getBaseRepositoryEntry(), settings.getSubIdent());
 			handlers.add(quizElementHandler);
+			// handler for gallery
+			GalleryElementHandler galleryElementHandler = new GalleryElementHandler();
+			handlers.add(galleryElementHandler);
 
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
@@ -900,6 +904,10 @@ public class PageRunController extends BasicController implements TooledControll
 			if (settings.isCanCreateQuiz()) {
 				creationHandlers.add(quizElementHandler);
 			}
+
+			GalleryElementHandler galleryElementHandler = new GalleryElementHandler();
+			handlers.add(galleryElementHandler);
+			creationHandlers.add(galleryElementHandler);
 
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
