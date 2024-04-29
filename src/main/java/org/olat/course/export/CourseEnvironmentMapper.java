@@ -48,6 +48,7 @@ public class CourseEnvironmentMapper {
 	private final Map<String,String> courseNodeIdentMap = new HashMap<>();
 	private final Map<String,Map<String,String>> mapUniqueKeys = new HashMap<>();
 	private final Map<String,String> renamedPath = new HashMap<>();
+	private final Map<Long,Long> sourcePageKeyToTargetPageKeyMap = new HashMap<>();
 	
 	private Identity author;
 	private Boolean learningPathNodeAccess;
@@ -278,5 +279,14 @@ public class CourseEnvironmentMapper {
 			}
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * Map the keys of the page in the page course element.
+	 * 
+	 * @return
+	 */
+	public Map<Long, Long> getSourcePageKeyToTargetPageKeyMap() {
+		return sourcePageKeyToTargetPageKeyMap;
 	}
 }
