@@ -38,3 +38,17 @@ alter table o_bs_identity add column planneddeletiondate timestamp;
 -- VFS
 alter table o_vfs_metadata add column f_deleted_date timestamp;
 alter table o_vfs_metadata add column fk_deleted_by int8;
+
+-- Media to Page Part (Content Editor)
+create table o_media_to_page_part (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_media int8 not null,
+   fk_page_part int8 not null,
+   primary key (id)
+);
+
+alter table o_media_to_page_part add constraint media_to_page_part_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_to_page_part_media_idx on o_media_to_page_part (fk_media);
+alter table o_media_to_page_part add constraint media_to_page_part_page_part_idx foreign key (fk_page_part) references o_ce_page_part (id);
+create index idx_media_to_page_part_page_part_idx on o_media_to_page_part (fk_page_part);

@@ -28,6 +28,8 @@ import org.olat.modules.ceditor.model.CodeSettings;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.ContainerSettings;
+import org.olat.modules.ceditor.model.GallerySettings;
+import org.olat.modules.ceditor.model.GalleryType;
 import org.olat.modules.ceditor.model.GeneralStyleSettings;
 import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
@@ -63,6 +65,7 @@ public class ContentEditorXStream {
 				TextSettings.class, TitleSettings.class, ContainerSettings.class, ContainerLayout.class, ContainerColumn.class,
 				TableContent.class, TableRow.class, TableColumn.class, TableSettings.class,
 				CodeSettings.class, CodeLanguage.class,
+				GallerySettings.class, GalleryType.class,
 				GeneralStyleSettings.class,
 				BlockLayoutSettings.class, MediaSettings.class, MathSettings.class,
 				AlertBoxSettings.class,
@@ -90,6 +93,9 @@ public class ContentEditorXStream {
 		xstream.alias("codelanguage", CodeLanguage.class);
 
 		xstream.alias("generalstylesettings", GeneralStyleSettings.class);
+
+		xstream.alias("gallerysettings", GallerySettings.class);
+		xstream.alias("gallerytype", GalleryType.class);
 
 		xstream.alias("blocklayoutsettings", BlockLayoutSettings.class);
 		xstream.alias("mediasettings", MediaSettings.class);

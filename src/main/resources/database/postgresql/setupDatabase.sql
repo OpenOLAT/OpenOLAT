@@ -2550,6 +2550,14 @@ create table o_media_log (
    primary key (id)
 );
 
+create table o_media_to_page_part (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_media int8 not null,
+   fk_page_part int8 not null,
+   primary key (id)
+);
+
 create table o_ce_page_reference  (
    id bigserial,
    creationdate timestamp not null,
@@ -5381,6 +5389,11 @@ alter table o_media_to_group add constraint med_to_group_group_idx foreign key (
 create index idx_med_to_group_group_idx on o_media_to_group (fk_group);
 alter table o_media_to_group add constraint med_to_group_re_idx foreign key (fk_repositoryentry) references o_repositoryentry (repositoryentry_id);
 create index idx_med_to_group_re_idx on o_media_to_group (fk_repositoryentry);
+
+alter table o_media_to_page_part add constraint media_to_page_part_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_to_page_part_media_idx on o_media_to_page_part (fk_media);
+alter table o_media_to_page_part add constraint media_to_page_part_page_part_idx foreign key (fk_page_part) references o_ce_page_part (id);
+create index idx_media_to_page_part_page_part_idx on o_media_to_page_part (fk_page_part);
 
 alter table o_ce_page_reference add constraint page_ref_to_page_idx foreign key (fk_page) references o_ce_page (id);
 create index idx_page_ref_to_page_idx on o_ce_page_reference (fk_page);

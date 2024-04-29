@@ -197,6 +197,7 @@
 		<class>org.olat.modules.ceditor.model.jpa.PageBodyImpl</class>
 		<class>org.olat.modules.ceditor.model.jpa.AbstractPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.CodePart</class>
+		<class>org.olat.modules.ceditor.model.jpa.GalleryPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.HTMLPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.MathPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.ParagraphPart</class>
@@ -218,6 +219,7 @@
 		<class>org.olat.modules.cemedia.model.MediaVersionMetadataImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaTagImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaToGroupRelationImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaToPagePartImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaToTaxonomyLevelImpl</class>
 		<class>org.olat.upgrade.model.UpgradeMedia</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
