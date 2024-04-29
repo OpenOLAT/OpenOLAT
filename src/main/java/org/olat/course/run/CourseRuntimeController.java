@@ -144,6 +144,7 @@ import org.olat.course.nodes.bc.CoachFolderFactory;
 import org.olat.course.nodes.bc.CourseDocumentsController;
 import org.olat.course.nodes.bc.CourseDocumentsFactory;
 import org.olat.course.nodes.co.COToolController;
+import org.olat.course.nodes.document.ui.DocumentRunController;
 import org.olat.course.nodes.feed.blog.BlogToolController;
 import org.olat.course.nodes.fo.FOToolController;
 import org.olat.course.nodes.info.InfoCourseSecurityCallback;
@@ -1533,7 +1534,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		if(popedController != getRunMainController()
 				&& !(popedController instanceof PreviewConfigController)
-				&& !(popedController instanceof OverviewController)) {
+				&& !(popedController instanceof OverviewController)
+				&& !(popedController instanceof DocumentRunController)) {
 			RunMainController run = toolControllerDone(ureq, null);
 			if(run != null && entries != null) {
 				run.activate(ureq, entries, null);
