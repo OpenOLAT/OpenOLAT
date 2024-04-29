@@ -82,6 +82,14 @@ public class ItemBodyResultFormItem extends AssessmentObjectFormItem {
 		component.setScorePerAnswers(scorePerAnswers);
 	}
 	
+	public boolean isHideFeedbacks() {
+		return component.isHideFeedbacks();
+	}
+	
+	public void setHideFeedbacks(boolean hide) {
+		component.setHideFeedbacks(hide);
+	}
+	
 	public boolean isReport() {
 		return component.isReport();
 	}

@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.inspection;
 
+import java.util.Date;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.course.assessment.AssessmentInspectionStatusEnum;
@@ -51,10 +53,13 @@ public class AssessmentInspectionTableCSSDelegate implements FlexiTableCssDelega
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
 		AssessmentInspectionRow row = tableModel.getObject(pos);
 		if(row != null && row.getInspectionStatus() == AssessmentInspectionStatusEnum.inProgress) {
-			return "success";
+			Date end = row.getEndTime();
+			Date to = row.getToDate();
+			Date now = new Date();
+			if((end == null || end.after(now)) && (to == null || to.after(now))) {
+				return "success";
+			}
 		}
 		return null;
 	}
-
-	
 }
