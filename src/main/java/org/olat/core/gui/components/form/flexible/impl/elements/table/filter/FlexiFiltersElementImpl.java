@@ -284,8 +284,8 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			return false;
 		}
 		
-		List<FlexiFilterButton> filterButtons = filtersEl.getFiltersButtons();
-		for(FlexiFilterButton filterButton:filterButtons) {
+		List<FlexiFilterButton> filterButtonsList = filtersEl.getFiltersButtons();
+		for(FlexiFilterButton filterButton:filterButtonsList) {
 			if(!filterButton.isImplicit() && filterButton.isChanged()) {
 				return true;
 			}
@@ -430,8 +430,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(filterCtrl == source) {
-			if(event instanceof ChangeValueEvent) {
-				ChangeValueEvent cve = (ChangeValueEvent)event;
+			if(event instanceof ChangeValueEvent cve) {
 				doApplyFilterValue(ureq, cve.getFilter(), cve.getValue());
 				filtersCallout.deactivate();
 				cleanUp();

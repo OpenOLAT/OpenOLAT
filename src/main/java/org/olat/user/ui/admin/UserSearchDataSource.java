@@ -150,6 +150,8 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 			if(period != null && !period.past()) {
 				Calendar cal = Calendar.getInstance();
 				cal.add(Calendar.DATE, period.period().getDays());
+				cal.add(Calendar.MONTH, period.period().getMonths());
+				cal.add(Calendar.YEAR, period.period().getYears());
 				return CalendarUtils.endOfDay(cal.getTime());
 			}
 		}
@@ -163,6 +165,8 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 			if(period != null && period.past()) {
 				Calendar cal = Calendar.getInstance();
 				cal.add(Calendar.DATE, -period.period().getDays());
+				cal.add(Calendar.MONTH, -period.period().getMonths());
+				cal.add(Calendar.YEAR, -period.period().getYears());
 				return CalendarUtils.startOfDay(cal.getTime());
 			}
 		}
