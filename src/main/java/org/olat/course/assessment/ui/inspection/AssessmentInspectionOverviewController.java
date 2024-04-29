@@ -351,7 +351,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		}
 	}
 	
-	private void loadModel() {
+	public void loadModel() {
 		SearchAssessmentInspectionParameters params = getSearchParameters();
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 

@@ -64,14 +64,6 @@ public class InspectionStatusCellRenderer implements FlexiCellRenderer {
 				} else {
 					render(target, status.name());
 				}
-			} else if(status == AssessmentInspectionStatusEnum.inProgress) {
-				Date end = inspectionRow.getEndTime();
-				Date to = inspectionRow.getToDate();
-				if((end != null && end.before(now)) || (to != null && to.before(now))) {
-					render(target, AssessmentInspectionStatusEnum.carriedOut.name());
-				} else {
-					render(target, status.name());
-				}
 			} else {
 				render(target, status.name());
 			}

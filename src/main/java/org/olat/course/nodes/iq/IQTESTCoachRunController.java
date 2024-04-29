@@ -331,6 +331,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_INSPECTIONS), null);
 			inspectionController = new AssessmentInspectionOverviewController(ureq, swControl, entry, courseNode, secCallback);
 			listenTo(inspectionController);
+		} else {
+			inspectionController.loadModel();
 		}
 
 		mainVC.put("segmentCmp", inspectionController.getInitialComponent());

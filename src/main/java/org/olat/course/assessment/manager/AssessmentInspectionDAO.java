@@ -214,7 +214,7 @@ public class AssessmentInspectionDAO {
 				select inspection from courseassessmentinspection as inspection
 				inner join fetch inspection.configuration as configuration
 				inner join fetch inspection.identity as ident
-				where inspection.endTime<:date and inspection.inspectionStatus=:status
+				where (inspection.endTime<:date or inspection.toDate<:date) and inspection.inspectionStatus=:status
 				""";
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(query, AssessmentInspection.class)
