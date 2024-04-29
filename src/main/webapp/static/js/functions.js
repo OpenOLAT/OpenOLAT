@@ -2777,7 +2777,7 @@ function showMessageBox(type, title, message, buttonCallback) {
 		} else {
 			cssype = 'alert-info';
 		}
-		let content = '<dialog id="myFunctionalModal" class="modal o-modal-' + cssype + ' fade in show" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">';
+		let content = '<dialog id="myFunctionalModal" class="modal o-modal-' + cssype + ' fade in show" tabindex="-1"><div class="modal-dialog"><div class="modal-content">';
 		content += '<div class="modal-header"><button type="button" class="close" aria-hidden="true" onclick="o_guiCloseModal(\'#myFunctionalModal\').remove();">&times;</button>';
         content += '<h4 class="modal-title">' + title + '</h4></div>';	
 		content += '<div class="modal-body alert ' + cssype + '"><p>' + message + '</p></div></div></div></dialog>';
