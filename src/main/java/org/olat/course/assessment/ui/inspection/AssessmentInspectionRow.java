@@ -87,6 +87,10 @@ public class AssessmentInspectionRow {
 		return inspection.getToDate();
 	}
 	
+	public Date getEndTime() {
+		return inspection.getEndTime();
+	}
+	
 	public String getSubIdent() {
 		return inspection.getSubIdent();
 	}
