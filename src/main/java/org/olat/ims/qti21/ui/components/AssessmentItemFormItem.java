@@ -104,6 +104,14 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 		component.setEnableAlwaysSkip(enable);
 	}
 	
+	public boolean isHideFeedbacks() {
+		return component.isHideFeedbacks();
+	}
+	
+	public void setHideFeedbacks(boolean hideFeedbacks) {
+		component.setHideFeedbacks(hideFeedbacks);
+	}
+	
 	public int getQuestionLevel() {
 		return component.getQuestionLevel();
 	}

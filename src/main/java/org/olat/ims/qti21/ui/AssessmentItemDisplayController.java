@@ -1144,6 +1144,10 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		public void setEnableAlwaysSkip(boolean enable) {
 			qtiEl.setEnableAlwaysSkip(enable);
 		}
+		
+		public void setHideFeedbacks(boolean hide) {
+			qtiEl.setHideFeedbacks(hide);
+		}
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

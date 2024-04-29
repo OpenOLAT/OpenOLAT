@@ -775,6 +775,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		}
 		
 		private void initInteractionResultFormItem(ItemBodyResultFormItem formItem) {
+			formItem.setHideFeedbacks(true);
 			formItem.setItemSessionState(sessionState);
 			formItem.setCandidateSessionContext(candidateSessionContext);
 			formItem.setResourceLocator(inputResourceLocator);
@@ -818,6 +819,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			qtiWorksCtrl.showQuestionLevel(level, maxLevels);
 			qtiWorksCtrl.setSubmitI18nKey("submit.check");
 			qtiWorksCtrl.setEnableAlwaysSkip(practiceItem.getAttempts() >= 1);
+			qtiWorksCtrl.setHideFeedbacks(true);
 		}
 		
 		protected ItemSessionState getItemSessionState() {
