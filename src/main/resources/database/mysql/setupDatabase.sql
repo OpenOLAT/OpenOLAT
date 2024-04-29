@@ -2647,7 +2647,7 @@ create table o_media_log (
 );
 
 create table o_media_to_page_part (
-   id bigserial not null auto_increment,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    fk_media bigint not null,
    fk_page_part bigint not null,
