@@ -232,6 +232,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		uploadLink = LinkFactory.createButton("library.toolbox.upload", overviewVC, this);
 		uploadLink.setCustomEnabledLinkCSS("btn btn-primary");
 		uploadLink.setElementCssClass("o_sel_upload_document");
+		uploadLink.setVisible(libraryModule.isUploadEnabled());
 		
 		//search
 		searchCtr = new SearchQueryController(ureq, getWindowControl());

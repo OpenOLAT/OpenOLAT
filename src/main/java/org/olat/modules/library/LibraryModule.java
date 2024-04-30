@@ -44,11 +44,14 @@ public class LibraryModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String CONTACTS_TO_NOTIFY_AFTER_FREEING = "notify.afterfreeing";
 	private static final String LIBRARY_ENTRY_KEY = "library.repository.entry.key";
 	private static final String LIBRARY_ENABLE = "site.library.enabled";
+	private static final String LIBRARY_UPLOAD_ENABLEd = "library.upload.enabled";
 	
 	private boolean autoSubscribe = false;
 	
 	@Value("${site.library.enabled}")
 	private boolean enabled;
+	@Value("${library.upload.enabled:true}")
+	private boolean uploadEnabled;
 	@Value("${library.repository.entry.key}")
 	private String libraryEntryKey;
 	@Value("${library.notify.afterupload}")
@@ -95,6 +98,11 @@ public class LibraryModule extends AbstractSpringModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(emailContactsToNotifyAfterFreeingObj)) {
 			emailContactsToNotifyAfterFreeing = emailContactsToNotifyAfterFreeingObj;
 		}
+		
+		String uploadEnabledObj = getStringPropertyValue(LIBRARY_UPLOAD_ENABLEd, true);
+		if(StringHelper.containsNonWhitespace(uploadEnabledObj)) {
+			uploadEnabled = "true".equals(uploadEnabledObj);
+		}
 	}
 
 	@Override
@@ -136,5 +144,14 @@ public class LibraryModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setLibraryEntryKey(String key) {
 		this.libraryEntryKey = key;
 		setStringProperty(LIBRARY_ENTRY_KEY, libraryEntryKey, true);
+	}
+
+	public boolean isUploadEnabled() {
+		return uploadEnabled;
+	}
+
+	public void setUploadEnabled(boolean enabled) {
+		this.uploadEnabled = enabled;
+		setStringProperty(LIBRARY_UPLOAD_ENABLEd, enabled ? "true" : "false", true);
 	}
 }
