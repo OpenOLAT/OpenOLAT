@@ -285,14 +285,19 @@ public class PageCourseNode extends AbstractAccessableCourseNode implements Cour
 				}
 			} else {
 				targetPage = pageService.copyPage(null, sourcePage);
+				Long targetPageKey;
 				if(targetPage != null) {
 					targetCourseNode.setPageReferenceKey(targetPage.getKey());
 					RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 					CoreSpringFactory.getImpl(PageService.class).addReference(targetPage, courseEntry, targetCourseNode.getIdent());
-					sourcePageKeyToTargetPageKeyMap.put(sourcePageKey, targetPage.getKey());
+					targetPageKey = targetPage.getKey();
 				} else {
-					sourcePageKeyToTargetPageKeyMap.put(sourcePageKey, Long.valueOf(-1l));
+					targetPageKey = Long.valueOf(-1l);
 					targetCourseNode.removePageReferenceKey();
+				}
+				
+				if(sourcePageKeyToTargetPageKeyMap != null) {
+					sourcePageKeyToTargetPageKeyMap.put(sourcePageKey, targetPageKey);
 				}
 			}
 		} else {
