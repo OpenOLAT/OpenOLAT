@@ -59,8 +59,7 @@ public class BGCopyPreparationStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		BGCopyPreparationStepController copyForm = new BGCopyPreparationStepController(ureq, windowControl, form,
+		return new BGCopyPreparationStepController(ureq, windowControl, form,
 				stepsRunContext, coursesEnabled, areasEnabled, rightsEnabled);
-		return copyForm;
 	}
 }

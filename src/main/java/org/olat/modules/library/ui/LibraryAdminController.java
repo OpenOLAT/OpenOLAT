@@ -23,7 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -52,9 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LibraryAdminController extends FormBasicController {
 	
-	private static final String[] onKeys = new String[]{"xx"};
-	
-	private MultipleSelectionElement enableEl;
+	private FormToggle enableEl;
+	private FormToggle uploadEnableEl;
 	private TextElement mailAfterUploadEl;
 	private TextElement mailAfterFreeingEl;
 	private FormLink addSharedFolderButton;
@@ -99,11 +98,10 @@ public class LibraryAdminController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_library_configuration");
 		
 		boolean enabled = libraryModule.isEnabled();
-		String[] onValues = new String[] { translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("library.enable", "library.enable", formLayout, onKeys, onValues);
+		enableEl = uifactory.addToggleButton("library.enable", "library.enable", translate("on"), translate("off"), formLayout);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
-		enableEl.select("xx", enabled);
-		
+		enableEl.toggle(enabled);
+
 		sharedFolderNameEl = uifactory.addStaticTextElement("library.shared.folder", "library.shared.folder",
 				translate("library.no.sharedfolder"), formLayout);
 		sharedFolderNameEl.setElementCssClass("o_sel_selected_shared_folder");
@@ -113,6 +111,11 @@ public class LibraryAdminController extends FormBasicController {
 		removeSharedFolderButton = uifactory.addFormLink("remove.shared.folder", sharedFolderCont, Link.BUTTON);
 		addSharedFolderButton = uifactory.addFormLink("add.shared.folder", sharedFolderCont, Link.BUTTON);
 		addSharedFolderButton.setElementCssClass("o_sel_add_shared_folder");
+		
+		boolean uploadEnabled = libraryModule.isUploadEnabled();
+		uploadEnableEl = uifactory.addToggleButton("library.upload.enabled", "library.upload.enabled", translate("on"), translate("off"), formLayout);
+		uploadEnableEl.addActionListener(FormEvent.ONCHANGE);
+		uploadEnableEl.toggle(uploadEnabled);
 		
 		String mailAfterUpload = libraryModule.getEmailContactsToNotifyAfterUpload();
 		mailAfterUploadEl = uifactory.addTextElement("library.configuration.mail.after.upload", 256, mailAfterUpload, formLayout);
@@ -126,9 +129,11 @@ public class LibraryAdminController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		boolean enabled = enableEl.isAtLeastSelected(1);
-		mailAfterUploadEl.setVisible(enabled);
-		mailAfterFreeingEl.setVisible(enabled);
+		boolean enabled = enableEl.isOn();
+		boolean uploadEnable = uploadEnableEl.isOn();
+		uploadEnableEl.setVisible(enabled);
+		mailAfterUploadEl.setVisible(enabled && uploadEnable);
+		mailAfterFreeingEl.setVisible(enabled && uploadEnable);
 		sharedFolderNameEl.setVisible(enabled);
 		sharedFolderCont.setVisible(enabled);
 	}
@@ -157,7 +162,7 @@ public class LibraryAdminController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enableEl == source) {
+		if(enableEl == source || uploadEnableEl == source) {
 			updateUI();
 		} else if(removeSharedFolderButton == source) {
 			doRemoveSharedFolder();
@@ -187,8 +192,10 @@ public class LibraryAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean enabled = enableEl.isAtLeastSelected(1);
+		boolean enabled = enableEl.isOn();
+		boolean uploadEnabled = uploadEnableEl.isOn();
 		libraryModule.setEnabled(enabled);
+		libraryModule.setUploadEnabled(uploadEnabled);
 		if(enabled) {
 			libraryModule.setEmailContactsToNotifyAfterUpload(mailAfterUploadEl.getValue());
 			libraryModule.setEmailContactsToNotifyAfterFreeing(mailAfterFreeingEl.getValue());
