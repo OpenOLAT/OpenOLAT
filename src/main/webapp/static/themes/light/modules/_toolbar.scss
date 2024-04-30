@@ -2,7 +2,9 @@
 .o_toolbar {
 	position: relative;
   	margin-bottom: $o-toolbar-margin-bottom;
-	margin-top: $o-toolbar-margin-top; 	// don't waste so much space with a toolbar
+  	&:not(:is(.o_toolbar_top *)) {
+		margin-top: $o-toolbar-margin-top; 	// don't waste so much space with a toolbar
+	}
   	@include clearfix();
 
 	border: 1px solid $o-toolbar-border-color;

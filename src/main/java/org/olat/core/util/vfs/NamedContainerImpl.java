@@ -91,6 +91,16 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	public List<VFSItem> getItems(VFSItemFilter filter) {
 		return getDelegate().getItems(filter);
 	}
+	
+	@Override
+	public VFSStatus canDescendants() {
+		return getDelegate().canDescendants();
+	}
+	
+	@Override
+	public List<VFSItem> getDescendants(VFSItemFilter filter) {
+		return getDelegate().getDescendants(filter);
+	}
 
 	@Override
 	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {

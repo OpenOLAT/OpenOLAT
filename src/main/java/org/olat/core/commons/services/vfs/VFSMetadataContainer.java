@@ -51,7 +51,7 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 		this(vfsRepositoryService, cached, wrappedContainer.getMetaInfo(), wrappedContainer.getParentContainer(),
 				wrappedContainer.getLocalSecurityCallback(), wrappedContainer.getDefaultItemFilter());
 		if (wrappedContainer instanceof NamedContainerImpl namedContainer) {
-			this.namedContainerName = namedContainer.getName();
+			this.vfsItem = wrappedContainer;
 		}
 	}
 
@@ -90,6 +90,14 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 		return defaultFilter;
 	}
 	
+	@Override
+	public String getName() {
+		if (vfsItem instanceof NamedContainerImpl namedContainer) {
+			return vfsItem.getName();
+		}
+		return super.getName();
+	}
+
 	@Override
 	public boolean isInPath(String path) {
 		if (getMetaInfo() == null || getMetaInfo().getRelativePath() == null) {

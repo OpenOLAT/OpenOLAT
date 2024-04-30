@@ -143,7 +143,11 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			sb.append("<input id=\"").append(id).append("\" type=\"").append(te.getHtmlInputType())
 			  .append("\" disabled=\"disabled\" class='form-control o_disabled ").append(elementCSS, elementCSS != null)
 			  .append("' size=\"").append(size)
-			  .append("\" value=\"").append(htmlVal).append("\">")
+			  .append("\" value=\"").append(htmlVal).append("\"");
+			if (te.hasPlaceholder()) {
+				sb.append(" placeholder=\"").append(te.getPlaceholder()).append("\"");
+			}
+			sb.append(">")
 			  .append("</span>");
 		}
 		

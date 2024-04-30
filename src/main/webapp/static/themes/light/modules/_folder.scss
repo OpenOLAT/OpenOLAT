@@ -310,3 +310,16 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 		}
 	}
 }
+
+/* File Browser */
+.o_file_browser_quick_search {
+	max-width: 300px;
+	.input-group {
+		span {
+			input.o_disabled {
+				border-top-left-radius: $input-border-radius;
+				border-bottom-left-radius: $input-border-radius;
+			}
+		}
+	}
+}

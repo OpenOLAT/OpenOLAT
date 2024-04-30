@@ -54,7 +54,7 @@ public class FolderTargetController extends BasicController {
 				submitButtonText);
 		listenTo(selectionCtrl);
 		stackedPanel.pushController(rootContainer.getName(), selectionCtrl);
-		selectionCtrl.updateCurrentContainer(currentContainer);
+		selectionCtrl.updateCurrentContainer(ureq, currentContainer);
 	}
 	
 	public Object getUserObject() {

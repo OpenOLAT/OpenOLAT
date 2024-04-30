@@ -491,7 +491,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			} else {
 				setCurrentContainer(rootContainer);
 			}
-		} if (FolderView.search == folderView) {
+		} else if (FolderView.search == folderView) {
 			setCurrentContainer(rootContainer);
 		}
 		
@@ -1285,6 +1285,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			// The clean up if no license check is needed.
 			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
 				doCopyMove(ureq, false, currentContainer, selectionEvent.getVfsItems());
+			} else {
+				cleanUp();
 			}
 			loadModel(ureq);
 		} else if (createDocumentCtrl == source) {

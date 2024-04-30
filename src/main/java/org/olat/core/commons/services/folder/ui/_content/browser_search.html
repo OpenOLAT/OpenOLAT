@@ -1,0 +1,8 @@
+<div class="o_file_browser_quick_search">
+	#if($r.available("quicksearch") && $r.visible("quicksearch"))
+		<div class="input-group o_block_bottom">
+			$r.render("quicksearch")
+			<span class="input-group-btn">$r.render("quickSearchButton")</span>
+		</div>
+	#end
+</div>

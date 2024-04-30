@@ -36,6 +36,8 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class FileBrowserMainController extends BasicController {
 
+	private TooledStackedPanel stackedPanel;
+	
 	private FileBrowserUploadController uploadCtrl;
 	private FileBrowserMountPointsController vfsSourcesCtrl;
 	private FileBrowserStoragesController storageesCtrl;
@@ -43,6 +45,8 @@ public class FileBrowserMainController extends BasicController {
 	public FileBrowserMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
 			FileBrowserSelectionMode selectionMode, FolderQuota folderQuota, String submitButtonText) {
 		super(ureq, wControl);
+		this.stackedPanel = stackedPanel;
+		stackedPanel.addListener(this);
 		
 		VelocityContainer mainVC = createVelocityContainer("browser_main");
 		putInitialPanel(mainVC);
@@ -66,8 +70,20 @@ public class FileBrowserMainController extends BasicController {
 	}
 
 	@Override
+	protected void doDispose() {
+		if (stackedPanel != null) {
+			stackedPanel.removeListener(this);
+		}
+		super.doDispose();
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == stackedPanel) {
+			if (stackedPanel.getLastController() == this) {
+				fireEvent(ureq, new FileBrowserTitleEvent(null));
+			}
+		}
 	}
 	
 	@Override

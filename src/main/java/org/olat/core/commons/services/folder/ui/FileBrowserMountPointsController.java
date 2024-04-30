@@ -114,7 +114,11 @@ public class FileBrowserMountPointsController extends BasicController {
 				selectionMode, submitButtonText);
 		listenTo(folderSelectionCtrl);
 		
-		stackedPanel.pushController(provider.getName(getLocale()), folderSelectionCtrl);
+		String providerName = provider.getName(getLocale());
+		stackedPanel.pushController(providerName, folderSelectionCtrl);
+		
+		fireEvent(ureq, new FileBrowserTitleEvent(providerName));
+		fireEvent(ureq, new FileBrowserPushEvent());
 	}
 
 	@Override

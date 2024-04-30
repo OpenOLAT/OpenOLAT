@@ -106,7 +106,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 		taxonomyTree.setRootVisible(true);
 		taxonomyTree.setTreeModel(builder.buildTreeModel());
 		
-		content = new TooledStackedPanel("taxonomy-stack", getTranslator(), this, "o_docpool_main_breadcrumb");
+		content = new TooledStackedPanel("taxonomy-stack", getTranslator(), this, "o_docpool_main_breadcrumb o_toolbar_top");
 		content.setNeverDisposeRootController(true);
 		content.setToolbarAutoEnabled(true);
 		
