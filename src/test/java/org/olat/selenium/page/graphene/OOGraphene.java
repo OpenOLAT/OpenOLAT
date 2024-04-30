@@ -129,12 +129,12 @@ public class OOGraphene {
 	}
 	
 	public static void waitModalDialogWithFieldsetDisappears(WebDriver browser, String fieldsetCssClass) {
-		By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]//fieldset[contains(@class,'" + fieldsetCssClass + "')]");
+		By modalBy = By.xpath("//dialog[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]//fieldset[contains(@class,'" + fieldsetCssClass + "')]");
 		waitModalDialogDisappears(browser, timeout, modalBy);
 	}
 	
 	public static void waitModalDialogWithDivDisappears(WebDriver browser, String divCssClass) {
-		By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]//div[contains(@class,'" + divCssClass + "')]");
+		By modalBy = By.xpath("//dialog[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]//div[contains(@class,'" + divCssClass + "')]");
 		waitModalDialogDisappears(browser, timeout, modalBy);
 	}
 	
