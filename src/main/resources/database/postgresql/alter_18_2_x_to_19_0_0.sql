@@ -43,6 +43,8 @@ alter table o_vfs_metadata add column fk_deleted_by int8;
 create table o_media_to_page_part (
    id bigserial,
    creationdate timestamp not null,
+   lastmodified timestamp not null,
+   pos int8 default null,
    fk_media int8 not null,
    fk_page_part int8 not null,
    primary key (id)

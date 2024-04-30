@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.ceditor.PagePart;
+import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.model.MediaToPagePartImpl;
@@ -46,19 +47,66 @@ public class MediaToPagePartDAO {
 	public MediaToPagePartImpl createRelation(Media media, PagePart pagePart) {
 		MediaToPagePartImpl relation = new MediaToPagePartImpl();
 		relation.setCreationDate(new Date());
+		relation.setLastModified(relation.getCreationDate());
 		relation.setMedia(media);
 		relation.setPagePart(pagePart);
 		dbInstance.getCurrentEntityManager().persist(relation);
 		return relation;
 	}
 
+	public GalleryPart persistRelation(GalleryPart galleryPart, Media media) {
+		MediaToPagePartImpl relation = new MediaToPagePartImpl();
+		relation.setCreationDate(new Date());
+		relation.setLastModified(relation.getCreationDate());
+		relation.setMedia(media);
+		relation.setPagePart(galleryPart);
+		galleryPart.getRelations().size();
+		galleryPart.getRelations().add(relation);
+		dbInstance.getCurrentEntityManager().persist(relation);
+		return dbInstance.getCurrentEntityManager().merge(galleryPart);
+	}
+
+	public GalleryPart persistRelation(GalleryPart galleryPart, Media media, int index) {
+		MediaToPagePartImpl relation = new MediaToPagePartImpl();
+		relation.setCreationDate(new Date());
+		relation.setLastModified(relation.getCreationDate());
+		relation.setMedia(media);
+		relation.setPagePart(galleryPart);
+		int size = galleryPart.getRelations().size();
+		if (index < size && index >= 0) {
+			galleryPart.getRelations().add(index, relation);
+		} else {
+			galleryPart.getRelations().add(relation);
+		}
+		dbInstance.getCurrentEntityManager().persist(relation);
+		return dbInstance.getCurrentEntityManager().merge(galleryPart);
+	}
+
+	public void move(GalleryPart galleryPart, MediaToPagePart relation, boolean up) {
+		galleryPart.getRelations().size();
+
+		int index = galleryPart.getRelations().indexOf(relation);
+		if (index < 0) {
+			galleryPart.getRelations().add(0, relation);
+		} else if (up && index > 0) {
+			galleryPart.getRelations().remove(index);
+			galleryPart.getRelations().add(index - 1, relation);
+		} else if (!up && (index < (galleryPart.getRelations().size() - 1))) {
+			galleryPart.getRelations().remove(index);
+			galleryPart.getRelations().add(index + 1, relation);
+		}
+		galleryPart.setLastModified(new Date());
+		dbInstance.getCurrentEntityManager().merge(galleryPart);
+	}
+
 	public List<PagePart> loadPageParts(Media media) {
 		QueryBuilder queryBuilder = new QueryBuilder();
 		queryBuilder
-				.append("select pagePart from mediatopagepart m2pp")
-				.append("  inner join m2pp.pagePart as pagePart")
+				.append("select pagePart from mediatopagepart relation")
+				.append("  inner join relation.pagePart as pagePart")
 				.where()
-				.append("  m2pp.media.key=:mediaKey");
+				.append("  relation.media.key=:mediaKey")
+				.append("  order by relation.pos");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(queryBuilder.toString(), PagePart.class)
@@ -71,11 +119,42 @@ public class MediaToPagePartDAO {
 				.append("select relation from mediatopagepart relation")
 				.append("  inner join fetch relation.pagePart as pagePart")
 				.where()
-				.append("  relation.media.key=:mediaKey");
+				.append("  relation.media.key=:mediaKey")
+				.append("  order by relation.pos");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(queryBuilder.toString(), MediaToPagePart.class)
 				.setParameter("mediaKey", media.getKey())
+				.getResultList();
+	}
+
+	public List<MediaToPagePart> loadRelations(PagePart pagePart) {
+		QueryBuilder queryBuilder = new QueryBuilder();
+		queryBuilder
+				.append("select relation from mediatopagepart relation")
+				.append("  inner join fetch relation.media as media")
+				.where()
+				.append("  relation.pagePart.key=:pagePartKey")
+				.append("  order by relation.pos");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(queryBuilder.toString(), MediaToPagePart.class)
+				.setParameter("pagePartKey", pagePart.getKey())
+				.getResultList();
+	}
+
+	public List<Media> loadMediaItems(PagePart pagePart) {
+		QueryBuilder queryBuilder = new QueryBuilder();
+		queryBuilder
+				.append("select media from mediatopagepart relation")
+				.append("  inner join relation.media as media")
+				.where()
+				.append("  relation.pagePart.key=:pagePartKey")
+				.append("  order by relation.pos");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(queryBuilder.toString(), Media.class)
+				.setParameter("pagePartKey", pagePart.getKey())
 				.getResultList();
 	}
 

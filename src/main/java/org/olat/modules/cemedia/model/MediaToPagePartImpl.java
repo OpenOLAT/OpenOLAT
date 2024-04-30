@@ -23,6 +23,7 @@ import java.io.Serial;
 import java.util.Date;
 import java.util.Objects;
 
+import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.jpa.AbstractPart;
@@ -48,7 +49,7 @@ import jakarta.persistence.TemporalType;
  */
 @Entity(name = "mediatopagepart")
 @Table(name = "o_media_to_page_part")
-public class MediaToPagePartImpl implements MediaToPagePart, Persistable {
+public class MediaToPagePartImpl implements MediaToPagePart, Persistable, ModifiedInfo {
 
 	@Serial
 	private static final long serialVersionUID = 9043690820171653920L;
@@ -62,6 +63,10 @@ public class MediaToPagePartImpl implements MediaToPagePart, Persistable {
 	@Column(name = "creationdate", nullable = false, insertable = true, updatable = false)
 	private Date creationDate;
 
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "lastmodified", nullable = false, insertable = true, updatable = true)
+	private Date lastModified;
+
 	@ManyToOne(targetEntity = MediaImpl.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_media", nullable = false, insertable = true, updatable = false)
 	private Media media;
@@ -69,6 +74,10 @@ public class MediaToPagePartImpl implements MediaToPagePart, Persistable {
 	@ManyToOne(targetEntity = AbstractPart.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_page_part", nullable = false, insertable = true, updatable = false)
 	private PagePart pagePart;
+
+	/** Used by Hibernate as OrderColumn for GalleryPart.relations */
+	@Column(name = "pos", insertable = false, updatable = false)
+	private long pos;
 
 	@Override
 	public Long getKey() {
@@ -86,6 +95,14 @@ public class MediaToPagePartImpl implements MediaToPagePart, Persistable {
 
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+	}
+
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
 	}
 
 	@Override

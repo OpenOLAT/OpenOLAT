@@ -11,7 +11,7 @@ import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageBody;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.manager.PageDAO;
-import org.olat.modules.ceditor.model.jpa.ContainerPart;
+import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.test.JunitTestHelper;
@@ -52,35 +52,36 @@ public class MediaToPagePartDAOTest extends OlatTestCase {
 	private MediaToPagePartDAO mediaToPagePartDao;
 
 	@Test
-	public void testCreateRelation() {
+	public void testPersistRelation() {
 		// Arrange
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-1");
 		Media media = mediaDao.createMediaAndVersion("Media 1", "Media 1 description", null,
 				"Media 1 content", "Image", "[Media:1]", null, 123, id);
-		PageBody pageBody = createBodyWithContainerPart("Page 1", "Page 1 summary");
-		PagePart containerPart = pageBody.getParts().get(0);
+		PageBody pageBody = createBodyWithGalleryPart("Page 1", "Page 1 summary");
+		GalleryPart reloadedGalleryPart1 = (GalleryPart) pageDao.loadPart(pageBody.getParts().get(0));
 
 		// Act
-		MediaToPagePart relation = mediaToPagePartDao.createRelation(media, containerPart);
+		GalleryPart persistedGalleryPart = mediaToPagePartDao.persistRelation(reloadedGalleryPart1, media);
 		dbInstance.commitAndCloseSession();
 
 		// Assert
 		List<PagePart> pageParts = mediaToPagePartDao.loadPageParts(media);
 		Assert.assertEquals(1, pageParts.size());
-		Assert.assertEquals(containerPart, pageParts.get(0));
+		Assert.assertEquals(reloadedGalleryPart1, pageParts.get(0));
 
 		List<MediaToPagePart> relations = mediaToPagePartDao.loadRelations(media);
 		Assert.assertEquals(1, relations.size());
-		Assert.assertEquals(relation, relations.get(0));
+		Assert.assertEquals(persistedGalleryPart.getRelations().get(0), relations.get(0));
 	}
 
-	private PageBody createBodyWithContainerPart(String pageTitle, String pageSummary) {
+	private PageBody createBodyWithGalleryPart(String pageTitle, String pageSummary) {
 		Page page = pageDao.createAndPersist(pageTitle, pageSummary, null, null,
 				true, null, null);
 		dbInstance.commitAndCloseSession();
-		ContainerPart containerPart = new ContainerPart();
+
+		GalleryPart galleryPart = new GalleryPart();
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		PageBody pageBody = pageDao.persistPart(reloadedBody, containerPart);
+		PageBody pageBody = pageDao.persistPart(reloadedBody, galleryPart);
 		dbInstance.commitAndCloseSession();
 		return pageBody;
 	}
@@ -91,12 +92,15 @@ public class MediaToPagePartDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-1");
 		Media media = mediaDao.createMediaAndVersion("Media 1", "Media 1 description", null,
 				"Media 1 content", "Image", "[Media:1]", null, 123, id);
-		PageBody page1Body = createBodyWithContainerPart("Page 1", "Page 1 summary");
-		PageBody page2Body = createBodyWithContainerPart("Page 2", "Page 2 summary");
-		PagePart pagePart1 = page1Body.getParts().get(0);
-		PagePart pagePart2 = page2Body.getParts().get(0);
-		mediaToPagePartDao.createRelation(media, pagePart1);
-		mediaToPagePartDao.createRelation(media, pagePart2);
+		PageBody page1Body = createBodyWithGalleryPart("Page 1", "Page 1 summary");
+		PageBody page2Body = createBodyWithGalleryPart("Page 2", "Page 2 summary");
+
+		GalleryPart reloadedGalleryPart1 = (GalleryPart) pageDao.loadPart(page1Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(reloadedGalleryPart1, media);
+		dbInstance.commitAndCloseSession();
+
+		GalleryPart reloadedGalleryPart2 = (GalleryPart) pageDao.loadPart(page2Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(reloadedGalleryPart2, media);
 		dbInstance.commitAndCloseSession();
 
 		// Act
@@ -105,7 +109,7 @@ public class MediaToPagePartDAOTest extends OlatTestCase {
 
 		// Assert
 		Assert.assertEquals(2, pageParts.size());
-		Set<PagePart> expectedPageParts = Set.of(pagePart1, pagePart2);
+		Set<PagePart> expectedPageParts = Set.of(reloadedGalleryPart1, reloadedGalleryPart2);
 		Set<PagePart> loadedPageParts = new HashSet<>(pageParts);
 		Assert.assertEquals(expectedPageParts, loadedPageParts);
 	}
@@ -116,12 +120,15 @@ public class MediaToPagePartDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-1");
 		Media media = mediaDao.createMediaAndVersion("Media 1", "Media 1 description", null,
 				"Media 1 content", "Image", "[Media:1]", null, 123, id);
-		PageBody page1Body = createBodyWithContainerPart("Page 1", "Page 1 summary");
-		PageBody page2Body = createBodyWithContainerPart("Page 2", "Page 2 summary");
-		PagePart pagePart1 = page1Body.getParts().get(0);
-		PagePart pagePart2 = page2Body.getParts().get(0);
-		mediaToPagePartDao.createRelation(media, pagePart1);
-		mediaToPagePartDao.createRelation(media, pagePart2);
+		PageBody page1Body = createBodyWithGalleryPart("Page 1", "Page 1 summary");
+		PageBody page2Body = createBodyWithGalleryPart("Page 2", "Page 2 summary");
+
+		GalleryPart reloadedGalleryPart1 = (GalleryPart) pageDao.loadPart(page1Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(reloadedGalleryPart1, media);
+		dbInstance.commitAndCloseSession();
+
+		GalleryPart reloadedGalleryPart2 = (GalleryPart) pageDao.loadPart(page2Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(reloadedGalleryPart2, media);
 		dbInstance.commitAndCloseSession();
 
 		// Act
@@ -132,8 +139,40 @@ public class MediaToPagePartDAOTest extends OlatTestCase {
 		List<Media> mediaItems = relations.stream().map(MediaToPagePart::getMedia).filter(m -> m.equals(media)).toList();
 		Set<PagePart> loadedPageParts = relations.stream().map(MediaToPagePart::getPagePart).collect(Collectors.toSet());
 		Assert.assertEquals(2, mediaItems.size());
-		Set<PagePart> expectedPageParts = Set.of(pagePart1, pagePart2);
+		Set<PagePart> expectedPageParts = Set.of(reloadedGalleryPart1, reloadedGalleryPart2);
 		Assert.assertEquals(expectedPageParts, loadedPageParts);
+	}
+	@Test
+	public void testLoadUsingListProperty() {
+		// Arrange
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-1");
+		Media media1 = mediaDao.createMediaAndVersion("Media 1", "Media 1 description", null,
+				"Media 1 content", "Image", "[Media:1]", null, 100, id);
+		Media media2 = mediaDao.createMediaAndVersion("Media 2", "Media 2 description", null,
+				"Media 2 content", "Image", "[Media:2]", null, 200, id);
+		PageBody page1Body = createBodyWithGalleryPart("Page 1", "Page 1 summary");
+
+		GalleryPart reloadedGalleryPart1 = (GalleryPart) pageDao.loadPart(page1Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(reloadedGalleryPart1, media1);
+		dbInstance.commitAndCloseSession();
+
+		reloadedGalleryPart1 = (GalleryPart) pageDao.loadPart(page1Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(reloadedGalleryPart1, media2);
+		dbInstance.commitAndCloseSession();
+
+		// Act
+		reloadedGalleryPart1 = (GalleryPart) pageDao.loadPart(page1Body.getParts().get(0));
+
+		// Assert
+		List<MediaToPagePart> relations = reloadedGalleryPart1.getRelations();
+		Assert.assertEquals(2, relations.size());
+		List<Media> mediaItems = relations.stream().map(MediaToPagePart::getMedia).toList();
+		Assert.assertEquals(2, mediaItems.size());
+		Assert.assertEquals(media1.getDescription(), mediaItems.get(0).getDescription());
+		Assert.assertEquals(media2.getDescription(), mediaItems.get(1).getDescription());
+
+		Set<PagePart> loadedPageParts = relations.stream().map(MediaToPagePart::getPagePart).collect(Collectors.toSet());
+		Assert.assertEquals(1, loadedPageParts.size());
 	}
 
 	@Test
@@ -142,18 +181,27 @@ public class MediaToPagePartDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("media-1");
 		Media media1 = mediaDao.createMediaAndVersion("Media 1", "Media 1 description", null,
 				"Media 1 content", "Image", "[Media:1]", null, 123, id1);
-		PageBody page1Body = createBodyWithContainerPart("Page 1", "Page 1 summary");
-		PageBody page2Body = createBodyWithContainerPart("Page 2", "Page 2 summary");
-		PagePart pagePart1 = page1Body.getParts().get(0);
-		PagePart pagePart2 = page2Body.getParts().get(0);
-		mediaToPagePartDao.createRelation(media1, pagePart1);
-		mediaToPagePartDao.createRelation(media1, pagePart2);
+		PageBody page1Body = createBodyWithGalleryPart("Page 1", "Page 1 summary");
+		PageBody page2Body = createBodyWithGalleryPart("Page 2", "Page 2 summary");
+
+		GalleryPart reloadedGalleryPart1 = (GalleryPart) pageDao.loadPart(page1Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(reloadedGalleryPart1, media1);
+		dbInstance.commitAndCloseSession();
+
+		GalleryPart reloadedGalleryPart2 = (GalleryPart) pageDao.loadPart(page2Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(reloadedGalleryPart2, media1);
+		dbInstance.commitAndCloseSession();
 
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("media-2");
 		Media media2 = mediaDao.createMediaAndVersion("Media 2", "Media 2 description", null,
 				"Media 2 content", "Image", "[Media:2]", null, 234, id2);
-		mediaToPagePartDao.createRelation(media2, pagePart1);
-		mediaToPagePartDao.createRelation(media2, pagePart2);
+
+		reloadedGalleryPart1 = (GalleryPart) pageDao.loadPart(page1Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(reloadedGalleryPart1, media2);
+		dbInstance.commitAndCloseSession();
+
+		reloadedGalleryPart2 = (GalleryPart) pageDao.loadPart(page2Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(reloadedGalleryPart2, media2);
 		dbInstance.commitAndCloseSession();
 
 		// Act
@@ -172,7 +220,7 @@ public class MediaToPagePartDAOTest extends OlatTestCase {
 		List<MediaToPagePart> loadedRelations2 = mediaToPagePartDao.loadRelations(media2);
 		Assert.assertEquals(2, loadedPageParts2.size());
 		Assert.assertEquals(2, loadedRelations2.size());
-		Set<PagePart> expectedPageParts = Set.of(pagePart1, pagePart2);
+		Set<PagePart> expectedPageParts = Set.of(reloadedGalleryPart1, reloadedGalleryPart2);
 		Set<PagePart> loadedPageParts = loadedRelations2.stream().map(MediaToPagePart::getPagePart).collect(Collectors.toSet());
 		Assert.assertEquals(expectedPageParts, loadedPageParts);
 	}
@@ -183,12 +231,15 @@ public class MediaToPagePartDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-1");
 		Media media = mediaDao.createMediaAndVersion("Media 1", "Media 1 description", null,
 				"Media 1 content", "Image", "[Media:1]", null, 123, id);
-		PageBody page1Body = createBodyWithContainerPart("Page 1", "Page 1 summary");
-		PageBody page2Body = createBodyWithContainerPart("Page 2", "Page 2 summary");
-		PagePart pagePart1 = page1Body.getParts().get(0);
-		PagePart pagePart2 = page2Body.getParts().get(0);
-		MediaToPagePart relation1 = mediaToPagePartDao.createRelation(media, pagePart1);
-		MediaToPagePart relation2 = mediaToPagePartDao.createRelation(media, pagePart2);
+		PageBody page1Body = createBodyWithGalleryPart("Page 1", "Page 1 summary");
+		PageBody page2Body = createBodyWithGalleryPart("Page 2", "Page 2 summary");
+
+		GalleryPart reloadedGalleryPart1 = (GalleryPart) pageDao.loadPart(page1Body.getParts().get(0));
+		MediaToPagePart relation1 = mediaToPagePartDao.persistRelation(reloadedGalleryPart1, media).getRelations().get(0);
+		dbInstance.commitAndCloseSession();
+
+		GalleryPart reloadedGalleryPart2 = (GalleryPart) pageDao.loadPart(page2Body.getParts().get(0));
+		MediaToPagePart relation2 = mediaToPagePartDao.persistRelation(reloadedGalleryPart2, media).getRelations().get(0);
 		dbInstance.commitAndCloseSession();
 
 		// Act
@@ -200,5 +251,6 @@ public class MediaToPagePartDAOTest extends OlatTestCase {
 		List<MediaToPagePart> relations = mediaToPagePartDao.loadRelations(media);
 		Assert.assertFalse(relations.contains(relation1));
 		Assert.assertTrue(relations.contains(relation2));
+		Assert.assertNotEquals(relation1, relation2);
 	}
 }

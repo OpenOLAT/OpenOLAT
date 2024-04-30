@@ -2553,6 +2553,8 @@ create table o_media_log (
 create table o_media_to_page_part (
    id bigserial,
    creationdate timestamp not null,
+   lastmodified timestamp not null,
+   pos int8 default null,
    fk_media int8 not null,
    fk_page_part int8 not null,
    primary key (id)

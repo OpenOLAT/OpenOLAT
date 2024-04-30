@@ -19,9 +19,9 @@
  */
 package org.olat.modules.ceditor.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,18 +33,26 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCel
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.manager.PageDAO;
 import org.olat.modules.ceditor.model.GalleryElement;
 import org.olat.modules.ceditor.model.GallerySettings;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaToPagePart;
+import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2024-04-18<br>
@@ -63,6 +71,15 @@ public class GalleryEditorController extends FormBasicController implements Page
 	private GalleryModel tableModel;
 	private FlexiTableElement tableEl;
 	private FormLink addImageButton;
+	private ChooseImageController chooseImageController;
+	private CloseableModalController cmc;
+
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private MediaToPagePartDAO mediaToPagePartDAO;
+	@Autowired
+	private PageDAO pageDAO;
 
 	public GalleryEditorController(UserRequest ureq, WindowControl wControl, GalleryPart galleryPart,
 								   PageElementStore<GalleryElement> store) {
@@ -112,8 +129,8 @@ public class GalleryEditorController extends FormBasicController implements Page
 	}
 
 	private void loadModel() {
-		List<GalleryRow> galleryRows = new ArrayList<>();
-
+		List<GalleryRow> galleryRows = mediaToPagePartDAO.loadRelations(galleryPart).stream()
+				.map(r -> new GalleryRow(r, r.getMedia(), r.getMedia().getVersions().get(0))).toList();
 		tableModel.setObjects(galleryRows);
 		tableEl.reset();
 		addTools();
@@ -144,18 +161,71 @@ public class GalleryEditorController extends FormBasicController implements Page
 				updateUI();
 				setBlockLayoutClass(galleryPart.getSettings());
 			}
+		} else if (cmc == source) {
+			cleanUp();
+		} else if (chooseImageController == source) {
+			if (event == Event.DONE_EVENT) {
+				doSaveMedia(ureq, chooseImageController.getMediaReference());
+			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(chooseImageController);
+		cmc = null;
+		chooseImageController = null;
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (addImageButton == source) {
+			doAddImage(ureq);
+		} else if (event instanceof SelectionEvent selectionEvent) {
+			MediaToPagePart relation = tableModel.getObject(selectionEvent.getIndex()).getRelation();
+			if (UP_ACTION.equals(selectionEvent.getCommand())) {
+				doMove(ureq, relation, true);
+			} else if (DOWN_ACTION.equals(selectionEvent.getCommand())) {
+				doMove(ureq, relation, false);
+			}
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private void doAddImage(UserRequest ureq) {
+		chooseImageController = new ChooseImageController(ureq, getWindowControl());
+		listenTo(chooseImageController);
+		String title = translate("choose.image");
+		cmc = new CloseableModalController(getWindowControl(), null,
+				chooseImageController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doMove(UserRequest ureq, MediaToPagePart relation, boolean up) {
+		galleryPart = (GalleryPart) pageDAO.loadPart(galleryPart);
+		mediaToPagePartDAO.move(galleryPart, relation, up);
+		dbInstance.commit();
+		loadModel();
+
+		fireEvent(ureq, new ChangePartEvent(galleryPart));
+	}
+
+	private void doSaveMedia(UserRequest ureq, Media media) {
+		GalleryPart reloadedGalleryPart = (GalleryPart) pageDAO.loadPart(galleryPart);
+		mediaToPagePartDAO.persistRelation(reloadedGalleryPart, media);
+		dbInstance.commit();
+		loadModel();
+
+		fireEvent(ureq, new ChangePartEvent(galleryPart));
 	}
 
 	private void updateUI() {

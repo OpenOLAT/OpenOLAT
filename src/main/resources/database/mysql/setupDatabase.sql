@@ -2649,6 +2649,8 @@ create table o_media_log (
 create table o_media_to_page_part (
    id bigint not null auto_increment,
    creationdate datetime not null,
+   lastmodified datetime not null,
+   pos bigint default null,
    fk_media bigint not null,
    fk_page_part bigint not null,
    primary key (id)

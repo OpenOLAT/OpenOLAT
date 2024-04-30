@@ -20,10 +20,18 @@
 package org.olat.modules.ceditor.model.jpa;
 
 import java.io.Serial;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.modules.ceditor.model.GalleryElement;
+import org.olat.modules.cemedia.MediaToPagePart;
+import org.olat.modules.cemedia.model.MediaToPagePartImpl;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Transient;
 
 /**
@@ -36,6 +44,22 @@ public class GalleryPart extends AbstractPart implements GalleryElement {
 
 	@Serial
 	private static final long serialVersionUID = -757372152238374576L;
+
+	@OneToMany(targetEntity = MediaToPagePartImpl.class, fetch = FetchType.LAZY, mappedBy = "pagePart",
+			orphanRemoval = true, cascade = {CascadeType.REMOVE})
+	@OrderColumn(name = "pos")
+	private List<MediaToPagePart> relations;
+
+	public List<MediaToPagePart> getRelations() {
+		if (relations == null) {
+			relations = new ArrayList<>();
+		}
+		return relations;
+	}
+
+	public void setRelations(List<MediaToPagePart> relations) {
+		this.relations = relations;
+	}
 
 	@Override
 	@Transient
