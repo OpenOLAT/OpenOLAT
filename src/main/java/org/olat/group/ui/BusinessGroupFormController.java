@@ -434,6 +434,10 @@ public class BusinessGroupFormController extends FormBasicController {
 	public String getGroupDescription() {
 		return businessGroupDescription.getValue();
 	}
+	
+	public void setGroupDescription(String description) {
+		businessGroupDescription.setValue(description);
+	}
 
 	/**
 	 * @return
@@ -461,6 +465,11 @@ public class BusinessGroupFormController extends FormBasicController {
 			return null;
 		}
 	}
+	
+	public void setGroupMax(Integer max) {
+		String val = max == null ? "" : max.toString();
+		businessGroupMaximumMembers.setValue(val);
+	}
 
 	/**
 	 * @return
@@ -475,9 +484,21 @@ public class BusinessGroupFormController extends FormBasicController {
 		}
 	}
 	
-	public Boolean isAllowToLeave() {
-		return this.allowToLeaveEl.isVisible() ? Boolean.valueOf(allowToLeaveEl.isAtLeastSelected(1)) : null;
+	public void setGroupMin(Integer min) {
+		String val = min == null ? "" : min.toString();
+		businessGroupMinimumMembers.setValue(val);
 	}
+	
+	public Boolean isAllowToLeave() {
+		return allowToLeaveEl.isVisible() ? Boolean.valueOf(allowToLeaveEl.isAtLeastSelected(1)) : null;
+	}
+	
+	public void setAllowToLeave(Boolean allowed) {
+		if(allowed != null) {
+			allowToLeaveEl.select("xx", allowed.booleanValue());
+		}
+	}
+	
 
 	/**
 	 * @return

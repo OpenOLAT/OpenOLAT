@@ -50,6 +50,12 @@ public class BGCopySingleGroupStepController extends StepFormBasicController   {
 		groupController = new BusinessGroupFormController(ureq, getWindowControl(), originalGroup, mainForm);
 		listenTo(groupController);
 		groupController.setGroupName(originalGroup.getName() + " " + translate("bgcopywizard.copyform.name.copy"));	
+		groupController.setGroupDescription(originalGroup.getDescription());
+		groupController.setGroupMin(originalGroup.getMinParticipants());
+		groupController.setGroupMax(originalGroup.getMaxParticipants());
+		groupController.setEnableWaitingList(originalGroup.getWaitingListEnabled());
+		groupController.setEnableAutoCloseRanks(originalGroup.getAutoCloseRanksEnabled());
+		groupController.setAllowToLeave(originalGroup.isAllowToLeave());
 		
 		initForm(ureq);
 	}
