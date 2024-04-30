@@ -115,6 +115,8 @@ public class AssessmentForm extends FormBasicController {
 	private static final String CMD_DONE_VISIBLE = "done.visible";
 	private static final String CMD_DONE_HIDDEN = "done.hidden";
 	
+	public static final int MAX_COMMENT_LENGTH = 2500;
+	
 	private StaticTextElement statusEl;
 	private StaticTextElement userVisibilityEl;
 	private TextElement score;
@@ -775,8 +777,8 @@ public class AssessmentForm extends FormBasicController {
 
 		if (hasComment) {
 			userCommentValue = courseAssessmentService.getUserComment(courseNode, assessedUserCourseEnv);
-			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, false, userCommentValue, assessmentCont);
-			userComment.setNotLongerThanCheck(2500, "input.toolong");
+			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", MAX_COMMENT_LENGTH, 5, 40, true, false, userCommentValue, assessmentCont);
+			userComment.setNotLongerThanCheck(MAX_COMMENT_LENGTH, "input.toolong");
 		}
 		
 		if(hasIndividualAssessmentDocs) {
@@ -792,8 +794,8 @@ public class AssessmentForm extends FormBasicController {
 		}
 		
 		coachCommentValue = courseAssessmentService.getCoachComment(courseNode, assessedUserCourseEnv);
-		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, false, coachCommentValue, assessmentCont);
-		coachComment.setNotLongerThanCheck(2500, "input.toolong");
+		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", MAX_COMMENT_LENGTH, 5, 40, true, false, coachCommentValue, assessmentCont);
+		coachComment.setNotLongerThanCheck(MAX_COMMENT_LENGTH, "input.toolong");
 		
 		boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
 				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);

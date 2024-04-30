@@ -31,6 +31,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.ui.tool.AssessmentForm;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +63,8 @@ public class EditCommentController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		commentEl = uifactory.addTextAreaElement("ucomment", "comment", 2500, 5, 40, true, false, row.getComment(), formLayout);
+		commentEl = uifactory.addTextAreaElement("ucomment", "comment", AssessmentForm.MAX_COMMENT_LENGTH,
+				6, 80, false, false, row.getComment(), formLayout);
 		commentEl.setElementCssClass("o_sel_course_gta_comment");
 
 		uifactory.addFormSubmitButton("save", formLayout);
