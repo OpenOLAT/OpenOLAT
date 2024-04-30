@@ -19,6 +19,8 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import java.util.stream.IntStream;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
@@ -53,6 +55,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class GalleryInspectorController extends FormBasicController implements PageElementInspectorController {
+	private static final int MAX_NB_COLUMNS = 4;
+	private static final int MAX_NB_ROWS = 3;
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
 	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
@@ -60,6 +64,8 @@ public class GalleryInspectorController extends FormBasicController implements P
 	private final PageElementStore<GalleryElement> store;
 	private TextElement titleEl;
 	private SingleSelection typeEl;
+	private SingleSelection columnsEl;
+	private SingleSelection rowsEl;
 
 	@Autowired
 	private DB dbInstance;
@@ -107,6 +113,20 @@ public class GalleryInspectorController extends FormBasicController implements P
 		typeEl = uifactory.addDropdownSingleselect("gallery.type", "gallery.type", layoutCont,
 				typeKV.keys(), typeKV.values(), null);
 		typeEl.addActionListener(FormEvent.ONCHANGE);
+
+		SelectionValues columnsKV = new SelectionValues();
+		IntStream.rangeClosed(1, MAX_NB_COLUMNS).mapToObj(String::valueOf)
+				.map(nbColumnsStr -> SelectionValues.entry(nbColumnsStr, nbColumnsStr)).forEachOrdered(columnsKV::add);
+		columnsEl = uifactory.addDropdownSingleselect("gallery.columns", "gallery.columns", layoutCont,
+				columnsKV.keys(), columnsKV.values(), null);
+		columnsEl.addActionListener(FormEvent.ONCHANGE);
+
+		SelectionValues rowsKV = new SelectionValues();
+		IntStream.rangeClosed(1, MAX_NB_ROWS).mapToObj(String::valueOf)
+				.map(nbRowsStr -> SelectionValues.entry(nbRowsStr, nbRowsStr)).forEach(rowsKV::add);
+		rowsEl = uifactory.addDropdownSingleselect("gallery.rows", "gallery.rows", layoutCont,
+				rowsKV.keys(), rowsKV.values(), null);
+		rowsEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	private void addStyleTab(FormItemContainer formLayout) {
@@ -123,6 +143,15 @@ public class GalleryInspectorController extends FormBasicController implements P
 		GallerySettings gallerySettings = galleryElement.getSettings();
 		titleEl.setValue(gallerySettings.getTitle());
 		typeEl.select(gallerySettings.getType().name(), true);
+		columnsEl.select(String.valueOf(gallerySettings.getColumns()), true);
+		rowsEl.select(String.valueOf(gallerySettings.getRows()), true);
+		if (GalleryType.grid.equals(gallerySettings.getType())) {
+			columnsEl.setVisible(true);
+			rowsEl.setVisible(true);
+		} else {
+			columnsEl.setVisible(false);
+			rowsEl.setVisible(false);
+		}
 	}
 
 	@Override
@@ -140,6 +169,10 @@ public class GalleryInspectorController extends FormBasicController implements P
 			doSaveSettings(ureq);
 		} else if (typeEl == source) {
 			doSaveSettings(ureq);
+		} else if (columnsEl == source) {
+			doSaveSettings(ureq);
+		} else if (rowsEl == source) {
+			doSaveSettings(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -152,6 +185,9 @@ public class GalleryInspectorController extends FormBasicController implements P
 	private void doSaveSettings(UserRequest ureq) {
 		GallerySettings gallerySettings = galleryElement.getSettings();
 		gallerySettings.setTitle(StringHelper.xssScan(titleEl.getValue()));
+		gallerySettings.setType(GalleryType.valueOf(typeEl.getSelectedKey()));
+		gallerySettings.setColumns(Integer.parseInt(columnsEl.getSelectedKey()));
+		gallerySettings.setRows(Integer.parseInt(rowsEl.getSelectedKey()));
 		galleryElement.setSettings(gallerySettings);
 		store.savePageElement(galleryElement);
 		dbInstance.commit();
