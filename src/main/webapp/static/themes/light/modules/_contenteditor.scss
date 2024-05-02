@@ -1594,6 +1594,18 @@ table.o_ce_table {
 	}
 }
 
+.o_page_run_gallery {
+	.o_gallery_header {
+		.o_gallery_buttons {
+			display: flex;
+
+			.swiper-button-prev, .swiper-button-next {
+				margin-top: 0;
+			}
+		}
+	}
+}
+
 /* Editor and run mode of content editor */
 .o_page_layout {
 

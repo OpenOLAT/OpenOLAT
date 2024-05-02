@@ -1,9 +1,39 @@
 <div id="$r.getCId()" class="o_page_run_gallery $blockLayoutClass">
 	<div class="o_gallery_header">
 		<div class="o_gallery_title">$r.escapeHtml($title)</div>
-		<div class="o_gallery_buttons">&lt;&nbsp;&gt;</div>
+		<div class="o_gallery_buttons">
+			<div id="o_swiper_button_prev_$r.getCId()" class="swiper-button-prev"></div>
+			<div id="o_swiper_button_next_$r.getCId()" class="swiper-button-next"></div>
+		</div>
 	</div>
-	<div class="o_gallery_images">
-		$r.render("gallery.images")
+	<div id="o_swiper_$r.getCId()" class="swiper o_gallery_images">
+		<div class="swiper-wrapper">
+			#foreach($galleryImageItem in $galleryImageItems)
+				<div class="swiper-slide">
+					<img src="$mapperUrl/${galleryImageItem.id()}">
+				</div>
+			#end
+		</div>
+		<div class="swiper-button-prev"></div>
+		<div class="swiper-button-next"></div>
+		<div class="swiper-pagination"></div>
 	</div>
 </div>
+<script>
+	"use strict";
+	new Swiper('#o_swiper_$r.getCId()', {
+		slidesPerView: 1,
+		slidesPerGroup: 1,
+		spaceBetween: 10,
+		breakpointBase: 'container',
+		navigation: {
+			prevEl: '#o_swiper_button_prev_$r.getCId()',
+			nextEl: '#o_swiper_button_next_$r.getCId()',
+			disabledClass: 'o_swiper_button_disabled'
+		},
+		pagination: {
+			el: '.swiper-pagination',
+			clickable: true
+		}
+	});
+</script>
