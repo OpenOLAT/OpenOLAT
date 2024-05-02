@@ -1,16 +1,32 @@
-<div id="$r.getCId()" class="o_page_run_gallery $blockLayoutClass">
+<div id="$r.getCId()" class="o_page_run_gallery $blockLayoutClass">thumbs
+	#set($bottomPaddingClass = "")
+	#if($showPagination)
+		#set($bottomPaddingClass = "o_bottom_padding_for_pagination")
+	#end
 	<div class="o_gallery_header">
 		<div class="o_gallery_title">$r.escapeHtml($title)</div>
+		#if($showTopNavButtons)
 		<div class="o_gallery_buttons">
 			<div id="o_swiper_button_prev_$r.getCId()" class="swiper-button-prev"></div>
 			<div id="o_swiper_button_next_$r.getCId()" class="swiper-button-next"></div>
 		</div>
+		#end
 	</div>
 	<div id="o_swiper_$r.getCId()" class="swiper o_gallery_images">
 		<div class="swiper-wrapper">
 			#foreach($galleryImageItem in $galleryImageItems)
-				<div class="swiper-slide">
+				<div class="swiper-slide $bottomPaddingClass">
 					<img src="$mapperUrl/${galleryImageItem.id()}">
+					#if($showTitleAndDescription)
+					<div class="o_title_and_description">
+						<div class="o_title">
+							$galleryImageItem.title()
+						</div>
+						<div class="o_description">
+							$galleryImageItem.description()
+						</div>
+					</div>
+					#end
 				</div>
 			#end
 		</div>
@@ -18,10 +34,21 @@
 		<div class="swiper-button-next"></div>
 		<div class="swiper-pagination"></div>
 	</div>
+	#if($showThumbnails)
+	<div id="o_swiper_thumbs_$r.getCId()" class="swiper o_gallery_thumbs">
+		<div class="swiper-wrapper">
+			#foreach($galleryImageItem in $galleryImageItems)
+			<div class="swiper-slide">
+				<img src="$mapperUrl/${galleryImageItem.id()}">
+			</div>
+			#end
+		</div>
+	</div>
+	#end
 </div>
 <script>
 	"use strict";
-	new Swiper('#o_swiper_$r.getCId()', {
+	var imageGallery = new Swiper('#o_swiper_$r.getCId()', {
 		slidesPerView: 1,
 		slidesPerGroup: 1,
 		spaceBetween: 10,
@@ -31,9 +58,24 @@
 			nextEl: '#o_swiper_button_next_$r.getCId()',
 			disabledClass: 'o_swiper_button_disabled'
 		},
+		#if($showPagination)
 		pagination: {
 			el: '.swiper-pagination',
 			clickable: true
-		}
+		},
+		#end
 	});
+
+	#if($showThumbnails)
+	var thumbsGallery = new Swiper('#o_swiper_thumbs_$r.getCId()', {
+		centeredSlides: true,
+		spaceBetween: 10,
+		slidesPerView: 'auto',
+		slideToClickedSlide: true,
+		touchRatio: 0.2,
+	});
+
+	imageGallery.controller.control = thumbsGallery;
+	thumbsGallery.controller.control = imageGallery;
+	#end
 </script>

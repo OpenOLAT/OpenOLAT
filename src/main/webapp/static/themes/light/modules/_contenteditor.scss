@@ -1598,10 +1598,36 @@ table.o_ce_table {
 	.o_gallery_header {
 		.o_gallery_buttons {
 			display: flex;
+			margin-right: 0;
 
 			.swiper-button-prev, .swiper-button-next {
 				margin-top: 0;
 			}
+		}
+	}
+
+	.o_gallery_images {
+		padding: 0;
+
+		.o_title_and_description {
+			.o_title {
+				font-weight: bold;
+				font-size: 14px;
+			}
+		}
+
+		.swiper-slide.o_bottom_padding_for_pagination {
+			padding-bottom: 24px;
+		}
+	}
+
+	.o_gallery_thumbs {
+		width: 100%;
+		height: 64px;
+		margin-top: 8px;
+
+		.swiper-slide {
+			max-width: calc(20% - 8px);
 		}
 	}
 }

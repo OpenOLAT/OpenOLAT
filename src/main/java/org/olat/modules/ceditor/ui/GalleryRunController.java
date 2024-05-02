@@ -98,17 +98,48 @@ public class GalleryRunController extends BasicController implements PageRunElem
 	}
 
 	private void updateUI() {
-		mainVC.contextPut("title", galleryPart.getSettings().getTitle());
+		GallerySettings gallerySettings = galleryPart.getSettings();
+
+		mainVC.contextPut("title", gallerySettings.getTitle());
+		updateSwiperConfiguration(gallerySettings);
+
 		mainVC.put("gallery.images", TextFactory.createTextComponentFromString("gallery.images",
 				"image slider placeholder", "o_hint", false, mainVC));
 
 		List<GalleryImageItem> galleryImageItems = mediaToPagePartDAO.loadRelations(galleryPart).stream()
 				.map(r -> r.getMedia().getVersions().get(0))
-				.map(mv -> new GalleryImageItem(Long.toString(mv.getKey()), mv.getMedia().getType(), mv))
+				.map(mv -> new GalleryImageItem(Long.toString(mv.getKey()), mv.getMedia().getType(), mv,
+						mv.getMedia().getTitle(), mv.getMedia().getDescription()))
 				.toList();
 		mainVC.contextPut("galleryImageItems", galleryImageItems);
 		galleryImages.items.clear();
 		galleryImages.items.addAll(galleryImageItems);
+	}
+
+	private void updateSwiperConfiguration(GallerySettings gallerySettings) {
+		switch (gallerySettings.getType()) {
+			case preview -> {
+				mainVC.contextPut("showPagination", false);
+				mainVC.contextPut("showTopNavButtons", true);
+				mainVC.contextPut("showSideNavButtons", false);
+				mainVC.contextPut("showThumbnails", true);
+				mainVC.contextPut("showTitleAndDescription", false);
+			}
+			case grid -> {
+				mainVC.contextPut("showPagination", true);
+				mainVC.contextPut("showTopNavButtons", true);
+				mainVC.contextPut("showSideNavButtons", false);
+				mainVC.contextPut("showThumbnails", false);
+				mainVC.contextPut("showTitleAndDescription", false);
+			}
+			case slideshow -> {
+				mainVC.contextPut("showPagination", true);
+				mainVC.contextPut("showTopNavButtons", false);
+				mainVC.contextPut("showSideNavButtons", true);
+				mainVC.contextPut("showThumbnails", false);
+				mainVC.contextPut("showTitleAndDescription", true);
+			}
+		}
 	}
 
 	@Override
@@ -137,7 +168,8 @@ public class GalleryRunController extends BasicController implements PageRunElem
 		return false;
 	}
 
-	public record GalleryImageItem(String id, String type, MediaVersion mediaVersion) {}
+	public record GalleryImageItem(String id, String type, MediaVersion mediaVersion, String title,
+								   String description) {}
 
 	private record GalleryImages(List<GalleryImageItem> items) {
 
