@@ -12,6 +12,10 @@
 		</div>
 		#end
 	</div>
+	#if($showSideNavButtons)
+	<div class="o_gallery_images_with_side_nav">
+	<div id="o_swiper_button_prev_$r.getCId()" class="swiper-button-prev"></div>
+	#end
 	<div id="o_swiper_$r.getCId()" class="swiper o_gallery_images">
 		<div class="swiper-wrapper">
 			#foreach($galleryImageItem in $galleryImageItems)
@@ -34,6 +38,10 @@
 		<div class="swiper-button-next"></div>
 		<div class="swiper-pagination"></div>
 	</div>
+	#if($showSideNavButtons)
+	<div id="o_swiper_button_next_$r.getCId()" class="swiper-button-next"></div>
+	</div>
+	#end
 	#if($showThumbnails)
 	<div id="o_swiper_thumbs_$r.getCId()" class="swiper o_gallery_thumbs">
 		<div class="swiper-wrapper">

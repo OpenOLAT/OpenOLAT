@@ -1612,12 +1612,29 @@ table.o_ce_table {
 		.o_title_and_description {
 			.o_title {
 				font-weight: bold;
-				font-size: 14px;
+				font-size: 16px;
 			}
 		}
 
 		.swiper-slide.o_bottom_padding_for_pagination {
 			padding-bottom: 24px;
+		}
+	}
+
+	.o_gallery_images_with_side_nav {
+		display: flex;
+
+		.swiper-button-prev, .swiper-button-next {
+			border: none;
+			background-color: transparent;
+			margin: auto 10px;
+			color: $brand-primary;
+		}
+
+		.swiper-button-prev:hover, .swiper-button-next:hover {
+			border: none;
+			box-shadow: none;
+			color: $link-hover-color;
 		}
 	}
 
