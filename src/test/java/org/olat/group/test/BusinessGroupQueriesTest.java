@@ -421,12 +421,12 @@ public class BusinessGroupQueriesTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("bg-search-7");
 		String managedFlags = "all";
 		BusinessGroup groupManaged = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
-				random(), managedFlags, 0, 5, true, false, true, false, false, null);
+				random(), managedFlags, 0, 5, true, false, true, false, false, null, null);
 		// Groups with external ID should be treated as managed even if they have no managed flag.
 		BusinessGroup groupExternalId = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
-				random(), null, 0, 5, true, false, true, false, false, null);
+				random(), null, 0, 5, true, false, true, false, false, null, null);
 		BusinessGroup groupUnmanaged = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
-				null, null, 0, 5, true, false, true, false, false, null);
+				null, null, 0, 5, true, false, true, false, false, null, null);
 		dbInstance.commitAndCloseSession();
 
 		// Check managed
@@ -462,11 +462,11 @@ public class BusinessGroupQueriesTest extends OlatTestCase {
 		Date lastUsageBefore = new GregorianCalendar(2020, 8, 9).getTime();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		BusinessGroup before = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
-				random(), null, 0, 5, true, false, true, false, false, null);
+				random(), null, 0, 5, true, false, true, false, false, null, null);
 		before.setLastUsage(DateUtils.addDays(lastUsageBefore, -2));
 		businessGroupDao.merge(before);
 		BusinessGroup after = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
-				null, null, 0, 5, true, false, true, false, false, null);
+				null, null, 0, 5, true, false, true, false, false, null, null);
 		after.setLastUsage(DateUtils.addDays(lastUsageBefore, 3));
 		businessGroupDao.merge(after);
 		dbInstance.commitAndCloseSession();
@@ -936,11 +936,11 @@ public class BusinessGroupQueriesTest extends OlatTestCase {
 	public void searchBusinessGroupsStatistics() {
 		Date lastUsageBefore = new GregorianCalendar(2020, 8, 9).getTime();
 		BusinessGroup before = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
-				random(), null, 0, 5, true, false, true, false, false, null);
+				random(), null, 0, 5, true, false, true, false, false, null, null);
 		before.setLastUsage(DateUtils.addDays(lastUsageBefore, -2));
 		businessGroupDao.merge(before);
 		BusinessGroup after = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
-				null, null, 0, 5, true, false, true, false, false, null);
+				null, null, 0, 5, true, false, true, false, false, null, null);
 		after.setLastUsage(DateUtils.addDays(lastUsageBefore, 3));
 		businessGroupDao.merge(after);
 		dbInstance.commitAndCloseSession();

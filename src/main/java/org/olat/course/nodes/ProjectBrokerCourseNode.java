@@ -852,7 +852,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 			BusinessGroup newAccountManagerGroup = bgs.copyBusinessGroup(author, originalAccountGroup,
 					originalAccountGroup.getName(), originalAccountGroup.getDescription(),
 					originalAccountGroup.getMinParticipants(), originalAccountGroup.getMaxParticipants(), false, false,
-					true, false, false, true, false, false, Boolean.FALSE);
+					true, false, false, true, false, false, null, null, Boolean.FALSE, author);
 			projectGroupManager.saveAccountManagerGroupKey(newAccountManagerGroup.getKey(), targetCpm, copyInstance);
 			bgs.addResourceTo(newAccountManagerGroup,
 					targetCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry());

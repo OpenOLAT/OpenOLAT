@@ -428,7 +428,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		String externalId = UUID.randomUUID().toString();
 		String managedFlags = "title,description";
 		BusinessGroup managedGroup = businessGroupDao.createAndPersist(null, "managed-grp-1", "managed-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
-				externalId, managedFlags, 0, 5, true, false, true, false, false, null);
+				externalId, managedFlags, 0, 5, true, false, true, false, false, null, null);
 		BusinessGroup freeGroup = businessGroupDao.createAndPersist(null, "free-grp-1", "free-grp-1-desc", BusinessGroup.BUSINESS_TYPE,
 				0, 5, true, false, true, false, false);
 		dbInstance.commitAndCloseSession();
@@ -459,7 +459,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		String externalId = UUID.randomUUID().toString();
 		String managedFlags = "all";
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "managed-grp-2", "managed-grp-2-desc", BusinessGroup.BUSINESS_TYPE,
-				externalId, managedFlags, 0, 5, true, false, true, false, false, null);
+				externalId, managedFlags, 0, 5, true, false, true, false, false, null, null);
 		dbInstance.commitAndCloseSession();
 
 		//search

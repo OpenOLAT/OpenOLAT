@@ -88,20 +88,17 @@ public class BGCopySingleGroupStepController extends StepFormBasicController   {
 		
 		BGCopyBusinessGroup currentCopy = getWithOriginal(copies);
 		if(currentCopy == null) {
-			BGCopyBusinessGroup group = new BGCopyBusinessGroup(originalGroup);
-			group.setNames(groupController.getGroupNames());
-			group.setDescription(groupController.getGroupDescription());
-			group.setMinParticipants(groupController.getGroupMin());
-			group.setMaxParticipants(groupController.getGroupMax());
-			group.setAllowToLeave(groupController.isAllowToLeave());
-			copies.add(group);
-		} else {
-			currentCopy.setNames(groupController.getGroupNames());
-			currentCopy.setDescription(groupController.getGroupDescription());
-			currentCopy.setMinParticipants(groupController.getGroupMin());
-			currentCopy.setMaxParticipants(groupController.getGroupMax());
-			currentCopy.setAllowToLeave(groupController.isAllowToLeave());
+			currentCopy = new BGCopyBusinessGroup(originalGroup);
+			copies.add(currentCopy);
 		}
+		currentCopy.setNames(groupController.getGroupNames());
+		currentCopy.setDescription(groupController.getGroupDescription());
+		currentCopy.setMinParticipants(groupController.getGroupMin());
+		currentCopy.setMaxParticipants(groupController.getGroupMax());
+		currentCopy.setAllowToLeave(groupController.isAllowToLeave());
+		currentCopy.setAutoCloseRanksEnabled(groupController.isAutoCloseRanksEnabled());
+		currentCopy.setWaitingListEnabled(groupController.isWaitingListEnabled());
+		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	

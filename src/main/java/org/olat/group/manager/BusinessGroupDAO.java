@@ -90,13 +90,14 @@ public class BusinessGroupDAO {
 			boolean showOwners, boolean showParticipants, boolean showWaitingList) {
 		return createAndPersist(creator, name, description, technicalType, null, null,
 				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled,
-				showOwners, showParticipants, showWaitingList, null);
+				showOwners, showParticipants, showWaitingList, null, creator);
 	}
 		
-	public BusinessGroup createAndPersist(Identity creator, String name, String description,
+	public BusinessGroup createAndPersist(Identity coach, String name, String description,
 				String technicalType, String externalId, String managedFlags,
 				Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
-				boolean showOwners, boolean showParticipants, boolean showWaitingList, Boolean allowToLeave) {
+				boolean showOwners, boolean showParticipants, boolean showWaitingList, Boolean allowToLeave,
+				Identity doer) {
 
 		BusinessGroupImpl businessgroup = new BusinessGroupImpl();
 		businessgroup.setCreationDate(new Date());
@@ -133,11 +134,13 @@ public class BusinessGroupDAO {
 		businessgroup.setLTI13DeploymentByCoachWithAuthorRightsEnabled(false);
 		businessgroup.setInvitationByCoachWithAuthorRightsEnabled(false);
 		
-		if(creator == null) {
+		if(doer == null) {
 			allowToLeave(businessgroup, allowToLeave, businessGroupModule.isAllowLeavingGroupCreatedByAuthors());
 		} else {
-			Roles roles = securityManager.getRoles(creator);
-			if(roles.isAuthor()) {
+			Roles roles = securityManager.getRoles(doer);
+			if(roles.isAdministrator() || roles.isGroupManager()) {
+				allowToLeave(businessgroup, allowToLeave, true);
+			} else if(roles.isAuthor()) {
 				allowToLeave(businessgroup, allowToLeave, businessGroupModule.isAllowLeavingGroupCreatedByAuthors());
 			} else {
 				allowToLeave(businessgroup, allowToLeave, businessGroupModule.isAllowLeavingGroupCreatedByLearners());
@@ -149,8 +152,8 @@ public class BusinessGroupDAO {
 
 		Group group = groupDao.createGroup();
 		businessgroup.setBaseGroup(group);
-		if (creator != null) {
-			groupDao.addMembershipTwoWay(group, creator, GroupRoles.coach.name());
+		if (coach != null) {
+			groupDao.addMembershipTwoWay(group, coach, GroupRoles.coach.name());
 		}
 
 		EntityManager em = dbInstance.getCurrentEntityManager();

@@ -168,6 +168,19 @@
 			jQuery(mlk).removeClass("is-visible");
 		}
 	}
+	
+	function unfocusEditor() {
+		try {
+			if(o_info.lastFormFocusEl) {
+				let focusedEl = jQuery(".o_page_content_editor #" + o_info.lastFormFocusEl);
+				if(focusedEl.length > 0) {
+					o_info.lastFormFocusEl = 0;
+				}
+			}
+		} catch(e) {
+			if(window.console) console.log(e);
+		}
+	}
 
 	function initWindowListener(settings) {
 		if(o_info.contentEditorWindowListener === undefined || o_info.contentEditorWindowListener == null) {
@@ -222,10 +235,12 @@
 						} else if(!edited) {
 							closeMathLive();
 							o_afterserver();
+							unfocusEditor();
 							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment', 'ignore-validating-error', 'oo-ignore-validating-error');
 						} else if(jTarget.closest(".o_ceditor_inspector_header").length > 0 && jTarget.closest("a").length > 0) {
 							closeMathLive();
 							o_afterserver();
+							unfocusEditor();
 							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_inspector', 'ignore-validating-error', 'oo-ignore-validating-error');
 						}
 					}

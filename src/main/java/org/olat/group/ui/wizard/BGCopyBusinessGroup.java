@@ -37,6 +37,8 @@ public class BGCopyBusinessGroup implements BusinessGroupShort {
 	private Integer minParticipants;
 	private Integer maxParticipants;
 	private Boolean allowToLeave;
+	private Boolean waitingListEnabled;
+	private Boolean autoCloseRanksEnabled;
 	
 	private final BusinessGroup original;
 	
@@ -109,6 +111,22 @@ public class BGCopyBusinessGroup implements BusinessGroupShort {
 
 	public void setMaxParticipants(Integer maxParticipants) {
 		this.maxParticipants = maxParticipants;
+	}
+
+	public Boolean getWaitingListEnabled() {
+		return waitingListEnabled;
+	}
+
+	public void setWaitingListEnabled(Boolean waitingListEnabled) {
+		this.waitingListEnabled = waitingListEnabled;
+	}
+
+	public Boolean getAutoCloseRanksEnabled() {
+		return autoCloseRanksEnabled;
+	}
+
+	public void setAutoCloseRanksEnabled(Boolean autoCloseRanksEnabled) {
+		this.autoCloseRanksEnabled = autoCloseRanksEnabled;
 	}
 
 	public Boolean getAllowToLeave() {
