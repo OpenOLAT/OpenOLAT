@@ -239,6 +239,10 @@ public class AuthoringEnvPage {
 	 * @return Itself
 	 */
 	public AuthoringEnvPage uploadResource(String title, File resource) {
+		return uploadResource(title, resource, true);
+	}
+	
+	public AuthoringEnvPage uploadResource(String title, File resource, boolean saveAllowed) {
 		By importBy = By.className("o_sel_author_import");
 		OOGraphene.waitElement(importBy, browser);
 		browser.findElement(importBy).click();
@@ -253,20 +257,23 @@ public class AuthoringEnvPage {
 		titleEl.sendKeys(title);
 		
 		//save
-		By saveBy = By.cssSelector("div.o_sel_repo_save_details button.btn-primary");
-		WebElement saveButton = browser.findElement(saveBy);
-		if(saveButton.isEnabled()) {
-			saveButton.click();
+		if(saveAllowed) {
+			By saveBy = By.xpath("//div[contains(@class,'o_sel_repo_save_details')]//button[contains(@class,'btn-primary')][not(contains(@class,'o_disabled'))]");
+			OOGraphene.waitElement(saveBy, browser);
+			browser.findElement(saveBy).click();
 			OOGraphene.waitModalDialogDisappears(browser);
 			OOGraphene.waitElement(generaltabBy, browser);
 			OOGraphene.waitTinymce(browser);
+		} else {
+			By saveDisabledBy = By.xpath("//div[contains(@class,'o_sel_repo_save_details')]//button[contains(@class,'btn-primary')][contains(@class,'o_disabled')]");
+			OOGraphene.waitElement(saveDisabledBy, browser);
 		}
 		return this;
 	}
 	
 	public AuthoringEnvPage assertOnResourceType() {
 		By typeEl = By.cssSelector(".o_sel_author_type");
-		OOGraphene.waitElement(typeEl, 5, browser);
+		OOGraphene.waitElement(typeEl, browser);
 		return this;
 	}
 	

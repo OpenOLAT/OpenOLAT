@@ -91,6 +91,7 @@ public class SurveyEditorPage extends ContentEditorPage {
 		OOGraphene.waitBusy(browser);
 		By emptyChoiceBy = By.xpath("//div[contains(@class,'o_evaluation_editor_form')]//table[contains(@class,'table-condensed')]/tbody/tr[" + pos + "]/td/div/input[@type='text'][string-length(@value)=0]");
 		OOGraphene.waitElement(emptyChoiceBy, browser);
+		OOGraphene.waitingALittleBit();// Wait the focus is set again
 		
 		browser.findElement(choiceBy).sendKeys(choice);
 		OOGraphene.waitBusy(browser);
