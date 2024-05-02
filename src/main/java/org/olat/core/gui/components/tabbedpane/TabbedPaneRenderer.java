@@ -26,7 +26,9 @@
 
 package org.olat.core.gui.components.tabbedpane;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentHelper;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -37,6 +39,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -44,13 +47,14 @@ import org.olat.core.util.StringHelper;
  */
 public class TabbedPaneRenderer extends DefaultComponentRenderer {
 
+	private static final Logger log = Tracing.createLoggerFor(TabbedPaneRenderer.class);
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		TabbedPane tb = (TabbedPane)source;
 		TabbedPaneItem tbi = tb.getTabbedPaneItem();
 		
-		int cnt = tb.getTabCount();
+		final int cnt = tb.getTabCount();
 		if (cnt == 0) return; // nothing to render
 		
 		int selPane = tb.getSelectedPane();
@@ -116,6 +120,16 @@ public class TabbedPaneRenderer extends DefaultComponentRenderer {
 		
 		if (tb.isPanelFocus()) {
 			sb.append("<script>try {document.getElementById('o_c").append(tb.getDispatchID()).append("_c').focus({preventScroll:true});} catch(e){if(console){console.log(e);}};</script>");
+		}
+		
+		try {
+			for(int i=0; i<cnt; i++) {
+				if(i != selPane) {
+					ComponentHelper.setDirtyFalseRecursive(tb.getTabAt(i));
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
 		}
 	}
 	

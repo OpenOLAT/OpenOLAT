@@ -76,8 +76,7 @@ public class ComponentHelper {
 
 	private static Component dofind(Component current, String id, List<Component> foundPath) {
 		if (id.equals(current.getDispatchID())) return current;
-		if (current instanceof ComponentCollection) {
-			ComponentCollection co = (ComponentCollection)current;
+		if (current instanceof ComponentCollection co) {
 			for (Component child : co.getComponents()) {
 				Component found = dofind(child, id, foundPath);
 				if (found != null) {
@@ -107,13 +106,21 @@ public class ComponentHelper {
 		if (!current.isVisible()) return; // invisible components are not validated,
 		// since they are not displayed
 		current.validate(ureq, vr);
-		if (current instanceof ComponentCollection) { // visit children
-			ComponentCollection co = (ComponentCollection)current;
+		if (current instanceof ComponentCollection co) { // visit children
 			for (Component child : co.getComponents()) {
 				doValidate(ureq, child, vr);
 			}
 		}
 	}
 	
-
+	public static void setDirtyFalseRecursive(Component cmp) {
+		if(cmp == null) return;
+		
+		cmp.setDirty(false);
+		if(cmp instanceof ComponentCollection co) {
+			for (Component child : co.getComponents()) {
+				setDirtyFalseRecursive(child);
+			}
+		}
+	}
 }
