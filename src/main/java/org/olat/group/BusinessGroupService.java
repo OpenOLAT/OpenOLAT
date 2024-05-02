@@ -208,7 +208,7 @@ public interface BusinessGroupService {
 	public BusinessGroup copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup, String targetName, String targetDescription,
 			Integer targetMin, Integer targetMax, boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
 			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList,
-			boolean copyRelations, Boolean allowToLeave);
+			boolean copyRelations, Boolean waitingListEnabled, Boolean autoCloseRanksEnabled, Boolean allowToLeave, Identity doer);
 	
 	/**
 	 * Create and persist new business groups based on a source group.
@@ -233,7 +233,7 @@ public interface BusinessGroupService {
 	public void copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup, List<String> targetNames, String targetDescription,
 			Integer targetMin, Integer targetMax, boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
 			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList,
-			boolean copyRelations, Boolean allowToLeave);
+			boolean copyRelations, Boolean waitingListEnabled, Boolean autoCloseRanksEnabled, Boolean allowToLeave, Identity doer);
 
 
 	/**

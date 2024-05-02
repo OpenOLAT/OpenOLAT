@@ -175,7 +175,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		
 		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description, technicalType, externalId, managedFlags,
-				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, false, false, false, null);
+				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, false, false, false, null, creator);
 		if(re != null) {
 			addResourceTo(group, re);
 		}
@@ -388,25 +388,32 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	public void copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup,
 			List<String> targetNames, String targetDescription, Integer targetMin, Integer targetMax, boolean copyAreas,
 			boolean copyCollabToolConfig, boolean copyRights, boolean copyOwners, boolean copyParticipants,
-			boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations, Boolean allowToLeave) {
+			boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations,
+			Boolean waitingListEnabled, Boolean autoCloseRanksEnabled, Boolean allowToLeave, Identity doer) {
 		for(String targetName:targetNames) {
 			copyBusinessGroup(identity, sourceBusinessGroup, targetName, targetDescription,
 					targetMin, targetMax, copyAreas, copyCollabToolConfig, copyRights,
-					copyOwners, copyParticipants, copyMemberVisibility, copyWaitingList, copyRelations, allowToLeave);
+					copyOwners, copyParticipants, copyMemberVisibility, copyWaitingList, copyRelations,
+					waitingListEnabled, autoCloseRanksEnabled, allowToLeave, doer);
 		}
 	}
 
 	@Override
 	public BusinessGroup copyBusinessGroup(Identity identity, BusinessGroup sourceBusinessGroup, String targetName, String targetDescription,
 			Integer targetMin, Integer targetMax,  boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
-			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList,
-			boolean copyRelations, Boolean allowToLeave) {
+			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList, boolean copyRelations,
+			Boolean waitingListEnabled, Boolean autoCloseRanksEnabled, Boolean allowToLeave, Identity doer) {
+		
+		Boolean waitingList = waitingListEnabled == null ? sourceBusinessGroup.getWaitingListEnabled() : waitingListEnabled;
+		Boolean autoCloseRanks = autoCloseRanksEnabled == null ? sourceBusinessGroup.getAutoCloseRanksEnabled() : autoCloseRanksEnabled;
 
 		// 1. create group, set waitingListEnabled, enableAutoCloseRanks like source business-group
 		BusinessGroup newGroup = businessGroupDAO.createAndPersist(null, targetName, targetDescription,
 				sourceBusinessGroup.getTechnicalType(), null, null,
-				targetMin, targetMax, sourceBusinessGroup.getWaitingListEnabled(), sourceBusinessGroup.getAutoCloseRanksEnabled(),
-				false, false, false, allowToLeave);
+				targetMin, targetMax,
+				waitingList != null && waitingList.booleanValue(),
+				autoCloseRanks != null && autoCloseRanks.booleanValue(),
+				false, false, false, allowToLeave, doer);
 		// return immediately with null value to indicate an already take groupname
 		if (newGroup == null) { 
 			return null;
@@ -479,8 +486,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		// 8. copy waiting-lisz
 		if (copyWaitingList) {
-			List<Identity> waitingList = getMembers(sourceBusinessGroup, GroupRoles.waiting.name());
-			for (Identity waiting:waitingList) {
+			List<Identity> waitingIdentitiesList = getMembers(sourceBusinessGroup, GroupRoles.waiting.name());
+			for (Identity waiting:waitingIdentitiesList) {
 				businessGroupRelationDAO.addRole(waiting, newGroup, GroupRoles.waiting.name());
 			}
 		}
