@@ -2201,7 +2201,7 @@ public class CourseTest extends Deployments {
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
-			.uploadResource(zipTitle, zipFile)
+			.uploadResource(zipTitle, zipFile, false)
 			.assertOnResourceType();
 	}
 	

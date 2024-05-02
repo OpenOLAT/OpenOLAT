@@ -264,6 +264,7 @@ public class AdministrationPage {
 		By ltiBy = By.cssSelector(".o_sel_lti13 span.o_tree_level_label_leaf>a");
 		OOGraphene.waitElement(ltiBy, browser);
 		browser.findElement(ltiBy).click();
+		OOGraphene.waitBusyAndScrollTop(browser);
 		By ltiConfigBy = By.cssSelector("fieldset.o_sel_lti13_admin_settings");
 		OOGraphene.waitElement(ltiConfigBy, browser);
 		return new LTI13SettingsPage(browser);
@@ -277,6 +278,7 @@ public class AdministrationPage {
 		By zoomBy = By.cssSelector(".o_sel_zoom span.o_tree_level_label_leaf>a");
 		OOGraphene.waitElement(zoomBy, browser);
 		browser.findElement(zoomBy).click();
+		OOGraphene.waitBusyAndScrollTop(browser);
 		By zoomConfigBy = By.cssSelector("fieldset.o_sel_zoom_admin_configuration");
 		OOGraphene.waitElement(zoomConfigBy, browser);
 		return new ZoomSettingsPage(browser);
@@ -290,8 +292,8 @@ public class AdministrationPage {
 		By jupiterHubBy = By.cssSelector(".o_sel_jupyterHub span.o_tree_level_label_leaf>a");
 		OOGraphene.waitElement(jupiterHubBy, browser);
 		browser.findElement(jupiterHubBy).click();
-		By jupiterHubConfigBy = By.cssSelector("fieldset.o_sel_jupyterhub_admin_configuration");
 		OOGraphene.waitBusyAndScrollTop(browser);
+		By jupiterHubConfigBy = By.cssSelector("fieldset.o_sel_jupyterhub_admin_configuration");
 		OOGraphene.waitElement(jupiterHubConfigBy, browser);
 		return new JupyterHubSettingsPage(browser);
 	}
