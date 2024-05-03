@@ -103,7 +103,7 @@ public class EvaluationFormExcelExport {
 		}
 	}
 	
-	private String getFileName(String surveyName) {
+	public String getFileName(String surveyName) {
 		return new StringBuilder()
 				.append(StringHelper.transformDisplayNameToFileSystemName(surveyName))
 				.append("_")

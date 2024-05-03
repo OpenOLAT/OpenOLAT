@@ -61,6 +61,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -87,7 +88,6 @@ import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilterFactory;
-import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport.UserColumns;
 import org.olat.modules.forms.ui.UserPropertiesColumns;
 import org.olat.repository.RepositoryEntry;
@@ -107,7 +107,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	private static final String CMD_SELECT = "select";
 	
 	private FormLink resetAllButton;
-	private FormLink excelButton;
+	private FormLink exportButton;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private FormParticipationTableModel dataModel;
 	private FlexiTableElement tableEl;
@@ -179,8 +179,8 @@ public class FormParticipationListController extends FormBasicController impleme
 			resetAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		}
 		
-		excelButton = uifactory.addFormLink("excel.export", buttonsTopCont, Link.BUTTON); 
-		excelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
+		exportButton = uifactory.addFormLink("excel.export", buttonsTopCont, Link.BUTTON); 
+		exportButton.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -360,7 +360,7 @@ public class FormParticipationListController extends FormBasicController impleme
 			} else if(event instanceof FlexiTableSearchEvent) {
 				reload();
 			}
-		} else if (source == excelButton) {
+		} else if (source == exportButton) {
 			doExport(ureq);
 		} else if (source == resetAllButton) {
 			doConfirmDeleteAllData(ureq);
@@ -451,8 +451,8 @@ public class FormParticipationListController extends FormBasicController impleme
 
 	private void doExport(UserRequest ureq) {
 		UserColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, getTranslator());
-		EvaluationFormExcelExport excelExport = formManager.getExcelExport(courseNode, survey.getIdentifier(), userColumns);
-		ureq.getDispatchResult().setResultingMediaResource(excelExport.createMediaResource());
+		MediaResource mediaResource = formManager.getExport(courseNode, survey.getIdentifier(), userColumns);
+		ureq.getDispatchResult().setResultingMediaResource(mediaResource);
 	}
 	
 	private void doConfirmDeleteAllData(UserRequest ureq) {

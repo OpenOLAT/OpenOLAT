@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -97,6 +98,8 @@ public interface FormManager {
 	
 	public void deleteAllData(EvaluationFormSurvey survey, CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
+	public MediaResource getExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns);
+	
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns);
 	
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, SessionFilter filter, UserColumns userColumns);

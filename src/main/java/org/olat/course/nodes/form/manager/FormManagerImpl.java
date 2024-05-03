@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -79,6 +80,7 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
+import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport.UserColumns;
@@ -482,6 +484,21 @@ public class FormManagerImpl implements FormManager {
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
 				courseNode.getIdent());
 	}
+	
+	@Override
+	public MediaResource getExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns) {
+		EvaluationFormSurvey survey = loadSurvey(identifier);
+		Form form = loadForm(survey);
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, true);
+		String nodeName = courseNode.getShortName();
+		EvaluationFormExcelExport excelExport = new EvaluationFormExcelExport(form, filter, null, userColumns, nodeName);
+		
+		List<FileUpload> fileUploads = evaluationFormManager.getUncontainerizedElements(form).stream().filter(element -> element instanceof FileUpload).map(element -> (FileUpload)element).toList();
+		if (fileUploads.isEmpty()) {
+			return excelExport.createMediaResource();
+		}
+		return new FormExportResource(evaluationFormManager, nodeName, filter, excelExport, fileUploads);
+	}
 
 	@Override
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode,
@@ -491,8 +508,6 @@ public class FormManagerImpl implements FormManager {
 		return getExcelExport(courseNode, identifier, filter, userColumns);
 	}
 	
-	
-
 	@Override
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode,
 			EvaluationFormSurveyIdentifier identifier, SessionFilter filter, UserColumns userColumns) {
