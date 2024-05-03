@@ -111,8 +111,11 @@ public class GalleryEditorController extends FormBasicController implements Page
 				GalleryModel.GalleryColumn.down.ordinal(), DOWN_ACTION, new BooleanCellRenderer(
 						new StaticFlexiCellRenderer(translate("gallery.down"), DOWN_ACTION), null
 		)));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.title.getI18nKey(),
-				GalleryModel.GalleryColumn.title.ordinal()));
+		DefaultFlexiColumnModel titleColumn = new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.title.getI18nKey(),
+				GalleryModel.GalleryColumn.title.ordinal());
+		titleColumn.setColumnCssClass("o_gallery_image_title");
+		columnModel.addFlexiColumnModel(titleColumn);
+		columnModel.getColumnModel(columnModel.getColumnCount() - 1).setColumnCssClass("o_gallery_image_title");
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.description.getI18nKey(),
 				GalleryModel.GalleryColumn.description.ordinal()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.version.getI18nKey(),

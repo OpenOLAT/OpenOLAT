@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
@@ -40,8 +41,8 @@ public class GalleryRow {
 	public GalleryRow(MediaToPagePart relation, Media media, MediaVersion mediaVersion) {
 		id = mediaVersion.getVersionUuid();
 		this.relation = relation;
-		title = media.getTitle();
-		description = media.getDescription();
+		title = StringHelper.truncateText(media.getTitle());
+		description = StringHelper.truncateText(media.getDescription());
 		version = mediaVersion.getVersionName();
 	}
 

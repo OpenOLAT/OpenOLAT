@@ -117,26 +117,30 @@ public class GalleryRunController extends BasicController implements PageRunElem
 	}
 
 	private void updateSwiperConfiguration(GallerySettings gallerySettings) {
+		mainVC.contextPut("showPagination", false);
+		mainVC.contextPut("showTopNavButtons", false);
+		mainVC.contextPut("showSideNavButtons", false);
+		mainVC.contextPut("showThumbnails", false);
+		mainVC.contextPut("showTitleAndDescription", false);
+		mainVC.contextPut("showRows", false);
+		mainVC.contextPut("rows", 1);
+		mainVC.contextPut("columns", 1);
+
 		switch (gallerySettings.getType()) {
 			case preview -> {
-				mainVC.contextPut("showPagination", false);
 				mainVC.contextPut("showTopNavButtons", true);
-				mainVC.contextPut("showSideNavButtons", false);
 				mainVC.contextPut("showThumbnails", true);
-				mainVC.contextPut("showTitleAndDescription", false);
 			}
 			case grid -> {
 				mainVC.contextPut("showPagination", true);
 				mainVC.contextPut("showTopNavButtons", true);
-				mainVC.contextPut("showSideNavButtons", false);
-				mainVC.contextPut("showThumbnails", false);
-				mainVC.contextPut("showTitleAndDescription", false);
+				mainVC.contextPut("showRows", gallerySettings.getRows() > 1);
+				mainVC.contextPut("rows", gallerySettings.getRows());
+				mainVC.contextPut("columns", gallerySettings.getColumns());
 			}
 			case slideshow -> {
 				mainVC.contextPut("showPagination", true);
-				mainVC.contextPut("showTopNavButtons", false);
 				mainVC.contextPut("showSideNavButtons", true);
-				mainVC.contextPut("showThumbnails", false);
 				mainVC.contextPut("showTitleAndDescription", true);
 			}
 		}

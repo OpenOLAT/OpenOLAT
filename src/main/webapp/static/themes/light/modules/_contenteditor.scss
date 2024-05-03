@@ -1588,8 +1588,15 @@ table.o_ce_table {
 		margin-top: 4px;
 		padding: 2px;
 
-		.o_table_wrapper .o_col_sticky_right {
-			background-color: unset;
+		.o_table_wrapper {
+			.o_col_sticky_right {
+				background-color: unset;
+			}
+			.o_gallery_image_title {
+				max-width: 192px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
 		}
 	}
 }

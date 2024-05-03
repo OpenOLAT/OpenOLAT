@@ -1,4 +1,4 @@
-<div id="$r.getCId()" class="o_page_run_gallery $blockLayoutClass">thumbs
+<div id="$r.getCId()" class="o_page_run_gallery $blockLayoutClass">
 	#set($bottomPaddingClass = "")
 	#if($showPagination)
 		#set($bottomPaddingClass = "o_bottom_padding_for_pagination")
@@ -57,8 +57,13 @@
 <script>
 	"use strict";
 	var imageGallery = new Swiper('#o_swiper_$r.getCId()', {
-		slidesPerView: 1,
-		slidesPerGroup: 1,
+		#if($showRows)
+		grid: {
+			rows: $rows,
+		},
+		#end
+		slidesPerView: $columns,
+		slidesPerGroup: $rows,
 		spaceBetween: 10,
 		breakpointBase: 'container',
 		navigation: {
@@ -85,5 +90,25 @@
 
 	imageGallery.controller.control = thumbsGallery;
 	thumbsGallery.controller.control = imageGallery;
+	#end
+
+	#if($showRows)
+	var maxHeightPerRow = new Array($rows).fill(0);
+	jQuery(function() {
+		jQuery('#o_swiper_$r.getCId() .swiper-slide').each(function(i, obj) {
+			var rowIndex = i % $rows;
+			var height = obj.clientHeight;
+			maxHeightPerRow[rowIndex] = Math.max(height, maxHeightPerRow[rowIndex]);
+		});
+		var totalHeight = 0;
+		for (var row = 0; row < $rows; row++) {
+			if (row > 0) {
+				totalHeight += 10;
+			}
+			totalHeight += maxHeightPerRow[row] - 24;
+		}
+		var swiper = document.getElementById('o_swiper_$r.getCId()');
+		swiper.setAttribute('style', `height: ${totalHeight}px;`);
+	});
 	#end
 </script>
