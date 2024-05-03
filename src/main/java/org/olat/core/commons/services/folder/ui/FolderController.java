@@ -164,6 +164,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.modules.audiovideorecording.AVModule;
+import org.olat.search.SearchModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -256,12 +257,14 @@ public class FolderController extends FormBasicController implements Activateabl
 	private SendDocumentsByEMailController emailCtrl;
 	
 	private final VFSContainer rootContainer;
-	private final VFSMetadata rootMetadata;
 	private VFSContainer currentContainer;
+	private VFSContainer topMostDescendantsContainer;
+	private VFSMetadata topMostDescendantsMetadata;
 	private VFSItemFilter vfsFilter = new VFSSystemItemFilter();
 	private final FolderControllerConfig config;
 	private final boolean licensesEnabled;
 	private final boolean webdavEnabled;
+	private boolean searchEnabled;
 	private boolean versionsEnabled;
 	private boolean trashEnabled;
 	private final Formatter formatter;
@@ -295,6 +298,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private SearchModule searchModule;
+	@Autowired
 	private AVModule avModule;
 	@Autowired
 	private MapperService mapperService;
@@ -302,9 +307,9 @@ public class FolderController extends FormBasicController implements Activateabl
 	public FolderController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, FolderControllerConfig config) {
 		super(ureq, wControl, "folder");
 		this.rootContainer = rootContainer;
-		this.rootMetadata = rootContainer.getMetaInfo();
 		this.config = config;
 		this.licensesEnabled = licenseModule.isEnabled(licenseHandler);
+		this.searchEnabled = config.isDisplaySearch() && searchModule.isSearchAllowed(ureq.getUserSession().getRoles());
 		this.webdavEnabled = config.isDisplayWebDAVLink() && webDAVModule.isEnabled() && webDAVModule.isLinkEnabled()
 				&& ureq.getUserSession().getRoles().isGuestOnly();
 		this.formatter = Formatter.getInstance(getLocale());
@@ -330,7 +335,6 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		initForm(ureq);
 		doOpenView(ureq, FolderView.folder);
-		updateCommandUI(ureq);
 	}
 
 	@Override
@@ -435,9 +439,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		boolean canDecendants = VFSStatus.YES == currentContainer.canDescendants();
 		viewFileLink.setVisible(canDecendants);
 		trashLink.setVisible(canViewTrash());
-		viewSearchLink.setVisible(config.isDisplaySearch());
-		quickSearchEl.setVisible(config.isDisplaySearch());
-		quickSearchButton.setVisible(config.isDisplaySearch());
+		viewSearchLink.setVisible(searchEnabled);
+		quickSearchEl.setVisible(searchEnabled);
+		quickSearchButton.setVisible(searchEnabled);
 		
 		boolean canEditCurrentContainer = canEdit(currentContainer);
 		addFileEl.setVisible(canEditCurrentContainer);
@@ -487,12 +491,12 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (FolderView.file == folderView) {
 			VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
 			if (topMostDescendantsContainer != null) {
-				setCurrentContainer(topMostDescendantsContainer);
+				updateCurrentContainer(ureq, topMostDescendantsContainer, false);
 			} else {
-				setCurrentContainer(rootContainer);
+				updateCurrentContainer(ureq, rootContainer, false);
 			}
 		} else if (FolderView.search == folderView) {
-			setCurrentContainer(rootContainer);
+			updateCurrentContainer(ureq, rootContainer, false);
 		}
 		
 		doOpenFolderView(ureq);
@@ -887,7 +891,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private VFSContainer getCachedContainer(VFSContainer vfsContainer) {
-		if (VFSStatus.YES == vfsContainer.canMeta()) {
+		if (VFSStatus.YES == vfsContainer.canMeta() && VFSStatus.YES == vfsContainer.canDescendants()) {
 			return new VFSMetadataContainer(vfsRepositoryService, true, vfsContainer);
 		}
 		return vfsContainer;
@@ -1019,16 +1023,17 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void forgeFilePath(FolderRow row) {
 		String filePath = null;
-		if (rootMetadata != null && row.getMetadata() != null) {
+		if (topMostDescendantsMetadata!= null && row.getMetadata() != null) {
 			String rowRelativePath = row.getMetadata().getRelativePath();
-			String rootRelativePath = rootMetadata.getRelativePath() + "/" + rootMetadata.getFilename();
+			String rootRelativePath = topMostDescendantsMetadata.getRelativePath() + "/" + topMostDescendantsMetadata.getFilename();
 			if (rowRelativePath.startsWith(rootRelativePath)) {
 				filePath = rowRelativePath.substring(rootRelativePath.length());
 			}
 		}
 		
 		if (filePath == null) {
-			VFSItem parent = row.getVfsItem().getParentContainer();
+			VFSItem vfsItem = row.getVfsItem();
+			VFSItem parent = vfsItem.getParentContainer();
 			if (parent == null) {
 				return;
 			}
@@ -1153,10 +1158,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
 		VFSItem vfsItem = rootContainer.resolve(path);
 		if (vfsItem instanceof VFSContainer) {
-			updateCurrentContainer(ureq, path);
+			updateCurrentContainer(ureq, path, true);
 			doOpenFolderView(ureq);
 		} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			updateCurrentContainer(ureq, vfsLeaf.getParentContainer());
+			updateCurrentContainer(ureq, vfsLeaf.getParentContainer(), true);
 			doOpenFolderView(ureq);
 			doOpenFileInLightbox(ureq, vfsLeaf);
 		}
@@ -1186,7 +1191,7 @@ public class FolderController extends FormBasicController implements Activateabl
 						doOpenView(ureq, FolderView.folder);
 					}
 					String parentPath = relativePath.substring(0, relativePath.lastIndexOf("/"));
-					updateCurrentContainer(ureq, parentPath);
+					updateCurrentContainer(ureq, parentPath, true);
 				}
 			}
 		} else if ("ONCLICK".equals(event.getCommand())) {
@@ -1457,12 +1462,12 @@ public class FolderController extends FormBasicController implements Activateabl
 		doQuickSearch(ureq);
 	}
 	
-	public void updateCurrentContainer(UserRequest ureq, VFSContainer container) {
+	public void updateCurrentContainer(UserRequest ureq, VFSContainer container, boolean reload) {
 		String relativePath = VFSManager.getRelativeItemPath(container, rootContainer, "/");
-		updateCurrentContainer(ureq, relativePath);
+		updateCurrentContainer(ureq, relativePath, reload);
 	}
 	
-	public void updateCurrentContainer(UserRequest ureq, String relativePath) {
+	public void updateCurrentContainer(UserRequest ureq, String relativePath, boolean reload) {
 		String path = relativePath;
 		if (path == null) {
 			path = "/";
@@ -1479,13 +1484,18 @@ public class FolderController extends FormBasicController implements Activateabl
 			path = "/";
 		}
 		
+		topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
+		topMostDescendantsMetadata = topMostDescendantsContainer != null? topMostDescendantsContainer.getMetaInfo(): null;
+		
 		reloadVersionsEnabled();
 		reloadTrashEnabled();
 		updateEmptyMessage();
 		updateFolderBreadcrumpUI(ureq, path);
 		updateCommandUI(ureq);
 		bulkEmailButton.setVisible(config.getEmailFilter().canEmail(path));
-		loadModel(ureq);
+		if (reload) {
+			loadModel(ureq);
+		}
 		updatePathResource(ureq, path);
 	}
 
@@ -1542,7 +1552,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			if (FolderView.folder != folderView) {
 				doOpenView(ureq, FolderView.folder);
 			}
-			updateCurrentContainer(ureq, vfsContainer);
+			updateCurrentContainer(ureq, vfsContainer, true);
 		}
 	}
 
@@ -1560,7 +1570,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (FolderView.folder != folderView) {
 			doOpenView(ureq, FolderView.folder);
 		}
-		updateCurrentContainer(ureq, parent);
+		updateCurrentContainer(ureq, parent, true);
 	}
 
 	private void doAddFromBrowser(UserRequest ureq) {
@@ -2652,7 +2662,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private void leaveTrash(UserRequest ureq) {
 		if (FolderView.trash == folderView) {
 			VFSContainer editableContainer = getTopMostEditableContainer(currentContainer);
-			updateCurrentContainer(ureq, editableContainer);
+			updateCurrentContainer(ureq, editableContainer, true);
 			doOpenView(ureq, FolderView.folder);
 		}
 	}

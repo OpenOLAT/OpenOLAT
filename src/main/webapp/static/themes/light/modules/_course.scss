@@ -1055,6 +1055,16 @@
 	height:auto;
 }
 
+/* Course storage folder */
+.o_course_folder {
+	.o_course_folder_header {
+		* {
+			margin-top: 0;
+			margin-bottom: 0;
+		}
+	}
+}
+
 /* Assessment tool */
 div.o_correction_navigation {
 	.o_correction_navigation_back {

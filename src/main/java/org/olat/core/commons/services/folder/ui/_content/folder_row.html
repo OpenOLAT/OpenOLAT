@@ -42,7 +42,11 @@
 		</div>
 		<div class="o_folder_card_modified o_flex_block_one_line_left">
 			<div class="o_nowrap o_muted">
-				$row.modified
+				#if($row.modified)
+					$row.modified
+				#else
+					&nbsp;
+				#end
 			</div>
 		</div>
 	</div>

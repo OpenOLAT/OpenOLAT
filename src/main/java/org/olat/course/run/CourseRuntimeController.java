@@ -36,11 +36,8 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
-import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.FolderRunController.Mail;
 import org.olat.core.commons.modules.glossary.GlossaryMainController;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.Mark;
@@ -88,8 +85,6 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
-import org.olat.core.util.vfs.NamedContainerImpl;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -127,7 +122,7 @@ import org.olat.course.disclaimer.ui.CourseDisclaimerReviewController;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.QuickPublishEvent;
 import org.olat.course.editor.overview.OverviewController;
-import org.olat.course.folder.CourseContainerOptions;
+import org.olat.course.folder.ui.CourseFolderController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.learningpath.LearningPathService;
@@ -169,7 +164,6 @@ import org.olat.course.statistic.StatisticType;
 import org.olat.course.todo.ui.CourseMyToDoTaskController;
 import org.olat.course.todo.ui.CourseToDoTaskController;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
@@ -273,7 +267,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private ConfirmLeaveController leaveDialogBox;
 	private Controller archiverCtrl;
 	private CustomDBMainController databasesCtrl;
-	private FolderRunController courseFolderCtrl;
+	private CourseFolderController courseFolderCtrl;
 	private InfoRunController participatInfoCtrl;
 	private TeamsMeetingsRunController teamsCtrl;
 	private SearchInputController searchController;
@@ -1560,7 +1554,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				cleanUp();	
 			}
 		} else if (courseFolderCtrl == source) {
-			if (event == Event.DONE_EVENT) {
+			if (event == CourseFolderController.OPEN_USAGE) {
 				doQuotaUsageView(ureq);
 			}
 		} else if (currentToolCtr == source) {
@@ -1957,18 +1951,18 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					}
 				}
 			} else if("CourseFolder".equalsIgnoreCase(type)) {
-				FolderRunController folderCtrl = doCourseFolder(ureq);
+				CourseFolderController folderCtrl = doCourseFolder(ureq);
 				if(folderCtrl != null && entries.size() > 1) {
-					folderCtrl.activatePath(ureq, BusinessControlFactory.getInstance().getPath(entries.get(1)));
+					folderCtrl.activate(ureq, entries.subList(1, entries.size()), state);
 				}
 			} else if("CoachFolder".equalsIgnoreCase(type)) {
 				if (coachFolderLink != null && coachFolderLink.isVisible()) {
 					activateSubEntries(ureq, doCoachFolder(ureq), entries);
 				}
 			} else if(type != null && type.startsWith("path=")) {
-				FolderRunController folderCtrl = doCourseFolder(ureq);
+				CourseFolderController folderCtrl = doCourseFolder(ureq);
 				if(folderCtrl != null) {
-					folderCtrl.activatePath(ureq, BusinessControlFactory.getInstance().getPath(entries.get(0)));
+					folderCtrl.activate(ureq, entries, state);
 				}
 			} else if("CourseNode".equals(type)) {
 				// free to stack for the run main controller
@@ -2393,19 +2387,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		return null;
 	}
 	
-	private FolderRunController doCourseFolder(UserRequest ureq) {
+	private CourseFolderController doCourseFolder(UserRequest ureq) {
 		if(delayedClose == Delayed.courseFolder || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				removeCustomCSS();
-				// Folder for course with custom link model to jump to course nodes
 				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-				VFSContainer courseContainer = course.getCourseFolderContainer(ureq.getUserSession().getIdentityEnvironment(),
-						CourseContainerOptions.all(), overrideReadOnly, Boolean.TRUE);
-				VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), courseContainer);
-				CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
-	
 				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("CourseFolder", 0l), null);
-				FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, Mail.always, true, ureq, swControl, null, customLinkTreeModel, null);
+				CourseFolderController ctrl = new CourseFolderController(ureq, swControl, course, overrideReadOnly);
+				
 				ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
 				courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
 				setActiveTool(folderLink);

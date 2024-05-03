@@ -141,7 +141,17 @@ public class MergeSource extends AbstractVirtualContainer {
 	 * @return
 	 */
 	public boolean isContainersChild(VFSContainer container) {
-		return mergedContainersChildren.contains(container);
+		for (VFSContainer mergedContainersChild : mergedContainersChildren) {
+			if (mergedContainersChild == container) {
+				return true;
+			}
+			if (mergedContainersChild instanceof NamedContainerImpl namedContainer) {
+				if (namedContainer.getDelegate() == container) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override

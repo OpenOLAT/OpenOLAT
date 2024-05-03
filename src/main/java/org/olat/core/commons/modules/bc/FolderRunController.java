@@ -53,7 +53,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -117,7 +116,6 @@ public class FolderRunController extends BasicController implements Activateable
 	private FolderCommand folderCommand;
 	private CloseableModalController cmc;
 	private Link editQuotaButton;
-	private Link showMemoryUsageLink;
 
 	private final Mail canMail;
 	
@@ -495,15 +493,7 @@ public class FolderRunController extends BasicController implements Activateable
 				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 			}
 			enableDisableQuota(ureq);
-		} else if (source == showMemoryUsageLink) {
-			fireEvent(ureq, Event.DONE_EVENT);
 		}
-	}
-
-	public void initToolbar(TooledStackedPanel stackPanel) {
-		showMemoryUsageLink = LinkFactory.createToolLink("viewMemoryUsage", translate("menu.memory.usage"), this,
-				"o_icon_hdd");
-		stackPanel.addTool(showMemoryUsageLink, TooledStackedPanel.Align.right, false);
 	}
 	
 	private void updatePathResource(UserRequest ureq) {
