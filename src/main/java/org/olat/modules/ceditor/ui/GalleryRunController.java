@@ -122,7 +122,7 @@ public class GalleryRunController extends BasicController implements PageRunElem
 		mainVC.contextPut("showSideNavButtons", false);
 		mainVC.contextPut("showThumbnails", false);
 		mainVC.contextPut("showTitleAndDescription", false);
-		mainVC.contextPut("showRows", false);
+		mainVC.contextPut("gridMode", false);
 		mainVC.contextPut("rows", 1);
 		mainVC.contextPut("columns", 1);
 
@@ -134,7 +134,7 @@ public class GalleryRunController extends BasicController implements PageRunElem
 			case grid -> {
 				mainVC.contextPut("showPagination", true);
 				mainVC.contextPut("showTopNavButtons", true);
-				mainVC.contextPut("showRows", gallerySettings.getRows() > 1);
+				mainVC.contextPut("gridMode", true);
 				mainVC.contextPut("rows", gallerySettings.getRows());
 				mainVC.contextPut("columns", gallerySettings.getColumns());
 			}

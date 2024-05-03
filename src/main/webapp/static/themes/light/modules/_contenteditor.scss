@@ -1620,11 +1620,17 @@ table.o_ce_table {
 			.o_title {
 				font-weight: bold;
 				font-size: 16px;
+				overflow: hidden;
+				text-overflow: ellipsis;
 			}
 		}
 
 		.swiper-slide.o_bottom_padding_for_pagination {
 			padding-bottom: 24px;
+		}
+
+		.swiper-wrapper.o_swiper_wrapper {
+			height: calc(100% - 20px);
 		}
 	}
 
