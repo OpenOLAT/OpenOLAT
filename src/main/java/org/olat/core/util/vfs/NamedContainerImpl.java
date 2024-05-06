@@ -116,6 +116,11 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	public VFSStatus canWrite() {
 		return getDelegate().canWrite();
 	}
+	
+	@Override
+	public VFSStatus canDelete() {
+		return getDelegate().canCopy();
+	}
 
 	@Override
 	public VFSStatus canCopy() {
