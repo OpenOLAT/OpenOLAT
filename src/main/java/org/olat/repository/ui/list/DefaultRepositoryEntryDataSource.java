@@ -155,7 +155,10 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	}
 	
 	private void setFilter(FlexiTableFilter filter) {
-		switch(FilterButton.valueOf(filter.getFilter())) {
+		FilterButton button = FilterButton.secureValueOf(filter.getFilter());
+		if(button == null) return;
+		
+		switch(button) {
 			case MARKED:
 				String markedValue = ((FlexiTableExtendedFilter)filter).getValue();
 				searchParams.setMarked(StringHelper.containsNonWhitespace(markedValue) ? Boolean.TRUE : null);
@@ -192,24 +195,27 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	
 	private void setStatusFilter(FlexiTableExtendedFilter filter) {
 		List<String> values = filter.getValues();
-		Set<RepositoryEntryStatusEnum> status = new HashSet<>();
+		Set<RepositoryEntryStatusEnum> statusSet = new HashSet<>();
 		if(values == null || values.isEmpty()) {
 			searchParams.setEntryStatus(baseEntryStatus);
 		} else {
 			for(String val:values) {
-				switch(FilterStatus.valueOf(val)) {
+				FilterStatus status = FilterStatus.secureValueOf(val);
+				if(status == null) continue;
+				
+				switch(status) {
 					case CLOSED:
-						status.add(RepositoryEntryStatusEnum.closed);
+						statusSet.add(RepositoryEntryStatusEnum.closed);
 						break;
 					case ACTIVE:
-						status.add(RepositoryEntryStatusEnum.published);
+						statusSet.add(RepositoryEntryStatusEnum.published);
 						break;
 					case PREPARATION:
-						Collections.addAll(status, RepositoryEntryStatusEnum.preparationToCoachPublished());
+						Collections.addAll(statusSet, RepositoryEntryStatusEnum.preparationToCoachPublished());
 						break;
 				}
 			}
-			RepositoryEntryStatusEnum[] statusArr = status.toArray(new RepositoryEntryStatusEnum[status.size()]);
+			RepositoryEntryStatusEnum[] statusArr = statusSet.toArray(new RepositoryEntryStatusEnum[statusSet.size()]);
 			searchParams.setEntryStatus(statusArr);
 		}
 	}
@@ -222,13 +228,31 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		BOOKING,
 		DATES,
 		EDUCATIONALTYPE,
-		AUTHORS
+		AUTHORS;
+		
+		public static FilterButton secureValueOf(String val) {
+			for(FilterButton button:values()) {
+				if(button.name().equalsIgnoreCase(val)) {
+					return button;
+				}
+			}
+			return null;
+		}
 	}
 	
 	public enum FilterStatus {
 		PREPARATION,
 		ACTIVE,
-		CLOSED
+		CLOSED;
+		
+		public static FilterStatus secureValueOf(String val) {
+			for(FilterStatus status:values()) {
+				if(status.name().equalsIgnoreCase(val)) {
+					return status;
+				}
+			}
+			return null;
+		}
 	}
 
 	private List<RepositoryEntryRow> processViewModel(List<RepositoryEntryMyView> repoEntries) {

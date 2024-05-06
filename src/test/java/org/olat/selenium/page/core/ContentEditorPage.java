@@ -25,7 +25,6 @@ import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 
 /**
@@ -180,11 +179,6 @@ public class ContentEditorPage extends ContentViewPage {
 		return closeEditFragment(toolbarContainerBy);
 	}
 	
-	public ContentEditorPage closeEditFragmentOfPortfolioPage() {
-		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_page_lead')]//div[contains(@class,'o_portfolio_status_block')]");
-		return closeEditFragment(toolbarContainerBy);
-	}
-	
 	/**
 	 * Close the fragment editor in the editor for survey.
 	 * 
@@ -196,20 +190,18 @@ public class ContentEditorPage extends ContentViewPage {
 	}
 	
 	private ContentEditorPage closeEditFragment(By containerBy) {
-		// Move the focus, important
-		new Actions(browser)
-			.moveToElement(browser.findElement(containerBy), -25, 0)
-			.click()
-			.perform();
-		
+		browser.findElement(containerBy).click();
 		OOGraphene.waitBusy(browser);
 		try {
 			OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Close edit fragment", browser);
-			throw e;
+			
+			// Try again
+			OOGraphene.waitingALittleLonger();
+			browser.findElement(containerBy).click();
+			OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
 		}
 		return this;
 	}
-
 }
