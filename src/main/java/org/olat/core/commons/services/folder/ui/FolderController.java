@@ -1394,7 +1394,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			cleanUp();
 		} else if (restoreSelectFolderCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				if (copySelectFolderCtrl.getUserObject() instanceof CopyUserObject copyUserObject) {
+				if (restoreSelectFolderCtrl.getUserObject() instanceof CopyUserObject copyUserObject) {
 					doRestore(ureq, restoreSelectFolderCtrl.getSelectedContainer(), copyUserObject.itemsToCopy());
 				}
 			}
