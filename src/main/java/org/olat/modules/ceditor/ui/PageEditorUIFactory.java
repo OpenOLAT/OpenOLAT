@@ -23,9 +23,11 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.jpa.CodePart;
+import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
+import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
 
 /**
@@ -60,6 +62,12 @@ public class PageEditorUIFactory {
 			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
 		}
 		if (sourceElement instanceof CodePart sourcePart && targetElement instanceof CodePart targetPart) {
+			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
+		}
+		if (sourceElement instanceof QuizPart sourcePart && targetElement instanceof QuizPart targetPart) {
+			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
+		}
+		if (sourceElement instanceof GalleryPart sourcePart && targetElement instanceof GalleryPart targetPart) {
 			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
 		}
 	}
