@@ -109,6 +109,7 @@ public class UserAdminQuickSearchController extends FormBasicController {
 		searchCont.setRootForm(mainForm);
 		
 		searchEl = uifactory.addTextElement("quick.search", "quick.search", 64, null, searchCont);
+		searchEl.setAriaLabel("quick.search");
 		searchEl.setFocus(true);
 		
 		searchLink = uifactory.addFormLink("rightAddOn", "", "", searchCont, Link.NONTRANSLATED);
@@ -118,7 +119,6 @@ public class UserAdminQuickSearchController extends FormBasicController {
 		String searchLabel = getTranslator().translate("quick.search");
 		searchLink.setLinkTitle(searchLabel);
 		searchLink.setI18nKey(searchLabel);
-
 		
 		uifactory.addSpacerElement("searchSpacer", formLayout, false);
 	}
