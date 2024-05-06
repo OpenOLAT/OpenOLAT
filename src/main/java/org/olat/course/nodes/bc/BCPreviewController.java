@@ -25,15 +25,15 @@
 
 package org.olat.course.nodes.bc;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
@@ -47,21 +47,26 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * Initial Date: 10.02.2005 <br>
  * @author Mike Stock
  */
-public class BCPreviewController extends DefaultController {
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(BCPreviewController.class);
-
-	private Translator trans;
-	private VelocityContainer previewVC;
-
+public class BCPreviewController extends BasicController {
+	
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
+	
 	public BCPreviewController(UserRequest ureq, WindowControl wControl, BCCourseNode node,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		super(wControl);
-		trans = Util.createPackageTranslator(BCPreviewController.class, ureq.getLocale());
-		previewVC = new VelocityContainer("bcPreviewVC", VELOCITY_ROOT + "/preview.html", trans, this);
+		super(ureq, wControl);
+		VelocityContainer previewVC = createVelocityContainer("preview");
+		putInitialPanel(previewVC);
+		
 		VFSContainer namedContainer = BCCourseNode.getNodeFolderContainer(node, userCourseEnv.getCourseEnvironment());
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
-		FolderRunController folder = new FolderRunController(namedContainer, false, ureq, getWindowControl());
-		previewVC.put("folder", folder.getInitialComponent());
+		FolderController folderCtrl = new FolderController(ureq, wControl, namedContainer, FOLDER_CONFIG);
+		listenTo(folderCtrl);
+		previewVC.put("folder", folderCtrl.getInitialComponent());
+		
 		// get additional infos
 		boolean canDownload = node.canDownload(ne);
 		boolean canUpload = node.canUpload(userCourseEnv, ne);
@@ -70,7 +75,6 @@ public class BCPreviewController extends DefaultController {
 		previewVC.contextPut("canDownload", Boolean.valueOf(secCallback.canRead()));
 		Quota q = secCallback.getQuota();
 		previewVC.contextPut("quotaKB", (q != null) ? q.getQuotaKB().toString() : "-");
-		setInitialComponent(previewVC);
 	}
 
 	@Override

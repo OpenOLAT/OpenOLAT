@@ -31,8 +31,9 @@ import org.apache.commons.lang.StringUtils;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.FolderRunController.Mail;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
@@ -70,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BCCourseNodeRunController extends BasicController implements Activateable2 {
 
-	private FolderRunController frc;
+	private FolderController folderCtrl;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -191,9 +193,14 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 				olatNamed.setLocalSecurityCallback(scallback);
 			}
 	
-			boolean canMail = !userCourseEnv.isCourseReadOnly();
-			frc = new FolderRunController(olatNamed, true, true, Mail.valueOf(canMail), ureq, getWindowControl(), null, null, courseContainer);
-			putInitialPanel(frc.getInitialComponent());
+			FolderControllerConfig config = FolderControllerConfig.builder()
+					.withMail(FolderEmailFilter.valueOf(!userCourseEnv.isCourseReadOnly()))
+					//TODO uh test
+					.withExternContainerForCopy(courseContainer)
+					.build();
+			folderCtrl = new FolderController(ureq, getWindowControl(), olatNamed, config );
+			listenTo(folderCtrl);
+			putInitialPanel(folderCtrl.getInitialComponent());
 		} else {
 			BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
 			putInitialPanel(noFolderForm.getInitialComponent());
@@ -204,26 +211,16 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 	public void event(UserRequest ureq, Component source, Event event) {
 	// no events to catch
 	}
-
-	@Override
-	protected void doDispose() {
-		if (frc != null) {
-			frc.dispose();
-			frc = null;
-		}
-        super.doDispose();
-	}
 	
 	public void activatePath(UserRequest ureq, String path) {
-		if (frc != null) {
-			frc.activatePath(ureq, path);
-		}
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString("[path=" + path + "]");
+		activate(ureq, entries, null);
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (frc != null) {
-			frc.activate(ureq, entries, state);
+		if (folderCtrl != null) {
+			folderCtrl.activate(ureq, entries, state);
 		}
 	}
 }

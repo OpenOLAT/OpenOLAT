@@ -311,7 +311,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		this.licensesEnabled = licenseModule.isEnabled(licenseHandler);
 		this.searchEnabled = config.isDisplaySearch() && searchModule.isSearchAllowed(ureq.getUserSession().getRoles());
 		this.webdavEnabled = config.isDisplayWebDAVLink() && webDAVModule.isEnabled() && webDAVModule.isLinkEnabled()
-				&& ureq.getUserSession().getRoles().isGuestOnly();
+				&& !ureq.getUserSession().getRoles().isGuestOnly();
 		this.formatter = Formatter.getInstance(getLocale());
 		
 		setCurrentContainer(rootContainer);
@@ -1342,6 +1342,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			cmc.deactivate();
 			cleanUp();
 		} else if (copySelectFolderCtrl == source) {
+			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
 				if (copySelectFolderCtrl.getUserObject() instanceof CopyUserObject copyUserObject) {
 					doCopyMove(ureq,
@@ -1350,9 +1351,9 @@ public class FolderController extends FormBasicController implements Activateabl
 							copyUserObject.itemsToCopy);
 				}
 			}
-			cmc.deactivate();
 			cleanUp();
 		} else if (licenseCheckCtrl == source) {
+			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
 				doCopyMove(ureq,
 					false,
@@ -1360,7 +1361,6 @@ public class FolderController extends FormBasicController implements Activateabl
 					licenseCheckCtrl.getItemsToCopy(),
 					licenseCheckCtrl.getLicense());
 			}
-			cmc.deactivate();
 			cleanUp();
 		} else if (zipConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {

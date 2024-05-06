@@ -21,7 +21,8 @@ package org.olat.course.nodes.bc;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -47,7 +48,11 @@ import org.olat.repository.RepositoryEntry;
  */
 public class CourseDocumentsController extends BasicController implements Activateable2 {
 	
-	private FolderRunController folderCtrl;
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withSearchEnabled(false)
+			.build();
+	
+	private FolderController folderCtrl;
 	private BCCourseNodeNoFolderForm noFolderCtrl;
 	
 	public CourseDocumentsController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
@@ -64,7 +69,7 @@ public class CourseDocumentsController extends BasicController implements Activa
 		if (rootContainer != null) {
 			rootContainer = new NamedContainerImpl(translate("command.documents"), rootContainer);
 			rootContainer.setLocalSecurityCallback(secCallback);
-			folderCtrl = new FolderRunController(rootContainer, true, false, true, ureq, getWindowControl());
+			folderCtrl = new FolderController(ureq, wControl, rootContainer, FOLDER_CONFIG);
 			listenTo(folderCtrl);
 			putInitialPanel(folderCtrl.getInitialComponent());
 		} else {

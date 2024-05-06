@@ -28,7 +28,9 @@ import java.util.Date;
 
 import org.olat.admin.AdminModule;
 import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -54,6 +56,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InfoMessageControllerSingleVM extends BasicController {
 	
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
+			
 	private final Link infomsgEditButton;
 	private final Link infomsgClearButton;
 	private final Link maintenancemsgEditButton;
@@ -62,7 +69,7 @@ public class InfoMessageControllerSingleVM extends BasicController {
 	private final VelocityContainer infoMsgEdit;
 	private final InfoMsgForm infoMsgForm;
 	private final InfoMsgForm maintenanceMsgForm;
-	private final FolderRunController staticFolderCtrl;
+	private final FolderController staticFolderCtrl;
 	private final StackedPanel container;
 	
 	@Autowired
@@ -118,7 +125,7 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		infoMsgEdit.put("maintenanceMsgForm", maintenanceMsgForm.getInitialComponent());
 		
 		// /customizing/static/
-		staticFolderCtrl = new FolderRunController(staticFolderMgr.getRootContainer(), true, ureq, control);
+		staticFolderCtrl = new FolderController(ureq, getWindowControl(), staticFolderMgr.getRootContainer(), FOLDER_CONFIG);
 		listenTo(staticFolderCtrl);
 		infoMsgView.put("staticFolder", staticFolderCtrl.getInitialComponent());
 		

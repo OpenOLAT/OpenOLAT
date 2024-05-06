@@ -28,8 +28,8 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.modules.bc.FolderManager;
-import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
+import org.olat.core.commons.services.webdav.ui.WebDAVController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -87,7 +87,7 @@ public class WebDAVPasswordController extends FormBasicController {
 	private WebDAVAuthManager webDAVAuthManager;
 	
 	public WebDAVPasswordController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "pwdav", Util.createPackageTranslator(FolderRunController.class, ureq.getLocale()));
+		super(ureq, wControl, "pwdav", Util.createPackageTranslator(WebDAVController.class, ureq.getLocale()));
 		syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		initForm(ureq);
 	}

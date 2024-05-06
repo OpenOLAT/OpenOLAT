@@ -25,12 +25,10 @@
 
 package org.olat.course.nodes.projectbroker;
 
-import org.olat.admin.quota.QuotaConstants;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,27 +39,18 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
-import org.olat.core.util.vfs.QuotaManager;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
-import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
@@ -93,7 +82,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	private static final String[] paneKeys = { PANE_TAB_CONF_DROPBOX, PANE_TAB_CONF_MODULES };
 
 
-	private Long courseId;
 	private ProjectBrokerCourseNode node;
 	private ModuleConfiguration config;
 	private ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration;
@@ -106,10 +94,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	private ModulesFormController modulesForm;
 	private DropboxForm dropboxForm;
 	private MSEditFormController scoringController;
-	private FolderRunController frc;
 	private ConditionEditController projectBrokerConditionController;
 	private boolean hasLogEntries;	
-	private DialogBoxController dialogBoxController;
 	private OptionsFormController optionsForm;
 	private GroupController accountManagerGroupController;
 
@@ -119,11 +105,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 
 	private ProjectEventFormController projectEventForm;
 
-	private CloseableModalController cmc;
 	private Long projectBrokerId;
 	
-	@Autowired
-	private QuotaManager quotaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -135,8 +118,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		super(ureq, wControl);
 
 		this.node = node;
-		//o_clusterOk by guido: save to hold reference to course inside editor
-		this.courseId = course.getResourceableId();
 		this.config = node.getModuleConfiguration();
 		projectBrokerModuleConfiguration	= new ProjectBrokerModuleConfiguration(node.getModuleConfiguration());
 		Translator fallbackTranslator = Util.createPackageTranslator(DropboxForm.class, ureq.getLocale(), Util.createPackageTranslator(MSCourseNodeEditController.class, ureq.getLocale()));
@@ -233,33 +214,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, event);
-			}
-		} else if (source == dialogBoxController) {			
-			if (DialogBoxUIFactory.isOkEvent(event)) {
-				// ok: open task folder
-				String relPath = TACourseNode.getTaskFolderPathRelToFolderRoot(CourseFactory.loadCourse(courseId), node);
-				VFSContainer rootFolder = VFSManager.olatRootContainer(relPath, null);
-				VFSContainer namedFolder = new NamedContainerImpl(translate("taskfolder"), rootFolder);
-
-				Quota folderQuota = quotaManager.getCustomQuota(relPath);
-				if (folderQuota == null) {
-					Quota defQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
-					folderQuota = quotaManager.createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
-				}
-				namedFolder.setLocalSecurityCallback(new FolderCallback(false, folderQuota));
-				
-				removeAsListenerAndDispose(frc);
-				frc = new FolderRunController(namedFolder, false, urequest, getWindowControl());
-				listenTo (frc);
-				
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(
-						getWindowControl(), translate("folder.close"), frc.getInitialComponent()
-				);
-				listenTo (cmc);
-				
-				cmc.activate();
-				fireEvent(urequest, Event.CHANGED_EVENT);
 			}
 		} else if (source == scoringController) {
 			if (event == Event.CANCELLED_EVENT) {

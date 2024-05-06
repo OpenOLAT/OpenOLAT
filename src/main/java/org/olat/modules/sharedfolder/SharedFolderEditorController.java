@@ -27,24 +27,22 @@ package org.olat.modules.sharedfolder;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.repository.RepositoryEntry;
 
@@ -52,82 +50,52 @@ import org.olat.repository.RepositoryEntry;
  * Initial Date:  Aug 29, 2005 <br>
  * @author Alexander Schneider
  */
-public class SharedFolderEditorController extends DefaultController implements Activateable2 {
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(SharedFolderEditorController.class);
+public class SharedFolderEditorController extends BasicController implements Activateable2 {
 	
-	private Translator translator;
+	private static final FolderControllerConfig FOLEDER_CONFIG = FolderControllerConfig.builder()
+			.withMail(FolderEmailFilter.never)
+			.build();
+			
 	private VelocityContainer vcEdit;
 	private Link previewButton;
 	
 	private RepositoryEntry re;
 	private VFSContainer sharedFolder;
-	private FolderRunController folderRunController;
+	private FolderController folderCtrl;
 	private CloseableModalController cmc;
 	private Controller controller;
 	private SharedFolderDisplayController sfdCtr;
 
-	/**
-	 * 
-	 * @param res
-	 * @param ureq
-	 * @param wControl
-	 */
 	public SharedFolderEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		super(wControl);
+		super(ureq, wControl);
+		this.re = re;
 		
-		translator = Util.createPackageTranslator(SharedFolderEditorController.class, ureq.getLocale());
-
-		vcEdit = new VelocityContainer("main", VELOCITY_ROOT + "/index.html", translator, this);
+		vcEdit = createVelocityContainer("index");
+		putInitialPanel(vcEdit);
+		
 		previewButton = LinkFactory.createButtonSmall("command.preview", vcEdit, this);
 		
-		this.re = re;
 		sharedFolder = SharedFolderManager.getInstance().getNamedSharedFolder(re, false);
-		folderRunController = new FolderRunController(sharedFolder, true, true, false, ureq, getWindowControl());
-		vcEdit.put("folder", folderRunController.getInitialComponent());
-		
-		setInitialComponent(vcEdit);
-
+		folderCtrl = new FolderController(ureq, wControl, sharedFolder, FOLEDER_CONFIG);
+		listenTo(folderCtrl);
+		vcEdit.put("folder", folderCtrl.getInitialComponent());
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) {
-			folderRunController.activate(ureq, entries, state);
-		} else {
-			String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
-			if(StringHelper.containsNonWhitespace(path)) {
-				folderRunController.activatePath(ureq, path);
-			}
-		}
+		folderCtrl.activate(ureq, entries, state);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == previewButton) {
 			VFSContainer sharedFolderPreview = SharedFolderManager.getInstance().getNamedSharedFolder(re, false);
 			sfdCtr = new SharedFolderDisplayController(ureq, getWindowControl(), sharedFolderPreview, re);
-			cmc = new CloseableModalController(getWindowControl(), translator.translate("close"), sfdCtr.getInitialComponent());
+			listenTo(controller);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), sfdCtr.getInitialComponent());
+			listenTo(cmc);
 			cmc.activate();
 		}
 	}
-			
-	@Override
-	protected void doDispose() {
-		if (folderRunController != null) {
-			folderRunController.dispose();
-			folderRunController = null;
-		}
-		if (controller != null) {
-			sfdCtr.dispose();
-			sfdCtr = null;
-		}
-		if (cmc != null) {
-			cmc.dispose();
-			cmc = null;
-		}
-        super.doDispose();
-	}
+	
 }

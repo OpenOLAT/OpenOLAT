@@ -41,7 +41,8 @@ import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper.LinkProviderCreator;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -402,16 +403,16 @@ public class CollaborationTools implements Serializable {
 	 * @param ureq
 	 * @param wControl
 	 * @param subsContext
-	 * @return Copnfigured FolderRunController
+	 * @return Copnfigured FolderController
 	 */
-	public FolderRunController createFolderController(UserRequest ureq, WindowControl wControl,
+	public FolderController createFolderController(UserRequest ureq, WindowControl wControl,
 			BusinessGroup businessGroup, boolean isAdmin, final SubscriptionContext subsContext, boolean readOnly) {
 		// do not use a global translator since in the fututre a collaborationtools
 		// may be shared among users
 		Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 		VFSContainer rootContainer = getSecuredFolder(businessGroup, subsContext, ureq.getIdentity(), isAdmin, readOnly);
 		VFSContainer namedContainer = new NamedContainerImpl(trans.translate("folder"), rootContainer);
-		return new FolderRunController(namedContainer, true, true, true, ureq, wControl);
+		return new FolderController(ureq, wControl, namedContainer, FolderControllerConfig.defaultConfig());
 	}
 	
 	/**

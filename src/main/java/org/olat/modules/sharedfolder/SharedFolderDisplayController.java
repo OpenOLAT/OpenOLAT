@@ -27,16 +27,17 @@ package org.olat.modules.sharedfolder;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -45,7 +46,6 @@ import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
@@ -61,8 +61,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Alexander Schneider
  */
-public class SharedFolderDisplayController extends DefaultController implements Activateable2 {
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(SharedFolderDisplayController.class);
+public class SharedFolderDisplayController extends BasicController implements Activateable2 {
 
 	/**
 	 * Name of a file (1. priority) that prevents directory listing in the
@@ -88,7 +87,10 @@ public class SharedFolderDisplayController extends DefaultController implements 
 	 */
 	private static final String DEFAULTDOTHTM = "default.htm";
 
-	private Translator translator;
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withMail(FolderEmailFilter.never)
+			.build();
+
 	private VelocityContainer vcDisplay;
 
 	private Controller controller;
@@ -100,12 +102,12 @@ public class SharedFolderDisplayController extends DefaultController implements 
 	 * @param previewBackground
 	 */
 	public SharedFolderDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer sharedFolder, OLATResourceable ores) {
-		super(wControl);
+		super(ureq, wControl);
 		addLoggingResourceable(LoggingResourceable.wrap(ores, OlatResourceableType.genRepoEntry));
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
-		translator = Util.createPackageTranslator(SharedFolderDisplayController.class, ureq.getLocale());
 
-		vcDisplay = new VelocityContainer("main", VELOCITY_ROOT + "/display.html", translator, this);
+		vcDisplay = createVelocityContainer("display");
+		putInitialPanel(vcDisplay);
 
 		VFSItem item = null;
 		item = sharedFolder.resolve(INDEXDOTHTML);
@@ -115,15 +117,12 @@ public class SharedFolderDisplayController extends DefaultController implements 
 
 		if (item == null) {
 			sharedFolder.setLocalSecurityCallback(new ReadOnlyCallback());
-			controller = new FolderRunController(sharedFolder, true, true, false, ureq, getWindowControl());
-			controller.addControllerListener(this);
+			controller = new FolderController(ureq, wControl, sharedFolder, FOLDER_CONFIG);
 		} else {
 			controller = new WebsiteDisplayController(ureq, getWindowControl(), sharedFolder, item.getName());
 		}
+		listenTo(controller);
 		vcDisplay.put("displayer", controller.getInitialComponent());
-
-
-		setInitialComponent(vcDisplay);
 	}
 	
 	@Override
@@ -131,8 +130,8 @@ public class SharedFolderDisplayController extends DefaultController implements 
 		if(entries == null || entries.isEmpty()) return;
 		
 		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
-		if(StringHelper.containsNonWhitespace(path) && controller instanceof FolderRunController) {
-			((FolderRunController)controller).activatePath(ureq, path);
+		if(StringHelper.containsNonWhitespace(path) && controller instanceof FolderController folderCtrl) {
+			folderCtrl.activate(ureq, entries, state);
 		}
 	}
 	

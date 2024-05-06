@@ -24,7 +24,9 @@ import java.io.File;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -70,6 +72,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BCCourseNodeConfigController extends FormBasicController {
 	
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
+	
 	private SingleSelection folderTargetChoose;
 	private FormLink chooseFolder;
 	private StaticTextElement subPath;
@@ -82,7 +90,7 @@ public class BCCourseNodeConfigController extends FormBasicController {
 	private CloseableModalController cmc;
 	private BCCourseNodeEditCreateFolderForm createFolderForm;
 	private BCCourseNodeEditChooseFolderForm chooseForm;
-	private FolderRunController folderCtrl;
+	private FolderController folderCtrl;
 
 	private final BCCourseNode node;
 	private final ModuleConfiguration moduleConfig;
@@ -347,7 +355,8 @@ public class BCCourseNodeConfigController extends FormBasicController {
 			showWarning("warning.no.linkedfolder");
 		} else {
 			removeAsListenerAndDispose(folderCtrl);
-			folderCtrl = new FolderRunController(namedContainer, false, ureq, getWindowControl());
+			
+			folderCtrl = new FolderController(ureq, getWindowControl(), namedContainer, FOLDER_CONFIG);
 			listenTo(folderCtrl);
 			stackPanel.pushController("Preview", folderCtrl);
 		}

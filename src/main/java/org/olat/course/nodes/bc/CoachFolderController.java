@@ -21,7 +21,8 @@ package org.olat.course.nodes.bc;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -47,7 +48,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class CoachFolderController extends BasicController implements Activateable2 {
 	
-	private FolderRunController folderCtrl;
+	private FolderController folderCtrl;
 	private BCCourseNodeNoFolderForm noFolderCtrl;
 	
 	public CoachFolderController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
@@ -64,7 +65,7 @@ public class CoachFolderController extends BasicController implements Activateab
 		if (rootContainer != null) {
 			rootContainer = new NamedContainerImpl(translate("command.coachfolder"), rootContainer);
 			rootContainer.setLocalSecurityCallback(secCallback);
-			folderCtrl = new FolderRunController(rootContainer, true, true, true, ureq, getWindowControl());
+			folderCtrl = new FolderController(ureq, getWindowControl(), rootContainer, FolderControllerConfig.defaultConfig());
 			listenTo(folderCtrl);
 			putInitialPanel(folderCtrl.getInitialComponent());
 		} else {

@@ -30,7 +30,9 @@ import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -68,7 +70,7 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 	protected final boolean isInvitee;
 	protected final boolean isDeleted;
 	
-	private FolderRunController folderRunController;
+	private FolderController folderRunController;
 	private WeeklyCalendarController calendarController;
 	private ContactFormController contactFormController;
 	private HomePageDisplayController homePageDisplayController;
@@ -130,7 +132,7 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 		return calendarController;
 	}
 	
-	protected FolderRunController doOpenFolder(UserRequest ureq) {
+	protected FolderController doOpenFolder(UserRequest ureq) {
 		removeAsListenerAndDispose(folderRunController);
 
 		String chosenUserFolderRelPath = FolderConfig.getUserHome(chosenIdentity) + "/public";
@@ -145,8 +147,13 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableType("userfolder");
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		folderRunController = new FolderRunController(namedFolder, false, true, false, ureq, bwControl);
-		folderRunController.setResourceURL("[Identity:" + chosenIdentity.getKey() + "][userfolder:0]");
+		
+		FolderControllerConfig config = FolderControllerConfig.builder()
+				.withDisplayWebDAVLinkEnabled(false)
+				.withMail(FolderEmailFilter.never)
+				.withSearchResourceUrl("[Identity:" + chosenIdentity.getKey() + "][userfolder:0]")
+				.build();
+		folderRunController = new FolderController(ureq, bwControl, namedFolder, config);
 		listenTo(folderRunController);
 		return folderRunController;
 	}

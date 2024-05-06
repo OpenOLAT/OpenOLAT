@@ -29,7 +29,9 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -60,6 +62,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CatalogLauncherTextEditController extends AbstractLauncherEditController {
 	
 	public static final String BUNDLE_NAME = CatalogV2UIFactory.class.getPackageName();
+
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
 	
 	private TabbedPaneItem tabbedPane;
 	private RichTextElement defaultLocaleTextEl;
@@ -118,7 +126,7 @@ public class CatalogLauncherTextEditController extends AbstractLauncherEditContr
 		tabbedPane.setSelectedPane(ureq, defaultLocaleTabIndex);
 		
 		VFSContainer mediaCont = VFSManager.getOrCreateContainer(launcherContainer, "media");
-		mediaCtrl = new FolderRunController(mediaCont, false, ureq, getWindowControl());
+		mediaCtrl = new FolderController(ureq, getWindowControl(), mediaCont, FOLDER_CONFIG);
 		listenTo(mediaCtrl);
 		tabbedPane.addTab(translate("launcher.text.media"), null, mediaCtrl);
 	}

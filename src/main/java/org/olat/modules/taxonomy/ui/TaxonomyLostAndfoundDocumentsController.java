@@ -19,7 +19,9 @@
  */
 package org.olat.modules.taxonomy.ui;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -40,8 +42,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TaxonomyLostAndfoundDocumentsController extends BasicController {
 	
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
+			
 	private final VelocityContainer mainVC;
-	private final FolderRunController folderCtrl;
+	private final FolderController folderCtrl;
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
@@ -50,12 +58,13 @@ public class TaxonomyLostAndfoundDocumentsController extends BasicController {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("lost_found_directory");
+		putInitialPanel(mainVC);
 		
 		VFSContainer documents = taxonomyService.getLostAndFoundDirectory(taxonomy);
 		VFSContainer namedContainer = new NamedContainerImpl("Lost+found", documents);
-		folderCtrl = new FolderRunController(namedContainer, false, false, false, ureq, getWindowControl());
+		folderCtrl = new FolderController(ureq, wControl, namedContainer, FOLDER_CONFIG);
+		listenTo(folderCtrl);
 		mainVC.put("folder", folderCtrl.getInitialComponent());
-		putInitialPanel(mainVC);
 	}
 
 	@Override

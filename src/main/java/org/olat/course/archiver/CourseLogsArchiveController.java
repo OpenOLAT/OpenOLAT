@@ -27,11 +27,14 @@ package org.olat.course.archiver;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -46,6 +49,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -75,6 +81,11 @@ import org.springframework.core.task.TaskRejectedException;
  */
 public class CourseLogsArchiveController extends BasicController implements GenericEventListener {
 	
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
+			
 	private Panel myPanel;
 	private VelocityContainer myContent;
 	
@@ -229,19 +240,20 @@ public class CourseLogsArchiveController extends BasicController implements Gene
 	
 		VFSContainer targetFolder = new LocalFolderImpl(new File(targetDir));
 		targetFolder.setLocalSecurityCallback(secCallback);
-		FolderRunController bcrun = new FolderRunController(targetFolder, true, ureq, getWindowControl());
-		Component folderComponent = bcrun.getInitialComponent();
-		if (relPath.length()!=0) {
+		FolderController folderCtrl = new FolderController(ureq, getWindowControl(), targetFolder, FOLDER_CONFIG);
+		listenTo(folderCtrl);
+		if (StringHelper.containsNonWhitespace(relPath)) {
 			if (!relPath.endsWith("/")) {
 				relPath = relPath + "/";
 			}
-			bcrun.activatePath(ureq, relPath);
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString("[path=" + relPath + "]");
+			folderCtrl.activate(ureq, entries, null);
 		}
 			
 		String personalFolder = Util.createPackageTranslator(HomeMainController.class, ureq.getLocale(), null).translate("menu.bc");
 			
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), folderComponent, true, personalFolder);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), folderCtrl.getInitialComponent(), true, personalFolder);
 		listenTo(cmc);
 		cmc.activate();
 	}
