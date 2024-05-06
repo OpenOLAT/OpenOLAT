@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -37,10 +38,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.manager.PageDAO;
@@ -73,6 +80,9 @@ public class GalleryEditorController extends FormBasicController implements Page
 	private FormLink addImageButton;
 	private ChooseImageController chooseImageController;
 	private CloseableModalController cmc;
+	private ToolsController toolsController;
+	private CloseableCalloutWindowController ccwc;
+	private DialogBoxController confirmRemoveDialog;
 
 	@Autowired
 	private DB dbInstance;
@@ -172,6 +182,19 @@ public class GalleryEditorController extends FormBasicController implements Page
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (toolsController == source) {
+			if (ccwc != null) {
+				ccwc.deactivate();
+			}
+			cleanUp();
+		} else if (confirmRemoveDialog == source) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				if (confirmRemoveDialog.getUserObject() instanceof GalleryRow galleryRow) {
+					MediaToPagePart relation = mediaToPagePartDAO.loadRelation(galleryRow.getRelation().getKey());
+					mediaToPagePartDAO.deleteRelation(relation);
+					loadModel();
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -179,8 +202,12 @@ public class GalleryEditorController extends FormBasicController implements Page
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(chooseImageController);
+		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(toolsController);
 		cmc = null;
 		chooseImageController = null;
+		ccwc = null;
+		toolsController = null;
 	}
 
 	@Override
@@ -194,8 +221,22 @@ public class GalleryEditorController extends FormBasicController implements Page
 			} else if (DOWN_ACTION.equals(selectionEvent.getCommand())) {
 				doMove(ureq, relation, false);
 			}
+		} else if (source instanceof FormLink link) {
+			if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof GalleryRow galleryRow) {
+				doOpenTools(ureq, link, galleryRow);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doOpenTools(UserRequest ureq, FormLink link, GalleryRow galleryRow) {
+		toolsController = new ToolsController(ureq, getWindowControl(), galleryRow);
+		listenTo(toolsController);
+
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsController.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(ccwc);
+		ccwc.activate();
 	}
 
 	@Override
@@ -231,6 +272,17 @@ public class GalleryEditorController extends FormBasicController implements Page
 		fireEvent(ureq, new ChangePartEvent(galleryPart));
 	}
 
+	private void doEdit(UserRequest ureq, GalleryRow galleryRow) {
+
+	}
+
+	private void doConfirmRemove(UserRequest ureq, GalleryRow galleryRow) {
+		String title = translate("gallery.tools.remove.title");
+		String text = translate("gallery.tools.remove.text");
+		confirmRemoveDialog = activateYesNoDialog(ureq, title, text, confirmRemoveDialog);
+		confirmRemoveDialog.setUserObject(galleryRow);
+	}
+
 	private void updateUI() {
 		flc.contextPut("title", galleryPart.getSettings().getTitle());
 	}
@@ -238,5 +290,38 @@ public class GalleryEditorController extends FormBasicController implements Page
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
 		//
+	}
+
+	private class ToolsController extends BasicController {
+
+		private final Link editLink;
+		private final Link removeLink;
+		private final GalleryRow galleryRow;
+
+		protected ToolsController(UserRequest ureq, WindowControl wControl, GalleryRow galleryRow) {
+			super(ureq, wControl);
+			this.galleryRow = galleryRow;
+
+			VelocityContainer mainVC = createVelocityContainer("gallery_tools");
+
+			editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
+			mainVC.put("edit", editLink);
+
+			removeLink = LinkFactory.createLink("remove", "remove", getTranslator(), mainVC, this, Link.LINK);
+			mainVC.put("remove", removeLink);
+
+			putInitialPanel(mainVC);
+		}
+
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+			if (source == editLink) {
+				doEdit(ureq, galleryRow);
+			} else if (source == removeLink) {
+				doConfirmRemove(ureq, galleryRow);
+			}
+		}
 	}
 }

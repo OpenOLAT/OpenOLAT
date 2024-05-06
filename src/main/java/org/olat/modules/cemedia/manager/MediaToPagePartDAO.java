@@ -173,4 +173,8 @@ public class MediaToPagePartDAO {
 	public void deleteRelation(MediaToPagePart relation) {
 		dbInstance.getCurrentEntityManager().remove(relation);
 	}
+
+	public MediaToPagePart loadRelation(Long key) {
+		return dbInstance.getCurrentEntityManager().find(MediaToPagePartImpl.class, key);
+	}
 }
