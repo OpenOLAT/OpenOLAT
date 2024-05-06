@@ -1,4 +1,8 @@
-<div id="$r.getCId()" class="o_page_run_gallery $blockLayoutClass">
+#set($readOnlyClass = "")
+#if($isReadOnly)
+	#set($readOnlyClass = "o_read_only_container")
+#end
+<div id="$r.getCId()" class="o_page_run_gallery $blockLayoutClass $readOnlyClass">
 	#set($bottomPaddingClass = "")
 	#if($showPagination)
 		#set($bottomPaddingClass = "o_bottom_padding_for_pagination")
@@ -57,6 +61,9 @@
 			#end
 		</div>
 	</div>
+	#end
+	#if($isReadOnly)
+	<div class="o_read_only_layer"></div>
 	#end
 </div>
 <script>

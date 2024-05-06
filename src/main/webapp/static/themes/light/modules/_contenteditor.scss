@@ -1569,6 +1569,7 @@ table.o_ce_table {
 .o_page_run_gallery, .o_page_edit_gallery {
 	.o_gallery_header {
 		display: flex;
+		margin-bottom: 10px;
 
 		.o_gallery_title {
 			display: inline-block;
@@ -1578,16 +1579,9 @@ table.o_ce_table {
 			line-height: 34px;
 			flex-grow: 1;
 		}
-
-		.o_gallery_buttons, .o_gallery_add_image {
-			margin-right: 4px;
-		}
 	}
 
 	.o_gallery_images {
-		margin-top: 4px;
-		padding: 2px;
-
 		.o_table_wrapper {
 			.o_col_sticky_right {
 				background-color: unset;
@@ -1602,6 +1596,19 @@ table.o_ce_table {
 }
 
 .o_page_run_gallery {
+	&.o_read_only_container {
+		position: relative;
+	}
+
+	.o_read_only_layer {
+		position: absolute;
+		z-index: 10;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+	}
+
 	.o_gallery_header {
 		.o_gallery_buttons {
 			display: flex;

@@ -44,14 +44,14 @@ public class BlockLayoutClassFactory {
 		if (settings == null) {
 			return getPredefinedCssClass(inForm);
 		}
-		return buildClass(settings.getLayoutSettings(), inForm);
+		return buildClass(settings.getLayoutSettings(), settings.getAlertBoxSettings(), inForm);
 	}
 
 	public static String buildClass(QuizSettings settings, boolean inForm) {
 		if (settings == null) {
 			return getPredefinedCssClass(inForm);
 		}
-		return buildClass(settings.getLayoutSettings(), inForm);
+		return buildClass(settings.getLayoutSettings(), settings.getAlertBoxSettings(), inForm);
 	}
 
 	public static String buildClass(CodeSettings settings, boolean inForm) {

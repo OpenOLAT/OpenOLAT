@@ -75,6 +75,7 @@ public class GalleryRunController extends BasicController implements PageRunElem
 		this.galleryPart = galleryPart;
 		this.editable = editable;
 		mainVC = createVelocityContainer("gallery_run");
+		mainVC.setDomReplacementWrapperRequired(false);
 		mainVC.setElementCssClass("o_gallery_run_element_css_class");
 		setBlockLayoutClass(galleryPart.getSettings());
 		putInitialPanel(mainVC);
@@ -87,6 +88,8 @@ public class GalleryRunController extends BasicController implements PageRunElem
 	}
 
 	private void initUI(UserRequest ureq) {
+		mainVC.contextPut("isReadOnly", editable);
+
 		galleryImages = new GalleryImages(new ArrayList<>());
 
 		JSAndCSSComponent js = new JSAndCSSComponent("js", SWIPER_JS, null);
