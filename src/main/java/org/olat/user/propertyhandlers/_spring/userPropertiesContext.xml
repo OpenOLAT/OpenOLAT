@@ -870,6 +870,22 @@
 					</bean>
 				</entry>
 
+				<entry key="org.olat.admin.user.UserAdminQuickSearchController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+								<ref bean="userPropertyOrgUnit" />
+								<ref bean="userPropertyStudySubject" />
+							</list>
+						</property>
+					</bean>
+				</entry>
+
 				<!--  NewUserForm is used in the user management environment -->
 				<entry key="org.olat.admin.user.NewUserForm">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">

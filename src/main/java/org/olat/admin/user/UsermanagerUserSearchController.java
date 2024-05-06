@@ -80,6 +80,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private UsermanagerUserSearchForm searchFormCtrl;
 	private UsermanagerUserBulkSearchForm listFormCtrl;
 	private UserSearchTableController tableCtr;
+	private UserAdminQuickSearchController quickSearchCtrl;
 
 	private final boolean showDelete;
 	private final boolean showEmailButton;
@@ -125,13 +126,17 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		userSearchVC = createVelocityContainer("usermanagerUsersearchTabs");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", userSearchVC, this);
-		segmentView.setRendererType(SegmentViewRendererType.linked);
+		segmentView.setRendererType(SegmentViewRendererType.linked);		
 		fieldsSearchLink = LinkFactory.createLink("search.fields", userSearchVC, this);
 		segmentView.addSegment(fieldsSearchLink, true);
 		listSearchLink = LinkFactory.createLink("search.list", userSearchVC, this);
 		segmentView.addSegment(listSearchLink, false);
-		
+
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		
+		quickSearchCtrl = new UserAdminQuickSearchController(ureq, wControl);
+		listenTo(quickSearchCtrl);
+		
 		searchFormCtrl = new UsermanagerUserSearchForm(ureq, wControl, isAdministrativeUser, manageableOrganisations);
 		listenTo(searchFormCtrl);
 		
@@ -264,12 +269,15 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	}
 	
 	private void doOpenFieldsSearch() {
+		userSearchVC.put("quickSearch", quickSearchCtrl.getInitialComponent());
+		
 		userSearchVC.put("usersearch", searchFormCtrl.getInitialComponent());
 		fieldsSearchLink.setCustomDisplayText(translate("search.fields.selected"));
 		listSearchLink.setCustomDisplayText(translate("search.list"));
 	}
 	
 	private void doOpenListSearch() {
+		userSearchVC.remove("quickSearch");
 		userSearchVC.put("usersearch", listFormCtrl.getInitialComponent());
 		fieldsSearchLink.setCustomDisplayText(translate("search.fields"));
 		listSearchLink.setCustomDisplayText(translate("search.list.selected"));
@@ -289,6 +297,22 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		tableCtr.activate(ureq, entries, null);
 	}
 	
+	private void doQuickSearch(UserRequest ureq) {
+		List<Identity> identities = quickSearchCtrl.getUserList();
+
+		removeAsListenerAndDispose(tableCtr);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel,
+				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete,
+						showStatusFilters, showOrganisationsFilters, true));
+		listenTo(tableCtr);
+		
+		tableCtr.loadModel(identities);
+		stackedPanel.pushController("Results", tableCtr);
+	}
+
 	private void doPushList(UserRequest ureq) {
 		List<Identity> identities = listFormCtrl.getUserList();
 
@@ -342,6 +366,12 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		} else if (source == listFormCtrl) {
 			if (event == Event.DONE_EVENT) {
 				doPushList(ureq);
+			} else if (event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, Event.CANCELLED_EVENT);
+			}
+		} else if (source == quickSearchCtrl) {
+			if (event == Event.DONE_EVENT) {
+				doQuickSearch(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
