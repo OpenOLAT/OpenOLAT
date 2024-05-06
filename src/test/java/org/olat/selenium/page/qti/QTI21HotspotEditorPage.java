@@ -86,7 +86,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	
 	public QTI21HotspotEditorPage moveToHotspotEditor() {
 		OOGraphene.waitingLong();//SEL wait focus jump
-		OOGraphene.moveTo(By.cssSelector("div fieldset.o_sel_assessment_item_correct_spots"), browser);
+		OOGraphene.scrollBottom(By.cssSelector("div fieldset.o_sel_assessment_item_correct_spots"), browser);
 		return this;
 	}
 	
@@ -135,7 +135,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	
 	private QTI21HotspotEditorPage moveElement(By elementBy, int xOffset, int yOffset) {
 		OOGraphene.waitElement(elementBy, browser);
-		OOGraphene.scrollTo(By.id("o_fiohotspot_layout_SELBOX"), browser);
+		OOGraphene.scrollBottom(By.id("o_fiohotspot_layout_SELBOX"), browser);
 		WebElement element = browser.findElement(elementBy);
 		try {
 			new Actions(browser)

@@ -812,7 +812,7 @@ public class CourseElementTest extends Deployments {
 		//set a message
 		infoMsgConfig
 			.createMessage()
-			.setMessage("Information 0", "A very important info")
+			.setMessage("Information 0", "A very important info", false)
 			.next()
 			.finish()
 			.assertOnMessageTitle("Information 0");
@@ -840,7 +840,7 @@ public class CourseElementTest extends Deployments {
 			.oldMessages();
 		infoMsgConfig
 			.editMessage("Information 2")
-			.setMessage("The latest information", "A very important info")
+			.setMessage("The latest information", "A very important info", true)
 			.next()
 			.finish()
 			.assertOnMessageTitle("The latest information");

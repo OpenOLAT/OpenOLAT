@@ -44,7 +44,7 @@ public class QTI21KprimEditorPage extends QTI21AssessmentItemEditorPage {
 	public QTI21KprimEditorPage moveToChoices() {
 		OOGraphene.waitTinymce(browser);
 		OOGraphene.waitingALittleBit();// wait focus probably
-		OOGraphene.scrollTo(By.cssSelector("fieldset.o_kprim_choices_editor"), browser);
+		OOGraphene.scrollBottom(By.cssSelector("fieldset.o_kprim_choices_editor"), browser);
 		return this;
 	}
 	

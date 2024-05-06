@@ -44,7 +44,7 @@ public class QTI21SingleChoiceEditorPage extends QTI21AssessmentItemEditorPage {
 	public QTI21SingleChoiceEditorPage addChoice(int position) {
 		By addBy = By.xpath("//div[contains(@class,'o_sel_add_choice_" + position + "')]/a");
 		OOGraphene.waitElement(addBy, browser);
-		OOGraphene.scrollTo(addBy, browser);
+		OOGraphene.scrollBottom(addBy, browser);
 		browser.findElement(addBy).click();
 		OOGraphene.waitBusy(browser);
 		//wait the next element

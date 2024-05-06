@@ -51,6 +51,7 @@ public class InfoMessageCEPage {
 		By createBy = By.className("o_sel_course_info_create_msg");
 		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitTinymce(browser);
 		return this;
 	}
 	
@@ -62,10 +63,12 @@ public class InfoMessageCEPage {
 	 * @param content
 	 * @return This page
 	 */
-	public InfoMessageCEPage setMessage(String title, String content) {
+	public InfoMessageCEPage setMessage(String title, String content, boolean clear) {
 		By titleBy = By.cssSelector(".o_sel_info_title input[type='text']");
 		WebElement titleEl = browser.findElement(titleBy);
-		titleEl.clear();
+		if(clear) {
+			titleEl.clear();
+		}
 		titleEl.sendKeys(title);
 		OOGraphene.tinymce(content, browser);
 		return this;
@@ -77,7 +80,6 @@ public class InfoMessageCEPage {
 	 * @return This page
 	 */
 	public InfoMessageCEPage next() {
-		OOGraphene.scrollBottom(By.cssSelector("dialog.dialog .modal-body"), browser);
 		OOGraphene.nextStep(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_info_contact"), browser);
 		return this;
@@ -102,7 +104,7 @@ public class InfoMessageCEPage {
 	 */
 	public InfoMessageCEPage quickMessage(String title, String content) {
 		createMessage()
-			.setMessage(title, content)
+			.setMessage(title, content, false)
 			.next()
 			.finish();
 		return this;
@@ -131,6 +133,7 @@ public class InfoMessageCEPage {
 		OOGraphene.waitElement(editBy, browser);
 		browser.findElement(editBy).click();
 		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitTinymce(browser);
 		return this;
 	}
 	
@@ -197,7 +200,7 @@ public class InfoMessageCEPage {
 	
 	public InfoMessageCEPage scrollToMessage(String title) {
 		By titleBy = By.xpath("//div[contains(@class,'o_msg')]//div//h3[contains(text(),'" + title + "')]");
-		OOGraphene.scrollTo(titleBy, browser);
+		OOGraphene.scrollBottom(titleBy, browser);
 		return this;
 	}
 	

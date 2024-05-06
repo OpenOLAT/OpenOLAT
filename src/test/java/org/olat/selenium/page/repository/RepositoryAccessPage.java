@@ -209,7 +209,7 @@ public class RepositoryAccessPage {
 	public BookingPage boooking() {
 		By bookingFieldsetBy = By.cssSelector("fieldset.o_ac_configuration");
 		OOGraphene.waitElement(bookingFieldsetBy, browser);
-		OOGraphene.moveTo(bookingFieldsetBy, browser);
+		OOGraphene.scrollBottom(bookingFieldsetBy, browser);
 		return new BookingPage(browser);
 	}
 	

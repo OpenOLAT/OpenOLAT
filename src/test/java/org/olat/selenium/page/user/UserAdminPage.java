@@ -234,7 +234,7 @@ public class UserAdminPage {
 		browser.findElement(usernameBy).sendKeys(username);
 		
 		By searchBlockBy = By.xpath("//fieldset[contains(@class,'o_sel_user_search_form')]//div[contains(@class,'form-group')][div/p/a]");
-		OOGraphene.scrollTo(searchBlockBy, browser);
+		OOGraphene.scrollBottom(searchBlockBy, browser);
 		
 		By searchBy = By.cssSelector(".o_sel_user_search_form a.btn-default.o_sel_user_search_button");
 		browser.findElement(searchBy).click();

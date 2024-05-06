@@ -412,14 +412,10 @@ public class OOGraphene {
 		browser.findElement(buttonBy).click();
 	}
 	
-	public static void scrollTo(By by, WebDriver browser) {
-		scrollBottom(by, browser);
-	}
-	
 	/**
-	 * Scroll to the element and wait a little longer.
+	 * Scroll 1024 to the bottom (dialog or window) and wait a little longer.
 	 * 
-	 * @param by The selector
+	 * @param by The selector to find if the element is in a dialog.
 	 * @param browser The browser
 	 */
 	public static void scrollBottom(By by, WebDriver browser) {
@@ -432,26 +428,42 @@ public class OOGraphene {
 		((JavascriptExecutor)browser).executeScript(scrollBottom, element);
 		OOGraphene.waitingALittleLonger();
 	}
-
+	
 	/**
-	 * The method waits for the element specified by the by selector.
+	 * Scroll 1024 to the right (table or window) and wait a little longer.
 	 * 
-	 * @param by The selector
+	 * @param by The selector to find if the element is in a scrollable table.
 	 * @param browser The browser
 	 */
-	public static void moveTo(By by, WebDriver browser) {
-		waitElementPresence(by, 5, browser);
-		scrollBottom(by, browser);
+	public static void scrollTableRight(By by, WebDriver browser) {
+		WebElement element = browser.findElement(by);
+
+		String scrollBottom = """
+				var modal = arguments[0].closest('.o_scrollable')?.scrollTo(1024, 0);\n
+				if(modal === undefined) { window.scrollTo(1024, 0); }
+				""";
+		((JavascriptExecutor)browser).executeScript(scrollBottom, element);
+		OOGraphene.waitingALittleLonger();
 	}
 	
 	/**
-	 * Scroll to the top anchor.
+	 * Scroll to the top.
 	 * 
 	 * @param browser The browser
 	 */
 	public static void scrollTop(WebDriver browser) {
 		((JavascriptExecutor)browser).executeScript("window.scrollTo(0, 0);");
 		OOGraphene.waitingALittleLonger();
+	}
+	
+	/**
+	 * Scroll an element into the view. Doesn't work in a dialog!
+	 * @param by The selector of the element to move into view.
+	 * @param browser The browser
+	 */
+	public static void scrollTo(By by, WebDriver browser) {
+		WebElement element = browser.findElement(by);
+		((JavascriptExecutor)browser).executeScript("return arguments[0].scrollIntoView({behavior:\"auto\", block: \"end\"});", element);
 	}
 	
 	public static final void waitTinymce(WebDriver browser) {

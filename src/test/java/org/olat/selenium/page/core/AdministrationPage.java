@@ -182,7 +182,7 @@ public class AdministrationPage {
 	public AdministrationPage setGroupConfirmationForUser(boolean mandatory) {
 		By userConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='user']");
 		OOGraphene.waitElementPresence(userConfirmationCheckBy, 5, browser);
-		OOGraphene.scrollTo(userConfirmationCheckBy, browser);
+		OOGraphene.scrollBottom(userConfirmationCheckBy, browser);
 		
 		WebElement userConfirmationCheckEl = browser.findElement(userConfirmationCheckBy);
 		OOGraphene.check(userConfirmationCheckEl, Boolean.valueOf(mandatory));
@@ -193,7 +193,7 @@ public class AdministrationPage {
 	public AdministrationPage setGroupConfirmationForAuthor(boolean mandatory) {
 		By authorConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='author']");
 		OOGraphene.waitElementPresence(authorConfirmationCheckBy, 5, browser);
-		OOGraphene.scrollTo(authorConfirmationCheckBy, browser);
+		OOGraphene.scrollBottom(authorConfirmationCheckBy, browser);
 		
 		WebElement authorConfirmationCheckEl = browser.findElement(authorConfirmationCheckBy);
 		OOGraphene.check(authorConfirmationCheckEl, Boolean.valueOf(mandatory));
@@ -301,7 +301,7 @@ public class AdministrationPage {
 	private void openSubMenu(String liClass) {
 		By menuItemBy = By.xpath("//li[contains(@class,'" + liClass + "')]");
 		OOGraphene.waitElement(menuItemBy, browser);
-		OOGraphene.moveTo(menuItemBy, browser);
+		OOGraphene.scrollBottom(menuItemBy, browser);
 		
 		By menuItemLinkBy = By.xpath("//li[contains(@class,'" + liClass + "')]//span[contains(@class,'o_tree_level_label_leaf')]/a[span[@class='o_tree_item']]");
 		browser.findElement(menuItemLinkBy).click();

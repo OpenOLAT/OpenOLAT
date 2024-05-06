@@ -40,7 +40,7 @@ public class QTI21OptionsPage {
 	}
 	
 	public QTI21OptionsPage showResults(Boolean show, QTI21AssessmentResultsOptions options) {
-		OOGraphene.moveTo(By.cssSelector("fieldset.o_sel_qti_resource_options div.o_sel_qti_show_results"), browser);
+		OOGraphene.scrollBottom(By.cssSelector("fieldset.o_sel_qti_resource_options div.o_sel_qti_show_results"), browser);
 		
 		By showResultsBy = By.cssSelector("div.o_sel_qti_show_results input[type='checkbox']");
 		WebElement showResultsEl2 = browser.findElement(showResultsBy);

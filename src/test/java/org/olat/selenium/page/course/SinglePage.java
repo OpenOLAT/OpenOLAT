@@ -95,7 +95,7 @@ public class SinglePage {
 		OOGraphene.tinymce(content, browser);
 		
 		By saveBy = By.id("o_save");
-		OOGraphene.moveTo(saveBy, browser);
+		OOGraphene.scrollBottom(saveBy, browser);
 		By saveAndCloseBy = By.cssSelector("#o_save #o_button_saveclose a");
 		browser.findElement(saveAndCloseBy).click();
 		OOGraphene.waitBusy(browser);

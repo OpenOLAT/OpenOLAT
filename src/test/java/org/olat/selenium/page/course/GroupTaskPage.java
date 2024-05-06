@@ -98,7 +98,7 @@ public class GroupTaskPage {
 		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//tr[td[contains(text(),'" + name + "')]]/td//a[contains(@onclick,'select')]");
 		OOGraphene.waitElement(taskBy, browser);
 		// Firefox seems to need double scrollTo to understand
-		OOGraphene.scrollTo(By.cssSelector("#o_step_assignement_content table>tbody"), browser);
+		OOGraphene.scrollBottom(By.cssSelector("#o_step_assignement_content table>tbody"), browser);
 		OOGraphene.clickAndWait(taskBy, browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
@@ -121,8 +121,7 @@ public class GroupTaskPage {
 	 */
 	private void moveToSubmit(By submitBy) {
 		OOGraphene.waitElement(submitBy, browser);
-		OOGraphene.moveTo(submitBy, browser);
-		OOGraphene.waitingALittleLonger();
+		OOGraphene.scrollBottom(submitBy, browser);
 	}
 	
 	public GroupTaskPage openSubmission() {
@@ -221,7 +220,7 @@ public class GroupTaskPage {
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
 			By collpaseBy = By.xpath("//div[contains(@class,'o_step_solution')]//button[contains(@class,'o_button_details')]");
-			OOGraphene.moveTo(collpaseBy, browser);
+			OOGraphene.scrollBottom(collpaseBy, browser);
 			browser.findElement(collpaseBy).click();
 		}
 		OOGraphene.waitElement(solutionLinkBy, browser);

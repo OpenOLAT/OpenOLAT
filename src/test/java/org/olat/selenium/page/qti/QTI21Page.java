@@ -444,7 +444,7 @@ public class QTI21Page {
 		By associateItemsBy = By.xpath("//div[@class='graphicAssociateInteraction']");
 		OOGraphene.waitElement(associateItemsBy, browser);
 		if(browser instanceof FirefoxDriver) {
-			OOGraphene.moveTo(associateItemsBy, browser);
+			OOGraphene.scrollBottom(associateItemsBy, browser);
 		}
 		return this;
 	}
@@ -627,7 +627,7 @@ public class QTI21Page {
 		By sliderBy = By.cssSelector("div.sliderInteraction");
 		OOGraphene.waitElement(sliderBy, browser);
 		By itemBy = By.cssSelector("div.o_assessmentitem_wrapper");
-		OOGraphene.moveTo(itemBy, browser);
+		OOGraphene.scrollBottom(itemBy, browser);
 		return this;
 	}
 	

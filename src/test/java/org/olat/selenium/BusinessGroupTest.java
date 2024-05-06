@@ -193,7 +193,7 @@ public class BusinessGroupTest extends Deployments {
 		group
 			.openNews()
 			.createMessage()
-			.setMessage("Information 0", "A very important info")
+			.setMessage("Information 0", "A very important info", false)
 			.next()
 			.finish()
 		.	assertOnMessageTitle("Information 0");

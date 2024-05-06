@@ -48,7 +48,7 @@ public class QTI21GradingAssignmentsPage {
 	public QTI21GradingAssignmentsPage openAssignmentUnassignedTool(String testNodeTitle) {
 		By toolBy = By.xpath("//div[contains(@class,'o_sel_grading_assignments_list')]//table//tr[td/span/i[contains(@class,'o_grad_assignment_unassigned')]][td/a[text()[contains(.,'" + testNodeTitle + "')]]]/td/div/a[i[contains(@class,'o_icon_actions o_icon-fws')]]");
 		OOGraphene.waitElement(toolBy, browser);
-		OOGraphene.scrollTo(toolBy, browser);
+		OOGraphene.scrollBottom(toolBy, browser);
 		browser.findElement(toolBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitCallout(browser);
