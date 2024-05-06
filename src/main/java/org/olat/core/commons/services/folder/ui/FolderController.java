@@ -1188,10 +1188,12 @@ public class FolderController extends FormBasicController implements Activateabl
 				Object userObject = popEvent.getUserObject();
 				if (userObject instanceof String relativePath) {
 					if (relativePath.startsWith(CMD_CRUMB_PREFIX)) {
+						updateCurrentContainer(ureq, currentContainer, false);
 						doOpenView(ureq, FolderView.folder);
+					} else {
+						String parentPath = relativePath.substring(0, relativePath.lastIndexOf("/"));
+						updateCurrentContainer(ureq, parentPath, true);
 					}
-					String parentPath = relativePath.substring(0, relativePath.lastIndexOf("/"));
-					updateCurrentContainer(ureq, parentPath, true);
 				}
 			}
 		} else if ("ONCLICK".equals(event.getCommand())) {
