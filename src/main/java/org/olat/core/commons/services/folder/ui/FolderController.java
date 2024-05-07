@@ -230,6 +230,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FormLink bulkZipButton;
 	private FormLink bulkEmailButton;
 	private FormLink bulkDeleteSoftlyButton;
+	private FormLink bulkRestoreButton;
 	private FormLink bulkDeletePermanentlyButton;
 	private ComponentWrapperElement trashMessageEl;
 	private TooledStackedPanel folderBreadcrumb;
@@ -477,6 +478,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		boolean canDelete = canDelete(currentContainer);
 		bulkDeleteSoftlyButton.setVisible(!trashView && canDelete);
+		bulkRestoreButton.setVisible(trashView && canDelete);
 		bulkDeletePermanentlyButton.setVisible(trashView && canDelete);
 		
 		flc.setDirty(true);
@@ -748,6 +750,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		bulkDeleteSoftlyButton = uifactory.addFormLink("delete", flc, Link.BUTTON);
 		bulkDeleteSoftlyButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		tableEl.addBatchButton(bulkDeleteSoftlyButton);
+		
+		bulkRestoreButton = uifactory.addFormLink("restore", flc, Link.BUTTON);
+		bulkRestoreButton.setIconLeftCSS("o_icon o_icon-fw o_icon_restore");
+		tableEl.addBatchButton(bulkRestoreButton);
 		
 		bulkDeletePermanentlyButton = uifactory.addFormLink("delete.permanently", flc, Link.BUTTON);
 		bulkDeletePermanentlyButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
@@ -1273,6 +1279,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			doBulkEmail(ureq);
 		} else if (bulkDeleteSoftlyButton == source) {
 			doBulkConfirmDeleteSoftly(ureq);
+		} else if (bulkRestoreButton == source) {
+			doBulkRestoreSelectFolder(ureq);
 		} else if (bulkDeletePermanentlyButton == source) {
 			doBulkConfirmDeletePermanently(ureq);
 		} else if (source instanceof FormLink) {
@@ -2580,9 +2588,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void doBulkConfirmDeletePermanently(UserRequest ureq) {
 		if (guardModalController(deletePermanentlyConfirmationCtrl)) return;
-		if (canDelete(currentContainer)) {
-			return;
-		}
 		
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		if (selectedIndex == null || selectedIndex.isEmpty()) {
@@ -2786,6 +2791,42 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (!addEvent.getFilenames().isEmpty()) {
 			fireEvent(ureq, addEvent);
 		}
+	}
+	
+	private void doBulkRestoreSelectFolder(UserRequest ureq) {
+		if (guardModalController(restoreSelectFolderCtrl)) return;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			showWarning("file.bulk.not.authorized");
+			return;
+		}
+		
+		List<VFSItem> selecteditems = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(row -> getUncachedItem(row.getVfsItem()))
+				.filter(Objects::nonNull)
+				.filter(vfsIttem -> !isItemNotAvailable(ureq, vfsIttem, false))
+				.toList();
+		
+		if (selecteditems.isEmpty()) {
+			showWarning("file.bulk.not.authorized");
+			loadModel(ureq);
+			return;
+		}
+		
+		removeAsListenerAndDispose(restoreSelectFolderCtrl);
+		
+		restoreSelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, rootContainer,
+				translate("restore"));
+		listenTo(restoreSelectFolderCtrl);
+		restoreSelectFolderCtrl.setUserObject(new CopyUserObject(true, selecteditems));
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), restoreSelectFolderCtrl.getInitialComponent(),
+				true, translate( "restore"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private boolean hasLockedChild(VFSContainer vfsContainer) {
