@@ -591,7 +591,35 @@ public class MediaDAO {
 		}
 		return usage;
 	}
-	
+
+	public List<MediaUsageWithStatus> getGalleryPageUsages(MediaLight media) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select page.key, page.title, page.status, entry.key, ref.subIdent, entry.displayname")
+		  .append(" from cegallerypart as galleryPart")
+		  .append(" inner join mediatopagepart as relation on (relation.pagePart.key=galleryPart.key)")
+		  .append(" inner join cepagebody as body on (body.key=galleryPart.body.key)")
+		  .append(" inner join cepage as page on (page.body.key=body.key)")
+		  .append(" inner join cepagereference ref on (ref.page.key=page.key)")
+		  .append(" inner join ref.repositoryEntry as entry")
+		  .append(" where relation.media.key=:mediaKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("mediaKey", media.getKey())
+				.getResultList().stream().map(object -> {
+					Long pageKey = (Long) object[0];
+					String pageTitle = (String) object[1];
+					String pageStatus = (String) object[2];
+					Long repoKey = (Long) object[3];
+					String subIdent = (String) object[4];
+					String repoDisplayname = (String) object[5];
+
+					return new MediaUsageWithStatus(pageKey, pageTitle, pageStatus, null, null,
+							repoKey, subIdent, repoDisplayname, null, null, null,
+							"", false, true);
+				}).toList();
+	}
+
 	private String toFullName(String firstName, String lastName) {
 		if(StringHelper.containsNonWhitespace(firstName) && StringHelper.containsNonWhitespace(lastName)) {
 			MediaIdentityNames names = new MediaIdentityNames(firstName, lastName);

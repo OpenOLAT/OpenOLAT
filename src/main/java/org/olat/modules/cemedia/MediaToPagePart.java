@@ -20,6 +20,7 @@
 package org.olat.modules.cemedia;
 
 import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
 import org.olat.modules.ceditor.PagePart;
 
 /**
@@ -28,7 +29,14 @@ import org.olat.modules.ceditor.PagePart;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public interface MediaToPagePart extends CreateInfo {
+
 	Long getKey();
+
 	Media getMedia();
+
+	MediaVersion getMediaVersion();
+
+	Identity getIdentity();
+
 	PagePart getPagePart();
 }

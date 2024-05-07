@@ -273,6 +273,8 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	public List<MediaUsageWithStatus> getMediaUsageWithStatus(IdentityRef identity, Media media) {
 		Identity author = media.getAuthor();
 		List<MediaUsageWithStatus> usages = mediaDao.getPageUsages(author, media);
+		List<MediaUsageWithStatus> galleryPageUsages = mediaDao.getGalleryPageUsages(media);
+		usages.addAll(galleryPageUsages);
 		List<MediaUsageWithStatus> portfolioUsages = mediaDao.getPortfolioUsages(author, identity, media);
 		usages.addAll(portfolioUsages);
 		return usages;

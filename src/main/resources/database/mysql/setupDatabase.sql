@@ -2652,6 +2652,8 @@ create table o_media_to_page_part (
    lastmodified datetime not null,
    pos bigint default null,
    fk_media bigint not null,
+   fk_media_version bigint default null,
+   fk_identity bigint default null,
    fk_page_part bigint not null,
    primary key (id)
 );
@@ -5425,6 +5427,8 @@ alter table o_media_log add constraint media_log_media_idx foreign key (fk_media
 alter table o_media_log add constraint media_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 
 alter table o_media_to_page_part add constraint media_to_page_part_media_idx foreign key (fk_media) references o_media (id);
+alter table o_media_to_page_part add constraint media_to_page_part_media_version_idx foreign key (fk_media_version) references o_media_version (id);
+alter table o_media_to_page_part add constraint media_to_page_part_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_media_to_page_part add constraint media_to_page_part_page_part_idx foreign key (fk_page_part) references o_ce_page_part (id);
 
 alter table o_ce_page_reference add constraint page_ref_to_page_idx foreign key (fk_page) references o_ce_page (id);

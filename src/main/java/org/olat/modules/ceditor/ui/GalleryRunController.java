@@ -21,6 +21,7 @@ package org.olat.modules.ceditor.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -110,7 +111,7 @@ public class GalleryRunController extends BasicController implements PageRunElem
 				"image slider placeholder", "o_hint", false, mainVC));
 
 		List<GalleryImageItem> galleryImageItems = mediaToPagePartDAO.loadRelations(galleryPart).stream()
-				.map(r -> r.getMedia().getVersions().get(0))
+				.map(GalleryEditorController::getMediaVersion).filter(Objects::nonNull)
 				.map(mv -> new GalleryImageItem(Long.toString(mv.getKey()), mv.getMedia().getType(), mv,
 						mv.getMedia().getTitle(), mv.getMedia().getDescription()))
 				.toList();

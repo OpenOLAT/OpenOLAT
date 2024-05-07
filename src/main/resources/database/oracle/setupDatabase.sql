@@ -2557,6 +2557,18 @@ create table o_media_log (
    primary key (id)
 );
 
+create table o_media_to_page_part (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   pos number(20) default null,
+   fk_media number(20) not null,
+   fk_media_version number(20) default null,
+   fk_identity number(20) default null,
+   fk_page_part number(20) not null,
+   primary key (id)
+);
+
 create table o_ce_page_reference  (
    id number(20) generated always as identity,
    creationdate date not null,
@@ -5444,6 +5456,15 @@ alter table o_media_log add constraint media_log_media_idx foreign key (fk_media
 create index idx_media_log_media_idx on o_media_log (fk_media);
 alter table o_media_log add constraint media_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_media_log_ident_idx on o_media_log (fk_identity);
+
+alter table o_media_to_page_part add constraint media_to_page_part_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_to_page_part_media_idx on o_media_to_page_part (fk_media);
+alter table o_media_to_page_part add constraint media_to_page_part_media_version_idx foreign key (fk_media_version) references o_media_version (id);
+create index idx_media_to_page_part_media_version_idx on o_media_to_page_part (fk_media_version);
+alter table o_media_to_page_part add constraint media_to_page_part_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_media_to_page_part_identity_idx on o_media_to_page_part (fk_identity);
+alter table o_media_to_page_part add constraint media_to_page_part_page_part_idx foreign key (fk_page_part) references o_ce_page_part (id);
+create index idx_media_to_page_part_page_part_idx on o_media_to_page_part (fk_page_part);
 
 alter table o_ce_page add constraint pf_page_body_idx foreign key (fk_body_id) references o_ce_page_body (id);
 create index idx_pf_page_body_idx on o_ce_page (fk_body_id);

@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -39,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -57,6 +59,7 @@ import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToPagePart;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +86,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 	private ToolsController toolsController;
 	private CloseableCalloutWindowController ccwc;
 	private DialogBoxController confirmRemoveDialog;
+	private ChooseVersionController chooseVersionController;
 
 	@Autowired
 	private DB dbInstance;
@@ -143,10 +147,20 @@ public class GalleryEditorController extends FormBasicController implements Page
 
 	private void loadModel() {
 		List<GalleryRow> galleryRows = mediaToPagePartDAO.loadRelations(galleryPart).stream()
-				.map(r -> new GalleryRow(r, r.getMedia(), r.getMedia().getVersions().get(0))).toList();
+				.map(r -> new GalleryRow(getTranslator(), r, r.getMedia(), getMediaVersion(r))).toList();
 		tableModel.setObjects(galleryRows);
 		tableEl.reset();
 		addTools();
+	}
+
+	public static MediaVersion getMediaVersion(MediaToPagePart relation) {
+		if (relation.getMediaVersion() != null) {
+			return relation.getMediaVersion();
+		}
+		if (relation.getMedia().getVersions() != null && !relation.getMedia().getVersions().isEmpty()) {
+			return relation.getMedia().getVersions().get(0);
+		}
+		return null;
 	}
 
 	private void addTools() {
@@ -195,6 +209,12 @@ public class GalleryEditorController extends FormBasicController implements Page
 					loadModel();
 				}
 			}
+		} else if (chooseVersionController == source) {
+			if (event == Event.DONE_EVENT) {
+				doSaveMediaVersion(ureq, chooseVersionController.getGalleryRow(), chooseVersionController.getMediaVersionId());
+			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -204,10 +224,12 @@ public class GalleryEditorController extends FormBasicController implements Page
 		removeAsListenerAndDispose(chooseImageController);
 		removeAsListenerAndDispose(ccwc);
 		removeAsListenerAndDispose(toolsController);
+		removeAsListenerAndDispose(chooseVersionController);
 		cmc = null;
 		chooseImageController = null;
 		ccwc = null;
 		toolsController = null;
+		chooseVersionController = null;
 	}
 
 	@Override
@@ -265,15 +287,33 @@ public class GalleryEditorController extends FormBasicController implements Page
 
 	private void doSaveMedia(UserRequest ureq, Media media) {
 		GalleryPart reloadedGalleryPart = (GalleryPart) pageDAO.loadPart(galleryPart);
-		mediaToPagePartDAO.persistRelation(reloadedGalleryPart, media);
+		MediaVersion mediaVersion = media.getVersions().get(0);
+		mediaToPagePartDAO.persistRelation(reloadedGalleryPart, media, mediaVersion, getIdentity());
 		dbInstance.commit();
 		loadModel();
 
 		fireEvent(ureq, new ChangePartEvent(galleryPart));
 	}
 
-	private void doEdit(UserRequest ureq, GalleryRow galleryRow) {
+	private void doSaveMediaVersion(UserRequest ureq, GalleryRow galleryRow, String mediaVersionId) {
+		MediaToPagePart relation = mediaToPagePartDAO.loadRelation(galleryRow.getRelation().getKey());
+		MediaVersion mediaVersion = relation.getMedia().getVersions().stream()
+				.filter(mv -> mv.getVersionUuid().equals(mediaVersionId)).findFirst().orElse(null);
+		mediaToPagePartDAO.updateMediaVersion(relation, mediaVersion, getIdentity());
+		dbInstance.commit();
+		loadModel();
 
+		fireEvent(ureq, new ChangePartEvent(galleryPart));
+	}
+
+	private void doChooseVersion(UserRequest ureq, GalleryRow galleryRow) {
+		chooseVersionController = new ChooseVersionController(ureq, getWindowControl(), galleryRow);
+		listenTo(chooseVersionController);
+		String title = translate("gallery.choose.version");
+		cmc = new CloseableModalController(getWindowControl(), null,
+				chooseVersionController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doConfirmRemove(UserRequest ureq, GalleryRow galleryRow) {
@@ -294,7 +334,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 
 	private class ToolsController extends BasicController {
 
-		private final Link editLink;
+		private final Link chooseVersionLink;
 		private final Link removeLink;
 		private final GalleryRow galleryRow;
 
@@ -304,24 +344,80 @@ public class GalleryEditorController extends FormBasicController implements Page
 
 			VelocityContainer mainVC = createVelocityContainer("gallery_tools");
 
-			editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
-			mainVC.put("edit", editLink);
+			chooseVersionLink = LinkFactory.createLink("gallery.choose.version", "choose.version", getTranslator(),
+					mainVC, this, Link.LINK);
+			mainVC.put("chooseVersion", chooseVersionLink);
 
-			removeLink = LinkFactory.createLink("remove", "remove", getTranslator(), mainVC, this, Link.LINK);
+			removeLink = LinkFactory.createLink("remove", "remove", getTranslator(), mainVC, this,
+					Link.LINK);
 			mainVC.put("remove", removeLink);
 
 			putInitialPanel(mainVC);
 		}
 
-
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
-			if (source == editLink) {
-				doEdit(ureq, galleryRow);
+			if (source == chooseVersionLink) {
+				doChooseVersion(ureq, galleryRow);
 			} else if (source == removeLink) {
 				doConfirmRemove(ureq, galleryRow);
 			}
+		}
+	}
+
+	private class ChooseVersionController extends FormBasicController {
+		private final GalleryRow galleryRow;
+		private SingleSelection versionsDropdown;
+
+
+		protected ChooseVersionController(UserRequest ureq, WindowControl wControl, GalleryRow galleryRow) {
+			super(ureq, wControl);
+			this.galleryRow = galleryRow;
+
+			initForm(ureq);
+		}
+
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			SelectionValues versionsKV = new SelectionValues();
+			MediaToPagePart relation = mediaToPagePartDAO.loadRelation(galleryRow.getRelation().getKey());
+			for (MediaVersion mediaVersion : relation.getMedia().getVersions()) {
+				versionsKV.add(SelectionValues.entry(mediaVersion.getVersionUuid(),
+						GalleryRow.getVersionName(getTranslator(), mediaVersion)));
+			}
+
+			versionsDropdown = uifactory.addDropdownSingleselect("versionsDropdown", "gallery.image.version",
+					formLayout, versionsKV.keys(), versionsKV.values());
+			versionsDropdown.addActionListener(FormEvent.ONCHANGE);
+			MediaVersion mediaVersion = GalleryEditorController.getMediaVersion(galleryRow.getRelation());
+			if (mediaVersion != null) {
+				versionsDropdown.select(mediaVersion.getVersionUuid(), true);
+			}
+		}
+
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if (versionsDropdown == source) {
+				fireEvent(ureq, FormEvent.DONE_EVENT);
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
+
+		public String getMediaVersionId() {
+			if (versionsDropdown.isOneSelected()) {
+				return versionsDropdown.getSelectedKey();
+			}
+			return null;
+		}
+
+		public GalleryRow getGalleryRow() {
+			return galleryRow;
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			//
 		}
 	}
 }

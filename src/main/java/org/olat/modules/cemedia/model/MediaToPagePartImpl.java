@@ -23,12 +23,15 @@ import java.io.Serial;
 import java.util.Date;
 import java.util.Objects;
 
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.jpa.AbstractPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToPagePart;
+import org.olat.modules.cemedia.MediaVersion;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -71,6 +74,14 @@ public class MediaToPagePartImpl implements MediaToPagePart, Persistable, Modifi
 	@JoinColumn(name = "fk_media", nullable = false, insertable = true, updatable = false)
 	private Media media;
 
+	@ManyToOne(targetEntity = MediaVersionImpl.class, fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "fk_media_version", nullable = true, insertable = true, updatable = true)
+	private MediaVersion mediaVersion;
+
+	@ManyToOne(targetEntity = IdentityImpl.class, fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "fk_identity", nullable = true, insertable = true, updatable = true)
+	private Identity identity;
+
 	@ManyToOne(targetEntity = AbstractPart.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_page_part", nullable = false, insertable = true, updatable = false)
 	private PagePart pagePart;
@@ -112,6 +123,24 @@ public class MediaToPagePartImpl implements MediaToPagePart, Persistable, Modifi
 
 	public void setMedia(Media media) {
 		this.media = media;
+	}
+
+	@Override
+	public MediaVersion getMediaVersion() {
+		return mediaVersion;
+	}
+
+	public void setMediaVersion(MediaVersion mediaVersion) {
+		this.mediaVersion = mediaVersion;
+	}
+
+	@Override
+	public Identity getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
 	}
 
 	@Override

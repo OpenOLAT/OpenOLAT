@@ -24,10 +24,12 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.Identity;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToPagePart;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.model.MediaToPagePartImpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,21 +46,17 @@ public class MediaToPagePartDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public MediaToPagePartImpl createRelation(Media media, PagePart pagePart) {
-		MediaToPagePartImpl relation = new MediaToPagePartImpl();
-		relation.setCreationDate(new Date());
-		relation.setLastModified(relation.getCreationDate());
-		relation.setMedia(media);
-		relation.setPagePart(pagePart);
-		dbInstance.getCurrentEntityManager().persist(relation);
-		return relation;
+	public GalleryPart persistRelation(GalleryPart galleryPart, Media media) {
+		return persistRelation(galleryPart, media, null, null);
 	}
 
-	public GalleryPart persistRelation(GalleryPart galleryPart, Media media) {
+	public GalleryPart persistRelation(GalleryPart galleryPart, Media media, MediaVersion mediaVersion, Identity identity) {
 		MediaToPagePartImpl relation = new MediaToPagePartImpl();
 		relation.setCreationDate(new Date());
 		relation.setLastModified(relation.getCreationDate());
 		relation.setMedia(media);
+		relation.setMediaVersion(mediaVersion);
+		relation.setIdentity(identity);
 		relation.setPagePart(galleryPart);
 		galleryPart.getRelations().size();
 		galleryPart.getRelations().add(relation);
@@ -176,5 +174,13 @@ public class MediaToPagePartDAO {
 
 	public MediaToPagePart loadRelation(Long key) {
 		return dbInstance.getCurrentEntityManager().find(MediaToPagePartImpl.class, key);
+	}
+
+	public MediaToPagePart updateMediaVersion(MediaToPagePart relation, MediaVersion mediaVersion, Identity identity) {
+		MediaToPagePartImpl mediaToPagePart = (MediaToPagePartImpl) relation;
+		mediaToPagePart.setLastModified(new Date());
+		mediaToPagePart.setMediaVersion(mediaVersion);
+		mediaToPagePart.setIdentity(identity);
+		return dbInstance.getCurrentEntityManager().merge(mediaToPagePart);
 	}
 }
