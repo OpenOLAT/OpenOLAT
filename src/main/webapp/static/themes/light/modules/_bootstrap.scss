@@ -52,8 +52,9 @@
 
 
 /* override */
-body div.tooltip-inner {
-	max-width:400px;
+body div.tooltip-inner, dialog div.tooltip-inner {
+	max-width: 400px;
+	min-width: 400px;
 }
 
 body div.popover,

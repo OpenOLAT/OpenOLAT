@@ -368,7 +368,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			// Attach bootstrap tooltip handler to help icon
 			sb.append("<script>\n")
 			  .append("\"use strict\"\n")
-			  .append("jQuery(function () {jQuery('#").append(helpIconId).append("').tooltip({placement:\"top\",container: \"body\",html:true,title:\"");
+			  .append("jQuery(function () {jQuery('#").append(helpIconId).append("').tooltip({placement:\"top\",container: \"#").append(helpIconId).append("\",html:true,title:\"");
 			if (helpText != null) {
 				sb.append(StringHelper.escapeJavaScript(helpText));
 			}
