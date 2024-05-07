@@ -1227,39 +1227,39 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 			}
 		}
 		
+		let formData = new FormData(htmlForm);
 		for(const file of files) {
-			let formData = new FormData(htmlForm);
 			formData.append(inputFileId, file);
-			formData.append('_csrf', csrf);
-			formData.delete('dispatchevent');
-			formData.append('dispatchevent', '4');
-			formData.delete('dispatchuri');
-			formData.append('dispatchuri', inputFileId);
-			if(directory != null) {
-				formData.append('upload-folder', directory);
-			}
-	
-			jQuery.ajax(targetUrl,{
-				xhr: function() {
-					let xhr = new window.XMLHttpRequest();						
-					xhr.upload.addEventListener("loadstart", o_XHRLoadstart, false);
-					xhr.upload.addEventListener("progress", loadProgress, false);
-					xhr.upload.addEventListener("loadend", loadEnd, false);
-					return xhr;
-			    },
-				type:'POST',
-				data: formData,
-				cache: false,
-				contentType: false,
-				enctype: 'multipart/form-data',
-			    processData: false,
-				dataType: 'json',
-				success: function(returnedData, textStatus, jqXHR) {
-					o_onXHRSuccess(returnedData, textStatus, jqXHR);
-				},
-				error: o_onXHRError
-			});
 		}
+		formData.append('_csrf', csrf);
+		formData.delete('dispatchevent');
+		formData.append('dispatchevent', '4');
+		formData.delete('dispatchuri');
+		formData.append('dispatchuri', inputFileId);
+		if(directory != null) {
+			formData.append('upload-folder', directory);
+		}
+
+		jQuery.ajax(targetUrl,{
+			xhr: function() {
+				let xhr = new window.XMLHttpRequest();						
+				xhr.upload.addEventListener("loadstart", o_XHRLoadstart, false);
+				xhr.upload.addEventListener("progress", loadProgress, false);
+				xhr.upload.addEventListener("loadend", loadEnd, false);
+				return xhr;
+		    },
+			type:'POST',
+			data: formData,
+			cache: false,
+			contentType: false,
+			enctype: 'multipart/form-data',
+		    processData: false,
+			dataType: 'json',
+			success: function(returnedData, textStatus, jqXHR) {
+				o_onXHRSuccess(returnedData, textStatus, jqXHR);
+			},
+			error: o_onXHRError
+		});
 	}
 	
 	function o_handleFilesValidate(files) {
