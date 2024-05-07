@@ -1510,7 +1510,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void reloadVersionsEnabled() {
-		versionsEnabled = vfsVersionModule.isEnabled() && rootContainer.canVersion() == VFSStatus.YES;
+		versionsEnabled = vfsVersionModule.isEnabled() && currentContainer.canVersion() == VFSStatus.YES;
 	}
 	
 	private void reloadTrashEnabled() {
@@ -1952,11 +1952,6 @@ public class FolderController extends FormBasicController implements Activateabl
 					return;
 				}
 			}
-			if (targetContainer.resolve(itemToCopy.getName()) != null) {
-				showWarning("error.copy.overlapping");
-				loadModel(ureq);
-				return;
-			}
 			if (vfsLockManager.isLockedForMe(itemToCopy, ureq.getIdentity(), VFSLockApplicationType.vfs, null)) {
 				showWarning("error.copy.locked");
 				loadModel(ureq);
@@ -1974,14 +1969,17 @@ public class FolderController extends FormBasicController implements Activateabl
 		while (listIterator.hasNext() && vfsStatus == VFSStatus.SUCCESS) {
 			VFSItem vfsItemToCopy = listIterator.next();
 			if (!isItemNotAvailable(ureq, targetContainer, false) && canCopy(vfsItemToCopy, null)) {
-				vfsItemToCopy = appendMissingLicense(vfsItemToCopy, license);
 				VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
-				if (vfsItemToCopy instanceof VFSLeaf sourceLeaf && targetItem != null && targetItem.canVersion() == VFSStatus.YES) {
-					boolean success = vfsRepositoryService.addVersion(sourceLeaf, ureq.getIdentity(), false, "", sourceLeaf.getInputStream());
+				if (versionsEnabled && vfsItemToCopy instanceof VFSLeaf newLeaf && targetItem instanceof VFSLeaf currentLeaf && targetItem.canVersion() == VFSStatus.YES) {
+					boolean success = vfsRepositoryService.addVersion(currentLeaf, ureq.getIdentity(), false, "", newLeaf.getInputStream());
 					if (!success) {
 						vfsStatus = VFSStatus.ERROR_FAILED;
 					}
 				} else {
+					vfsItemToCopy = appendMissingLicense(vfsItemToCopy, license);
+					if (targetItem != null) {
+						vfsItemToCopy = makeNameUnique(targetContainer, vfsItemToCopy);
+					}
 					vfsStatus = targetContainer.copyFrom(vfsItemToCopy, getIdentity());
 				}
 				if (move && vfsStatus == VFSStatus.SUCCESS) {
@@ -1999,6 +1997,14 @@ public class FolderController extends FormBasicController implements Activateabl
 		loadModel(ureq);
 		markNews();
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	private VFSItem makeNameUnique(VFSContainer targetContainer, VFSItem vfsItem) {
+		String nonExistingName = VFSManager.similarButNonExistingName(targetContainer, vfsItem.getName());
+		if (vfsItem instanceof VFSContainer) {
+			return new NamedContainerImpl(nonExistingName, (VFSContainer)vfsItem);
+		}
+		return new NamedLeaf(nonExistingName, (VFSLeaf)vfsItem);
 	}
 	
 	private VFSItem appendMissingLicense(VFSItem vfsItem, License license) {
@@ -2274,7 +2280,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		String zipFilenameBase = vfsItem.getName().substring(0, vfsItem.getName().length() - 4);
-		String unzipContainerName = getUniqueContainerName(zipFilenameBase);
+		String unzipContainerName = VFSManager.similarButNonExistingName(currentContainer, zipFilenameBase);
 		if (unzipContainerName == null) {
 			showError("error.unzip");
 			loadModel(ureq);
@@ -2790,23 +2796,11 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (inheritingContainer != null) {
 			quota = inheritingContainer.getLocalSecurityCallback().getQuota();
 			if (quota != null && Quota.UNLIMITED != quota.getQuotaKB()) {
-				actualUsage = VFSManager.getUsageKB(inheritingContainer);
+				actualUsage = VFSManager.getUsageKB(getUncachedItem(inheritingContainer));
 			}
 		}
 		
 		return new FolderQuota(ureq, quota, actualUsage);
-	}
-	
-	private String getUniqueContainerName(String baseContainerName) {
-		String uniqueContainerName = baseContainerName;
-		for (int i=1; i<999; i++) {
-			VFSItem item = currentContainer.resolve(uniqueContainerName);
-			if (item == null) {
-				return uniqueContainerName;
-			}
-			uniqueContainerName = baseContainerName + "_" + i;
-		}
-		return null;
 	}
 	
 	private void markNews() {

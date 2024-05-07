@@ -454,6 +454,7 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	@Override
 	public void search(UserRequest ureq, String searchTerm) {
 		if (StringHelper.containsNonWhitespace(searchTerm)) {
+			this.searchTerm = searchTerm;
 			updateView(ureq, FolderView.search);
 		} else {
 			updateView(ureq, FolderView.folder);

@@ -195,7 +195,6 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 	
 			FolderControllerConfig config = FolderControllerConfig.builder()
 					.withMail(FolderEmailFilter.valueOf(!userCourseEnv.isCourseReadOnly()))
-					//TODO uh test
 					.withExternContainerForCopy(courseContainer)
 					.build();
 			folderCtrl = new FolderController(ureq, getWindowControl(), olatNamed, config );

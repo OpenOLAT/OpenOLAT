@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FileBrowserMediaCenterController extends BasicController {
 	
-	private static final MediaCenterConfig MEDIA_CENTER_CONFIG = new MediaCenterConfig(true, false, false, false, false, false, null,
+	private static final MediaCenterConfig MEDIA_CENTER_CONFIG = new MediaCenterConfig(true, false, false, false, true, false, null,
 			List.of(AudioHandler.AUDIO_TYPE, DrawioHandler.DRAWIO_TYPE, FileHandler.FILE_TYPE, ImageHandler.IMAGE_TYPE, VideoHandler.VIDEO_TYPE),
 			MediaCenterController.ALL_TAB_ID, Access.DIRECT, null);
 	
