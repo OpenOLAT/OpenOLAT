@@ -195,6 +195,17 @@ dialog.popover {
 	background: none;
 	box-shadow: none;
 	
+	.popover-title {
+		margin-top: 10px;
+  		background-color: $popover-bg;
+		border: 1px solid $popover-fallback-border-color;
+		border: 1px solid $popover-border-color;
+		border-bottom: 1px solid darken($popover-title-bg, 5%);
+  		border-top-left-radius: $border-radius-large;
+  		border-top-right-radius: $border-radius-large;
+		@include box-shadow(0 5px 10px rgba(0, 0, 0, .2));
+	}
+	
 	.popover-content {
 		margin-top: 10px;
   		background-color: $popover-bg;
@@ -202,6 +213,13 @@ dialog.popover {
 		border: 1px solid $popover-border-color;
 		border-radius: $border-radius-large;
 		@include box-shadow(0 5px 10px rgba(0, 0, 0, .2));
+	}
+	
+	.popover-title ~ .popover-content {
+  		margin-top: 0;
+  		border-top: none;
+  		border-top-left-radius: 0;
+  		border-top-right-radius: 0;
 	}
 	
 	&.bottom {
