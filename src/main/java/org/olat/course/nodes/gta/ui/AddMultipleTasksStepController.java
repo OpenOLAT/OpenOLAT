@@ -22,7 +22,6 @@ package org.olat.course.nodes.gta.ui;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import net.sf.jazzlib.ZipEntry;
 import net.sf.jazzlib.ZipInputStream;
@@ -32,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FileElementInfos;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -55,12 +55,14 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 
 	private static final Logger log = Tracing.createLoggerFor(AddMultipleTasksStepController.class);
 
+	private FileElement filesUploadEl;
+
+	private final List<String> uploadedFileNames = new ArrayList<>();
 	private final StepsRunContext runContext;
 	private final File tasksFolder;
+
 	@Autowired
-	protected GTAManager gtaManager;
-	private FileElement zipUploadEl;
-	private List<String> uploadedFileNames;
+	private GTAManager gtaManager;
 
 	public AddMultipleTasksStepController(UserRequest ureq, WindowControl wControl, Form rootForm,
 										  StepsRunContext runContext, CourseEnvironment courseEnv, GTACourseNode gtaNode) {
@@ -68,16 +70,15 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 
 		this.runContext = runContext;
 		tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
-		uploadedFileNames = new ArrayList<>();
 		initForm(ureq);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (zipUploadEl.isUploadSuccess() && !zipUploadEl.hasError()) {
+		if (filesUploadEl.isUploadSuccess() && !filesUploadEl.hasError()) {
 			runContext.put("fileNames", uploadedFileNames);
 			runContext.put("tasksFolder", tasksFolder);
-			runContext.put("zipFile", zipUploadEl);
+			runContext.put("uploadedFiles", filesUploadEl);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 	}
@@ -88,31 +89,43 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 
 		FormLayoutContainer uploadCont = uifactory.addDefaultFormLayout("def.upload.cont", null, formLayout);
 
-		zipUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "wizard.step0.upload", uploadCont);
-		zipUploadEl.limitToMimeType(Collections.singleton("application/zip"), "wizard.step0.upload.wrongfiletype", null);
-		zipUploadEl.setMandatory(true, "wizard.step0.upload.empty");
+		filesUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "wizard.step0.upload", uploadCont);
+		filesUploadEl.setMandatory(true, "wizard.step0.upload.empty");
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		if (zipUploadEl.getUploadFile() != null && FileUtils.validateFilename(zipUploadEl.getUploadFileName())) {
-			// checking if everything can be extracted properly and adding metadata value of files
-			// in new String List 'uploadedFileNames' for next step AddMetadataStepController
-			allOk &= extractAssignmentMediaFileNames();
+		uploadedFileNames.clear();
+		if (filesUploadEl.getUploadFile() != null
+				&& FileUtils.validateFilename(filesUploadEl.getUploadFileName())) {
+			// single file and zip: Extract
+			if (filesUploadEl.getUploadFilesInfos().size() == 1
+					&& filesUploadEl.getUploadMimeType().equals("application/zip")) {
+				// checking if everything can be extracted properly and adding metadata value of files
+				// in new String List 'uploadedFileNames' for next step AddMetadataStepController
+				allOk &= extractAssignmentMediaFileNames();
+			} else {
+				// multiple upload: just add without extracting anything
+				for (FileElementInfos fileElementInfos : filesUploadEl.getUploadFilesInfos()) {
+					uploadedFileNames.add(fileElementInfos.fileName());
+				}
+			}
 		} else {
-			zipUploadEl.setErrorKey("error.file.invalid");
+			filesUploadEl.setErrorKey("error.file.invalid");
 			allOk &= false;
 		}
 
-		if (uploadedFileNames.isEmpty() && !zipUploadEl.hasError()) {
-			zipUploadEl.setErrorKey("error.upload.empty");
+		// uploadedFileNames can only be empty if an empty/invalid zip is selected
+		// multiple files can't be empty
+		if (uploadedFileNames.isEmpty() && !filesUploadEl.hasError()) {
+			filesUploadEl.setErrorKey("error.upload.empty");
 		} else {
 			List<String> fileNames = new ArrayList<>();
 			for (String uploadedFileName : uploadedFileNames) {
 				if (!FileUtils.validateFilename(uploadedFileName)) {
-					zipUploadEl.setErrorKey("error.file.invalid");
+					filesUploadEl.setErrorKey("error.file.invalid");
 					allOk &= false;
 				}
 
@@ -123,9 +136,9 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 				}
 				if (!fileNames.isEmpty()) {
 					if (fileNames.size() > 1) {
-						zipUploadEl.setErrorKey("error.files.exist", String.join(", ", fileNames));
+						filesUploadEl.setErrorKey("error.files.exist", String.join(", ", fileNames));
 					} else {
-						zipUploadEl.setErrorKey("error.file.exists", fileNames.get(0));
+						filesUploadEl.setErrorKey("error.file.exists", fileNames.get(0));
 					}
 					allOk &= false;
 				}
@@ -139,7 +152,7 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 		boolean allOk = true;
 
 		uploadedFileNames.clear();
-		try (ZipInputStream zis = new ZipInputStream(zipUploadEl.getUploadInputStream())) {
+		try (ZipInputStream zis = new ZipInputStream(filesUploadEl.getUploadInputStream())) {
 			ZipEntry zipEntry = zis.getNextEntry();
 
 			while (zipEntry != null) {
@@ -163,8 +176,8 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 		} catch (IOException e) {
 			allOk = false;
 			log.error("Error processing Zip-File as Stream: {}", e.getMessage());
-			zipUploadEl.reset();
-			zipUploadEl.setErrorKey("wizard.step0.upload.error");
+			filesUploadEl.reset();
+			filesUploadEl.setErrorKey("wizard.step0.upload.error");
 		}
 
 		return allOk;

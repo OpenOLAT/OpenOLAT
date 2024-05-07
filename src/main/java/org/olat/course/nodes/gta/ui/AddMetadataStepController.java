@@ -35,6 +35,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FileElementInfos;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -70,7 +71,7 @@ public class AddMetadataStepController extends StepFormBasicController {
 	private List<TextElement> descElList;
 
 	private final File tasksFolder;
-	private final FileElement zipFileEl;
+	private final FileElement filesUploadEl;
 	private final StepsRunContext runContext;
 	private final List<TaskDefinition> taskList;
 	private final List<String> uploadedFileNames;
@@ -79,11 +80,50 @@ public class AddMetadataStepController extends StepFormBasicController {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		taskList = new ArrayList<>();
 		this.runContext = runContext;
-		zipFileEl = (FileElement) runContext.get("zipFile");
+		filesUploadEl = (FileElement) runContext.get("uploadedFiles");
 		uploadedFileNames = (List<String>) runContext.get("fileNames");
 		tasksFolder = (File) runContext.get("tasksFolder");
 
 		initForm(ureq);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormInfo("wizard.step1.info");
+
+		FormLayoutContainer metadataCont = uifactory.addDefaultFormLayout("def.metadata.cont", null, formLayout);
+
+		SelectionValues descSV = new SelectionValues();
+		descSV.add(entry(METADATA_UNIVERSAL_DESC, translate(METADATA_UNIVERSAL_DESC)));
+		descSV.add(entry(METADATA_INDIVIDUAL_DESC, translate(METADATA_INDIVIDUAL_DESC)));
+		descriptionSelectionEl = uifactory.addRadiosVertical("task.description", metadataCont, descSV.keys(), descSV.values());
+		descriptionSelectionEl.select(METADATA_UNIVERSAL_DESC, true);
+		descriptionSelectionEl.addActionListener(FormEvent.ONCHANGE);
+
+		universalDescTextEl = uifactory.addTextAreaElement("metadata.desc", null,
+				2048, 3, -1, true, false, "", metadataCont);
+		universalDescTextEl.setVisible(false);
+
+		spacerEl = uifactory.addSpacerElement("spacerElement", metadataCont, true);
+
+		titleElList = new ArrayList<>(uploadedFileNames.size());
+		descElList = new ArrayList<>(uploadedFileNames.size());
+		for (String taskFileName : uploadedFileNames) {
+			titleElList.add(uifactory.addTextElement(taskFileName, null, 256, taskFileName, metadataCont));
+			titleElList.get(uploadedFileNames.indexOf(taskFileName)).setLabel("wizard.step1.indi.file.title", new String[]{taskFileName});
+			titleElList.get(uploadedFileNames.indexOf(taskFileName)).setMandatory(true);
+			descElList.add(uifactory.addTextAreaElement(taskFileName + "/desc", "task.description",
+					2048, 3, -1, true, false, "", metadataCont));
+			descElList.get(uploadedFileNames.indexOf(taskFileName)).setVisible(false);
+		}
+
+		updateVisibility();
+	}
+
+	private void updateVisibility() {
+		universalDescTextEl.setVisible(descriptionSelectionEl.isKeySelected(METADATA_UNIVERSAL_DESC));
+		spacerEl.setVisible(descriptionSelectionEl.isKeySelected(METADATA_UNIVERSAL_DESC));
+		descElList.forEach(d -> d.setVisible(descriptionSelectionEl.isKeySelected(METADATA_INDIVIDUAL_DESC)));
 	}
 
 	@Override
@@ -105,9 +145,31 @@ public class AddMetadataStepController extends StepFormBasicController {
 			taskList.add(task);
 		}
 
-		// first 'extraction' in AddMultipleTasksStepController for getting the values (title) for this step
-		// second extraction after completion and for adding new tasks/files to OO
-		allOk = extractAssignmentMediaFiles();
+		if (!filesUploadEl.isMultiFileUpload()
+				&& filesUploadEl.getUploadMimeType().equals("application/zip")) {
+			// first 'extraction' in AddMultipleTasksStepController for getting the values (title) for this step
+			// second extraction after completion and for adding new tasks/files to OO
+			allOk = extractAssignmentMediaFiles();
+		} else {
+			allOk = uploadAssignmentMediaFiles();
+		}
+
+		return allOk;
+	}
+
+	private boolean uploadAssignmentMediaFiles() {
+		boolean allOk = true;
+
+		try {
+			for (FileElementInfos fileElementInfos : filesUploadEl.getUploadFilesInfos()) {
+				// adding files to system
+				File target = new File(tasksFolder, fileElementInfos.fileName());
+				Files.copy(fileElementInfos.file().toPath(), target.toPath());
+			}
+		} catch (IOException e) {
+			allOk = false;
+			log.error("Error processing files: {}", e.getMessage());
+		}
 
 		return allOk;
 	}
@@ -115,7 +177,7 @@ public class AddMetadataStepController extends StepFormBasicController {
 	private boolean extractAssignmentMediaFiles() {
 		boolean allOk = true;
 
-		try (ZipInputStream zis = new ZipInputStream(zipFileEl.getUploadInputStream())) {
+		try (ZipInputStream zis = new ZipInputStream(filesUploadEl.getUploadInputStream())) {
 			ZipEntry zipEntry = zis.getNextEntry();
 
 			while (zipEntry != null) {
@@ -158,45 +220,4 @@ public class AddMetadataStepController extends StepFormBasicController {
 			updateVisibility();
 		}
 	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormInfo("wizard.step1.info");
-
-		FormLayoutContainer metadataCont = uifactory.addDefaultFormLayout("def.metadata.cont", null, formLayout);
-
-		SelectionValues descSV = new SelectionValues();
-		descSV.add(entry(METADATA_UNIVERSAL_DESC, translate(METADATA_UNIVERSAL_DESC)));
-		descSV.add(entry(METADATA_INDIVIDUAL_DESC, translate(METADATA_INDIVIDUAL_DESC)));
-		descriptionSelectionEl = uifactory.addRadiosVertical("task.description", metadataCont, descSV.keys(), descSV.values());
-		descriptionSelectionEl.select(METADATA_UNIVERSAL_DESC, true);
-		descriptionSelectionEl.addActionListener(FormEvent.ONCHANGE);
-
-		universalDescTextEl = uifactory.addTextAreaElement("metadata.desc", null,
-				2048, 3, -1, true, false, "", metadataCont);
-		universalDescTextEl.setVisible(false);
-
-		spacerEl = uifactory.addSpacerElement("spacerElement", metadataCont, true);
-
-		titleElList = new ArrayList<>(uploadedFileNames.size());
-		descElList = new ArrayList<>(uploadedFileNames.size());
-		for (String taskFileName : uploadedFileNames) {
-			titleElList.add(uifactory.addTextElement(taskFileName, null, 256, taskFileName, metadataCont));
-			titleElList.get(uploadedFileNames.indexOf(taskFileName)).setLabel("wizard.step1.indi.file.title", new String[]{taskFileName});
-			titleElList.get(uploadedFileNames.indexOf(taskFileName)).setMandatory(true);
-			descElList.add(uifactory.addTextAreaElement(taskFileName + "/desc", "task.description",
-					2048, 3, -1, true, false, "", metadataCont));
-			descElList.get(uploadedFileNames.indexOf(taskFileName)).setVisible(false);
-		}
-
-		updateVisibility();
-	}
-
-	private void updateVisibility() {
-		universalDescTextEl.setVisible(descriptionSelectionEl.isKeySelected(METADATA_UNIVERSAL_DESC));
-		spacerEl.setVisible(descriptionSelectionEl.isKeySelected(METADATA_UNIVERSAL_DESC));
-		descElList.forEach(d -> d.setVisible(descriptionSelectionEl.isKeySelected(METADATA_INDIVIDUAL_DESC)));
-	}
-
-
 }
