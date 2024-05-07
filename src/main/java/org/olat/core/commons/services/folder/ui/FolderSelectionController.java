@@ -21,7 +21,6 @@ package org.olat.core.commons.services.folder.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -51,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.BreadCrumb;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -61,6 +61,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -319,11 +320,12 @@ public class FolderSelectionController extends FormBasicController implements Fi
 			if (event instanceof PopEvent popEvent) {
 				Object userObject = popEvent.getUserObject();
 				updateView(ureq, FolderView.folder);
-				if (userObject instanceof VFSContainer vfsContainer) {
-					updateCurrentContainer(ureq, vfsContainer.getParentContainer());
-				} else if (userObject instanceof String cmd) {
-					if (cmd.startsWith(CMD_CRUMB_PREFIX)) {
-						updateCurrentContainer(ureq, topMostDescendantsContainer);
+				if (userObject instanceof String relativePath) {
+					if (relativePath.startsWith(CMD_CRUMB_PREFIX)) {
+						updateCurrentContainer(ureq, currentContainer);
+					} else {
+						String parentPath = relativePath.substring(0, relativePath.lastIndexOf("/"));
+						updateCurrentContainer(ureq, parentPath);
 					}
 				}
 			}
@@ -408,35 +410,64 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	}
 	
 	public void updateCurrentContainer(UserRequest ureq, VFSContainer container) {
-		currentContainer = (VFSContainer)getUncachedItem(container);
-		List<VFSContainer> parents = new ArrayList<>(1);
-		getParentsToRoot(parents, currentContainer);
+		String relativePath = VFSManager.getRelativeItemPath(container, rootContainer, "/");
+		updateCurrentContainer(ureq, relativePath);
+	}
+	
+	public void updateCurrentContainer(UserRequest ureq, String relativePath) {
+		String path = relativePath;
+		if (path == null) {
+			path = "/";
+		}
+		if (!path.startsWith("/")) {
+			path = "/" + path;
+		}
 		
-		stackedPanel.popUpToController(this);
-		Collections.reverse(parents);
-		for (VFSContainer parent : parents) {
-			stackedPanel.pushController(parent.getName(), null, parent);
+		VFSItem vfsItem = rootContainer.resolve(path);
+		if (vfsItem instanceof VFSContainer vfsContainer) {
+			currentContainer = vfsContainer;
+		} else {
+			currentContainer = rootContainer;
+			path = "/";
 		}
-		if (FolderView.search == folderView) {
-			stackedPanel.pushController(translate("search"), null, CMD_CRUMB_PREFIX + FolderView.search.name());
-		}
-		stackedPanel.setDirty(true);
 		
 		topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
 		topMostDescendantsMetadata = topMostDescendantsContainer != null? topMostDescendantsContainer.getMetaInfo(): null;
+		
+		updateFolderBreadcrumpUI(path);
 		
 		loadModel();
 		fireEvent(ureq, new FileBrowserPushEvent());
 	}
 	
-	private void getParentsToRoot(List<VFSContainer> parents, VFSContainer container) {
-		if (container == rootContainer) {
-			return;
+	private void updateFolderBreadcrumpUI(String path) {
+		String[] pathParts = path.split("/");
+		String ralativePath = "";
+		stackedPanel.popUpToController(this);
+		for (int i = 1; i < pathParts.length; i++) {
+			String pathPart = pathParts[i];
+			ralativePath += "/" + pathPart;
+			VFSItem vfsItem = rootContainer.resolve(ralativePath);
+			if (vfsItem != null) {
+				pathPart = vfsItem.getName();
+			}
+			stackedPanel.pushController(pathPart, null, ralativePath);
+			stackedPanel.setDirty(true);
 		}
-		VFSContainer parentContainer = container.getParentContainer();
-		if (parentContainer != null) {
-			parents.add(container);
-			getParentsToRoot(parents, parentContainer);
+		updateViewCrumb();
+	}
+	
+	private void updateViewCrumb() {
+		if(!stackedPanel.getBreadCrumbs().isEmpty()) {
+			Link lastCrumb = stackedPanel.getBreadCrumbs().get(stackedPanel.getBreadCrumbs().size() - 1);
+			if (lastCrumb.getUserObject() instanceof BreadCrumb breadCrumb && breadCrumb.getUserObject() instanceof String path) {
+				if (path.startsWith(CMD_CRUMB_PREFIX)) {
+					stackedPanel.popContent();
+				}
+			}
+		}
+		if (FolderView.search == folderView) {
+			stackedPanel.pushController(translate("search"), null, CMD_CRUMB_PREFIX + FolderView.search.name());
 		}
 	}
 
