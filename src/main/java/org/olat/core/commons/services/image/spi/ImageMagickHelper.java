@@ -34,6 +34,7 @@ import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.ImageOutputOptions;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.thumbnail.FinalSize;
+import org.olat.core.commons.services.vfs.VFSMetadataLeaf;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalImpl;
@@ -107,6 +108,10 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	}
 	
 	private final File extractIOFile(VFSLeaf leaf) {
+		if(leaf instanceof VFSMetadataLeaf metadataLeaf
+				&& metadataLeaf.getItem() instanceof VFSLeaf metadataItem) {
+			leaf = metadataItem;
+		}
 		if(leaf instanceof NamedLeaf namedLeaf) {
 			leaf = namedLeaf.getDelegate();
 		}
