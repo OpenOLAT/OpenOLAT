@@ -21,6 +21,7 @@ package org.olat.core.commons.services.folder.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.services.folder.ui.event.FileBrowserSelectionEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;

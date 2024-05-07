@@ -28,7 +28,9 @@ package org.olat.course.nodes.ta;
 import java.io.File;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
@@ -57,11 +59,16 @@ import org.olat.user.UserManager;
 public class ReturnboxController extends BasicController {
 
 	public static final String RETURNBOX_DIR_NAME = "returnboxes";
+	private static final FolderControllerConfig RETURNBOX_FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
 	
 	// config
 	
 	private VelocityContainer myContent;
-	private FolderRunController returnboxFolderRunController;
+	private FolderController returnboxFolderCtrl;
 	private SubscriptionContext subsContext;
 	private ContextualSubscriptionController contextualSubscriptionCtr;
 	
@@ -97,9 +104,9 @@ public class ReturnboxController extends BasicController {
 		String fullName = userManager.getUserDisplayName(getIdentity());
 		VFSContainer namedContainer = new NamedContainerImpl(fullName, rootFolder);
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
-		returnboxFolderRunController = new FolderRunController(namedContainer, false, ureq, wControl);
-		returnboxFolderRunController.addControllerListener(this);
-		myContent.put("returnbox", returnboxFolderRunController.getInitialComponent());
+		returnboxFolderCtrl = new FolderController(ureq, wControl, namedContainer, RETURNBOX_FOLDER_CONFIG);
+		listenTo(returnboxFolderCtrl);
+		myContent.put("returnbox", returnboxFolderCtrl.getInitialComponent());
 		// notification
 		if ( !previewMode && !ureq.getUserSession().getRoles().isGuestOnly()) {
 			// offer subscription, but not to guests

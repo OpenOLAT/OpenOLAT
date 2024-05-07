@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * 
@@ -45,6 +46,7 @@ public class RecordAVController extends BasicController {
 	private final AVCreationController creationCtrl;
 	
 	private final VFSContainer currentContainer;
+	private VFSLeaf createdLeaf;
 
 	public RecordAVController(UserRequest ureq, WindowControl wControl, VFSContainer currentContainer, boolean audio) {
 		super(ureq, wControl);
@@ -65,6 +67,10 @@ public class RecordAVController extends BasicController {
 		putInitialPanel(creationCtrl.getInitialComponent());
 	}
 
+	public VFSLeaf getCreatedLeaf() {
+		return createdLeaf;
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
@@ -76,7 +82,7 @@ public class RecordAVController extends BasicController {
 
 		if (creationCtrl == source) {
 			if (event instanceof AVCreationEvent) {
-				creationCtrl.moveUploadFileTo(currentContainer, creationCtrl.getFileName());
+				createdLeaf = creationCtrl.moveUploadFileTo(currentContainer, creationCtrl.getFileName());
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}

@@ -28,13 +28,16 @@ package org.olat.course.nodes.ta;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.core.commons.modules.bc.FolderEvent;
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
+import org.olat.core.commons.services.folder.ui.event.FolderDeleteEvent;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -124,6 +127,12 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 	private static final String[] paneKeys = { PANE_TAB_SOLUTION, PANE_TAB_CONF_SCORING, PANE_TAB_CONF_DROPBOX, PANE_TAB_CONF_TASK, PANE_TAB_CONF_MODULES,
 			PANE_TAB_ACCESSIBILITY };
 
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
+			
 	private ICourse course;
 	private TACourseNode node;
 	private ModuleConfiguration config;
@@ -136,7 +145,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 	private TaskFormController taskController;
 	private DropboxForm dropboxForm;
 	private MSEditFormController scoringController;
-	private FolderRunController frc;
+	private FolderController frc;
 	private ConditionEditController taskConditionC, dropConditionC, returnboxConditionC, scoringConditionC, solutionConditionC;
 	private boolean hasLogEntries;	
 	private DialogBoxController dialogBoxController;
@@ -289,9 +298,8 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				VFSContainer rootFolder = VFSManager.olatRootContainer(relPath, null);
 				VFSContainer namedFolder = new NamedContainerImpl(translate("taskfolder"), rootFolder);
 				namedFolder.setLocalSecurityCallback(getTaskFolderSecCallback(relPath));
-				frc = new FolderRunController(namedFolder, false, ureq, getWindowControl());
-				//listenTo(frc);
-				frc.addControllerListener(this);
+				frc = new FolderController(ureq, getWindowControl(), namedFolder, FOLDER_CONFIG);
+				listenTo(frc);
 				CloseableModalController cmc = new CloseableModalController(getWindowControl(), translate("folder.close"), frc
 						.getInitialComponent());
 				cmc.activate();				
@@ -311,7 +319,8 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			SubscriptionContext subContext = SolutionFileUploadNotificationHandler.getSubscriptionContext(course.getCourseEnvironment(), node);
 			VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota, subContext);
 			namedContainer.setLocalSecurityCallback(secCallback);
-			FolderRunController folderCtrl = new FolderRunController(namedContainer, false, ureq, getWindowControl());
+			FolderController folderCtrl = new FolderController(ureq, getWindowControl(), namedContainer, FOLDER_CONFIG);
+			listenTo(folderCtrl);
 			CloseableModalController cmc = new CloseableModalController(getWindowControl(), translate("close"), folderCtrl.getInitialComponent());
 			cmc.activate();
 		} else if (source == editScoringConfigButton){
@@ -404,7 +413,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				VFSContainer rootFolder = VFSManager.olatRootContainer(relPath, null);
 				VFSContainer namedFolder = new NamedContainerImpl(translate("taskfolder"), rootFolder);
 				namedFolder.setLocalSecurityCallback(getTaskFolderSecCallback(relPath));
-				frc = new FolderRunController(namedFolder, false, urequest, getWindowControl());
+				frc = new FolderController(urequest, getWindowControl(), namedFolder, FOLDER_CONFIG);
 				listenTo(frc);
 				CloseableModalController cmc = new CloseableModalController(getWindowControl(), translate("folder.close"), frc
 						.getInitialComponent());
@@ -443,9 +452,9 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				return;
 			}
-		} else if (source == frc && (event instanceof FolderEvent) && event.getCommand().equals(FolderEvent.DELETE_EVENT)) {					
-			String deletedTaskFile = getFileListAsComaSeparated(((FolderEvent)event).getFilename());
-		  //cancel task assignment				
+		} else if (source == frc && event instanceof FolderDeleteEvent deleteEvent) {
+			String deletedTaskFile = deleteEvent.getFilenames().stream().collect(Collectors.joining(", "));
+			//cancel task assignment	
 			identitiesToBeNotified = removeAssignedTask(course,deletedTaskFile);
 			if(identitiesToBeNotified.size()>0) {
 		    //prepare mailTemplate if they are any identities to be notified
@@ -472,26 +481,6 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		} else {			
 			log.warn("Can not handle event in TACourseNodeEditController source=" + source + " " + event.toString());
 		}
-	}
-	
-	/**
-	 * Strips the html tags from the input string.
-	 * @param fileListHtml
-	 * @return
-	 */
-	private String getFileListAsComaSeparated(String fileListHtml) {
-	  //strip html
-		String filesString = "";
-		String[] tokens = fileListHtml.split("<[^<>]+>");
-		for(String token:tokens) {
-			if(!token.equals("")) {
-				if(filesString.length()>3) {
-					filesString += ", ";
-				}
-				filesString += token;					
-			}
-		}
-		return filesString;
 	}
 	
 	/**

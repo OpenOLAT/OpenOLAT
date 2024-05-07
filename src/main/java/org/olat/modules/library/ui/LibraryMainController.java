@@ -33,11 +33,14 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsConfig;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.comparators.TitleComparator;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.commentAndRating.ui.UserRatingChangedEvent;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
+import org.olat.core.commons.services.folder.ui.event.FolderAddEvent;
+import org.olat.core.commons.services.folder.ui.event.FolderDeleteEvent;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -105,6 +108,11 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 	public static final String ICON_CSS_CLASS = "o_library_icon";
 	private static final String GUI_CONF_LAYOUT_KEY = "library_layout_conf";
 	private static final String I18N_UPLOAD_FOLDER_DISPLAYNAME = "library.upload.folder.displayname";
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
 
 	private Link editLink;
 	private Link reviewLink;
@@ -115,7 +123,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 	
 	private CatalogController catalogCtr;
 	private CloseableModalController dialogCtr;
-	private FolderRunController editFolderCtr;
+	private FolderController editFolderCtr;
 	private NewCatalogItemController newCatalogItemCtr;
 	private NewestFilesController newestFilesCtr;
 	private MostViewedFilesController mostViewedFilesCtr;
@@ -418,7 +426,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 				cleanUpUploadController();
 			}
 		} else if (source == editFolderCtr) {
-			if (event == FolderCommand.FOLDERCOMMAND_FINISHED) {
+			if (event instanceof FolderAddEvent || event instanceof FolderDeleteEvent) {
 				libraryManager.markPublisherNews();
 				newestFilesCtr.updateView(ureq.getLocale());
 			}
@@ -518,7 +526,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 			if (editFolderCtr != null) {
 				removeAsListenerAndDispose(editFolderCtr);
 			}
-			editFolderCtr = new FolderRunController(sharedFolder, true, ureq, getWindowControl());
+			editFolderCtr = new FolderController(ureq, getWindowControl(), sharedFolder, FOLDER_CONFIG);
 			listenTo(editFolderCtr);
 
 			if (editLayoutCtr != null) {

@@ -51,6 +51,9 @@ import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.folder.ui.FolderDataModel.FolderCols;
 import org.olat.core.commons.services.folder.ui.component.QuotaBar;
+import org.olat.core.commons.services.folder.ui.event.FileBrowserSelectionEvent;
+import org.olat.core.commons.services.folder.ui.event.FolderAddEvent;
+import org.olat.core.commons.services.folder.ui.event.FolderDeleteEvent;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
@@ -1301,17 +1304,23 @@ public class FolderController extends FormBasicController implements Activateabl
 			loadModel(ureq);
 		} else if (createDocumentCtrl == source) {
 			if (event == Event.DONE_EVENT) {
+				fireEvent(ureq, new FolderAddEvent(createDocumentCtrl.getCreatedLeaf().getName()));
 				markNews();
 			}
 			loadModel(ureq);
 			cmc.deactivate();
 			cleanUp();
 		} else if (createFolderCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				fireEvent(ureq, new FolderAddEvent(createFolderCtrl.getCreatedItem().getName()));
+				markNews();
+			}
 			loadModel(ureq);
 			cmc.deactivate();
 			cleanUp();
 		} else if (recordAVController == source) {
 			if (event == Event.DONE_EVENT) {
+				fireEvent(ureq, new FolderAddEvent(recordAVController.getCreatedLeaf().getName()));
 				markNews();
 			}
 			loadModel(ureq);
@@ -1967,6 +1976,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		}
 		
+		FolderAddEvent addEvent = new FolderAddEvent();
 		VFSStatus vfsStatus = VFSStatus.SUCCESS;
 		ListIterator<VFSItem> listIterator = itemsToCopy.listIterator();
 		while (listIterator.hasNext() && vfsStatus == VFSStatus.SUCCESS) {
@@ -1985,8 +1995,11 @@ public class FolderController extends FormBasicController implements Activateabl
 					}
 					vfsStatus = targetContainer.copyFrom(vfsItemToCopy, getIdentity());
 				}
-				if (move && vfsStatus == VFSStatus.SUCCESS) {
-					vfsItemToCopy.deleteSilently();
+				if (vfsStatus == VFSStatus.SUCCESS) {
+					addEvent.addFilename(vfsItemToCopy.getName());
+					if (move) {
+						vfsItemToCopy.deleteSilently();
+					}
 				}
 			}
 		}
@@ -1999,7 +2012,13 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		loadModel(ureq);
 		markNews();
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		if (!addEvent.getFilenames().isEmpty()) {
+			if (move) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else {
+				fireEvent(ureq, addEvent);
+			}
+		}
 	}
 
 	private VFSItem makeNameUnique(VFSContainer targetContainer, VFSItem vfsItem) {
@@ -2231,7 +2250,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		loadModel(ureq);
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, new FolderAddEvent(zipFile.getName()));
 	}
 	
 	private void doBulkZipConfirmation(UserRequest ureq) {
@@ -2322,7 +2341,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		markNews();
 		loadModel(ureq);
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		FolderAddEvent addEvent = new FolderAddEvent(unzipContainer.getName());
+		unzipContainer.getDescendants(null).forEach(unzippedItem -> addEvent.addFilename(unzippedItem.getName()));
+		fireEvent(ureq, addEvent);
 	}
 
 	private boolean canUnzip(VFSItem vfsItem, VFSMetadata vfsMetadata) {
@@ -2419,12 +2440,15 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
+		FolderDeleteEvent deleteEvent = new FolderDeleteEvent();
+		deleteEvent.addFilename(vfsItem.getName());
+		
 		// Move to trash
 		vfsItem.delete();
 		
 		markNews();
 		loadModel(ureq);
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, deleteEvent);
 	}
 	
 	private void doBulkConfirmDeleteSoftly(UserRequest ureq) {
@@ -2489,11 +2513,15 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
-		itemsToDelete.forEach(VFSItem::delete);
+		FolderDeleteEvent deleteEvent = new FolderDeleteEvent();
+		itemsToDelete.forEach(itemToDelete -> {
+			deleteEvent.addFilename(itemToDelete.getName());
+			itemToDelete.delete();
+		});
 		
 		markNews();
 		loadModel(ureq);
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, deleteEvent);
 	}
 	
 	private void doConfirmDeletePermanently(UserRequest ureq, FolderRow row) {
@@ -2732,12 +2760,16 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
+		FolderAddEvent addEvent = new FolderAddEvent();
 		VFSStatus vfsStatus = VFSStatus.SUCCESS;
 		ListIterator<VFSItem> listIterator = itemsToCopy.listIterator();
 		while (listIterator.hasNext() && vfsStatus == VFSStatus.SUCCESS) {
 			VFSItem vfsItemToCopy = listIterator.next();
 			if (VFSStatus.SUCCESS == vfsStatus) {
 				vfsStatus = vfsItemToCopy.restore((VFSContainer)reloadedTarget);
+				if (VFSStatus.SUCCESS == vfsStatus) {
+					addEvent.addFilename(vfsItemToCopy.getName());
+				}
 			}
 		}
 		
@@ -2750,7 +2782,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		loadModel(ureq);
 		markNews();
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		if (!addEvent.getFilenames().isEmpty()) {
+			fireEvent(ureq, addEvent);
+		}
 	}
 	
 	private boolean hasLockedChild(VFSContainer vfsContainer) {

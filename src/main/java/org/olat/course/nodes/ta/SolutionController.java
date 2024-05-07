@@ -25,7 +25,9 @@
 
 package org.olat.course.nodes.ta;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
@@ -49,8 +51,14 @@ import org.olat.course.run.environment.CourseEnvironment;
 
 public class SolutionController extends BasicController {
 	
+	private static final FolderControllerConfig SOLUTION_FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
+	
 	private VelocityContainer myContent;
-	private FolderRunController solutionFolderRunController;
+	private FolderController solutionFolderCtrl;
 	private SubscriptionContext subsContext;
 	private ContextualSubscriptionController contextualSubscriptionCtr;
 
@@ -74,9 +82,9 @@ public class SolutionController extends BasicController {
 		VFSContainer rootFolder = VFSManager.olatRootContainer(solutionPath, null);
 		VFSContainer namedContainer = new NamedContainerImpl("solutions", rootFolder); 
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
-		solutionFolderRunController = new FolderRunController(namedContainer, false, ureq, wControl);
-		solutionFolderRunController.addControllerListener(this);
-		myContent.put("solutionbox", solutionFolderRunController.getInitialComponent());
+		solutionFolderCtrl = new FolderController(ureq, wControl, namedContainer, SOLUTION_FOLDER_CONFIG);
+		listenTo(solutionFolderCtrl);
+		myContent.put("solutionbox", solutionFolderCtrl.getInitialComponent());
 		if (!previewMode) {
 			// offer subscription, but not to guests
 			subsContext = SolutionFileUploadNotificationHandler.getSubscriptionContext(courseEnv, node);

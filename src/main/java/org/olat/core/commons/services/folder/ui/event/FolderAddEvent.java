@@ -17,22 +17,40 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.folder.ui;
+package org.olat.core.commons.services.folder.ui.event;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 29 Apr 2024<br>
+ * Initial date: 7 May 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class FileBrowserPushEvent extends Event {
+public class FolderAddEvent extends Event {
 
-	private static final long serialVersionUID = 2956731231410800087L;
+	private static final long serialVersionUID = -996255422685295660L;
+	
+	private final List<String> filenames = new ArrayList<>(1);
 
-	public FileBrowserPushEvent() {
-		super("file-browser-push");
+	public FolderAddEvent() {
+		super("folder-add");
+	}
+	
+	public FolderAddEvent(String filename) {
+		this();
+		filenames.add(filename);
+	}
+	
+	public void addFilename(String filename) {
+		this.filenames.add(filename);
+	}
+
+	public List<String> getFilenames() {
+		return filenames;
 	}
 
 }

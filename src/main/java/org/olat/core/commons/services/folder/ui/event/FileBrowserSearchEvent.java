@@ -17,7 +17,7 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.folder.ui;
+package org.olat.core.commons.services.folder.ui.event;
 
 import org.olat.core.gui.control.Event;
 
@@ -27,19 +27,19 @@ import org.olat.core.gui.control.Event;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class FileBrowserTitleEvent extends Event {
+public class FileBrowserSearchEvent extends Event {
 
-	private static final long serialVersionUID = 8735026311883161116L;
+	private static final long serialVersionUID = 2748703528974754426L;
 	
-	private final String title;
-	
-	public FileBrowserTitleEvent(String title) {
-		super("fil-browser-title");
-		this.title = title;
+	private final String searchTerm;
+
+	public FileBrowserSearchEvent(String searchTerm) {
+		super("file-browser-search");
+		this.searchTerm = searchTerm;
 	}
 
-	public String getTitle() {
-		return title;
+	public String getSearchTerm() {
+		return searchTerm;
 	}
 
 }

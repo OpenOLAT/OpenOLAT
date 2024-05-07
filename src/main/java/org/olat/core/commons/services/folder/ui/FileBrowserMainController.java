@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.folder.ui;
 
+import org.olat.core.commons.services.folder.ui.event.FileBrowserTitleEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;

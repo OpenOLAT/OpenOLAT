@@ -27,6 +27,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.olat.core.commons.services.folder.ui.FolderDataModel.FolderCols;
+import org.olat.core.commons.services.folder.ui.event.FileBrowserPushEvent;
+import org.olat.core.commons.services.folder.ui.event.FileBrowserSelectionEvent;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataContainer;
 import org.olat.core.commons.services.vfs.VFSMetadataItem;

@@ -17,29 +17,30 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.folder.ui;
+package org.olat.modules.video.ui.event;
 
 import org.olat.core.gui.control.Event;
+import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * 
- * Initial date: 29 Apr 2024<br>
+ * Initial date: 7 May 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class FileBrowserSearchEvent extends Event {
+public class VideoPosterEvent extends Event {
 
-	private static final long serialVersionUID = 2748703528974754426L;
-	
-	private final String searchTerm;
+	private static final long serialVersionUID = -7068245456272831784L;
 
-	public FileBrowserSearchEvent(String searchTerm) {
-		super("file-browser-search");
-		this.searchTerm = searchTerm;
+	private final VFSLeaf poster;
+
+	public VideoPosterEvent(VFSLeaf poster) {
+		super("video-poster");
+		this.poster = poster;
 	}
 
-	public String getSearchTerm() {
-		return searchTerm;
+	public VFSLeaf getPoster() {
+		return poster;
 	}
 
 }

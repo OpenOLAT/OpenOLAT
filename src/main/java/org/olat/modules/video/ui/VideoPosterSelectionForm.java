@@ -27,7 +27,6 @@ import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -52,6 +51,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
+import org.olat.modules.video.ui.event.VideoPosterEvent;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -185,8 +185,8 @@ public class VideoPosterSelectionForm extends BasicController {
 		if (source instanceof Link) {
 			Link button = (Link) source;
 			VFSItem posterFile = tmpContainer.resolve((String)button.getUserObject());
-			if (posterFile instanceof VFSLeaf) {
-				fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, posterFile));
+			if (posterFile instanceof VFSLeaf posterLeaf) {
+				fireEvent(ureq, new VideoPosterEvent(posterLeaf));
 			}
 		}
 	}

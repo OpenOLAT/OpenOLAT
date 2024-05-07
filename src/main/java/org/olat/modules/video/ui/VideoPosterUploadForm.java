@@ -22,7 +22,6 @@ package org.olat.modules.video.ui;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -38,6 +37,7 @@ import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.video.ui.event.VideoPosterEvent;
 import org.olat.resource.OLATResource;
 
 /**
@@ -95,7 +95,7 @@ public class VideoPosterUploadForm extends FormBasicController {
 					FileUtils.deleteFile(posterField.getUploadFile());
 				}
 			} else {
-				fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, posterField.moveUploadFileTo(metaDataFolder)));
+				fireEvent(ureq, new VideoPosterEvent(posterField.moveUploadFileTo(metaDataFolder)));
 			}
 		}
 	}

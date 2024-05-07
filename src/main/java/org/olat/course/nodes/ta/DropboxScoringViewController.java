@@ -27,14 +27,17 @@ package org.olat.course.nodes.ta;
 
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.FolderEvent;
-import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.commands.FolderCommand;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
+import org.olat.core.commons.services.folder.ui.event.FolderAddEvent;
+import org.olat.core.commons.services.folder.ui.event.FolderDeleteEvent;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
@@ -96,14 +99,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DropboxScoringViewController extends BasicController {
 
 	private static final Logger log = Tracing.createLoggerFor(DropboxScoringViewController.class);
+
+	private static final FolderControllerConfig DROPBOX_FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
+	private static final FolderControllerConfig RETURNBOX_FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withSearchEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.withDisplaySubscription(false)
+			.build();
 	
 	protected CourseNode node;
 	protected UserCourseEnvironment userCourseEnv;	
 	private VelocityContainer myContent;
 	private Link taskLaunchButton;
 	private Link cancelTaskButton;
-	private FolderRunController dropboxFolderRunController;
-	private FolderRunController returnboxFolderRunController;
+	private FolderController dropboxFolderCtrl;
+	private FolderController returnboxFolderCtrl;
 	private String assignedTask;
 	private StatusForm statusForm;
 	private CloseableModalController cmc;
@@ -191,18 +206,16 @@ public class DropboxScoringViewController extends BasicController {
 		}
 		
 		VFSContainer namedDropbox = getDropboxFilePath(assessee);
-		dropboxFolderRunController = new FolderRunController(namedDropbox, false, ureq, getWindowControl());
-		listenTo(dropboxFolderRunController);
+		dropboxFolderCtrl = new FolderController(ureq, getWindowControl(), namedDropbox, DROPBOX_FOLDER_CONFIG);
+		listenTo(dropboxFolderCtrl);
 		
-		myContent.put("dropbox", dropboxFolderRunController.getInitialComponent());
+		myContent.put("dropbox", dropboxFolderCtrl.getInitialComponent());
 
 		// returnbox display
 		VFSContainer namedReturnbox = getReturnboxFilePath(assessee);
-		returnboxFolderRunController = new FolderRunController(namedReturnbox, false, ureq, getWindowControl());
-		returnboxFolderRunController.disableSubscriptionController();
-		listenTo(returnboxFolderRunController);
-		
-		myContent.put("returnbox", returnboxFolderRunController.getInitialComponent());
+		returnboxFolderCtrl = new FolderController(ureq, getWindowControl(), namedReturnbox, RETURNBOX_FOLDER_CONFIG);
+		listenTo(returnboxFolderCtrl);
+		myContent.put("returnbox", returnboxFolderCtrl.getInitialComponent());
 
 		// insert Status Pull-Down Menu depending on user role == author
 		boolean isAuthor = ureq.getUserSession().getRoles().isAuthor();
@@ -275,62 +288,57 @@ public class DropboxScoringViewController extends BasicController {
 	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == dropboxFolderRunController) {
-			if (event instanceof FolderEvent) {
-				FolderEvent folderEvent = (FolderEvent) event;
-				if (folderEvent.getCommand().equals(FolderEvent.DELETE_EVENT)) {
-					UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-					// log entry for this file
-					Identity coach = ureq.getIdentity();
-					Identity student = userCourseEnv.getIdentityEnvironment().getIdentity();
-					am.appendToUserNodeLog(node, coach, student, "FILE DELETED: " + folderEvent.getFilename(), null);
-				}
+		if (source == dropboxFolderCtrl) {
+			if (event instanceof FolderDeleteEvent deleteEvent) {
+				UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+				Identity coach = ureq.getIdentity();
+				Identity student = userCourseEnv.getIdentityEnvironment().getIdentity();
+				deleteEvent.getFilenames().forEach(
+						filename -> am.appendToUserNodeLog(node, coach, student, "FILE DELETED: " + filename, null));
 			}
-		} else if (source == returnboxFolderRunController) {
-			if (event instanceof FolderEvent) {
-				FolderEvent folderEvent = (FolderEvent) event;
-				if (   folderEvent.getCommand().equals(FolderEvent.UPLOAD_EVENT)
-						|| folderEvent.getCommand().equals(FolderEvent.NEW_FILE_EVENT) ) {
-					UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-					// log entry for this file
-					Identity coach = ureq.getIdentity();
-					Identity student = userCourseEnv.getIdentityEnvironment().getIdentity();
-					
-					if(assessmentConfig.isAssessable()) {
-						AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
-						if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
-							eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
-							courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, coach, false, Role.coach);
-						}
-					}
-
-					am.appendToUserNodeLog(node, coach, student, "FILE UPLOADED: " + folderEvent.getFilename(), null);
-					String toMail = UserManager.getInstance().getUserDisplayEmail(student, ureq.getLocale());
-					
-					OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseNode.class, Long.valueOf(node.getIdent()));
-					ContextEntry ce =		BusinessControlFactory.getInstance().createContextEntry(ores);
-					BusinessControl bc = BusinessControlFactory.getInstance().createBusinessControl(ce, getWindowControl().getBusinessControl());
-					String link = BusinessControlFactory.getInstance().getAsURIString(bc, true);
-					
-					log.debug("Returnbox notification email with link={}", link);
-					String subject = translate("returnbox.email.subject");
-					String body = translate("returnbox.email.body", new String[] { userCourseEnv.getCourseEnvironment().getCourseTitle(), node.getShortTitle(),
-									folderEvent.getFilename(), link });
-
-					MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-					MailBundle bundle = new MailBundle();
-					bundle.setContext(context);
-					bundle.setToId(student);
-					bundle.setContent(subject, body);
-					MailerResult result = CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
-					if(result.getReturnCode() > 0) {
-						am.appendToUserNodeLog(node, coach, student, "MAIL SEND FAILED TO:" + toMail + "; MailReturnCode: " + result.getReturnCode(), null);
-						log.warn("Could not send email 'returnbox notification' to " + student + "with email=" + toMail);
-					} else {
-						log.info("Send email 'returnbox notification' to " + student + "with email=" + toMail);
+		} else if (source == returnboxFolderCtrl) {
+			if (event instanceof FolderAddEvent addEvent) {
+				UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+				Identity coach = ureq.getIdentity();
+				Identity student = userCourseEnv.getIdentityEnvironment().getIdentity();
+				
+				if(assessmentConfig.isAssessable()) {
+					AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
+					if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
+						eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
+						courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, coach, false, Role.coach);
 					}
 				}
-			} else if(FolderCommand.FOLDERCOMMAND_FINISHED == event) {
+				
+				addEvent.getFilenames().forEach(filename -> am.appendToUserNodeLog(node, coach, student, "FILE ADDED: " + filename, null));
+				String toMail = UserManager.getInstance().getUserDisplayEmail(student, ureq.getLocale());
+				
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseNode.class, Long.valueOf(node.getIdent()));
+				ContextEntry ce =		BusinessControlFactory.getInstance().createContextEntry(ores);
+				BusinessControl bc = BusinessControlFactory.getInstance().createBusinessControl(ce, getWindowControl().getBusinessControl());
+				String link = BusinessControlFactory.getInstance().getAsURIString(bc, true);
+				
+				log.debug("Returnbox notification email with link={}", link);
+				String subject = translate("returnbox.email.subject");
+				String body = translate("returnbox.email.body", new String[] {
+						userCourseEnv.getCourseEnvironment().getCourseTitle(),
+						node.getShortTitle(),
+						addEvent.getFilenames().stream().collect(Collectors.joining(", ")),
+						link });
+
+				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+				MailBundle bundle = new MailBundle();
+				bundle.setContext(context);
+				bundle.setToId(student);
+				bundle.setContent(subject, body);
+				MailerResult result = CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
+				if(result.getReturnCode() > 0) {
+					am.appendToUserNodeLog(node, coach, student, "MAIL SEND FAILED TO:" + toMail + "; MailReturnCode: " + result.getReturnCode(), null);
+					log.warn("Could not send email 'returnbox notification' to " + student + "with email=" + toMail);
+				} else {
+					log.info("Send email 'returnbox notification' to " + student + "with email=" + toMail);
+				}
+			} else {
 				if(assessmentConfig.isAssessable()) {
 					AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
 					if (eval == null) {

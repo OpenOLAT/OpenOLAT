@@ -19,7 +19,7 @@
  */
 package org.olat.core.commons.services.folder.ui;
 
-import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
@@ -34,9 +34,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,14 +50,15 @@ public class CreateFolderController extends FormBasicController {
 	private TextElement textElementEl;
 
 	private final VFSContainer currentContainer;
+	private VFSItem createdItem;
 	
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
-	
+
 	protected CreateFolderController(UserRequest ureq, WindowControl wControl, VFSContainer currentContainer) {
 		super(ureq, wControl);
 		// For validation messages
-		setTranslator(Util.createPackageTranslator(FolderRunController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(FileUploadController.class, getLocale(), getTranslator()));
 		this.currentContainer = currentContainer;
 		
 		initForm(ureq);
@@ -74,6 +75,10 @@ public class CreateFolderController extends FormBasicController {
 		formLayout.add(formButtons);
 		uifactory.addFormSubmitButton("folder.create.button", formButtons);
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());
+	}
+
+	public VFSItem getCreatedItem() {
+		return createdItem;
 	}
 
 	@Override
@@ -108,9 +113,9 @@ public class CreateFolderController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String name = textElementEl.getValue().trim();
-		VFSItem item = currentContainer.createChildContainer(name);
-		if (item instanceof VFSContainer && item.canMeta() == VFSStatus.YES) {
-			VFSMetadata metaInfo = item.getMetaInfo();
+		createdItem = currentContainer.createChildContainer(name);
+		if (createdItem instanceof VFSContainer && createdItem.canMeta() == VFSStatus.YES) {
+			VFSMetadata metaInfo = createdItem.getMetaInfo();
 			if (metaInfo instanceof VFSMetadataImpl metadata) {
 				metadata.setFileInitializedBy(getIdentity());
 				vfsRepositoryService.updateMetadata(metaInfo);

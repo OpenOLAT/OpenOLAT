@@ -19,7 +19,6 @@
  */
 package org.olat.modules.video.ui;
 
-import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,6 +38,7 @@ import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.manager.VideoMediaMapper;
+import org.olat.modules.video.ui.event.VideoPosterEvent;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
@@ -120,13 +120,12 @@ public class VideoPosterEditController extends FormBasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(source == posterUploadForm || source == posterSelectionForm){
-			if(event instanceof FolderEvent){
-				VFSLeaf posterFile = (VFSLeaf) ((FolderEvent) event).getItem();
+			if(event instanceof VideoPosterEvent posterEvent){
 				if(source == posterUploadForm){
-					videoManager.setPosterframeResizeUploadfile(videoResource, posterFile, getIdentity());
-					posterFile.delete();
-				} else {					
-					videoManager.setPosterframe(videoResource, posterFile, getIdentity());
+					videoManager.setPosterframeResizeUploadfile(videoResource, posterEvent.getPoster(), getIdentity());
+					posterEvent.getPoster().deleteSilently();
+				} else {	
+					videoManager.setPosterframe(videoResource, posterEvent.getPoster(), getIdentity());
 				}
 				updatePosterImage(ureq, videoResource);
 			}

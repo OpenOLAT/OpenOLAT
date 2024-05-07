@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
+import org.olat.core.commons.services.folder.ui.event.FileBrowserPushEvent;
+import org.olat.core.commons.services.folder.ui.event.FileBrowserTitleEvent;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.gui.UserRequest;

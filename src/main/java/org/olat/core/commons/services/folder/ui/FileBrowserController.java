@@ -21,6 +21,9 @@ package org.olat.core.commons.services.folder.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.services.folder.ui.event.FileBrowserPushEvent;
+import org.olat.core.commons.services.folder.ui.event.FileBrowserSearchEvent;
+import org.olat.core.commons.services.folder.ui.event.FileBrowserTitleEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;

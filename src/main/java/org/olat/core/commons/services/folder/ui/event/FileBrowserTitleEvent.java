@@ -17,32 +17,29 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.folder.ui;
-
-import java.util.List;
+package org.olat.core.commons.services.folder.ui.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.core.util.vfs.VFSItem;
 
 /**
  * 
- * Initial date: 17 Apr 2024<br>
+ * Initial date: 29 Apr 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class FileBrowserSelectionEvent extends Event {
+public class FileBrowserTitleEvent extends Event {
 
-	private static final long serialVersionUID = -5041930163208368339L;
-
-	private final List<VFSItem> vfsItems;
+	private static final long serialVersionUID = 8735026311883161116L;
 	
-	public FileBrowserSelectionEvent(List<VFSItem> vfsItems) {
-		super("file-browser-selection");
-		this.vfsItems = vfsItems;
+	private final String title;
+	
+	public FileBrowserTitleEvent(String title) {
+		super("fil-browser-title");
+		this.title = title;
 	}
-	
-	public List<VFSItem> getVfsItems() {
-		return vfsItems;
+
+	public String getTitle() {
+		return title;
 	}
 
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.folder.ui;
 
+import org.olat.core.commons.services.folder.ui.event.FileBrowserSearchEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
