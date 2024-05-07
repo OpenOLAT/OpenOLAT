@@ -28,6 +28,7 @@ import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
@@ -72,8 +73,8 @@ public abstract class WebDAVMergeSource extends MergeSource {
 	}
 
 	@Override
-	public VFSStatus delete() {
-		return VFSStatus.NO;
+	public VFSSuccess delete() {
+		return VFSSuccess.ERROR_FAILED;
 	}
 	
 	@Override

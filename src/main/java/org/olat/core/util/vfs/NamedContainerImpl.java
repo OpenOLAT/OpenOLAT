@@ -103,12 +103,12 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	}
 
 	@Override
-	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {
+	public VFSSuccess copyFrom(VFSItem source, Identity savedBy) {
 		return getDelegate().copyFrom(source, savedBy);
 	}
 
 	@Override
-	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
+	public VFSSuccess copyContentOf(VFSContainer container, Identity savedBy) {
 		return getDelegate().copyContentOf(container, savedBy);
 	}
 
@@ -128,8 +128,8 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	}
 
 	@Override
-	public VFSStatus rename(String newname) {
-		return VFSStatus.NO;
+	public VFSSuccess rename(String newname) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
@@ -143,7 +143,7 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	}
 
 	@Override
-	public VFSStatus delete() {
+	public VFSSuccess delete() {
 		return getDelegate().delete();
 	}
 

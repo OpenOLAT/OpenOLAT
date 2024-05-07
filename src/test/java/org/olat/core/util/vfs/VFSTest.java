@@ -99,8 +99,8 @@ public class VFSTest extends OlatTestCase {
 		Assert.assertNotNull(vfsRepositoryService.updateMetadata(metaInfo));
 		
 		String newName = UUID.randomUUID() + ".txt";
-		VFSStatus renamedStatus = firstLeaf.rename(newName);
-		Assert.assertEquals(VFSStatus.YES, renamedStatus);
+		VFSSuccess renamedStatus = firstLeaf.rename(newName);
+		Assert.assertEquals(VFSSuccess.SUCCESS, renamedStatus);
 		
 		VFSItem renamedItem = testContainer.resolve(newName);
 		Assert.assertTrue(renamedItem instanceof VFSLeaf);
@@ -134,8 +134,8 @@ public class VFSTest extends OlatTestCase {
 		prepareFile(secondLeaf);
 		
 		// Rename the second file to the first one
-		VFSStatus renamedStatus = firstLeaf.rename(filename);
-		Assert.assertEquals(VFSStatus.YES, renamedStatus);
+		VFSSuccess renamedStatus = firstLeaf.rename(filename);
+		Assert.assertEquals(VFSSuccess.SUCCESS, renamedStatus);
 		
 		VFSItem renamedItem = testContainer.resolve(filename);
 		Assert.assertTrue(renamedItem instanceof VFSLeaf);

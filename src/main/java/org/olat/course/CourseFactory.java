@@ -95,7 +95,7 @@ import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.callbacks.FullAccessWithLazyQuotaCallback;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.xml.XStreamHelper;
@@ -480,9 +480,9 @@ public class CourseFactory {
 
 		// delete course directory
 		VFSContainer fCourseBasePath = getCourseBaseContainer(res.getResourceableId());
-		VFSStatus status = fCourseBasePath.deleteSilently();
+		VFSSuccess status = fCourseBasePath.deleteSilently();
 		DBFactory.getInstance().commitAndCloseSession();
-		boolean deletionSuccessful = (status == VFSStatus.YES || status == VFSStatus.SUCCESS);
+		boolean deletionSuccessful = status == VFSSuccess.SUCCESS;
 		log.info("deleteCourse: finished deletion. res={}, deletion successful: {}, duration: {} ms.",
 				res, deletionSuccessful, (System.currentTimeMillis()-start));
 	}

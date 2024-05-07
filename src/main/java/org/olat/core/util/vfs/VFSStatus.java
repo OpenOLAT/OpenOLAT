@@ -34,14 +34,7 @@ package org.olat.core.util.vfs;
 public enum VFSStatus {
 	
 	YES,
-	NO,
-	NO_SECURITY_DENIED,
-	SUCCESS,
-	ERROR_SOURCE_NOT_COPYABLE,
-	ERROR_FAILED,
-	ERROR_QUOTA_EXCEEDED,
-	ERROR_OVERLAPPING,
-	ERROR_NAME_ALREDY_USED;
+	NO;
 	
 	public static final long UNDEFINED = -1;
 	

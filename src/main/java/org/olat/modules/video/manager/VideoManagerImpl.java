@@ -90,7 +90,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -1303,13 +1303,13 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	public boolean deleteVideoTranscodings(OLATResource videoResource) {
 		videoTranscodingDao.deleteVideoTranscodings(videoResource);
 		VFSContainer container = getTranscodingContainer(videoResource);
-		VFSStatus deleteStatus;
+		VFSSuccess deleteStatus;
 		if(container == null) {
-			deleteStatus = VFSStatus.YES;
+			deleteStatus = VFSSuccess.SUCCESS;
 		} else {
 			deleteStatus = container.delete();
 		}
-		return deleteStatus == VFSStatus.YES;
+		return deleteStatus == VFSSuccess.SUCCESS;
 	}
 	
 	@Override

@@ -56,7 +56,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.ICourse;
@@ -488,12 +488,12 @@ public class DocumentConfigController extends BasicController {
 				if (container.resolve(fileName) != null) {
 					showError("error.file.name.in.use");
 				} else {
-					VFSStatus renameStatus = documentSource.getVfsLeaf().rename(fileName);
-					if (VFSStatus.NO.equals(renameStatus)) {
-						showError("error.file.not.renamed");
-					} else {
+					VFSSuccess renameStatus = documentSource.getVfsLeaf().rename(fileName);
+					if (VFSSuccess.SUCCESS == renameStatus) {
 						documentSource = new DocumentSource(documentSource.getVfsLeaf());
 						doSetDocumentFromCourseFolder(ureq, fileName);
+					} else {
+						showError("error.file.not.renamed");
 					}
 				}
 			}

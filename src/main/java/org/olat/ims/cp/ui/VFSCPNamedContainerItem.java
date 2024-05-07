@@ -28,6 +28,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.ims.cp.CPTreeDataModel;
 import org.olat.ims.cp.ContentPackage;
@@ -87,13 +88,13 @@ public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 	}
 
 	@Override
-	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {
-		return VFSStatus.NO;
+	public VFSSuccess copyFrom(VFSItem source, Identity savedBy) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
-		return VFSStatus.NO;
+	public VFSSuccess copyContentOf(VFSContainer container, Identity savedBy) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override

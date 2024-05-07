@@ -33,9 +33,10 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -73,7 +74,7 @@ public class CourseConfigManagerImpl implements CourseConfigManager {
 	public boolean deleteConfigOf(ICourse course) {
 		VFSLeaf configFile = getConfigFile(course);
 		if (configFile != null) {
-			return configFile.delete() == VFSStatus.YES;
+			return configFile.delete() == VFSSuccess.SUCCESS;
 		}
 		return false;
 	}

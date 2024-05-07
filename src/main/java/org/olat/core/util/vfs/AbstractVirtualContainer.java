@@ -99,13 +99,13 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	}
 
 	@Override
-	public VFSStatus copyFrom(VFSItem vfsItem, Identity savedBy) {
-		return VFSStatus.ERROR_FAILED;
+	public VFSSuccess copyFrom(VFSItem vfsItem, Identity savedBy) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
-		return VFSStatus.NO;
+	public VFSSuccess copyContentOf(VFSContainer container, Identity savedBy) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
@@ -119,23 +119,23 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	}
 
 	@Override
-	public VFSStatus rename(String newname) {
-		return VFSStatus.NO;
+	public VFSSuccess rename(String newname) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus delete() {
-		return VFSStatus.NO;
+	public VFSSuccess delete() {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus restore(VFSContainer targetContainer) {
-		return VFSStatus.NO;
+	public VFSSuccess restore(VFSContainer targetContainer) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus deleteSilently() {
-		return VFSStatus.NO;
+	public VFSSuccess deleteSilently() {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override

@@ -86,18 +86,18 @@ public class CopySourceLeaf implements VFSLeaf {
 	}
 
 	@Override
-	public VFSStatus delete() {
-		return VFSStatus.NO;
+	public VFSSuccess delete() {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus restore(VFSContainer targetContainer) {
-		return VFSStatus.ERROR_FAILED;
+	public VFSSuccess restore(VFSContainer targetContainer) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus deleteSilently() {
-		return VFSStatus.ERROR_FAILED;
+	public VFSSuccess deleteSilently() {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
@@ -131,8 +131,8 @@ public class CopySourceLeaf implements VFSLeaf {
 	}
 
 	@Override
-	public VFSStatus rename(String newname) {
-		return VFSStatus.ERROR_FAILED;
+	public VFSSuccess rename(String newname) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override

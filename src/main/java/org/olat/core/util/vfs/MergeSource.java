@@ -221,7 +221,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	}
 
 	@Override
-	public VFSStatus copyFrom(VFSItem source, Identity savedBy) {
+	public VFSSuccess copyFrom(VFSItem source, Identity savedBy) {
 		if (canWrite() != VFSStatus.YES) {
 			throw new AssertException("Cannot create child container in merge source if not writable.");
 		}
@@ -229,12 +229,12 @@ public class MergeSource extends AbstractVirtualContainer {
 	}
 
 	@Override
-	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy) {
+	public VFSSuccess copyContentOf(VFSContainer container, Identity savedBy) {
 		if (canWrite() != VFSStatus.YES) {
 			throw new AssertException("Cannot create child container in merge source if not writable.");
 		}
 		
-		VFSStatus status = null;
+		VFSSuccess status = null;
 		for(VFSItem item:container.getItems()) {
 			status = rootWriteContainer.copyFrom(item, savedBy);
 		}

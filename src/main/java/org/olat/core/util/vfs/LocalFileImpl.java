@@ -125,10 +125,10 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 	}
 
 	@Override
-	public VFSStatus rename(String newname) {
+	public VFSSuccess rename(String newname) {
 		File f = getBasefile();
 		if(!f.exists()) {
-			return VFSStatus.NO;
+			return VFSSuccess.ERROR_FAILED;
 		}
 		
 		if(canMeta() == VFSStatus.YES) {
@@ -144,16 +144,16 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4094022
 			// We need to manually reload the new basefile
 			super.setBasefile(new File(nf.getAbsolutePath()));
-			return VFSStatus.YES; 
+			return VFSSuccess.SUCCESS;
 		}
-		return VFSStatus.NO;
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus delete() {
+	public VFSSuccess delete() {
 		File file = getBasefile();
 		if (!file.exists()) {
-			return VFSStatus.YES;
+			return VFSSuccess.SUCCESS;
 		}
 		
 		if (canMeta() == VFSStatus.YES) {
@@ -162,7 +162,7 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 			// File is already in trash
 			File parentFile = file.getParentFile();
 			if (VFSRepositoryService.TRASH_NAME.equals(parentFile.getName())) {
-				return VFSStatus.YES;
+				return VFSSuccess.SUCCESS;
 			}
 			
 			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
@@ -192,25 +192,25 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 			
 			if (vfsMetadata != null) {
 				vfsRepositoryService.markAsDeleted(doer, vfsMetadata, fileInTrash);
-				return VFSStatus.YES;
+				return VFSSuccess.SUCCESS;
 			}
-			return VFSStatus.NO;
+			return VFSSuccess.ERROR_FAILED;
 		}
 		
 		return deleteBasefile();
 	}
 
 	@Override
-	public VFSStatus restore(VFSContainer targetContainer) {
+	public VFSSuccess restore(VFSContainer targetContainer) {
 		if (targetContainer.canWrite() != VFSStatus.YES) {
-			return VFSStatus.NO;
+			return VFSSuccess.ERROR_FAILED;
 		}
 		if (canMeta() != VFSStatus.YES) {
-			return VFSStatus.NO;
+			return VFSSuccess.ERROR_FAILED;
 		}
 		File file = getBasefile();
 		if (!file.exists()) {
-			return VFSStatus.NO;
+			return VFSSuccess.ERROR_FAILED;
 		}
 		
 		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
@@ -218,13 +218,13 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 		
 		VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(this);
 		if (vfsMetadata == null || !vfsMetadata.isDeleted()) {
-			return VFSStatus.NO;
+			return VFSSuccess.ERROR_FAILED;
 		}
 		
 		if (targetContainer instanceof LocalFolderImpl localFolder) {
 			long quotaLeft = VFSManager.getQuotaLeftKB(targetContainer);
 			if (quotaLeft != Quota.UNLIMITED && quotaLeft < (file.length() / 1024)) {
-				return VFSStatus.ERROR_QUOTA_EXCEEDED;
+				return VFSSuccess.ERROR_QUOTA_EXCEEDED;
 			}
 			
 			File restoredFile;
@@ -241,14 +241,14 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 			}
 			
 			vfsRepositoryService.unmarkFromDeleted(doer, vfsMetadata, restoredFile);
-			return VFSStatus.YES;
+			return VFSSuccess.SUCCESS;
 		}
 		
-		return VFSStatus.NO;
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus deleteSilently() {
+	public VFSSuccess deleteSilently() {
 		if(canMeta() == VFSStatus.YES) {
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
 			CoreSpringFactory.getImpl(DB.class).commit();
@@ -260,13 +260,13 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 		return deleteBasefile();
 	}
 	
-	private VFSStatus deleteBasefile() {
-		VFSStatus status = VFSStatus.NO;
+	private VFSSuccess deleteBasefile() {
+		VFSSuccess status = VFSSuccess.ERROR_FAILED;
 		try {
 			if(!Files.deleteIfExists(getBasefile().toPath())) {
 				log.debug("Cannot delete base file because it doesn't exist: {}", this);
 			}
-			status = VFSStatus.YES;
+			status = VFSSuccess.SUCCESS;
 		} catch(IOException e) {
 			log.error("Cannot delete base file: {}", this, e);
 		}

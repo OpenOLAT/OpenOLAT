@@ -48,6 +48,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
@@ -302,14 +303,14 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			VFSResource vfsResource = (VFSResource)resource;
 			VFSItem item = vfsResource.getItem();
 			if (item != null && VFSStatus.YES.equals(item.canDelete())) {
-				VFSStatus status;
+				VFSSuccess status;
 				boolean helpFile = isClientHelpFile(item);
 				if(helpFile) {
 					status = item.deleteSilently();
 				} else {
 					status = item.delete();
 				}
-				deleted = (status == VFSStatus.YES || status == VFSStatus.SUCCESS);
+				deleted = status == VFSSuccess.SUCCESS;
 			}
 		}
 		return deleted;

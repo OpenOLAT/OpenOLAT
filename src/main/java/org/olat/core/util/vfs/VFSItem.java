@@ -76,21 +76,21 @@ public interface VFSItem {
 	 * @param newname e.g test.txt or myfolder (no path prepended)
 	 * @return status
 	 */
-	public VFSStatus rename(String newname);
+	public VFSSuccess rename(String newname);
 	
 	/**
 	 * Deletes the item. If the item is a container, all children will be deleted recursively
 	 * @return status
 	 */
-	public VFSStatus delete();
+	public VFSSuccess delete();
 	
-	public VFSStatus restore(VFSContainer targetContainer);
+	public VFSSuccess restore(VFSContainer targetContainer);
 	
 	/**
 	 * Delete the items and by pass versioning if enabled
 	 * @return
 	 */
-	public VFSStatus deleteSilently();
+	public VFSSuccess deleteSilently();
 
 	/**
 	 * @return True if the file exists

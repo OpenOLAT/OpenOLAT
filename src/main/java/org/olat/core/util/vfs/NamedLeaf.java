@@ -101,17 +101,17 @@ public class NamedLeaf implements VFSLeaf {
 	}
 
 	@Override
-	public VFSStatus delete() {
+	public VFSSuccess delete() {
 		return delegate.delete();
 	}
 
 	@Override
-	public VFSStatus restore(VFSContainer targetContainer) {
+	public VFSSuccess restore(VFSContainer targetContainer) {
 		return delegate.delete();
 	}
 
 	@Override
-	public VFSStatus deleteSilently() {
+	public VFSSuccess deleteSilently() {
 		return delegate.deleteSilently();
 	}
 
@@ -148,7 +148,7 @@ public class NamedLeaf implements VFSLeaf {
 	}
 
 	@Override
-	public VFSStatus rename(String newname) {
+	public VFSSuccess rename(String newname) {
 		throw new RuntimeException("unsupported");
 	}
 

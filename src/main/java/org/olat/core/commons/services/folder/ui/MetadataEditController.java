@@ -33,7 +33,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
-import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -134,8 +134,8 @@ public class MetadataEditController extends FormBasicController {
 				return;
 			}
 			
-			VFSStatus rename = vfsItem.rename(fileName);
-			if (VFSStatus.NO.equals(rename)) {
+			VFSSuccess rename = vfsItem.rename(fileName);
+			if (VFSSuccess.SUCCESS != rename) {
 				showError("error.metadata.not.saved");
 				return;
 			}

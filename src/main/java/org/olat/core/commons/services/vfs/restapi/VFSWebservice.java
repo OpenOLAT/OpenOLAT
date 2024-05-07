@@ -61,7 +61,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.File64VO;
@@ -460,8 +460,8 @@ public class VFSWebservice {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		VFSStatus status = item.delete();
-		if(status == VFSStatus.YES) {
+		VFSSuccess status = item.delete();
+		if(status == VFSSuccess.SUCCESS) {
 			return Response.ok().build();
 		}
 		//need something better

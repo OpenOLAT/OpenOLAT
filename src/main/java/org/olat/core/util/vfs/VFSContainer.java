@@ -76,7 +76,7 @@ public interface VFSContainer extends VFSItem {
 	 * @param savedBy The identity who copied the source
 	 * @return the status
 	 */
-	public VFSStatus copyFrom(VFSItem source, Identity savedBy);
+	public VFSSuccess copyFrom(VFSItem source, Identity savedBy);
 	
 	/**
 	 * 
@@ -84,7 +84,7 @@ public interface VFSContainer extends VFSItem {
 	 * @param savedBy  The identity who copied the container
 	 * @return
 	 */
-	public VFSStatus copyContentOf(VFSContainer container, Identity savedBy);
+	public VFSSuccess copyContentOf(VFSContainer container, Identity savedBy);
 
 	/**
 	 * Create a new child container (of same type) if possible.

@@ -37,6 +37,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 
 /**
@@ -108,23 +109,23 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 	}
 
 	@Override
-	public VFSStatus rename(String newname) {
-		return VFSStatus.NO;
+	public VFSSuccess rename(String newname) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus delete() {
-		return VFSStatus.NO;
+	public VFSSuccess delete() {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus restore(VFSContainer targetContainer) {
-		return VFSStatus.NO;
+	public VFSSuccess restore(VFSContainer targetContainer) {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override
-	public VFSStatus deleteSilently() {
-		return VFSStatus.NO;
+	public VFSSuccess deleteSilently() {
+		return VFSSuccess.ERROR_FAILED;
 	}
 
 	@Override

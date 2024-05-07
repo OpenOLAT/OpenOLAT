@@ -162,6 +162,7 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -1977,16 +1978,16 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		FolderAddEvent addEvent = new FolderAddEvent();
-		VFSStatus vfsStatus = VFSStatus.SUCCESS;
+		VFSSuccess vfsStatus = VFSSuccess.SUCCESS;
 		ListIterator<VFSItem> listIterator = itemsToCopy.listIterator();
-		while (listIterator.hasNext() && vfsStatus == VFSStatus.SUCCESS) {
+		while (listIterator.hasNext() && vfsStatus == VFSSuccess.SUCCESS) {
 			VFSItem vfsItemToCopy = listIterator.next();
 			if (!isItemNotAvailable(ureq, targetContainer, false) && canCopy(vfsItemToCopy, null)) {
 				VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
 				if (versionsEnabled && vfsItemToCopy instanceof VFSLeaf newLeaf && targetItem instanceof VFSLeaf currentLeaf && targetItem.canVersion() == VFSStatus.YES) {
 					boolean success = vfsRepositoryService.addVersion(currentLeaf, ureq.getIdentity(), false, "", newLeaf.getInputStream());
 					if (!success) {
-						vfsStatus = VFSStatus.ERROR_FAILED;
+						vfsStatus = VFSSuccess.ERROR_FAILED;
 					}
 				} else {
 					vfsItemToCopy = appendMissingLicense(vfsItemToCopy, license);
@@ -1995,7 +1996,7 @@ public class FolderController extends FormBasicController implements Activateabl
 					}
 					vfsStatus = targetContainer.copyFrom(vfsItemToCopy, getIdentity());
 				}
-				if (vfsStatus == VFSStatus.SUCCESS) {
+				if (vfsStatus == VFSSuccess.SUCCESS) {
 					addEvent.addFilename(vfsItemToCopy.getName());
 					if (move) {
 						vfsItemToCopy.deleteSilently();
@@ -2004,9 +2005,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		}
 		
-		if (vfsStatus == VFSStatus.ERROR_QUOTA_EXCEEDED) {
+		if (vfsStatus == VFSSuccess.ERROR_QUOTA_EXCEEDED) {
 			showWarning("error.copy.quota.exceeded");
-		} else if (vfsStatus != VFSStatus.SUCCESS) {
+		} else if (vfsStatus != VFSSuccess.SUCCESS) {
 			showWarning("error.copy");
 		}
 		
@@ -2761,21 +2762,21 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		FolderAddEvent addEvent = new FolderAddEvent();
-		VFSStatus vfsStatus = VFSStatus.SUCCESS;
+		VFSSuccess vfsStatus = VFSSuccess.SUCCESS;
 		ListIterator<VFSItem> listIterator = itemsToCopy.listIterator();
-		while (listIterator.hasNext() && vfsStatus == VFSStatus.SUCCESS) {
+		while (listIterator.hasNext() && vfsStatus == VFSSuccess.SUCCESS) {
 			VFSItem vfsItemToCopy = listIterator.next();
-			if (VFSStatus.SUCCESS == vfsStatus) {
+			if (VFSSuccess.SUCCESS == vfsStatus) {
 				vfsStatus = vfsItemToCopy.restore((VFSContainer)reloadedTarget);
-				if (VFSStatus.SUCCESS == vfsStatus) {
+				if (VFSSuccess.SUCCESS == vfsStatus) {
 					addEvent.addFilename(vfsItemToCopy.getName());
 				}
 			}
 		}
 		
-		if (vfsStatus == VFSStatus.ERROR_QUOTA_EXCEEDED) {
+		if (vfsStatus == VFSSuccess.ERROR_QUOTA_EXCEEDED) {
 			showWarning("error.restore.quota.exceeded");
-		} else if (vfsStatus != VFSStatus.SUCCESS && vfsStatus != VFSStatus.YES) {
+		} else if (vfsStatus != VFSSuccess.SUCCESS) {
 			log.debug("Restore error {}", vfsStatus);
 			showWarning("error.restore");
 		}

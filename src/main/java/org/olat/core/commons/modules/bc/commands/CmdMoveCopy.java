@@ -55,6 +55,7 @@ import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,7 +160,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 			abortFailed(ureq, "failed");
 			return;
 		}
-		VFSStatus vfsStatus = VFSStatus.SUCCESS;
+		VFSSuccess vfsStatus = VFSSuccess.SUCCESS;
 		VFSContainer rootContainer = folderComponent.getRootContainer();
 		VFSItem vfsItem = rootContainer.resolve(selectedPath);
 		if (vfsItem == null || (vfsItem.canWrite() != VFSStatus.YES)) {
@@ -180,9 +181,9 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 			} else {
 				vfsStatus = target.copyFrom(vfsSource, ureq.getIdentity());
 			}
-			if (vfsStatus != VFSStatus.SUCCESS) {
+			if (vfsStatus != VFSSuccess.SUCCESS) {
 				String errorKey = "failed";
-				if (vfsStatus == VFSStatus.ERROR_QUOTA_EXCEEDED)
+				if (vfsStatus == VFSSuccess.ERROR_QUOTA_EXCEEDED)
 					errorKey = "QuotaExceeded";
 				abortFailed(ureq, errorKey);
 				return;

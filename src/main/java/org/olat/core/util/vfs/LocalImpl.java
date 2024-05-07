@@ -68,7 +68,7 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	public VFSStatus canDelete() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canDelete())
-			return VFSStatus.NO_SECURITY_DENIED;
+			return VFSStatus.NO;
 		return (basefile.canWrite() ? VFSStatus.YES : VFSStatus.NO);
 	}
 
@@ -76,7 +76,7 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	public VFSStatus canCopy() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canCopy())
-			return VFSStatus.NO_SECURITY_DENIED;
+			return VFSStatus.NO;
 		return VFSStatus.YES;
 	}
 
@@ -84,7 +84,7 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	public VFSStatus canRename() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canWrite())
-			return VFSStatus.NO_SECURITY_DENIED;
+			return VFSStatus.NO;
 		return VFSStatus.YES;
 	}
 
