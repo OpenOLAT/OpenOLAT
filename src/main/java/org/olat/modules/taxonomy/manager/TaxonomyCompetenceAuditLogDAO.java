@@ -54,6 +54,7 @@ public class TaxonomyCompetenceAuditLogDAO {
 		competenceXStream.omitField(TaxonomyCompetenceImpl.class, "lastModified");
 		competenceXStream.omitField(TaxonomyCompetenceImpl.class, "taxonomy");
 		competenceXStream.omitField(TaxonomyLevelImpl.class, "taxonomy");
+		competenceXStream.omitField(TaxonomyLevelImpl.class, "type");
 	}
 	
 	@Autowired
