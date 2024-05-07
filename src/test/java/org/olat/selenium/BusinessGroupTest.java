@@ -214,11 +214,10 @@ public class BusinessGroupTest extends Deployments {
 		String directoryName = "New directory";
 		group
 			.openFolder()
-			.assertOnFolderCmp()
-			.createDirectory(directoryName)
-			.assertOnDirectory(directoryName)
-			.createHTMLFile("New file", "Some really cool content.")
-			.assertOnFile("New file.html");
+			.createDirectoryV2(directoryName)
+			.assertOnDirectoryV2(directoryName)
+			.createHTMLFileV2("New file", "Some really cool content.")
+			.assertOnFileCard("New file.html");
 		
 		//check forum
 		String threadBodyMarker = UUID.randomUUID().toString();

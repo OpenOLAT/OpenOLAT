@@ -389,6 +389,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		addBrowserLink = uifactory.addFormLink("browser.add", formLayout, Link.LINK);
 		addBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_file_browser");
+		addBrowserLink.setElementCssClass("o_sel_folder_add_browser");
 		createDropdown.addElement(addBrowserLink);
 		
 		recordSpacer = new SpacerItem("createSpace");
@@ -396,10 +397,12 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		createDocumentLink = uifactory.addFormLink("document.create", formLayout, Link.LINK);
 		createDocumentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		createDocumentLink.setElementCssClass("o_sel_folder_new_document");
 		createDropdown.addElement(createDocumentLink);
 		
 		createFolderLink = uifactory.addFormLink("folder.create", formLayout, Link.LINK);
 		createFolderLink.setIconLeftCSS("o_icon o_icon-fw o_icon_new_folder");
+		createFolderLink.setElementCssClass("o_sel_folder_new_folder");
 		createDropdown.addElement(createFolderLink);
 		
 		recordSpacer = new SpacerItem("recordSpace");

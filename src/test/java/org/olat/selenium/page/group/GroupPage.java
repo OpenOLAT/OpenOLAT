@@ -167,8 +167,7 @@ public class GroupPage {
 	
 	public FolderPage openFolder() {
 		openMenuItem(folderTool);
-		OOGraphene.waitElement(FolderPage.folderBy, browser);
-		return new FolderPage(browser);
+		return new FolderPage(browser).assertOnFolderV2();
 	}
 	
 	public ForumPage openForum() {
