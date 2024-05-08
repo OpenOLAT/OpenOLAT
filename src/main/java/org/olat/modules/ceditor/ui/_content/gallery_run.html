@@ -7,10 +7,14 @@
 	#if($showPagination)
 		#set($bottomPaddingClass = "o_bottom_padding_for_pagination")
 	#end
-	#set($swiperWrapperClass = "")
+	#set($gridModeClass = "")
 	#if($gridMode)
-		#set($swiperWrapperClass = "o_swiper_wrapper")
+		#set($gridModeClass = "o_grid_mode")
 		#set($bottomPaddingClass = "")
+	#end
+	#set($spacerClass = "")
+	#if($previewMode)
+		#set($spacerClass = "o_use_preview_spacer")
 	#end
 	<div class="o_gallery_header">
 		<div class="o_gallery_title">$r.escapeHtml($title)</div>
@@ -25,8 +29,9 @@
 	<div class="o_gallery_images_with_side_nav">
 	<div id="o_swiper_button_prev_$r.getCId()" class="swiper-button-prev"></div>
 	#end
-	<div id="o_swiper_$r.getCId()" class="swiper o_gallery_images">
-		<div class="swiper-wrapper $swiperWrapperClass">
+	<div id="o_swiper_$r.getCId()" class="swiper o_gallery_images $spacerClass">
+		<div class="o_spacer"></div>
+		<div class="swiper-wrapper $gridModeClass">
 			#foreach($galleryImageItem in $galleryImageItems)
 				<div class="swiper-slide $bottomPaddingClass">
 					<img src="$mapperUrl/${galleryImageItem.id()}">
@@ -69,6 +74,34 @@
 </div>
 <script>
 	"use strict";
+
+	function setGalleryImagesSpacer() {
+		jQuery(function() {
+			var images = jQuery('#o_swiper_$r.getCId() .swiper-slide img');
+			var aspectRatios = [];
+			images.each(function(i, obj) {
+				var aspectRatio = obj.width / obj.height;
+				aspectRatios.push(aspectRatio);
+			});
+			aspectRatios.sort();
+			var medianAspectRatio = aspectRatios[Math.floor(aspectRatios.length / 2)];
+			var inverseAspectRatio = 1 / medianAspectRatio;
+			var paddingTop = `calc(100% * ${inverseAspectRatio})`;
+
+			var spacer = jQuery('#o_swiper_${r.getCId()}.o_use_preview_spacer .o_spacer');
+			spacer.css('padding-top', paddingTop);
+
+			images.each(function(i, obj) {
+				var aspectRatio = obj.width / obj.height;
+				if (aspectRatio > medianAspectRatio) {
+					jQuery(obj).css('width', '100%');
+				} else {
+					jQuery(obj).css('height', '100%');
+				}
+			});
+		});
+	}
+
 	var imageGallery = new Swiper('#o_swiper_$r.getCId()', {
 		grid: {
 			rows: $rows,
@@ -87,6 +120,13 @@
 			clickable: true
 		},
 		#end
+		on: {
+			init: function() {
+				#if($previewMode)
+					setGalleryImagesSpacer();
+				#end
+			},
+		},
 	});
 
 	#if($showThumbnails)

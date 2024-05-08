@@ -1623,6 +1623,34 @@ table.o_ce_table {
 	.o_gallery_images {
 		padding: 0;
 
+		&.o_use_preview_spacer {
+			position: relative;
+			width: 100%;
+
+			.o_spacer {
+				width: 100%;
+				padding-top: calc(100% * 0.75); /* default aspect ratio 4:3: 0.75 */
+			}
+
+			.swiper-wrapper {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+
+				.swiper-slide {
+					display: flex;
+					overflow: hidden;
+					justify-content: center;
+					align-items: center;
+
+					img {
+						max-width: 100%;
+						max-height: 100%;
+					}
+				}
+			}
+		}
+
 		.o_title_and_description {
 			margin-top: 10px;
 
@@ -1638,8 +1666,10 @@ table.o_ce_table {
 			padding-bottom: 24px;
 		}
 
-		.swiper-wrapper.o_swiper_wrapper {
-			height: calc(100% - 20px);
+		.swiper-wrapper {
+			&.o_grid_mode {
+				height: calc(100% - 20px);
+			}
 		}
 	}
 
