@@ -97,7 +97,8 @@ public class SurveyRunController extends BasicController {
 		this.surveyIdent = surveyManager.getSurveyIdentifier(courseNode, courseEntry);
 		this.secCallback = secCallback;
 
-		if (RepositoryEntryStatusEnum.deleted == referencedEntry.getEntryStatus()
+		if (referencedEntry == null
+				|| RepositoryEntryStatusEnum.deleted == referencedEntry.getEntryStatus()
 				|| RepositoryEntryStatusEnum.trash == referencedEntry.getEntryStatus()) {
 			EmptyStateConfig emptyState = EmptyStateConfig.builder()
 					.withIconCss("o_survey_icon")
@@ -108,10 +109,9 @@ public class SurveyRunController extends BasicController {
 			emptyStateCmp.setTranslator(getTranslator());
 			putInitialPanel(emptyStateCmp);
 			return;
-		} else {
-			mainVC = createVelocityContainer("run");
 		}
-
+		
+		mainVC = createVelocityContainer("run");
 		putInitialPanel(mainVC);
 
 		initVelocityContainer(ureq);

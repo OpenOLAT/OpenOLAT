@@ -70,7 +70,8 @@ public class FormRunController extends BasicController {
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
 		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdent);
-		if (RepositoryEntryStatusEnum.deleted == referencedEntry.getEntryStatus()
+		if (survey == null || referencedEntry == null
+				|| RepositoryEntryStatusEnum.deleted == referencedEntry.getEntryStatus()
 				|| RepositoryEntryStatusEnum.trash == referencedEntry.getEntryStatus()) {
 			EmptyStateConfig emptyState = EmptyStateConfig.builder()
 					.withIconCss("o_icon_form")

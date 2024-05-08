@@ -345,6 +345,10 @@ public class FormManagerImpl implements FormManager {
 	@Override
 	public List<FormParticipation> getFormParticipations(EvaluationFormSurvey survey,
 			FormParticipationSearchParams searchParams) {
+		if (survey == null) {
+			return List.of();
+		}
+		
 		List<EvaluationFormParticipation> participations = getParticipations(survey, null, searchParams.isAdmin());
 		
 		List<Identity> coachedIdentities = getCoachedIdentities(searchParams);

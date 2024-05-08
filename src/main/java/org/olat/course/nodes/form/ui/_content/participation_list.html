@@ -1,4 +1,10 @@
-#if($r.available("buttons.top"))
-	$r.render("buttons.top")
+#if($errorNoSurvey)
+	<div class="o_info">
+		$r.translate("error.no.survey")
+	<div>
+#else
+	#if($r.available("buttons.top"))
+		$r.render("buttons.top")
+	#end
+	$r.render("table")
 #end
-$r.render("table")
