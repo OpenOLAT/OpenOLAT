@@ -1662,11 +1662,35 @@ table.o_ce_table {
 
 	.o_gallery_thumbs {
 		width: 100%;
-		height: 64px;
 		margin-top: 8px;
+		position: relative;
+
+		.o_spacer {
+			width: 100%;
+			padding-top: calc((20% - 8px) * 0.5625); /* aspect ratio 16:9: 0.5625 */
+		}
+
+		.swiper-wrapper {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+		}
 
 		.swiper-slide {
+			display: flex;
+			overflow: hidden;
+			justify-content: center;
+			align-items: center;
 			max-width: calc(20% - 8px);
+			height: 100%;
+			border-radius: $border-radius-base;
+			border: 1px solid $o-slider-border;
+
+			img {
+				flex-shrink: 0;
+				min-width: 100%;
+				min-height: 100%;
+			}
 		}
 	}
 }
