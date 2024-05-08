@@ -205,8 +205,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_info_ap { @include o-add-icon('info-circle');}
 .o_icon_info_msg { @include o-add-icon('exclamation-circle'); color: $brand-danger}
 .o_icon_info_resource { @include o-add-icon('info-circle');}
-.o_icon_inheritance_root { @include o-add-icon('arrow-circle-down');}
-.o_icon_inheritance_inherited { @include o-add-icon('arrow-circle-down', false);}
+.o_icon_inheritance_root { @include o-add-icon('circle-down');}
+.o_icon_inheritance_inherited { @include o-add-icon('circle-down', false);}
 .o_icon_inheritance_none { @include o-add-icon('circle', false);}
 .o_icon_inline_editable { @include o-add-icon('edit');}
 .o_icon_inspect { @include o-add-icon('cog');}
