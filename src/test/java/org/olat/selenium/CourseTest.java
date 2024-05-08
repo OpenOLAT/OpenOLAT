@@ -40,6 +40,7 @@ import org.olat.course.CourseModule;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.modules.invitation.restapi.InvitationVO;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.core.AdministrationPage;
@@ -65,11 +66,13 @@ import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.AuthoringEnvPage.Wizard;
+import org.olat.selenium.page.survey.SurveyPage;
 import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.RepositorySettingsPage;
 import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
+import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.RepositoryRestClient;
 import org.olat.test.rest.UserRestClient;
@@ -2177,6 +2180,102 @@ public class CourseTest extends Deployments {
 			.assertOnUsers(externalUser)
 			.selectUser(externalUser)
 			.assertPassed(externalUser);
+	}
+	
+	/**
+	 * An administrator import per REST a form and a course which uses
+	 * this form with the option "WITH_SOFT_KEY" enabled. The import will
+	 * linked the course to the form resource with its soft key and not import
+	 * it.<br>
+	 * The course imported, the author checks that the resource is
+	 * linked and publish the course for a participant. The participant log
+	 * in and submit the survey.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void importCourseWithSoftKey()
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Suleika");
+		
+		// Deploy the form
+		URL formUrl = ArquillianDeployments.class.getResource("file_resources/form_soft_key.zip");
+		String formTitle = "Form-SK " + UUID.randomUUID();
+		RepositoryEntryVO formEntry = new RepositoryRestClient(deploymentUrl)
+			.deployResourceBySoftKey(new File(formUrl.toURI()), formTitle, "test9_1_109770189125568");
+		formTitle = formEntry.getDisplayname();
+		
+		// Deploy the course
+		URL courseUrl = ArquillianDeployments.class.getResource("file_resources/course_export_soft_key.zip");
+		String courseTitle = "Course-SK " + UUID.randomUUID();
+		new RepositoryRestClient(deploymentUrl)
+			.deployResourceBySoftKey(new File(courseUrl.toURI()), courseTitle, courseTitle.replace(" ", "-").toLowerCase().substring(0, 36));
+		
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.openResource(courseTitle);
+		
+		CoursePageFragment courseRuntime = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = courseRuntime
+			.edit()
+			.selectNode("Form")
+			.selectTabFormContent()
+			.assertOnResource(formTitle);
+		
+		courseEditor
+			.selectNode("Survey")
+			.selectTabSurveyContent()
+			.assertOnResource(formTitle);
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		
+		MembersPage membersPage = courseEditor
+			.clickToolbarBack()
+			.members();
+			
+		membersPage
+			.addMember()
+			.importList()
+			.setMembers(user)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
+		userLoginPage
+			.loginAs(user.getLogin(), user.getPassword());
+		
+		//open the course
+		NavigationPage userNavBar = NavigationPage.load(browser);
+		userNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//go to the group task
+		CoursePageFragment userCourse = new CoursePageFragment(browser);
+		userCourse
+			.clickTree()
+			.selectWithTitle("Survey");
+		
+		SurveyPage userSurvey = SurveyPage.loadPage(browser)
+			.assertOnSurvey();
+		
+		userSurvey
+			.answerSingleChoice("Soft")
+			.saveAndCloseSurvey()
+			.assertOnSurveyClosed();
 	}
 	
 	/**

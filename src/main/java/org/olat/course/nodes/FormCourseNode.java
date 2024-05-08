@@ -236,7 +236,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			setEvaluationFormReference(re, getModuleConfiguration());
 			postImportCopy(course, this);
 		} else if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
-			// Do nothing, keep the reference
+			postImportCopy(course, this);
 		} else {
 			removeEvaluationFormReference(getModuleConfiguration());
 		}
