@@ -2314,6 +2314,7 @@ public class CourseElementTest extends Deployments {
 			.addSingleChoiceElement()
 			.addSingleChoice("Mercury", 2)
 			.addSingleChoice("Venus", 3)
+			.scrollTop()
 			.closeEditFragmentOfResource();
 		
 		surveyEditor
