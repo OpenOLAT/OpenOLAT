@@ -204,4 +204,9 @@ public class ContentEditorPage extends ContentViewPage {
 		}
 		return this;
 	}
+	
+	public ContentEditorPage scrollTop() {
+		OOGraphene.scrollTop(browser);
+		return this;
+	}
 }

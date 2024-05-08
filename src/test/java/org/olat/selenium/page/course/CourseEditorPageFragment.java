@@ -82,6 +82,12 @@ public class CourseEditorPageFragment {
 		return this;
 	}
 	
+	public CourseEditorPageFragment assertOnResource(String resourceTitle) {
+		By landingBy = By.xpath("//div[@class='o_course_editor']//a/span[text()[contains(.,'" + resourceTitle + "')]]");
+		OOGraphene.waitElement(landingBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Select the root course element.
 	 */
@@ -333,7 +339,11 @@ public class CourseEditorPageFragment {
 	}
 	
 	public CourseEditorPageFragment selectTabSurveyContent() {
-		return selectTabContent(chooseSurveyButton);
+		return selectTabContent(By.cssSelector("fieldset.o_sel_survey_config_form"));
+	}
+	
+	public CourseEditorPageFragment selectTabFormContent() {
+		return selectTabContent(By.cssSelector("fieldset.o_sel_form_config_form"));
 	}
 	
 	public CourseEditorPageFragment selectTabCPContent() {
@@ -356,11 +366,11 @@ public class CourseEditorPageFragment {
 		return selectTabContent(chooseWikiButton);
 	}
 	
-	private CourseEditorPageFragment selectTabContent(By selectButtonBy) {
+	private CourseEditorPageFragment selectTabContent(By targetBy) {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_repo_entry>a");
 		OOGraphene.waitElement(tabBy, browser);
 		browser.findElement(tabBy).click();
-		OOGraphene.waitElement(selectButtonBy, browser);
+		OOGraphene.waitElement(targetBy, browser);
 		return this;
 	}
 	

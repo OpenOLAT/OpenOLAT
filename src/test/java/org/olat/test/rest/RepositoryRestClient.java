@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
@@ -34,12 +36,14 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.olat.core.util.StringHelper;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -98,6 +102,66 @@ public class RepositoryRestClient {
 		
 		String displayname = "Demo-Kurs-" + UUID.randomUUID().toString();
 		return deployCourse(archive, "-", displayname);
+	}
+	
+	/**
+	 * Import a learn resource or a course with a specific soft key. If
+	 * the soft key is already used, returns the repository entry which uses
+	 * it and don't import again the file.
+	 * 
+	 * @param archive The ZIP archive
+	 * @param displayname The name of the resource
+	 * @param softKey The soft key
+	 * @return The repository entry
+	 * @throws URISyntaxException
+	 * @throws IOException
+	 */
+	public RepositoryEntryVO deployResourceBySoftKey(File archive, String displayname, String softKey)
+	throws URISyntaxException, IOException {
+		RestConnection conn = new RestConnection(deploymentUrl);
+		assertTrue(conn.login(username, password));
+		
+		// Check first if ressource already exists
+		List<RepositoryEntryVO> entries = getResourceByExternalId(conn, softKey);
+		if(entries != null && entries.size() == 1) {
+			return entries.get(0);
+		}
+
+		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo").path("entries").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+				.addBinaryBody("file", archive, ContentType.APPLICATION_OCTET_STREAM, archive.getName())
+				.addTextBody("filename", archive.getName())
+				.addTextBody("resourcename", "-")
+				.addTextBody("displayname", displayname)
+				.addTextBody("softkey", softKey)
+				.addTextBody("externalId", softKey)
+				.addTextBody("withLinkedReferences", RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY.name())
+				.build();
+		method.setEntity(entity);
+		
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		
+		RepositoryEntryVO vo = conn.parse(response, RepositoryEntryVO.class);
+		assertNotNull(vo);
+		assertNotNull(vo.getDisplayname());
+		assertNotNull(vo.getKey());
+		conn.shutdown();
+		return vo;
+	}
+	
+	private List<RepositoryEntryVO> getResourceByExternalId(RestConnection conn, String externalId)
+	throws URISyntaxException, IOException {
+		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo").path("entries")
+				.queryParam("externalId", externalId).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		if(response.getStatusLine().getStatusCode() == 200) {
+			return conn.parseList(response, RepositoryEntryVO.class);
+		}
+		return new ArrayList<>();
 	}
 	
 	public RepositoryEntryVO deployResource(File archive, String resourcename, String displayname)

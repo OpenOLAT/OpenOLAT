@@ -70,6 +70,7 @@ import org.olat.test.JunitTestHelper.IdentityWithLogin;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 
 /**
  * 
@@ -85,6 +86,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RestConnection {
 	
 	private static final Logger log = Tracing.createLoggerFor(RestConnection.class);
+
+	private static final JsonFactory jsonFactory = new JsonFactory();
+	private static final ObjectMapper mapper = new ObjectMapper(jsonFactory);
 	
 	private int PORT = 9998;
 	private String HOST = "localhost";
@@ -94,7 +98,6 @@ public class RestConnection {
 	private final BasicCookieStore cookieStore = new BasicCookieStore();
 	private final BasicCredentialsProvider provider = new BasicCredentialsProvider();
 	private final CloseableHttpClient httpclient;
-	private static final JsonFactory jsonFactory = new JsonFactory();
 
 	private String securityToken;
 	
@@ -331,7 +334,6 @@ public class RestConnection {
 	
 	public String stringuified(Object obj) {
 		try(StringWriter w = new StringWriter()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
 			mapper.writeValue(w, obj);
 			return w.toString();
 		} catch (Exception e) {
@@ -342,7 +344,6 @@ public class RestConnection {
 	
 	public <U> U parse(HttpEntity entity, Class<U> cl) {
 		try(InputStream body = entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
 			return mapper.readValue(body, cl);
 		} catch (Exception e) {
 			log.error("", e);
@@ -352,9 +353,19 @@ public class RestConnection {
 	
 	public <U> U parse(HttpResponse response, Class<U> cl) {
 		try(InputStream body = response.getEntity().getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
 			return mapper.readValue(body, cl);
 		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public <U> List<U> parseList(HttpResponse response, Class<U> cl) {
+		CollectionType javaType = mapper.getTypeFactory()
+			      .constructCollectionType(List.class, cl);
+		try(InputStream in=response.getEntity().getContent()) {
+			return mapper.readValue(in, javaType);
+		} catch(Exception e) {
 			log.error("", e);
 			return null;
 		}

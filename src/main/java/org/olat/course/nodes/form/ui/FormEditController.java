@@ -57,7 +57,7 @@ public class FormEditController extends ActivateableTabbableDefaultController im
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CONFIG), configController.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CONFIG), "o_sel_repo_entry", configController.getInitialComponent());
 	}
 
 	@Override

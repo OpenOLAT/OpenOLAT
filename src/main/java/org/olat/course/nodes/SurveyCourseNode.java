@@ -315,7 +315,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode
 			setEvaluationFormReference(re, getModuleConfiguration());
 			postImportCopy(course, getIdent());
 		} else if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
-			// Do nothing, keep the reference
+			postImportCopy(course, getIdent());
 		} else {
 			removeEvaluationFormReference(getModuleConfiguration());
 		}
