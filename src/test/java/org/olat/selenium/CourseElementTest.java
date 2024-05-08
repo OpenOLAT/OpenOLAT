@@ -1349,7 +1349,7 @@ public class CourseElementTest extends Deployments {
 		FolderPage directory = folder
 			.openReturnBox()
 			.assertOnEmptyFolderCard()
-			.addFileCard(coachImageFile)
+			.quickUploadFile(coachImageFile)
 			.assertOnFileCard(coachImageFile.getName());
 		
 		// The participant come in
@@ -1379,7 +1379,7 @@ public class CourseElementTest extends Deployments {
 		participantFolder
 			.openDropBox()
 			.assertOnEmptyFolderCard()
-			.addFileCard(participantImageFile)
+			.quickUploadFile(participantImageFile)
 			.assertOnFileCard(participantImageFile.getName());
 		
 		//Author check the image in the participant drop box

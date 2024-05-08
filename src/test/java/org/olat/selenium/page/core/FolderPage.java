@@ -26,7 +26,6 @@ import java.util.List;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -46,19 +45,24 @@ public class FolderPage {
 		this.browser = browser;
 	}
 	
-	public FolderPage assertOnFolderCmp() {
-		By folderCmpBy = By.className("o_briefcase_foldercomp");
-		OOGraphene.waitElement(folderCmpBy, browser);
-		return this;
-	}
-	
-	public FolderPage assertOnFolderV2() {
+	/**
+	 * Assert that the table is visible.
+	 * s
+	 * @return Itself
+	 */
+	public FolderPage assertOnFolderTable() {
 		By folderCmpBy = By.cssSelector(".o_folder .o_folder_table");
 		OOGraphene.waitElement(folderCmpBy, browser);
 		return this;
 	}
 	
-	public FolderPage createDirectoryV2(String name) {
+	/**
+	 * Add a new folder.
+	 * 
+	 * @param name The folder name
+	 * @return Itself
+	 */
+	public FolderPage createDirectory(String name) {
 		By newFileBy = By.cssSelector(".o_folder_create_group>div>button.btn");
 		OOGraphene.waitElement(newFileBy, browser);
 		browser.findElement(newFileBy).click();
@@ -81,13 +85,13 @@ public class FolderPage {
 		return this;
 	}
 	
-	public FolderPage assertOnDirectoryV2(String name) {
+	public FolderPage assertOnDirectory(String name) {
 		By directoryBy = By.xpath("//div[contains(@class,'o_folder_table')]//div[contains(@class,'o_folder_card')]//h5/a/span[contains(text(),'" + name + "')]");
 		OOGraphene.waitElement(directoryBy, browser);
 		return this;
 	}
 	
-	public FolderPage createHTMLFileV2(String name, String content) {
+	public FolderPage createHTMLFile(String name, String content) {
 		By newFileBy = By.cssSelector(".o_folder_create_group>div>button.btn");
 		OOGraphene.waitElement(newFileBy, browser);
 		browser.findElement(newFileBy).click();
@@ -137,31 +141,13 @@ public class FolderPage {
 		return this;
 	}
 	
+	/**
+	 * Upload a file via the upload dialog.
+	 * 
+	 * @param file The file to upload
+	 * @return Itself
+	 */
 	public FolderPage uploadFile(File file) {
-		try {
-			By newFileBy = By.className("o_bc_upload");
-			OOGraphene.waitElement(newFileBy, browser);
-			browser.findElement(newFileBy).click();
-			OOGraphene.waitModalDialog(browser);
-			
-			By inputBy = By.cssSelector("div.modal-dialog div.o_fileinput input[type='file']");
-			OOGraphene.uploadFile(inputBy, file, browser);
-			By uploadedBy = By.cssSelector("div.modal-dialog div.o_sel_file_uploaded");
-			OOGraphene.waitElementSlowly(uploadedBy, 5, browser);
-			OOGraphene.waitingALittleBit();
-			
-			By saveButtonBy = By.cssSelector("div.o_sel_upload_buttons button.btn-primary");
-			OOGraphene.click(saveButtonBy, browser);
-			OOGraphene.waitModalDialogDisappears(browser);
-		} catch (Error | Exception e) {
-			OOGraphene.takeScreenshot("uploadFile", browser);
-			throw e;
-		}
-		return this;
-	}
-	
-	
-	public FolderPage uploadFileV2(File file) {
 		try {
 			By newFileBy = By.cssSelector(".o_folder_create_group>div>button.btn");
 			OOGraphene.waitElement(newFileBy, browser);
@@ -191,7 +177,13 @@ public class FolderPage {
 		return this;
 	}
 	
-	public FolderPage addFileCard(File file) {
+	/**
+	 * Use the quick upload field in the folder component to upload a file.
+	 * 
+	 * @param file The file to upload
+	 * @return Itselfs
+	 */
+	public FolderPage quickUploadFile(File file) {
 		By addFileBy = By.cssSelector(".o_folder_cmds .o_folder_create_group div.o_fileinput");
 		OOGraphene.waitElement(addFileBy, browser);
 		By inputFileBy = By.cssSelector(".o_folder_cmds .o_folder_create_group div.o_fileinput input[type='file']");
@@ -200,7 +192,7 @@ public class FolderPage {
 		return this;
 	}
 	
-	public FolderPage unzipFileV2(String filename) {
+	public FolderPage unzipFile(String filename) {
 		By unzipBy = By.xpath("//div[@class='o_folder_table']//div[contains(@class,'o_folder_card_meta')]/div[div/h5/div/span[text()[contains(.,'" + filename + "')]]]/a[i[contains(@class,'o_icon_actions')]]");
 		OOGraphene.waitElement(unzipBy, browser);
 		browser.findElement(unzipBy).click();
@@ -212,14 +204,7 @@ public class FolderPage {
 		browser.findElement(unzippedFolderBy).click();
 		
 		String directoryName = filename.replace(".zip", "");
-		return assertOnDirectoryV2(directoryName);
-	}
-	
-	public FolderPage selectFile(String filename) {
-		By selectBy = By.xpath("//div[@class='o_briefcase_folder']//tr[td/a[text()[contains(.,'" + filename + "')]]]/td/input[@type='checkbox']");
-		WebElement selectEl = browser.findElement(selectBy);
-		OOGraphene.check(selectEl, Boolean.TRUE);
-		return this;
+		return assertOnDirectory(directoryName);
 	}
 	
 	public FolderPage selectRootDirectory() {
@@ -230,21 +215,9 @@ public class FolderPage {
 		return this;
 	}
 	
-	public FolderPage assertOnFile(String filename) {
-		By fileBy = By.xpath("//table[contains(@class,'o_bc_table')]//a[contains(text(),'" + filename + "')]");
-		OOGraphene.waitElement(fileBy, browser);
-		return this;
-	}
-	
 	public FolderPage assertOnFileCard(String filename) {
 		By fileBy = By.xpath("//div[contains(@class,'o_folder_table')]//h5/a/span[contains(text(),'" + filename + "')]");
 		OOGraphene.waitElement(fileBy, browser);
-		return this;
-	}
-	
-	public FolderPage assertOnEmptyFolder() {
-		By emptyBy = By.cssSelector(".o_table_wrapper .o_empty_state .o_empty_msg");
-		OOGraphene.waitElement(emptyBy, browser);
 		return this;
 	}
 
@@ -253,6 +226,4 @@ public class FolderPage {
 		OOGraphene.waitElement(emptyBy, browser);
 		return this;
 	}
-	
-	
 }

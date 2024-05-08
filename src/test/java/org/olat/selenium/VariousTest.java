@@ -182,9 +182,9 @@ public class VariousTest extends Deployments {
 		File documentsFile = new File(documentsUrl.toURI());
 		
 		new FolderPage(browser)
-			.assertOnFolderV2()
-			.uploadFileV2(documentsFile)
-			.unzipFileV2(documentsFile.getName());
+			.assertOnFolderTable()
+			.uploadFile(documentsFile)
+			.unzipFile(documentsFile.getName());
 		
 		navigation
 			.openAdministration()
@@ -232,8 +232,8 @@ public class VariousTest extends Deployments {
 			.clickToolbarBack();
 		
 		new FolderPage(browser)
-			.assertOnFolderV2()
-			.createDirectoryV2("Topics");
+			.assertOnFolderTable()
+			.createDirectory("Topics");
 
 		navigation
 			.openAdministration()

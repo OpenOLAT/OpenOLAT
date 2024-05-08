@@ -167,7 +167,7 @@ public class GroupPage {
 	
 	public FolderPage openFolder() {
 		openMenuItem(folderTool);
-		return new FolderPage(browser).assertOnFolderV2();
+		return new FolderPage(browser).assertOnFolderTable();
 	}
 	
 	public ForumPage openForum() {

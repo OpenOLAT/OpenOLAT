@@ -78,7 +78,7 @@ public class UserToolsPage {
 	 */
 	public FolderPage assertOnFolderV2() {
 		return new FolderPage(browser)
-			.assertOnFolderV2();
+			.assertOnFolderTable();
 	}
 	
 	/**

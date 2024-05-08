@@ -214,9 +214,9 @@ public class BusinessGroupTest extends Deployments {
 		String directoryName = "New directory";
 		group
 			.openFolder()
-			.createDirectoryV2(directoryName)
-			.assertOnDirectoryV2(directoryName)
-			.createHTMLFileV2("New file", "Some really cool content.")
+			.createDirectory(directoryName)
+			.assertOnDirectory(directoryName)
+			.createHTMLFile("New file", "Some really cool content.")
 			.assertOnFileCard("New file.html");
 		
 		//check forum
