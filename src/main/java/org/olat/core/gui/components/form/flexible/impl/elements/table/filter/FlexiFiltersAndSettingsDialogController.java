@@ -90,24 +90,23 @@ public class FlexiFiltersAndSettingsDialogController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == filtersAndSettingsCtrl) {
-			if(event instanceof FiltersAndSettingsEvent) {
-				doSetSettings(ureq, (FiltersAndSettingsEvent)event);
-			} else if(event instanceof SelectFilterEvent) {
-				doSelectFilter(ureq, ((SelectFilterEvent)event).getFilterButton());
+			if(event instanceof FiltersAndSettingsEvent fse) {
+				doSetSettings(ureq, fse);
+			} else if(event instanceof SelectFilterEvent selectEvent) {
+				doSelectFilter(ureq, selectEvent.getFilterButton());
 			} else if(event instanceof CustomizeColumnsEvent) {
 				doCustomizeColumns();
 			} else if(event instanceof CustomizeSortEvent) {
 				doCustomizeSort(ureq);
 			}
 		} else if(source == filterCtrl) {
-			if(event instanceof ChangeValueEvent) {
-				ChangeValueEvent cve = (ChangeValueEvent)event;
+			if(event instanceof ChangeValueEvent cve) {
 				doApplyFilterValue(cve.getFilter(), cve.getValue());
 				closeSubPanel();
 			} 
 		} else if(source == sortCtrl) {
-			if(event instanceof CustomizeSortEvent) {
-				sortKey = ((CustomizeSortEvent)event).getSortKey();
+			if(event instanceof CustomizeSortEvent cse) {
+				sortKey = cse.getSortKey();
 				filtersAndSettingsCtrl.updateSort(sortKey);
 			}
 			closeSubPanel();

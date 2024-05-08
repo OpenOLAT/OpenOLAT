@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTablePeriodFilter.PeriodWithUnit;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -58,8 +59,8 @@ public class SearchIdentityParams {
 	private Date createdBefore;
 	private Date userLoginAfter;
 	private Date userLoginBefore;
-	private Date expireAfter;
-	private Date expiredSince;
+	private PeriodWithUnit expireAfter;
+	private PeriodWithUnit expiredSince;
 	private Integer status;
 	private List<Integer> exactStatusList;
 	private List<Integer> excludeStatusList;
@@ -430,19 +431,19 @@ public class SearchIdentityParams {
 		this.withoutEfficiencyStatements = withoutEfficiencyStatements;
 	}
 	
-	public Date getExpireIn() {
+	public PeriodWithUnit getExpireIn() {
 		return expireAfter;
 	}
 
-	public void setExpireIn(Date date) {
+	public void setExpireIn(PeriodWithUnit date) {
 		this.expireAfter = date;
 	}
 
-	public Date getExpiredSince() {
+	public PeriodWithUnit getExpiredSince() {
 		return expiredSince;
 	}
 
-	public void setExpiredSince(Date expiredSince) {
+	public void setExpiredSince(PeriodWithUnit expiredSince) {
 		this.expiredSince = expiredSince;
 	}
 

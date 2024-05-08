@@ -74,6 +74,11 @@ public class FlexiFilterPeriodController extends FormBasicController {
 		pastPK.add(SelectionValues.entry("past", pastLabel));
 		pastEl = uifactory.addDropdownSingleselect("past", null, formLayout, pastPK.keys(), pastPK.values());
 		pastEl.setDomReplacementWrapperRequired(false);
+		if(filterPeriod != null && filterPeriod.past()) {
+			pastEl.select("past", true);
+		} else {
+			pastEl.select("future", true);
+		}
 		
 		String val = filterPeriod == null ? "" : Integer.toString(filterPeriod.value());
 		valueEl = uifactory.addTextElement("value", null, 5, val, formLayout);

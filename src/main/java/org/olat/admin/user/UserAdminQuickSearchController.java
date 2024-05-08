@@ -90,11 +90,11 @@ public class UserAdminQuickSearchController extends FormBasicController {
 	 */
 	public UserAdminQuickSearchController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_DEFAULT);	
-		init(ureq);
+		init();
 		initForm(ureq);
 	}
 		
-	private void init(UserRequest ureq) {		
+	private void init() {		
 		List<UserPropertyHandler> allSearchFormPropertyHandlers = userManager.getUserPropertyHandlersFor(UserAdminQuickSearchController.class.getCanonicalName(), true);
 		userSearchFormPropertyHandlers = allSearchFormPropertyHandlers.stream()
 				.filter(prop -> !UserConstants.NICKNAME.equals(prop.getName()))// admin. has the login search field
@@ -150,8 +150,8 @@ public class UserAdminQuickSearchController extends FormBasicController {
 	 * @return List of identities. List can be empty, but never NULL. 
 	 */
 	List<Identity> getUserList() {
-		List<Identity> searchResult = new ArrayList<Identity>();
-		List<Organisation> searchableOrganisations = organisationService.getOrganisations(getIdentity(), new OrganisationRoles[] { OrganisationRoles.usermanager, OrganisationRoles.administrator });
+		List<Identity> searchResult = new ArrayList<>();
+		List<Organisation> searchableOrganisations = organisationService.getOrganisations(getIdentity(), OrganisationRoles.usermanager, OrganisationRoles.administrator);
 		
 		String searchElValue = searchEl.getValue();
 		if(StringHelper.containsNonWhitespace(searchElValue)) {

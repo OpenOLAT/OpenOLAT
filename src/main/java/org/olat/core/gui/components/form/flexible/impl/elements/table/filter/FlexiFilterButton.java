@@ -91,8 +91,7 @@ public class FlexiFilterButton {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof FlexiFilterButton) {
-			FlexiFilterButton filterButton = (FlexiFilterButton)obj;
+		if(obj instanceof FlexiFilterButton filterButton) {
 			return filter != null && filter.getFilter() != null && filterButton.getFilter() != null
 					&& filter.getFilter().equals(filterButton.getFilter().getFilter());
 		}

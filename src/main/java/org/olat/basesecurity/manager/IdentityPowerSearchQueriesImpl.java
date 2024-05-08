@@ -776,10 +776,10 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			dbq.setParameter("lastloginBefore", params.getUserLoginBefore(), TemporalType.TIMESTAMP);
 		}
 		if(params.getExpireIn() != null) {
-			dbq.setParameter("expireIn", params.getExpireIn(), TemporalType.TIMESTAMP);
+			dbq.setParameter("expireIn", params.getExpireIn().toDateFromNow(), TemporalType.TIMESTAMP);
 		}
 		if(params.getExpiredSince() != null) {
-			dbq.setParameter("expiredSince", params.getExpiredSince(), TemporalType.TIMESTAMP);
+			dbq.setParameter("expiredSince", params.getExpiredSince().toDateFromNow(), TemporalType.TIMESTAMP);
 		}
 		
 		if(params.getExactStatusList() != null && !params.getExactStatusList().isEmpty()) {

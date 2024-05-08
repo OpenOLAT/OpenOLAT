@@ -94,8 +94,7 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 				filterLinks.add(link);
 			}
 			
-			if(formLayout instanceof FormLayoutContainer) {
-				FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			if(formLayout instanceof FormLayoutContainer layoutCont) {
 				layoutCont.contextPut("filters", filterLinks);
 			}
 		}
@@ -176,12 +175,9 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 			fireEvent(ureq, new FiltersAndSettingsEvent(FiltersAndSettingsEvent.FILTERS_RESET));
 		} else if(source == sortLink) {
 			fireEvent(ureq, new CustomizeSortEvent());
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if(link.getUserObject() instanceof FlexiFilterButton) {
-				FlexiFilterButton filterButton = (FlexiFilterButton)link.getUserObject();
-				fireEvent(ureq, new SelectFilterEvent(filterButton));
-			}
+		} else if(source instanceof FormLink link
+				&&link.getUserObject() instanceof FlexiFilterButton filterButton) {
+			fireEvent(ureq, new SelectFilterEvent(filterButton));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

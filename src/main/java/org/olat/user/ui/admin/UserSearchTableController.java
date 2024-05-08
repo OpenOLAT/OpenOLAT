@@ -20,7 +20,6 @@
 package org.olat.user.ui.admin;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +61,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTablePeriodFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTablePeriodFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
@@ -374,13 +373,22 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	}
 
 	public void loadModel(SearchIdentityParams params) {
+		List<FlexiTableFilterValue> filterValues = new ArrayList<>(4);
 		if (settings.isStatusFilter() && params.getExactStatusList() != null && !params.getExactStatusList().isEmpty()) {
-			Collection<String> keys = params.getExactStatusList().stream()
-					.map(i -> Integer.toString(i))
-					.collect(Collectors.toSet());
-			tableEl.setSelectedFilterKeys(keys);
-			params.setExactStatusList(null);
+			List<String> status = params.getExactStatusList().stream()
+				.map(Object::toString).toList();
+			filterValues.add(FlexiTableFilterValue.valueOf(UserSearchTableController.FILTER_STATUS, status));
 		}
+		if (params.getExpireIn() != null ) {
+			filterValues.add(FlexiTableFilterValue.valueOf(UserSearchTableController.FILTER_INACTIVATION_DATE, params.getExpireIn()));	
+		}
+		if (params.getExpiredSince() != null ) {
+			filterValues.add(FlexiTableFilterValue.valueOf(UserSearchTableController.FILTER_INACTIVATION_DATE, params.getExpiredSince()));	
+		}
+		if(!filterValues.isEmpty()) {
+			tableEl.setFiltersValues(null, null,filterValues);
+		}
+
 		currentSearchParams = params;
 		UserSearchDataSource dataSource = new UserSearchDataSource(params, userPropertyHandlers, getLocale());
 		tableModel.setSource(dataSource);
@@ -393,14 +401,6 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	
 	public void loadModel(List<Identity> identityList) {
 		// Activate all filters
-		List<String> statusList = new ArrayList<>();
-		statusList.add(Identity.STATUS_ACTIV.toString());
-		statusList.add(Identity.STATUS_PERMANENT.toString());
-		statusList.add(Identity.STATUS_LOGIN_DENIED.toString());
-		statusList.add(Identity.STATUS_PENDING.toString());
-		statusList.add(Identity.STATUS_INACTIVE.toString());
-		tableEl.setSelectedFilterKeys(statusList);
-		
 		if(identityList.isEmpty()) {
 			tableModel.setSource(new EmptyDataSource());
 		} else {

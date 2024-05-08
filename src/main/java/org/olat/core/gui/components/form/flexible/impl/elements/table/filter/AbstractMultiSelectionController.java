@@ -73,7 +73,7 @@ public abstract class AbstractMultiSelectionController extends FormBasicControll
 	
 	protected abstract boolean isClearLink();
 	
-	protected abstract Event createChangedEvent(Set<String> selectedKeys);
+	protected abstract Event createChangedEvent(@SuppressWarnings("hiding") Set<String> selectedKeys);
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

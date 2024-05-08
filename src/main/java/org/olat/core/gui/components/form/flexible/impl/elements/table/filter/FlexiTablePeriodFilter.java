@@ -19,11 +19,15 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
+import java.io.Serializable;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -176,7 +180,29 @@ public class FlexiTablePeriodFilter extends FlexiTableFilter implements FlexiTab
 		return new FlexiFilterPeriodController(ureq, wControl, this);
 	}
 	
-	public record PeriodWithUnit(Period period, boolean past, int value, ChronoUnit unit) {
-		//
+	public record PeriodWithUnit(Period period, boolean past, int value, ChronoUnit unit) implements Serializable {
+
+		public Date toDateFromNow() {
+			Calendar cal = Calendar.getInstance();
+			int factor = past ? -1 : 1;
+			switch(unit) {
+				case DAYS:
+					cal.add(Calendar.DATE, factor * value);
+					break;
+				case WEEKS:
+					cal.add(Calendar.DATE, factor * value * 7);
+					break;
+				case MONTHS:
+					cal.add(Calendar.MONTH, factor * value);
+					break;
+				case YEARS:
+					cal.add(Calendar.YEAR, factor * value);
+					break;
+				default:
+					cal.add(Calendar.DATE, factor * value);
+					break;
+			}
+			return past ? CalendarUtils.startOfDay(cal.getTime()) : CalendarUtils.endOfDay(cal.getTime());
+		}
 	}
 }

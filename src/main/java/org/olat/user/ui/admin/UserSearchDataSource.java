@@ -20,9 +20,7 @@
 package org.olat.user.ui.admin;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -30,7 +28,6 @@ import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.basesecurity.model.OrganisationRefImpl;
-import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
@@ -94,11 +91,14 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 			searchParams.setSearchString(null);
 		}
 		
-		Date expireIn = getExpireIn(filters);
-		Date expiredSince = getExpiredSince(filters);
+		PeriodWithUnit expireIn = getExpireIn(filters);
+		PeriodWithUnit expiredSince = getExpiredSince(filters);
 		if(expireIn != null || expiredSince != null) {
 			searchParams.setExpireIn(expireIn);
 			searchParams.setExpiredSince(expiredSince);
+		} else {
+			searchParams.setExpireIn(null);
+			searchParams.setExpiredSince(null);
 		}
 		
 		if(isStatusShowAll(filters)) {
@@ -143,31 +143,23 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 		return false;
 	}
 	
-	private Date getExpireIn(List<FlexiTableFilter> filters) {
+	private PeriodWithUnit getExpireIn(List<FlexiTableFilter> filters) {
 		FlexiTableFilter expireFilter = FlexiTableFilter.getFilter(filters, UserSearchTableController.FILTER_INACTIVATION_DATE);
 		if(expireFilter instanceof FlexiTablePeriodFilter filter) {
 			PeriodWithUnit period = filter.getPeriodWithUnit();
 			if(period != null && !period.past()) {
-				Calendar cal = Calendar.getInstance();
-				cal.add(Calendar.DATE, period.period().getDays());
-				cal.add(Calendar.MONTH, period.period().getMonths());
-				cal.add(Calendar.YEAR, period.period().getYears());
-				return CalendarUtils.endOfDay(cal.getTime());
+				return period;
 			}
 		}
 		return null;
 	}
 	
-	private Date getExpiredSince(List<FlexiTableFilter> filters) {
+	private PeriodWithUnit getExpiredSince(List<FlexiTableFilter> filters) {
 		FlexiTableFilter expireFilter = FlexiTableFilter.getFilter(filters, UserSearchTableController.FILTER_INACTIVATION_DATE);
 		if(expireFilter instanceof FlexiTablePeriodFilter filter) {
 			PeriodWithUnit period = filter.getPeriodWithUnit();
 			if(period != null && period.past()) {
-				Calendar cal = Calendar.getInstance();
-				cal.add(Calendar.DATE, -period.period().getDays());
-				cal.add(Calendar.MONTH, -period.period().getMonths());
-				cal.add(Calendar.YEAR, -period.period().getYears());
-				return CalendarUtils.startOfDay(cal.getTime());
+				return period;
 			}
 		}
 		return null;
