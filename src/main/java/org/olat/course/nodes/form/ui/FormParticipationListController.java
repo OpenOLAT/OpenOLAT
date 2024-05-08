@@ -152,9 +152,6 @@ public class FormParticipationListController extends FormBasicController impleme
 		this.secCallback = secCallback;
 		courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
-		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
-		survey = formManager.loadSurvey(surveyIdent);
-		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(FormParticipationTableModel.USAGE_IDENTIFIER, isAdministrativeUser);
 		
@@ -163,12 +160,19 @@ public class FormParticipationListController extends FormBasicController impleme
 						getIdentity(), coachCourseEnv.isAdmin(), coachCourseEnv.isCoach());
 		fakeParticipants = securityManager.loadIdentityByRefs(fakeParticipantRefs);
 		
+		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
+		survey = formManager.loadSurvey(surveyIdent);
+		
 		initForm(ureq);
 		reload();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (survey == null) {
+			flc.contextPut("errorNoSurvey", Boolean.TRUE);
+		} 
+		
 		FormLayoutContainer buttonsTopCont = FormLayoutContainer.createButtonLayout("buttons.top", getTranslator());
 		buttonsTopCont.setElementCssClass("o_button_group o_button_group_right");
 		buttonsTopCont.setRootForm(mainForm);
@@ -259,6 +263,9 @@ public class FormParticipationListController extends FormBasicController impleme
 			ContextEntry entry = entries.get(0);
 			String resourceType = entry.getOLATResourceable().getResourceableTypeName();
 			if(ORES_TYPE_IDENTITY.equals(resourceType)) {
+				if (dataModel == null) {
+					return; // Errors in configuration
+				}
 				Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
 				for(int i=dataModel.getRowCount(); i--> 0; ) {
 					FormParticipationRow row = dataModel.getObject(i);

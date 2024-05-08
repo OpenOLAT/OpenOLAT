@@ -108,7 +108,7 @@ class EvaluationFormParticipationDAO {
 	
 	List<EvaluationFormParticipation> loadBySurvey(EvaluationFormSurveyRef survey,
 			EvaluationFormParticipationStatus status, boolean fetchExecutor) {
-		if (survey == null) return null;
+		if (survey == null) return List.of();
 		
 		StringBuilder query = new StringBuilder();
 		query.append("select participation from evaluationformparticipation as participation");
