@@ -106,17 +106,18 @@ public class ProjectBrokerPage {
 	}
 	
 	public ProjectBrokerPage assertOnFileInDropbox(String filename) {
-		By fileBy = By.xpath("//div[@id='collapseDropbox']//div[@class='o_briefcase_folder']//table/tbody/tr/td/a[text()[contains(.,'" + filename + "')]]");		
+		By fileBy = By.xpath("//div[@id='collapseDropbox']//div[contains(@class,'o_folder_table')]//h5/a/span[contains(text(),'" + filename + "')]");	
 		OOGraphene.waitElement(fileBy, browser);
 		return this;
 	}
 	
 	public ProjectBrokerPage selectFolderInDropbox(UserVO user) {
-		By folderBy = By.xpath("//div[@id='collapseDropbox']//div[@class='o_briefcase_folder']//table/tbody/tr/td/a[i[text()[contains(.,'" + user.getLastName() + "')]]][i[contains(@class,'o_filetype_folder')]]");		
+		String name = user.getLastName();
+		By folderBy = By.xpath("//div[@id='collapseDropbox']//div[contains(@class,'o_folder_table')]//div[contains(@class,'o_folder_card')]//h5/a/span[contains(text(),'" + name + "')]");
 		OOGraphene.waitElement(folderBy, browser);
 		browser.findElement(folderBy).click();
 		
-		By breadCrumbBy = By.xpath("//div[@class='o_briefcase_folder']//ol/li[text()[contains(.,'" + user.getLastName() + "')]]");
+		By breadCrumbBy = By.xpath("//div[@id='collapseDropbox']//ol/li[contains(@class,'o_breadcrumb_crumb')][not(contains(@class,'o_display_none'))]//span[text()[contains(.,'" + user.getLastName() + "')]]");
 		OOGraphene.waitElement(breadCrumbBy, browser);
 		return this;
 	}
