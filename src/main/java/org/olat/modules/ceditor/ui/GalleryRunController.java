@@ -125,7 +125,6 @@ public class GalleryRunController extends BasicController implements PageRunElem
 		mainVC.contextPut("showTopNavButtons", false);
 		mainVC.contextPut("showSideNavButtons", false);
 		mainVC.contextPut("showThumbnails", false);
-		mainVC.contextPut("showTitleAndDescription", false);
 		mainVC.contextPut("previewMode", false);
 		mainVC.contextPut("gridMode", false);
 		mainVC.contextPut("slideShowMode", false);
@@ -148,7 +147,6 @@ public class GalleryRunController extends BasicController implements PageRunElem
 			case slideshow -> {
 				mainVC.contextPut("showPagination", true);
 				mainVC.contextPut("showSideNavButtons", true);
-				mainVC.contextPut("showTitleAndDescription", true);
 				mainVC.contextPut("slideShowMode", true);
 			}
 		}

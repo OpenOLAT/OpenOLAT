@@ -30,12 +30,23 @@
 	<div id="o_swiper_button_prev_$r.getCId()" class="swiper-button-prev"></div>
 	#end
 	<div id="o_swiper_$r.getCId()" class="swiper o_gallery_images $spacerClass">
-		<div class="o_spacer"></div>
+		#if($previewMode)
+		<div class="o_preview_spacer"></div>
+		#end
 		<div class="swiper-wrapper $gridModeClass">
 			#foreach($galleryImageItem in $galleryImageItems)
 				<div class="swiper-slide $bottomPaddingClass">
+					#if($slideShowMode)
+					<div class="o_use_slide_show_spacer">
+						<div class="o_slide_show_spacer"></div>
+						<div class="o_slide_show_image_wrapper">
+							<img src="$mapperUrl/${galleryImageItem.id()}">
+						</div>
+					</div>
+					#else
 					<img src="$mapperUrl/${galleryImageItem.id()}">
-					#if($showTitleAndDescription)
+					#end
+					#if($slideShowMode)
 					<div class="o_title_and_description">
 						<div class="o_title">
 							$galleryImageItem.title()
@@ -75,20 +86,29 @@
 <script>
 	"use strict";
 
-	function setGalleryImagesSpacer() {
+	function findMedianAspectRatio(jQueryElement) {
+		var aspectRatios = [];
+		jQueryElement.each(function(i, obj) {
+			if (obj.height === 0) {
+				aspectRatios.push(1.6);
+			} else {
+				var aspectRatio = obj.width / obj.height;
+				aspectRatio = Math.max(aspectRatio, 1);
+				aspectRatios.push(aspectRatio);
+			}
+		});
+		aspectRatios.sort();
+		return aspectRatios[Math.floor(aspectRatios.length / 2)];
+	}
+
+	function setPreviewSpacer() {
 		jQuery(function() {
 			var images = jQuery('#o_swiper_$r.getCId() .swiper-slide img');
-			var aspectRatios = [];
-			images.each(function(i, obj) {
-				var aspectRatio = obj.width / obj.height;
-				aspectRatios.push(aspectRatio);
-			});
-			aspectRatios.sort();
-			var medianAspectRatio = aspectRatios[Math.floor(aspectRatios.length / 2)];
+			var medianAspectRatio = findMedianAspectRatio(images);
 			var inverseAspectRatio = 1 / medianAspectRatio;
 			var paddingTop = `calc(100% * ${inverseAspectRatio})`;
 
-			var spacer = jQuery('#o_swiper_${r.getCId()}.o_use_preview_spacer .o_spacer');
+			var spacer = jQuery('#o_swiper_${r.getCId()}.o_use_preview_spacer .o_preview_spacer');
 			spacer.css('padding-top', paddingTop);
 
 			images.each(function(i, obj) {
@@ -100,6 +120,27 @@
 				}
 			});
 		});
+	}
+
+	function setSlideShowSpacer() {
+		jQuery(function() {
+			var images = jQuery('#o_swiper_$r.getCId() .swiper-slide img');
+			var medianAspectRatio = findMedianAspectRatio(images);
+			var inverseAspectRatio = 1 / medianAspectRatio;
+			var paddingTop = `calc(100% * ${inverseAspectRatio})`;
+
+			var spacer = jQuery('#o_swiper_${r.getCId()} .o_slide_show_spacer');
+			spacer.css('padding-top', paddingTop);
+
+			images.each(function(i, obj) {
+				var aspectRatio = obj.width / obj.height;
+				if (aspectRatio > medianAspectRatio) {
+					jQuery(obj).css('width', '100%');
+				} else {
+					jQuery(obj).css('height', '100%');
+				}
+			});
+		})
 	}
 
 	var imageGallery = new Swiper('#o_swiper_$r.getCId()', {
@@ -123,7 +164,10 @@
 		on: {
 			init: function() {
 				#if($previewMode)
-					setGalleryImagesSpacer();
+					setPreviewSpacer();
+				#end
+				#if($slideShowMode)
+					setSlideShowSpacer();
 				#end
 			},
 		},
