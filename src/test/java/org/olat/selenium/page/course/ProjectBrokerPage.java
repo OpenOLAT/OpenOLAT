@@ -113,7 +113,7 @@ public class ProjectBrokerPage {
 	
 	public ProjectBrokerPage selectFolderInDropbox(UserVO user) {
 		String name = user.getLastName();
-		By folderBy = By.xpath("//div[@id='collapseDropbox']//div[contains(@class,'o_folder_table')]//div[contains(@class,'o_folder_card')]//h5/a/span[contains(text(),'" + name + "')]");
+		By folderBy = By.xpath("//div[@id='collapseDropbox']//div[contains(@class,'o_folder_table')]//div[contains(@class,'o_folder_card')][div/div/div/h5/a[span[contains(text(),'" + name + "')]]]/div[contains(@class,'o_folder_card_thumbnail')]");
 		OOGraphene.waitElement(folderBy, browser);
 		browser.findElement(folderBy).click();
 		
@@ -137,6 +137,7 @@ public class ProjectBrokerPage {
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_task_form button.btn-primary");
 		OOGraphene.clickAndWait(saveButtonBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	
