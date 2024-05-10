@@ -62,14 +62,15 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 				target.appendHtmlEscaped(cssClass);
 				target.append("\"");
 			}
-			target.append(" style='white-space: nowrap;'");
+			target.append(" style=\"white-space: nowrap;\"");
 			String hoverText = getHoverText(cellValue);
 			if (StringHelper.containsNonWhitespace(hoverText)) {
 				target.append(" title=\"");
 				target.appendHtmlEscaped(hoverText);
+				target.append("\"");
 			}
-			target.append("\">");
-			target.append("<i class='").append(blankIfNull(getIconCssClass(cellValue))).append("'> </i> <span>");
+			target.append(">")
+			      .append("<i class='").append(blankIfNull(getIconCssClass(cellValue))).append("'> </i> <span>");
 	
 			target.append(blankIfNull(getCellValue(cellValue)));
 			String iconRightCssClass = this.getIconRightCssClass(cellValue);
