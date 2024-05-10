@@ -21,10 +21,13 @@ package org.olat.modules.ceditor.model.jpa;
 
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.modules.ceditor.model.GalleryElement;
 import org.olat.modules.cemedia.MediaToPagePart;
+import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
 import org.olat.modules.cemedia.model.MediaToPagePartImpl;
 
 import jakarta.persistence.CascadeType;
@@ -48,17 +51,10 @@ public class GalleryPart extends AbstractPart implements GalleryElement {
 	@OneToMany(targetEntity = MediaToPagePartImpl.class, fetch = FetchType.LAZY, mappedBy = "pagePart",
 			orphanRemoval = true, cascade = {CascadeType.REMOVE})
 	@OrderColumn(name = "pos")
-	private List<MediaToPagePart> relations;
+	private List<MediaToPagePart> relations = new ArrayList<>();
 
 	public List<MediaToPagePart> getRelations() {
-		if (relations == null) {
-			relations = new ArrayList<>();
-		}
 		return relations;
-	}
-
-	public void setRelations(List<MediaToPagePart> relations) {
-		this.relations = relations;
 	}
 
 	@Override
@@ -71,6 +67,17 @@ public class GalleryPart extends AbstractPart implements GalleryElement {
 	public GalleryPart copy() {
 		GalleryPart part = new GalleryPart();
 		copy(part);
+		MediaToPagePartDAO mediaToPagePartDAO = CoreSpringFactory.getImpl(MediaToPagePartDAO.class);
+		List<MediaToPagePart> sourceRelations = mediaToPagePartDAO.loadRelations(this);
+		for (MediaToPagePart sourceRelation : sourceRelations) {
+			MediaToPagePartImpl targetRelation = new MediaToPagePartImpl();
+			targetRelation.setCreationDate(new Date());
+			targetRelation.setLastModified(targetRelation.getCreationDate());
+			targetRelation.setMedia(sourceRelation.getMedia());
+			targetRelation.setMediaVersion(sourceRelation.getMediaVersion());
+			targetRelation.setIdentity(sourceRelation.getIdentity());
+			part.getRelations().add(targetRelation);
+		}
 		return part;
 	}
 }
