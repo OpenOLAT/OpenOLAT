@@ -129,6 +129,9 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	public static final String FILTER_ORGANISATIONS = "organisations";
 	public static final String FILTER_INACTIVATION_DATE = "inactivation.date";
 	
+	public static final List<Integer> ALL_STATUS = List.of(Identity.STATUS_ACTIV, Identity.STATUS_INACTIVE,
+			Identity.STATUS_LOGIN_DENIED, Identity.STATUS_PENDING, Identity.STATUS_PERMANENT);
+	
 	private Link nextLink;
 	private Link previousLink;
 	private FormLink mailButton;

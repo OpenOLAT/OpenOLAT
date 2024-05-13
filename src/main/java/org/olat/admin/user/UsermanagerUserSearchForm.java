@@ -70,7 +70,6 @@ import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -100,9 +99,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private SingleSelection userAccountExpirationUnitEl;
 	private FormLink searchButton;
 
-	
-	private String[] statusKeys;
-	private String[] statusValues;
 	private List<String> roleKeys;
 	private List<String> roleValues;
 	private SelectionValues organisationSV;
@@ -114,6 +110,9 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private final Map <String,FormItem> items = new HashMap<>();
 	private final List<Organisation> manageableOrganisations;
+	
+	private static final List<Integer> ALL_STATUS = List.of(Identity.STATUS_ACTIV, Identity.STATUS_INACTIVE,
+			Identity.STATUS_LOGIN_DENIED, Identity.STATUS_PENDING, Identity.STATUS_PERMANENT);
 	
 	@Autowired
 	private LoginModule loginModule;
@@ -142,21 +141,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		for(int i=0; i<roleKeys.size(); i++) {
 			roleValues.add(translate("search.form.constraint.".concat(roleKeys.get(i))));
 		}
-
-		statusKeys = new String[] { 
-				Integer.toString(Identity.STATUS_ACTIV),
-				Integer.toString(Identity.STATUS_PERMANENT),
-				Integer.toString(Identity.STATUS_PENDING),
-				Integer.toString(Identity.STATUS_INACTIVE),
-				Integer.toString(Identity.STATUS_LOGIN_DENIED)
-		};
-		statusValues = new String[] {
-				translate("rightsForm.status.activ"),
-				translate("rightsForm.status.permanent"),
-				translate("rightsForm.status.pending"),
-				translate("rightsForm.status.inactive"),
-				translate("rightsForm.status.login_denied")
-		};
 		
 		extraSearchKeys = new String[] { "no-resources", "no-eff-statements" };
 		extraSearchValues = new String[] { translate("no.resource"), translate("no.eff.statement") };
@@ -198,10 +182,12 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 
 		String loginVal = getStringValue("login");
 		// when searching for deleted users, add wildcard to match with backup prefix
-		List<Integer> statusList = getStatus();
-		if (statusList.contains(Identity.STATUS_DELETED)) {
-			loginVal = "*" + loginVal;
+		List<Integer> statusList = status.getSelectedKeys().stream()
+				.map(Integer::valueOf).toList();
+		if(statusList.isEmpty()) {
+			statusList = ALL_STATUS;
 		}
+
 		loginVal = loginVal.equals("") ? null : loginVal;
 
 		// get user fields from form
@@ -217,10 +203,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 					userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
 				}	
 			} else if (StringHelper.containsNonWhitespace(uiValue)) {
-				// when searching for deleted users, add wildcard to match with backup prefix
-				if (userPropertyHandler instanceof EmailProperty && statusList.contains(Identity.STATUS_DELETED)) {
-					uiValue = "*" + uiValue;
-				}
 				userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
 			}
 		}
@@ -331,14 +313,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 			}
 		}
 		return selectedOrganisations;
-	}
-	
-	protected List<Integer> getStatus() {
-		List<Integer> statusList = new ArrayList<>();
-		for(String selectedKey:status.getSelectedKeys()) {
-			statusList.add(Integer.valueOf(selectedKey));
-		}
-		return statusList;
 	}
 	
 	protected boolean isNoResources() {
@@ -459,12 +433,14 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 				authKeysValues.keys(), authKeysValues.values(), 2);
 		
 		uifactory.addSpacerElement("space3", formLayout, false);
-		status = uifactory.addCheckboxesVertical("status", "search.form.title.status", formLayout, statusKeys, statusValues, 2);
-		status.select(statusKeys[0], true);	
-		status.select(statusKeys[1], true);	
-		status.select(statusKeys[2], true);	
-		status.select(statusKeys[3], true);	
-		status.select(statusKeys[4], true);	
+		
+		SelectionValues statusPK = new SelectionValues();
+		statusPK.add(SelectionValues.entry(Integer.toString(Identity.STATUS_ACTIV), translate("rightsForm.status.activ")));
+		statusPK.add(SelectionValues.entry(Integer.toString(Identity.STATUS_PERMANENT), translate("rightsForm.status.permanent")));
+		statusPK.add(SelectionValues.entry(Integer.toString(Identity.STATUS_PENDING), translate("rightsForm.status.pending")));
+		statusPK.add(SelectionValues.entry(Integer.toString(Identity.STATUS_INACTIVE), translate("rightsForm.status.inactive")));
+		statusPK.add(SelectionValues.entry(Integer.toString(Identity.STATUS_LOGIN_DENIED), translate("rightsForm.status.login_denied")));
+		status = uifactory.addCheckboxesVertical("status", "search.form.title.status", formLayout, statusPK.keys(), statusPK.values(), 2);
 		
 		extraSearch = uifactory.addCheckboxesVertical("extra.search", null, formLayout, extraSearchKeys, extraSearchValues, 2);
 
@@ -474,7 +450,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		beforeDate = uifactory.addDateChooser("search.form.beforeDate", null, formLayout);
 		beforeDate.setValidDateCheck("error.search.form.no.valid.datechooser");
 		
-
 		uifactory.addSpacerElement("space5", formLayout, false);
 		
 		SelectionValues unitPK = new SelectionValues();

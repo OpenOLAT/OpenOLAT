@@ -103,7 +103,7 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 		
 		if(isStatusShowAll(filters)) {
 			searchParams.setStatus(null);
-			searchParams.setExactStatusList(List.of());
+			searchParams.setExactStatusList(UserSearchTableController.ALL_STATUS);
 		} else {
 			List<Integer> exactStatusList = getStatusFromFilter(filters);
 			if(exactStatusList.isEmpty()) {
@@ -136,7 +136,8 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, UserSearchTableController.FILTER_STATUS);
 		if(statusFilter != null ) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
-			if(filterValues == null || filterValues.isEmpty() || filterValues.size() == 5) {
+			if(filterValues == null || filterValues.isEmpty()
+					|| filterValues.size() == UserSearchTableController.ALL_STATUS.size()) {
 				return true;
 			}
 		}
@@ -176,6 +177,8 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 						statusList.add(Integer.parseInt(value));
 					}	
 				}
+			} else {
+				statusList = UserSearchTableController.ALL_STATUS;
 			}
 		}
 		return statusList;
