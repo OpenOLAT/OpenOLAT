@@ -225,7 +225,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		}
 		
 		String dispatchUri = getRootForm().getRequestParameter("dispatchuri");
-		if("saveinlinedtiny".equals(cmd)) {
+		if(SAVE_INLINE_EVENT.equals(cmd)) {
 			if(submitValue != null) {
 				setValue(submitValue);
 				getRootForm().fireFormEvent(ureq, new FormEvent(cmd, this, FormEvent.ONCLICK));

@@ -33,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTex
  * @author gnaegi
  */
 public interface RichTextElement extends TextElement {
+	
+	public static final String SAVE_INLINE_EVENT = "saveinlinedtiny";
 
 	/**
 	 * Get the rich text editor configuration object

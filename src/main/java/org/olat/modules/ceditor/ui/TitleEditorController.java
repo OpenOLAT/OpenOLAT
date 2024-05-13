@@ -124,7 +124,7 @@ public class TitleEditorController extends FormBasicController implements PageEl
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(titleItem == source) {
+		if(titleItem == source && RichTextElement.SAVE_INLINE_EVENT.equals(event.getCommand())) {
 			doSave(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
