@@ -35,8 +35,8 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VersionsDeletedFileDataModel extends DefaultFlexiTableDataModel<VersionsDeletedFileRow>
-implements SortableFlexiTableDataModel<VersionsDeletedFileRow> {
+public class VersionsDeletedFileDataModel extends DefaultFlexiTableDataModel<TrashRow>
+implements SortableFlexiTableDataModel<TrashRow> {
 	
 	private final Translator translator;
 	
@@ -48,22 +48,21 @@ implements SortableFlexiTableDataModel<VersionsDeletedFileRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<VersionsDeletedFileRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, translator.getLocale()).sort();
+			List<TrashRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, translator.getLocale()).sort();
 			super.setObjects(rows);
 		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		VersionsDeletedFileRow f = getObject(row);
+		TrashRow f = getObject(row);
 		return getValueAt(f, col);
 	}
 
 	@Override
-	public Object getValueAt(VersionsDeletedFileRow row, int col) {
+	public Object getValueAt(TrashRow row, int col) {
 		switch(VersionsDeletedCols.values()[col]) {
-			case id: return row.getRevisionKey();
-			case nr: return row.getRevisionNr();
+			case id: return row.getKey();
 			case relativePath: return row.getRelativePath();
 			case filename: return row.getFilename();
 			case size: return row.getSize();
@@ -75,7 +74,6 @@ implements SortableFlexiTableDataModel<VersionsDeletedFileRow> {
 	public enum VersionsDeletedCols implements FlexiSortableColumnDef {
 		
 		id("table.header.id"),
-		nr("table.header.nr"),
 		relativePath("table.header.path"),
 		filename("table.header.file"),
 		size("table.header.size");

@@ -196,49 +196,6 @@ public class VFSRevisionDAO {
 				.getResultList();
 	}
 
-	/**
-	 * @return A list of metadata of deleted files with revisions.
-	 */
-	public List<VFSMetadataRef> getMetadataOfDeletedFiles() {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select new org.olat.core.commons.services.vfs.model.VFSMetadataRefImpl(meta.key)")
-		.append(" from vfsrevision rev")
-		.append(" inner join rev.metadata meta")
-		.append(" where meta.deleted=:deleted");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), VFSMetadataRef.class)
-				.setParameter("deleted", Boolean.TRUE)
-				.getResultList();
-	}
-
-	/**
-	 * @return A list of revisions of deleted files.
-	 */
-	public List<VFSRevision> getRevisionsOfDeletedFiles() {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select rev from vfsrevision rev")
-		.append(" inner join fetch rev.metadata meta")
-		.append(" where meta.deleted=:deleted");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), VFSRevision.class)
-				.setParameter("deleted", Boolean.TRUE)
-				.getResultList();
-	}
-
-	public long getRevisionsSizeOfDeletedFiles() {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select sum(rev.size) from vfsrevision rev")
-		.append(" inner join rev.metadata meta")
-		.append(" where meta.deleted=:deleted");
-		List<Long> size = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("deleted", Boolean.TRUE)
-				.getResultList();
-		return size == null || size.isEmpty() || size.get(0) == null ? 0 : size.get(0).longValue();
-	}
-
-
-
 	public long calculateRevisionsSize() {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select sum(rev.size) from vfsrevision rev");

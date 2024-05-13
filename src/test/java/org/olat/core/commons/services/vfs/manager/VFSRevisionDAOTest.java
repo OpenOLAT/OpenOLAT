@@ -154,59 +154,6 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getMetadataOfDeletedFiles() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
-		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
-				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision deletedRevision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 25l, new Date(), "A comment", deletedMetadata);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(deletedRevision);
-		// mark as deleted
-		((VFSMetadataImpl)deletedMetadata).setDeleted(true);
-		deletedMetadata = vfsMetadataDao.updateMetadata(deletedMetadata);
-		dbInstance.commitAndCloseSession();
-		
-		List<VFSMetadataRef> deletedRefs = revisionDao.getMetadataOfDeletedFiles();
-		Assert.assertNotNull(deletedRefs);
-		Assert.assertTrue(deletedRefs.contains(new VFSMetadataRefImpl(deletedMetadata.getKey())));
-	}
-	
-	@Test
-	public void getRevisionsOfDeletedFiles() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
-		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
-				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision deletedRevision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 25l, new Date(), "A comment", deletedMetadata);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(deletedRevision);
-		// mark as deleted
-		((VFSMetadataImpl)deletedMetadata).setDeleted(true);
-		deletedMetadata = vfsMetadataDao.updateMetadata(deletedMetadata);
-		dbInstance.commitAndCloseSession();
-		
-		List<VFSRevision> deletedVersions = revisionDao.getRevisionsOfDeletedFiles();
-		Assert.assertNotNull(deletedVersions);
-		Assert.assertTrue(deletedVersions.contains(deletedRevision));
-	}
-	
-	@Test
-	public void getRevisionsSizeOfDeletedFiles() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
-		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
-				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision deletedRevision = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 25l, new Date(), "A comment", deletedMetadata);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(deletedRevision);
-		// mark as deleted
-		((VFSMetadataImpl)deletedMetadata).setDeleted(true);
-		deletedMetadata = vfsMetadataDao.updateMetadata(deletedMetadata);
-		dbInstance.commitAndCloseSession();
-		
-		long size = revisionDao.getRevisionsSizeOfDeletedFiles();
-		Assert.assertTrue(size >= 25l);
-	}
-	
-	@Test
 	public void calculateRevisionsSize() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",

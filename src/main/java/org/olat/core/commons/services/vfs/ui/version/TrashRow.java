@@ -19,42 +19,35 @@
  */
 package org.olat.core.commons.services.vfs.ui.version;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.VFSRevision;
-import org.olat.core.id.Persistable;
 
 /**
  * 
- * Initial date: 3 avr. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 8 May 2024<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class VersionsDeletedFileRow {
+public class TrashRow {
 	
-	private final Long revisionKey;
-	private final int revisionNr;
-	private final long size;
+	private final VFSMetadata metadata;
 	private final String relativePath;
-	private final String filename;
 	
-	public VersionsDeletedFileRow(VFSRevision revision) {
-		revisionKey = revision instanceof Persistable ? ((Persistable)revision).getKey() : null;
-		revisionNr = revision.getRevisionNr();
-		size = revision.getSize();
-		relativePath = revision.getMetadata().getRelativePath().replace("/" + VFSRepositoryService.TRASH_NAME, "");
-		filename = revision.getMetadata().getFilename();
+	public TrashRow(VFSMetadata metadata) {
+		this.metadata = metadata;
+		this.relativePath = metadata.getRelativePath().replace("/" + VFSRepositoryService.TRASH_NAME, "");
 	}
-	
-	public Long getRevisionKey() {
-		return revisionKey;
+
+	public VFSMetadata getMetadata() {
+		return metadata;
 	}
-	
-	public int getRevisionNr() {
-		return revisionNr;
+
+	public Long getKey() {
+		return metadata.getKey();
 	}
 	
 	public long getSize() {
-		return size;
+		return metadata.getFileSize();
 	}
 
 	public String getRelativePath() {
@@ -62,10 +55,7 @@ public class VersionsDeletedFileRow {
 	}
 
 	public String getFilename() {
-		return filename;
+		return metadata.getFilename();
 	}
-	
-	
-	
 
 }

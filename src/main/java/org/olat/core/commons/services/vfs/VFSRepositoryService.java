@@ -143,6 +143,8 @@ public interface VFSRepositoryService {
 	
 	public void cleanTrash(Identity identity, VFSMetadata vfsMetadata);
 	
+	public List<VFSMetadata> getDeletedDateBeforeMetadatas(Date reference);
+	
 	/**
 	 * Delete the metadata (but not the file), the thumbnails and versions
 	 * attached to this metadata.
@@ -260,18 +262,6 @@ public interface VFSRepositoryService {
 	 * @return the size in bytes
 	 */
 	public long getRevisionsTotalSize();
-	
-	public long getRevisionsTotalSizeOfDeletedFiles();
-	
-	/**
-	 * @return A list of metadata references of deleted files with revisions.
-	 */
-	public List<VFSMetadataRef> getMetadataOfDeletedFiles();
-	
-	/**
-	 * @return A list of metadata references of deleted files with revisions.
-	 */
-	public List<VFSRevision> getRevisionsOfDeletedFiles();
 	
 	/**
 	 * @return A list of metadata references of deleted files with more than the specified number of revisions.

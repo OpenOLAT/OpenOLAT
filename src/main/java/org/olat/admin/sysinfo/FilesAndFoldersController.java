@@ -21,8 +21,8 @@ package org.olat.admin.sysinfo;
 
 import org.olat.admin.quota.QuotaController;
 import org.olat.core.commons.services.vfs.ui.management.VFSOverviewController;
+import org.olat.core.commons.services.vfs.ui.version.AdminConfigurationMainController;
 import org.olat.core.commons.services.vfs.ui.version.VFSTrashController;
-import org.olat.core.commons.services.vfs.ui.version.AdminConfigurationController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -53,7 +53,7 @@ public class FilesAndFoldersController extends BasicController{
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
-	private AdminConfigurationController configurationCtrl;
+	private AdminConfigurationMainController configurationCtrl;
 	private LargeFilesController fileStats;
 	private QuotaController quotas;
 	private VFSTrashController trash;
@@ -78,7 +78,7 @@ public class FilesAndFoldersController extends BasicController{
 		fileStatsLink = LinkFactory.createLink("filesfolders.menu.largefiles", mainVC, this);
 		segmentView.addSegment(fileStatsLink, false);
 		
-		trashLink = LinkFactory.createLink("filesfolders.menu.deletedFiles", mainVC, this);
+		trashLink = LinkFactory.createLink("filesfolders.menu.trash", mainVC, this);
 		segmentView.addSegment(trashLink, false);
 		
 		
@@ -127,7 +127,7 @@ public class FilesAndFoldersController extends BasicController{
 
 	private void doConfiguration(UserRequest ureq) {
 		if(configurationCtrl == null) {
-			configurationCtrl = new AdminConfigurationController(ureq, getWindowControl());
+			configurationCtrl = new AdminConfigurationMainController(ureq, getWindowControl());
 			listenTo(configurationCtrl);
 		}
 		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());

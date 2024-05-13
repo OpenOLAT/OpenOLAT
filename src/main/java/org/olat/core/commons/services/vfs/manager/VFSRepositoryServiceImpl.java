@@ -524,7 +524,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	protected void deleteRetentionExceededPermanently(Date deletionDateBefore) {
-		List<VFSMetadata> retentionExceeded = metadataDao.getDeletedDateBeforeMetadatas(deletionDateBefore);
+		List<VFSMetadata> retentionExceeded = getDeletedDateBeforeMetadatas(deletionDateBefore);
 		for (VFSMetadata metadata : retentionExceeded) {
 			VFSItem item = getItemFor(metadata);
 			item.deleteSilently();
@@ -540,7 +540,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 		}
 	}
-
+	@Override
+	public List<VFSMetadata> getDeletedDateBeforeMetadatas(Date reference) {
+		return metadataDao.getDeletedDateBeforeMetadatas(reference);
+	}
+	
 	@Override
 	public int deleteMetadata(VFSMetadata data) {
 		if(data == null) return 0; // nothing to do
@@ -1193,21 +1197,6 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Override
 	public long getRevisionsTotalSize() {
 		return revisionDao.calculateRevisionsSize();
-	}
-
-	@Override
-	public long getRevisionsTotalSizeOfDeletedFiles() {
-		return revisionDao.getRevisionsSizeOfDeletedFiles();
-	}
-	
-	@Override
-	public List<VFSRevision> getRevisionsOfDeletedFiles() {
-		return revisionDao.getRevisionsOfDeletedFiles();
-	}
-
-	@Override
-	public List<VFSMetadataRef> getMetadataOfDeletedFiles() {
-		return revisionDao.getMetadataOfDeletedFiles();
 	}
 
 	@Override
