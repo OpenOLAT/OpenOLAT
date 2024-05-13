@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -273,6 +274,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private boolean versionsEnabled;
 	private boolean trashEnabled;
 	private final Formatter formatter;
+	private final Date newLabelDate = new Date();
 	private FolderView folderView;
 	private int counter = 0;
 	
@@ -986,8 +988,9 @@ public class FolderController extends FormBasicController implements Activateabl
 				
 				selectionLink.setElementCssClass("o_link_plain");
 				
-				selectionLink.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
-				titleLink.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
+				String title = getTitleWithLabel(row);
+				selectionLink.setI18nKey(title);
+				titleLink.setI18nKey(title);
 				
 				selectionLink.setUserObject(row);
 				titleLink.setUserObject(row);
@@ -1006,8 +1009,9 @@ public class FolderController extends FormBasicController implements Activateabl
 				
 				selectionEl.setElementCssClass("o_link_plain");
 				
-				selectionEl.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
-				titleEl.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
+				String title = getTitleWithLabel(row);
+				selectionEl.setI18nKey(title);
+				titleEl.setI18nKey(title);
 				
 				selectionEl.setUserObject(row);
 				titleEl.setUserObject(row);
@@ -1021,17 +1025,26 @@ public class FolderController extends FormBasicController implements Activateabl
 				row.setSelectionItem(selectionEl);
 				row.setTitleItem(titleEl);
 			} else {
-				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), flc);
+				String title = getTitleWithLabel(row);
+				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, title, flc);
 				selectionEl.setElementCssClass("o_nowrap");
 				selectionEl.setDomWrapperElement(DomWrapperElement.span);
 				selectionEl.setStaticFormElement(false);
 				row.setSelectionItem(selectionEl);
 				
-				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), flc);
+				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, title, flc);
 				titleEl.setStaticFormElement(false);
 				row.setTitleItem(titleEl);
 			}
 		}
+	}
+
+	private String getTitleWithLabel(FolderRow row) {
+		String title = StringHelper.escapeHtml(row.getTitle());
+		if (FolderUIFactory.isNew(newLabelDate, row.getMetadata(), row.getVfsItem())) {
+			title = "<div class=\"o_folder_label o_folder_label_new\">" + translate("new.label") + "</div> " + title;
+		}
+		return title;
 	}
 	
 	private void forgeFilePath(FolderRow row) {
@@ -1306,7 +1319,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			// No clean up. Uploaded, temporary files are deleted when controller is disposed.
 			// The clean up if no license check is needed.
 			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
-				doCopyMove(ureq, false, currentContainer, selectionEvent.getVfsItems());
+				doCopyMove(ureq, false, currentContainer, selectionEvent.getVfsItems(), null);
 			} else {
 				cleanUp();
 			}
@@ -1371,7 +1384,8 @@ public class FolderController extends FormBasicController implements Activateabl
 					doCopyMove(ureq,
 							copyUserObject.move(),
 							copySelectFolderCtrl.getSelectedContainer(),
-							copyUserObject.itemsToCopy);
+							copyUserObject.itemsToCopy,
+							null);
 				}
 			}
 			cleanUp();
@@ -1382,7 +1396,8 @@ public class FolderController extends FormBasicController implements Activateabl
 					false,
 					licenseCheckCtrl.getTargetContainer(),
 					licenseCheckCtrl.getItemsToCopy(),
-					licenseCheckCtrl.getLicense());
+					licenseCheckCtrl.getLicense(),
+					licenseCheckCtrl.getSuccessMessage());
 			}
 			cleanUp();
 		} else if (zipConfirmationCtrl == source) {
@@ -1634,7 +1649,17 @@ public class FolderController extends FormBasicController implements Activateabl
 			List<VFSItem> items = uploadFilesInfos.stream()
 					.map(infos -> (VFSItem)new NamedLeaf(infos.fileName(), new LocalFileImpl(infos.file())))
 					.toList();
-			doCopyMove(ureq, false, container, items);
+			doCopyMove(ureq, false, container, items, this::showUploadSuccessMessage);
+		}
+	}
+
+	private void showUploadSuccessMessage(List<String> filenames) {
+		if (filenames != null && !filenames.isEmpty()) {
+			if (filenames.size() == 1) {
+				showInfo("upload.success.single", filenames.get(0));
+			} else {
+				showInfo("upload.success.multi", String.valueOf(filenames.size()));
+			}
 		}
 	}
 
@@ -1929,7 +1954,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		cmc.activate();
 	}
 
-	private void doCopyMove(UserRequest ureq, boolean move, VFSContainer targetContainer, List<VFSItem> itemsToCopy) {
+	private void doCopyMove(UserRequest ureq, boolean move, VFSContainer targetContainer, List<VFSItem> itemsToCopy,
+			Consumer<List<String>> successMessage) {
 		if (licensesEnabled && folderModule.isForceLicenseCheck() && !move) {
 			int numMissingLicenses = 0;
 			for (VFSItem itemToCopy : itemsToCopy) {
@@ -1942,7 +1968,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				if (guardModalController(licenseCheckCtrl)) {
 					return;
 				}
-				licenseCheckCtrl = new LicenseCheckController(ureq, getWindowControl(), targetContainer, itemsToCopy, numMissingLicenses);
+				licenseCheckCtrl = new LicenseCheckController(ureq, getWindowControl(), targetContainer, itemsToCopy,
+						numMissingLicenses, successMessage);
 				listenTo(licenseCheckCtrl);
 				
 				cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -1953,11 +1980,12 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		}
 		
-		doCopyMove(ureq, move, targetContainer, itemsToCopy, null);
+		doCopyMove(ureq, move, targetContainer, itemsToCopy, null, successMessage);
 		cleanUp();
 	}
 
-	private void doCopyMove(UserRequest ureq, boolean move, VFSContainer targetContainer, List<VFSItem> itemsToCopy, License license) {
+	private void doCopyMove(UserRequest ureq, boolean move, VFSContainer targetContainer, List<VFSItem> itemsToCopy,
+			License license, Consumer<List<String>> successMessage) {
 		if (isItemNotAvailable(ureq, targetContainer, true)) return;
 		
 		if (!canEdit(targetContainer)) {
@@ -2017,6 +2045,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			showWarning("error.copy.quota.exceeded");
 		} else if (vfsStatus != VFSSuccess.SUCCESS) {
 			showWarning("error.copy");
+		} else if (successMessage != null) {
+			successMessage.accept(addEvent.getFilenames());
 		}
 		
 		loadModel(ureq);

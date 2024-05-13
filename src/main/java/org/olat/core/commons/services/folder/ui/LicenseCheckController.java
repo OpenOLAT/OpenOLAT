@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.folder.ui;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.services.license.License;
@@ -60,6 +61,7 @@ public class LicenseCheckController extends FormBasicController {
 	private final VFSContainer targetContainer;
 	private final List<VFSItem> itemsToCopy;
 	private final int numMissingLicenses;
+	private final Consumer<List<String>> successMessage;
 
 	@Autowired
 	private LicenseService licenseService;
@@ -67,12 +69,13 @@ public class LicenseCheckController extends FormBasicController {
 	private FolderLicenseHandler licenseHandler;
 
 	protected LicenseCheckController(UserRequest ureq, WindowControl wControl, VFSContainer targetContainer,
-			List<VFSItem> itemsToCopy, int numMissingLicenses) {
+			List<VFSItem> itemsToCopy, int numMissingLicenses, Consumer<List<String>> successMessage) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(LicenseUIFactory.class, getLocale(), getTranslator()));
 		this.targetContainer = targetContainer;
 		this.itemsToCopy = itemsToCopy;
 		this.numMissingLicenses = numMissingLicenses;
+		this.successMessage = successMessage;
 		
 		initForm(ureq);
 	}
@@ -123,6 +126,10 @@ public class LicenseCheckController extends FormBasicController {
 
 	public List<VFSItem> getItemsToCopy() {
 		return itemsToCopy;
+	}
+
+	public Consumer<List<String>> getSuccessMessage() {
+		return successMessage;
 	}
 
 	public License getLicense() {

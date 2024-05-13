@@ -217,4 +217,14 @@ public class FolderUIFactory {
 		return null;
 	}
 
+	public static boolean isNew(Date refDate, VFSMetadata vfsMetadata, VFSItem vfsItem) {
+		if (vfsMetadata != null && vfsMetadata.getFileLastModified() != null && refDate.before(vfsMetadata.getFileLastModified())) {
+			return true;
+		}
+		if (vfsItem != null && vfsItem.getLastModified() > 0 && refDate.before(new Date(vfsItem.getLastModified()))) {
+			return true;
+		}
+		return false;
+	}
+
 }
