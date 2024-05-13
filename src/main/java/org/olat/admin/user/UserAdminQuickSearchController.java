@@ -151,7 +151,7 @@ public class UserAdminQuickSearchController extends FormBasicController {
 	 */
 	List<Identity> getUserList() {
 		List<Identity> searchResult = new ArrayList<Identity>();
-		List<Organisation> searchableOrganisations = organisationService.getOrganisations(getIdentity(), new OrganisationRoles[] { OrganisationRoles.usermanager, OrganisationRoles.administrator });
+		List<Organisation> searchableOrganisations = organisationService.getOrganisations(getIdentity(), new OrganisationRoles[] { OrganisationRoles.usermanager, OrganisationRoles.rolesmanager,  OrganisationRoles.administrator });
 		
 		String searchElValue = searchEl.getValue();
 		if(StringHelper.containsNonWhitespace(searchElValue)) {
@@ -169,7 +169,7 @@ public class UserAdminQuickSearchController extends FormBasicController {
 					}
 					
 					SearchIdentityParams params = new SearchIdentityParams(searchValue,
-							userProperties, false, null, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);			
+							userProperties, false, null, null, null, null, null, null, null, null);			
 					params.setOrganisations(searchableOrganisations);					
 
 					searchResult.addAll(identitySearchQueries.getIdentitiesByPowerSearch(params, 0, -1));
@@ -180,7 +180,7 @@ public class UserAdminQuickSearchController extends FormBasicController {
 					userProperties.put(UserConstants.FIRSTNAME, ""); 
 					
 					params = new SearchIdentityParams(searchValue,
-							userProperties, false, null, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);			
+							userProperties, false, null, null, null, null, null, null, null, null);			
 					params.setOrganisations(searchableOrganisations);					
 					params.setIdAndExternalIds(searchElValue);
 					
