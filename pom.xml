@@ -82,7 +82,7 @@
 		<swagger.ui.version>5.17.2</swagger.ui.version>
 		<com.mysql.version>8.4.0</com.mysql.version>
 		<org.postgresql.version>42.7.3</org.postgresql.version>
-		<org.infinispan.version>15.0.2.Final</org.infinispan.version>
+		<org.infinispan.version>15.0.3.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.20.0</version.selenium>
 		<activemq.artemis.version>2.33.0</activemq.artemis.version>
@@ -2342,7 +2342,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>5.11.0</version>
+			<version>5.12.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
