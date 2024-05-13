@@ -296,7 +296,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 				String shortKey = "error.missingfile.short";
 				String longKey = "error.missingfile.long";
 				String[] params = new String[] { this.getShortTitle() };
-				sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, PACKAGE_ST);
+				sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, Util.getPackageName(SPEditController.class));
 				sd.setDescriptionForUnit(getIdent());
 				// set which pane is affected by error
 				sd.setActivateableViewIdentifier(STCourseNodeEditController.PANE_TAB_ST_CONFIG);
