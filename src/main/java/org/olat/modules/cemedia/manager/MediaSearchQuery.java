@@ -88,6 +88,9 @@ public class MediaSearchQuery {
 			} else {
 				sb.and().append("(");
 				appendSharedAll(sb, parameters);
+				if (parameters.getScope() == Scope.SHARED_WITH_ME && parameters.getRepositoryEntry() != null) {
+					repositoryEntryKey = parameters.getRepositoryEntry().getKey();
+				}
 				sb.append(")");
 			}
 		}
@@ -237,6 +240,10 @@ public class MediaSearchQuery {
 			} else {
 				roles = new GroupRoles[]{ GroupRoles.owner };
 			}
+			Long repositoryEntryKey = null;
+			if (parameters.getScope() == Scope.SHARED_WITH_ME && parameters.getRepositoryEntry() != null) {
+				repositoryEntryKey = parameters.getRepositoryEntry().getKey();
+			}
 			sb.append(" exists (select shareReRel.key from mediatogroup as shareReRel")
 			  .append("  inner join shareReRel.repositoryEntry as v")
 			  .append("  inner join v.groups as relGroup")
@@ -244,6 +251,7 @@ public class MediaSearchQuery {
 	          .append("  inner join vBaseGroup.members as vMembership")
 			  .append("  where shareReRel.media.key=media.key and shareReRel.type").in(MediaToGroupRelationType.REPOSITORY_ENTRY)
 			  .append("    and vMembership.identity.key=:identityKey and vMembership.role").in(roles)
+			  .append("    and shareReRel.repositoryEntry.key=:entryKey", repositoryEntryKey != null)
 			  .append(")");
 
 			sb.append(")");

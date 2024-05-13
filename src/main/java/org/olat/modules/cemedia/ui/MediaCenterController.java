@@ -752,6 +752,7 @@ public class MediaCenterController extends FormBasicController
 			params.setScope(Scope.MY);
 		} else if(selectedTab == sharedWithMeTab) {
 			params.setScope(Scope.SHARED_WITH_ME);
+			params.setRepositoryEntry(repositoryEntry);
 		} else if(selectedTab == sharedByMeTab) {
 			params.setScope(Scope.SHARED_BY_ME);
 		} else if(selectedTab == sharedWithEntryTab) {
