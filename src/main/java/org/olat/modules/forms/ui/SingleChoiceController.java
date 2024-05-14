@@ -113,6 +113,7 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 				break;
 			default:
 				singleChoiceEl = uifactory.addDropdownSingleselect(name, null, flc, keys, values);
+				singleChoiceEl.enableNoneSelection(translate("single.choice.select"));
 		}
 		singleChoiceEl.setAllowNoSelection(true);
 
