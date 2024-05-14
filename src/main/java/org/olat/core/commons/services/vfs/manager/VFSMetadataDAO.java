@@ -135,7 +135,7 @@ public class VFSMetadataDAO {
 		  .append(" left join fetch metadata.licenseType as licenseType")
 		  .append(" where metadata.filename=:filename and metadata.relativePath=:relativePath");
 		if (directory != null) {
-			sb.append("and metadata.directory=:directory");
+			sb.append(" and metadata.directory=:directory");
 		}
 		
 		TypedQuery<VFSMetadata> query = dbInstance.getCurrentEntityManager()
