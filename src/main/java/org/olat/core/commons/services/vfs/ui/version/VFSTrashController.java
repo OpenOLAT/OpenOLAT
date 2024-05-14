@@ -120,7 +120,7 @@ public class VFSTrashController extends FormBasicController {
 				.map(TrashRow::new)
 				.collect(Collectors.toList());
 		dataModel.setObjects(rows);
-		tableEl.reset(true, true, true);
+		tableEl.reset(false, true, true);
 	}
 
 	@Override

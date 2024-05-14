@@ -127,19 +127,25 @@ public class VFSMetadataDAO {
 		return metadata == null || metadata.isEmpty() ? null : metadata.get(0);
 	}
 	
-	public VFSMetadata getMetadata(String relativePath, String filename, boolean directory) {
+	public VFSMetadata getMetadata(String relativePath, String filename, Boolean directory) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select metadata from filemetadata metadata")
 		  .append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
 		  .append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
 		  .append(" left join fetch metadata.licenseType as licenseType")
-		  .append(" where metadata.filename=:filename and metadata.relativePath=:relativePath and metadata.directory=:directory");
-
-		List<VFSMetadata> metadata = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), VFSMetadata.class)
-			.setParameter("filename", filename)
-			.setParameter("relativePath", relativePath)
-			.setParameter("directory", Boolean.valueOf(directory))
+		  .append(" where metadata.filename=:filename and metadata.relativePath=:relativePath");
+		if (directory != null) {
+			sb.append("and metadata.directory=:directory");
+		}
+		
+		TypedQuery<VFSMetadata> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), VFSMetadata.class)
+				.setParameter("filename", filename)
+				.setParameter("relativePath", relativePath);
+		if (directory != null) {
+			query.setParameter("directory", directory);
+		}
+		List<VFSMetadata> metadata = query
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();

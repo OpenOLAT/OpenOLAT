@@ -290,7 +290,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		
 		String filename = file.getName();
-		VFSMetadata metadata = metadataDao.getMetadata(relativePath, filename, file.isDirectory());
+		VFSMetadata metadata = metadataDao.getMetadata(relativePath, filename, null);
 		if(metadata == null) {
 			metadata = createMetadata(file, relativePath, filename);
 		} else if(file.isFile() && !metadata.isInTranscoding()

@@ -40,7 +40,6 @@ import java.nio.file.Path;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -251,8 +250,6 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 	public VFSSuccess deleteSilently() {
 		if(canMeta() == VFSStatus.YES) {
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
-			CoreSpringFactory.getImpl(DB.class).commit();
-			
 		} else {
 			// some lock can create a metadata object with canMeta() == NO
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getBasefile());
