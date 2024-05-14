@@ -215,10 +215,12 @@ public interface CertificatesManager {
 	public PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1, String custom2, String custom3);
 
 	public Certificate uploadCertificate(Identity identity, Date creationDate,
-			String externalId, CertificateManagedFlag[] managedFlags, OLATResource resource, File certificateFile);
+			String externalId, CertificateManagedFlag[] managedFlags, OLATResource resource,
+			Date nextRecertificationDate, File certificateFile);
 	
 	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate,
-			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey, File certificateFile);
+			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey,
+			Date nextRecertificationDate, File certificateFile);
 	
 	public void generateCertificates(List<CertificateInfos> infos, RepositoryEntry entry, CertificateTemplate template, CertificateConfig config);
 

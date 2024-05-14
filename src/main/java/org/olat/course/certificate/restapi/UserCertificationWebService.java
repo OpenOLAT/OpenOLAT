@@ -63,8 +63,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.StringToClassMapItem;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -279,7 +281,19 @@ public class UserCertificationWebService {
 	 */
 	@POST
 	@Path("")
-	@Operation(summary = "Upload a new standalone certificate", description = "Upload a new certificate standalone.")
+	@Operation(summary = "Upload a new standalone certificate", description = "Upload a new certificate standalone.",
+			requestBody = @RequestBody(description = "", content = {
+					@Content(mediaType = MediaType.MULTIPART_FORM_DATA, 
+							schema = @Schema(properties= {
+									@StringToClassMapItem(key="file", value=File.class),
+									@StringToClassMapItem(key="courseTitle", value=String.class),
+									@StringToClassMapItem(key="creationDate", value=String.class),
+									@StringToClassMapItem(key="nextRecertificationDate", value=String.class),
+									@StringToClassMapItem(key="archivedResourceKey", value=String.class),
+									@StringToClassMapItem(key="externalId", value=String.class),
+									@StringToClassMapItem(key="managedFlags", value=String.class),
+							}))
+			}))
 	@ApiResponse(responseCode = "200", description = "if the certificate was uploaded")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
@@ -292,6 +306,7 @@ public class UserCertificationWebService {
 			File tmpFile = partsReader.getFile();
 			String courseTitle = partsReader.getValue("courseTitle");
 			String creationDateStr = partsReader.getValue("creationDate");
+			String nextRecertificationDateStr = partsReader.getValue("nextRecertificationDate");
 			String archivedResource = partsReader.getValue("archivedResourceKey");
 			String externalId = partsReader.getValue("externalId");
 			CertificateManagedFlag[] managedFlags = CertificateManagedFlag.toEnum(partsReader.getValue("managedFlags"));
@@ -307,7 +322,11 @@ public class UserCertificationWebService {
 			if(StringHelper.containsNonWhitespace(creationDateStr)) {
 				creationDate = ObjectFactory.parseDate(creationDateStr);
 			}
-
+			Date nextRecertificationDate = null;
+			if(StringHelper.containsNonWhitespace(nextRecertificationDateStr)) {
+				nextRecertificationDate = ObjectFactory.parseDate(nextRecertificationDateStr);
+			}
+			
 			Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
 			if(assessedIdentity == null) {
 				return Response.serverError().status(Response.Status.NOT_FOUND).build();
@@ -316,7 +335,9 @@ public class UserCertificationWebService {
 				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 
-			certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, externalId, managedFlags, courseTitle, archivedResourceKey, tmpFile);
+			certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate,
+					externalId, managedFlags, courseTitle, archivedResourceKey,
+					nextRecertificationDate, tmpFile);
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);

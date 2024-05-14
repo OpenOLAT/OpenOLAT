@@ -198,7 +198,7 @@ public class CertificationTest extends OlatRestTestCase {
 		Assert.assertNotNull(certificateUrl);
 		File certificateFile = new File(certificateUrl.toURI()); 
 		Certificate certificate = certificatesManager
-				.uploadCertificate(assessedIdentity, new Date(), externalId, null, entry.getOlatResource(), certificateFile);
+				.uploadCertificate(assessedIdentity, new Date(), externalId, null, entry.getOlatResource(), null, certificateFile);
 		dbInstance.commitAndCloseSession();
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
@@ -242,11 +242,17 @@ public class CertificationTest extends OlatRestTestCase {
 		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
 		
 		Date creationDate = createDate(2014, 7, 1);
+		Date nextCertificationDate = createDate(2036, 7, 1);
+		
+		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create()
 				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
 				.addTextBody("filename", certificateFile.getName())
 				.addBinaryBody("file", certificateFile, ContentType.APPLICATION_OCTET_STREAM, certificateFile.getName())
-				.addTextBody("creationDate", ObjectFactory.formatDate(creationDate));
+				.addTextBody("externalId", "CWS-4543231")
+				.addTextBody("managedFlags", "delete")
+				.addTextBody("creationDate", ObjectFactory.formatDate(creationDate))
+				.addTextBody("nextRecertificationDate", ObjectFactory.formatDate(nextCertificationDate));
 		method.setEntity(builder.build());
 
 		HttpResponse response = conn.execute(method);
@@ -257,6 +263,10 @@ public class CertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
 		Assert.assertNotNull(certificate);
 		Assert.assertEquals(creationDate, certificate.getCreationDate());
+		Assert.assertEquals(nextCertificationDate, certificate.getNextRecertificationDate());
+		Assert.assertEquals("CWS-4543231", certificate.getExternalId());
+		Assert.assertEquals(1, certificate.getManagedFlags().length);
+		
 		//check the certificate file
 		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
 		Assert.assertNotNull(certificateLeaf);
@@ -282,11 +292,16 @@ public class CertificationTest extends OlatRestTestCase {
 		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
 		
 		Date creationDate = createDate(2014, 7, 1);
+		Date nextCertificationDate = createDate(2030, 8, 1);
+		
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create()
 				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
 				.addTextBody("filename", certificateFile.getName())
 				.addBinaryBody("file", certificateFile, ContentType.APPLICATION_OCTET_STREAM, certificateFile.getName())
-				.addTextBody("creationDate", ObjectFactory.formatDate(creationDate));
+				.addTextBody("externalId", "CWS-264810")
+				.addTextBody("managedFlags", "delete")
+				.addTextBody("creationDate", ObjectFactory.formatDate(creationDate))
+				.addTextBody("nextRecertificationDate", ObjectFactory.formatDate(nextCertificationDate));
 		method.setEntity(builder.build());
 
 		HttpResponse response = conn.execute(method);
@@ -297,6 +312,10 @@ public class CertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, resourceKey);
 		Assert.assertNotNull(certificate);
 		Assert.assertEquals(creationDate, certificate.getCreationDate());
+		Assert.assertEquals(nextCertificationDate, certificate.getNextRecertificationDate());
+		Assert.assertEquals("CWS-264810", certificate.getExternalId());
+		Assert.assertEquals(1, certificate.getManagedFlags().length);
+
 		//check the certificate file
 		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
 		Assert.assertNotNull(certificateLeaf);

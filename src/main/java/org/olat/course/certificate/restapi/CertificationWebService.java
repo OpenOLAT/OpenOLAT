@@ -331,12 +331,19 @@ public class CertificationWebService {
 			String courseTitle = partsReader.getValue("courseTitle");
 			String externalId = partsReader.getValue("externalId");
 			CertificateManagedFlag[] managedFlags = CertificateManagedFlag.toEnum(partsReader.getValue("managedFlags"));
+			
 			String creationDateStr = partsReader.getValue("creationDate");
 			Date creationDate = null;
 			if(StringHelper.containsNonWhitespace(creationDateStr)) {
 				creationDate = ObjectFactory.parseDate(creationDateStr);
 			}
 
+			String nextRecertificationDateStr = partsReader.getValue("nextRecertificationDate");
+			Date nextRecertificationDate = null;
+			if(StringHelper.containsNonWhitespace(nextRecertificationDateStr)) {
+				nextRecertificationDate = ObjectFactory.parseDate(nextRecertificationDateStr);
+			}
+			
 			Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
 			if(assessedIdentity == null) {
 				return Response.serverError().status(Response.Status.NOT_FOUND).build();
@@ -347,9 +354,11 @@ public class CertificationWebService {
 			
 			OLATResource resource = resourceManager.findResourceById(resourceKey);
 			if(resource == null) {
-				certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, externalId, managedFlags, courseTitle, resourceKey, tmpFile);
+				certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate,
+						externalId, managedFlags, courseTitle, resourceKey, nextRecertificationDate, tmpFile);
 			} else {
-				certificatesManager.uploadCertificate(assessedIdentity, creationDate, externalId, managedFlags, resource, tmpFile);
+				certificatesManager.uploadCertificate(assessedIdentity, creationDate,
+						externalId, managedFlags, resource, nextRecertificationDate, tmpFile);
 			}
 			return Response.ok().build();
 		} catch (Throwable e) {

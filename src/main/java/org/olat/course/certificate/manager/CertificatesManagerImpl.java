@@ -832,7 +832,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public Certificate uploadCertificate(Identity identity, Date creationDate,
-			String externalId, CertificateManagedFlag[] managedFlags, OLATResource resource, File certificateFile) {
+			String externalId, CertificateManagedFlag[] managedFlags, OLATResource resource,
+			Date nextRecertificationDate, File certificateFile) {
 		CertificateImpl certificate = new CertificateImpl();
 		certificate.setOlatResource(resource);
 		certificate.setArchivedResourceKey(resource.getKey());
@@ -850,6 +851,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setManagedFlagsString(CertificateManagedFlag.toString(managedFlags));
 		certificate.setLast(true);
 		certificate.setStatus(CertificateStatus.ok);
+		certificate.setNextRecertificationDate(nextRecertificationDate);
 
 		String dir = usersStorage.generateDir();
 		try (InputStream in = Files.newInputStream(certificateFile.toPath())) {
@@ -879,7 +881,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	
 	@Override
 	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate,
-			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey, File certificateFile) {
+			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey,
+			Date nextRecertificationDate, File certificateFile) {
 		CertificateStandalone certificate = new CertificateStandalone();
 		certificate.setArchivedResourceKey(resourceKey);
 		if(creationDate != null) {
@@ -889,6 +892,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificate.setCreationDate(new Date());
 			certificate.setLastModified(certificate.getCreationDate());
 		}
+		certificate.setNextRecertificationDate(nextRecertificationDate);
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setExternalId(externalId);

@@ -19,6 +19,8 @@
  */
 package org.olat.course.certificate.restapi;
 
+import java.util.Date;
+
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -38,9 +40,11 @@ import org.olat.course.certificate.CertificateManagedFlag;
 public class CertificateVO {
 	
 	private Long key;
+	private Date creationDate;
 	private Long identityKey;
 	private String courseTitle;
 	private Long courseResourceKey;
+	private Date nextCertificationDate;
 	private String uuid;
 	private String externalId;
 	private String managedFlags;
@@ -52,6 +56,8 @@ public class CertificateVO {
 	public static CertificateVO valueOf(CertificateLight certificate) {
 		CertificateVO vo = new CertificateVO();
 		vo.setKey(certificate.getKey());
+		vo.setCreationDate(certificate.getCreationDate());
+		vo.setNextCertificationDate(certificate.getNextRecertificationDate());
 		vo.setIdentityKey(certificate.getIdentityKey());
 		vo.setCourseTitle(certificate.getCourseTitle());
 		vo.setCourseResourceKey(certificate.getOlatResourceKey());
@@ -64,6 +70,8 @@ public class CertificateVO {
 	public static CertificateVO valueOf(Certificate certificate) {
 		CertificateVO vo = new CertificateVO();
 		vo.setKey(certificate.getKey());
+		vo.setCreationDate(certificate.getCreationDate());
+		vo.setNextCertificationDate(certificate.getNextRecertificationDate());
 		vo.setIdentityKey(certificate.getIdentity().getKey());
 		vo.setCourseTitle(certificate.getCourseTitle());
 		vo.setCourseResourceKey(certificate.getArchivedResourceKey());
@@ -79,6 +87,22 @@ public class CertificateVO {
 
 	public void setKey(Long key) {
 		this.key = key;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	public Date getNextCertificationDate() {
+		return nextCertificationDate;
+	}
+
+	public void setNextCertificationDate(Date nextCertificationDate) {
+		this.nextCertificationDate = nextCertificationDate;
 	}
 
 	public Long getIdentityKey() {

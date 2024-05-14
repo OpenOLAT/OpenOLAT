@@ -47,6 +47,7 @@ public class UploadExternalCertificateController extends FormBasicController {
 	private TextElement titleEl;
 	private DateChooser issuedDateEl;
 	private FileElement certificateEl;
+	private DateChooser nextRecertificationDateEl;
 	
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -65,10 +66,14 @@ public class UploadExternalCertificateController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		titleEl = uifactory.addTextElement("certificate.title", 255, null, formLayout);
 		titleEl.setMandatory(true);
+		
 		issuedDateEl = uifactory.addDateChooser("certificate.date", null, formLayout);
 		issuedDateEl.setMandatory(true);
+		
+		nextRecertificationDateEl = uifactory.addDateChooser("next.recertification.date", null, formLayout);
+		
 		certificateEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "certificate.file", formLayout);
-		certificateEl.setMaxUploadSizeKB(certificatesModule.getUploadLimit() * 1024, "certiicate.file.error", null);
+		certificateEl.setMaxUploadSizeKB(certificatesModule.getUploadLimit() * 1024l, "certiicate.file.error", null);
 		certificateEl.setMandatory(true);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
@@ -106,7 +111,8 @@ public class UploadExternalCertificateController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		certificatesManager.uploadStandaloneCertificate(assessedIdentity, issuedDateEl.getDate(), null, null, titleEl.getValue(), -1l, certificateEl.getUploadFile());
+		certificatesManager.uploadStandaloneCertificate(assessedIdentity, issuedDateEl.getDate(), null, null, titleEl.getValue(), -1l,
+				nextRecertificationDateEl.getDate(), certificateEl.getUploadFile());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

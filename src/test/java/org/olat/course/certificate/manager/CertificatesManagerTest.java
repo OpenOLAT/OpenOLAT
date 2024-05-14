@@ -38,6 +38,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
@@ -293,11 +294,16 @@ public class CertificatesManagerTest extends OlatTestCase {
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.YEAR, 2012);
 		Date creationDate = cal.getTime();
+		cal.add(Calendar.DATE, 3);
+		Date nextCertificationDate = cal.getTime();
+		
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		Assert.assertNotNull(certificateUrl);
 		File certificateFile = new File(certificateUrl.toURI());
 		
-		Certificate certificate = certificatesManager.uploadCertificate(identity, creationDate, null, null, entry.getOlatResource(), certificateFile);
+		Certificate certificate = certificatesManager.uploadCertificate(identity, creationDate, "OO-123456",
+				new CertificateManagedFlag[]{ CertificateManagedFlag.delete },
+				entry.getOlatResource(), nextCertificationDate, certificateFile);
 		Assert.assertNotNull(certificate);
 		Assert.assertNotNull(certificate.getKey());
 		Assert.assertNotNull(certificate.getUuid());
@@ -314,7 +320,10 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertEquals(identity, reloadedCertificate.getIdentity());
 		Assert.assertEquals(entry.getOlatResource().getKey(), reloadedCertificate.getArchivedResourceKey());
 		Assert.assertEquals(creationDate, reloadedCertificate.getCreationDate());
-		
+		Assert.assertEquals(nextCertificationDate, reloadedCertificate.getNextRecertificationDate());
+		Assert.assertEquals(1, reloadedCertificate.getManagedFlags().length);
+		Assert.assertEquals("OO-123456", reloadedCertificate.getExternalId());
+
 		//the file
 		VFSLeaf savedCertificateFile = certificatesManager.getCertificateLeaf(reloadedCertificate);
 		Assert.assertNotNull(savedCertificateFile);
@@ -339,17 +348,22 @@ public class CertificatesManagerTest extends OlatTestCase {
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.YEAR, 2012);
 		Date creationDate = cal.getTime();
+		cal.set(Calendar.DATE, 5);
+		Date nextCertificationDate = cal.getTime();
+		
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		Assert.assertNotNull(certificateUrl);
 		File certificateFile = new File(certificateUrl.toURI());
 		
 		Certificate certificate = certificatesManager
-				.uploadStandaloneCertificate(identity, creationDate, null, null, courseTitle, resourceKey, certificateFile);
+				.uploadStandaloneCertificate(identity, creationDate, "OO-23647826", null, courseTitle, resourceKey, nextCertificationDate, certificateFile);
 		Assert.assertNotNull(certificate);
 		Assert.assertNotNull(certificate.getKey());
 		Assert.assertNotNull(certificate.getUuid());
 		Assert.assertEquals(courseTitle, certificate.getCourseTitle());
 		Assert.assertEquals(identity, certificate.getIdentity());
+		Assert.assertEquals(nextCertificationDate, certificate.getNextRecertificationDate());
+		Assert.assertEquals("OO-23647826", certificate.getExternalId());
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -389,7 +403,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		cal.set(Calendar.MILLISECOND, 0);
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		File certificateFile = new File(certificateUrl.toURI());
-		Certificate certificate = certificatesManager.uploadCertificate(identity, cal.getTime(), null, null, entry.getOlatResource(), certificateFile);
+		Certificate certificate = certificatesManager.uploadCertificate(identity, cal.getTime(), null, null, entry.getOlatResource(), null, certificateFile);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
 		
@@ -431,10 +445,10 @@ public class CertificatesManagerTest extends OlatTestCase {
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		File certificateFile = new File(certificateUrl.toURI());
 		//certificate linked to the course which will be deleted
-		Certificate certificateDeletedCourse = certificatesManager.uploadCertificate(identity, cal.getTime(), null, null, entryToDelete.getOlatResource(), certificateFile);
+		Certificate certificateDeletedCourse = certificatesManager.uploadCertificate(identity, cal.getTime(), null, null, entryToDelete.getOlatResource(), null, certificateFile);
 		Assert.assertNotNull(certificateDeletedCourse);
 		//certificate of the staying course
-		Certificate certificate = certificatesManager.uploadCertificate(identity, cal.getTime(), null, null, entry.getOlatResource(), certificateFile);
+		Certificate certificate = certificatesManager.uploadCertificate(identity, cal.getTime(), null, null, entry.getOlatResource(), null, certificateFile);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
 		
