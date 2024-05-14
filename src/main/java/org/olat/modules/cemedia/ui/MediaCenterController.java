@@ -773,12 +773,14 @@ public class MediaCenterController extends FormBasicController
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Media".equalsIgnoreCase(resName)) {
 			FlexiFiltersTab tab = tableEl.getSelectedFilterTab();
-			if(tab == null) {
+			if(tab == null || tab != allTab) {
 				tableEl.setSelectedFilterTab(ureq, allTab);
+				doSelectTab();
 			}
 			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
 			if(!activateMedia(ureq, resId) && tableEl.getSelectedFilterTab() != allTab) {
 				tableEl.setSelectedFilterTab(ureq, allTab);
+				doSelectTab();
 				activateMedia(ureq, resId);
 			}
 			
