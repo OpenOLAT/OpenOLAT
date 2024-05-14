@@ -111,7 +111,7 @@ public class WizardInfoController extends DefaultController {
 		for (int i = 1; i <= totalSteps; i++) {
 			target.append("<li class='")
 			      .append("active", step == i)
-			      .append("'><span class'badge'>")
+			      .append("'><span class='badge'>")
 			      .append(Integer.toString(i))
 			      .append("</span><span class='chevron'></span></li>");
 		}
