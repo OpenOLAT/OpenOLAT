@@ -181,7 +181,7 @@ public class GalleryRunController extends BasicController implements PageRunElem
 	public record GalleryImageItem(String id, String type, MediaVersion mediaVersion, String title,
 								   String description) {}
 
-	private record GalleryImages(List<GalleryImageItem> items) {
+	public record GalleryImages(List<GalleryImageItem> items) {
 
 		public GalleryImageItem getImageById(String id) {
 			if (!StringHelper.containsNonWhitespace(id)) {
@@ -196,7 +196,7 @@ public class GalleryRunController extends BasicController implements PageRunElem
 		}
 	}
 
-	private record GalleryMapper(GalleryPart galleryPart, GalleryImages galleryImages,
+	public record GalleryMapper(GalleryPart galleryPart, GalleryImages galleryImages,
 								 MediaService mediaService) implements Mapper {
 
 		@Override

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
@@ -33,8 +34,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
@@ -58,6 +62,7 @@ import org.olat.modules.ceditor.model.GallerySettings;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
@@ -69,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class GalleryEditorController extends FormBasicController implements PageElementEditorController {
+public class GalleryEditorController extends FormBasicController implements PageElementEditorController, FlexiTableComponentDelegate {
 
 	private static final String UP_ACTION = "up";
 	private static final String DOWN_ACTION = "down";
@@ -87,6 +92,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 	private CloseableCalloutWindowController ccwc;
 	private DialogBoxController confirmRemoveDialog;
 	private ChooseVersionController chooseVersionController;
+	private GalleryRunController.GalleryImages galleryImages;
 
 	@Autowired
 	private DB dbInstance;
@@ -94,6 +100,8 @@ public class GalleryEditorController extends FormBasicController implements Page
 	private MediaToPagePartDAO mediaToPagePartDAO;
 	@Autowired
 	private PageDAO pageDAO;
+	@Autowired
+	private MediaService mediaService;
 
 	public GalleryEditorController(UserRequest ureq, WindowControl wControl, GalleryPart galleryPart,
 								   PageElementStore<GalleryElement> store) {
@@ -142,12 +150,31 @@ public class GalleryEditorController extends FormBasicController implements Page
 
 		tableModel = new GalleryModel(columnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "gallery.images", tableModel, getTranslator(), formLayout);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
+		VelocityContainer row = createVelocityContainer("gallery_image_row");
+		row.setDomReplacementWrapperRequired(false);
+		tableEl.setRowRenderer(row, this);
+		tableEl.setCssDelegate(new GalleryCssDelegate());
+
+		galleryImages = new GalleryRunController.GalleryImages(new ArrayList<>());
+		String mapperUrl = registerCacheableMapper(ureq, "gallery-" + galleryPart.getId(),
+				new GalleryRunController.GalleryMapper(galleryPart, galleryImages, mediaService));
+		row.contextPut("mapperUrl", mapperUrl);
+
 		updateUI();
 	}
 
 	private void loadModel() {
 		List<GalleryRow> galleryRows = mediaToPagePartDAO.loadRelations(galleryPart).stream()
 				.map(r -> new GalleryRow(getTranslator(), r, r.getMedia(), getMediaVersion(r))).toList();
+		List<GalleryRunController.GalleryImageItem> galleryImageItems = galleryRows.stream()
+				.map(GalleryRow::getMediaVersion)
+				.map(mv -> new GalleryRunController.GalleryImageItem(Long.toString(mv.getKey()),
+						mv.getMedia().getType(), mv, mv.getMedia().getTitle(),
+						mv.getMedia().getDescription())).toList();
+		galleryImages.items().clear();
+		galleryImages.items().addAll(galleryImageItems);
 		tableModel.setObjects(galleryRows);
 		tableEl.reset();
 		addTools();
@@ -332,6 +359,16 @@ public class GalleryEditorController extends FormBasicController implements Page
 		//
 	}
 
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		GalleryRow galleryRow = tableModel.getObject(row);
+		List<Component> components = new ArrayList<>();
+		if (galleryRow.getToolLink() != null) {
+			components.add(galleryRow.getToolLink().getComponent());
+		}
+		return components;
+	}
+
 	private class ToolsController extends BasicController {
 
 		private final Link chooseVersionLink;
@@ -418,6 +455,18 @@ public class GalleryEditorController extends FormBasicController implements Page
 		@Override
 		protected void formOK(UserRequest ureq) {
 			//
+		}
+	}
+
+	private class GalleryCssDelegate extends DefaultFlexiTableCssDelegate {
+		@Override
+		public String getTableCssClass(FlexiTableRendererType type) {
+			return "o_gallery_images_table clearfix";
+		}
+
+		@Override
+		public String getRowCssClass(FlexiTableRendererType type, int pos) {
+			return "o_gallery_image_card_cell";
 		}
 	}
 }

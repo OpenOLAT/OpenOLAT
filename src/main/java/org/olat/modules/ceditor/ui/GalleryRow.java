@@ -37,6 +37,7 @@ public class GalleryRow {
 	private final String description;
 	private final String version;
 	private final MediaToPagePart relation;
+	private final MediaVersion mediaVersion;
 	private FormLink toolLink;
 
 	public GalleryRow(Translator translator, MediaToPagePart relation, Media media, MediaVersion mediaVersion) {
@@ -45,6 +46,7 @@ public class GalleryRow {
 		title = StringHelper.truncateText(media.getTitle());
 		description = StringHelper.truncateText(media.getDescription());
 		version = getVersionName(translator, mediaVersion);
+		this.mediaVersion = mediaVersion;
 	}
 
 	public static String getVersionName(Translator translator, MediaVersion mediaVersion) {
@@ -73,6 +75,10 @@ public class GalleryRow {
 
 	public MediaToPagePart getRelation() {
 		return relation;
+	}
+
+	public MediaVersion getMediaVersion() {
+		return mediaVersion;
 	}
 
 	public FormLink getToolLink() {

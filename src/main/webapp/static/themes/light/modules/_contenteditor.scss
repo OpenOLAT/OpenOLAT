@@ -1755,6 +1755,57 @@ table.o_ce_table {
 	}
 }
 
+.o_page_edit_gallery {
+	.o_rendertype_custom {
+		.o_gallery_image_card_cell {
+			position: relative;
+			float: left;
+			margin: 5px;
+			width: 160px;
+			height: 110px;
+
+			.o_gallery_image_card {
+				.o_thumbnail {
+					overflow: hidden;
+					box-sizing: content-box;
+					border-radius: 3px 3px 0 0;
+					border-bottom: 1px solid #cccccc;
+					display: flex;
+					align-items: center;
+					width: inherit;
+					height: 70px;
+
+					img {
+						width: 100%;
+					}
+				}
+
+				.o_meta {
+					display: flex;
+					flex-direction: column;
+					padding: 5px;
+					gap: 5px;
+
+					.o_title_line {
+						display: flex;
+
+						.o_title {
+							flex-grow: 1;
+							font-size: 14px;
+							font-weight: normal;
+							margin: 0;
+							padding-bottom: .1em;
+							overflow: hidden;
+							white-space: nowrap;
+							text-overflow: ellipsis;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 /* Editor and run mode of content editor */
 .o_page_layout {
 
