@@ -36,14 +36,15 @@
 		<div class="swiper-wrapper $gridModeClass">
 			#foreach($galleryImageItem in $galleryImageItems)
 				<div class="swiper-slide $bottomPaddingClass">
-					#if($slideShowMode)
-					<div class="o_use_slide_show_spacer">
-						<div class="o_slide_show_spacer"></div>
-						<div class="o_slide_show_image_wrapper">
+					#if($slideShowMode || $gridMode)
+					<div class="o_use_slide_spacer">
+						<div class="o_slide_spacer"></div>
+						<div class="o_slide_image_wrapper">
 							<img src="$mapperUrl/${galleryImageItem.id()}">
 						</div>
 					</div>
-					#else
+					#end
+					#if($previewMode)
 					<img src="$mapperUrl/${galleryImageItem.id()}">
 					#end
 					#if($slideShowMode)
@@ -101,6 +102,7 @@
 		return aspectRatios[Math.floor(aspectRatios.length / 2)];
 	}
 
+	#if($previewMode)
 	function setPreviewSpacer() {
 		jQuery(function() {
 			var images = jQuery('#o_swiper_$r.getCId() .swiper-slide img');
@@ -121,8 +123,10 @@
 			});
 		});
 	}
+	#end
 
-	function setSlideShowSpacer() {
+	#if($slideShowMode || $gridMode)
+	function setSlideSpacers() {
 		jQuery(function() {
 			var images = jQuery('#o_swiper_$r.getCId() .swiper-slide img');
 			var medianAspectRatio = findMedianAspectRatio(images);
@@ -142,6 +146,41 @@
 			});
 		})
 	}
+	#end
+
+	#if($gridMode)
+	function setGridModeHeight() {
+		var maxHeightPerRow = new Array($rows).fill(0);
+		jQuery(function() {
+			var swiperSlide = jQuery('#o_swiper_$r.getCId() .swiper-slide');
+			swiperSlide.each(function(i, obj) {
+				var rowIndex = i % $rows;
+				var height = obj.clientHeight;
+				maxHeightPerRow[rowIndex] = Math.max(height, maxHeightPerRow[rowIndex]);
+			});
+			var totalHeight = 0;
+			for (var row = 0; row < $rows; row++) {
+				totalHeight += maxHeightPerRow[row];
+			}
+			totalHeight += 40 + 10 * ($rows - 1);
+
+			var swiper = document.getElementById('o_swiper_$r.getCId()');
+			swiper.setAttribute('style', `height: ${totalHeight}px;`);
+
+			setTimeout(function() {
+				swiperSlide.each(function(i, obj) {
+					var rowIndex = i % $rows;
+					var height = maxHeightPerRow[rowIndex];
+					obj.style.height = `${height}px`;
+					obj.style.marginTop = '0';
+					if (rowIndex < ($rows - 1)) {
+						obj.style.marginBottom = '10px';
+					}
+				});
+			}, 500);
+		});
+	}
+	#end
 
 	var imageGallery = new Swiper('#o_swiper_$r.getCId()', {
 		grid: {
@@ -167,7 +206,11 @@
 					setPreviewSpacer();
 				#end
 				#if($slideShowMode)
-					setSlideShowSpacer();
+					setSlideSpacers();
+				#end
+				#if($gridMode)
+					setSlideSpacers();
+					setGridModeHeight();
 				#end
 			},
 		},
@@ -184,37 +227,5 @@
 
 	imageGallery.controller.control = thumbsGallery;
 	thumbsGallery.controller.control = imageGallery;
-	#end
-
-	#if($gridMode)
-	var maxHeightPerRow = new Array($rows).fill(0);
-	jQuery(function() {
-		var swiperSlide = jQuery('#o_swiper_$r.getCId() .swiper-slide');
-		swiperSlide.each(function(i, obj) {
-			var rowIndex = i % $rows;
-			var height = obj.clientHeight;
-			maxHeightPerRow[rowIndex] = Math.max(height, maxHeightPerRow[rowIndex]);
-		});
-		var totalHeight = 0;
-		for (var row = 0; row < $rows; row++) {
-			totalHeight += maxHeightPerRow[row];
-		}
-		totalHeight += 40 + 10 * ($rows - 1);
-
-		var swiper = document.getElementById('o_swiper_$r.getCId()');
-		swiper.setAttribute('style', `height: ${totalHeight}px;`);
-
-		setTimeout(function() {
-			swiperSlide.each(function(i, obj) {
-				var rowIndex = i % $rows;
-				var height = maxHeightPerRow[rowIndex];
-				obj.style.height = `${height}px`;
-				obj.style.marginTop = '0';
-				if (rowIndex < ($rows - 1)) {
-					obj.style.marginBottom = '10px';
-				}
-			});
-		}, 500);
-	});
 	#end
 </script>

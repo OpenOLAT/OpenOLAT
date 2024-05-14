@@ -1668,16 +1668,16 @@ table.o_ce_table {
 				padding-bottom: 24px;
 			}
 
-			.o_use_slide_show_spacer {
+			.o_use_slide_spacer {
 				position: relative;
 				width: 100%;
 
-				.o_slide_show_spacer {
+				.o_slide_spacer {
 					width: 100%;
 					padding-top: calc(100% * 0.75); /* default aspect ratio 4:3: 0.75 */
 				}
 
-				.o_slide_show_image_wrapper {
+				.o_slide_image_wrapper {
 					position: absolute;
 					top: 0;
 					bottom: 0;
