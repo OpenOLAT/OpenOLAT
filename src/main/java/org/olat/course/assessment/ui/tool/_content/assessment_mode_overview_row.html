@@ -1,12 +1,12 @@
 <div class="o_qti_assessment_mode o_mode_frame_outer">
 	<div class="o_mode_frame_inner o_assessment_status_${helper.getStatus($row.assessmentMode).name()}">
-		<h4 style="display: flex; justify-content: space-between;">
-			<span>
+		<h4 style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+			<span style="white-space: nowrap; overflow: hidden; max-width: 350px; text-overflow: ellipsis;">
 				<i class='o_icon o_icon_assessment_mode'>  </i> $r.escapeHtml($row.name)
-				#if(!$row.assessmentMode.getStatus().name().equals("none"))
-					<small class="text-muted">&nbsp;-&nbsp;${helper.getModeState($row.assessmentMode)}</small>
-				#end
 			</span>
+			#if(!$row.assessmentMode.getStatus().name().equals("none"))
+				:<small class="text-muted">&nbsp;-&nbsp;${helper.getModeState($row.assessmentMode)}</small>
+			#end
 			<span style="white-space: nowrap;">
 				<small>$row.getAssessmentModeRendered()</small>
 			</span>

@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -182,7 +183,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 			if (stopAssessmentMode != null) {
 				stopAssessmentMode.setVisible(false);
 			}
-			assessmentModeMessageFormatting(mainVC);
+			assessmentModeMessageFormatting(mainVC, modes);
 		} else if (stackPanel != null) {
 			stackPanel.removeMessageComponent();
 		}
@@ -252,7 +253,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 		} else if (stopAssessmentMode == source) {
 			doConfirmStop(ureq, (AssessmentMode) stopAssessmentMode.getUserObject());
 		} else if (infoLink == source) {
-			doOpenEventCallout(ureq, (AssessmentMode) infoLink.getUserObject());
+			doOpenEventCallout(ureq, (List<AssessmentMode>) infoLink.getUserObject());
 		}
 	}
 
@@ -288,13 +289,13 @@ public class StopAssessmentWarningController extends BasicController implements 
 		cmc = null;
 	}
 
-	private void doOpenEventCallout(UserRequest ureq, AssessmentMode mode) {
+	private void doOpenEventCallout(UserRequest ureq, List<AssessmentMode> modes) {
 		if (eventCalloutCtrl != null && assessmentModeDetailsCtrl != null) return;
 
 		removeAsListenerAndDispose(eventCalloutCtrl);
 		removeAsListenerAndDispose(assessmentModeDetailsCtrl);
 
-		assessmentModeDetailsCtrl = new AssessmentModeDetailsController(ureq, getWindowControl(), mode);
+		assessmentModeDetailsCtrl = new AssessmentModeDetailsController(ureq, getWindowControl(), modes);
 		listenTo(assessmentModeDetailsCtrl);
 
 		Component eventCmp = assessmentModeDetailsCtrl.getInitialComponent();
@@ -333,7 +334,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 		}
 
 		infoLink = LinkFactory.createLink("mode_info", "mode_info", "CMD_SCORE_DESC", "<i class='o_icon o_icon_info_badge'> </i>", null, null, this, Link.NONTRANSLATED);
-		infoLink.setUserObject(mode);
+		infoLink.setUserObject(Collections.singletonList(mode));
 		StringOutput status = new StringOutput();
 		ModeStatusCellRenderer modeStatusCellRenderer = new ModeStatusCellRenderer(Util.createPackageTranslator(AssessmentModeListController.class, getLocale()));
 		modeStatusCellRenderer.renderStatus(mode.getStatus(), null, status);
@@ -357,16 +358,25 @@ public class StopAssessmentWarningController extends BasicController implements 
 
 		String message = translate(i18nMessage, args);
 		warn.put("infoLink", infoLink);
-		warn.contextPut("title", status + "&nbsp;&nbsp;\"" + StringHelper.escapeHtml(mode.getName()) + "\"");
+		warn.contextPut("status", status);
+		warn.contextPut("title", StringHelper.escapeHtml(mode.getName()));
 		warn.contextPut("message", message);
 	}
 
-	private void assessmentModeMessageFormatting(VelocityContainer warn) {
+	private void assessmentModeMessageFormatting(VelocityContainer warn, List<AssessmentMode> modes) {
 		warn.contextRemove("title");
+		infoLink = LinkFactory.createLink("mode_info", "mode_info", "CMD_SCORE_DESC", "<i class='o_icon o_icon_info_badge'> </i>", null, null, this, Link.NONTRANSLATED);
+		infoLink.setUserObject(modes);
 		String assessmentToolUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey() + "/assessmentToolv2/0";
-		String i18nMessage = "assessment.mode.several";
-		String message = translate(i18nMessage, assessmentToolUrl);
-		warn.contextPut("message", message);
+		String i18nMessagePart1 = "assessment.mode.several.part1";
+		String messagePart1 = translate(i18nMessagePart1);
+		String i18nMessagePart2 = "assessment.mode.several.part2";
+		String messagePart2 = translate(i18nMessagePart2, assessmentToolUrl);
+
+		warn.put("infoLink", infoLink);
+		warn.contextPut("message", messagePart1);
+		warn.contextPut("message2", messagePart2);
+		warn.contextPut("modeStatus", modes.get(0).getStatus().name());
 	}
 
 	private void doConfirmStart(UserRequest ureq, AssessmentMode mode) {

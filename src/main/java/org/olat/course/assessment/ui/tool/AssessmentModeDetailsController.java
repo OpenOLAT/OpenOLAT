@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -46,18 +48,19 @@ public class AssessmentModeDetailsController extends BasicController {
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 
-	protected AssessmentModeDetailsController(UserRequest ureq, WindowControl wControl, AssessmentMode mode) {
+	protected AssessmentModeDetailsController(UserRequest ureq, WindowControl wControl, List<AssessmentMode> modes) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentModeHelper.class, ureq.getLocale()));
 
 		mainVC = createVelocityContainer("assessment_details");
 		AssessmentModeHelper helper = new AssessmentModeHelper(getTranslator());
+		mainVC.contextPut("helper", helper);
+		mainVC.contextPut("modes", modes);
 
-		mainVC.contextPut("title", "<i class='o_icon o_icon_assessment_mode'>  </i>" + "&nbsp;" + StringHelper.escapeHtml(mode.getName()));
-		mainVC.contextPut("modeState", helper.getModeState(mode));
-		mainVC.contextPut("beginEnd", helper.getBeginEndTooltip(mode));
-		mainVC.contextPut("leadFollowUpTime", helper.getLeadFollowupTime(mode));
-		forgeStatistics(mode);
-
+		if (modes != null) {
+			for (AssessmentMode mode : modes) {
+				forgeStatistics(mode);
+			}
+		}
 		putInitialPanel(mainVC);
 	}
 
@@ -68,7 +71,7 @@ public class AssessmentModeDetailsController extends BasicController {
 			AssessmentModeProgressionItem waitBarItem = new AssessmentModeProgressionItem("tooltipId", mode, getTranslator());
 			waitBarItem.setMax(statistics.getNumPlanned());
 			waitBarItem.setActual(statistics.getNumInOpenOlat());
-			mainVC.put("modeItem", waitBarItem.getComponent());
+			mainVC.put(mode.getKey().toString(), waitBarItem.getComponent());
 		}
 	}
 

@@ -1,9 +1,20 @@
-<div style="display: flex; align-items: center;">
-    <b><h4>$title</h4></b>&nbsp;-&nbsp;<div class="text-muted">$modeState</div>
-</div>
-<div class="text-muted">$beginEnd</div>
-<div class="text-muted">$leadFollowUpTime</div>
-<br>
-#if($r.isNotNull("modeItem"))
-    <p>$r.render("modeItem")</p>
+#foreach ($mode in $modes)
+    #if($foreach.count > 1)
+        <hr>
+    #end
+    <div style="display: flex; align-items: center;">
+        <b>
+            <div style="white-space: nowrap; overflow: hidden; max-width: 200px; text-overflow: ellipsis;">
+                <h4>
+                    <i class='o_icon o_icon_assessment_mode'></i>&nbsp;$r.escapeHtml($mode.name)
+                </h4>
+            </div>
+        </b>&nbsp;-&nbsp;<div class="text-muted">$helper.getModeState($mode)</div>
+    </div>
+    <div class="text-muted">$helper.getBeginEndTooltip($mode)</div>
+    <div class="text-muted">$helper.getLeadFollowupTime($mode)</div>
+    <br>
+    #if($r.isNotNull($mode.getKey()))
+        <p>$r.render($mode.getKey().toString())</p>
+    #end
 #end
