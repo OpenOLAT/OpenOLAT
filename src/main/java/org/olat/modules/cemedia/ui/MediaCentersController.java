@@ -78,15 +78,15 @@ public class MediaCentersController extends BasicController implements Activatea
 		if(entries == null || entries.isEmpty()) return;
 
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("Media".equalsIgnoreCase(resName)) {
-			MediaCenterController mediaCenterCtrl = doOpenMyMediaCenter(ureq);
-			mediaCenterCtrl.activate(ureq, entries, state);
-			if(mediaCenterCtrl.isDetailsOpen()) {
-				segmentView.select(myMediaCenterLink);
-			} else {
-				doOpenAdminMediaCenter(ureq).activate(ureq, entries, state);
-				segmentView.select(adminMediaCenterLink);
-			}
+		if ("My".equals(resName)) {
+			doOpenMyMediaCenter(ureq).activate(ureq, entries, state);
+			segmentView.select(myMediaCenterLink);
+		} else if ("Admin".equals(resName)) {
+			doOpenAdminMediaCenter(ureq).activate(ureq, entries, state);
+			segmentView.select(adminMediaCenterLink);
+		} else if ("Media".equals(resName)) {
+			doOpenMyMediaCenter(ureq).activate(ureq, entries, state);
+			segmentView.select(myMediaCenterLink);
 		}
 	}
 
