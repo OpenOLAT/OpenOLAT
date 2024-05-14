@@ -182,6 +182,9 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 }
 
 .o_folder {
+	.o_table_filters_wrapper {
+		z-index: initial;
+	}
 	.o_rendertype_custom {
 		.o_folder_table {
 			display: grid;
