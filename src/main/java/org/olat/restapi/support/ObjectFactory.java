@@ -64,7 +64,7 @@ import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
  */
 public class ObjectFactory {
 	private static final Logger log = Tracing.createLoggerFor(ObjectFactory.class);
-	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 	public static String formatDate(Date date) {
 		if(date == null) return null;
