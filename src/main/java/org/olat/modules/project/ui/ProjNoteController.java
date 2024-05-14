@@ -163,7 +163,7 @@ public class ProjNoteController extends FormBasicController {
 		cleanUpNoteUI();
 		updateHeaderUI(ureq);
 		
-		noteViewCtrl = new ProjNoteViewController(ureq, getWindowControl(), bcFactory, noteInfo, false);
+		noteViewCtrl = new ProjNoteViewController(ureq, getWindowControl(), mainForm, bcFactory, noteInfo, false);
 		listenTo(noteViewCtrl);
 		flc.add("viewNote", noteViewCtrl.getInitialFormItem());
 		flc.contextPut("edit", Boolean.FALSE);

@@ -22,6 +22,7 @@ package org.olat.modules.project.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.control.Controller;
@@ -51,9 +52,9 @@ public class ProjNoteViewController extends FormBasicController {
 	private Boolean memberOpen = Boolean.FALSE;
 	private Boolean metadataOpen = Boolean.FALSE;
 
-	public ProjNoteViewController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
+	public ProjNoteViewController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjectBCFactory bcFactory,
 			ProjNoteInfo noteInfo, boolean withOpenInSameWindow) {
-		super(ureq, wControl, "edit");
+		super(ureq, wControl, LAYOUT_CUSTOM, "edit", mainForm);
 		this.bcFactory = bcFactory;
 		this.noteInfo = noteInfo;
 		this.withOpenInSameWindow = withOpenInSameWindow;
