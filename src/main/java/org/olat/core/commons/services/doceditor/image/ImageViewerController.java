@@ -55,7 +55,7 @@ public class ImageViewerController extends BasicController {
 		
 		VFSLeaf vfsLeaf = configs.getVfsLeaf();
 		VFSMediaMapper mapper = new VFSMediaMapper(vfsLeaf);
-		String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsLeaf.getRelPath()));
+		String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsLeaf.getRelPath() + vfsLeaf.getLastModified()));
 		String url = registerCacheableMapper(ureq, mapperId, mapper);
 		mainVC.contextPut("url", url);
 	}
