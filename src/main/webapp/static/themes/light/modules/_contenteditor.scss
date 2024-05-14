@@ -1757,23 +1757,27 @@ table.o_ce_table {
 
 .o_page_edit_gallery {
 	.o_rendertype_custom {
+		.o_gallery_images_table {
+			margin-top: 5px;
+		}
+
 		.o_gallery_image_card_cell {
 			position: relative;
 			float: left;
 			margin: 5px;
 			width: 160px;
-			height: 110px;
+			height: 124px;
 
 			.o_gallery_image_card {
 				.o_thumbnail {
 					overflow: hidden;
 					box-sizing: content-box;
-					border-radius: 3px 3px 0 0;
-					border-bottom: 1px solid #cccccc;
+					border-radius: $o-card-border-radius $o-card-border-radius 0 0;
+					border-bottom: $o-card-border;
 					display: flex;
 					align-items: center;
 					width: inherit;
-					height: 70px;
+					height: 88px;
 
 					img {
 						width: 100%;
