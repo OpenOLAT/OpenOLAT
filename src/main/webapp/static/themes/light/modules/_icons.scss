@@ -195,6 +195,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_help { @include o-add-icon('question-circle'); cursor: help;}
 .o_icon_home { @include o-add-icon('home');}
 .o_icon_image { @include o-add-icon('image');}
+.o_icon_image_comparison {
+	position: relative;
+	margin-left: -13px;
+	& {
+		@include o-add-icon('image');
+		@include o-add-icon('image', false, false);
+	}
+	&:after { position: absolute; top: 0; right: -13px; font-size: 100%; }
+}
 .o_icon_images { @include o-add-icon('images');}
 .o_icon_impress { @include o-add-icon('info-circle');}
 .o_icon_important { @include o-add-icon('exclamation-triangle'); color: $brand-warning;}
