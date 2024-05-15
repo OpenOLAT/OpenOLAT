@@ -81,7 +81,7 @@ public class PdfJsViewerController extends BasicController {
 			}
 		} else {
 			VFSMediaMapper mapper = new VFSMediaMapper(vfsLeaf);
-			String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsLeaf.getRelPath()));
+			String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsLeaf.getRelPath() + vfsLeaf.getLastModified()));
 			String pdfUrl = registerCacheableMapper(ureq, mapperId, mapper);
 			sb.append("?file=").append(pdfUrl);
 		}
