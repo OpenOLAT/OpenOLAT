@@ -199,6 +199,7 @@
 		<class>org.olat.modules.ceditor.model.jpa.CodePart</class>
 		<class>org.olat.modules.ceditor.model.jpa.GalleryPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.HTMLPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.ImageComparisonPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.MathPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.ParagraphPart</class>
 		<class>org.olat.modules.ceditor.model.jpa.QuizPart</class>

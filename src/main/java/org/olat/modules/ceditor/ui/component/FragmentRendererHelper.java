@@ -37,6 +37,7 @@ import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.jpa.CodePart;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
+import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
@@ -124,6 +125,11 @@ public class FragmentRendererHelper {
 		if (element instanceof GalleryPart galleryPart) {
 			if (galleryPart.getSettings() != null) {
 				return galleryPart.getSettings().getAlertBoxSettings();
+			}
+		}
+		if (element instanceof ImageComparisonPart imageComparisonPart) {
+			if (imageComparisonPart.getSettings() != null) {
+				return imageComparisonPart.getSettings().getAlertBoxSettings();
 			}
 		}
 		if (element instanceof Rubric rubric) {
