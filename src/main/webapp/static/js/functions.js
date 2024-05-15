@@ -2152,9 +2152,9 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 		// Copy function arguments and set the dirtyCheck to false for execution in callback.
 		// Note that the argument list is dynamic, there are potentially more arguments than
 		// listed in the function (e.g. in QTI2)
-		var callbackArguments = Array.prototype.slice.call(arguments);
+		let callbackArguments = Array.prototype.slice.call(arguments);
 		callbackArguments[5] = false; 		
-		var onIgnoreCallback = function() {
+		let onIgnoreCallback = function() {
 			// fire original event when the "ok, delete anyway" button was pressed
 			o_ffXHREvent.apply(window, callbackArguments);
 		}
@@ -2169,13 +2169,13 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	// The window.suppressOlatOnUnloadOnce works only once (needed in SCORM).
 	// o_beforeserver();
 	
-	var data = new Object();
+	let data = new Object();
 	if(submit) {
-		var form = jQuery('#' + formNam);
-		var formData = form.serializeArray();
-		var formLength = formData.length;
-		for(var i=0; i<formLength; i++) {
-			var nameValue = formData[i];//dispatchuri and dispatchevent will be overriden
+		let form = jQuery('#' + formNam);
+		let formData = form.serializeArray();
+		let formLength = formData.length;
+		for(let i=0; i<formLength; i++) {
+			let nameValue = formData[i];//dispatchuri and dispatchevent will be overriden
 			if(nameValue.name != 'dispatchuri' && nameValue.name != 'dispatchevent') {
 				data[nameValue.name] = nameValue.value;
 			}
@@ -2184,13 +2184,13 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 		data['_csrf'] = jQuery('#' + formNam + " input[name='_csrf']").val();
 	}
 	
-	var openInNewWindow = false;
-	var openInNewWindowTarget = "_blank";
+	let openInNewWindow = false;
+	let openInNewWindowTarget = "_blank";
 	data['dispatchuri'] = dispId;
 	data['dispatchevent'] = eventInt;
 	if(arguments.length > 9) {
-		var argLength = arguments.length;
-		for(var j=9; j<argLength; j=j+2) {
+		let argLength = arguments.length;
+		for(let j=9; j<argLength; j=j+2) {
 			if(argLength > j+1) {
 				data[arguments[j]] = arguments[j+1];
 				if(arguments[j] == "oo-opennewwindow-oo") {
@@ -2202,13 +2202,13 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 		}
 	}
 	
-	var newTargetWindow = null;
+	let newTargetWindow = null;
 	if(openInNewWindow) {
 		newTargetWindow = window.open("",openInNewWindowTarget);
 		newTargetWindow.blur();
 	}
 	
-	var targetUrl = jQuery('#' + formNam).attr("action");
+	let targetUrl = jQuery('#' + formNam).attr("action");
 	jQuery.ajax(targetUrl,{
 		type:'POST',
 		data: data,
@@ -2218,9 +2218,9 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 			try {
 				o_ainvoke(responseData);
 				if(push) {
-					var businessPath = responseData['businessPath'];
-					var documentTitle = responseData['documentTitle'];
-					var historyPointId = responseData['historyPointId'];
+					let businessPath = responseData['businessPath'];
+					let documentTitle = responseData['documentTitle'];
+					let historyPointId = responseData['historyPointId'];
 					if(businessPath) {
 						o_pushState(historyPointId, documentTitle, businessPath);
 					}
@@ -2238,25 +2238,25 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 }
 
 function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
-	var data = new Object();
+	let data = new Object();
 	data['dispatchuri'] = dispId;
 	data['dispatchevent'] = eventInt;
 	
-	var csrfEl = jQuery('#' + formNam + " input[name='_csrf']");
+	let csrfEl = jQuery('#' + formNam + " input[name='_csrf']");
 	if(csrfEl != null && csrfEl.length > 0) {
 		data['_csrf'] = csrfEl.val();
 	}
 	
 	if(arguments.length > 5) {
-		var argLength = arguments.length;
-		for(var i=5; i<argLength; i=i+2) {
+		let argLength = arguments.length;
+		for(let i=5; i<argLength; i=i+2) {
 			if(argLength > i+1) {
 				data[arguments[i]] = arguments[i+1];
 			}
 		}
 	}
 	
-	var targetUrl = jQuery('#' + formNam).attr("action");
+	let targetUrl = jQuery('#' + formNam).attr("action");
 	jQuery.ajax(targetUrl,{
 		type:'POST',
 		data: data,
@@ -2264,12 +2264,13 @@ function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 		dataType: 'json',
 		success: function(responseData, textStatus, jqXHR) {
 			//no response
-		}
+		},
+		error: o_onXHRError
 	})
 }
 
 function o_XHRWikiEvent(link) {
-	var href = jQuery(link).attr('href');
+	let href = jQuery(link).attr('href');
 	if(href.indexOf(o_info.serverUri) == 0) {
 		href = href.substring(o_info.serverUri.length, href.length);
 	}
@@ -2395,10 +2396,10 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 //by pass every check and don't wait a response from the response
 //typically used to send GUI settings back to the server
 function o_XHRNFEvent(targetUrl) {
-	var data = new Object();
+	let data = new Object();
 	if(arguments.length > 1) {
-		var argLength = arguments.length;
-		for(var i=1; i<argLength; i=i+2) {
+		let argLength = arguments.length;
+		for(let i=1; i<argLength; i=i+2) {
 			if(argLength > i+1) {
 				data[arguments[i]] = arguments[i+1];
 			}
