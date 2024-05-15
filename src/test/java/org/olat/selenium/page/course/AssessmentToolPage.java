@@ -237,8 +237,8 @@ public class AssessmentToolPage {
 			OOGraphene.waitElementSlowly(doneBy, 10, browser);
 		} catch(Exception e) {
 			log.warn("Try a second time, takes a screenshot for chrome on linux.");
-			// On linux, the screenshot update the window of chrome
-			OOGraphene.takeScreenshot("Status passed", browser);
+			// On Linux, the screenshot update the window of Chrome
+			OOGraphene.takeScreenshotInMemory(browser);
 			OOGraphene.waitElementSlowly(doneBy, 10, browser);
 		}
 		return this;

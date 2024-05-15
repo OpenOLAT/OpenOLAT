@@ -117,8 +117,12 @@ public class ProjectBrokerPage {
 		OOGraphene.waitElement(folderBy, browser);
 		browser.findElement(folderBy).click();
 		
+		// On Linux, the screenshot update the window of Chrome
+		OOGraphene.waitingALittleLonger();
+		OOGraphene.takeScreenshotInMemory(browser);
+		
 		By breadCrumbBy = By.xpath("//div[@id='collapseDropbox']//ol/li[contains(@class,'o_breadcrumb_crumb')][not(contains(@class,'o_display_none'))]//span[text()[contains(.,'" + user.getLastName() + "')]]");
-		OOGraphene.waitElement(breadCrumbBy, browser);
+		OOGraphene.waitElementSlowly(breadCrumbBy, 5, browser);
 		return this;
 	}
 	
