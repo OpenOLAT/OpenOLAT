@@ -26,6 +26,7 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
@@ -33,8 +34,8 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Service;
 
@@ -58,7 +59,7 @@ public class MathWebDispatcher implements Dispatcher {
 		try{
 			//upon creation URL is checked for 
 			ureq = new UserRequestImpl("math", request, response);
-		} catch(NumberFormatException nfe) {
+		} catch(RequestAbortedException | NumberFormatException nfe) {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}

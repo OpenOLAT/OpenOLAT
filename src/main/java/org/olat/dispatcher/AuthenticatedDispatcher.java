@@ -66,6 +66,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.Tracing;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -113,6 +114,9 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		try{
 			//upon creation URL is checked for 
 			ureq = new UserRequestImpl(uriPrefix, request, response);
+		} catch(RequestAbortedException eofe) {
+			log.debug("Bad Request {}", request.getPathInfo(), eofe);
+			return ;
 		} catch(NumberFormatException nfe) {
 			//MODE could not be decoded
 			//typically if robots with wrong urls hit the system

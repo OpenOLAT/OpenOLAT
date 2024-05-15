@@ -25,6 +25,7 @@ import java.util.Locale;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
@@ -40,8 +41,8 @@ import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -84,7 +85,7 @@ public class LibraryDispatcher  implements Dispatcher {
 		try {
 			//upon creation URL is checked for 
 			ureq = new UserRequestImpl(uriPrefix, request, response);
-		} catch(NumberFormatException nfe) {
+		} catch(RequestAbortedException | NumberFormatException nfe) {
 			//MODE could not be decoded
 			//typically if robots with wrong urls hit the system
 			//or user have bookmarks

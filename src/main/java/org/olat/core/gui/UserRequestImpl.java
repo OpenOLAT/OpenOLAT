@@ -49,9 +49,11 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.DispatchResult;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
@@ -103,7 +105,8 @@ public class UserRequestImpl implements UserRequest {
 	 * @param httpReq
 	 * @param httpResp
 	 */
-	public UserRequestImpl(String uriPrefix, HttpServletRequest httpReq, HttpServletResponse httpResp) {
+	public UserRequestImpl(String uriPrefix, HttpServletRequest httpReq, HttpServletResponse httpResp)
+	throws RequestAbortedException {
 		this.httpReq = httpReq;
 		this.httpResp = httpResp;
 		this.uriPrefix = uriPrefix;
@@ -230,7 +233,7 @@ public class UserRequestImpl implements UserRequest {
 	 * The first three params are WindowsID, TimestampID and ComponentID. Any
 	 * remaining params make up key/value pairs.
 	 */
-	private void parseRequest(HttpServletRequest hreq) {
+	private void parseRequest(HttpServletRequest hreq) throws RequestAbortedException {
 		String uri = hreq.getRequestURI();
 		String decodedUri;
 		try {
@@ -298,7 +301,13 @@ public class UserRequestImpl implements UserRequest {
 		} else if(contentType.startsWith("multipart/")) {
 			try {
 				hreq.getParts();
-			} catch (IOException | ServletException e) {
+				
+			} catch (IOException e) {
+				log.error("Test: {} - {}", e.getClass(), e.getCause().getClass());
+				if(ServletUtil.isAbortException(e)) {
+					throw new RequestAbortedException(e);
+				}
+			} catch (ServletException e) {
 				log.error("", e);
 			}
 		}

@@ -21,6 +21,7 @@ package org.olat.modules.library.ui;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -28,9 +29,12 @@ import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.gui.media.BadRequestMediaResource;
 import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.logging.Tracing;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -50,6 +54,8 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
 public class LibraryMapper implements Mapper {
+	
+	private static final Logger log = Tracing.createLoggerFor(LibraryMapper.class);
 	
 	private String basePath;
 	private final LibraryManager libraryManager;
@@ -73,9 +79,14 @@ public class LibraryMapper implements Mapper {
 		SiteConfiguration libConfig = sitesModule.getConfigurationSite(siteDef);
 		SiteSecurityCallback secCallback = (SiteSecurityCallback)CoreSpringFactory.getBean(libConfig.getSecurityCallbackBeanId());
 
-		UserRequest ureq = new UserRequestImpl(relPath, request, null);
-		if(!secCallback.isAllowedToLaunchSite(ureq)) {
-			return new ForbiddenMediaResource();
+		try {
+			UserRequest ureq = new UserRequestImpl(relPath, request, null);
+			if(!secCallback.isAllowedToLaunchSite(ureq)) {
+				return new ForbiddenMediaResource();
+			}
+		} catch (RequestAbortedException e) {
+			log.error("", e);
+			return new BadRequestMediaResource();
 		}
 		
 		if (relPath.startsWith(basePath)) {

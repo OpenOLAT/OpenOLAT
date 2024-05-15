@@ -48,6 +48,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
@@ -157,7 +158,7 @@ public class RESTDispatcher implements Dispatcher {
 		try {
 			//upon creation URL is checked for 
 			ureq = new UserRequestImpl(uriPrefix, request, response);
-		} catch(NumberFormatException nfe) {
+		} catch(RequestAbortedException | NumberFormatException nfe) {
 			//MODE could not be decoded
 			//typically if robots with wrong urls hit the system
 			//or user have bookmarks

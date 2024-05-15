@@ -47,6 +47,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.cache.CacheWrapper;
@@ -300,7 +301,7 @@ public class LTI13ToolDispatcherDelegate {
 		try{
 			//upon creation URL is checked for 
 			return new UserRequestImpl("lti", request, response);
-		} catch(NumberFormatException nfe) {
+		} catch(RequestAbortedException | NumberFormatException nfe) {
 			if(log.isDebugEnabled()){
 				log.debug("Bad Request {}", request.getPathInfo());
 			}

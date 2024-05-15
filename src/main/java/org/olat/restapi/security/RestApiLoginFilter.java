@@ -56,6 +56,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -243,7 +244,7 @@ public class RestApiLoginFilter implements Filter {
 		try{
 			//upon creation URL is checked for
 			ureq = new UserRequestImpl(requestURI, request, response);
-		} catch(NumberFormatException nfe) {
+		} catch(RequestAbortedException | NumberFormatException nfe) {
 			return -1;
 		}
 		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);

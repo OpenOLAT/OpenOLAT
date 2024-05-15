@@ -21,14 +21,18 @@ package org.olat.resource.accesscontrol.provider.paypalcheckout.ui;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
+import org.olat.core.gui.media.BadRequestMediaResource;
 import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutManager;
@@ -42,6 +46,8 @@ import org.olat.resource.accesscontrol.ui.AccessEvent;
  *
  */
 public class PaypalSmartButtonMapper implements Mapper {
+	
+	private static final Logger log = Tracing.createLoggerFor(PaypalSmartButtonMapper.class);
 	
 	private CreateSmartOrder order;
 	private final OfferAccess link;
@@ -91,9 +97,14 @@ public class PaypalSmartButtonMapper implements Mapper {
 		if(order != null && StringHelper.containsNonWhitespace(order.getPaypalOrderId())) {
 			paypalManager.approveTransaction(order.getPaypalOrderId());
 
-			UserRequest ureq = new UserRequestImpl("m", request, null);
-			controller.fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);
-			return buildOrderResource(order.getPaypalOrderId());
+			try {
+				UserRequest ureq = new UserRequestImpl("m", request, null);
+				controller.fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);
+				return buildOrderResource(order.getPaypalOrderId());
+			} catch (RequestAbortedException e) {
+				log.error("", e);
+				return new BadRequestMediaResource();
+			}
 		}
 		return null;
 	}

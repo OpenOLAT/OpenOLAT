@@ -28,6 +28,7 @@ package org.olat.core.gui.media;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -261,6 +262,17 @@ public class ServletUtil {
 			IOUtils.closeQuietly(bis);
 			IOUtils.closeQuietly(in);
 		}
+	}
+	
+	public static boolean isAbortException(Exception e) {
+		do {
+
+			String className = e.getClass().getSimpleName();
+			if("ClientAbortException".equals(className) || e instanceof EOFException) {
+				return true;
+			}
+		} while (e.getCause() != null);
+		return false;
 	}
 	
 	public static final void handleIOException(String msg, Exception e) {

@@ -1189,13 +1189,12 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 		
 		let htmlForm = document.getElementById(formName);
 		htmlForm.classList.remove('o_dnd_over');
+		let xhr = null;
 		
 		let targetUrl = htmlForm.getAttribute("action");
 		let csrf = document.querySelector('#' + formName + " input[name='_csrf']").getAttribute('value');
 		let numOfFiles = files.length;
-		let numOfFilesToEnd = numOfFiles;
 		let totalFiles = 0;
-		let totalLoadedFiles = 0;
 		for(const file of files) {
 			totalFiles += file.size;
 		}
@@ -1204,10 +1203,20 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
     		showAjaxSpinner();
 		}
 		
+		function abortProgress() {
+			if(xhr != null) {
+				try {
+					xhr.abort();
+				} catch(e) {
+					if(window.console) console.log(e);
+				}
+			}
+		}
+		
 		function loadProgress(evt) {
     		showAjaxSpinner();
     		if (evt.lengthComputable) {
-    			let loaded = totalLoadedFiles + evt.loaded;
+    			let loaded = evt.loaded;
        			let percentComplete = Math.floor(((loaded / totalFiles) * 100.0));
         		// only upldate UI once in a while, painting is a lot slower than progress updates
         		let now = Date.now();
@@ -1215,16 +1224,15 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 					o_info.ajaxBusyLastProgress = now;
 					jQuery('#o_ajax_busy .progress-bar').attr('aria-valuenow', percentComplete).css('width', percentComplete + '%');
 					jQuery('#o_ajax_progress .o_progress_info').text(BFormatter.formatBytes(loaded) + '  /  ' + BFormatter.formatBytes(totalFiles));
+					jQuery('#o_ajax_progress #o_progress_cancel').click(function() {
+						abortProgress();
+					});
 				}
 			}
     	}
 		
 		function loadEnd(evt) {
-    		totalLoadedFiles += evt.loaded;
-			numOfFilesToEnd = numOfFilesToEnd - 1;
-			if(numOfFilesToEnd <= 0) {
-				o_XHRLoadend();
-			}
+			o_XHRLoadend();
 		}
 		
 		let formData = new FormData(htmlForm);
@@ -1240,7 +1248,7 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 			formData.append('upload-folder', directory);
 		}
 
-		jQuery.ajax(targetUrl,{
+		xhr = jQuery.ajax(targetUrl,{
 			xhr: function() {
 				let xhr = new window.XMLHttpRequest();						
 				xhr.upload.addEventListener("loadstart", o_XHRLoadstart, false);
@@ -2420,8 +2428,10 @@ function o_onXHRError(jqXHR, textStatus, errorThrown, wasFlexiDirtyDirty) {
 		jQuery("#myFunctionalModal a.o_button_ghost").on("click", function() {
 			jQuery('#myFunctionalModal').remove();
 		});
+	} else if(jqXHR.status == 0 && "abort" === textStatus) {
+		// Aborted
 	} else if(window.console) {
-		console.log('Error status 2', jqXHR.status, textStatus, errorThrown, jqXHR.responseText);
+		console.log('Error status', jqXHR.status, textStatus, errorThrown, jqXHR.responseText);
 		console.log(jqXHR);
 	}
 }

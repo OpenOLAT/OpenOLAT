@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.logging.Tracing;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.edusharing.model.SearchResult;
 
@@ -57,7 +58,7 @@ public class EdusharingSearchCallbackMapper implements Mapper {
 			ureq = new UserRequestImpl("edusharing", request, null);
 			EdusharingConversionService conversionService = CoreSpringFactory.getImpl(EdusharingConversionService.class);
 			searchResult = conversionService.toSearchResult(ureq);
-		} catch (NumberFormatException nfe) {
+		} catch (RequestAbortedException | NumberFormatException nfe) {
 			//
 		}
 		

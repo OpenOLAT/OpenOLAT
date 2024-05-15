@@ -56,6 +56,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -124,13 +125,19 @@ public class ShibbolethDispatcher implements Dispatcher{
 		ShibbolethAttributes shibbolethAttriutes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
 		shibbolethAttriutes.init(attributesMap);
 		String uid = shibbolethAttriutes.getUID();
-		if(uid == null) {
-			handleException(new ShibbolethException(ShibbolethException.UNIQUE_ID_NOT_FOUND,"Unable to get unique identifier for subject. Make sure you are listed in the metadata.xml file and your resources your are trying to access are available and your are allowed to see them. (Resourceregistry). "),
-					req, resp, translator);
-			return;
-		}
 
-		if(!authorization(req, resp, shibbolethAttriutes)) {
+		try {
+			if(uid == null) {
+				handleException(new ShibbolethException(ShibbolethException.UNIQUE_ID_NOT_FOUND,"Unable to get unique identifier for subject. Make sure you are listed in the metadata.xml file and your resources your are trying to access are available and your are allowed to see them. (Resourceregistry). "),
+						req, resp, translator);
+				return;
+			}
+
+			if(!authorization(req, resp, shibbolethAttriutes)) {
+				return;
+			}
+		} catch (IOException e) {
+			DispatcherModule.sendBadRequest(req.getPathInfo(), resp);
 			return;
 		}
 
@@ -138,7 +145,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 		try{
 			//upon creation URL is checked for
 			ureq = new UserRequestImpl(uriPrefix, req, resp);
-		} catch(NumberFormatException nfe) {
+		} catch(RequestAbortedException | NumberFormatException nfe) {
 			//MODE could not be decoded
 			//typically if robots with wrong urls hit the system
 			//or user have bookmarks
@@ -185,8 +192,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 				disclaimer(resp);
 			} else {
 				MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
-				if (mr instanceof RedirectMediaResource) {
-					RedirectMediaResource rmr = (RedirectMediaResource)mr;
+				if (mr instanceof RedirectMediaResource rmr) {
 					rmr.prepare(resp);
 				} else {
 					DispatcherModule.redirectToDefaultDispatcher(resp); // error, redirect to login screen
@@ -234,7 +240,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 		}
 	}
 
-	private boolean authorization(HttpServletRequest req, HttpServletResponse resp, ShibbolethAttributes shibbolethAttibutes) {
+	private boolean authorization(HttpServletRequest req, HttpServletResponse resp, ShibbolethAttributes shibbolethAttibutes) throws IOException {
 		boolean authorized = false;
 		if(shibbolethModule.isAccessControlByAttributes()) {
 			if(StringHelper.containsNonWhitespace(shibbolethModule.getAttribute1()) && StringHelper.containsNonWhitespace(shibbolethModule.getAttribute1Values())) {
@@ -278,7 +284,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 	 * @param req
 	 * @param resp
 	 */
-	private void handleException(Throwable e, HttpServletRequest req, HttpServletResponse resp, Translator transl) {
+	private void handleException(Throwable e, HttpServletRequest req, HttpServletResponse resp, Translator transl) throws IOException {
 		UserRequest ureq = new UserRequestImpl(ShibbolethDispatcher.PATH_SHIBBOLETH, req, resp);
 		if(e instanceof ShibbolethException) {
 			String userMsg = "";

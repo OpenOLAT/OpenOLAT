@@ -109,28 +109,32 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 	}
 	
 	private synchronized void renderController(PdfDelivery delivery, HttpServletRequest request, HttpServletResponse response) {
-		ControllerCreator creator = delivery.getControllerCreator();
-		UserRequest ureq = new UserRequestImpl("pdfd", request, response);
-		UserSession usess = ureq.getUserSession();
-		if(usess.getIdentity() == null) {
-			if(delivery.getIdentity() != null) {
-				usess.setIdentity(delivery.getIdentity());
+		try {
+			ControllerCreator creator = delivery.getControllerCreator();
+			UserRequest ureq = new UserRequestImpl("pdfd", request, response);
+			UserSession usess = ureq.getUserSession();
+			if(usess.getIdentity() == null) {
+				if(delivery.getIdentity() != null) {
+					usess.setIdentity(delivery.getIdentity());
+				}
+				usess.setRoles(Roles.userRoles());
 			}
-			usess.setRoles(Roles.userRoles());
+			
+			Window window;
+			if(delivery.getWindow() == null) {
+				PopupBrowserWindow pbw = delivery.getWindowControl().getWindowBackOffice()
+						.getWindowManager().createNewPopupBrowserWindowFor(ureq, creator);
+				pbw.setForPrint(true);
+				window = pbw.getPopupWindowControl().getWindowBackOffice().getWindow();
+				delivery.setWindow(window);
+				delivery.setBrowserWindow(pbw);
+			} else {
+				window = delivery.getWindow();
+			}
+			window.dispatchRequest(ureq, true);
+		} catch (Exception e) {
+			log.error("", e);
 		}
-		
-		Window window;
-		if(delivery.getWindow() == null) {
-			PopupBrowserWindow pbw = delivery.getWindowControl().getWindowBackOffice()
-					.getWindowManager().createNewPopupBrowserWindowFor(ureq, creator);
-			pbw.setForPrint(true);
-			window = pbw.getPopupWindowControl().getWindowBackOffice().getWindow();
-			delivery.setWindow(window);
-			delivery.setBrowserWindow(pbw);
-		} else {
-			window = delivery.getWindow();
-		}
-		window.dispatchRequest(ureq, true);
 	}
 	
 	private void renderFile(PdfDelivery delivery, String filename, HttpServletResponse response)

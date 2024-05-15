@@ -46,6 +46,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
@@ -185,7 +186,7 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 		try{
 			//upon creation URL is checked for 
 			ureq = new UserRequestImpl(uriPrefix, request, response);
-		} catch(NumberFormatException nfe) {
+		} catch(RequestAbortedException | NumberFormatException nfe) {
 			//
 		}
 		

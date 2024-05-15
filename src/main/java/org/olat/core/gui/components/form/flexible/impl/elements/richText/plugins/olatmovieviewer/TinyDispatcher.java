@@ -34,6 +34,7 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.logging.Tracing;
+import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
 
@@ -55,7 +56,7 @@ public class TinyDispatcher implements Dispatcher {
 		try{
 			//upon creation URL is checked for 
 			ureq = new UserRequestImpl("tiny", request, httpResponse);
-		} catch(NumberFormatException nfe) {
+		} catch(RequestAbortedException | NumberFormatException nfe) {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), httpResponse);
 			return;
 		}

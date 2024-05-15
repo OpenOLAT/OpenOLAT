@@ -31,6 +31,9 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,9 +71,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Description:<br> - to be used by the windowmanager only! - this controller
@@ -123,19 +123,20 @@ public class AjaxController extends DefaultController {
 				pollCount++;
 				statsManager.incrementAuthenticatedPollerClick();
 
-				String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
-				UserRequest uureq = new UserRequestImpl(uriPrefix, request, null);
-				boolean reload = false;
-				Windows ws = Windows.getWindows(uureq);
-				if(ws != null && wboImpl.getChiefController() != null) {
-					ChiefController cc = wboImpl.getChiefController();
-					reload = cc.wishAsyncReload(uureq, false);
-					cc.getWindow().setMarkToBeRemoved(false);
-				}
-				
 				MediaResource resource;
+				UserRequest uureq = null;
 				
 				try {
+					String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
+					uureq = new UserRequestImpl(uriPrefix, request, null);
+					boolean reload = false;
+					Windows ws = Windows.getWindows(uureq);
+					if(ws != null && wboImpl.getChiefController() != null) {
+						ChiefController cc = wboImpl.getChiefController();
+						reload = cc.wishAsyncReload(uureq, false);
+						cc.getWindow().setMarkToBeRemoved(false);
+					}
+					
 					// check for dirty components now.
 					wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
 					Command updateDirtyCom = window.handleDirties();
@@ -155,6 +156,9 @@ public class AjaxController extends DefaultController {
 					} else {
 						resource = new NothingChangedMediaResource();
 					}
+				} catch (IOException e) {
+					log.error("Abort ajax", e);
+					return null;
 				} catch (CannotReplaceDOMFragmentException e) {
 					log.error("", e);
 					String timestampID = uureq.getTimestampID();

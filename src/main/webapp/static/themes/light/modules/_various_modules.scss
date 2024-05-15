@@ -1294,7 +1294,7 @@ div.o_reminder_custom_email {
 
 /* busy screen */
 #o_ajax_busy { 
-	height: 9em; 
+	height: 11em; 
 	width: 240px;
 	text-align: center;
 	color: #fff; 
@@ -1429,6 +1429,11 @@ ul.o_assessment_docs>li:last-child {
 	top: 0;
 	width: 3px; 	
 	background: $o-progress-marker-color;
+}
+
+.o_progress_buttons {
+	text-align: center;
+	margin: 10px 0 0 0;
 }
 
 .o_progress {
