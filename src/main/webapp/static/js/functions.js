@@ -2195,8 +2195,8 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 				data[arguments[j]] = arguments[j+1];
 				if(arguments[j] == "oo-opennewwindow-oo") {
 					openInNewWindow = true;
-				} else if(arguments[i] == "oo-opennewwindow-target") {
-					openInNewWindowTarget = arguments[i+1];
+				} else if(arguments[j] == "oo-opennewwindow-target") {
+					openInNewWindowTarget = arguments[j+1];
 				}
 			}
 		}
