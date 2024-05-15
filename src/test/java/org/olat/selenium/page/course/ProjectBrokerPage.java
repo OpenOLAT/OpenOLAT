@@ -113,7 +113,7 @@ public class ProjectBrokerPage {
 	
 	public ProjectBrokerPage selectFolderInDropbox(UserVO user) {
 		String name = user.getLastName();
-		By folderBy = By.xpath("//div[@id='collapseDropbox']//div[contains(@class,'o_folder_table')]//div[contains(@class,'o_folder_card')][div/div/div/h5/a[span[contains(text(),'" + name + "')]]]/div[contains(@class,'o_folder_card_thumbnail')]");
+		By folderBy = By.xpath("//div[@id='collapseDropbox']//div[contains(@class,'o_folder_table')]//div[contains(@class,'o_folder_card_thumbnail') and contains(@class,'o_folder_openable')][div/div/div/h5/a[span[contains(text(),'" + name + "')]]]/div[contains(@class,'o_folder_card_thumbnail')]");
 		OOGraphene.waitElement(folderBy, browser);
 		browser.findElement(folderBy).click();
 		

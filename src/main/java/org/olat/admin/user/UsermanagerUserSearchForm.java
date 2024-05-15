@@ -111,9 +111,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private final Map <String,FormItem> items = new HashMap<>();
 	private final List<Organisation> manageableOrganisations;
 	
-	private static final List<Integer> ALL_STATUS = List.of(Identity.STATUS_ACTIV, Identity.STATUS_INACTIVE,
-			Identity.STATUS_LOGIN_DENIED, Identity.STATUS_PENDING, Identity.STATUS_PERMANENT);
-	
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
@@ -184,9 +181,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		// when searching for deleted users, add wildcard to match with backup prefix
 		List<Integer> statusList = status.getSelectedKeys().stream()
 				.map(Integer::valueOf).toList();
-		if(statusList.isEmpty()) {
-			statusList = ALL_STATUS;
-		}
 
 		loginVal = loginVal.equals("") ? null : loginVal;
 
