@@ -210,10 +210,12 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		Date now = new Date();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
 		Date endWithFollowupTime = mode.getEndWithFollowupTime();
-		//check if the mode must not be guarded anymore
+		// Check if the mode must not be guarded anymore
 		if(mode.isManual() && ((Status.end.equals(mode.getStatus()) && EndStatus.all.equals(mode.getEndStatus())) || Status.none.equals(mode.getStatus()))) {
 			return null;
-		} else if(!mode.isManual() && (beginWithLeadTime.after(now) || now.after(endWithFollowupTime))) {
+		}
+		// Check if automatic is out of bounds
+		if(!mode.isManual() && (beginWithLeadTime.after(now) || now.after(endWithFollowupTime))) {
 			return null;
 		} 
 		
@@ -224,6 +226,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 
 		StringBuilder sb = new StringBuilder();
 		boolean allowed = true;
+		boolean safeExamCheck = false;
 		if(mode.getIpList() != null) {
 			boolean ipInRange = IpListValidator.isIpAllowed(mode.getIpList(), address);
 			if(!ipInRange) {
@@ -235,7 +238,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			allowed &= ipInRange;
 		}
 		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey())) {
-			boolean safeExamCheck = isSafelyAllowed(ureq, mode.getSafeExamBrowserKey(), null);
+			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, mode.getSafeExamBrowserKey(), null);
 			if(!safeExamCheck) {
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 				sb.append(translate("error.safe.exam"));
@@ -244,7 +247,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			}
 			allowed &= safeExamCheck;
 		} else if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList())) {
-			boolean safeExamCheck = isSafelyAllowed(ureq, null, mode.getSafeExamBrowserConfigPListKey());
+			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, null, mode.getSafeExamBrowserConfigPListKey());
 			if(!safeExamCheck) {
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 				sb.append(translate("error.safe.exam"));
@@ -261,6 +264,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 
 		String state;
 		if(allowed) {
+			guard.setSafeExamCheck(safeExamCheck);
 			Link go = guard.getGo();
 			Link cont = guard.getContinue();
 			ExternalLink quit = guard.getQuitSEB();
@@ -567,6 +571,8 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		private String leadTime;
 		private String followupTime;
 		
+		private boolean safeExamCheck = false;
+		
 		private TransientAssessmentMode reference;
 		
 		private CountDownComponent countDown;
@@ -660,6 +666,14 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 
 		public void setStatus(String status) {
 			this.status = status;
+		}
+
+		public boolean isSafeExamCheck() {
+			return safeExamCheck;
+		}
+
+		public void setSafeExamCheck(boolean safeExamCheck) {
+			this.safeExamCheck = safeExamCheck;
 		}
 
 		public String getErrors() {

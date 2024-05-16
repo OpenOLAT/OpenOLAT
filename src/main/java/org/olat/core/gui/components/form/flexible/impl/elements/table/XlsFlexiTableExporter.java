@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.EmptyURLBuilder;
 import org.olat.core.gui.render.StringOutput;
@@ -160,6 +161,13 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 			dataRow.addCell(col, date, workbook.getStyles().getDateStyle());
 		} else if(value instanceof Number number) {
 			dataRow.addCell(col, number, null);
+		} else if(value instanceof FormLink fLink) {
+			String customDisplayText = fLink.getComponent().getCustomDisplayText();
+			if(StringHelper.isLong(customDisplayText)) {
+				dataRow.addCell(col, Long.valueOf(customDisplayText), null);
+			} else if(StringHelper.containsNonWhitespace(customDisplayText)) {
+				renderCell(ftC, cellRenderer, dataRow, customDisplayText, row, col, translator);
+			}
 		} else if(value instanceof FormItem) {
 			// do nothing
 		} else {
@@ -178,7 +186,11 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 			if(StringHelper.containsNonWhitespace(cellValue)) {
 				cellValue = StringHelper.unescapeHtml(cellValue);
 			}
-			dataRow.addCell(col, cellValue, null);
+			if(StringHelper.isLong(cellValue)) {
+				dataRow.addCell(col, Long.valueOf(cellValue), null);
+			} else {
+				dataRow.addCell(col, cellValue, null);
+			}
 		} catch(IOException e) {
 			log.error("", e);
 		}

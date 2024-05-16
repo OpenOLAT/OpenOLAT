@@ -109,7 +109,10 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.endDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.typeDisplayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.resources));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
+		
+		DefaultFlexiColumnModel selectCol = new DefaultFlexiColumnModel("select", translate("select"), "select");
+		selectCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(selectCol);
 		
 		if(secCallback.canEditCurriculum()) {
 			StickyActionColumnModel toolsCol = new StickyActionColumnModel(SearchCols.tools);
@@ -122,6 +125,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
+		tableEl.setExportEnabled(true);
 		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setEmptyTableSettings("table.search.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-search-manage");
@@ -230,7 +234,8 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			resourcesLink = uifactory.addFormLink("resources_" + (++counter), "resources", String.valueOf(element.getNumOfResources()),
 					null, null, Link.NONTRANSLATED);
 		}
-		CurriculumElementSearchRow row = new CurriculumElementSearchRow(element.getCurriculumElement(), resourcesLink, toolsLink);
+		CurriculumElementSearchRow row = new CurriculumElementSearchRow(element.getCurriculumElement(),
+				element.getNumOfResources(), resourcesLink, toolsLink);
 		
 		toolsLink.setUserObject(row);
 		if(resourcesLink != null) {
