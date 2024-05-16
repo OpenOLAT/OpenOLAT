@@ -1363,6 +1363,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		HttpPost post = new HttpPost(uri);
 		String payload = builder.getXmlPayload();
 		post.addHeader("Content-Language", "en-US");
+		post.addHeader("Content-type", "text/xml"); // set content type explicitly, not taken from myEntity below
 		ContentType cType = ContentType.create("text/xml", StandardCharsets.UTF_8);
 		HttpEntity myEntity = new StringEntity(payload, cType);
 		post.setEntity(myEntity);

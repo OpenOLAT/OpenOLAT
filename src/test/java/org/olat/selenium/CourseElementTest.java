@@ -1758,18 +1758,18 @@ public class CourseElementTest extends Deployments {
 		//guest refresh the view and reply to admin
 		guestForum
 			.flatView()
-			.assertMessageBody("Huxley")
+			.assertMessageBody("My favorite author is Huxley")
 			.replyToMessage("Huxley is my favorite author", " I prefer Orwell", "Orwell is my favorite author");
 
 		//admin see its new messages, see the list of users, select the guest and its messages
 		OOGraphene.waitingALittleLonger();//JMS message need to be delivered
 		adminForum
 			.newMessages()
-			.assertMessageBody("Orwell")
+			.assertMessageBody("Orwell is my favorite author")
 			.clickBack()
 			.userFilter()
 			.selectFilteredUser(guestAlias)
-			.assertMessageBody("Orwell")
+			.assertMessageBody("Orwell is my favorite author")
 			.clickBack()
 			.clickBack()
 			.assertThreadListOnNumber("Your favorite author", 3);

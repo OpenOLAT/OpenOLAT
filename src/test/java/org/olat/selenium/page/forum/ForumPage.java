@@ -169,28 +169,20 @@ public class ForumPage {
 	}
 	
 	public ForumPage assertMessageBody(String text) {
-		By messageBodyBy = By.className("o_forum_message_body");
-		List<WebElement> messages = browser.findElements(messageBodyBy);
-		boolean found = false;
-		for(WebElement message:messages) {
-			if(message.getText().contains(text)) {
-				found = true;
-			}
-		}
-		Assert.assertTrue(found);
+		By messageBy = By.xpath("//div[contains(@class,'o_forum_message_body')]//p[text()[contains(.,'" + text + "')]]");
+		OOGraphene.waitElement(messageBy, browser);
 		return this;
 	}
 	
 	public ForumPage assertOnGuestPseudonym(String alias) {
 		By authorBy = By.xpath("//div[contains(@class,'o_author')][contains(text(),'" + alias + "')]");
-		List<WebElement> authorEls = browser.findElements(authorBy);
-		Assert.assertFalse(authorEls.isEmpty());
+		OOGraphene.waitElement(authorBy, browser);
 		return this;
 	}
 	
 	public ForumPage waitMessageBody(String text) {
 		By messageBy = By.xpath("//div[contains(@class,'o_forum_message_body')][//p[contains(text(),'" + text + "')]]");
-		OOGraphene.waitElement(messageBy, 10, browser);
+		OOGraphene.waitElement(messageBy, browser);
 		return this;
 	}
 
