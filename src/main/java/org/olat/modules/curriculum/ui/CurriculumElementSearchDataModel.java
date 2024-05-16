@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -34,13 +36,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 public class CurriculumElementSearchDataModel extends DefaultFlexiTableDataModel<CurriculumElementSearchRow>
 implements SortableFlexiTableDataModel<CurriculumElementSearchRow> {
 	
+	private static final SearchCols[] COLS = SearchCols.values();
+	
 	public CurriculumElementSearchDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<CurriculumElementSearchRow> views = new CurriculumElementSearchTableModelSortDelegate(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
 	}
 
 	@Override
@@ -51,7 +58,7 @@ implements SortableFlexiTableDataModel<CurriculumElementSearchRow> {
 
 	@Override
 	public Object getValueAt(CurriculumElementSearchRow row, int col) {
-		switch(SearchCols.values()[col]) {
+		switch(COLS[col]) {
 			case key: return row.getKey();
 			case curriculum: return row.getCurriculumDisplayName();
 			case displayName: return row.getDisplayName();
@@ -86,7 +93,7 @@ implements SortableFlexiTableDataModel<CurriculumElementSearchRow> {
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != tools;
 		}
 
 		@Override

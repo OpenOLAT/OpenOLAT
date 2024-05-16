@@ -35,16 +35,18 @@ import org.olat.modules.curriculum.CurriculumElementType;
  */
 public class CurriculumElementSearchRow implements CurriculumElementRef {
 	
+	private final long numOfResources;
 	private final CurriculumElement element;
 	private final CurriculumElementType elementType;
 	
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
 	
-	public CurriculumElementSearchRow(CurriculumElement element,
+	public CurriculumElementSearchRow(CurriculumElement element, long numOfResources,
 			FormLink resourcesLink, FormLink toolsLink) {
 		this.element = element;
 		elementType = element.getType();
+		this.numOfResources = numOfResources;
 		this.toolsLink = toolsLink;
 		this.resourcesLink = resourcesLink;
 	}
@@ -84,6 +86,10 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 	
 	public String getCurriculumElementTypeDisplayName() {
 		return elementType == null ? null : elementType.getDisplayName();
+	}
+	
+	public long getNumOfRessources() {
+		return numOfResources;
 	}
 	
 	public FormLink getToolsLink() {
