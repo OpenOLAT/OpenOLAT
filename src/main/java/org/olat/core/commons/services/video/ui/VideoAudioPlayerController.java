@@ -42,7 +42,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.modules.video.VideoFormatExtended;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -91,7 +90,7 @@ public class VideoAudioPlayerController extends BasicController {
 
 		if (vfsMedia != null) {
 			VFSMetadata metaData = vfsMedia.getMetaInfo();
-			String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsMedia.getRelPath()));
+			String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsMedia.getRelPath() + vfsMedia.getLastModified()));
 			VFSMediaMapper mediaMapper = new VFSMediaMapper(vfsMedia);
 			boolean useMaster = metaData != null && metaData.isInTranscoding();
 			mediaMapper.setUseMaster(useMaster);
