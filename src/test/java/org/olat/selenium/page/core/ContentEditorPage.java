@@ -176,7 +176,7 @@ public class ContentEditorPage extends ContentViewPage {
 	 */
 	public ContentEditorPage closeEditFragmentOfPage() {
 		By toolbarContainerBy = By.xpath("//div[contains(@class,'o_ce_wrapper')]//div[contains(@class,'o_page_lead')]");
-		return closeEditFragment(toolbarContainerBy);
+		return closeEditFragment(toolbarContainerBy, toolbarContainerBy);
 	}
 	
 	/**
@@ -185,11 +185,12 @@ public class ContentEditorPage extends ContentViewPage {
 	 * @return Itself
 	 */
 	public ContentEditorPage closeEditFragmentOfResource() {
-		By toolbarContainerBy = By.xpath("//div[@id='o_main_container']//div[@class='o_tools_container']");
-		return closeEditFragment(toolbarContainerBy);
+		By toolbarContainerBy = By.xpath("//div[@id='o_main_container']//div[@class='o_tools_container']/div[@class='container-fluid']");
+		By toolbarBreadcrumbBy = By.xpath("//div[@id='o_main_container']//div[@class='o_breadcrumb']/ol[@class='breadcrumb']");
+		return closeEditFragment(toolbarContainerBy, toolbarBreadcrumbBy);
 	}
 	
-	private ContentEditorPage closeEditFragment(By containerBy) {
+	private ContentEditorPage closeEditFragment(By containerBy, By alternativeContainerBy) {
 		browser.findElement(containerBy).click();
 		OOGraphene.waitBusy(browser);
 		try {
@@ -199,7 +200,7 @@ public class ContentEditorPage extends ContentViewPage {
 			
 			// Try again
 			OOGraphene.waitingALittleLonger();
-			browser.findElement(containerBy).click();
+			browser.findElement(alternativeContainerBy).click();
 			OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
 		}
 		return this;
