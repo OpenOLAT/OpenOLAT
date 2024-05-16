@@ -52,6 +52,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -69,6 +70,7 @@ import org.olat.login.auth.AuthenticationProvider;
 import org.olat.registration.PwChangeController;
 import org.olat.registration.RegistrationController;
 import org.olat.registration.RegistrationModule;
+import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -332,10 +334,15 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(pwChangeCtrl == source || registrationCtrl == source) {
 			if (event == Event.CANCELLED_EVENT) {
-				// is a Form cancelled, show Login Form
-				content = initLoginContent(ureq);
-				initChangePassword(content);
-				dmzPanel.setContent(content);
+				if (loginModule.getAuthenticationProvider(ShibbolethDispatcher.PROVIDER_SHIB) != null) {
+					// Redirect to context path to prevent Javascript error when using Shibboleth provider
+					ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
+				} else {
+					// is a Form cancelled, show Login Form
+					content = initLoginContent(ureq);
+					initChangePassword(content);
+					dmzPanel.setContent(content);
+				}
 			}
 			cmc.deactivate();
 			cleanUp();
