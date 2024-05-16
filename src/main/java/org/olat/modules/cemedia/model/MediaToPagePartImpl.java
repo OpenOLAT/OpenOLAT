@@ -71,7 +71,7 @@ public class MediaToPagePartImpl implements MediaToPagePart, Persistable, Modifi
 	private Date lastModified;
 
 	@ManyToOne(targetEntity = MediaImpl.class, fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "fk_media", nullable = false, insertable = true, updatable = false)
+	@JoinColumn(name = "fk_media", nullable = false, insertable = true, updatable = true)
 	private Media media;
 
 	@ManyToOne(targetEntity = MediaVersionImpl.class, fetch = FetchType.LAZY, optional = true)

@@ -653,7 +653,8 @@
 	.o_ceditor_inspector_content {
 		padding: 10px;
 
-		.o_image_inspector_style, .o_table_inspector_style, .o_code_inspector_style {
+		.o_image_inspector_style, .o_table_inspector_style, .o_code_inspector_style,
+		.o_image_comparison_inspector_tab {
 			max-height: 360px;
 			overflow: auto;
 			padding-right: 4px;
@@ -1910,11 +1911,13 @@ table.o_ce_table {
 	.o_image,
 	.o_page_edit_code,
 	.o_page_edit_gallery,
+	.o_page_edit_image_comparison,
 	.o_page_edit_quiz,
 	.o_page_edit_title,
 	.o_page_run_code,
 	.o_page_run_file,
 	.o_page_run_gallery,
+	.o_page_run_image_comparison,
 	.o_page_run_quiz,
 	.o_page_table_edition,
 	.o_page_table_run,

@@ -1,0 +1,19 @@
+<div id="$r.getCId()" class="o_page_run_image_comparison $blockLayoutClass">
+	<div class="js-img-compare">
+		<div style="display: none;">
+			<span class="images-compare-label">$r.escapeHtml($beforeText)</span>
+			<img src="$mapperUrl/$beforeImageId" alt="$r.escapeHtml($beforeText)">
+		</div>
+		<div>
+			<span class="images-compare-label">$r.escapeHtml($afterText)</span>
+			<img src="$mapperUrl/$afterImageId" alt="$r.escapeHtml($afterText)">
+		</div>
+	</div>
+</div>
+<script>
+	"use strict";
+
+	jQuery(function() {
+		var imagesCompareElement = jQuery('.js-img-compare').imagesCompare();
+	});
+</script>

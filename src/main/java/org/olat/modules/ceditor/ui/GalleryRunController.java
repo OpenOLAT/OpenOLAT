@@ -27,7 +27,6 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
-import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -106,9 +105,6 @@ public class GalleryRunController extends BasicController implements PageRunElem
 
 		mainVC.contextPut("title", gallerySettings.getTitle());
 		updateSwiperConfiguration(gallerySettings);
-
-		mainVC.put("gallery.images", TextFactory.createTextComponentFromString("gallery.images",
-				"image slider placeholder", "o_hint", false, mainVC));
 
 		List<GalleryImageItem> galleryImageItems = mediaToPagePartDAO.loadRelations(galleryPart).stream()
 				.map(GalleryEditorController::getMediaVersion).filter(Objects::nonNull)

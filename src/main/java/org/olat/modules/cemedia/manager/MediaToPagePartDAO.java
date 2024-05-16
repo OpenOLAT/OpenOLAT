@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
+import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
@@ -64,21 +65,25 @@ public class MediaToPagePartDAO {
 		return dbInstance.getCurrentEntityManager().merge(galleryPart);
 	}
 
-	public GalleryPart persistRelation(GalleryPart galleryPart, Media media, int index) {
+	public ImageComparisonPart persistRelation(ImageComparisonPart imageComparisonPart, Media media, MediaVersion mediaVersion, Identity identity) {
+		PagePart pagePart = persistRelation(imageComparisonPart, imageComparisonPart.getRelations(), media, mediaVersion, identity);
+		return (ImageComparisonPart) pagePart;
+	}
+
+	private PagePart persistRelation(PagePart pagePart, List<MediaToPagePart> relations, Media media, MediaVersion mediaVersion, Identity identity) {
 		MediaToPagePartImpl relation = new MediaToPagePartImpl();
 		relation.setCreationDate(new Date());
 		relation.setLastModified(relation.getCreationDate());
 		relation.setMedia(media);
-		relation.setPagePart(galleryPart);
-		int size = galleryPart.getRelations().size();
-		if (index < size && index >= 0) {
-			galleryPart.getRelations().add(index, relation);
-		} else {
-			galleryPart.getRelations().add(relation);
-		}
+		relation.setMediaVersion(mediaVersion);
+		relation.setIdentity(identity);
+		relation.setPagePart(pagePart);
+		relations.size();
+		relations.add(relation);
 		dbInstance.getCurrentEntityManager().persist(relation);
-		return dbInstance.getCurrentEntityManager().merge(galleryPart);
+		return dbInstance.getCurrentEntityManager().merge(pagePart);
 	}
+
 
 	public void move(GalleryPart galleryPart, MediaToPagePart relation, boolean up) {
 		galleryPart.getRelations().size();
@@ -181,6 +186,13 @@ public class MediaToPagePartDAO {
 		mediaToPagePart.setLastModified(new Date());
 		mediaToPagePart.setMediaVersion(mediaVersion);
 		mediaToPagePart.setIdentity(identity);
+		return dbInstance.getCurrentEntityManager().merge(mediaToPagePart);
+	}
+
+	public MediaToPagePart updateMedia(MediaToPagePart relation, Media media) {
+		MediaToPagePartImpl mediaToPagePart = (MediaToPagePartImpl) relation;
+		mediaToPagePart.setLastModified(new Date());
+		mediaToPagePart.setMedia(media);
 		return dbInstance.getCurrentEntityManager().merge(mediaToPagePart);
 	}
 }

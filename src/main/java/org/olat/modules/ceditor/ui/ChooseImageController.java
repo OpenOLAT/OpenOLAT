@@ -40,6 +40,7 @@ public class ChooseImageController extends BasicController {
 
 	private final MediaCenterController mediaCenterController;
 	private Media mediaReference;
+	private Object userData;
 
 	public ChooseImageController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -50,6 +51,14 @@ public class ChooseImageController extends BasicController {
 		listenTo(mediaCenterController);
 
 		putInitialPanel(mediaCenterController.getInitialComponent());
+	}
+
+	public Object getUserData() {
+		return userData;
+	}
+
+	public void setUserData(Object userData) {
+		this.userData = userData;
 	}
 
 	@Override

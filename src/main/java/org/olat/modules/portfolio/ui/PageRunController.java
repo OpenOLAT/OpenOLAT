@@ -92,6 +92,7 @@ import org.olat.modules.ceditor.handler.ContainerHandler;
 import org.olat.modules.ceditor.handler.EvaluationFormHandler;
 import org.olat.modules.ceditor.handler.GalleryElementHandler;
 import org.olat.modules.ceditor.handler.HTMLRawPageElementHandler;
+import org.olat.modules.ceditor.handler.ImageComparisonElementHandler;
 import org.olat.modules.ceditor.handler.MathPageElementHandler;
 import org.olat.modules.ceditor.handler.ParagraphPageElementHandler;
 import org.olat.modules.ceditor.handler.QuizElementHandler;
@@ -849,6 +850,9 @@ public class PageRunController extends BasicController implements TooledControll
 			// handler for gallery
 			GalleryElementHandler galleryElementHandler = new GalleryElementHandler();
 			handlers.add(galleryElementHandler);
+			// handler for image comparison
+			ImageComparisonElementHandler imageComparisonElementHandler = new ImageComparisonElementHandler();
+			handlers.add(imageComparisonElementHandler);
 
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
@@ -908,6 +912,10 @@ public class PageRunController extends BasicController implements TooledControll
 			GalleryElementHandler galleryElementHandler = new GalleryElementHandler();
 			handlers.add(galleryElementHandler);
 			creationHandlers.add(galleryElementHandler);
+
+			ImageComparisonElementHandler imageComparisonElementHandler = new ImageComparisonElementHandler();
+			handlers.add(imageComparisonElementHandler);
+			creationHandlers.add(imageComparisonElementHandler);
 
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {

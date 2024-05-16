@@ -28,6 +28,7 @@ public class ImageComparisonSettings {
 
 	private ImageComparisonOrientation orientation;
 	private ImageComparisonType type;
+	private String description;
 	private String text1;
 	private String text2;
 	private BlockLayoutSettings layoutSettings;
@@ -50,6 +51,14 @@ public class ImageComparisonSettings {
 
 	public void setType(ImageComparisonType type) {
 		this.type = type;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public String getText1() {

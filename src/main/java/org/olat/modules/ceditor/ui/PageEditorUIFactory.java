@@ -24,6 +24,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.model.jpa.CodePart;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
+import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
@@ -68,6 +69,9 @@ public class PageEditorUIFactory {
 			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
 		}
 		if (sourceElement instanceof GalleryPart sourcePart && targetElement instanceof GalleryPart targetPart) {
+			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
+		}
+		if (sourceElement instanceof ImageComparisonPart sourcePart && targetElement instanceof ImageComparisonPart targetPart) {
 			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
 		}
 	}
