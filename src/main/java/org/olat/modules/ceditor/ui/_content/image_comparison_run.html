@@ -1,4 +1,9 @@
-<div id="$r.getCId()" class="o_page_run_image_comparison $blockLayoutClass">
+#if($wrongRight)
+#set($wrongRightClass = "o_wrong_right")
+#else
+#set($wrongRightClass = "")
+#end
+<div id="$r.getCId()" class="o_page_run_image_comparison $blockLayoutClass $wrongRightClass">
 	<div id="$r.getCId()_compare">
 		<img src="$mapperUrl/$beforeImageId" alt="$r.escapeHtml($beforeText)">
 		<img src="$mapperUrl/$afterImageId" alt="$r.escapeHtml($afterText)">
@@ -17,12 +22,8 @@
 			#else
 			orientation: 'vertical',
 			#end
-			#if($beforeText)
 			before_label: '$r.escapeHtml($beforeText)',
-			#end
-			#if($afterText)
 			after_label: '$r.escapeHtml($afterText)',
-			#end
 		};
 		jQuery('#$r.getCId()_compare').twentytwenty(options);
 	});

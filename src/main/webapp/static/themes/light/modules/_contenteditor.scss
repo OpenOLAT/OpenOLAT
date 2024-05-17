@@ -1817,6 +1817,66 @@ table.o_ce_table {
 		margin-top: 10px;
 		margin-bottom: 10px;
 	}
+
+	&.o_wrong_right {
+		.twentytwenty-overlay {
+
+			> div {
+				box-sizing: border-box;
+				border-width: 2px;
+				border-style: solid;
+
+				&.twentytwenty-before-label {
+					border-color: $brand-danger;
+				}
+				&.twentytwenty-after-label {
+					border-color: $brand-success;
+				}
+			}
+		}
+
+		.twentytwenty-horizontal {
+			.twentytwenty-left-arrow {
+				border-right-color: $brand-success;
+			}
+
+			.twentytwenty-right-arrow {
+				border-left-color: $brand-danger;
+			}
+
+			.twentytwenty-overlay {
+				> div {
+					&.twentytwenty-before-label {
+						border-right-width: 3.5px;
+					}
+					&.twentytwenty-after-label {
+						border-left-width: 3.5px;
+					}
+				}
+			}
+		}
+
+		.twentytwenty-vertical {
+			.twentytwenty-down-arrow {
+				border-top-color: $brand-danger;
+			}
+
+			.twentytwenty-up-arrow {
+				border-bottom-color: $brand-success;
+			}
+
+			.twentytwenty-overlay {
+				> div {
+					&.twentytwenty-before-label {
+						border-bottom-width: 3.5px;
+					}
+					&.twentytwenty-after-label {
+						border-top-width: 3.5px;
+					}
+				}
+			}
+		}
+	}
 }
 
 /* Editor and run mode of content editor */
