@@ -42,6 +42,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.ImageComparisonOrientation;
 import org.olat.modules.ceditor.model.ImageComparisonSettings;
+import org.olat.modules.ceditor.model.ImageComparisonType;
 import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.MediaHandler;
@@ -123,6 +124,8 @@ public class ImageComparisonRunController extends BasicController implements Pag
 		mainVC.contextPut("beforeText", imageComparisonSettings.getText1());
 		mainVC.contextPut("afterText", imageComparisonSettings.getText2());
 		mainVC.contextPut("horizontal", ImageComparisonOrientation.horizontal.equals(imageComparisonSettings.getOrientation()));
+		mainVC.contextPut("wrongRight", ImageComparisonType.wrongRight.equals(imageComparisonSettings.getType()));
+		mainVC.contextPut("description", imageComparisonSettings.getDescription());
 		images.items.clear();
 		images.items.addAll(imageComparisonImageItems);
 	}
