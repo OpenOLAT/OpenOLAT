@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.1.6</org.springframework.version>
+		<org.springframework.version>6.1.7</org.springframework.version>
 		<org.hibernate.version>6.4.6.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
@@ -88,7 +88,7 @@
 		<activemq.artemis.version>2.33.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.2</jakarta.xml.bind-api>
-		<jakarta.xml.ws-api>4.0.1</jakarta.xml.ws-api>
+		<jakarta.xml.ws-api>4.0.2</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.30</qtiworks.version>
 		
 	    <!-- properties for testing and Q&A -->
@@ -376,7 +376,7 @@
 				<dependency>
 				    <groupId>com.sun.xml.messaging.saaj</groupId>
 				    <artifactId>saaj-impl</artifactId>
-				    <version>3.0.3</version>
+				    <version>3.0.4</version>
 				</dependency>
 				<dependency>
 					<groupId>org.hibernate.orm</groupId>
@@ -542,7 +542,7 @@
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
 				    <artifactId>jakarta.xml.ws-api</artifactId>
-				    <version>4.0.0</version>
+				    <version>${jakarta.xml.ws-api}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.hibernate.orm</groupId>
