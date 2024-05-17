@@ -339,42 +339,6 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 				padding-left: 8px;
 			}
 		}
-
-		.o_quiz_result {
-			border-radius: $border-radius-base;
-			border: 1px solid $modal-content-border-color;
-			padding: 10px 14px;
-
-			.o_quiz_your_result_line {
-				display: flex;
-				font-weight: bold;
-				font-size: 16px;
-				margin-bottom: -6px;
-
-				.o_quiz_your_result {
-					flex-grow: 1;
-				}
-
-				.o_quiz_trophy {
-					font-size: 20px;
-				}
-			}
-
-			.o_quiz_summary {
-				.o_large_number {
-					font-weight: bold;
-					font-size: 32px;
-				}
-			}
-
-			.o_quiz_progress {
-				padding: 0;
-
-				.o_progress {
-					line-height: 10px;
-				}
-			}
-		}
 	}
 }
 

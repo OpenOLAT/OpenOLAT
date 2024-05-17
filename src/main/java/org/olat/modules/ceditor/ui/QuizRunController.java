@@ -30,6 +30,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.widget.FigureWidget;
+import org.olat.core.gui.components.widget.WidgetFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -52,8 +54,8 @@ import org.olat.modules.ceditor.model.QuizSettings;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.repository.RepositoryEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
+
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
@@ -109,7 +111,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 		switch (state) {
 			case intro -> updateIntroUI(ureq);
-			case quiz -> updateQuizUI(ureq);
+			case quiz -> updateQuizUI();
 			case result -> updateResultUI(ureq);
 		}
 	}
@@ -134,7 +136,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 		}
 	}
 
-	private void updateQuizUI(UserRequest ureq) {
+	private void updateQuizUI() {
 		mainVC.contextPut("questionNumber", questionIndex + 1);
 		mainVC.contextPut("questionIndex", questionIndex);
 		mainVC.contextPut("numberOfQuestions", getNumberOfQuestions());
@@ -145,7 +147,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 	private void updateProgressBar() {
 		if (progressBar == null) {
-			progressBar = new ProgressBar("progress", 100, 0.0f, (float) getNumberOfQuestions(), null);
+			progressBar = new ProgressBar("progress", 100, 0.0f, getNumberOfQuestions(), null);
 			progressBar.setWidthInPercent(true);
 			progressBar.setLabelAlignment(ProgressBar.LabelAlignment.none);
 			progressBar.setRenderSize(ProgressBar.RenderSize.small);
@@ -159,11 +161,14 @@ public class QuizRunController extends BasicController implements PageRunElement
 		retryButton = LinkFactory.createButton("quiz.retry", mainVC, this);
 		retryButton.setIconLeftCSS("o_icon o_icon-fw o_icon_retry");
 		retryButton.setPrimary(true);
-		mainVC.contextPut("summary", translate("quiz.summary",
-				"" + getNumberOfPassedQuestions(), "" + getNumberOfQuestions()));
-		mainVC.put("quiz.retry", retryButton);
 		updateProgressBar();
 		progressBar.setActual(getNumberOfPassedQuestions());
+		
+		FigureWidget figures = WidgetFactory.createFigureWidget("quiz.figures", mainVC, translate("quiz.your.result"), "o_icon_score");
+		figures.setValue(String.valueOf(getNumberOfPassedQuestions()));
+		figures.setDesc(translate("quiz.figures.desc", String.valueOf(getNumberOfQuestions())));
+		figures.setAdditionalComp(progressBar);
+		figures.setAdditionalCssClass("o_widget_progress");
 	}
 
 	private String substituteVariables(String text) {

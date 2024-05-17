@@ -40,6 +40,11 @@ import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.widget.FigureWidget;
+import org.olat.core.gui.components.widget.TextWidget;
+import org.olat.core.gui.components.widget.Widget;
+import org.olat.core.gui.components.widget.WidgetFactory;
+import org.olat.core.gui.components.widget.WidgetGroup;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -73,7 +78,6 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
-import org.olat.modules.portfolio.Binder;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +92,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 
 	private int counter = 0;
 	private final VelocityContainer mainVC;
+	private WidgetGroup widgetGroup;
+	private TextWidget passedWidget;
 	private DisplayOrDownloadComponent download;
 	
 	private final AssessmentEvaluation assessmentEval;
@@ -132,29 +138,41 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	}
 
 	private void exposeToVC(UserRequest ureq) {
+		widgetGroup = WidgetFactory.createWidgetGroup("results", mainVC);
+		
+		passedWidget = null;
+		FigureWidget gradeWidget = null;
+		FigureWidget scoreWidget = null;
+		Widget scoreWWeightedWidget = null;
+		FigureWidget attemptsWidget = null;
+		
+		
 		boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
 		mainVC.contextPut("resultsVisible", resultsVisible);
 		
 		// Attempts
 		boolean hasAttempts = assessmentConfig.hasAttempts();
-		mainVC.contextPut("hasAttemptsField", Boolean.valueOf(hasAttempts));
 		if (hasAttempts) {
+			attemptsWidget = WidgetFactory.createFigureWidget("attempts", null, translate("attempts.yourattempts"), "o_icon_attempts");
+			
 			Integer attempts = assessmentEval.getAttempts();
 			if (attempts == null) {
 				attempts = Integer.valueOf(0);
 			}
-			mainVC.contextPut("attempts", attempts);
-			if (assessmentConfig.hasMaxAttempts()) {
+			attemptsWidget.setValue(String.valueOf(attempts));
+			if (assessmentConfig.hasMaxAttempts() && attempts > 0) {
 				Integer maxAttempts = assessmentConfig.getMaxAttempts();
-				mainVC.contextPut("maxAttempts", maxAttempts);
+				attemptsWidget.setDesc(translate("attempts.of", String.valueOf(maxAttempts)));
 			}
 		}
 		
 		// Score
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
-		mainVC.contextPut("hasScoreField", Boolean.valueOf(hasScore));
 		ProgressBar scoreProgress = null;
 		if (hasScore) {
+			scoreWidget = WidgetFactory.createFigureWidget("score", null, translate("score"), "o_icon_score");
+			scoreWidget.setValueCssClass("o_sel_score");
+			
 			String scoreFormatted;
 			int progress;
 			if (resultsVisible && assessmentEval.getScore() != null) {
@@ -164,50 +182,81 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				scoreFormatted = translate("assessment.value.not.visible");
 				progress = 0;
 			}
-			mainVC.contextPut("score", scoreFormatted);
+			scoreWidget.setValue(scoreFormatted);
 			
 			Float maxScore = assessmentConfig.getMaxScore();
-			if (maxScore != null) {
-				mainVC.contextPut("maxScore", AssessmentHelper.getRoundedScore(maxScore));
+			if (maxScore != null && maxScore > 0) {
+				scoreWidget.setDesc(translate("score.of", AssessmentHelper.getRoundedScore(maxScore)));
+				
 				scoreProgress = new ProgressBar("scoreProgress", 100, progress, maxScore, null);
 				scoreProgress.setWidthInPercent(true);
 				scoreProgress.setLabelAlignment(LabelAlignment.none);
 				scoreProgress.setRenderSize(RenderSize.small);
 				scoreProgress.setLabelMaxEnabled(false);
-				mainVC.put("scoreProgress", scoreProgress);
+				scoreWidget.setAdditionalComp(scoreProgress);
+				scoreWidget.setAdditionalCssClass("o_widget_progress");
 			}
 			
 			BigDecimal scoreScale = assessmentEval.getScoreScale();
 			if(scoreScale != null && assessmentConfig.isScoreScalingEnabled()
 					&& !ScoreScalingHelper.equals(BigDecimal.ONE, scoreScale)) {
-				String scale = assessmentConfig.getScoreScale();
-				String i18nLabel =  ScoreScalingHelper.isFractionScale(scale)
-						? "score.weighted.fraction" : "score.weighted.decorated";
-				mainVC.contextPut("scoreScaleLabel", translate(i18nLabel, scale));
-				mainVC.contextPut("weightedScore", AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore()));
+				
+				if (resultsVisible) {
+					
+					String scale = assessmentConfig.getScoreScale();
+					String i18nLabel =  ScoreScalingHelper.isFractionScale(scale)
+							? "score.weighted.fraction" : "score.weighted.decorated";
+					scoreWWeightedWidget = WidgetFactory.createFigureWidget("scoreWeighted", null,
+							translate("score"), translate("score.weighted.subtitle"), "o_icon_score_unbalanced",
+							AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore()), null,
+							translate(i18nLabel, scale), null, null, null);
+				} else {
+					scoreWWeightedWidget = WidgetFactory.createTextWidget("scoreWeighted", null, translate("score"),
+							translate("score.weighted.subtitle"), "o_icon_score_unbalanced",
+							translate("assessment.value.not.visible"), null, null, null, null);
+				}
 			}
 		}
 		
 		// Grade
 		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
-		mainVC.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
 		if (hasGrade) {
 			String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEval.getGradeSystemIdent())
 					? assessmentEval.getGradeSystemIdent()
 					: gradeSystemSupplier.getGradeSystem().getIdentifier();
-			mainVC.contextPut("gradeLabel", GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident));
-			mainVC.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(), 
-					assessmentEval.getPerformanceClassIdent(), assessmentEval.getGrade(), assessmentEval.getGradeSystemIdent()));
+			String translatePerformanceClass = GradeUIFactory.translatePerformanceClass(getTranslator(), 
+					assessmentEval.getPerformanceClassIdent(), assessmentEval.getGrade(), assessmentEval.getGradeSystemIdent());
+			
+			gradeWidget = WidgetFactory.createFigureWidget("frade", null,
+					GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident), "o_icon_grade");
+			if (resultsVisible && StringHelper.containsNonWhitespace(translatePerformanceClass)) {
+				gradeWidget.setValue(translatePerformanceClass);
+			} else {
+				gradeWidget.setValue(translate("assessment.value.not.visible"));
+			}
 		}
 		
 		// Passed
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
-		mainVC.contextPut("hasPassedField", Boolean.valueOf(hasPassed));
 		if (hasPassed) {
-			mainVC.contextPut("hasPassedValue", (assessmentEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-			mainVC.contextPut("passed", assessmentEval.getPassed());
-			if (!hasGrade) {
-				mainVC.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue()));
+			passedWidget = WidgetFactory.createTextWidget("passed", null, translate("passed.success.status"), "o_icon_success_status");
+			if (resultsVisible) {
+				if (assessmentEval.getPassed() == null) {
+					passedWidget.setValue(translate("passed.nopassed"));
+					passedWidget.setValueCssClass("o_noinfo");
+				} else if (assessmentEval.getPassed()) {
+					passedWidget.setValue(translate("passed.yes"));
+					passedWidget.setValueCssClass("o_state o_passed");
+				} else {
+					passedWidget.setValue(translate("passed.no"));
+					passedWidget.setValueCssClass("o_state o_failed");
+				}
+			} else {
+				passedWidget.setValue(translate("assessment.value.not.visible"));
+			}
+			
+			if (!hasGrade && assessmentConfig.getCutValue() != null) {
+				passedWidget.setAdditionalText(translate("passed.cut.from", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue())));
 			}
 			if (scoreProgress != null && assessmentEval.getPassed() != null) {
 				if (assessmentEval.getPassed().booleanValue()) {
@@ -279,6 +328,12 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				mainVC.put("download", download);
 			}
 		}
+		
+		widgetGroup.add(passedWidget);
+		widgetGroup.add(gradeWidget);
+		widgetGroup.add(scoreWidget);
+		widgetGroup.add(scoreWWeightedWidget);
+		widgetGroup.add(attemptsWidget);
 	}
 
 	private DocumentWrapper createDocumentWrapper(VFSLeaf document, VelocityContainer docsVC) {
@@ -317,24 +372,20 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		
 		return wrapper;
 	}
-
-	public void setBinderInformation(Binder binder) {
-		mainVC.contextPut("binder", binder);
-	}
 	
 	public void setTitle(String title) {
 		mainVC.contextPut("title", title);
 	}
 	
 	public void setPassedProgress(Component passedProgress) {
-		mainVC.put("passedProgress", passedProgress);
+		if (passedWidget != null) {
+			passedWidget.setLeftComp(passedProgress);
+		}
 	}
 	
-	public void addCustomWidgets(Component customWidgets) {
-		if (customWidgets != null) {
-			mainVC.put("customWidgets", customWidgets);
-		} else {
-			mainVC.remove("customWidgets");
+	public void addCustomWidget(Widget widget) {
+		if (widgetGroup != null) {
+			widgetGroup.add(widget);
 		}
 	}
 

@@ -39,16 +39,7 @@
 	#end
 		<div class="o_quiz_panel">
 			<div class="o_quiz_title">$r.escapeHtml($title)</div>
-			<div class="o_quiz_result">
-				<div class="o_quiz_your_result_line">
-					<div class="o_quiz_your_result">$r.translate("quiz.your.result")</div>
-					<div class="o_quiz_trophy"><i class="o_icon o_icon-fw o_icon_score"> </i></div>
-				</div>
-				<div class="o_quiz_summary">$summary</div>
-				<div class="o_quiz_progress">
-					$r.render("progressBar")
-				</div>
-			</div>
+			$r.render("quiz.figures")
 			<div class="o_quiz_button">$r.render("quiz.retry")</div>
 		</div>
 	</div>

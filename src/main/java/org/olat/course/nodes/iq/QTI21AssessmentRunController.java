@@ -46,6 +46,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.widget.Widget;
+import org.olat.core.gui.components.widget.WidgetFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -402,34 +404,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					if(session != null) {
 						File signature = qtiService.getAssessmentResultSignature(session);
 						if(signature != null && signature.exists()) {
-							VelocityContainer customCont = createVelocityContainer("assessment_custom_widgtes");
-							
-							customCont.contextPut("filename", signature.getName());
-							
-							String type = FileUtils.getFileSuffix(signature.getName()).toUpperCase();
-							customCont.contextPut("type", type);
-							
-							try {
-								Date issueDate = qtiService.getAssessmentResultSignatureIssueDate(session);
-								if (issueDate != null) {
-									customCont.contextPut("creationDate", Formatter.getInstance(getLocale()).formatDateAndTime(issueDate));
-								} else {
-									BasicFileAttributes attr = Files.readAttributes(signature.toPath(), BasicFileAttributes.class);
-									Date creationDate = new Date(attr.creationTime().to(TimeUnit.MILLISECONDS));
-									customCont.contextPut("creationDate", Formatter.getInstance(getLocale()).formatDateAndTime(creationDate));
-								}
-							} catch (IOException e) {
-								// Do not display
-							}
-							
-							Link openLink = LinkFactory.createLink("openfile", "download", getTranslator(), customCont, this, Link.LINK | Link.NONTRANSLATED);
-							openLink.setCustomDisplayText(signature.getName());
-							
-							Link downloadLink = LinkFactory.createCustomLink("download", "download", "", Link.BUTTON | Link.NONTRANSLATED, customCont, this);
-							downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
-							downloadLink.setGhost(true);
-							
-							assessmentParticipantViewCtrl.addCustomWidgets(customCont);
+							Widget widget = craeteWidget(session, signature);
+							assessmentParticipantViewCtrl.addCustomWidget(widget);
 						}
 					}
 				}
@@ -437,6 +413,38 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				exposeResults(ureq, resultsVisible, passed, assessmentEval.getAssessmentStatus());
 			}
 		}
+	}
+
+	private Widget craeteWidget(AssessmentTestSession session, File signature) {
+		VelocityContainer contentCont = createVelocityContainer("assessment_widgtes_content");
+		
+		contentCont.contextPut("filename", signature.getName());
+		
+		String type = FileUtils.getFileSuffix(signature.getName()).toUpperCase();
+		contentCont.contextPut("type", type);
+		
+		try {
+			Date issueDate = qtiService.getAssessmentResultSignatureIssueDate(session);
+			if (issueDate != null) {
+				contentCont.contextPut("creationDate", Formatter.getInstance(getLocale()).formatDateAndTime(issueDate));
+			} else {
+				BasicFileAttributes attr = Files.readAttributes(signature.toPath(), BasicFileAttributes.class);
+				Date creationDate = new Date(attr.creationTime().to(TimeUnit.MILLISECONDS));
+				contentCont.contextPut("creationDate", Formatter.getInstance(getLocale()).formatDateAndTime(creationDate));
+			}
+		} catch (IOException e) {
+			// Do not display
+		}
+		
+		Link openLink = LinkFactory.createLink("openfile", "download", getTranslator(), contentCont, this, Link.LINK | Link.NONTRANSLATED);
+		openLink.setCustomDisplayText(signature.getName());
+		
+		Link downloadLink = LinkFactory.createCustomLink("download", "download", "", Link.BUTTON | Link.NONTRANSLATED, contentCont, this);
+		downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		downloadLink.setGhost(true);
+		Widget widget = WidgetFactory.createComponentWidget("cert", mainVC, translate("digital.signature.download"), null,
+				"o_icon_qti_signature", contentCont, "o_widget_main_download", null, null, null);
+		return widget;
 	}
 	
 	private void initAttemptsMessage(int maxAttempts, Integer attempts) {

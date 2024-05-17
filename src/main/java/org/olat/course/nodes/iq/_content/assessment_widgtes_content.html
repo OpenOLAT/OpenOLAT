@@ -1,0 +1,15 @@
+<div class="o_widget_downlaod">
+	<div class="o_flex_block_one_line_left o_assessment_document">
+		<i class="o_icon o_icon-2x o_filetype_file $r.getFiletypeIconCss($filename) o_flex_item_fix"> </i>
+		<div class="o_flex_item_max">
+			<h5 class="o_nowrap">$r.render("openfile")</h5>
+			<div class="text-muted small o_nowrap">
+				${type}
+				#if($creationDate) | $creationDate#end
+			</div>
+		</div>
+		<div class="o_flex_item_fix o_assessment_document_actions">
+			$r.render("download")
+		</div>
+	</div>
+</div>

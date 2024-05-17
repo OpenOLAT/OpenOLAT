@@ -23,7 +23,6 @@
 
 .o_widget {
 	min-width: $o-widget-min-width;
-	max-width: 2 * $o-widget-min-width - $o-widgets-gap;
 	height: $o-widget-height;
 	min-height: $o-widget-height;
 	max-height: $o-widget-height;
@@ -81,7 +80,7 @@
 						color: $o-widget-text-additional-color;
 					}
 				}
-				.o_widget_radial_progress {
+				.o_widget_left_col {
 					display: grid;
 					align-items: end;
 					.o_progress {
@@ -111,13 +110,6 @@
 				display: flex;
 				flex-direction: column;
 				width: 100%;
-				.o_meta_desc {
-					margin-top: 5px;
-					.o_meta_item {
-						display: flex;
-						justify-content: space-between;
-					}
-				}
 				.o_widget_figure {
 					line-height: 30px;
 					.o_widget_figure_value {
@@ -167,6 +159,28 @@
 			align-items: end;
 		}
 	}
+	
+	&.o_widget_main_binder {
+		.o_widget_content {
+			margin-top: 0;
+			height: 100%;
+			.o_widget_main_binder {
+				display: flex;
+				flex-direction: column;
+				width: 100%;
+				.o_widget_binder_dates {
+					margin-top: auto;
+					.o_widget_binder_date {
+						display: flex;
+						justify-content: space-between;
+						.o_widget_binder_date_label {
+							font-weight: 700;
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 .o_widgets {
@@ -174,4 +188,8 @@
 	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 	gap: $o-widgets-gap;
 	container-type: inline-size;
+	
+	.o_widget {
+		max-width: 2 * $o-widget-min-width - $o-widgets-gap;
+	}
 }

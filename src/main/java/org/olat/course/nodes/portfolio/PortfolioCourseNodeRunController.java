@@ -405,7 +405,6 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 
 		initAddAccessRightsTools();
 		updateAssessmentInfos(ureq, copyBinder.getReturnDate());
-		assessmentParticipantViewCtrl.setBinderInformation(copyBinder);
 
 		doOpenBinders(ureq);
 	}
@@ -460,6 +459,12 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 						assessmentEval, assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
 				listenTo(assessmentParticipantViewCtrl);
 				assessmentInfosContainer.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+				
+				PortfolioWidget widget = new PortfolioWidget("binder", getTranslator());
+				widget.setTitle(translate("portfolio.title"));
+				widget.setIconCss("o_icon_pf_binder");
+				widget.setBinder(copyBinder);
+				assessmentParticipantViewCtrl.addCustomWidget(widget);
 			}
 
 			assessmentInfosContainer.setVisible(true);
