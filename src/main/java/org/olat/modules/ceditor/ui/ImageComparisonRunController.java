@@ -41,6 +41,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.model.ImageComparisonOrientation;
 import org.olat.modules.ceditor.model.ImageComparisonSettings;
 import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -101,13 +102,13 @@ public class ImageComparisonRunController extends BasicController implements Pag
 		List<String> jsPath = new ArrayList<>();
 		List<String> cssPath = new ArrayList<>();
 		if (Settings.isDebuging()) {
-			jsPath.add("js/hammer/hammer.js");
-			jsPath.add("js/jqueryImagesCompare/jquery.images-compare.js");
-			cssPath.add(StaticMediaDispatcher.getStaticURI("js/jqueryImagesCompare/images-compare.css"));
+			jsPath.add("js/twentyTwenty/jquery.event.move.js");
+			jsPath.add("js/twentyTwenty/jquery.twentytwenty.js");
+			cssPath.add(StaticMediaDispatcher.getStaticURI("js/twentyTwenty/twentytwenty.css"));
 		} else {
-			jsPath.add("js/hammer/hammer.min.js");
-			jsPath.add("js/jqueryImagesCompare/jquery.images-compare.min.js");
-			cssPath.add(StaticMediaDispatcher.getStaticURI("js/jqueryImagesCompare/images-compare.css"));
+			jsPath.add("js/twentyTwenty/jquery.event.move.js");
+			jsPath.add("js/twentyTwenty/jquery.twentytwenty.js");
+			cssPath.add(StaticMediaDispatcher.getStaticURI("js/twentyTwenty/twentytwenty.css"));
 		}
 
 		JSAndCSSComponent js = new JSAndCSSComponent("js",
@@ -128,6 +129,7 @@ public class ImageComparisonRunController extends BasicController implements Pag
 		mainVC.contextPut("afterImageId", imageComparisonImageItems.size() < 2 ? null : imageComparisonImageItems.get(1).id);
 		mainVC.contextPut("beforeText", imageComparisonSettings.getText1());
 		mainVC.contextPut("afterText", imageComparisonSettings.getText2());
+		mainVC.contextPut("horizontal", ImageComparisonOrientation.horizontal.equals(imageComparisonSettings.getOrientation()));
 		images.items.clear();
 		images.items.addAll(imageComparisonImageItems);
 	}
