@@ -29,6 +29,7 @@ import java.util.Objects;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
@@ -62,6 +63,7 @@ public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 	private Map<Long, Date> identityToLaunchDate;
 	private List<Long> memberKeys;
 	
+	private DB dbInstance;
 	private ToDoService toDoService;
 
 	public MultiUserUserToDoEnvironment(Collection<String> toDoProviderTypes, Collection<? extends IdentityRef> identities) {
@@ -119,8 +121,9 @@ public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 		
 		ToDoTask toDoTask = getToDoService().createToDoTask(null, toDoTaskType, originId, originSubPath, originTitle, originSubTitle, null);
 		toDoTask.setTitle(title); // Needed in email template
-		getToDoService().updateMember(null, toDoTask, List.of(assignee), List.of());
 		toDoTask.setAssigneeRights(ASSIGNEE_RIGHTS);
+		getToDoService().updateMember(null, toDoTask, List.of(assignee), List.of());
+		getDBInstance().commit();
 		return toDoTask;
 	}
 	
@@ -200,6 +203,13 @@ public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 			toDoService = CoreSpringFactory.getImpl(ToDoService.class);
 		}
 		return toDoService;
+	}
+	
+	private DB getDBInstance() {
+		if(dbInstance == null) {
+			dbInstance = CoreSpringFactory.getImpl(DB.class);
+		}
+		return dbInstance;
 	}
 
 }
