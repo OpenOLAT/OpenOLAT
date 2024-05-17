@@ -232,3 +232,58 @@ body .basicLightbox {
 	z-index: 100000; 
 }
 
+/* TwentyTwenty image comparison */
+.twentytwenty-wrapper {
+
+	&.twentytwenty-horizontal, &.twentytwenty-vertical {
+		.twentytwenty-before-label::before, .twentytwenty-after-label::before {
+			line-height: 30px;
+			background-color: rgba(85, 85, 85, 0.8);
+			border-radius: $border-radius-large;
+			font-size: unset;
+			font-family: unset;
+			letter-spacing: unset;
+		}
+	}
+
+	&.twentytwenty-horizontal {
+		.twentytwenty-before-label::before, .twentytwenty-after-label::before {
+			top: 10px;
+			margin-top: unset;
+		}
+	}
+
+	&.twentytwenty-vertical {
+		.twentytwenty-before-label::before, .twentytwenty-after-label::before {
+			left: 10px;
+			margin-left: unset;
+			width: unset;
+		}
+	}
+
+	.twentytwenty-container {
+		&.active {
+			.twentytwenty-overlay, :hover.twentytwenty-overlay {
+				background: unset;
+
+				.twentytwenty-before-label, .twentytwenty-after-label {
+					opacity: 1;
+				}
+			}
+		}
+
+		.twentytwenty-overlay {
+			.twentytwenty-before-label, .twentytwenty-after-label {
+				opacity: unset;
+			}
+		}
+
+		.twentytwenty-overlay:hover {
+			background: unset;
+		}
+
+		.twentytwenty-handle {
+			background-color: rgba(black, 0.33);
+		}
+	}
+}

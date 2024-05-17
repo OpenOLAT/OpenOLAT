@@ -35,7 +35,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -101,15 +100,9 @@ public class ImageComparisonRunController extends BasicController implements Pag
 	private void addImagesCompareJs() {
 		List<String> jsPath = new ArrayList<>();
 		List<String> cssPath = new ArrayList<>();
-		if (Settings.isDebuging()) {
-			jsPath.add("js/twentyTwenty/jquery.event.move.js");
-			jsPath.add("js/twentyTwenty/jquery.twentytwenty.js");
-			cssPath.add(StaticMediaDispatcher.getStaticURI("js/twentyTwenty/twentytwenty.css"));
-		} else {
-			jsPath.add("js/twentyTwenty/jquery.event.move.js");
-			jsPath.add("js/twentyTwenty/jquery.twentytwenty.js");
-			cssPath.add(StaticMediaDispatcher.getStaticURI("js/twentyTwenty/twentytwenty.css"));
-		}
+		jsPath.add("js/twentyTwenty/jquery.event.move.js");
+		jsPath.add("js/twentyTwenty/oo_jquery.twentytwenty.js");
+		cssPath.add(StaticMediaDispatcher.getStaticURI("js/twentyTwenty/twentytwenty.css"));
 
 		JSAndCSSComponent js = new JSAndCSSComponent("js",
 				jsPath.toArray(String[]::new),
