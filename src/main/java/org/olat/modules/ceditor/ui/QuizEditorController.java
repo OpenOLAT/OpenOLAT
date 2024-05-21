@@ -143,6 +143,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		addQuestionButton = uifactory.addFormLink("addQuestion", "addremove.add.text", "", formLayout, Link.BUTTON);
 		addQuestionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		addQuestionButton.setIconRightCSS("o_icon o_icon_caret");
 
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
