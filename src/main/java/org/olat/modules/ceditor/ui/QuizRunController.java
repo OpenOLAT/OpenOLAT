@@ -119,6 +119,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private void updateIntroUI(UserRequest ureq) {
 		updateImage(ureq);
 
+		mainVC.contextPut("quizOutcomeClass", "");
 		mainVC.contextPut("title", quizPart.getSettings().getTitle());
 		mainVC.contextPut("description", substituteVariables(quizPart.getSettings().getDescription()));
 		startButton = LinkFactory.createButton("quiz.start", mainVC, this);
@@ -157,6 +158,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 	private void updateResultUI(UserRequest ureq) {
 		updateImage(ureq);
+		mainVC.contextPut("quizOutcomeClass", "");
 		mainVC.contextPut("title", quizPart.getSettings().getTitle());
 		retryButton = LinkFactory.createButton("quiz.retry", mainVC, this);
 		retryButton.setIconLeftCSS("o_icon o_icon-fw o_icon_retry");
@@ -249,6 +251,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 	}
 
 	private void doShowQuestion(UserRequest ureq, QuizQuestion quizQuestion) {
+		mainVC.contextPut("quizOutcomeClass", "");
 		updateUI(ureq);
 
 		ContentEditorQti.QuizQuestionStorageInfo storageInfo = contentEditorQti.getStorageInfo(quizPart, quizQuestion);
@@ -291,6 +294,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 		if (sessionStatus.equals(SessionStatus.FINAL)) {
 			if (StringHelper.containsNonWhitespace(resultIdentifier)) {
 				questionPassedState.put(resultIdentifier, score >= 1);
+				mainVC.contextPut("quizOutcomeClass", score >= 1 ? "o_correct" : "o_incorrect");
 			}
 		}
 	}

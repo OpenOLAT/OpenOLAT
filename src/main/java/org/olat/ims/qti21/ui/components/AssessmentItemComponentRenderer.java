@@ -251,7 +251,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 					renderControl(sb, component, title, false, "o_sel_skip_question", new NameValuePair("cid", Event.skip.name()));
 					skipRendered = true;
 				}
-				if (component.isPageMode() && component.isShowPageModeSolution()) {
+				if (component.isPageMode() && itemSessionState.isResponded()) {
 					renderNextButton(sb, component, translator);
 				}
 			} else {
@@ -295,7 +295,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 
 	private void renderSubmitButton(AssessmentRenderer renderer, StringOutput sb, AssessmentItemComponent component, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
 		if (component.isPageMode()) {
-			if (AssessmentRenderFunctions.isCorrectlyAnswered(itemSessionState) || component.isShowPageModeSolution()) {
+			if (itemSessionState.isResponded() || component.isShowPageModeSolution()) {
 				return;
 			}
 		}
