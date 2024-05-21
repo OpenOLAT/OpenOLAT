@@ -42,9 +42,11 @@ import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event;
 
+import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -201,7 +203,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("<h4 class='itemTitle'>");
 			sb.append(StringHelper.escapeHtml(translator.translate("solution"))).append("</h4>");
 			renderer.setPageModeSolutionMode(true);
-			assessmentItem.getItemBody().getBlocks().forEach((block)
+			getSolutionBlocks(assessmentItem.getItemBody().getBlocks()).forEach((block)
 					-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
 			renderer.setPageModeSolutionMode(false);
 		}
@@ -268,6 +270,13 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("</div>");
 		
 		sb.append("</div>"); // end wrapper
+	}
+
+	private List<Block> getSolutionBlocks(List<Block> blocks) {
+		if (blocks.stream().anyMatch(b -> ChoiceInteraction.QTI_CLASS_NAME.equals(b.getQtiClassName()))) {
+			return blocks.stream().filter(b -> ChoiceInteraction.QTI_CLASS_NAME.equals(b.getQtiClassName())).toList();
+		}
+		return blocks;
 	}
 
 	private void renderShowSolutionButton(StringOutput sb, AssessmentItemComponent component, ItemSessionState itemSessionState, Translator translator) {
