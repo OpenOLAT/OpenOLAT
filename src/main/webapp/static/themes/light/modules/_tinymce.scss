@@ -210,3 +210,12 @@ figure.image {
 		font-style: italic;
 	}
 }
+
+/* remove top margin for heading on top of the tinymce */
+.mce-content-body {
+	h1, h2, h3, h4, h5, h6 {
+		&:first-child {
+			margin-top: 0;
+		}
+	}
+}
