@@ -66,7 +66,7 @@ public class CountingCallback implements VFSSecurityCallback {
 	}
 	
 	private boolean limitReached () {
-		return countFiles(dropbox) <= limit;
+		return countFiles(dropbox) < limit;
 	}
 
 	@Override

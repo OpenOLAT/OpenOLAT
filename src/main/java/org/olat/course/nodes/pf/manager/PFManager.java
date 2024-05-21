@@ -332,6 +332,8 @@ public class PFManager {
 			callback= new CountingCallback(folderSubContext, dropbox, pfNode.getLimitCount(), alterFile);
 		} else if (limitCount && alterFile) {
 			callback = new ReadDeleteCallback(folderSubContext);
+		} else if (alterFile) {
+			callback= new CountingCallback(folderSubContext, dropbox, pfNode.getLimitCount(), alterFile);
 		} else if (!limitCount && !alterFile) {
 			callback = new ReadWriteCallback(folderSubContext, quotaPath);
 		} else {

@@ -2020,18 +2020,22 @@ public class FolderController extends FormBasicController implements Activateabl
 		while (listIterator.hasNext() && vfsStatus == VFSSuccess.SUCCESS) {
 			VFSItem vfsItemToCopy = listIterator.next();
 			if (!isItemNotAvailable(ureq, targetContainer, false) && canCopy(vfsItemToCopy, null)) {
-				VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
-				if (versionsEnabled && vfsItemToCopy instanceof VFSLeaf newLeaf && targetItem instanceof VFSLeaf currentLeaf && targetItem.canVersion() == VFSStatus.YES) {
-					boolean success = vfsRepositoryService.addVersion(currentLeaf, ureq.getIdentity(), false, "", newLeaf.getInputStream());
-					if (!success) {
-						vfsStatus = VFSSuccess.ERROR_FAILED;
+				if (canEdit(targetContainer)) {
+					VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
+					if (versionsEnabled && vfsItemToCopy instanceof VFSLeaf newLeaf && targetItem instanceof VFSLeaf currentLeaf && targetItem.canVersion() == VFSStatus.YES) {
+						boolean success = vfsRepositoryService.addVersion(currentLeaf, ureq.getIdentity(), false, "", newLeaf.getInputStream());
+						if (!success) {
+							vfsStatus = VFSSuccess.ERROR_FAILED;
+						}
+					} else {
+						vfsItemToCopy = appendMissingLicense(vfsItemToCopy, license);
+						if (targetItem != null) {
+							vfsItemToCopy = makeNameUnique(targetContainer, vfsItemToCopy);
+						}
+						vfsStatus = targetContainer.copyFrom(vfsItemToCopy, getIdentity());
 					}
 				} else {
-					vfsItemToCopy = appendMissingLicense(vfsItemToCopy, license);
-					if (targetItem != null) {
-						vfsItemToCopy = makeNameUnique(targetContainer, vfsItemToCopy);
-					}
-					vfsStatus = targetContainer.copyFrom(vfsItemToCopy, getIdentity());
+					vfsStatus = VFSSuccess.ERROR_FAILED;
 				}
 				if (vfsStatus == VFSSuccess.SUCCESS) {
 					addEvent.addFilename(vfsItemToCopy.getName());
@@ -2387,7 +2391,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private boolean canUnzip(VFSItem vfsItem, VFSMetadata vfsMetadata) {
-		if (canEdit(currentContainer) && isNotDeleted(vfsMetadata) && vfsItem instanceof VFSLeaf vfsLeaf) {
+		if (config.isDisplayUnzip() && canEdit(currentContainer) && isNotDeleted(vfsMetadata) && vfsItem instanceof VFSLeaf vfsLeaf) {
 			return vfsLeaf.getName().toLowerCase().endsWith(".zip");
 		}
 		return false;

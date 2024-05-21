@@ -102,6 +102,7 @@ public class PFParticipantController extends BasicController {
 				.withDisplayWebDAVLinkEnabled(false)
 				.withDisplayQuotaLink(isCoach)
 				.withSearchEnabled(false)
+				.withUnzipEnabled(false)
 				.withMail(FolderEmailFilter.never)
 				.build();
 		

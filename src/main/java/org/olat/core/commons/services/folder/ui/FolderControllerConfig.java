@@ -37,6 +37,7 @@ public class FolderControllerConfig {
 	private final boolean displayWebDAVLink;
 	private final boolean displayQuotaLink;
 	private final boolean displaySearch;
+	private final boolean displayUnzip;
 	private final FolderEmailFilter emailFilter;
 	private final VFSItemFilter filter;
 	private final CustomLinkTreeModel customLinkTreeModel;
@@ -48,6 +49,7 @@ public class FolderControllerConfig {
 		this.displayWebDAVLink = builder.displayWebDAVLink;
 		this.displayQuotaLink = builder.displayQuotaLink;
 		this.displaySearch = builder.displaySearch;
+		this.displayUnzip = builder.displayUnzip;
 		this.emailFilter = builder.emailFilter;
 		this.filter = builder.filter;
 		this.customLinkTreeModel = builder.customLinkTreeModel;
@@ -69,6 +71,10 @@ public class FolderControllerConfig {
 
 	public boolean isDisplaySearch() {
 		return displaySearch;
+	}
+
+	public boolean isDisplayUnzip() {
+		return displayUnzip;
 	}
 
 	public FolderEmailFilter getEmailFilter() {
@@ -93,6 +99,7 @@ public class FolderControllerConfig {
 		private boolean displayWebDAVLink = true;
 		private boolean displayQuotaLink = true;
 		private boolean displaySearch = true;
+		private boolean displayUnzip = true;
 		private String searchResourceUrl = null;
 		private FolderEmailFilter emailFilter = FolderEmailFilter.always;
 		private VFSItemFilter filter = null;
@@ -123,12 +130,17 @@ public class FolderControllerConfig {
 			return this;
 		}
 		
+		public FolderControllerConfigBuilder withUnzipEnabled(boolean enabled) {
+			this.displayUnzip = enabled;
+			return this;
+		}
+		
 		public FolderControllerConfigBuilder withSearchResourceUrl(String url) {
 			this.searchResourceUrl = url;
 			return this;
 		}
 		
-		public FolderControllerConfigBuilder withMail(FolderEmailFilter emailFilter ) {
+		public FolderControllerConfigBuilder withMail(FolderEmailFilter emailFilter) {
 			this.emailFilter = emailFilter;
 			return this;
 		}
