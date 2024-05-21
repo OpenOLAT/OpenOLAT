@@ -153,19 +153,23 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		imageLayout.setFormTitle(getTranslator().translate("imagecomparison.image" + (index + 1)));
 		layoutCont.add(imageLayout);
 
-		String page = velocity_root + "/quiz_tab_image.html";
-		FormLayoutContainer imageSearchLayout = FormLayoutContainer.createCustomFormLayout("image.search", getTranslator(), page);
+		String page = velocity_root + "/image_search.html";
+		FormLayoutContainer imageSearchLayout = FormLayoutContainer.createCustomFormLayout("image.search" + index, getTranslator(), page);
 		imageLayout.add(imageSearchLayout);
 		imageSearchLayout.setLabel("imagecomparison.image", null);
-		StaticTextElement imageNameEl = uifactory.addStaticTextElement("imageName", "", "", imageSearchLayout);
+		String staticTextElementName = "imageName" + index;
+		imageSearchLayout.contextPut("staticTextElementName", staticTextElementName);
+		StaticTextElement imageNameEl = uifactory.addStaticTextElement(staticTextElementName, "", "", imageSearchLayout);
 		imageNameEls.add(imageNameEl);
-		FormLink chooseImageLink = uifactory.addFormLink("chooseImageLink", "", "", imageSearchLayout, Link.NONTRANSLATED);
+		String formLinkName = "chooseImageLink" + index;
+		imageSearchLayout.contextPut("formLinkName", formLinkName);
+		FormLink chooseImageLink = uifactory.addFormLink(formLinkName, "", "", imageSearchLayout, Link.NONTRANSLATED);
 		chooseImageLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search");
 		String chooseImageLabel = getTranslator().translate("choose.image");
 		chooseImageLink.setLinkTitle(chooseImageLabel);
 		chooseImageLinks.add(chooseImageLink);
 
-		TextElement textEl = uifactory.addTextElement("text", "imagecomparison.text", 40, null, imageLayout);
+		TextElement textEl = uifactory.addTextElement("text" + index, "imagecomparison.text", 40, null, imageLayout);
 		textEl.addActionListener(FormEvent.ONBLUR);
 		textEls.add(textEl);
 	}
