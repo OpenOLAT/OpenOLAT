@@ -154,6 +154,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		boolean hasAttempts = assessmentConfig.hasAttempts();
 		if (hasAttempts) {
 			attemptsWidget = WidgetFactory.createFigureWidget("attempts", null, translate("attempts.yourattempts"), "o_icon_attempts");
+			attemptsWidget.setValueCssClass("o_sel_attempts");
 			
 			Integer attempts = assessmentEval.getAttempts();
 			if (attempts == null) {

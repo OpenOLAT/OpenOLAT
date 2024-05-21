@@ -569,7 +569,7 @@ public class OOGraphene {
 	 * @param selectTab A predicate to select the right tab
 	 * @param browser The driver
 	 */
-	public static final void selectTab(String ulClass, Predicate<WebDriver> selectTab, boolean slowly, WebDriver browser) {
+	private static final void selectTab(String ulClass, Predicate<WebDriver> selectTab, boolean slowly, WebDriver browser) {
 		OOGraphene.waitElement(By.cssSelector("ul." + ulClass), browser);
 		List<WebElement> tabLinks = browser.findElements(By.cssSelector("ul." + ulClass + ">li"));
 		int count = tabLinks.size();
