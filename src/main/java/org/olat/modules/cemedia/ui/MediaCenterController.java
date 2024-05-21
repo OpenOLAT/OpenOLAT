@@ -772,6 +772,7 @@ public class MediaCenterController extends FormBasicController
 			params.setUsedIn(List.of(UsedIn.NOT_USED));
 		} else {
 			params.setScope(Scope.ALL);
+			params.setRepositoryEntry(repositoryEntry);
 		}
 		return params;
 	}
