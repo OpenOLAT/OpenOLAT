@@ -225,6 +225,64 @@ public class GTAManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getTaskByRef() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-3.1");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-4.1");
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
+		dbInstance.commit();
+		
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.group.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("bg.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, null, node, taskFile, participant);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response);
+		Assert.assertNotNull(response.getTask());
+
+		Task assignedTask = gtaManager.getTask(response.getTask());
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(assignedTask);
+		Assert.assertEquals(response.getTask(), assignedTask);
+		Assert.assertEquals(businessGroup, assignedTask.getBusinessGroup());
+	}
+	
+	@Test
+	public void getTaskByIdentity() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-4.2");
+		dbInstance.commit();
+		
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("bg.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, taskFile);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response);
+		Assert.assertNotNull(response.getTask());
+
+		Task assignedTask = gtaManager.getTask(participant, tasks);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(assignedTask);
+		Assert.assertEquals(response.getTask(), assignedTask);
+		Assert.assertEquals(participant, assignedTask.getIdentity());
+	}
+	
+	@Test
 	public void getTasks() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-3");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-4");

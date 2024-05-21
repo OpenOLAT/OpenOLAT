@@ -21,6 +21,7 @@ package org.olat.course.archiver;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
@@ -40,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateRange;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -86,14 +88,12 @@ public class ForumArchiveReportExportController extends FormBasicController {
 		dateRangeEl.setSeparator("fo.report.generator.date.range.end");
 
 		// filter by selected organisations. Filter only available if organisationModule is enabled
-		if (organisationModule.isEnabled()) {
-			List<Organisation> organisations = organisationService.getOrganisations(OrganisationStatus.notDelete());
-			SelectionValues organisationsSV = new SelectionValues();
-			organisations.forEach(o -> organisationsSV.add(new SelectionValues.SelectionValue(o.getKey().toString(), o.getDisplayName())));
-
-			orgaSelectionEl = uifactory.addCheckboxesFilterDropdown("fo.report.generator.orga.filter.label",
-					"fo.report.generator.orga.filter.label", formLayout, getWindowControl(), organisationsSV);
-		}
+		SelectionValues organisationsSV = new SelectionValues();
+		List<Organisation> organisations = organisationService.getOrganisations(OrganisationStatus.notDelete());
+		organisations.forEach(o -> organisationsSV.add(new SelectionValues.SelectionValue(o.getKey().toString(), o.getDisplayName())));
+		orgaSelectionEl = uifactory.addCheckboxesFilterDropdown("fo.report.generator.orga.filter.label",
+				"fo.report.generator.orga.filter.label", formLayout, getWindowControl(), organisationsSV);
+		
 
 		FormLayoutContainer buttons = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttons);
@@ -108,7 +108,7 @@ public class ForumArchiveReportExportController extends FormBasicController {
 	 */
 	private void updateSelectiveVisibility() {
 		dateRangeEl.setVisible(reportDataEl.isKeySelected(FILTER_OPTION_SELECTIVE));
-		orgaSelectionEl.setVisible(reportDataEl.isKeySelected(FILTER_OPTION_SELECTIVE));
+		orgaSelectionEl.setVisible(organisationModule.isEnabled() && reportDataEl.isKeySelected(FILTER_OPTION_SELECTIVE));
 	}
 
 	@Override
@@ -131,15 +131,18 @@ public class ForumArchiveReportExportController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	public SingleSelection getReportDataEl() {
-		return reportDataEl;
+	public boolean isReportAllData() {
+		return reportDataEl.isKeySelected("all");
 	}
 
-	public DateChooser getDateRangeEl() {
-		return dateRangeEl;
+	public DateRange getDateRange() {
+		return new DateRange(dateRangeEl.getDate(), dateRangeEl.getSecondDate());
 	}
 
-	public MultiSelectionFilterElement getOrgaSelectionEl() {
-		return orgaSelectionEl;
+	public List<String> getOrganisationsSelection() {
+		if(orgaSelectionEl.isVisible()) {
+			return new ArrayList<>(orgaSelectionEl.getSelectedKeys());
+		}
+		return List.of();
 	}
 }
