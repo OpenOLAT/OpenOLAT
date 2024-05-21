@@ -1625,8 +1625,17 @@ table.o_ce_table {
 	.o_ce_layout_light,
 	.o_ce_layout_large,
 	.o_ce_layout_custom {
-		h1, h2, h3, h4, h5, h6 {
-			margin: 0;
+		&.o_title_page_element {
+			h1, h2, h3, h4, h5, h6 {
+				margin: 0;
+			}
+		}
+		&.o_ce_html_raw {
+			h1, h2, h3, h4, h5, h6 {
+				&:first-child {
+					margin-top: 0;
+				}
+			}
 		}
 	}
 
