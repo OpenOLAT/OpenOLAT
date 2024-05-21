@@ -1,23 +1,29 @@
 <div class="o_qti_assessment_mode o_mode_frame_outer">
 	<div class="o_mode_frame_inner o_assessment_status_${helper.getStatus($row.assessmentMode).name()}">
-		<h4 style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
-			<span style="white-space: nowrap; overflow: hidden; max-width: 350px; text-overflow: ellipsis;">
-				<i class='o_icon o_icon_assessment_mode'>  </i> $r.escapeHtml($row.name)
-			</span>
+		<div class="o_assessment_header">
+			<h4 class="o_nowrap">
+				<div class="o_nowrap">
+					<i class='o_icon o_icon_assessment_mode'>  </i> $r.escapeHtml($row.name)
+				</div>
+			</h4>
 			#if(!$row.assessmentMode.getStatus().name().equals("none"))
-				:<small class="text-muted">&nbsp;-&nbsp;${helper.getModeState($row.assessmentMode)}</small>
+				<div class="text-nowrap">
+					<small class="text-muted">${helper.getModeState($row.assessmentMode)}</small>
+				</div>
 			#end
-			<span style="white-space: nowrap;">
+			<div class="text-nowrap" style="margin-left: auto;">
 				<small>$row.getAssessmentModeRendered()</small>
-			</span>
-		</h4>
+			</div>
+		</div>
+
+
 		<div class="text-muted">${helper.getBeginEndTooltip($row.assessmentMode)}</div>
 		<div class="text-muted">${helper.getLeadFollowupTime($row.assessmentMode)}</div>
 		<br>
 		#if($r.isNotNull($row.waitBarItem))
 			<p>$r.render($row.waitBarItem)</p>
 		#end
-		<div style="display: flex; justify-content: center;">
+		<div class="o_assessment_action_button">
 			#if($r.isNotNull($row.actionButtonName))
 				$r.render($row.actionButton)
 			#end

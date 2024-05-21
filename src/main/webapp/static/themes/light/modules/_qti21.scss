@@ -386,6 +386,15 @@ span.o_qti_gaptext_score_alternative {
 /* Assessment mode states */
 .o_qti_assessment_mode {
 
+	&.o_assessment_mode_details {
+		display: flex;
+		align-items: center;
+
+		.o_assessment_mode_detail_date {
+			flex-shrink: 0;
+		}
+	}
+
 	&.o_mode_label {
 		padding: 5px 10px;
 		border-radius: 5px;
@@ -427,6 +436,31 @@ span.o_qti_gaptext_score_alternative {
 			background-color: $o-assessment-inspection-withdrawn-color-bg;
 			border-color: $o-assessment-inspection-withdrawn-color;
 		}
+
+		&.o_assessment_mode_warn {
+			display: flex;
+			gap: .5rem;
+			align-items: center;
+		}
+
+		.o_assessment_status_badge {
+			flex-shrink: 0;
+		}
+
+		.o_assessment_title {
+			word-wrap: anywhere;
+		}
+	}
+
+	.o_assessment_header {
+		display: flex;
+		align-items: baseline;
+		gap: 5px;
+	}
+
+	.o_assessment_action_button {
+		display: flex;
+		justify-content: center;
 	}
 
 	&.o_assessment_status_none {

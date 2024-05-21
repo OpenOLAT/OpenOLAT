@@ -2,14 +2,15 @@
     #if($foreach.count > 1)
         <hr>
     #end
-    <div style="display: flex; align-items: center;">
-        <b>
-            <div style="white-space: nowrap; overflow: hidden; max-width: 200px; text-overflow: ellipsis;">
-                <h4>
-                    <i class='o_icon o_icon_assessment_mode'></i>&nbsp;$r.escapeHtml($mode.name)
-                </h4>
-            </div>
-        </b>&nbsp;-&nbsp;<div class="text-muted">$helper.getModeState($mode)</div>
+    <div class="o_qti_assessment_mode o_assessment_mode_details">
+        <div class="o_nowrap">
+            <h4 class="o_nowrap">
+                <i class='o_icon o_icon_assessment_mode'></i>&nbsp;$r.escapeHtml($mode.name)
+            </h4>
+        </div>
+        <div class="text-muted o_assessment_mode_detail_date">
+            $helper.getModeState($mode)
+        </div>
     </div>
     <div class="text-muted">$helper.getBeginEndTooltip($mode)</div>
     <div class="text-muted">$helper.getLeadFollowupTime($mode)</div>
