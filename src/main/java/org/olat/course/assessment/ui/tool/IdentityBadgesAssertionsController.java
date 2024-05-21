@@ -47,6 +47,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -78,6 +79,7 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 	private final boolean canGenerate;
 	private Identity assessedIdentity;
 	private RepositoryEntry courseEntry;
+	private final String titleID;
 	
 	private CloseableModalController cmc;
 	private AwardBadgesWithPreviewController awardBadgesCtrl;
@@ -92,6 +94,7 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 		this.canGenerate = !readOnly;
 		this.courseEntry = courseEntry;
 		this.assessedIdentity = assessedIdentity;
+		this.titleID = "o_batches_" + CodeHelper.getRAMUniqueID();
 		mediaUrl = registerMapper(ureq, new BadgeImageMapper());
 		
 		initForm(ureq);
@@ -101,6 +104,21 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 	public boolean hasBadgesAssertions() {
 		return tableModel != null && tableModel.getRowCount() > 0;
 	}
+	
+	public int getNumOfBadgesAssertions() {
+		return tableModel != null ? tableModel.getRowCount() : 0;
+	}
+	
+	public BadgeAssertion getLastBadgeAssertion() {
+		if(tableModel.getRowCount() > 0) {
+			return tableModel.getObject(0).getBadgeAssertion();
+		}
+		return null;
+	}
+
+	public String getTitleID() {
+		return titleID;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -109,6 +127,8 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 			generateLink.setElementCssClass("o_sel_award_badge");
 			generateLink.setIconLeftCSS("o_icon o_icon_add");
 		}
+		
+		flc.contextPut("titleID", titleID);
 		
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeCols.name, "select"));

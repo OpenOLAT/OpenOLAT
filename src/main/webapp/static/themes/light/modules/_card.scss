@@ -71,6 +71,17 @@
 						font-size: $o-widget-figure-value-font-size;
 						font-weight: $o-widget-figure-value-font-weight;
 					}
+					&.o_widget_text_regular {
+						font-size: $font-size-base;
+						font-weight: normal;
+						padding-bottom: 5px;
+					}
+					&.o_widget_text_success {
+						color: $brand-success;
+					}
+					&.o_widget_text_danger {
+						color: $brand-danger;
+					}
 				}
 				.o_widget_additional {
 					display: flex;
@@ -103,6 +114,15 @@
 					/* Some space between progress and text */
 					&:has(.o_progress) {
 						margin-right: 10px;
+					}
+					.o_text_widget_image {
+						display: grid;
+						align-items: center;
+						width: 60px;
+						height: 65px;
+						i {
+							font-size: 40px;
+						}
 					}
 				}
 			}

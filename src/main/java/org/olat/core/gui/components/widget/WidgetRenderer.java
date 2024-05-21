@@ -50,7 +50,9 @@ public abstract class WidgetRenderer extends DefaultComponentRenderer {
 		
 		sb.append("<div class=\"o_widget_header\">");
 		sb.append("<div class=\"o_widget_title o_flex_item_max\">");
-		sb.append(widget.getTitle());
+		if (StringHelper.containsNonWhitespace(widget.getTitle())) {
+			sb.append(widget.getTitle());
+		}
 		if (StringHelper.containsNonWhitespace(widget.getSubTitle())) {
 			sb.append(" <span class=\"o_widget_subtitle\">");
 			sb.append(widget.getSubTitle());

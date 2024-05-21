@@ -132,7 +132,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private IdentityBadgesAssertionsController badgesCtrl;
 	private IdentityCertificatesController certificatesCtrl;
 	private IdentityAssessmentOverviewController courseDetailsCtrl;
-	private final IdentityAssessmentProgressController assessmentProgressCtrl;
+	private final IdentityAssessmentFiguresController assessmentFiguresCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -223,10 +223,11 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				logError("Course corrupted", e);
 			}
 		}
-		assessmentProgressCtrl = new IdentityAssessmentProgressController(ureq, getWindowControl(), assessedCourseEnv,
+		
+		assessmentFiguresCtrl = new IdentityAssessmentFiguresController(ureq, getWindowControl(), assessedCourseEnv,
 				businessGroup, efficiencyStatement, scoreScalingEnabled, links);
-		listenTo(assessmentProgressCtrl);
-		mainVC.put("assessment.progress", assessmentProgressCtrl.getInitialComponent());
+		listenTo(assessmentFiguresCtrl);
+		mainVC.put("assessment.widgets", assessmentFiguresCtrl.getInitialComponent());
 		
 		mainVC.contextPut("withTitle", Boolean.valueOf(title));
 		mainVC.contextPut("withUserData", Boolean.valueOf(userData));
@@ -243,6 +244,9 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		} else if(certificateConfig == null || !certificateConfig.isCertificateEnabled()) {
 			certificatesCtrl.getInitialComponent().setVisible(false);
 		}
+		if (certificatesCtrl.getInitialComponent().isVisible()) {
+			assessmentFiguresCtrl.updateCerificate(ureq, true, certificatesCtrl.getLastCertificate(), certificatesCtrl.getTitleID());
+		}
 		
 		badgeConfig = courseRepoEntry == null ? null : openBadgesManager.getConfiguration(courseRepoEntry);
 		badgesCtrl = new IdentityBadgesAssertionsController(ureq, getWindowControl(),
@@ -251,6 +255,9 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		mainVC.put("badges", badgesCtrl.getInitialComponent());
 		badgesCtrl.getInitialComponent().setVisible(badgesCtrl.hasBadgesAssertions()
 				|| (badgeConfig != null && badgeConfig.isAwardEnabled()));
+		if (badgesCtrl.getInitialComponent().isVisible()) {
+			assessmentFiguresCtrl.updateBatch(ureq, badgesCtrl.getNumOfBadgesAssertions(), badgesCtrl.getLastBadgeAssertion(), badgesCtrl.getTitleID());
+		}
 		
 		populateCourseDetails(ureq);
 		if(certificate != null) {
@@ -368,8 +375,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	}
 	
 	private void populateAssessedIdentityCompletion() {
-		if (assessmentProgressCtrl.hasCompletion()) {	
-			setIdentityCompletion(assessmentProgressCtrl.getCompletion(), assessmentProgressCtrl.getBarColor());
+		if (assessmentFiguresCtrl.hasCompletion()) {	
+			setIdentityCompletion(assessmentFiguresCtrl.getCompletion(), assessmentFiguresCtrl.getBarColor());
 		} else {
 			mainVC.remove("completion");
 		}
@@ -474,9 +481,9 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				historyOfStatementsDropdown.setTranslatedLabel(statementLink.getI18n());
 				mainVC.contextPut("version", statementLink.getI18n());
 			}
-			assessmentProgressCtrl.updateFromStatement(efficiencyStatement);
-			if(assessmentProgressCtrl.hasCompletion()) {
-				setIdentityCompletion(assessmentProgressCtrl.getCompletion(), assessmentProgressCtrl.getBarColor());
+			assessmentFiguresCtrl.updateFromStatement(efficiencyStatement);
+			if(assessmentFiguresCtrl.hasCompletion()) {
+				setIdentityCompletion(assessmentFiguresCtrl.getCompletion(), assessmentFiguresCtrl.getBarColor());
 			} else {
 				mainVC.remove("completion");
 			}

@@ -56,6 +56,7 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -109,6 +110,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 	private final RepositoryEntry courseEntry;
 	private final RepositoryEntryCertificateConfiguration certificateConfig;
 	
+	private final String titleID;
 	private final boolean canDelete;
 	private final boolean canGenerate;
 	private final Formatter formatter;
@@ -133,6 +135,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		this.courseEntry = courseEntry;
 		this.assessedIdentity = assessedIdentity;
 		this.certificateConfig = certificateConfig;
+		this.titleID = "o_certificates_" + CodeHelper.getRAMUniqueID();
 		
 		canDelete = canGenerate = (certificateConfig != null && certificateConfig.isManualCertificationEnabled()) && !readOnly;
 		formatter = Formatter.getInstance(getLocale());
@@ -155,6 +158,10 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		}
 		return null;
 	}
+
+	public String getTitleID() {
+		return titleID;
+	}
 	
 	@Override
 	protected void doDispose() {
@@ -170,6 +177,8 @@ public class IdentityCertificatesController extends FormBasicController implemen
 			generateLink.setElementCssClass("o_sel_certificate_generate");
 			generateLink.setIconLeftCSS("o_icon o_icon_add");
 		}
+		
+		flc.contextPut("titleID", titleID);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.title));

@@ -93,8 +93,8 @@
 	
 	<fieldset>
 		<legend>$r.translate("assessment.title")</legend>
-		#if($r.available("assessment.progress"))
-			$r.render("assessment.progress")
+		#if($r.available("assessment.widgets"))
+			$r.render("assessment.widgets")
 		#end
 		#if($r.available("courseDetails"))
 			$r.render("courseDetails")

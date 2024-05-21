@@ -1,5 +1,5 @@
 <fieldset class="o_block #if($r.isNotNull($rowCount) && $rowCount>1) o_certificate_multi #end">
-	<legend>$r.translate("certificate")</legend>
+	<legend><a id="$titleID" class="o_link_plain">$r.translate("certificate")</a></legend>
 	#if($r.available("generate.certificate"))
 		<div class="o_button_group o_button_group_right">
 			$r.render("generate.certificate")

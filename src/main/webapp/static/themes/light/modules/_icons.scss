@@ -323,6 +323,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_principal { @include o-add-icon('eye');}
 .o_icon_print { @include o-add-icon('print');}
 .o_icon_private { @include o-add-icon('print');}
+.o_icon_progress { @include o-add-icon('circle', false);}
 .o_icon_progress_success { @include o-add-icon('check'); color: #e5efe5}
 .o_icon_progress_danger { @include o-add-icon('times'); color: #efe5e5}
 .o_icon_provider_adfs { @include o-add-brand-icon('windows');}

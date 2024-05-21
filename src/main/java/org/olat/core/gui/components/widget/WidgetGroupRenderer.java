@@ -47,7 +47,9 @@ public class WidgetGroupRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("\">");
 		for (Widget widget : widgetGroup.getWidgets()) {
-			renderer.render(widget, sb, args);
+			if (widget.isVisible()) {
+				renderer.render(widget, sb, args);
+			}
 			widget.setDirty(false);
 		}
 		sb.append("</div>");
