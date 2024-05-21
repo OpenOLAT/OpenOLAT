@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -148,16 +149,16 @@ public class ForumArchiveController extends GenericArchiveController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == forumArchiveReportExportCtrl) {
 			if (event == Event.DONE_EVENT) {
-				if (forumArchiveReportExportCtrl.getReportDataEl().isKeySelected("all")) {
+				if (forumArchiveReportExportCtrl.isReportAllData()) {
 					// if no filter is selected and all data should be exported
 					doExportReport(ureq, null, null, null);
 				} else {
-					Date beginDate = forumArchiveReportExportCtrl.getDateRangeEl().getDate();
+					DateRange dateRange = forumArchiveReportExportCtrl.getDateRange();
+					Date beginDate = dateRange.getFrom();
 					// increasing by 1, because end date is inclusive
-					Date endDate = forumArchiveReportExportCtrl.getDateRangeEl().getSecondDate() != null
-							? DateUtils.addDays(forumArchiveReportExportCtrl.getDateRangeEl().getSecondDate(), 1) : null;
-					List<String> selectedOrgaKeys = forumArchiveReportExportCtrl.getOrgaSelectionEl().getSelectedKeys().stream().toList();
-
+					Date endDate = dateRange.getTo() != null
+							? DateUtils.addDays(dateRange.getTo(), 1) : null;
+					List<String> selectedOrgaKeys = forumArchiveReportExportCtrl.getOrganisationsSelection();
 					doExportReport(ureq, beginDate, endDate, selectedOrgaKeys);
 				}
 			}
