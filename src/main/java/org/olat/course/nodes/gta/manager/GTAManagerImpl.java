@@ -947,7 +947,12 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 	@Override
 	public Task getTask(TaskRef task) {
-		String q = "select task from gtatask task where task.key=:taskKey";
+		String q = """
+				select task from gtatask task
+				left join fetch task.businessGroup as businessGroup
+				left join fetch task.identity as ident
+				left join fetch task.taskList as taskList
+				where task.key=:taskKey""";
 		List<Task> tasks = dbInstance.getCurrentEntityManager().createQuery(q, Task.class)
 			.setParameter("taskKey", task.getKey())
 			.getResultList();
@@ -966,7 +971,11 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 	@Override
 	public Task getTask(IdentityRef identity, TaskList taskList) {
-		String q = "select task from gtatask task where task.taskList.key=:taskListKey and task.identity.key=:identityKey";
+		String q = """
+				select task from gtatask task
+				inner join fetch task.identity as ident
+				inner join fetch task.taskList as taskList
+				where taskList.key=:taskListKey and ident.key=:identityKey""";
 		List<Task> tasks = dbInstance.getCurrentEntityManager().createQuery(q, Task.class)
 			.setParameter("taskListKey", taskList.getKey())
 			.setParameter("identityKey", identity.getKey())

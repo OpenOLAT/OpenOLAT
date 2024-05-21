@@ -198,6 +198,7 @@ public class EditMultipleDueDatesController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		for (Task task : tasks) {
+			//gtaManager.getTask(task);
 			TaskDueDate dueDates = gtaManager.getDueDatesTask(task);
 			if (assignmentDueDateEl.isEnabled()) {
 				gtaManager.logIfChanged(assignmentDueDateEl.getDate(), dueDates.getAssignmentDueDate(), TaskProcess.assignment, task,
