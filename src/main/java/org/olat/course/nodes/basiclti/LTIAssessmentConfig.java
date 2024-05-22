@@ -142,6 +142,21 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean hasFormEvaluation() {
+		return false;
+	}
+	
+	@Override
+	public FormEvaluationScoreMode getFormEvaluationScoreMode() {
+		return null;
+	}
+	
+	@Override
+	public String getFormEvaluationScoreScale() {
+		return null;
+	}
+
+	@Override
 	public Mode getPassedMode() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD)? Mode.setByNode: Mode.none;
 	}

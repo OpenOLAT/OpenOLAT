@@ -63,7 +63,9 @@ import org.olat.core.util.vfs.DownloadeableVFSMediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.FormEvaluationScoreMode;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.AssessmentForm.DocumentWrapper;
 import org.olat.course.nodes.CourseNode;
@@ -74,10 +76,22 @@ import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SliderStatistic;
+import org.olat.modules.forms.SlidersStatistic;
+import org.olat.modules.forms.StepCounts;
+import org.olat.modules.forms.model.SliderStatisticImpl;
+import org.olat.modules.forms.model.SlidersStatisticImpl;
+import org.olat.modules.forms.model.StepCountsBuilder;
+import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,6 +114,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	private final AssessmentConfig assessmentConfig;
 	private final AssessmentDocumentsSupplier assessmentDocumentsSupplier;
 	private final GradeSystemSupplier gradeSystemSupplier;
+	private final FormEvaluationSupplier formEvaluationSupplier;
 	private final PanelInfo panelInfo;
 	private String mapperUri;
 	private final Roles roles;
@@ -116,7 +131,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	public AssessmentParticipantViewController(UserRequest ureq, WindowControl wControl,
 			AssessmentEvaluation assessmentEval, AssessmentConfig assessmentConfig,
 			AssessmentDocumentsSupplier assessmentDocumentsSupplier, GradeSystemSupplier gradeSystemSupplier,
-			PanelInfo panelInfo) {
+			FormEvaluationSupplier formEvaluationSupplier, PanelInfo panelInfo) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
@@ -126,6 +141,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		this.assessmentConfig = assessmentConfig;
 		this.assessmentDocumentsSupplier = assessmentDocumentsSupplier;
 		this.gradeSystemSupplier = gradeSystemSupplier;
+		this.formEvaluationSupplier = formEvaluationSupplier;
 		this.panelInfo = panelInfo;
 		roles = ureq.getUserSession().getRoles();
 		
@@ -145,6 +161,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		FigureWidget scoreWidget = null;
 		Widget scoreWWeightedWidget = null;
 		FigureWidget attemptsWidget = null;
+		List<Widget> rubricsWidgets = null;
 		
 		
 		boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
@@ -216,6 +233,34 @@ public class AssessmentParticipantViewController extends BasicController impleme
 							translate("score.weighted.subtitle"), "o_icon_score_unbalanced",
 							translate("assessment.value.not.visible"), null, null, null, null);
 				}
+			}
+		}
+		
+		// Rubrics
+		boolean hasFormEvaluation = assessmentConfig.hasFormEvaluation();
+		if(hasFormEvaluation) {
+			List<RubricValue> statistics = formEvaluationSupplier.getRubricStatistics(assessmentConfig.getFormEvaluationScoreMode());
+			rubricsWidgets = new ArrayList<>(statistics.size());
+			
+			for(int i=0; i<statistics.size(); i++) {
+				RubricValue rubricValue = statistics.get(i);
+				Double maxScoreRubric = rubricValue.maxScore();
+				Double score = rubricValue.score();
+				
+				FigureWidget rubricWidget = WidgetFactory.createFigureWidget("rubric_" + i, null,
+						translate("form.evaluation.rubric.score", Integer.toString(i + 1)), "o_icon_score");
+				rubricWidget.setDesc(translate("score.of", AssessmentHelper.getRoundedScore(maxScoreRubric)));
+				rubricWidget.setValue(AssessmentHelper.getRoundedScore(score));
+				
+				ProgressBar rubricProgress = new ProgressBar("scoreProgress_" + i, 100, score.floatValue(), maxScoreRubric.floatValue(), null);
+				rubricProgress.setWidthInPercent(true);
+				rubricProgress.setLabelAlignment(LabelAlignment.none);
+				rubricProgress.setRenderSize(RenderSize.small);
+				rubricProgress.setLabelMaxEnabled(false);
+				rubricProgress.setBarColor(BarColor.passed);
+				rubricWidget.setAdditionalComp(rubricProgress);
+				rubricWidget.setAdditionalCssClass("o_widget_progress");
+				rubricsWidgets.add(rubricWidget);
 			}
 		}
 		
@@ -335,6 +380,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		widgetGroup.add(scoreWidget);
 		widgetGroup.add(scoreWWeightedWidget);
 		widgetGroup.add(attemptsWidget);
+		widgetGroup.addAll(rubricsWidgets);
 	}
 
 	private DocumentWrapper createDocumentWrapper(VFSLeaf document, VelocityContainer docsVC) {
@@ -494,5 +540,99 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		public boolean isDownloadEnabled();
 		
 	}
+	
+	public interface FormEvaluationSupplier {
+		
+		public List<RubricValue> getRubricStatistics(FormEvaluationScoreMode scoreMode);
+		
+	}
+	
+	public static FormEvaluationSupplier formEvaluation(UserCourseEnvironment userCourseEnv, CourseNode courseNode, AssessmentConfig assessmentConfig) {
+		if(assessmentConfig.hasAssessmentForm()) {
+			return new DefaultFormEvaluationSupplier(userCourseEnv, courseNode, assessmentConfig);
+		}
+		return new NoFormEvaluationSupplier();
+	}
 
+	public static class NoFormEvaluationSupplier implements FormEvaluationSupplier {
+
+		@Override
+		public List<RubricValue> getRubricStatistics(FormEvaluationScoreMode scoreMode) {
+			return List.of();
+		}
+	}
+	
+	public static class DefaultFormEvaluationSupplier implements FormEvaluationSupplier {
+		
+		private final Identity assessedIdentity;
+		private final RepositoryEntry courseEntry;
+		private final CourseNode courseNode;
+		private final float scale;
+		
+		private DefaultFormEvaluationSupplier(UserCourseEnvironment userCourseEnv, CourseNode courseNode, AssessmentConfig assessmentConfig) {
+			this.courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			this.courseNode = courseNode;
+			
+			String scaleConfig = assessmentConfig.getFormEvaluationScoreScale();
+			if(StringHelper.containsNonWhitespace(scaleConfig)) {
+				scale = Float.parseFloat(scaleConfig);
+			} else {
+				scale = 1.0f;
+			}
+
+			assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
+		}
+		
+		@Override
+		public List<RubricValue> getRubricStatistics(FormEvaluationScoreMode scoreMode) {
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+			EvaluationFormSession session = courseAssessmentService.getSession(courseEntry, courseNode, assessedIdentity);
+			if(session != null) {
+				List<RubricStatistic> statsList = evaluationFormManager.getRubricStatistics(session);
+				List<RubricValue> values = new ArrayList<>(statsList.size());
+				for(RubricStatistic stats:statsList) {
+					SlidersStatistic slidersStatistics = getSlidersStatistic(stats.getRubric());
+					RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(stats.getRubric(), slidersStatistics);
+	
+					Double score = null;
+					Double maxScore = null;
+					if(scoreMode == FormEvaluationScoreMode.sum) {
+						score = stats.getTotalStatistic().getSum();
+						maxScore = rubricStatistic.getTotalStatistic().getSum();
+					} else if(scoreMode == FormEvaluationScoreMode.avg) {
+						score = stats.getTotalStatistic().getAvg();
+						maxScore = rubricStatistic.getTotalStatistic().getAvg();
+					} else {
+						continue;
+					}
+					
+					if(score != null) {
+						double scaledScore = score.doubleValue() * scale;
+						double scaledMaxScore = maxScore.doubleValue() * scale;
+						values.add(new RubricValue(scaledScore, scaledMaxScore));
+					}
+				}
+				return values;
+			}
+			return List.of();
+		}
+		
+		private SlidersStatistic getSlidersStatistic(Rubric rubric) {
+			SlidersStatisticImpl slidersStatisticImpl = new SlidersStatisticImpl();
+			int step = rubric.getSteps();
+			for (Slider slider : rubric.getSliders()) {
+				StepCounts stepCounts = StepCountsBuilder.builder(rubric.getSteps())
+						.withCount(step, Long.valueOf(1))
+						.build();
+				SliderStatistic sliderStatistic = new SliderStatisticImpl(null, null, null, null, null, null, stepCounts, null);
+				slidersStatisticImpl.put(slider, sliderStatistic);
+			}
+			return slidersStatisticImpl;
+		}
+	}
+	
+	public record RubricValue(Double score, Double maxScore) {
+		//
+	}
 }

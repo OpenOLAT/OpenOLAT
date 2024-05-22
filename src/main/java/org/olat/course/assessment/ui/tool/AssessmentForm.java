@@ -60,6 +60,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
@@ -82,7 +84,6 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.scoring.ScoreScalingHelper;
@@ -91,12 +92,16 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.ui.ProgressEvent;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -119,7 +124,9 @@ public class AssessmentForm extends FormBasicController {
 	
 	private StaticTextElement statusEl;
 	private StaticTextElement userVisibilityEl;
+	private StaticTextElement formEvaluationStatusEl;
 	private TextElement score;
+	private StaticTextElement formEvaluationScore;
 	private StaticTextElement weightedScore;
 	private FormLayoutContainer gradeCont;
 	private StaticTextElement gradeEl;
@@ -139,13 +146,20 @@ public class AssessmentForm extends FormBasicController {
 	private DropdownItem saveAndDoneDropdown;
 	private FormLink saveAndDoneAdditionalLink;
 	private List<DocumentWrapper> assessmentDocuments;
+	private FormLink viewFormEvaluationLink;
+	private FormLink editFormEvaluationLink;
+	private FormLink reopenFormEvaluationLink;
 
 	private Controller docEditorCtrl;
+	private CloseableModalController cmc;
 	private DialogBoxController confirmDeleteDocCtrl;
+	private Controller evaluationFormExecCtrl;
+	private LightboxController lightboxCtrl; 
 	
 	private final AssessmentConfig assessmentConfig;
 	private final boolean hasScore, hasGrade, autoGrade, hasPassed, hasComment, hasIndividualAssessmentDocs, hasAttempts;
 	private final boolean hasScoreScaling;
+	private final boolean hasFormEvaluation;
 	private final BigDecimal scoreScale;
 	private Float min, max, cut;
 	private final Integer maxAttempts;
@@ -164,9 +178,7 @@ public class AssessmentForm extends FormBasicController {
 	private GradeScale gradeScale;
 	private NavigableSet<GradeScoreRange> gradeScoreRanges;
 	private boolean gradeApplied;
-	
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
+
 	@Autowired
 	private GradeModule gradeModule;
 	@Autowired
@@ -175,6 +187,8 @@ public class AssessmentForm extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private DocEditorService docEditorService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	/**
 	 * Constructor for an assessment detail form. The form will be configured according
@@ -199,6 +213,7 @@ public class AssessmentForm extends FormBasicController {
 		hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		autoGrade = assessmentConfig.isAutoGrade();
 		gradeApplied = autoGrade;
+		hasFormEvaluation = assessmentConfig.hasFormEvaluation();
 		hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		hasComment = assessmentConfig.hasComment();
 		hasIndividualAssessmentDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
@@ -301,15 +316,31 @@ public class AssessmentForm extends FormBasicController {
 				doDeleteAssessmentDocument(documentToDelete);
 				reloadAssessmentDocs();
 			}
-		} else if(source == docEditorCtrl) {
+		} else if(source == evaluationFormExecCtrl) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT
+					|| event instanceof ProgressEvent) {
+				updateFormEvaluation();
+				if(event == Event.CHANGED_EVENT) {
+					updateScoreAfterFormEvaluation();
+					fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, false));
+				}
+			}
+			cleanUp();
+		} else if(source == docEditorCtrl || source == cmc || source == lightboxCtrl) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(evaluationFormExecCtrl);
 		removeAsListenerAndDispose(docEditorCtrl);
+		removeAsListenerAndDispose(lightboxCtrl);
+		removeAsListenerAndDispose(cmc);
+		evaluationFormExecCtrl = null;
 		docEditorCtrl = null;
+		lightboxCtrl = null;
+		cmc = null;
 	}
 	
 	@Override
@@ -342,6 +373,12 @@ public class AssessmentForm extends FormBasicController {
 		} else if(reopenLink == source) {
 			doReopen();
 			fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_REOPEN, false));
+		} else if(viewFormEvaluationLink == source) {
+			doViewFormEvaluation(ureq);
+		} else if(editFormEvaluationLink == source) {
+			doFormEvaluation(ureq, true, false);
+		} else if(reopenFormEvaluationLink == source) {
+			doFormEvaluation(ureq, true, true);
 		} else if(uploadDocsEl == source) {
 			if(uploadDocsEl.getUploadFile() != null && StringHelper.containsNonWhitespace(uploadDocsEl.getUploadFileName())) {
 				courseAssessmentService.addIndividualAssessmentDocument(courseNode,
@@ -606,6 +643,33 @@ public class AssessmentForm extends FormBasicController {
 		return wrapper;
 	}
 	
+	private void doViewFormEvaluation(UserRequest ureq) {
+		removeAsListenerAndDispose(evaluationFormExecCtrl);
+
+		evaluationFormExecCtrl = courseAssessmentService.getEvaluationFormController(ureq, getWindowControl(),
+				courseNode, coachCourseEnv, assessedUserCourseEnv, false, false);
+		listenTo(evaluationFormExecCtrl);
+
+		lightboxCtrl = new LightboxController(ureq, getWindowControl(), evaluationFormExecCtrl);
+		listenTo(lightboxCtrl);
+		lightboxCtrl.activate();
+	}
+	
+	private void doFormEvaluation(UserRequest ureq, boolean edit, boolean reopen) {
+		removeAsListenerAndDispose(evaluationFormExecCtrl);
+
+		evaluationFormExecCtrl = courseAssessmentService.getEvaluationFormController(ureq, getWindowControl(),
+				courseNode, coachCourseEnv, assessedUserCourseEnv, edit, reopen);
+		listenTo(evaluationFormExecCtrl);
+		
+		String fullname = userManager.getUserDisplayName(assessedUserCourseEnv.getIdentityEnvironment().getIdentity());
+		String title = translate("form.evaluation.title.modal", fullname);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				evaluationFormExecCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void updateStatus(ScoreEvaluation scoreEval) {
 		boolean closed = (scoreEval != null && scoreEval.getAssessmentStatus() == AssessmentEntryStatus.done);
 		
@@ -661,6 +725,8 @@ public class AssessmentForm extends FormBasicController {
 		reopenLink.setVisible(closed && !coachCourseEnv.isCourseReadOnly());
 		flc.setDirty(true);
 	}
+	
+
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -682,11 +748,28 @@ public class AssessmentForm extends FormBasicController {
 		userVisibilityEl = uifactory.addStaticTextElement("user.visibility", userVisibilityText, generalCont);
 		userVisibilityEl.setDomWrapperElement(DomWrapperElement.div);
 		
-		FormLayoutContainer assessmentCont = FormLayoutContainer.createDefaultFormLayout("assessment", getTranslator());
+		FormLayoutContainer formEvaluationCont = uifactory.addDefaultFormLayout("formEvaluation", null, formLayout);
+		formEvaluationCont.setElementCssClass("o_sel_assessment_form_evaluation");
+		formEvaluationCont.setFormTitle(translate("form.evaluation.title"));
+		formEvaluationCont.setVisible(hasFormEvaluation);
+		
+		if(hasFormEvaluation) {
+			formEvaluationStatusEl = uifactory.addStaticTextElement("form.evaluation.status", "-", formEvaluationCont);
+			formEvaluationStatusEl.setDomWrapperElement(DomWrapperElement.div);
+
+			formEvaluationScore = uifactory.addStaticTextElement("form.evaluation.score", "form.evaluation.score", "-", formEvaluationCont);
+			
+			FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("form.evalutation.buttons", null, formEvaluationCont);
+			editFormEvaluationLink = uifactory.addFormLink("form.evaluation.edit", buttonsCont, Link.BUTTON);
+			reopenFormEvaluationLink = uifactory.addFormLink("form.evaluation.reopen", buttonsCont, Link.BUTTON);
+			
+			viewFormEvaluationLink = uifactory.addFormLink("form.evaluation.open", buttonsCont, Link.BUTTON);
+			viewFormEvaluationLink.setGhost(true);
+		}
+		
+		FormLayoutContainer assessmentCont = uifactory.addDefaultFormLayout("assessment", null, formLayout);
 		assessmentCont.setElementCssClass("o_sel_assessment_form");
 		assessmentCont.setFormTitle(translate("personal.title"));
-		assessmentCont.setRootForm(mainForm);
-		formLayout.add("assessment", assessmentCont);
 		
 		if (hasAttempts) {
 			attemptsValue = courseAssessmentService.getAttempts(courseNode, assessedUserCourseEnv);
@@ -883,6 +966,7 @@ public class AssessmentForm extends FormBasicController {
 		reloadAssessmentDocs();
 		updateStatus(scoreEval);
 		updateGradeAndScaleUI();
+		updateFormEvaluation();
 	}
 	
 	private String decorateWeightedScore(Float rawScore) {
@@ -893,15 +977,55 @@ public class AssessmentForm extends FormBasicController {
 			BigDecimal bigWeightedScore = ScoreScalingHelper.getWeightedScore(rawScore, scoreScale);
 			wScore = AssessmentHelper.getRoundedScore(bigWeightedScore);
 		}
-		String scoreScaling = courseNode.getModuleConfiguration()
-				.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
-
+		
+		String scoreScaling = assessmentConfig.getScoreScale();
 		return translate("form.score.weighted.decorator", wScore, scoreScaling);
 	}
 
 	private void doApplyGrade() {
 		gradeApplied = true;
 		updateGradeAndScaleUI();
+	}
+	
+	private void updateFormEvaluation() {
+		if(hasFormEvaluation) {
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			EvaluationFormSession session = courseAssessmentService.getSession(courseEntry, courseNode, assessedIdentity);
+			EvaluationFormSessionStatus evaluationFormStatus = session == null ? null : session.getEvaluationFormSessionStatus();
+			String status = new EvaluationFormSessionStatusCellRenderer(getLocale(), true).render(evaluationFormStatus);
+			formEvaluationStatusEl.setValue(status);
+			
+			viewFormEvaluationLink.setVisible(evaluationFormStatus != null);
+			editFormEvaluationLink.setVisible(evaluationFormStatus == null
+					|| evaluationFormStatus == EvaluationFormSessionStatus.inProgress);
+			reopenFormEvaluationLink.setVisible(evaluationFormStatus == EvaluationFormSessionStatus.done);
+			
+			if(evaluationFormStatus == EvaluationFormSessionStatus.done) {
+				Float evaluationScore = courseAssessmentService.getEvaluationScore(session, courseEntry, courseNode);
+				if(evaluationScore == null) {
+					formEvaluationScore.setValue("-");
+				} else {
+					formEvaluationScore.setValue(AssessmentHelper.getRoundedScore(evaluationScore));
+				}
+			} else {
+				formEvaluationScore.setValue("-");
+			}
+		}
+	}
+	
+	private void updateScoreAfterFormEvaluation() {
+		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
+		if (scoreEval == null) {
+			scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
+		}
+		if(hasScore) {
+			scoreValue = scoreEval.getScore();
+			if (scoreValue != null) {
+				score.setValue(AssessmentHelper.getRoundedScore(scoreValue));
+			}
+			weightedScore.setValue(decorateWeightedScore(scoreValue));
+		}
 	}
 	
 	private void updateGradeAndScaleUI() {

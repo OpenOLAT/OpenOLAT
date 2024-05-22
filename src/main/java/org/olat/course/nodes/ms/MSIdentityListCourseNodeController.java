@@ -42,13 +42,13 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.repository.RepositoryEntry;
@@ -70,15 +70,17 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private MSStatisticController statsCtrl;
 
 	private Boolean hasEvaluationForm;
+	private EvaluationFormProvider evaluationFormProvider;
 
 	@Autowired
 	private MSService msService;
 
 	public MSIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			RepositoryEntry courseEntry, MSCourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
 		super(ureq, wControl, stackPanel, courseEntry, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
-
+		
+		evaluationFormProvider = MSCourseNode.getEvaluationFormProvider();
 		flc.contextPut("showTitle", Boolean.valueOf(showTitle));
 		flc.setDirty(true);
 	}
@@ -125,7 +127,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		super.reload(ureq);
 		
 		if (hasEvaluationForm()) {
-			List<EvaluationFormSession> sessions = msService.getSessions(getCourseRepositoryEntry(), courseNode.getIdent());
+			List<EvaluationFormSession> sessions = msService.getSessions(getCourseRepositoryEntry(), courseNode.getIdent(), evaluationFormProvider);
 			Map<String, EvaluationFormSession> identToSesssion = sessions.stream()
 					.collect(Collectors.toMap(
 							s -> s.getSurvey().getIdentifier().getSubident2(),
@@ -198,7 +200,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	private void doLaunchStatistics(UserRequest ureq) {
 		statsCtrl = new MSStatisticController(ureq, getWindowControl(), getCourseEnvironment(), getOptions(),
-				(MSCourseNode) courseNode);
+				courseNode, MSCourseNode.getEvaluationFormProvider());
 		listenTo(statsCtrl);
 		stackPanel.pushController(translate("tool.stats"), statsCtrl);
 	}

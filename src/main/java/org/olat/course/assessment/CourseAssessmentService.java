@@ -49,6 +49,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -289,6 +290,14 @@ public interface CourseAssessmentService {
 	 */
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
+	
+	
+	public EvaluationFormSession getSession(RepositoryEntry courseEntry, CourseNode courseNode, Identity assessedIdentity);
+	
+	public Float getEvaluationScore(EvaluationFormSession session, RepositoryEntry courseEntry, CourseNode courseNode);
+	
+	public Controller getEvaluationFormController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment, boolean edit, boolean reopen);
 	
 	/**
 	 * Returns the controller with the list of assessed identities for a specific

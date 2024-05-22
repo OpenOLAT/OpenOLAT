@@ -137,6 +137,35 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean hasFormEvaluation() {
+		return false;
+	}
+	
+	@Override
+	public FormEvaluationScoreMode getFormEvaluationScoreMode() {
+		FormEvaluationScoreMode scoreMode = null;
+		if(hasFormEvaluation()) {
+			String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
+			if (MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig)) {
+				scoreMode = FormEvaluationScoreMode.avg;
+			} else if (MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)) {
+				scoreMode = FormEvaluationScoreMode.sum;
+			}
+		}
+		return scoreMode;
+	}
+	
+	@Override
+	public String getFormEvaluationScoreScale() {
+		String scaleConfig = null;
+		if(hasFormEvaluation()) {	
+			scaleConfig = courseNode.getModuleConfiguration().getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE,
+				MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE);
+		}
+		return scaleConfig;
+	}
+
+	@Override
 	public Mode getPassedMode() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD)? Mode.setByNode: Mode.none;
 	}

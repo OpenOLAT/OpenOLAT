@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -30,10 +31,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
-import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
-import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -60,11 +59,13 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private int workflowPos, assignmentPos, submissionPos, revisionPos, gradingPos, solutionsPos, highScoreTabPosition;
 	
 	private TabbedPane myTabbedPane;
+	private final BreadcrumbPanel stackPanel;
+	
 	private GTAWorkflowEditController workflowCtrl;
 	private GTARevisionAndCorrectionEditController revisionCtrl;
 	private GTAAssignmentEditController assignmentCtrl;
 	private GTASubmissionEditController submissionCtrl;
-	private MSEditFormController manualAssessmentCtrl;
+	private GTAEditAssessmentConfigController assessmentCtrl;
 	private GTASampleSolutionsEditController solutionsCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
 	
@@ -72,18 +73,17 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment euce;
 	private final CourseEnvironment courseEnv;
-	private final NodeAccessType nodeAccessType;
 	private final RepositoryEntry courseEntry;
 	
-	public GTAEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
+	public GTAEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, GTACourseNode gtaNode,
 			ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		
 		this.euce = euce;
 		this.gtaNode = gtaNode;
+		this.stackPanel = stackPanel;
 		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		courseEnv = course.getCourseEnvironment();
-		nodeAccessType = NodeAccessType.of(course);
 		config = gtaNode.getModuleConfiguration();
 
 		//workflow
@@ -99,8 +99,8 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		revisionCtrl = new GTARevisionAndCorrectionEditController(ureq, getWindowControl(), config);
 		listenTo(revisionCtrl);
 		//grading
-		manualAssessmentCtrl = createManualAssessmentCtrl(ureq, course);
-		listenTo(manualAssessmentCtrl);
+		assessmentCtrl = createManualAssessmentCtrl(ureq, course);
+		listenTo(assessmentCtrl);
 		//solutions
 		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), gtaNode, courseEnv, false);
 		listenTo(solutionsCtrl);
@@ -119,7 +119,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		assignmentPos = tabbedPane.addTab(translate(PANE_TAB_ASSIGNMENT), "o_sel_gta_assignment", assignmentCtrl.getInitialComponent());
 		submissionPos = tabbedPane.addTab(translate(PANE_TAB_SUBMISSION), "o_sel_gta_submission", submissionCtrl.getInitialComponent());
 		revisionPos = tabbedPane.addTab(translate(PANE_TAB_REVIEW_AND_CORRECTIONS), revisionCtrl.getInitialComponent());
-		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), "o_sel_gta_assessment", manualAssessmentCtrl.getInitialComponent());
+		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), "o_sel_gta_assessment", assessmentCtrl.getInitialComponent());
 		solutionsPos = tabbedPane.addTab(translate(PANE_TAB_SOLUTIONS), "o_sel_gta_solution", solutionsCtrl.getInitialComponent());
 		highScoreTabPosition = myTabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		updateEnabledDisabledTabs();
@@ -194,23 +194,25 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				listenTo(revisionCtrl);
 				myTabbedPane.replaceTab(revisionPos, revisionCtrl.getInitialComponent());
 			}
-		} else if(manualAssessmentCtrl == source) {
+		} else if(assessmentCtrl == source) {
 			if (event == Event.DONE_EVENT){
-				manualAssessmentCtrl.updateModuleConfiguration(config);
+				assessmentCtrl.updateModuleConfiguration(config);
 				updateEnabledDisabledTabs();
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
-				removeAsListenerAndDispose(manualAssessmentCtrl);
-				manualAssessmentCtrl = createManualAssessmentCtrl(ureq, CourseFactory.loadCourse(courseEntry));
-				listenTo(manualAssessmentCtrl);
-				myTabbedPane.replaceTab(gradingPos, manualAssessmentCtrl.getInitialComponent());
+				removeAsListenerAndDispose(assessmentCtrl);
+				assessmentCtrl = createManualAssessmentCtrl(ureq, CourseFactory.loadCourse(courseEntry));
+				listenTo(assessmentCtrl);
+				myTabbedPane.replaceTab(gradingPos, assessmentCtrl.getInitialComponent());
+			} else if(event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if(solutionsCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == highScoreNodeConfigController){
+		} else if (source == highScoreNodeConfigController) {
 			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
@@ -227,8 +229,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		}
 	}
 
-	private MSEditFormController createManualAssessmentCtrl(UserRequest ureq, ICourse course) {
-		return new MSEditFormController(ureq, getWindowControl(), course, gtaNode, nodeAccessType,
-				translate("grading.configuration.title"), "manual_user/learningresources/Course_Element_Task/");
+	private GTAEditAssessmentConfigController createManualAssessmentCtrl(UserRequest ureq, ICourse course) {
+		return new GTAEditAssessmentConfigController(ureq, getWindowControl(), stackPanel, gtaNode, course);
 	}
 }

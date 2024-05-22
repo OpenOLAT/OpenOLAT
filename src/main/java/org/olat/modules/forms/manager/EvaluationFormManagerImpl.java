@@ -48,7 +48,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.course.nodes.ms.MSService;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -68,6 +67,7 @@ import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.SessionStatusInformation;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.SlidersStatistic;
@@ -118,6 +118,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	private SessionStatusPublisher sessionStatusPublisher;
 	@Autowired
 	private RubricStatisticCalculator rubricStatisticCalculator;
+	@Autowired
+	private EvaluationFormProviderRegistry evaluationFormProviderRegistry;
 
 	@Override
 	public Form loadForm(RepositoryEntry formEntry) {
@@ -552,8 +554,23 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public boolean isEvaluationFormWeightActivelyUsed(RepositoryEntryRef formEntry) {
-		// Improve this by declaring and implementing providers
-		return evaluationFormSurveyDao.hasSurvey(formEntry, MSService.SURVEY_ORES_TYPE_NAME);
+		List<String> surveyTypeNames = evaluationFormProviderRegistry.getSurveyOresTypeNames();
+		return evaluationFormSurveyDao.hasSurvey(formEntry, surveyTypeNames);
+	}
+	
+	@Override
+	public List<RubricStatistic> getRubricStatistics(EvaluationFormSession session) {
+		Form form = loadForm(session.getSurvey().getFormEntry());
+		List<RubricStatistic> statistics = new ArrayList<>();
+		SessionFilter sessionFilter = SessionFilterFactory.create(session);
+		for (AbstractElement element : form.getElements()) {
+			if (Rubric.TYPE.equals(element.getType())) {
+				Rubric rubric = (Rubric) element;
+				RubricStatistic statistic = getRubricStatistic(rubric, sessionFilter);
+				statistics.add(statistic);
+			}
+		}
+		return statistics;
 	}
 	
 	@Override

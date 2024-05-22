@@ -206,6 +206,21 @@ public class MaxScoreCumulatorTest {
 		public boolean isGradeMinMaxFromScale() {
 			return false;
 		}
+		
+		@Override
+		public boolean hasFormEvaluation() {
+			return false;
+		}
+		
+		@Override
+		public FormEvaluationScoreMode getFormEvaluationScoreMode() {
+			return null;
+		}
+
+		@Override
+		public String getFormEvaluationScoreScale() {
+			return null;
+		}
 
 		@Override
 		public Mode getPassedMode() {

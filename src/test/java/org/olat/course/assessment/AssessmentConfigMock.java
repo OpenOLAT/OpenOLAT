@@ -165,6 +165,21 @@ public class AssessmentConfigMock implements AssessmentConfig {
 	public void setGradeMinMaxFromScale(boolean gradeMinMaxFromScale) {
 		this.gradeMinMaxFromScale = gradeMinMaxFromScale;
 	}
+	
+	@Override
+	public boolean hasFormEvaluation() {
+		return false;
+	}
+	
+	@Override
+	public FormEvaluationScoreMode getFormEvaluationScoreMode() {
+		return null;
+	}
+
+	@Override
+	public String getFormEvaluationScoreScale() {
+		return null;
+	}
 
 	@Override
 	public Mode getPassedMode() {

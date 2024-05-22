@@ -229,6 +229,10 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			flc.getRootForm().setHideDirtyMarkingMessage(true);
 		}
 	}
+	
+	public void setSaveDisplayText(String text) {
+		saveLink.getComponent().setCustomDisplayText(text);
+	}
 
 	private void ajustFromSession() {
 		if (session == null)

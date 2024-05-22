@@ -213,7 +213,7 @@ public class GroupTaskConfigurationPage {
 		return this;
 	}
 	
-	public GroupTaskConfigurationPage setAssessmentOptions(Float minVal, Float maxVal, Float cutVal) {
+	public GroupTaskConfigurationPage setAssessmentOptions(float minVal, float maxVal, float cutVal) {
 		new AssessmentCEConfigurationPage(browser).setScoreAuto(minVal, maxVal, cutVal);
 		return this;
 	}

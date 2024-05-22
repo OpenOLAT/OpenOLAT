@@ -1499,7 +1499,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 					courseEntry, coachCourseEnv, assessedIdentity, true, assessmentCallback);
 		} else {
 			currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
-					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true, showTitle);
+					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true, true, true, showTitle);
 		}
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);

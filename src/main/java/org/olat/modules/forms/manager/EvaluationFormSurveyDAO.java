@@ -117,19 +117,19 @@ class EvaluationFormSurveyDAO {
 		return query.getResultList();
 	}
 
-	boolean hasSurvey(RepositoryEntryRef formEntrRef, String oresTypeName) {
+	boolean hasSurvey(RepositoryEntryRef formEntrRef, List<String> oresTypeNames) {
 		if (formEntrRef == null) return false;
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select survey.key");
 		sb.append("  from evaluationformsurvey as survey");
 		sb.and().append("survey.formEntry.key = :formEntryKey");
-		sb.and().append("survey.resName = :oresTypeName");
+		sb.and().append("survey.resName in (:oresTypeNames)");
 		
 		List<Long> keys = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("formEntryKey", formEntrRef.getKey())
-				.setParameter("oresTypeName", oresTypeName)
+				.setParameter("oresTypeNames", oresTypeNames)
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();

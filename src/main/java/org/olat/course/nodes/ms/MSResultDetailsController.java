@@ -37,6 +37,7 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -63,7 +64,8 @@ public class MSResultDetailsController extends BasicController {
 	private MSService msService;
 
 	public MSResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv, CourseNode courseNode) {
+			UserCourseEnvironment assessedUserCourseEnv, CourseNode courseNode,
+			EvaluationFormProvider evaluationFormProvider) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("result_details");
@@ -75,7 +77,7 @@ public class MSResultDetailsController extends BasicController {
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		UserNodeAuditManager auditManager = assessedUserCourseEnv.getCourseEnvironment().getAuditManager();
 		AuditEnv auditEnv = AuditEnv.of(auditManager , courseNode, assessedIdentity, getIdentity(), Role.coach);
-		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, assessedIdentity, auditEnv);
+		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, evaluationFormProvider, assessedIdentity, auditEnv);
 		
 		String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
 		

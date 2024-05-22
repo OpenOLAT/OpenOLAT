@@ -47,6 +47,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.RepositoryEntryReferenceProvider.SettingsContentProvider;
 import org.olat.repository.ui.author.CreateEntryController;
 import org.olat.repository.ui.author.ImportRepositoryEntryController;
 import org.olat.repository.ui.author.ImportURLRepositoryEntryController;
@@ -76,12 +77,14 @@ public class RepositoryEntryReferenceController extends BasicController {
 	private Link importUrlLink;
 	private Link replaceImportUrlLink;
 	private final Link editLink;
+	private final Link editSettingsLink;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchCtrl;
 	private CreateEntryController createCtrl;
 	private ImportRepositoryEntryController importCtrl;
 	private ImportURLRepositoryEntryController importUrlCtrl;
+	private Controller editSettingsCtrl;
 	
 	private RepositoryEntry repositoryEntry;
 	private final RepositoryEntryReferenceProvider referenceProvider;
@@ -214,6 +217,11 @@ public class RepositoryEntryReferenceController extends BasicController {
 		editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		editLink.setGhost(true);
 		
+		editSettingsLink = LinkFactory.createButton("edit.settings", mainVC, this);
+		editSettingsLink.setElementCssClass("o_sel_re_settings_edit");
+		editSettingsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+		editSettingsLink.setGhost(true);
+		
 		updateUI(ureq);
 	}
 
@@ -228,6 +236,11 @@ public class RepositoryEntryReferenceController extends BasicController {
 			referencePanel.setIconCssClass(referenceProvider.getIconCssClass(repositoryEntry));
 			referencePanel.setContent(referenceProvider.getReferenceContentProvider().getContent(repositoryEntry));
 			
+			SettingsContentProvider settingsProvider = referenceProvider.getSettingsContentProvider();
+			if(referenceProvider.hasSettings() && settingsProvider != null) {
+				referencePanel.setAdditionalContent(settingsProvider.getSettingsContent(repositoryEntry));
+			}
+			
 			replaceSelectLink.setEnabled(referenceProvider.isReplaceable(repositoryEntry));
 			
 			RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
@@ -235,7 +248,12 @@ public class RepositoryEntryReferenceController extends BasicController {
 				if (referenceProvider.isEditable(repositoryEntry, getIdentity())) {
 					referencePanel.addLink(editLink);
 				}
-			}
+				
+				if(referenceProvider.hasSettings() && settingsProvider != null
+						&& referenceProvider.isSettingsEditable(repositoryEntry, getIdentity())) {
+					referencePanel.addAdditionalLink(editSettingsLink);
+				}
+			}	
 		}
 	}
 
@@ -268,6 +286,8 @@ public class RepositoryEntryReferenceController extends BasicController {
 			doEditRepositoryEntry(ureq);
 		} else if(source == createCmp || (source instanceof Link link && link.getUserObject() instanceof RepositoryHandler)) {
 			doCreateRepositoryEntry(ureq, (RepositoryHandler)((Link)source).getUserObject());
+		} else if (source == editSettingsLink) {
+			doEditSettings(ureq);
 		}
 	}
 
@@ -325,6 +345,15 @@ public class RepositoryEntryReferenceController extends BasicController {
 				cmc.deactivate();
 				cleanUp();
 				showError("add.failed");
+			} else {
+				cmc.deactivate();
+				cleanUp();
+			}
+		} else if(source == editSettingsCtrl) {
+			if (event.equals(Event.DONE_EVENT)) {
+
+				cmc.deactivate();
+				cleanUp();
 			} else {
 				cmc.deactivate();
 				cleanUp();
@@ -435,5 +464,15 @@ public class RepositoryEntryReferenceController extends BasicController {
 			log.error("", e);
 		}
 	}
-
+	
+	private void doEditSettings(UserRequest ureq) {
+		editSettingsCtrl = referenceProvider.getSettingsContentProvider()
+				.getEditSettingsController(ureq, getWindowControl(), repositoryEntry);
+		listenTo(editSettingsCtrl);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editSettingsCtrl.getInitialComponent(), true, "");
+		listenTo(cmc);
+		cmc.activate();
+	}
 }

@@ -207,7 +207,7 @@ public class CheckListRunController extends FormBasicController implements Activ
 		
 		removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
-				assessmentEval, assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
+				assessmentEval, assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), null, panelInfo);
 		listenTo(assessmentParticipantViewCtrl);
 		layoutCont.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 		

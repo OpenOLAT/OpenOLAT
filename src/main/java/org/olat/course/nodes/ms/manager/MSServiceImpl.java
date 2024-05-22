@@ -21,7 +21,6 @@ package org.olat.course.nodes.ms.manager;
 
 import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +39,7 @@ import org.olat.course.nodes.ms.MinMax;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
@@ -80,25 +80,38 @@ public class MSServiceImpl implements MSService {
 	
 	@Override
 	public EvaluationFormSession getOrCreateSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent,
-			Identity assessedIdentity, AuditEnv auditEnv) {
-		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, assessedIdentity);
+			EvaluationFormProvider evaluationFormProvider, Identity assessedIdentity, AuditEnv auditEnv) {
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, evaluationFormProvider, assessedIdentity);
 		EvaluationFormSurvey survey = loadOrCreateSurvey(formEntry, surveyIdent);
-		EvaluationFormParticipation participation = loadOrCreateParticipation(survey);
+		EvaluationFormParticipation participation = loadOrCreateParticipation(survey, evaluationFormProvider);
 		return loadOrCreateSesssion(participation, auditEnv);
 	}
+	
+	@Override
+	public EvaluationFormSession getSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent,
+			EvaluationFormProvider evaluationFormProvider, Identity assessedIdentity) {
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, evaluationFormProvider, assessedIdentity);
+		EvaluationFormSurvey survey = loadOrCreateSurvey(formEntry, surveyIdent);
+		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(evaluationFormProvider.getEvaluationFormParticipationIdentifierType(), "1");
+		EvaluationFormParticipation loadedParticipation = evaluationFormManager.loadParticipationByIdentifier(survey, identifier);
+		if(loadedParticipation == null) {
+			return null;
+		}
+		return evaluationFormManager.loadSessionByParticipation(loadedParticipation);
+	}
 
-	private EvaluationFormSurveyIdentifier getSurveyIdentitfier(RepositoryEntry ores, String nodeIdent,
+	private EvaluationFormSurveyIdentifier getSurveyIdentitfier(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider,
 			Identity assessedIdentity) {
-		OLATResourceable msOres = getMsOlatResourceable(ores);
+		OLATResourceable msOres = getMsOlatResourceable(ores, evaluationFormProvider);
 		return of(msOres, nodeIdent, assessedIdentity.getKey().toString());
 	}
 
-	private EvaluationFormSurveyIdentifier getSurveysIdentifier(RepositoryEntry ores, String nodeIdent) {
-		return of(getMsOlatResourceable(ores), nodeIdent);
+	private EvaluationFormSurveyIdentifier getSurveysIdentifier(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider) {
+		return of(getMsOlatResourceable(ores, evaluationFormProvider), nodeIdent);
 	}
 
-	private OLATResourceable getMsOlatResourceable(RepositoryEntry ores) {
-		return OresHelper.createOLATResourceableInstance(SURVEY_ORES_TYPE_NAME, ores.getKey());
+	private OLATResourceable getMsOlatResourceable(RepositoryEntry ores, EvaluationFormProvider evaluationFormProvider) {
+		return OresHelper.createOLATResourceableInstance(evaluationFormProvider.getSurveyTypeName(), ores.getKey());
 	}
 	
 	private EvaluationFormSurvey loadOrCreateSurvey(RepositoryEntry formEntry, EvaluationFormSurveyIdentifier surveyIdent) {
@@ -109,9 +122,9 @@ public class MSServiceImpl implements MSService {
 		return survey;
 	}
 
-	private EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormSurvey survey) {
+	private EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormSurvey survey, EvaluationFormProvider evaluationFormProvider) {
 		// All coaches have to edit the same participation. So use the same identifier for all.
-		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier("ms-course-node", "1");
+		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(evaluationFormProvider.getEvaluationFormParticipationIdentifierType(), "1");
 		EvaluationFormParticipation loadedParticipation = evaluationFormManager.loadParticipationByIdentifier(survey, identifier);
 		if (loadedParticipation == null) {
 			loadedParticipation = evaluationFormManager.createParticipation(survey, identifier);
@@ -129,9 +142,9 @@ public class MSServiceImpl implements MSService {
 	}
 
 	@Override
-	public EvaluationFormSession getSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity,
-			EvaluationFormSessionStatus status) {
-		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, assessedIdentity);
+	public EvaluationFormSession getSession(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider,
+			Identity assessedIdentity, EvaluationFormSessionStatus status) {
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, evaluationFormProvider, assessedIdentity);
 		SessionFilter filter = SessionFilterFactory.create(surveyIdent, status);
 		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
 		return !sessions.isEmpty()? sessions.get(0): null;
@@ -157,27 +170,28 @@ public class MSServiceImpl implements MSService {
 	}
 
 	@Override
-	public boolean hasSessions(RepositoryEntry ores, String nodeIdent) {
-		return !evaluationFormManager.loadSurveys(getSurveysIdentifier(ores, nodeIdent)).isEmpty();
+	public boolean hasSessions(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider) {
+		return !evaluationFormManager.loadSurveys(getSurveysIdentifier(ores, nodeIdent, evaluationFormProvider)).isEmpty();
 	}
 
 	@Override
-	public List<EvaluationFormSession> getSessions(RepositoryEntry ores, String nodeIdent) {
-		SessionFilter filter = SessionFilterFactory.create(getSurveysIdentifier(ores, nodeIdent));
+	public List<EvaluationFormSession> getSessions(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider) {
+		SessionFilter filter = SessionFilterFactory.create(getSurveysIdentifier(ores, nodeIdent, evaluationFormProvider));
 		return evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
 	}
 
 	@Override
-	public void deleteSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity, AuditEnv auditEnv) {
-		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, assessedIdentity);	
+	public void deleteSession(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider,
+			Identity assessedIdentity, AuditEnv auditEnv) {
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, evaluationFormProvider, assessedIdentity);	
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
 		evaluationFormManager.deleteSurvey(survey);
 		logAudit(auditEnv, "Evaluation deleted");
 	}
 
 	@Override
-	public void deleteSessions(RepositoryEntry ores, String nodeIdent) {
-		List<EvaluationFormSurvey> surveys = evaluationFormManager.loadSurveys(getSurveysIdentifier(ores, nodeIdent));
+	public void deleteSessions(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider) {
+		List<EvaluationFormSurvey> surveys = evaluationFormManager.loadSurveys(getSurveysIdentifier(ores, nodeIdent, evaluationFormProvider));
 		for (EvaluationFormSurvey survey : surveys) {
 			evaluationFormManager.deleteSurvey(survey);
 		}
@@ -185,22 +199,12 @@ public class MSServiceImpl implements MSService {
 
 	@Override
 	public List<RubricStatistic> getRubricStatistics(EvaluationFormSession session) {
-		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());
-		List<RubricStatistic> statistics = new ArrayList<>();
-		SessionFilter sessionFilter = SessionFilterFactory.create(session);
-		for (AbstractElement element : form.getElements()) {
-			if (Rubric.TYPE.equals(element.getType())) {
-				Rubric rubric = (Rubric) element;
-				RubricStatistic statistic = evaluationFormManager.getRubricStatistic(rubric, sessionFilter);
-				statistics.add(statistic);
-			}
-		}
-		return statistics;
+		return evaluationFormManager.getRubricStatistics(session);
 	}
 	
 	@Override
-	public Map<String, Map<Rubric, RubricStatistic>> getRubricStatistics(RepositoryEntry ores, String nodeIdent, Form form) {
-		List<EvaluationFormSession> sessions = getSessions(ores, nodeIdent);
+	public Map<String, Map<Rubric, RubricStatistic>> getRubricStatistics(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider, Form form) {
+		List<EvaluationFormSession> sessions = getSessions(ores, nodeIdent, evaluationFormProvider);
 		Map<String, EvaluationFormSession> identToSesssion = sessions.stream()
 				.collect(Collectors.toMap(
 						s -> s.getSurvey().getIdentifier().getSubident2(),
@@ -215,7 +219,7 @@ public class MSServiceImpl implements MSService {
 					.flatMap(r -> r.getSliders().stream())
 					.map(Slider::getId)
 					.collect(Collectors.toList());
-			SessionFilter filter = SessionFilterFactory.create(getSurveysIdentifier(ores, nodeIdent));
+			SessionFilter filter = SessionFilterFactory.create(getSurveysIdentifier(ores, nodeIdent, evaluationFormProvider));
 			List<EvaluationFormResponse> responses = evaluationFormManager.getResponses(responseIdentifiers, filter , Limit.all());
 			Map<EvaluationFormSession, List<EvaluationFormResponse>> sessionToResponses = responses.stream()
 					.collect(Collectors.groupingBy(EvaluationFormResponse::getSession));

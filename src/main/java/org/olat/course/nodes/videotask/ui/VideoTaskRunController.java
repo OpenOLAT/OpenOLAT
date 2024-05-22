@@ -169,7 +169,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		}
 		
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, wControl, assessmentEval,
-				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
+				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), null, panelInfo);
 		listenTo(assessmentParticipantViewCtrl);
 		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
 			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
@@ -529,7 +529,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		assessmentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval,
-				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
+				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), null, panelInfo);
 		listenTo(assessmentParticipantViewCtrl);
 		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
 			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());

@@ -77,7 +77,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.co.ContactFormController;
-import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -519,9 +518,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			listenTo(groupGradingCtrl);
 			mainVC.put("grading", groupGradingCtrl.getInitialComponent());
 		} else if(assessedIdentity != null) {
-			OLATResource courseOres = courseEntry.getOlatResource();
 			participantGradingCtrl = new GTACoachedParticipantGradingController(ureq, getWindowControl(),
-					courseOres, gtaNode, assignedTask, coachCourseEnv, assessedIdentity);
+					gtaNode, assignedTask, coachCourseEnv, assessedIdentity);
 			listenTo(participantGradingCtrl);
 			mainVC.put("grading", participantGradingCtrl.getInitialComponent());
 		}

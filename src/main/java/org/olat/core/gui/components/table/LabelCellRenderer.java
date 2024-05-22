@@ -38,6 +38,10 @@ public abstract class LabelCellRenderer implements FlexiCellRenderer {
 	protected boolean isNullRendered() {
 		return false;
 	}
+	
+	protected boolean isLabelLight() {
+		return true;
+	}
 
 	protected abstract String getCellValue(Object val, Translator translator);
 
@@ -79,7 +83,7 @@ public abstract class LabelCellRenderer implements FlexiCellRenderer {
 				|| StringHelper.containsNonWhitespace(iconCssClass)
 				|| StringHelper.containsNonWhitespace(value)) {
 			target.append("<div>");
-			target.append("<span class='o_labeled_light");
+			target.append("<span class='o_labeled").append("_light", isLabelLight());
 			if (StringHelper.containsNonWhitespace(elementCssClass)) {
 				target.append(" ").append(elementCssClass);
 			}

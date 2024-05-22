@@ -38,6 +38,11 @@ public interface AssessmentConfig {
 		automatic	
 	}
 	
+	public enum FormEvaluationScoreMode {
+		avg,
+		sum
+	}
+	
 	/**
 	 * Real assessments are in efficiency statements and are shown in the assessment tool.
 	 * 
@@ -119,6 +124,21 @@ public interface AssessmentConfig {
 	 * @return if the produced passed can be overriden by the coach
 	 */
 	public boolean isPassedOverridable();
+	
+	/**
+	 * @return true if the course element has an evaluation based on form and rubrics
+	 */
+	public boolean hasFormEvaluation();
+	
+	/**
+	 * @return The mode to calculate the score (sum or average) of the rubrics
+	 */
+	public FormEvaluationScoreMode getFormEvaluationScoreMode();
+	
+	/**
+	 * @return The scale factor to multiple the score of the rubrics
+	 */
+	public String getFormEvaluationScoreScale();
 	
 	/**
 	 * The user visibility is initialized when the course node gets assessment data

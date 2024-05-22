@@ -17,5 +17,8 @@
 	#if($r.available("group.assessment"))
 		$r.render("group.assessment")
 	#end
+	#if($r.available("tool.stats"))
+		$r.render("tool.stats")
+	#end
 </div>
 $r.render("table")

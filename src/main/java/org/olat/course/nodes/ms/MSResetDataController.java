@@ -45,6 +45,7 @@ import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,6 +64,7 @@ public class MSResetDataController extends FormBasicController {
 	private final CourseEnvironment courseEnv;
 	private final MSCourseNode courseNode;
 	private final List<Identity> identities;
+	private final EvaluationFormProvider evaluationFormProvider;
 	
 	@Autowired
 	private MSService msService;
@@ -76,6 +78,7 @@ public class MSResetDataController extends FormBasicController {
 		super(ureq, wControl, "delete_data_confirmation");
 		this.courseEnv = courseEnv;
 		this.courseNode = courseNode;
+		evaluationFormProvider = MSCourseNode.getEvaluationFormProvider();
 		
 		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
 			identities = ScoreAccountingHelper.loadUsers(courseEnv);
@@ -129,7 +132,7 @@ public class MSResetDataController extends FormBasicController {
 			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, uce, getIdentity(), false,
 					Role.coach);
 			AuditEnv auditEnv = AuditEnv.of(auditManager, courseNode, identity, getIdentity(), Role.coach);
-			msService.deleteSession(courseEntry, courseNode.getIdent(), identity, auditEnv);
+			msService.deleteSession(courseEntry, courseNode.getIdent(), evaluationFormProvider, identity, auditEnv);
 		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);

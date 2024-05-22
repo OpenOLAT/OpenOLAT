@@ -22,9 +22,11 @@ package org.olat.course.nodes.gta;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.ModuleAssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -91,6 +93,12 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	@Override
 	public boolean hasStatus() {
 		return true; // Task Course node has always a status-field
+	}
+	
+	@Override
+	public boolean hasFormEvaluation() {
+		String formSoftKey = MSCourseNode.getEvaluationFormReference(config);
+		return StringHelper.containsNonWhitespace(formSoftKey);
 	}
 
 	@Override

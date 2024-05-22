@@ -95,8 +95,28 @@ public class IconPanelRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("</div>");
 		}
-		
 		sb.append("</div>");
+		
+		// Settings column
+		if(panel.getAdditionalContent() != null) {
+			sb.append("<div class='o_icon_panel_content_col o_icon_panel_settings_col'>");
+			if (panel.getAdditionalContent() != null) {
+				renderer.render(sb, panel.getAdditionalContent(), args);
+			}
+			// Links
+			if (!panel.getAdditionalLinks().isEmpty()) {
+				sb.append("<div class='o_icon_panel_links pull-right'>");
+				for (Component link : panel.getAdditionalLinks()) {
+					if (link.isVisible()) {
+						renderer.render(sb, link, args);
+					}
+				}
+				sb.append("</div>");
+			}
+			
+			sb.append("</div>");
+		}
+		
 		sb.append("</div>");
 		
 		panel.setDirty(false);

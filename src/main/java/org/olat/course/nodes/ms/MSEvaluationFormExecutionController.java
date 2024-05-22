@@ -41,6 +41,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
@@ -76,7 +77,8 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	private MSService msService;
 
 	public MSEvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv, CourseNode msCourseNode) {
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv, CourseNode msCourseNode,
+			EvaluationFormProvider evaluationFormProvider) {
 		super(ureq, wControl);
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.coachCourseEnv = coachCourseEnv;
@@ -91,7 +93,7 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 		RepositoryEntry formEntry = MSCourseNode.getEvaluationForm(config);
 		RepositoryEntry ores = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		String nodeIdent = msCourseNode.getIdent();
-		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, assessedIdentity, auditEnv);
+		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, evaluationFormProvider, assessedIdentity, auditEnv);
 		
 		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
 		AssessmentEntry aEntry = am.getAssessmentEntry(msCourseNode, assessedIdentity);
@@ -102,8 +104,9 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 		editLink = LinkFactory.createButton("evaluation.edit", mainVC, this);
 		updateUI(ureq);
 		
-		stackPanel.addListener(this);
-		
+		if(stackPanel != null) {
+			stackPanel.addListener(this);
+		}
 		putInitialPanel(mainVC);
 	}
 
@@ -192,8 +195,7 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 
 	private void doSetAssessmentScore() {
 		session = msService.getSession(session);
-		if (courseNode instanceof MSCourseNode) {
-			MSCourseNode msCourseNode = (MSCourseNode) courseNode;
+		if (courseNode instanceof MSCourseNode msCourseNode) {
 			msCourseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, Role.coach, session, getLocale());
 		}
 		updateUIReopenAndEdit();
@@ -204,6 +206,8 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 		
 		editExecutionCtrl = new MSEvaluationBackController(ureq, getWindowControl(), session);
 		listenTo(editExecutionCtrl);
-		stackPanel.pushController(translate("evaluation.edit.crumb"), editExecutionCtrl);
+		if(stackPanel != null) {
+			stackPanel.pushController(translate("evaluation.edit.crumb"), editExecutionCtrl);
+		}
 	}
 }

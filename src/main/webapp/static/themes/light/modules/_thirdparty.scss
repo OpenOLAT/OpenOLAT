@@ -225,6 +225,24 @@
 			max-height: 95%;
 		}
 	}
+	
+	.o_lightbox_modal_form {
+		overflow-x: hidden;
+		overflow-y: auto;
+		width: calc(100vw - 60px);
+		max-height: calc(96vh - 40px);
+		padding: 15px 30px 15px 30px;
+		
+		background-color: white;
+		border: 1px solid $modal-content-border-color;
+		border-radius: $border-radius-large;
+	}
+}
+
+@media (min-width: $screen-md-min) {
+	.basicLightbox .o_lightbox_modal_form {
+    	width: $modal-lg;
+    }
 }
 
 /* Above most modals and callouts */

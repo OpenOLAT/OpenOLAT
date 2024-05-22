@@ -4,22 +4,41 @@
 	</div>
 	<table class="table">
 	<tbody>
-		<tr>
+		<tr aria-hidden="true">
 			<th></th>
 			<td></td>
 		</tr>
 		<tr>
-			<th>$r.translate("status")</th>
-			<td>$status</td>
+			<th id="oo-assessment-entry-status">$r.translate("status")</th>
+			<td aria-labelledby="oo-assessment-entry-status">$status</td>
 		</tr>
 		<tr>
-			<th>$r.translate("user.visibility")</th>
-			<td>$userVisibility</td>
+			<th id="oo-assessment-entry-visibility">$r.translate("user.visibility")</th>
+			<td aria-labelledby="oo-assessment-entry-visibility">$userVisibility</td>
 		</tr>
-		<tr>
+		<tr aria-hidden="true">
 			<th></th>
 			<td></td>
 		</tr>
+
+		#if($hasFormEvaluation)
+		<tr class="o_table_part">
+			<th colspan="2">$r.translate("form.evaluation.title")</th>
+		</tr>
+		<tr>
+			<th id="oo-form-evaluation-score">$r.translate("form.evaluation.score")</th>
+			<td aria-labelledby="oo-form-evaluation-score">$formEvaluationScore</td>
+		</tr>
+		<tr>
+			<th id="oo-form-evaluation-show">$r.translate("form.evaluation.title.short")</th>
+			<td aria-labelledby="oo-form-evaluation-show">$r.render("form.evaluation.show")</td>
+		</tr>
+		<tr aria-hidden="true">
+			<th></th>
+			<td></td>
+		</tr>
+		#end
+		
 		<tr class="o_table_part">
 			<th>$r.translate("personal.title")</th>
 			<td><span class="o_hidden">$userVisibilityInverted</span></td>
@@ -27,8 +46,8 @@
 		
 		#if ($hasAttemptsField)
 			<tr>
-				<th>$r.translate("form.attempts")</th>
-				<td>
+				<th id="oo-assessment-entry-attempts">$r.translate("form.attempts")</th>
+				<td aria-labelledby="oo-assessment-entry-attempts">
 					#if ($r.isNotEmpty($attempts))
 						$attempts
 						#if ($hasMaxAttemptsField)
@@ -42,13 +61,13 @@
 		#if ($hasScoreField)
 			#if($scoreMinMax)
 				<tr>
-					<th>$r.translate("score.min.max")</th>
-					<td>$scoreMinMax</td>
+					<th id="oo-assessment-entry-min-max-score">$r.translate("score.min.max")</th>
+					<td aria-labelledby="oo-assessment-entry-min-max-score">$scoreMinMax</td>
 				</tr>
 			#end
 			<tr class="o_score">
-				<th>$r.translate("form.score")</th>
-				<td>
+				<th id="oo-assessment-entry-score">$r.translate("form.score")</th>
+				<td aria-labelledby="oo-assessment-entry-score">
 					#if($r.isNotEmpty($score))
 						$score
 					#end
@@ -56,8 +75,8 @@
 			</tr>
 			#if($r.isNotEmpty($scoreWeightLabel))
 				<tr class="o_weighted_score">
-					<th>$scoreWeightLabel</th>
-					<td>#if($r.isNotEmpty($weightedScore))
+					<th id="oo-assessment-entry-weighted-score">$scoreWeightLabel</th>
+					<td aria-labelledby="oo-assessment-entry-weighted-score">#if($r.isNotEmpty($weightedScore))
 							$weightedScore
 						#end
 					</td>
@@ -67,8 +86,8 @@
 		
 		#if($hasGradeField)
 		<tr class="o_grade">
-			<th scope="row">$gradeLabel</th>
-			<td>
+			<th id="oo-assessment-entry-grade">$gradeLabel</th>
+			<td aria-labelledby="oo-assessment-entry-grade">
 				#if($grade)
 					$grade
 				#end
@@ -79,13 +98,13 @@
 		#if ($hasPassedField)
 			#if ($passedCutValue)
 				<tr class="o_cutval">
-					<th>$r.translateWithPackage("org.olat.course.nodes.ms", "passed.cut")</th>
-					<td>$passedCutValue</td>
+					<th id="oo-assessment-entry-cut-value">$r.translateWithPackage("org.olat.course.nodes.ms", "passed.cut")</th>
+					<td aria-labelledby="oo-assessment-entry-cut-value">$passedCutValue</td>
 				</tr>
 			#end
 			<tr class="o_state #if($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
-				<th>$r.translate("form.passed")</th>
-				<td>
+				<th id="oo-assessment-entry-passed">$r.translate("form.passed")</th>
+				<td aria-labelledby="oo-assessment-entry-passed">
 					#if($hasPassedValue && $passed)
 						<i class="o_icon o_icon_passed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
 					#elseif($hasPassedValue && !$passed)
@@ -99,8 +118,8 @@
 		
 		#if ($hasCommentField)
 			<tr>
-				<th>$r.translate("form.usercomment")</th>
-				<td>
+				<th id="oo-assessment-entry-user-comment">$r.translate("form.usercomment")</th>
+				<td aria-labelledby="oo-assessment-entry-user-comment">
 					#if ($r.isNotEmpty($comment))
 						$comment
 					#end
@@ -110,21 +129,20 @@
 		
 		#if ($hasDocumentField)
 			<tr>
-				<th>$r.translate("assessment.documents.title")</th>
-				<td>$r.render("docs")</td>
+				<th id="oo-assessment-entry-docs">$r.translate("assessment.documents.title")</th>
+				<td aria-labelledby="oo-assessment-entry-docs">$r.render("docs")</td>
 			</tr>
 		#end
 		
 		<tr>
-			<th>$r.translate("form.coachcomment")</th>
-			<td>
+			<th id="oo-assessment-entry-coach-comment">$r.translate("form.coachcomment")</th>
+			<td aria-labelledby="oo-assessment-entry-coach-comment">
 				#if ($r.isNotEmpty($coachComment))
 					$coachComment
 				#end
 			</td>
 		</tr>
-		
-		<tr>
+		<tr aria-hidden="true">
 			<th></th>
 			<td></td>
 		</tr>
@@ -139,7 +157,6 @@
 			$r.render("user.visibility.set.visible")
 		#end
 	</div>
-	
 </div>
 
 #if($r.available("participantView"))

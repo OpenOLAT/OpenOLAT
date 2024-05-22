@@ -200,6 +200,21 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean hasFormEvaluation() {
+		return false;
+	}
+	
+	@Override
+	public FormEvaluationScoreMode getFormEvaluationScoreMode() {
+		return null;
+	}
+	
+	@Override
+	public String getFormEvaluationScoreScale() {
+		return null;
+	}
+
+	@Override
 	public Mode getPassedMode() {
 		Mode mode = Mode.none;
 		

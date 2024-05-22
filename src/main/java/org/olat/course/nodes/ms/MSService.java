@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
@@ -39,13 +40,14 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 public interface MSService {
-	
-	String SURVEY_ORES_TYPE_NAME = "course-ms";
 
-	EvaluationFormSession getOrCreateSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent,
+	EvaluationFormSession getOrCreateSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider,
 			Identity assessedIdentity, AuditEnv auditEnv);
+	
+	EvaluationFormSession getSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider,
+			Identity assessedIdentity);
 
-	EvaluationFormSession getSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity,
+	EvaluationFormSession getSession(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider, Identity assessedIdentity,
 			EvaluationFormSessionStatus status);
 
 	EvaluationFormSession getSession(EvaluationFormSessionRef sessionRef);
@@ -54,17 +56,18 @@ public interface MSService {
 
 	EvaluationFormSession reopenSession(EvaluationFormSession session, AuditEnv auditEnv);
 
-	boolean hasSessions(RepositoryEntry ores, String nodeIdent);
+	boolean hasSessions(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider);
 	
-	List<EvaluationFormSession> getSessions(RepositoryEntry ores, String nodeIdent);
+	List<EvaluationFormSession> getSessions(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider);
 	
-	void deleteSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity, AuditEnv auditEnv);
+	void deleteSession(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider,
+			Identity assessedIdentity, AuditEnv auditEnv);
 
-	void deleteSessions(RepositoryEntry ores, String nodeIdent);
+	void deleteSessions(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider);
 	
 	List<RubricStatistic> getRubricStatistics(EvaluationFormSession session);
 	
-	Map<String, Map<Rubric, RubricStatistic>> getRubricStatistics(RepositoryEntry ores, String nodeIdent, Form form);
+	Map<String, Map<Rubric, RubricStatistic>> getRubricStatistics(RepositoryEntry ores, String nodeIdent, EvaluationFormProvider evaluationFormProvider, Form form);
 	
 	/**
 	 * Calculates the possible minimum and maximum sum of all rubrics in the

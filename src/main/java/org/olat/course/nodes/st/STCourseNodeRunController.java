@@ -124,7 +124,7 @@ public class STCourseNodeRunController extends BasicController {
 		if (userCourseEnv.isParticipant() && (hasScore || hasPassed)) {
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), se,
-					assessmentConfig, null, gradeSystem(userCourseEnv, stCourseNode), null);
+					assessmentConfig, null, gradeSystem(userCourseEnv, stCourseNode), null, null);
 			listenTo(assessmentParticipantViewCtrl);
 			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 			

@@ -51,6 +51,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.archiver.ArchiveResource;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessedIdentityLargeInfosController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ArchiveOptions;
@@ -62,10 +64,12 @@ import org.olat.course.nodes.gta.ui.GTACoachedParticipantListController.MakedEve
 import org.olat.course.nodes.gta.ui.component.DownloadDocumentMapper;
 import org.olat.course.nodes.gta.ui.events.SelectBusinessGroupEvent;
 import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
+import org.olat.course.nodes.ms.MSStatisticController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
@@ -86,6 +90,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private ContextualSubscriptionController contextualSubscriptionCtr;
 	
 	private final Link backLink;
+	private final Link statsLink;
 	private final Link downloadButton;
 	private final Link nextIdentityLink;
 	private final Link previousIdentityLink;
@@ -99,7 +104,10 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
 	private final UserCourseEnvironment coachCourseEnv;
+	private final AssessmentConfig assessmentConfig;
 	private boolean markedOnly = false;
+	
+	private MSStatisticController statsCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -109,6 +117,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public GTACoachSelectionController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode) {
@@ -116,6 +126,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		this.gtaNode = gtaNode;
 		this.coachCourseEnv = coachCourseEnv;
 		this.courseEnv = coachCourseEnv.getCourseEnvironment();
+		assessmentConfig = courseAssessmentService
+				.getAssessmentConfig(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
 		
 		mainVC = createVelocityContainer("coach_selection");
 		backLink = LinkFactory.createLinkBack(mainVC, this);
@@ -135,6 +147,11 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		downloadButton.setTranslator(getTranslator());
 		downloadButton.setVisible(isDownloadAvailable());
 		
+		statsLink = LinkFactory.createButton("tool.stats", mainVC, this);
+		statsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
+		statsLink.setVisible(assessmentConfig.hasAssessmentForm()
+				&& GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE)));
+
 		assessedIdentityStackPanel = new TooledStackedPanel("gta-assessed-identity-stack", getTranslator(), this);
 		assessedIdentityStackPanel.setNeverDisposeRootController(true);
 		assessedIdentityStackPanel.setInvisibleCrumb(0);
@@ -285,6 +302,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			doNextIdentity(ureq);
 		} else if(previousIdentityLink == source) {
 			doPreviousIdentity(ureq);
+		} else if(statsLink == source) {
+			doLaunchStatistics(ureq);
 		} else if(assessedIdentityStackPanel == source) {
 			if(event instanceof PopEvent) {
 				back(ureq);
@@ -314,6 +333,13 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			mainVC.remove(coachAssignmentListCtrl.getInitialComponent());
 			removeAsListenerAndDispose(coachAssignmentListCtrl);
 			coachAssignmentListCtrl = null;
+		}
+		if(statsCtrl != null) {
+			assessedIdentityStackPanel.popController(statsCtrl);
+			mainVC.remove("selectionStack");
+			mainVC.remove(statsCtrl.getInitialComponent());
+			removeAsListenerAndDispose(statsCtrl);
+			statsCtrl = null;
 		}
 		backLink.setVisible(false);
 		if (participantListCtrl != null) {
@@ -440,6 +466,20 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		nextIdentityLink.setEnabled(index + 1 < numOfRows);
 
 		return (Activateable2)coachingCtrl;
+	}
+	
+	private void doLaunchStatistics(UserRequest ureq) {
+		AssessmentToolOptions options = new AssessmentToolOptions();
+		List<Identity> assessedIdentities = participantListCtrl.getAssessableIdentities();
+		options.setIdentities(assessedIdentities);
+
+		statsCtrl = new MSStatisticController(ureq, getWindowControl(), courseEnv, options,
+				gtaNode, GTACourseNode.getEvaluationFormProvider());
+		listenTo(statsCtrl);
+		
+		assessedIdentityStackPanel.pushController(translate("tool.stats"), statsCtrl);
+		mainVC.put("selectionStack", assessedIdentityStackPanel);
+		assessedIdentityStackPanel.getToolBar().setVisible(true);
 	}
 	
 	private class GTAAssessedBusinessGroupController extends BasicController implements Activateable2 {

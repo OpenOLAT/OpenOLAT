@@ -100,4 +100,18 @@ public class CourseNodeReferenceProvider implements RepositoryEntryReferenceProv
 		return true;
 	}
 
+	@Override
+	public boolean hasSettings() {
+		return false;
+	}
+
+	@Override
+	public boolean isSettingsEditable(RepositoryEntry repositoryEntry, Identity identity) {
+		return isEditable(repositoryEntry, identity);
+	}
+
+	@Override
+	public SettingsContentProvider getSettingsContentProvider() {
+		return null;
+	}
 }

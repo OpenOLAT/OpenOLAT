@@ -21,8 +21,11 @@ package org.olat.repository.ui;
 
 import java.util.List;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
 
@@ -54,4 +57,19 @@ public interface RepositoryEntryReferenceProvider {
 		
 	}
 	
+	public boolean hasSettings();
+
+	public boolean isSettingsEditable(RepositoryEntry repositoryEntry, Identity identity);
+	
+	public SettingsContentProvider getSettingsContentProvider();
+	
+	public static interface SettingsContentProvider {
+		
+		public Component getSettingsContent(RepositoryEntry repositoryEntry);
+		
+		public void refreshSettings(Component cmp, RepositoryEntry repositoryEntry);
+		
+		public Controller getEditSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry);
+		
+	}
 }

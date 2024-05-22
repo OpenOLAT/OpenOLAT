@@ -17,6 +17,9 @@
 		#if($r.available("bulk.download.title"))
 			$r.render("bulk.download.title")
 		#end
+		#if($r.available("tool.stats"))
+			$r.render("tool.stats")
+		#end
 		#if($r.available("contextualSubscription"))
 			<div style="display:inline-block;">$r.render("contextualSubscription")</div>
 		#end

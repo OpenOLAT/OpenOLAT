@@ -21,6 +21,7 @@ package org.olat.course.nodes.ms;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.ModuleAssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -76,6 +77,13 @@ public class MSAssessmentConfig extends ModuleAssessmentConfig {
 		}
 		return super.getPassedMode();
 	}
+	
+	@Override
+	public boolean hasFormEvaluation() {
+		String formSoftKey = MSCourseNode.getEvaluationFormReference(config);
+		return StringHelper.containsNonWhitespace(formSoftKey)
+				&& config.getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
+	}
 
 	@Override
 	public boolean hasAttempts() {
@@ -105,7 +113,7 @@ public class MSAssessmentConfig extends ModuleAssessmentConfig {
 
 	@Override
 	public boolean hasEditableDetails() {
-		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
+		return false;//config.getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
 	}
 
 }

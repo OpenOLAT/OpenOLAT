@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.formEvaluation;
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
@@ -67,9 +69,12 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,8 +91,11 @@ public class AssessmentViewController extends BasicController implements Assessm
 	private Link reopenLink;
 	private Link userVisibilityVisibleLink;
 	private Link userVisibilityHiddenLink;
+	private Link showFormEvaluationLink;
 	
 	private Controller docEditorCtrl;
+	private LightboxController lightboxCtrl;
+	private Controller evaluationFormViewCtrl;
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 
 	private int counter = 0;
@@ -132,6 +140,10 @@ public class AssessmentViewController extends BasicController implements Assessm
 		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");
 		reopenLink.setIconLeftCSS("o_icon o_icon_status_in_review");
 		reopenLink.setVisible(!coachCourseEnv.isCourseReadOnly());
+		
+		showFormEvaluationLink = LinkFactory.createLink("form.evaluation.show", mainVC, this);
+		showFormEvaluationLink.setElementCssClass("o_sel_assessment_form_evaluation_show");
+		showFormEvaluationLink.setVisible(assessmentConfig.hasFormEvaluation());
 		
 		updateUserVisibilityUI();
 		
@@ -194,6 +206,7 @@ public class AssessmentViewController extends BasicController implements Assessm
 		}
 		mainVC.contextPut("hasCommentField", assessmentConfig.hasComment());
 		mainVC.contextPut("hasDocumentField", assessmentConfig.hasIndividualAsssessmentDocuments());
+		mainVC.contextPut("hasFormEvaluation", assessmentConfig.hasFormEvaluation());	
 	}
 
 	private void putAssessmentDataToVC(UserRequest ureq) {
@@ -218,7 +231,10 @@ public class AssessmentViewController extends BasicController implements Assessm
 		// Hack to avoid change of the column width when switching user visibility
 		Boolean userVisibilityInverted = assessmentEntry.getUserVisibility() != null && assessmentEntry.getUserVisibility().booleanValue()? Boolean.FALSE: Boolean.TRUE;
 		mainVC.contextPut("userVisibilityInverted", new UserVisibilityCellRenderer(true).render(userVisibilityInverted, getTranslator()));
-
+		
+		String formEvaluationScore = assessmentConfig.hasFormEvaluation() ? getFormEvaluationScore() : "-";
+		mainVC.contextPut("formEvaluationScore", formEvaluationScore);
+		
 		String rawComment = assessmentEntry.getComment();
 		if (assessmentConfig.hasComment()) {
 			StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
@@ -241,6 +257,20 @@ public class AssessmentViewController extends BasicController implements Assessm
 			docsVC.contextPut("documents", wrappers);
 			mainVC.put("docs", docsVC);
 		}
+	}
+	
+	private String getFormEvaluationScore() {
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		EvaluationFormSession session = courseAssessmentService.getSession(courseEntry, courseNode, assessedIdentity);
+		EvaluationFormSessionStatus evaluationFormStatus = session == null ? null : session.getEvaluationFormSessionStatus();
+		if(evaluationFormStatus == EvaluationFormSessionStatus.done) {
+			Float evaluationScore = courseAssessmentService.getEvaluationScore(session, courseEntry, courseNode);
+			if(evaluationScore != null) {
+				return AssessmentHelper.getRoundedScore(evaluationScore);
+			}
+		}
+		return "-";
 	}
 	
 	private DocumentWrapper createDocumentWrapper(VFSLeaf document, VelocityContainer docsVC) {
@@ -284,7 +314,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 		removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
 				AssessmentEvaluation.toAssessmentEvaluation(assessmentEntry, assessmentConfig), assessmentConfig, this,
-				gradeSystem(coachCourseEnv, courseNode), AssessmentEditController.PANEL_INFO);
+				gradeSystem(coachCourseEnv, courseNode), formEvaluation(assessedUserCourseEnv, courseNode, assessmentConfig),
+				AssessmentEditController.PANEL_INFO);
 		assessmentParticipantViewCtrl.setTitle(translate("performance.summary.preview"));
 		listenTo(assessmentParticipantViewCtrl);
 		mainVC.put("participantView", assessmentParticipantViewCtrl.getInitialComponent());
@@ -302,14 +333,18 @@ public class AssessmentViewController extends BasicController implements Assessm
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == docEditorCtrl) {
+		if(source == docEditorCtrl || source == evaluationFormViewCtrl || source == lightboxCtrl) {
 			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(evaluationFormViewCtrl);
 		removeAsListenerAndDispose(docEditorCtrl);
+		removeAsListenerAndDispose(lightboxCtrl);
+		evaluationFormViewCtrl = null;
 		docEditorCtrl = null;
+		lightboxCtrl = null;
 	}
 
 	@Override
@@ -320,6 +355,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 			doSetUserVisibility(ureq, Boolean.FALSE);
 		} else if (source == reopenLink) {
 			doReopen(ureq);
+		} else if(source == showFormEvaluationLink) {
+			doShowFormEvaluation(ureq);
 		} else if(source instanceof Link link && link.getUserObject() instanceof DocumentWrapper wrapper) {
 			if("download".equals(link.getCommand())) {
 				ureq.getDispatchResult()
@@ -365,5 +402,17 @@ public class AssessmentViewController extends BasicController implements Assessm
 		
 		courseAssessmentService.updateScoreEvaluation(courseNode, eval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_REOPEN, false));
+	}
+	
+	private void doShowFormEvaluation(UserRequest ureq) {
+		removeAsListenerAndDispose(evaluationFormViewCtrl);
+
+		evaluationFormViewCtrl = courseAssessmentService.getEvaluationFormController(ureq, getWindowControl(),
+				courseNode, coachCourseEnv, assessedUserCourseEnv, false, false);
+		listenTo(evaluationFormViewCtrl);
+
+		lightboxCtrl = new LightboxController(ureq, getWindowControl(), evaluationFormViewCtrl);
+		listenTo(lightboxCtrl);
+		lightboxCtrl.activate();
 	}
 }

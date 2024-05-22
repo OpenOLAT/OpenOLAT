@@ -154,6 +154,21 @@ public class STAssessmentConfig implements AssessmentConfig {
 	public boolean isGradeMinMaxFromScale() {
 		return true;
 	}
+	
+	@Override
+	public boolean hasFormEvaluation() {
+		return false;
+	}
+	
+	@Override
+	public FormEvaluationScoreMode getFormEvaluationScoreMode() {
+		return null;
+	}
+
+	@Override
+	public String getFormEvaluationScoreScale() {
+		return null;
+	}
 
 	@Override
 	public Mode getPassedMode() {

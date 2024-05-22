@@ -251,7 +251,8 @@ public class ScormRunController extends BasicController implements GenericEventL
 		if (isAssessable) {
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 			AssessmentEvaluation assessmentEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
-			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig, null, null, null);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig,
+					null, null, null, null);
 			listenTo(assessmentParticipantViewCtrl);
 			startPage.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 			

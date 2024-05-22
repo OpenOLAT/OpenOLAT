@@ -658,7 +658,7 @@ ul.o_certificates li {
 	row-gap: 10px;
 	grid-template-columns: 50px auto 60px;
 	padding: 0 $o-export-area-rowelem-space-md $o-export-area-rowelem-space-md $o-export-area-rowelem-space-md;
-	border-bottom: 1px solid $legend-border-color;;
+	border-bottom: 1px solid $legend-border-color;
 	
 	.o_achievement_type {
 		display: grid;
@@ -826,7 +826,7 @@ ul.o_certificates li {
 	dl {
 		dt {
 			&:first-letter { 
-				font-size: ceil(($font-size-base * 1.5));;
+				font-size: ceil(($font-size-base * 1.5));
 			}
 			small {
 				color: $text-muted;
@@ -1185,6 +1185,18 @@ div.o_reminder_custom_email {
 		}
 		>.o_cmds {
 			padding-right: 15px;
+		}
+
+		~ .o_icon_panel_content_col {
+		
+			&::before {
+				content: ' ';
+				width: 0px;
+				height: 100%;
+				margin: 0 0 0 -15px;
+				border-left : $o-icon-panel-border;
+				float: left;
+			}
 		}
 	}
 }

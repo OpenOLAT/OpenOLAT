@@ -47,12 +47,14 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.AbstractElement;
@@ -83,7 +85,8 @@ public class MSStatisticController extends FormBasicController {
 
 	private final CourseEnvironment courseEnv;
 	private final AssessmentToolOptions asOptions;
-	private final MSCourseNode courseNode;
+	private final CourseNode courseNode;
+	private final EvaluationFormProvider evaluationFormProvider;
 	private final Form form;
 	private final List<RubricWrapper> rubrics;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -103,12 +106,13 @@ public class MSStatisticController extends FormBasicController {
 	private EvaluationFormManager evaluationFormManager;
 
 	public MSStatisticController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			AssessmentToolOptions asOptions, MSCourseNode courseNode) {
+			AssessmentToolOptions asOptions, CourseNode courseNode, EvaluationFormProvider evaluationFormProvider) {
 		super(ureq, wControl, "statistic");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.courseEnv = courseEnv;
 		this.asOptions = asOptions;
 		this.courseNode = courseNode;
+		this.evaluationFormProvider = evaluationFormProvider;
 		this.form = loadForm(courseNode);
 		this.rubrics = loadRubrics();
 		
@@ -125,7 +129,7 @@ public class MSStatisticController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	private Form loadForm(MSCourseNode courseNode) {
+	private Form loadForm(CourseNode courseNode) {
 		RepositoryEntry formEntry = MSCourseNode.getEvaluationForm(courseNode.getModuleConfiguration());
 		if (formEntry != null) {
 			return evaluationFormManager.loadForm(formEntry);
@@ -263,7 +267,7 @@ public class MSStatisticController extends FormBasicController {
 		List<Identity> identities = loadIdentities();
 		
 		Map<String, Map<Rubric, RubricStatistic>> identToStatistics = msService
-				.getRubricStatistics(courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent(), form);
+				.getRubricStatistics(courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent(), evaluationFormProvider, form);
 		List<MSStatisticRow> rows = new ArrayList<>();
 		for (Identity identity: identities) {
 			Map<Rubric, RubricStatistic> rubricStatistics = identToStatistics.get(identity.getKey().toString());

@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.ms;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.formEvaluation;
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
 import java.util.List;
@@ -58,6 +59,7 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -76,6 +78,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	private final CourseNode courseNode;
 	private final AssessmentConfig assessmentConfig;
 	private final AssessmentEvaluation assessmentEval;
+	private final EvaluationFormProvider evaluationFormProvider;
 	private final PanelInfo panelInfo;
 	
 	@Autowired
@@ -94,8 +97,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	 * @param showLog If true, the change log will be displayed
 	 */
 	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNode courseNode, boolean displayNodeInfo, boolean showLog) {
-		this(ureq, wControl, userCourseEnv, courseNode, displayNodeInfo, showLog, false);
+			CourseNode courseNode, EvaluationFormProvider evaluationFormProvider, boolean displayNodeInfo, boolean showLog) {
+		this(ureq, wControl, userCourseEnv, courseNode, evaluationFormProvider, displayNodeInfo, showLog, false);
 	}
 	
 	/**
@@ -110,7 +113,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	 * @param overrideUserResultsVisiblity If the controller can override the user visiblity of the score evaluation
 	 */
 	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNode courseNode, boolean displayNodeInfo, boolean showLog, boolean overrideUserResultsVisiblity) {
+			CourseNode courseNode, EvaluationFormProvider evaluationFormProvider,
+			boolean displayNodeInfo, boolean showLog, boolean overrideUserResultsVisiblity) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
@@ -118,6 +122,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
 		this.assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
+		this.evaluationFormProvider = evaluationFormProvider;
 		this.panelInfo = new PanelInfo(MSCourseNodeRunController.class,
 				"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
 		
@@ -129,7 +134,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		myContent = createVelocityContainer("run");
 
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, wControl, assessmentEval,
-				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
+				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode),
+				formEvaluation(userCourseEnv, courseNode, assessmentConfig), panelInfo);
 		listenTo(assessmentParticipantViewCtrl);
 		myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 		
@@ -204,8 +210,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	private void exposeUserDataToVC(UserRequest ureq) {
 		boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
 		if(resultsVisible) {
-			if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED)) {
-				detailsCtrl = new MSResultDetailsController(ureq, getWindowControl(), userCourseEnv, courseNode);
+			if (evaluationFormProvider != null && courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED)) {
+				detailsCtrl = new MSResultDetailsController(ureq, getWindowControl(), userCourseEnv, courseNode, evaluationFormProvider);
 				listenTo(detailsCtrl);
 				myContent.put("details", detailsCtrl.getInitialComponent());
 			}

@@ -55,6 +55,11 @@ public interface MinMax {
 			return max;
 		}
 		
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(24);
+			sb.append("MinMax[min=").append(min).append(";max=").append(max).append("]");
+			return sb.toString();
+		}
 	}
-
 }

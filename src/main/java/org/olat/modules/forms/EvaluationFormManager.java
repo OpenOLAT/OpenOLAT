@@ -250,5 +250,7 @@ public interface EvaluationFormManager {
 	public RubricRating getRubricRating(Rubric rubric, Double value);
 	
 	public List<CountRatioResult> calculateRatio(List<CountResult> countResults);
+	
+	public List<RubricStatistic> getRubricStatistics(EvaluationFormSession session);
 
 }

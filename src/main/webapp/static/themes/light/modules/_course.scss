@@ -664,6 +664,28 @@
 		font-weight: 		normal;
 		text-transform:		none;
 	}
+	
+	&.o_evaluation_in_progress {
+		border-color: 		$o-course-results-evaluation-in-progress-color;
+		background-color: 	$o-course-results-evaluation-in-progress-color;
+		font-size:			100%;
+		font-weight: 		normal;
+		text-transform:		none;
+	}
+	&.o_evaluation_done {
+		border-color: 		$o-course-results-evaluation-done-color;
+		background-color: 	$o-course-results-evaluation-done-color;
+		font-size:			100%;
+		font-weight: 		normal;
+		text-transform:		none;
+	}
+	&.o_evaluation_open {
+		border-color: 		$o-course-results-evaluation-open-color;
+		background-color: 	$o-course-results-evaluation-open-color;
+		font-size:			100%;
+		font-weight: 		normal;
+		text-transform:		none;
+	}
 }
 .o_labeled_light {
 	&.o_results_visible {
@@ -676,6 +698,28 @@
 	&.o_results_hidden {
 		border-color: 		$o-course-results-hidden-color;
 		color: 				$o-course-results-hidden-color;
+		font-size:			100%;
+		font-weight: 		normal;
+		text-transform:		none;
+	}
+
+	&.o_evaluation_in_progress {
+		border-color: 		$o-course-results-evaluation-in-progress-color;
+		color: 				$o-course-results-evaluation-in-progress-color;
+		font-size:			100%;
+		font-weight: 		normal;
+		text-transform:		none;
+	}
+	&.o_evaluation_done {
+		border-color: 		$o-course-results-evaluation-done-color;
+		color: 				$o-course-results-evaluation-done-color;
+		font-size:			100%;
+		font-weight: 		normal;
+		text-transform:		none;
+	}
+	&.o_evaluation_open {
+		border-color: 		$o-course-results-evaluation-open-color;
+		color: 				$o-course-results-evaluation-open-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
@@ -695,6 +739,21 @@
 	}
 	.o_table_part {
 		background-color: $o-course-assessment-table-part-bg-color;
+	}
+}
+
+/* Special for task element */
+#o_step_grading_content {
+	.o_block_top {
+		 margin: 0;
+	}
+	
+	.o_assessment_panel {
+		border-top: none;
+	
+		.panel-heading {
+			display: none;
+		}
 	}
 }
 

@@ -63,6 +63,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.grade.GradeModule;
@@ -135,6 +136,7 @@ public class MSConfigController extends FormBasicController {
 	private RepositoryEntry formEntry;
 	private MinMax formMinMax;
 	private GradeScale gradeScale;
+	private EvaluationFormProvider evaluationFormProvider;
 	
 	@Autowired
 	private MSService msService;
@@ -158,6 +160,7 @@ public class MSConfigController extends FormBasicController {
 		ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
 		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
 		this.formEntry = MSCourseNode.getEvaluationForm(config);
+		evaluationFormProvider = MSCourseNode.getEvaluationFormProvider();
 		doCalculateMinMax();
 		
 		trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
@@ -350,7 +353,7 @@ public class MSConfigController extends FormBasicController {
 	private void updateUI() {
 		boolean scoreEnabled = scoreEnableEl.isOn();
 		boolean formEnabled = evaluationFormEnabledEl.isOn();
-		boolean replacePossible = !msService.hasSessions(ores, nodeIdent);
+		boolean replacePossible = !msService.hasSessions(ores, nodeIdent, evaluationFormProvider);
 
 		if (formEntry != null) {
 			String displayname = StringHelper.escapeHtml(formEntry.getDisplayname());

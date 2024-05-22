@@ -359,7 +359,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			if (assessmentEval != null) {
 				removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
-						assessmentEval, new IQSELFRunAssessmentConfig(assessmentEval), this, gradeSystem(userCourseEnv, courseNode), panelInfo);
+						assessmentEval, new IQSELFRunAssessmentConfig(assessmentEval), this, gradeSystem(userCourseEnv, courseNode), null, panelInfo);
 				listenTo(assessmentParticipantViewCtrl);
 				mainVC.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 				mainVC.contextPut("attempts", assessmentEval.getAttempts());
@@ -386,7 +386,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				
 				removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
-						assessmentEval, assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
+						assessmentEval, assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), null, panelInfo);
 				listenTo(assessmentParticipantViewCtrl);
 				mainVC.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 				

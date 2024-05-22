@@ -174,17 +174,14 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage openIndividualAssessment() {
-		By assessmentButtonBy = By.cssSelector("div.o_step_grading .o_sel_course_gta_assessment_button");
-		List<WebElement> buttons = browser.findElements(assessmentButtonBy);
-		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
+		By assessmentPanelBy = By.cssSelector("div.o_step_grading .o_assessment_panel");
+		List<WebElement> assessmentPanels = browser.findElements(assessmentPanelBy);
+		if(assessmentPanels.isEmpty() || !assessmentPanels.get(0).isDisplayed()) {
 			//open grading tab
 			By collpaseBy = By.xpath("//div[contains(@class,'o_step_grading')]//button[contains(@class,'o_button_details')]");
 			OOGraphene.click(collpaseBy, browser);
-			OOGraphene.waitElement(assessmentButtonBy, browser);
+			OOGraphene.waitElement(assessmentPanelBy, browser);
 		}
-		
-		OOGraphene.click(assessmentButtonBy, browser);
-		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
 	
@@ -201,7 +198,9 @@ public class GroupTaskToCoachPage {
 		
 		By saveAndCloseBy = By.cssSelector(".o_sel_assessment_form button.btn.o_sel_assessment_form_save_and_done");
 		OOGraphene.click(saveAndCloseBy, browser);
-		OOGraphene.waitModalDialogDisappears(browser);
+		
+		By viewPanelBy = By.cssSelector(".o_step_grading .o_assessment_panel>table");
+		OOGraphene.waitElement(viewPanelBy, browser);
 		return this;
 	}
 	

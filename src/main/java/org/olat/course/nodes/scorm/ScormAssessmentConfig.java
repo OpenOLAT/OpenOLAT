@@ -136,6 +136,21 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean hasFormEvaluation() {
+		return false;
+	}
+	
+	@Override
+	public FormEvaluationScoreMode getFormEvaluationScoreMode() {
+		return null;
+	}
+	
+	@Override
+	public String getFormEvaluationScoreScale() {
+		return null;
+	}
+
+	@Override
 	public Mode getPassedMode() {
 		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true)? Mode.setByNode: Mode.none;
 	}

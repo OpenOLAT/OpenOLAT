@@ -88,8 +88,8 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	private CourseAssessmentService courseAssessmentService;
 	
 	public AssessmentIdentityCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
-			Identity assessedIdentity, boolean courseNodeDetails, boolean showTitle) {
+			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv, Identity assessedIdentity,
+			boolean courseNodeDetails, boolean assessmentLog, boolean identityDetails, boolean showTitle) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentModule.class, ureq.getLocale()));
 		
 		this.stackPanel = stackPanel;
@@ -113,6 +113,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		initDetails();
 		
 		identityInfosCtrl = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course, courseNode);
+		identityInfosCtrl.getInitialComponent().setVisible(identityDetails);
 		listenTo(identityInfosCtrl);
 		identityAssessmentVC.put("identityInfos", identityInfosCtrl.getInitialComponent());
 
@@ -136,9 +137,11 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				doOpenAssessment(ureq);
 			}
 			
-			String nodeLog = courseAssessmentService.getAuditLog(courseNode, assessedUserCourseEnvironment);
-			if(StringHelper.containsNonWhitespace(nodeLog)) {
-				identityAssessmentVC.contextPut("log", StringHelper.escapeHtml(nodeLog));
+			if(assessmentLog) {
+				String nodeLog = courseAssessmentService.getAuditLog(courseNode, assessedUserCourseEnvironment);
+				if(StringHelper.containsNonWhitespace(nodeLog)) {
+					identityAssessmentVC.contextPut("log", StringHelper.escapeHtml(nodeLog));
+				}
 			}
 		}
 		putInitialPanel(identityAssessmentVC);
@@ -146,6 +149,10 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	
 	public static String lockKey(CourseNode node, IdentityRef identity) {
 		return "AssessmentLock-NID::" + node.getIdent() + "-IID::" + identity.getKey();
+	}
+	
+	public boolean isLockSuccessful() {
+		return lockEntry != null && lockEntry.isSuccess();
 	}
 	
 	public UserCourseEnvironment getCoachCourseEnvironment() {

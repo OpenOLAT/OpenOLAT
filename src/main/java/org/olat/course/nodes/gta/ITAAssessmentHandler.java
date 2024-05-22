@@ -19,16 +19,26 @@
  */
 package org.olat.course.nodes.gta;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.course.assessment.handler.AssessmentConfig.FormEvaluationScoreMode;
+import org.olat.course.assessment.handler.FormEvaluationHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.AssessmentEvaluationFormExecutionController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.ui.GTAIdentityListCourseNodeController;
+import org.olat.course.nodes.ms.MSService;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.forms.EvaluationFormProvider;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +49,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ITAAssessmentHandler extends AbstractGTAAssessmentHandler {
+public class ITAAssessmentHandler extends AbstractGTAAssessmentHandler implements FormEvaluationHandler {
 
 	@Override
 	public String acceptCourseNodeType() {
@@ -55,4 +65,32 @@ public class ITAAssessmentHandler extends AbstractGTAAssessmentHandler {
 				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 
+	@Override
+	public EvaluationFormSession getSession(RepositoryEntry courseEntry, CourseNode courseNode, Identity assessedIdentity) {
+		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		RepositoryEntry formEntry = MSCourseNode.getEvaluationForm(courseNode.getModuleConfiguration());
+		EvaluationFormProvider evaluationFormProvider = GTACourseNode.getEvaluationFormProvider();
+		return msService.getSession(formEntry, courseEntry, courseNode.getIdent(), evaluationFormProvider, assessedIdentity);
+	}
+	
+	@Override
+	public Float getEvaluationScore(EvaluationFormSession session, FormEvaluationScoreMode scoreMode) {
+		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		Float evaluationScore = null;
+		if(scoreMode == FormEvaluationScoreMode.avg) {
+			evaluationScore = msService.calculateScoreByAvg(session);
+		} else if(scoreMode == FormEvaluationScoreMode.sum) {
+			evaluationScore = msService.calculateScoreBySum(session);
+		}
+		return evaluationScore;
+	}
+
+	@Override
+	public Controller getEvaluationFormController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv,
+			boolean edit, boolean reopen) {
+		EvaluationFormProvider evaluationFormProvider = GTACourseNode.getEvaluationFormProvider();
+		return new AssessmentEvaluationFormExecutionController(ureq, wControl, assessedUserCourseEnv, edit, reopen,
+				courseNode, evaluationFormProvider);
+	}
 }

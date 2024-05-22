@@ -127,27 +127,27 @@ public class ModuleConfiguration implements Serializable {
 
 	/**
 	 * return a config value as a Boolean
-	 * @param config_key the key
+	 * @param configKey the key
 	 * @return null if no such key, or true if there is a entry under 'key' of type string with value "true", or false otherwise
 	 */
-	public Boolean getBooleanEntry(String config_key) {
+	public Boolean getBooleanEntry(String configKey) {
 		// boolean are stored either as null (no val yet), "true", or "false" (Strings)
-		Object val = get(config_key);
+		Object val = get(configKey);
 		if (val == null) return null;
-		if( val instanceof Boolean) return (Boolean)val;
+		if( val instanceof Boolean bValue) return bValue;
 		return val.equals("true") ? Boolean.TRUE : Boolean.FALSE;
 	}
 	
-	public Float getFloatEntry(String config_key) {
-		Object val = get(config_key);
+	public Float getFloatEntry(String configKey) {
+		Object val = get(configKey);
 		Float floatValue = null;
 		if (val == null) {
 			floatValue = null;
-		} else if( val instanceof Float) {
-			floatValue = (Float)val;
-		} else if( val instanceof String) {
+		} else if( val instanceof Float fValue) {
+			floatValue = fValue;
+		} else if( val instanceof String sValue) {
 			try {
-				floatValue = Float.valueOf((String)val);
+				floatValue = Float.valueOf(sValue);
 			} catch(NumberFormatException e) {
 				//
 			}

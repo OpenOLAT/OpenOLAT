@@ -467,7 +467,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 					coachCourseEnv, assessedIdentity, true, secCallback);
 		} else {
 			currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
-					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true, true);
+					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true, true, true, true);
 		}
 		listenTo(currentIdentityCtrl);
 		

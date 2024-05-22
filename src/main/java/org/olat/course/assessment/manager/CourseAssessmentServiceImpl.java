@@ -66,6 +66,7 @@ import org.olat.course.assessment.ScoreAccountingTriggerSearchParams;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.CoachAssignmentMode;
 import org.olat.course.assessment.handler.AssessmentHandler;
+import org.olat.course.assessment.handler.FormEvaluationHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeStatsController;
@@ -100,6 +101,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -430,6 +432,33 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			UserCourseEnvironment assessedUserCourseEnvironment) {
 		return getAssessmentHandler(courseNode).getDetailsEditController(ureq, wControl, stackPanel, courseNode,
 				coachCourseEnv, assessedUserCourseEnvironment);
+	}
+	
+	@Override
+	public EvaluationFormSession getSession(RepositoryEntry courseEntry, CourseNode courseNode, Identity assessedIdentity) {
+		AssessmentHandler handler = getAssessmentHandler(courseNode);
+		return handler instanceof FormEvaluationHandler evaluationHandler
+				? evaluationHandler.getSession(courseEntry, courseNode, assessedIdentity)
+				: null;
+	}
+
+	@Override
+	public Float getEvaluationScore(EvaluationFormSession session, RepositoryEntry courseEntry, CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = getAssessmentConfig(courseEntry, courseNode);
+		AssessmentHandler handler = getAssessmentHandler(courseNode);
+		return handler instanceof FormEvaluationHandler evaluationHandler && assessmentConfig.hasAssessmentForm()
+				? evaluationHandler.getEvaluationScore(session, assessmentConfig.getFormEvaluationScoreMode())
+				: null;
+	}
+
+	@Override
+	public Controller getEvaluationFormController(UserRequest ureq, WindowControl wControl,
+			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment,
+			boolean edit, boolean reopen) {
+		AssessmentHandler handler = getAssessmentHandler(courseNode);
+		return handler instanceof FormEvaluationHandler evaluationHandler
+			? evaluationHandler.getEvaluationFormController(ureq, wControl, courseNode, coachCourseEnv, assessedUserCourseEnvironment, edit, reopen)
+			: null;
 	}
 
 	@Override

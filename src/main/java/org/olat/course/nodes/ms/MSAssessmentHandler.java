@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.ms;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -27,8 +28,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.assessment.handler.AssessmentHandler;
+import org.olat.course.assessment.handler.FormEvaluationHandler;
+import org.olat.course.assessment.handler.AssessmentConfig.FormEvaluationScoreMode;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.AssessmentEvaluationFormExecutionController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.evaluation.DefaultLearningPathStatusEvaluator;
 import org.olat.course.learningpath.evaluation.LearningPathEvaluatorBuilder;
@@ -43,6 +46,8 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.forms.EvaluationFormProvider;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.stereotype.Service;
@@ -54,7 +59,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class MSAssessmentHandler implements AssessmentHandler {
+public class MSAssessmentHandler implements FormEvaluationHandler {
 	
 	private static final StatusEvaluator STATUS_EVALUATOR_NOT_STARTED = new DefaultLearningPathStatusEvaluator(AssessmentEntryStatus.notStarted);
 	private static final StatusEvaluator STATUS_EVALUATOR_IN_REVIEW = new DefaultLearningPathStatusEvaluator(AssessmentEntryStatus.inReview);
@@ -96,8 +101,7 @@ public class MSAssessmentHandler implements AssessmentHandler {
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		return new MSEvaluationFormExecutionController(ureq, wControl, (TooledStackedPanel)stackPanel,
-				coachCourseEnv, assessedUserCourseEnv, courseNode);
+		return null;
 	}
 
 	@Override
@@ -110,8 +114,37 @@ public class MSAssessmentHandler implements AssessmentHandler {
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		return new MSIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
+		return new MSIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, (MSCourseNode)courseNode,
 				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
+	}
+	
+	@Override
+	public EvaluationFormSession getSession(RepositoryEntry courseEntry, CourseNode courseNode, Identity assessedIdentity) {
+		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		EvaluationFormProvider evaluationFormProvider = MSCourseNode.getEvaluationFormProvider();
+		RepositoryEntry formEntry = MSCourseNode.getEvaluationForm(courseNode.getModuleConfiguration());
+		return msService.getSession(formEntry, courseEntry, courseNode.getIdent(), evaluationFormProvider, assessedIdentity);
+	}
+
+	@Override
+	public Float getEvaluationScore(EvaluationFormSession session, FormEvaluationScoreMode scoreMode) {
+		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		Float evaluationScore = null;
+		if(scoreMode == FormEvaluationScoreMode.avg) {
+			evaluationScore = msService.calculateScoreByAvg(session);
+		} else if(scoreMode == FormEvaluationScoreMode.sum) {
+			evaluationScore = msService.calculateScoreBySum(session);
+		}
+		return evaluationScore;
+	}
+
+	@Override
+	public Controller getEvaluationFormController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv, boolean edit,
+			boolean reopen) {
+		EvaluationFormProvider evaluationFormProvider = MSCourseNode.getEvaluationFormProvider();
+		return new AssessmentEvaluationFormExecutionController(ureq, wControl,
+				assessedUserCourseEnv, edit, reopen, courseNode, evaluationFormProvider);
 	}
 
 }

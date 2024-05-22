@@ -81,6 +81,17 @@ public class WidgetGroup extends AbstractComponent implements ComponentCollectio
 		return copy;
 	}
 	
+
+	public void addAll(List<Widget> widgets) {
+		if (widgets == null || widgets.isEmpty()) {
+			return;
+		}
+		
+		for(Widget widget:widgets) {
+			add(widget);
+		}
+	}
+	
 	public void add(Widget widget) {
 		if (widget == null) {
 			return;

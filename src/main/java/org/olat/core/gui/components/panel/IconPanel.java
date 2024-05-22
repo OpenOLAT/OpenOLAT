@@ -41,6 +41,8 @@ public class IconPanel extends AbstractComponent implements ComponentCollection 
 	private static final ComponentRenderer RENDERER = new IconPanelRenderer();
 	private final List<Component> links = new ArrayList<>(3);
 	private Component content;
+	private final List<Component> additionalLinks = new ArrayList<>(3);
+	private Component additionalContent;
 	private String iconCssClass;
 	private String title;
 	private String tagline;
@@ -74,20 +76,31 @@ public class IconPanel extends AbstractComponent implements ComponentCollection 
 				return link;
 			}
 		}
+		for (Component link : additionalLinks) {
+			if (link.getComponentName().equals(name)) {
+				return link;
+			}
+		}
 		
 		if (content != null && content.getComponentName().equals(name)) {
 			return content;
 		}
-		
+		if (additionalContent != null && additionalContent.getComponentName().equals(name)) {
+			return additionalContent;
+		}
 		return null;
 	}
 
 	@Override
 	public Iterable<Component> getComponents() {
-		List<Component> allComponent = new ArrayList<>(links.size() + 1);
+		List<Component> allComponent = new ArrayList<>(links.size() + additionalLinks.size() + 2);
 		allComponent.addAll(links);
+		allComponent.addAll(additionalLinks);
 		if (content != null) {
 			allComponent.add(content);
+		}
+		if (additionalContent != null) {
+			allComponent.add(additionalContent);
 		}
 		return allComponent;
 	}
@@ -103,6 +116,15 @@ public class IconPanel extends AbstractComponent implements ComponentCollection 
 
 	public void setContent(Component content) {
 		this.content = content;
+		setDirty(true);
+	}
+	
+	public Component getAdditionalContent() {
+		return additionalContent;
+	}
+	
+	public void setAdditionalContent(Component additionalContent) {
+		this.additionalContent = additionalContent;
 		setDirty(true);
 	}
 
@@ -131,11 +153,23 @@ public class IconPanel extends AbstractComponent implements ComponentCollection 
 
 	public void removeAllLinks() {
 		links.clear();
+		additionalLinks.clear();
 		setDirty(true);
 	}
 
 	List<Component> getLinks() {
 		return links;
+	}
+	
+	public void addAdditionalLink(Link link) {
+		if (link != null) {
+			additionalLinks.add(link);
+			setDirty(true);
+		}
+	}
+	
+	List<Component> getAdditionalLinks() {
+		return additionalLinks;
 	}
 	
 	public String getTitle() {

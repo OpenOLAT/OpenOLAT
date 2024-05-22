@@ -156,10 +156,10 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 		sut.createSurvey(oresA, subIdentA1, null, formEntry, null);
 		dbInstance.commitAndCloseSession();
 		
-		boolean hasSurvey = sut.hasSurvey(formEntry, resNameA);
+		boolean hasSurvey = sut.hasSurvey(formEntry, List.of(resNameA));
 		assertThat(hasSurvey).isTrue();
 		
-		hasSurvey = sut.hasSurvey(formEntry, random());
+		hasSurvey = sut.hasSurvey(formEntry, List.of(random()));
 		assertThat(hasSurvey).isFalse();
 	}
 	

@@ -76,6 +76,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -700,7 +701,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	    }
 	    
 	    boolean showGrading = false;
-	    MSCourseNodeRunController msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, gtaNode, false, false);
+	    EvaluationFormProvider evaluationFormProvider = GTACourseNode.getEvaluationFormProvider();
+	    MSCourseNodeRunController msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, gtaNode, evaluationFormProvider, false, false);
 	    if(msCtrl.hasScore() || msCtrl.hasPassed() || msCtrl.hasComment()) {
 	    	showGrading = true; 
 	    } else if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)

@@ -46,6 +46,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -118,6 +119,8 @@ public class MSEditFormController extends FormBasicController {
 	private FormToggle incorporateInCourseAssessmentEl;
 	private SpacerElement incorporateInCourseAssessmentSpacer;
 	private TextElement scoreScalingEl;
+	private SingleSelection scoreTypeEl;
+	private TextElement evaluationScoreScalingEl;
 	
 	private FormLink showInfoTextsLink;
 
@@ -139,7 +142,10 @@ public class MSEditFormController extends FormBasicController {
 	private final String title;
 	private final String helpUrl;
 	private GradeScale gradeScale;
+	private boolean withEvaluation;
 	private final boolean scoreScalingEnabled;
+	private MinMax formMinMax;
+	private String formEvaluationScoreCalculation;
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
@@ -200,9 +206,24 @@ public class MSEditFormController extends FormBasicController {
 		Boolean sf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		scoreGranted.toggle(sf == null ? false : sf.booleanValue());
 		scoreGranted.setElementCssClass("o_sel_course_ms_score");
-
+		
+		SelectionValues scoringPK = new SelectionValues();
+		scoringPK.add(SelectionValues.entry("automatic", translate("form.score.type.scoring.automatic")));
+		scoringPK.add(SelectionValues.entry(MSCourseNode.CONFIG_VALUE_SCORE_MANUAL, translate("form.score.type.scoring.manual")));
+		
+		scoreTypeEl = uifactory.addRadiosVertical("form.score.type.scoring", "form.score.type.scoring", formLayout,
+				scoringPK.keys(), scoringPK.values());
+		scoreTypeEl.select("automatic", true);
+		scoreTypeEl.addActionListener(FormEvent.ONCHANGE);
+		
+		String evaluationScale = modConfig.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE);
+		evaluationScoreScalingEl = uifactory.addTextElement("form.score.type.scoring.scale", "form.score.type.scoring.scale", 8, evaluationScale, formLayout);
+		evaluationScoreScalingEl.setDisplaySize(5);
+		evaluationScoreScalingEl.setRegexMatchCheck(scoreRex, "form.error.wrongFloat");
+		evaluationScoreScalingEl.setElementCssClass("o_sel_course_ms_evaluation_scale");
+	
 		// ...minimum value...
-		Float min = (Float) modConfig.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
+		Float min = modConfig.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		if (min == null) {
 			min = Float.valueOf(0);
 		}
@@ -211,7 +232,7 @@ public class MSEditFormController extends FormBasicController {
 		minVal.setRegexMatchCheck(scoreRex, "form.error.wrongFloat");
 		minVal.setElementCssClass("o_sel_course_ms_min_val");
 		
-		Float max = (Float) modConfig.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+		Float max = modConfig.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		if (max == null) {
 			max = Float.valueOf(0);
 		}
@@ -372,6 +393,7 @@ public class MSEditFormController extends FormBasicController {
 		maxVal.setVisible(scoreGranted.isOn());
 		minVal.setMandatory(minVal.isVisible());
 		maxVal.setMandatory(maxVal.isVisible());
+		evaluationScoreScalingEl.setVisible(scoreGranted.isOn() && withEvaluation);
 		
 		if (gradeEnabledEl != null) {
 			gradeSpacer.setVisible(scoreGranted.isOn());
@@ -396,7 +418,20 @@ public class MSEditFormController extends FormBasicController {
 		displayType.setVisible(displayPassed.isOn() && gradeDisable);
 		cutVal.setVisible(displayType.isVisible() && displayType.isSelected(0));
 		cutVal.setMandatory(cutVal.isVisible());
+
+		scoreTypeEl.setVisible(scoreGranted.isOn() && withEvaluation);
+		boolean scoreAuto = scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected() && "automatic".equals(scoreTypeEl.getSelectedKey());
+		minVal.setEnabled(!scoreAuto);
+		maxVal.setEnabled(!scoreAuto);
 		
+		if(formMinMax != null && scoreAuto) {
+			minVal.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMin()));
+			maxVal.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMax()));
+		}
+		if(evaluationScoreScalingEl.isVisible() && !StringHelper.containsNonWhitespace(evaluationScoreScalingEl.getValue())) {
+			evaluationScoreScalingEl.setValue("1.0");
+		}
+				
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
 				&& (scoreGranted.isOn() || displayPassed.isOn());
 		incorporateInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
@@ -434,6 +469,7 @@ public class MSEditFormController extends FormBasicController {
 		// score flag
 		minVal.clearError();
 		maxVal.clearError();
+		evaluationScoreScalingEl.clearError();
 		if (scoreGranted.isOn()) {
 			if (!minVal.getValue().matches(scoreRex)) {
 				minVal.setErrorKey("form.error.wrongFloat");
@@ -444,6 +480,11 @@ public class MSEditFormController extends FormBasicController {
 				allOk &= false;
 			} else if (Float.parseFloat(minVal.getValue()) > Float.parseFloat(maxVal.getValue())) {
 				maxVal.setErrorKey("form.error.minGreaterThanMax");
+				allOk &= false;
+			}
+			
+			if(withEvaluation && !evaluationScoreScalingEl.getValue().matches(scoreRex)) {
+				evaluationScoreScalingEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
 			}
 		}
@@ -485,19 +526,58 @@ public class MSEditFormController extends FormBasicController {
 			gradeScaleButtonsCont.setVisible(!displayOnly);
 		}
 	}
+	
+	public void setEvaluationOn(UserRequest ureq, boolean withEvaluation, MinMax formMinMax, String formScoreCalculation) {
+		this.withEvaluation = withEvaluation;
+		this.formMinMax = withEvaluation ? formMinMax : null;
+		this.formEvaluationScoreCalculation = withEvaluation ? formScoreCalculation : null;
+		update(ureq);
+	}
+	
+	public void setMinMax(Float min, Float max) {
+		minVal.setValue(AssessmentHelper.getRoundedScore(min));
+		maxVal.setValue(AssessmentHelper.getRoundedScore(max));
+	}
+	
+	public Float getEvaluationScale() {
+		String val = evaluationScoreScalingEl != null && evaluationScoreScalingEl.isVisible() ? evaluationScoreScalingEl.getValue() : null;	
+		if(StringHelper.containsNonWhitespace(val)) {
+			try {
+				return Float.valueOf(val);
+			} catch (NumberFormatException e) {
+				// 
+			}
+		}
+		return null;
+	}
 
 	public void updateModuleConfiguration(ModuleConfiguration moduleConfiguration) {
 		// mandatory score flag
 		Boolean sf = Boolean.valueOf(scoreGranted.isOn());
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, sf);
+
 		if (sf.booleanValue()) {
 			// do min/max value
 			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, Float.valueOf(minVal.getValue()));
 			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, Float.valueOf(maxVal.getValue()));
+			if(withEvaluation) {
+				String scale = evaluationScoreScalingEl.isVisible()
+						? evaluationScoreScalingEl.getValue()
+						: MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE;
+				moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, scale);
+			}
+			
+			if(!scoreTypeEl.isVisible() || (scoreTypeEl.isOneSelected() && MSCourseNode.CONFIG_VALUE_SCORE_MANUAL.equals(scoreTypeEl.getSelectedKey()))) {
+				moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, MSCourseNode.CONFIG_VALUE_SCORE_MANUAL);
+			} else if(StringHelper.containsNonWhitespace(formEvaluationScoreCalculation)) {
+				moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, formEvaluationScoreCalculation);
+			}
 		} else {
 			// remove old config
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE);
+			moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, MSCourseNode.CONFIG_VALUE_SCORE_NONE);
 		}
 		
 		// Grade

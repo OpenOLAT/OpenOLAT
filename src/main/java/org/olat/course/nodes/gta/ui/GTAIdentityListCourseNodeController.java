@@ -54,6 +54,7 @@ import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.ms.MSStatisticController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
@@ -75,11 +76,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeController {
-	
+
+	private FormLink statsButton;
 	private FormLink downloadButton;
 	private FormLink bulkExtendButton;
 	private FormLink bulkDownloadButton;
 	
+	private MSStatisticController statsCtrl;
 	private GroupAssessmentController assessmentCtrl;
 	private BulkAssessmentToolController bulkAssessmentToolCtrl;
 	private EditMultipleDueDatesController editMultipleDueDatesCtrl;
@@ -113,6 +116,11 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		super.initBulkStatusTools(ureq, formLayout);
 		
 		ModuleConfiguration config =  courseNode.getModuleConfiguration();
+		
+		if (assessmentConfig.hasAssessmentForm()) {
+			statsButton = uifactory.addFormLink("tool.stats", formLayout, Link.BUTTON);
+			statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
+		}
 		
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
 			&& (config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
@@ -224,6 +232,8 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 			doBulkDownload(ureq);
 		} else if(bulkExtendButton == source) {
 			doEditMultipleDueDates(ureq);
+		} else if(statsButton == source) {
+			doLaunchStatistics(ureq);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -306,5 +316,12 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 			listenTo(cmc);
 			cmc.activate();
 		}
+	}
+	
+	private void doLaunchStatistics(UserRequest ureq) {
+		statsCtrl = new MSStatisticController(ureq, getWindowControl(), getCourseEnvironment(), getOptions(),
+				courseNode, GTACourseNode.getEvaluationFormProvider());
+		listenTo(statsCtrl);
+		stackPanel.pushController(translate("tool.stats"), statsCtrl);
 	}
 }

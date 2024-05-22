@@ -20,6 +20,8 @@
  */
 package org.olat.course.nodes;
 
+import static org.olat.modules.forms.EvaluationFormSessionStatus.done;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -73,7 +75,6 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.CoachAssignmentMode;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.duedate.DueDateConfig;
@@ -92,6 +93,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.gta.GTAAssessmentConfig;
+import org.olat.course.nodes.gta.GTAEvaluationFormProvider;
 import org.olat.course.nodes.gta.GTALearningPathNodeHandler;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAModule;
@@ -107,6 +109,9 @@ import org.olat.course.nodes.gta.rule.GTAReminderProvider;
 import org.olat.course.nodes.gta.ui.GTADefaultsEditController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTARunController;
+import org.olat.course.nodes.ms.MSScoreEvaluationAndDataHelper;
+import org.olat.course.nodes.ms.MSService;
+import org.olat.course.nodes.ms.MinMax;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -125,12 +130,18 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.forms.EvaluationFormProvider;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeService;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
@@ -242,10 +253,16 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		return false;
 	}
 	
+	private MinMax getMinMax() {
+		return MSCourseNode.getMinMax(getModuleConfiguration());
+	}
+	
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
-		return null;
+		return MSCourseNode.getEvaluationForm(getModuleConfiguration());
 	}
+	
+
 	
 	@Override
 	public boolean hasBusinessGroups() {
@@ -257,6 +274,14 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	public boolean hasBusinessGroupAreas() {
 		List<Long> areaKeys = getModuleConfiguration().getList(GTACourseNode.GTASK_AREAS, Long.class);
 		return !areaKeys.isEmpty() || super.hasBusinessGroupAreas();
+	}
+	
+	public static void setEvaluationFormReference(RepositoryEntry re, ModuleConfiguration moduleConfig) {
+		moduleConfig.set(MSCourseNode.CONFIG_KEY_EVAL_FORM_SOFTKEY, re.getSoftkey());
+	}
+	
+	public static void removeEvaluationFormReference(ModuleConfiguration moduleConfig) {
+		moduleConfig.remove(MSCourseNode.CONFIG_KEY_EVAL_FORM_SOFTKEY);
 	}
 	
 	@Override
@@ -520,8 +545,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	 * 
 	 */
 	@Override
-	public void exportNode(File fExportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withResource) {
-		File fNodeExportDir = new File(fExportDirectory, getIdent());
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
+		File fNodeExportDir = new File(exportDirectory, getIdent());
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		
 		// export the tasks
@@ -546,6 +571,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		if(solutionDefinitions.exists()) {
 			File copySolutionDefinitions = new File(fSolExportDir.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
 			FileUtils.copyFileToFile(solutionDefinitions, copySolutionDefinitions, false);
+		}
+		
+		// Export evaluation form
+		RepositoryEntry re = MSCourseNode.getEvaluationForm(getModuleConfiguration());
+		if (re != null && (withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE || withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY)) {
+			RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fNodeExportDir);
+			reie.exportDoExport(withReferences);
 		}
 	}
 	
@@ -578,6 +610,20 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		gtaManager.createIfNotExists(entry, this);
+		
+		// Import evaluation form
+		
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE && rie.anyExportedPropertiesAvailable()) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EvaluationFormResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+				rie.getDescription(), RepositoryEntryImportExportLinkEnum.NONE, organisation, locale, rie.importGetExportedFile(), null);
+			setEvaluationFormReference(re, getModuleConfiguration());
+		} else if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			// Do nothing, keep the reference
+		} else {
+			removeEvaluationFormReference(getModuleConfiguration());
+		}
 	}
 
 	@Override
@@ -1057,7 +1103,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
-		GTAEditController editCtrl = new GTAEditController(ureq, wControl, this, course, euce);
+		GTAEditController editCtrl = new GTAEditController(ureq, wControl, stackPanel, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, editCtrl);
 	}
@@ -1084,49 +1130,115 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 
 	@Override
 	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
-		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		CoreSpringFactory.getImpl(GTAManager.class).createIfNotExists(re, this);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		AssessmentService assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
+		CoreSpringFactory.getImpl(GTAManager.class).createIfNotExists(courseEntry, this);
+		
 		super.updateOnPublish(locale, course, publisher, publishEvents);
 		
 		updateCoachAssignment(course);
-		updateScores(course, publisher);
-	}
-	
-	private void updateScores(ICourse course, Identity publisher) {
-		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		AssessmentService assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, this);
-		
-		BigDecimal updatedScoreScale = ScoreScalingHelper.isEnabled(course) ? ScoreScalingHelper.getScoreScale(this) : null;
-		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, getIdent());
 
-		for(AssessmentEntry assessmentEntry: assessmentEntries) {
-			AssessmentEvaluation currentEval = courseAssessmentService.toAssessmentEvaluation(assessmentEntry, assessmentConfig);
-			
-			Float updateWeightedScore = null;
-			if(ScoreScalingHelper.isEnabled(course)) {
-				updateWeightedScore = ScoreScalingHelper.getWeightedFloatScore(assessmentEntry.getScore(), updatedScoreScale);	
-			}
-			
-			boolean hasChanges = !ScoreScalingHelper.equals(updatedScoreScale, assessmentEntry.getScoreScale())
-					|| !Objects.equals(updateWeightedScore, currentEval.getWeightedScore());
-			
-			if (hasChanges) {
-				IdentityEnvironment ienv = new IdentityEnvironment(assessmentEntry.getIdentity(), Roles.userRoles());
-				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-				
-				ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), updateWeightedScore,
-						currentEval.getScoreScale(), currentEval.getGrade(), currentEval.getGradeSystemIdent(),
-						currentEval.getPerformanceClassIdent(), currentEval.getPassed(), currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
-						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
-						currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
-				courseAssessmentService.updateScoreEvaluation(this, scoreEval, uce, publisher, false, Role.coach);
-				
-				DBFactory.getInstance().commitAndCloseSession();
-			}
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, getIdent());
+		for(AssessmentEntry assessmentEntry:assessmentEntries) {
+			updateScorePassedOnPublish(course, assessmentEntry, publisher, locale);
 		}
 		DBFactory.getInstance().commitAndCloseSession();
+	}
+	
+	private void updateScorePassedOnPublish(ICourse course, AssessmentEntry assessmentEntry, Identity publisher, Locale locale) {
+		final RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		final Identity assessedIdentity = assessmentEntry.getIdentity();
+		
+		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		EvaluationFormProvider evaluationFormProvider = getEvaluationFormProvider();
+		
+		IdentityEnvironment ienv = new IdentityEnvironment(assessedIdentity, Roles.userRoles());
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+	
+		AssessmentEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, userCourseEnv);
+		EvaluationFormSession session = msService.getSession(courseEntry, getIdent(), evaluationFormProvider, assessedIdentity, done);
+	
+		Float updatedScore = getScore(msService, currentEval, session);
+		Float updatedWeightedScore = null;
+		BigDecimal updatedScoreScale = null;
+		if(ScoreScalingHelper.isEnabled(course)) {
+			updatedScoreScale = ScoreScalingHelper.getScoreScale(this);
+			updatedWeightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, updatedScoreScale);
+		}
+		ScoreEvaluation updateScoreEvaluation = MSScoreEvaluationAndDataHelper.getUpdateScoreEvaluation(userCourseEnv, this, locale, updatedScore);
+		String updateGrade = updateScoreEvaluation.getGrade();
+		String updateGradeSystemIdent = updateScoreEvaluation.getGradeSystemIdent();
+		String updatePerformanceClassIdent = updateScoreEvaluation.getPerformanceClassIdent();
+		Boolean updatedPassed = updateScoreEvaluation.getPassed();
+		
+		boolean needUpdate = !Objects.equals(updatedScore, currentEval.getScore())
+				|| !Objects.equals(updatedWeightedScore, currentEval.getWeightedScore())
+				|| !Objects.equals(updateGrade, currentEval.getGrade())
+				|| !Objects.equals(updateGradeSystemIdent, currentEval.getGradeSystemIdent())
+				|| !Objects.equals(updatePerformanceClassIdent, currentEval.getPerformanceClassIdent())
+				|| !Objects.equals(updatedPassed, currentEval.getPassed())
+				|| !ScoreScalingHelper.equals(updatedScoreScale, currentEval.getScoreScale());
+		
+		if (needUpdate) {
+			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedWeightedScore,
+					updatedScoreScale, updateGrade, updateGradeSystemIdent,
+					updatePerformanceClassIdent, updatedPassed, currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
+					currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+					currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+			courseAssessmentService.updateScoreEvaluation(this, scoreEval, userCourseEnv, publisher, false, Role.coach);
+			
+			DBFactory.getInstance().commitAndCloseSession();
+		}
+	}
+	
+	private Float getScore(MSService msService, AssessmentEvaluation currentEval, EvaluationFormSession session) {
+		Float score = null;
+		ModuleConfiguration config = getModuleConfiguration();
+		String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
+		String scaleConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE);
+		float scale = Float.parseFloat(scaleConfig);
+		if (MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig)) {
+			score = msService.calculateScoreByAvg(session);
+			score = msService.scaleScore(score, scale);
+		} else if (MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)) {
+			score = msService.calculateScoreBySum(session);
+			score = msService.scaleScore(score, scale);
+		}
+		if (score == null) {
+			score = currentEval.getScore();
+		}
+		
+		// Score has to be in configured range.
+		MinMax minMax = getMinMax();
+		if (score != null) {
+			if(minMax.getMax().floatValue() < score.floatValue()) {
+				score = minMax.getMax();
+			}
+			if(minMax.getMin().floatValue() > score.floatValue()) {
+				score = minMax.getMin();
+			}
+		}
+		return score;
+	}
+	
+	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv,
+			Role by, EvaluationFormSession session, Locale locale) {
+		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		
+		AssessmentEvaluation currentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(this);
+		Float score = getScore(msService, currentEval, session);
+		ScoreEvaluation updateEval = MSScoreEvaluationAndDataHelper.getUpdateScoreEvaluation(assessedUserCourseEnv, this, locale, score);
+		
+		// save
+		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(updateEval.getScore(), updateEval.getWeightedScore(),
+				updateEval.getScoreScale(), currentEval.getGrade(),
+				currentEval.getGradeSystemIdent(), currentEval.getPerformanceClassIdent(), currentEval.getPassed(),
+				currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
+				currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+				currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		courseAssessmentService.saveScoreEvaluation(this, identity, scoreEvaluation, assessedUserCourseEnv, false, by);
 	}
 	
 	private void updateCoachAssignment(ICourse course) {
@@ -1164,6 +1276,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		}
 		DBFactory.getInstance().commitAndCloseSession();
 	}
+	
+	public static EvaluationFormProvider getEvaluationFormProvider() {
+		return new GTAEvaluationFormProvider();
+	}
 
 	@Override
 	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream, String path, Identity doer, Role by) {
@@ -1184,6 +1300,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			}
 		} else {
 			archiveNodeUserData(courseEnv, assessedIdentity, taskList, false, archiveStream, path);
+			MSScoreEvaluationAndDataHelper.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, this, getEvaluationFormProvider());
 		}
 		
 		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
@@ -1193,6 +1310,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
 		boolean resetTaskData = GTAType.individual.name().equals(getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
 		if(resetTaskData) {
+			MSScoreEvaluationAndDataHelper.resetUserData(assessedUserCourseEnv, this, getEvaluationFormProvider(), identity, by);
 			resetUserTaskData(assessedUserCourseEnv, identity);
 		}
 		super.resetUserData(assessedUserCourseEnv, identity, by);

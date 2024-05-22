@@ -28,12 +28,10 @@ package org.olat.course.nodes;
 import static org.olat.modules.forms.EvaluationFormSessionStatus.done;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.zip.ZipOutputStream;
 
@@ -56,13 +54,11 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
-import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -70,12 +66,13 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
-import org.olat.course.nodes.ms.AuditEnv;
 import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.nodes.ms.MSCoachRunController;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
+import org.olat.course.nodes.ms.MSEvaluationFormProvider;
 import org.olat.course.nodes.ms.MSLearningPathNodeHandler;
+import org.olat.course.nodes.ms.MSScoreEvaluationAndDataHelper;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MinMax;
 import org.olat.course.properties.CoursePropertyManager;
@@ -92,26 +89,16 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.SessionFilter;
-import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.EvaluationFormResource;
-import org.olat.modules.forms.model.xml.Form;
-import org.olat.modules.forms.ui.EvaluationFormExcelExport;
-import org.olat.modules.forms.ui.EvaluationFormReportsController;
-import org.olat.modules.forms.ui.LegendNameGenerator;
-import org.olat.modules.forms.ui.ReportHelper;
-import org.olat.modules.forms.ui.ReportHelperUserColumns;
-import org.olat.modules.forms.ui.SessionInformationLegendNameGenerator;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
-import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.properties.Property;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -164,6 +151,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	
 	public static final String CONFIG_KEY_OPTIONAL = "cnOptional";
 	public static final String CONFIG_KEY_SCORE = "score";
+	public static final String CONFIG_KEY_SCORE_EVAL_FORM = "score.evaluation";
 	public static final String CONFIG_VALUE_SCORE_NONE = "score.none";
 	public static final String CONFIG_VALUE_SCORE_MANUAL = "score.manual";
 	public static final String CONFIG_VALUE_SCORE_EVAL_FORM_SUM = "score.evaluation.form.sum";
@@ -253,7 +241,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		if (roles.isGuestOnly()) {
 			controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else if (userCourseEnv.isParticipant()) {
-			controller = new MSCourseNodeRunController(ureq, wControl, userCourseEnv, this, true, true);
+			controller = new MSCourseNodeRunController(ureq, wControl, userCourseEnv, this, getEvaluationFormProvider(), true, true);
 		} else if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
 			controller = new MSCoachRunController(ureq, wControl, userCourseEnv, this);
 		} else {
@@ -390,10 +378,13 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	public static RepositoryEntry getEvaluationForm(ModuleConfiguration config) {
 		if (config == null) return null;
 		
-		String repoSoftkey = config.getStringValue(CONFIG_KEY_EVAL_FORM_SOFTKEY);
-		if (!StringHelper.containsNonWhitespace(repoSoftkey)) return null;
-		
+		String repoSoftkey = getEvaluationFormReference(config);
 		return RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoSoftkey, false);
+	}
+	
+	public static String getEvaluationFormReference(ModuleConfiguration moduleConfig) {
+		String repoSoftkey = moduleConfig.getStringValue(CONFIG_KEY_EVAL_FORM_SOFTKEY);
+		return StringHelper.containsNonWhitespace(repoSoftkey) ? repoSoftkey : null;
 	}
 	
 	public static void setEvaluationFormReference(RepositoryEntry re, ModuleConfiguration moduleConfig) {
@@ -403,69 +394,29 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	public static void removeEvaluationFormReference(ModuleConfiguration moduleConfig) {
 		moduleConfig.remove(CONFIG_KEY_EVAL_FORM_SOFTKEY);
 	}
-	
-	
 
 	@Override
 	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
 			String path, Identity doer, Role by) {
 		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
-		
-		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		
-		try {
-			MSService msService = CoreSpringFactory.getImpl(MSService.class);
-			I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
-			EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
-			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-			Locale locale = i18nManager.getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
-
-			RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
-			if(formEntry != null) {
-				EvaluationFormSession session =  msService.getSession(courseEntry, getIdent(), assessedIdentity, null);
-				if(session != null) {
-					SessionFilter filter = SessionFilterFactory.create(session);
-					Form form = evaluationFormManager.loadForm(formEntry);
-					
-					Translator translator = Util.createPackageTranslator(EvaluationFormReportsController.class, locale);
-					LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
-					ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
-					ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper, translator);
-					
-					EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter,
-							reportHelper.getComparator(), userColumns, getShortName());
-					evaluationFormExport.export(archiveStream, path);
-				}
-			}
-		} catch (IOException e) {
-			log.error("", e);
-		}
+		MSScoreEvaluationAndDataHelper.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, this, getEvaluationFormProvider());
 	}
 
 	@Override
 	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
-		RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
-		if(formEntry != null) {
-			MSService msService = CoreSpringFactory.getImpl(MSService.class);
-			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-			
-			EvaluationFormSession session =  msService.getSession(courseEntry, getIdent(), assessedIdentity, null);
-			if(session != null) {
-				UserNodeAuditManager auditManager = assessedUserCourseEnv.getCourseEnvironment().getAuditManager();
-				AuditEnv auditEnv = AuditEnv.of(auditManager, this, assessedIdentity, identity, by);
-				msService.deleteSession(courseEntry, getIdent(), assessedIdentity, auditEnv);
-			}
-		}
-		
+		MSScoreEvaluationAndDataHelper.resetUserData(assessedUserCourseEnv, this, getEvaluationFormProvider(), identity, by);
 		super.resetUserData(assessedUserCourseEnv, identity, by);
+	}
+	
+	public static EvaluationFormProvider getEvaluationFormProvider() {
+		return new MSEvaluationFormProvider();
 	}
 
 	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
 		List<Property> list = cpm.listCourseNodeProperties(this, null, null, null);
-		if (list.size() == 0) return null; // no properties created yet
+		if (list.isEmpty()) return null; // no properties created yet
 		Translator trans = new PackageTranslator(PACKAGE_MS, locale);
 		return trans.translate("warn.nodedelete");
 	}
@@ -483,8 +434,9 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		
 		// Delete the surveys
 		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		EvaluationFormProvider evaluationFormProvider = getEvaluationFormProvider();
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		msService.deleteSessions(entry, getIdent());
+		msService.deleteSessions(entry, getIdent(), evaluationFormProvider);
 		
 		// Delete GradeScales
 		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(entry, getIdent());
@@ -550,16 +502,22 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	private void updateScorePassedOnPublish(ICourse course, Identity assessedIdentity, Identity coachIdentity, Locale locale) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		EvaluationFormProvider evaluationFormProvider = getEvaluationFormProvider();
 		RepositoryEntry ores = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 		
 		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, userCourseEnv);
-		EvaluationFormSession session = msService.getSession(ores, getIdent(), assessedIdentity, done);
+		
+		EvaluationFormSession session = msService.getSession(ores, getIdent(), evaluationFormProvider, assessedIdentity, done);
 		
 		Float updatedScore = getScore(msService, userCourseEnv, session);
-		BigDecimal scoreScale = ScoreScalingHelper.isEnabled(course) ? ScoreScalingHelper.getScoreScale(this) : null;
-		Float updatedWeightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, scoreScale);
+		BigDecimal scoreScale = null;
+		Float updatedWeightedScore = null;
+		if(ScoreScalingHelper.isEnabled(course)) {
+			scoreScale = ScoreScalingHelper.getScoreScale(this);
+			updatedWeightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, scoreScale);
+		}
 		ScoreEvaluation updateScoreEvaluation = getUpdateScoreEvaluation(userCourseEnv, locale, updatedScore);
 		String updateGrade = updateScoreEvaluation.getGrade();
 		String updateGradeSystemIdent = updateScoreEvaluation.getGradeSystemIdent();
@@ -615,50 +573,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	private ScoreEvaluation getUpdateScoreEvaluation(UserCourseEnvironment assessedUserCourseEnv, Locale locale, Float score) {
-		GradeScoreRange gradeScoreRange = null;
-		String grade = null;
-		String gradeSystemIdent = null;
-		String performanceClassIdent = null;
-		Boolean passed = null;
-		ModuleConfiguration config = getModuleConfiguration();
-		
-		if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD)) {
-			if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED)) {
-				if (CoreSpringFactory.getImpl(GradeModule.class).isEnabled() && score != null) {
-					boolean applyGrade = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
-					if (!applyGrade) {
-						ScoreEvaluation currentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(this);
-						applyGrade = StringHelper.containsNonWhitespace(currentEval.getGrade());
-					}
-					if (applyGrade) {
-						GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
-						GradeScale gradeScale = gradeService.getGradeScale(assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent());
-						NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
-						gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
-						grade = gradeScoreRange.getGrade();
-						gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
-						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-						passed = gradeScoreRange.getPassed();
-					}
-				}
-			} else if (config.has(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)) {
-				Float cutConfig = (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-				if (cutConfig != null && score != null) {
-					boolean aboveCutValue = score.floatValue() >= cutConfig.floatValue();
-					passed = Boolean.valueOf(aboveCutValue);
-				}
-			} else {
-				ScoreEvaluation currentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(this);
-				grade = currentEval.getGrade();
-				gradeSystemIdent = currentEval.getGradeSystemIdent();
-				performanceClassIdent = currentEval.getPerformanceClassIdent();
-				passed = currentEval.getPassed();
-			}
-			
-		}
-		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
-		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
-		return new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed, null, null, null, null, null, null);
+		return MSScoreEvaluationAndDataHelper.getUpdateScoreEvaluation(assessedUserCourseEnv, this, locale, score);
 	}
 
 	@Override
