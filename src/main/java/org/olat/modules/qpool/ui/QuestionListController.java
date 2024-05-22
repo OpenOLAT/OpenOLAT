@@ -30,6 +30,9 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.ai.AiSPI;
+import org.olat.core.commons.services.ai.event.AiServiceFailedEvent;
+import org.olat.core.commons.services.ai.event.AiQuestionItemsCreatedEvent;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -124,7 +127,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private FormLink statusFinalLink;
 	private FormLink statusEndOfLifeLink;
 	private FormLink createTest;
-	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, convertItem, deleteItem, authorItem, importItem, bulkChange;
+	private FormLink list, exportItem, shareItem, removeItem, newItem, newAiItem, copyItem, convertItem, deleteItem, authorItem, importItem, bulkChange;
 
 	private final TooledStackedPanel stackPanel;
 	private RenameController renameCtrl;
@@ -153,6 +156,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private MetadataBulkChangeController bulkChangeCtrl;
 	private ImportSourcesController importSourcesCtrl;
 	private NewItemOptionsController newItemOptionsCtrl;
+	private NewAiItemController newAiItemCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ReferencableEntriesSearchController importTestCtrl;
 	private ConversionConfirmationController conversionConfirmationCtrl;
@@ -161,6 +165,8 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private boolean itemCollectionDirty = false;
 
+	@Autowired
+	private AiSPI aiSPI;
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -220,6 +226,10 @@ public class QuestionListController extends AbstractItemListController implement
 			if(getSource().isCreateEnabled()) {
 				newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
 				newItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_new");			
+			}
+			if (aiSPI.isQuestionGenerationEnabled()) {
+				newAiItem = uifactory.addFormLink("new.ai.item", formLayout, Link.BUTTON);
+				newAiItem.setIconLeftCSS("o_icon o_icon-fw o_icon_wizard");
 			}
 			importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
 			importItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_import");
@@ -366,6 +376,8 @@ public class QuestionListController extends AbstractItemListController implement
 				doOpenImport(ureq);
 			} else if(link == newItem) {
 				doChooseNewItemType(ureq);
+			} else if(link == newAiItem) {
+				doChooseNewAiItem(ureq);
 			} else if(link == bulkChange) {
 				List<ItemRow> items = getMetadataEditableItems();
 				if(!items.isEmpty()) {
@@ -464,6 +476,21 @@ public class QuestionListController extends AbstractItemListController implement
 				QItemCreationCmdEvent qicce = (QItemCreationCmdEvent)event;
 				doCreateNewItem(ureq, qicce.getTitle(), qicce.getTaxonomyLevel(), qicce.getFactory());
 			}
+		} else if(source == newAiItemCtrl) {
+			if (event instanceof AiServiceFailedEvent) {
+				AiServiceFailedEvent failedEvent = (AiServiceFailedEvent) event;
+				showError("ai.error", "<p class='b_warning'>" + failedEvent.getErrorDetails());
+			} else if (event.equals(Event.FAILED_EVENT)) {
+				showError("ai.error" + "");
+			} else if (event instanceof AiQuestionItemsCreatedEvent) {
+				AiQuestionItemsCreatedEvent createdEvent = (AiQuestionItemsCreatedEvent) event;
+				List<QuestionItem> questionItems = createdEvent.getQuestionItems();
+				// TODO update model
+				showInfo("ai.questions.created", questionItems.size() + "");
+				fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_CREATED));
+			}  
+			cmc.deactivate();
+			cleanUp();			
 		} else if(source == selectGroupCtrl) {
 			cmc.deactivate();
 			if(event instanceof BusinessGroupSelectionEvent) {
@@ -773,6 +800,17 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(cmc);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				newItemOptionsCtrl.getInitialComponent(), true, translate("new.item"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
+	private void doChooseNewAiItem(UserRequest ureq) {
+		removeAsListenerAndDispose(newItemOptionsCtrl);
+		newAiItemCtrl = new NewAiItemController(ureq, getWindowControl(), getSecurityCallback(), getSource().isAdminItemSource());
+		listenTo(newAiItemCtrl);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newAiItemCtrl.getInitialComponent(), true, translate("new.ai.item"));
 		cmc.activate();
 		listenTo(cmc);
 	}

@@ -2326,6 +2326,20 @@
 		</dependency>
 		<!-- end Paypal -->
 
+		<!-- AI API -->
+   		<dependency>
+			<groupId>io.github.sashirestela</groupId>
+			<artifactId>simple-openai</artifactId>
+			<version>3.2.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- end AI API -->
+
 		<!-- Start test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
