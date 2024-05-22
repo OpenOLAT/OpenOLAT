@@ -47,13 +47,13 @@ import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.model.jpa.SpacerPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.ceditor.model.jpa.TitlePart;
+import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.MediaVersionMetadata;
 import org.olat.modules.cemedia.model.MediaImpl;
 import org.olat.modules.cemedia.model.MediaVersionImpl;
 import org.olat.modules.cemedia.model.MediaVersionMetadataImpl;
 
-import com.microsoft.graph.callrecords.models.Media;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
