@@ -19,6 +19,7 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import java.io.File;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesAssessmentItemListener;
@@ -47,6 +49,7 @@ import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.manager.ContentEditorQti;
 import org.olat.modules.ceditor.model.QuizQuestion;
@@ -58,6 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 
 /**
  * Initial date: 2024-03-11<br>
@@ -67,6 +71,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 public class QuizRunController extends BasicController implements PageRunElement, OutcomesAssessmentItemListener {
 
 	private final VelocityContainer mainVC;
+	private final AssessmentEntry assessmentEntry;
 	private QuizPart quizPart;
 	private final boolean editable;
 	private Link startButton;
@@ -76,9 +81,9 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private final AssessmentSessionAuditLogger candidateAuditLogger = new DefaultAssessmentSessionAuditLogger();
 	private final RepositoryEntry entry;
 	private final String subIdent;
-	private int questionIndex;
+	private int questionIndex = 0;
 	private ProgressBar progressBar;
-	private Map<String, Boolean> questionPassedState;
+	private Map<String, Boolean> questionPassedState = new HashMap<>();
 
 	@Autowired
 	private ContentEditorQti contentEditorQti;
@@ -94,12 +99,44 @@ public class QuizRunController extends BasicController implements PageRunElement
 		questionIndex = 0;
 		this.editable = editable;
 		this.entry = entry;
-		this.subIdent = subIdent;
+		this.subIdent = subIdent + "_" + quizPart.getId();
+
+		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, entry,
+				this.subIdent, Boolean.FALSE, entry);
+
 		mainVC = createVelocityContainer("quiz_run");
 		mainVC.setElementCssClass("o_quiz_run_element_css_class");
 		setBlockLayoutClass(quizPart.getSettings());
 		putInitialPanel(mainVC);
-		updateUI(ureq);
+
+		AssessmentRunStatus runStatus = assessmentEntry.getCurrentRunStatus();
+		if (runStatus != null) {
+			switch (runStatus) {
+				case running -> doStart(ureq);
+				case done -> {
+					initQuestionPassedStates();
+					doShowResult(ureq);
+				}
+				default -> updateUI(ureq);
+			}
+		} else {
+			updateUI(ureq);
+		}
+	}
+
+	private void initQuestionPassedStates() {
+		questionPassedState = new HashMap<>();
+		AssessmentTestSession lastSession = qtiService.getResumableAssessmentItemsSession(getIdentity(),
+				null, entry, subIdent, entry, false);
+		if (lastSession != null) {
+			List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(lastSession);
+			for (AssessmentItemSession itemSession : itemSessions) {
+				int score = itemSession.getScore() != null ? itemSession.getScore().intValue() : 0;
+				if (StringHelper.containsNonWhitespace(itemSession.getAssessmentItemIdentifier())) {
+					questionPassedState.put(itemSession.getAssessmentItemIdentifier(), score > 0);
+				}
+			}
+		}
 	}
 
 	private void setBlockLayoutClass(QuizSettings quizSettings) {
@@ -218,34 +255,68 @@ public class QuizRunController extends BasicController implements PageRunElement
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (startButton == source) {
+			updateRunStatus(AssessmentRunStatus.running);
 			doStart(ureq);
 			updateUI(ureq);
 		} else if (retryButton == source) {
+			reset();
 			doStart(ureq);
 			updateUI(ureq);
 		}
 	}
 
-	private void doStart(UserRequest ureq) {
-		questionIndex = 0;
-		questionPassedState = new HashMap<>();
+	private void reset() {
+		updateRunStatus(AssessmentRunStatus.notStarted);
+		updateCompletion(0.0);
+		qtiService.deleteAssessmentTestSession(List.of(getIdentity()), entry, entry, subIdent);
+	}
 
+	private void doStart(UserRequest ureq) {
 		List<QuizQuestion> questions = quizPart.getSettings().getQuestions();
-		if (questionIndex >= questions.size()) {
+		if (questions.isEmpty()) {
 			return;
 		}
 
 		state = State.quiz;
 
+		initQuestionIndex(questions);
 		doShowQuestion(ureq, questions.get(questionIndex));
+	}
+
+	private void initQuestionIndex(List<QuizQuestion> questions) {
+		if (questions.isEmpty()) {
+			return;
+		}
+		double completion = getCompletion();
+		questionIndex = Math.min((int) Math.round(completion * questions.size()), questions.size() - 1);
+	}
+
+	private double getCompletion() {
+		if (assessmentEntry.getCompletion() == null) {
+			return 0.0d;
+		}
+		return assessmentEntry.getCompletion();
+	}
+
+	private void updateCompletion(Double completion) {
+		assessmentEntry.setCompletion(completion);
+		assessmentService.updateAssessmentEntry(assessmentEntry);
+	}
+
+	private void updateRunStatus(AssessmentRunStatus runStatus) {
+		assessmentEntry.setCurrentRunStatus(runStatus);
+		assessmentService.updateAssessmentEntry(assessmentEntry);
 	}
 
 	private void doNext(UserRequest ureq) {
 		List<QuizQuestion> questions = quizPart.getSettings().getQuestions();
 		if ((questionIndex + 1) < questions.size()) {
 			questionIndex++;
+			updateCompletion((double) questionIndex / questions.size());
 			doShowQuestion(ureq, questions.get(questionIndex));
 		} else {
+			updateCompletion(1.0);
+			updateRunStatus(AssessmentRunStatus.done);
 			doShowResult(ureq);
 		}
 	}
@@ -258,17 +329,13 @@ public class QuizRunController extends BasicController implements PageRunElement
 		URI assessmentItemUri = storageInfo.questionFile().toURI();
 		ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItem(assessmentItemUri,
 				storageInfo.questionDirectory());
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(),
-				null, entry, subIdent, Boolean.TRUE, entry);
 
-		boolean authorMode = true;
 		QTI21DeliveryOptions deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		deliveryOptions.setPageMode(true);
 		deliveryOptions.setLastQuestion(questionIndex >= (getNumberOfQuestions() - 1));
-		assessmentItemDisplayController = new AssessmentItemDisplayController(ureq, getWindowControl(),
-				entry, subIdent, entry, assessmentEntry, authorMode, resolvedAssessmentItem,
-				storageInfo.questionDirectory(), storageInfo.questionFile(), quizQuestion.getId(), deliveryOptions,
-				this, candidateAuditLogger);
+		assessmentItemDisplayController = new QuizAssessmentItemDisplayController(ureq, getWindowControl(),
+				resolvedAssessmentItem, storageInfo.questionDirectory(), storageInfo.questionFile(),
+				quizQuestion.getId(), deliveryOptions);
 		listenTo(assessmentItemDisplayController);
 		mainVC.put("question", assessmentItemDisplayController.getInitialComponent());
 	}
@@ -293,6 +360,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 						 SessionStatus sessionStatus) {
 		if (sessionStatus.equals(SessionStatus.FINAL)) {
 			if (StringHelper.containsNonWhitespace(resultIdentifier)) {
+				updateRunStatus(AssessmentRunStatus.running);
 				questionPassedState.put(resultIdentifier, score >= 1);
 				mainVC.contextPut("quizOutcomeClass", score >= 1 ? "o_correct" : "o_incorrect");
 			}
@@ -303,5 +371,41 @@ public class QuizRunController extends BasicController implements PageRunElement
 		intro,
 		quiz,
 		result
+	}
+
+	private class QuizAssessmentItemDisplayController extends AssessmentItemDisplayController {
+
+		public QuizAssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
+												   ResolvedAssessmentItem resolvedAssessmentItem, File fUnzippedDirRoot,
+												   File itemFile, String externalRefIdentifier,
+												   QTI21DeliveryOptions deliveryOptions) {
+			super(ureq, wControl, entry, subIdent, entry, assessmentEntry, false, resolvedAssessmentItem,
+					fUnzippedDirRoot, itemFile, externalRefIdentifier, deliveryOptions,
+					QuizRunController.this, candidateAuditLogger);
+		}
+
+		@Override
+		protected AssessmentTestSession initOrResumeAssessmentTestSession(RepositoryEntry courseEntry, String subIdent,
+																		  RepositoryEntry referenceEntry,
+																		  AssessmentEntry assessmentEntry,
+																		  boolean authorMode) {
+			AssessmentTestSession lastSession = qtiService.getResumableAssessmentItemsSession(getIdentity(),
+					null, courseEntry, subIdent, entry, authorMode);
+			if (lastSession == null) {
+				candidateSession = qtiService.createAssessmentTestSession(getIdentity(), null,
+						assessmentEntry, courseEntry, subIdent, entry, null, authorMode);
+				return candidateSession;
+			}
+			return lastSession;
+		}
+
+		@Override
+		protected ItemSessionState loadItemSessionState() {
+			ItemSessionState itemSessionState = qtiService.loadItemSessionState(candidateSession, itemSession);
+			if (itemSessionState == null) {
+				itemSessionState = new ItemSessionState();
+			}
+			return itemSessionState;
+		}
 	}
 }
