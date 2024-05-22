@@ -323,7 +323,8 @@ public class PFManager {
 		VFSSecurityCallback callback;
 		SubscriptionContext folderSubContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		int count = countFiles(dropbox);
-		boolean limitCount = (pfNode.hasParticipantBoxConfigured() && pfNode.hasLimitCountConfigured()) && pfNode.isGreaterOrEqualToLimit(count);
+		boolean limitEnabled = pfNode.hasParticipantBoxConfigured() && pfNode.hasLimitCountConfigured();
+		boolean limitCount = limitEnabled && pfNode.isGreaterOrEqualToLimit(count);
 		boolean timeFrame = pfNode.hasDropboxTimeFrameConfigured() && !pfNode.isInDropboxTimeFrame();
 		boolean alterFile = (pfNode.hasParticipantBoxConfigured() && pfNode.hasAlterFileConfigured());
 		if (timeFrame || limitCount && !alterFile){
@@ -332,7 +333,7 @@ public class PFManager {
 			callback= new CountingCallback(folderSubContext, dropbox, pfNode.getLimitCount(), alterFile);
 		} else if (limitCount && alterFile) {
 			callback = new ReadDeleteCallback(folderSubContext);
-		} else if (alterFile) {
+		} else if (limitEnabled) {
 			callback= new CountingCallback(folderSubContext, dropbox, pfNode.getLimitCount(), alterFile);
 		} else if (!limitCount && !alterFile) {
 			callback = new ReadWriteCallback(folderSubContext, quotaPath);
