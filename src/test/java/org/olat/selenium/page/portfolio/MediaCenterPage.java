@@ -41,7 +41,7 @@ public class MediaCenterPage {
 	}
 	
 	public MediaCenterPage assertOnMediaCenter() {
-		By mediaCenterBy = By.cssSelector("div.o_portfolio div.o_media_browser");
+		By mediaCenterBy = By.cssSelector("div.o_personal_folder div.o_media_browser");
 		OOGraphene.waitElement(mediaCenterBy, browser);
 		return this;
 	}
@@ -65,9 +65,9 @@ public class MediaCenterPage {
 	 * @return Itself
 	 */
 	public MediaCenterPage assertOnMediaDetails(String name) {
-		By nameBy = By.xpath("//div[contains(@class,'o_portfolio')]//h2[contains(text(),'" + name + "')]");
+		By nameBy = By.xpath("//div[contains(@class,'o_personal_folder')]//h2[contains(text(),'" + name + "')]");
 		OOGraphene.waitElement(nameBy, browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_portfolio .o_sel_media_metadata"), browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_personal_folder .o_sel_media_metadata"), browser);
 		return this;
 	}
 	
@@ -80,7 +80,7 @@ public class MediaCenterPage {
 	}
 	
 	public MediaCenterPage uploadMedia(String title, File file) {
-		By addMedia = By.cssSelector("div.o_portfolio a.o_sel_add_media");
+		By addMedia = By.cssSelector("div.o_personal_folder a.o_sel_add_media");
 		browser.findElement(addMedia).click();
 		OOGraphene.waitModalDialog(browser);
 		

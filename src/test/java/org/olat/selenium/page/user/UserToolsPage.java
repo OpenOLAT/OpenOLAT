@@ -23,10 +23,9 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.LoginPage;
-import org.olat.selenium.page.core.FolderPage;
+import org.olat.selenium.page.core.FileHubPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LecturesProfilePage;
-import org.olat.selenium.page.portfolio.MediaCenterPage;
 import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -76,9 +75,9 @@ public class UserToolsPage {
 	 * Check if we see the calendar.
 	 * @return
 	 */
-	public FolderPage assertOnFolderV2() {
-		return new FolderPage(browser)
-			.assertOnFolderTable();
+	public FileHubPage assertOnFileHub() {
+		return new FileHubPage(browser)
+			.assertOnFileHub();
 	}
 	
 	/**
@@ -163,12 +162,11 @@ public class UserToolsPage {
 		OOGraphene.waitBusy(browser);
 		return new LecturesProfilePage(browser);
 	}
-	
-	public MediaCenterPage openMediaCenter() {
-		By myLecturesBy = By.className("o_sel_user_tools-MediaCenter");
-		browser.findElement(myLecturesBy).click();
-		OOGraphene.waitBusy(browser);
-		return new MediaCenterPage(browser);
+
+	public FileHubPage openFileHub() {
+		By fileHubBy = By.className("o_sel_user_tools-filehub");
+		browser.findElement(fileHubBy).click();
+		return new FileHubPage(browser).assertOnFileHub();
 	}
 	
 	/**

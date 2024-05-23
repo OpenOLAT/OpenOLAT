@@ -188,8 +188,7 @@ public class FolderPage {
 		OOGraphene.waitElement(addFileBy, browser);
 		By inputFileBy = By.cssSelector(".o_folder_cmds .o_folder_create_group div.o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputFileBy, file, browser);
-		assertOnFileCard(file.getName());
-		return this;
+		return assertOnFileCard(file.getName());
 	}
 	
 	public FolderPage unzipFile(String filename) {

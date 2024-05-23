@@ -503,10 +503,10 @@ public class UserTest extends Deployments {
 			.assertOnCalendar();
 		
 		//go to my folder
-		String folderUrl = deploymentUrl.toString() + "auth/HomeSite/" + user.getKey() + "/userfolder/0";
+		String folderUrl = deploymentUrl.toString() + "auth/HomeSite/" + user.getKey() + "/filehub/0";
 		browser.get(folderUrl);
 		new UserToolsPage(browser)
-			.assertOnFolderV2();
+			.assertOnFileHub();
 	}
 	
 	/**
