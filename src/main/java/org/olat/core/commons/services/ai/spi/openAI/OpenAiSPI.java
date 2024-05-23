@@ -19,21 +19,19 @@
  */
 package org.olat.core.commons.services.ai.spi.openAI;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.logging.log4j.Logger;
-import org.dom4j.tree.DefaultDocument;
 import org.olat.core.commons.services.ai.AiSPI;
+import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
+import org.olat.core.commons.services.ai.ui.OpenAIAdminConfigFormController;
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.xml.XMLParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -54,16 +52,13 @@ import io.github.sashirestela.openai.domain.chat.ChatRequest;
  *
  */
 @Service
-public class OpenAiSPI extends AbstractSpringModule implements ConfigOnOff, AiSPI {
+public class OpenAiSPI extends AbstractSpringModule implements AiSPI {
 	private static final Logger log = Tracing.createLoggerFor(OpenAiSPI.class);
-	private static final String SPI_NAME = "OpenOlat.AI.Module:OpenAI";
+	private static final String SPI_NAME = "OpenAI";
+	private static final String SPI_ID = "OpenAI";
 		
-	private static final String OPENAI_ENABLED = "openai.enabled";
     private static final String OPENAI_API_KEY = "openai.api.key";
     private static final String OPENAI_CHAT_MODEL = "openai.chat.model";
-	
-	@Value("${ai.openai.enabled:false}")
-	private boolean enabled;
 	
 	@Value("${ai.openai.api.key}")
 	private String apiKey;
@@ -92,27 +87,9 @@ public class OpenAiSPI extends AbstractSpringModule implements ConfigOnOff, AiSP
 	}
 
 	private void updateProperties() {
-		String enabledObj = getStringPropertyValue(OPENAI_ENABLED, true);
-		if(StringHelper.containsNonWhitespace(enabledObj)) {
-			// only override if configured, otherwise take from spring injected value
-			enabled = "true".equals(enabledObj);
-		}
 		apiKey = getStringPropertyValue(OPENAI_API_KEY, apiKey);
 		chatModel = getStringPropertyValue(OPENAI_CHAT_MODEL, chatModel);
-
-		if (enabled && StringHelper.containsNonWhitespace(apiKey)) {
-			openAI = SimpleOpenAI.builder().apiKey(apiKey).build();
-		}
-	}
-	
-	@Override
-	public boolean isEnabled() {
-		return enabled;
-	}
-	
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-		setStringProperty(OPENAI_ENABLED, Boolean.toString(enabled), true);
+		openAI = SimpleOpenAI.builder().apiKey(apiKey).build();
 	}
 	
 	/**
@@ -128,6 +105,7 @@ public class OpenAiSPI extends AbstractSpringModule implements ConfigOnOff, AiSP
 	public void setApiKey(String apiKey) {
 		this.apiKey = apiKey;
 		setStringProperty(OPENAI_API_KEY, apiKey, true);
+		openAI = SimpleOpenAI.builder().apiKey(apiKey).build();			
 	}
 
 	/**
@@ -151,8 +129,18 @@ public class OpenAiSPI extends AbstractSpringModule implements ConfigOnOff, AiSP
 	 **********************/
 	
 	@Override
-	public String getSpiName() {
+	public String getId() {
+		return SPI_ID;
+	}
+
+	@Override
+	public String getName() {
 		return SPI_NAME;
+	}
+	
+	@Override
+	public Controller createAdminController(UserRequest ureq, WindowControl wControl) {
+		return new OpenAIAdminConfigFormController(ureq, wControl);
 	}
 
 	@Override
@@ -162,17 +150,19 @@ public class OpenAiSPI extends AbstractSpringModule implements ConfigOnOff, AiSP
 
 	@Override
 	public boolean isQuestionGenerationEnabled() {
-		return isEnabled();
+		// check if configured
+		return true;
 	}
 	
 	@Override
-	public DefaultDocument createMCQuestionsDocument(String input, int number) {
-		DefaultDocument resultDocument = null;
+	public AiMCQuestionsResponse generateMCQuestionsResponse(String input, int number) {
+		AiMCQuestionsResponse response = new AiMCQuestionsResponse();
 		try {			
 			Locale locale = openAiPromptHelper.detectSupportedLocale(input);
 			if (locale == null) {
-				resultDocument = createErrorDocument("Could not detect language. Only DE and EN supported.");
-				return resultDocument;
+				
+				response.setError("Could not detect language. Only DE and EN supported.");
+				return response;
 			}			
 			
 			//TODO: check input length
@@ -196,32 +186,27 @@ public class OpenAiSPI extends AbstractSpringModule implements ConfigOnOff, AiSP
 			if (log.isDebugEnabled()) {
 				log.debug("OpenAI chat response for MC question:: " + result);
 			}
-log.info("OpenAI chat response for MC question:: " + result);
 			
-			// Convert response to XML Document
-			XMLParser parser = new XMLParser();
-			InputStream is = new ByteArrayInputStream(result.getBytes(StandardCharsets.UTF_8));
-			resultDocument = (DefaultDocument) parser.parse(is, false);
+			response = openAiPromptHelper.parseQuestionResult(result);
 			
 		} catch (Exception e) {
 			log.warn("Error while creating an MC question via AI service", e);
-			resultDocument = createErrorDocument(e.getMessage());
+			response.setError(parseErrorString(e.getMessage()));
 		}
-		return resultDocument;
+		return response;
 	}
 
 	
-	private DefaultDocument createErrorDocument(String errormessage) {
+	private String parseErrorString(String errormessage) {
 		// parse for fancy CleverClientException that hide the real openAI errors: 
 		if (errormessage.contains("\"message\": \"")) {
 			errormessage = errormessage.substring(errormessage.indexOf("\"message\": \"") + 12);
 			errormessage = errormessage.substring(0, errormessage.indexOf("\""));
 		}
-		String error = "<error>" + errormessage + "</error>";
-		XMLParser parser = new XMLParser();
-		InputStream is = new ByteArrayInputStream(error.getBytes(StandardCharsets.UTF_8));
-		return (DefaultDocument) parser.parse(is, false);
+		return errormessage;
 	}
 	
-
+	
+	
+	
 }

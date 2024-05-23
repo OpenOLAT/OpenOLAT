@@ -28,12 +28,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.dom4j.Document;
-import org.dom4j.Node;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.ai.AiSPI;
 import org.olat.core.commons.services.ai.event.AiQuestionItemsCreatedEvent;
 import org.olat.core.commons.services.ai.event.AiServiceFailedEvent;
+import org.olat.core.commons.services.ai.model.AiMCQuestionData;
+import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.UserRequest;
@@ -58,7 +58,10 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemAuditLog.Action;
 import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
+import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -87,6 +90,8 @@ public class NewAiItemController extends FormBasicController {
 	private QTI21Service qtiService;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	protected QuestionPoolModule qpoolModule;
 	@Autowired
 	protected QPoolService qpoolService;
 	@Autowired
@@ -134,31 +139,29 @@ public class NewAiItemController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String input = contentEl.getValue();
 		
-		int numberQuestions = Math.max(1, Math.round(input.length() / 1000));
-		Document itemDocument = aiSPI.createMCQuestionsDocument(input, numberQuestions);
+		int numberQuestions = Math.max(1, Math.round(input.length() / 500));
+		AiMCQuestionsResponse response = aiSPI.generateMCQuestionsResponse(input, numberQuestions);
 		
-		if (itemDocument != null && itemDocument.hasContent()) {
-			Node errorNode = itemDocument.selectSingleNode("//error");
-			if (errorNode != null) {
-				// something went wrong, print error and quit
-				fireEvent(ureq, new AiServiceFailedEvent(StringHelper.xssScan(errorNode.getStringValue())));				
-				return;
-			} else {
-				// create all items in the document and fire event with item list to parent
-				List<QuestionItem> questionItems = new ArrayList<>();
-				List<Node> items = itemDocument.selectNodes("//item");
-				for (Node itemNode : items) {
-					QuestionItem item = doCreateMCItem(ureq, itemNode.getDocument());
-					if (item != null) {
-						questionItems.add(item);					
-					}					
-				}
-				if (questionItems.size() > 0) {
-					fireEvent(ureq, new AiQuestionItemsCreatedEvent(questionItems));								
-					return;
-				}			
+		if (response.isSuccess()) {
+			// create all items in the document and fire event with item list to parent
+			List<QuestionItem> questionItems = new ArrayList<>();
+
+			for (AiMCQuestionData questionData : response.getQuestions()) {
+				QuestionItem item = doCreateMCItem(ureq, questionData);
+				if (item != null) {
+					questionItems.add(item);					
+				}				
 			}
-		}
+			if (questionItems.size() > 0) {
+				fireEvent(ureq, new AiQuestionItemsCreatedEvent(questionItems));								
+				return;
+			}			
+			
+		} else {
+			// something went wrong, print error and quit
+			fireEvent(ureq, new AiServiceFailedEvent(StringHelper.xssScan(response.getError())));				
+			return;
+		}			
 		fireEvent(ureq, Event.FAILED_EVENT);
 	}
 
@@ -167,10 +170,10 @@ public class NewAiItemController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	private QuestionItem doCreateMCItem(UserRequest ureq, Document itemDocument) {
+	private QuestionItem doCreateMCItem(UserRequest ureq, AiMCQuestionData itemData) {
 		// 1) Create basic item using the builder in RAM
-		String title = itemDocument.selectSingleNode("//title").getStringValue();
-		String question = itemDocument.selectSingleNode("//question").getStringValue();
+		String title = itemData.getTitle();
+		String question = itemData.getQuestion();
 		if (title == null || question == null) {
 			return null;			
 		}
@@ -183,9 +186,8 @@ public class NewAiItemController extends FormBasicController {
 		mcItemBuilder.setMaxScore(1d);
 		mcItemBuilder.clearMapping();
 		// create correct answers
-		List<Node> correctNodes = itemDocument.selectNodes("//correct");
-		for (Node correct : correctNodes) {
-			String correctValue = StringHelper.xssScan(correct.getStringValue());
+		for (String correctValue : itemData.getCorrectAnswers()) {
+			correctValue = StringHelper.xssScan(correctValue);
 			ChoiceInteraction interaction = mcItemBuilder.getChoiceInteraction();
 			SimpleChoice newChoice = AssessmentItemFactory.createSimpleChoice(interaction, correctValue,
 					mcItemBuilder.getQuestionType().getPrefix());
@@ -193,36 +195,33 @@ public class NewAiItemController extends FormBasicController {
 			mcItemBuilder.addCorrectAnswer(newChoice.getIdentifier());
 		}
 		// create the wrong answers
-		List<Node> wrongNodes = itemDocument.selectNodes("//wrong");
-		for (Node wrong : wrongNodes) {
-			String wrongValue = StringHelper.xssScan(wrong.getStringValue());
+		for (String wrongValue : itemData.getWrongAnswers()) {
+			wrongValue = StringHelper.xssScan(wrongValue);
 			ChoiceInteraction interaction = mcItemBuilder.getChoiceInteraction();
 			SimpleChoice newChoice = AssessmentItemFactory.createSimpleChoice(interaction, wrongValue,
 					QTI21QuestionType.mc.getPrefix());
 			mcItemBuilder.addSimpleChoice(newChoice);
-		}
-		
+		}		
 		mcItemBuilder.build();
 		
 		// 2) Add metadata
 		AssessmentItemAndMetadata metaItem = new AssessmentItemAndMetadata(mcItemBuilder);
 		// Meta: topic
-		String topic = itemDocument.selectSingleNode("//topic").getStringValue();
+		String topic = itemData.getTopic();
 		if (topic != null) {
 			metaItem.setTopic(StringHelper.xssScan(topic));			
 		}
 		// Meta: keywords and taxonomy
-		String keywords = itemDocument.selectSingleNode("//keywords").getStringValue();
+		String keywords = itemData.getKeywords();
 		if (keywords != null) {
 			metaItem.setKeywords(StringHelper.xssScan(keywords));
+		}
+		String subject = itemData.getSubject();
+		if (subject != null) {
 			// Try mapping to a taxonomy
-			Set<TaxonomyLevel> taxonomies = new HashSet<TaxonomyLevel>();
-			String[] keywordsArray = keywords.split(",");
-			for (String keyword : keywordsArray) {
-				keyword = keyword.trim();
-				taxonomies.addAll(searchTaxonomyLevels(keyword));
-			}		
 			TaxonomyLevel finalTaxonomy = null;
+			Set<TaxonomyLevel> taxonomies = new HashSet<TaxonomyLevel>();
+			taxonomies.addAll(searchTaxonomyLevels(subject));
 			int currentLevel = 0;
 			for (TaxonomyLevel taxLevel : taxonomies) {
 				// use the most specific taxonomy if multiple have been found
@@ -231,12 +230,28 @@ public class NewAiItemController extends FormBasicController {
 					finalTaxonomy = taxLevel;			
 				}
 			}
+			if (finalTaxonomy == null) {
+				// try fallback to keywords
+				String[] keywordsArray = keywords.split(",");
+				for (String keyword : keywordsArray) {
+					keyword = keyword.trim();
+					taxonomies.addAll(searchTaxonomyLevels(keyword));
+				}		
+				currentLevel = 0;
+				for (TaxonomyLevel taxLevel : taxonomies) {
+					// use the most specific taxonomy if multiple have been found
+					int level = StringUtils.countMatches(taxLevel.getMaterializedPathIdentifiers(), "/");
+					if (level > currentLevel) {					
+						finalTaxonomy = taxLevel;			
+					}
+				}
+			}
 			if (finalTaxonomy != null) {
 				metaItem.setTaxonomyPath(finalTaxonomy.getMaterializedPathIdentifiers());
 			}
 		}
 		// Meta: used AI service and AI model
-		metaItem.setEditor(aiSPI.getSpiName());
+		metaItem.setEditor("OpenOlat.AI.QTI12.Generator." + aiSPI.getId());
 		metaItem.setEditorVersion(aiSPI.getQuestionGenerationModel());
 		
 		// 3) Persist item in question pool using the Excel import SPI
@@ -246,7 +261,14 @@ public class NewAiItemController extends FormBasicController {
 		builder.withAfter(importedItem);
 		qpoolService.persist(builder.create());
 		
-		// 4: Set default license
+		// 4: Set review status, but only if review process is not enabled		
+		if( !qpoolModule.isReviewProcessEnabled() && importedItem instanceof QuestionItemImpl) { 
+			QuestionItemImpl itemImpl = (QuestionItemImpl)importedItem;
+			itemImpl.setQuestionStatus(QuestionStatus.review);
+			qpoolService.updateItem(itemImpl);
+		}
+		
+		// 5: Set default license
 		if (licenseModule.isEnabled(licenseHandler)) {
 			// The QItemFactory may create a no license as part of the import process.
 			// But for new question items the default license should be created.

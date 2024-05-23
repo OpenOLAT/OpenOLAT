@@ -19,7 +19,10 @@
  */
 package org.olat.core.commons.services.ai;
 
-import org.dom4j.Document;
+import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 
 /**
  * 
@@ -32,12 +35,45 @@ import org.dom4j.Document;
  */
 public interface AiSPI {
 	
-	public String getSpiName();
+	/**
+	 * @return The technical identifier of the SPI
+	 */
+	public String getId();
+
+	/**
+	 * @return The human readable identifier / name of the SPI, e.g the prouduct name
+	 */
+	public String getName();
 	
-	public String getQuestionGenerationModel();
+	/**
+	 * Factory method to create an admin interface to configure the SPI
+	 * @param ureq
+	 * @param wControl
+	 * @return
+	 */
+	public Controller createAdminController(UserRequest ureq, WindowControl wControl);
+
 	
+	/**
+	 * @return true: this SPI can be used to generate questions; false: the SPI can
+	 *         not be used to generate questions
+	 */
 	public boolean isQuestionGenerationEnabled();
+
+	/**
+	 * @return The LLM used for generating questions
+	 */
+	public String getQuestionGenerationModel();
+
 	
-	public Document createMCQuestionsDocument(String input, int number);
+	/**
+	 * Generative method to create multiple choice items from a given text input
+	 * 
+	 * @param input  The original input text. Make sure it is not longer than your
+	 *               model supports
+	 * @param number the number of questions that shall be generated
+	 * @return
+	 */
+	public AiMCQuestionsResponse generateMCQuestionsResponse(String input, int number);
 
 }

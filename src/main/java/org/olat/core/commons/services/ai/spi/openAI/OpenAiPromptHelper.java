@@ -21,7 +21,10 @@ package org.olat.core.commons.services.ai.spi.openAI;
 
 import java.util.Locale;
 
+import org.olat.core.commons.services.ai.model.AiMCQuestionData;
+import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.commons.services.text.TextService;
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -108,19 +111,26 @@ public class OpenAiPromptHelper {
 	UserMessage createChoiceQuestionUserMessage(String input, int number, int correct, int wrong, Locale locale) {
 		if (locale != null && locale.getLanguage().equals("en")) {
 			return UserMessage.of("""
-						Create a short summary title for the text. Then create %s different multiple choice question with %s correct and %s wrong answers.
-						Format: 
-						<items> 
-							<item>
-							 	<title>Title</title>
-							 	<topic>Topic</topic>
-								<keywords>Keywords</keywords>
-							 	<question>Question</question>
+						Create %s different multiple choice question with %s correct and %s wrong answers.
+						Use the following format for each question: 
+						
+						<item>
+						 	<title>Title</title>
+						 	<topic>Topic</topic>
+						 	<subject>Subject area</subject>
+							<keywords>Keywords</keywords>
+						 	<question>Question</question>
+							<answers>
+								<correct>Correct answer</correct>
 								<correct>Correct answer</correct>
 								<wrong>Wrong answer</wrong>
-							</item>
-						</items>
+								<wrong>Wrong answer</wrong>
+								<wrong>Wrong answer</wrong>
+							</answers>
+						</item>
 						
+						-----
+												
 						Use this text for the questions:
 						
 						-----
@@ -128,19 +138,26 @@ public class OpenAiPromptHelper {
 						""".formatted(correct, wrong) + input);
 		} else if (locale != null && locale.getLanguage().equals("de")) {
 			return UserMessage.of("""
-						Fasse den Text in einem kurzen Titel zusammen. Dann erstelle %s verschiedene Multiple-Choice Fragen mit %s korrekten und %s falschen Antworten.
-						Benutze das folgende Format:
-						<items> 
-							<item> 
-								<title>Titel</title>
-							 	<topic>Thema</topic>
-								<keywords>Schlüsselwörter</keywords>
-								<question>Frage</question>
+						Erstelle %s verschiedene Multiple-Choice Fragen mit %s korrekten und %s falschen Antworten.
+						Benutze das folgende Format für jede einzelne Frage:
+
+						<item> 
+							<title>Titel</title>
+						 	<topic>Thema</topic>
+						 	<subject>Fachbereich</subject>
+							<keywords>Schlüsselwörter</keywords>
+							<question>Frage</question>
+							<answers>
+								<correct>Korrekte Antwort</correct>
 								<correct>Korrekte Antwort</correct>
 								<wrong>Falsche Antwort</wrong>
-							</item>
-						</items>
-						
+								<wrong>Falsche Antwort</wrong>
+								<wrong>Falsche Antwort</wrong>
+							</answers>
+						</item>
+
+						-----
+												
 						Verwende diesen Text für die Fragen:
 							
 						-----
@@ -149,5 +166,78 @@ public class OpenAiPromptHelper {
 		} 
 		return null;
 	}
+
+	/**
+	 * Method to parse the result of the chat that contains MC questions according
+	 * to the prompt. The method tries to parse the XML like input in a fail-save
+	 * manner. Invalid XML or missing elements are skipped. 
+	 * 
+	 * @param result The input from the OpenAI chat bot
+	 * @return
+	 */
+	AiMCQuestionsResponse parseQuestionResult(String result) {
+		AiMCQuestionsResponse response = new AiMCQuestionsResponse();
+		String currentItem = getNextElement(result, "item");
+		if (currentItem.length() > 0) {
+			result  = result.substring(result.indexOf("</item>") + 7);			
+		}
+				
+		while(StringHelper.containsNonWhitespace(currentItem)) {
+			AiMCQuestionData mcData = new AiMCQuestionData();
+			response.addQuestion(mcData);
+	
+			mcData.setTitle(getNextElement(currentItem, "title"));
+			mcData.setTopic(getNextElement(currentItem, "topic"));
+			mcData.setSubject(getNextElement(currentItem, "subject"));
+			mcData.setKeywords(getNextElement(currentItem, "keywords"));
+			mcData.setQuestion(getNextElement(currentItem, "question"));
+
+			// find all correct in answers
+			String answers = getNextElement(currentItem, "answers");
+			String correct = getNextElement(answers, "correct");
+			while (StringHelper.containsNonWhitespace(correct)) {				
+				mcData.addCorrectAnswer(correct);
+				answers = answers.substring(answers.indexOf("</correct>") + 10);
+				correct = getNextElement(answers, "correct");
+			}
+			// reset, find all wrong in answers
+			answers = getNextElement(currentItem, "answers");
+			String wrong = getNextElement(answers, "wrong");
+			while (StringHelper.containsNonWhitespace(wrong)) {				
+				mcData.addWrongAnswer(wrong);
+				answers = answers.substring(answers.indexOf("</wrong>") + 8);
+				wrong = getNextElement(answers, "wrong");
+			}
+			
+			currentItem = getNextElement(result, "item");
+			if (currentItem.length() > 0) {
+				result  = result.substring(result.indexOf("</item>") + 7);			
+			}
+		}		
+		return response;
+	}
+	
+	
+	/**
+	 * Helper to find and extract the content of the next XML element in the given
+	 * input
+	 * 
+	 * @param input
+	 * @param elementName
+	 * @return The found element content or an empty string if not found or XML
+	 *         invalid
+	 */
+	private String getNextElement(String input, String elementName) {
+		String startTag = "<" + elementName + ">";
+		String endTag = "</" + elementName + ">";
+		int nextStartPos = input.indexOf(startTag);
+		int nextEndPos = input.indexOf(endTag);
+		if (nextStartPos < 0 || nextEndPos < 0 || nextEndPos < (nextStartPos + startTag.length())) {
+			return ""; 
+		}
+		return input.substring(nextStartPos + startTag.length(), nextEndPos);
+	}
+	
+	
 
 }

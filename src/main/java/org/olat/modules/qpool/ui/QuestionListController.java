@@ -30,9 +30,9 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.ai.AiSPI;
-import org.olat.core.commons.services.ai.event.AiServiceFailedEvent;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.event.AiQuestionItemsCreatedEvent;
+import org.olat.core.commons.services.ai.event.AiServiceFailedEvent;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -166,7 +166,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private boolean itemCollectionDirty = false;
 
 	@Autowired
-	private AiSPI aiSPI;
+	private AiModule aiModule;
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -227,7 +227,7 @@ public class QuestionListController extends AbstractItemListController implement
 				newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
 				newItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_new");			
 			}
-			if (aiSPI.isQuestionGenerationEnabled()) {
+			if (aiModule.isAiEnabled() && aiModule.getAiProvider().isQuestionGenerationEnabled()) {
 				newAiItem = uifactory.addFormLink("new.ai.item", formLayout, Link.BUTTON);
 				newAiItem.setIconLeftCSS("o_icon o_icon-fw o_icon_wizard");
 			}
@@ -481,7 +481,7 @@ public class QuestionListController extends AbstractItemListController implement
 				AiServiceFailedEvent failedEvent = (AiServiceFailedEvent) event;
 				showError("ai.error", "<p class='b_warning'>" + failedEvent.getErrorDetails());
 			} else if (event.equals(Event.FAILED_EVENT)) {
-				showError("ai.error" + "");
+				showError("ai.error", "");
 			} else if (event instanceof AiQuestionItemsCreatedEvent) {
 				AiQuestionItemsCreatedEvent createdEvent = (AiQuestionItemsCreatedEvent) event;
 				List<QuestionItem> questionItems = createdEvent.getQuestionItems();
