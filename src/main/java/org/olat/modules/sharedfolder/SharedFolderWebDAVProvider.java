@@ -105,6 +105,6 @@ public class SharedFolderWebDAVProvider implements WebDAVProvider {
 
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
-		return new SharedFolderWebDAVMergeSource(identityEnv.getIdentity(), publiclyReadableFolders);
+		return new SharedFolderWebDAVMergeSource(getMountPoint(), identityEnv.getIdentity(), publiclyReadableFolders);
 	}
 }

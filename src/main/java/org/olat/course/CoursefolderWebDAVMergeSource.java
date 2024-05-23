@@ -57,8 +57,8 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 	private final RepositoryManager repositoryManager;
 	private final CurriculumService curriculumService;
 	
-	public CoursefolderWebDAVMergeSource(IdentityEnvironment identityEnv) {
-		super(identityEnv.getIdentity());
+	public CoursefolderWebDAVMergeSource(String name, IdentityEnvironment identityEnv) {
+		super(name, identityEnv.getIdentity());
 		this.identityEnv = identityEnv;
 		webDAVModule = CoreSpringFactory.getImpl(WebDAVModule.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);

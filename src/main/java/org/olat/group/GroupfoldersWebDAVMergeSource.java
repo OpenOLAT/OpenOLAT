@@ -48,8 +48,8 @@ class GroupfoldersWebDAVMergeSource extends WebDAVMergeSource {
 	
 	private final CollaborationManager collaborationManager;
 
-	public GroupfoldersWebDAVMergeSource(Identity identity, CollaborationManager collaborationManager) {
-		super(identity);
+	public GroupfoldersWebDAVMergeSource(String name, Identity identity, CollaborationManager collaborationManager) {
+		super(name, identity);
 		this.collaborationManager = collaborationManager;
 	}
 	

@@ -38,6 +38,7 @@ public class FolderControllerConfig {
 	private final boolean displayQuotaLink;
 	private final boolean displaySearch;
 	private final boolean displayUnzip;
+	private final boolean fileHub;
 	private final FolderEmailFilter emailFilter;
 	private final VFSItemFilter filter;
 	private final CustomLinkTreeModel customLinkTreeModel;
@@ -50,6 +51,7 @@ public class FolderControllerConfig {
 		this.displayQuotaLink = builder.displayQuotaLink;
 		this.displaySearch = builder.displaySearch;
 		this.displayUnzip = builder.displayUnzip;
+		this.fileHub = builder.fileHub;
 		this.emailFilter = builder.emailFilter;
 		this.filter = builder.filter;
 		this.customLinkTreeModel = builder.customLinkTreeModel;
@@ -77,6 +79,10 @@ public class FolderControllerConfig {
 		return displayUnzip;
 	}
 
+	public boolean isFileHub() {
+		return fileHub;
+	}
+
 	public FolderEmailFilter getEmailFilter() {
 		return emailFilter;
 	}
@@ -100,6 +106,7 @@ public class FolderControllerConfig {
 		private boolean displayQuotaLink = true;
 		private boolean displaySearch = true;
 		private boolean displayUnzip = true;
+		private boolean fileHub = false;
 		private String searchResourceUrl = null;
 		private FolderEmailFilter emailFilter = FolderEmailFilter.always;
 		private VFSItemFilter filter = null;
@@ -132,6 +139,11 @@ public class FolderControllerConfig {
 		
 		public FolderControllerConfigBuilder withUnzipEnabled(boolean enabled) {
 			this.displayUnzip = enabled;
+			return this;
+		}
+		
+		public FolderControllerConfigBuilder withFileHub(boolean fileHub) {
+			this.fileHub = fileHub;
 			return this;
 		}
 		

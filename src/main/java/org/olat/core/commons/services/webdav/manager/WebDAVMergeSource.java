@@ -43,8 +43,8 @@ public abstract class WebDAVMergeSource extends MergeSource {
 	private final Identity identity;
 	private long loadTime;
 	
-	public WebDAVMergeSource(Identity identity) {
-		super(null, null);
+	public WebDAVMergeSource(String name, Identity identity) {
+		super(null, name);
 		this.identity = identity;
 	}
 	

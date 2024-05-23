@@ -127,9 +127,13 @@ public class MergedCourseContainer extends MergeSource {
 		initialized = true;
 		super.init();
 		
-		ICourse course = CourseFactory.loadCourse(courseEntry);
-		if(course instanceof PersistingCourseImpl persistedCourse) {
-			init(persistedCourse);
+		try {
+			ICourse course = CourseFactory.loadCourse(courseEntry);
+			if(course instanceof PersistingCourseImpl persistedCourse) {
+				init(persistedCourse);
+			}
+		} catch (CorruptedCourseException e) {
+			log.warn("Error loading course: {}", e.getMessage());
 		}
 	}
 	

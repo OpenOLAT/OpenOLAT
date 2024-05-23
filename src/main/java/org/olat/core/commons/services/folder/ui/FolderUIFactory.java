@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Date;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSMetadataContainer;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
@@ -188,13 +189,16 @@ public class FolderUIFactory {
 		return null;
 	}
 
-	public static Long getSize(VFSMetadata vfsMetadata, VFSItem vfsItem) {
+	public static Long getSize(VFSMetadata vfsMetadata, VFSItem vfsItem, boolean fileHub) {
 		if (vfsItem instanceof VFSContainer vfsContainer) {
-			return Long.valueOf(vfsContainer.getItems(new VFSSystemItemFilter()).size());
+			if (!fileHub || vfsItem instanceof VFSMetadataContainer) {
+				return Long.valueOf(vfsContainer.getItems(new VFSSystemItemFilter()).size());
+			}
 		} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
 			if (vfsMetadata != null) {
 				return vfsMetadata.getFileSize();
 			}
+			return vfsLeaf.getSize();
 		}
 		return null;
 	}

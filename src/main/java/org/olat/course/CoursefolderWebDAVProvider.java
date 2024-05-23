@@ -66,6 +66,6 @@ public class CoursefolderWebDAVProvider implements WebDAVProvider {
 
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
-		return new CoursefolderWebDAVMergeSource(identityEnv);
+		return new CoursefolderWebDAVMergeSource(MOUNTPOINT, identityEnv);
 	}
 }

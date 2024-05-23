@@ -70,11 +70,11 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -319,9 +319,11 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			if (StringHelper.containsNonWhitespace(url)) {
 				appendMetadata("mf.url", url, sb);
 			}
-			String author = userManager.getUserDisplayName(infos.getFileInitializedBy());
-			if (StringHelper.containsNonWhitespace(author)) {
-				appendMetadata("mf.author", author, sb);
+			if (infos.getFileInitializedBy() != null) {
+				String author = userManager.getUserDisplayName(infos.getFileInitializedBy().getKey());
+				if (StringHelper.containsNonWhitespace(author)) {
+					appendMetadata("mf.author", author, sb);
+				}
 			}
 			String size = Formatter.formatBytes(file.getSize());
 			appendMetadata("mf.size", size, sb);
@@ -371,6 +373,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 
 		List<ContextEntry> ces = bCF.createCEListFromString(businnessPath);
 		String uri = bCF.getAsURIString(ces, true);
+		uri = uri.replace("filehub", "userfolder");
 		this.appendMetadata("mf.url", uri, sb);
 	}
 

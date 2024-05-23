@@ -250,7 +250,7 @@ public class CourseLogsArchiveController extends BasicController implements Gene
 			folderCtrl.activate(ureq, entries, null);
 		}
 			
-		String personalFolder = Util.createPackageTranslator(HomeMainController.class, ureq.getLocale(), null).translate("menu.bc");
+		String personalFolder = Util.createPackageTranslator(HomeMainController.class, ureq.getLocale(), null).translate("webdav.name");
 			
 		removeAsListenerAndDispose(cmc);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), folderCtrl.getInitialComponent(), true, personalFolder);

@@ -61,8 +61,8 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 	private final TaxonomyService taxonomyService;
 	private final DocumentPoolNotificationsHandler notificationsHandler;
 	
-	public DocumentPoolWebDAVMergeSource(IdentityEnvironment identityEnv) {
-		super(identityEnv.getIdentity());
+	public DocumentPoolWebDAVMergeSource(String name, IdentityEnvironment identityEnv) {
+		super(name, identityEnv.getIdentity());
 		this.identityEnv = identityEnv;
 		docPoolModule = CoreSpringFactory.getImpl(DocumentPoolModule.class);
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);

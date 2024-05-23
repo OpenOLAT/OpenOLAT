@@ -37,6 +37,7 @@ import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
@@ -93,6 +94,16 @@ public class MyArchivesWebDAVSource extends MergeSource {
 		return exports;
 	}
 	
+	@Override
+	public VFSStatus canDescendants() {
+		return VFSStatus.YES;
+	}
+
+	@Override
+	public List<VFSItem> getDescendants(VFSItemFilter filter) {
+		return getItems(filter);
+	}
+
 	@Override
 	protected void init() {
 		if(!initialized) {

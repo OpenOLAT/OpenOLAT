@@ -121,11 +121,21 @@ public class VirtualContainer extends AbstractVirtualContainer {
 				if (container.getName().equals(childName)) {
 					VFSItem vfsItem = container.resolve(nextPath);
 					// set default filter on resolved file if it is a container
-					if (vfsItem != null && vfsItem instanceof VFSContainer) {
+					if (vfsItem instanceof VFSContainer) {
 						VFSContainer resolvedContainer = (VFSContainer) vfsItem;
 						resolvedContainer.setDefaultItemFilter(defaultFilter);
 					}
 					return vfsItem;
+				} else if (container instanceof NamedContainerImpl namedContainer) {
+					if (namedContainer.getDelegate().getName().equals(childName)) {
+						VFSItem vfsItem = container.resolve(nextPath);
+						// set default filter on resolved file if it is a container
+						if (vfsItem instanceof VFSContainer) {
+							VFSContainer resolvedContainer = (VFSContainer) vfsItem;
+							resolvedContainer.setDefaultItemFilter(defaultFilter);
+						}
+						return vfsItem;
+					}
 				}
 			}
 		}

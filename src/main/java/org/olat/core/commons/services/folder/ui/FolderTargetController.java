@@ -50,6 +50,7 @@ public class FolderTargetController extends BasicController {
 		super(ureq, wControl);
 		stackedPanel = new TooledStackedPanel("folderBreadcrumb", getTranslator(), this);
 		stackedPanel.setToolbarEnabled(false);
+		stackedPanel.setInvisibleCrumb(0);
 		putInitialPanel(stackedPanel);
 		
 		selectionCtrl = new FolderSelectionController(ureq, wControl, stackedPanel, rootContainer, FileBrowserSelectionMode.targetSingle,

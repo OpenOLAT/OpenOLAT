@@ -17,13 +17,17 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.folder.ui;
+package org.olat.home;
 
 import java.util.List;
 
 import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
-import org.olat.core.commons.services.folder.ui.event.FileBrowserPushEvent;
-import org.olat.core.commons.services.folder.ui.event.FileBrowserTitleEvent;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
+import org.olat.core.commons.services.folder.ui.FolderUIFactory;
+import org.olat.core.commons.services.folder.ui.TranslatedWebDAVProvider;
+import org.olat.core.commons.services.folder.ui.event.FolderRootEvent;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.gui.UserRequest;
@@ -36,8 +40,16 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VirtualContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,17 +58,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class FileBrowserMountPointsController extends BasicController {
+public class PersonalFileHubMountPointsController extends BasicController implements Activateable2 {
 
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplaySubscription(false)
+			.withDisplayQuotaLink(false)
+			.withFileHub(true)
+			.withMail(FolderEmailFilter.publicOnly)
+			.build();
 	private static final String CMD_OPEN = "open";
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackedPanel;
+	private final List<Link> links;
 
-	private FolderSelectionController folderSelectionCtrl;
+	private FolderController folderCtrl;
 
-	private final FileBrowserSelectionMode selectionMode;
-	private final String submitButtonText;
+	private final String fileHubName;
 	private final IdentityEnvironment identityEnv;
 	private int counter = 0;
 	
@@ -65,18 +83,18 @@ public class FileBrowserMountPointsController extends BasicController {
 	@Autowired
 	private CustomStaticFolderManager staticFolderManager;
 
-	protected FileBrowserMountPointsController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackedPanel, FileBrowserSelectionMode selectionMode, String submitButtonText) {
+	public PersonalFileHubMountPointsController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackedPanel, String fileHubName) {
 		super(ureq, wControl);
 		this.stackedPanel = stackedPanel;
-		this.selectionMode = selectionMode;
-		this.submitButtonText = submitButtonText;
+		this.fileHubName = fileHubName;
 		this.identityEnv = new IdentityEnvironment(getIdentity(), ureq.getUserSession().getRoles());
 		
+		velocity_root = Util.getPackageVelocityRoot(FolderUIFactory.class);
 		mainVC = createVelocityContainer("browser_mega_buttons");
 		putInitialPanel(mainVC);
 		
-		List<Link> links = webdavModule.getWebDAVProviders().values().stream()
+		links = webdavModule.getWebDAVProviders().values().stream()
 				.filter(provider -> !staticFolderManager.getMountPoint().equals(provider.getMountPoint()))
 				.filter(provider -> provider.hasAccess(identityEnv))
 				.map(provider -> new TranslatedWebDAVProvider(provider, getLocale()))
@@ -98,6 +116,28 @@ public class FileBrowserMountPointsController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+		if (StringHelper.containsNonWhitespace(path)) {
+			String[] pathParts = path.split("/");
+			if (pathParts.length >= 2) {
+				String providerName = pathParts[1];
+				links.stream()
+					.map(link -> (WebDAVProvider)link.getUserObject())
+					.filter(provider -> providerName.equalsIgnoreCase(provider.getContainer(identityEnv).getName()))
+					.findFirst().ifPresent(provider -> {
+						doOpen(ureq, provider);
+						if (folderCtrl != null) {
+							folderCtrl.activate(ureq, entries, state);
+						}
+					});
+			}
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link link) {
 			String command = link.getCommand();
@@ -111,21 +151,27 @@ public class FileBrowserMountPointsController extends BasicController {
 	
 	private void doOpen(UserRequest ureq, WebDAVProvider provider) {
 		VFSContainer vfsContainer = provider.getContainer(identityEnv);
-		folderSelectionCtrl = new FolderSelectionController(ureq, getWindowControl(), stackedPanel, vfsContainer,
-				selectionMode, submitButtonText);
-		listenTo(folderSelectionCtrl);
+		vfsContainer = new NamedContainerImpl(provider.getName(getLocale()), vfsContainer);
+		
+		VirtualContainer fileHubContainer = new VirtualContainer(fileHubName);
+		fileHubContainer.addItem(vfsContainer);
+
+		folderCtrl = new FolderController(ureq, getWindowControl(), fileHubContainer, FOLDER_CONFIG);
+		listenTo(folderCtrl);
+		folderCtrl.updateCurrentContainer(ureq, vfsContainer, true);
 		
 		String providerName = provider.getName(getLocale());
-		stackedPanel.pushController(providerName, folderSelectionCtrl);
-		
-		fireEvent(ureq, new FileBrowserTitleEvent(providerName));
-		fireEvent(ureq, new FileBrowserPushEvent());
+		stackedPanel.pushController(providerName, folderCtrl);
+		stackedPanel.setInvisibleCrumb(2);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == folderSelectionCtrl) {
-			fireEvent(ureq, event);
+		if (source == folderCtrl) {
+			if (event == FolderRootEvent.EVENT) {
+				stackedPanel.setInvisibleCrumb(1);
+				stackedPanel.popUpToRootController(ureq);
+			}
 		}
 		super.event(ureq, source, event);
 	}

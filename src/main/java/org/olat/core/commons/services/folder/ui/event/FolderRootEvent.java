@@ -17,51 +17,24 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.folder.ui;
+package org.olat.core.commons.services.folder.ui.event;
 
-import org.olat.core.util.StringHelper;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 6 Mar 2024<br>
+ * Initial date: 21 May 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public enum FolderEmailFilter {
+public class FolderRootEvent extends Event {
 	
-	always() {
-		@Override
-		public boolean canEmail(String path) {
-			return true;
-		}
-	},
-	never() {
-		@Override
-		public boolean canEmail(String path) {
-			return false;
-		}
-	},
-	publicOnly() {
-		@Override
-		public boolean canEmail(String path) {
-			if (StringHelper.containsNonWhitespace(path)) {
-				// Public folder of personal files
-				if (!path.startsWith("/")) {
-					path = "/" + path;
-				}
-				String[] pathParts = path.split("/");
-				if (pathParts.length >= 3) {
-					return "public".equals(pathParts[2]);
-				}
-			}
-			return false;
-		}
-	};
-	
-	public abstract boolean canEmail(String path);
-	
-	public static final FolderEmailFilter valueOf(boolean canEmail) {
-		return canEmail? always: never;
+	public static final Event EVENT = new FolderRootEvent();
+
+	private static final long serialVersionUID = -7954429585393833451L;
+
+	public FolderRootEvent() {
+		super("folder-root");
 	}
 
 }

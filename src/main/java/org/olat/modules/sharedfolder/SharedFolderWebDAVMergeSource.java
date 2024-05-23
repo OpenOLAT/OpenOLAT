@@ -54,8 +54,8 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 
 	private final List<String> publiclyReadableFolders;
 	
-	public SharedFolderWebDAVMergeSource(Identity identity, List<String> publiclyReadableFolders) {
-		super(identity);
+	public SharedFolderWebDAVMergeSource(String name, Identity identity, List<String> publiclyReadableFolders) {
+		super(name, identity);
 		this.publiclyReadableFolders = publiclyReadableFolders;
 	}
 

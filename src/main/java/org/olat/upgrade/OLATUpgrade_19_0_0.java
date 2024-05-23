@@ -130,7 +130,7 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 				if (StringHelper.containsNonWhitespace(availableTools)
 						&& availableTools.contains("org.olat.home.HomeMainController:org.olat.core.commons.modules.bc.PersonalFolderController")) {
 					availableTools = availableTools.replace("org.olat.home.HomeMainController:org.org.olat.core.commons.modules.bc.PersonalFolderController",
-							"org.olat.home.HomeMainController:org.olat.home.PersonalFolderController");
+							"org.olat.home.HomeMainController:org.olat.home.PersonalFileHubController");
 					userToolsModule.setAvailableUserTools(availableTools);
 				}
 				log.info("Update folder user tool.");

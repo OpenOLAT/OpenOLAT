@@ -21,12 +21,9 @@ package org.olat.home;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.BriefcaseWebDAVMergeSource;
-import org.olat.core.commons.services.folder.ui.FolderController;
-import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
-import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -34,42 +31,47 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.user.UserManager;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 26 Mar 2024<br>
+ * Initial date: 21 May 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class PersonalFolderController extends BasicController implements Activateable2 {
+public class PersonalFileHubMainController extends BasicController implements Activateable2 {
 
-	private FolderController folderCtrl;
-	
-	@Autowired
-	private UserManager userManager;
+	private PersonalFileHubMountPointsController vfsSourcesCtrl;
+	private PersonalFileHubStoragesController storageesCtrl;
 
-	public PersonalFolderController(UserRequest ureq, WindowControl wControl) {
+	public PersonalFileHubMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
 		super(ureq, wControl);
 		
-		VelocityContainer mainVC = createVelocityContainer("personal_folder");
+		VelocityContainer mainVC = createVelocityContainer("file_hub");
 		putInitialPanel(mainVC);
 		
-		BriefcaseWebDAVMergeSource rootContainer = new BriefcaseWebDAVMergeSource(getIdentity(),
-				ureq.getUserSession().getRoles(), userManager.getUserDisplayName(getIdentity()));
-		FolderControllerConfig config = FolderControllerConfig.builder()
-				.withSearchResourceUrl("[Identity:" + getIdentity().getKey() + "][userfolder:0]")
-				.withMail(FolderEmailFilter.publicOnly)
-				.build();
-		folderCtrl = new FolderController(ureq, wControl, rootContainer, config);
-		listenTo(folderCtrl);
-		mainVC.put("folder", folderCtrl.getInitialComponent());
+		mainVC.contextPut("vfsSourcesTitle", translate("file.hub.sources"));
+		vfsSourcesCtrl = new PersonalFileHubMountPointsController(ureq, wControl, stackedPanel, translate("file.hub"));
+		listenTo(vfsSourcesCtrl);
+		mainVC.put("vfsSources", vfsSourcesCtrl.getInitialComponent());
+		
+		mainVC.contextPut("storagesTitle", translate("file.hub.storage"));
+		storageesCtrl = new PersonalFileHubStoragesController(ureq, wControl, stackedPanel);
+		listenTo(storageesCtrl);
+		mainVC.put("storages", storageesCtrl.getInitialComponent());
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		folderCtrl.activate(ureq, entries, state);
+		if(entries == null || entries.isEmpty()) return;
+		
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("MediaCenter".equalsIgnoreCase(resName)) {
+			storageesCtrl.activate(ureq, entries, state);
+		} else if("Media".equalsIgnoreCase(resName)) {
+			storageesCtrl.activate(ureq, entries, state);
+		} else {
+			vfsSourcesCtrl.activate(ureq, entries, state);
+		}
 	}
 
 	@Override

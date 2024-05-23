@@ -74,6 +74,6 @@ public class DocumentPoolWebDAVProvider implements WebDAVProvider {
 
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
-		return new DocumentPoolWebDAVMergeSource(identityEnv);
+		return new DocumentPoolWebDAVMergeSource("docpool", identityEnv);
 	}
 }

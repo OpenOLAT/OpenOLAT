@@ -78,7 +78,7 @@ public class GroupfoldersWebDAVProvider implements WebDAVProvider {
 
 	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
-		return new GroupfoldersWebDAVMergeSource(identityEnv.getIdentity(), collaborationManager);
+		return new GroupfoldersWebDAVMergeSource(MOUNTPOINT, identityEnv.getIdentity(), collaborationManager);
 	}
 }
 

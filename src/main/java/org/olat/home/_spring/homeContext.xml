@@ -73,21 +73,21 @@
 	</bean>
 	-->	
 	
-	<!--  the users personal folder -->
+	<!--  the users personal file hub -->
 	<bean class="org.olat.admin.user.tools.UserToolExtension" init-method="initExtensionPoints">
 		<property name="order" value="105" />
 		<property name="enabled" value="${minimalhome.ext.userfolder}"></property>
-		<property name="navigationKey" value="userfolder" />
+		<property name="navigationKey" value="filehub" />
 		<property name="iconCssClass" value="o_icon o_icon-fw o_bc_icon" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.home.PersonalFolderController"/>
+				<property name="className" value="org.olat.home.PersonalFileHubController"/>
 			</bean>
 		</property>
 		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
 		<property name="translationPackage" value="org.olat.home" />
-		<property name="i18nActionKey" value="menu.bc"/>
-		<property name="i18nDescriptionKey" value="menu.bc.alt"/>
+		<property name="i18nActionKey" value="menu.file.hub"/>
+		<property name="i18nDescriptionKey" value="menu.file.hub.alt"/>
 		<property name="extensionPoints">
 			<list>	
 				<value>org.olat.home.HomeMainController</value>
