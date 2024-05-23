@@ -817,8 +817,14 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 					.replace("&#61;", "=");
 		}
 
-		sb.append("<span id=\"").append(uniqueId).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:").append(width).append("px; height:").append(height).append("px;\">\n")
-		  .append(" <script src=\"");
+		sb.append("<span id=\"").append(uniqueId).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000;");
+		if (component.isPageMode()) {
+			sb.append(" width:100%;");
+		} else {
+			sb.append(" width:").append(width).append("px; height:").append(height).append("px;");
+		}
+		sb.append("\">\n");
+		sb.append(" <script src=\"");
 		Renderer.renderStaticURI(sb, "movie/player.js");
 		sb.append("\"></script>\n")
 		  .append(" <script defer=\"defer\">")
