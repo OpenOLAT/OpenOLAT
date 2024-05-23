@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
@@ -56,6 +57,8 @@ import org.olat.modules.ceditor.model.QuizQuestion;
 import org.olat.modules.ceditor.model.QuizSettings;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -91,6 +94,8 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private QTI21Service qtiService;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private MediaDAO mediaDAO;
 
 	public QuizRunController(UserRequest ureq, WindowControl wControl, QuizPart quizPart, boolean editable,
 							 RepositoryEntry entry, String subIdent) {
@@ -168,8 +173,14 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 	private void updateImage(UserRequest ureq) {
 		if (quizPart.getBackgroundImageMedia() != null && quizPart.getBackgroundImageMediaVersion() != null) {
+			MediaVersion updatedMediaVersion = mediaDAO.loadVersionByKey(quizPart.getBackgroundImageMediaVersion().getKey());
 			if (mainVC.getComponent("image") == null) {
-				mainVC.put("image", ComponentsFactory.getImageComponent(ureq, quizPart.getBackgroundImageMediaVersion()));
+				mainVC.put("image", ComponentsFactory.getImageComponent(ureq, updatedMediaVersion));
+			} else if (mainVC.getComponent("image") instanceof ImageComponent existingImageComponent) {
+				String existingPath = existingImageComponent.getMedia().getRelPath();
+				if (!existingPath.endsWith(updatedMediaVersion.getRootFilename())) {
+					mainVC.put("image", ComponentsFactory.getImageComponent(ureq, updatedMediaVersion));
+				}
 			}
 		}
 	}
