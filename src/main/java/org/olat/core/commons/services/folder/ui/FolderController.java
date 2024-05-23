@@ -579,10 +579,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void doOpenFolderView(UserRequest ureq) {
-		FlexiTableRendererType rendererType = tableEl != null
-				? tableEl.getRendererType()
-				: FlexiTableRendererType.custom;
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel iconCol = new DefaultFlexiColumnModel(FolderCols.icon, new FolderIconRenderer());
 		iconCol.setExportable(false);
@@ -602,16 +598,17 @@ public class FolderController extends FormBasicController implements Activateabl
 		dataModel = new FolderDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), flc);
 		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(FolderCols.title.name(), true)));
-		tableEl.setAndLoadPersistedPreferences(ureq, "folder." + folderView.name());
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
-		tableEl.setRendererType(rendererType);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setCssDelegate(new FolderCssDelegate(dataModel));
 		VelocityContainer rowVC = createVelocityContainer("folder_row");
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "folder");
 		
 		updateEmptyMessage();
 		initBulkLinks();
@@ -870,6 +867,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		row.setModified(FolderUIFactory.getModified(formatter, row.getLastModifiedDate(), row.getLastModifiedBy()));
 		row.setFileSuffix(FolderUIFactory.getFileSuffix(vfsMetadata, vfsItem));
 		row.setTranslatedType(FolderUIFactory.getTranslatedType(getTranslator(), vfsMetadata, vfsItem));
+		row.setNewLabel(getNewLabel(row));
 		row.setSize(FolderUIFactory.getSize(vfsMetadata, vfsItem, config.isFileHub()));
 		row.setTranslatedSize(FolderUIFactory.getTranslatedSize(getTranslator(), vfsItem, row.getSize()));
 		if (versionsEnabled) {
@@ -1006,9 +1004,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				
 				selectionLink.setElementCssClass("o_link_plain");
 				
-				String title = getTitleWithLabel(row);
-				selectionLink.setI18nKey(title);
-				titleLink.setI18nKey(title);
+				selectionLink.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
+				titleLink.setI18nKey(getTitleWithLabel(row));
 				
 				selectionLink.setUserObject(row);
 				titleLink.setUserObject(row);
@@ -1027,9 +1024,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				
 				selectionEl.setElementCssClass("o_link_plain");
 				
-				String title = getTitleWithLabel(row);
-				selectionEl.setI18nKey(title);
-				titleEl.setI18nKey(title);
+				selectionEl.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
+				titleEl.setI18nKey(getTitleWithLabel(row));
 				
 				selectionEl.setUserObject(row);
 				titleEl.setUserObject(row);
@@ -1043,14 +1039,13 @@ public class FolderController extends FormBasicController implements Activateabl
 				row.setSelectionItem(selectionEl);
 				row.setTitleItem(titleEl);
 			} else {
-				String title = getTitleWithLabel(row);
-				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, title, flc);
+				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), flc);
 				selectionEl.setElementCssClass("o_nowrap");
 				selectionEl.setDomWrapperElement(DomWrapperElement.span);
 				selectionEl.setStaticFormElement(false);
 				row.setSelectionItem(selectionEl);
 				
-				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, title, flc);
+				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, getTitleWithLabel(row), flc);
 				titleEl.setStaticFormElement(false);
 				row.setTitleItem(titleEl);
 			}
@@ -1059,10 +1054,17 @@ public class FolderController extends FormBasicController implements Activateabl
 
 	private String getTitleWithLabel(FolderRow row) {
 		String title = StringHelper.escapeHtml(row.getTitle());
-		if (FolderUIFactory.isNew(newLabelDate, row.getMetadata(), row.getVfsItem())) {
-			title = "<div class=\"o_folder_label o_folder_label_new\">" + translate("new.label") + "</div> " + title;
+		if (row.getNewLabel() != null) {
+			title = row.getNewLabel() + " " + title;
 		}
 		return title;
+	}
+	
+	private String getNewLabel(FolderRow row) {
+		if (FolderUIFactory.isNew(newLabelDate, row.getMetadata(), row.getVfsItem())) {
+			return "<div class=\"o_folder_label o_folder_label_new\">" + translate("new.label") + "</div>";
+		}
+		return null;
 	}
 	
 	private void forgeFilePath(FolderRow row) {
@@ -2955,7 +2957,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void markNews() {
-		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(rootContainer);
+		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
 		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
 		if (secCallback != null) {
 			SubscriptionContext subsContext = secCallback.getSubscriptionContext();

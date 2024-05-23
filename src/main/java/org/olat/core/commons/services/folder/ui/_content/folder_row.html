@@ -26,6 +26,11 @@
 			#end
 		</div>
 	</div>
+	#if($row.getNewLabel())
+		<div class="o_folder_new_labels">
+			$row.getNewLabel()
+		</div>
+	#end
 	#if($row.getLabels())
 		<div class="o_folder_labels">
 			$row.getLabels()

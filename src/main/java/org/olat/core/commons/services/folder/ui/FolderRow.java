@@ -52,6 +52,7 @@ public class FolderRow {
 	private FolderStatus status;
 	private String translatedStatus;
 	private String elementsLabel;
+	private String newLabel;
 	private String labels;
 	private Long size;
 	private String translatedSize;
@@ -227,6 +228,14 @@ public class FolderRow {
 
 	public void setElementsLabel(String elementsLabel) {
 		this.elementsLabel = elementsLabel;
+	}
+
+	public String getNewLabel() {
+		return newLabel;
+	}
+
+	public void setNewLabel(String newLabel) {
+		this.newLabel = newLabel;
 	}
 
 	public String getLabels() {
