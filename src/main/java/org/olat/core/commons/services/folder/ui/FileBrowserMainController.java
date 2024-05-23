@@ -41,7 +41,7 @@ public class FileBrowserMainController extends BasicController {
 	
 	private FileBrowserUploadController uploadCtrl;
 	private FileBrowserMountPointsController vfsSourcesCtrl;
-	private FileBrowserStoragesController storageesCtrl;
+	private FileBrowserLibrariesController storageesCtrl;
 
 	public FileBrowserMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
 			FileBrowserSelectionMode selectionMode, FolderQuota folderQuota, String submitButtonText) {
@@ -53,21 +53,21 @@ public class FileBrowserMainController extends BasicController {
 		putInitialPanel(mainVC);
 		
 		if (FileBrowserSelectionMode.sourceMulti == selectionMode || FileBrowserSelectionMode.sourceSingle == selectionMode) {
-			mainVC.contextPut("uploadTitle", translate("browser.upload.title"));
+			mainVC.contextPut("uploadTitle", translate("browser.upload"));
 			uploadCtrl = new FileBrowserUploadController(ureq, getWindowControl(), selectionMode, folderQuota, submitButtonText);
 			listenTo(uploadCtrl);
 			mainVC.put("upload", uploadCtrl.getInitialComponent());
 		}
 		
-		mainVC.contextPut("vfsSourcesTitle", translate("browser.vfs.select.title"));
+		mainVC.contextPut("storageTitle", translate("browser.storages"));
 		vfsSourcesCtrl = new FileBrowserMountPointsController(ureq, wControl, stackedPanel, selectionMode, submitButtonText);
 		listenTo(vfsSourcesCtrl);
 		mainVC.put("vfsSources", vfsSourcesCtrl.getInitialComponent());
 		
-		mainVC.contextPut("storagesTitle", translate("browser.storages.select.title"));
-		storageesCtrl = new FileBrowserStoragesController(ureq, wControl, stackedPanel);
+		mainVC.contextPut("librariesTitle", translate("browser.libraries"));
+		storageesCtrl = new FileBrowserLibrariesController(ureq, wControl, stackedPanel);
 		listenTo(storageesCtrl);
-		mainVC.put("storages", storageesCtrl.getInitialComponent());
+		mainVC.put("libraries", storageesCtrl.getInitialComponent());
 	}
 
 	@Override

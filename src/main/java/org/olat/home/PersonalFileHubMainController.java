@@ -41,7 +41,7 @@ import org.olat.core.id.context.StateEntry;
 public class PersonalFileHubMainController extends BasicController implements Activateable2 {
 
 	private PersonalFileHubMountPointsController vfsSourcesCtrl;
-	private PersonalFileHubStoragesController storageesCtrl;
+	private PersonalFileHubLibrariesController storageesCtrl;
 
 	public PersonalFileHubMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
 		super(ureq, wControl);
@@ -49,15 +49,15 @@ public class PersonalFileHubMainController extends BasicController implements Ac
 		VelocityContainer mainVC = createVelocityContainer("file_hub");
 		putInitialPanel(mainVC);
 		
-		mainVC.contextPut("vfsSourcesTitle", translate("file.hub.sources"));
+		mainVC.contextPut("storageTitle", translate("file.hub.storage"));
 		vfsSourcesCtrl = new PersonalFileHubMountPointsController(ureq, wControl, stackedPanel, translate("file.hub"));
 		listenTo(vfsSourcesCtrl);
 		mainVC.put("vfsSources", vfsSourcesCtrl.getInitialComponent());
 		
-		mainVC.contextPut("storagesTitle", translate("file.hub.storage"));
-		storageesCtrl = new PersonalFileHubStoragesController(ureq, wControl, stackedPanel);
+		mainVC.contextPut("librariesTitle", translate("file.hub.libraries"));
+		storageesCtrl = new PersonalFileHubLibrariesController(ureq, wControl, stackedPanel);
 		listenTo(storageesCtrl);
-		mainVC.put("storages", storageesCtrl.getInitialComponent());
+		mainVC.put("libraries", storageesCtrl.getInitialComponent());
 	}
 
 	@Override

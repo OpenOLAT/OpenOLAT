@@ -49,7 +49,7 @@ import org.olat.modules.cemedia.ui.MediaCentersController;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class PersonalFileHubStoragesController extends BasicController implements Activateable2 {
+public class PersonalFileHubLibrariesController extends BasicController implements Activateable2 {
 	
 	private static final String CMD_MEDIA_CENTER = "media";
 	
@@ -60,7 +60,7 @@ public class PersonalFileHubStoragesController extends BasicController implement
 
 	private int counter = 0;
 	
-	public PersonalFileHubStoragesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
+	public PersonalFileHubLibrariesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
 		super(ureq, wControl, Util.createPackageTranslator(FolderUIFactory.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.stackedPanel = stackedPanel;
@@ -70,17 +70,17 @@ public class PersonalFileHubStoragesController extends BasicController implement
 		putInitialPanel(mainVC);
 		
 		List<Link> links = List.of(
-				createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media"), "")
+				createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media"))
 			);
 		mainVC.contextPut("links", links);
 	}
 	
-	private Link createLink(String cmd, String iconCSS, String name, String description) {
+	private Link createLink(String cmd, String iconCSS, String name) {
 		Link link = LinkFactory.createCustomLink("cont_" + counter++, cmd, null, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, this);
 		link.setElementCssClass("btn btn-default o_button_mega");
 		link.setIconLeftCSS("o_icon o_icon-xl " + iconCSS);
 		String text = "<div class=\"o_mega_headline\">" + name + "</div>";
-		text += "<div class=\"o_mega_subline\">" + description + "</div>";
+		text += "<div class=\"o_mega_subline\">" + "</div>";
 		link.setCustomDisplayText(text);
 		return link;
 	}

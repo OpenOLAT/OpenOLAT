@@ -53,11 +53,6 @@ public class CoursefolderWebDAVProvider implements WebDAVProvider {
 	public String getName(Locale locale) {
 		return Util.createPackageTranslator(CoursefolderWebDAVProvider.class, locale).translate("webdav.name");
 	}
-
-	@Override
-	public String getDescription(Locale locale) {
-		return Util.createPackageTranslator(CoursefolderWebDAVProvider.class, locale).translate("webdav.description");
-	}
 	
 	@Override
 	public boolean hasAccess(IdentityEnvironment identityEnv) {

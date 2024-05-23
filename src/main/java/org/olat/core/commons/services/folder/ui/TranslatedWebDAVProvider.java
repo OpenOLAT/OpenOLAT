@@ -27,12 +27,10 @@ public final class TranslatedWebDAVProvider {
 	
 	private final WebDAVProvider provider;
 	private final String name;
-	private final String description;
 	
 	public TranslatedWebDAVProvider(WebDAVProvider provider, Locale locale) {
 		this.provider = provider;
 		this.name = provider.getName(locale);
-		this.description = provider.getDescription(locale);
 	}
 
 	public WebDAVProvider getProvider() {
@@ -41,10 +39,6 @@ public final class TranslatedWebDAVProvider {
 	
 	public String getName() {
 		return name;
-	}
-	
-	public String getDescription() {
-		return description;
 	}
 	
 }

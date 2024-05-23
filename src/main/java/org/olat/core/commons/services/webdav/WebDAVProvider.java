@@ -42,8 +42,6 @@ public interface WebDAVProvider {
 	
 	public String getName(Locale locale);
 
-	public String getDescription(Locale locale);
-
 	public boolean hasAccess(IdentityEnvironment identityEnv);
 
 	/**

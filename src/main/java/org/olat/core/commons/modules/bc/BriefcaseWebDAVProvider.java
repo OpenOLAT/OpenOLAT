@@ -56,11 +56,6 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 	public String getName(Locale locale) {
 		return Util.createPackageTranslator(PersonalFileHubController.class, locale).translate("webdav.name");
 	}
-
-	@Override
-	public String getDescription(Locale locale) {
-		return Util.createPackageTranslator(PersonalFileHubController.class, locale).translate("webdav.description");
-	}
 	
 	public VFSContainer getContainer(Identity identity, Roles roles) {
 		// merge /public and /private

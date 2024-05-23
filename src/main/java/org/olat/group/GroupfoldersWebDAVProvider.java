@@ -72,11 +72,6 @@ public class GroupfoldersWebDAVProvider implements WebDAVProvider {
 	}
 
 	@Override
-	public String getDescription(Locale locale) {
-		return Util.createPackageTranslator(BGControllerFactory.class, locale).translate("webdav.description");
-	}
-
-	@Override
 	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
 		return new GroupfoldersWebDAVMergeSource(MOUNTPOINT, identityEnv.getIdentity(), collaborationManager);
 	}
