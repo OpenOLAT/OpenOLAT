@@ -961,7 +961,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 			item.addFormItem(endAttemptButton);
 		}
-		endAttemptButton.setEnabled(!ended);
+		endAttemptButton.setEnabled(!ended && (!component.isPageMode() || !itemSessionState.isResponded()));
 		Component endAttemptCmp = endAttemptButton.getComponent();
 		endAttemptCmp.getHTMLRendererSingleton()
 				.render(renderer.getRenderer(), sb, endAttemptCmp, ubu, translator, new RenderResult(), null);

@@ -863,8 +863,9 @@ public class PracticeController extends BasicController implements OutcomesAsses
 
 		@Override
 		public void handleResponses(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap,
-				Map<Identifier,ResponseInput> fileResponseMap, String candidateComment) {
-			super.handleResponses(ureq, stringResponseMap, fileResponseMap, candidateComment);
+									Map<Identifier,ResponseInput> fileResponseMap, String candidateComment,
+									FormItem source) {
+			super.handleResponses(ureq, stringResponseMap, fileResponseMap, candidateComment, null);
 			
 			final Boolean passed = itemSession.getPassed();
 			final boolean correct = passed == null || passed.booleanValue();

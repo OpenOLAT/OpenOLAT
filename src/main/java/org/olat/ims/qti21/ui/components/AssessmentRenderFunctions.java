@@ -796,6 +796,7 @@ public class AssessmentRenderFunctions {
 			ctx.put("isPageMode", component.isPageMode());
 			if (component.isPageMode()) {
 				ctx.put("isAnswerCorrect", isCorrectlyAnswered(itemSessionState));
+				ctx.put("isAnswerIncorrect", isIncorrectlyAnswered(itemSessionState));
 				ctx.put("isShowPageModeSolution", component.isShowPageModeSolution());
 				if (component.isShowPageModeSolution()) {
 					ctx.put("isPageModeSolution", pageModeSolutionMode);

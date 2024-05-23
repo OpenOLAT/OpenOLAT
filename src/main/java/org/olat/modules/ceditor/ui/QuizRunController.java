@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -48,6 +49,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.DefaultAssessmentSessionAuditLogger;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent;
+import org.olat.ims.qti21.ui.ResponseInput;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
@@ -65,6 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * Initial date: 2024-03-11<br>
@@ -417,6 +420,12 @@ public class QuizRunController extends BasicController implements PageRunElement
 				itemSessionState = new ItemSessionState();
 			}
 			return itemSessionState;
+		}
+
+		@Override
+		public void handleResponses(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap, Map<Identifier,
+				ResponseInput> fileResponseMap, String candidateComment, FormItem source) {
+			super.handleResponses(ureq, stringResponseMap, fileResponseMap, candidateComment, source);
 		}
 	}
 }

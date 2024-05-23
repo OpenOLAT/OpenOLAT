@@ -32,38 +32,43 @@
 			#set($disabled = ($r.isItemSessionEnded() || $isShowPageModeSolution))
 			#set($answerCorrectnessClass = "")
 			#if($single)
-				#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_off")
+				#set($iconClass = "o_icon_quiz_single_choice_off")
 			#else
-				#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_off")
+				#set($iconClass = "o_icon_quiz_multiple_choice_off")
 			#end
 			#if($isPageModeSolution)
 				#set($selected = false)
 				#if($singleChoiceSolution && $simpleChoice.identifier.equals($singleChoiceSolution))
 					#set($answerCorrectnessClass = "o_correct")
-					#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_correct")
+					#set($iconClass = "o_icon_quiz_single_choice_correct")
 					#set($selected = true)
 				#end
 				#if($multipleChoiceSolutions && $multipleChoiceSolutions.contains($simpleChoice.identifier))
 					#set($answerCorrectnessClass = "o_correct")
-					#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_correct")
+					#set($iconClass = "o_icon_quiz_multiple_choice_correct")
 					#set($selected = true)
 				#end
 			#else
 				#if($selected)
+					#if($single)
+						#set($iconClass = "o_icon_quiz_single_choice_on")
+					#else
+						#set($iconClass = "o_icon_quiz_multiple_choice_on")
+					#end
 					#if($isAnswerCorrect)
 						#set($answerCorrectnessClass = "o_correct")
 						#if($single)
-							#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_correct")
+							#set($iconClass = "o_icon_quiz_single_choice_correct")
 						#else
-							#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_correct")
+							#set($iconClass = "o_icon_quiz_multiple_choice_correct")
 						#end
-					#else
-						#if($single)
-							#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_incorrect")
-						#else
-							#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_incorrect")
-						#end
+					#elseif($isAnswerIncorrect)
 						#set($answerCorrectnessClass = "o_incorrect")
+						#if($single)
+							#set($iconClass = "o_icon_quiz_single_choice_incorrect")
+						#else
+							#set($iconClass = "o_icon_quiz_multiple_choice_incorrect")
+						#end
 					#end
 				#end
 			#end
@@ -85,7 +90,7 @@
 						   value="$r.toString($simpleChoice.identifier)"
 						   #if($single) type="radio" #else type="checkbox" #end
 						   #if($disabled) disabled #end
-						   #if($selected) checked #end /><i class="$iconClass"> </i>
+						   #if($selected) checked #end /><i class="o_icon o_icon-fw $iconClass"> </i>
 					$r.appendFlexiFormDirtyForCheckbox("oo_$r.toString($simpleChoice.identifier)")
 					#if(!$r.classContains($interaction,"choiceright"))
 						<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span>
@@ -135,38 +140,43 @@
 				#set($selected = $r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier))
 				#set($answerCorrectnessClass = "")
 				#if($single)
-					#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_off")
+					#set($iconClass = "o_icon_quiz_single_choice_off")
 				#else
-					#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_off")
+					#set($iconClass = "o_icon_quiz_multiple_choice_off")
 				#end
 				#if($isPageModeSolution)
 					#set($selected = false)
 					#if($singleChoiceSolution && $simpleChoice.identifier.equals($singleChoiceSolution))
 						#set($answerCorrectnessClass = "o_correct")
-						#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_correct")
+						#set($iconClass = "o_icon_quiz_single_choice_correct")
 						#set($selected = true)
 					#end
 					#if($multipleChoiceSolutions && $multipleChoiceSolutions.contains($simpleChoice.identifier))
 						#set($answerCorrectnessClass = "o_correct")
-						#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_correct")
+						#set($iconClass = "o_icon_quiz_multiple_choice_correct")
 						#set($selected = true)
 					#end
 				#else
 					#if($selected)
+						#if($single)
+							#set($iconClass = "o_icon_quiz_single_choice_on")
+						#else
+							#set($iconClass = "o_icon_quiz_multiple_choice_on")
+						#end
 						#if($isAnswerCorrect)
 							#set($answerCorrectnessClass = "o_correct")
 							#if($single)
-								#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_correct")
+								#set($iconClass = "o_icon_quiz_single_choice_correct")
 							#else
-								#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_correct")
+								#set($iconClass = "o_icon_quiz_multiple_choice_correct")
 							#end
-						#else
-							#if($single)
-								#set($iconClass = "o_icon o_icon-fw o_icon_quiz_single_choice_incorrect")
-							#else
-								#set($iconClass = "o_icon o_icon-fw o_icon_quiz_multiple_choice_incorrect")
-							#end
+						#elseif($isAnswerIncorrect)
 							#set($answerCorrectnessClass = "o_incorrect")
+							#if($single)
+								#set($iconClass = "o_icon_quiz_single_choice_incorrect")
+							#else
+								#set($iconClass = "o_icon_quiz_multiple_choice_incorrect")
+							#end
 						#end
 					#end
 				#end
@@ -198,7 +208,7 @@
 						#else
 							<label>
 						#end
-							<i class="$iconClass"> </i>
+							<i class="o_icon o_icon-fw $iconClass"> </i>
 						</label>
 						$r.appendFlexiFormDirtyForCheckbox("oo_$r.toString($simpleChoice.identifier)")
 					</td>

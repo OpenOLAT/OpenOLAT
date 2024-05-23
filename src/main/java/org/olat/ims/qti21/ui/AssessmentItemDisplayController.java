@@ -330,7 +330,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 				qtiWorksCtrl.qtiEl.getComponent().showPageModeSolution();
 				break;
 			case response:
-				handleResponses(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
+				handleResponses(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment(), qe.getFormItemSource());
 				break;
 			case tmpResponse:
 				handleTemporaryResponses(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
@@ -672,7 +672,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	}
 	
 	public void handleResponses(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap,
-			Map<Identifier,ResponseInput> fileResponseMap, String candidateComment) {
+								Map<Identifier,ResponseInput> fileResponseMap, String candidateComment, FormItem source) {
 
 		/* Retrieve current JQTI state and set up JQTI controller */
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
@@ -723,6 +723,10 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			}
 		}
 
+		/* Detect hint button in page mode */
+		String cmd = (source instanceof FormLink) ? ((FormLink)source).getCmd() : "";
+		boolean hintResponseInPageMode = deliveryOptions.isPageMode() && cmd.contains(QTI21Constants.HINT_REQUEST);
+
 		/* Attempt to bind responses */
 		boolean allResponsesValid = false;
 		boolean allResponsesBound = false;
@@ -744,6 +748,11 @@ public class AssessmentItemDisplayController extends BasicController implements 
 
 			/* Invoke response processing (if responses are valid or not) */
 			itemSessionController.performResponseProcessing(timestamp);
+
+			if (hintResponseInPageMode) {
+				itemSessionController.getItemSessionState().setSessionStatus(SessionStatus.PENDING_RESPONSE_PROCESSING);
+				itemSessionController.getItemSessionState().setResponded(false);
+			}
 		} catch (final QtiCandidateStateException e) {
 	        candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.RESPONSES_NOT_EXPECTED, null);
 			logError("RESPONSES_NOT_EXPECTED", e);

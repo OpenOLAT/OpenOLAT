@@ -214,8 +214,9 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		//end body
 		sb.append("</div>");
 		
-		// Display active modal feedback (only after responseProcessing)
-		if(itemSessionState.getSessionStatus() == SessionStatus.FINAL) {
+		// Display active modal feedback (only after responseProcessing or when in page mode)
+		if(itemSessionState.getSessionStatus() == SessionStatus.FINAL ||
+				(itemSessionState.getSessionStatus() == SessionStatus.PENDING_RESPONSE_PROCESSING && component.isPageMode())) {
 			renderTestItemModalFeedback(renderer, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
 		}
 

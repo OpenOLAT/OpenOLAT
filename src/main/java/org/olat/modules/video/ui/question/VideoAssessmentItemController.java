@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -302,8 +303,9 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 
 		@Override
 		public void handleResponses(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap,
-				Map<Identifier,ResponseInput> fileResponseMap, String candidateComment) {
-			super.handleResponses(ureq, stringResponseMap, fileResponseMap, candidateComment);
+									Map<Identifier,ResponseInput> fileResponseMap, String candidateComment,
+									FormItem source) {
+			super.handleResponses(ureq, stringResponseMap, fileResponseMap, candidateComment, null);
 		}
 		
 		@Override
