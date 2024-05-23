@@ -798,9 +798,9 @@ public class AssessmentRenderFunctions {
 				ctx.put("isAnswerCorrect", isCorrectlyAnswered(itemSessionState));
 				ctx.put("isAnswerIncorrect", isIncorrectlyAnswered(itemSessionState));
 				ctx.put("isShowPageModeSolution", component.isShowPageModeSolution());
-				if (component.isShowPageModeSolution()) {
-					ctx.put("isPageModeSolution", pageModeSolutionMode);
-					if (pageModeSolutionMode && component instanceof AssessmentItemComponent assessmentItemComponent) {
+				ctx.put("isPageModeSolution", pageModeSolutionMode);
+				if (itemSessionState.isResponded()) {
+					if (component instanceof AssessmentItemComponent assessmentItemComponent) {
 						AssessmentItem assessmentItem = assessmentItemComponent.getAssessmentItem();
 						if (assessmentItem != null) {
 							ResponseDeclarationGroup responseDeclarationGroup = assessmentItem.getNodeGroups().getResponseDeclarationGroup();

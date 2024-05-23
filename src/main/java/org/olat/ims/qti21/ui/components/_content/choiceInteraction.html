@@ -49,24 +49,25 @@
 					#set($selected = true)
 				#end
 			#else
-				#if($selected)
-					#if($single)
+				#if($single)
+					#if($selected)
 						#set($iconClass = "o_icon_quiz_single_choice_on")
-					#else
-						#set($iconClass = "o_icon_quiz_multiple_choice_on")
-					#end
-					#if($isAnswerCorrect)
-						#set($answerCorrectnessClass = "o_correct")
-						#if($single)
+						#if($isAnswerCorrect)
+							#set($answerCorrectnessClass = "o_correct")
 							#set($iconClass = "o_icon_quiz_single_choice_correct")
-						#else
-							#set($iconClass = "o_icon_quiz_multiple_choice_correct")
-						#end
-					#elseif($isAnswerIncorrect)
-						#set($answerCorrectnessClass = "o_incorrect")
-						#if($single)
+						#elseif($isAnswerIncorrect)
+							#set($answerCorrectnessClass = "o_incorrect")
 							#set($iconClass = "o_icon_quiz_single_choice_incorrect")
+						#end
+					#end
+				#else
+					#if($selected)
+						#set($iconClass = "o_icon_quiz_multiple_choice_on")
+						#if($multipleChoiceSolutions && $multipleChoiceSolutions.contains($simpleChoice.identifier))
+							#set($answerCorrectnessClass = "o_correct")
+							#set($iconClass = "o_icon_quiz_multiple_choice_correct")
 						#else
+							#set($answerCorrectnessClass = "o_incorrect")
 							#set($iconClass = "o_icon_quiz_multiple_choice_incorrect")
 						#end
 					#end
@@ -113,7 +114,7 @@
 			</div>
 		#end
 	#end
-#else	
+#elseif($r.getOrientation($interaction.orientation) == "vertical")
 	<table>
 		#if($interaction.getPrompt())
          <tr class="prompt">
@@ -157,24 +158,25 @@
 						#set($selected = true)
 					#end
 				#else
-					#if($selected)
-						#if($single)
+					#if($single)
+						#if($selected)
 							#set($iconClass = "o_icon_quiz_single_choice_on")
-						#else
-							#set($iconClass = "o_icon_quiz_multiple_choice_on")
-						#end
-						#if($isAnswerCorrect)
-							#set($answerCorrectnessClass = "o_correct")
-							#if($single)
+							#if($isAnswerCorrect)
+								#set($answerCorrectnessClass = "o_correct")
 								#set($iconClass = "o_icon_quiz_single_choice_correct")
-							#else
-								#set($iconClass = "o_icon_quiz_multiple_choice_correct")
-							#end
-						#elseif($isAnswerIncorrect)
-							#set($answerCorrectnessClass = "o_incorrect")
-							#if($single)
+							#elseif($isAnswerIncorrect)
+								#set($answerCorrectnessClass = "o_incorrect")
 								#set($iconClass = "o_icon_quiz_single_choice_incorrect")
+							#end
+						#end
+					#else
+						#if($selected)
+							#set($iconClass = "o_icon_quiz_multiple_choice_on")
+							#if($multipleChoiceSolutions && $multipleChoiceSolutions.contains($simpleChoice.identifier))
+								#set($answerCorrectnessClass = "o_correct")
+								#set($iconClass = "o_icon_quiz_multiple_choice_correct")
 							#else
+								#set($answerCorrectnessClass = "o_incorrect")
 								#set($iconClass = "o_icon_quiz_multiple_choice_incorrect")
 							#end
 						#end
