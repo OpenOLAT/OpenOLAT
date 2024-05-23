@@ -92,8 +92,8 @@ public class SimpleLogExporter implements ICourseLogExporter {
 			boolean anonymize, boolean isAdministrativeUser) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select v, ident, identUser from loggingobject as v")
-		  .append(" left join ").append(IdentityImpl.class.getCanonicalName()).append(" as ident on (ident.key=v.userId)")
-		  .append(" left join ident.user as identUser")
+		  .append(" left join fetch ").append(IdentityImpl.class.getCanonicalName()).append(" as ident on (ident.key=v.userId)")
+		  .append(" left join fetch ident.user as identUser")
 		  .and().append(" v.resourceAdminAction=:resAdminAction")
 		  .and().append(" ((v.targetResId = :resId) or (v.parentResId = :resId) or (v.grandParentResId = :resId) or (v.greatGrandParentResId = :resId))");
 

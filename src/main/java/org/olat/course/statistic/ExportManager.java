@@ -34,9 +34,10 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.translator.Translator;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
@@ -88,6 +89,8 @@ public class ExportManager {
 	
 	@Autowired
 	private ICourseLogExporter courseLogExporter;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	/**
 	 * Archives the course log files
@@ -159,13 +162,21 @@ public class ExportManager {
 	}
 	
 	private void saveFile(String targetDir, String zipName, File tmpDir, List<File> files, String email, String emailI18nSubkey, Locale locale) {
-		File zipFile = new File(targetDir, zipName);
+		File zipDir = new File(targetDir);
+		// Make sure directory and metadata exists 
+		zipDir.mkdirs();
+		vfsRepositoryService.getMetadataFor(zipDir);
+
+		File zipFile = new File(zipDir, zipName);
 		Set<String> filenames = files.stream()
 				.map(File::getName)
 				.collect(Collectors.toSet());
 		if (ZipUtil.zip(filenames, tmpDir, zipFile, false)) {
 			sendEMail(email, locale, emailI18nSubkey);
 		}
+		
+		// Make sure metadata exists for the zip file
+		vfsRepositoryService.getMetadataFor(zipFile);
 		FileUtils.deleteDirsAndFiles(tmpDir, true, true);
 	}
 	
