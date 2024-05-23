@@ -137,10 +137,16 @@ public class FileElementImpl extends FormItemImpl
 
 		String dispatchuri = form.getRequestParameter("dispatchuri");
 		String uploadDirectory = form.getRequestParameter("upload-folder");
-		if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())
-				&& "delete".equals(form.getRequestParameter("delete"))) {
-			File file = getFileByFilename(form.getRequestParameter("filename"));
-			getRootForm().fireFormEvent(ureq, new DeleteFileElementEvent(this, file, FormEvent.ONCLICK));
+		String dropped = form.getRequestParameter("dropped-filename");
+
+		if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+			if("delete".equals(form.getRequestParameter("delete"))) {
+				File file = getFileByFilename(form.getRequestParameter("filename"));
+				getRootForm().fireFormEvent(ureq, new DeleteFileElementEvent(this, file, FormEvent.ONCLICK));
+			} else if(StringHelper.containsNonWhitespace(uploadDirectory) && StringHelper.containsNonWhitespace(dropped)) {
+				getRootForm().fireFormEvent(ureq, new DropFileElementEvent(this, uploadDirectory, dropped, FormEvent.ONCLICK));
+				return;
+			}
 		}
 		
 		List<MultipartFileInfos> list = form.getRequestMultipartFileInfosList(component.getFormDispatchId());

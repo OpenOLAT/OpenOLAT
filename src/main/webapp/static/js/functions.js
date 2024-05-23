@@ -1183,8 +1183,39 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 		e.preventDefault();
 		e.stopPropagation();
 	}
+	
+	function o_handleFilenames(file, directory) {
+		showAjaxSpinner();
+		
+		let htmlForm = document.getElementById(formName);
+		let targetUrl = htmlForm.getAttribute("action");
+		let csrf = document.querySelector('#' + formName + " input[name='_csrf']").getAttribute('value');
+		
+		let formData = new FormData(htmlForm);
+		formData.append('_csrf', csrf);
+		formData.delete('dispatchevent');
+		formData.append('dispatchevent', '4');
+		formData.delete('dispatchuri');
+		formData.append('dispatchuri', inputFileId);
+		formData.append('upload-folder', directory);
+		formData.append('dropped-filename', file);
 
-	function o_handleFiles(files, directory) {	
+		let xhr = jQuery.ajax(targetUrl,{
+			type:'POST',
+			data: formData,
+			cache: false,
+			contentType: false,
+			enctype: 'multipart/form-data',
+		    processData: false,
+			dataType: 'json',
+			success: function(returnedData, textStatus, jqXHR) {
+				o_onXHRSuccess(returnedData, textStatus, jqXHR);
+			},
+			error: o_onXHRError
+		});
+	}
+
+	function o_handleFiles(files, directory) {
 		showAjaxSpinner();
 		
 		let htmlForm = document.getElementById(formName);
@@ -1309,13 +1340,21 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 		return true;
 	}
 	
+	function handleDragFileItem(e) {
+		let filename = e.target.getAttribute("data-drag-file");
+		e.dataTransfer.setData("text/openolat-file-transfert", filename);
+	}
+	
 	function handleDrop(e) {
 		let directory = jQuery(e.target)
 			.parents("*[data-upload-folder]")
 			.data('upload-folder');
 		let dt = e.dataTransfer;
 		let files = dt.files;
-		if(o_handleFilesValidate(files)) {
+		if(dt.types.includes("text/openolat-file-transfert")) {
+			let data = dt.getData("text/openolat-file-transfert");
+			o_handleFilenames(data, directory);
+		} else if(files.length > 0 && o_handleFilesValidate(files)) {
 			o_handleFiles(files, directory);
 		}
 		e.stopPropagation();
@@ -1324,9 +1363,13 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 	function handleFileOver(e) {
 		let directoryElement = jQuery(e.target)
 			.parents("*[data-upload-folder]");
+		
 		if(directoryElement.length == 1) {
 			directoryElement.get(0).classList.add('o_dnd_over');
 			this.classList.remove('o_dnd_over');
+		} else if(e.dataTransfer.types.includes("text/openolat-file-transfert")) {
+			this.classList.remove('o_dnd_over');
+			e.preventDefault();
 		} else {
 			this.classList.add('o_dnd_over');
 		}
@@ -1348,6 +1391,16 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 		dropAreaEl.setAttribute('data-drop', 'true');
 		dropAreaEl.addEventListener('drop', handleDrop, false);
 	}
+	
+	jQuery(function() {
+		jQuery("*[data-drag-file]", dropAreaEl).each(function(index, dragEl) {
+			let dragAttr = jQuery(dragEl).attr('draggable');
+			if(dragAttr == null) {
+				jQuery(dragEl).attr('draggable', true);
+				dragEl.addEventListener("dragstart", handleDragFileItem, false);
+			}
+		});
+	});
 }
 
 function o_handleFileFormatSize(size) {

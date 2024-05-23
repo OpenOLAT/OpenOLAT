@@ -149,8 +149,10 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 	protected void renderRow(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 		sb.append("<div class='");
-		if(ftC.getFormItem().getCssDelegate() != null) {
-			String cssClass = ftC.getFormItem().getCssDelegate().getRowCssClass(FlexiTableRendererType.custom, row);
+		
+		FlexiTableCssDelegate delegate = ftC.getFormItem().getCssDelegate();
+		if(delegate != null) {
+			String cssClass = delegate.getRowCssClass(FlexiTableRendererType.custom, row);
 			if (cssClass == null) {
 				sb.append("o_table_row row");
 			} else {
@@ -160,8 +162,8 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 			sb.append("o_table_row row");
 		}
 		sb.append("'");
-		if(ftC.getFormItem().getCssDelegate() != null) {
-			List<Data> dataAttributes = ftC.getFormItem().getCssDelegate().getRowDataAttributes(row);
+		if(delegate != null) {
+			List<Data> dataAttributes = delegate.getRowDataAttributes(row);
 			if(dataAttributes != null) {
 				for(Data dataAttribute:dataAttributes) {
 					sb.append(" data-").append(dataAttribute.name()).append("=\"").append(dataAttribute.value()).append("\"");

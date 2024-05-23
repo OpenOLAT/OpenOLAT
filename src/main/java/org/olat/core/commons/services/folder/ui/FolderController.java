@@ -99,6 +99,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.DropFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.UploadFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
@@ -1276,6 +1277,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		} else if(addFileEl == source) {
 			if(event instanceof UploadFileElementEvent ufee) {
 				doUploadFile(ureq, ufee.getUploadFilesInfos(), ufee.getUploadFolder());
+			} else if(event instanceof DropFileElementEvent dfee) {
+				doDropFileByName(ureq, dfee.getDirectory(), dfee.getFilename());
 			}
 		} else if (viewFolderLink == source) {
 			doOpenView(ureq, FolderView.folder);
@@ -1682,6 +1685,28 @@ public class FolderController extends FormBasicController implements Activateabl
 				showInfo("upload.success.single", filenames.get(0));
 			} else {
 				showInfo("upload.success.multi", String.valueOf(filenames.size()));
+			}
+		}
+	}
+	
+	private void doDropFileByName(UserRequest ureq, String directory, String filename) {
+		if(StringHelper.containsNonWhitespace(directory) && StringHelper.containsNonWhitespace(filename)) {
+			VFSContainer container = currentContainer;
+			VFSItem dir = container.resolve(directory);
+			VFSItem item = container.resolve(filename);
+			if(dir instanceof VFSContainer subContainer && item != null
+					&& canEdit(subContainer) && canMove(item, item.getMetaInfo())) {
+				doCopyMove(ureq, true, subContainer, List.of(item), null, this::showDropSuccessMessage);
+			}
+		}
+	}
+	
+	private void showDropSuccessMessage(List<String> filenames) {
+		if (filenames != null && !filenames.isEmpty()) {
+			if (filenames.size() == 1) {
+				showInfo("drop.success.single", filenames.get(0));
+			} else {
+				showInfo("drop.success.multi", String.valueOf(filenames.size()));
 			}
 		}
 	}
@@ -3147,8 +3172,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			if(row.isDirectory()) {
 				String filename = row.getFilename();
 				return List.of(new Data("upload-folder", filename));
-			}
-			return super.getRowDataAttributes(pos);
+			} 
+			String filename = row.getFilename();
+			return List.of(new Data("drag-file", filename));
 		}
 	}
 	
