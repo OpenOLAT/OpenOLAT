@@ -135,7 +135,9 @@ public abstract class OlatRestTestCase extends OlatTestCase {
 			}
 		}
 		
-		restModule.setEnabled(true);
+		if(!restModule.isEnabled()) {
+			restModule.setEnabled(true);
+		}
 		if(!webServerStarted) {
 			webServer.start();
 			webServerStarted = true;

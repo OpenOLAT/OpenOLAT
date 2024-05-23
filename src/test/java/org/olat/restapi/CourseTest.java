@@ -712,15 +712,14 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		dbInstance.commitAndCloseSession();
 		
 		List<RepositoryEntryEducationalType> educationalTypes = repositoryManager.getAllEducationalTypes();
 		RepositoryEntryEducationalType educationalType = educationalTypes.get(0);
 		courseEntry = repositoryManager.setDescriptionAndName(courseEntry, courseEntry.getDisplayname(), "Course ref.", "Course authors",
 				"Course description", "Course teaser", "Course objectives", "Course requirements", "Course credits", "DE", "Zurich", "5 days",
 				null, null, null, educationalType);
-		dbInstance.commitAndCloseSession();
 		course.getCourseEnvironment().updateCourseEntry(courseEntry);
+		dbInstance.commitAndCloseSession();
 
 		//remove the owner
 		assertTrue(conn.login("administrator", "openolat"));
