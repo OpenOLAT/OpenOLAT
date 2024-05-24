@@ -5,8 +5,8 @@
 #end
 <div id="$r.getCId()" class="o_page_run_image_comparison $blockLayoutClass $wrongRightClass">
 	<div id="$r.getCId()_compare">
-		<img src="$mapperUrl/$beforeImageId" alt="$r.escapeHtml($beforeText)">
-		<img src="$mapperUrl/$afterImageId" alt="$r.escapeHtml($afterText)">
+		<img onload="$r.getId("image_loaded_")();" src="$mapperUrl/$beforeImageId" alt="$r.escapeHtml($beforeText)">
+		<img onload="$r.getId("image_loaded_")();" src="$mapperUrl/$afterImageId" alt="$r.escapeHtml($afterText)">
 	</div>
 	<div class="o_description">
 		$r.escapeHtml($description)
@@ -15,7 +15,16 @@
 <script>
 	"use strict";
 
-	jQuery(function() {
+	var imagesLoaded = 0;
+
+	function $r.getId("image_loaded_")() {
+		imagesLoaded++;
+		if (imagesLoaded >= 2) {
+			$r.getId("init_comparison_")();
+		}
+	}
+
+	function $r.getId("init_comparison_")() {
 		var options = {
 			#if($horizontal)
 			orientation: 'horizontal',
@@ -26,5 +35,6 @@
 			after_label: '$r.escapeHtml($afterText)',
 		};
 		jQuery('#$r.getCId()_compare').twentytwenty(options);
-	});
+		console.log("image comparison initialized");
+	}
 </script>
