@@ -151,7 +151,7 @@ public class ResultsSearchController extends SearchInputController {
 			}
 			
 			hideDidYouMeanWords();
-			SearchResults results = doSearch(ureq, didYouMeanWord, condQueries, getParentContext(), getDocumentType(), key, 0, RESULT_PER_PAGE, false);
+			SearchResults results = doSearch(ureq, didYouMeanWord, condQueries, getParentContext(), getDocumentType(), getFileType(), key, 0, RESULT_PER_PAGE, false);
 			resultCtlr.setSearchResults(ureq, results);
 			persistSearch();
 		} else if (source == extendedSearchLink) {
@@ -183,9 +183,9 @@ public class ResultsSearchController extends SearchInputController {
 			if(advancedSearchController.isDocumentTypesSelected()) {
 				//if document types are selected, these queries overwrite the conditional query for document type
 				//set in this controller
-				results = doSearch(ureq, query, condQueries, getParentContext(), null, key, firstResult, RESULT_PER_PAGE, true);
+				results = doSearch(ureq, query, condQueries, getParentContext(), null, null, key, firstResult, RESULT_PER_PAGE, true);
 			} else {
-				results = doSearch(ureq, query, condQueries, getParentContext(), getDocumentType(), key, firstResult, RESULT_PER_PAGE, true);
+				results = doSearch(ureq, query, condQueries, getParentContext(), getDocumentType(), getFileType(), key, firstResult, RESULT_PER_PAGE, true);
 			}
 		} else {
 			String searchString = getSearchString();
@@ -194,7 +194,7 @@ public class ResultsSearchController extends SearchInputController {
 				if(contextSelection.isOneSelected()) {
 					key = contextSelection.getSelectedKey();
 				}
-				results = doSearch(ureq, searchString, null, getParentContext(), getDocumentType(), key, firstResult, RESULT_PER_PAGE, true);
+				results = doSearch(ureq, searchString, null, getParentContext(), getDocumentType(), getFileType(), key, firstResult, RESULT_PER_PAGE, true);
 			} else {
 				results = SearchResults.EMPTY_SEARCH_RESULTS;
 			}

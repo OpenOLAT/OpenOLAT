@@ -1,3 +1,8 @@
+#if($r.available("search") && $r.visible("search"))
+	<div class="o_filehub_search o_block_large">
+		<div>$r.render("search")</div>
+	</div>
+#end
 #if($r.available("vfsSources") && $r.visible("vfsSources"))
 	<div class="o_block_large_bottom">
 		<fieldset>

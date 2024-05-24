@@ -20,6 +20,7 @@
 package org.olat.home;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -29,8 +30,21 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.search.SearchModule;
+import org.olat.search.SearchServiceUIFactory;
+import org.olat.search.SearchServiceUIFactory.DisplayOption;
+import org.olat.search.service.document.file.ExcelDocument;
+import org.olat.search.service.document.file.HtmlDocument;
+import org.olat.search.service.document.file.OpenDocument;
+import org.olat.search.service.document.file.PdfDocument;
+import org.olat.search.service.document.file.PowerPointDocument;
+import org.olat.search.service.document.file.TextDocument;
+import org.olat.search.service.document.file.WordDocument;
+import org.olat.search.ui.SearchInputController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,15 +53,45 @@ import org.olat.core.id.context.StateEntry;
  *
  */
 public class PersonalFileHubMainController extends BasicController implements Activateable2 {
-
+	
+	private static final String SEARCH_FILE_TYPES = List.of(
+			HtmlDocument.FILE_TYPE,
+			WordDocument.FILE_TYPE,
+			OpenDocument.TEXT_FILE_TYPE,
+			ExcelDocument.FILE_TYPE,
+			OpenDocument.SPEADSHEET_FILE_TYPE,
+			OpenDocument.FORMULA_FILE_TYPE,
+			PowerPointDocument.FILE_TYPE,
+			OpenDocument.PRESENTATION_FILE_TYPE,
+			PdfDocument.FILE_TYPE,
+			TextDocument.FILE_TYPE)
+		.stream()
+		.collect(Collectors.joining(" "));
+			
+	private SearchInputController searchCtrl;
 	private PersonalFileHubMountPointsController vfsSourcesCtrl;
 	private PersonalFileHubLibrariesController storageesCtrl;
+	
+	@Autowired
+	private SearchModule searchModule;
+	@Autowired
+	private SearchServiceUIFactory searchUIFactory;
 
 	public PersonalFileHubMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("file_hub");
 		putInitialPanel(mainVC);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		if (searchModule.isSearchAllowed(roles)) {
+			searchCtrl = searchUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD_TEXT, null);
+			listenTo(searchCtrl);
+			mainVC.put("search", searchCtrl.getInitialComponent());
+			searchCtrl.setResourceContextEnable(false);
+			searchCtrl.setResourceUrl(null);
+			searchCtrl.setFileType(SEARCH_FILE_TYPES);
+		}
 		
 		mainVC.contextPut("storageTitle", translate("file.hub.storage"));
 		vfsSourcesCtrl = new PersonalFileHubMountPointsController(ureq, wControl, stackedPanel, translate("file.hub"));

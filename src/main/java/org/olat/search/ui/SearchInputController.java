@@ -90,6 +90,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	
 	private String parentContext;
 	private String documentType;
+	private String fileType;
 	private String resourceUrl;
 	private boolean resourceContextEnable = true;
 	private String contextHelpPage = DEFAULT_CONTEXT_HELP_PAGE;
@@ -150,6 +151,14 @@ public class SearchInputController extends FormBasicController implements Generi
 
 	public void setDocumentType(String documentType) {
 		this.documentType = documentType;
+	}
+
+	public String getFileType() {
+		return fileType;
+	}
+
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
 	}
 
 	public String getResourceUrl() {
@@ -290,7 +299,7 @@ public class SearchInputController extends FormBasicController implements Generi
 		} else if (didYouMeanLinks != null && didYouMeanLinks.contains(source)) {
 			String didYouMeanWord = (String)source.getUserObject();
 			searchInput.setValue(didYouMeanWord);
-			doSearch(ureq, didYouMeanWord, null, parentContext, documentType, resourceUrl, 0, RESULT_PER_PAGE, false);
+			doSearch(ureq, didYouMeanWord, null, parentContext, documentType, fileType, resourceUrl, 0, RESULT_PER_PAGE, false);
 		}
 	}
 	
@@ -381,6 +390,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	private void createResultsSearchController(UserRequest ureq) {
 		resultCtlr = new ResultsSearchController(ureq, getWindowControl(), getResourceUrl());
 		resultCtlr.setDocumentType(getDocumentType());
+		resultCtlr.setFileType(getFileType());
 		resultCtlr.setParentContext(getParentContext());
 		resultCtlr.setResourceContextEnable(isResourceContextEnable());
 		resultCtlr.setContextHelpPage(getContextHelpPage());
@@ -467,8 +477,8 @@ public class SearchInputController extends FormBasicController implements Generi
 		}		
 	}
 	
-	protected SearchResults doSearch(UserRequest ureq, String searchString, List<String> condSearchStrings, String parentCtxt, String docType, String rsrcUrl,
-			int firstResult, int maxReturns, boolean doSpellCheck) {
+	protected SearchResults doSearch(UserRequest ureq, String searchString, List<String> condSearchStrings, String parentCtxt, String docType, String fileType,
+			String rsrcUrl, int firstResult, int maxReturns, boolean doSpellCheck) {
 		
 		String query = null;
 		List<String> condQueries = null;
@@ -479,7 +489,7 @@ public class SearchInputController extends FormBasicController implements Generi
 			}
 
 			query = getQueryString(searchString, false);
-			condQueries = getCondQueryStrings(condSearchStrings, parentCtxt, docType, rsrcUrl);
+			condQueries = getCondQueryStrings(condSearchStrings, parentCtxt, docType, fileType, rsrcUrl);
 			SearchResults searchResults = searchClient.doSearch(query, condQueries,
 					getIdentity(), ureq.getUserSession().getRoles(), getLocale(), firstResult, maxReturns, true);
 
@@ -494,10 +504,10 @@ public class SearchInputController extends FormBasicController implements Generi
 					if (didYouMeansWords != null && !didYouMeansWords.isEmpty()) {
 						setDidYouMeanWords(didYouMeansWords);
 					} else {
-						searchResults = doFuzzySearch(ureq, searchString, null, parentCtxt, docType, rsrcUrl, firstResult, maxReturns);
+						searchResults = doFuzzySearch(ureq, searchString, null, parentCtxt, docType, fileType, rsrcUrl, firstResult, maxReturns);
 					}
 				} else {
-					searchResults = doFuzzySearch(ureq, searchString, null, parentCtxt, docType, rsrcUrl, firstResult, maxReturns);
+					searchResults = doFuzzySearch(ureq, searchString, null, parentCtxt, docType, fileType, rsrcUrl, firstResult, maxReturns);
 				}
 			}
 			
@@ -519,11 +529,12 @@ public class SearchInputController extends FormBasicController implements Generi
 		return SearchResults.EMPTY_SEARCH_RESULTS;
 	}
 	
-	protected SearchResults doFuzzySearch(UserRequest ureq, String searchString, List<String> condSearchStrings, String parentCtxt, String docType, String rsrcUrl,
-			int firstResult, int maxReturns) throws QueryException, ParseException, ServiceNotAvailableException  {
+	protected SearchResults doFuzzySearch(UserRequest ureq, String searchString, List<String> condSearchStrings,
+			String parentCtxt, String docType, String fileType, String rsrcUrl, int firstResult, int maxReturns)
+			throws QueryException, ParseException, ServiceNotAvailableException {
 		hideDidYouMeanWords();
 		String query = getQueryString(searchString, true);
-		List<String> condQueries = getCondQueryStrings(condSearchStrings, parentCtxt, docType, rsrcUrl);
+		List<String> condQueries = getCondQueryStrings(condSearchStrings, parentCtxt, docType, fileType, rsrcUrl);
 		return searchClient.doSearch(query, condQueries,
 				getIdentity(), ureq.getUserSession().getRoles(), getLocale(), firstResult, maxReturns, true);
 	}
@@ -579,7 +590,7 @@ public class SearchInputController extends FormBasicController implements Generi
 		return query.toString();
 	}
 	
-	private List<String> getCondQueryStrings(List<String> condSearchStrings, String parentCtxt, String docType, String rsrcUrl) {
+	private List<String> getCondQueryStrings(List<String> condSearchStrings, String parentCtxt, String docType, String fileType, String rsrcUrl) {
 		List<String> queries = new ArrayList<>();
 		if(condSearchStrings != null && !condSearchStrings.isEmpty()) {
 			queries.addAll(condSearchStrings);
@@ -590,6 +601,9 @@ public class SearchInputController extends FormBasicController implements Generi
 		}
 		if (StringHelper.containsNonWhitespace(docType)) {
 			appendAnd(queries, "(", AbstractOlatDocument.DOCUMENTTYPE_FIELD_NAME, ":(", docType, "))");
+		}
+		if (StringHelper.containsNonWhitespace(fileType)) {
+			appendAnd(queries, "(", AbstractOlatDocument.FILETYPE_FIELD_NAME, ":(", fileType, "))");
 		}
 		if (StringHelper.containsNonWhitespace(rsrcUrl)) {
 			appendAnd(queries, AbstractOlatDocument.RESOURCEURL_FIELD_NAME, ":", escapeResourceUrl(rsrcUrl), "*");
