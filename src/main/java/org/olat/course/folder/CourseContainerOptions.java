@@ -52,6 +52,10 @@ public class CourseContainerOptions {
 		return new CourseContainerOptions(true, false, true, false, false, false);
 	}
 	
+	public static final CourseContainerOptions withoutCourseFolder() {
+		return new CourseContainerOptions(true, true, false, true, true, true);
+	}
+	
 	public static final CourseContainerOptions courseFolder() {
 		return new CourseContainerOptions(false, false, true, false, false, false);
 	}

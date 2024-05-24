@@ -21,9 +21,6 @@ package org.olat.course.folder.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
-import org.olat.core.commons.services.folder.ui.FolderController;
-import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -37,12 +34,9 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.NamedContainerImpl;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.ICourse;
-import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.run.CourseRuntimeController;
-import org.olat.course.tree.CourseInternalLinkTreeModel;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -56,25 +50,22 @@ public class CourseFolderController extends BasicController implements Activatea
 
 	private Link showMemoryUsageLink;
 	
-	private final FolderController folderCtrl;
+	private final CourseFolderFileHubMainController fileHubCtrl;
 
-	public CourseFolderController(UserRequest ureq, WindowControl wControl, ICourse course, boolean overrideReadOnly) {
+	public CourseFolderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, ICourse course, boolean overrideReadOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseRuntimeController.class, ureq.getLocale()));
 		
 		VelocityContainer mainVC = createVelocityContainer("course_folder");
 		putInitialPanel(mainVC);
 		
-		VFSContainer courseContainer = course.getCourseFolderContainer(ureq.getUserSession().getIdentityEnvironment(),
-				CourseContainerOptions.all(), overrideReadOnly, Boolean.TRUE);
-		VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), courseContainer);
-		CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
+		TooledStackedPanel stackedPanel = new TooledStackedPanel("folderBreadcrumb", getTranslator(), this);
+		stackedPanel.setCssClass("o_toolbar_top");
+		stackedPanel.setToolbarEnabled(false);
+		mainVC.put("stackedPanel", stackedPanel);
 		
-		FolderControllerConfig config = FolderControllerConfig.builder()
-				.withCustomLinkTreeModel(customLinkTreeModel)
-				.build();
-		folderCtrl = new FolderController(ureq, wControl, namedCourseFolder, config);
-		listenTo(folderCtrl);
-		mainVC.put("folder", folderCtrl.getInitialComponent());
+		fileHubCtrl = new CourseFolderFileHubMainController(ureq, wControl, stackedPanel, repositoryEntry, course, overrideReadOnly);
+		listenTo(fileHubCtrl);
+		stackedPanel.pushController(translate("command.coursefiles"), fileHubCtrl);
 	}
 
 	public void initToolbar(TooledStackedPanel stackPanel) {
@@ -84,7 +75,7 @@ public class CourseFolderController extends BasicController implements Activatea
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		folderCtrl.activate(ureq, entries, state);
+		fileHubCtrl.activate(ureq, entries, state);
 	}
 
 	@Override

@@ -722,7 +722,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 			
 		if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
-			folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefolder"), this, "o_icon_coursefolder");
+			folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefiles"), this, "o_icon_coursefolder");
 			folderLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Coursefolder:0]]"));
 			folderLink.setElementCssClass("o_sel_course_folder");
@@ -2393,10 +2393,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				removeCustomCSS();
 				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("CourseFolder", 0l), null);
-				CourseFolderController ctrl = new CourseFolderController(ureq, swControl, course, overrideReadOnly);
+				CourseFolderController ctrl = new CourseFolderController(ureq, swControl, getRepositoryEntry(), course, overrideReadOnly);
 				
 				ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
-				courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
+				courseFolderCtrl = pushController(ureq, translate("command.coursefiles"), ctrl);
 				setActiveTool(folderLink);
 				ctrl.initToolbar(toolbarPanel);
 				listenTo(ctrl);
