@@ -107,6 +107,8 @@ public interface VFSRepositoryService {
 	
 	public void cleanMetadatas();
 	
+	public void synchMetadatas(VFSContainer container);
+	
 	public List<VFSMetadata> getMostDownloaded(VFSMetadata ancestorMetadata, int maxResults);
 
 	/**

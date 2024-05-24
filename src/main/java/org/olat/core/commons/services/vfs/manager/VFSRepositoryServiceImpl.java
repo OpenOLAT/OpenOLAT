@@ -268,6 +268,30 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		
 		return deleted;
 	}
+	
+	@Override
+	public void synchMetadatas(VFSContainer vfsContainer) {
+		if (vfsContainer == null) {
+			return;
+		}
+		
+		VFSMetadata vfsMetadata = vfsContainer.getMetaInfo();
+		if (vfsMetadata == null) {
+			return;
+		}
+		
+		metadataDao.getDescendants(vfsMetadata, Boolean.FALSE).forEach(this::checkMetadata);
+		
+		File directory = toFile(vfsMetadata);
+		if (directory != null) {
+			try {
+				migrateDirectories(directory);
+			} catch (IOException e) {
+				dbInstance.closeSession();
+				log.error("Error while cleaning metadata", e);
+			}
+		}
+	}
 
 	@Override
 	public VFSMetadata getMetadataFor(VFSItem path) {

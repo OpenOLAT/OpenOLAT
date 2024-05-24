@@ -227,6 +227,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private DropdownItem cmdDropdown;
 	private FormLink webdavLink;
 	private FormLink quotaEditLink;
+	private FormLink synchMetadataLink;
 	private FormLink trashMenuLink;
 	private FormLink bulkDownloadButton;
 	private FormLink bulkMoveButton;
@@ -439,6 +440,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		quotaEditLink.setIconLeftCSS("o_icon o_icon-fw o_icon_quota");
 		cmdDropdown.addElement(quotaEditLink);
 		
+		synchMetadataLink = uifactory.addFormLink("synch.metadata", formLayout, Link.LINK);
+		synchMetadataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reload");
+		cmdDropdown.addElement(synchMetadataLink);
+		
 		trashMenuLink = uifactory.addFormLink("quota.edit.menu", "trash", null, formLayout, Link.LINK);
 		trashMenuLink.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
 		trashMenuLink.setElementCssClass("o_folder_trash_menu_item");
@@ -470,6 +475,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		webdavLink.setVisible(webdavEnabled);
 		quotaEditLink.setVisible(config.isDisplayQuotaLink() && canEditQuota(ureq));
+		synchMetadataLink.setVisible(VFSStatus.YES == currentContainer.canMeta());
 		trashMenuLink.setVisible(canViewTrash());
 		cmdDropdown.setVisible(webdavLink.isVisible() || quotaEditLink.isVisible() || trashMenuLink.isVisible());
 		
@@ -1306,6 +1312,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			doShowWebdav(ureq);
 		} else if (source == quotaEditLink) {
 			doEditQuota(ureq);
+		} else if (source == synchMetadataLink) {
+			doSynchMetadata(ureq);
 		} else if (bulkDownloadButton == source) {
 			doBulkDownload(ureq);
 		} else if (bulkMoveButton == source) {
@@ -1921,6 +1929,15 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (customQuota != null) {
 			inheritingContainer.getLocalSecurityCallback().setQuota(customQuota);
 		}
+	}
+	
+	private void doSynchMetadata(UserRequest ureq) {
+		if (isItemNotAvailable(ureq, currentContainer, false)) return;
+		
+		vfsRepositoryService.synchMetadatas(currentContainer);
+		
+		showInfo("synch.metadata.done");
+		loadModel(ureq);
 	}
 	
 	private void doOpenMetadata(UserRequest ureq, FolderRow row) {

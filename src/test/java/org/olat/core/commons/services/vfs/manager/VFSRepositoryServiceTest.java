@@ -51,11 +51,11 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -384,6 +384,66 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void synchMetadatas() throws IOException {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer container = testContainer.createChildContainer(UUID.randomUUID().toString());
+		VFSContainer container1 = container.createChildContainer("sub1");
+		container1.getMetaInfo();
+		VFSLeaf file11 = createFile(container);
+		VFSLeaf file12 = createFile(container);
+		
+		List<VFSMetadata> descendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.FALSE);
+		assertThat(descendants).containsExactlyInAnyOrder(
+				container1.getMetaInfo(),
+				file11.getMetaInfo(),
+				file12.getMetaInfo()
+			);
+		
+		// Create container and file without metadata
+		VFSContainer container2 = container.createChildContainer("sub2");
+		VFSLeaf file21 = container2.createChildLeaf("image21.jpg");
+		copyTestTxt(file21, "IMG_1491.jpg");
+		descendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.FALSE);
+		assertThat(descendants).containsExactlyInAnyOrder(
+				container1.getMetaInfo(),
+				file11.getMetaInfo(),
+				file12.getMetaInfo()
+			);
+		
+		// Synch and check whether the matadata are generated
+		vfsRepositoryService.synchMetadatas(container);
+		descendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.FALSE);
+		assertThat(descendants).containsExactlyInAnyOrder(
+				container1.getMetaInfo(),
+				file11.getMetaInfo(),
+				file12.getMetaInfo(),
+				container2.getMetaInfo(),
+				file21.getMetaInfo()
+			);
+		
+		// Delete a container and a file but not the metadata
+		VFSManager.olatRootFile(file21.getRelPath()).delete();
+		VFSManager.olatRootFile(container2.getRelPath()).delete();
+		VFSManager.olatRootFile(file12.getRelPath()).delete();
+		descendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.FALSE);
+		assertThat(descendants).containsExactlyInAnyOrder(
+				container1.getMetaInfo(),
+				file11.getMetaInfo(),
+				file12.getMetaInfo(),
+				container2.getMetaInfo(),
+				file21.getMetaInfo()
+			);
+		
+		// Synch and check whether the matadata are deleted
+		vfsRepositoryService.synchMetadatas(container);
+		descendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.FALSE);
+		assertThat(descendants).containsExactlyInAnyOrder(
+				container1.getMetaInfo(),
+				file11.getMetaInfo()
+			);
+	}
+	
+	@Test
 	public void markAsDeleted_leaf() {
 		// Create a folder with a file
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
@@ -501,10 +561,16 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 	}
 	
 	private VFSLeaf createFile() {
-		String filename = UUID.randomUUID() + ".txt";
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
-		VFSLeaf firstLeaf = testContainer.createChildLeaf(filename);
+		return createFile(testContainer);
+	}
+	
+	private VFSLeaf createFile(VFSContainer container) {
+		String filename = UUID.randomUUID() + ".txt";
+		VFSLeaf firstLeaf = container.createChildLeaf(filename);
 		copyTestTxt(firstLeaf, "test.txt");
+		firstLeaf.getMetaInfo();
+		dbInstance.commitAndCloseSession();
 		return firstLeaf;
 	}
 	
