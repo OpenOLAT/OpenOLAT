@@ -292,10 +292,8 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 	private void doSaveImageText(UserRequest ureq, int index) {
 		ImageComparisonSettings imageComparisonSettings = imageComparisonElement.getSettings();
 		switch (index) {
-			case 0:
-				imageComparisonSettings.setText1(textEls.get(index).getValue());
-			case 1:
-				imageComparisonSettings.setText2(textEls.get(index).getValue());
+			case 0 -> imageComparisonSettings.setText1(textEls.get(index).getValue());
+			case 1 -> imageComparisonSettings.setText2(textEls.get(index).getValue());
 		}
 		imageComparisonElement.setSettings(imageComparisonSettings);
 		store.savePageElement(imageComparisonElement);
