@@ -1953,7 +1953,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private boolean canEdit(VFSItem vfsItem) {
-		if (vfsItem instanceof VFSLeaf || vfsItem instanceof VFSContainer) {
+		if (vfsItem instanceof VFSLeaf) {
 			VFSContainer parentContainer = vfsItem.getParentContainer();
 			if (parentContainer != null) {
 				return parentContainer.canWrite() == VFSStatus.YES;
