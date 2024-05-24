@@ -2,8 +2,16 @@
 #set($choices = $r.getVisibleOrderedChoices($interaction))
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
+#set($answerCorrectnessClass = "")
+#if($isAnswerCorrect && !$isPageModeSolution)
+	#set($answerCorrectnessClass = "o_correct")
+#end
+#if($isAnswerIncorrect && !$isPageModeSolution)
+	#set($answerCorrectnessClass = "o_incorrect")
+#end
+
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
-<span class="$localName#if($r.isTrue($isOffline)) o_qti_offline#end"> 
+<span class="$answerCorrectnessClass $localName#if($r.isTrue($isOffline)) o_qti_offline#end">
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
 	<span class="o_error badResponse">$r.translate("error.choice")</span>
 	#end
@@ -21,7 +29,7 @@
         	$r.renderTextOrVariables($choice.getTextOrVariables())
         #end
     #else
-	<select id="oo_${responseIdentifier}" name="qtiworks_response_${responseIdentifier}">
+	<select id="oo_${responseIdentifier}" class="$answerCorrectnessClass" name="qtiworks_response_${responseIdentifier}">
 		#set($disabled = "")
 		#if($isShowPageModeSolution)
 			#set($disabled = "disabled")

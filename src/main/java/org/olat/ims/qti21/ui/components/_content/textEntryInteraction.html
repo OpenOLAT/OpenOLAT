@@ -5,9 +5,17 @@
 #set($responseInput = $r.getResponseValue($interaction.responseIdentifier))
 #set($responseInputString = $r.toString($responseInput))
 
+#set($answerCorrectnessClass = "")
+#if($isAnswerCorrect && !$isPageModeSolution)
+	#set($answerCorrectnessClass = "o_correct")
+#end
+#if($isAnswerIncorrect && !$isPageModeSolution)
+	#set($answerCorrectnessClass = "o_incorrect")
+#end
+
 #set($checkJavaScript = $r.checkJavaScript($responseDeclaration,$interaction.patternmask))
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
-<span class="$localName #if($r.isTrue($isCorrectionHelp)) has-feedback #if($r.isCorrectTextEntry($interaction)) has-success #else has-error #end #end">
+<span class="$answerCorrectnessClass $localName #if($r.isTrue($isCorrectionHelp)) has-feedback #if($r.isCorrectTextEntry($interaction)) has-success #else has-error #end #end">
 
 	#if($isPageMode)
 		#set($disabled = ($r.isItemSessionEnded() || $isShowPageModeSolution))
@@ -21,7 +29,7 @@
 		#end
 		<input id="od_${responseIdentifier}"
 			   type="text"
-			   class="$r.textEntryType($interaction)"
+			   class="$answerCorrectnessClass $r.textEntryType($interaction)"
 			   name="qtiworks_response_${responseIdentifier}"
 			   value="$value"
 			   #if($placeholder) $r.placeholder($interaction) #end

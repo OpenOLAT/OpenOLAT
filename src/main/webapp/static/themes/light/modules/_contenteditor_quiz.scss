@@ -84,6 +84,73 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 				padding: 0;
 				border: none;
 				background: unset;
+
+				span.textEntryInteraction, span.inlineChoiceInteraction {
+					&.o_correct {
+						@include o-add-icon('circle-check', true, false);
+						@include o-add-icon-font(false);
+
+						&:after {
+							margin-left: -24px;
+							color: $brand-success;
+							background-color: white;
+						}
+					}
+
+					&.o_incorrect {
+						@include o-add-icon('circle-xmark', true, false);
+						@include o-add-icon-font(false);
+
+						&:after {
+							margin-left: -24px;
+							color: $brand-danger;
+							background-color: white;
+						}
+					}
+				}
+
+				span.textEntryInteraction {
+					&.o_correct, &.o_incorrect {
+						margin-right: 5px;
+					}
+
+					input.text {
+						background: transparent;
+						border-radius: $border-radius-small;
+						border-width: 1px;
+						border-style: solid;
+						padding: 2px 24px 2px 5px;
+						margin-top: -4px;
+						-webkit-appearance: none;
+
+						&.o_correct {
+							border-color: $brand-success;
+						}
+
+						&.o_incorrect {
+							border-color: $brand-danger;
+						}
+					}
+				}
+
+				span.inlineChoiceInteraction {
+					select {
+						background: transparent;
+						border-radius: $border-radius-small;
+						border-width: 1px;
+						border-style: solid;
+						padding: 2px 24px 2px 5px;
+						-webkit-appearance: none;
+
+						&.o_correct {
+							border-color: $brand-success;
+						}
+
+						&.o_incorrect {
+							border-color: $brand-danger;
+						}
+					}
+				}
 			}
 
 			.o_assessmentitem_wrapper .o_qti_item_body {
