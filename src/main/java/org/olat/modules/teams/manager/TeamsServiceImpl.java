@@ -24,8 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
@@ -34,7 +33,6 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
@@ -43,12 +41,10 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
-import org.olat.login.oauth.spi.MicrosoftAzureADFSProvider;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsMeetingDeletionHandler;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.TeamsUser;
-import org.olat.modules.teams.model.ConnectionInfos;
 import org.olat.modules.teams.model.TeamsError;
 import org.olat.modules.teams.model.TeamsErrorCodes;
 import org.olat.modules.teams.model.TeamsErrors;
@@ -60,10 +56,10 @@ import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.microsoft.graph.core.ClientException;
 import com.microsoft.graph.models.OnlineMeeting;
 import com.microsoft.graph.models.OnlineMeetingRole;
 import com.microsoft.graph.models.User;
+import com.microsoft.graph.models.odataerrors.ODataError;
 
 /**
  * 
@@ -82,8 +78,6 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 	private TeamsUserDAO teamsUserDao;
 	@Autowired
 	private MicrosoftGraphDAO graphDao;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private TeamsMeetingDAO teamsMeetingDao;
 	@Autowired
@@ -206,16 +200,17 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, boolean guest, TeamsErrors errors) {
-		OnlineMeetingRole role = (presenter && !guest) ? OnlineMeetingRole.PRESENTER : OnlineMeetingRole.ATTENDEE;
+	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, boolean guest,
+			OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
+		OnlineMeetingRole role = (presenter && !guest) ? OnlineMeetingRole.Presenter : OnlineMeetingRole.Attendee;
 		meeting = teamsMeetingDao.loadByKey(meeting.getKey());
 		if(meeting == null) {
 			errors.append(new TeamsError(TeamsErrorCodes.meetingDeleted));
 		} else if(!StringHelper.containsNonWhitespace(meeting.getOnlineMeetingId())) {
 			if(presenter || (!guest)) {
 				dbInstance.commitAndCloseSession();
-				User user = lookupUser(identity, errors);
-				meeting = createOnlineMeeting(meeting, user, role, errors);
+				User user = lookupMe(identity, oauth2Tokens, errors);
+				meeting = createOnlineMeeting(meeting, user, role, oauth2Tokens, errors);
 			} else {
 				errors.append(new TeamsError(TeamsErrorCodes.presenterMissing));
 			}
@@ -244,22 +239,26 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 	 * @param errors The errors object, mandatory
 	 * @return The update meeting.
 	 */
-	private TeamsMeeting createOnlineMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, TeamsErrors errors) {
+	private TeamsMeeting createOnlineMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role,
+			OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
 		TeamsMeeting lockedMeeting = null;
 		try {
 			lockedMeeting = teamsMeetingDao.loadForUpdate(meeting);
 			if(lockedMeeting == null) {
 				errors.append(new TeamsError(TeamsErrorCodes.meetingDeleted));
 			} else if(!StringHelper.containsNonWhitespace(lockedMeeting.getOnlineMeetingId())) {
-				OnlineMeeting onlineMeeting = graphDao.createMeeting(lockedMeeting, user, role, errors);
+				OnlineMeeting onlineMeeting = graphDao.createMeeting(lockedMeeting, user, role, oauth2Tokens, errors);
 				if(onlineMeeting != null) {
-					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingId(onlineMeeting.id);
-					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingJoinUrl(onlineMeeting.joinUrl);
+					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingId(onlineMeeting.getId());
+					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingJoinUrl(onlineMeeting.getJoinWebUrl());
 					lockedMeeting = teamsMeetingDao.updateMeeting(lockedMeeting);
 				}
 			}
-		}catch (ClientException | NullPointerException | IllegalArgumentException e) {
+		} catch (NullPointerException | IllegalArgumentException e) {
 			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
+			log.error("Cannot create teams meeting", e);
+		} catch(ODataError e) {
+			errors.append(new TeamsError(TeamsErrorCodes.unkown));
 			log.error("Cannot create teams meeting", e);
 		} catch (Exception e) {
 			errors.append(new TeamsError(TeamsErrorCodes.unkown));
@@ -271,87 +270,22 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 	}
 	
 	@Override
-	public User lookupUser(Identity identity, TeamsErrors errors) {
+	public User lookupMe(Identity identity, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
 		TeamsUser teamsUser = teamsUserDao.getUser(identity);
 		if(teamsUser != null) {
 			User user = new User();
-			user.id = teamsUser.getIdentifier();
-			user.displayName = teamsUser.getDisplayName();
+			user.setId(teamsUser.getIdentifier());
+			user.setDisplayName(teamsUser.getDisplayName());
 			return user;
 		}
 
-		
-		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
-		String institutionalEmail = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
-		List<User> users = graphDao.searchUsersByMail(email, institutionalEmail, errors);
-		if(users.size() > 1) {
-			users = reduceToPrefered(email, users);
-		}
-		if(users.size() == 1) {
-			User user = users.get(0);
-			teamsUserDao.createUser(identity, user.id, user.displayName);
+		User user = graphDao.getMe(oauth2Tokens);
+		if(user != null) {
+			teamsUserDao.createUser(identity, user.getId(), user.getDisplayName());
 			dbInstance.commit();
 			return user;
 		}
-		
-		List<String> principals = new ArrayList<>();
-		if(StringHelper.containsNonWhitespace(email)) {
-			principals.add(email);
-		}
-		if(StringHelper.containsNonWhitespace(institutionalEmail)) {
-			principals.add(institutionalEmail);
-		}
-		Authentication authentication = securityManager.findAuthentication(identity, MicrosoftAzureADFSProvider.PROVIDER, BaseSecurity.DEFAULT_ISSUER);
-		if(authentication != null && StringHelper.containsNonWhitespace(authentication.getAuthusername())) {
-			principals.add(authentication.getAuthusername());
-		}
-		User user = graphDao.searchUserByUserPrincipalName(principals, errors);
-		if(user == null) {
-			log.debug("Cannot find user with email: {} or institutional email: {} (users found {})", email, institutionalEmail, users.size());
-		} else {
-			teamsUserDao.createUser(identity, user.id, user.displayName);
-			dbInstance.commit();
-		}
-		return user;
-	}
-	
-	private List<User> reduceToPrefered(String email, List<User> users) {
-		List<User> preferedUsers = new ArrayList<>();
-		// First mail
-		for(User user:users) {
-			if(user.mail != null && user.mail.equalsIgnoreCase(email)) {
-				preferedUsers.add(user);
-			}
-		}
-		
-		// Fallback other mails
-		if(preferedUsers.isEmpty()) {
-			for(User user:users) {
-				if(user.otherMails != null) {
-					for(String otherMail:user.otherMails) {
-						if(otherMail != null && otherMail.equalsIgnoreCase(email)) {
-							preferedUsers.add(user);
-						}
-					}
-				}
-			}
-		}
-		
-		if(!preferedUsers.isEmpty()) {
-			return preferedUsers;
-		}
-		return users;
-	}
-
-	@Override
-	public ConnectionInfos checkConnection(TeamsErrors errors) {
-		return graphDao.check(errors);
-	}
-
-	@Override
-	public ConnectionInfos checkConnection(String clientId, String clientSecret, String tenantGuid,
-			String producerId, TeamsErrors errors) {
-		return graphDao.check(clientId, clientSecret, tenantGuid, producerId, errors);
+		return null;
 	}
 	
 	private void removeCalendarEvent(TeamsMeeting meeting) {

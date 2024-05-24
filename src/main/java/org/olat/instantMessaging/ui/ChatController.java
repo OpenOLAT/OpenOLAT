@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -384,8 +385,8 @@ public class ChatController extends BasicController implements GenericEventListe
 		} else if (source == rosterCtrl) {
 			doSendPresence(rosterCtrl.getNickName(), rosterCtrl.isUseNickName());
 		} else if (source == supervisorRosterCtrl) {
-			if(event instanceof SelectChannelEvent) {
-				doSwitchChannel(((SelectChannelEvent)event).getChannel());
+			if(event instanceof SelectChannelEvent sce) {
+				doSwitchChannel(sce.getChannel());
 			}
 		}
 	}
@@ -398,11 +399,9 @@ public class ChatController extends BasicController implements GenericEventListe
 			loadModel(getLastWeek(), -1);
 		} else if(lastMonth == source) {
 			loadModel(getLastMonth(), -1);
-		} else if(source instanceof Link) {
-			Link link = (Link)source;
-			if("meeting".equals(link.getCommand()) && link.getUserObject() instanceof ChatMessage) {
-				doStartMeeting((ChatMessage)link.getUserObject());
-			}
+		} else if(source instanceof Link link && "meeting".equals(link.getCommand())
+				&& link.getUserObject() instanceof ChatMessage message) {
+			doStartMeeting(ureq, message);
 		}
 	}
 	
@@ -436,7 +435,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		loadModel(currentDateFrom, currentMaxResults);
 	}
 	
-	private void doStartMeeting(ChatMessage message) {
+	private void doStartMeeting(UserRequest ureq, ChatMessage message) {
 		InstantMessage im = imService.getMessageById(getIdentity(), message.getMessageKey(), true);
 		if(im.getBbbMeeting() != null) {
 			BigBlueButtonErrors errors = new BigBlueButtonErrors();
@@ -446,7 +445,8 @@ public class ChatController extends BasicController implements GenericEventListe
 			redirectTo(meetingUrl, errors);
 		} else if(im.getTeamsMeeting() != null) {
 			TeamsErrors errors = new TeamsErrors();
-			TeamsMeeting meeting = teamsService.joinMeeting(im.getTeamsMeeting(), getIdentity(), highlightVip, false, errors);
+			OAuth2Tokens oauth2Tokens = ureq.getUserSession().getOAuth2Tokens();
+			TeamsMeeting meeting = teamsService.joinMeeting(im.getTeamsMeeting(), getIdentity(), highlightVip, false, oauth2Tokens, errors);
 			redirectTo(meeting, errors);	
 		}
 	}

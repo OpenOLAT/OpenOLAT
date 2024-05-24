@@ -131,13 +131,6 @@ public class IdentityEnvironment implements Serializable {
 	}
 
 	/**
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return "identity: " + identity + ", roles: " + roles + ", attributes: " + attributes + " , super:" + super.toString();
-	}
-
-	/**
 	 * never returns null: if the locale is not set yet, then the olat's default
 	 * locale is returned
 	 * 
@@ -154,4 +147,8 @@ public class IdentityEnvironment implements Serializable {
 		this.locale = locale;
 	}
 
+	@Override
+	public String toString() {
+		return "identity: " + identity + ", roles: " + roles + ", attributes: " + attributes + " , super:" + super.toString();
+	}
 }

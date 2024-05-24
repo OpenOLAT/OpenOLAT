@@ -110,49 +110,25 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		setBooleanProperty(PROP_ENABLED, enabled, true);
 	}
 
+
 	public String getApiKey() {
 		return apiKey;
-	}
-
-	public void setApiKey(String apiKey) {
-		this.apiKey = apiKey;
-		setStringProperty(MSGRAPH_API_KEY, apiKey, true);
 	}
 
 	public String getApiSecret() {
 		return apiSecret;
 	}
 
-	public void setApiSecret(String apiSecret) {
-		this.apiSecret = apiSecret;
-		setStringProperty(MSGRAPH_API_SECRET, apiSecret, true);
-	}
-
 	public String getTenantGuid() {
 		return tenantGuid;
-	}
-
-	public void setTenantGuid(String tenantGuid) {
-		this.tenantGuid = tenantGuid;
-		setStringProperty(MSGRAPH_TENANT_GUID, tenantGuid, true);
 	}
 	
 	public String getTenantOrganisation() {
 		return organisation;
 	}
 	
-	public void setTenantOrganisation(String organisation) {
-		this.organisation = organisation;
-		setStringProperty(MSGRAPH_TENANT_ORG, organisation, true);
-	}
-	
 	public String getProducerId() {
 		return producerId;
-	}
-
-	public void setProducerId(String producerId) {
-		this.producerId = producerId;
-		setStringProperty(PROP_PRODUCER_ID, producerId, true);
 	}
 
 	public boolean isGroupsEnabled() {

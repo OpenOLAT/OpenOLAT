@@ -25,11 +25,14 @@ import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.basesecurity.OAuth2Tokens;
+import org.olat.basesecurity.model.OAuth2TokensImpl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
+import org.olat.modules.teams.TeamsModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -76,6 +79,8 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	private String countryAttributeName;
 	
 	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
 	private OAuthLoginModule oauthModule;
 	
 	@Override
@@ -94,7 +99,7 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	}
 
 	@Override
-	public OAuthService getScribeProvider() {
+	public OAuth20Service getScribeProvider() {
 		ServiceBuilder serviceBuilder = new ServiceBuilder(oauthModule.getAzureAdfsApiKey());
 		if(StringHelper.containsNonWhitespace(oauthModule.getAzureAdfsApiSecret())) {
 			serviceBuilder = serviceBuilder.apiSecret(oauthModule.getAzureAdfsApiSecret());
@@ -106,8 +111,17 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			// common tenant
 			api = MicrosoftAzureActiveDirectory20Api.instance();
 		}
+		
+		// Build scopes
+		StringBuilder scopes = new StringBuilder(64);
+		scopes.append("profile openid email User.Read");
+		if(teamsModule.isEnabled()) {
+			scopes.append(" OnlineMeetings.ReadWrite");
+		}
+		scopes.append(" offline_access");
+		
 		return serviceBuilder
-				.defaultScope("profile openid email User.Read")
+				.defaultScope(scopes.toString())
 				.callback(oauthModule.getCallbackUrl())
                 .build(api);
 	}
@@ -140,6 +154,7 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			JSONWebToken jwt = JSONWebToken.parse(accessToken);
 			JSONObject obj = jwt.getJsonPayload();
 			user.setId(getValue(obj, idAttributeName, user.getId()));
+			
 			user.setFirstName(getValue(obj, firstNameAttributeName, user.getFirstName()));
 			user.setLastName(getValue(obj, lastNameAttributeName, user.getLastName()));
 			user.setEmail(getValue(obj, emailAttributeName, user.getEmail()));
@@ -150,6 +165,9 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			user.setInstitutionalName(getValue(obj, institutionalNameAttributeName, user.getInstitutionalName()));
 			user.setDepartment(getValue(obj, departmentAttributeName, user.getDepartment()));
 			user.setCountry(getValue(obj, countryAttributeName, user.getCountry()));
+			
+			OAuth2Tokens oauth2Tokens = OAuth2TokensImpl.valueOf(accessToken);
+			user.setOAuth2Tokens(oauth2Tokens);
 		} catch (JSONException e) {
 			log.error("", e);
 		}
@@ -175,7 +193,7 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			user.setInstitutionalName(getValue(obj, institutionalNameAttributeName, user.getInstitutionalName()));
 			user.setDepartment(getValue(obj, departmentAttributeName, user.getDepartment()));
 			user.setCountry(getValue(obj, countryAttributeName, user.getCountry()));
-			log.debug("User infos (graph): ", obj);
+			log.debug("User infos (graph): {}", obj);
 		} catch (JSONException | InterruptedException | ExecutionException | IOException e) {
 			log.error("", e);
 		}

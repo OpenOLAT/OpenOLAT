@@ -41,6 +41,7 @@ import jakarta.servlet.http.HttpSessionBindingEvent;
 import jakarta.servlet.http.HttpSessionBindingListener;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.commons.persistence.DBFactory;
@@ -103,6 +104,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private final Stack<HistoryPoint> history = new Stack<>();
 	
 	private String csrfToken;
+	private transient OAuth2Tokens oauth2Tokens;
 
 	public UserSession() {
 		init();
@@ -293,7 +295,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	public Roles getRoles() {
 		Roles result = identityEnvironment.getRoles();
 		if (result == null) {
-			log.warn("getRoles: null, this="+this, new RuntimeException("getRoles"));
+			log.warn("getRoles: null, this={}", this, new RuntimeException("getRoles"));
 		}
 		return result;
 	}
@@ -314,6 +316,14 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		return identityEnvironment;
 	}
 	
+	public OAuth2Tokens getOAuth2Tokens() {
+		return oauth2Tokens;
+	}
+
+	public void setOAuth2Tokens(OAuth2Tokens oauth2Tokens) {
+		this.oauth2Tokens = oauth2Tokens;
+	}
+
 	public boolean isInLockModeProcess() {
 		return lockResource != null || lockMode != null
 				|| (lockRequests != null && !lockRequests.isEmpty());

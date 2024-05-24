@@ -108,10 +108,11 @@
 	    <test.env.db.oracle.pass>olat00002</test.env.db.oracle.pass>
 	    <test.env.db.oracle.host>localhost</test.env.db.oracle.host>
 	    <test.env.db.oracle.host.port>1521</test.env.db.oracle.host.port>
-	    <test.env.msgraph.app.id></test.env.msgraph.app.id>
-	    <test.env.msgraph.app.secret></test.env.msgraph.app.secret>
-	    <test.env.msgraph.app.tenant></test.env.msgraph.app.tenant>
-	    <test.env.msgraph.teams.producer></test.env.msgraph.teams.producer>
+	    <test.env.azure.adfs.enabled>false</test.env.azure.adfs.enabled>
+	    <test.env.azure.adfs.client.id></test.env.azure.adfs.client.id>
+	    <test.env.azure.adfs.client.secret></test.env.azure.adfs.client.secret>
+	    <test.env.azure.adfs.tenant></test.env.azure.adfs.tenant>
+	    <test.env.azure.adfs.refresh.token></test.env.azure.adfs.refresh.token>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
 	    <test.env.webdriver.chrome.driver></test.env.webdriver.chrome.driver>
@@ -1359,10 +1360,11 @@
 						<test.env.db.postgresql.pass>${test.env.db.postgresql.pass}</test.env.db.postgresql.pass>
 						<test.env.db.postgresql.host.port>${test.env.db.postgresql.host.port}</test.env.db.postgresql.host.port>
 						<test.env.instance.id>${test.env.instance.id}</test.env.instance.id>
-						<test.env.msgraph.app.id>${test.env.msgraph.app.id}</test.env.msgraph.app.id>
-						<test.env.msgraph.app.secret>${test.env.msgraph.app.secret}</test.env.msgraph.app.secret>
-						<test.env.msgraph.app.tenant>${test.env.msgraph.app.tenant}</test.env.msgraph.app.tenant>
-						<test.env.msgraph.teams.producer>${test.env.msgraph.teams.producer}</test.env.msgraph.teams.producer>
+	    				<test.env.azure.adfs.enabled>${test.env.azure.adfs.enabled}</test.env.azure.adfs.enabled>
+	    				<test.env.azure.adfs.client.id>${test.env.azure.adfs.client.id}</test.env.azure.adfs.client.id>
+						<test.env.azure.adfs.client.secret>${test.env.azure.adfs.client.secret}</test.env.azure.adfs.client.secret>
+						<test.env.azure.adfs.tenant>${test.env.azure.adfs.tenant}</test.env.azure.adfs.tenant>
+						<test.env.azure.adfs.refresh.token>${test.env.azure.adfs.refresh.token}</test.env.azure.adfs.refresh.token>
 						<arquillian.launch>tomcat-8-managed</arquillian.launch>
 						<webdriver.http.factory>jdk-http-client</webdriver.http.factory>
 						<webdriver.browser>${test.env.webdriver.browser}</webdriver.browser>
@@ -2162,8 +2164,8 @@
 		<!-- Microsoft Graph -->
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
-			<artifactId>microsoft-graph-beta</artifactId>
-			<version>0.78.0-SNAPSHOT</version>
+			<artifactId>microsoft-graph</artifactId>
+			<version>6.10.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
@@ -2176,6 +2178,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-identity</artifactId>
+			<version>1.12.1</version>
+		</dependency>
+<!-- Thanks for using https://jar-download.com -->
+
 		<!-- End Microsoft Graph -->
 		<!-- Lucene dependencies -->
 		<dependency>

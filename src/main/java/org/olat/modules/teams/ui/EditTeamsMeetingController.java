@@ -228,9 +228,9 @@ public class EditTeamsMeetingController extends FormBasicController {
 	
 	private SelectionValues getPresenters(boolean attendee) {
 		SelectionValues presentersKeyValues = new SelectionValues();
-		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.ROLE_IS_PRESENTER, "meeting.presenters.role");
-		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.ORGANIZATION, "meeting.presenters.organization");
-		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.EVERYONE, "meeting.presenters.everyone");
+		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.RoleIsPresenter, "meeting.presenters.role");
+		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.Organization, "meeting.presenters.organization");
+		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.Everyone, "meeting.presenters.everyone");
 		return presentersKeyValues;
 	}
 	
@@ -248,8 +248,8 @@ public class EditTeamsMeetingController extends FormBasicController {
 		presentersEl.setKeysAndValues(presentersKeyValues.keys(), presentersKeyValues.values(), null);
 		if(presentersKeyValues.containsKey(presentersKey)) {
 			presentersEl.select(presentersKey, true);
-		} else if(attendeeMode && presentersKeyValues.containsKey(OnlineMeetingPresenters.EVERYONE.name())) {
-			presentersEl.select(OnlineMeetingPresenters.EVERYONE.name(), true);
+		} else if(attendeeMode && presentersKeyValues.containsKey(OnlineMeetingPresenters.Everyone.name())) {
+			presentersEl.select(OnlineMeetingPresenters.Everyone.name(), true);
 		} else {
 			presentersEl.select(presentersKeyValues.keys()[0], true);
 		}

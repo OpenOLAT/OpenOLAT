@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -642,7 +643,7 @@ public class TopicsRunCoachController extends FormBasicController {
 				doSyncRecordings(topic);
 			} else if (CMD_JOIN.equals(cmd)) {
 				TopicWrapper wrapper = (TopicWrapper)link.getUserObject();
-				doJoin(wrapper);
+				doJoin(ureq, wrapper);
 			} else if (CMD_RECORDING.equals(cmd)) {
 				BigBlueButtonRecordingReference recordingReference = (BigBlueButtonRecordingReference)link.getUserObject();
 				doOpenRecording(ureq, recordingReference);
@@ -750,7 +751,7 @@ public class TopicsRunCoachController extends FormBasicController {
 		stackPanel.pushController(panelTitle, topicRunCtrl);
 	}
 	
-	private void doJoin(TopicWrapper wrapper) {
+	private void doJoin(UserRequest ureq, TopicWrapper wrapper) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setAppointment(wrapper.getAppointment());
 		params.setFetchTopic(true);
@@ -770,7 +771,7 @@ public class TopicsRunCoachController extends FormBasicController {
 		if (appointment.getBBBMeeting() != null) {
 			doJoinBBBMeeting(wrapper, appointment);
 		} else if (appointment.getTeamsMeeting() != null) {
-			doJoinTeamsMeeting(appointment);
+			doJoinTeamsMeeting(ureq, appointment);
 		}
 	}
 
@@ -824,9 +825,11 @@ public class TopicsRunCoachController extends FormBasicController {
 		}
 	}
 
-	private void doJoinTeamsMeeting(Appointment appointment) {
+	private void doJoinTeamsMeeting(UserRequest ureq, Appointment appointment) {
 		TeamsErrors errors = new TeamsErrors();
-		TeamsMeeting meeting = appointmentsService.joinTeamsMeeting(appointment, getIdentity(), errors);
+
+		OAuth2Tokens oauth2Tokens = ureq.getUserSession().getOAuth2Tokens();
+		TeamsMeeting meeting = appointmentsService.joinTeamsMeeting(appointment, getIdentity(), oauth2Tokens, errors);
 		
 		if(meeting == null) {
 			showWarning("warning.no.meeting");

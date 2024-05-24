@@ -21,6 +21,7 @@ package org.olat.modules.teams.ui;
 
 import java.util.Date;
 
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -64,7 +66,9 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 	private final boolean moderator;
 	private final boolean administrator;
 	private final OLATResourceable meetingOres;
+	
 	private final User graphUser;
+	private final OAuth2Tokens oauth2Tokens;
 	
 	@Autowired
 	private TeamsService teamsService;
@@ -76,9 +80,11 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		this.meeting = meeting;
 		this.moderator = moderator;
 		this.administrator = administrator;
-		guest = ureq.getUserSession().getRoles().isGuestOnly();
+		UserSession usess = ureq.getUserSession();
+		guest = usess.getRoles().isGuestOnly();
 		TeamsErrors errors = new TeamsErrors();
-		graphUser = teamsService.lookupUser(getIdentity(), errors);
+		oauth2Tokens = usess.getOAuth2Tokens();
+		graphUser = teamsService.lookupMe(getIdentity(), oauth2Tokens, errors);
 		meetingOres = OresHelper.createOLATResourceableInstance(TeamsMeeting.class.getSimpleName(), meeting.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
 		
@@ -98,8 +104,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		boolean ended = isEnded();
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			initFormInformations(layoutCont);
 		}
 		
@@ -135,8 +140,9 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 			layoutCont.contextPut("externalUrl", url);
 		}
 		
-		if(graphUser != null && StringHelper.containsNonWhitespace(graphUser.displayName)) {
-			layoutCont.contextPut("asUser", translate("as.user", new String[] { graphUser.displayName } ));
+		if(graphUser != null && oauth2Tokens != null
+				&& StringHelper.containsNonWhitespace(graphUser.getDisplayName())) {
+			layoutCont.contextPut("asUser", translate("as.user", graphUser.getDisplayName()));
 		} else {
 			layoutCont.contextPut("asUser", translate("as.user.guest"));
 		}
@@ -172,7 +178,11 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		joinButton.setEnabled(!readOnly && accessible);
 		
 		boolean running = teamsService.isMeetingRunning(meeting);
-		if(graphUser != null && (moderator || administrator || meeting.isParticipantsCanOpen())) {
+		boolean accountWarning = (!running && (graphUser == null || oauth2Tokens == null)
+				&& (moderator || administrator || meeting.isParticipantsCanOpen()));
+		flc.contextPut("microsoftAccountWarning", Boolean.valueOf(accountWarning));
+
+		if(graphUser != null && this.oauth2Tokens != null && (moderator || administrator || meeting.isParticipantsCanOpen())) {
 			flc.contextPut("notStarted", Boolean.FALSE);
 			if(!running) {
 				joinButton.setI18nKey(translate("meeting.start.button"));
@@ -192,11 +202,9 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 	
 	@Override
 	public void event(Event event) {
-		if(event instanceof TeamsMeetingEvent) {
-			TeamsMeetingEvent ace = (TeamsMeetingEvent)event;
-			if(ace.getMeetingKey() != null && ace.getMeetingKey().equals(meeting.getKey())) {
-				reloadButtonsAndStatus();
-			}
+		if(event instanceof TeamsMeetingEvent ace && ace.getMeetingKey() != null
+				&& ace.getMeetingKey().equals(meeting.getKey())) {
+			reloadButtonsAndStatus();
 		}
 	}
 
@@ -218,7 +226,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		
 		Identity id = guest ? null : getIdentity();
 		boolean presenter = (administrator || moderator);
-		meeting = teamsService.joinMeeting(meeting, id, presenter, guest, errors);
+		meeting = teamsService.joinMeeting(meeting, id, presenter, guest, oauth2Tokens, errors);
 		if(meeting == null) {
 			showWarning("warning.no.meeting");
 			fireEvent(ureq, Event.BACK_EVENT);

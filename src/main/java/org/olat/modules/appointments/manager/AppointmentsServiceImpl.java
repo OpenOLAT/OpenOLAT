@@ -39,6 +39,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -1030,7 +1031,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	}
 
 	@Override
-	public TeamsMeeting joinTeamsMeeting(Appointment appointment, Identity identity, TeamsErrors errors) {
+	public TeamsMeeting joinTeamsMeeting(Appointment appointment, Identity identity, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
 		boolean organizer = organizerDao.loadOrganizers(appointment.getTopic()).stream()
 				.anyMatch(o -> o.getIdentity().getKey().equals(identity.getKey()));
 		boolean participation = false;
@@ -1044,7 +1045,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			errors.append(new TeamsError(TeamsErrorCodes.unkown));
 			return null;
 		}
-		return teamsService.joinMeeting(appointment.getTeamsMeeting(), identity, organizer, false, errors);
+		return teamsService.joinMeeting(appointment.getTeamsMeeting(), identity, organizer, false, oauth2Tokens, errors);
 	}
 
 }

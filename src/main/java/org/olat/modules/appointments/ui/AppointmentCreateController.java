@@ -893,7 +893,7 @@ public class AppointmentCreateController extends FormBasicController {
 			teamsMeeting.setFollowupTime(followupTime);
 			
 			teamsMeeting.setPermanent(false);
-			teamsMeeting.setAllowedPresenters(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name());
+			teamsMeeting.setAllowedPresenters(OnlineMeetingPresenters.RoleIsPresenter.name());
 			teamsMeeting.setMainPresenter(appointmentsService.getFormattedOrganizers(topic));
 		}
 		return appointment;

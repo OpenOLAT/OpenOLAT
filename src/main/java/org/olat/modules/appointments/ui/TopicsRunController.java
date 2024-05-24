@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -550,8 +551,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if (CMD_MORE.equals(cmd)) {
 				Topic topic = (Topic)link.getUserObject();
@@ -564,7 +564,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 				doOrganizerEmail(ureq, wrapper.getTopic(), wrapper.getOrganizers());
 			} else if (CMD_JOIN.equals(cmd)) {
 				TopicWrapper wrapper = (TopicWrapper)link.getUserObject();
-				doJoin(wrapper);
+				doJoin(ureq, wrapper);
 			} else if (CMD_RECORDING.equals(cmd)) {
 				BigBlueButtonRecordingReference recordingReference = (BigBlueButtonRecordingReference)link.getUserObject();
 				doOpenRecording(ureq, recordingReference);
@@ -616,7 +616,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 		cmc.activate();
 	}
 
-	private void doJoin(TopicWrapper wrapper) {
+	private void doJoin(UserRequest ureq, TopicWrapper wrapper) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setAppointment(wrapper.getAppointment());
 		params.setFetchTopic(true);
@@ -635,7 +635,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 		if (appointment.getBBBMeeting() != null) {
 			doJoinBBBMeeting(wrapper, appointment);
 		} else if (appointment.getTeamsMeeting() != null) {
-			doJoinTeamsMeeting(appointment);
+			doJoinTeamsMeeting(ureq, appointment);
 		}
 	}
 
@@ -684,9 +684,10 @@ public class TopicsRunController extends FormBasicController implements Activate
 		}
 	}
 
-	private void doJoinTeamsMeeting(Appointment appointment) {
+	private void doJoinTeamsMeeting(UserRequest ureq, Appointment appointment) {
 		TeamsErrors errors = new TeamsErrors();
-		TeamsMeeting meeting = appointmentsService.joinTeamsMeeting(appointment, getIdentity(), errors);
+		OAuth2Tokens oauth2Tokens = ureq.getUserSession().getOAuth2Tokens();
+		TeamsMeeting meeting = appointmentsService.joinTeamsMeeting(appointment, getIdentity(), oauth2Tokens, errors);
 		
 		if(meeting == null) {
 			showWarning("warning.no.meeting");

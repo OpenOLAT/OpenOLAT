@@ -39,7 +39,6 @@ import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.microsoft.graph.models.AccessLevel;
 import com.microsoft.graph.models.LobbyBypassScope;
 import com.microsoft.graph.models.OnlineMeetingPresenters;
 
@@ -69,10 +68,10 @@ public class TeamsMeetingDAO {
 		meeting.setIdentifier(UUID.randomUUID().toString());
 		
 		meeting.setParticipantsCanOpen(false);
-		meeting.setAllowedPresenters(OnlineMeetingPresenters.EVERYONE.name());
-		meeting.setAccessLevel(AccessLevel.EVERYONE.name());
+		meeting.setAllowedPresenters(OnlineMeetingPresenters.Everyone.name());
+		meeting.setAccessLevel("EVERYONE");
 		meeting.setEntryExitAnnouncement(true);
-		meeting.setLobbyBypassScope(LobbyBypassScope.ORGANIZATION.name());
+		meeting.setLobbyBypassScope(LobbyBypassScope.Organization.name());
 		meeting.setEntry(entry);
 		meeting.setSubIdent(subIdent);
 		meeting.setBusinessGroup(businessGroup);

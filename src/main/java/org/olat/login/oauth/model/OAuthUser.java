@@ -22,6 +22,7 @@ package org.olat.login.oauth.model;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.id.UserConstants;
 
 /**
@@ -48,6 +49,7 @@ public class OAuthUser {
 	private String country;
 	private String lang;
 	
+	private OAuth2Tokens oauth2Tokens;
 	private List<String> authenticationExternalIds;
 	
 	public String getId() {
@@ -144,6 +146,14 @@ public class OAuthUser {
 
 	public void setAuthenticationExternalIds(List<String> authenticationExternalIds) {
 		this.authenticationExternalIds = authenticationExternalIds;
+	}
+
+	public OAuth2Tokens getOAuth2Tokens() {
+		return oauth2Tokens;
+	}
+
+	public void setOAuth2Tokens(OAuth2Tokens oauth2Tokens) {
+		this.oauth2Tokens = oauth2Tokens;
 	}
 
 	public String getProperty(String propName) {

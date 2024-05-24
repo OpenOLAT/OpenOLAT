@@ -196,7 +196,7 @@ public class OAuthDispatcher implements Dispatcher {
 				if(!oauthLoginModule.isSkipDisclaimerDialog() && registrationManager.needsToConfirmDisclaimer(identity)) {
 					disclaimer(request, response, infos, registration, provider);
 				} else {
-					login(identity, provider, ureq, response);
+					login(identity, infos, provider, ureq, response);
 				}
 			}
 		} catch (Exception e) {
@@ -212,7 +212,7 @@ public class OAuthDispatcher implements Dispatcher {
 				&& oauthLoginManager.isValid(infos)) {
 			Identity authenticatedIdentity = oauthLoginManager.createIdentity(infos, registration.getAuthProvider());
 			if(authenticatedIdentity != null) {
-				login(authenticatedIdentity, provider, ureq, response);	
+				login(authenticatedIdentity, infos, provider, ureq, response);	
 			} else {
 				error(ureq, "Unexpected error");
 			}
@@ -223,7 +223,7 @@ public class OAuthDispatcher implements Dispatcher {
 		}
 	}
 	
-	private void login(Identity identity, OAuthSPI provider, UserRequest ureq, HttpServletResponse response) {
+	private void login(Identity identity, OAuthUser infos, OAuthSPI provider, UserRequest ureq, HttpServletResponse response) {
 		int loginStatus = AuthHelper.doLogin(identity, provider.getProviderName(), ureq);
 		if (loginStatus != AuthHelper.LOGIN_OK) {
 			if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
@@ -236,6 +236,7 @@ public class OAuthDispatcher implements Dispatcher {
 				DispatcherModule.redirectToDefaultDispatcher(response); 
 			}
 		} else {
+			ureq.getUserSession().setOAuth2Tokens(infos.getOAuth2Tokens());
 			//update last login date and register active user
 			securityManager.setIdentityLastLogin(identity);
 			MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();

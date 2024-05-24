@@ -56,10 +56,10 @@ public class TeamsUIHelper {
 	public static void setDefaults(SingleSelection presentersEl, TeamsMeeting meeting) {	
 		if(meeting != null && meeting.getAllowedPresenters() != null && presentersEl.containsKey(meeting.getAllowedPresenters())) {
 			presentersEl.select(meeting.getAllowedPresenters(), true);
-		} else if(presentersEl.containsKey(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name())) {
-			presentersEl.select(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), true);
+		} else if(presentersEl.containsKey(OnlineMeetingPresenters.RoleIsPresenter.name())) {
+			presentersEl.select(OnlineMeetingPresenters.RoleIsPresenter.name(), true);
 		} else {
-			presentersEl.select(OnlineMeetingPresenters.EVERYONE.name(), true);
+			presentersEl.select(OnlineMeetingPresenters.Everyone.name(), true);
 		}
 	}
 	

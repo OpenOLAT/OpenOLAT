@@ -23,24 +23,15 @@ import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.teams.TeamsModule;
-import org.olat.modules.teams.TeamsService;
-import org.olat.modules.teams.model.ConnectionInfos;
-import org.olat.modules.teams.model.TeamsError;
-import org.olat.modules.teams.model.TeamsErrorCodes;
-import org.olat.modules.teams.model.TeamsErrors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,27 +47,17 @@ public class TeamsConfigurationController extends FormBasicController {
 
 	private MultipleSelectionElement moduleEnabled;
 	private MultipleSelectionElement enabledForEl;
-	private TextElement clientIdEl;
-	private TextElement secretEl;
-	private TextElement tenantEl;
-	private StaticTextElement organisationEl;
-	private TextElement producerIdEl;
-	private StaticTextElement producerEl;
-	private FormLink checkConnectionButton;
-	private SpacerElement appSpacer;
+	private StaticTextElement clientIdEl;
+	private StaticTextElement secretEl;
+	private StaticTextElement tenantEl;
 	
 	@Autowired
 	private TeamsModule teamsModule;
-	@Autowired
-	private TeamsService teamsService;
 	
 	public TeamsConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		initForm(ureq);
 		updateUI();
-		if(teamsModule.isEnabled()) {
-			loadModel();
-		}
 	}
 
 	@Override
@@ -102,119 +83,37 @@ public class TeamsConfigurationController extends FormBasicController {
 		enabledForEl.select(FOR_KEYS[3], teamsModule.isChatExamsEnabled());
 		
 		String clientId = teamsModule.getApiKey();
-		clientIdEl = uifactory.addTextElement("client.id", "azure.adfs.id", 255, clientId, formLayout);
-		clientIdEl.setMandatory(true);
+		boolean showOldConfiguration = StringHelper.containsNonWhitespace(clientId);
+		clientIdEl = uifactory.addStaticTextElement("client.id", "azure.adfs.id", clientId, formLayout);
+		clientIdEl.setVisible(showOldConfiguration);
 		String clientSecret = teamsModule.getApiSecret();
-		secretEl = uifactory.addTextElement("secret", "azure.adfs.secret", 255, clientSecret, formLayout);
-		secretEl.setMandatory(true);
+		secretEl = uifactory.addStaticTextElement("secret", "azure.adfs.secret", clientSecret, formLayout);
+		secretEl.setVisible(showOldConfiguration);
 		String tenant = teamsModule.getTenantGuid();
-		tenantEl = uifactory.addTextElement("tenant", "azure.tenant.guid", 255, tenant, formLayout);
-		tenantEl.setMandatory(true);
-		String organisation = teamsModule.getTenantOrganisation();
-		organisationEl = uifactory.addStaticTextElement("organisation", "azure.tenant.organisation", organisation, formLayout);
-		organisationEl.setVisible(StringHelper.containsNonWhitespace(organisation));
-		
-		appSpacer = uifactory.addSpacerElement("spacer1", formLayout, false);
-		
-		String producerId = teamsModule.getProducerId();
-		producerIdEl = uifactory.addTextElement("producer.id", "graph.producer.id", 255, producerId, formLayout);
-		producerEl = uifactory.addStaticTextElement("producer", "graph.producer.displayname", organisation, formLayout);
-		producerEl.setVisible(false);
+		tenantEl = uifactory.addStaticTextElement("tenant", "azure.tenant.guid", tenant, formLayout);
+		tenantEl.setVisible(showOldConfiguration);
 		
 		//buttons save - check
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
-		checkConnectionButton = uifactory.addFormLink("check.connection", "check.connection", null, buttonLayout, Link.BUTTON);
-	}
-	
-	private void loadModel() {
-		TeamsErrors errors = new TeamsErrors();
-		ConnectionInfos infos = teamsService.checkConnection(errors);
-		updateModel(infos);
-	}
-	
-	private void updateModel(ConnectionInfos infos) {
-		String organisation = infos == null ? "" : infos.getOrganisation();
-		organisationEl.setValue(organisation);
-		organisationEl.setVisible(StringHelper.containsNonWhitespace(organisation));
-		
-		String producer = infos == null ? "" : infos.getProducerDisplayName();
-		producerEl.setValue(producer);
-		producerEl.setVisible(StringHelper.containsNonWhitespace(producer));
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(moduleEnabled == source) {
 			updateUI();
-		} else if(this.checkConnectionButton == source) {
-			doCheckConnection();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
 	private void updateUI() {
 		boolean enabled = moduleEnabled.isAtLeastSelected(1);
-		clientIdEl.setVisible(enabled);
-		secretEl.setVisible(enabled);
-		tenantEl.setVisible(enabled);
-		producerIdEl.setVisible(enabled);
-		checkConnectionButton.setVisible(enabled);
-		organisationEl.setVisible(enabled && StringHelper.containsNonWhitespace(organisationEl.getValue()));
-		producerEl.setVisible(enabled && StringHelper.containsNonWhitespace(producerEl.getValue()));
-		appSpacer.setVisible(enabled);
-		enabledForEl.setVisible(enabled);
-	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-
-		boolean enabled = moduleEnabled.isSelected(0);
-		if(enabled) {
-			allOk &= validateMandatory(clientIdEl);
-			allOk &= validateMandatory(secretEl);
-			allOk &= validateMandatory(tenantEl);
-			allOk &= validateConnection();
-		}
-		
-		return allOk;
-	}
-	
-	private boolean validateConnection() {
-		boolean allOk = true;
-
-		TeamsErrors errors = new TeamsErrors();
-		ConnectionInfos infos = teamsService.checkConnection(clientIdEl.getValue(), secretEl.getValue(), tenantEl.getValue(),
-				producerIdEl.getValue(), errors);
-		
-		producerIdEl.clearError();
-		if(infos != null) {
-			if(StringHelper.containsNonWhitespace(producerIdEl.getValue())
-					&& !StringHelper.containsNonWhitespace(infos.getProducerDisplayName())) {
-				producerIdEl.setErrorKey("error.producerNotFound");
-				allOk &= false;
-			}
-		}
-		
-		if(errors.hasErrors()) {
-			clientIdEl.setErrorKey("error.connection");
-		}
-
-		return allOk;
-	}
-	
-	private boolean validateMandatory(TextElement el) {
-		boolean allOk = true;
-		
-		el.clearError();
-		if(!StringHelper.containsNonWhitespace(el.getValue())) {
-			el.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
-		
-		return allOk;
+		boolean showOldConfiguration = StringHelper.containsNonWhitespace(clientIdEl.getValue());
+		clientIdEl.setVisible(enabled && showOldConfiguration);
+		secretEl.setVisible(enabled && showOldConfiguration);
+		tenantEl.setVisible(enabled && showOldConfiguration);
+		enabledForEl.setVisible(enabled && showOldConfiguration);
 	}
 
 	@Override
@@ -222,55 +121,12 @@ public class TeamsConfigurationController extends FormBasicController {
 		boolean enabled = moduleEnabled.isSelected(0);
 		teamsModule.setEnabled(enabled);
 		if(enabled) {
-			teamsModule.setApiKey(clientIdEl.getValue());
-			teamsModule.setApiSecret(secretEl.getValue());
-			teamsModule.setTenantGuid(tenantEl.getValue());
-			teamsModule.setTenantOrganisation(organisationEl.getValue());
-			teamsModule.setProducerId(producerIdEl.getValue());
 			teamsModule.setCoursesEnabled(enabledForEl.isSelected(0));
 			teamsModule.setAppointmentsEnabled(enabledForEl.isSelected(1));
 			teamsModule.setGroupsEnabled(enabledForEl.isSelected(2));
 			teamsModule.setChatExamsEnabled(enabledForEl.isSelected(3));
 			showInfo("info.saved");
-		} else {
-			teamsModule.setApiKey(null);
-			teamsModule.setApiSecret(null);
-			teamsModule.setTenantGuid(null);
-			teamsModule.setTenantOrganisation(null);
-			teamsModule.setProducerId(null);
-			showInfo("info.saved");
 		}
-
 		CollaborationToolsFactory.getInstance().initAvailableTools();
-	}
-	
-	private void doCheckConnection() {
-		String producerId = producerIdEl.getValue();
-		
-		TeamsErrors errors = new TeamsErrors();
-		ConnectionInfos infos = teamsService.checkConnection(clientIdEl.getValue(), secretEl.getValue(), tenantEl.getValue(),
-				producerId, errors);
-		updateModel(infos);
-		
-		if(infos == null) {
-			if(errors.getErrors().isEmpty()) {
-				showError("error.connection");
-			} else {
-				String formattedErrors = TeamsUIHelper.formatErrors(getTranslator(), errors);
-				getWindowControl().setError(formattedErrors);
-			}
-		} else {
-			if(StringHelper.containsNonWhitespace(producerId)
-					&& !StringHelper.containsNonWhitespace(infos.getProducerDisplayName())) {
-				errors.append(new TeamsError(TeamsErrorCodes.producerNotFound));
-			}
-
-			if(errors.getErrors().isEmpty()) {
-				showInfo("info.connection.ok");
-			} else {
-				String formattedErrors = TeamsUIHelper.formatErrors(getTranslator(), errors);
-				getWindowControl().setError(formattedErrors);
-			}
-		}
 	}
 }

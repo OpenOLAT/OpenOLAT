@@ -22,9 +22,9 @@ package org.olat.modules.teams;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
-import org.olat.modules.teams.model.ConnectionInfos;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.model.TeamsMeetingsSearchParameters;
 import org.olat.repository.RepositoryEntry;
@@ -66,17 +66,20 @@ public interface TeamsService {
 	
 	public TeamsMeeting getMeeting(String identifier);
 	
-	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, boolean guest, TeamsErrors errors);
+	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, boolean guest,
+			OAuth2Tokens oauth2Tokens, TeamsErrors errors);
 
 	public int countMeetings(TeamsMeetingsSearchParameters searchParams);
 	
 	public List<TeamsMeeting> searchMeetings(TeamsMeetingsSearchParameters searchParams, int firstResult, int maxResults);
 	
-	public User lookupUser(Identity identity, TeamsErrors errors);
-	
-	public ConnectionInfos checkConnection(TeamsErrors errors);
-	
-	public ConnectionInfos checkConnection(String clientId, String clientSecret, String tenantGuid,
-			String producerId, TeamsErrors errors);
+	/**
+	 * 
+	 * @param identity The identity to lookup
+	 * @param oauth2Tokens  The access token for the above identity
+	 * @param errors Wrapper to collect errors
+	 * @return The user or null if not found
+	 */
+	public User lookupMe(Identity identity, OAuth2Tokens oauth2Tokens, TeamsErrors errors);
 
 }

@@ -34,7 +34,6 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.microsoft.graph.models.AccessLevel;
 import com.microsoft.graph.models.LobbyBypassScope;
 import com.microsoft.graph.models.OnlineMeetingPresenters;
 
@@ -77,10 +76,10 @@ public class TeamsMeetingDAOTest extends OlatTestCase {
 		Assert.assertEquals(subIdent, meeting.getSubIdent());
 		Assert.assertNull(meeting.getBusinessGroup());
 		
-		Assert.assertEquals(AccessLevel.EVERYONE.name(), meeting.getAccessLevel());
-		Assert.assertEquals(OnlineMeetingPresenters.EVERYONE.name(), meeting.getAllowedPresenters());
+		Assert.assertEquals("EVERYONE", meeting.getAccessLevel());
+		Assert.assertEquals(OnlineMeetingPresenters.Everyone.name(), meeting.getAllowedPresenters());
 		Assert.assertTrue(meeting.isEntryExitAnnouncement());
-		Assert.assertEquals(LobbyBypassScope.ORGANIZATION.name(), meeting.getLobbyBypassScope());
+		Assert.assertEquals(LobbyBypassScope.Organization.name(), meeting.getLobbyBypassScope());
 	}
 	
 	@Test

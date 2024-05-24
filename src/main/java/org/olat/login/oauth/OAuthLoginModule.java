@@ -92,11 +92,15 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private String adfsApiKey;
 	private String adfsApiSecret;
 	private String adfsOAuth2Endpoint;
-	
+
+	@Value("${azure.adfs.enabled:false}")
 	private boolean azureAdfsEnabled;
 	private boolean azureAdfsRootEnabled;
+	@Value("${azure.adfs.client.id}")
 	private String azureAdfsApiKey;
+	@Value("${azure.adfs.client.secret}")
 	private String azureAdfsApiSecret;
+	@Value("${azure.adfs.tenant}")
 	private String azureAdfsTenant;
 
 	@Value("${switch.eduid.enabled:false}")
@@ -212,13 +216,13 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		adfsOAuth2Endpoint = getStringPropertyValue("adfsOAuth2Endpoint", false);
 		
 		//Azure ADFS
-		String azureAdfsEnabledObj = getStringPropertyValue("azureAdfsEnabled", true);
+		String azureAdfsEnabledObj = getStringPropertyValue("azureAdfsEnabled", Boolean.toString(azureAdfsEnabled));
 		azureAdfsEnabled = "true".equals(azureAdfsEnabledObj);
-		String azureAdfsRootEnabledObj = getStringPropertyValue("azureAdfsRootEnabled", true);
+		String azureAdfsRootEnabledObj = getStringPropertyValue("azureAdfsRootEnabled", Boolean.toString(azureAdfsRootEnabled));
 		azureAdfsRootEnabled = "true".equals(azureAdfsRootEnabledObj);
-		azureAdfsApiKey = getStringPropertyValue("azureAdfsApiKey", false);
-		azureAdfsApiSecret = getStringPropertyValue("azureAdfsApiSecret", false);
-		azureAdfsTenant = getStringPropertyValue("azureAdfsTenant", false);
+		azureAdfsApiKey = getStringPropertyValue("azureAdfsApiKey", azureAdfsApiKey);
+		azureAdfsApiSecret = getStringPropertyValue("azureAdfsApiSecret", azureAdfsApiSecret);
+		azureAdfsTenant = getStringPropertyValue("azureAdfsTenant", azureAdfsTenant);
 		
 		// Tequila
 		String tequilaEnabledObj = getStringPropertyValue("tequilaEnabled", true);

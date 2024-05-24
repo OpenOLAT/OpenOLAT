@@ -613,7 +613,7 @@ public class AppointmentEditController extends FormBasicController {
 				teamsMeeting.setReadableIdentifier(null);
 			}
 			
-			teamsMeeting.setAllowedPresenters(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name());
+			teamsMeeting.setAllowedPresenters(OnlineMeetingPresenters.RoleIsPresenter.name());
 			teamsMeeting.setPermanent(false);
 			
 			appointment = appointmentsService.removeBBBMeeting(appointment);

@@ -224,8 +224,7 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof TeamsMeetingEvent) {
-			TeamsMeetingEvent ace = (TeamsMeetingEvent)event;
+		if(event instanceof TeamsMeetingEvent ace) {
 			if(ace.getMeetingKey() != null && ace.getMeetingKey().equals(meeting.getKey())) {
 				reloadButtonsAndStatus();
 			}
@@ -255,7 +254,7 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 		}	
 		Identity id = guest ? null : getIdentity();
 		TeamsErrors errors = new TeamsErrors();
-		meeting = teamsService.joinMeeting(meeting, id, false, guest, errors);
+		meeting = teamsService.joinMeeting(meeting, id, false, guest, usess.getOAuth2Tokens(), errors);
 		
 		if(StringHelper.containsNonWhitespace(meeting.getOnlineMeetingJoinUrl())) {
 			MediaResource resource = new RedirectMediaResource(meeting.getOnlineMeetingJoinUrl());

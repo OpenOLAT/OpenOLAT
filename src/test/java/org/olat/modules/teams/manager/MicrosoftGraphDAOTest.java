@@ -25,12 +25,12 @@ import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
+import org.olat.basesecurity.model.OAuth2TokensImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.modules.teams.TeamsMeeting;
-import org.olat.modules.teams.TeamsModule;
-import org.olat.modules.teams.model.ConnectionInfos;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.repository.RepositoryEntry;
@@ -38,7 +38,6 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.microsoft.graph.models.AccessLevel;
 import com.microsoft.graph.models.LobbyBypassScope;
 import com.microsoft.graph.models.OnlineMeeting;
 import com.microsoft.graph.models.OnlineMeetingPresenters;
@@ -56,46 +55,35 @@ public class MicrosoftGraphDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private TeamsModule teamsModule;
-	@Autowired
 	private TeamsMeetingDAO teamsMeetingDao;
 	@Autowired
+	private OAuthLoginModule oauthLoginModule;
+	@Autowired
 	private MicrosoftGraphDAO microsoftGraphDao;
-	
-	@Test
-	public void aTeamsModule() {
-		Assume.assumeTrue(StringHelper.containsNonWhitespace(teamsModule.getApiKey()));
-		
-		Assert.assertNotNull(teamsModule.getApiKey());
-		Assert.assertNotNull(teamsModule.getApiSecret());
-		Assert.assertNotNull(teamsModule.getTenantGuid());
-	}
-	
-	@Test
-	public void login() {
-		Assume.assumeTrue(StringHelper.containsNonWhitespace(teamsModule.getApiKey()));
-		
-		TeamsErrors errors = new TeamsErrors();
-		ConnectionInfos infos = microsoftGraphDao.check(errors);
-		Assert.assertNotNull(infos);
-		Assert.assertNotNull(infos.getOrganisation());
-		Assert.assertFalse(errors.hasErrors());
-		
-		if(StringHelper.containsNonWhitespace(teamsModule.getProducerId())) {
-			Assert.assertNotNull(infos.getProducerDisplayName());
-		}
-	}
 	
 	@Test
 	public void canAttendeeOpenMeeting() {
 		TeamsMeetingImpl test = new TeamsMeetingImpl();
 		// everyone
-		test.setAllowedPresenters(OnlineMeetingPresenters.EVERYONE.name());
-		test.setLobbyBypassScope(LobbyBypassScope.EVERYONE.name());
+		test.setAllowedPresenters(OnlineMeetingPresenters.Everyone.name());
+		test.setLobbyBypassScope(LobbyBypassScope.Everyone.name());
 		Assert.assertTrue(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
 		
-		test.setAllowedPresenters(OnlineMeetingPresenters.ORGANIZATION.name());
-		test.setLobbyBypassScope(LobbyBypassScope.ORGANIZER.name());
+		test.setAllowedPresenters(OnlineMeetingPresenters.Organization.name());
+		test.setLobbyBypassScope(LobbyBypassScope.Organizer.name());
+		Assert.assertFalse(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
+	}
+	
+	@Test
+	public void canAttendeeOpenMeetingCompatibilityMode() {
+		TeamsMeetingImpl test = new TeamsMeetingImpl();
+		// everyone
+		test.setAllowedPresenters("EVERYONE");
+		test.setLobbyBypassScope("EVERYONE");
+		Assert.assertTrue(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
+		
+		test.setAllowedPresenters("ORGANIZATION");
+		test.setLobbyBypassScope("ORGANIZER");
 		Assert.assertFalse(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
 	}
 	
@@ -105,47 +93,48 @@ public class MicrosoftGraphDAOTest extends OlatTestCase {
 		
 		TeamsMeetingImpl test = new TeamsMeetingImpl();
 		Assert.assertFalse(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
-		test.setAllowedPresenters(OnlineMeetingPresenters.EVERYONE.name());
+		test.setAllowedPresenters(OnlineMeetingPresenters.Everyone.name());
 		Assert.assertFalse(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
-		test.setLobbyBypassScope(LobbyBypassScope.EVERYONE.name());
+		test.setLobbyBypassScope(LobbyBypassScope.Everyone.name());
 		Assert.assertTrue(MicrosoftGraphDAO.canAttendeeOpenMeeting(test));
 	}
 	
 	@Test
-	public void createUpdateDeleteOnBehalf() {
-		Assume.assumeTrue(StringHelper.containsNonWhitespace(teamsModule.getApiKey()));
-		Assume.assumeTrue(StringHelper.containsNonWhitespace(teamsModule.getProducerId()));
+	public void createUpdateDeleteOnBehalf() throws Exception {
+		String refreshToken = System.getProperty("test.env.azure.adfs.refresh.token");
+		Assume.assumeTrue(StringHelper.containsNonWhitespace(oauthLoginModule.getAzureAdfsApiKey()));
+		Assume.assumeTrue(StringHelper.containsNonWhitespace(refreshToken));
 		
 		// create an OpenOlat meeting
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String name = "Real-Online-Meeting - 1";
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-1");
+		OAuth2TokensImpl oauth2Tokens = new OAuth2TokensImpl();
+		oauth2Tokens.setRefreshToken(refreshToken);
 		
 		Date start = DateUtils.addHours(new Date(), 3);
 		Date end = DateUtils.addMinutes(start, 15);
 		TeamsMeeting meeting = teamsMeetingDao.createMeeting(name, start, end, entry, null, null, creator);
-		meeting.setAccessLevel(AccessLevel.EVERYONE.name());
-		meeting.setAllowedPresenters(OnlineMeetingPresenters.EVERYONE.name());
-		meeting.setLobbyBypassScope(LobbyBypassScope.EVERYONE.name());
+		meeting.setAccessLevel("EVERYONE");
+		meeting.setAllowedPresenters(OnlineMeetingPresenters.Everyone.name());
+		meeting.setLobbyBypassScope(LobbyBypassScope.Everyone.name());
 		meeting = teamsMeetingDao.updateMeeting(meeting);
 		dbInstance.commitAndCloseSession();
 		
 		// create the online meeting
-		String userId = teamsModule.getProducerId();
-		User user = new User();
-		user.id = userId;	
+		User user = microsoftGraphDao.getMe(oauth2Tokens);				
 		TeamsErrors errors = new TeamsErrors();
-		OnlineMeeting onlineMeeting = microsoftGraphDao.createMeeting(meeting, user, OnlineMeetingRole.PRESENTER, errors);
+		OnlineMeeting onlineMeeting = microsoftGraphDao.createMeeting(meeting, user, OnlineMeetingRole.Presenter, oauth2Tokens, errors);
 		Assert.assertNotNull(onlineMeeting);
-		Assert.assertNotNull(onlineMeeting.id);
-		Assert.assertNotNull(onlineMeeting.joinUrl);
-		Assert.assertEquals(name, onlineMeeting.subject);
+		Assert.assertNotNull(onlineMeeting.getId());
+		Assert.assertNotNull(onlineMeeting.getJoinWebUrl());
+		Assert.assertEquals(name, onlineMeeting.getSubject());
 		
 		// update the meeting
 		String updateName = "Update-Online-Meeting - 1";
 		meeting.setSubject(updateName);
-		((TeamsMeetingImpl)meeting).setOnlineMeetingId(onlineMeeting.id);
-		((TeamsMeetingImpl)meeting).setOnlineMeetingJoinUrl(onlineMeeting.joinUrl);
+		((TeamsMeetingImpl)meeting).setOnlineMeetingId(onlineMeeting.getId());
+		((TeamsMeetingImpl)meeting).setOnlineMeetingJoinUrl(onlineMeeting.getJoinWebUrl());
 		meeting = teamsMeetingDao.updateMeeting(meeting);
 		dbInstance.commitAndCloseSession();
 	}

@@ -26,21 +26,20 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
-import org.olat.modules.teams.model.ConnectionInfos;
 import org.olat.modules.teams.model.TeamsError;
 import org.olat.modules.teams.model.TeamsErrorCodes;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.microsoft.aad.msal4j.MsalException;
-import com.microsoft.graph.core.ClientException;
-import com.microsoft.graph.models.AccessLevel;
+import com.azure.core.credential.TokenCredential;
 import com.microsoft.graph.models.Application;
+import com.microsoft.graph.models.ApplicationCollectionResponse;
 import com.microsoft.graph.models.BodyType;
 import com.microsoft.graph.models.Identity;
 import com.microsoft.graph.models.IdentitySet;
@@ -54,11 +53,8 @@ import com.microsoft.graph.models.OnlineMeetingPresenters;
 import com.microsoft.graph.models.OnlineMeetingRole;
 import com.microsoft.graph.models.Organization;
 import com.microsoft.graph.models.User;
-import com.microsoft.graph.requests.ApplicationCollectionPage;
-import com.microsoft.graph.requests.GraphServiceClient;
-import com.microsoft.graph.requests.UserCollectionPage;
-
-import okhttp3.Request;
+import com.microsoft.graph.models.UserCollectionResponse;
+import com.microsoft.graph.serviceclient.GraphServiceClient;
 
 /**
  * 
@@ -71,50 +67,29 @@ public class MicrosoftGraphDAO {
 	
 	private static final Logger log = Tracing.createLoggerFor(MicrosoftGraphDAO.class);
 	
-	private static final String SERVICE_ROOT = "https://graph.microsoft.com/beta";
+	private static final String[] USER_ATTRS = new String[] { "displayName", "id", "mail", "otherMails" };
+	private static final String[] ORGANISATION_ATTRS = new String[] { "id", "displayName" };
 	
 	public static final List<OnlineMeetingPresenters> ALLOWED_PRESENTERS_FOR_ATTENDEE = List
-			.of(OnlineMeetingPresenters.EVERYONE, OnlineMeetingPresenters.ORGANIZATION);
+			.of(OnlineMeetingPresenters.Everyone, OnlineMeetingPresenters.Organization);
 	public static final List<LobbyBypassScope> ALLOWED_LOBBY_BYPASS_FOR_ATTENDEE = List
-			.of(LobbyBypassScope.EVERYONE, LobbyBypassScope.ORGANIZATION, LobbyBypassScope.ORGANIZATION_AND_FEDERATED);
+			.of(LobbyBypassScope.Everyone, LobbyBypassScope.Organization, LobbyBypassScope.OrganizationAndFederated);
 	
 
 	@Autowired
 	private TeamsModule teamsModule;
 	
-	private AuthenticationTokenProvider tokenProvider;
-	
-	private synchronized AuthenticationTokenProvider getTokenProvider() {
-		if(tokenProvider == null
-				|| (teamsModule.getApiKey() != null && !teamsModule.getApiKey().equals(tokenProvider.getClientId()))
-				|| (teamsModule.getApiSecret() != null && !teamsModule.getApiSecret().equals(tokenProvider.getClientSecret()))
-				|| (teamsModule.getTenantGuid() != null && !teamsModule.getTenantGuid().equals(tokenProvider.getTenantGuid()))) {
-			String clientId = teamsModule.getApiKey();
-			String clientSecret = teamsModule.getApiSecret();
-			String tenantGuid = teamsModule.getTenantGuid();
-			MicrosoftGraphAccessTokenManager tokenManager = new MicrosoftGraphAccessTokenManager(clientId, clientSecret, tenantGuid);
-			tokenProvider = new AuthenticationTokenProvider(tokenManager);
-		}
-		return tokenProvider;
+	public synchronized TokenCredential getTokenProvider(OAuth2Tokens tokens) {
+		return new OAuth2TokenCredential(tokens);
 	}
 	
-	public GraphServiceClient<Request> client() {
-		AuthenticationTokenProvider authProvider = getTokenProvider();
-		GraphServiceClient<Request> graphClient = GraphServiceClient
-				.builder()
-				.authenticationProvider(authProvider)
-				.buildClient();
-		graphClient.setServiceRoot(SERVICE_ROOT);
-		return graphClient;
+	public GraphServiceClient client(OAuth2Tokens tokens) {
+		TokenCredential authProvider = getTokenProvider(tokens);
+		return client(authProvider);
 	}
 	
-	public GraphServiceClient<Request> client(AuthenticationTokenProvider authProvider) {
-		GraphServiceClient<Request> graphClient = GraphServiceClient
-				.builder()
-				.authenticationProvider(authProvider)
-				.buildClient();
-		graphClient.setServiceRoot(SERVICE_ROOT);
-		return graphClient;
+	public GraphServiceClient client(TokenCredential authProvider) {
+		return new GraphServiceClient(authProvider);
 	}
 	
 	public static boolean canAttendeeOpenMeeting(TeamsMeeting meeting) {
@@ -140,22 +115,21 @@ public class MicrosoftGraphDAO {
 	 * @param errors Mandatory errors object
 	 * @return An online meeting if successful
 	 */
-	public OnlineMeeting createMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, TeamsErrors errors)
-	throws ClientException {
+	public OnlineMeeting createMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
 		MeetingParticipants participants = new MeetingParticipants();
-		participants.attendees = new ArrayList<>();
+		participants.setAttendees(new ArrayList<>());
 		if(user != null) {
-			if(role == OnlineMeetingRole.PRESENTER) {
+			if(role == OnlineMeetingRole.Presenter) {
 				// Add all possible roles
-				participants.organizer = createParticipantInfo(user, OnlineMeetingRole.PRESENTER);
-				participants.attendees.add(createParticipantInfo(user, OnlineMeetingRole.PRESENTER));
-				log.info("Create Teams Meeting on MS for {}, for role {} and MS user as organizer and presenter {} {}", meeting.getKey(), role, user.id, user.displayName);
+				participants.setOrganizer(createParticipantInfo(user, OnlineMeetingRole.Presenter));
+				participants.getAttendees().add(createParticipantInfo(user, OnlineMeetingRole.Presenter));
+				log.info("Create Teams Meeting on MS for {}, for role {} and MS user as organizer and presenter {} {}", meeting.getKey(), role, user.getId(), user.getDisplayName());
 			} else if(StringHelper.containsNonWhitespace(teamsModule.getProducerId()) && canAttendeeOpenMeeting(meeting)) {
 				// Attendee can create an online meeting only if they have a chance to enter it
-				participants.organizer = createParticipantInfo(teamsModule.getProducerId(), OnlineMeetingRole.PRESENTER);
-				MeetingParticipantInfo  infos = createParticipantInfo(user, OnlineMeetingRole.ATTENDEE);
-				participants.attendees.add(infos);
-				log.info("Create Teams Meeting on MS for {}, for role {} and MS user as attendee {} {}", meeting.getKey(), role, user.id, user.displayName);
+				participants.setOrganizer(createParticipantInfo(teamsModule.getProducerId(), OnlineMeetingRole.Presenter));
+				MeetingParticipantInfo  infos = createParticipantInfo(user, OnlineMeetingRole.Attendee);
+				participants.getAttendees().add(infos);
+				log.info("Create Teams Meeting on MS for {}, for role {} and MS user as attendee {} {}", meeting.getKey(), role, user.getId(), user.getDisplayName());
 			} else {
 				errors.append(new TeamsError(TeamsErrorCodes.organizerMissing));
 				return null;
@@ -167,36 +141,35 @@ public class MicrosoftGraphDAO {
 		
 		OnlineMeeting onlineMeeting = new OnlineMeeting();
 		if(meeting.getStartDate() != null && meeting.getEndDate() != null) {
-			onlineMeeting.startDateTime = toCalendar(meeting.getStartDate());
-			onlineMeeting.endDateTime = toCalendar(meeting.getEndDate());
+			onlineMeeting.setStartDateTime(toCalendar(meeting.getStartDate()));
+			onlineMeeting.setEndDateTime(toCalendar(meeting.getEndDate()));
 		}
-		onlineMeeting.subject = meeting.getSubject();
-		onlineMeeting.participants = participants;
-		onlineMeeting.allowedPresenters = toOnlineMeetingPresenters(meeting.getAllowedPresenters());
+		onlineMeeting.setSubject(meeting.getSubject());
+		onlineMeeting.setParticipants(participants);
+		onlineMeeting.setAllowedPresenters(meeting.getAllowedPresentersEnum());
 
 		LobbyBypassSettings lobbyBypassSettings = new LobbyBypassSettings();
-		lobbyBypassSettings.isDialInBypassEnabled = Boolean.TRUE;
-		lobbyBypassSettings.scope = toLobbyBypassScope(meeting.getLobbyBypassScope());
-		onlineMeeting.lobbyBypassSettings = lobbyBypassSettings;
+		lobbyBypassSettings.setIsDialInBypassEnabled(Boolean.TRUE);
+		lobbyBypassSettings.setScope(meeting.getLobbyBypassScopeEnum());
+		onlineMeeting.setLobbyBypassSettings(lobbyBypassSettings);
 	
 		String joinInformations = meeting.getJoinInformation();
 		if(StringHelper.containsNonWhitespace(joinInformations)) {
 			ItemBody body = new ItemBody();
 			if(StringHelper.isHtml(joinInformations)) {
-				body.contentType = BodyType.HTML;
+				body.setContentType(BodyType.Html);
 			} else {
-				body.contentType = BodyType.TEXT;
+				body.setContentType(BodyType.Text);
 			}
-			body.content = "<html><body>" + joinInformations + "</body></html>";
-			onlineMeeting.joinInformation = body;
+			body.setContent("<html><body>" + joinInformations + "</body></html>");
+			onlineMeeting.setJoinInformation(body);
 		}
 
-		onlineMeeting = client()
-				.communications()
+		onlineMeeting = client(oauth2Tokens)
+				.me()
 				.onlineMeetings()
-				.buildRequest()
 				.post(onlineMeeting);
-		log.info(Tracing.M_AUDIT, "Online-Meeting created (/communications) with id: {}", onlineMeeting.id);
+		log.info(Tracing.M_AUDIT, "Online-Meeting created (/communications) with id: {}", onlineMeeting.getId());
 
 		return onlineMeeting;
 	}
@@ -208,7 +181,7 @@ public class MicrosoftGraphDAO {
 	 * @param institutionalEmail The institutional E-mail (optional)
 	 * @return The first users found
 	 */
-	public List<User> searchUsersByMail(String email, String institutionalEmail, TeamsErrors errors) {
+	public List<User> searchUsersByMail(String email, String institutionalEmail, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("mail eq '").append(email).append("'")
 		  .append(" or otherMails/any(x:x eq '").append(email).append("')");
@@ -218,240 +191,101 @@ public class MicrosoftGraphDAO {
 		}
 
 		try {
-			UserCollectionPage user = client()
+			UserCollectionResponse user = client(oauth2Tokens)
 					.users()
-					.buildRequest()
-					.filter(sb.toString())
-					.select("displayName,id,mail,otherMails")
-					.get();
-			return user.getCurrentPage();
-		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
+					.get(requestConfiguration -> {
+						requestConfiguration.queryParameters.select = USER_ATTRS;
+						requestConfiguration.queryParameters.filter = sb.toString();
+					});
+			return user.getValue();
+		} catch (NullPointerException | IllegalArgumentException e) {
 			log.error("Cannot find user with email: {} {}", email, institutionalEmail, e);
 			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
 			return new ArrayList<>();
 		}
 	}
 	
-	/**
-	 * 
-	 * @param mail
-	 * @param issuer
-	 * @return
-	 */
-	public User searchUserByUserPrincipalName(List<String> principals, TeamsErrors errors) {
-		if(principals == null || principals.isEmpty()) return null;
-		
-		StringBuilder sb = new StringBuilder();
-		for(String principal:principals) {
-			if(sb.length() > 0) {
-				sb.append(" or ");
-			}
-			sb.append("userPrincipalName eq '").append(principal).append("'");
-		}
-
-		try {
-			UserCollectionPage user = client().users()
-					.buildRequest()
-					.filter(sb.toString())
-					.select("displayName,id,mail,otherMails")
-					.top(1)
-					.get();
-			
-			List<User> users = user.getCurrentPage();
-			return users.isEmpty() ? null : users.get(0);
-		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
-			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
-			log.error("Cannot find user with principal names", e);
-			return null;
-		}
-	}
-	
-	public User searchUserById(String id, GraphServiceClient<Request> client, TeamsErrors errors) {
-		try {
-			return client
-					.users(id)
-					.buildRequest()
-					.select("displayName,id,mail,otherMails")
-					.get();
-		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
-			errors.append(new TeamsError(e.getMessage(), ""));
-			log.error("Cannot find user with id: {}", id, e);
-			return null;
-		}
-	}
-	
-	public List<User> getAllUsers() {
-		UserCollectionPage user = client()
-				.users()
-				.buildRequest()
-				.select("displayName,id,mail,otherMails")
-				.get();
-		return user.getCurrentPage();
-	}
-	
-	public Organization getOrganisation(String id, GraphServiceClient<Request> client) {
+	public Organization getOrganisation(String id, GraphServiceClient client) {
 		return client
-			.organization(id)
-			.buildRequest()
-			.select("id,displayName")
-			.get();
+			.organization()
+			.byOrganizationId(id)
+			.get(requestConfiguration ->
+		    	requestConfiguration.queryParameters.select = ORGANISATION_ATTRS);
 	}
 	
-	public Application getApplication(String id, GraphServiceClient<Request> client, TeamsErrors errors) {
+	public Application getApplication(String id, GraphServiceClient client, TeamsErrors errors) {
 		try {
-			ApplicationCollectionPage appsPage = client
+			ApplicationCollectionResponse appsPage = client
 				.applications()
-				.buildRequest()
-				.filter("appId eq '" + id + "'")
-				.top(1)
-				.get();
+				.get(requestConfiguration -> {
+					requestConfiguration.queryParameters.top = 1;
+					requestConfiguration.queryParameters.filter = "appId eq '" + id + "'";
+				});
 			
-			List<Application> apps = appsPage.getCurrentPage();
+			List<Application> apps = appsPage.getValue();
 			return apps == null || apps.isEmpty() ? null : apps.get(0);
-		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
-			errors.append(new TeamsError(e.getMessage(), ""));
-			log.error("", e);
-			return null;
-		}
-	}
-	
-	public ConnectionInfos check(String clientId, String clientSecret, String tenantGuid,
-			String producerId, TeamsErrors errors) {
-		
-		try {
-			MicrosoftGraphAccessTokenManager accessTokenManager = new MicrosoftGraphAccessTokenManager(clientId, clientSecret, tenantGuid);
-			AuthenticationTokenProvider authProvider = new AuthenticationTokenProvider(accessTokenManager);
-			GraphServiceClient<Request> client = client(authProvider);
-			
-			Organization org = getOrganisation(tenantGuid, client);
-			String organisation = org == null ? null : org.displayName;
-
-			String producerDisplayName = null;
-			if(StringHelper.containsNonWhitespace(producerId)) {
-				User producer = searchUserById(producerId, client, errors);
-				producerDisplayName = producer == null ? null : producer.displayName;
-			}
-
-			return new ConnectionInfos(organisation, producerDisplayName);
-		} catch (ClientException e) {
-			errors.append(extractMsalFrom(e));
-			log.error("", e);
-			return null;
 		} catch (NullPointerException | IllegalArgumentException e) {
-			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
-			log.error("", e);
-			return null;
-		} catch (Exception e) {
-			errors.append(new TeamsError(e.getMessage()));
-			log.error("", e);
-			return null;
-		}
-	}
-	
-	/**
-	 * Not sure if we can use it everywhere, the message can perhaps hold
-	 * some sensitive informations about the configuration.
-	 * 
-	 * @param ex The exception
-	 * @return
-	 */
-	private TeamsError extractMsalFrom(ClientException ex) {
-		int count = 0;// prevent some infinite loop
-		Throwable e = ex;
-		String message = ex.getMessage();
-		
-		do {
-			if(e instanceof MsalException) {
-				message = e.getMessage();
-				if(message != null && message.indexOf('\n') >= 0) {
-					message = message.substring(0, message.indexOf('\n'));
-				}
-				break;
-			}
-			e = e.getCause();
-			count++;
-		} while (e != null && count < 10);
-		
-		return new TeamsError(message);
-	}
-	
-	public final ConnectionInfos check(TeamsErrors errors) {
-		try {
-			GraphServiceClient<Request> client = client();
-			String tenantId = teamsModule.getTenantGuid();
-			Organization org = getOrganisation(tenantId, client);
-			String organisation = org == null ? null : org.displayName;
-		
-			String producerDisplayName = null;
-			if(StringHelper.containsNonWhitespace(teamsModule.getProducerId())) {
-				User producer = searchUserById(teamsModule.getProducerId(), client, errors);
-				producerDisplayName = producer == null ? null : producer.displayName;
-			}
-
-			return new ConnectionInfos(organisation, producerDisplayName);
-		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
-			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
-			log.error("", e);
-			return null;
-		} catch (Exception e) {
 			errors.append(new TeamsError(e.getMessage(), ""));
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	public User getMe(OAuth2Tokens oauth2Tokens) {
+		try {
+			User me = client(oauth2Tokens)
+					.me()
+					.get();
+			if(me != null) {
+				log.info("Me: {} ({})", me.getGivenName(), me.getId());
+			}
+			return me;
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;
 	}
 
 	public static final LobbyBypassScope toLobbyBypassScope(String string) {
-		LobbyBypassScope val = LobbyBypassScope.ORGANIZATION;
+		LobbyBypassScope val = LobbyBypassScope.Organization;
 		if(StringHelper.containsNonWhitespace(string)) {
-			try {
-				val = LobbyBypassScope.valueOf(string);
-			} catch (Exception e) {
-				log.error("Cannot parse lobby bypass scope: {}", string, e);
-			}
-		}
-		return val;
-	}
-	
-	public static final AccessLevel toAccessLevel(String string) {
-		AccessLevel val = AccessLevel.EVERYONE;
-		if(StringHelper.containsNonWhitespace(string)) {
-			try {
-				val = AccessLevel.valueOf(string);
-			} catch (Exception e) {
-				log.error("Cannot parse access level: {}", string, e);
+			for(LobbyBypassScope scope:LobbyBypassScope.values()) {
+				if(scope.name().equalsIgnoreCase(string)) {
+					return scope;
+				}
 			}
 		}
 		return val;
 	}
 	
 	public static final OnlineMeetingPresenters toOnlineMeetingPresenters(String string) {
-		OnlineMeetingPresenters val = OnlineMeetingPresenters.EVERYONE;
+		OnlineMeetingPresenters val = OnlineMeetingPresenters.Everyone;
 		if(StringHelper.containsNonWhitespace(string)) {
-			try {
-				val = OnlineMeetingPresenters.valueOf(string);
-			} catch (Exception e) {
-				log.error("Cannot parse online meeting presenters: {}", string, e);
+			for(OnlineMeetingPresenters presenter:OnlineMeetingPresenters.values()) {
+				if(presenter.name().equalsIgnoreCase(string)) {
+					return presenter;
+				}
 			}
 		}
 		return val;
 	}
 	
 	private IdentitySet createIdentitySetById(User user) {
-		return createIdentitySetById(user.id);
+		return createIdentitySetById(user.getId());
 	}
 	
 	private IdentitySet createIdentitySetById(String id) {
 		IdentitySet identitySet = new IdentitySet();
 		Identity user = new Identity();
-		user.id = id;
-		identitySet.user = user;
+		user.setId(id);
+		identitySet.setUser(user);
 		return identitySet;
 	}
 	
 	private MeetingParticipantInfo createParticipantInfo(IdentitySet identity, OnlineMeetingRole role) {
 		MeetingParticipantInfo participantInfo = new MeetingParticipantInfo();
-		participantInfo.identity = identity;
-		participantInfo.role = role;
+		participantInfo.setIdentity(identity);
+		participantInfo.setRole(role);
 		return participantInfo;
 	}
 	

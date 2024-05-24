@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
@@ -181,7 +182,7 @@ public interface AppointmentsService {
 
 	public Appointment removeTeamsMeeting(Appointment appointment);
 
-	public TeamsMeeting joinTeamsMeeting(Appointment appointment, Identity identity, TeamsErrors errors);
+	public TeamsMeeting joinTeamsMeeting(Appointment appointment, Identity identity, OAuth2Tokens oauth2Tokens, TeamsErrors errors);
 
 }
 

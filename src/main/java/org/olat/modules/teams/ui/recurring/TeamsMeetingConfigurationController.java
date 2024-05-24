@@ -139,15 +139,15 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		participantsOpenEl.setVisible(StringHelper.containsNonWhitespace(teamsModule.getProducerId()));
 		
 		SelectionValues presentersKeyValues = new SelectionValues();
-		presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), translate("meeting.presenters.role")));
-		presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.ORGANIZATION.name(), translate("meeting.presenters.organization")));
-		presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.EVERYONE.name(), translate("meeting.presenters.everyone")));
+		presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.RoleIsPresenter.name(), translate("meeting.presenters.role")));
+		presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.Organization.name(), translate("meeting.presenters.organization")));
+		presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.Everyone.name(), translate("meeting.presenters.everyone")));
 		presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
 		presentersEl.setMandatory(true);
 		if(meetingsContext.getAllowedPresenters() != null && presentersKeyValues.containsKey(meetingsContext.getAllowedPresenters())) {
 			presentersEl.select(meetingsContext.getAllowedPresenters(), true);
 		} else {
-			presentersEl.select(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), true);
+			presentersEl.select(OnlineMeetingPresenters.RoleIsPresenter.name(), true);
 		}
 	}
 
