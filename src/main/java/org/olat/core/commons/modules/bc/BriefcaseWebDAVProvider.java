@@ -49,7 +49,7 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 	
 	@Override
 	public String getIconCss() {
-		return "o_bc_icon";
+		return "o_icon_user";
 	}
 
 	@Override
