@@ -18,7 +18,7 @@
 <span class="$answerCorrectnessClass $localName #if($r.isTrue($isCorrectionHelp)) has-feedback #if($r.isCorrectTextEntry($interaction)) has-success #else has-error #end #end">
 
 	#if($isPageMode)
-		#set($disabled = ($r.isItemSessionEnded() || $isShowPageModeSolution))
+		#set($disabled = ($r.isItemSessionEnded() || $isShowPageModeSolution || $isResponded))
 		#set($placeholder = (!$r.isItemSessionEnded() && !$isShowPageModeSolution))
 		#set($value = "")
 		#if($responseInputString && !$responseInputString.isEmpty())

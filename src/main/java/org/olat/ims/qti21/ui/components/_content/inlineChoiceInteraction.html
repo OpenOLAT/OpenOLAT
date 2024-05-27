@@ -31,7 +31,7 @@
     #else
 	<select id="oo_${responseIdentifier}" class="$answerCorrectnessClass" name="qtiworks_response_${responseIdentifier}">
 		#set($disabled = "")
-		#if($isShowPageModeSolution)
+		#if($isShowPageModeSolution || $isResponded)
 			#set($disabled = "disabled")
 		#else
 			#if($r.isItemSessionEnded())
