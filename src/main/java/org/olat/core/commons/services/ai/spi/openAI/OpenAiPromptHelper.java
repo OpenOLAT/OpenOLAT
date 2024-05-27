@@ -135,7 +135,7 @@ public class OpenAiPromptHelper {
 						
 						-----
 						
-						""".formatted(correct, wrong) + input);
+						""".formatted(number, correct, wrong) + input);
 		} else if (locale != null && locale.getLanguage().equals("de")) {
 			return UserMessage.of("""
 						Erstelle %s verschiedene Multiple-Choice Fragen mit %s korrekten und %s falschen Antworten.
