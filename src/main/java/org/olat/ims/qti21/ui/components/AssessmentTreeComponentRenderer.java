@@ -129,7 +129,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 				renderNavigationAssessmentSection(renderer, sb, component, node, ubu, translator, options);
 				break;
 			case ASSESSMENT_ITEM_REF:
-				renderNavigationAssessmentItem(sb, component, node, translator, options);
+				renderNavigationAssessmentItem(renderer, sb, component, node, translator, options);
 				break;
 			default: break;
 		}
@@ -147,7 +147,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("</ul></li>");
 	}
 	
-	private void renderNavigationAssessmentItem(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
+	private void renderNavigationAssessmentItem(AssessmentRenderer renderer, StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
 			Translator translator, RenderingRequest options) {
 		
 		// check if currently rendered item is the active item
@@ -165,7 +165,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		try {
 			renderAssessmentItemMark(sb, component, itemNode, translator);
 			renderAssessmentItemAttempts(sb, component, itemNode, translator);
-			renderItemStatus(sb, component, itemNode, translator, options);
+			renderItemStatus(renderer, sb, component, itemNode, translator, options);
 			renderAssessmentItemLink(sb, component, itemNode, translator);
 		} catch(IllegalStateException ex) {
 			log.error("", ex);
@@ -244,11 +244,11 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		return title;
 	}
 	
-	private void renderItemStatus(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
+	private void renderItemStatus(AssessmentRenderer renderer, StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
 			Translator translator, RenderingRequest options) {
 		ItemProcessingContext itemProcessingContext = component.getItemSessionState(itemNode);
 		ItemSessionState itemSessionState = itemProcessingContext.getItemSessionState();
-		renderItemStatus(sb, itemSessionState, options, translator);
+		renderItemStatus(renderer, sb, itemSessionState, options, translator);
 	}
 	
 	private void renderAssessmentItemMark(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode, Translator translator) {	

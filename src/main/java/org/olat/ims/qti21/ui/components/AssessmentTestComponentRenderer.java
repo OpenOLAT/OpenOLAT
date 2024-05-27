@@ -421,7 +421,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//title + status
 		sb.append("<h4 class='itemTitle'>");
 		sb.append("<span class='o_qti_item_meta'>");
-		renderItemStatus(sb, itemSessionState, options, translator);
+		renderItemStatus(renderer, sb, itemSessionState, options, translator);
 		renderMaxScoreItem(sb, component, itemSessionState, translator);
 		sb.append("</span>");
 		String title;
@@ -581,7 +581,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		switch(node.getTestNodeType()) {
 			case TEST_PART: renderReviewTestPart(renderer, sb, component, node, ubu, translator); break;
 			case ASSESSMENT_SECTION: renderReviewAssessmentSection(renderer, sb, component, node, ubu, translator); break;
-			case ASSESSMENT_ITEM_REF: renderReviewAssessmentItem(sb, component, node, translator); break;
+			case ASSESSMENT_ITEM_REF: renderReviewAssessmentItem(renderer, sb, component, node, translator); break;
 			default: break;
 		}
 	}
@@ -628,7 +628,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
-	private void renderReviewAssessmentItem(StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode, Translator translator) {
+	private void renderReviewAssessmentItem(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode, Translator translator) {
 		EffectiveItemSessionControl itemSessionControl = itemNode.getEffectiveItemSessionControl();
 		
 		//<xsl:variable name="reviewable" select="@allowReview='true' or @showFeedback='true'" as="xs:boolean"/>
@@ -648,16 +648,16 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			  .append(StringHelper.escapeHtml(itemNode.getSectionPartTitle())).append("</span>");
 
 			if(!reviewable) {
-				renderItemStatusMessage("reviewNotAllowed", "assessment.item.status.reviewNot", sb, translator);
+				renderItemStatusMessage(renderer, "reviewNotAllowed", "assessment.item.status.reviewNot", sb, translator);
 			} else if(!itemSessionState.getUnboundResponseIdentifiers().isEmpty()
 					|| !itemSessionState.getInvalidResponseIdentifiers().isEmpty()) {
-				renderItemStatusMessage("reviewInvalid", "assessment.item.status.reviewInvalidAnswer", sb, translator);
+				renderItemStatusMessage(renderer, "reviewInvalid", "assessment.item.status.reviewInvalidAnswer", sb, translator);
 			} else if(itemSessionState.isResponded()) {
-				renderItemStatusMessage("review", "assessment.item.status.review", sb, translator);
+				renderItemStatusMessage(renderer, "review", "assessment.item.status.review", sb, translator);
 			} else if(itemSessionState.getEntryTime() != null) {
-				renderItemStatusMessage("reviewNotAnswered", "assessment.item.status.reviewNotAnswered", sb, translator);
+				renderItemStatusMessage(renderer, "reviewNotAnswered", "assessment.item.status.reviewNotAnswered", sb, translator);
 			} else {
-				renderItemStatusMessage("reviewNotSeen", "assessment.item.status.reviewNotSeen", sb, translator);
+				renderItemStatusMessage(renderer, "reviewNotSeen", "assessment.item.status.reviewNotSeen", sb, translator);
 			}
 			
 			sb.append("</button></li>");
@@ -739,7 +739,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			URLBuilder ubu, Translator translator) {
 		switch(node.getTestNodeType()) {
 			case ASSESSMENT_SECTION: renderNavigationAssessmentSection(renderer, sb, component, node, ubu, translator); break;
-			case ASSESSMENT_ITEM_REF: renderNavigationAssessmentItem(sb, component, node, translator); break;
+			case ASSESSMENT_ITEM_REF: renderNavigationAssessmentItem(renderer, sb, component, node, translator); break;
 			default: break;
 		}
 	}
@@ -767,14 +767,14 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
-	protected void renderItemStatusMessage(String status, String i18nKey, StringOutput sb, Translator translator) {
+	protected void renderItemStatusMessage(AssessmentRenderer renderer, String status, String i18nKey, StringOutput sb, Translator translator) {
 		String title = translator.translate(i18nKey);
 		sb.append("<span class='o_assessmentitem_status ").append(status).append(" ' title=\"").append(StringHelper.escapeHtml(title))
 		.append("\"><i class='o_icon o_icon-fw o_icon_qti_").append(status).append("'> </i><span>").append(title).append("</span></span>");
 	}
 
 	
-	private void renderNavigationAssessmentItem(StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode, Translator translator) {
+	private void renderNavigationAssessmentItem(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode, Translator translator) {
 		String key = itemNode.getKey().toString();
 		sb.append("<li class='o_assessmentitem'>");
 		sb.append("<button type='button' onclick=\"");
@@ -788,16 +788,16 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		
 		ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
 		if(itemSessionState.getEndTime() != null) {
-			renderItemStatusMessage("ended", "assessment.item.status.finished", sb, translator);
+			renderItemStatusMessage(renderer, "ended", "assessment.item.status.finished", sb, translator);
 		} else if(itemSessionState.getUnboundResponseIdentifiers().size() > 0
 				|| itemSessionState.getInvalidResponseIdentifiers().size() > 0) {
-			renderItemStatusMessage("invalid", "assessment.item.status.needsAttention", sb, translator);
+			renderItemStatusMessage(renderer, "invalid", "assessment.item.status.needsAttention", sb, translator);
 		} else if(itemSessionState.isResponded() || itemSessionState.hasUncommittedResponseValues()) {
-			renderItemStatusMessage("answered", "assessment.item.status.answered", sb, translator);
+			renderItemStatusMessage(renderer, "answered", "assessment.item.status.answered", sb, translator);
 		} else if(itemSessionState.getEntryTime() != null) {
-			renderItemStatusMessage("notAnswered", "assessment.item.status.notAnswered", sb, translator);
+			renderItemStatusMessage(renderer, "notAnswered", "assessment.item.status.notAnswered", sb, translator);
 		} else {
-			renderItemStatusMessage("notPresented", "assessment.item.status.notSeen", sb, translator);
+			renderItemStatusMessage(renderer, "notPresented", "assessment.item.status.notSeen", sb, translator);
 		}
 		
 		sb.append("</button>");

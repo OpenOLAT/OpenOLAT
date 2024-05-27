@@ -352,8 +352,16 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 			}
 
 			.o_assessmentitem_wrapper {
-				.itemTitle .o_qti_item_meta {
-					margin-top: 8px;
+				.itemTitle {
+					line-height: 40px;
+
+					.o_qti_item_meta {
+						margin-top: 8px;
+					}
+				}
+
+				.o_solution_wrapper {
+					margin-top: 20px;
 				}
 
 				.modalFeedback {

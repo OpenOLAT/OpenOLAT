@@ -45,6 +45,7 @@ public class AssessmentRenderer {
 	private boolean report;
 	private boolean offline;
 	private boolean pageModeSolutionMode;
+	private boolean pageMode;
 	
 	public AssessmentRenderer(Renderer renderer) {
 		this.renderer = renderer;
@@ -65,6 +66,7 @@ public class AssessmentRenderer {
 		clone.setReport(report);
 		clone.setOffline(offline);
 		clone.setPageModeSolutionMode(pageModeSolutionMode);
+		clone.setPageMode(pageMode);
 		return clone;
 	}
 	
@@ -142,6 +144,14 @@ public class AssessmentRenderer {
 	
 	public void setPageModeSolutionMode(boolean pageModeSolutionMode) {
 		this.pageModeSolutionMode = pageModeSolutionMode;
+	}
+
+	public boolean isPageMode() {
+		return pageMode;
+	}
+
+	public void setPageMode(boolean pageMode) {
+		this.pageMode = pageMode;
 	}
 
 	public boolean isCandidateCommentAllowed() {

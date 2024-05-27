@@ -155,6 +155,8 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
             throw new OLATRuntimeException("Item has not been entered yet. We do not currently support rendering of this state.", null);
         }
 
+		renderer.setPageMode(component.isPageMode());
+
         /* Finally pass to rendering layer */
        // candidateAuditLogger.logItemRendering(candidateEvent);
         //final List<CandidateEventNotification> notifications = candidateEvent.getNotifications();
@@ -184,7 +186,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			renderItemStatus(renderer, sb, itemSessionState, translator);
 		}
 		if (component.isPageMode()) {
-			renderAnswerCorrectnessFeedback(sb, itemSessionState, translator);
+			renderAnswerCorrectnessFeedback(renderer, sb, itemSessionState, translator);
 		}
 		if(component.isShowQuestionLevel()) {
 			renderQuestionLevels(component.getQuestionLevel(), component.getMaxQuestionLevel(), sb, translator);
@@ -199,13 +201,16 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		assessmentItem.getItemBody().getBlocks().forEach((block)
 				-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
 
+		// solution
 		if (component.isShowPageModeSolution()) {
+			sb.append("<div class='o_solution_wrapper'>");
 			sb.append("<h4 class='itemTitle'>");
 			sb.append(StringHelper.escapeHtml(translator.translate("solution"))).append("</h4>");
 			renderer.setPageModeSolutionMode(true);
 			getSolutionBlocks(assessmentItem.getItemBody().getBlocks()).forEach((block)
 					-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
 			renderer.setPageModeSolutionMode(false);
+			sb.append("</div>");
 		}
 
 		//comment
@@ -351,17 +356,17 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		if(renderer.isSolutionMode()) {
 			sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.modelSolution")).append("</span>");
 		} else {
-			super.renderItemStatus(sb, itemSessionState, null, translator);
+			super.renderItemStatus(renderer, sb, itemSessionState, null, translator);
 		}
 	}
 
-	private void renderAnswerCorrectnessFeedback(StringOutput sb, ItemSessionState itemSessionState, Translator translator) {
+	private void renderAnswerCorrectnessFeedback(AssessmentRenderer renderer, StringOutput sb, ItemSessionState itemSessionState, Translator translator) {
 		if (itemSessionState.isRespondedValidly()) {
 			if (itemSessionState.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER) instanceof FloatValue maxScore) {
 				if (itemSessionState.getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER) instanceof FloatValue score) {
 					String status = score.equals(maxScore) ? "correct" : "incorrect";
 					String i18nKey = "assessment.item.status.page." + status;
-					renderItemStatusMessage(status, i18nKey, sb, translator);
+					renderItemStatusMessage(renderer, status, i18nKey, sb, translator);
 				}
 			}
 		}

@@ -273,4 +273,9 @@ public class QuizInspectorController extends FormBasicController implements Page
 		}
 		return new QuizSettings();
 	}
+
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		//
+	}
 }
