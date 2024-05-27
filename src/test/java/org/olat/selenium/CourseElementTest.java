@@ -2656,9 +2656,6 @@ public class CourseElementTest extends Deployments {
 			.selectMeeting(meetingName)
 			.assertOnMeeting(meetingName);
 		
-		// Teams is not configured, errors
-		OOGraphene.closeErrorBox(browser);
-		
 		teams
 			.assertOnJoinDisabled();
 	}
@@ -2719,9 +2716,6 @@ public class CourseElementTest extends Deployments {
 			.selectMeetingsList()
 			.selectMeeting(meetingName)
 			.assertOnMeeting(meetingName);
-		
-		// Teams is not configured, errors
-		OOGraphene.closeErrorBox(browser);
 		
 		teams
 			.assertOnJoinDisabled();

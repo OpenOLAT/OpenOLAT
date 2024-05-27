@@ -183,7 +183,7 @@ public class QTI21Page {
 	 * @return Itself
 	 */
 	public QTI21Page answerInlineChoice(String value) {
-		By inlineBy = By.xpath("//span[@class='inlineChoiceInteraction']/select");
+		By inlineBy = By.xpath("//span[contains(@class,'inlineChoiceInteraction')]/select");
 		OOGraphene.waitElement(inlineBy, browser);
 		WebElement inlineEl = browser.findElement(inlineBy);
 		new Select(inlineEl).selectByValue(value);
@@ -191,7 +191,7 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page answerInlineChoiceByText(String text, int position) {
-		By inlineBy = By.xpath("//span[@class='inlineChoiceInteraction'][" + position + "]/select");
+		By inlineBy = By.xpath("//span[contains(@class,'inlineChoiceInteraction')][" + position + "]/select");
 		OOGraphene.waitElement(inlineBy, browser);
 		WebElement inlineEl = browser.findElement(inlineBy);
 		new Select(inlineEl).selectByVisibleText(text);
