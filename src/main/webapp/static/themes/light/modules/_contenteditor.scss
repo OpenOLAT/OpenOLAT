@@ -658,6 +658,19 @@
 			max-height: 360px;
 			overflow: auto;
 			padding-right: 4px;
+
+			.o_slider_wrapper {
+				margin-left: 0.6em;
+				margin-right: 0.6em;
+
+				.ui-slider-pip {
+					display: none;
+				}
+
+				.ui-slider-horizontal.ui-slider-pips {
+					margin-bottom: 0;
+				}
+			}
 		}
 
 		fieldset.o_form.o_quiz_inspector_tab {

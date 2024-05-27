@@ -119,6 +119,13 @@ public class ImageComparisonRunController extends BasicController implements Pag
 				.stream().map(this::getMediaVersion).filter(Objects::nonNull)
 				.map(mv -> new ImageComparisonImageItem(Long.toString(mv.getKey()), mv.getMedia().getType(), mv))
 				.toList();
+		if (imageComparisonSettings.getInitialSliderPosition() == null) {
+			mainVC.contextPut("initialSliderPosition", null);
+		} else {
+			double initialSliderPosition = imageComparisonSettings.getInitialSliderPosition() / 100.0;
+			initialSliderPosition = Math.max(0.001, initialSliderPosition);
+			mainVC.contextPut("initialSliderPosition", initialSliderPosition);
+		}
 		mainVC.contextPut("beforeImageId", imageComparisonImageItems.isEmpty() ? null : imageComparisonImageItems.get(0).id);
 		mainVC.contextPut("afterImageId", imageComparisonImageItems.size() < 2 ? null : imageComparisonImageItems.get(1).id);
 		mainVC.contextPut("beforeText", imageComparisonSettings.getText1());

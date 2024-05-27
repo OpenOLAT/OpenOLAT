@@ -29,6 +29,7 @@ public class ImageComparisonSettings {
 	private ImageComparisonOrientation orientation;
 	private ImageComparisonType type;
 	private String description;
+	private Double initialSliderPosition;
 	private String text1;
 	private String text2;
 	private BlockLayoutSettings layoutSettings;
@@ -51,6 +52,14 @@ public class ImageComparisonSettings {
 
 	public void setType(ImageComparisonType type) {
 		this.type = type;
+	}
+
+	public Double getInitialSliderPosition() {
+		return initialSliderPosition;
+	}
+
+	public void setInitialSliderPosition(Double initialSliderPosition) {
+		this.initialSliderPosition = initialSliderPosition;
 	}
 
 	public String getDescription() {

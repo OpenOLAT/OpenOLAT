@@ -215,6 +215,7 @@
 						|| jTarget.closest(".o_page_edit_code").length > 0
 						|| jTarget.closest(".o_page_edit_quiz").length > 0
 						|| jTarget.closest(".o_gallery_images.o_editable_table").length > 0
+						|| jTarget.closest(".o_page_run_image_comparison .twentytwenty-handle").length > 0
 						|| (jTarget.closest("a").length > 0 && jTarget.closest(".o_tools_container").length == 0 && jTarget.closest(".o_ceditor_inspector_header").length == 0)
 						|| jTarget.closest("button").length > 0
 						|| e.target.nodeName == 'BODY'

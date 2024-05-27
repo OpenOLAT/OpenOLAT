@@ -97,6 +97,7 @@ public class ImageComparisonElementHandler implements PageElementHandler, PageEl
 		ImageComparisonSettings imageComparisonSettings = imageComparisonPart.getSettings();
 		imageComparisonSettings.setOrientation(ImageComparisonOrientation.horizontal);
 		imageComparisonSettings.setType(ImageComparisonType.standard);
+		imageComparisonSettings.setInitialSliderPosition(50.0);
 		imageComparisonPart.setSettings(imageComparisonSettings);
 		return imageComparisonPart;
 	}

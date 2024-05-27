@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -73,6 +74,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 	private final PageElementStore<ImageComparisonElement> store;
 	private SingleSelection orientationEl;
 	private SingleSelection typeEl;
+	private SliderElement initialSliderPositionEl;
 	private TextAreaElement descriptionEl;
 	private List<StaticTextElement> imageNameEls = new ArrayList<>();
 	private List<FormLink> chooseImageLinks = new ArrayList<>();
@@ -138,8 +140,15 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 				layoutCont, typeKV.keys(), typeKV.values(), null);
 		typeEl.addActionListener(FormEvent.ONCHANGE);
 
+		initialSliderPositionEl = uifactory.addSliderElement("imagecomparison.position",
+				"imagecomparison.initial.slider.position", layoutCont);
+		initialSliderPositionEl.addActionListener(FormEvent.ONCHANGE);
+		initialSliderPositionEl.setMinValue(0);
+		initialSliderPositionEl.setMaxValue(100);
+		initialSliderPositionEl.setStep(5);
+
 		descriptionEl = uifactory.addTextAreaElement("imagecomparison.description", 3, 60, null, layoutCont);
-		descriptionEl.addActionListener(FormEvent.ONBLUR);
+		descriptionEl.addActionListener(FormEvent.ONCHANGE);
 
 		addSetImageSection(layoutCont);
 		addSetImageSection(layoutCont);
@@ -170,7 +179,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		chooseImageLinks.add(chooseImageLink);
 
 		TextElement textEl = uifactory.addTextElement("text" + index, "imagecomparison.text", 40, null, imageLayout);
-		textEl.addActionListener(FormEvent.ONBLUR);
+		textEl.addActionListener(FormEvent.ONCHANGE);
 		textEls.add(textEl);
 	}
 
@@ -188,6 +197,8 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		ImageComparisonSettings imageComparisonSettings = imageComparisonElement.getSettings();
 		orientationEl.select(imageComparisonSettings.getOrientation().name(), true);
 		typeEl.select(imageComparisonSettings.getType().name(), true);
+		initialSliderPositionEl.setValue(imageComparisonSettings.getInitialSliderPosition() == null ? 50.0 :
+				imageComparisonSettings.getInitialSliderPosition());
 		descriptionEl.setValue(imageComparisonSettings.getDescription());
 		if (imageComparisonElement instanceof ImageComparisonPart imageComparisonPart) {
 			List<MediaToPagePart> relations = mediaToPagePartDAO.loadRelations(imageComparisonPart);
@@ -233,6 +244,8 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 			doSaveSettings(ureq);
 		} else if (typeEl == source) {
 			doSaveSettings(ureq);
+		} else if (initialSliderPositionEl == source) {
+			doSaveSettings(ureq);
 		} else if (descriptionEl == source) {
 			doSaveSettings(ureq);
 		} else if (chooseImageLinks.size() >= 2 && chooseImageLinks.get(0) == source) {
@@ -256,6 +269,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		ImageComparisonSettings imageComparisonSettings = imageComparisonElement.getSettings();
 		imageComparisonSettings.setOrientation(ImageComparisonOrientation.valueOf(orientationEl.getSelectedKey()));
 		imageComparisonSettings.setType(ImageComparisonType.valueOf(typeEl.getSelectedKey()));
+		imageComparisonSettings.setInitialSliderPosition(initialSliderPositionEl.getValue());
 		imageComparisonSettings.setDescription(descriptionEl.getValue());
 		imageComparisonElement.setSettings(imageComparisonSettings);
 		store.savePageElement(imageComparisonElement);
@@ -358,5 +372,9 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 			return imageComparisonElement.getSettings();
 		}
 		return new ImageComparisonSettings();
+	}
+
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 	}
 }

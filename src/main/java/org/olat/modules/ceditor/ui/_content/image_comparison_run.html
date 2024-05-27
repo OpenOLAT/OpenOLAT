@@ -26,6 +26,9 @@
 
 	function $r.getId("init_comparison_")() {
 		var options = {
+			#if($initialSliderPosition)
+			default_offset_pct: $initialSliderPosition,
+			#end
 			#if($horizontal)
 			orientation: 'horizontal',
 			#else
@@ -35,6 +38,5 @@
 			after_label: '$r.escapeHtml($afterText)',
 		};
 		jQuery('#$r.getCId()_compare').twentytwenty(options);
-		console.log("image comparison initialized");
 	}
 </script>
