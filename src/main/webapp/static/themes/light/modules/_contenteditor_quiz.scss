@@ -86,6 +86,10 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 				background: unset;
 
 				span.textEntryInteraction, span.inlineChoiceInteraction {
+					&.o_correct, &.o_incorrect {
+						margin-right: 5px;
+					}
+
 					&.o_correct {
 						@include o-add-icon('circle-check', true, false);
 						@include o-add-icon-font(false);
@@ -110,17 +114,13 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 				}
 
 				span.textEntryInteraction {
-					&.o_correct, &.o_incorrect {
-						margin-right: 5px;
-					}
-
 					input.text {
 						background: transparent;
 						border-radius: $border-radius-small;
 						border-width: 1px;
 						border-style: solid;
 						padding: 2px 24px 2px 5px;
-						margin-top: -4px;
+						margin-bottom: 4px;
 						-webkit-appearance: none;
 
 						&.o_correct {
@@ -140,6 +140,7 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 						border-width: 1px;
 						border-style: solid;
 						padding: 2px 24px 2px 5px;
+						margin-bottom: 4px;
 						-webkit-appearance: none;
 
 						&.o_correct {
@@ -191,6 +192,10 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 						i:before {
 							color: $brand-danger;
 						}
+					}
+
+					.check {
+						font-weight: 700;
 					}
 
 					label {

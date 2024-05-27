@@ -4,12 +4,12 @@
 #set($responseDeclaration = $r.getResponseDeclaration($interaction.responseIdentifier))
 #set($responseInput = $r.getResponseValue($interaction.responseIdentifier))
 #set($responseInputString = $r.toString($responseInput))
-
+#set($inputMatchesSolution = $r.escapeHtml($responseInputString) == $solutions[${responseIdentifier}])
 #set($answerCorrectnessClass = "")
-#if($isAnswerCorrect && !$isPageModeSolution)
+#if($isPageMode && $isResponded && $inputMatchesSolution && !$isPageModeSolution)
 	#set($answerCorrectnessClass = "o_correct")
 #end
-#if($isAnswerIncorrect && !$isPageModeSolution)
+#if($isPageMode && $isResponded && !$inputMatchesSolution && !$isPageModeSolution)
 	#set($answerCorrectnessClass = "o_incorrect")
 #end
 
