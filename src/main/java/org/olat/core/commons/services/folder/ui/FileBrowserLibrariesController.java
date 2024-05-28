@@ -19,8 +19,11 @@
  */
 package org.olat.core.commons.services.folder.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.services.folder.ui.event.FileBrowserPushEvent;
+import org.olat.core.commons.services.folder.ui.event.FileBrowserTitleEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,6 +34,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.sharepoint.SharePointModule;
+import org.olat.modules.sharepoint.SharePointService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,24 +49,38 @@ import org.olat.core.gui.control.controller.BasicController;
 public class FileBrowserLibrariesController extends BasicController {
 	
 	private static final String CMD_MEDIA_CENTER = "media";
+	private static final String CMD_SHARE_POINT = "sharepoint";
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackedPanel;
 
 	private FileBrowserMediaCenterController mediaCenterCtrl;
-
+	private FolderSelectionController folderSelectionCtrl;
+	
+	private final FileBrowserSelectionMode selectionMode;
+	private final String submitButtonText;
 	private int counter = 0;
 	
-	public FileBrowserLibrariesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
+	@Autowired
+	private SharePointModule sharePointModule;
+	@Autowired
+	private SharePointService sharePointService;
+	
+	public FileBrowserLibrariesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
+			FileBrowserSelectionMode selectionMode, String submitButtonText) {
 		super(ureq, wControl);
 		this.stackedPanel = stackedPanel;
+		this.selectionMode = selectionMode;
+		this.submitButtonText = submitButtonText;
 		
 		mainVC = createVelocityContainer("browser_mega_buttons");
 		putInitialPanel(mainVC);
 		
-		List<Link> links = List.of(
-				createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media"))
-			);
+		List<Link> links = new ArrayList<>();
+		links.add(createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media")));
+		if(sharePointModule.isEnabled()) {
+			links.add(createLink(CMD_SHARE_POINT, "o_icon_provider_adfs", translate("browser.storages.share.point")));
+		}
 		mainVC.contextPut("links", links);
 	}
 	
@@ -78,6 +100,8 @@ public class FileBrowserLibrariesController extends BasicController {
 			String command = link.getCommand();
 			if (CMD_MEDIA_CENTER.equals(command)) {
 				doOpenMediaCenter(ureq);
+			} else if(CMD_SHARE_POINT.equals(command)) {
+				doOpenSharePoint(ureq);
 			}
 		}
 	}
@@ -85,6 +109,8 @@ public class FileBrowserLibrariesController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == mediaCenterCtrl) {
+			fireEvent(ureq, event);
+		} else if (source == folderSelectionCtrl) {
 			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);
@@ -96,6 +122,21 @@ public class FileBrowserLibrariesController extends BasicController {
 		listenTo(mediaCenterCtrl);
 		
 		stackedPanel.pushController(title, mediaCenterCtrl);
+	}
+	
+	private void doOpenSharePoint(UserRequest ureq) {
+		UserSession usess = ureq.getUserSession();
+		VFSContainer spContainer = sharePointService.getSharePointContainer(usess);
+
+		folderSelectionCtrl = new FolderSelectionController(ureq, getWindowControl(), stackedPanel, spContainer,
+				selectionMode, submitButtonText);
+		listenTo(folderSelectionCtrl);
+		
+		String providerName = spContainer.getName();
+		stackedPanel.pushController(providerName, folderSelectionCtrl);
+
+		fireEvent(ureq, new FileBrowserTitleEvent(providerName));
+		fireEvent(ureq, new FileBrowserPushEvent());
 	}
 
 }

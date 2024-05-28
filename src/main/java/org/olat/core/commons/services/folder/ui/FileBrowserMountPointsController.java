@@ -36,7 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,7 +57,6 @@ public class FileBrowserMountPointsController extends BasicController {
 
 	private final FileBrowserSelectionMode selectionMode;
 	private final String submitButtonText;
-	private final IdentityEnvironment identityEnv;
 	private int counter = 0;
 	
 	@Autowired
@@ -71,14 +70,15 @@ public class FileBrowserMountPointsController extends BasicController {
 		this.stackedPanel = stackedPanel;
 		this.selectionMode = selectionMode;
 		this.submitButtonText = submitButtonText;
-		this.identityEnv = new IdentityEnvironment(getIdentity(), ureq.getUserSession().getRoles());
 		
 		mainVC = createVelocityContainer("browser_mega_buttons");
 		putInitialPanel(mainVC);
 		
+		UserSession usess = ureq.getUserSession();
+		
 		List<Link> links = webdavModule.getWebDAVProviders().values().stream()
 				.filter(provider -> !staticFolderManager.getMountPoint().equals(provider.getMountPoint()))
-				.filter(provider -> provider.hasAccess(identityEnv))
+				.filter(provider -> provider.hasAccess(usess))
 				.map(provider -> new TranslatedWebDAVProvider(provider, getLocale()))
 				.sorted((p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()))
 				.map(this::createLink)
@@ -110,7 +110,7 @@ public class FileBrowserMountPointsController extends BasicController {
 	}
 	
 	private void doOpen(UserRequest ureq, WebDAVProvider provider) {
-		VFSContainer vfsContainer = provider.getContainer(identityEnv);
+		VFSContainer vfsContainer = provider.getContainer(ureq.getUserSession());
 		folderSelectionCtrl = new FolderSelectionController(ureq, getWindowControl(), stackedPanel, vfsContainer,
 				selectionMode, submitButtonText);
 		listenTo(folderSelectionCtrl);

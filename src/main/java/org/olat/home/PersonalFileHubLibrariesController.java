@@ -19,8 +19,12 @@
  */
 package org.olat.home;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.commons.services.folder.ui.FolderUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -37,11 +41,16 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.cemedia.ui.MediaCenterConfig;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaCentersController;
+import org.olat.modules.sharepoint.SharePointModule;
+import org.olat.modules.sharepoint.SharePointService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,13 +61,27 @@ import org.olat.modules.cemedia.ui.MediaCentersController;
 public class PersonalFileHubLibrariesController extends BasicController implements Activateable2 {
 	
 	private static final String CMD_MEDIA_CENTER = "media";
+	private static final String CMD_SHARE_POINT = "sharepoint";
+	
+	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplaySubscription(false)
+			.withDisplayQuotaLink(false)
+			.withFileHub(true)
+			.withMail(FolderEmailFilter.publicOnly)
+			.build();
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackedPanel;
 
 	private Controller mediaCenterCtrl;
+	private FolderController folderCtrl;
 
 	private int counter = 0;
+	
+	@Autowired
+	private SharePointModule sharePointModule;
+	@Autowired
+	private SharePointService sharePointService;
 	
 	public PersonalFileHubLibrariesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
 		super(ureq, wControl, Util.createPackageTranslator(FolderUIFactory.class, ureq.getLocale()));
@@ -69,9 +92,11 @@ public class PersonalFileHubLibrariesController extends BasicController implemen
 		mainVC = createVelocityContainer("browser_mega_buttons");
 		putInitialPanel(mainVC);
 		
-		List<Link> links = List.of(
-				createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media"))
-			);
+		List<Link> links = new ArrayList<>(3);
+		links.add(createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media")));
+		if(sharePointModule.isEnabled() && ureq.getUserSession().getOAuth2Tokens() != null) {
+			links.add(createLink(CMD_SHARE_POINT, "o_icon_provider_adfs", translate("browser.storages.share.point")));
+		}
 		mainVC.contextPut("links", links);
 	}
 	
@@ -111,6 +136,8 @@ public class PersonalFileHubLibrariesController extends BasicController implemen
 			String command = link.getCommand();
 			if (CMD_MEDIA_CENTER.equals(command)) {
 				doOpenMediaCenter(ureq);
+			} else if(CMD_SHARE_POINT.equals(command)) {
+				doOpenSharePoint(ureq);
 			}
 		}
 	}
@@ -145,4 +172,16 @@ public class PersonalFileHubLibrariesController extends BasicController implemen
 		stackedPanel.pushController(title, mediaCenterCtrl);
 	}
 
+	private void doOpenSharePoint(UserRequest ureq) {
+		UserSession usess = ureq.getUserSession();
+		VFSContainer spContainer = sharePointService.getSharePointContainer(usess);
+
+		folderCtrl = new FolderController(ureq, getWindowControl(), spContainer, FOLDER_CONFIG);
+		listenTo(folderCtrl);
+		folderCtrl.updateCurrentContainer(ureq, spContainer, true);
+		
+		String providerName = spContainer.getName();
+		stackedPanel.pushController(providerName, folderCtrl);
+		stackedPanel.setInvisibleCrumb(2);
+	}
 }

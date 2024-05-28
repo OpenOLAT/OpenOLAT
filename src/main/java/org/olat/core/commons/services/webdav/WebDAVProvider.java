@@ -28,7 +28,7 @@ package org.olat.core.commons.services.webdav;
 
 import java.util.Locale;
 
-import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
 
 public interface WebDAVProvider {
@@ -42,13 +42,13 @@ public interface WebDAVProvider {
 	
 	public String getName(Locale locale);
 
-	public boolean hasAccess(IdentityEnvironment identityEnv);
+	public boolean hasAccess(UserSession userSession);
 
 	/**
 	 * Return the container which's content will be mounted under the name as provided by getMountPoint.
 	 * @param identity
 	 * @return
 	 */
-	public VFSContainer getContainer(IdentityEnvironment identityEnv);
+	public VFSContainer getContainer(UserSession userSession);
 
 }

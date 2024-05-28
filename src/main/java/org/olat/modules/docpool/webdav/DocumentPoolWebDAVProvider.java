@@ -24,6 +24,7 @@ import java.util.Locale;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.docpool.DocumentPoolModule;
@@ -63,12 +64,13 @@ public class DocumentPoolWebDAVProvider implements WebDAVProvider {
 	}
 	
 	@Override
-	public boolean hasAccess(IdentityEnvironment identityEnv) {
-		return docPoolModule.isEnabled() && identityEnv != null;
+	public boolean hasAccess(UserSession usess) {
+		return docPoolModule.isEnabled() && usess != null && usess.getIdentityEnvironment() != null;
 	}
 
 	@Override
-	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
+	public VFSContainer getContainer(UserSession usess) {
+		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
 		return new DocumentPoolWebDAVMergeSource("docpool", identityEnv);
 	}
 }

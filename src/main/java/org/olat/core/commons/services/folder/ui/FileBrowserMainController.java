@@ -65,7 +65,7 @@ public class FileBrowserMainController extends BasicController {
 		mainVC.put("vfsSources", vfsSourcesCtrl.getInitialComponent());
 		
 		mainVC.contextPut("librariesTitle", translate("browser.libraries"));
-		storageesCtrl = new FileBrowserLibrariesController(ureq, wControl, stackedPanel);
+		storageesCtrl = new FileBrowserLibrariesController(ureq, wControl, stackedPanel, selectionMode, submitButtonText);
 		listenTo(storageesCtrl);
 		mainVC.put("libraries", storageesCtrl.getInitialComponent());
 	}

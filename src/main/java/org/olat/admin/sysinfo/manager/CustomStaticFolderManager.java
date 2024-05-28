@@ -27,6 +27,7 @@ import org.olat.admin.sysinfo.SysinfoController;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -84,13 +85,17 @@ public class CustomStaticFolderManager implements InitializingBean, WebDAVProvid
 	}
 	
 	@Override
-	public boolean hasAccess(IdentityEnvironment identityEnv) {
+	public boolean hasAccess(UserSession usess) {
+		if(usess == null) return false;
+		
+		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
 		return identityEnv != null && identityEnv.getRoles() != null
 				&& (identityEnv.getRoles().isAdministrator() || identityEnv.getRoles().isSystemAdmin());
 	}
 
 	@Override
-	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
+	public VFSContainer getContainer(UserSession usess) {
+		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
 		if(identityEnv != null && identityEnv.getRoles() != null
 				&& (identityEnv.getRoles().isAdministrator() || identityEnv.getRoles().isSystemAdmin())) {
 			return getRootContainer();

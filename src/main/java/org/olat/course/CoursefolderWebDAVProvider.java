@@ -29,6 +29,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 /**
@@ -55,12 +56,13 @@ public class CoursefolderWebDAVProvider implements WebDAVProvider {
 	}
 	
 	@Override
-	public boolean hasAccess(IdentityEnvironment identityEnv) {
-		return identityEnv != null;
+	public boolean hasAccess(UserSession usess) {
+		return usess != null && usess.getIdentityEnvironment() != null;
 	}
 
 	@Override
-	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
+	public VFSContainer getContainer(UserSession usess) {
+		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
 		return new CoursefolderWebDAVMergeSource(MOUNTPOINT, identityEnv);
 	}
 }

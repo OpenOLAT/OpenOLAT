@@ -41,11 +41,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -75,7 +75,6 @@ public class PersonalFileHubMountPointsController extends BasicController implem
 	private FolderController folderCtrl;
 
 	private final String fileHubName;
-	private final IdentityEnvironment identityEnv;
 	private int counter = 0;
 	
 	@Autowired
@@ -88,15 +87,15 @@ public class PersonalFileHubMountPointsController extends BasicController implem
 		super(ureq, wControl);
 		this.stackedPanel = stackedPanel;
 		this.fileHubName = fileHubName;
-		this.identityEnv = new IdentityEnvironment(getIdentity(), ureq.getUserSession().getRoles());
-		
+
 		velocity_root = Util.getPackageVelocityRoot(FolderUIFactory.class);
 		mainVC = createVelocityContainer("browser_mega_buttons");
 		putInitialPanel(mainVC);
-		
+
+		UserSession usess = ureq.getUserSession();
 		links = webdavModule.getWebDAVProviders().values().stream()
 				.filter(provider -> !staticFolderManager.getMountPoint().equals(provider.getMountPoint()))
-				.filter(provider -> provider.hasAccess(identityEnv))
+				.filter(provider -> provider.hasAccess(usess))
 				.map(provider -> new TranslatedWebDAVProvider(provider, getLocale()))
 				.sorted((p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()))
 				.map(this::createLink)
@@ -121,12 +120,14 @@ public class PersonalFileHubMountPointsController extends BasicController implem
 		
 		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
 		if (StringHelper.containsNonWhitespace(path)) {
+			UserSession usess = ureq.getUserSession();
+			
 			String[] pathParts = path.split("/");
 			if (pathParts.length >= 2) {
 				String providerName = pathParts[1];
 				links.stream()
 					.map(link -> (WebDAVProvider)link.getUserObject())
-					.filter(provider -> providerName.equalsIgnoreCase(provider.getContainer(identityEnv).getName()))
+					.filter(provider -> providerName.equalsIgnoreCase(provider.getContainer(usess).getName()))
 					.findFirst().ifPresent(provider -> {
 						doOpen(ureq, provider);
 						if (folderCtrl != null) {
@@ -150,7 +151,8 @@ public class PersonalFileHubMountPointsController extends BasicController implem
 	}
 	
 	private void doOpen(UserRequest ureq, WebDAVProvider provider) {
-		VFSContainer vfsContainer = provider.getContainer(identityEnv);
+		UserSession usess = ureq.getUserSession();
+		VFSContainer vfsContainer = provider.getContainer(usess);
 		vfsContainer = new NamedContainerImpl(provider.getName(getLocale()), vfsContainer);
 		
 		VirtualContainer fileHubContainer = new VirtualContainer(fileHubName);

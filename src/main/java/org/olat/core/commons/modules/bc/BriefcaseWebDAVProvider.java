@@ -32,6 +32,7 @@ import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.home.PersonalFileHubController;
@@ -63,13 +64,14 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 	}
 
 	@Override
-	public boolean hasAccess(IdentityEnvironment identityEnv) {
-		return identityEnv != null;
+	public boolean hasAccess(UserSession userSession) {
+		return userSession != null && userSession.getIdentityEnvironment() != null;
 	}
 
 	@Override
-	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
+	public VFSContainer getContainer(UserSession usess) {
 		// merge /public and /private
+		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
 		return getContainer(identityEnv.getIdentity(), identityEnv.getRoles());
 	}
 	

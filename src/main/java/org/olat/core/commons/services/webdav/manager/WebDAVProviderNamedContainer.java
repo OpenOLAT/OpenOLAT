@@ -20,7 +20,7 @@
 package org.olat.core.commons.services.webdav.manager;
 
 import org.olat.core.commons.services.webdav.WebDAVProvider;
-import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
@@ -31,14 +31,14 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  */
 public class WebDAVProviderNamedContainer extends NamedContainerImpl {
 	
-	private IdentityEnvironment identityEnv;
+	private UserSession usess;
 	private final WebDAVProvider provider;
 	private VFSContainer parentContainer;
 	
-	public WebDAVProviderNamedContainer(IdentityEnvironment identityEnv, WebDAVProvider provider) {
+	public WebDAVProviderNamedContainer(UserSession usess, WebDAVProvider provider) {
 		super(provider.getMountPoint(), null);
 		this.provider = provider;
-		this.identityEnv = identityEnv;
+		this.usess = usess;
 	}
 
 	@Override
@@ -49,12 +49,12 @@ public class WebDAVProviderNamedContainer extends NamedContainerImpl {
 	@Override
 	public VFSContainer getDelegate() {
 		if(super.getDelegate() == null) {
-			setDelegate(provider.getContainer(identityEnv));
+			setDelegate(provider.getContainer(usess));
 			if(parentContainer != null) {
 				super.setParentContainer(parentContainer);
 				parentContainer = null;
 			}
-			identityEnv = null;
+			usess = null;
 		}
 		return super.getDelegate();
 	}

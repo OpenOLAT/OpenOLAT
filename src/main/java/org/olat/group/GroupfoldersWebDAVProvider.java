@@ -30,6 +30,7 @@ import java.util.Locale;
 import org.olat.collaboration.CollaborationManager;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.group.ui.BGControllerFactory;
@@ -52,8 +53,8 @@ public class GroupfoldersWebDAVProvider implements WebDAVProvider {
 	}
 	
 	@Override
-	public boolean hasAccess(IdentityEnvironment identityEnv) {
-		return identityEnv != null;
+	public boolean hasAccess(UserSession usess) {
+		return usess != null && usess.getIdentityEnvironment() != null;
 	}
 
 	@Override
@@ -72,7 +73,8 @@ public class GroupfoldersWebDAVProvider implements WebDAVProvider {
 	}
 
 	@Override
-	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
+	public VFSContainer getContainer(UserSession usess) {
+		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
 		return new GroupfoldersWebDAVMergeSource(MOUNTPOINT, identityEnv.getIdentity(), collaborationManager);
 	}
 }

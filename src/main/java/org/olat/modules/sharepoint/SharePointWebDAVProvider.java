@@ -17,56 +17,54 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.course.archiver.webdav;
+package org.olat.modules.sharepoint;
 
 import java.util.Locale;
 
-import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
-import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.archiver.ArchivesController;
 
 /**
  * 
- * Initial date: 26 févr. 2024<br>
+ * Initial date: 3 mai 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MyArchivesWebDAVProvider implements WebDAVProvider {
+public class SharePointWebDAVProvider implements WebDAVProvider {
+	
+	private SharePointService sharePointService;
 
-	private static final String MOUNTPOINT = "mycoursearchives";
+	public SharePointWebDAVProvider(SharePointService sharePointService) {
+		this.sharePointService = sharePointService;
+	}
 
 	@Override
 	public String getMountPoint() {
-		return MOUNTPOINT;
+		return "sharepoint";
 	}
-	
+
 	@Override
 	public String getIconCss() {
-		return "o_icon_coursearchive";
+		return "o_icon_provider_adfs";
 	}
 
 	@Override
 	public String getName(Locale locale) {
-		return Util.createPackageTranslator(ArchivesController.class, locale).translate("webdav.name");
+		return "SharePoint";
 	}
-	
+
 	@Override
 	public boolean hasAccess(UserSession usess) {
-		if(usess == null) {
-			return false;
-		}
-		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
-		return identityEnv != null && identityEnv.getRoles() != null && identityEnv.getRoles()
-				.hasSomeRoles(OrganisationRoles.author, OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator);
+		OAuth2Tokens tokens = usess.getOAuth2Tokens();
+		return tokens != null && (StringHelper.containsNonWhitespace(tokens.getAccessToken())
+				|| StringHelper.containsNonWhitespace(tokens.getRefreshToken()));
 	}
 
 	@Override
 	public VFSContainer getContainer(UserSession usess) {
-		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
-		return new MyArchivesWebDAVSource(identityEnv);
+		return sharePointService.getSharePointContainer(usess);
 	}
 }

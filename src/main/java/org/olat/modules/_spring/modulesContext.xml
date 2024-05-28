@@ -24,6 +24,7 @@
 	<import resource="classpath:/org/olat/modules/wiki/_spring/wikiContext.xml"/>
 	<import resource="classpath:/org/olat/modules/reminder/_spring/reminderContext.xml"/>
 	<import resource="classpath:/org/olat/modules/teams/_spring/teamsContext.xml"/>
+	<import resource="classpath:/org/olat/modules/sharepoint/_spring/sharePointContext.xml"/>
 	<import resource="classpath:/org/olat/modules/video/_spring/videoContext.xml"/>
 	<import resource="classpath:/org/olat/modules/contacttracing/_spring/contactTracingContext.xml"/>
 	<import resource="classpath:/org/olat/modules/immunityproof/_spring/immunityProofContext.xml"/>

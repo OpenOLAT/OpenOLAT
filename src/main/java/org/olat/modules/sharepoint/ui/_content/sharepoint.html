@@ -1,0 +1,17 @@
+<div class="o_button_group o_button_group_right">
+	#if($r.available("me"))
+		$r.render("me")
+	#end
+	#if($r.available("test"))
+		$r.render("test")
+	#end
+	#if($r.available("upload"))
+		$r.render("upload")
+	#end
+	$r.render("test.application")
+</div>
+#if($r.isTrue($token))
+	$r.render("folders")
+#else
+	<div class="o_warning">You are not logged with Microsoft</div>
+#end

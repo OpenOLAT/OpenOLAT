@@ -123,7 +123,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		final Identity identity = identityEnv.getIdentity();
 		
 		fdc = resourceCache.computeIfAbsent(identity.getKey(), key -> {
-			VFSContainer webdavContainer = getMountableRoot(identityEnv);
+			VFSContainer webdavContainer = getMountableRoot(usess);
 			//create the / folder
 			VirtualContainer rootContainer = new VirtualContainer("");
 			rootContainer.addItem(webdavContainer);
@@ -138,7 +138,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	 * Returns a mountable root containing all entries which will be exposed to the webdav mount.
 	 * @return
 	 */
-	private VFSContainer getMountableRoot(IdentityEnvironment identityEnv) {
+	private VFSContainer getMountableRoot(UserSession identityEnv) {
 		MergeSource vfsRoot = new MergeSource(null, "webdav");
 		for (Map.Entry<String, WebDAVProvider> entry : webdavModule.getWebDAVProviders().entrySet()) {
 			WebDAVProvider provider = entry.getValue();
