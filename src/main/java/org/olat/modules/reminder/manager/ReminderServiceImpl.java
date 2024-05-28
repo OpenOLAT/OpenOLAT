@@ -275,7 +275,13 @@ public class ReminderServiceImpl implements ReminderService {
 			if(bundle == null) {
 				status = "error";
 			} else {
-				MailerResult result = mailManager.sendMessage(bundle);
+				MailerResult result;
+				if (!reminder.isEmailCopyOnly()) {
+					result = mailManager.sendMessage(bundle);
+				} else {
+					result = new MailerResult();
+					result.setReturnCode(MailerResult.OK);
+				}
 				overviewResult.append(result);
 				
 				List<Identity> failedIdentities = result.getFailedIdentites();
@@ -283,7 +289,7 @@ public class ReminderServiceImpl implements ReminderService {
 					status = "error";
 				} else {
 					status = "ok";
-					sendReminderCopies(reminder, bundle, copyOwners, copyAddresses);
+					sendReminderCopies(reminder, bundle, template, copyOwners, copyAddresses);
 				}
 			}
 			reminderDao.markAsSend(reminder, identityToRemind, status, run);
@@ -324,18 +330,20 @@ public class ReminderServiceImpl implements ReminderService {
 		return null;
 	}
 
-	private void sendReminderCopies(Reminder reminder, MailBundle remindedMailBundle, Set<Identity> copyOwners, List<String> copyAddresses) {
+	private void sendReminderCopies(Reminder reminder, MailBundle remindedMailBundle, CourseReminderTemplate template, Set<Identity> copyOwners, List<String> copyAddresses) {
 		getCopyRevievers(reminder, remindedMailBundle.getToId(), copyOwners)
-				.forEach(copyReciever -> sendReminderCopyIntern(reminder, copyReciever, remindedMailBundle));
-		sendReminderCopiesExtern(reminder, copyAddresses, remindedMailBundle);
+				.forEach(copyReciever -> sendReminderCopyIntern(reminder, copyReciever, remindedMailBundle, template));
+		sendReminderCopiesExtern(reminder, copyAddresses, remindedMailBundle, template);
 	}
 	
-	private void sendReminderCopyIntern(Reminder reminder, Identity copyReciever, MailBundle remindedMailBundle) {
+	private void sendReminderCopyIntern(Reminder reminder, Identity copyReciever, MailBundle remindedMailBundle, CourseReminderTemplate template) {
 		try {
 			Locale locale = I18nManager.getInstance().getLocaleOrDefault(copyReciever.getUser().getPreferences().getLanguage());
 			Translator translator = Util.createPackageTranslator(ReminderAdminController.class, locale);
 			
-			MailBundle bundle = createCopyMailBundle(remindedMailBundle, translator);
+			MailBundle bundle = reminder.isEmailCopyOnly()
+					? createCopyOnlyMailBundle(remindedMailBundle, template, copyReciever, locale)
+					: createCopyMailBundle(remindedMailBundle, translator);
 			bundle.setToId(copyReciever);
 			MailerResult result = mailManager.sendMessage(bundle);
 			if (!result.isSuccessful()) {
@@ -347,10 +355,12 @@ public class ReminderServiceImpl implements ReminderService {
 		}
 	}
 	
-	private void sendReminderCopiesExtern(Reminder reminder, List<String> copyAddresses, MailBundle remindedMailBundle) {
+	private void sendReminderCopiesExtern(Reminder reminder, List<String> copyAddresses, MailBundle remindedMailBundle, CourseReminderTemplate template) {
 		if (copyAddresses != null && !copyAddresses.isEmpty()) {
 			Translator translator = Util.createPackageTranslator(ReminderAdminController.class, I18nModule.getDefaultLocale());
-			MailBundle bundle = createCopyMailBundle(remindedMailBundle, translator);
+			MailBundle bundle = reminder.isEmailCopyOnly()
+					? createCopyOnlyMailBundle(remindedMailBundle, template, null, translator.getLocale())
+					: createCopyMailBundle(remindedMailBundle, translator);
 			for (String copyAddress : copyAddresses) {
 				try {
 					bundle.setTo(copyAddress);
@@ -377,4 +387,12 @@ public class ReminderServiceImpl implements ReminderService {
 		bundle.setContent(copySubject, copyBody);
 		return bundle;
 	}
+	
+	private MailBundle createCopyOnlyMailBundle(MailBundle remindedMailBundle, CourseReminderTemplate template, Identity copyReciever, Locale locale) {
+		template.setToRecipient(remindedMailBundle.getToId());
+		template.setLocale(locale);
+		
+		return mailManager.makeMailBundle(remindedMailBundle.getContext(), copyReciever, template, null, null, new MailerResult());
+	}
+	
 }

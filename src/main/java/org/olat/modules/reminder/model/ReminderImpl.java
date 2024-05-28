@@ -96,6 +96,8 @@ public class ReminderImpl implements Reminder, Persistable {
 	private String emailSubject;
 	@Column(name="r_email_body", nullable=true, insertable=true, updatable=true)
 	private String emailBody;
+	@Column(name="r_email_copy_only", nullable=true, insertable=true, updatable=true)
+	private boolean emailCopyOnly;
 	@Column(name = "r_email_copy", nullable = true, insertable = true, updatable = true)
 	private String emailCopyStr;
 	private transient Set<EmailCopy> emailCopy;
@@ -197,6 +199,16 @@ public class ReminderImpl implements Reminder, Persistable {
 	@Override
 	public void setEmailBody(String emailBody) {
 		this.emailBody = emailBody;
+	}
+
+	@Override
+	public boolean isEmailCopyOnly() {
+		return emailCopyOnly;
+	}
+
+	@Override
+	public void setEmailCopyOnly(boolean emailCopyOnly) {
+		this.emailCopyOnly = emailCopyOnly;
 	}
 
 	@Override

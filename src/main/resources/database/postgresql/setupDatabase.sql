@@ -3329,6 +3329,7 @@ create table o_rem_reminder (
    r_configuration text,
    r_email_subject varchar(255),
    r_email_body text,
+   r_email_copy_only bool default false,
    r_email_copy varchar(32),
    r_email_custom_copy varchar(1024),
    fk_creator int8 not null,

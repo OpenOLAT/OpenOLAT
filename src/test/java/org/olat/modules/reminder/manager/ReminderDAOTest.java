@@ -73,6 +73,7 @@ public class ReminderDAOTest extends OlatTestCase {
 		reminder.setDescription("Reminder - 1");
 		reminder.setEmailSubject("This is a subject");
 		reminder.setEmailBody("Hello world");
+		reminder.setEmailCopyOnly(true);
 		reminder.setEmailCopy(Set.of(EmailCopy.owner, EmailCopy.custom));
 		reminder.setCustomEmailCopy("email@adress");
 
@@ -89,6 +90,7 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertEquals("<rules></rules>", savedReminder.getConfiguration());
 		Assert.assertEquals("This is a subject", savedReminder.getEmailSubject());
 		Assert.assertEquals("Hello world", savedReminder.getEmailBody());
+		Assert.assertTrue(reminder.isEmailCopyOnly());
 		Assert.assertTrue(savedReminder.getEmailCopy().contains(EmailCopy.owner));
 		Assert.assertTrue(savedReminder.getEmailCopy().contains(EmailCopy.custom));
 		Assert.assertEquals("email@adress", savedReminder.getCustomEmailCopy());

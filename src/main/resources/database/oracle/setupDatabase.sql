@@ -3363,6 +3363,7 @@ create table o_rem_reminder (
    r_configuration clob,
    r_email_subject varchar(255),
    r_email_body clob,
+   r_email_copy_only number default 0,
    r_email_copy varchar(32),
    r_email_custom_copy varchar(1024),
    fk_creator number(20) not null,

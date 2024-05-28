@@ -60,3 +60,6 @@ alter table o_media_to_page_part add constraint media_to_page_part_identity_idx 
 create index idx_media_to_page_part_identity_idx on o_media_to_page_part (fk_identity);
 alter table o_media_to_page_part add constraint media_to_page_part_page_part_idx foreign key (fk_page_part) references o_ce_page_part (id);
 create index idx_media_to_page_part_page_part_idx on o_media_to_page_part (fk_page_part);
+
+-- Reminder
+alter table o_rem_reminder add r_email_copy_only bool default false;

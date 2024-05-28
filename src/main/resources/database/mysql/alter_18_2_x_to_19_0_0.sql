@@ -53,3 +53,6 @@ alter table o_media_to_page_part add constraint media_to_page_part_media_idx for
 alter table o_media_to_page_part add constraint media_to_page_part_media_version_idx foreign key (fk_media_version) references o_media_version (id);
 alter table o_media_to_page_part add constraint media_to_page_part_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_media_to_page_part add constraint media_to_page_part_page_part_idx foreign key (fk_page_part) references o_ce_page_part (id);
+
+-- Reminders
+alter table o_rem_reminder add column r_email_copy_only bool default false;

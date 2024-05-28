@@ -56,6 +56,10 @@ public interface Reminder extends CreateInfo, ModifiedInfo {
 
 	public void setEmailBody(String emailBody);
 	
+	public boolean isEmailCopyOnly();
+	
+	public void setEmailCopyOnly(boolean emailCopyOnly);
+	
 	public Set<EmailCopy> getEmailCopy();
 	
 	public void setEmailCopy(Set<EmailCopy> emailCopy);

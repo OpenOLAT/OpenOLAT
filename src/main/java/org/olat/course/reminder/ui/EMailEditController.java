@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -55,9 +56,10 @@ import org.olat.modules.reminder.ui.ReminderAdminController;
  *
  */
 public class EMailEditController extends StepFormBasicController {
-
+	
 	private TextElement subjectEl;
 	private RichTextElement emailEl;
+	private SingleSelection emailCopyOnlyEl;
 	private MultipleSelectionElement emailCopyEl;
 	private FormLayoutContainer customEmailCont;
 	private TextElement customEmailEl;
@@ -97,7 +99,12 @@ public class EMailEditController extends StepFormBasicController {
 		recipientsCont.setRootForm(mainForm);
 		formLayout.add(recipientsCont);
 		
-		uifactory.addStaticTextElement("email.to", translate("email.to.text"), recipientsCont);
+		SelectionValues emailToSV = new SelectionValues();
+		emailToSV.add(entry(Boolean.FALSE.toString(), translate("email.to.rules"), translate("email.to.rules.desc"), null, null, true));
+		emailToSV.add(entry(Boolean.TRUE.toString(), translate("email.to.specific"), translate("email.to.specific.desc"), null, null, true)); 
+		emailCopyOnlyEl = uifactory.addCardSingleSelectHorizontal("email.to", "email.to", recipientsCont, emailToSV);
+		emailCopyOnlyEl.select(Boolean.toString(reminder.isEmailCopyOnly()), true);
+		emailCopyOnlyEl.addActionListener(FormEvent.ONCHANGE);
 		
 		SelectionValues emailCopyKV = new SelectionValues();
 		emailCopyKV.add(entry(EmailCopy.owner.name(), translate("email.copy.owner")));
@@ -121,13 +128,23 @@ public class EMailEditController extends StepFormBasicController {
 	}
 
 	private void updateUI() {
+		boolean emailCopyOnly = emailCopyOnlyEl.isOneSelected() && Boolean.valueOf(emailCopyOnlyEl.getSelectedKey());
+		if (emailCopyOnly) {
+			emailCopyEl.setLabel("email.copy.specific", null);
+			emailCopyEl.setMandatory(true);
+		} else {
+			emailCopyEl.setLabel("email.copy", null);
+		}
+		
 		boolean customEmailVisible = emailCopyEl.getSelectedKeys().contains(EmailCopy.custom.name());
 		customEmailCont.setVisible(customEmailVisible);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == emailCopyEl) {
+		if (source == emailCopyOnlyEl) {
+			updateUI();
+		} else if (source == emailCopyEl) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -146,6 +163,13 @@ public class EMailEditController extends StepFormBasicController {
 		emailEl.clearError();
 		if(!StringHelper.containsNonWhitespace(emailEl.getValue())) {
 			emailEl.setErrorKey("form.mandatory.hover");
+			allOk &= false;
+		}
+		
+		emailCopyEl.clearError();
+		boolean emailCopyOnly = emailCopyOnlyEl.isOneSelected() && Boolean.valueOf(emailCopyOnlyEl.getSelectedKey());
+		if(emailCopyOnly && !emailCopyEl.isAtLeastSelected(1)) {
+			emailCopyEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
@@ -179,6 +203,9 @@ public class EMailEditController extends StepFormBasicController {
 		
 		String emailBody = emailEl.getValue();
 		reminder.setEmailBody(emailBody);
+		
+		boolean emailCopyOnly = emailCopyOnlyEl.isOneSelected() && Boolean.valueOf(emailCopyOnlyEl.getSelectedKey());
+		reminder.setEmailCopyOnly(emailCopyOnly);
 		
 		Set<EmailCopy> emailCopy = new HashSet<>();
 		if (emailCopyEl.isAtLeastSelected(1)) {

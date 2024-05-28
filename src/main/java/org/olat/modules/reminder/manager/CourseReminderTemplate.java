@@ -43,6 +43,8 @@ public class CourseReminderTemplate extends MailTemplate {
 	private static final String FULL_NAME = "fullName";
 	private static final String EMAIL = "email";
 	private static final String USERNAME = "username";
+	private static final String RECIPIENT_FIRST_NAME = "recipientFirstName";
+	private static final String RECIPIENT_LAST_NAME = "recipientLastName";
 	private static final String COURSE_URL = "courseUrl";
 	private static final String COURSE_NAME = "courseName";
 	private static final String COURSE_DESCRIPTION = "courseDescription";
@@ -59,19 +61,22 @@ public class CourseReminderTemplate extends MailTemplate {
 	private static final String COURSE_LOCATION = "courseLocation";
 
 	private static final Collection<String> BODY_VARIABLE_NAMES =
-			List.of(FIRST_NAME, LAST_NAME, FULL_NAME, EMAIL, USERNAME, COURSE_URL, COURSE_NAME, COURSE_DESCRIPTION, COURSE_REFERENCE,
-					COURSE_TEASER, COURSE_OBJECTIVES, COURSE_REQUIREMENTS, COURSE_CERTIFICATION, COURSE_AUTHORS, COURSE_MAIN_LANGUAGE,
-					COURSE_EXPENDITURE_WORK, COURSE_EXECUTION_PERIOD_START, COURSE_EXECUTION_PERIOD_END, COURSE_LOCATION);
+			List.of(FIRST_NAME, LAST_NAME, FULL_NAME, EMAIL, USERNAME, RECIPIENT_FIRST_NAME, RECIPIENT_LAST_NAME,
+					COURSE_URL, COURSE_NAME, COURSE_DESCRIPTION, COURSE_REFERENCE, COURSE_TEASER, COURSE_OBJECTIVES,
+					COURSE_REQUIREMENTS, COURSE_CERTIFICATION, COURSE_AUTHORS, COURSE_MAIN_LANGUAGE,
+					COURSE_EXPENDITURE_WORK, COURSE_EXECUTION_PERIOD_START, COURSE_EXECUTION_PERIOD_END,
+					COURSE_LOCATION);
 	private static final Collection<String> SUBJECT_VARIABLE_NAMES =
 			List.of(COURSE_NAME, COURSE_EXECUTION_PERIOD_START, COURSE_EXECUTION_PERIOD_END, COURSE_AUTHORS, COURSE_LOCATION);
 
 	private final String url;
 	private final RepositoryEntry entry;
-	private final Locale locale;
+	private Locale locale;
 	private final RepositoryEntryLifecycleDAO lifecycleDAO;
+	private Identity toRecipient;
 
 	public CourseReminderTemplate(String subjectTemplate, String bodyTemplate, String url, RepositoryEntry entry,
-								  Locale locale, RepositoryEntryLifecycleDAO lifecycleDAO) {
+			Locale locale, RepositoryEntryLifecycleDAO lifecycleDAO) {
 		super(subjectTemplate, bodyTemplate, null);
 		this.url = url;
 		this.entry = entry;
@@ -87,29 +92,45 @@ public class CourseReminderTemplate extends MailTemplate {
 		return SUBJECT_VARIABLE_NAMES;
 	}
 
+	public void setLocale(Locale locale) {
+		this.locale = locale;
+	}
+
+	public void setToRecipient(Identity toRecipient) {
+		this.toRecipient = toRecipient;
+	}
+
 	@Override
 	public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		BaseSecurityManager securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
 
-		User user = recipient.getUser();
-		String firstName = StringHelper.escapeHtml(user.getFirstName());
-		vContext.put(FIRST_NAME.toLowerCase(), firstName);
-		vContext.put(FIRST_NAME, firstName);
-		String lastName = StringHelper.escapeHtml(user.getLastName());
-		vContext.put(LAST_NAME.toLowerCase(), lastName);
-		vContext.put(LAST_NAME, lastName);
-		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(recipient));
-		vContext.put(FULL_NAME.toLowerCase(), fullName);
-		vContext.put(FULL_NAME, fullName);
-		String email = StringHelper.escapeHtml(userManager.getUserDisplayEmail(user, locale));
-		vContext.put("mail", email);
-		vContext.put(EMAIL, email);
-		String loginName = securityManager.findAuthenticationName(recipient);
-		if (!StringHelper.containsNonWhitespace(loginName)) {
-			loginName = recipient.getName();
+		if (recipient != null) {
+			User user = recipient.getUser();
+			putVariablesInMailContext(vContext, FIRST_NAME, StringHelper.escapeHtml(user.getFirstName()));
+			putVariablesInMailContext(vContext, LAST_NAME, StringHelper.escapeHtml(user.getLastName()));
+			putVariablesInMailContext(vContext, FULL_NAME, StringHelper.escapeHtml(userManager.getUserDisplayName(recipient)));
+			
+			String email = StringHelper.escapeHtml(userManager.getUserDisplayEmail(user, locale));
+			vContext.put("mail", email);
+			vContext.put(EMAIL, email);
+			String loginName = securityManager.findAuthenticationName(recipient);
+			if (!StringHelper.containsNonWhitespace(loginName)) {
+				loginName = recipient.getName();
+			}
+			vContext.put(USERNAME, loginName);
+			
+			if (toRecipient == null) {
+				toRecipient = recipient;
+			}
 		}
-		vContext.put(USERNAME, loginName);
+		
+		if (toRecipient != null) {
+			User toUser = toRecipient.getUser();
+			putVariablesInMailContext(vContext, RECIPIENT_FIRST_NAME, StringHelper.escapeHtml(toUser.getFirstName()));
+			putVariablesInMailContext(vContext, RECIPIENT_LAST_NAME, StringHelper.escapeHtml(toUser.getLastName()));
+		}
+		
 		// Put variables from greater context
 		if (entry != null) {
 			Formatter formatter = Formatter.getInstance(locale);
