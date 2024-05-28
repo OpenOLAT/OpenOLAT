@@ -94,7 +94,7 @@ public class PersonalFileHubLibrariesController extends BasicController implemen
 		
 		List<Link> links = new ArrayList<>(3);
 		links.add(createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media")));
-		if(sharePointModule.isEnabled() && ureq.getUserSession().getOAuth2Tokens() != null) {
+		if(sharePointModule.isEnabled() && sharePointModule.canSharePoint(ureq.getUserSession())) {
 			links.add(createLink(CMD_SHARE_POINT, "o_icon_provider_adfs", translate("browser.storages.share.point")));
 		}
 		mainVC.contextPut("links", links);

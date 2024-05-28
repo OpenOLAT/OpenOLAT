@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity;
 
+
 /**
  * 
  * Initial date: 24 mai 2024<br>
@@ -32,5 +33,9 @@ public interface OAuth2Tokens {
 	public String getRefreshToken();
 	
 	public Integer getExpiresIn();
+	
+	public <U> U getUser(Class<U> cl);
+	
+	public void setUser(Object user);
 
 }

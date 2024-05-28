@@ -233,9 +233,12 @@ public class MicrosoftGraphDAO {
 	
 	public User getMe(OAuth2Tokens oauth2Tokens) {
 		try {
-			User me = client(oauth2Tokens)
+			User me = oauth2Tokens.getUser(User.class);
+			if(me == null) {
+				me = client(oauth2Tokens)
 					.me()
 					.get();
+			}
 			if(me != null) {
 				log.info("Me: {} ({})", me.getGivenName(), me.getId());
 			}

@@ -271,6 +271,11 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 	
 	@Override
 	public User lookupMe(Identity identity, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
+		User oauthUser = oauth2Tokens == null ? null : oauth2Tokens.getUser(User.class);
+		if(oauthUser != null) {
+			return oauthUser;
+		}
+
 		TeamsUser teamsUser = teamsUserDao.getUser(identity);
 		if(teamsUser != null) {
 			User user = new User();

@@ -38,6 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.apis.MicrosoftAzureActiveDirectory20Api;
 import com.github.scribejava.apis.microsoftazureactivedirectory.BaseMicrosoftAzureActiveDirectoryApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
@@ -48,6 +51,7 @@ import com.github.scribejava.core.model.Token;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.github.scribejava.core.oauth.OAuthService;
+import com.microsoft.graph.models.User;
 
 /**
  * 
@@ -61,6 +65,11 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	private static final Logger log = Tracing.createLoggerFor(MicrosoftAzureADFSProvider.class);
 	
 	public static final String PROVIDER = "AZUREAD";
+	
+	private static final ObjectMapper mapper = new ObjectMapper();
+	static {
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	}
 
 	@Value("${azure.adfs.attributename.useridentifyer:userPrincipalName}")
 	private String idAttributeName;
@@ -200,6 +209,11 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			user.setDepartment(getValue(obj, departmentAttributeName, user.getDepartment()));
 			user.setCountry(getValue(obj, countryAttributeName, user.getCountry()));
 			log.debug("User infos (graph): {}", obj);
+			
+			if(user.getOAuth2Tokens() != null) {
+				User mUser = parseUser(body);
+				user.getOAuth2Tokens().setUser(mUser);
+			}
 		} catch (JSONException | InterruptedException | ExecutionException | IOException e) {
 			log.error("", e);
 		}
@@ -216,5 +230,14 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	@Override
 	public String getIssuerIdentifier() {
 		return "https://login.microsoftonline.com";
+	}
+	
+	protected static User parseUser(String json) {
+		try {
+			return mapper.readValue(json, User.class);
+		} catch (JsonProcessingException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 }

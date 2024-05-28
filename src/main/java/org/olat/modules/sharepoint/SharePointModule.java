@@ -25,10 +25,13 @@ import java.util.List;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.microsoft.graph.models.User;
 
 /**
  * 
@@ -80,6 +83,13 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setBooleanProperty(PROP_ENABLED, enabled, true);
+	}
+	
+	public boolean canSharePoint(UserSession usess) {
+		if(isEnabled()) {
+			return usess != null && usess.getOAuth2Tokens() != null && usess.getOAuth2Tokens().getUser(User.class) != null;
+		}
+		return false;
 	}
 
 	public List<String> getExcludeSitesAndDrives() {

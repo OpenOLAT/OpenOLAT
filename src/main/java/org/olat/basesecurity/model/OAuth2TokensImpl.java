@@ -34,6 +34,7 @@ public class OAuth2TokensImpl implements OAuth2Tokens {
 	private String accessToken;
 	private String refreshToken;
 	private Integer expiresIn;
+	private Object user;
 	
 	public static OAuth2Tokens valueOf(OAuth2AccessToken oauth2AccessToken) {
 		OAuth2TokensImpl tokens = new OAuth2TokensImpl();
@@ -73,5 +74,19 @@ public class OAuth2TokensImpl implements OAuth2Tokens {
 	public void refresh(OAuth2AccessToken oauth2AccessToken) {
 		this.accessToken = oauth2AccessToken.getAccessToken();
 		this.expiresIn = oauth2AccessToken.getExpiresIn();
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <U> U getUser(Class<U> cl) {
+		if(user != null && user.getClass().isAssignableFrom(cl)) {
+			return (U)user;
+		}
+		return null;
+	}
+
+	@Override
+	public void setUser(Object user) {
+		this.user = user;
 	}
 }

@@ -49,6 +49,7 @@ public class OAuthUser {
 	private String country;
 	private String lang;
 	
+	
 	private OAuth2Tokens oauth2Tokens;
 	private List<String> authenticationExternalIds;
 	

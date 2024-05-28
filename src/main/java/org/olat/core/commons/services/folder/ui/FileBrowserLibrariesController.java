@@ -78,7 +78,7 @@ public class FileBrowserLibrariesController extends BasicController {
 		
 		List<Link> links = new ArrayList<>();
 		links.add(createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media")));
-		if(sharePointModule.isEnabled()) {
+		if(sharePointModule.isEnabled() && sharePointModule.canSharePoint(ureq.getUserSession())) {
 			links.add(createLink(CMD_SHARE_POINT, "o_icon_provider_adfs", translate("browser.storages.share.point")));
 		}
 		mainVC.contextPut("links", links);
