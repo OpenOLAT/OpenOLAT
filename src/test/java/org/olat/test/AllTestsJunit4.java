@@ -430,6 +430,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.reminder.manager.ReminderDAOTest.class,
 	org.olat.modules.reminder.manager.ReminderRuleEngineTest.class,
 	org.olat.modules.reminder.manager.ReminderRulesXStreamTest.class,
+	org.olat.modules.reminder.rule.RepositoryEntryStatusRuleSPITest.class,
 	org.olat.modules.taxonomy.manager.TaxonomyDAOTest.class,
 	org.olat.modules.taxonomy.manager.TaxonomyLevelDAOTest.class,
 	org.olat.modules.taxonomy.manager.TaxonomyLevelTypeDAOTest.class,

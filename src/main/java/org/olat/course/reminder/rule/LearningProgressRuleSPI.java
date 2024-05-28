@@ -58,7 +58,7 @@ public class LearningProgressRuleSPI implements FilterRuleSPI {
 	
 	@Override
 	public int getSortValue() {
-		return 6;
+		return 8;
 	}
 	
 	@Override

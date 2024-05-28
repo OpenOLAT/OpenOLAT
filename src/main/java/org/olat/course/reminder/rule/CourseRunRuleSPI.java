@@ -53,7 +53,7 @@ public class CourseRunRuleSPI implements FilterRuleSPI {
 	
 	@Override
 	public int getSortValue() {
-		return 6;
+		return 7;
 	}
 	
 	@Override

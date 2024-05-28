@@ -55,7 +55,7 @@ public class RepositoryEntryLifecycleAfterValidFromRuleSPI implements Repository
 	
 	@Override
 	public int getSortValue() {
-		return 2;
+		return 3;
 	}
 	
 	@Override

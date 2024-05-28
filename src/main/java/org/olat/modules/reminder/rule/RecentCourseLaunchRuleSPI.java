@@ -55,7 +55,7 @@ public class RecentCourseLaunchRuleSPI extends AbstractLaunchDateRuleSPI {
 	
 	@Override
 	public int getSortValue() {
-		return 5;
+		return 6;
 	}
 	
 	@Override
