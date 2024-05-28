@@ -50,7 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -267,7 +267,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(FILTER_ASSESSABLE, translate("filter.assessable")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.assessable"),
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.assessable"),
 				FILTER_ASSESSABLE, statusValues, true));
 
 		tableEl.setFilters(true, filters, false, false);

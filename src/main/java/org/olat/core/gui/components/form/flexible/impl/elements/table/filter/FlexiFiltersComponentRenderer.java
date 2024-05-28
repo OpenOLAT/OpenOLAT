@@ -59,7 +59,7 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 			  .append("<ul class='nav nav-pills o_table_filters'>");
 			List<FlexiFilterButton> filterButtons = ffE.getFiltersButtons();
 			for(FlexiFilterButton filterButton:filterButtons) {
-				renderFormItem(renderer, sb, filterButton.getButton(), "", args);
+				renderFormItem(renderer, sb, filterButton.getButtonItem(), "", args);
 			}
 			if (!alwaysOn) {
 				FormLink addLink = ffE.getAddFiltersButton();

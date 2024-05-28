@@ -322,6 +322,18 @@ table.table.o_table_nowrap>tbody>tr>td {
 					@include button-variant($o-table-filter-active-color, $o-table-filter-active-bg, $o-table-filter-active-border);
 				}
 			}
+			
+			>li>fieldset {
+				margin: 0 1px 0 0;
+				border: 1px solid transparent;
+				border-radius: $btn-border-radius-base;
+				@include button-variant($o-table-filter-color, $o-table-filter-bg, $o-table-filter-border);
+				
+				.checkbox {
+					padding: 6px 12px;
+					margin: 0;
+				}
+			}
 		}
 		>ul.o_table_filters_config {
 			margin-left: 1em;

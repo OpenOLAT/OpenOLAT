@@ -58,6 +58,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
@@ -376,13 +377,13 @@ public class RepositoryEntryListController extends FormBasicController
 		// bookmarked
 		SelectionValues markedKeyValue = new SelectionValues();
 		markedKeyValue.add(SelectionValues.entry("marked", translate("search.mark")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("search.mark"),
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("search.mark"),
 				FilterButton.MARKED.name(), markedKeyValue, true));
 		
 		// my resources
 		SelectionValues myResourcesKeyValue = new SelectionValues();
 		myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.owned.resources.only"),
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("cif.owned.resources.only"),
 				FilterButton.OWNED.name(), myResourcesKeyValue, true));
 
 		SelectionValues coursesValues = new SelectionValues();

@@ -83,6 +83,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
@@ -161,8 +162,8 @@ import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -709,13 +710,13 @@ public class AuthorListController extends FormBasicController implements Activat
 		// bookmarked
 		SelectionValues markedKeyValue = new SelectionValues();
 		markedKeyValue.add(SelectionValues.entry("marked", translate("search.mark")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("search.mark"),
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("search.mark"),
 				AuthorSourceFilter.MARKED.name(), markedKeyValue, true));
 		
 		// my resources
 		SelectionValues myResourcesKeyValue = new SelectionValues();
 		myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.owned.resources.only"),
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("cif.owned.resources.only"),
 				AuthorSourceFilter.OWNED.name(), myResourcesKeyValue, true));
 		
 		// author

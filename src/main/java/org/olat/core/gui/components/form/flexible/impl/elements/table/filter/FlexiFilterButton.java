@@ -19,8 +19,10 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -30,15 +32,15 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
  */
 public class FlexiFilterButton {
 	
-	private final FormLink button;
+	private final FormItem formItem;
 	private final FlexiTableExtendedFilter filter;
 	
 	private boolean enabled;
 	private boolean changed = false;
 	private boolean implicit = false;
 	
-	public FlexiFilterButton(FormLink button, FlexiTableExtendedFilter filter, boolean enabled) {
-		this.button = button;
+	public FlexiFilterButton(FormItem formItem, FlexiTableExtendedFilter filter, boolean enabled) {
+		this.formItem = formItem;
 		this.filter = filter;
 		this.enabled = enabled;
 	}
@@ -60,7 +62,11 @@ public class FlexiFilterButton {
 	 */
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
-		button.setVisible(enabled && !implicit);
+		formItem.setVisible(enabled && !implicit);
+	}
+	
+	public void setVisible(boolean visible) {
+		formItem.setVisible(visible);
 	}
 
 	public boolean isImplicit() {
@@ -69,15 +75,32 @@ public class FlexiFilterButton {
 
 	public void setImplicit(boolean implicit) {
 		this.implicit = implicit;
-		button.setVisible(enabled && !implicit);
+		formItem.setVisible(enabled && !implicit);
 	}
 
-	public FormLink getButton() {
-		return button;
+	public FormItem getButtonItem() {
+		return formItem;
 	}
 
 	public FlexiTableExtendedFilter getFilter() {
 		return filter;
+	}
+	
+	public void setDisplayText(String text, String title) {
+		if(formItem instanceof FormLink buttonLink) {
+			buttonLink.getComponent().setCustomDisplayText(text);
+			if(StringHelper.containsNonWhitespace(title)) {
+				buttonLink.getComponent().setTitle(title);
+			}
+		}
+	}
+	
+	public void setElementCssClass(String cssClass) {
+		if(formItem instanceof FormLink buttonLink) {
+			buttonLink.getComponent().setElementCssClass(cssClass);
+		} else {
+			formItem.setElementCssClass(cssClass);
+		}
 	}
 
 	@Override

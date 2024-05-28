@@ -35,9 +35,11 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
@@ -236,7 +238,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	public List<FlexiFilterButton> getFiltersButtons() {
 		for(FlexiFilterButton filterButton:filterButtons) {
 			boolean visible = filterButton.isEnabled() && !filterButton.isImplicit();
-			filterButton.getButton().setVisible(visible);
+			filterButton.getButtonItem().setVisible(visible);
 		}
 		return filterButtons;
 	}
@@ -365,15 +367,24 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			label = title = filter.getLabel();
 		}
 		
-		FormLink button = new FormLinkImpl(id, id, label, Link.BUTTON | Link.NONTRANSLATED);
-		button.setDomReplacementWrapperRequired(false);
-		button.setTranslator(translator);
-		button.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
-		button.setVisible(enabled);
-		button.setTitle(title);
-		components.put(id, button);
-		rootFormAvailable(button);
-		FlexiFilterButton filterButton = new FlexiFilterButton(button, filter, enabled);
+		FormItem buttonItem;
+		if(filter instanceof FlexiTableFilterItem filterItem) {
+			buttonItem = filterItem.getButtonFormItem(id);
+			buttonItem.addActionListener(FormEvent.ONCHANGE);
+		} else {
+			FormLink button = new FormLinkImpl(id, id, label, Link.BUTTON | Link.NONTRANSLATED);
+			button.setDomReplacementWrapperRequired(false);
+			button.setTranslator(translator);
+			button.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
+			button.setVisible(enabled);
+			button.setTitle(title);
+			buttonItem = button;
+		}
+
+		components.put(id, buttonItem);
+		rootFormAvailable(buttonItem);
+		
+		FlexiFilterButton filterButton = new FlexiFilterButton(buttonItem, filter, enabled);
 		setFilterButtonCssClass(filterButton, filter.isSelected());
 		return filterButton;
 	}
@@ -403,9 +414,12 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			doDeleteFilter(ureq);
 		} else {
 			for(FlexiFilterButton filterButton:filterButtons) {
-				if(filterButton.getButton().getFormDispatchId().equals(dispatchuri)) {
-					
-					doOpenFilter(ureq, filterButton.getButton(), filterButton.getFilter());
+				if(filterButton.getButtonItem().getFormDispatchId().equals(dispatchuri)) {
+					if(filterButton.getButtonItem() instanceof FormLink button) {
+						doOpenFilter(ureq, button, filterButton.getFilter());
+					} else {
+						doFilter(ureq, filterButton.getButtonItem(), filterButton.getFilter());
+					}
 				}
 			}
 		}
@@ -413,10 +427,9 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
-		if(source instanceof Choice) {
+		if(source instanceof Choice colsChoice) {
 			if(Choice.EVNT_VALIDATION_OK.equals(event)) {
-				Choice visibleColsChoice = (Choice)source;
-				setCustomizedFilters(visibleColsChoice);
+				setCustomizedFilters(colsChoice);
 			} else if(Choice.EVNT_FORM_RESETED.equals(event)) {
 				resetCustomizedFilters();
 			}
@@ -545,7 +558,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			
 			if(resetFilter) {
 				filter.reset();
-				filterButton.getButton().getComponent().setCustomDisplayText(filter.getLabel());
+				filterButton.setDisplayText(filter.getLabel(), filter.getLabel());
 				setFilterButtonCssClass(filterButton, filter.isSelected());
 			} else if(filter.isSelected()) {
 				filterButton.setChanged(true);
@@ -563,6 +576,12 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 				button.getFormDispatchId(), "", true, "", new CalloutSettings(false, CalloutOrientation.bottom, true, null));
 		filtersCallout.addControllerListener(this);
 		filtersCallout.activate();
+	}
+
+	private void doFilter(UserRequest ureq, FormItem button, FlexiTableExtendedFilter filter) {
+		// Make sure the request is evaluated first
+		button.evalFormRequest(ureq);
+		doApplyFilterValue(ureq, filter, filter.getValue());
 	}
 	
 	private void doApplyFilterValue(UserRequest ureq, FlexiTableExtendedFilter filter, Object value) {
@@ -585,16 +604,15 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		} else {
 			label = title = filter.getLabel();
 		}
-		filterButton.getButton().getComponent().setCustomDisplayText(label);
-		filterButton.getButton().getComponent().setTitle(title);
+		filterButton.setDisplayText(label, title);
 		setFilterButtonCssClass(filterButton, filter.isSelected());
 	}
 	
 	private void setFilterButtonCssClass(FlexiFilterButton filterButton, boolean active) {
 		if(active) {
-			filterButton.getButton().getComponent().setElementCssClass("o_table_filter o_filter_active");
+			filterButton.setElementCssClass("o_table_filter o_filter_active");
 		} else {
-			filterButton.getButton().getComponent().setElementCssClass("o_table_filter");	
+			filterButton.setElementCssClass("o_table_filter");	
 		}
 	}
 	
@@ -657,10 +675,9 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			FlexiTableExtendedFilter filter = filterButton.getFilter();
 			filter.reset();
 			String label = filter.getLabel();
-			filterButton.getButton().setI18nKey(label);
-			filterButton.getButton().setTitle(label);
+			filterButton.setDisplayText(label, label);
 			filterButton.setEnabled(filter.isDefaultVisible());
-			filterButton.getButton().setVisible(filterButton.isEnabled());
+			filterButton.setVisible(filterButton.isEnabled());
 			filterButton.setChanged(false);
 			setFilterButtonCssClass(filterButton, filter.isSelected());
 		}
