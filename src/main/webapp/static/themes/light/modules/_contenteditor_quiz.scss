@@ -154,8 +154,15 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 				}
 			}
 
-			.o_assessmentitem_wrapper .o_qti_item_body {
-				background-color: unset;
+			.o_assessmentitem_wrapper {
+				display: flex;
+				flex-direction: column;
+				min-height: 180px;
+
+				.o_qti_item_body {
+					background-color: unset;
+					min-height: unset;
+				}
 			}
 
 			.choiceInteraction {
@@ -369,7 +376,9 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 					margin-top: 20px;
 				}
 
-				.modalFeedback {
+				.modalFeedback.o_togglebox_wrapper {
+					margin-top: 20px;
+
 					h4 {
 						border: unset;
 						font-size: unset;
@@ -386,9 +395,12 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 			.o_button_group.o_assessmentitem_controls {
 				background: unset;
 				border: unset;
-				margin: unset;
+				margin-top: auto;
+				margin-right: unset;
+				margin-bottom: unset;
+				margin-left: unset;
 				padding: unset;
-				padding-top: 16px;
+				padding-top: 20px;
 			}
 
 			.o_assessmentitem_controls .o_sel_show_solution span::before {
@@ -405,8 +417,8 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
-		width: 70%;
-		max-height: 90%;
+		width: 75%;
+		max-height: 98%;
 		overflow-y: auto;
 
 		.o_quiz_title {
@@ -427,6 +439,13 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 			a {
 				padding-left: 8px;
 			}
+		}
+	}
+
+	@media (max-width: $screen-xs-max) {
+		.o_quiz_panel {
+			padding: 5px 5px 10px 5px;
+			width: 90%;
 		}
 	}
 }
