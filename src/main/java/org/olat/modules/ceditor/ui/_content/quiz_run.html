@@ -1,11 +1,11 @@
-<div id="$r.getCId()" class="o_page_run_quiz $blockLayoutClass">
+<div id="$r.getCId()" class="o_page_run_quiz $blockLayoutClass" role="application" title="$r.translate('add.quiz')">
   #if($state == "intro")
 	#if($r.available("image"))
 	<div class="o_background_image_wrapper">
 		$r.render("image")
 	#else
 	<div class="o_background_placeholder">
-		<img src='$r.staticLink("/images/media/transparent_16_9.png")' />
+		<img src='$r.staticLink("/images/media/transparent_16_9.png")' alt="$r.translate('background.image')"/>
 	#end
 		<div class="o_quiz_panel">
 			<div class="o_quiz_title">$r.escapeHtml($title)</div>

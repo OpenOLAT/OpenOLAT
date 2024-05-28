@@ -171,6 +171,8 @@ public class QuizRunController extends BasicController implements PageRunElement
 		startButton.setIconLeftCSS("o_icon o_icon-fw o_icon_play");
 		startButton.setPrimary(true);
 		startButton.setEnabled(!editable);
+		startButton.setTitle("quiz.start");
+		startButton.setAriaLabel("quiz.start");
 		mainVC.put("quiz.start", startButton);
 	}
 
@@ -214,6 +216,8 @@ public class QuizRunController extends BasicController implements PageRunElement
 		retryButton = LinkFactory.createButton("quiz.retry", mainVC, this);
 		retryButton.setIconLeftCSS("o_icon o_icon-fw o_icon_retry");
 		retryButton.setPrimary(true);
+		retryButton.setTitle("quiz.retry");
+		retryButton.setAriaLabel("quiz.retry");
 		updateProgressBar();
 		progressBar.setActual(getNumberOfPassedQuestions());
 		
@@ -255,6 +259,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 			if (changePartEvent.getElement() instanceof QuizPart updatedQuizPart) {
 				quizPart = updatedQuizPart;
 				setBlockLayoutClass(quizPart.getSettings());
+				reset();
 				updateUI(ureq);
 			}
 		} else if (assessmentItemDisplayController == source) {

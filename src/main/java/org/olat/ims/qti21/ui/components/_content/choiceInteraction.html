@@ -76,6 +76,7 @@
 
 			#set($isRight = ($r.classContains($interaction,"choiceright")))
 			<div id="oo_$r.toString($simpleChoice.identifier)_choice"
+				 tabindex="0"
 				 class="form-group o_qti_item_choice_option_flow #if($selected) o_selected $answerCorrectnessClass#end #if($isRight) o_input_right #end">
 				<div #if($single) class="radio" #else class="check" #end>
 					#if(!$disabled)
@@ -185,6 +186,7 @@
 
 				#set($isRight = ($r.classContains($interaction,"choiceright")))
 				<tr id="oo_$r.toString($simpleChoice.identifier)_choice"
+					tabindex="0"
 					class="choiceinteraction #if($selected) o_selected $answerCorrectnessClass#end #if($isRight) o_input_right #end">
 					#set($disabled = ($r.isItemSessionEnded() || $isShowPageModeSolution))
 					#if($r.classContains($interaction,"choiceright"))
@@ -264,23 +266,44 @@
 #if($isPageMode && !$isResponded)
 <script>
 	"use strict";
+	function keyPressHandler(event) {
+		if (event.which === 32 || event.keyCode === 32) {
+			event.preventDefault();
+			var checkbox = jQuery(this).find('input[type=checkbox]');
+			if (checkbox.length > 0) {
+				var checked = checkbox.prop('checked');
+				checkbox.prop('checked', !checked).trigger('change');
+			}
+			var radio = jQuery(this).find('input[type=radio]');
+			if (radio.length > 0) {
+				radio.attr('checked', true).trigger('change');
+			}
+		}
+	}
+
 	jQuery(function() {
+		jQuery('tr.choiceinteraction').keypress(keyPressHandler); /* horizontal */
+		jQuery('div.o_qti_item_choice_option_flow').keypress(keyPressHandler); /* vertical */
+		/* vertical single choice */
 		jQuery('td.control > input[type=radio]').change(function() {
 			jQuery('tr.choiceinteraction').removeClass('o_selected'); // unselect all
 			jQuery(`#${this.id}_choice`).addClass('o_selected'); // select the one that was clicked / changed
 			jQuery('tr.choiceinteraction i.o_icon_quiz_single_choice_on').addClass('o_icon_quiz_single_choice_off').removeClass('o_icon_quiz_single_choice_on'); // uncheck all checked
 			jQuery(`#${this.id}_choice i.o_icon_quiz_single_choice_off`).addClass('o_icon_quiz_single_choice_on').removeClass('o_icon_quiz_single_choice_off'); // check the one that was clicked / changed
 		});
+		/* vertical multiple choice */
 		jQuery('td.control > input[type=checkbox]').change(function() {
 			jQuery(`#${this.id}_choice`).toggleClass('o_selected'); // toggle selection of the one that was clicked / changed
 			jQuery(`#${this.id}_choice i`).toggleClass('o_icon_quiz_multiple_choice_on').toggleClass('o_icon_quiz_multiple_choice_off'); // toggle checked state of the one that was clicked / changed
 		});
+		/* horizontal single choice */
 		jQuery('div.o_qti_item_choice_option_flow input[type=radio]').change(function() {
 			jQuery('.o_qti_item_choice_option_flow').removeClass('o_selected'); // unselect all
 			jQuery(`#${this.id}_choice`).addClass('o_selected'); // select the one that was clicked / changed
 			jQuery('.o_qti_item_choice_option_flow i.o_icon_quiz_single_choice_on').addClass('o_icon_quiz_single_choice_off').removeClass('o_icon_quiz_single_choice_on'); // uncheck all checked
 			jQuery(`#${this.id}_choice i.o_icon_quiz_single_choice_off`).addClass('o_icon_quiz_single_choice_on').removeClass('o_icon_quiz_single_choice_off'); // check the one that was clicked / changed
 		});
+		/* horizontal multiple choice */
 		jQuery('div.o_qti_item_choice_option_flow input[type=checkbox]').change(function() {
 			jQuery(`#${this.id}_choice`).toggleClass('o_selected'); // toggle selection of the one that was clicked / changed
 			jQuery(`#${this.id}_choice i`).toggleClass('o_icon_quiz_multiple_choice_on').toggleClass('o_icon_quiz_multiple_choice_off'); // toggle checked state of the one that was clicked / changed
