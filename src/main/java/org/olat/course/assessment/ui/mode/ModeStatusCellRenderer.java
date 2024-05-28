@@ -77,7 +77,7 @@ public class ModeStatusCellRenderer implements FlexiCellRenderer {
 
 	public void renderStatus(Status status, EndStatus endStatus, StringOutput sb) {
 		String title = helper.getStatusLabel(status);
-		String statusClass = "o_qti_assessment_mode o_mode_label o_assessment_status_" + status.name();
+		String statusClass = "o_labeled o_qti_assessment_mode o_assessment_status_" + status.name();
 		sb.append("<span class='").append(statusClass).append("'").append("title='").append(title).append("'><i class='o_icon o_icon-fw ").append(status.cssClass()).append("'> </i> ")
 				.append("<span>").append(title).append("</span>")
 				.append(" <i class='o_icon o_icon_disadvantage_compensation'> </i>", EndStatus.withoutDisadvantage == endStatus)

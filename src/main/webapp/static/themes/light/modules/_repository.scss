@@ -312,8 +312,6 @@ a.o_repo_tools_status {
 /* Status full style, e.g. in toolbar */
 .o_labeled,
 .o_toolbar .o_tools_container a.o_labeled {
-	font-weight: bold;
-	
 	&.o_repo_status_preparation {
 	    background-color: $o-repo-preparation-color;
 	    border-color: $o-repo-preparation-color;

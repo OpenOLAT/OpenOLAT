@@ -86,7 +86,7 @@ import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * Initial date: 12.12.2014<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
@@ -98,7 +98,7 @@ public class AssessmentModeListController extends FormBasicController implements
 	private FlexiTableElement tableEl;
 	private AssessmentModeListModel model;
 	private final TooledStackedPanel toolbarPanel;
-	
+
 	private Controller editCtrl;
 	private CloseableModalController cmc;
 	private ToolsController toolsCtrl;
@@ -106,15 +106,15 @@ public class AssessmentModeListController extends FormBasicController implements
 	private DialogBoxController deleteDialogBox;
 	private ConfirmStopAssessmentModeController stopCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	
+
 	private final RepositoryEntry entry;
 	private final AssessmentModeSecurityCallback secCallback;
-	
+
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
-	
+
 	public AssessmentModeListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry entry, AssessmentModeSecurityCallback secCallback) {
 		super(ureq, wControl, "mode_list");
@@ -122,15 +122,15 @@ public class AssessmentModeListController extends FormBasicController implements
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		toolbarPanel.addListener(this);
-		
+
 		initForm(ureq);
 		loadModel();
 		initFiltersPresets(ureq);
-		
+
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
-	
+
 	@Override
 	protected void doDispose() {
 		toolbarPanel.removeListener(this);
@@ -147,11 +147,11 @@ public class AssessmentModeListController extends FormBasicController implements
 			addLink = uifactory.addFormLink("add", "add", "add.mode", null, formLayout, Link.BUTTON);
 			addLink.setElementCssClass("o_sel_assessment_mode_add");
 			addLink.setIconLeftCSS("o_icon o_icon_add");
-			
+
 			deleteLink = uifactory.addFormLink("delete", "delete", "delete.mode", null, formLayout, Link.BUTTON);
 			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
 		}
-		
+
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new ModeStatusCellRenderer(getTranslator())));
@@ -162,29 +162,29 @@ public class AssessmentModeListController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.leadTime, new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.followupTime, new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target, new TargetAudienceCellRenderer(getTranslator())));
-		
+
 		if(secCallback.canStartStopAssessment()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("start.exam", Cols.start.ordinal(), "start",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start", "btn btn-default btn-sm", "o_icon o_icon-fw o_icon_status_in_progress"), null)));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("stop.exam", Cols.stop.ordinal(), "stop",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("finish"), "stop","btn btn-default btn-sm", "o_icon o_icon-fw o_as_mode_stop"), null)));
 		}
-		
+
 		DefaultFlexiColumnModel configSebCol = new DefaultFlexiColumnModel("table.header.config.seb", Cols.configSeb.ordinal(), "configSeb",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer("", "configSeb", null, "o_icon-fw o_icon_download", translate("table.header.config.seb.hint")), null));
 		configSebCol.setHeaderTooltip(translate("table.header.config.seb.hint"));
 		configSebCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(configSebCol);
-		
+
 		if(secCallback.canEditAssessmentMode()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.actions", Cols.toolsLink.ordinal(), "copy",
 					new ToolsCellRenderer("table.header.actions", "copy")));
 		}
-		
+
 		model = new AssessmentModeListModel(columnsModel, getTranslator(), assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
-		
+
 		tableEl.setMultiSelect(canEditAssessmentMode);
 		tableEl.setSelectAllEnable(canEditAssessmentMode);
 		tableEl.setSearchEnabled(true);
@@ -196,11 +196,13 @@ public class AssessmentModeListController extends FormBasicController implements
 
 		initFiltersPresets(ureq);
 	}
-	
+
 	private void loadModel() {
 		List<AssessmentMode> modes = new ArrayList<>(assessmentModeMgr.getAssessmentModeFor(entry));
 		// remove filtered assessment modes
-		modes.removeIf(mode -> isExcludedByStatusFilter(mode.getStatus()) || isExcludedBySearchString(mode));
+		modes.removeIf(mode ->
+				isExcludedByStatusFilter(mode.getStatus())
+						|| isExcludedBySearchString(mode));
 
 		model.setObjects(modes);
 		tableEl.reloadData();
@@ -213,8 +215,21 @@ public class AssessmentModeListController extends FormBasicController implements
 		return StringHelper.containsNonWhitespace(tableEl.getQuickSearchString()) && !mode.getName().toLowerCase().contains(tableEl.getQuickSearchString().toLowerCase());
 	}
 
+	/**
+	 * Filter if:
+	 * Relevant is selected -> show everything except modes with status end
+	 * All is selected -> show all
+	 * Specific modeStatus is selected -> show only modes with selected modeStatus
+	 * @param modeStatus
+	 * @return
+	 */
 	private boolean isExcludedByStatusFilter(Status modeStatus) {
-		return tableEl.getSelectedFilterTab() != null && !tableEl.getSelectedFilterTab().getId().equals("all") && !tableEl.getSelectedFilterTab().getId().equals(modeStatus.name());
+		return (tableEl.getSelectedFilterTab() != null &&
+				tableEl.getSelectedFilterTab().getId().equals("relevant") && modeStatus.equals(Status.end))
+				|| (tableEl.getSelectedFilterTab() != null
+				&& !tableEl.getSelectedFilterTab().getId().equals("all")
+				&& !tableEl.getSelectedFilterTab().getId().equals("relevant")
+				&& !tableEl.getSelectedFilterTab().getId().equals(modeStatus.name()));
 	}
 
 	@Override
@@ -262,7 +277,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
@@ -350,10 +365,10 @@ public class AssessmentModeListController extends FormBasicController implements
 	private void initFiltersPresets(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
-		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithFilters("all", translate("all"),
+		FlexiFiltersTab relevantTab = FlexiFiltersTabFactory.tabWithFilters("relevant", translate("table.filter.relevant"),
 				TabSelectionBehavior.clear, List.of());
-		allTab.setFiltersExpanded(true);
-		tabs.add(allTab);
+		relevantTab.setFiltersExpanded(true);
+		tabs.add(relevantTab);
 
 		for (Status modeStatus : getAllModeStatus()) {
 			AssessmentModeHelper helper = new AssessmentModeHelper(getTranslator());
@@ -362,8 +377,13 @@ public class AssessmentModeListController extends FormBasicController implements
 			tabs.add(filterStatus);
 		}
 
+		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithFilters("all", translate("all"),
+				TabSelectionBehavior.clear, List.of());
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, allTab);
+		tableEl.setSelectedFilterTab(ureq, relevantTab);
 	}
 
 	private void doAdd(UserRequest ureq) {
@@ -373,22 +393,22 @@ public class AssessmentModeListController extends FormBasicController implements
 		listenTo(editCtrl);
 		toolbarPanel.pushController(translate("new.mode"), editCtrl);
 	}
-	
+
 	private void doConfirmDelete(UserRequest ureq, List<AssessmentMode> modeToDelete) {
 		StringBuilder sb = new StringBuilder();
 		boolean canDelete = true;
 		for(AssessmentMode mode:modeToDelete) {
 			if(mode == null) continue;
-			
+
 			if(StringHelper.containsNonWhitespace(sb.toString())) sb.append(", ");
 			sb.append(mode.getName());
-			
+
 			Status status = mode.getStatus();
 			if(status == Status.leadtime || status == Status.assessment || status == Status.followup) {
 				canDelete = false;
 			}
 		}
-		
+
 		if(canDelete) {
 			String names = StringHelper.escapeHtml(sb.toString());
 			String title = translate("confirm.delete.title");
@@ -399,7 +419,7 @@ public class AssessmentModeListController extends FormBasicController implements
 			showWarning("error.in.assessment");
 		}
 	}
-	
+
 	private void doDelete(List<AssessmentMode> modesToDelete) {
 		for(AssessmentMode modeToDelete:modesToDelete) {
 			assessmentModeMgr.delete(modeToDelete);
@@ -407,12 +427,12 @@ public class AssessmentModeListController extends FormBasicController implements
 		loadModel();
 		tableEl.deselectAll();
 	}
-	
+
 	private void doCopy(UserRequest ureq, AssessmentMode mode) {
 		AssessmentMode modeToCopy = assessmentModeMgr.getAssessmentModeById(mode.getKey());
 		AssessmentMode newMode = assessmentModeMgr.createAssessmentMode(modeToCopy);
 		newMode.setName(translate("copy.name", modeToCopy.getName()));
-		
+
 		AssessmentModeEditController modeEditCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, newMode);
 		Set<AssessmentModeToGroup> assessmentModeToGroups = modeToCopy.getGroups();
 		if(assessmentModeToGroups != null) {
@@ -421,7 +441,7 @@ public class AssessmentModeListController extends FormBasicController implements
 					.collect(Collectors.toSet());
 			modeEditCtrl.setBusinessGroups(businessGroups);
 		}
-		
+
 		Set<AssessmentModeToArea> assessmentModeToAreas = modeToCopy.getAreas();
 		if(assessmentModeToAreas != null) {
 			Set<BGArea> areas = assessmentModeToAreas.stream()
@@ -429,7 +449,7 @@ public class AssessmentModeListController extends FormBasicController implements
 					.collect(Collectors.toSet());
 			modeEditCtrl.setAreas(areas);
 		}
-		
+
 		Set<AssessmentModeToCurriculumElement> assessmentModeToCurriculums = modeToCopy.getCurriculumElements();
 		if(assessmentModeToCurriculums != null) {
 			Set<CurriculumElement> curriculumElements = assessmentModeToCurriculums.stream()
@@ -437,16 +457,16 @@ public class AssessmentModeListController extends FormBasicController implements
 					.collect(Collectors.toSet());
 			modeEditCtrl.setCurriculumElements(curriculumElements);
 		}
-		
+
 		listenTo(modeEditCtrl);
 		toolbarPanel.pushController(newMode.getName(), modeEditCtrl);
-		
+
 		editCtrl = modeEditCtrl;
 	}
-	
+
 	private void doEdit(UserRequest ureq, AssessmentMode mode) {
 		removeAsListenerAndDispose(editCtrl);
-		
+
 		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
 		if(reloadedMode == null) {
 			showWarning("warning.assessment.mode.already.deleted");
@@ -458,11 +478,11 @@ public class AssessmentModeListController extends FormBasicController implements
 			editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, mode);
 		}
 		listenTo(editCtrl);
-		
+
 		String title = translate("form.mode.title", mode.getName());
 		toolbarPanel.pushController(title, editCtrl);
 	}
-	
+
 	private void doConfirmStart(UserRequest ureq, AssessmentMode mode) {
 		String title = translate("confirm.start.title");
 		String text = translate("confirm.start.text");
@@ -477,10 +497,10 @@ public class AssessmentModeListController extends FormBasicController implements
 		loadModel();
 		fireEvent(ureq, new AssessmentModeStatusEvent());
 	}
-	
+
 	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {
 		if(guardModalController(stopCtrl)) return;
-		
+
 		mode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
 		if(mode == null) {
 			showWarning("warning.assessment.mode.already.deleted");
@@ -488,14 +508,14 @@ public class AssessmentModeListController extends FormBasicController implements
 		} else {
 			stopCtrl = new ConfirmStopAssessmentModeController(ureq, getWindowControl(), mode);
 			listenTo(stopCtrl);
-			
+
 			String title = translate("confirm.stop.title");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), stopCtrl.getInitialComponent(), true, title, true);
 			cmc.activate();
 			listenTo(cmc);
 		}
 	}
-	
+
 	private void doDownloadConfigSeb(UserRequest ureq, AssessmentMode mode) {
 		MediaResource resource;
 		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList())) {
