@@ -1245,7 +1245,8 @@ public class FolderController extends FormBasicController implements Activateabl
 						doOpenView(ureq, FolderView.folder);
 					} else {
 						String parentPath = relativePath.substring(0, relativePath.lastIndexOf("/"));
-						updateCurrentContainer(ureq, parentPath, true);
+						updateCurrentContainer(ureq, parentPath, false);
+						doOpenView(ureq, FolderView.folder);
 						if ("".equals(parentPath)) {
 							fireEvent(ureq, FolderRootEvent.EVENT);
 						}
