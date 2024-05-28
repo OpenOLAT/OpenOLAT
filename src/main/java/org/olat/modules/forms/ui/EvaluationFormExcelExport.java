@@ -191,7 +191,7 @@ public class EvaluationFormExcelExport {
 				col.getAndIncrement(); // no header
 				break;
 			case FileUpload.TYPE:
-				col.getAndIncrement(); // no header
+				mergeColumn(element, col);
 				break;
 			case Disclaimer.TYPE:
 				addDisclaimerHeader(workbook, headerRow, col, (Disclaimer) element);
@@ -369,6 +369,7 @@ public class EvaluationFormExcelExport {
 	private void addFileUpload(OpenXMLWorkbook workbook, EvaluationFormSession session, Row row, AtomicInteger col,
 			FileUpload fileUpload) {
 		EvaluationFormResponse response = responses.getResponse(session, fileUpload.getId());
+		decrementMergedColumn(fileUpload, col);
 		if (response != null) {
 			String value = response.getStringuifiedResponse();
 			if (StringHelper.containsNonWhitespace(value)) {
