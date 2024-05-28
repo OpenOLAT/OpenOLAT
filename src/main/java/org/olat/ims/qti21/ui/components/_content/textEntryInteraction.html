@@ -12,6 +12,9 @@
 #if($isPageMode && $isResponded && !$inputMatchesSolution && !$isPageModeSolution)
 	#set($answerCorrectnessClass = "o_incorrect")
 #end
+#if($isPageModeSolution)
+	#set($isBadResponse = false)
+#end
 
 #set($checkJavaScript = $r.checkJavaScript($responseDeclaration,$interaction.patternmask))
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
@@ -44,7 +47,8 @@
 	#end
 
 	#if($r.isTrue($isCorrectionHelp))<span class="o_icon #if($r.isCorrectTextEntry($interaction)) o_icon_qti_summary_correct #else o_icon_error #end o_feedback_right"> </span> #end
-	
+
+	#if(!$isPageMode)
 	#if($isBadResponse)
         <span class="badResponse">
 		#if($responseDeclaration.cardinality.toQtiString() == "record")
@@ -55,6 +59,7 @@
 			$r.translate("error.textEntry.invalid")
 		#end
         </span>
+	#end
 	#end
 
 	#if($isInvalidResponse)
@@ -68,4 +73,19 @@
 		#end
 	#end
 </span>
+
+#if($isPageMode)
+	#if($isBadResponse)
+	<span class="badResponse">
+		#if($responseDeclaration.cardinality.toQtiString() == "record")
+			$r.translate("error.textEntry.invalid.record")
+		#elseif($responseDeclaration.baseType == "FLOAT")
+			$r.translate("error.textEntry.invalid.float")
+		#else
+			$r.translate("error.textEntry.invalid")
+		#end
+	</span>
+	#end
+#end
+
 $r.appendFlexiFormDirtyAndStopKeyboardsEvent("od_${responseIdentifier}")

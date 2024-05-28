@@ -823,7 +823,7 @@ public class AssessmentRenderFunctions {
 				putSingleChoiceSolution(ctx, responseDeclaration);
 			}
 		} else if (interaction instanceof InlineChoiceInteraction) {
-			putSingleSolution(ctx, responseDeclarationGroup.getChildren().get(0));
+			putSolutions(ctx, responseDeclarationGroup);
 		} else if (interaction instanceof TextEntryInteraction) {
 			putSolutions(ctx, responseDeclarationGroup);
 		}
@@ -851,14 +851,6 @@ public class AssessmentRenderFunctions {
 		if (fieldValues.get(0).getSingleValue() instanceof IdentifierValue identifierValue) {
 			Identifier identifier = identifierValue.identifierValue();
 			ctx.put("singleChoiceSolution", identifier);
-		}
-	}
-
-	private static void putSingleSolution(Context ctx, ResponseDeclaration responseDeclaration) {
-		List<FieldValue> fieldValues = responseDeclaration.getCorrectResponse().getFieldValues();
-		if (fieldValues.get(0).getSingleValue() instanceof IdentifierValue identifierValue) {
-			Identifier identifier = identifierValue.identifierValue();
-			ctx.put("singleSolution", identifier);
 		}
 	}
 }

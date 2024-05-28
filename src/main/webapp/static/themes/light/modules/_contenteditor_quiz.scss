@@ -114,7 +114,7 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 				}
 
 				span.textEntryInteraction {
-					input.text {
+					input.text, input.numeric {
 						background: transparent;
 						border-radius: $border-radius-small;
 						border-width: 1px;

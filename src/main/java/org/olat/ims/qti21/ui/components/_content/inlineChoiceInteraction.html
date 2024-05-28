@@ -1,12 +1,13 @@
 #set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($choices = $r.getVisibleOrderedChoices($interaction))
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
-
+#set($solution = $solutions[${responseIdentifier}])
+#set($inputMatchesSolution = $r.valueContains($responseValue, $solution))
 #set($answerCorrectnessClass = "")
-#if($isAnswerCorrect && !$isPageModeSolution)
+#if($isPageMode && $isResponded && $inputMatchesSolution && !$isPageModeSolution)
 	#set($answerCorrectnessClass = "o_correct")
 #end
-#if($isAnswerIncorrect && !$isPageModeSolution)
+#if($isPageMode && $isResponded && !$inputMatchesSolution && !$isPageModeSolution)
 	#set($answerCorrectnessClass = "o_incorrect")
 #end
 
@@ -42,7 +43,7 @@
         #foreach($choice in $choices)
 			#set($selected = "")
 			#if($isPageModeSolution)
-				#if($singleSolution && $choice.identifier.equals($singleSolution))
+				#if($solution && $choice.identifier.toString().equals($solution))
 					#set($selected = "selected")
 				#end
 			#else
