@@ -486,6 +486,14 @@
 									<targetPath>WEB-INF/classes/org/infinispan/hibernate/cache/commons/builder/</targetPath>
 									<filtering>false</filtering>
 								</resource>
+								<resource>
+									<directory>src/main/resources/</directory>
+									<targetPath>WEB-INF/classes/</targetPath>
+									<filtering>false</filtering>
+									<includes>
+										<include>broker-oo.xml</include>	
+									</includes>
+								</resource>
 							</webResources>
 						</configuration>
 					</plugin>
