@@ -35,7 +35,7 @@ import org.olat.repository.RepositoryEntry;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
+public class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 	
 	private static final Logger log = Tracing.createLoggerFor(CoursefolderWebDAVNamedContainer.class);
 	

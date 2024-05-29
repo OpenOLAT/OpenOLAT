@@ -171,6 +171,7 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.lock.LockInfo;
+import org.olat.course.CoursefolderWebDAVNamedContainer;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.search.SearchModule;
 import org.olat.user.UserManager;
@@ -499,7 +500,7 @@ public class FolderController extends FormBasicController implements Activateabl
 
 	private boolean canSearch() {
 		if (config.isFileHub()) {
-			return VFSStatus.YES == currentContainer.canDescendants();
+			return VFSStatus.YES == currentContainer.canDescendants() || currentContainer instanceof CoursefolderWebDAVNamedContainer;
 		}
 		return searchEnabled;
 	}
@@ -518,7 +519,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		this.folderView = view;
 		
 		if (FolderView.file == folderView) {
-			VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
+			VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer();
 			if (topMostDescendantsContainer != null) {
 				updateCurrentContainer(ureq, topMostDescendantsContainer, false);
 			} else {
@@ -526,12 +527,17 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		} else if (FolderView.search == folderView) {
 			if (config.isFileHub()) {
-				VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
+				VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer();
 				if (topMostDescendantsContainer != null) {
 					updateCurrentContainer(ureq, topMostDescendantsContainer, false);
 				}
 			} else {
 				updateCurrentContainer(ureq, rootContainer, false);
+			}
+		} else if (FolderView.trash == folderView) {
+			VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer();
+			if (topMostDescendantsContainer != null) {
+				updateCurrentContainer(ureq, topMostDescendantsContainer, false);
 			}
 		}
 		
@@ -817,7 +823,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private List<FolderRow> loadTrashRows(UserRequest ureq) {
-		VFSContainer descendantsContainer = getTopMostDescendantsContainer(currentContainer);
+		VFSContainer descendantsContainer = getTopMostDescendantsContainer();
 		if (descendantsContainer == null) {
 			return List.of();
 		}
@@ -846,16 +852,40 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		return rows;
 	}
-
-	private VFSContainer getTopMostDescendantsContainer(VFSContainer vfsContainer) {
+	
+	private VFSContainer getTopMostDescendantsContainer() {
 		VFSContainer topMostDescendantsContainer = null;
 		
-		if (vfsContainer != null && VFSStatus.YES == vfsContainer.canDescendants()) {
-			topMostDescendantsContainer = vfsContainer;
-			
-			VFSContainer parentDescendantsContainer = getTopMostDescendantsContainer(vfsContainer.getParentContainer());
-			if (parentDescendantsContainer != null) {
-				return parentDescendantsContainer;
+		if (VFSStatus.YES == currentContainer.canDescendants()) {
+			topMostDescendantsContainer = currentContainer;
+		}
+		if (folderBreadcrumb == null) {
+			return topMostDescendantsContainer;
+		}
+		
+		List<Link> breadCrumbs = folderBreadcrumb.getBreadCrumbs();
+		for (int i = breadCrumbs.size()-1 ; i >= 0; i--) {
+			Link link = breadCrumbs.get(i);
+			if (link.getUserObject() instanceof BreadCrumb breadCrumb && breadCrumb.getUserObject() instanceof String relativePath) {
+				String path = relativePath;
+				if (path.startsWith(CMD_CRUMB_PREFIX)) {
+					continue;
+				}
+				
+				if (!path.startsWith("/")) {
+					path = "/" + path;
+				}
+				
+				VFSItem vfsItem = rootContainer.resolve(path);
+				if (vfsItem instanceof VFSContainer vfsContainer) {
+					if (VFSStatus.YES == vfsContainer.canDescendants() || vfsContainer instanceof CoursefolderWebDAVNamedContainer) {
+						topMostDescendantsContainer = vfsContainer;
+					} else {
+						return topMostDescendantsContainer;
+					}
+				} else {
+					return topMostDescendantsContainer;
+				}
 			}
 		}
 		return topMostDescendantsContainer;
@@ -1283,6 +1313,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		} else if(addFileEl == source) {
 			if(event instanceof UploadFileElementEvent ufee) {
+				leaveTrash(ureq);
 				doUploadFile(ureq, ufee.getUploadFilesInfos(), ufee.getUploadFolder());
 			} else if(event instanceof DropFileElementEvent dfee) {
 				doDropFileByName(ureq, dfee.getDirectory(), dfee.getFilename());
@@ -1557,7 +1588,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			path = "/";
 		}
 		
-		topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
+		topMostDescendantsContainer = getTopMostDescendantsContainer();
 		topMostDescendantsMetadata = topMostDescendantsContainer != null? topMostDescendantsContainer.getMetaInfo(): null;
 		
 		reloadVersionsEnabled();
@@ -1585,7 +1616,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void reloadTrashEnabled() {
-		VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
+		VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer();
 		trashEnabled = topMostDescendantsContainer != null && VFSStatus.YES == topMostDescendantsContainer.canDelete();
 	}
 	
@@ -1981,14 +2012,14 @@ public class FolderController extends FormBasicController implements Activateabl
 		return vfsItem.canWrite() == VFSStatus.YES;
 	}
 	
-	private VFSContainer getTopMostEditableContainer(VFSContainer vfsContainer) {
-		if (vfsContainer != null && VFSStatus.YES == vfsContainer.canWrite()) {
-			VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer(vfsContainer.getParentContainer());
+	private VFSContainer getTopMostEditableContainer() {
+		if (currentContainer != null && VFSStatus.YES == currentContainer.canWrite()) {
+			VFSContainer topMostDescendantsContainer = getTopMostDescendantsContainer();
 			if (topMostDescendantsContainer != null) {
 				return topMostDescendantsContainer;
 			}
 		}
-		return vfsContainer;
+		return currentContainer;
 	}
 	
 	private void doCopySelectFolder(UserRequest ureq, FolderRow row) {
@@ -2798,7 +2829,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		if (secCallback == null) {
 			// Items in the trash are loaded flat. The parents are unknown.
-			VFSContainer trashRootContainer = getTopMostDescendantsContainer(currentContainer);
+			VFSContainer trashRootContainer = getTopMostDescendantsContainer();
 			secCallback = VFSManager.findInheritedSecurityCallback(trashRootContainer);
 		}
 		
@@ -2823,7 +2854,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void leaveTrash(UserRequest ureq) {
 		if (FolderView.trash == folderView) {
-			VFSContainer editableContainer = getTopMostEditableContainer(currentContainer);
+			VFSContainer editableContainer = getTopMostEditableContainer();
 			updateCurrentContainer(ureq, editableContainer, true);
 			doOpenView(ureq, FolderView.folder);
 		}

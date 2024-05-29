@@ -65,6 +65,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.course.CoursefolderWebDAVNamedContainer;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -152,7 +153,7 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	private void loadModel() {
 		List<VFSItem> items =  FolderView.folder == folderView
 				? getCachedContainer(currentContainer).getItems(vfsFilter)
-				: getCachedContainer(currentContainer).getDescendants(vfsFilter);
+				: getDescendants(currentContainer);
 		
 		List<FolderRow> rows = new ArrayList<>(items.size());
 		for (VFSItem vfsItem : items) {
@@ -183,6 +184,35 @@ public class FolderSelectionController extends FormBasicController implements Fi
 		
 		boolean multiSelect = FileBrowserSelectionMode.sourceMulti == selectionMode && isAnyChildCopyable();
 		tableEl.setMultiSelect(multiSelect);
+	}
+	
+	private List<VFSItem> getDescendants(VFSContainer vfsContainer) {
+		List<VFSItem> allItems = new ArrayList<>();
+		loadItemsAndChildren(allItems, vfsContainer);
+		return allItems;
+	}
+
+	private void loadItemsAndChildren(List<VFSItem> allItems, VFSContainer vfsContainer) {
+		boolean descendantsLoaded = false;
+		List<VFSItem> items = null;
+		VFSContainer cachedContainer = getCachedContainer(vfsContainer);
+		if (VFSStatus.YES == cachedContainer.canDescendants()) {
+			items = cachedContainer.getDescendants(vfsFilter);
+			descendantsLoaded = true;
+		}
+		
+		if (items == null) {
+			items = vfsContainer.getItems(vfsFilter);
+		}
+		allItems.addAll(items);
+		
+		if (!descendantsLoaded) {
+			items.forEach(item -> {
+				if (item instanceof VFSContainer childContainer) {
+					loadItemsAndChildren(allItems, childContainer);
+				}
+			});
+		}
 	}
 	
 	private boolean isAnyChildCopyable() {
@@ -431,7 +461,7 @@ public class FolderSelectionController extends FormBasicController implements Fi
 			path = "/";
 		}
 		
-		topMostDescendantsContainer = getTopMostDescendantsContainer(currentContainer);
+		topMostDescendantsContainer = getTopMostDescendantsContainer();
 		topMostDescendantsMetadata = topMostDescendantsContainer != null? topMostDescendantsContainer.getMetaInfo(): null;
 		
 		updateFolderBreadcrumpUI(path);
@@ -495,18 +525,42 @@ public class FolderSelectionController extends FormBasicController implements Fi
 		updateCurrentContainer(ureq, topMostDescendantsContainer);
 	}
 	
-	private VFSContainer getTopMostDescendantsContainer(VFSContainer vfsContainer) {
-		VFSContainer foundTopMostDescendantsContainer = null;
+	private VFSContainer getTopMostDescendantsContainer() {
+		VFSContainer topMostDescendantsContainer = null;
 		
-		if (vfsContainer != null && VFSStatus.YES == vfsContainer.canDescendants()) {
-			foundTopMostDescendantsContainer = vfsContainer;
-			
-			VFSContainer parentDescendantsContainer = getTopMostDescendantsContainer(vfsContainer.getParentContainer());
-			if (parentDescendantsContainer != null) {
-				return parentDescendantsContainer;
+		if (VFSStatus.YES == currentContainer.canDescendants()) {
+			topMostDescendantsContainer = currentContainer;
+		}
+		if (stackedPanel == null) {
+			return topMostDescendantsContainer;
+		}
+		
+		List<Link> breadCrumbs = stackedPanel.getBreadCrumbs();
+		for (int i = breadCrumbs.size()-1 ; i >= 0; i--) {
+			Link link = breadCrumbs.get(i);
+			if (link.getUserObject() instanceof BreadCrumb breadCrumb && breadCrumb.getUserObject() instanceof String relativePath) {
+				String path = relativePath;
+				if (path.startsWith(CMD_CRUMB_PREFIX)) {
+					continue;
+				}
+				
+				if (!path.startsWith("/")) {
+					path = "/" + path;
+				}
+				
+				VFSItem vfsItem = rootContainer.resolve(path);
+				if (vfsItem instanceof VFSContainer vfsContainer) {
+					if (VFSStatus.YES == vfsContainer.canDescendants() || vfsContainer instanceof CoursefolderWebDAVNamedContainer) {
+						topMostDescendantsContainer = vfsContainer;
+					} else {
+						return topMostDescendantsContainer;
+					}
+				} else {
+					return topMostDescendantsContainer;
+				}
 			}
 		}
-		return foundTopMostDescendantsContainer;
+		return topMostDescendantsContainer;
 	}
 	
 	private boolean isItemNotAvailable(FolderRow row, boolean showDeletedMessage) {
