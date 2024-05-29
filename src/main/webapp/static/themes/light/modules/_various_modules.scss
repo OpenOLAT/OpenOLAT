@@ -1530,7 +1530,7 @@ a.o_labeled {
 	text-align: center;
 	text-decoration: none;
 	vertical-align: middle;
-	font-size: 75%;
+	font-size: 14px;
 	line-height: 1;
 	white-space: nowrap;
 	border: 1px solid;
@@ -1544,6 +1544,7 @@ a.o_labeled {
 .o_labeled_light,
 a.o_labeled_light {
 	@extend %o_labeled;
+	font-size: 85%;
 	background-color: 	$o-labeled-light-bg-color;
  }
  .o_table_flexi {

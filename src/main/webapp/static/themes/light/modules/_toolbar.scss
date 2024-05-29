@@ -332,7 +332,7 @@
 		.o_inner_wrapper.o_labeled,
 		.o_inner_wrapper.o_labeled_light {
 			line-height: ($o-toolbar-size-icon-md - 2px);
-			font-size: 70% !important;
+			font-size: 14px;
 			padding: 0 18px 0 4px;
 			&:is(.dropdown-toggle.o_empty *) {
 				padding: 0 4px 0 4px;
