@@ -10,8 +10,12 @@
 	#end
 		<div class="o_folder_card_img #if($row.getThumbnailCss())$row.getThumbnailCss()#end">
 			#if($row.isThumbnailAvailable())
-				## 2x the max viewport (344 = 2 x $o-folder-card-thumbnail-height)
-				<img src="$row.getThumbnailUrl()/412/344" draggable="false" alt=""/>
+				#if(${row.isExternalItem()})
+					<img src="$row.getLargeThumbnailUrl()" draggable="false" alt=""/>
+				#else
+					## 2x the max viewport (344 = 2 x $o-folder-card-thumbnail-height)
+					<img src="$row.getThumbnailUrl()/412/344" draggable="false" alt=""/>
+				#end
 			#else
 				<div class="o_folder_row_thumbnail">
 					<div class="o_folder_icon_container">

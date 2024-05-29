@@ -23,16 +23,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.util.vfs.AbstractVirtualContainer;
-import org.olat.core.util.vfs.ExternalItem;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSExternalItem;
+import org.olat.core.util.vfs.VFSExternalMetadata;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSAllItemsFilter;
+import org.olat.modules.sharepoint.SharePointHelper;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
 import com.azure.core.credential.TokenCredential;
+import com.microsoft.graph.models.DriveItem;
 
 /**
  * 
@@ -40,7 +43,7 @@ import com.azure.core.credential.TokenCredential;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractSPContainer extends AbstractVirtualContainer implements ExternalItem {
+public abstract class AbstractSPContainer extends AbstractVirtualContainer implements VFSExternalItem {
 	
 	private final VFSContainer parentContainer;
 	protected final SharePointDAO sharePointDao;
@@ -67,11 +70,43 @@ public abstract class AbstractSPContainer extends AbstractVirtualContainer imple
 					items.add(new DriveItemContainer(this, drive, item,
 							sharePointDao, exclusionsLabels, tokenProvider));
 				} else {
-					items.add(new DriveItemLeaf(this,  drive, item, sharePointDao, tokenProvider));
+					DriveItemMetadata metadata = toMetadata(item);
+					items.add(new DriveItemLeaf(this, drive, item, metadata, sharePointDao, tokenProvider));
 				}
 			}
 		}
 		return items;
+	}
+	
+	protected DriveItemMetadata toMetadata(MicrosoftDriveItem item) {
+		DriveItem driveItem = item.driveItem();
+		
+		DriveItemMetadata metadata = new DriveItemMetadata();
+		metadata.setFilename(driveItem.getName());
+		metadata.setDirectory(driveItem.getFolder() != null);
+		metadata.setCreationDate(SharePointHelper.toDate(driveItem.getCreatedDateTime()));
+		metadata.setFileLastModified(SharePointHelper.toDate(driveItem.getLastModifiedDateTime()));
+		
+		if(driveItem.getSize() != null) {
+			metadata.setFileSize(driveItem.getSize());
+		}
+
+		return metadata;
+	}
+	
+	@Override
+	public String getThumbnailUrl() {
+		return null;
+	}
+
+	@Override
+	public String getLargeThumbnailUrl() {
+		return null;
+	}
+
+	@Override
+	public VFSExternalMetadata getMetaInfo() {
+		return null;
 	}
 	
 	@Override

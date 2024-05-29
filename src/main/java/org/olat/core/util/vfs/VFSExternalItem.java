@@ -27,6 +27,13 @@ package org.olat.core.util.vfs;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ExternalItem extends VFSItem {
+public interface VFSExternalItem extends VFSItem {
+	
+	@Override
+	VFSExternalMetadata getMetaInfo();
+	
+	String getThumbnailUrl();
+	
+	String getLargeThumbnailUrl();
 
 }

@@ -47,6 +47,7 @@ import com.microsoft.graph.models.DriveItemCollectionResponse;
 import com.microsoft.graph.models.DriveItemUploadableProperties;
 import com.microsoft.graph.models.Site;
 import com.microsoft.graph.models.SiteCollectionResponse;
+import com.microsoft.graph.models.ThumbnailSet;
 import com.microsoft.graph.models.UploadSession;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
 import com.nimbusds.jose.shaded.gson.JsonObject;
@@ -65,7 +66,8 @@ public class SharePointDAO {
 	private static final int MAX_ATTEMPTS = 5;
 
 	private static final String[] ATTRS_DRIVE = new String[] { "id", "name", "lastModifiedDateTime", "weburl" };
-	private static final String[] ATTRS_DRIVE_ITEM = new String[] { "id", "name", "lastModifiedDateTime", "weburl", "size", "file", "folder", "sensitivityLabel" };
+	private static final String[] ATTRS_DRIVE_ITEM = new String[] { "id", "name", "lastModifiedDateTime", "weburl", "size", "file", "folder", "fileSystemInfo", "sensitivityLabel" };
+	private static final String[] EXPAND_DRIVE_ITEM = new String[] { "thumbnails" };
 
 	public List<MicrosoftSite> getSites(TokenCredential tokenProvider) {
 		try {
@@ -172,28 +174,11 @@ public class SharePointDAO {
 				.searchWithQ(searchString)
 				.get(requestConfiguration -> {
 					requestConfiguration.queryParameters.select = ATTRS_DRIVE_ITEM;
+					requestConfiguration.queryParameters.expand = EXPAND_DRIVE_ITEM;
 				});
 
 			List<DriveItem> driveItemList = response.getValue();
-			if(driveItemList == null) {
-				log.info("Search: null");
-				return List.of();
-			}
-			log.info("Search: {}", driveItemList.size());
-			
-			List<MicrosoftDriveItem> items = new ArrayList<>(driveItemList.size());
-			for(DriveItem driveItem:driveItemList) {
-				Map<String,Object> datas = driveItem.getAdditionalData();
-				if(datas.containsKey("sensitivityLabel")) {
-					Object element = datas.get("sensitivityLabel");
-					if(element instanceof JsonObject obj && obj.has("protectionEnabled")) {
-						boolean enabled = obj.get("protectionEnabled").getAsBoolean();
-						log.info("driveItem has protection enabled: {}", enabled);
-					}
-				}
-				items.add(MicrosoftDriveItem.valueOf(driveItem));
-			}
-			return items;
+			return  toMicrosoftDriveItemList(driveItemList);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -211,30 +196,43 @@ public class SharePointDAO {
 				.children()
 				.get(requestConfiguration -> {
 					requestConfiguration.queryParameters.select = ATTRS_DRIVE_ITEM;
+					requestConfiguration.queryParameters.expand = EXPAND_DRIVE_ITEM;
 				});
 
 			List<DriveItem> driveItemList = response.getValue();
-			if(driveItemList == null) {
-				return List.of();
-			}
-			
-			List<MicrosoftDriveItem> items = new ArrayList<>(driveItemList.size());
-			for(DriveItem driveItem:driveItemList) {
-				Map<String,Object> datas = driveItem.getAdditionalData();
-				if(datas.containsKey("sensitivityLabel")) {
-					Object element = datas.get("sensitivityLabel");
-					if(element instanceof JsonObject obj && obj.has("protectionEnabled")) {
-						boolean enabled = obj.get("protectionEnabled").getAsBoolean();
-						log.info("driveItem has protection enabled: {}", enabled);
-					}
-				}
-				items.add(MicrosoftDriveItem.valueOf(driveItem));
-			}
-			return items;
+			return toMicrosoftDriveItemList(driveItemList);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	private List<MicrosoftDriveItem> toMicrosoftDriveItemList(List<DriveItem> driveItemList) {
+		if(driveItemList == null) {
+			return List.of();
+		}
+		
+		List<MicrosoftDriveItem> items = new ArrayList<>(driveItemList.size());
+		for(DriveItem driveItem:driveItemList) {
+			Map<String,Object> datas = driveItem.getAdditionalData();
+			if(datas.containsKey("sensitivityLabel")) {
+				Object element = datas.get("sensitivityLabel");
+				if(element instanceof JsonObject obj && obj.has("protectionEnabled")) {
+					boolean enabled = obj.get("protectionEnabled").getAsBoolean();
+					log.info("driveItem has protection enabled: {}", enabled);
+				}
+			}
+			
+			ThumbnailSet thumbnails = null;
+			List<ThumbnailSet> sets = driveItem.getThumbnails();
+			if(sets != null && !sets.isEmpty()) {
+				thumbnails = sets.get(0);
+			}
+			
+			boolean directory = driveItem.getFolder() != null;
+			items.add(new MicrosoftDriveItem(driveItem, thumbnails, directory));
+		}
+		return items;
 	}
 	
 	public InputStream getItemContent(Drive drive, DriveItem driveItem, TokenCredential tokenProvider) {

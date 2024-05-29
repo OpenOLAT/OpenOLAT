@@ -32,7 +32,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.AbstractVirtualContainer;
-import org.olat.core.util.vfs.ExternalItem;
+import org.olat.core.util.vfs.VFSExternalItem;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -154,7 +154,7 @@ public class FolderUIFactory {
 				if (basefile != null) {
 					filename = basefile.getName();
 				}
-			} else if(vfsLeaf instanceof ExternalItem externalItem) {
+			} else if(vfsLeaf instanceof VFSExternalItem externalItem) {
 				filename = externalItem.getName();
 			}
 		}

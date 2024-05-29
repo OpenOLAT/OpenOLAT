@@ -19,22 +19,30 @@
  */
 package org.olat.modules.sharepoint.model;
 
-import com.microsoft.graph.models.DriveItem;
-import com.microsoft.graph.models.ThumbnailSet;
+import org.olat.core.commons.services.vfs.model.VFSTransientMetadata;
+import org.olat.core.util.vfs.VFSExternalItem;
+import org.olat.core.util.vfs.VFSExternalMetadata;
 
 /**
  * 
- * Initial date: 7 déc. 2023<br>
+ * Initial date: 29 mai 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MicrosoftDriveItem(DriveItem driveItem, ThumbnailSet thumbnails, boolean directory) {
+public class DriveItemMetadata extends VFSTransientMetadata implements VFSExternalMetadata {
 	
-	public String id() {
-		return driveItem.getId();
+	private VFSExternalItem item;
+	
+	public DriveItemMetadata() {
+		//
+	}
+
+	@Override
+	public VFSExternalItem getItem() {
+		return item;
 	}
 	
-	public String name() {
-		return driveItem.getName();
+	public void setItem(VFSExternalItem item) {
+		this.item = item;
 	}
 }

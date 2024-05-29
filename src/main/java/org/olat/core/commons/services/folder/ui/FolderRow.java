@@ -25,6 +25,7 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSExternalItem;
 import org.olat.core.util.vfs.VFSItem;
 
 /**
@@ -62,6 +63,7 @@ public class FolderRow {
 	private String translatedLicense;
 	private boolean thumbnailAvailable;
 	private String thumbnailUrl;
+	private String largeThumbnailUrl;
 	private String thumbnailCss;
 	private boolean openable;
 	private boolean openInNewWindow;
@@ -309,6 +311,17 @@ public class FolderRow {
 	public void setThumbnailUrl(String thumbnailUrl) {
 		this.thumbnailUrl = thumbnailUrl;
 	}
+	
+	public String getLargeThumbnailUrl() {
+		if(largeThumbnailUrl == null) {
+			return getThumbnailUrl();
+		}
+		return largeThumbnailUrl;
+	}
+
+	public void setLargeThumbnailUrl(String largeThumbnailUrl) {
+		this.largeThumbnailUrl = largeThumbnailUrl;
+	}
 
 	public String getThumbnailCss() {
 		return thumbnailCss;
@@ -324,6 +337,10 @@ public class FolderRow {
 
 	public void setOpenable(boolean openable) {
 		this.openable = openable;
+	}
+	
+	public boolean isExternalItem() {
+		return vfsItem instanceof VFSExternalItem;
 	}
 
 	public boolean isOpenInNewWindow() {

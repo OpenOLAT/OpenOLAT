@@ -40,7 +40,8 @@ public class FolderIconRenderer implements FlexiCellRenderer {
 		if (cellValue instanceof FolderRow folderRow) {
 			target.append("<div class=\"o_folder_row_thumbnail\">");
 			if (folderRow.isThumbnailAvailable()) {
-				target.append("<img src=\"").append(folderRow.getThumbnailUrl() + "/30/30").append("\" draggable=\"false\" alt=\"\"/>");
+				target.append("<img src=\"").append(folderRow.getThumbnailUrl())
+				      .append("/30/30", !folderRow.isExternalItem()).append("\" draggable=\"false\" alt=\"\"/>");
 			} else {
 				target.append("<div class=\"o_folder_row_thumbnail_icon\"><i class=\"o_icon ");
 				target.append(folderRow.getIconCssClass());

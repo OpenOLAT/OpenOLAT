@@ -17,24 +17,18 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.sharepoint.model;
+package org.olat.core.util.vfs;
 
-import com.microsoft.graph.models.DriveItem;
-import com.microsoft.graph.models.ThumbnailSet;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 
 /**
  * 
- * Initial date: 7 déc. 2023<br>
+ * Initial date: 29 mai 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MicrosoftDriveItem(DriveItem driveItem, ThumbnailSet thumbnails, boolean directory) {
+public interface VFSExternalMetadata extends VFSMetadata {
 	
-	public String id() {
-		return driveItem.getId();
-	}
-	
-	public String name() {
-		return driveItem.getName();
-	}
+	VFSExternalItem getItem();
+
 }

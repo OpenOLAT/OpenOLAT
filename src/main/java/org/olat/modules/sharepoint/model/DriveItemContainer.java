@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSExternalMetadata;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
@@ -72,8 +73,18 @@ public class DriveItemContainer extends AbstractSPContainer {
 	}
 	
 	@Override
+	public VFSStatus canMeta() {
+		return VFSStatus.NO;
+	}
+	
+	@Override
 	public VFSStatus canDescendants() {
 		return VFSStatus.YES;
+	}
+	
+	@Override
+	public VFSExternalMetadata getMetaInfo() {
+		return null;
 	}
 
 	@Override

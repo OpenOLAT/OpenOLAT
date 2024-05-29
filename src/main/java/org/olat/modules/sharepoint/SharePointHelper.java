@@ -17,24 +17,33 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.sharepoint.model;
+package org.olat.modules.sharepoint;
 
-import com.microsoft.graph.models.DriveItem;
-import com.microsoft.graph.models.ThumbnailSet;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 /**
  * 
- * Initial date: 7 déc. 2023<br>
+ * Initial date: 29 mai 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MicrosoftDriveItem(DriveItem driveItem, ThumbnailSet thumbnails, boolean directory) {
+public class SharePointHelper {
 	
-	public String id() {
-		return driveItem.getId();
+	private SharePointHelper() {
+		//
 	}
 	
-	public String name() {
-		return driveItem.getName();
+	public static long toDateInMilliSeconds(OffsetDateTime dateTime) {
+		if(dateTime == null) return -1l;
+		return dateTime.toLocalDate().atTime(dateTime.toLocalTime()).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000l;
 	}
+	
+	public static Date toDate(OffsetDateTime dateTime) {
+		if(dateTime == null) return null;
+		long seconds = toDateInMilliSeconds(dateTime);
+		return seconds == -1l ? null : new Date(seconds);
+	}
+
 }

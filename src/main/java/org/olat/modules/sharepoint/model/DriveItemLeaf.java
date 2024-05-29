@@ -21,20 +21,20 @@ package org.olat.modules.sharepoint.model;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.util.vfs.ExternalItem;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSExternalItem;
+import org.olat.core.util.vfs.VFSExternalMetadata;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.modules.sharepoint.SharePointHelper;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
 import com.azure.core.credential.TokenCredential;
+import com.microsoft.graph.models.ThumbnailSet;
 
 /**
  * 
@@ -42,19 +42,24 @@ import com.azure.core.credential.TokenCredential;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DriveItemLeaf implements VFSLeaf, ExternalItem {
+public class DriveItemLeaf implements VFSLeaf, VFSExternalItem {
 	
 	private final MicrosoftDrive drive;
 	private final MicrosoftDriveItem driveItem;
+	private final DriveItemMetadata metadata;
 	private final SharePointDAO sharePointDao;
 	private final VFSContainer parentContainer;
 	private final TokenCredential tokenProvider;
 	
 	public DriveItemLeaf(VFSContainer parentContainer,
-			MicrosoftDrive drive, MicrosoftDriveItem driveItem,
+			MicrosoftDrive drive, MicrosoftDriveItem driveItem, DriveItemMetadata metadata,
 			SharePointDAO sharePointDao, TokenCredential tokenProvider) {
 		this.drive = drive;
 		this.driveItem = driveItem;
+		this.metadata = metadata;
+		if(metadata != null) {
+			metadata.setItem(this);
+		}
 		this.parentContainer = parentContainer;
 		this.sharePointDao = sharePointDao;
 		this.tokenProvider = tokenProvider;
@@ -129,8 +134,7 @@ public class DriveItemLeaf implements VFSLeaf, ExternalItem {
 	public long getLastModified() {
 		long lastModified = -1;
 		if(driveItem.driveItem().getLastModifiedDateTime() != null) {
-			OffsetDateTime dateTime = driveItem.driveItem().getLastModifiedDateTime();
-			lastModified = dateTime.toLocalDate().atTime(dateTime.toLocalTime()).atZone(ZoneId.systemDefault()).toEpochSecond();
+			lastModified = SharePointHelper.toDateInMilliSeconds(driveItem.driveItem().getLastModifiedDateTime());
 		}
 		return lastModified;
 	}
@@ -147,7 +151,7 @@ public class DriveItemLeaf implements VFSLeaf, ExternalItem {
 
 	@Override
 	public VFSStatus canMeta() {
-		return VFSStatus.NO;
+		return metadata == null ? VFSStatus.NO : VFSStatus.YES;
 	}
 
 	@Override
@@ -156,8 +160,36 @@ public class DriveItemLeaf implements VFSLeaf, ExternalItem {
 	}
 
 	@Override
-	public VFSMetadata getMetaInfo() {
-		return null;
+	public VFSExternalMetadata getMetaInfo() {
+		return metadata;
+	}
+
+	@Override
+	public String getThumbnailUrl() {
+		ThumbnailSet thumbnails = driveItem.thumbnails();
+		String url = null;
+		if(thumbnails != null) {
+			if(thumbnails.getMedium() != null) {
+				url = thumbnails.getMedium().getUrl();
+			} else if(thumbnails.getSmall() != null) {
+				url = thumbnails.getSmall().getUrl();
+			}
+		}
+		return url;
+	}
+
+	@Override
+	public String getLargeThumbnailUrl() {
+		ThumbnailSet thumbnails = driveItem.thumbnails();
+		String url = null;
+		if(thumbnails != null) {
+			if(thumbnails.getLarge() != null) {
+				url = thumbnails.getLarge().getUrl();
+			} else if(thumbnails.getMedium() != null) {
+				url = thumbnails.getMedium().getUrl();
+			}
+		}
+		return url;
 	}
 
 	@Override
