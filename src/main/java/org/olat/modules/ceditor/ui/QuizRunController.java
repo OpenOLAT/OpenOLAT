@@ -77,7 +77,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class QuizRunController extends BasicController implements PageRunElement, OutcomesAssessmentItemListener {
 
 	private final VelocityContainer mainVC;
-	private final AssessmentEntry assessmentEntry;
+	private AssessmentEntry assessmentEntry;
 	private QuizPart quizPart;
 	private final boolean editable;
 	private Link startButton;
@@ -107,17 +107,19 @@ public class QuizRunController extends BasicController implements PageRunElement
 		questionIndex = 0;
 		this.editable = editable;
 		this.entry = entry;
-		this.subIdent = subIdent + "_" + quizPart.getId();
+		this.subIdent = StringHelper.containsNonWhitespace(subIdent) ? subIdent + "_" + quizPart.getId() : "";
 
-		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, entry,
-				this.subIdent, Boolean.FALSE, entry);
+		if (this.entry != null && StringHelper.containsNonWhitespace(this.subIdent)) {
+			assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, entry,
+					this.subIdent, Boolean.FALSE, entry);
+		}
 
 		mainVC = createVelocityContainer("quiz_run");
 		mainVC.setElementCssClass("o_quiz_run_element_css_class");
 		setBlockLayoutClass(quizPart.getSettings());
 		putInitialPanel(mainVC);
 
-		AssessmentRunStatus runStatus = assessmentEntry.getCurrentRunStatus();
+		AssessmentRunStatus runStatus = assessmentEntry != null ? assessmentEntry.getCurrentRunStatus() : null;
 		if (runStatus != null) {
 			switch (runStatus) {
 				case running -> doStart(ureq);
@@ -170,7 +172,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 		startButton = LinkFactory.createButton("quiz.start", mainVC, this);
 		startButton.setIconLeftCSS("o_icon o_icon-fw o_icon_play");
 		startButton.setPrimary(true);
-		startButton.setEnabled(!editable);
+		startButton.setEnabled(!editable && assessmentEntry != null);
 		startButton.setTitle("quiz.start");
 		startButton.setAriaLabel("quiz.start");
 		mainVC.put("quiz.start", startButton);
@@ -287,7 +289,9 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private void reset() {
 		updateRunStatus(AssessmentRunStatus.notStarted);
 		updateCompletion(0.0);
-		qtiService.deleteAssessmentTestSession(List.of(getIdentity()), entry, entry, subIdent);
+		if (entry != null && StringHelper.containsNonWhitespace(subIdent)) {
+			qtiService.deleteAssessmentTestSession(List.of(getIdentity()), entry, entry, subIdent);
+		}
 	}
 
 	private void doStart(UserRequest ureq) {
@@ -311,18 +315,24 @@ public class QuizRunController extends BasicController implements PageRunElement
 	}
 
 	private double getCompletion() {
-		if (assessmentEntry.getCompletion() == null) {
+		if (assessmentEntry != null && assessmentEntry.getCompletion() == null) {
 			return 0.0d;
 		}
 		return assessmentEntry.getCompletion();
 	}
 
 	private void updateCompletion(Double completion) {
+		if (assessmentEntry == null) {
+			return;
+		}
 		assessmentEntry.setCompletion(completion);
 		assessmentService.updateAssessmentEntry(assessmentEntry);
 	}
 
 	private void updateRunStatus(AssessmentRunStatus runStatus) {
+		if (assessmentEntry == null) {
+			return;
+		}
 		assessmentEntry.setCurrentRunStatus(runStatus);
 		assessmentService.updateAssessmentEntry(assessmentEntry);
 	}
