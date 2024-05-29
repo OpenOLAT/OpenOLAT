@@ -180,6 +180,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 			String courseTitle = getCourseTitle(re, namingAndGrouping.isPrependReference());
 			String name = namingAndGrouping.getTermUniqueName(termSoftKey, courseTitle);
 			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, identityEnv, entryAdmin);
+			cfContainer.setParentContainer(termContainer);
 			termContainer.getItems().add(cfContainer);
 			termed = true;
 		}
@@ -204,6 +205,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 				String courseTitle = getCourseTitle(re, false);
 				String name = namingAndGrouping.getTermUniqueName(termSoftKey, courseTitle);
 				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, identityEnv, entryAdmin);
+				cfContainer.setParentContainer(termContainer);
 				termContainer.getItems().add(cfContainer);
 				termed = true;
 			}
@@ -277,6 +279,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		}
 		
 		public void addToFinished(VFSContainer container) {
+			container.setParentContainer(finishedContainer);
 			finishedContainer.getItems().add(container);
 		}
 		
@@ -285,14 +288,17 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 				managedAndClosedContainer = new VirtualContainer("_closed");
 				addToManaged(managedAndClosedContainer);
 			}
+			container.setParentContainer(managedAndClosedContainer);
 			managedAndClosedContainer.getItems().add(container);
 		}
 		
 		public void addToManaged(VFSContainer container) {
 			if(managedContainer == null) {
 				managedContainer = new VirtualContainer("_managed");
+				managedContainer.setParentContainer(noTermContainer);
 				noTermContainer.getItems().add(managedContainer);
 			}
+			container.setParentContainer(managedContainer);
 			managedContainer.getItems().add(container);	
 		}
 		
@@ -301,14 +307,17 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 				manuallyAndClosedContainer = new VirtualContainer("_closed");
 				addToManually(manuallyAndClosedContainer);
 			}
+			container.setParentContainer(manuallyAndClosedContainer);
 			manuallyAndClosedContainer.getItems().add(container);
 		}
 		
 		public void addToManually(VFSContainer container) {
 			if(manuallyContainer == null) {
 				manuallyContainer = new VirtualContainer("_manually");
+				manuallyContainer.setParentContainer(noTermContainer);
 				noTermContainer.getItems().add(manuallyContainer);
 			}
+			container.setParentContainer(manuallyContainer);
 			manuallyContainer.getItems().add(container);
 		}
 		
@@ -331,6 +340,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 					addToManually(container);
 				}
 			} else {
+				container.setParentContainer(noTermContainer);
 				noTermContainer.getItems().add(container);
 			}
 		}
