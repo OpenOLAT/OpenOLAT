@@ -131,7 +131,7 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			scopes.append(" OnlineMeetings.ReadWrite");
 		}
 		if(sharePointModule.isEnabled()) {
-			scopes.append(" Sites.Search.All AllSites.Read MyFiles.Read MyFiles.Write");
+			scopes.append(" MyFiles.Read MyFiles.Write");
 		}
 		scopes.append(" offline_access");
 		
