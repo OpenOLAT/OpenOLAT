@@ -32,9 +32,29 @@ import org.olat.core.util.vfs.VFSExternalMetadata;
 public class DriveItemMetadata extends VFSTransientMetadata implements VFSExternalMetadata {
 	
 	private VFSExternalItem item;
+	private String thumbnailUrl;
+	private String largeThumbnailUrl;
 	
 	public DriveItemMetadata() {
 		//
+	}
+
+	@Override
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
+	}
+
+	public void setThumbnailUrl(String thumbnailUrl) {
+		this.thumbnailUrl = thumbnailUrl;
+	}
+
+	@Override
+	public String getLargeThumbnailUrl() {
+		return largeThumbnailUrl;
+	}
+
+	public void setLargeThumbnailUrl(String largeThumbnailUrl) {
+		this.largeThumbnailUrl = largeThumbnailUrl;
 	}
 
 	@Override

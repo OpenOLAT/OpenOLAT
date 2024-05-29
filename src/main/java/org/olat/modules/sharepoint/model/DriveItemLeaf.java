@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSExternalItem;
+import org.olat.core.util.vfs.VFSExternalLeaf;
 import org.olat.core.util.vfs.VFSExternalMetadata;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -34,7 +34,6 @@ import org.olat.modules.sharepoint.SharePointHelper;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
 import com.azure.core.credential.TokenCredential;
-import com.microsoft.graph.models.ThumbnailSet;
 
 /**
  * 
@@ -42,7 +41,7 @@ import com.microsoft.graph.models.ThumbnailSet;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DriveItemLeaf implements VFSLeaf, VFSExternalItem {
+public class DriveItemLeaf implements VFSLeaf, VFSExternalLeaf {
 	
 	private final MicrosoftDrive drive;
 	private final MicrosoftDriveItem driveItem;
@@ -162,34 +161,6 @@ public class DriveItemLeaf implements VFSLeaf, VFSExternalItem {
 	@Override
 	public VFSExternalMetadata getMetaInfo() {
 		return metadata;
-	}
-
-	@Override
-	public String getThumbnailUrl() {
-		ThumbnailSet thumbnails = driveItem.thumbnails();
-		String url = null;
-		if(thumbnails != null) {
-			if(thumbnails.getMedium() != null) {
-				url = thumbnails.getMedium().getUrl();
-			} else if(thumbnails.getSmall() != null) {
-				url = thumbnails.getSmall().getUrl();
-			}
-		}
-		return url;
-	}
-
-	@Override
-	public String getLargeThumbnailUrl() {
-		ThumbnailSet thumbnails = driveItem.thumbnails();
-		String url = null;
-		if(thumbnails != null) {
-			if(thumbnails.getLarge() != null) {
-				url = thumbnails.getLarge().getUrl();
-			} else if(thumbnails.getMedium() != null) {
-				url = thumbnails.getMedium().getUrl();
-			}
-		}
-		return url;
 	}
 
 	@Override

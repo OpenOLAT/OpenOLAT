@@ -48,6 +48,7 @@ import org.olat.core.commons.services.doceditor.UserInfo;
 import org.olat.core.commons.services.doceditor.drawio.DrawioEditor;
 import org.olat.core.commons.services.doceditor.model.DocEditorOpenInfoImpl;
 import org.olat.core.commons.services.doceditor.model.NoEditorAvailable;
+import org.olat.core.commons.services.doceditor.model.TransientAccess;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -57,6 +58,7 @@ import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -225,7 +227,12 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		int minutes = editor != null? editor.getAccessDurationMinutes(configs.getMode()): 0;
 		Date expiresAt = Date.from(Instant.now().plus(Duration.ofMinutes(minutes)));
 		
-		return accessDao.createAccess(configs.getVfsLeaf().getMetaInfo(), identity, editorType, configs.getMode(),
+		VFSMetadata metadata = configs.getVfsLeaf().getMetaInfo();
+		if(metadata instanceof Persistable) {
+			return accessDao.createAccess(metadata, identity, editorType, configs.getMode(),
+					configs.isVersionControlled(), configs.isDownloadEnabled(), configs.isFireSavedEvent(), expiresAt);
+		}
+		return new TransientAccess(metadata, identity, editorType, configs.getMode(),
 				configs.isVersionControlled(), configs.isDownloadEnabled(), configs.isFireSavedEvent(), expiresAt);
 	}
  

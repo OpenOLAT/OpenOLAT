@@ -66,7 +66,7 @@ public class SharePointDAO {
 	private static final int MAX_ATTEMPTS = 5;
 
 	private static final String[] ATTRS_DRIVE = new String[] { "id", "name", "lastModifiedDateTime", "weburl" };
-	private static final String[] ATTRS_DRIVE_ITEM = new String[] { "id", "name", "lastModifiedDateTime", "weburl", "size", "file", "folder", "fileSystemInfo", "sensitivityLabel" };
+	private static final String[] ATTRS_DRIVE_ITEM = new String[] { "id", "name", "lastModifiedDateTime", "weburl", "size", "file", "folder", "sensitivityLabel" };
 	private static final String[] EXPAND_DRIVE_ITEM = new String[] { "thumbnails" };
 
 	public List<MicrosoftSite> getSites(TokenCredential tokenProvider) {

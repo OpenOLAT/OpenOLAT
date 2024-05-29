@@ -101,6 +101,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSExternalItem;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -295,6 +296,10 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 	@Override
 	public VFSMetadata getMetadataFor(VFSItem path) {
+		if(path instanceof VFSExternalItem externalItem) {
+			return externalItem.getMetaInfo();
+		}
+		
 		File file = toFile(path);
 		return getMetadataFor(file);
 	}

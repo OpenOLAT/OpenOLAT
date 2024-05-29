@@ -59,12 +59,14 @@ public class SharePointContainer extends MergeSource {
 	@Override
 	protected void init() {
 		List<MicrosoftSite> sites = sharePointDao.getSites(tokenProvider);
-		for(MicrosoftSite site:sites) {
-			if(SharePointDAO.accept(site, exclusionsSitesAndDrives)) {
-				SiteContainer siteContainer = new SiteContainer(this, site, sharePointDao,
-						exclusionsSitesAndDrives, exclusionsLabels, tokenProvider);
-				siteContainer.setLocalSecurityCallback(new ReadOnlyCallback());
-				addContainer(siteContainer);
+		if(sites != null) {
+			for(MicrosoftSite site:sites) {
+				if(SharePointDAO.accept(site, exclusionsSitesAndDrives)) {
+					SiteContainer siteContainer = new SiteContainer(this, site, sharePointDao,
+							exclusionsSitesAndDrives, exclusionsLabels, tokenProvider);
+					siteContainer.setLocalSecurityCallback(new ReadOnlyCallback());
+					addContainer(siteContainer);
+				}
 			}
 		}
 		

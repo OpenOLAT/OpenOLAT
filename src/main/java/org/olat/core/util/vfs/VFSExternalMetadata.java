@@ -30,5 +30,9 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 public interface VFSExternalMetadata extends VFSMetadata {
 	
 	VFSExternalItem getItem();
+	
+	String getThumbnailUrl();
+	
+	String getLargeThumbnailUrl();
 
 }

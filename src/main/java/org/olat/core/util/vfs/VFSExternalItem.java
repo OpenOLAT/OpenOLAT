@@ -31,9 +31,5 @@ public interface VFSExternalItem extends VFSItem {
 	
 	@Override
 	VFSExternalMetadata getMetaInfo();
-	
-	String getThumbnailUrl();
-	
-	String getLargeThumbnailUrl();
 
 }

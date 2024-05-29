@@ -36,6 +36,8 @@ import org.olat.modules.sharepoint.manager.SharePointDAO;
 
 import com.azure.core.credential.TokenCredential;
 import com.microsoft.graph.models.DriveItem;
+import com.microsoft.graph.models.ThumbnailSet;
+import com.microsoft.graph.models.User;
 
 /**
  * 
@@ -82,26 +84,41 @@ public abstract class AbstractSPContainer extends AbstractVirtualContainer imple
 		DriveItem driveItem = item.driveItem();
 		
 		DriveItemMetadata metadata = new DriveItemMetadata();
+
 		metadata.setFilename(driveItem.getName());
 		metadata.setDirectory(driveItem.getFolder() != null);
 		metadata.setCreationDate(SharePointHelper.toDate(driveItem.getCreatedDateTime()));
 		metadata.setFileLastModified(SharePointHelper.toDate(driveItem.getLastModifiedDateTime()));
+		metadata.setLastModified(SharePointHelper.toDate(driveItem.getLastModifiedDateTime()));
 		
+		metadata.setUrl(driveItem.getWebUrl());
+		metadata.setUri(driveItem.getWebUrl());
+		metadata.setUuid(driveItem.getId());
+		
+		
+		User createdBy = driveItem.getCreatedByUser();
+		if(createdBy != null) {
+			String givenName = createdBy.getGivenName();
+			String surName = createdBy.getSurname();
+			
+			System.out.println(givenName + " " + surName);
+		}
+		
+		ThumbnailSet thumbnails = item.thumbnails();
+		if(thumbnails != null) {
+			if(thumbnails.getLarge() != null) {
+				metadata.setLargeThumbnailUrl(thumbnails.getLarge().getUrl());
+			}
+			if(thumbnails.getMedium() != null) {
+				metadata.setThumbnailUrl(thumbnails.getMedium().getUrl());
+			}
+		}
+	
 		if(driveItem.getSize() != null) {
 			metadata.setFileSize(driveItem.getSize());
 		}
 
 		return metadata;
-	}
-	
-	@Override
-	public String getThumbnailUrl() {
-		return null;
-	}
-
-	@Override
-	public String getLargeThumbnailUrl() {
-		return null;
 	}
 
 	@Override
