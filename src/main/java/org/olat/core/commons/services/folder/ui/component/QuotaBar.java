@@ -32,7 +32,6 @@ import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.Quota;
 
 /**
  * 
@@ -74,11 +73,13 @@ public class QuotaBar extends AbstractComponent {
 			return;
 		}
 		
-		if (quota.getQuotaKB() == Quota.UNLIMITED) {
+		if (isUnlimited()) {
 			progressBar.setIsNoMax(true);
 		} else if(quota.getQuotaKB() == 0) {
+			progressBar.setIsNoMax(false);
 			progressBar.setMax(quota.getQuotaKB());
 		} else {
+			progressBar.setIsNoMax(false);
 			progressBar.setMax(quota.getQuotaKB() / BYTE_UNIT);
 		}
 		progressBar.setActual(quota.getActualUsage() / BYTE_UNIT);

@@ -3196,7 +3196,7 @@ public class FolderController extends FormBasicController implements Activateabl
 
 		@Override
 		public String getWrapperCssClass(FlexiTableRendererType type) {
-			return "o_table_rows_middle";
+			return "o_table_wrapper o_table_flexi o o_table_rows_middle";
 		}
 		
 		@Override
