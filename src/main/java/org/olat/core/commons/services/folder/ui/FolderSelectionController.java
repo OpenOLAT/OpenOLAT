@@ -59,6 +59,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSExternalLeaf;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -258,15 +259,19 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	
 	private void forgeThumbnail(FolderRow row) {
 		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf && row.getMetadata() != null && isThumbnailAvailable(row.getMetadata(), vfsLeaf)) {
-			// One mapper per thumbnail per leaf version. The mapper is cached for 10 min or all users.
-			FolderThumbnailMapper thumbnailMapper = new FolderThumbnailMapper(vfsRepositoryService, avModule, row.getMetadata(), row.getVfsItem());
-			MapperKey mapperKey = mapperService.register(null, getThumbnailMapperId(row.getMetadata()), thumbnailMapper, 10);
-			
-			row.setThumbnailAvailable(true);
-			row.setThumbnailUrl(mapperKey.getUrl());
-			if (FolderThumbnailMapper.isAudio(row.getMetadata(), vfsLeaf)) {
-				row.setThumbnailCss("o_folder_card_img_center");
+			if(vfsLeaf instanceof VFSExternalLeaf externalLeaf) {
+				row.setThumbnailUrl(externalLeaf.getMetaInfo().getThumbnailUrl());
+				row.setLargeThumbnailUrl(externalLeaf.getMetaInfo().getLargeThumbnailUrl());
+			} else {
+				// One mapper per thumbnail per leaf version. The mapper is cached for 10 min or all users.
+				FolderThumbnailMapper thumbnailMapper = new FolderThumbnailMapper(vfsRepositoryService, avModule, row.getMetadata(), row.getVfsItem());
+				MapperKey mapperKey = mapperService.register(null, getThumbnailMapperId(row.getMetadata()), thumbnailMapper, 10);
+				row.setThumbnailUrl(mapperKey.getUrl());
+				if (FolderThumbnailMapper.isAudio(row.getMetadata(), vfsLeaf)) {
+					row.setThumbnailCss("o_folder_card_img_center");
+				}
 			}
+			row.setThumbnailAvailable(true);
 		}
 	}
 	

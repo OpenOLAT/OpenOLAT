@@ -51,6 +51,11 @@ public class SiteContainer extends AbstractSPContainer {
 		this.site = site;
 		this.exclusionsSitesAndDrives = exclusionsSitesAndDrives;
 	}
+	
+	@Override
+	public String getIconCSS() {
+		return "o_icon_sharepoint_drive";
+	}
 
 	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {

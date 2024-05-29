@@ -44,6 +44,11 @@ public class OneDriveContainer extends AbstractRootDriveContainer {
 	}
 	
 	@Override
+	public String getIconCSS() {
+		return "o_icon_onedrive";
+	}
+
+	@Override
 	public MicrosoftDrive getDrive() {
 		if(oneDrive == null) {
 			oneDrive = sharePointDao.getMeOneDrive(tokenProvider);

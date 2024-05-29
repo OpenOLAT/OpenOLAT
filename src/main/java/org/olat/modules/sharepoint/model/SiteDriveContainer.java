@@ -41,6 +41,11 @@ public class SiteDriveContainer extends AbstractRootDriveContainer {
 		super(parentContainer, drive.name(), sharePointDao, exclusionsLabels, tokenProvider);
 		this.drive = drive;
 	}
+	
+	@Override
+	public String getIconCSS() {
+		return "o_icon_sharepoint_drive";
+	}
 
 	@Override
 	public MicrosoftDrive getDrive() {

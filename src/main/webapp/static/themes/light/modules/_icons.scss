@@ -295,6 +295,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_offer_active { @include o-add-icon('eye'); color: $o-ac-offer-active-color;}
 .o_icon_offer_inactive { @include o-add-icon('eye-slash'); color: $o-ac-offer-inactive-color;}
 .o_icon_ok { @include o-add-icon('check'); color: $brand-success}
+.o_icon_onedrive { @include o-add-icon('cloud'); }
 .o_icon_open_tree { @include o-add-icon('caret-right');}
 .o_icon_open_togglebox { @include o-add-icon('caret-right');}
 .o_icon_openolat { @include o-add-icon('infinity');}
@@ -425,6 +426,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_settings { @include o-add-icon('gears');}
 .o_icon_share { @include o-add-icon('share');}
 .o_icon_share_alt { @include o-add-icon('share-alt-square');}
+.o_icon_sharepoint_drive { @include o-add-icon('database'); }
 .o_icon_show_more { @include o-add-icon('square-caret-down', false);}
 .o_icon_show_less { @include o-add-icon('square-caret-up', false);}
 .o_icon_show_send { @include o-add-icon('paper-plane', false);}

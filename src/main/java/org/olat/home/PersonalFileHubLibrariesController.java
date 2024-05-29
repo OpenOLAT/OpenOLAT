@@ -182,6 +182,5 @@ public class PersonalFileHubLibrariesController extends BasicController implemen
 		
 		String providerName = spContainer.getName();
 		stackedPanel.pushController(providerName, folderCtrl);
-		stackedPanel.setInvisibleCrumb(2);
 	}
 }

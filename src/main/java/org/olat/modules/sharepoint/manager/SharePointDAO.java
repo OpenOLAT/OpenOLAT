@@ -75,6 +75,7 @@ public class SharePointDAO {
 					.sites()
 					.get(requestConfiguration -> {
 						requestConfiguration.queryParameters.search = "frentix";
+						requestConfiguration.queryParameters.filter = null;
 					});
 			
 			List<Site> sitesList = allSites.getValue();

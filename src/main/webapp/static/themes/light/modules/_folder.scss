@@ -172,12 +172,17 @@
 	align-items: center;
 	.o_icon {
 		font-size: $o-folder-row-thumbnail-icon-size;
-		&.o_filetype_folder {
+		&.o_filetype_folder, &.o_icon_sharepoint_drive, &.o_icon_onedrive {
 			color: $o-folder-row-thumbnail-folder-icon-color;
 		}
 	}
 	&:not(:has(.o_icon)) {
 		outline: $o-folder-row-thumbnail-image-border;
+	}
+	
+	>img {
+		max-height: 100%;
+		max-width: 100%;
 	}
 }
 tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, tr.o_folder_muted_row td a {
