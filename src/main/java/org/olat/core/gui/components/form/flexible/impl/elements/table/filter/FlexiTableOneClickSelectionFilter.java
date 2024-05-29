@@ -89,9 +89,11 @@ public class FlexiTableOneClickSelectionFilter extends FlexiTableFilter implemen
 	@Override
 	public void setValue(Object val) {
 		value = convert(val);
-		if(value != null && mse != null && mse.getKeys().contains(value)) {
+		if(mse != null) {
 			mse.uncheckAll();
-			mse.select(value, true);
+			if(value != null && mse.getKeys().contains(value)) {
+				mse.select(value, true);
+			}
 		}
 	}
 	
@@ -164,6 +166,7 @@ public class FlexiTableOneClickSelectionFilter extends FlexiTableFilter implemen
 		if(mse == null) {
 			mse = new MultipleSelectionElementImpl(id, Layout.vertical, 1);
 			mse.setDomReplacementWrapperRequired(false);
+			mse.setAjaxOnly(true);
 			mse.setKeysAndValues(availableValues.keys(), availableValues.values(), null, null);
 			mse.setFormLayout("minimal");
 			
