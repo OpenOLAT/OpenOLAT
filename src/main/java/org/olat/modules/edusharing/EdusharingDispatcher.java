@@ -19,6 +19,7 @@
  */
 package org.olat.modules.edusharing;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +29,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Properties;
 
 import jakarta.servlet.ServletException;
@@ -40,12 +43,15 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.modules.edusharing.model.SearchResult;
+import org.olat.modules.edusharing.ui.EdusharingUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -248,7 +254,8 @@ public class EdusharingDispatcher implements Dispatcher {
 		String width = ureq.getParameter("width");
 		String height = ureq.getParameter("height");
 		Identity viewer = ureq.getUserSession().getIdentity();
-		String language = LocaleNegotiator.getPreferedLocale(ureq).getLanguage();
+		Locale preferedLocale = LocaleNegotiator.getPreferedLocale(ureq);
+		String language = preferedLocale.getLanguage();
 		
 		try (EdusharingResponse edusharingResponse = edusharingService.getRendered(viewer, identifier, version, width, height, language)) {
 			response.setStatus(edusharingResponse.getStatus());
@@ -256,6 +263,16 @@ public class EdusharingDispatcher implements Dispatcher {
 				response.setContentType(edusharingResponse.getMimeType());
 				response.setContentLengthLong(edusharingResponse.getContentLength());
 				stream(edusharingResponse.getContent(), response.getOutputStream());
+			} else {
+				response.setContentType("text/plain");
+				Translator translator = Util.createPackageTranslator(EdusharingUIFactory.class, preferedLocale);
+				String errorText = switch (edusharingResponse.getStatus()) {
+				case 401 -> translator.translate("error.render.401");
+				case 404 -> translator.translate("error.render.404");
+				case 405 -> translator.translate("error.render.405");
+				default -> translator.translate("error.render", String.valueOf(edusharingResponse.getStatus()));
+				};
+				stream( new ByteArrayInputStream(errorText.getBytes(StandardCharsets.UTF_8)) , response.getOutputStream());
 			}
 		}
 	}
