@@ -73,4 +73,6 @@ public interface ContentEditorFragment extends ComponentCollection {
 	public boolean isInForm();
 
 	public void setInForm(boolean inForm);
+
+	public void positionInspector(String offsetLeft, String offsetTop);
 }

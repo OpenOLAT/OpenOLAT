@@ -80,6 +80,7 @@ import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddLayoutEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
+import org.olat.modules.ceditor.ui.event.PositionInspectorEvent;
 import org.olat.modules.ceditor.ui.event.SaveElementEvent;
 import org.olat.modules.cemedia.ui.event.AddMediaEvent;
 import org.olat.modules.forms.model.xml.Container;
@@ -233,6 +234,8 @@ public class PageEditorV2Controller extends BasicController {
 			doCloseEditor(ureq, cpe.getElement());
 		} else if(event instanceof CloseInspectorEvent cpe) {
 			doCloseInspector(ureq, cpe.getElementId(), cpe.isSilently());
+		} else if (event instanceof PositionInspectorEvent positionInspectorEvent) {
+			doPropagateInspectorPosition(ureq, positionInspectorEvent);
 		}
 		super.event(ureq, source, event);
 	}
@@ -402,6 +405,15 @@ public class PageEditorV2Controller extends BasicController {
 			if(comp instanceof ContentEditorFragment elementCmp
 					&&elementCmp.getElementId().equals(elementId) && elementCmp.isEditMode()) {
 				elementCmp.setInspectorVisible(false, silently);
+			}
+			return true;
+		}, editorCmp, false).visitAll(ureq);
+	}
+
+	private void doPropagateInspectorPosition(UserRequest ureq, PositionInspectorEvent positionInspectorEvent) {
+		new ComponentTraverser((comp, uureq) -> {
+			if (comp instanceof ContentEditorFragment contentEditorFragment) {
+				contentEditorFragment.positionInspector(positionInspectorEvent.getOffsetLeft(), positionInspectorEvent.getOffsetTop());
 			}
 			return true;
 		}, editorCmp, false).visitAll(ureq);

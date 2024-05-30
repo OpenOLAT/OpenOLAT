@@ -41,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.ui.ContainerEditorController;
+import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.CloneElementEvent;
@@ -491,5 +492,12 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 	@Override
 	public void setInForm(boolean inForm) {
 		this.inForm = inForm;
+	}
+
+	@Override
+	public void positionInspector(String offsetLeft, String offsetTop) {
+		if (inspectorPart instanceof ModalInspectorController modalInspectorController) {
+			modalInspectorController.positionInspector(offsetLeft, offsetTop);
+		}
 	}
 }

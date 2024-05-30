@@ -31,6 +31,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.ui.event.CloseInspectorEvent;
+import org.olat.modules.ceditor.ui.event.PositionInspectorEvent;
 
 /**
  * 
@@ -83,6 +84,9 @@ public class ModalInspectorController extends BasicController implements PageEle
 			if("close_inspector".equals(event.getCommand())) {
 				fireEvent(ureq, new CloseInspectorEvent(elementId, false));
 			}
+			if ("position_inspector".equals(event.getCommand())) {
+				fireEvent(ureq, new PositionInspectorEvent(ureq.getParameter("offsetLeft"), ureq.getParameter("offsetTop")));
+			}
 		}
 	}
 	
@@ -91,4 +95,9 @@ public class ModalInspectorController extends BasicController implements PageEle
 		fireEvent(ureq, event);
 	}
 
+	public void positionInspector(String offsetLeft, String offsetTop) {
+		// Do this silently, so it gets added at the next redraw.
+		mainVC.getContext().put("offsetLeft", offsetLeft);
+		mainVC.getContext().put("offsetTop", offsetTop);
+	}
 }

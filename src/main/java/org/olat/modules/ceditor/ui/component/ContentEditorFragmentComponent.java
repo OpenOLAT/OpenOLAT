@@ -38,6 +38,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.event.CloneElementEvent;
 import org.olat.modules.ceditor.ui.event.DeleteElementEvent;
@@ -74,11 +75,13 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	
 	private final Controller editorPart;
 	private final PageRunElement viewPart;
+	private final Controller inspectorPart;
 	
 	public ContentEditorFragmentComponent(String name, PageElement pageElement, PageRunElement viewPart, Controller editorPart, Controller inspectorPart, Translator translator) {
 		super(name);
 		this.editorPart = editorPart;
 		this.viewPart = viewPart;
+		this.inspectorPart = inspectorPart;
 		this.pageElement = pageElement;
 		setDomReplacementWrapperRequired(false);
 		
@@ -352,5 +355,12 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	@Override
 	public void setInForm(boolean inForm) {
 		this.inForm = inForm;
+	}
+
+	@Override
+	public void positionInspector(String offsetLeft, String offsetTop) {
+		if (inspectorPart instanceof ModalInspectorController modalInspectorController) {
+			modalInspectorController.positionInspector(offsetLeft, offsetTop);
+		}
 	}
 }
