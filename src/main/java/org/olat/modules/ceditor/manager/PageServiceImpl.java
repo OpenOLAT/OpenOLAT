@@ -83,6 +83,7 @@ import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaLogDAO;
+import org.olat.modules.cemedia.manager.MediaRelationDAO;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.manager.PageUserInfosDAO;
@@ -117,6 +118,8 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	private PageDAO pageDao;
 	@Autowired
 	private MediaDAO mediaDao;
+	@Autowired
+	private MediaRelationDAO mediaRelationDao;
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
@@ -188,6 +191,7 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 
 	@Override
 	public int deleteReference(RepositoryEntry repositoryEntry, String subIdent) {
+		mediaRelationDao.deleteRelations(repositoryEntry);
 		return pageReferenceDao.deleteReference(repositoryEntry, subIdent);	
 	}
 
