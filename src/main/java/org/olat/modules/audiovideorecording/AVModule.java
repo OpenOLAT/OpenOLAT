@@ -60,6 +60,8 @@ public class AVModule extends AbstractSpringModule {
 	private static final String LOCAL_AUDIO_CONVERSION_ENABLED = "av.local.audio.conversion.enabled";
 	private static final String HANDBRAKE_CLI_PATH = "av.handbrakecli.path";
 	private static final String FFMPEG_PATH = "av.ffmpeg.path";
+	private static final String VIDEO_TRANSCODING_DIR = "video.transcoding.dir";
+	private static final String FOLDER_ROOT = "folder.root";
 	private static final String PROPERTY_CATEGORY_COMMAND_PATH = "commandPath";
 	private static final String PROPERTY_NAME_HAND_BRAKE_CLI = "HandBrakeCLI";
 	private static final String PROPERTY_CATEGORY_TRANSCODING = "transcoding";
@@ -80,6 +82,10 @@ public class AVModule extends AbstractSpringModule {
 	private String handbrakeCliPath;
 	@Value("${av.ffmpeg.path}")
 	private String ffmpegPath;
+	@Value("${video.transcoding.dir}")
+	private String videoTranscodingDir;
+	@Value("${folder.root}")
+	private String folderRoot;
 
 	private Boolean localVideoConversionPossible;
 	private Boolean localAudioConversionPossible;
@@ -137,12 +143,24 @@ public class AVModule extends AbstractSpringModule {
 			ffmpegPath = ffmpegPathObj;
 		}
 
+		String videoTranscodingDirObj = getStringPropertyValue(VIDEO_TRANSCODING_DIR, true);
+		if (StringHelper.containsNonWhitespace(videoTranscodingDirObj)) {
+			videoTranscodingDir = videoTranscodingDirObj;
+		}
+
+		String folderRootObj = getStringPropertyValue(FOLDER_ROOT, true);
+		if (StringHelper.containsNonWhitespace(folderRootObj)) {
+			folderRoot = folderRootObj;
+		}
+
 		log.info("av.video.recording.enabled={}", videoRecordingEnabled);
 		log.info("av.audio.recording.enabled={}", audioRecordingEnabled);
 		log.info("av.local.transcoding.enabled={}", localTranscodingEnabled);
 		log.info("av.local.audio.conversion.enabled={}", localAudioConversionEnabled);
 		log.info("av.handbrakecli.path={}", handbrakeCliPath);
 		log.info("av.ffmpeg.path={}", ffmpegPath);
+		log.info("folder.root={}", folderRoot);
+		log.info("video.transcoding.dir={}", videoTranscodingDir);
 	}
 
 	@Override
@@ -429,5 +447,12 @@ public class AVModule extends AbstractSpringModule {
 		} catch (MalformedURLException e) {
 			return null;
 		}
+	}
+
+	public boolean externalTranscodingProbablySetUp() {
+		if (StringHelper.containsNonWhitespace(videoTranscodingDir) && StringHelper.containsNonWhitespace(folderRoot)) {
+			return !videoTranscodingDir.startsWith(folderRoot);
+		}
+		return false;
 	}
 }
