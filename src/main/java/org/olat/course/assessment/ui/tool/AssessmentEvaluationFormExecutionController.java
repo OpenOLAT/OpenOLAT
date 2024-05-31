@@ -91,7 +91,7 @@ public class AssessmentEvaluationFormExecutionController extends BasicController
 		boolean readOnly = !edit;
 		boolean showDoneButton = edit;
 		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null,
-				readOnly, showDoneButton, false, null);
+				readOnly, showDoneButton, edit, false, null);
 		executionCtrl.setSaveDisplayText(translate("save"));
 		listenTo(executionCtrl);
 		
@@ -116,7 +116,7 @@ public class AssessmentEvaluationFormExecutionController extends BasicController
 			if(Event.DONE_EVENT.equals(event)) {
 				doSetAssessmentScore();
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if(event instanceof ProgressEvent) {
+			} else if(event instanceof ProgressEvent || event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, event);
 			}
 		}

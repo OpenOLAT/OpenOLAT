@@ -232,9 +232,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 		Boolean userVisibilityInverted = assessmentEntry.getUserVisibility() != null && assessmentEntry.getUserVisibility().booleanValue()? Boolean.FALSE: Boolean.TRUE;
 		mainVC.contextPut("userVisibilityInverted", new UserVisibilityCellRenderer(true).render(userVisibilityInverted, getTranslator()));
 		
-		String formEvaluationScore = assessmentConfig.hasFormEvaluation() ? getFormEvaluationScore() : "-";
-		mainVC.contextPut("formEvaluationScore", formEvaluationScore);
-		
+		putFormEvaluationScoreAndStatus();
+
 		String rawComment = assessmentEntry.getComment();
 		if (assessmentConfig.hasComment()) {
 			StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
@@ -257,9 +256,15 @@ public class AssessmentViewController extends BasicController implements Assessm
 			docsVC.contextPut("documents", wrappers);
 			mainVC.put("docs", docsVC);
 		}
+
+		if(assessmentConfig.hasFormEvaluation()) {
+			putFormEvaluationScoreAndStatus();
+		}
 	}
 	
-	private String getFormEvaluationScore() {
+	private void putFormEvaluationScoreAndStatus() {
+		mainVC.contextPut("formEvaluationScore", "-");
+		
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		EvaluationFormSession session = courseAssessmentService.getSession(courseEntry, courseNode, assessedIdentity);
@@ -267,10 +272,13 @@ public class AssessmentViewController extends BasicController implements Assessm
 		if(evaluationFormStatus == EvaluationFormSessionStatus.done) {
 			Float evaluationScore = courseAssessmentService.getEvaluationScore(session, courseEntry, courseNode);
 			if(evaluationScore != null) {
-				return AssessmentHelper.getRoundedScore(evaluationScore);
+				String score = AssessmentHelper.getRoundedScore(evaluationScore);
+				mainVC.contextPut("formEvaluationScore", score);
 			}
 		}
-		return "-";
+		
+		String status = new EvaluationFormSessionStatusCellRenderer(getLocale(), true, true, false).render(evaluationFormStatus);
+		mainVC.contextPut("formEvaluationStatus", status);
 	}
 	
 	private DocumentWrapper createDocumentWrapper(VFSLeaf document, VelocityContainer docsVC) {

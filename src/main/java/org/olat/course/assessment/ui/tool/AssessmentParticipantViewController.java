@@ -250,9 +250,16 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				FigureWidget rubricWidget = WidgetFactory.createFigureWidget("rubric_" + i, null,
 						translate("form.evaluation.rubric.score", Integer.toString(i + 1)), "o_icon_score");
 				rubricWidget.setDesc(translate("score.of", AssessmentHelper.getRoundedScore(maxScoreRubric)));
-				rubricWidget.setValue(AssessmentHelper.getRoundedScore(score));
 				
-				ProgressBar rubricProgress = new ProgressBar("scoreProgress_" + i, 100, score.floatValue(), maxScoreRubric.floatValue(), null);
+				float progress = 0.0f;
+				if(resultsVisible) {
+					rubricWidget.setValue(AssessmentHelper.getRoundedScore(score));
+					progress = score.floatValue();
+				} else {
+					rubricWidget.setValue(translate("assessment.value.not.visible"));
+				}
+				
+				ProgressBar rubricProgress = new ProgressBar("scoreProgress_" + i, 100, progress, maxScoreRubric.floatValue(), null);
 				rubricProgress.setWidthInPercent(true);
 				rubricProgress.setLabelAlignment(LabelAlignment.none);
 				rubricProgress.setRenderSize(RenderSize.small);

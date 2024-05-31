@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -99,6 +100,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private final List<ExecutionFragment> fragments = new ArrayList<>();
 	private FormLink saveLink;
 	private FormSubmit doneLink;
+	private FormCancel cancelLink;
 	private DialogBoxController confirmDoneCtrl;
 	private PageFragmentsElementImpl fragmentsEl;
 
@@ -110,6 +112,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private EmptyState emptyState;
 	private boolean readOnly;
 	private boolean showDoneButton;
+	private boolean showCancelButton;
 	private final boolean doneSavesOnly;
 	private boolean isRubricAssessment;
 
@@ -124,7 +127,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			EmptyStateConfig emptyStateConfig) {
-		this(ureq, wControl, null, null, session, null, null, false, true, false, emptyStateConfig);
+		this(ureq, wControl, null, null, session, null, null, false, true, false, false, emptyStateConfig);
 	}
 
 	/**
@@ -133,18 +136,18 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	 */
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			EvaluationFormResponses responses, Form form, DataStorage storage, Component header) {
-		this(ureq, wControl, form, storage, session, null, header, false, true, false, null);
+		this(ureq, wControl, form, storage, session, null, header, false, true, false, false, null);
 		this.responses = responses;
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			boolean readOnly, boolean showDoneButton, boolean doneSavesOnly, EmptyStateConfig emptyState) {
-		this(ureq, wControl, null, null, session, null, null, readOnly, showDoneButton, doneSavesOnly, emptyState);
+		this(ureq, wControl, null, null, session, null, null, readOnly, showDoneButton, false, doneSavesOnly, emptyState);
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
 			EvaluationFormSession session, ExecutionIdentity executionIdentity, Component header, boolean readOnly,
-			boolean showDoneButton, boolean doneSavesOnly, EmptyStateConfig emptyStateConfig) {
+			boolean showDoneButton, boolean showCancelButton, boolean doneSavesOnly, EmptyStateConfig emptyStateConfig) {
 		super(ureq, wControl, "execute");
 
 		this.session = session;
@@ -152,6 +155,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		this.emptyStateConfig = emptyStateConfig != null? emptyStateConfig: EMPTY_STATE_DEFAULTS;
 		this.readOnly = readOnly;
 		this.showDoneButton = showDoneButton;
+		this.showCancelButton = showCancelButton;
 		this.doneSavesOnly = doneSavesOnly;
 
 		if (form != null) {
@@ -224,6 +228,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		String labelKey = doneSavesOnly? "save": "save.as.done";
 		doneLink = uifactory.addFormSubmitButton("save.as.done", labelKey, formLayout);
 		saveLink = uifactory.addFormLink("save.intermediate", "save.intermediate", null, flc, Link.BUTTON);
+		cancelLink = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		showHideButtons();
 		if(!doneLink.isVisible() && !saveLink.isVisible()) {
 			flc.getRootForm().setHideDirtyMarkingMessage(true);
@@ -302,6 +307,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private void showHideButtons() {
 		saveLink.setVisible(!readOnly && !doneSavesOnly && session != null);
 		doneLink.setVisible(showDoneButton);
+		cancelLink.setVisible(showCancelButton);
 	}
 
 	@Override
@@ -345,6 +351,11 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override

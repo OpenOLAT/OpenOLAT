@@ -26,6 +26,9 @@
 			#if($r.available("save.intermediate") && $r.visible("save.intermediate"))
 				$r.render("save.intermediate")
 			#end
+			#if($r.available("cancel"))
+				$r.render("cancel")
+			#end
 		</div>
 	</div>
 #end

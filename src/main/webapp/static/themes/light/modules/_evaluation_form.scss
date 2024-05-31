@@ -754,3 +754,13 @@
 	}
 }
 
+.o_evaluation_wrapper {
+	.o_button_group:first-child {
+		margin-top: 0;
+	}
+	
+	.o_button_group:last-child {
+		margin-bottom: 0;
+	}
+}
+

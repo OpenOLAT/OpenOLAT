@@ -88,6 +88,10 @@ body .progress {
 	margin-bottom:0;
 }
 
+body .modal-body {
+	padding: 20px;
+}
+
 /* extend panel to contain multiple separated bodies */
 .panel-body:nth-child(n+2) {
 	border-top: 1px solid $panel-default-border;

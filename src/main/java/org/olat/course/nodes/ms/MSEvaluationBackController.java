@@ -51,7 +51,7 @@ public class MSEvaluationBackController extends BasicController {
 		backLink = LinkFactory.createLinkBack(mainVC, this);
 		mainVC.put("back", backLink);
 
-		editExecutionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null, false, true, false, null);
+		editExecutionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null, false, true, false, false, null);
 		listenTo(editExecutionCtrl);
 		mainVC.put("execution", editExecutionCtrl.getInitialComponent());
 		

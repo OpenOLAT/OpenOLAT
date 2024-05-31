@@ -129,7 +129,7 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 			removeAsListenerAndDispose(executionCtrl);
 		}
 		
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null, true, false, false, null);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, null, null, true, false, false, false, null);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());
 	}
