@@ -31,5 +31,7 @@ import org.olat.core.util.vfs.VFSContainer;
 public interface SharePointService {
 	
 	VFSContainer getSharePointContainer(UserSession usess);
+	
+	VFSContainer getOneDriveContainer(UserSession usess);
 
 }

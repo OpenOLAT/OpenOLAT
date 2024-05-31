@@ -69,12 +69,12 @@ public class SharePointDAO {
 	private static final String[] ATTRS_DRIVE_ITEM = new String[] { "id", "name", "lastModifiedDateTime", "weburl", "size", "file", "folder", "sensitivityLabel" };
 	private static final String[] EXPAND_DRIVE_ITEM = new String[] { "thumbnails" };
 
-	public List<MicrosoftSite> getSites(TokenCredential tokenProvider) {
+	public List<MicrosoftSite> getSites(TokenCredential tokenProvider, String search) {
 		try {
 			SiteCollectionResponse allSites = client(tokenProvider)
 					.sites()
 					.get(requestConfiguration -> {
-						requestConfiguration.queryParameters.search = "frentix";
+						requestConfiguration.queryParameters.search = search;
 						requestConfiguration.queryParameters.filter = null;
 					});
 			

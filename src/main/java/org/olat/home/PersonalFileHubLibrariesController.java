@@ -41,7 +41,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -62,6 +61,7 @@ public class PersonalFileHubLibrariesController extends BasicController implemen
 	
 	private static final String CMD_MEDIA_CENTER = "media";
 	private static final String CMD_SHARE_POINT = "sharepoint";
+	private static final String CMD_ONE_DRIVE = "onedrive";
 	
 	private static final FolderControllerConfig FOLDER_CONFIG = FolderControllerConfig.builder()
 			.withDisplaySubscription(false)
@@ -94,8 +94,11 @@ public class PersonalFileHubLibrariesController extends BasicController implemen
 		
 		List<Link> links = new ArrayList<>(3);
 		links.add(createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media")));
-		if(sharePointModule.isEnabled() && sharePointModule.canSharePoint(ureq.getUserSession())) {
+		if(sharePointModule.canSharePoint(ureq.getUserSession())) {
 			links.add(createLink(CMD_SHARE_POINT, "o_icon_provider_adfs", translate("browser.storages.share.point")));
+		}
+		if (sharePointModule.canOneDrive(ureq.getUserSession())) {
+			links.add(createLink(CMD_ONE_DRIVE, "o_icon_onedrive", translate("browser.storages.one.drive")));
 		}
 		mainVC.contextPut("links", links);
 	}
@@ -138,6 +141,8 @@ public class PersonalFileHubLibrariesController extends BasicController implemen
 				doOpenMediaCenter(ureq);
 			} else if(CMD_SHARE_POINT.equals(command)) {
 				doOpenSharePoint(ureq);
+			} else if(CMD_ONE_DRIVE.equals(command)) {
+				doOpenOneDrive(ureq);
 			}
 		}
 	}
@@ -173,9 +178,16 @@ public class PersonalFileHubLibrariesController extends BasicController implemen
 	}
 
 	private void doOpenSharePoint(UserRequest ureq) {
-		UserSession usess = ureq.getUserSession();
-		VFSContainer spContainer = sharePointService.getSharePointContainer(usess);
+		VFSContainer spContainer = sharePointService.getSharePointContainer(ureq.getUserSession());
+		doOpenFolder(ureq, spContainer);
+	}
+	
+	private void doOpenOneDrive(UserRequest ureq) {
+		VFSContainer oneDriveContainer = sharePointService.getOneDriveContainer(ureq.getUserSession());
+		doOpenFolder(ureq, oneDriveContainer);
+	}
 
+	private void doOpenFolder(UserRequest ureq, VFSContainer spContainer) {
 		folderCtrl = new FolderController(ureq, getWindowControl(), spContainer, FOLDER_CONFIG);
 		listenTo(folderCtrl);
 		folderCtrl.updateCurrentContainer(ureq, spContainer, true);

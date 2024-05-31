@@ -94,6 +94,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.io.ShieldInputStream;
@@ -130,6 +131,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				.thenComparing(comparing(VFSRevision::getRevisionTempNr, nullsFirst(Integer::compareTo)));
 	private static final String POSTER_PREFIX = "._oo_poster_";
 	
+	private CacheWrapper<String,VFSItem> inMemoryItems;
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -160,11 +163,12 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	private BaseSecurity securityManager;
 	// Autowired liste by setVfsContextInfoResolver() method
 	private List<VFSContextInfoResolver> vfsContextInfoResolver;
-	
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, fileSizeSubscription);
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, incrementFileDownload);
+		inMemoryItems = coordinatorManager.getCoordinator().getCacher().getCache("VFSRepository", "inMemoryItems");
 	}
 
 	@Override
@@ -201,7 +205,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Override
 	public VFSMetadata getMetadataByUUID(String uuid) {
 		if(StringHelper.containsNonWhitespace(uuid)) {
-			return metadataDao.getMetadata(uuid);
+			VFSMetadata metadata = metadataDao.getMetadata(uuid);
+			if(metadata == null && inMemoryItems.containsKey(uuid)) {
+				metadata = inMemoryItems.get(uuid).getMetaInfo();
+			}
+			return metadata;
 		}
 		return null;
 	}
@@ -391,9 +399,14 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public VFSItem getItemFor(String uuid) {
 		VFSMetadata metadata = metadataDao.getMetadata(uuid);
 		if(metadata == null) {
-			return null;
+			return inMemoryItems.get(uuid);
 		}
 		return getItemFor(metadata);
+	}
+
+	@Override
+	public void registerInMemoryItem(String uuid, VFSItem item) {
+		inMemoryItems.put(uuid, item);
 	}
 
 	@Override

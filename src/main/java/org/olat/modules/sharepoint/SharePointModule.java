@@ -43,16 +43,25 @@ import com.microsoft.graph.models.User;
 public class SharePointModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String PROP_ENABLED = "sharepoint.enabled";
+	private static final String PROP_SITES_ENABLED = "sharepoint.sites.enabled";
+	private static final String PROP_ONEDRIVE_ENABLED = "sharepoint.onedrive.enabled";
 	private static final String PROP_EXCLUDE_SITES_AND_DRIVES = "sharepoint.exclude.sites.drives";
 	private static final String PROP_EXCLUDE_LABELS = "sharepoint.exclude.labels";
+	private static final String PROP_SITES_SEARCH = "sharepoint.sites.search";
 	
 	@Value("${sharepoint.enabled:false}")
 	private boolean enabled;
+	@Value("${sharepoint.sites.enabled:false}")
+	private boolean sitesEnabled;
+	@Value("${sharepoint.onedrive.enabled:false}")
+	private boolean oneDriveEnabled;
 	
 	@Value("${sharepoint.exclude.sites.drives}")
 	private String excludeSitesAndDrives;
 	@Value("${sharepoint.exclude.labels}")
 	private String excludeLabels;
+	@Value("${sharepoint.sites.search}")
+	private String sitesSearch;
 	
 	@Autowired
 	public SharePointModule(CoordinatorManager coordinatorManager) {
@@ -66,8 +75,19 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 			enabled = "true".equals(enabledObj);
 		}
 		
+		String sitesEnabledObj = getStringPropertyValue(PROP_SITES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(sitesEnabledObj)) {
+			sitesEnabled = "true".equals(sitesEnabledObj);
+		}
+		
+		String oneDriveEnabledObj = getStringPropertyValue(PROP_ONEDRIVE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(oneDriveEnabledObj)) {
+			oneDriveEnabled = "true".equals(oneDriveEnabledObj);
+		}
+		
 		excludeSitesAndDrives = getStringPropertyValue(PROP_EXCLUDE_SITES_AND_DRIVES, excludeSitesAndDrives);
 		excludeLabels = getStringPropertyValue(PROP_EXCLUDE_LABELS, excludeLabels);
+		sitesSearch = getStringPropertyValue(PROP_SITES_SEARCH, sitesSearch);
 	}
 
 	@Override
@@ -85,11 +105,32 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 		setBooleanProperty(PROP_ENABLED, enabled, true);
 	}
 	
+	public boolean isSitesEnabled() {
+		return sitesEnabled;
+	}
+
+	public void setSitesEnabled(boolean sitesEnabled) {
+		this.sitesEnabled = sitesEnabled;
+		setBooleanProperty(PROP_SITES_ENABLED, enabled, true);
+	}
+
+	public boolean isOneDriveEnabled() {
+		return oneDriveEnabled;
+	}
+
+	public void setOneDriveEnabled(boolean oneDriveEnabled) {
+		this.oneDriveEnabled = oneDriveEnabled;
+		setBooleanProperty(PROP_ONEDRIVE_ENABLED, enabled, true);
+	}
+
 	public boolean canSharePoint(UserSession usess) {
-		if(isEnabled()) {
-			return usess != null && usess.getOAuth2Tokens() != null && usess.getOAuth2Tokens().getUser(User.class) != null;
-		}
-		return false;
+		return isEnabled() && isSitesEnabled()
+				&& usess != null && usess.getOAuth2Tokens() != null && usess.getOAuth2Tokens().getUser(User.class) != null;
+	}
+	
+	public boolean canOneDrive(UserSession usess) {
+		return isEnabled() && isOneDriveEnabled()
+				&& usess != null && usess.getOAuth2Tokens() != null && usess.getOAuth2Tokens().getUser(User.class) != null;
 	}
 
 	public List<String> getExcludeSitesAndDrives() {
@@ -116,6 +157,15 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	public void setExcludeLabels(String exclusionList) {
 		this.excludeLabels = exclusionList;
 		setStringProperty(PROP_EXCLUDE_LABELS, exclusionList, true);
+	}
+	
+	public String getSitesSearch() {
+		return sitesSearch;
+	}
+
+	public void setSitesSearch(String sitesSearch) {
+		this.sitesSearch = sitesSearch;
+		setStringProperty(PROP_SITES_SEARCH, sitesSearch, true);
 	}
 	
 	private String toString(List<String> list) {

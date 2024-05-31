@@ -34,7 +34,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.sharepoint.SharePointModule;
 import org.olat.modules.sharepoint.SharePointService;
@@ -50,6 +49,7 @@ public class FileBrowserLibrariesController extends BasicController {
 	
 	private static final String CMD_MEDIA_CENTER = "media";
 	private static final String CMD_SHARE_POINT = "sharepoint";
+	private static final String CMD_ONE_DRIVE = "onedrive";
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackedPanel;
@@ -78,8 +78,11 @@ public class FileBrowserLibrariesController extends BasicController {
 		
 		List<Link> links = new ArrayList<>();
 		links.add(createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media")));
-		if(sharePointModule.isEnabled() && sharePointModule.canSharePoint(ureq.getUserSession())) {
+		if (sharePointModule.canSharePoint(ureq.getUserSession())) {
 			links.add(createLink(CMD_SHARE_POINT, "o_icon_provider_adfs", translate("browser.storages.share.point")));
+		}
+		if (sharePointModule.canOneDrive(ureq.getUserSession())) {
+			links.add(createLink(CMD_ONE_DRIVE, "o_icon_onedrive", translate("browser.storages.one.drive")));
 		}
 		mainVC.contextPut("links", links);
 	}
@@ -102,6 +105,8 @@ public class FileBrowserLibrariesController extends BasicController {
 				doOpenMediaCenter(ureq);
 			} else if(CMD_SHARE_POINT.equals(command)) {
 				doOpenSharePoint(ureq);
+			} else if(CMD_ONE_DRIVE.equals(command)) {
+				doOpenOneDrive(ureq);
 			}
 		}
 	}
@@ -125,9 +130,16 @@ public class FileBrowserLibrariesController extends BasicController {
 	}
 	
 	private void doOpenSharePoint(UserRequest ureq) {
-		UserSession usess = ureq.getUserSession();
-		VFSContainer spContainer = sharePointService.getSharePointContainer(usess);
+		VFSContainer spContainer = sharePointService.getSharePointContainer(ureq.getUserSession());
+		doOpenFolderSelection(ureq, spContainer);
+	}
+	
+	private void doOpenOneDrive(UserRequest ureq) {
+		VFSContainer oneDriveContainer = sharePointService.getOneDriveContainer(ureq.getUserSession());
+		doOpenFolderSelection(ureq, oneDriveContainer);
+	}
 
+	private void doOpenFolderSelection(UserRequest ureq, VFSContainer spContainer) {
 		folderSelectionCtrl = new FolderSelectionController(ureq, getWindowControl(), stackedPanel, spContainer,
 				selectionMode, submitButtonText);
 		listenTo(folderSelectionCtrl);

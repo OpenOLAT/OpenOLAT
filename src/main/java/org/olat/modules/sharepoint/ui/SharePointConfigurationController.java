@@ -45,7 +45,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SharePointConfigurationController extends FormBasicController {
 	
 	private FormToggle moduleEnabledEl;
-	
+	private FormToggle sitesEnabledEl;
+	private FormToggle oneDriveEnabledEl;
+
+	private TextElement searchSitesEl;
 	private TextElement excludeSitesAndDrivesEl;
 	private TextElement excludeLabelsEl;
 	
@@ -68,6 +71,17 @@ public class SharePointConfigurationController extends FormBasicController {
 		moduleEnabledEl.toggle(sharePointModule.isEnabled());
 		moduleEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
+		sitesEnabledEl = uifactory.addToggleButton("sites.enable", "sharepoint.sites.enable", translate("on"), translate("off"), formLayout);
+		sitesEnabledEl.toggle(sharePointModule.isSitesEnabled());
+		sitesEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		
+		oneDriveEnabledEl = uifactory.addToggleButton("onedrive.enable", "sharepoint.onedrive.enable", translate("on"), translate("off"), formLayout);
+		oneDriveEnabledEl.toggle(sharePointModule.isOneDriveEnabled());
+		oneDriveEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		
+		String sitesSearch = sharePointModule.getSitesSearch();
+		searchSitesEl = uifactory.addTextElement("sites.search", 128, sitesSearch, formLayout);
+		
 		String exclusionSitesAndDrives = toTextArea(sharePointModule.getExcludeSitesAndDrives());
 		excludeSitesAndDrivesEl = uifactory.addTextAreaElement("exclusion.sites", "exclusion.sites", 4000, 4, 60, false, false, false, exclusionSitesAndDrives, formLayout);
 		
@@ -80,6 +94,9 @@ public class SharePointConfigurationController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean enabled = moduleEnabledEl.isOn();
+		sitesEnabledEl.setVisible(enabled);
+		oneDriveEnabledEl.setVisible(enabled);
+		searchSitesEl.setVisible(enabled);
 		excludeSitesAndDrivesEl.setVisible(enabled);
 		excludeLabelsEl.setVisible(enabled);
 	}
@@ -96,8 +113,13 @@ public class SharePointConfigurationController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		boolean enabled = moduleEnabledEl.isOn();
 		sharePointModule.setEnabled(enabled);
+		sharePointModule.setSitesEnabled(enabled && sitesEnabledEl.isOn());
+		sharePointModule.setOneDriveEnabled(enabled && oneDriveEnabledEl.isOn());
 		
 		if(enabled) {
+			String sitesSearch = searchSitesEl.getValue();
+			sharePointModule.setSitesSearch(sitesSearch);
+			
 			List<String> excludeSitesAndDrives = toList(excludeSitesAndDrivesEl.getValue());
 			sharePointModule.setExcludeSitesAndDrives(excludeSitesAndDrives);
 			

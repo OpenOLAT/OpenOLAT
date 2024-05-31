@@ -38,9 +38,8 @@ public class OneDriveContainer extends AbstractRootDriveContainer {
 	
 	private MicrosoftDrive oneDrive;
 	
-	public OneDriveContainer(SharePointContainer parentContainer,
-			SharePointDAO sharePointDao, List<String> exclusionsLabels, TokenCredential tokenProvider) {
-		super(parentContainer, "OneDrive", sharePointDao, exclusionsLabels, tokenProvider);
+	public OneDriveContainer(SharePointDAO sharePointDao, List<String> exclusionsLabels, TokenCredential tokenProvider) {
+		super(null, "OneDrive", sharePointDao, exclusionsLabels, tokenProvider);
 	}
 	
 	@Override

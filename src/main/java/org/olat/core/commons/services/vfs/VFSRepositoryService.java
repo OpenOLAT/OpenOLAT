@@ -76,6 +76,8 @@ public interface VFSRepositoryService {
 	public VFSItem getItemFor(VFSMetadata metdata);
 	
 	public VFSItem getItemFor(String uuid);
+	
+	public void registerInMemoryItem(String uuid, VFSItem item);
 
 	/**
 	 * Returns a file URL as a leaf.

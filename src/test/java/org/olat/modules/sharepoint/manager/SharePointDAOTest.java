@@ -116,7 +116,7 @@ public class SharePointDAOTest extends OlatTestCase {
 		oauth2Tokens.setRefreshToken(refreshToken);
 		TokenCredential credential = new OAuth2TokenCredential(oauth2Tokens);
 		
-		List<MicrosoftSite> sites = sharePointDao.getSites(credential);
+		List<MicrosoftSite> sites = sharePointDao.getSites(credential, "frentix");
 		Assert.assertNotNull(sites);
 		// Normally there is always some sites available
 		Assert.assertFalse(sites.isEmpty());

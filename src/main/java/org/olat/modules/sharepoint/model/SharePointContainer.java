@@ -21,10 +21,11 @@ package org.olat.modules.sharepoint.model;
 
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
+import org.olat.modules.sharepoint.SharePointModule;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
 import com.azure.core.credential.TokenCredential;
@@ -38,16 +39,18 @@ import com.azure.core.credential.TokenCredential;
 public class SharePointContainer extends MergeSource {
 
 	private final SharePointDAO sharePointDao;
+	private final SharePointModule sharePointModule;
 	private final TokenCredential tokenProvider;
 	
 	private final List<String> exclusionsSitesAndDrives;
 	private final List<String> exclusionsLabels;
 	
 	public SharePointContainer(VFSContainer parentContainer, String name,
-			SharePointDAO sharePointDao, List<String> exclusionsSitesAndDrives,
-			List<String> exclusionsLabels, TokenCredential tokenProvider) {
+			SharePointModule sharePointModule, SharePointDAO sharePointDao,
+			List<String> exclusionsSitesAndDrives, List<String> exclusionsLabels, TokenCredential tokenProvider) {
 		super(parentContainer, name);
 		this.sharePointDao = sharePointDao;
+		this.sharePointModule = sharePointModule;
 		this.tokenProvider = tokenProvider;
 		this.exclusionsSitesAndDrives = exclusionsSitesAndDrives;
 		this.exclusionsLabels = exclusionsLabels;
@@ -58,7 +61,11 @@ public class SharePointContainer extends MergeSource {
 	
 	@Override
 	protected void init() {
-		List<MicrosoftSite> sites = sharePointDao.getSites(tokenProvider);
+		String searchQuery = sharePointModule.getSitesSearch();
+		if(!StringHelper.containsNonWhitespace(searchQuery)) {
+			searchQuery = "frentix";
+		}
+		List<MicrosoftSite> sites = sharePointDao.getSites(tokenProvider, searchQuery);
 		if(sites != null) {
 			for(MicrosoftSite site:sites) {
 				if(SharePointDAO.accept(site, exclusionsSitesAndDrives)) {
@@ -69,9 +76,5 @@ public class SharePointContainer extends MergeSource {
 				}
 			}
 		}
-		
-		OneDriveContainer oneDrive = new OneDriveContainer(this, sharePointDao, exclusionsLabels, tokenProvider);
-		oneDrive.setLocalSecurityCallback(new FullAccessCallback());
-		addContainer(oneDrive);
 	}
 }

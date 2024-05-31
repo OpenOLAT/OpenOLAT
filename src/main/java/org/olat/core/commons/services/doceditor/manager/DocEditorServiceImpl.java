@@ -242,9 +242,12 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 			return accessDao.createAccess(metadata, identity, editorType, configs.getMode(),
 					configs.isVersionControlled(), configs.isDownloadEnabled(), configs.isFireSavedEvent(), expiresAt);
 		}
-		TransientAccess transientAccess = new TransientAccess(metadata, identity, editorType, configs.getMode(),
+		
+		// In memory items and access are VIEW only
+		TransientAccess transientAccess = new TransientAccess(metadata, identity, editorType, Mode.VIEW,
 				configs.isVersionControlled(), configs.isDownloadEnabled(), configs.isFireSavedEvent(), expiresAt);
 		transientAccessCache.put(transientAccess.getKey(), transientAccess);
+		vfsRepositoryService.registerInMemoryItem(metadata.getUuid(), configs.getVfsLeaf());
 		return transientAccess;
 	}
  
@@ -298,6 +301,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	public void deleteAccess(Access access) {
 		if (access != null) {
 			accessDao.delete(access);
+			transientAccessCache.remove(access.getKey());
 		}
 	}
 
@@ -309,6 +313,7 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		}
 		if (expired(access)) {
 			accessDao.delete(accessRef);
+			transientAccessCache.remove(accessRef.getKey());
 			access = null;
 		}
 		return access;

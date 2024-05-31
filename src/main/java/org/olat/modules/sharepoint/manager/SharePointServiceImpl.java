@@ -22,8 +22,10 @@ package org.olat.modules.sharepoint.manager;
 import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.modules.sharepoint.SharePointModule;
 import org.olat.modules.sharepoint.SharePointService;
+import org.olat.modules.sharepoint.model.OneDriveContainer;
 import org.olat.modules.sharepoint.model.SharePointContainer;
 import org.olat.modules.teams.manager.MicrosoftGraphDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,12 +51,24 @@ public class SharePointServiceImpl implements SharePointService {
 
 	@Override
 	public VFSContainer getSharePointContainer(UserSession usess) {
-		if(!sharePointModule.isEnabled()) return null;
+		if(!sharePointModule.isEnabled() || !sharePointModule.isSitesEnabled()) return null;
 		
 		OAuth2Tokens tokens = usess.getOAuth2Tokens();
 		TokenCredential tokenProvider = microsoftGraphDao.getTokenProvider(tokens);
-		return new SharePointContainer(null, "SharePoint", sharePointDao,
+		return new SharePointContainer(null, "SharePoint", sharePointModule, sharePointDao,
 				sharePointModule.getExcludeSitesAndDrives(), sharePointModule.getExcludeLabels(),
 				tokenProvider);
+	}
+
+	@Override
+	public VFSContainer getOneDriveContainer(UserSession usess) {
+		if(!sharePointModule.isEnabled() || !sharePointModule.isOneDriveEnabled()) return null;
+		
+		OAuth2Tokens tokens = usess.getOAuth2Tokens();
+		TokenCredential tokenProvider = microsoftGraphDao.getTokenProvider(tokens);
+		
+		OneDriveContainer oneDrive = new OneDriveContainer(sharePointDao, sharePointModule.getExcludeLabels(), tokenProvider);
+		oneDrive.setLocalSecurityCallback(new FullAccessCallback());
+		return oneDrive;
 	}
 }
