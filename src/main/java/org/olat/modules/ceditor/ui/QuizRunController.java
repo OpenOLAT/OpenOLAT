@@ -172,7 +172,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 		startButton = LinkFactory.createButton("quiz.start", mainVC, this);
 		startButton.setIconLeftCSS("o_icon o_icon-fw o_icon_play");
 		startButton.setPrimary(true);
-		startButton.setEnabled(!editable && assessmentEntry != null);
+		startButton.setEnabled(!editable);
 		startButton.setTitle("quiz.start");
 		startButton.setAriaLabel("quiz.start");
 		mainVC.put("quiz.start", startButton);
@@ -315,7 +315,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 	}
 
 	private double getCompletion() {
-		if (assessmentEntry != null && assessmentEntry.getCompletion() == null) {
+		if (assessmentEntry == null || assessmentEntry.getCompletion() == null) {
 			return 0.0d;
 		}
 		return assessmentEntry.getCompletion();
@@ -418,6 +418,11 @@ public class QuizRunController extends BasicController implements PageRunElement
 																		  RepositoryEntry referenceEntry,
 																		  AssessmentEntry assessmentEntry,
 																		  boolean authorMode) {
+			if (courseEntry == null || !StringHelper.containsNonWhitespace(subIdent)) {
+				candidateSession = qtiService.createInMemoryAssessmentTestSession(getIdentity());
+				return candidateSession;
+			}
+
 			AssessmentTestSession lastSession = qtiService.getResumableAssessmentItemsSession(getIdentity(),
 					null, courseEntry, subIdent, entry, authorMode);
 			if (lastSession == null) {
