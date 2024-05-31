@@ -88,6 +88,7 @@ import org.olat.core.commons.services.vfs.impl.VFSContextInfoUnknownPathResolver
 import org.olat.core.commons.services.vfs.manager.MetaInfoReader.Thumbnail;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
+import org.olat.core.commons.services.vfs.model.VFSTransientMetadata;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -387,6 +388,13 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Override
 	public VFSItem getItemFor(VFSMetadata metadata) {
 		if(metadata == null) return null;
+		
+		if(metadata instanceof VFSTransientMetadata) {
+			if(metadata.getUuid() != null) {
+				return inMemoryItems.get(metadata.getUuid());
+			}
+			return null;
+		}
 		
 		File file = toFile(metadata);
 		if(file.isDirectory()) {
