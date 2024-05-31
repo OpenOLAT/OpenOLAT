@@ -393,7 +393,6 @@ public class MSEditFormController extends FormBasicController {
 		maxVal.setVisible(scoreGranted.isOn());
 		minVal.setMandatory(minVal.isVisible());
 		maxVal.setMandatory(maxVal.isVisible());
-		evaluationScoreScalingEl.setVisible(scoreGranted.isOn() && withEvaluation);
 		
 		if (gradeEnabledEl != null) {
 			gradeSpacer.setVisible(scoreGranted.isOn());
@@ -423,6 +422,7 @@ public class MSEditFormController extends FormBasicController {
 		boolean scoreAuto = scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected() && "automatic".equals(scoreTypeEl.getSelectedKey());
 		minVal.setEnabled(!scoreAuto);
 		maxVal.setEnabled(!scoreAuto);
+		evaluationScoreScalingEl.setVisible(scoreGranted.isOn() && scoreAuto);
 		
 		if(formMinMax != null && scoreAuto) {
 			minVal.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMin()));

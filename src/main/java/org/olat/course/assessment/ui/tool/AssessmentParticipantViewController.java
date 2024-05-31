@@ -86,6 +86,7 @@ import org.olat.modules.forms.model.SliderStatisticImpl;
 import org.olat.modules.forms.model.SlidersStatisticImpl;
 import org.olat.modules.forms.model.StepCountsBuilder;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeService;
@@ -247,8 +248,15 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				Double maxScoreRubric = rubricValue.maxScore();
 				Double score = rubricValue.score();
 				
-				FigureWidget rubricWidget = WidgetFactory.createFigureWidget("rubric_" + i, null,
-						translate("form.evaluation.rubric.score", Integer.toString(i + 1)), "o_icon_score");
+				String name;
+				boolean showName = rubricValue.rubric().getNameDisplays().contains(NameDisplay.report)
+						&& StringHelper.containsNonWhitespace(rubricValue.rubric().getName());
+				if(showName) {
+					name = translate("form.evaluation.rubric.score.named", rubricValue.rubric().getName());
+				} else {
+					name = translate("form.evaluation.rubric.score", Integer.toString(i + 1));
+				}
+				FigureWidget rubricWidget = WidgetFactory.createFigureWidget("rubric_" + i, null, name, "o_icon_score");
 				rubricWidget.setDesc(translate("score.of", AssessmentHelper.getRoundedScore(maxScoreRubric)));
 				
 				float progress = 0.0f;
@@ -599,8 +607,9 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				List<RubricStatistic> statsList = evaluationFormManager.getRubricStatistics(session);
 				List<RubricValue> values = new ArrayList<>(statsList.size());
 				for(RubricStatistic stats:statsList) {
-					SlidersStatistic slidersStatistics = getSlidersStatistic(stats.getRubric());
-					RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(stats.getRubric(), slidersStatistics);
+					Rubric rubric = stats.getRubric();
+					SlidersStatistic slidersStatistics = getSlidersStatistic(rubric);
+					RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, slidersStatistics);
 	
 					Double score = null;
 					Double maxScore = null;
@@ -610,14 +619,13 @@ public class AssessmentParticipantViewController extends BasicController impleme
 					} else if(scoreMode == FormEvaluationScoreMode.avg) {
 						score = stats.getTotalStatistic().getAvg();
 						maxScore = rubricStatistic.getTotalStatistic().getAvg();
-					} else {
-						continue;
 					}
 					
-					if(score != null) {
-						double scaledScore = score.doubleValue() * scale;
+					if(maxScore != null) {
+						double dScore = score == null ? 0.0d : score.doubleValue();
+						double scaledScore = dScore * scale;
 						double scaledMaxScore = maxScore.doubleValue() * scale;
-						values.add(new RubricValue(scaledScore, scaledMaxScore));
+						values.add(new RubricValue(scaledScore, scaledMaxScore, rubric));
 					}
 				}
 				return values;
@@ -639,7 +647,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		}
 	}
 	
-	public record RubricValue(Double score, Double maxScore) {
+	public record RubricValue(Double score, Double maxScore, Rubric rubric) {
 		//
 	}
 }
