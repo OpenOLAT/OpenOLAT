@@ -63,6 +63,9 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.Cacher;
+import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
@@ -89,6 +92,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	private static final String PROPERTY_CATEGOTY = "document.editor";
 	private static final String PROPERTY_PREF_EDITOR = "pref.editor";
 
+	private CacheWrapper<Long,Access> transientAccessCache;
+	
 	@Autowired
 	private List<DocEditor> editors;
 	@Autowired
@@ -101,6 +106,8 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	private PropertyManager propertyManager;
 	@Autowired
 	private BaseSecurityManager securityManager;
+	@Autowired
+	private Coordinator coordinator;
 	
 	@PostConstruct
 	private void init() {
@@ -108,6 +115,9 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CONTEXT_ENTRY_KEY,
 				new DocEditorContextEntryControllerCreator(this));
+		
+		Cacher cacher = coordinator.getCacher();
+		transientAccessCache = cacher.getCache("DocEditor", "transientAccess");
 	}
 	
 	@Override
@@ -232,8 +242,10 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 			return accessDao.createAccess(metadata, identity, editorType, configs.getMode(),
 					configs.isVersionControlled(), configs.isDownloadEnabled(), configs.isFireSavedEvent(), expiresAt);
 		}
-		return new TransientAccess(metadata, identity, editorType, configs.getMode(),
+		TransientAccess transientAccess = new TransientAccess(metadata, identity, editorType, configs.getMode(),
 				configs.isVersionControlled(), configs.isDownloadEnabled(), configs.isFireSavedEvent(), expiresAt);
+		transientAccessCache.put(transientAccess.getKey(), transientAccess);
+		return transientAccess;
 	}
  
 	private DocEditor getPreferredEditor(Identity identity, Roles roles, DocEditorConfigs configs) {
@@ -292,6 +304,9 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 	@Override
 	public Access getAccess(AccessRef accessRef) {
 		Access access = accessDao.loadAccess(accessRef);
+		if(access == null) {
+			access = transientAccessCache.get(accessRef.getKey());
+		}
 		if (expired(access)) {
 			accessDao.delete(accessRef);
 			access = null;

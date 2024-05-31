@@ -25,6 +25,7 @@ import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.CodeHelper;
 
 /**
  * 
@@ -34,6 +35,7 @@ import org.olat.core.id.Identity;
  */
 public class TransientAccess implements Access {
 	
+	private Long key;
 	private Date creationDate;
 	private Date lastModified;
 
@@ -52,6 +54,7 @@ public class TransientAccess implements Access {
 	public TransientAccess(VFSMetadata metadata, Identity identity, String editorType, Mode mode, boolean versionControlled,
 			boolean download, boolean fireSavedEvent, Date expiresAt) {
 		creationDate = new Date();
+		this.key = - CodeHelper.getForeverUniqueID();
 		this.editorType = editorType;
 		this.mode = mode;
 		this.versionControlled = versionControlled;
@@ -64,7 +67,7 @@ public class TransientAccess implements Access {
 	
 	@Override
 	public Long getKey() {
-		return null;
+		return key;
 	}
 
 	@Override

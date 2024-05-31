@@ -55,6 +55,14 @@
 			<expiration max-idle="21600000" interval="5000" />
 		</local-cache>
 		
+		<local-cache name="DocEditor-transientAccess" simple-cache="true" statistics="true">
+			<encoding media-type="application/x-java-object"/>
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory max-count="10000" when-full="REMOVE" />
+			<expiration max-idle="7200000" interval="5000" />
+		</local-cache>
+		
 		<local-cache name="CalendarManager-calendar" simple-cache="true" statistics="true">
 			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
