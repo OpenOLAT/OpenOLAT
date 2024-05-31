@@ -116,6 +116,9 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 
 	@Override
 	public void setInspectorVisible(boolean inspectorVisible, boolean silently) {
+		if (inspectorVisible) {
+			positionInspector(null, null);
+		}
 		if(isInspectorVisible() != inspectorVisible && inspectorPanel != null) {
 			inspectorPanel.setInspectorVisible(inspectorVisible);
 			toggleInspectorButton.setElementCssClass("o_sel_elementinspector" + (inspectorVisible ? " active" : ""));

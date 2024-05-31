@@ -19,18 +19,37 @@ jQuery(function() {
 				if (x > 0 && y > 0 && x < (windowWidth - width) && y < (windowHeight - height)) {
 					jInspector.css("left", `${x}px`);
 					jInspector.css("top", `${y}px`);
+					return true;
 				}
 			}
 		}
+		return false;
 	}
 
 	var initializePosition = function() {
 		if(inspectorPosition()) {
 			var jInspector = jQuery(".o_page_inspector");
+
+			if (overrideWithTemplateVariables(jInspector)) {
+				return;
+			}
+
 			var jFragment = jInspector.closest(".o_page_fragment_edit");
 			if(jFragment != null) {
 				var fragmentEl = jFragment.get(0);
 				var fragmentRect = fragmentEl.getBoundingClientRect();
+
+				var left = fragmentRect.right;
+				var inspectorWidth = jInspector.width();
+				if (inspectorWidth < window.innerWidth) {
+					if (left < 0) {
+						left = 0;
+					}
+					if ((left + inspectorWidth) > window.innerWidth) {
+						left = window.innerWidth - inspectorWidth;
+					}
+				}
+
 				var top = fragmentRect.top;
 				if(fragmentEl.classList.contains("o_page_container_edit")) {
 					top += 26;
@@ -44,8 +63,9 @@ jQuery(function() {
 						top = window.innerHeight - inspectorHeight;
 					}
 				}
+
 				jInspector.css("top", top + "px");
-				overrideWithTemplateVariables(jInspector);
+				jInspector.css("left", left + "px");
 			}
 		}
 	}

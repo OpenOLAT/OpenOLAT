@@ -239,6 +239,9 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 
 	@Override
 	public void setInspectorVisible(boolean inspectorVisible, boolean silently) {
+		if (inspectorVisible) {
+			positionInspector(null, null);
+		}
 		if(isInspectorVisible() != inspectorVisible && inspectorPanel != null) {
 			editMode = inspectorVisible;
 			inspectorPanel.setInspectorVisible(inspectorVisible);

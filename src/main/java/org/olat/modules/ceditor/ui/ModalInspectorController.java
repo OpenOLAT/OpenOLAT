@@ -31,7 +31,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.ui.event.CloseInspectorEvent;
-import org.olat.modules.ceditor.ui.event.PositionInspectorEvent;
 
 /**
  * 
@@ -85,7 +84,7 @@ public class ModalInspectorController extends BasicController implements PageEle
 				fireEvent(ureq, new CloseInspectorEvent(elementId, false));
 			}
 			if ("position_inspector".equals(event.getCommand())) {
-				fireEvent(ureq, new PositionInspectorEvent(ureq.getParameter("offsetLeft"), ureq.getParameter("offsetTop")));
+				positionInspector(ureq.getParameter("offsetLeft"), ureq.getParameter("offsetTop"));
 			}
 		}
 	}
