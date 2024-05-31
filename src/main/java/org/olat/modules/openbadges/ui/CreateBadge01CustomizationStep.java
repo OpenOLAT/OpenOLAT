@@ -183,10 +183,18 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 				createContext.setBackgroundColorId(backgroundColor.getColor().id());
 				setSvg();
 			} else if (source == applyButton || source == titleEl) {
+				titleEl.clearError();
+				titleEl.validate();
 				createContext.setTitle(titleEl.getValue());
 				setSvg();
 			}
 			super.formInnerEvent(ureq, source, event);
+		}
+
+		@Override
+		protected boolean validateFormLogic(UserRequest ureq) {
+			titleEl.clearError();
+			return super.validateFormLogic(ureq);
 		}
 
 		@Override
