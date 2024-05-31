@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.gui.UserRequest;
@@ -43,6 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
+import org.olat.course.assessment.ui.tool.EvaluationFormSessionStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
@@ -54,6 +57,7 @@ import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MSStatisticController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -63,6 +67,9 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.forms.EvaluationFormProvider;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,12 +88,16 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	private FormLink downloadButton;
 	private FormLink bulkExtendButton;
 	private FormLink bulkDownloadButton;
+
+	private final EvaluationFormProvider evaluationFormProvider;
 	
 	private MSStatisticController statsCtrl;
 	private GroupAssessmentController assessmentCtrl;
 	private BulkAssessmentToolController bulkAssessmentToolCtrl;
 	private EditMultipleDueDatesController editMultipleDueDatesCtrl;
-	
+
+	@Autowired
+	private MSService msService;
 	@Autowired
 	private GTAManager gtaManager;
 
@@ -94,6 +105,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
 		super(ureq, wControl, stackPanel, courseEntry, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
+		evaluationFormProvider = GTACourseNode.getEvaluationFormProvider();
 	}
 
 	@Override
@@ -108,6 +120,15 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.details.gta", IdentityCourseElementCols.details.ordinal()));
 		}
 		super.initStatusColumns(columnsModel);
+	}
+	
+	@Override
+	protected void initScoreColumns(FlexiTableColumnModel columnsModel) {
+		if (assessmentConfig.hasFormEvaluation()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.evaluationForm,
+					new EvaluationFormSessionStatusCellRenderer(getLocale(), true, false, true)));
+		}
+		super.initScoreColumns(columnsModel);
 	}
 
 	@Override
@@ -179,6 +200,27 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 			if(taskList != null) {
 				loadTasksInModel(taskList);
 			}
+		}
+		
+		if (assessmentConfig.hasFormEvaluation()) {
+			loadEvaluationFormSessions();
+		}
+	}
+	
+	private void loadEvaluationFormSessions() {
+		List<EvaluationFormSession> sessions = msService.getSessions(getCourseRepositoryEntry(), courseNode.getIdent(), evaluationFormProvider);
+		Map<String, EvaluationFormSession> identToSesssion = sessions.stream()
+				.collect(Collectors.toMap(
+						s -> s.getSurvey().getIdentifier().getSubident2(),
+						Function.identity()));
+		
+		for (AssessedIdentityElementRow row : usersTableModel.getObjects()) {
+			String ident = row.getIdentityKey().toString();
+			EvaluationFormSession session = identToSesssion.get(ident);
+			EvaluationFormSessionStatus status = session != null
+					? session.getEvaluationFormSessionStatus()
+					: null;
+			row.setEvaluationFormStatus(status);
 		}
 	}
 	

@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.component.CompletionItem;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -65,6 +66,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private Long numOfEntriesInProgress;
 	private Long numOfEntriesPublished;
 	private Long numOfEntriesInRevision;
+	private EvaluationFormSessionStatus evaluationFormStatus;
 	
 	private Object details;
 	private Date initialCourseLaunchDate;
@@ -267,6 +269,14 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public void setNumOfEntriesInRevision(Long numOfEntriesInRevision) {
 		this.numOfEntriesInRevision = numOfEntriesInRevision;
+	}
+
+	public EvaluationFormSessionStatus getEvaluationFormStatus() {
+		return evaluationFormStatus;
+	}
+
+	public void setEvaluationFormStatus(EvaluationFormSessionStatus evaluationFormStatus) {
+		this.evaluationFormStatus = evaluationFormStatus;
 	}
 
 	public FormLink getOpenBinderLink() {

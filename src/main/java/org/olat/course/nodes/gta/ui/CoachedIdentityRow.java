@@ -30,6 +30,7 @@ import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.user.UserPropertiesRow;
 
 /**
@@ -53,6 +54,8 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 
 	private final int numOfSubmissionDocs;
 	private final int numOfCollectedDocs;
+	
+	private EvaluationFormSessionStatus evaluationFormSessionStatus;
 	
 	private FormLink toolsLink;
 	private DownloadLink downloadTaskFileLink;
@@ -170,6 +173,14 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 		return coachKey;
 	}
 	
+	public EvaluationFormSessionStatus getEvaluationFormSessionStatus() {
+		return evaluationFormSessionStatus;
+	}
+
+	public void setEvaluationFormSessionStatus(EvaluationFormSessionStatus evaluationFormSessionStatus) {
+		this.evaluationFormSessionStatus = evaluationFormSessionStatus;
+	}
+
 	public FormLink getToolsLink() {
 		return toolsLink;
 	}

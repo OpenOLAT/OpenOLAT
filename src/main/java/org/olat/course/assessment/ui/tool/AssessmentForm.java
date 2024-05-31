@@ -993,7 +993,7 @@ public class AssessmentForm extends FormBasicController {
 			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			EvaluationFormSession session = courseAssessmentService.getSession(courseEntry, courseNode, assessedIdentity);
 			EvaluationFormSessionStatus evaluationFormStatus = session == null ? null : session.getEvaluationFormSessionStatus();
-			String status = new EvaluationFormSessionStatusCellRenderer(getLocale(), true).render(evaluationFormStatus);
+			String status = new EvaluationFormSessionStatusCellRenderer(getLocale(), true, true, false).render(evaluationFormStatus);
 			formEvaluationStatusEl.setValue(status);
 			
 			viewFormEvaluationLink.setVisible(evaluationFormStatus != null);

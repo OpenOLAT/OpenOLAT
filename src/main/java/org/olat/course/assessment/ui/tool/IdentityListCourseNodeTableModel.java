@@ -143,6 +143,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case numOfNewEntries -> row.getNumOfEntriesNew();
 				case numOfInProgressEntries -> row.getNumOfEntriesInProgress();
 				case openBinder -> row.getOpenBinderLink();
+				case evaluationForm -> row.getEvaluationFormStatus();
 				default -> "ERROR";
 			};
 		}
@@ -190,7 +191,8 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		numOfInProgressEntries("table.header.num.inprogress.entries"),
 		numOfPublishedEntries("table.header.num.published.entries"),
 		numOfInRevisionEntries("table.header.num.inrevision.entries"),
-		openBinder("table.header.action.open.binder");
+		openBinder("table.header.action.open.binder"),
+		evaluationForm("table.header.evaluation.form");
 		
 		private final String i18nKey;
 		private final String icon;

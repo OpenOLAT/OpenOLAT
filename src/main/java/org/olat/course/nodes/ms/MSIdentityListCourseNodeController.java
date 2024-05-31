@@ -29,8 +29,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanNullCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.link.Link;
@@ -40,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
+import org.olat.course.assessment.ui.tool.EvaluationFormSessionStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.nodes.MSCourseNode;
@@ -70,7 +69,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private MSStatisticController statsCtrl;
 
 	private Boolean hasEvaluationForm;
-	private EvaluationFormProvider evaluationFormProvider;
+	private final EvaluationFormProvider evaluationFormProvider;
 
 	@Autowired
 	private MSService msService;
@@ -112,12 +111,8 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	@Override
 	protected void initScoreColumns(FlexiTableColumnModel columnsModel) {
 		if (hasEvaluationForm()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.details.ms",
-					IdentityCourseElementCols.details.ordinal(),
-					new BooleanNullCellRenderer(
-							new CSSIconFlexiCellRenderer("o_icon_lg o_icon_ms_done"),
-							new CSSIconFlexiCellRenderer("o_icon_lg o_icon_ms_pending"),
-							null)));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel( IdentityCourseElementCols.evaluationForm,
+					new EvaluationFormSessionStatusCellRenderer(getLocale(), true, false, true)));
 		}
 		super.initScoreColumns(columnsModel);
 	}
@@ -136,10 +131,10 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			for (AssessedIdentityElementRow row : usersTableModel.getObjects()) {
 				String ident = row.getIdentityKey().toString();
 				EvaluationFormSession session = identToSesssion.get(ident);
-				Boolean sessionDone = session != null
-						? EvaluationFormSessionStatus.done.equals(session.getEvaluationFormSessionStatus())
+				EvaluationFormSessionStatus status = session != null
+						? session.getEvaluationFormSessionStatus()
 						: null;
-				row.setDetails(sessionDone);
+				row.setEvaluationFormStatus(status);
 			}
 		}
 	}

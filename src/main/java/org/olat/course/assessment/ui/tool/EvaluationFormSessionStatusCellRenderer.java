@@ -35,11 +35,15 @@ import org.olat.modules.forms.EvaluationFormSessionStatus;
  */
 public class EvaluationFormSessionStatusCellRenderer extends LabelCellRenderer {
 
+	private final boolean icon;
+	private final boolean label;
 	private final boolean light;
 	private final Translator trans;
 	
-	public EvaluationFormSessionStatusCellRenderer(Locale locale, boolean light) {
+	public EvaluationFormSessionStatusCellRenderer(Locale locale, boolean icon, boolean label, boolean light) {
 		trans = Util.createPackageTranslator(AssessmentStatusCellRenderer.class, locale);
+		this.icon = icon;
+		this.label = label;
 		this.light = light;
 	}
 
@@ -68,11 +72,35 @@ public class EvaluationFormSessionStatusCellRenderer extends LabelCellRenderer {
 
 	@Override
 	protected String getIconCssClass(Object val) {
+		if(icon) {
+			EvaluationFormSessionStatus status = getStatus(val);
+			if(status == EvaluationFormSessionStatus.inProgress) {
+				return "o_icon o_icon-fw o_icon_pencil";
+			} else if(status == EvaluationFormSessionStatus.done) {
+				return "o_icon o_icon-fw o_icon_check";
+			}
+			return "o_icon o_icon-fw o_icon_circle";
+		}
 		return null;
 	}
 
 	@Override
+	protected String getTitle(Object val, Translator translator) {
+		if(label) {
+			return null;
+		}
+		return getLabel(val);
+	}
+
+	@Override
 	protected String getCellValue(Object val, Translator translator) {
+		if(label) {
+			return getLabel(val);
+		}
+		return "";
+	}
+	
+	private String getLabel(Object val) {
 		EvaluationFormSessionStatus status = getStatus(val);
 		if(status == EvaluationFormSessionStatus.inProgress) {
 			return trans.translate("assessment.evaluation.status.inProgress");

@@ -99,7 +99,7 @@ public class AssessmentEvaluationFormExecutionController extends BasicController
 		mainVC.put("execution", executionCtrl.getInitialComponent());
 		
 		EvaluationFormSessionStatus evaluationFormStatus = session == null ? null : session.getEvaluationFormSessionStatus();
-		String status = new EvaluationFormSessionStatusCellRenderer(getLocale(), false).render(evaluationFormStatus);
+		String status = new EvaluationFormSessionStatusCellRenderer(getLocale(), true, true, false).render(evaluationFormStatus);
 		mainVC.contextPut("status", status);
 		
 		putInitialPanel(mainVC);

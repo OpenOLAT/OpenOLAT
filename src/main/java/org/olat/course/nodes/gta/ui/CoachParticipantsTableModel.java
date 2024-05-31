@@ -106,6 +106,7 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 					}
 					return row.getNumOfSubmissionDocs();
 				case assessmentStatus: return row.getAssessmentStatus();
+				case evaluationForm: return row.getEvaluationFormSessionStatus();
 				case coachAssignment: return row.getCoachFullName();
 				case tools: return row.getToolsLink();
 				default: return "ERROR";	
@@ -129,7 +130,8 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 		numOfSubmissionDocs("table.header.num.submissionDocs"),
 		assessmentStatus("table.header.assessmentStatus"),
 		coachAssignment("table.header.coach.assignment"),
-		tools("table.header.tools");
+		tools("table.header.tools"),
+		evaluationForm("table.header.evaluation.form");
 		
 		private final String i18nKey;
 		

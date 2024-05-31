@@ -106,6 +106,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssignCoachController;
+import org.olat.course.assessment.ui.tool.EvaluationFormSessionStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -127,6 +128,7 @@ import org.olat.course.nodes.gta.ui.CoachParticipantsTableModel.CGCols;
 import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
+import org.olat.course.nodes.ms.MSService;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -145,6 +147,9 @@ import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
+import org.olat.modules.forms.EvaluationFormProvider;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -192,6 +197,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final Set<Long> fakeParticipantKeys;
 	private Map<String, List<Long>> groupKeyToIdentityKeys;
+	private final EvaluationFormProvider evaluationFormProvider;
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
@@ -203,6 +209,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private MSService msService;
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
@@ -234,6 +242,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		this.coachCourseEnv = coachCourseEnv;
 		this.markedDefault = markedDefault;
 		tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
+		evaluationFormProvider = GTACourseNode.getEvaluationFormProvider();
 		
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), gtaNode);
 		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
@@ -321,8 +330,11 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		DefaultFlexiColumnModel userVisibilityCol = new DefaultFlexiColumnModel(CGCols.userVisibility, new UserVisibilityCellRenderer(false));
 		userVisibilityCol.setIconHeader("o_icon o_icon-fw o_icon_results_hidden");
-
 		columnsModel.addFlexiColumnModel(userVisibilityCol);
+		if(assessmentConfig.hasFormEvaluation()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.evaluationForm,
+				new EvaluationFormSessionStatusCellRenderer(getLocale(), true, false, true)));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.numOfSubmissionDocs));
@@ -599,6 +611,23 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			TaskLight task = identityToTasks.get(assessableIdentity.getIdentityKey());
 			CoachedIdentityRow row = forgeRow(assessableIdentity, mark, task, assessment, entry, fileNameToDefinitions, tasksFolder);
 			rows.add(row);
+		}
+		
+		if(assessmentConfig.hasFormEvaluation()) {
+			List<EvaluationFormSession> sessions = msService.getSessions(entry, gtaNode.getIdent(), evaluationFormProvider);
+			Map<String, EvaluationFormSession> identToSesssion = sessions.stream()
+					.collect(Collectors.toMap(
+							s -> s.getSurvey().getIdentifier().getSubident2(),
+							Function.identity()));
+			
+			for (CoachedIdentityRow row : rows) {
+				String ident = row.getIdentityKey().toString();
+				EvaluationFormSession session = identToSesssion.get(ident);
+				EvaluationFormSessionStatus status = session != null
+						? session.getEvaluationFormSessionStatus()
+						: null;
+				row.setEvaluationFormSessionStatus(status);
+			}
 		}
 		
 		tableModel.setObjects(rows);
