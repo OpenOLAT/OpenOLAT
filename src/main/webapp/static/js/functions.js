@@ -3422,8 +3422,12 @@ var OOEdusharing = {
 				node.replaceWith(esNode);
 				OPOL.adjustContentHeightForAbsoluteElement('.o_edusharing_container .edusharing_metadata_wrapper');
 			},
-			error : function(XMLHttpRequest, textStatus, errorThrown) {
-				node.replaceWith("<div class='o_warning'>edu-sharing not available</div>");
+			error : function(xhr) {
+				if (xhr.responseText) {
+					node.replaceWith("<div class='o_warning'>" + xhr.responseText + "</div>");
+				} else {
+					node.replaceWith("<div class='o_warning'>edu-sharing not available</div>");
+				}
 			}
 		})
 	},
