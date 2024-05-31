@@ -63,6 +63,14 @@ public interface DocEditor {
 	boolean hasDocumentBaseUrl();
 
 	String getDocumentBaseUrl();
+	
+	/**
+	 * @param metadata The metadata
+	 * @return true if the editor has an external URL
+	 */
+	boolean hasDirectUrl(VFSMetadata metadata);
+	
+	String getDirectUrl(VFSMetadata metadata);
 
 	/**
 	 * Indicates whether a specific identity with specific roles is permitted to use the editor.

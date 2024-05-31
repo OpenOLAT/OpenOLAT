@@ -114,6 +114,16 @@ public class OnlyOfficeEditor implements DocEditor {
 	public String getDocumentBaseUrl() {
 		return null;
 	}
+	
+	@Override
+	public boolean hasDirectUrl(VFSMetadata metadata) {
+		return false;
+	}
+
+	@Override
+	public String getDirectUrl(VFSMetadata metadata) {
+		return null;
+	}
 
 	@Override
 	public boolean isEnabledFor(Identity identity, Roles roles) {

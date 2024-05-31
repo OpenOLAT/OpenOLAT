@@ -354,7 +354,9 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 			Optional<DocEditor> editor = getEditor(access.getEditorType());
 			if (editor.isPresent()) {
 				DocEditor docEditor = editor.get();
-				if (docEditor.hasDocumentBaseUrl()) {
+				if(docEditor.hasDirectUrl(access.getMetadata())) {
+					url = docEditor.getDirectUrl(access.getMetadata());
+				} else if (docEditor.hasDocumentBaseUrl()) {
 					String documenBasetUrl = docEditor.getDocumentBaseUrl();
 					url = documenBasetUrl + getDocumentPath(access);
 				} else {
