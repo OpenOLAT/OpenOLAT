@@ -40,6 +40,7 @@ import org.olat.modules.ceditor.PageReference;
 import org.olat.modules.ceditor.manager.PageDAO;
 import org.olat.modules.ceditor.manager.PageReferenceDAO;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
@@ -445,6 +446,30 @@ public class MediaDAOTest extends OlatTestCase {
 		List<MediaUsage> usages = mediaDao.getUsages(media);
 		assertThat(usages)
 			.hasSize(1);
+	}
+
+	@Test
+	public void getMediaPartUses() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-8");
+		Page page = pageDao.createAndPersist("Page 4a", "A page with content.", null, null, true, null, null);
+		Media media = mediaDao.createMediaAndVersion("Media", "Simple image media", null, "", ImageHandler.IMAGE_TYPE, "[Media:0]", null, 10, author);
+		dbInstance.commitAndCloseSession();
+
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+
+		MediaPart mediaPart = MediaPart.valueOf(author, media);
+		pageDao.persistPart(reloadedBody, mediaPart);
+
+		QuizPart quizPart = QuizPart.valueOf(author, media);
+		pageDao.persistPart(reloadedBody, quizPart);
+
+		dbInstance.commitAndCloseSession();
+
+		List<MediaUsage> quizPartUses = mediaDao.getQuizPartUses(media);
+		assertThat(quizPartUses).hasSize(1);
+
+		List<MediaUsage> mediaPartUses = mediaDao.getMediaPartUses(media);
+		assertThat(mediaPartUses).hasSize(1);
 	}
 	
 	@Test

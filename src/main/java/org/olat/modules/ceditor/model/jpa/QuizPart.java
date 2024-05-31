@@ -130,4 +130,14 @@ public class QuizPart extends AbstractPart implements QuizElement {
 		}
 		contentEditorQti.deleteQuestionsDirectory(this);
 	}
+
+	public static QuizPart valueOf(Identity identity, Media media) {
+		QuizPart quizPart = new QuizPart();
+		quizPart.setBackgroundImageIdentity(identity);
+		quizPart.setBackgroundImageMedia(media);
+		if (media.getVersions() != null && !media.getVersions().isEmpty()) {
+			quizPart.setBackgroundImageMediaVersion(media.getVersions().get(0));
+		}
+		return quizPart;
+	}
 }

@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.annotation.PostConstruct;
 
@@ -272,12 +273,10 @@ public class MediaServiceImpl implements MediaService, GenericEventListener {
 	@Override
 	public List<MediaUsageWithStatus> getMediaUsageWithStatus(IdentityRef identity, Media media) {
 		Identity author = media.getAuthor();
-		List<MediaUsageWithStatus> usages = mediaDao.getPageUsages(author, media);
-		List<MediaUsageWithStatus> galleryPageUsages = mediaDao.getGalleryPageUsages(media);
-		usages.addAll(galleryPageUsages);
+		List<MediaUsageWithStatus> pageUsages = mediaDao.getPageUsages(author, media);
+		List<MediaUsageWithStatus> mediaRelationPageUses = mediaDao.getMediaRelationPageUses(media);
 		List<MediaUsageWithStatus> portfolioUsages = mediaDao.getPortfolioUsages(author, identity, media);
-		usages.addAll(portfolioUsages);
-		return usages;
+		return Stream.of(pageUsages, mediaRelationPageUses, portfolioUsages).flatMap(Collection::stream).toList();
 	}
 
 	@Override

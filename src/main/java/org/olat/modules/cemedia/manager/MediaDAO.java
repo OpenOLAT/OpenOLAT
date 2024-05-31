@@ -21,9 +21,11 @@ package org.olat.modules.cemedia.manager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import jakarta.persistence.TypedQuery;
 
@@ -363,6 +365,12 @@ public class MediaDAO {
 		if(useInForKeys) {
 			sb.append(" and media.key in (:mediaKeys)");
 		}
+		sb.append(" and not exists(select relation from mediatopagepart relation")
+		  .append("  where relation.media.key=media.key")
+		  .append(")");
+		sb.append(" and not exists(select quizPart from cequizpart quizPart")
+		  .append("  where quizPart.backgroundImageMedia.key=media.key")
+		  .append(")");
 		sb.append(" and not exists(select mediaPart from cemediapart mediaPart")
 		  .append("  where mediaPart.media.key=media.key")
 		  .append(" )");
@@ -531,8 +539,22 @@ public class MediaDAO {
 		}
 		return usage;
 	}
-	
-	public List<MediaUsageWithStatus> getPageUsages(IdentityRef author, MediaLight media) {
+
+	public List<MediaUsageWithStatus> getPageUsages(IdentityRef author, Media media) {
+		return Stream.of(this.getMediaPartUses(author, media), getQuizPartUses(author, media))
+				.flatMap(Collection::stream).toList();
+	}
+
+	public List<MediaUsageWithStatus> getMediaPartUses(IdentityRef author, MediaLight media) {
+		return getPageUsages(author, media, true, false);
+	}
+
+	public List<MediaUsageWithStatus> getQuizPartUses(IdentityRef author, MediaLight media) {
+		return getPageUsages(author, media, false, true);
+	}
+
+	private List<MediaUsageWithStatus> getPageUsages(IdentityRef author, MediaLight media, boolean selectMediaParts,
+													 boolean selectQuizParts) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select page.key, page.title, page.status, ")
 		  .append("  v.key, ref.subIdent, v.displayname,")
@@ -549,55 +571,58 @@ public class MediaDAO {
           .append("   inner join pageBaseGroup.members as pageMembership")
 		  .append("   where pageRe.key=v.key and pageMembership.identity.key=:authorKey and pageMembership.role").in(GroupRoles.owner.name())
 		  .append("  ) as numOfAuthorOwnership")
-		  .append(" from cemediapart as mediaPart")
-		  .append(" inner join cepagebody as pageBody on (pageBody.key=mediaPart.body.key)")
+		  .append(" from cemediapart as pagePart", selectMediaParts)
+		  .append(" from cequizpart as pagePart", selectQuizParts)
+		  .append(" inner join cepagebody as pageBody on (pageBody.key=pagePart.body.key)")
 		  .append(" inner join cepage as page on (page.body.key=pageBody.key)")
-		  .append(" inner join mediaPart.media as media")
-		  .append(" left join mediaPart.mediaVersion as mediaVersion")
-		  .append(" left join mediaPart.identity as ident")
+		  .append(" inner join pagePart.media as media", selectMediaParts)
+		  .append(" inner join pagePart.backgroundImageMedia as media", selectQuizParts)
+		  .append(" left join pagePart.mediaVersion as mediaVersion", selectMediaParts)
+		  .append(" left join pagePart.backgroundImageMediaVersion as mediaVersion", selectQuizParts)
+		  .append(" left join pagePart.identity as ident", selectMediaParts)
+		  .append(" left join pagePart.backgroundImageIdentity as ident", selectQuizParts)
 		  .append(" left join ident.user as identUser")
 		  .append(" inner join cepagereference ref on (ref.page.key=page.key)")
 		  .append(" inner join ref.repositoryEntry as v")
 		  .append(" where media.key=:mediaKey");
 		
-		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("mediaKey", media.getKey())
 				.setParameter("authorKey", author.getKey())
-				.getResultList();
-		List<MediaUsageWithStatus> usage = new ArrayList<>(objects.size());
-		for(Object[] object:objects) {
-			Long pageKey = (Long)object[0];
-			String pageTitle = (String)object[1];
-			String pageStatus = (String)object[2];
-
-			Long repoKey = (Long)object[3];
-			String subIdent = (String)object[4];
-			String repoDisplayname = (String)object[5];
-
-			Long mediaKey = (Long)object[6];
-			Long mediaVersionKey = (Long)object[7];
-			String mediaVersionName = (String)object[8];
-			
-			String userFullName = toFullName((String)object[9], (String)object[10]);
-
-			long linkedByGroup = PersistenceHelper.extractPrimitiveLong(object, 11);
-			long linkedToAuthor = PersistenceHelper.extractPrimitiveLong(object, 12);
-			boolean revoked = linkedByGroup== 0 && linkedToAuthor == 0;
-
-			usage.add(new MediaUsageWithStatus(pageKey, pageTitle, pageStatus, null, null,
-					repoKey, subIdent, repoDisplayname, mediaKey, mediaVersionKey, mediaVersionName,
-					userFullName, revoked, true));
-		}
-		return usage;
+				.getResultStream().map(this::mapToMediaUsageWithStatus).toList();
 	}
 
-	public List<MediaUsageWithStatus> getGalleryPageUsages(MediaLight media) {
+	private MediaUsageWithStatus mapToMediaUsageWithStatus(Object[] object) {
+		Long pageKey = (Long)object[0];
+		String pageTitle = (String)object[1];
+		String pageStatus = (String)object[2];
+
+		Long repoKey = (Long)object[3];
+		String subIdent = (String)object[4];
+		String repoDisplayname = (String)object[5];
+
+		Long mediaKey = (Long)object[6];
+		Long mediaVersionKey = (Long)object[7];
+		String mediaVersionName = (String)object[8];
+
+		String userFullName = toFullName((String)object[9], (String)object[10]);
+
+		long linkedByGroup = PersistenceHelper.extractPrimitiveLong(object, 11);
+		long linkedToAuthor = PersistenceHelper.extractPrimitiveLong(object, 12);
+		boolean revoked = linkedByGroup== 0 && linkedToAuthor == 0;
+
+		return new MediaUsageWithStatus(pageKey, pageTitle, pageStatus, null, null,
+				repoKey, subIdent, repoDisplayname, mediaKey, mediaVersionKey, mediaVersionName,
+				userFullName, revoked, true);
+	}
+
+	public List<MediaUsageWithStatus> getMediaRelationPageUses(MediaLight media) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select page.key, page.title, page.status, entry.key, ref.subIdent, entry.displayname")
-		  .append(" from cegallerypart as galleryPart")
-		  .append(" inner join mediatopagepart as relation on (relation.pagePart.key=galleryPart.key)")
-		  .append(" inner join cepagebody as body on (body.key=galleryPart.body.key)")
+		  .append(" from cepagepart as pagePart")
+		  .append(" inner join mediatopagepart as relation on (relation.pagePart.key=pagePart.key)")
+		  .append(" inner join cepagebody as body on (body.key=pagePart.body.key)")
 		  .append(" inner join cepage as page on (page.body.key=body.key)")
 		  .append(" inner join cepagereference ref on (ref.page.key=page.key)")
 		  .append(" inner join ref.repositoryEntry as entry")
@@ -629,74 +654,158 @@ public class MediaDAO {
 	}
 	
 	public List<MediaUsage> getUsages(MediaLight media) {
+		return Stream.of(getMediaPartUses(media), getQuizPartUses(media), getPagePartRelationUses(media))
+						.flatMap(Collection::stream).toList();
+	}
+
+	public List<MediaUsage> getMediaPartUses(MediaLight media) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select page.key, page.title, page.status, ")
-		  .append("  binder.key, binder.title,")
-		  .append("  v.key, ref.subIdent, v.displayname,")
-		  .append("  media.key, mediaVersion.key, mediaVersion.versionName")
-		  .append(" from cepage as page")
-		  .append(" inner join page.body as pageBody")
-		  .append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
-		  .append(" inner join mediaPart.media as media")
-		  .append(" left join mediaPart.mediaVersion as mediaVersion")
-		  .append(" left join page.section as section")
-		  .append(" left join section.binder as binder")
-		  .append(" left join cepagereference ref on (ref.page.key=page.key)")
-		  .append(" left join ref.repositoryEntry as v")
-		  .append(" where media.key=:mediaKey");
-		
-		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+				.append("  binder.key, binder.title,")
+				.append("  v.key, ref.subIdent, v.displayname,")
+				.append("  media.key, mediaVersion.key, mediaVersion.versionName")
+				.append(" from cemediapart as mediaPart")
+				.append(" inner join mediaPart.media as media")
+				.append(" inner join mediaPart.body as pageBody")
+				.append(" inner join cepage as page on (page.body.key=pageBody.key)")
+				.append(" left join mediaPart.mediaVersion as mediaVersion")
+				.append(" left join page.section as section")
+				.append(" left join section.binder as binder")
+				.append(" left join cepagereference ref on (ref.page.key=page.key)")
+				.append(" left join ref.repositoryEntry as v")
+				.append(" where media.key=:mediaKey");
+
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("mediaKey", media.getKey())
-				.getResultList();
-		List<MediaUsage> usage = new ArrayList<>(objects.size());
-		for(Object[] object:objects) {
-			Long pageKey = (Long)object[0];
-			String pageTitle = (String)object[1];
-			String pageStatus = (String)object[2];
-			
-			Long binderKey = (Long)object[3];
-			String binderTitle = (String)object[4];
-			
-			Long repoKey = (Long)object[5];
-			String subIdent = (String)object[6];
-			String repoDisplayname = (String)object[7];
+				.getResultStream().map(this::mapToMediaUsage).toList();
+	}
 
-			Long mediaKey = (Long)object[8];
-			Long mediaVersionKey = (Long)object[9];
-			String mediaVersionName = (String)object[10];
-			
-			usage.add(new MediaUsage(pageKey, pageTitle, pageStatus, binderKey, binderTitle,
-					repoKey, subIdent, repoDisplayname,
-					mediaKey, mediaVersionKey, mediaVersionName));
-		}
-		return usage;
+	public List<MediaUsage> getQuizPartUses(MediaLight media) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select page.key, page.title, page.status, ")
+				.append("  binder.key, binder.title,")
+				.append("  v.key, ref.subIdent, v.displayname,")
+				.append("  media.key, mediaVersion.key, mediaVersion.versionName")
+				.append(" from cequizpart as quizPart")
+				.append(" inner join quizPart.backgroundImageMedia as media")
+				.append(" inner join quizPart.body as pageBody")
+				.append(" inner join cepage as page on (page.body.key=pageBody.key)")
+				.append(" left join quizPart.backgroundImageMediaVersion as mediaVersion")
+				.append(" left join page.section as section")
+				.append(" left join section.binder as binder")
+				.append(" left join cepagereference ref on (ref.page.key=page.key)")
+				.append(" left join ref.repositoryEntry as v")
+				.append(" where media.key=:mediaKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("mediaKey", media.getKey())
+				.getResultStream().map(this::mapToMediaUsage).toList();
+	}
+
+	public List<MediaUsage> getPagePartRelationUses(MediaLight media) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select page.key, page.title, page.status, ")
+				.append("  binder.key, binder.title,")
+				.append("  v.key, ref.subIdent, v.displayname,")
+				.append("  media.key, mediaVersion.key, mediaVersion.versionName")
+				.append(" from mediatopagepart as relation")
+				.append(" inner join relation.media as media")
+				.append(" inner join relation.pagePart as pagePart")
+				.append(" inner join pagePart.body as pageBody")
+				.append(" inner join cepage as page on (page.body.key=pageBody.key)")
+				.append(" left join relation.mediaVersion as mediaVersion")
+				.append(" left join page.section as section")
+				.append(" left join section.binder as binder")
+				.append(" left join cepagereference ref on (ref.page.key=page.key)")
+				.append(" left join ref.repositoryEntry as v")
+				.append(" where media.key=:mediaKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("mediaKey", media.getKey())
+				.getResultStream().map(this::mapToMediaUsage).toList();
+	}
+
+	private MediaUsage mapToMediaUsage(Object[] object) {
+		Long pageKey = (Long)object[0];
+		String pageTitle = (String)object[1];
+		String pageStatus = (String)object[2];
+
+		Long binderKey = (Long)object[3];
+		String binderTitle = (String)object[4];
+
+		Long repoKey = (Long)object[5];
+		String subIdent = (String)object[6];
+		String repoDisplayname = (String)object[7];
+
+		Long mediaKey = (Long)object[8];
+		Long mediaVersionKey = (Long)object[9];
+		String mediaVersionName = (String)object[10];
+
+		return new MediaUsage(pageKey, pageTitle, pageStatus, binderKey, binderTitle,
+				repoKey, subIdent, repoDisplayname,
+				mediaKey, mediaVersionKey, mediaVersionName);
 	}
 	
 	public long countUsages(List<? extends MediaLight> medias) {
-		if(medias == null || medias.isEmpty()) {
+		if (medias == null || medias.isEmpty()) {
 			return 0;
 		}
-		
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select count(mediaPart.key)")
-		  .append(" from cepage as page")
-		  .append(" inner join page.body as pageBody")
-		  .append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
-		  .append(" inner join mediaPart.media as media")
-		  .append(" where media.key in (:mediaKeyList)");
-		
+
 		List<Long> mediaKeys = medias.stream()
 				.map(MediaLight::getKey)
 				.toList();
-		
+
+		return countMediaPartUses(mediaKeys) + countQuizPartUses(mediaKeys) + countPagePartRelationUses(mediaKeys);
+	}
+
+	private long countMediaPartUses(List<Long> mediaKeys) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(mediaPart.key)")
+				.append(" from cepage as page")
+				.append(" inner join page.body as pageBody")
+				.append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
+				.append(" inner join mediaPart.media as media")
+				.append(" where media.key in (:mediaKeyList)");
+
 		List<Number> count = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("mediaKeyList", mediaKeys)
 				.getResultList();
-		return count != null && !count.isEmpty() ? count.get(0).longValue() : 0l;
+		return count != null && !count.isEmpty() ? count.get(0).longValue() : 0L;
 	}
-	
+
+	private long countQuizPartUses(List<Long> mediaKeys) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(quizPart.key)")
+				.append(" from cepage as page")
+				.append(" inner join page.body as pageBody")
+				.append(" inner join treat(pageBody.parts as cequizpart) quizPart")
+				.append(" inner join quizPart.backgroundImageMedia as media")
+				.append(" where media.key in (:mediaKeyList)");
+
+		List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("mediaKeyList", mediaKeys)
+				.getResultList();
+		return count != null && !count.isEmpty() ? count.get(0).longValue() : 0L;
+	}
+
+	private long countPagePartRelationUses(List<Long> mediaKeys) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(relation.key)")
+				.append(" from mediatopagepart as relation")
+				.append(" where media.key in (:mediaKeyList)");
+
+		List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("mediaKeyList", mediaKeys)
+				.getResultList();
+		return count != null && !count.isEmpty() ? count.get(0).longValue() : 0L;
+	}
+
 	public Usage getFileUsage(String path) {
 		final String home = "/HomeSite/";
 		final String mediaCenter = "/MediaCenter/";
