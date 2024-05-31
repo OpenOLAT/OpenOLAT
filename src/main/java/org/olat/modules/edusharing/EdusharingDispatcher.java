@@ -49,7 +49,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.modules.edusharing.model.SearchResult;
 import org.olat.modules.edusharing.ui.EdusharingUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,7 +181,7 @@ public class EdusharingDispatcher implements Dispatcher {
 	}
 	
 	private void redirectToSearch(UserRequest ureq, HttpServletResponse response) {
-		String language = LocaleNegotiator.getPreferedLocale(ureq).getLanguage();
+		String language = ureq.getLocale().getLanguage();
 		Ticket ticket = edusharingService.getTicket(ureq.getIdentity());
 		
 		String reurl = ureq.getParameter("reurl");
@@ -254,8 +253,8 @@ public class EdusharingDispatcher implements Dispatcher {
 		String width = ureq.getParameter("width");
 		String height = ureq.getParameter("height");
 		Identity viewer = ureq.getUserSession().getIdentity();
-		Locale preferedLocale = LocaleNegotiator.getPreferedLocale(ureq);
-		String language = preferedLocale.getLanguage();
+		Locale locale = ureq.getLocale();
+		String language = locale.getLanguage();
 		
 		try (EdusharingResponse edusharingResponse = edusharingService.getRendered(viewer, identifier, version, width, height, language)) {
 			response.setStatus(edusharingResponse.getStatus());
@@ -265,7 +264,7 @@ public class EdusharingDispatcher implements Dispatcher {
 				stream(edusharingResponse.getContent(), response.getOutputStream());
 			} else {
 				response.setContentType("text/plain");
-				Translator translator = Util.createPackageTranslator(EdusharingUIFactory.class, preferedLocale);
+				Translator translator = Util.createPackageTranslator(EdusharingUIFactory.class, locale);
 				String errorText = switch (edusharingResponse.getStatus()) {
 				case 401 -> translator.translate("error.render.401");
 				case 404 -> translator.translate("error.render.404");
@@ -283,7 +282,7 @@ public class EdusharingDispatcher implements Dispatcher {
 		String identifier = ureq.getParameter("identifier");
 		Ticket ticket = edusharingService.getTicket(ureq.getIdentity());
 		Identity viewer = ureq.getUserSession().getIdentity();
-		String language = LocaleNegotiator.getPreferedLocale(ureq).getLanguage();
+		String language = ureq.getLocale().getLanguage();
 		String url = edusharingService.getRenderAsWindowUrl(ticket, viewer, identifier, language);
 		
 		if (!StringHelper.containsNonWhitespace(url)) {
