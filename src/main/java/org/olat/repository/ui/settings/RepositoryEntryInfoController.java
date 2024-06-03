@@ -20,7 +20,6 @@
 package org.olat.repository.ui.settings;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -71,13 +70,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryInfoController extends FormBasicController {
 	
-	private static final Set<String> imageMimeTypes = new HashSet<>();
-	static {
-		imageMimeTypes.add("image/gif");
-		imageMimeTypes.add("image/jpg");
-		imageMimeTypes.add("image/jpeg");
-		imageMimeTypes.add("image/png");
-	}
+	private static final Set<String> imageMimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
+	private static final Set<String> videoMimeTypes = Set.of("video/mp4");
+
 	
 	private static final int picUploadlimitKB = 5120;
 	private static final int movieUploadlimitKB = 102400;
@@ -200,6 +195,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			movieUpload.setInitialFile(((LocalFileImpl)movie).getBasefile());
 		}
 		movieUpload.setVisible(!managed && !readOnly);
+		movieUpload.limitToMimeType(videoMimeTypes, "cif.error.mimetype", new String[]{ videoMimeTypes.toString()} );
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
