@@ -168,14 +168,6 @@ public class StopAssessmentWarningController extends BasicController implements 
 				}
 			}
 			mainVC.contextPut("modeStatus", mode.getStatus().name());
-			if (mode.getStatus().equals(Status.followup)) {
-				if (startAssessmentMode != null) {
-					startAssessmentMode.setVisible(false);
-				}
-				if (stopAssessmentMode != null) {
-					stopAssessmentMode.setVisible(false);
-				}
-			}
 		} else if (modes.size() > 1) {
 			if (startAssessmentMode != null) {
 				startAssessmentMode.setVisible(false);
@@ -337,7 +329,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 		infoLink.setUserObject(Collections.singletonList(mode));
 		StringOutput status = new StringOutput();
 		ModeStatusCellRenderer modeStatusCellRenderer = new ModeStatusCellRenderer(Util.createPackageTranslator(AssessmentModeListController.class, getLocale()));
-		modeStatusCellRenderer.renderStatus(mode.getStatus(), null, status);
+		modeStatusCellRenderer.renderStatus(mode.getStatus(), mode.getEndStatus(), status);
 
 		String[] args = new String[]{
 				start,

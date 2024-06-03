@@ -355,7 +355,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 	public String getAssessmentModeRendered(AssessmentMode mode) {
 		StringOutput status = new StringOutput();
 		ModeStatusCellRenderer modeStatusCellRenderer = new ModeStatusCellRenderer(Util.createPackageTranslator(AssessmentModeListController.class, getLocale()));
-		modeStatusCellRenderer.renderStatus(mode.getStatus(), null, status);
+		modeStatusCellRenderer.renderStatus(mode.getStatus(), mode.getEndStatus(), status);
 		return status.toString();
 	}
 	

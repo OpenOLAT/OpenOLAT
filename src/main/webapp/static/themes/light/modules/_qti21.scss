@@ -389,6 +389,7 @@ span.o_qti_gaptext_score_alternative {
 	&.o_assessment_mode_details {
 		display: flex;
 		align-items: center;
+		gap: 1rem;
 
 		.o_assessment_mode_detail_date {
 			flex-shrink: 0;
