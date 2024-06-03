@@ -60,6 +60,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.UploadFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -839,7 +840,7 @@ public class MediaCenterController extends FormBasicController
 		} else if(bulkDeleteButton == source) {
 			doConfirmDelete(ureq);
 		} else if(uploadEl == source) {
-			if("ONCHANGE".equals(event.getCommand())) {
+			if("ONCHANGE".equals(event.getCommand()) || event instanceof UploadFileElementEvent) {
 				doUpload(ureq);
 			}
 		} else if(source == tableEl) {
