@@ -54,17 +54,20 @@ public class IconPanelLabelTextRenderer extends DefaultComponentRenderer {
 		}
 		
 		if (labelTexts != null && !labelTexts.isEmpty()) {
+			int columnWidth = content.getColumnWidth();
+			int secondColumnWidth = 12 - content.getColumnWidth();
+			
 			for (int i = 0; i < labelTexts.size(); i++) {
 				LabelText labelText = labelTexts.get(i);
 				String id = "o_text_label_" + i;
 				sb.append("<div class='form-horizontal'>");
-				sb.append("<label class='control-label col-sm-3' for=\"").append(id).append("\">");
+				sb.append("<label class='control-label col-sm-").append(columnWidth).append("' for=\"").append(id).append("\">");
 				if (StringHelper.containsNonWhitespace(labelText.label())) {
 					sb.append(labelText.label());
 				}
 				sb.append("</label>");
 				sb.append("</div>");
-				sb.append("<div class='form-control-static col-sm-9' id=\"").append(id).append("\">");
+				sb.append("<div class='form-control-static col-sm-").append(secondColumnWidth).append("' id=\"").append(id).append("\">");
 				if (StringHelper.containsNonWhitespace(labelText.text())) {
 					sb.append(labelText.text());
 				}

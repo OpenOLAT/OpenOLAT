@@ -436,8 +436,9 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	
 	@Override
 	public EvaluationFormSession getSession(RepositoryEntry courseEntry, CourseNode courseNode, Identity assessedIdentity) {
+		AssessmentConfig assessmentConfig = getAssessmentConfig(courseEntry, courseNode);
 		AssessmentHandler handler = getAssessmentHandler(courseNode);
-		return handler instanceof FormEvaluationHandler evaluationHandler
+		return handler instanceof FormEvaluationHandler evaluationHandler && assessmentConfig.hasFormEvaluation()
 				? evaluationHandler.getSession(courseEntry, courseNode, assessedIdentity)
 				: null;
 	}
@@ -446,7 +447,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	public Float getEvaluationScore(EvaluationFormSession session, RepositoryEntry courseEntry, CourseNode courseNode) {
 		AssessmentConfig assessmentConfig = getAssessmentConfig(courseEntry, courseNode);
 		AssessmentHandler handler = getAssessmentHandler(courseNode);
-		return handler instanceof FormEvaluationHandler evaluationHandler && assessmentConfig.hasAssessmentForm()
+		return handler instanceof FormEvaluationHandler evaluationHandler && assessmentConfig.hasFormEvaluation()
 				? evaluationHandler.getEvaluationScore(session, assessmentConfig.getFormEvaluationScoreMode())
 				: null;
 	}
@@ -455,8 +456,10 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	public Controller getEvaluationFormController(UserRequest ureq, WindowControl wControl,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment,
 			boolean edit, boolean reopen) {
+		RepositoryEntry courseEntry = assessedUserCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		AssessmentConfig assessmentConfig = getAssessmentConfig(courseEntry, courseNode);
 		AssessmentHandler handler = getAssessmentHandler(courseNode);
-		return handler instanceof FormEvaluationHandler evaluationHandler
+		return handler instanceof FormEvaluationHandler evaluationHandler && assessmentConfig.hasFormEvaluation()
 			? evaluationHandler.getEvaluationFormController(ureq, wControl, courseNode, coachCourseEnv, assessedUserCourseEnvironment, edit, reopen)
 			: null;
 	}

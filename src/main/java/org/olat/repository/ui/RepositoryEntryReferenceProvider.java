@@ -49,6 +49,8 @@ public interface RepositoryEntryReferenceProvider {
 	
 	public boolean canImport();
 	
+	public String getWarningMessage();
+	
 	public static interface ReferenceContentProvider {
 		
 		public Component getContent(RepositoryEntry repositoryEntry);

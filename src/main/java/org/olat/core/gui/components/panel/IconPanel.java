@@ -47,6 +47,10 @@ public class IconPanel extends AbstractComponent implements ComponentCollection 
 	private String title;
 	private String tagline;
 	
+	private String message;
+	private String messsageIconCssClass;
+	
+	
 	public IconPanel(String name) {
 		super(name);
 		setDomReplacementWrapperRequired(false);
@@ -189,4 +193,19 @@ public class IconPanel extends AbstractComponent implements ComponentCollection 
 		this.tagline = tagline;
 	}
 
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public String getMesssageIconCssClass() {
+		return messsageIconCssClass;
+	}
+
+	public void setMesssageIconCssClass(String messsageIconCssClass) {
+		this.messsageIconCssClass = messsageIconCssClass;
+	}
 }

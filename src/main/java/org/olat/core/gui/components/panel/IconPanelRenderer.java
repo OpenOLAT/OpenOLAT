@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.panel;
 
+import java.util.List;
+
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
@@ -67,8 +69,11 @@ public class IconPanelRenderer extends DefaultComponentRenderer {
 		sb.append("</h4>");
 		sb.append("</div>");
 		
+		boolean withAdditionalContent = panel.getAdditionalContent() != null;
+		
 		// Content column
-		sb.append("<div class='o_icon_panel_content_col'>");
+		sb.append("<div class='o_icon_panel_content_col")
+		  .append(" o_with_additional_content", withAdditionalContent).append("'>");
 		// Header
 		sb.append("<div class='o_icon_panel_header'>");
 		if (StringHelper.containsNonWhitespace(panel.getTitle())) {
@@ -81,45 +86,61 @@ public class IconPanelRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("</div>");
 		
-		// Content
-		if (panel.getContent() != null && panel.getContent().isVisible()) {
-			renderer.render(sb, panel.getContent(), args);
-		}
-		// Links
-		if (!panel.getLinks().isEmpty()) {
-			sb.append("<div class='o_icon_panel_links pull-right'>");
-			for (Component link : panel.getLinks()) {
-				if (link.isVisible()) {
-					renderer.render(sb, link, args);
-				}
+		if(StringHelper.containsNonWhitespace(panel.getMessage())) {
+			sb.append("<div class='o_icon_panel_message");
+			if(StringHelper.containsNonWhitespace(panel.getMesssageIconCssClass())) {
+				sb.append(" ").append(panel.getMesssageIconCssClass());
 			}
+			sb.append("'>");
+			sb.appendHtmlEscaped(panel.getMessage());
 			sb.append("</div>");
+		} else {
+			sb.append("<div class='o_icon_panel_message'></div>");
 		}
-		sb.append("</div>");
 		
-		// Settings column
-		if(panel.getAdditionalContent() != null) {
-			sb.append("<div class='o_icon_panel_content_col o_icon_panel_settings_col'>");
-			if (panel.getAdditionalContent() != null) {
-				renderer.render(sb, panel.getAdditionalContent(), args);
-			}
-			// Links
-			if (!panel.getAdditionalLinks().isEmpty()) {
-				sb.append("<div class='o_icon_panel_links pull-right'>");
-				for (Component link : panel.getAdditionalLinks()) {
-					if (link.isVisible()) {
-						renderer.render(sb, link, args);
-					}
-				}
-				sb.append("</div>");
-			}
-			
-			sb.append("</div>");
+		// Content
+		renderPanelContent(renderer, sb, panel.getContent(), args);
+		if(withAdditionalContent) {
+			renderPanelContent(renderer, sb, panel.getAdditionalContent(), args);
+		}
+
+		// Links
+		renderLinks(renderer, sb, panel.getLinks(), args);
+		if(withAdditionalContent) {
+			renderLinks(renderer, sb, panel.getAdditionalLinks(), args);
 		}
 		
 		sb.append("</div>");
 		
 		panel.setDirty(false);
 	}
+	
+	private void renderPanelContent(Renderer renderer, StringOutput sb, Component source, String[] args) {
+		if(source == null) {
+			sb.append("<div></div>");// Make the grid predictable
+		} else if(source.isVisible()) {
+			sb.append("<div class='o_icon_panel_content'>");
+			renderer.render(sb, source, args);
+			sb.append("</div>");
+		} else {
+			source.setDirty(false);
+			sb.append("<div id='o_c").append(source.getDispatchID()).append("'></div>");
+		}
+	}
 
+	private void renderLinks(Renderer renderer, StringOutput sb, List<Component> links, String[] args) {
+		if(links == null || links.isEmpty()) {
+			sb.append("<div></div>");// Make the grid predictable
+		} else {
+			sb.append("<div class='o_icon_panel_links'>");
+			for (Component link : links) {
+				if (link.isVisible()) {
+					renderer.render(sb, link, args);
+				} else {
+					link.setDirty(false);
+				}
+			}
+			sb.append("</div>");
+		}
+	}
 }

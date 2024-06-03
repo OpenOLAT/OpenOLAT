@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -51,6 +52,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.repository.RepositoryEntry;
@@ -75,8 +77,11 @@ public class GTAEditAssessmentConfigController extends BasicController implement
 	private final IconPanelLabelTextContent iconPanelContent;
 	private final IconPanelLabelTextContent iconPanelSettings;
 
+	private GTACourseNode gtaNode;
+	private int numberOfAssessments = 0;
 	private final NodeAccessType nodeAccessType;
 	private ModuleConfiguration moduleConfiguration;
+	private final RepositoryEntry courseEntry;
 
 	private MSEditFormController manualAssessmentCtrl;
 	private EvaluationFormExecutionController previewCtr;
@@ -95,16 +100,21 @@ public class GTAEditAssessmentConfigController extends BasicController implement
 		super(ureq, wControl);
 		moduleConfiguration = gtaNode.getModuleConfiguration();
 		nodeAccessType = NodeAccessType.of(course);
+		this.gtaNode = gtaNode;
 		this.stackPanel = stackPanel;
+		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		numberOfAssessments = getNumberOfAssessments();
 		
 		mainVC = createVelocityContainer("edit_assessment_config");
 		
 		evaluationOnOffCtrl = new GTAEditEvaluationConfigController(ureq, getWindowControl(), moduleConfiguration);
 		listenTo(evaluationOnOffCtrl);
 		mainVC.put("evaluationOnOff", evaluationOnOffCtrl.getInitialComponent());
-		
+
 		iconPanelContent = new IconPanelLabelTextContent("content");
+		iconPanelContent.setColumnWidth(6);
 		iconPanelSettings = new IconPanelLabelTextContent("content");
+		iconPanelSettings.setColumnWidth(6);
 		
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.form.resource.selected"))
@@ -127,28 +137,6 @@ public class GTAEditAssessmentConfigController extends BasicController implement
 		
 		putInitialPanel(mainVC);
 		updateUI(ureq);
-	}
-	
-	public class GTACourseNodeReferenceProvider extends CourseNodeReferenceProvider {
-		
-		private final SettingsContentProvider settingsProvider;
-		
-		public GTACourseNodeReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes,
-				EmptyStateConfig emptyStateConfig, String selectionTitle, ReferenceContentProvider referenceContentProvider,
-				SettingsContentProvider settingsProvider) {
-			super(repositoryService, resourceTypes,  emptyStateConfig, selectionTitle, referenceContentProvider);
-			this.settingsProvider = settingsProvider;
-		}
-
-		@Override
-		public boolean hasSettings() {
-			return true;
-		}
-
-		@Override
-		public SettingsContentProvider getSettingsContentProvider() {
-			return settingsProvider;
-		}
 	}
 	
 	@Override
@@ -177,6 +165,7 @@ public class GTAEditAssessmentConfigController extends BasicController implement
 
 		List<IconPanelLabelTextContent.LabelText> labelTexts = new ArrayList<>(4);
 		labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("score.evaluation.points"), translate(i18nScoreKey)));
+		labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("num.of.form.assessment"), Integer.toString(numberOfAssessments)));
 		iconPanelSettings.setLabelTexts(labelTexts);
 	}
 
@@ -252,6 +241,11 @@ public class GTAEditAssessmentConfigController extends BasicController implement
 		manualAssessmentCtrl.setEvaluationOn(ureq, evaluationEnabled, minMax, evalScoringMethod);
 	}
 	
+	private int getNumberOfAssessments() {	
+		List<EvaluationFormSession> sessions = msService.getSessions(courseEntry, gtaNode.getIdent(), GTACourseNode.getEvaluationFormProvider());
+		return sessions.size();
+	}
+	
 	private MinMax calculateMinMax() {
 		RepositoryEntry formEntry = MSCourseNode.getEvaluationForm(moduleConfiguration);
 		if (formEntry == null) {
@@ -319,5 +313,59 @@ public class GTAEditAssessmentConfigController extends BasicController implement
 		}
 		updateSettingsPanel();
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+	}
+	
+	public class GTACourseNodeReferenceProvider extends CourseNodeReferenceProvider {
+		
+		private final SettingsContentProvider settingsProvider;
+		
+		public GTACourseNodeReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes,
+				EmptyStateConfig emptyStateConfig, String selectionTitle, ReferenceContentProvider referenceContentProvider,
+				SettingsContentProvider settingsProvider) {
+			super(repositoryService, resourceTypes,  emptyStateConfig, selectionTitle, referenceContentProvider);
+			this.settingsProvider = settingsProvider;
+		}
+
+		@Override
+		public String getWarningMessage() {
+			if(numberOfAssessments > 0) {
+				return translate("warning.form.in.use");
+			}
+			return null;
+		}
+
+		@Override
+		public boolean hasSettings() {
+			return true;
+		}
+
+		@Override
+		public SettingsContentProvider getSettingsContentProvider() {
+			return settingsProvider;
+		}
+		
+		public boolean canCreate() {
+			return numberOfAssessments == 0;
+		}
+
+		@Override
+		public boolean canImport() {
+			return numberOfAssessments == 0;
+		}
+
+		@Override
+		public boolean isReplaceable(RepositoryEntry repositoryEntry) {
+			return numberOfAssessments == 0 && super.isReplaceable(repositoryEntry);
+		}
+
+		@Override
+		public boolean isEditable(RepositoryEntry repositoryEntry, Identity identity) {
+			return numberOfAssessments == 0 && super.isEditable(repositoryEntry, identity);
+		}
+
+		@Override
+		public boolean isSettingsEditable(RepositoryEntry repositoryEntry, Identity identity) {
+			return true;
+		}
 	}
 }

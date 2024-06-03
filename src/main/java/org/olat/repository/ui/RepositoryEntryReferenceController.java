@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -78,6 +79,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 	private Link replaceImportUrlLink;
 	private final Link editLink;
 	private final Link editSettingsLink;
+	private final Dropdown commandsDropdown;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchCtrl;
@@ -106,8 +108,8 @@ public class RepositoryEntryReferenceController extends BasicController {
 		referencePanel = new IconPanel("reference");
 		referencePanel.setElementCssClass("o_block_bottom");
 		mainVC.put("reference", referencePanel);
-		
-		Dropdown commandsDropdown = new Dropdown("commands", null, true, getTranslator());
+
+		commandsDropdown = new Dropdown("commands", null, true, getTranslator());
 		commandsDropdown.setDomReplaceable(false);
 		commandsDropdown.setButton(true);
 		commandsDropdown.setOrientation(DropdownOrientation.right);
@@ -125,6 +127,12 @@ public class RepositoryEntryReferenceController extends BasicController {
 		replaceSelectLink = LinkFactory.createButton("replace", mainVC, this);
 		replaceSelectLink.setElementCssClass("o_sel_re_reference_replace_select");
 		replaceSelectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search");
+		
+		String warningMessage = referenceProvider.getWarningMessage();
+		if(StringHelper.containsNonWhitespace(warningMessage)) {
+			referencePanel.setMessage(warningMessage);
+			referencePanel.setMesssageIconCssClass("o_warning_with_icon");
+		}
 		
 		if (guiConfig.canCreate()) {
 			List<String> creatorTypes = new ArrayList<>( guiConfig.getResourceTypes().size());
@@ -229,6 +237,13 @@ public class RepositoryEntryReferenceController extends BasicController {
 		mainVC.contextPut("repositoryEntryAvailable", Boolean.valueOf(repositoryEntry != null));
 		
 		referencePanel.removeAllLinks();
+		
+		String warningMessage = referenceProvider.getWarningMessage();
+		if(StringHelper.containsNonWhitespace(warningMessage)) {
+			referencePanel.setMessage(warningMessage);
+			referencePanel.setMesssageIconCssClass("o_warning_with_icon");
+		}
+		
 		if (repositoryEntry != null) {
 			
 			referencePanel.setTitle(repositoryEntry.getDisplayname());
@@ -255,6 +270,13 @@ public class RepositoryEntryReferenceController extends BasicController {
 				}
 			}	
 		}
+		
+		
+		boolean enabled = false;
+		for(Component command:commandsDropdown.getComponents()) {
+			enabled |= command.isEnabled();
+		}
+		commandsDropdown.setEnabled(enabled);
 	}
 
 	public RepositoryEntry getRepositoryEntry() {

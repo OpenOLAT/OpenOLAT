@@ -101,6 +101,11 @@ public class CourseNodeReferenceProvider implements RepositoryEntryReferenceProv
 	}
 
 	@Override
+	public String getWarningMessage() {
+		return null;
+	}
+
+	@Override
 	public boolean hasSettings() {
 		return false;
 	}

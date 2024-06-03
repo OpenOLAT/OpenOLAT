@@ -37,6 +37,7 @@ public class IconPanelLabelTextContent extends AbstractComponent {
 	
 	private List<LabelText> labelTexts;
 	private String warning;
+	private int columnWidth = 3;
 
 	public IconPanelLabelTextContent(String name) {
 		super(name);
@@ -57,6 +58,14 @@ public class IconPanelLabelTextContent extends AbstractComponent {
 
 	public void setWarning(String warning) {
 		this.warning = warning;
+	}
+
+	public int getColumnWidth() {
+		return columnWidth;
+	}
+
+	public void setColumnWidth(int columnWidth) {
+		this.columnWidth = columnWidth;
 	}
 
 	@Override

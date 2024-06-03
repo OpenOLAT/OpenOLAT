@@ -93,17 +93,8 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		sb.append("</span>", (dropdownInnerText != null));
 		sb.append("</span>");
 		
-		if (hasComponents) {
-			if (dropdown.getCaretPosition().equals(CaretPosition.left)) {
-				sb.append(" <i class='");
-				if(StringHelper.containsNonWhitespace(dropdown.getCarretIconCSS())) {
-					sb.append(dropdown.getCarretIconCSS());
-				} else {
-					// Caret to indicate the drop-down nature of the button
-					sb.append("o_icon o_icon_caret");
-				}
-				sb.append("'> </i> ");
-			}
+		if (dropdown.getCaretPosition().equals(CaretPosition.left)) {
+			renderCaret(sb, hasComponents, dropdown);
 		}
 		
 		// Button label, normally rendered below the button, but within the clickable link
@@ -118,17 +109,8 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			sb.append("<span class='o_label'>").append(label).append("</span>");
 		}
 		
-		if (hasComponents) {
-			if (dropdown.getCaretPosition().equals(CaretPosition.right)) {
-				sb.append(" <i class='");
-				if(StringHelper.containsNonWhitespace(dropdown.getCarretIconCSS())) {
-					sb.append(dropdown.getCarretIconCSS());
-				} else {
-					// Caret to indicate the drop-down nature of the button
-					sb.append("o_icon o_icon_caret");
-				}
-				sb.append("'> </i> ");
-			}
+		if (dropdown.getCaretPosition().equals(CaretPosition.right)) {
+			renderCaret(sb, hasComponents, dropdown);
 		}
 		
 		if(dropdown.isButton()) {
@@ -186,7 +168,20 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 				sb.append("});</script>");
 			}
 		}
-		
-		
+	}
+	
+	private void renderCaret(StringOutput sb, boolean hasComponents, Dropdown dropdown) {
+		if (hasComponents) {
+			sb.append(" <i class='");
+			if(StringHelper.containsNonWhitespace(dropdown.getCarretIconCSS())) {
+				sb.append(dropdown.getCarretIconCSS());
+			} else {
+				// Caret to indicate the drop-down nature of the button
+				sb.append("o_icon o_icon_caret");
+			}
+			sb.append("'> </i> ");
+		} else {
+			sb.append(" <i class='o_icon'> </i>");
+		}
 	}
 }
