@@ -160,6 +160,7 @@
 
 	.o_rendertype_custom .o_medias_table {
 		margin-top: $o-media-browser-space;
+		margin-right: -$o-media-browser-space;
 		
 		.o_media_card_cell {
 			position: relative;
