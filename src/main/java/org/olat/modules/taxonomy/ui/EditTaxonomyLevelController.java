@@ -253,8 +253,8 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		teaserImageEl.setDeleteEnabled(true);
 		teaserImageEl.addActionListener(FormEvent.ONCHANGE);
 		VFSLeaf teaserImage = taxonomyService.getTeaserImage(level);
-		if (teaserImage instanceof LocalFileImpl) {
-			teaserImageEl.setInitialFile(((LocalFileImpl)teaserImage).getBasefile());
+		if (teaserImage instanceof LocalFileImpl teaserLeaf) {
+			teaserImageEl.setInitialFile(teaserLeaf.getBasefile());
 		}
 		updateTeaserImagePreview(ureq);
 
@@ -271,8 +271,8 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		backgroundImageEl.setDeleteEnabled(true);
 		backgroundImageEl.addActionListener(FormEvent.ONCHANGE);
 		VFSLeaf backgroundImage = taxonomyService.getBackgroundImage(level);
-		if (backgroundImage instanceof LocalFileImpl) {
-			backgroundImageEl.setInitialFile(((LocalFileImpl)backgroundImage).getBasefile());
+		if (backgroundImage instanceof LocalFileImpl backgroundLeaf) {
+			backgroundImageEl.setInitialFile(backgroundLeaf.getBasefile());
 		}
 		updateBackgroundImagePreview(ureq);
 		
@@ -352,7 +352,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			String teaserImageUrl = registerMapper(ureq, new VFSMediaMapper(teaserImage));
 			teaserImageCont.contextPut("imageUrl", teaserImageUrl);
 			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, () -> translate("level.image.teaser.sample"));
-			teaserImageCont.contextPut("displayName", displayName);
+			teaserImageCont.contextPut("displayName", StringHelper.escapeHtml(displayName));
 			teaserImageCont.setVisible(true);
 			teaserImageEl.setLabel(null, null);
 		} else {
@@ -371,7 +371,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			String backgroundImageUrl = registerMapper(ureq, new VFSMediaMapper(backgroundImage));
 			backgroundImageCont.contextPut("bgImageUrl", backgroundImageUrl);
 			String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level, () -> translate("level.image.teaser.sample"));
-			backgroundImageCont.contextPut("displayName", displayName);
+			backgroundImageCont.contextPut("displayName", StringHelper.escapeHtml(displayName));
 			backgroundImageCont.setVisible(true);
 			backgroundImageEl.setLabel(null, null);
 		} else {

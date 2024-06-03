@@ -632,7 +632,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 	}
 	
 	private void tryToStore(VFSContainer imageContainer, Identity savedBy, File file, String filename) {
-		imageContainer.delete();
+		imageContainer.deleteSilently();
 		
 		String cleandFilename = FileUtils.cleanFilename(filename);
 		VFSLeaf vfsLeaf = VFSManager.resolveOrCreateLeafFromPath(imageContainer, cleandFilename);
