@@ -368,7 +368,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 		warn.put("infoLink", infoLink);
 		warn.contextPut("message", messagePart1);
 		warn.contextPut("message2", messagePart2);
-		warn.contextPut("modeStatus", modes.get(0).getStatus().name());
+		warn.contextPut("modeStatus", "several");
 	}
 
 	private void doConfirmStart(UserRequest ureq, AssessmentMode mode) {

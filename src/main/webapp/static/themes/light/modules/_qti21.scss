@@ -406,6 +406,10 @@ span.o_qti_gaptext_score_alternative {
 		border: 1px solid;
 		border-radius: 5px;
 
+		&.o_assessment_status_several {
+			border-color: $brand-warning;
+		}
+
 		&.o_assessment_status_none {
 			background-color: $o-assessment-inspection-scheduled-color-bg;
 			border-color: $o-assessment-inspection-scheduled-color;
