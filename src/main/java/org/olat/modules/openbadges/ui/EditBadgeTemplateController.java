@@ -52,6 +52,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.openbadges.BadgeTemplate;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +106,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_badge_template_edit");
 		String identifier = badgeTemplate != null ? badgeTemplate.getIdentifier() :
-				OpenBadgesUIFactory.createIdentifier();
+				OpenBadgesFactory.createIdentifier();
 		identifierEl = uifactory.addStaticTextElement("form.identifier", identifier, formLayout);
 
 		imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");

@@ -238,7 +238,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
-			nameEl = uifactory.addTextElement("form.name", 80, badgeClass.getNameWithScan(), formLayout);
+			nameEl = uifactory.addTextElement("form.name", 80, badgeClass.getName(), formLayout);
 			nameEl.setElementCssClass("o_sel_badge_name");
 			nameEl.setMandatory(true);
 

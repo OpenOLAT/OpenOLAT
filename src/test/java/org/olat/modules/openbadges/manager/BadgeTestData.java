@@ -19,9 +19,10 @@
  */
 package org.olat.modules.openbadges.manager;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
-import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -31,22 +32,24 @@ import org.olat.repository.RepositoryEntry;
  */
 public class BadgeTestData {
 
-	public static BadgeClassImpl createTestBadgeClass(String name, String image, RepositoryEntry entry) {
+	public static BadgeClassImpl createTestBadgeClass(String name, String sourceImage, RepositoryEntry entry) {
 		BadgeClassImpl badgeClassImpl = new BadgeClassImpl();
 
-		badgeClassImpl.setUuid(OpenBadgesUIFactory.createIdentifier());
+		badgeClassImpl.setUuid(OpenBadgesFactory.createIdentifier());
 		badgeClassImpl.setStatus(BadgeClass.BadgeClassStatus.preparation);
 		badgeClassImpl.setVersionWithScan("1.0");
 		badgeClassImpl.setLanguage("en");
 		badgeClassImpl.setValidityEnabled(false);
-		badgeClassImpl.setImage(image);
+		badgeClassImpl.setImage(OpenBadgesFactory.createBadgeClassFileName(badgeClassImpl.getUuid(), sourceImage));
 		badgeClassImpl.setNameWithScan(name);
 		badgeClassImpl.setDescriptionWithScan("Test badge description");
 		badgeClassImpl.setCriteria("<criteria></criteria>");
-		badgeClassImpl.setSalt("badgeClass" + Math.abs(badgeClassImpl.getUuid().hashCode()));
+		badgeClassImpl.setSalt(OpenBadgesFactory.createSalt(badgeClassImpl));
 		String issuer = "{\"name\":\"OpenOlat\",\"type\":\"Issuer\",\"@context\":\"https://w3id.org/openbadges/v2\",\"url\":\"https://test.openolat.org\"}";
 		badgeClassImpl.setIssuer(issuer);
 		badgeClassImpl.setEntry(entry);
+
+		CoreSpringFactory.getImpl(BadgeClassDAO.class).createBadgeClass(badgeClassImpl);
 
 		return badgeClassImpl;
 	}

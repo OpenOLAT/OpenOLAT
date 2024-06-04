@@ -34,12 +34,14 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.WebappHelper;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
-import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 
@@ -79,6 +81,9 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 	@Autowired
 	BadgeClassDAO badgeClassDAO;
 
+	@Autowired
+	BadgeEntryConfigurationDAO badgeEntryConfigurationDAO;
+
 	@After
 	public void tearDown() throws Exception {
 		List<BadgeAssertion> globalBadgeAssertions = badgeAssertionDAO.getBadgeAssertions(null, null, true);
@@ -97,7 +102,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 		// Arrange
 
-		String uuid = OpenBadgesUIFactory.createIdentifier();
+		String uuid = OpenBadgesFactory.createIdentifier();
 		BadgeAssertion badgeAssertion = createBadgeAssertion(uuid);
 		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
 		String jsonString = OpenBadgesManagerImpl.createBakedJsonString(badgeAssertion);
@@ -134,8 +139,6 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 	private BadgeAssertion createBadgeAssertion(String uuid) {
 		BadgeClassImpl badgeClassImpl = BadgeTestData.createTestBadgeClass("PNG badge", "image.png", null);
-		badgeClassDAO.createBadgeClass(badgeClassImpl);
-
 		Identity recipient = JunitTestHelper.createAndPersistIdentityAsUser("badgeRecipient");
 		String recipientObject = OpenBadgesManagerImpl.createRecipientObject(recipient, badgeClassImpl.getSalt());
 		String verification = "{\"type\":\"hosted\"}";
@@ -169,5 +172,41 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 			String mergedSvg = managerImpl.mergeAssertionJson(svg, json, "https://test.openolat.org/badge/assertion/123");
 			System.err.println(mergedSvg);
 		}
+	}
+
+	@Test
+	public void copyConfigurationAndBadgeClasses() {
+		// arrange
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-class-author-1");
+		RepositoryEntry sourceEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		BadgeClassImpl originalBadgeClass = BadgeTestData.createTestBadgeClass("Course badge", "image.png", sourceEntry);
+		BadgeEntryConfiguration badgeEntryConfiguration = badgeEntryConfigurationDAO.createConfiguration(sourceEntry);
+		badgeEntryConfiguration.setAwardEnabled(true);
+		badgeEntryConfiguration.setOwnerCanAward(true);
+		badgeEntryConfiguration.setCoachCanAward(true);
+		badgeEntryConfigurationDAO.updateConfiguration(badgeEntryConfiguration);
+
+		// act
+		RepositoryEntry targetEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		openBadgesManager.copyConfigurationAndBadgeClasses(sourceEntry, targetEntry, author);
+
+		// assert
+		List<BadgeClass> originalBadgeClasses = badgeClassDAO.getBadgeClasses(sourceEntry);
+		List<BadgeClass> copiedBadgeClasses = badgeClassDAO.getBadgeClasses(targetEntry);
+		BadgeEntryConfiguration originalConfiguration = badgeEntryConfigurationDAO.getConfiguration(sourceEntry);
+		BadgeEntryConfiguration copiedConfiguration = badgeEntryConfigurationDAO.getConfiguration(targetEntry);
+
+		Assert.assertEquals(1, originalBadgeClasses.size());
+		Assert.assertEquals(1, copiedBadgeClasses.size());
+		Assert.assertNotNull(originalConfiguration);
+		Assert.assertNotNull(copiedConfiguration);
+
+		Assert.assertEquals(originalBadgeClass.getUuid(), originalBadgeClasses.get(0).getUuid());
+		Assert.assertNotEquals(originalBadgeClass.getUuid(), copiedBadgeClasses.get(0).getUuid());
+		Assert.assertEquals(originalBadgeClass.getName(), copiedBadgeClasses.get(0).getName());
+
+		Assert.assertEquals(originalConfiguration.isAwardEnabled(), copiedConfiguration.isAwardEnabled());
+		Assert.assertEquals(originalConfiguration.isCoachCanAward(), copiedConfiguration.isCoachCanAward());
+		Assert.assertTrue(copiedConfiguration.isOwnerCanAward());
 	}
 }

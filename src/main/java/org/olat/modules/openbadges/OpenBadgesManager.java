@@ -87,11 +87,11 @@ public interface OpenBadgesManager {
 
 	void createBadgeClass(BadgeClassImpl badgeClass);
 
-	String createBadgeClassImageFromSvgTemplate(Long templateKey, String backgroundColorId, String title, Identity savedBy);
+	String createBadgeClassImageFromSvgTemplate(String uuid, Long templateKey, String backgroundColorId, String title, Identity savedBy);
 
-	String createBadgeClassImageFromPngTemplate(Long templateKey);
+	String createBadgeClassImageFromPngTemplate(String uuid, Long templateKey);
 
-	String createBadgeClassImage(File tempBadgeFileImage, String targetBadgeImageFileName, Identity savedBy);
+	String createBadgeClassImage(String uuid, File tempBadgeFileImage, String targetBadgeImageFileName, Identity savedBy);
 
 	List<BadgeClass> getBadgeClasses(RepositoryEntry entry);
 
@@ -167,6 +167,8 @@ public interface OpenBadgesManager {
 	boolean isEnabled();
 
 	void deleteConfiguration(RepositoryEntryRef entry);
+
+	void copyConfigurationAndBadgeClasses(RepositoryEntry sourceEntry, RepositoryEntry targetEntry, Identity author);
 
 	//
 	// Types

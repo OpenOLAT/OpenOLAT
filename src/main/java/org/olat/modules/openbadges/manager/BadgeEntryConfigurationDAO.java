@@ -52,6 +52,17 @@ public class BadgeEntryConfigurationDAO {
 		return configuration;
 	}
 
+	public void cloneConfiguration(BadgeEntryConfiguration sourceConfiguration, RepositoryEntry targetEntry) {
+		BadgeEntryConfigurationImpl targetConfiguration = new BadgeEntryConfigurationImpl();
+		targetConfiguration.setCreationDate(new Date());
+		targetConfiguration.setLastModified(targetConfiguration.getCreationDate());
+		targetConfiguration.setAwardEnabled(sourceConfiguration.isAwardEnabled());
+		targetConfiguration.setCoachCanAward(sourceConfiguration.isCoachCanAward());
+		targetConfiguration.setOwnerCanAward(sourceConfiguration.isOwnerCanAward());
+		targetConfiguration.setEntry(targetEntry);
+		dbInstance.getCurrentEntityManager().persist(targetConfiguration);
+	}
+
 	public BadgeEntryConfiguration getConfiguration(RepositoryEntryRef entry) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select config from badgeentryconfig config ");

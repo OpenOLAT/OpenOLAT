@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -65,7 +66,7 @@ public class AwardBadgesController extends FormBasicController {
 		this.recipients = recipients;
 
 		badgeKV = new SelectionValues();
-		openBadgesManager.getBadgeClasses(courseEntry).forEach(bc -> badgeKV.add(SelectionValues.entry(bc.getUuid(), bc.getNameWithScan())));
+		openBadgesManager.getBadgeClasses(courseEntry).forEach(bc -> badgeKV.add(SelectionValues.entry(bc.getUuid(), bc.getName())));
 
 		initForm(ureq);
 	}
@@ -121,7 +122,7 @@ public class AwardBadgesController extends FormBasicController {
 		Date now = new Date();
 		if (badgeClass != null) {
 			for (Identity recipient : recipients) {
-				String uuid = OpenBadgesUIFactory.createIdentifier();
+				String uuid = OpenBadgesFactory.createIdentifier();
 				openBadgesManager.createBadgeAssertion(uuid, badgeClass, now, recipient, getIdentity());
 			}
 		}

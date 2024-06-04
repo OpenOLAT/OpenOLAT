@@ -274,7 +274,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		public Object getValueAt(int row, int col) {
 			BadgeAssertion badgeAssertion = getObject(row).badgeAssertionWithSize.badgeAssertion();
 			return switch (Cols.values()[col]) {
-				case name -> badgeAssertion.getBadgeClass().getNameWithScan();
+				case name -> badgeAssertion.getBadgeClass().getName();
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 				case status -> translate("assertion.status." + badgeAssertion.getStatus().name());
 				case awardedBy -> userManager.getUserDisplayName(badgeAssertion.getAwardedBy());

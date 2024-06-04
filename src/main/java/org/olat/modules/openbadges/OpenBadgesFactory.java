@@ -19,6 +19,8 @@
  */
 package org.olat.modules.openbadges;
 
+import java.util.UUID;
+
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.FileUtils;
 
@@ -73,5 +75,17 @@ public class OpenBadgesFactory {
 
 	public static String createIssuerUrl(String identifier) {
 		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + ISSUER_PATH + identifier;
+	}
+
+	public static String createSalt(BadgeClass badgeClass) {
+		return "badgeClass" + Math.abs(badgeClass.getUuid().hashCode());
+	}
+
+	public static String createBadgeClassFileName(String uuid, String sourceName) {
+		return uuid + "." + FileUtils.getFileSuffix(sourceName);
+	}
+
+	public static String createIdentifier() {
+		return UUID.randomUUID().toString().replace("-", "");
 	}
 }

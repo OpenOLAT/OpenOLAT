@@ -130,9 +130,9 @@ public class CreateBadgeClassWizardContext {
 		ICourse course = entry != null ? CourseFactory.loadCourse(entry) : null;
 		courseResourcableId = course != null ? course.getResourceableId() : null;
 		BadgeClassImpl badgeClassImpl = new BadgeClassImpl();
-		badgeClassImpl.setUuid(OpenBadgesUIFactory.createIdentifier());
+		badgeClassImpl.setUuid(OpenBadgesFactory.createIdentifier());
 		badgeClassImpl.setStatus(BadgeClass.BadgeClassStatus.preparation);
-		badgeClassImpl.setSalt("badgeClass" + Math.abs(badgeClassImpl.getUuid().hashCode()));
+		badgeClassImpl.setSalt(OpenBadgesFactory.createSalt(badgeClassImpl));
 		Profile issuer = new Profile(new JSONObject());
 		if (course != null) {
 			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();

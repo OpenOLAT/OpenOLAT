@@ -48,6 +48,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -84,7 +85,7 @@ public class AwardBadgesWithPreviewController extends FormBasicController {
 			if(!excludedBadgeSet.contains(bc)) {
 				String url = mediaUrl + "/" + bc.getImage();
 				Size targetSize = bcw.fitIn(90, 90);
-				badgeKV.add(SelectionValues.entry(bc.getUuid(), bc.getNameWithScan(), new Image(url, targetSize)));
+				badgeKV.add(SelectionValues.entry(bc.getUuid(), bc.getName(), new Image(url, targetSize)));
 			}
 		});
 
@@ -150,7 +151,7 @@ public class AwardBadgesWithPreviewController extends FormBasicController {
 		Date now = new Date();
 		if (badgeClass != null) {
 			for (Identity recipient : recipients) {
-				String uuid = OpenBadgesUIFactory.createIdentifier();
+				String uuid = OpenBadgesFactory.createIdentifier();
 				openBadgesManager.createBadgeAssertion(uuid, badgeClass, now, recipient, getIdentity());
 			}
 		}

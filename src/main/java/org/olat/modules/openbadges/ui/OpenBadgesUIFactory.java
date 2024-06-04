@@ -20,7 +20,6 @@
 package org.olat.modules.openbadges.ui;
 
 import java.util.Locale;
-import java.util.UUID;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -45,10 +44,6 @@ public class OpenBadgesUIFactory {
 
 	public static String getTemplateDescriptionI18nKey(String identifier) {
 		return "template.description.id." + identifier;
-	}
-
-	public static String createIdentifier() {
-		return UUID.randomUUID().toString().replace("-", "");
 	}
 
 	public static String getTemplateNameFallbackKey() {

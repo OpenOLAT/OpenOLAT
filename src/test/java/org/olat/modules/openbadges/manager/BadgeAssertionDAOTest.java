@@ -29,8 +29,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
-import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -71,14 +71,13 @@ public class BadgeAssertionDAOTest extends OlatTestCase {
 
 	@Test
 	public void testCreateBadgeAssertion() {
-		String uuid = OpenBadgesUIFactory.createIdentifier();
+		String uuid = OpenBadgesFactory.createIdentifier();
 		String recipientObject = "{}";
 		String verification = "{}";
 		Date issuedOn = new Date();
 		Identity recipient = JunitTestHelper.createAndPersistIdentityAsUser("badgeRecipient");
 
 		BadgeClassImpl badgeClassImpl = BadgeTestData.createTestBadgeClass("Test badge", "image.svg", null);
-		badgeClassDAO.createBadgeClass(badgeClassImpl);
 
 		badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClassImpl, verification, issuedOn, recipient, null);
 
@@ -102,15 +101,12 @@ public class BadgeAssertionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
 
 		BadgeClassImpl courseBadgeClass = BadgeTestData.createTestBadgeClass("Test badge with course", "image1.svg", courseEntry);
-		badgeClassDAO.createBadgeClass(courseBadgeClass);
-
 		BadgeClassImpl globalBadgeClass = BadgeTestData.createTestBadgeClass("Test badge without course", "image2.svg", null);
-		badgeClassDAO.createBadgeClass(globalBadgeClass);
 
-		String uuid1 = OpenBadgesUIFactory.createIdentifier();
-		String uuid2 = OpenBadgesUIFactory.createIdentifier();
-		String uuid3 = OpenBadgesUIFactory.createIdentifier();
-		String uuid4 = OpenBadgesUIFactory.createIdentifier();
+		String uuid1 = OpenBadgesFactory.createIdentifier();
+		String uuid2 = OpenBadgesFactory.createIdentifier();
+		String uuid3 = OpenBadgesFactory.createIdentifier();
+		String uuid4 = OpenBadgesFactory.createIdentifier();
 		Set<String> uuids = Set.of(uuid1, uuid2, uuid3, uuid4);
 		String recipientObject = "{}";
 		String verification = "{}";
@@ -181,15 +177,13 @@ public class BadgeAssertionDAOTest extends OlatTestCase {
 
 	@Test
 	public void testRevokeBadgeAssertion() {
-		String uuid = OpenBadgesUIFactory.createIdentifier();
+		String uuid = OpenBadgesFactory.createIdentifier();
 		String recipientObject = "{}";
 		String verification = "{}";
 		Date issuedOn = new Date();
 		Identity recipient = JunitTestHelper.createAndPersistIdentityAsUser("badgeRecipient");
 
 		BadgeClassImpl badgeClassImpl = BadgeTestData.createTestBadgeClass("Test badge", "image.svg", null);
-		badgeClassDAO.createBadgeClass(badgeClassImpl);
-
 		BadgeAssertion badgeAssertion = badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClassImpl, verification, issuedOn, recipient, null);
 
 		Assert.assertNotNull(badgeAssertion);

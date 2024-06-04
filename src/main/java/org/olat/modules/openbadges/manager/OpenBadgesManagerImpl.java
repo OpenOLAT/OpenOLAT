@@ -122,7 +122,7 @@ import org.w3c.dom.Node;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-@Service
+@Service("openBadgesManager")
 public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBean {
 	private static final Logger log = Tracing.createLoggerFor(OpenBadgesManagerImpl.class);
 	private static final String BADGES_VFS_FOLDER = "badges";
@@ -541,13 +541,37 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeClassDAO.createBadgeClass(badgeClass);
 	}
 
+	private void cloneBadgeClass(BadgeClass sourceClass, RepositoryEntry targetEntry, Identity author) {
+		BadgeClassImpl targetClass = new BadgeClassImpl();
+		targetClass.setEntry(targetEntry);
+		targetClass.setUuid(OpenBadgesFactory.createIdentifier());
+		targetClass.setSalt(OpenBadgesFactory.createSalt(targetClass));
+		targetClass.setStatus(BadgeClass.BadgeClassStatus.preparation);
+		targetClass.setVersion(sourceClass.getVersion());
+		targetClass.setName(sourceClass.getName());
+		targetClass.setDescription(sourceClass.getDescription());
+		targetClass.setIssuer(sourceClass.getIssuer());
+		targetClass.setLanguage(sourceClass.getLanguage());
+		targetClass.setValidityEnabled(sourceClass.isValidityEnabled());
+		targetClass.setValidityTimelapse(sourceClass.getValidityTimelapse());
+		targetClass.setValidityTimelapseUnit(sourceClass.getValidityTimelapseUnit());
+		targetClass.setCriteria(sourceClass.getCriteria());
+		targetClass.setImage(OpenBadgesFactory.createBadgeClassFileName(targetClass.getUuid(), sourceClass.getImage()));
+		badgeClassDAO.createBadgeClass(targetClass);
+
+		VFSContainer classesContainer = getBadgeClassesRootContainer();
+		if (classesContainer.resolve(sourceClass.getImage()) instanceof LocalFileImpl sourceLeaf) {
+			copyFile(classesContainer, sourceLeaf.getBasefile(), targetClass.getImage(), author);
+		}
+	}
+
 	@Override
-	public String createBadgeClassImageFromSvgTemplate(Long templateKey, String backgroundColorId, String title,
-													   Identity savedBy) {
+	public String createBadgeClassImageFromSvgTemplate(String uuid, Long templateKey, String backgroundColorId,
+													   String title, Identity savedBy) {
 		BadgeTemplate template = getTemplate(templateKey);
 		String svg = getTemplateSvgImageWithSubstitutions(template.getImage(), backgroundColorId, title);
 		VFSContainer classesContainer = getBadgeClassesRootContainer();
-		String targetFileName = VFSManager.rename(classesContainer, template.getImage());
+		String targetFileName = OpenBadgesFactory.createBadgeClassFileName(uuid, template.getImage());
 		VFSLeaf targetLeaf = classesContainer.createChildLeaf(targetFileName);
 		try (InputStream inputStream = new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8))) {
 			if (VFSManager.copyContent(inputStream, targetLeaf, savedBy)) {
@@ -560,20 +584,22 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public String createBadgeClassImageFromPngTemplate(Long templateKey) {
+	public String createBadgeClassImageFromPngTemplate(String uuid, Long templateKey) {
 		BadgeTemplate template = getTemplate(templateKey);
 		String templateImage = template.getImage();
 		VFSLeaf templateLeaf = getTemplateVfsLeaf(templateImage);
 		VFSContainer classesContainer = getBadgeClassesRootContainer();
-		String targetFileName = VFSManager.rename(classesContainer, templateImage);
+		String targetFileName = OpenBadgesFactory.createBadgeClassFileName(uuid, template.getImage());
 		VFSLeaf targetLeaf = classesContainer.createChildLeaf(targetFileName);
 		imageService.scaleImage(templateLeaf, targetLeaf, MAX_BADGE_CLASS_IMAGE_WIDTH, MAX_BADGE_CLASS_IMAGE_HEIGHT, false);
 		return targetFileName;
 	}
 
 	@Override
-	public String createBadgeClassImage(File tempBadgeFileImage, String targetBadgeImageFileName, Identity savedBy) {
-		return copyBadgeClassFile(tempBadgeFileImage, targetBadgeImageFileName, savedBy);
+	public String createBadgeClassImage(String uuid, File tempBadgeFileImage, String targetBadgeImageFileName,
+										Identity savedBy) {
+		String targetFileName = OpenBadgesFactory.createBadgeClassFileName(uuid, targetBadgeImageFileName);
+		return copyBadgeClassFile(tempBadgeFileImage, targetFileName, savedBy);
 	}
 
 	@Override
@@ -722,7 +748,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	public BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 									 Identity recipient, Identity awardedBy) {
 		if (badgeAssertionExists(recipient, badgeClass)) {
-			log.debug("Badge assertion exists for user " + recipient.toString() + " and badge " + badgeClass.getNameWithScan());
+			log.debug("Badge assertion exists for user " + recipient.toString() + " and badge " + badgeClass.getName());
 			return null;
 		}
 
@@ -758,7 +784,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		MailerResult mailerResult = sendBadgeEmail(badgeAssertion, bakedImageFile);
 		if (!mailerResult.isSuccessful()) {
-			log.error("Sending Badge \"{}\" to \"{}\" failed", badgeAssertion.getBadgeClass().getNameWithScan(),
+			log.error("Sending Badge \"{}\" to \"{}\" failed", badgeAssertion.getBadgeClass().getName(),
 					badgeAssertion.getRecipient().getKey());
 		}
 
@@ -790,7 +816,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	private String[] createMailArgs(BadgeAssertion badgeAssertion) {
 		return new String[] {
-				badgeAssertion.getBadgeClass().getNameWithScan(), // badge name
+				badgeAssertion.getBadgeClass().getName(), // badge name
 				Settings.getServerContextPathURI() + "/url/HomeSite/" + badgeAssertion.getRecipient().getKey() +
 						"/badges/0/key/" + badgeAssertion.getKey() // badge URL
 		};
@@ -806,7 +832,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				continue;
 			}
 			if (badgeCriteria.allConditionsMet(passed != null ? passed : false, score != null ? score : 0)) {
-				String uuid = OpenBadgesUIFactory.createIdentifier();
+				String uuid = OpenBadgesFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
 		}
@@ -867,7 +893,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			boolean passed = assessmentEntry.getPassed() != null ? assessmentEntry.getPassed() : false;
 			double score = assessmentEntry.getScore() != null ? assessmentEntry.getScore().doubleValue() : 0;
 			log.debug("Badge '{}', participant '{}': passed = {}, score = {}",
-					badgeClass.getNameWithScan(), assessedIdentity.getName(), passed, score);
+					badgeClass.getName(), assessedIdentity.getName(), passed, score);
 			assert badgeCriteria != null;
 			if (badgeCriteria.isAwardAutomatically() && badgeCriteria.allConditionsMet(passed, score)) {
 				automaticRecipients.add(assessedIdentity);
@@ -883,7 +909,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 		Date issuedOn = new Date();
 		for (Identity recipient : recipients) {
-			String uuid = OpenBadgesUIFactory.createIdentifier();
+			String uuid = OpenBadgesFactory.createIdentifier();
 			createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 		}
 	}
@@ -1243,6 +1269,17 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public void deleteConfiguration(RepositoryEntryRef entry) {
 		badgeEntryConfigurationDAO.delete(entry);
+	}
+
+	@Override
+	public void copyConfigurationAndBadgeClasses(RepositoryEntry sourceEntry, RepositoryEntry targetEntry, Identity author) {
+		BadgeEntryConfiguration sourceConfiguration = badgeEntryConfigurationDAO.getConfiguration(sourceEntry);
+		if (sourceConfiguration != null) {
+			badgeEntryConfigurationDAO.cloneConfiguration(sourceConfiguration, targetEntry);
+		}
+		badgeClassDAO.getBadgeClasses(sourceEntry, true).stream()
+				.filter(bc -> !BadgeClass.BadgeClassStatus.revoked.equals(bc.getStatus()))
+				.forEach(bc -> cloneBadgeClass(bc, targetEntry, author));
 	}
 
 	@Override

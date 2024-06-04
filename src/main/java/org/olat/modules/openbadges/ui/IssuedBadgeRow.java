@@ -41,7 +41,7 @@ public class IssuedBadgeRow {
 	private FormLink toolLink;
 
 	public IssuedBadgeRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
-		this.name = badgeAssertionWithSize.badgeAssertion().getBadgeClass().getNameWithScan();
+		this.name = badgeAssertionWithSize.badgeAssertion().getBadgeClass().getName();
 		this.badgeAssertionWithSize = badgeAssertionWithSize;
 	}
 

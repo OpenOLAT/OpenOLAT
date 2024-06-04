@@ -99,6 +99,7 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.ReminderRule;
@@ -565,7 +566,7 @@ public class CourseHandler implements RepositoryHandler {
 		FileUtils.deleteDirsAndFiles(fExportDir, true, true);
 		
 		cloneReminders(author, envMapper, source, target);
-		cloneConfigurations(source, target);
+		cloneConfigurations(source, target, author);
 		
 		return target;
 	}
@@ -593,17 +594,20 @@ public class CourseHandler implements RepositoryHandler {
 		course.postCopyCourse(envMapper, sourceCourse, context);
 		
 		cloneReminders(context.getExecutingIdentity(), envMapper, context.getSourceRepositoryEntry(), target, context);
-		cloneConfigurations(context.getSourceRepositoryEntry(), target);
+		cloneConfigurations(context.getSourceRepositoryEntry(), target, context.getExecutingIdentity());
 		
 		return target;
 	}
 	
-	private void cloneConfigurations(RepositoryEntry source, RepositoryEntry target) {
+	private void cloneConfigurations(RepositoryEntry source, RepositoryEntry target, Identity author) {
 		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		lectureService.copyRepositoryEntryLectureConfiguration(source, target);
 		
 		CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
 		certificatesManager.copyRepositoryEntryCertificateConfiguration(source, target);
+
+		OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+		openBadgesManager.copyConfigurationAndBadgeClasses(source, target, author);
 	}
 	
 	private void cloneReminders(Identity author, CourseEnvironmentMapper envMapper, RepositoryEntry source, RepositoryEntry target, CopyCourseContext context) {
