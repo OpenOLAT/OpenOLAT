@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.manager.ContentEditorQti;
 import org.olat.modules.ceditor.model.QuizElement;
 import org.olat.modules.ceditor.model.QuizQuestion;
@@ -103,7 +104,7 @@ public class QuizPart extends AbstractPart implements QuizElement {
 	}
 
 	@Override
-	public boolean afterCopy() {
+	public boolean afterCopy(PagePart oldPart) {
 		ContentEditorQti contentEditorQti = CoreSpringFactory.getImpl(ContentEditorQti.class);
 		String targetStoragePath = contentEditorQti.generateStoragePath(this);
 		setStoragePath(targetStoragePath);

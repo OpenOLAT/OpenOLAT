@@ -210,7 +210,7 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 		for(PagePart part:parts) {
 			PagePart newPart = part.copy();
 			copyBody = pageDao.persistPart(copyBody, newPart);
-			if (newPart.afterCopy()) {
+			if (newPart.afterCopy(part)) {
 				newPart = pageDao.merge(newPart);
 			}
 			mapKeys.put(part.getKey().toString(), newPart.getKey().toString());

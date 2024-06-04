@@ -21,10 +21,10 @@ package org.olat.modules.ceditor.model.jpa;
 
 import java.io.Serial;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.ImageComparisonElement;
 import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
@@ -65,19 +65,19 @@ public class ImageComparisonPart extends AbstractPart implements ImageComparison
 
 	@Override
 	public ImageComparisonPart copy() {
-		ImageComparisonPart newPart = new ImageComparisonPart();
-		copy(newPart);
+		ImageComparisonPart part = new ImageComparisonPart();
+		copy(part);
+		return part;
+	}
+
+	@Override
+	public boolean afterCopy(PagePart oldPart) {
 		MediaToPagePartDAO mediaToPagePartDAO = CoreSpringFactory.getImpl(MediaToPagePartDAO.class);
-		List<MediaToPagePart> sourceRelations = mediaToPagePartDAO.loadRelations(this);
+		List<MediaToPagePart> sourceRelations = mediaToPagePartDAO.loadRelations(oldPart);
 		for (MediaToPagePart sourceRelation : sourceRelations) {
-			MediaToPagePartImpl targetRelation = new MediaToPagePartImpl();
-			targetRelation.setCreationDate(new Date());
-			targetRelation.setLastModified(targetRelation.getCreationDate());
-			targetRelation.setMedia(sourceRelation.getMedia());
-			targetRelation.setMediaVersion(sourceRelation.getMediaVersion());
-			targetRelation.setIdentity(sourceRelation.getIdentity());
-			newPart.getRelations().add(targetRelation);
+			mediaToPagePartDAO.persistRelation(this, sourceRelation.getMedia(),
+					sourceRelation.getMediaVersion(), sourceRelation.getIdentity());
 		}
-		return newPart;
+		return true;
 	}
 }

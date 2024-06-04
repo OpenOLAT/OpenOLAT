@@ -193,7 +193,7 @@ public abstract class AbstractPart implements Persistable, ModifiedInfo, CreateI
 	}
 
 	@Override
-	public boolean afterCopy() {
+	public boolean afterCopy(PagePart oldPart) {
 		return false;
 	}
 
