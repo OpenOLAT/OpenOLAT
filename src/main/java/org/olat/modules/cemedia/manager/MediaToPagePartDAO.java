@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
@@ -175,6 +176,20 @@ public class MediaToPagePartDAO {
 
 	public void deleteRelation(MediaToPagePart relation) {
 		dbInstance.getCurrentEntityManager().remove(relation);
+	}
+
+	public int deleteRelations(Page page) {
+		Long bodyKey = page.getBody().getKey();
+		QueryBuilder queryBuilder = new QueryBuilder();
+		queryBuilder
+				.append("delete from mediatopagepart rel")
+				.append(" where exists (select 1 from cepagepart part")
+				.append("  where rel.pagePart.key=part.key and part.body.key=(:bodyKey)")
+				.append(" )");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(queryBuilder.toString())
+				.setParameter("bodyKey", bodyKey)
+				.executeUpdate();
 	}
 
 	public MediaToPagePart loadRelation(Long key) {

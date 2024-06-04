@@ -57,6 +57,7 @@ import org.olat.modules.ceditor.model.jpa.AssignmentImpl;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.PageBodyImpl;
 import org.olat.modules.ceditor.model.jpa.PageImpl;
+import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.BinderRef;
@@ -86,6 +87,8 @@ public class PageDAO {
 	private PageToTaxonomyCompetenceDAO competenceDAO;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private MediaToPagePartDAO mediaToPagePartDAO;
 
 	/**
 	 * 
@@ -944,6 +947,7 @@ public class PageDAO {
 		int usage = getCountSharedPageBody(page);
 		boolean deleteBody = usage <= 1;
 		if(deleteBody) {
+			mediaToPagePartDAO.deleteRelations(page);
 			String partQ = "delete from cepagepart part where part.body.key=:bodyKey";
 			parts = dbInstance.getCurrentEntityManager()
 					.createQuery(partQ)
