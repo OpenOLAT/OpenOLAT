@@ -79,13 +79,13 @@
 		<io.jsonwebtoken>0.12.5</io.jsonwebtoken>
 		<io.undertow>2.3.13.Final</io.undertow>
 		<jackson.version>2.17.1</jackson.version>
-		<swagger.ui.version>5.17.11</swagger.ui.version>
+		<swagger.ui.version>5.17.14</swagger.ui.version>
 		<com.mysql.version>8.4.0</com.mysql.version>
 		<org.postgresql.version>42.7.3</org.postgresql.version>
 		<org.infinispan.version>15.0.4.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.21.0</version.selenium>
-		<activemq.artemis.version>2.33.0</activemq.artemis.version>
+		<activemq.artemis.version>2.34.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.2</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.2</jakarta.xml.ws-api>
@@ -1744,7 +1744,7 @@
 		<dependency>
 			<groupId>com.webauthn4j</groupId>
 			<artifactId>webauthn4j-core</artifactId>
-			<version>0.24.0.RELEASE</version>
+			<version>0.24.1.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -2173,7 +2173,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.11.0</version>
+			<version>6.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
@@ -2440,7 +2440,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>33.2.0-jre</version>
+			<version>33.2.1-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>
