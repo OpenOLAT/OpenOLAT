@@ -199,8 +199,6 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		};
 		configXstream.addPermission(new ExplicitTypePermission(types));
 
-		configXstream.omitField(QTI21DeliveryOptions.class, "pageMode");
-		configXstream.omitField(QTI21DeliveryOptions.class, "lastQuestion");
 		configXstream.alias("deliveryOptions", QTI21DeliveryOptions.class);
 		configXstream.alias("assessmentResultsOptions", QTI21AssessmentResultsOptions.class);
 	}
