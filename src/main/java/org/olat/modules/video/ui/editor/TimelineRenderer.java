@@ -137,6 +137,9 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 
 	private void renderTimeline(StringOutput s, FlexiTableComponent ftC) {
 		if (ftC.getFormItem().getTableDataModel() instanceof TimelineModel timelineModel) {
+			if (timelineModel.getVideoLength() == 0) {
+				return;
+			}
 			s.append("<div style=\"height: 8px;\"></div>");
 			s.append("<div class=\"o_video_timeline\">");
 			s.append("<div id=\"o_video_timeline_containment\" style=\"height: 1px; left: 70px; right: 15px; position: absolute;\"></div>");

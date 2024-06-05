@@ -199,7 +199,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 			timelineModel.setVisibleChannels(List.of(TimelineEventType.QUIZ, TimelineEventType.COMMENT,
 					TimelineEventType.ANNOTATION, TimelineEventType.SEGMENT, TimelineEventType.CHAPTER));
 		}
-		fps = (int) (1000L * videoFrameCount / videoDurationInMillis);
+		fps = videoDurationInMillis != 0 ? (int) (1000L * videoFrameCount / videoDurationInMillis) : 24;
 
 		timelineTableEl = uifactory.addTableElement(getWindowControl(), "timelineEvents", timelineModel,
 				10, true, getTranslator(), formLayout);

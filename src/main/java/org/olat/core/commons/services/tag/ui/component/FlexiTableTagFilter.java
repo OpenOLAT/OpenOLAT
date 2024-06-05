@@ -66,14 +66,15 @@ public class FlexiTableTagFilter extends FlexiTableFilter implements FlexiTableE
 	}
 
 	public void setValues(List<String> value) {
-		this.value = value;
+		this.value = value == null ? new ArrayList<>() : value;
+		
 	}
 	
 	@Override
 	public void setValue(Object val) {
 		this.value = convert(val);
 		if(val == null) {
-			this.value = null;
+			this.value = new ArrayList<>();
 		} else if(val instanceof List) {
 			@SuppressWarnings("unchecked")
 			List<String> vals = (List<String>)val;
@@ -100,7 +101,7 @@ public class FlexiTableTagFilter extends FlexiTableFilter implements FlexiTableE
 
 	@Override
 	public void reset() {
-		value = null;
+		value = new ArrayList<>();
 	}
 	
 	public List<TagRef> getTags() {

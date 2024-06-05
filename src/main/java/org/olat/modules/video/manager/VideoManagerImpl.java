@@ -1182,21 +1182,24 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 			if(videoFile.exists()) {
 				videoFile.deleteSilently();
 			}
-		} else if(format == VideoFormat.youtube && youtubeProvider.isEnabled()) {
-			YoutubeMetadata metadata = youtubeProvider.getSnippet(url);
-			if(metadata != null) {
-				if(StringHelper.containsNonWhitespace(metadata.getThumbnailUrl())) {
-					uploadPoster(entry, metadata.getThumbnailUrl(), changedBy);
-				}
-				
-				
-				if(metadata.getDuration() > 0) {
-					String length = Formatter.formatTimecode(metadata.getDuration());
-					meta.setLength(length);
-					entry = repositoryManager.setExpenditureOfWork(entry, length);
-				}
-			}
+		} else if(format == VideoFormat.youtube) {
+			if (youtubeProvider.isEnabled()) {
+				YoutubeMetadata metadata = youtubeProvider.getSnippet(url);
+				if(metadata != null) {
+					if(StringHelper.containsNonWhitespace(metadata.getThumbnailUrl())) {
+						uploadPoster(entry, metadata.getThumbnailUrl(), changedBy);
+					}
 
+					if(metadata.getDuration() > 0) {
+						String length = Formatter.formatTimecode(metadata.getDuration());
+						meta.setLength(length);
+						entry = repositoryManager.setExpenditureOfWork(entry, length);
+					}
+				}
+			} else {
+				meta.setLength(null);
+				entry = repositoryManager.setExpenditureOfWork(entry, null);
+			}
 		} else {
 			meta.setSize(0l);
 			meta.setWidth(800);
