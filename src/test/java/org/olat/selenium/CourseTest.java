@@ -66,7 +66,7 @@ import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.AuthoringEnvPage.Wizard;
-import org.olat.selenium.page.survey.SurveyPage;
+import org.olat.selenium.page.survey.EvaluationFormPage;
 import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.RepositorySettingsPage;
@@ -2261,12 +2261,12 @@ public class CourseTest extends Deployments {
 			.clickTree()
 			.selectWithTitle("Survey");
 		
-		SurveyPage userSurvey = SurveyPage.loadPage(browser)
-			.assertOnSurvey();
+		EvaluationFormPage userSurvey = EvaluationFormPage.loadPage(browser)
+			.assertOnExecution();
 		
 		userSurvey
 			.answerSingleChoice("Soft")
-			.saveAndCloseSurvey()
+			.saveAndClose()
 			.assertOnSurveyClosed();
 	}
 	

@@ -29,22 +29,22 @@ import org.openqa.selenium.WebDriver;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SurveyPage {
+public class EvaluationFormPage {
 
 	private final By toolsMenu = By.cssSelector("ul.o_sel_repository_tools");
 	
 	private final WebDriver browser;
 	
-	public SurveyPage(WebDriver browser) {
+	public EvaluationFormPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public static SurveyPage loadPage(WebDriver browser) {
-		return new SurveyPage(browser)
-				.assertOnSurvey();
+	public static EvaluationFormPage loadPage(WebDriver browser) {
+		return new EvaluationFormPage(browser)
+				.assertOnExecution();
 	}
 	
-	public SurveyPage assertOnSurvey() {
+	public EvaluationFormPage assertOnExecution() {
 		By pageBy = By.cssSelector("div.o_evaluation_execution.o_page_content");
 		OOGraphene.waitElement(pageBy, browser);
 		return this;
@@ -68,14 +68,14 @@ public class SurveyPage {
 	 * Click the editor link in the tools drop-down
 	 * @return Itself
 	 */
-	public SurveyPage openToolsMenu() {
+	public EvaluationFormPage openToolsMenu() {
 		By toolsMenuCaret = By.cssSelector("a.o_sel_repository_tools");
 		browser.findElement(toolsMenuCaret).click();
 		OOGraphene.waitElement(toolsMenu, browser);
 		return this;
 	}
 	
-	public SurveyPage answerSingleChoice(String choice) {
+	public EvaluationFormPage answerSingleChoice(String choice) {
 		By choiceBy = By.xpath("//div[contains(@class,'o_ed_formsinglechoice')]//label[text()[contains(.,'" + choice + "')]]/input[@type='radio']");
 		OOGraphene.waitElement(choiceBy, browser);
 		browser.findElement(choiceBy).click();
@@ -83,7 +83,7 @@ public class SurveyPage {
 		return this;
 	}
 	
-	public SurveyPage answerMultipleChoice(String choice) {
+	public EvaluationFormPage answerMultipleChoice(String choice) {
 		By choiceBy = By.xpath("//div[contains(@class,'o_ed_formmultiplechoice')]//label[text()[contains(.,'" + choice + "')]]/input[@type='checkbox']");
 		OOGraphene.waitElement(choiceBy, browser);
 		browser.findElement(choiceBy).click();
@@ -91,7 +91,24 @@ public class SurveyPage {
 		return this;
 	}
 	
-	public SurveyPage saveAndCloseSurvey() {
+	public EvaluationFormPage answerRubric(String choice, int rating) {
+		By choiceBy = By.xpath("//div[contains(@class,'o_evaluation_discrete_radio')]//div[contains(@class,'o_slider')][div[contains(@class,'o_evaluation_left_label')]/p[text()[contains(.,'" + choice + "')]]]/div[contains(@class,'o_slider_elements')]/div[contains(@class,'o_evaluation_steps')]/div[contains(@class,'radio')][" + rating +"]/label/input[@type='radio']");
+		OOGraphene.waitElement(choiceBy, browser);
+		browser.findElement(choiceBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public EvaluationFormPage assertAnsweredRubric(String choice, int rating, boolean disabled) {
+		String input = "/label/input[@type='radio']" + (disabled ? "[@disabled='disabled']" : "");
+		By choiceBy = By.xpath("//div[contains(@class,'o_evaluation_discrete_radio')]//div[contains(@class,'o_slider')][div[contains(@class,'o_evaluation_left_label')]/p[text()[contains(.,'" + choice + "')]]]/div[contains(@class,'o_slider_elements')]/div[contains(@class,'o_evaluation_steps')]/div[contains(@class,'radio')][" + rating +"]" + input);
+		OOGraphene.waitElement(choiceBy, browser);
+		browser.findElement(choiceBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public EvaluationFormPage saveAndClose() {
 		By saveBy = By.xpath("//div[contains(@class,'o_evaluation_form')]//button[contains(@class,'btn-primary')]");
 		browser.findElement(saveBy).click();
 		
@@ -102,8 +119,14 @@ public class SurveyPage {
 		return this;
 	}
 	
-	public SurveyPage assertOnSurveyClosed() {
+	public EvaluationFormPage assertOnSurveyClosed() {
 		By infoPanelBy = By.cssSelector(".o_surv_run #o_msg_info .panel-body>h4");
+		OOGraphene.waitElement(infoPanelBy, browser);
+		return this;
+	}
+	
+	public EvaluationFormPage assertOnFormClosed() {
+		By infoPanelBy = By.xpath("//div[contains(@class,'o_evaluation_block')]//input[@type='radio'][@disabled='disabled']");
 		OOGraphene.waitElement(infoPanelBy, browser);
 		return this;
 	}

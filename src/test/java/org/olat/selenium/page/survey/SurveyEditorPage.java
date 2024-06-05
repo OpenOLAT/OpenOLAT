@@ -37,10 +37,10 @@ public class SurveyEditorPage extends ContentEditorPage {
 		super(browser, true);
 	}
 	
-	public SurveyPage close() {
+	public EvaluationFormPage close() {
 		OOGraphene.scrollTop(browser);
 		OOGraphene.clickBreadcrumbBack(browser);
-		return new SurveyPage(browser);
+		return new EvaluationFormPage(browser);
 	}
 	
 	@Override

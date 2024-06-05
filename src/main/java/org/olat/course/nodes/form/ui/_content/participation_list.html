@@ -3,8 +3,10 @@
 		$r.translate("error.no.survey")
 	<div>
 #else
+<div class="o_sel_form_participants_list">
 	#if($r.available("buttons.top"))
 		$r.render("buttons.top")
 	#end
 	$r.render("table")
+</div>
 #end

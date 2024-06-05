@@ -87,7 +87,8 @@ import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.ScormPage;
 import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.survey.SurveyEditorPage;
-import org.olat.selenium.page.survey.SurveyPage;
+import org.olat.selenium.page.survey.EvaluationFormPage;
+import org.olat.selenium.page.survey.FormPage;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
@@ -2283,7 +2284,7 @@ public class CourseElementTest extends Deployments {
 			.assertOnInfos()
 			.clickToolbarBack();
 		
-		SurveyPage survey = SurveyPage
+		EvaluationFormPage survey = EvaluationFormPage
 			.loadPage(browser);
 		SurveyEditorPage surveyEditor = survey
 			.edit();
@@ -2374,14 +2375,141 @@ public class CourseElementTest extends Deployments {
 			.tree()
 			.selectWithTitle(surveyNodeTitle);
 		
-		SurveyPage userSurvey = SurveyPage.loadPage(browser)
-			.assertOnSurvey();
+		EvaluationFormPage userSurvey = EvaluationFormPage.loadPage(browser)
+			.assertOnExecution();
 		
 		userSurvey
 			.answerMultipleChoice("Saturn")
 			.answerSingleChoice("Venus")
-			.saveAndCloseSurvey()
+			.saveAndClose()
 			.assertOnSurveyClosed();
+	}
+	
+	
+	/**
+	 * An author upload a form with 2 rubrics. He uses it in a
+	 * course. A participant of the course fills the form and
+	 * the author checks the results.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithForm()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Maximilien");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a survey
+		//upload a SCORM package
+		String formTitle = "Form - " + UUID.randomUUID();
+		URL formUrl = JunitTestHelper.class.getResource("file_resources/form_with_rubrics_planets.zip");
+		File formFile = new File(formUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(formTitle, formFile);
+
+		//create a course
+		String courseTitle = "Course-With-Form-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		navBar.openCourse(courseTitle);
+		
+		String formNodeTitle = "FormNode-1";
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("form")
+			.nodeTitle(formNodeTitle)
+			.selectTabFormContent()
+			.chooseForm(formTitle)
+			.saveConfiguration();
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		
+		MembersPage membersPage = courseEditor
+			.clickToolbarBack()
+			.members();
+			
+		membersPage
+			.addMember()
+			.importList()
+			.setMembers(user)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		//open the course and see the survey
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		course
+			.tree()
+			.selectWithTitle(formNodeTitle);
+		
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
+		userLoginPage
+			.loginAs(user.getLogin(), user.getPassword());
+		
+		//open the course
+		NavigationPage userNavBar = NavigationPage.load(browser);
+		userNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		//go to the group task
+		CoursePageFragment userCourse = new CoursePageFragment(browser);
+		userCourse
+			.tree()
+			.selectWithTitle(formNodeTitle);
+		
+		EvaluationFormPage userSurvey = EvaluationFormPage.loadPage(browser)
+			.assertOnExecution();
+		
+		userSurvey
+			//Planets
+			.answerRubric("Venus", 2)
+			.answerRubric("Earth", 3)
+			.answerRubric("Saturn", 4)
+			.answerRubric("Neptun", 4)
+			.answerRubric("Pluto", 5)
+			// Asteroids
+			.answerRubric("Ceres", 4)
+			.answerRubric("Juno", 2)
+			.answerRubric("Pallas", 4)
+			.answerRubric("Kabudari", 5)
+			.saveAndClose()
+			.assertOnFormClosed();
+		
+		// Author is back
+		authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resumeWithAssert();
+		
+		NavigationPage.load(browser)
+			.openAuthoringEnvironment()
+			.openResource(courseTitle);
+		
+		new FormPage(browser)
+			.assertOnParticipantsList()
+			.selectParticipant(user.getFirstName())
+			.assertOnFormClosed()
+			.assertAnsweredRubric("Venus", 2, true)
+			.assertAnsweredRubric("Pluto", 5, true)
+			.assertAnsweredRubric("Pallas", 4, true)
+			.assertAnsweredRubric("Kabudari", 5, true);
 	}
 	
 	

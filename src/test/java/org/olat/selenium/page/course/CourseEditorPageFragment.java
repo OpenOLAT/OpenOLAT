@@ -50,6 +50,7 @@ public class CourseEditorPageFragment {
 	public static final By chooseScormButton = By.className("o_sel_scorm_choose_repofile");
 	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
 	public static final By chooseSurveyButton = By.className("o_sel_survey_choose_repofile");
+	public static final By chooseFormButton = By.className("o_sel_form_choose_repofile");
 	
 	public static final By tabNavTabsBy = By.cssSelector("ul.nav.nav-tabs");
 	
@@ -399,6 +400,16 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseSurvey(String resourceTitle) {
 		return chooseResource(chooseSurveyButton, resourceTitle);
+	}
+	
+	/**
+	 * @see chooseResource
+	 * @param resourceTitle The title of the survey
+	 * @return Itself
+	 */
+	public FormConfigurationPage chooseForm(String resourceTitle) {
+		chooseResource(chooseFormButton, resourceTitle);
+		return new FormConfigurationPage(browser);
 	}
 	
 	/**
