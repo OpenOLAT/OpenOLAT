@@ -22,6 +22,8 @@ package org.olat.modules.video.ui.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -54,7 +56,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.gui.control.winmgr.functions.VideoCommands;
 import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -75,8 +77,6 @@ import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.VideoTimeCellRenderer;
 import org.olat.repository.RepositoryEntry;
-
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -372,7 +372,8 @@ public class MasterController extends FormBasicController implements FlexiTableC
 			case SEGMENT -> fireEvent(ureq, new SegmentSelectedEvent(timelineRow.getId(), timelineRow.getStartTime(),
 					timelineRow.getDuration() / 1000));
 			case COMMENT -> fireEvent(ureq, new CommentSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
-			case VIDEO -> {
+			case VIDEO, CORRECT, INCORRECT -> {
+				//
 			}
 		}
 	}
@@ -449,17 +450,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	public void select(String id) {
 		timelineModel.select(id);
 		String typeClass = timelineModel.getActiveTypeAsClass();
-		JSCommand command = new JSCommand(
-				"try {" +
-						"  jQuery('.o_video_timeline_box').removeClass('o_video_active');" +
-						(typeClass != null ? "  jQuery('.o_video_timeline_box." + typeClass + "').addClass('o_video_active');" : "") +
-						"  jQuery('.o_video_selected').removeClass('o_video_selected');" +
-						"  jQuery('#o_video_event_" + id + "').addClass('o_video_selected');" +
-						"} catch(e) {" +
-						"  if (window.console) console.log(e);" +
-						"}"
-				);
-		getWindowControl().getWindowBackOffice().sendCommandTo(command);
+		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands.markSelect(id, typeClass));
 	}
 
 	public void updateVideoDuration(String durationInSecondsString) {
@@ -499,16 +490,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	public void setTypeOnly(TimelineEventType type) {
 		timelineModel.setActiveType(type);
 		String typeClass = timelineModel.getActiveTypeAsClass();
-		JSCommand command = new JSCommand(
-				"try {" +
-						"  jQuery('.o_video_timeline_box').removeClass('o_video_active');" +
-						(typeClass != null ? "  jQuery('.o_video_timeline_box." + typeClass + "').addClass('o_video_active');" : "") +
-						"  jQuery('.o_video_selected').removeClass('o_video_selected');" +
-						"} catch(e) {" +
-						"  if (window.console) console.log(e);" +
-						"}"
-		);
-		getWindowControl().getWindowBackOffice().sendCommandTo(command);
+		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands.markTypeOnly(typeClass));
 	}
 
 	private class ThumbnailMapper implements Mapper {
@@ -520,8 +502,8 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				return new ForbiddenMediaResource();
 			}
 			VFSItem thumbnailFile = thumbnailsContainer.resolve(relPath);
-			if (thumbnailFile instanceof VFSLeaf) {
-				return new VFSMediaResource((VFSLeaf) thumbnailFile);
+			if (thumbnailFile instanceof VFSLeaf leaf) {
+				return new VFSMediaResource(leaf);
 			}
 			String secondString = relPath.substring(thumbnailKeywordIndex + THUMBNAIL_BASE_FILE_NAME.length(), suffixIndex);
 			try {
