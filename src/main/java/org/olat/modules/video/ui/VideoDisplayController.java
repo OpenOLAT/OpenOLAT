@@ -55,7 +55,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.winmgr.functions.VideoCommands;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
@@ -84,6 +84,10 @@ import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.modules.video.manager.VideoSubtitlesHelper;
+import org.olat.modules.video.ui.component.ContinueAtCommand;
+import org.olat.modules.video.ui.component.ContinueCommand;
+import org.olat.modules.video.ui.component.PauseCommand;
+import org.olat.modules.video.ui.component.ShowHideProgressTooltipCommand;
 import org.olat.modules.video.ui.event.MarkerMovedEvent;
 import org.olat.modules.video.ui.event.MarkerResizedEvent;
 import org.olat.modules.video.ui.event.VideoEvent;
@@ -627,7 +631,7 @@ public class VideoDisplayController extends BasicController {
 	private void processVideoEvents(UserRequest ureq, String cmd) {
 		String currentTime = ureq.getHttpReq().getParameter("currentTime");
 		String duration = ureq.getHttpReq().getParameter("duration");
-		if (shouldUpdateVideoDuration(duration)) {
+		if(!StringHelper.containsNonWhitespace(videoMetadata.getLength()) && StringHelper.containsNonWhitespace(duration)) {
 			updateVideoDuration(duration);
 		}
 		
@@ -660,19 +664,7 @@ public class VideoDisplayController extends BasicController {
 		}
 		updateGUIPreferences(ureq, src);
 	}
-
-	private boolean shouldUpdateVideoDuration(String duration) {
-		if (!StringHelper.containsNonWhitespace(duration)) {
-			return false;
-		}
-
-		if (StringHelper.containsNonWhitespace(videoMetadata.getLength()) && !videoMetadata.getLength().equals("0:00")) {
-			return false;
-		}
-
-		return true;
-	}
-
+	
 	private void updateVideoDuration(String duration) {
 		try {
 			Long durationInSeconds = Math.round(Double.parseDouble(duration));
@@ -725,7 +717,8 @@ public class VideoDisplayController extends BasicController {
 		if(StringHelper.containsNonWhitespace(currentTime)) {
 			loadMarker(ureq, currentTime, null);
 		}
-		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands.videoContinue(getVideoElementId()));
+		ContinueCommand cmd = new ContinueCommand(getVideoElementId());
+		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
 	}
 	
 	private void doGoBackAfterQuestion(VideoQuestion question) {
@@ -744,7 +737,8 @@ public class VideoDisplayController extends BasicController {
 			time = previousQuestions.toSeconds();
 			backToQuestion = previousQuestions;
 		}
-		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands.continueAt(getVideoElementId(), time));
+		Command cmd = new ContinueAtCommand(getVideoElementId(), time);
+		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
 	}
 
 	private void doMarkerMoved(UserRequest ureq) {
@@ -977,17 +971,19 @@ public class VideoDisplayController extends BasicController {
 	}
 
 	public void showHideProgressTooltip(boolean show) {
-		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands
-				.showHideProgressTooltip(getVideoElementId(), show));
+		ShowHideProgressTooltipCommand elementProgressTooltipCommand =
+				new ShowHideProgressTooltipCommand(getVideoElementId(), show);
+		getWindowControl().getWindowBackOffice().sendCommandTo(elementProgressTooltipCommand);
 	}
 
 	public void play() {
-		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands.videoContinue(getVideoElementId()));
+		ContinueCommand cmd = new ContinueCommand(getVideoElementId());
+		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
 	}
 
 	public void pause(long timeInSeconds) {
-		getWindowControl().getWindowBackOffice().sendCommandTo(VideoCommands
-				.pause(getVideoElementId(), timeInSeconds));
+		PauseCommand cmd = new PauseCommand(getVideoElementId(), timeInSeconds);
+		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
 	}
 
 	public static class VideoMarkerWrapper {
