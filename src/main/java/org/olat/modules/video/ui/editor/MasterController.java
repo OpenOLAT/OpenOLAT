@@ -454,7 +454,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	}
 
 	public void updateVideoDuration(String durationInSecondsString) {
-		if (videoDurationInMillis >= 0 || timelineModel == null) {
+		if (!videoDurationShouldBeUpdated(durationInSecondsString)) {
 			return;
 		}
 
@@ -469,6 +469,22 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		} catch (NumberFormatException e) {
 			logError("Cannot parse duration: " + durationInSecondsString, e);
 		}
+	}
+
+	private boolean videoDurationShouldBeUpdated(String durationInSecondsString) {
+		if (timelineModel == null) {
+			return false;
+		}
+		if (!StringHelper.containsNonWhitespace(durationInSecondsString)) {
+			return false;
+		}
+		if ("0".equals(durationInSecondsString)) {
+			return false;
+		}
+		if (videoDurationInMillis > 0) {
+			return false;
+		}
+		return true;
 	}
 
 	public void setTypeOnly(TimelineEventType type) {
