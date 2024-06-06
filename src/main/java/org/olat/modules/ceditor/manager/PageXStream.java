@@ -39,6 +39,7 @@ import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.EvaluationFormPart;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.ceditor.model.jpa.HTMLPart;
+import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.PageBodyImpl;
@@ -79,7 +80,7 @@ public class PageXStream {
 				ContainerPart.class, EvaluationFormPart.class,  HTMLPart.class, MathPart.class,
 				MediaPart.class, SpacerPart.class, TablePart.class, TitlePart.class, ParagraphPart.class,
 				CodePart.class, QuizPart.class,
-				GalleryPart.class,
+				GalleryPart.class, ImageComparisonPart.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.aliasType("page", PageImpl.class);
@@ -107,6 +108,7 @@ public class PageXStream {
 		xstream.aliasType("quizPart", QuizPart.class);
 		xstream.aliasType("galleryPart", GalleryPart.class);
 		xstream.omitField(MediaToPagePartImpl.class, "identity");
+		xstream.aliasType("imageComparisonPart", ImageComparisonPart.class);
 	}
 	
 	public static final Page fromPath(Path path)
