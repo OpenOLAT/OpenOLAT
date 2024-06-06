@@ -37,6 +37,7 @@ import org.olat.modules.ceditor.model.jpa.AbstractPart;
 import org.olat.modules.ceditor.model.jpa.CodePart;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.EvaluationFormPart;
+import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.ceditor.model.jpa.HTMLPart;
 import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -48,9 +49,11 @@ import org.olat.modules.ceditor.model.jpa.SpacerPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.ceditor.model.jpa.TitlePart;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.MediaVersionMetadata;
 import org.olat.modules.cemedia.model.MediaImpl;
+import org.olat.modules.cemedia.model.MediaToPagePartImpl;
 import org.olat.modules.cemedia.model.MediaVersionImpl;
 import org.olat.modules.cemedia.model.MediaVersionMetadataImpl;
 
@@ -72,9 +75,11 @@ public class PageXStream {
 				PageImpl.class, Page.class, PageBodyImpl.class, PageBody.class,
 				AbstractPart.class, PagePart.class, Media.class, MediaImpl.class,
 				MediaVersion.class, MediaVersionImpl.class, MediaVersionMetadata.class, MediaVersionMetadataImpl.class,
+				MediaToPagePart.class, MediaToPagePartImpl.class,
 				ContainerPart.class, EvaluationFormPart.class,  HTMLPart.class, MathPart.class,
 				MediaPart.class, SpacerPart.class, TablePart.class, TitlePart.class, ParagraphPart.class,
-				CodePart.class, QuizPart.class
+				CodePart.class, QuizPart.class,
+				GalleryPart.class,
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.aliasType("page", PageImpl.class);
@@ -97,8 +102,11 @@ public class PageXStream {
 		xstream.omitField(MediaImpl.class, "author");
 		xstream.omitField(MediaImpl.class, "versions");
 		xstream.aliasType("mediaVersion", MediaVersionImpl.class);
+		xstream.aliasType("mediaToPagePart", MediaToPagePartImpl.class);
 		xstream.omitField(MediaVersionImpl.class, "metadata");
 		xstream.aliasType("quizPart", QuizPart.class);
+		xstream.aliasType("galleryPart", GalleryPart.class);
+		xstream.omitField(MediaToPagePartImpl.class, "identity");
 	}
 	
 	public static final Page fromPath(Path path)
