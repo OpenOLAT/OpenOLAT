@@ -55,6 +55,13 @@ public interface FormToggle extends FormItem {
 	public void toggleOff();
 	
 	public void setTitle(String title);
+	
+	/**
+	 * Add some text after the toggle button inline.
+	 * 
+	 * @param text The text
+	 */
+	public void setText(String text);
 
 	/**
 	 * set the css of the button icons. Works with the BUTTON_ presentations.

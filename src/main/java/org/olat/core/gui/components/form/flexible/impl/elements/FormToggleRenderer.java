@@ -138,6 +138,11 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 			}
 		}
 		sb.append("</button>");
+		
+		String text = cmp.getText();
+		if(StringHelper.containsNonWhitespace(text)) {
+			sb.append(" <span class='o_toggle_block'>").append(text).append("</span>");
+		}
 	}
 	
 	private String getRole(FormToggleComponent cmp) {

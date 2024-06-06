@@ -476,6 +476,19 @@ public class TabbedPane extends Container implements Activateable2 {
 	protected boolean isEnabled(int pane) {
 		return tabPanes.get(pane).isEnabled();
 	}
+	
+	protected boolean isVisible(int pane) {
+		return tabPanes.get(pane).isVisible();
+	}
+	
+	public void setVisible(int pane, boolean visible) {
+		boolean wasVisible = isVisible(pane);
+		if (wasVisible != visible) {
+			setDirty(true);
+		}
+		tabPanes.get(pane).setVisible(visible);
+		setDirty(true);
+	}
 
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
@@ -502,6 +515,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	protected static class TabPane {
 		
 		private boolean enabled = true;
+		private boolean visible = true;
 		private final boolean reload;
 		private final String displayName;
 		private final String elementCssClass;
@@ -561,6 +575,14 @@ public class TabbedPane extends Container implements Activateable2 {
 			this.enabled = enabled;
 		}
 		
+		public boolean isVisible() {
+			return visible;
+		}
+
+		public void setVisible(boolean visible) {
+			this.visible = visible;
+		}
+
 		public String getDisplayName() {
 			return displayName;
 		}

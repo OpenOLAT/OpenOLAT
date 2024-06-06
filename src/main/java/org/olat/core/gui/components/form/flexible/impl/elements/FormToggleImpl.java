@@ -112,6 +112,11 @@ public class FormToggleImpl extends FormItemImpl implements FormToggle {
 	}
 	
 	@Override
+	public void setText(String text) {
+		component.setText(text);
+	}
+
+	@Override
 	public void setAriaLabel(String ariaLabel) {
 		component.setAriaLabel(ariaLabel);
 	}

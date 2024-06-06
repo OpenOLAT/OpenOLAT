@@ -70,7 +70,7 @@ public class TabbedPaneRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("'>");
 		for (int i = 0; i < cnt; i++) {
-			if(tb.isHideDisabledTab() && !tb.isEnabled(i)) {
+			if((tb.isHideDisabledTab() && !tb.isEnabled(i)) || !tb.isVisible(i)) {
 				continue;
 			}
 			

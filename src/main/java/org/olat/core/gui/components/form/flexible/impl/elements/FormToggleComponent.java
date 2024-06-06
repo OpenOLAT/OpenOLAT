@@ -44,6 +44,7 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 	private String toggleOnText;
 	private String toggleOffText;
 	private String title;
+	private String text;
 	private String ariaLabel;
 	private String ariaLabelledBy;
 	private Presentation presentation = Presentation.SWITCH;
@@ -141,6 +142,14 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getText() {
+		return text;
+	}
+
+	public void setText(String text) {
+		this.text = text;
 	}
 
 	public String getAriaLabel() {
