@@ -54,6 +54,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -1009,6 +1010,18 @@ public class ZipUtil {
 
 		public InvalidZipException(String message) {
 			super(message);
+		}
+	}
+
+	public static void exportFile(String dirName, VFSLeaf leaf, ZipOutputStream zout) {
+		try (InputStream in = leaf.getInputStream()) {
+			if (in != null) {
+				zout.putNextEntry(new ZipEntry(concat(dirName, leaf.getName())));
+				IOUtils.copy(in, zout);
+				zout.closeEntry();
+			}
+		} catch (IOException e) {
+			log.error("", e);
 		}
 	}
 }

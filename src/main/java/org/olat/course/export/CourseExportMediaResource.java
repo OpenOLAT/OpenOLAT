@@ -49,6 +49,7 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSRevisionsAndThumbnailsFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -72,6 +73,12 @@ import org.olat.course.nodes.video.VideoEditController;
 import org.olat.course.style.CourseStyleService;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.glossary.GlossaryManager;
+import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeClasses;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.manager.BadgeClassesXStream;
+import org.olat.modules.openbadges.manager.BadgeEntryConfigurationXStream;
 import org.olat.modules.reminder.ReminderService;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
@@ -265,10 +272,11 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 		exportRepositoryEntryMetadata(sourceCourse, zout);
 		exportReminders(sourceCourse, zout);
 		exportCertificatesConfigurations(sourceCourse, zout);
+		exportCourseBadgeClasses(sourceCourse, zout);
 
 		DBFactory.getInstance().commitAndCloseSession();
 	}
-	
+
 	private void exportReminders(PersistingCourseImpl sourceCourse,  ZipOutputStream zout) {
 		try {
 			zout.putNextEntry(new ZipEntry(ZipUtil.concat(ICourse.EXPORTED_DATA_FOLDERNAME, ReminderService.REMINDERS_XML)));
@@ -298,7 +306,45 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
-	
+
+	private void exportCourseBadgeClasses(PersistingCourseImpl sourceCourse, ZipOutputStream zout) {
+		try {
+			RepositoryEntry entry = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+
+			// BadgeConfiguration.xml
+			zout.putNextEntry(new ZipEntry(ZipUtil.concat(ICourse.EXPORTED_DATA_FOLDERNAME, CourseHandler.BADGE_CONFIGURATION_XML)));
+			BadgeEntryConfiguration badgeConfiguration = openBadgesManager.getConfiguration(entry);
+			if (badgeConfiguration != null) {
+				String xmlString = BadgeEntryConfigurationXStream.toXML(badgeConfiguration);
+				zout.write(xmlString.getBytes(StandardCharsets.UTF_8));
+			}
+			zout.closeEntry();
+			log.info("badges: exported course badge configuration: {}", CourseHandler.BADGE_CONFIGURATION_XML);
+
+			// Badge images
+			BadgeClasses badgeClasses = new BadgeClasses(openBadgesManager.getBadgeClasses(entry));
+			for (BadgeClass badgeClass : badgeClasses.getItems()) {
+				VFSLeaf leaf = openBadgesManager.getBadgeClassVfsLeaf(badgeClass.getImage());
+				if (leaf != null) {
+					ZipUtil.exportFile(ICourse.EXPORTED_DATA_FOLDERNAME, leaf, zout);
+					log.info("badges: exported image: {}", leaf.getName());
+				}
+			}
+
+			// BadgeClasses.xml
+			zout.putNextEntry(new ZipEntry(ZipUtil.concat(ICourse.EXPORTED_DATA_FOLDERNAME, CourseHandler.BADGE_CLASSES_XML)));
+			String xmlString = BadgeClassesXStream.toXML(badgeClasses);
+			zout.write(xmlString.getBytes(StandardCharsets.UTF_8));
+			zout.closeEntry();
+			log.info("badges: exported course badge classe: {}", CourseHandler.BADGE_CLASSES_XML);
+
+		} catch(Exception e) {
+			log.error("", e);
+			DBFactory.getInstance().commitAndCloseSession();
+		}
+	}
+
 	private void exportRepositoryEntryMetadata(PersistingCourseImpl sourceCourse, ZipOutputStream zout) {
 		try {
 			RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(sourceCourse, true);

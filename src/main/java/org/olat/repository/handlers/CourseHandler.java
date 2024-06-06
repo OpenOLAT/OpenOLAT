@@ -141,7 +141,9 @@ public class CourseHandler implements RepositoryHandler {
 
 	public static final String EDITOR_XML = "editortreemodel.xml";
 	public static final String EXPORT_CERTIFICATES_CONFIG = "CertificatesConfiguration.xml";
-	
+	public static final String BADGE_CONFIGURATION_XML = "BadgeConfiguration.xml";
+	public static final String BADGE_CLASSES_XML = "BadgeClasses.xml";
+
 	private static final Logger log = Tracing.createLoggerFor(CourseHandler.class);
 	
 	@Override
