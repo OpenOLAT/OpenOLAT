@@ -631,7 +631,7 @@ public class VideoDisplayController extends BasicController {
 	private void processVideoEvents(UserRequest ureq, String cmd) {
 		String currentTime = ureq.getHttpReq().getParameter("currentTime");
 		String duration = ureq.getHttpReq().getParameter("duration");
-		if(!StringHelper.containsNonWhitespace(videoMetadata.getLength()) && StringHelper.containsNonWhitespace(duration)) {
+		if (shouldUpdateVideoDuration(duration)) {
 			updateVideoDuration(duration);
 		}
 		
@@ -664,7 +664,19 @@ public class VideoDisplayController extends BasicController {
 		}
 		updateGUIPreferences(ureq, src);
 	}
-	
+
+	private boolean shouldUpdateVideoDuration(String duration) {
+		if (!StringHelper.containsNonWhitespace(duration)) {
+			return false;
+		}
+
+		if (StringHelper.containsNonWhitespace(videoMetadata.getLength()) && !videoMetadata.getLength().equals("0:00")) {
+			return false;
+		}
+
+		return true;
+	}
+
 	private void updateVideoDuration(String duration) {
 		try {
 			Long durationInSeconds = Math.round(Double.parseDouble(duration));
