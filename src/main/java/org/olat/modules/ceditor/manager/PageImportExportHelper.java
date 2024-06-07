@@ -36,8 +36,12 @@ import org.olat.core.util.ZipUtil;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.model.jpa.GalleryPart;
+import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +61,8 @@ public class PageImportExportHelper {
 	
 	public void export(Page page, ZipOutputStream zout)
 	throws IOException {
+		unproxy(page);
+
 		zout.putNextEntry(new ZipEntry("page.xml"));
 		PageXStream.toStream(page, zout);
 		zout.closeEntry();
@@ -66,11 +72,69 @@ public class PageImportExportHelper {
 			if(part instanceof MediaPart mediaPart) {
 				export(mediaPart, zout);
 			}
+			if (part instanceof GalleryPart galleryPart) {
+				export(galleryPart, zout);
+			}
+			if (part instanceof ImageComparisonPart imageComparisonPart) {
+				export(imageComparisonPart, zout);
+			}
 		}
 	}
-	
+
+	private void unproxy(Page page) {
+		for (PagePart part : page.getBody().getParts()) {
+			if (part instanceof GalleryPart galleryPart) {
+				unproxy(galleryPart);
+			}
+			if (part instanceof ImageComparisonPart imageComparisonPart) {
+				unproxy(imageComparisonPart);
+			}
+		}
+	}
+
+	private void unproxy(GalleryPart galleryPart) {
+		for (MediaToPagePart relation : galleryPart.getRelations()) {
+			unproxy(relation);
+		}
+	}
+
+	private void unproxy(ImageComparisonPart imageComparisonPart) {
+		for (MediaToPagePart relation : imageComparisonPart.getRelations()) {
+			unproxy(relation);
+		}
+	}
+
+	private void unproxy(MediaToPagePart relation) {
+		Hibernate.unproxy(relation.getMedia());
+		Hibernate.unproxy(relation.getMediaVersion());
+	}
+
+	private void export(GalleryPart galleryPart, ZipOutputStream zout) {
+		for (MediaToPagePart relation : galleryPart.getRelations()) {
+			export(relation, zout);
+		}
+	}
+
+	private void export(ImageComparisonPart imageComparisonPart, ZipOutputStream zout) {
+		for (MediaToPagePart relation : imageComparisonPart.getRelations()) {
+			export(relation, zout);
+		}
+	}
+
+	private void export(MediaToPagePart relation, ZipOutputStream zout) {
+		if (relation.getMediaVersion() != null) {
+			export(relation.getMediaVersion(), zout);
+		} else if (relation.getMedia().getVersions() != null && !relation.getMedia().getVersions().isEmpty()) {
+			export(relation.getMedia().getVersions().get(0), zout);
+		}
+	}
+
 	private void export(MediaPart mediaPart, ZipOutputStream zout) {
 		MediaVersion mediaVersion = mediaPart.getMediaVersion();
+		export(mediaVersion, zout);
+	}
+
+	private void export(MediaVersion mediaVersion, ZipOutputStream zout) {
 		if(StringHelper.containsNonWhitespace(mediaVersion.getStoragePath())) {
 			File mediaDir = new File(FolderConfig.getCanonicalRoot(), mediaVersion.getStoragePath());
 			ZipUtil.addPathToZip(mediaVersion.getStoragePath(), mediaDir.toPath(), zout);
