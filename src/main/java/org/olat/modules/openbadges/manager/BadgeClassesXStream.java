@@ -19,6 +19,8 @@
  */
 package org.olat.modules.openbadges.manager;
 
+import java.io.InputStream;
+
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeClasses;
@@ -49,5 +51,9 @@ public class BadgeClassesXStream {
 
 	public static String toXML(BadgeClasses badgeClasses) {
 		return xstream.toXML(badgeClasses);
+	}
+
+	public static BadgeClasses fromXML(InputStream is) {
+		return (BadgeClasses) xstream.fromXML(is);
 	}
 }

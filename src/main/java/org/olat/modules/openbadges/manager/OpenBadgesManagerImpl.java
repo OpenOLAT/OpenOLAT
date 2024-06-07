@@ -90,6 +90,7 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeCategory;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeClasses;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesFactory;
@@ -541,7 +542,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeClassDAO.createBadgeClass(badgeClass);
 	}
 
-	private void cloneBadgeClass(BadgeClass sourceClass, RepositoryEntry targetEntry, Identity author) {
+	private void cloneBadgeClass(BadgeClass sourceClass, RepositoryEntry targetEntry, Identity author,
+								 File sourceDirectory) {
 		BadgeClassImpl targetClass = new BadgeClassImpl();
 		targetClass.setEntry(targetEntry);
 		targetClass.setUuid(OpenBadgesFactory.createIdentifier());
@@ -560,9 +562,23 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeClassDAO.createBadgeClass(targetClass);
 
 		VFSContainer classesContainer = getBadgeClassesRootContainer();
-		if (classesContainer.resolve(sourceClass.getImage()) instanceof LocalFileImpl sourceLeaf) {
+
+		if (sourceDirectory != null) {
+			copyFile(sourceDirectory, sourceClass.getImage(), classesContainer, targetClass.getImage(), author);
+		} else if (classesContainer.resolve(sourceClass.getImage()) instanceof LocalFileImpl sourceLeaf) {
 			copyFile(classesContainer, sourceLeaf.getBasefile(), targetClass.getImage(), author);
 		}
+	}
+
+	private void copyFile(File sourceDirectory, String sourceFileName, VFSContainer targetContainer,
+						  String targetFileName, Identity savedBy) {
+		File sourceFile = new File(sourceDirectory, sourceFileName);
+		if (!sourceFile.exists()) {
+			log.error("Couldn't find source file: {}", sourceFileName);
+			return;
+		}
+
+		copyFile(targetContainer, sourceFile, targetFileName, savedBy);
 	}
 
 	@Override
@@ -712,17 +728,20 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	private String copyFile(VFSContainer targetContainer, File sourceFile, String targetFileName, Identity savedBy) {
 		String finalTargetFileName = VFSManager.rename(targetContainer, targetFileName);
-		if (finalTargetFileName != null) {
-			VFSLeaf targetLeaf = targetContainer.createChildLeaf(finalTargetFileName);
-			try (InputStream inputStream = Files.newInputStream(sourceFile.toPath())) {
-				if (VFSManager.copyContent(inputStream, targetLeaf, savedBy)) {
-					return finalTargetFileName;
-				}
-			} catch (IOException e) {
-				log.error("", e);
+		if (finalTargetFileName == null) {
+			log.error("Couldn't rename file to target file name {}.", targetFileName);
+			return null;
+		}
+
+		VFSLeaf targetLeaf = targetContainer.createChildLeaf(finalTargetFileName);
+		try (InputStream inputStream = Files.newInputStream(sourceFile.toPath())) {
+			if (VFSManager.copyContent(inputStream, targetLeaf, savedBy)) {
+				return finalTargetFileName;
+			} else {
+				log.error("Couldn't copy file {} to {}", sourceFile.getName(), targetFileName);
 			}
-		} else {
-			log.error("Could not set a target file name for {}.", targetFileName);
+		} catch (IOException e) {
+			log.error("", e);
 		}
 		return null;
 	}
@@ -1279,7 +1298,23 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 		badgeClassDAO.getBadgeClasses(sourceEntry, true).stream()
 				.filter(bc -> !BadgeClass.BadgeClassStatus.revoked.equals(bc.getStatus()))
-				.forEach(bc -> cloneBadgeClass(bc, targetEntry, author));
+				.forEach(bc -> cloneBadgeClass(bc, targetEntry, author, null));
+	}
+
+	@Override
+	public void importConfiguration(RepositoryEntry targetEntry, BadgeEntryConfiguration importedConfiguration) {
+		BadgeEntryConfiguration targetConfiguration = getConfiguration(targetEntry);
+		targetConfiguration.setAwardEnabled(importedConfiguration.isAwardEnabled());
+		targetConfiguration.setOwnerCanAward(importedConfiguration.isOwnerCanAward());
+		targetConfiguration.setCoachCanAward(importedConfiguration.isCoachCanAward());
+		updateConfiguration(targetConfiguration);
+	}
+
+	@Override
+	public void importBadgeClasses(RepositoryEntry targetEntry, BadgeClasses badgeClasses, File fImportBaseDirectory, Identity author) {
+		badgeClasses.getItems().stream()
+				.filter(bc -> !BadgeClass.BadgeClassStatus.revoked.equals(bc.getStatus()))
+				.forEach(bc -> cloneBadgeClass(bc, targetEntry, author, fImportBaseDirectory));
 	}
 
 	@Override

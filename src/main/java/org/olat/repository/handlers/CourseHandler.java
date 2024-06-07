@@ -99,7 +99,11 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.openbadges.BadgeClasses;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.manager.BadgeClassesXStream;
+import org.olat.modules.openbadges.manager.BadgeEntryConfigurationXStream;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.ReminderRule;
@@ -353,7 +357,9 @@ public class CourseHandler implements RepositoryHandler {
 		// Make sure lecture configuration is available
 		CoreSpringFactory.getImpl(LectureService.class)
 			.getRepositoryEntryLectureConfiguration(re);
-		
+
+		// import badges
+		importBadgesAndConfiguration(re, fImportBaseDirectory, initialAuthor);
 		
 		//clean up export folder
 		cleanExportAfterImport(fImportBaseDirectory);
@@ -528,6 +534,33 @@ public class CourseHandler implements RepositoryHandler {
 			}
 		}
 		return certificatesConfiguration;
+	}
+
+	private void importBadgesAndConfiguration(RepositoryEntry entry, File fImportBaseDirectory, Identity author) {
+		File configurationXml = new File(fImportBaseDirectory, BADGE_CONFIGURATION_XML);
+		OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+		if (configurationXml.exists()) {
+			try (InputStream is = new FileInputStream(configurationXml)) {
+				BadgeEntryConfiguration configuration = BadgeEntryConfigurationXStream.fromXML(is);
+				if (configuration != null) {
+					openBadgesManager.importConfiguration(entry, configuration);
+				}
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
+
+		File badgeClassesXml = new File(fImportBaseDirectory, BADGE_CLASSES_XML);
+		if (badgeClassesXml.exists()) {
+			try (InputStream is = new FileInputStream(badgeClassesXml)) {
+				BadgeClasses badgeClasses = BadgeClassesXStream.fromXML(is);
+				if (badgeClasses != null) {
+					openBadgesManager.importBadgeClasses(entry, badgeClasses, fImportBaseDirectory, author);
+				}
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
 	}
 	
 	private void markDirtyNewRecursively(CourseEditorTreeNode editorRootNode) {

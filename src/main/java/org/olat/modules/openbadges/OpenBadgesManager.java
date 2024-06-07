@@ -170,6 +170,10 @@ public interface OpenBadgesManager {
 
 	void copyConfigurationAndBadgeClasses(RepositoryEntry sourceEntry, RepositoryEntry targetEntry, Identity author);
 
+	void importConfiguration(RepositoryEntry targetEntry, BadgeEntryConfiguration configuration);
+
+	void importBadgeClasses(RepositoryEntry targetEntry, BadgeClasses badgeClasses, File fImportBaseDirectory, Identity author);
+
 	//
 	// Types
 	//
