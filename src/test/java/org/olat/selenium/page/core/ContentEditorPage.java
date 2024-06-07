@@ -195,6 +195,10 @@ public class ContentEditorPage extends ContentViewPage {
 	private ContentEditorPage closeEditFragment(By containerBy, By alternativeContainerBy) {
 		browser.findElement(containerBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitingALittleBit();
+		browser.findElement(containerBy).click();
+		OOGraphene.waitBusy(browser);
+		
 		try {
 			OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
 		} catch (Exception e) {
