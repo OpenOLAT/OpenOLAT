@@ -98,29 +98,34 @@ public class ForumPage {
 	 * @return
 	 */
 	public ForumPage createThread(String title, String content, String alias) {
-		By newThreadBy = By.className("o_sel_forum_thread_new");
-		browser.findElement(newThreadBy).click();
-		OOGraphene.waitModalDialog(browser);
-		OOGraphene.waitTinymce(browser);
-		
-		//fill the form
-		By titleBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_title input[type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).sendKeys(title);
-		
-		if(alias != null) {
-			By aliasBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_alias input[type='text']");
-			browser.findElement(aliasBy).sendKeys(alias);
+		try {
+			By newThreadBy = By.className("o_sel_forum_thread_new");
+			browser.findElement(newThreadBy).click();
+			OOGraphene.waitModalDialog(browser);
+			OOGraphene.waitTinymce(browser);
+			
+			//fill the form
+			By titleBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_title input[type='text']");
+			OOGraphene.waitElement(titleBy, browser);
+			browser.findElement(titleBy).sendKeys(title);
+			
+			if(alias != null) {
+				By aliasBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_alias input[type='text']");
+				browser.findElement(aliasBy).sendKeys(alias);
+			}
+			
+			OOGraphene.tinymce(content, browser);
+			
+			//save
+			By saveBy = By.cssSelector("div.modal-content form button.btn-primary");
+			OOGraphene.click(saveBy, browser);
+			OOGraphene.waitModalDialogDisappears(browser);
+			By messageTitleBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + title + "')]]");
+			OOGraphene.waitElement(messageTitleBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("CreateThread", browser);
+			throw e;
 		}
-		
-		OOGraphene.tinymce(content, browser);
-		
-		//save
-		By saveBy = By.cssSelector("div.modal-content form button.btn-primary");
-		OOGraphene.click(saveBy, browser);
-		OOGraphene.waitModalDialogDisappears(browser);
-		By messageTitleBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + title + "')]]");
-		OOGraphene.waitElement(messageTitleBy, browser);
 		return this;
 	}
 	
@@ -193,20 +198,25 @@ public class ForumPage {
 	}
 	
 	public ForumPage replyToMessageNoWait(String reference, String title, String reply) {
-		By replyBy = By.xpath("//div[contains(@class,'o_forum_message')][div[contains(@class,'o_forum_message_header')]/h4[text()[contains(.,'" + reference + "')]]]//a[contains(@class,'o_sel_forum_reply') and not(contains(@class,'o_sel_forum_reply_quoted'))]");
-		OOGraphene.waitElementPresence(replyBy, 5, browser);
-		OOGraphene.click(replyBy, browser);
-		OOGraphene.waitModalDialog(browser);
-		OOGraphene.waitTinymce(browser);
-		
-		if(title != null) {
-			By titleBy = By.cssSelector(".o_sel_forum_message_title input[type='text']");
-			browser.findElement(titleBy).sendKeys(title);
+		try {
+			By replyBy = By.xpath("//div[contains(@class,'o_forum_message')][div[contains(@class,'o_forum_message_header')]/h4[text()[contains(.,'" + reference + "')]]]//a[contains(@class,'o_sel_forum_reply') and not(contains(@class,'o_sel_forum_reply_quoted'))]");
+			OOGraphene.waitElementPresence(replyBy, 5, browser);
+			OOGraphene.click(replyBy, browser);
+			OOGraphene.waitModalDialog(browser);
+			OOGraphene.waitTinymce(browser);
+			
+			if(title != null) {
+				By titleBy = By.cssSelector(".o_sel_forum_message_title input[type='text']");
+				browser.findElement(titleBy).sendKeys(title);
+			}
+			OOGraphene.tinymce(reply, browser);
+			
+			By saveBy = By.cssSelector("fieldset.o_sel_forum_message_form button.btn-primary");
+			OOGraphene.click(saveBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("ReplyToMessage", browser);
+			throw e;
 		}
-		OOGraphene.tinymce(reply, browser);
-		
-		By saveBy = By.cssSelector("fieldset.o_sel_forum_message_form button.btn-primary");
-		OOGraphene.click(saveBy, browser);
 		return this;
 	}
 	

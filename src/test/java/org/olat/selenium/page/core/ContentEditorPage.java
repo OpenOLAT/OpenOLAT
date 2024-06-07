@@ -187,12 +187,18 @@ public class ContentEditorPage extends ContentViewPage {
 	public ContentEditorPage closeEditFragmentOfResource() {
 		By toolbarContainerBy = By.xpath("//div[@id='o_main_container']//div[@class='o_tools_container']/div[@class='container-fluid']");
 		By toolbarBreadcrumbBy = By.xpath("//div[@id='o_main_container']//div[@class='o_breadcrumb']/ol[@class='breadcrumb']");
+		OOGraphene.waitElement(toolbarContainerBy, browser);
+		OOGraphene.waitElement(toolbarBreadcrumbBy, browser);
 		return closeEditFragment(toolbarContainerBy, toolbarBreadcrumbBy);
 	}
 	
 	private ContentEditorPage closeEditFragment(By containerBy, By alternativeContainerBy) {
 		browser.findElement(containerBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitingALittleBit();
+		browser.findElement(containerBy).click();
+		OOGraphene.waitBusy(browser);
+		
 		try {
 			OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
 		} catch (Exception e) {
