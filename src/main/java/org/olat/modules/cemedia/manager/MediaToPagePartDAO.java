@@ -34,6 +34,7 @@ import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.model.MediaToPagePartImpl;
 
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -209,5 +210,28 @@ public class MediaToPagePartDAO {
 		mediaToPagePart.setLastModified(new Date());
 		mediaToPagePart.setMedia(media);
 		return dbInstance.getCurrentEntityManager().merge(mediaToPagePart);
+	}
+
+	public boolean hasRelation(PagePart pagePart, Media media, MediaVersion mediaVersion) {
+		Long pagePartKey = pagePart.getKey();
+		Long mediaKey = media.getKey();
+		Long mediaVersionKey = mediaVersion != null ? mediaVersion.getKey() : null;
+		QueryBuilder queryBuilder = new QueryBuilder();
+		queryBuilder
+				.append("select relation.key from mediatopagepart relation")
+				.append(" where relation.pagePart.key=:pagePartKey")
+				.append("  and relation.media.key=:mediaKey")
+				.append("  and relation.mediaVersion.key=:mediaVersionKey", mediaVersionKey != null);
+
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(queryBuilder.toString(), Long.class)
+				.setParameter("pagePartKey", pagePartKey)
+				.setParameter("mediaKey", mediaKey);
+
+		if (mediaVersionKey != null) {
+			query.setParameter("mediaVersionKey", mediaVersionKey);
+		}
+		List<Long> relationKeys = query.getResultList();
+		return relationKeys != null && !relationKeys.isEmpty();
 	}
 }

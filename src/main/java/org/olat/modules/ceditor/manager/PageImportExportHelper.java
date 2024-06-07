@@ -105,6 +105,10 @@ public class PageImportExportHelper {
 	}
 
 	private void unproxy(MediaToPagePart relation) {
+		if (relation == null) {
+			return;
+		}
+
 		Hibernate.unproxy(relation.getMedia());
 		Hibernate.unproxy(relation.getMediaVersion());
 	}
@@ -122,6 +126,10 @@ public class PageImportExportHelper {
 	}
 
 	private void export(MediaToPagePart relation, ZipOutputStream zout) {
+		if (relation == null) {
+			return;
+		}
+
 		if (relation.getMediaVersion() != null) {
 			export(relation.getMediaVersion(), zout);
 		} else if (relation.getMedia().getVersions() != null && !relation.getMedia().getVersions().isEmpty()) {

@@ -75,15 +75,19 @@ import org.olat.modules.ceditor.PageReference;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
+import org.olat.modules.ceditor.model.jpa.GalleryPart;
+import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.PageImpl;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLog;
+import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaLogDAO;
 import org.olat.modules.cemedia.manager.MediaRelationDAO;
+import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.manager.PageUserInfosDAO;
@@ -152,7 +156,9 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	private TaxonomyCompetenceDAO taxonomyCompetenceDAO;
 	@Autowired
 	private PageToTaxonomyCompetenceDAO pageToTaxonomyCompetenceDao;
-	
+	@Autowired
+	private MediaToPagePartDAO mediaToPagePartDAO;
+
 	@Override
 	public Page getPageByKey(Long key) {
 		return pageDao.loadByKey(key);
@@ -233,22 +239,70 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 		PageBody copyBody = copy.getBody();
 		List<PagePart> parts = page.getBody().getParts();
 		Map<String,String> mapKeys = new HashMap<>();
-		for(PagePart part:parts) {
+		for (PagePart part:parts) {
 			PagePart newPart = part.copy();
-			if(newPart instanceof MediaPart mediaPart && mediaPart.getMedia() != null) {
-				MediaWithVersion importedMedia = importMedia(mediaPart.getMedia(), mediaPart.getMediaVersion(), mediaOwner, storage);
-				mediaPart.setMedia(importedMedia.media());
-				mediaPart.setMediaVersion(importedMedia.version());
-				mediaPart.setIdentity(mediaOwner);
+
+			if (newPart instanceof MediaPart mediaPart) {
+				importMediaPart(mediaPart, mediaOwner, storage);
 			}
+
 			copyBody = pageDao.persistPart(copyBody, newPart);
+
+			if (newPart instanceof GalleryPart galleryPart && part instanceof GalleryPart serializedPart) {
+				importGalleryPart(galleryPart, serializedPart, mediaOwner, storage);
+			}
+			if (newPart instanceof ImageComparisonPart imageComparisonPart) {
+				importImageComparisonPart(imageComparisonPart, mediaOwner, storage);
+			}
+
 			mapKeys.put(part.getKey().toString(), newPart.getKey().toString());
 		}
 		
 		remapContainers(copyBody, mapKeys);
 		return copy;
 	}
-	
+
+	private void importMediaPart(MediaPart mediaPart, Identity mediaOwner, ZipFile storage) {
+		if (mediaPart.getMedia() == null) {
+			return;
+		}
+
+		MediaWithVersion importedMedia = importMedia(mediaPart.getMedia(), mediaPart.getMediaVersion(), mediaOwner, storage);
+		mediaPart.setMedia(importedMedia.media());
+		mediaPart.setMediaVersion(importedMedia.version());
+		mediaPart.setIdentity(mediaOwner);
+	}
+
+	private void importGalleryPart(GalleryPart galleryPart, GalleryPart serializedPart, Identity mediaOwner, ZipFile storage) {
+		for (MediaToPagePart relation : serializedPart.getRelations()) {
+			importRelation(relation, mediaOwner, storage, galleryPart);
+		}
+	}
+
+	private void importImageComparisonPart(ImageComparisonPart imageComparisonPart, Identity mediaOwner, ZipFile storage) {
+		for (MediaToPagePart relation : imageComparisonPart.getRelations()) {
+			importRelation(relation, mediaOwner, storage, imageComparisonPart);
+		}
+	}
+
+	private void importRelation(MediaToPagePart relation, Identity mediaOwner, ZipFile storage, GalleryPart galleryPart) {
+		if (relation == null) {
+			return;
+		}
+
+		MediaWithVersion mediaWithVersion = importMedia(relation.getMedia(), relation.getMediaVersion(), mediaOwner, storage);
+		if (!mediaToPagePartDAO.hasRelation(galleryPart, mediaWithVersion.media(), mediaWithVersion.version())) {
+			mediaToPagePartDAO.persistRelation(galleryPart, mediaWithVersion.media(), mediaWithVersion.version(), mediaOwner);
+		}
+	}
+
+	private void importRelation(MediaToPagePart relation, Identity mediaOwner, ZipFile storage, ImageComparisonPart imageComparisonPart) {
+		MediaWithVersion mediaWithVersion = importMedia(relation.getMedia(), relation.getMediaVersion(), mediaOwner, storage);
+		if (!mediaToPagePartDAO.hasRelation(imageComparisonPart, mediaWithVersion.media(), mediaWithVersion.version())) {
+			mediaToPagePartDAO.persistRelation(imageComparisonPart, mediaWithVersion.media(), mediaWithVersion.version(), mediaOwner);
+		}
+	}
+
 	private MediaWithVersion importMedia(Media media, MediaVersion mediaVersion, Identity owner, ZipFile storage) {
 		String mediaUuid = media.getUuid();
 		if(StringHelper.containsNonWhitespace(mediaUuid)) {
