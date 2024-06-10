@@ -122,7 +122,9 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		SelectionValues modeValues = new SelectionValues();
 		modeValues.add(SelectionValues.entry(ScoreEvaluation.allCorrectAnswers.name(), translate("form.score.assessment.all.correct")));
 		modeValues.add(SelectionValues.entry( ScoreEvaluation.perAnswer.name(), translate("form.score.assessment.per.answer")));
-		modeValues.add(SelectionValues.entry(ScoreEvaluation.negativePointSystem.name(), translate("form.score.assessment.nps")));
+		if(!itemBuilder.isSingleChoice()) {
+			modeValues.add(SelectionValues.entry(ScoreEvaluation.negativePointSystem.name(), translate("form.score.assessment.nps")));
+		}
 		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout,
 				modeValues.keys(), modeValues.values());
 		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
@@ -189,6 +191,24 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 			}
 			
 			updateBackground();
+			
+			// NPS works only for multiple choices
+			String selectedMode = assessmentModeEl.isOneSelected() ? assessmentModeEl.getSelectedKey() : null;
+					
+			SelectionValues modeValues = new SelectionValues();
+			modeValues.add(SelectionValues.entry(ScoreEvaluation.allCorrectAnswers.name(), translate("form.score.assessment.all.correct")));
+			modeValues.add(SelectionValues.entry( ScoreEvaluation.perAnswer.name(), translate("form.score.assessment.per.answer")));
+			if(!itemBuilder.isSingleChoice()) {
+				modeValues.add(SelectionValues.entry(ScoreEvaluation.negativePointSystem.name(), translate("form.score.assessment.nps")));
+			}
+			assessmentModeEl.setKeysAndValues(modeValues.keys(), modeValues.values(), null);
+			if((ScoreEvaluation.negativePointSystem.name().equals(selectedMode) && itemBuilder.isSingleChoice())
+					|| selectedMode == null
+					|| !modeValues.containsKey(selectedMode)) {
+				assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
+			} else {
+				assessmentModeEl.select(selectedMode, true);
+			}
 		}
 	}
 

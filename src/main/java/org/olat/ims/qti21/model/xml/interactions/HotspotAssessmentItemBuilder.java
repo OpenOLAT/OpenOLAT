@@ -43,6 +43,7 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory.CorrectChoice;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
@@ -179,7 +180,13 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 	private void extractScoreEvaluationMode() {
 		scoreMapping = getMapping(assessmentItem, hotspotInteraction);
 		boolean hasMapping = scoreMapping != null && !scoreMapping.isEmpty();
-		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+		if(hasMapping) {
+			scoreEvaluation = ScoreEvaluation.perAnswer;
+		} else if(QtiNodesExtractor.hasNegativePointSystem(assessmentItem)) {
+			scoreEvaluation = ScoreEvaluation.negativePointSystem;
+		} else {
+			scoreEvaluation = ScoreEvaluation.allCorrectAnswers;
+		}
 	}
 	
 	public static Map<Identifier,Double> getMapping(AssessmentItem item, HotspotInteraction interaction) {
@@ -480,7 +487,7 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 			ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
 			responseRules.add(0, rule);
 			buildMainScoreRulePerAnswer(rule);
-		} else if(scoreEvaluation == ScoreEvaluation.negativePointSystem) {
+		} else if(scoreEvaluation == ScoreEvaluation.negativePointSystem && !isSingleChoice()) {
 			ensureFeedbackBasicOutcomeDeclaration();
 			AssessmentItemFactory.appendMainScoreRuleNegativePointSystem(assessmentItem, hotspotInteraction, getHotspotChoices(),
 					correctFeedback != null || incorrectFeedback != null, this, outcomeDeclarations, responseRules);
