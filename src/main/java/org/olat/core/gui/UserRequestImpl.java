@@ -301,12 +301,11 @@ public class UserRequestImpl implements UserRequest {
 		} else if(contentType.startsWith("multipart/")) {
 			try {
 				hreq.getParts();
-				
 			} catch (IOException e) {
-				log.error("Test: {} - {}", e.getClass(), e.getCause().getClass());
 				if(ServletUtil.isAbortException(e)) {
 					throw new RequestAbortedException(e);
 				}
+				log.error("", e);
 			} catch (ServletException e) {
 				log.error("", e);
 			}

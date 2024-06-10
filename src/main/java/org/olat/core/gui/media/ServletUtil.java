@@ -264,14 +264,16 @@ public class ServletUtil {
 		}
 	}
 	
-	public static boolean isAbortException(Exception e) {
+	public static boolean isAbortException(Throwable e) {
+		int count = 0;	
 		do {
-
 			String className = e.getClass().getSimpleName();
 			if("ClientAbortException".equals(className) || e instanceof EOFException) {
 				return true;
 			}
-		} while (e.getCause() != null);
+			e = e.getCause();
+			count++;
+		} while (e != null && count < 10);
 		return false;
 	}
 	
