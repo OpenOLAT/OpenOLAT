@@ -117,7 +117,7 @@
 				var aspectRatio = obj.width / obj.height;
 				if (aspectRatio > medianAspectRatio) {
 					jQuery(obj).css('width', '100%');
-				} else {
+				} else if (aspectRatio < medianAspectRatio) {
 					jQuery(obj).css('height', '100%');
 				}
 			});
@@ -140,7 +140,7 @@
 				var aspectRatio = obj.width / obj.height;
 				if (aspectRatio > medianAspectRatio) {
 					jQuery(obj).css('width', '100%');
-				} else {
+				} else if (aspectRatio < medianAspectRatio) {
 					jQuery(obj).css('height', '100%');
 				}
 			});
