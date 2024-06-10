@@ -170,6 +170,18 @@ public class ResourceInfoDispatcher implements Dispatcher {
 		bfwcParts.showTopNav(false);
 		final RepositoryEntry entry = getRepositoryEntryById(Long.valueOf(requestedData));
 		if (entry.getCanIndexMetadata() && entry.getEntryStatus() == RepositoryEntryStatusEnum.published) {
+			// Set last modified, required by google
+			long lastModified = entry.getLastModified().toInstant().toEpochMilli();
+			long lastModifiedFromBrowser = ureq.getHttpReq().getDateHeader("If-Modified-Since");			
+			if (lastModifiedFromBrowser != -1 && lastModified <= lastModifiedFromBrowser) {
+				// Setting 304 and returning with empty body
+				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+			    return;
+			}			
+			response.addDateHeader("Last-Modified", lastModified);
+			
+			// Add content. For each request a temporary window is created and the details
+			// controller is loaded into that window. 
 			ControllerCreator controllerCreator = (uureq, wControl) -> new RepositoryEntryPublicInfosController(uureq, wControl, entry);
 			bfwcParts.setContentControllerCreator(controllerCreator);
 

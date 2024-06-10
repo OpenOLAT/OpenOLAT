@@ -27,6 +27,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 
+import org.olat.core.util.Formatter;
 import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 import org.olat.modules.oaipmh.common.model.Metadata;
 import org.olat.modules.oaipmh.common.xml.XSLPipeline;
@@ -65,7 +66,7 @@ public class XMLSitemap implements XmlWritable {
 
 			for (RepositoryEntry repositoryEntry : repositoryEntries) {
 				infoUrl = ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString());
-				lastModDate = repositoryEntry.getLastModified().toString();
+				lastModDate = Formatter.formatDatetime(repositoryEntry.getLastModified());
 
 				writer.writeStartElement(NAMESPACE_URI, "url");
 

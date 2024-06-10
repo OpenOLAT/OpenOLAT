@@ -155,6 +155,10 @@ public class PageCourseNode extends AbstractAccessableCourseNode implements Cour
 	}
 	
 	private boolean canEdit(UserCourseEnvironment userCourseEnv) {
+		if (userCourseEnv.isCourseReadOnly()) {
+			// when course is read only the page is not editable by anybody, not even administrator
+			return false;
+		}
 		return userCourseEnv.isAdmin() ||
 				CoreSpringFactory.getImpl(NodeRightService.class).isGranted(getModuleConfiguration(), userCourseEnv, EDIT_PAGE);
 	}
