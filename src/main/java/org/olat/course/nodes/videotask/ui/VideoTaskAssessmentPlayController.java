@@ -102,7 +102,7 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 		String videoElementId = videoDisplayController.getVideoElementId();
 		long durationInSeconds = VideoHelper.durationInSeconds(videoEntry, videoDisplayController);
 		timelineCtrl = new MasterController(ureq, getWindowControl(),
-				videoEntry, taskSessions, videoElementId, durationInSeconds);
+				videoEntry, taskSessions, videoElementId, durationInSeconds, true);
 		timelineCtrl.setVisibleChannels(List.of(TimelineEventType.CORRECT, TimelineEventType.SEGMENT, TimelineEventType.INCORRECT, TimelineEventType.VIDEO));
 		listenTo(timelineCtrl);
 		mainVC.put("timeline", timelineCtrl.getInitialComponent());

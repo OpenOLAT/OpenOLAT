@@ -93,6 +93,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private final VFSContainer thumbnailsContainer;
 	private final VFSLeaf videoFile;
 	private final long videoFrameCount;
+	private final boolean readOnly;
 	private long videoDurationInMillis;
 	private int fps;
 	private final Size movieSize;
@@ -118,7 +119,15 @@ public class MasterController extends FormBasicController implements FlexiTableC
 
 	public MasterController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 							List<VideoTaskSession> sessions, String videoElementId, long durationInSeconds) {
+		this(ureq, wControl, repositoryEntry, sessions, videoElementId, durationInSeconds, false);
+	}
+
+	public MasterController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
+							List<VideoTaskSession> sessions, String videoElementId, long durationInSeconds,
+							boolean readOnly) {
 		super(ureq, wControl, "master");
+		this.readOnly = readOnly;
+
 		flc.contextPut("videoElementId", videoElementId);
 		thumbnailsContainer = videoManager.getThumbnailsContainer(repositoryEntry.getOlatResource());
 		timelineDataSource = new TimelineDataSource(repositoryEntry.getOlatResource(), sessions, getTranslator());
@@ -180,11 +189,14 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				sb.append("<div class=\"o_video_color_circle o_video_colored_area ").append((String) val).append("\">").append("</div>");
 			}
 		}));
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(TimelineCols.tools.i18nHeaderKey(),
-				TimelineCols.tools.ordinal());
-		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsColumn.setColumnCssClass("o_icon-fws o_col_sticky_right o_col_action");
-		columnModel.addFlexiColumnModel(toolsColumn);
+
+		if (!readOnly) {
+			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(TimelineCols.tools.i18nHeaderKey(),
+					TimelineCols.tools.ordinal());
+			toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsColumn.setColumnCssClass("o_icon-fws o_col_sticky_right o_col_action");
+			columnModel.addFlexiColumnModel(toolsColumn);
+		}
 
 		timelineModel = new TimelineModel(timelineDataSource, columnModel);
 		String mediaUrl = registerMapper(ureq, new ThumbnailMapper());
@@ -224,6 +236,10 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	}
 
 	private void addTools() {
+		if (readOnly) {
+			return;
+		}
+
 		for (TimelineRow timelineRow : timelineDataSource.getRows()) {
 			String toolId = "tool_" + timelineRow.getId();
 			FormLink toolLink = (FormLink) timelineTableEl.getFormComponent(toolId);
