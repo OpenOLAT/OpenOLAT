@@ -28,11 +28,11 @@ package org.olat.core.util.cache.infinispan;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.IsolationLevel;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.TransactionMode;
-import org.infinispan.util.concurrent.IsolationLevel;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.Cacher;
 
@@ -82,7 +82,8 @@ public class InfinispanCacher implements Cacher {
 			builder.expiration()
 				.maxIdle(maxIdle);
 			builder.transaction()
-				.transactionMode(TransactionMode.NON_TRANSACTIONAL);
+				.transactionMode(TransactionMode.NON_TRANSACTIONAL)
+				.reaperWakeUpInterval(30000);
 			builder.locking()
 				.concurrencyLevel(1000)
 				.useLockStriping(false)
