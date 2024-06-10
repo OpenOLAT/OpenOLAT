@@ -243,7 +243,7 @@ public interface QtiNodesExtractor {
 	
 	public static boolean hasNegativePointSystem(AssessmentItem assessmentItem) {
 		OutcomeDeclaration numCorrectDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.NPS_NUMCORRECT_IDENTIFIER);
-		OutcomeDeclaration numIncorrectDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.NPS_NUMCORRECT_IDENTIFIER);
+		OutcomeDeclaration numIncorrectDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.NPS_NUMINCORRECT_IDENTIFIER);
 		return numCorrectDeclaration != null && numIncorrectDeclaration != null;
 	}
 }
