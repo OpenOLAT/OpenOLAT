@@ -104,10 +104,10 @@ public class CSPLogListController extends FormBasicController implements Breadcr
 			if(event == Event.CANCELLED_EVENT) {
 				stackPanel.setToolbarEnabled(false);
 				stackPanel.popController(logEntryCtrl);
-			} else if(event instanceof NextEntryEvent) {
-				doNext(ureq, ((NextEntryEvent)event).getEntry());
-			} else if(event instanceof PreviousEntryEvent) {
-				doPrevious(ureq, ((NextEntryEvent)event).getEntry());
+			} else if(event instanceof NextEntryEvent ne) {
+				doNext(ureq, ne.getEntry());
+			} else if(event instanceof PreviousEntryEvent pe) {
+				doPrevious(ureq, pe.getEntry());
 			}
 		}
 		super.event(ureq, source, event);
@@ -116,8 +116,7 @@ public class CSPLogListController extends FormBasicController implements Breadcr
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				CSPLog row = tableModel.getObject(se.getIndex());
 				if("select".equals(cmd)) {
