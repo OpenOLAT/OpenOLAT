@@ -17,11 +17,6 @@
  *  Initial code contributed and copyrighted by<br>
  *  26.08.2014 by frentix GmbH, https://www.frentix.com
  *  <p>
- *  This plugin can be used to apply a background image carrousel effect on
- *  a DOM element. The plugin will replace the images in the provided list one
- *  after another. 
- *  This plugin should be used from within a theme.js in your custom theme if
- *  required.
  *  
  *  @author uhensler, https://www.frentix.com
  *  @date March 2024
@@ -72,8 +67,12 @@
 	};
 	
 	OOBreadcrumb.prototype.calculateMenu = function() {
+		// Remove the no wrap class to enable the calculation of the number of visible crumbs.
+		// Add the class afterwards to enable the ellipsis on the last crumb.
+		this.elements.crumbs.removeClass('o_nowrap');
 		this.elements.moreList.removeClass('o_display_none');
 		this.showMoreCrumbs(0);
+		this.elements.crumbs.last().addClass('o_nowrap');
 	};
 	
 	OOBreadcrumb.prototype.showMoreCrumbs = function(numVisibleCrumbs) {
