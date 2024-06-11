@@ -27,6 +27,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.CatalogEntry;
 
 /**
@@ -58,6 +59,7 @@ public class SearchRepositoryEntryParameters {
 	private Date offerValidAt;
 	private boolean canCopyForAuthor;
 	private boolean canReferenceForAuthor;
+	private List<TaxonomyLevelRef> taxonomyLevels;
 	
 	public SearchRepositoryEntryParameters() {
 		//
@@ -154,6 +156,14 @@ public class SearchRepositoryEntryParameters {
 
 	public void setExternalRef(String externalRef) {
 		this.externalRef = externalRef;
+	}
+	
+	public List<TaxonomyLevelRef> getTaxonomyLevels() {
+		return taxonomyLevels;
+	}
+
+	public void setTaxonomyLevels(List<TaxonomyLevelRef> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
 	}
 
 	public CatalogEntry getParentEntry() {

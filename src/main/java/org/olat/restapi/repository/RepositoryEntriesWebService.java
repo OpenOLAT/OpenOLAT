@@ -65,8 +65,10 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.fileresource.types.ResourceEvaluation;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -178,6 +180,7 @@ public class RepositoryEntriesWebService {
 			@QueryParam("limit") @DefaultValue("25") Integer limit,
 			@QueryParam("managed") Boolean managed, @QueryParam("externalId") String externalId,
 			@QueryParam("externalRef") String externalRef, @QueryParam("resourceType") String resourceType,
+			@QueryParam("taxonomyLevelKey") String taxonomyLevelKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		try {
 			// list of courses open for everybody
@@ -196,6 +199,10 @@ public class RepositoryEntriesWebService {
 			}
 			if(StringHelper.containsNonWhitespace(resourceType)) {
 				params.setResourceTypes(Collections.singletonList(resourceType));
+			}
+			if(StringHelper.isLong(taxonomyLevelKey)) {
+				TaxonomyLevelRef levelRef = new TaxonomyLevelRefImpl(Long.valueOf(taxonomyLevelKey));
+				params.setTaxonomyLevels(List.of(levelRef));
 			}
 			
 			if(MediaTypeVariants.isPaged(httpRequest, request)) {

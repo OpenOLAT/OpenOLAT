@@ -74,6 +74,8 @@ import org.olat.course.editor.NodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
@@ -177,6 +179,7 @@ public class CoursesWebService {
 			@QueryParam("limit") Integer limit, @QueryParam("managed") Boolean managed,
 			@QueryParam("externalId") String externalId, @QueryParam("externalRef") String externalRef,
 			@QueryParam("repositoryEntryKey") String repositoryEntryKey,
+			@QueryParam("taxonomyLevelKey") String taxonomyLevelKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);
@@ -197,6 +200,10 @@ public class CoursesWebService {
 			} catch (NumberFormatException e) {
 				log.error("Cannot parse the following repository entry key: {}", repositoryEntryKey);
 			}
+		}
+		if(StringHelper.isLong(taxonomyLevelKey)) {
+			TaxonomyLevelRef levelRef = new TaxonomyLevelRefImpl(Long.valueOf(taxonomyLevelKey));
+			params.setTaxonomyLevels(List.of(levelRef));
 		}
 
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {

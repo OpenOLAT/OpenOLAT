@@ -29,6 +29,7 @@ package org.olat.restapi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,11 +59,16 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.ObjectFactory;
@@ -87,11 +93,17 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private TaxonomyDAO taxonomyDao;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 
 	@Test
 	public void testGetEntries() throws IOException, URISyntaxException {
@@ -124,6 +136,33 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		assertNotNull(entryVoes.getRepositoryEntries());
 		assertTrue(entryVoes.getRepositoryEntries().length <= 25);
 		assertTrue(entryVoes.getTotalCount() >= entryVoes.getRepositoryEntries().length);
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetEntriesByTaxonomyLevel() throws IOException, URISyntaxException {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry(false);
+		dbInstance.commit();
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-search-repo", "Search by taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		repositoryEntryToTaxonomyLevelDao.createRelation(entry, level);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.queryParam("taxonomyLevelKey", level.getKey()).build();
+		
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<RepositoryEntryVO> entryVoes = parseRepoArray(response.getEntity());
+
+		Assert.assertNotNull(entryVoes);
+		Assert.assertEquals(1, entryVoes.size());
+		Assert.assertEquals(entry.getKey(), entryVoes.get(0).getKey());
 		
 		conn.shutdown();
 	}
