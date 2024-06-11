@@ -19,9 +19,9 @@
  */
 package org.olat.core.commons.services.folder.ui;
 
+import java.util.Comparator;
 import java.util.List;
 
-import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
 import org.olat.core.commons.services.folder.ui.event.FileBrowserPushEvent;
 import org.olat.core.commons.services.folder.ui.event.FileBrowserTitleEvent;
 import org.olat.core.commons.services.webdav.WebDAVModule;
@@ -61,8 +61,6 @@ public class FileBrowserMountPointsController extends BasicController {
 	
 	@Autowired
 	private WebDAVModule webdavModule;
-	@Autowired
-	private CustomStaticFolderManager staticFolderManager;
 
 	protected FileBrowserMountPointsController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackedPanel, FileBrowserSelectionMode selectionMode, String submitButtonText) {
@@ -77,10 +75,10 @@ public class FileBrowserMountPointsController extends BasicController {
 		UserSession usess = ureq.getUserSession();
 		
 		List<Link> links = webdavModule.getWebDAVProviders().values().stream()
-				.filter(provider -> !staticFolderManager.getMountPoint().equals(provider.getMountPoint()))
+				.filter(WebDAVProvider::isDisplayInFileHub)
 				.filter(provider -> provider.hasAccess(usess))
 				.map(provider -> new TranslatedWebDAVProvider(provider, getLocale()))
-				.sorted((p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()))
+				.sorted(Comparator.comparing(TranslatedWebDAVProvider::getSortOrder).thenComparing(TranslatedWebDAVProvider::getName))
 				.map(this::createLink)
 				.toList();
 		mainVC.contextPut("links", links);

@@ -49,6 +49,11 @@ public class BriefcaseWebDAVProvider implements WebDAVProvider {
 	}
 	
 	@Override
+	public int getSortOrder() {
+		return 10;
+	}
+	
+	@Override
 	public String getIconCss() {
 		return "o_icon_user";
 	}

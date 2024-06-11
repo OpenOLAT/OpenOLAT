@@ -38,6 +38,15 @@ public interface WebDAVProvider {
 	 */
 	public String getMountPoint();
 	
+	public default boolean isDisplayInFileHub() { 
+		return true;
+	}
+	
+	/**
+	 * Get the sort order in File Hub.
+	 */
+	public int getSortOrder();
+	
 	public String getIconCss();
 	
 	public String getName(Locale locale);

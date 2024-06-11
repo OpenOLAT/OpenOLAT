@@ -21,9 +21,7 @@ package org.olat.modules.sharepoint;
 
 import java.util.Locale;
 
-import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
 
@@ -45,6 +43,16 @@ public class SharePointWebDAVProvider implements WebDAVProvider {
 	public String getMountPoint() {
 		return "sharepoint";
 	}
+	
+	@Override
+	public boolean isDisplayInFileHub() {
+		return false;
+	}
+
+	@Override
+	public int getSortOrder() {
+		return 100;
+	}
 
 	@Override
 	public String getIconCss() {
@@ -58,9 +66,10 @@ public class SharePointWebDAVProvider implements WebDAVProvider {
 
 	@Override
 	public boolean hasAccess(UserSession usess) {
-		OAuth2Tokens tokens = usess.getOAuth2Tokens();
-		return tokens != null && (StringHelper.containsNonWhitespace(tokens.getAccessToken())
-				|| StringHelper.containsNonWhitespace(tokens.getRefreshToken()));
+		return true;
+//		OAuth2Tokens tokens = usess.getOAuth2Tokens();
+//		return tokens != null && (StringHelper.containsNonWhitespace(tokens.getAccessToken())
+//				|| StringHelper.containsNonWhitespace(tokens.getRefreshToken()));
 	}
 
 	@Override

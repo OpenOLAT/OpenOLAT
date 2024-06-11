@@ -85,6 +85,11 @@ public class SharedFolderWebDAVProvider implements WebDAVProvider {
 	}
 	
 	@Override
+	public int getSortOrder() {
+		return 100;
+	}
+	
+	@Override
 	public String getIconCss() {
 		return "o_FileResource-SHAREDFOLDER_icon";
 	}

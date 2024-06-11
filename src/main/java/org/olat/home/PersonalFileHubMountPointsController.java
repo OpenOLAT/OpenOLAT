@@ -19,9 +19,9 @@
  */
 package org.olat.home;
 
+import java.util.Comparator;
 import java.util.List;
 
-import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
 import org.olat.core.commons.services.folder.ui.FolderController;
 import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
 import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
@@ -79,8 +79,6 @@ public class PersonalFileHubMountPointsController extends BasicController implem
 	
 	@Autowired
 	private WebDAVModule webdavModule;
-	@Autowired
-	private CustomStaticFolderManager staticFolderManager;
 
 	public PersonalFileHubMountPointsController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackedPanel, String fileHubName) {
@@ -91,13 +89,15 @@ public class PersonalFileHubMountPointsController extends BasicController implem
 		velocity_root = Util.getPackageVelocityRoot(FolderUIFactory.class);
 		mainVC = createVelocityContainer("browser_mega_buttons");
 		putInitialPanel(mainVC);
+		
+		Comparator.comparing(TranslatedWebDAVProvider::getSortOrder).thenComparing(TranslatedWebDAVProvider::getName);
 
 		UserSession usess = ureq.getUserSession();
 		links = webdavModule.getWebDAVProviders().values().stream()
-				.filter(provider -> !staticFolderManager.getMountPoint().equals(provider.getMountPoint()))
+				.filter(WebDAVProvider::isDisplayInFileHub)
 				.filter(provider -> provider.hasAccess(usess))
 				.map(provider -> new TranslatedWebDAVProvider(provider, getLocale()))
-				.sorted((p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()))
+				.sorted(Comparator.comparing(TranslatedWebDAVProvider::getSortOrder).thenComparing(TranslatedWebDAVProvider::getName))
 				.map(this::createLink)
 				.toList();
 		mainVC.contextPut("links", links);

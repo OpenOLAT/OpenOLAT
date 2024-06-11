@@ -37,6 +37,10 @@ public final class TranslatedWebDAVProvider {
 		return provider;
 	}
 	
+	public int getSortOrder() {
+		return provider.getSortOrder();
+	}
+	
 	public String getName() {
 		return name;
 	}
