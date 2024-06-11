@@ -34,7 +34,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.login.auth.AuthenticationProviderSPI;
-import org.olat.login.validation.AllOkValidationResult;
 import org.olat.login.validation.ValidationResult;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
@@ -101,7 +100,11 @@ public class ShibbolethManagerImpl implements ShibbolethManager, AuthenticationP
 
 	@Override
 	public ValidationResult validateAuthenticationUsername(String name, String provider, Identity identity) {
-		return new AllOkValidationResult();
+		Authentication authentication = authenticationDao.getAuthentication(name, ShibbolethDispatcher.PROVIDER_SHIB, BaseSecurity.DEFAULT_ISSUER);
+		if(authentication == null || authentication.getIdentity().equals(identity)) {
+			return ShibValidationResult.allOk();
+		}
+		return ShibValidationResult.error("username.rule.in.use");
 	}
 
 	@Override

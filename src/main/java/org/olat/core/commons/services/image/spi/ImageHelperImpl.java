@@ -352,8 +352,8 @@ public class ImageHelperImpl extends AbstractImageHelper {
 						log.warn(e.getMessage(), e);
 					}
                 }
-			} catch (IOException e) {
-				log.error("Exception when trying to read {}: {}", imageName, e.getMessage(), e);
+			} catch (Exception e) {
+				log.warn("Exception when trying to read {}: {}", imageName, e.getMessage(), e);
 			} finally {
 				reader.dispose();
 			}
@@ -390,13 +390,13 @@ public class ImageHelperImpl extends AbstractImageHelper {
 						log.warn(e.getMessage(), e);
 					}
                 }
-			} catch (IOException e) {
-				log.error("Exception when trying to read {}: {}", imageName, e.getMessage(), e);
+			} catch (Exception e) {
+				log.warn("Exception when trying to read {}: {}", imageName, e.getMessage(), e);
 			} finally {
 				reader.dispose();
 			}
 		} else {
-			log.error("No reader found for given format: {}", suffix);
+			log.warn("No reader found for given format: {}", suffix);
 		}
 		return null;
 	}
