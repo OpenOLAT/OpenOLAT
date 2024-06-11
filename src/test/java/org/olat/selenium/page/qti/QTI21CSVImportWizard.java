@@ -103,9 +103,7 @@ public class QTI21CSVImportWizard {
 	 * @return this
 	 */
 	public QTI21CSVImportWizard finish() {
-		browser.findElement(finishBy).click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.waitElementDisappears(By.cssSelector(".modal-content .wizard"), 5, browser);
+		OOGraphene.finishStep(browser, false);
 		return this;
 	}
 }
