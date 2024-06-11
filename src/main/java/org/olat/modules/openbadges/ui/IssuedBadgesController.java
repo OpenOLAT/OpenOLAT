@@ -251,7 +251,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		row.setIssuedOn(Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()));
 		row.setIssuer(badgeAssertion.getBadgeClass().getIssuerDisplayString());
 		row.setDownloadUrl(downloadUrl + "/" + badgeAssertion.getDownloadFileName());
-		if (mine) {
+		if (showLinkedInLink(badgeAssertion)) {
 			row.setAddToLinkedInUrl(openBadgesManager.badgeAssertionAsLinkedInUrl(badgeAssertion));
 		}
 		String toolId = "tool_" + badgeAssertion.getUuid();
@@ -264,6 +264,19 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		}
 		toolLink.setUserObject(badgeAssertion);
 		row.setToolLink(toolLink);
+	}
+
+	private boolean showLinkedInLink(BadgeAssertion badgeAssertion) {
+		if (!mine) {
+			return false;
+		}
+		if (BadgeAssertion.BadgeAssertionStatus.revoked.equals(badgeAssertion.getStatus())) {
+			return false;
+		}
+		if (openBadgesManager.isBadgeAssertionExpired(badgeAssertion)) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -454,7 +467,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 			tableModel.getObjects().forEach(r -> {
 				if (r.getBadgeAssertion().getUuid().equals(badgeAssertion.getUuid())) {
 					mainVC.contextPut("downloadUrl", r.getDownloadUrl());
-					if (mine) {
+					if (showLinkedInLink(r.getBadgeAssertion())) {
 						mainVC.contextPut("addToLinkedInUrl", r.getAddToLinkedInUrl());
 					}
 				}

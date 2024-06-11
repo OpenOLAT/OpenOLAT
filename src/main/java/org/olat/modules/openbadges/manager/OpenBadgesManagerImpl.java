@@ -1115,6 +1115,39 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return sizeForVfsLeaf(bakedImageLeaf);
 	}
 
+	public boolean isBadgeAssertionExpired(BadgeAssertion badgeAssertion) {
+		Date expiryDate = getBadgeAssertionExpirationDate(badgeAssertion);
+		if (expiryDate == null) {
+			return false;
+		}
+		return new Date().after(expiryDate);
+	}
+
+	private Date getBadgeAssertionExpirationDate(BadgeAssertion badgeAssertion) {
+		if (badgeAssertion == null) {
+			return null;
+		}
+		if (badgeAssertion.getExpires() != null) {
+			return badgeAssertion.getExpires();
+		}
+		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
+		if (badgeClass == null) {
+			return null;
+		}
+		if (!badgeClass.isValidityEnabled()) {
+			return null;
+		}
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(badgeAssertion.getIssuedOn());
+		switch (badgeClass.getValidityTimelapseUnit()) {
+			case year -> calendar.add(Calendar.YEAR, badgeClass.getValidityTimelapse());
+			case month -> calendar.add(Calendar.MONTH, badgeClass.getValidityTimelapse());
+			case week -> calendar.add(Calendar.WEEK_OF_YEAR, badgeClass.getValidityTimelapse());
+			case day -> calendar.add(Calendar.DAY_OF_YEAR, badgeClass.getValidityTimelapse());
+		}
+		return calendar.getTime();
+	}
+
 	@Override
 	public VFSLeaf getBadgeAssertionVfsLeaf(String badgeAssertionFile) {
 		VFSContainer badgeAssertionsContainer = getBadgeAssertionsRootContainer();
@@ -1195,7 +1228,16 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				.add(LinkedInUrl.Field.certId, badgeAssertion.getUuid())
 				.add(LinkedInUrl.Field.certUrl, OpenBadgesFactory.createAssertionPublicUrl(badgeAssertion.getUuid()))
 				.add(LinkedInUrl.Field.issueYear, Integer.toString(cal.get(Calendar.YEAR)))
-				.add(LinkedInUrl.Field.issueMonth, Integer.toString(cal.get(Calendar.MONTH)));
+				.add(LinkedInUrl.Field.issueMonth, Integer.toString(cal.get(Calendar.MONTH) + 1));
+
+		Date expiresOn = getBadgeAssertionExpirationDate(badgeAssertion);
+		if (expiresOn != null) {
+			Calendar expiresOnCal = Calendar.getInstance();
+			expiresOnCal.setTime(expiresOn);
+			linkedInUrlBuilder
+					.add(LinkedInUrl.Field.expirationYear, Integer.toString(expiresOnCal.get(Calendar.YEAR)))
+					.add(LinkedInUrl.Field.expirationMonth, Integer.toString(expiresOnCal.get(Calendar.MONTH) + 1));
+		}
 
 		return linkedInUrlBuilder.asUrl();
 	}

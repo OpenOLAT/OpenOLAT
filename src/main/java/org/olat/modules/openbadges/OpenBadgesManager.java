@@ -133,6 +133,8 @@ public interface OpenBadgesManager {
 	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry,
 															 boolean nullEntryMeansAll);
 
+	boolean isBadgeAssertionExpired(BadgeAssertion badgeAssertion);
+
 	BadgeAssertion getBadgeAssertion(String uuid);
 
 	VFSLeaf getBadgeAssertionVfsLeaf(String relPath);

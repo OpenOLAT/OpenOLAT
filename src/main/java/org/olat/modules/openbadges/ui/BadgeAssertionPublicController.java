@@ -98,7 +98,10 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		flc.contextPut("img", mediaUrl + "/" + badgeAssertion.getBakedImage());
 		flc.contextPut("downloadUrl", downloadUrl + "/" + fileName);
 
-		flc.contextPut("revokedBadge", badgeAssertion.getStatus() == BadgeAssertion.BadgeAssertionStatus.revoked);
+		flc.contextPut("revokedBadge", BadgeAssertion.BadgeAssertionStatus.revoked.equals(badgeAssertion.getStatus()));
+		if (!BadgeAssertion.BadgeAssertionStatus.revoked.equals(badgeAssertion.getStatus())) {
+			flc.contextPut("expiredBadge", openBadgesManager.isBadgeAssertionExpired(badgeAssertion));
+		}
 
 		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
 		flc.contextPut("badgeClass", badgeClass);
