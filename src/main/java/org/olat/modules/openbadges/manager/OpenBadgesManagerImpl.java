@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -93,6 +94,7 @@ import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeClasses;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.BadgeTemplate;
+import org.olat.modules.openbadges.LinkedInUrl;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesModule;
@@ -1177,6 +1179,25 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (!root.exists()) {
 			root.mkdirs();
 		}
+	}
+
+	public String badgeAssertionAsLinkedInUrl(BadgeAssertion badgeAssertion) {
+		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
+		LinkedInUrl.LinkedInUrlBuilder linkedInUrlBuilder = new LinkedInUrl.LinkedInUrlBuilder();
+
+		Date issuedOn = badgeAssertion.getIssuedOn();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(issuedOn);
+
+		linkedInUrlBuilder
+				.add(LinkedInUrl.Field.name, badgeClass.getName())
+				.add(LinkedInUrl.Field.organizationName, badgeClass.getIssuerDisplayString())
+				.add(LinkedInUrl.Field.certId, badgeAssertion.getUuid())
+				.add(LinkedInUrl.Field.certUrl, OpenBadgesFactory.createAssertionPublicUrl(badgeAssertion.getUuid()))
+				.add(LinkedInUrl.Field.issueYear, Integer.toString(cal.get(Calendar.YEAR)))
+				.add(LinkedInUrl.Field.issueMonth, Integer.toString(cal.get(Calendar.MONTH)));
+
+		return linkedInUrlBuilder.asUrl();
 	}
 
 	private VFSContainer getBadgeAssertionsRootContainer() {

@@ -92,6 +92,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	private final RepositoryEntry courseEntry;
 	private final boolean nullEntryMeansAll;
 	private final String titleKey;
+	private final boolean mine;
 	private final String helpLink;
 	private IssuedBadgesTableModel tableModel;
 	private FlexiTableElement tableEl;
@@ -104,12 +105,13 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	private OpenBadgesManager openBadgesManager;
 
 	public IssuedBadgesController(UserRequest ureq, WindowControl wControl, String titleKey, RepositoryEntry courseEntry,
-								  boolean nullEntryMeansAll, Identity identity, String helpLink) {
+								  boolean nullEntryMeansAll, Identity identity, boolean mine, String helpLink) {
 		super(ureq, wControl, "issued_badges");
 		this.titleKey = titleKey;
 		this.courseEntry = courseEntry;
 		this.nullEntryMeansAll = nullEntryMeansAll;
 		this.identity = identity;
+		this.mine = mine;
 		this.helpLink = helpLink;
 		mediaUrl = registerMapper(ureq, new BadgeImageMapper());
 		downloadUrl = registerMapper(ureq, new BadgeAssertionDownloadableMediaFileMapper());
@@ -249,7 +251,9 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		row.setIssuedOn(Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()));
 		row.setIssuer(badgeAssertion.getBadgeClass().getIssuerDisplayString());
 		row.setDownloadUrl(downloadUrl + "/" + badgeAssertion.getDownloadFileName());
-
+		if (mine) {
+			row.setAddToLinkedInUrl(openBadgesManager.badgeAssertionAsLinkedInUrl(badgeAssertion));
+		}
 		String toolId = "tool_" + badgeAssertion.getUuid();
 		FormLink toolLink = (FormLink) flc.getComponent(toolId);
 		if (toolLink == null) {
@@ -450,6 +454,9 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 			tableModel.getObjects().forEach(r -> {
 				if (r.getBadgeAssertion().getUuid().equals(badgeAssertion.getUuid())) {
 					mainVC.contextPut("downloadUrl", r.getDownloadUrl());
+					if (mine) {
+						mainVC.contextPut("addToLinkedInUrl", r.getAddToLinkedInUrl());
+					}
 				}
 			});
 			putInitialPanel(mainVC);

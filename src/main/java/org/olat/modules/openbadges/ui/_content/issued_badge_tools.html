@@ -12,4 +12,11 @@
 			<span>$r.translate("download")</span>
 		</a>
 	</li>
+	#if($addToLinkedInUrl)
+	<li>
+		<a style="width: 100%;" role="button" href="${addToLinkedInUrl}" target="_blank">
+			<span>$r.translate("add.to.linkedin")</span>
+		</a>
+	</li>
+	#end
 </ul>

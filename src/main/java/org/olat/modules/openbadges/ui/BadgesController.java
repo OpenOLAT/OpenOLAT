@@ -39,7 +39,7 @@ public class BadgesController extends BasicController {
 		super(ureq, wControl);
 
 		issuedBadgesController = new IssuedBadgesController(ureq, wControl, "badges",
-				null, true, identity, null);
+				null, true, identity, getIdentity().equals(identity), null);
 		listenTo(issuedBadgesController);
 
 		putInitialPanel(issuedBadgesController.getInitialComponent());

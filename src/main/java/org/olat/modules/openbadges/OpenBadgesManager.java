@@ -147,6 +147,8 @@ public interface OpenBadgesManager {
 
 	void deleteBadgeAssertion(BadgeAssertion badgeAssertion);
 
+	String badgeAssertionAsLinkedInUrl(BadgeAssertion badgeAssertion);
+
 	//
 	// Category
 	//

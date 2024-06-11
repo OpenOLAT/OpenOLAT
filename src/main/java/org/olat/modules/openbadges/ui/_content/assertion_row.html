@@ -15,5 +15,12 @@
 				<span id="$row.name">$r.translate("download")</span>
 			</a>
 		</div>
+		#if($row.addToLinkedInUrl)
+		<div class="o_download">
+			<a class="btn btn-default" role="button" href="$row.addToLinkedInUrl" target="_blank">
+				<span id="$row.name">$r.translate("add.to.linkedin")</span>
+			</a>
+		</div>
+		#end
 	</div>
 </div>
