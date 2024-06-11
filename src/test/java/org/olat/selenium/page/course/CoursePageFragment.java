@@ -443,10 +443,7 @@ public class CoursePageFragment {
 	}
 	
 	public BadgesPage myBadges() {
-		By myCourseMenuCaret = By.cssSelector("a.o_sel_dropdown_mycourse");
-		browser.findElement(myCourseMenuCaret).click();
-		By myCourseMenuBy = By.cssSelector("ul.o_sel_dropdown_mycourse");
-		OOGraphene.waitElement(myCourseMenuBy, browser);
+		openMyCourseMenu();
 		
 		By badgesBy = By.xpath("//ul[contains(@class,'o_sel_dropdown_mycourse')]/li/a[i[contains(@class,'o_icon_badge')]]");
 		OOGraphene.waitElement(badgesBy, browser);
@@ -456,5 +453,13 @@ public class CoursePageFragment {
 		OOGraphene.waitElement(issuedBadges, browser);
 		
 		return new BadgesPage(browser);
+	}
+	
+	private CoursePageFragment openMyCourseMenu() {
+		By myCourseMenuCaret = By.cssSelector("a.o_sel_dropdown_mycourse");
+		browser.findElement(myCourseMenuCaret).click();
+		By myCourseMenuBy = By.cssSelector("ul.o_sel_dropdown_mycourse");
+		OOGraphene.waitElement(myCourseMenuBy, browser);
+		return this;
 	}
 }

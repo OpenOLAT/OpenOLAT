@@ -269,7 +269,7 @@ body#o_body:has(dialog.dialog.modal.show) {
 	}
 	.modal-body {
 		flex-grow:1;
-		overflow-y: scroll; /* scroll only here in modal dialog */
+		overflow-y: auto; /* scroll only here in modal dialog */
 	}
 	.modal-footer {
 		flex-grow: 0;

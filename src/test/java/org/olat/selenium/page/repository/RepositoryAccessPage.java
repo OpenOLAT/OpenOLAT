@@ -206,7 +206,7 @@ public class RepositoryAccessPage {
 		return this;
 	}
 
-	public BookingPage boooking() {
+	public BookingPage booking() {
 		By bookingFieldsetBy = By.cssSelector("fieldset.o_ac_configuration");
 		OOGraphene.waitElement(bookingFieldsetBy, browser);
 		OOGraphene.scrollBottom(bookingFieldsetBy, browser);
