@@ -240,7 +240,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 			if(StringHelper.containsNonWhitespace(linkCSS)) {
 				target.append(" class=\"").append(linkCSS).append("\"");
 			}
-			target.append(">");
+			target.append(" draggable=\"false\">");
 			if(StringHelper.containsNonWhitespace(iconLeftCSS)) {
 				target.append("<i class=\"o_icon ").append(iconLeftCSS).append("\">&nbsp;</i>");
 			}

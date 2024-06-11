@@ -122,7 +122,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 					new NameValuePair("select", "uncheckall")))
 			.append("; return false;\" title=\"").append(translator.translate("form.uncheckall")).append("\"")
 			.append(" style='display:none'", (numOfChecked < numOfRows || numOfChecked == 0))
-			.append("><i class='o_icon o_icon-lg o_icon_check_on' aria-hidden='true'> </i></a>");
+			.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_on' aria-hidden='true'> </i></a>");
 
 		// Some are checked (mixed) - uncheck all
 		target.append("<a id='").append(dispatchId).append("_dsm' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
@@ -131,7 +131,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 					new NameValuePair("select", "uncheckall")))
 			.append("; return false;\" title=\"").append(translator.translate("form.uncheckall")).append("\"")
 			.append(" style='display:none'", (numOfChecked == numOfRows || numOfChecked == 0))
-			.append("><i class='o_icon o_icon-lg o_icon_check_mixed' aria-hidden='true'> </i></a>");
+			.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_mixed' aria-hidden='true'> </i></a>");
 
 		// Nothing is checked - check all
 		if (ftE.getPageSize() == -1 || numOfRows <= ftE.getPageSize()) {
@@ -143,7 +143,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				.append("; return false;\" title=\"")
 				.append(translator.translate("form.checkall.numbered", Integer.toString(numOfRows))).append("\"")
 				.append(" style='display:none'", numOfChecked > 0)
-				.append("><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a>");
+				.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a>");
 								
 		} else {					
 			// Show menu to opt for all or just current page check
@@ -151,14 +151,14 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				.append("display:none;", numOfChecked > 0)
 				.append("'><a class='dropdown-toggle' data-toggle='dropdown' href='javascript:;' ")
 				.append(" title=\"").append(translator.translate("form.checkall")).append("\"")
-				.append("><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a>")					
+				.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a>")					
 				.append("<ul class='dropdown-menu dropdown-menu-left'>")
 				// page
 				.append("<li><a id='").append(dispatchId).append("_sp' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
 				.append(formName).append("', true);")
 				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 						new NameValuePair("select", "checkpage")))
-				.append("; return false;\"><i class='o_icon o_icon-lg o_icon-fw o_icon_check_mixed' aria-hidden='true'> </i> <span>")
+				.append("; return false;\" draggable=\"false\"><i class='o_icon o_icon-lg o_icon-fw o_icon_check_mixed' aria-hidden='true'> </i> <span>")
 				.append(translator.translate("form.checkpage"))
 				.append("</span></a></li>")
 				// all 
@@ -166,7 +166,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				.append(formName).append("', true);")
 				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 						new NameValuePair("select", "checkall")))
-				.append("; return false;\"><i class='o_icon o_icon-lg o_icon-fw o_icon_check_on' aria-hidden='true'> </i> <span>")
+				.append("; return false;\" draggable=\"false\"><i class='o_icon o_icon-lg o_icon-fw o_icon_check_on' aria-hidden='true'> </i> <span>")
 				.append(translator.translate("form.checkall.numbered", Integer.toString(numOfRows)))
 				.append("</span></a></li>")
 				.append("</ul></div>");
@@ -220,17 +220,17 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				sb.append("<a class='o_orderby' href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
-				  .append("\">");
+				  .append("\" draggable=\"false\">");
 			} else if(asc.booleanValue()) {
 				sb.append("<a class='o_orderby o_orderby_asc' href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "desc")))
-				  .append("\">");
+				  .append("\" draggable=\"false\">");
 			} else {
 				sb.append("<a class='o_orderby o_orderby_desc' href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
-				  .append("\">");
+				  .append("\" draggable=\"false\">");
 			}
 			sb.append(header).append("</a>");
 		}
@@ -355,7 +355,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				target.append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
 						new NameValuePair("tt-details", Integer.toString(row))));
 				target.append(";");
-				target.append(" return false;\" role='button'>");
+				target.append(" return false;\" role='button' draggable=\"false\">");
 				target.append("<i class='o_icon o_icon-lg ").append(collapseIcon).append("'> </i>");
 				target.append("<span class='visually-hidden'>").append(collapseText).append("</span>");
 				target.append("</a>");
@@ -491,12 +491,12 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 					      .append(dispatchId).append("_csa' href=\"javascript:;\" onclick=\"")
 					      .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, false,
 							  new NameValuePair("cc-selectall", fcm.getColumnIndex())))
-					      .append("\"><i class='o_icon o_icon_check_on'> </i> <span>").append(translator.translate("form.select.all"))
+					      .append("\" draggable=\"false\"><i class='o_icon o_icon_check_on'> </i> <span>").append(translator.translate("form.select.all"))
 					      .append("</span></a><br><a id='")
 					      .append(dispatchId).append("_cdsa' href=\"javascript:;\" onclick=\"")
 					      .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, false,
 							  new NameValuePair("cc-deselectall", fcm.getColumnIndex())))
-					      .append("\"><i class='o_icon o_icon_check_off'> </i> <span>").append(translator.translate("form.uncheckall"))
+					      .append("\" draggable=\"false\"><i class='o_icon o_icon_check_off'> </i> <span>").append(translator.translate("form.uncheckall"))
 					      .append("</span></a></td>");
 				} else {
 					target.append("<td> </td>");

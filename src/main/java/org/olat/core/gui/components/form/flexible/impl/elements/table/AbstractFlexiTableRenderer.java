@@ -241,7 +241,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
 		  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 				  new NameValuePair("reset-search", "true")))
-		  .append("\" class='btn btn-default o_reset_quick_search' aria-label='")
+		  .append("\" draggable=\"false\" class='btn btn-default o_reset_quick_search' aria-label='")
 		  .append(translator.translate("aria.reset.search")).append("'><i class='o_icon o_icon_remove_filters'> </i></a>");
 		
 		renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
@@ -324,7 +324,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("reset-search", "true")))
-			  .append("\" class='btn btn-default o_reset_quick_search' aria-label='")
+			  .append("\" draggable=\"false\" class='btn btn-default o_reset_quick_search' aria-label='")
 			  .append(translator.translate("aria.reset.search")).append("'><i class='o_icon o_icon_remove_filters'> </i></a>");
 			
 			if(ftE.getExtendedSearchButton() != null) {
@@ -418,7 +418,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			  .append(" <a href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("rm-filter", "true")))
-			  .append("\" title=\"").append(translator.translate("remove.filters")).append("\">")
+			  .append("\" draggable=\"false\" title=\"").append(translator.translate("remove.filters")).append("\">")
 			  .append("<i class='o_icon o_icon_remove o_icon-fw'> </i></a></div>"); 
 		}
 		
@@ -473,7 +473,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append("<li><a href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("filter", filter.getFilter())))
-				  .append("\">").append("<i class='o_icon o_icon_check o_icon-fw'> </i> ", isSelected);
+				  .append("\" draggable=\"false\">").append("<i class='o_icon o_icon_check o_icon-fw'> </i> ", isSelected);
 				if(filter.getIconLeftCSS() != null) {
 					sb.append("<i class='o_icon ").append(filter.getIconLeftCSS()).append("'> </i> ");
 				}
@@ -532,7 +532,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("sort", sort.getSortKey().getKey()),
 						  new NameValuePair("asc",  sort.getSortKey().isAsc() ? "desc" : "asc")))
-				  .append("\">");
+				  .append("\" draggable=\"false\">");
 				if(sort.isSelected()) {
 					if(sort.getSortKey().isAsc()) {
 						sb.append("<i class='o_icon o_icon_sort_desc o_icon-fw'> </i> ");
@@ -590,7 +590,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<li><a id='").append(dispatchId).append("_").append(index).append("_bc' href=\"javascript:;\" onclick=\"")
 		  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
 				  new NameValuePair("tt-crumb", index)))
-		  .append("\">").appendHtmlEscaped(crumb.getCrump()).append("</a></li>");
+		  .append("\" draggable=\"false\">").appendHtmlEscaped(crumb.getCrump()).append("</a></li>");
 	}
 	
 	protected void renderFormItem(Renderer renderer, StringOutput sb, FormItem item, URLBuilder ubu, Translator translator,
@@ -614,14 +614,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				  .append(dispatchId).append("_toa' href=\"javascript:;\" onclick=\"")
 				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
 						  new NameValuePair("tt-openclose", "openall")))
-				  .append("\"><i class='o_icon o_icon-lg o_icon_close_tree'> </i> <span>").append(translator.translate("form.openall"))
+				  .append("\" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_close_tree'> </i> <span>").append(translator.translate("form.openall"))
 				  .append("</span></a>");
 
 				sb.append("<a id='")
 				  .append(dispatchId).append("_tca' href=\"javascript:;\" onclick=\"")
 				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
 						  new NameValuePair("tt-openclose", "closeall")))
-				  .append("\"><i class='o_icon o_icon-lg o_icon_open_tree'> </i> <span>").append(translator.translate("form.closeall"))
+				  .append("\" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_open_tree'> </i> <span>").append(translator.translate("form.closeall"))
 				  .append("</span></a>");
 				
 				sb.append("</div></div>");
@@ -761,14 +761,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<li><a href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("pagesize", Integer.toString(size))))
-			  .append("\">").append(Integer.toString(size)).append("</a></li>");
+			  .append("\" draggable=\"false\">").append(Integer.toString(size)).append("</a></li>");
 		}
 		
 		if(ftE.isShowAllRowsEnabled()) {
 			sb.append("<li><a href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("pagesize", "all")))
-			  .append("\">").append(translator.translate("show.all")).append("</a></li>");
+			  .append("\" draggable=\"false\">").append(translator.translate("show.all")).append("</a></li>");
 		}
 		  
 		sb.append("</ul></div>")
@@ -788,7 +788,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 					  new NameValuePair("page", Integer.toString(page - 1))));
 		}
-		sb.append("\">").append("&laquo;").append("</a></li>");
+		sb.append("\" draggable=\"false\">").append("&laquo;").append("</a></li>");
 	}
 	
 	private void renderPageNextLink(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
@@ -803,7 +803,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 					  new NameValuePair("page", Integer.toString(page + 1)))); 
 		}
-		sb.append("\">").append("&raquo;").append("</a></li>");
+		sb.append("\" draggable=\"false\">").append("&raquo;").append("</a></li>");
 	}
 	
 	private void renderPageNumberLinks(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
@@ -851,7 +851,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<li").append(" class='active'", (page == i)).append("><a href=\"javascript:")
 		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 				  new NameValuePair("page", Integer.toString(i))))
-		  .append(";\">").append(i+1).append("</a></li>");
+		  .append(";\" draggable=\"false\">").append(i+1).append("</a></li>");
 	}
 
 	private int adaptStepIfNeeded(final int page, final int maxStepSize, final int stepSize, final int i) {

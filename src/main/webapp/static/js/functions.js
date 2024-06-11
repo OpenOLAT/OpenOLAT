@@ -1356,6 +1356,10 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 			o_handleFilenames(data, directory);
 		} else if(files.length > 0 && o_handleFilesValidate(files)) {
 			o_handleFiles(files, directory);
+		} else {
+			jQuery(e.target).parents("*[data-upload-folder]")
+				.removeClass('o_dnd_over');
+			this.classList.remove('o_dnd_over');
 		}
 		e.stopPropagation();
 	}

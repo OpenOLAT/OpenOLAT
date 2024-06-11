@@ -161,6 +161,8 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				renderHrefAndOnclickLink(renderer, sb, link, ubu);
 			}
 			
+			sb.append(" draggable=\"false\"");
+			
 			//tooltips
 			if(title != null) {
 				sb.append(" title=\"");
