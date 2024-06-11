@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.gui.components.progressbar.ProgressDelegate;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.mail.MailPackage;
@@ -582,16 +581,6 @@ public interface BusinessGroupService {
 	 * linked to it.
 	 */
 	public void dedupMembers(Identity ureqIdentity, RepositoryEntry entry, boolean coaches, boolean participants);
-	
-	/**
-	 * Deduplicate all the courses in the repository
-	 * @param ureqIdentity
-	 * @param coaches
-	 * @param participants
-	 * @param progressDelegate
-	 */
-	public void dedupMembers(Identity ureqIdentity, boolean coaches, boolean participants, ProgressDelegate progressDelegate);
-
 	
 	//security
 	/**

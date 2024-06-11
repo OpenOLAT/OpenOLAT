@@ -47,7 +47,6 @@ import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.commons.info.InfoMessageManager;
 import org.olat.commons.info.InfoMessageToGroup;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.gui.components.progressbar.ProgressDelegate;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
@@ -101,12 +100,9 @@ import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.manager.RepositoryEntryQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
-import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -149,11 +145,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Autowired
 	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	@Autowired
-	private RepositoryEntryQueries repositoryEntryQueries;
-	@Autowired
 	private ACReservationDAO reservationDao;
-	@Autowired
-	private ACService acService;
 	@Autowired
 	private DB dbInstance;
 
@@ -1535,46 +1527,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					BusinessGroupRepositoryEntryEvent.fireEvents(BusinessGroupRepositoryEntryEvent.REPOSITORY_ENTRY_ADDED, group, re);
 				}
 			}
-		}
-	}
-
-	@Override
-	public void dedupMembers(Identity ureqIdentity, boolean coaches, boolean participants, ProgressDelegate delegate) {
-		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
-		params.setRoles(Roles.administratorRoles());
-		params.setResourceTypes(Collections.singletonList("CourseModule"));
-		params.setOfferOrganisations(acService.getOfferOrganisations(ureqIdentity));
-		params.setOfferValidAt(new Date());
-		
-		float ratio = -1.0f;
-		if(delegate != null) {
-			int numOfEntries = repositoryEntryQueries.countEntries(params);
-			ratio = 100.0f / numOfEntries;
-		}
-
-		int counter = 0;
-		int countForCommit = 0;
-		float actual = 100.0f;
-		int batch = 25;
-		List<RepositoryEntry> entries;
-		do {
-			entries = repositoryEntryQueries.searchEntries(params, counter, batch, true);
-			for(RepositoryEntry re:entries) {
-				countForCommit += 2 + dedupSingleRepositoryentry(ureqIdentity, re, coaches, participants, false);
-				if(countForCommit > 25) {
-					dbInstance.intermediateCommit();
-					countForCommit = 0;
-				}
-			}
-			counter += entries.size();
-			if(delegate != null) {
-				actual -= (entries.size() * ratio);
-				delegate.setActual(actual);
-			}
-		} while(entries.size() == batch);
-		
-		if(delegate != null) {
-			delegate.finished();
 		}
 	}
 
