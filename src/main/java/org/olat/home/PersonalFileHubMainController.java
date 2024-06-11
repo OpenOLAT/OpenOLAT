@@ -36,13 +36,10 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
-import org.olat.search.service.document.file.ExcelDocument;
-import org.olat.search.service.document.file.HtmlDocument;
-import org.olat.search.service.document.file.OpenDocument;
-import org.olat.search.service.document.file.PdfDocument;
-import org.olat.search.service.document.file.PowerPointDocument;
-import org.olat.search.service.document.file.TextDocument;
-import org.olat.search.service.document.file.WordDocument;
+import org.olat.search.service.indexer.group.GroupFolderIndexer;
+import org.olat.search.service.indexer.repository.SharedFolderRepositoryIndexer;
+import org.olat.search.service.indexer.repository.course.BCCourseNodeIndexer;
+import org.olat.search.service.indexer.repository.course.DialogCourseNodeIndexer;
 import org.olat.search.ui.SearchInputController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,17 +51,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PersonalFileHubMainController extends BasicController implements Activateable2 {
 	
-	private static final String SEARCH_FILE_TYPES = List.of(
-			HtmlDocument.FILE_TYPE,
-			WordDocument.FILE_TYPE,
-			OpenDocument.TEXT_FILE_TYPE,
-			ExcelDocument.FILE_TYPE,
-			OpenDocument.SPEADSHEET_FILE_TYPE,
-			OpenDocument.FORMULA_FILE_TYPE,
-			PowerPointDocument.FILE_TYPE,
-			OpenDocument.PRESENTATION_FILE_TYPE,
-			PdfDocument.FILE_TYPE,
-			TextDocument.FILE_TYPE)
+	private static final String SEARCH_DOCUMENT_TYPE = List.of(
+			BCCourseNodeIndexer.TYPE,
+			DialogCourseNodeIndexer.TYPE_FILE,
+			SharedFolderRepositoryIndexer.TYPE,
+			GroupFolderIndexer.TYPE)
 		.stream()
 		.collect(Collectors.joining(" "));
 			
@@ -90,7 +81,7 @@ public class PersonalFileHubMainController extends BasicController implements Ac
 			mainVC.put("search", searchCtrl.getInitialComponent());
 			searchCtrl.setResourceContextEnable(false);
 			searchCtrl.setResourceUrl(null);
-			searchCtrl.setFileType(SEARCH_FILE_TYPES);
+			searchCtrl.setDocumentType(SEARCH_DOCUMENT_TYPE);
 		}
 		
 		mainVC.contextPut("storageTitle", translate("file.hub.storage"));
