@@ -193,7 +193,9 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
-			titleEl.clearError();
+			if (titleEl != null) {
+				titleEl.clearError();
+			}
 			return super.validateFormLogic(ureq);
 		}
 
