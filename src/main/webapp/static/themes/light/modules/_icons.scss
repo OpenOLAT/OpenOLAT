@@ -223,6 +223,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_instruction { @include o-add-icon('hand-point-right');}
 .o_icon_instructional_design { @include o-add-icon('leaf');}
 .o_icon_institution { @include o-add-icon('bank');}
+.o_icon_invalidate { @include o-add-icon('circle-minus');}
 .o_icon_italic { @include o-add-icon('italic');}
 .o_icon_landingpage { @include o-add-icon('bullseye');}
 .o_icon_language { @include o-add-icon('globe');}
@@ -687,7 +688,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qitem_export { @include o-add-icon('download');}
 .o_icon_qitem_hide_metadata { @include o-add-icon('toggle-on');}
 .o_icon_qitem_import { @include o-add-icon('upload');}
-.o_icon_qitem_new { @include o-add-icon('plus-circle');}
+.o_icon_qitem_new { @include o-add-icon('circle-plus');}
 .o_icon_qitem_review { @include o-add-icon('star', false);}
 .o_icon_qitem_revised { @include o-add-icon('rotate-left');}
 .o_icon_qitem_share { @include o-add-icon('share');}
