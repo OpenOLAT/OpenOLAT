@@ -34,6 +34,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
@@ -188,6 +189,11 @@ public class RepositoryEntryQueries {
 		if(StringHelper.containsNonWhitespace(params.getExternalRef())) {
 			query.append(" and v.externalRef=:externalRef");
 		}
+		
+		if (params.getTaxonomyLevels() != null) {
+			query.append(" and exists (select reToTax.key from repositoryentrytotaxonomylevel as reToTax")
+			     .append("  where reToTax.entry.key=v.key and reToTax.taxonomyLevel.key in (:taxonomyLevelKeys))");
+		}
 
 		if(orderBy) {
 			query.append(" order by v.displayname, v.key ASC");
@@ -227,6 +233,11 @@ public class RepositoryEntryQueries {
 		}
 		if(StringHelper.containsNonWhitespace(params.getExternalRef())) {
 			dbQuery.setParameter("externalRef", params.getExternalRef());
+		}
+		if (params.getTaxonomyLevels() != null) {
+			List<Long> taxonomyLevelKeys = params.getTaxonomyLevels().stream()
+					.map(TaxonomyLevelRef::getKey).collect(Collectors.toList());
+			dbQuery.setParameter("taxonomyLevelKeys", taxonomyLevelKeys);
 		}
 		if(addParams.isIdentity()) {
 			dbQuery.setParameter("identityKey", params.getIdentity().getKey());
