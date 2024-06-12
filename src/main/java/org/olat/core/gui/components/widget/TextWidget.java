@@ -34,6 +34,7 @@ public class TextWidget extends AdditionalWidget {
 	
 	private String value;
 	private String valueCssClass;
+	private Component valueComp;
 	private Component leftComp;
 
 	protected TextWidget(String name) {
@@ -65,6 +66,15 @@ public class TextWidget extends AdditionalWidget {
 
 	public void setValueCssClass(String valueCssClass) {
 		this.valueCssClass = valueCssClass;
+		setDirty(true);
+	}
+
+	public Component getValueComp() {
+		return valueComp;
+	}
+
+	public void setValueComp(Component valueComp) {
+		this.valueComp = valueComp;
 		setDirty(true);
 	}
 

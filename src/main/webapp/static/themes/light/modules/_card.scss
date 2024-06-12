@@ -124,6 +124,17 @@
 							font-size: 40px;
 						}
 					}
+					.o_text_widget_repo_image {
+						height: 50px;
+						width: 75px;
+						object-fit: cover;
+						object-position: top center;
+						margin-right: 5px;
+					}
+				}
+				.o_widget_link {
+					display: flex;
+					padding-bottom: 5px;
 				}
 			}
 			&.o_widget_main_figure {
@@ -131,7 +142,8 @@
 				flex-direction: column;
 				width: 100%;
 				.o_widget_figure {
-					line-height: 30px;
+					line-height: 31px;
+					margin-bottom: -1px;
 					.o_widget_figure_value {
 						font-size: $o-widget-figure-value-font-size;
 						font-weight: $o-widget-figure-value-font-weight;
@@ -154,14 +166,6 @@
 							display: none;
 						}
 					}
-				}
-			}
-			&.o_widget_main_link {
-				display: flex;
-				flex-direction: column;
-				.o_widget_link {
-					margin-top: auto;
-					padding-bottom: 5px;
 				}
 			}
 			&.o_widget_main_download {

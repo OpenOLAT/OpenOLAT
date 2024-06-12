@@ -43,7 +43,7 @@ import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.components.widget.ComponentWidget;
+import org.olat.core.gui.components.widget.TextWidget;
 import org.olat.core.gui.components.widget.WidgetFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -131,12 +131,13 @@ public class STCourseNodeRunController extends BasicController {
 			CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			if ((cc.isEfficiencyStatementEnabled() || certificatesManager.isCertificateEnabled(courseEntry))
-					&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {
+					&& userCourseEnv.hasEfficiencyStatementOrCertificate(true)) {
 				certificationLink = LinkFactory.createCustomLink("certification.show", "certification.show",
 						translate("certification.show"), Link.LINK + Link.NONTRANSLATED, myContent, this);
-				ComponentWidget widget = WidgetFactory.createComponentWidget("cert", null, translate("certification"), "o_icon_certificate");
-				widget.setContent(certificationLink);
-				widget.setMainCss("o_widget_main_link");
+				certificationLink.setElementCssClass("o_nowrap");
+				TextWidget widget = WidgetFactory.createTextWidget("cert", null, translate("certification"), "o_icon_certificate");
+				widget.setValueComp(certificationLink);
+				widget.setValueCssClass("o_widget_link");
 				assessmentParticipantViewCtrl.addCustomWidget(widget);
 			}
 			

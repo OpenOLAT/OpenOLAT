@@ -50,12 +50,20 @@ public class TextWidgetRenderer extends WidgetRenderer {
 		sb.append("</div>");
 		
 		sb.append("<div class=\"o_flex_item_max\">");
-		sb.append("<div class=\"o_widget_text o_nowrap ");
+		sb.append("<div class=\"");
+		if (widget.getValueComp() == null) {
+			sb.append("o_widget_text o_nowrap ");
+		}
 		if (StringHelper.containsNonWhitespace(widget.getValueCssClass())) {
 			sb.append(widget.getValueCssClass());
 		}
 		sb.append("\">");
-		sb.append(widget.getValue());
+		if (widget.getValueComp() != null) {
+			renderer.render(widget.getValueComp(), sb, args);
+			widget.getValueComp().setDirty(false);
+		} else {
+			sb.append(widget.getValue());
+		}
 		sb.append("</div>");
 		
 		renderAdditional(renderer, sb, args, widget);

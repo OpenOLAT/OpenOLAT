@@ -37,7 +37,6 @@ import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.components.widget.ComponentWidget;
 import org.olat.core.gui.components.widget.FigureWidget;
 import org.olat.core.gui.components.widget.TextWidget;
 import org.olat.core.gui.components.widget.WidgetFactory;
@@ -63,6 +62,7 @@ import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.assessment.ui.tool.IdentityCertificatesController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -82,6 +82,7 @@ import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -99,8 +100,8 @@ public class IdentityAssessmentFiguresController extends BasicController {
 	private final VelocityContainer mainVC;
 	private final ProgressBar completionItem;
 	private WidgetGroup widgetGroup;
-	private ComponentWidget courseWidget;
-	private ComponentWidget groupWidget;
+	private TextWidget courseWidget;
+	private TextWidget groupWidget;
 	private TextWidget passedWidget;
 	private TextWidget progressWidget;
 	private FigureWidget gradeWidget;
@@ -123,6 +124,8 @@ public class IdentityAssessmentFiguresController extends BasicController {
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -136,6 +139,7 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(IdentityCertificatesController.class, getLocale(), getTranslator()));
 		
 		this.links = links;
 		this.businessGroup = businessGroup;
@@ -162,7 +166,7 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		mainVC.put("completion", completionItem);
 		mainVC.contextPut("scoreScalingEnabled", Boolean.valueOf(scoreScalingEnabled));
 		
-		initLinks();
+		initLinks(ureq);
 		initWidgets();
 
 		if (efficiencyStatement != null) {
@@ -200,15 +204,33 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		widgetGroup.add(certificateWidget);
 	}
 
-	private void initLinks() {
+	private void initLinks(UserRequest ureq) {
 		if(assessedUserCourseEnv != null) {
 			RepositoryEntry entry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			if(entry != null && RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.preparationToClosed())) {	
+			if(entry != null && RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.preparationToClosed())) {
 				courseLink = LinkFactory.createCustomLink("course.link", "course.link",
 						StringHelper.escapeHtml(entry.getDisplayname()), Link.LINK + Link.NONTRANSLATED, mainVC, this);
-				courseWidget = WidgetFactory.createComponentWidget("course", mainVC, translate("course"), "o_CourseModule_icon");
-				courseWidget.setContent(courseLink);
-				courseWidget.setMainCss("o_widget_main_link");
+				courseLink.setElementCssClass("o_nowrap");
+				courseWidget = WidgetFactory.createTextWidget("course", mainVC, translate("course"), "o_CourseModule_icon");
+				courseWidget.setValueComp(courseLink);
+				courseWidget.setValueCssClass("o_widget_link");
+				if (StringHelper.containsNonWhitespace(entry.getExternalRef())) {
+					courseWidget.setAdditionalText(entry.getExternalRef());
+				}
+				
+				VFSLeaf vfsLeaf = repositoryService.getIntroductionImage(entry);
+				if (vfsLeaf != null) {
+					VelocityContainer courseThumbCont = createVelocityContainer("course_widget_thumb");
+					courseThumbCont.setDomReplacementWrapperRequired(false);
+					courseWidget.setLeftComp(courseThumbCont);
+					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(vfsLeaf, 75, 50, true);
+					if (thumbnail != null) {
+						VFSMediaMapper mapper = new VFSMediaMapper(thumbnail);
+						String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(thumbnail.getRelPath() + thumbnail.getLastModified()));
+						String url = registerCacheableMapper(ureq, mapperId, mapper);
+						courseThumbCont.contextPut("url", url);
+					}
+				}
 			}
 		}
 		
@@ -217,9 +239,10 @@ public class IdentityAssessmentFiguresController extends BasicController {
 			if(links) {
 				groupLink = LinkFactory.createCustomLink("group.link", "group.link",
 						StringHelper.escapeHtml(businessGroup.getName()), Link.LINK + Link.NONTRANSLATED, mainVC, this);
-				groupWidget = WidgetFactory.createComponentWidget("group", mainVC, translate("group"), "o_icon_group");
-				groupWidget.setContent(groupLink);
-				groupWidget.setMainCss("o_widget_main_link");
+				groupLink.setElementCssClass("o_nowrap");
+				groupWidget = WidgetFactory.createTextWidget("group", mainVC, translate("group"), "o_icon_group");
+				groupWidget.setValueComp(groupLink);
+				groupWidget.setValueCssClass("o_widget_link");
 			}
 		}
 	}
@@ -313,7 +336,7 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		passedWidget.setVisible(hasPassed);
 		progressWidget.setVisible(!hasPassed && hasCompletion);
 		
-		progressWidget.setValueCssClass("o_widget_text_large o_widget_text_success");
+		progressWidget.setValueCssClass("o_widget_text_success");
 		if (resultsVisible) {
 			if (passed == null) {
 				passedWidget.setValue(translate("passed.nopassed"));
@@ -354,7 +377,7 @@ public class IdentityAssessmentFiguresController extends BasicController {
 			progressWidget.setValue(Math.round(completion * 100) + "%");
 		} else {
 			passedWidget.setLeftComp(null);
-			passedWidget.setLeftComp(null);
+			progressWidget.setLeftComp(null);
 		}
 	}
 	
