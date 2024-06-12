@@ -133,8 +133,10 @@ public class ProjWhiteboardController extends BasicController implements Generic
 		emptyState.setIconCss("o_icon o_icon_proj_whiteboard");
 		emptyState.setIndicatorIconCss("o_no_indicator");
 		emptyState.setMessageI18nKey("whiteboard.empty.message");
-		emptyState.setButtonI18nKey("whiteboard.empty.button");
-		emptyState.getButton().setNewWindow(true, true);
+		if (secCallback.canEditWhiteboard()) {
+			emptyState.setButtonI18nKey("whiteboard.empty.button");
+			emptyState.getButton().setNewWindow(true, true);
+		}
 		
 		reload(ureq);
 	}
