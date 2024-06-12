@@ -48,6 +48,7 @@ import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CourseScoreCondition;
+import org.olat.modules.openbadges.criteria.Symbol;
 
 /**
  * Initial date: 2023-06-15<br>
@@ -182,7 +183,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				return switch (conditionDropdown.getSelectedKey()) {
 					case CoursePassedCondition.KEY -> new CoursePassedCondition();
 					case CourseScoreCondition.KEY -> new CourseScoreCondition(
-							CourseScoreCondition.Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
+							Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
 							StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
 					);
 					default -> null;
@@ -224,9 +225,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			conditionsKV.add(SelectionValues.entry(CourseScoreCondition.KEY, translate("form.criteria.condition.course.score")));
 
 			symbolsKV = new SelectionValues();
-			symbolsKV.add(SelectionValues.entry(CourseScoreCondition.Symbol.greaterThan.name(), CourseScoreCondition.Symbol.greaterThan.getSymbolString()));
-			symbolsKV.add(SelectionValues.entry(CourseScoreCondition.Symbol.greaterThanOrEqual.name(), CourseScoreCondition.Symbol.greaterThanOrEqual.getSymbolString()));
-			symbolsKV.add(SelectionValues.entry(CourseScoreCondition.Symbol.equals.name(), CourseScoreCondition.Symbol.equals.getSymbolString()));
+			symbolsKV.add(SelectionValues.entry(Symbol.greaterThan.name(), Symbol.greaterThan.getSymbolString()));
+			symbolsKV.add(SelectionValues.entry(Symbol.greaterThanOrEqual.name(), Symbol.greaterThanOrEqual.getSymbolString()));
+			symbolsKV.add(SelectionValues.entry(Symbol.equals.name(), Symbol.equals.getSymbolString()));
 
 			initForm(ureq);
 		}
@@ -270,7 +271,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			String key = newRule.getSelectedKey();
 			BadgeCondition newBadgeCondition = switch (key) {
 				case CoursePassedCondition.KEY -> new CoursePassedCondition();
-				case CourseScoreCondition.KEY -> new CourseScoreCondition(CourseScoreCondition.Symbol.greaterThan, 1);
+				case CourseScoreCondition.KEY -> new CourseScoreCondition(Symbol.greaterThan, 1);
 				default -> null;
 			};
 			if (newBadgeCondition != null) {

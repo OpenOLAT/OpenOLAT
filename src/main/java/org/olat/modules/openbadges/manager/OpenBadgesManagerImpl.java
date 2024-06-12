@@ -852,7 +852,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			if (!badgeCriteria.isAwardAutomatically()) {
 				continue;
 			}
-			if (badgeCriteria.allConditionsMet(passed != null ? passed : false, score != null ? score : 0)) {
+			if (badgeCriteria.allCourseConditionsMet(passed != null ? passed : false, score != null ? score : 0)) {
 				String uuid = OpenBadgesFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
@@ -916,7 +916,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			log.debug("Badge '{}', participant '{}': passed = {}, score = {}",
 					badgeClass.getName(), assessedIdentity.getName(), passed, score);
 			assert badgeCriteria != null;
-			if (badgeCriteria.isAwardAutomatically() && badgeCriteria.allConditionsMet(passed, score)) {
+			if (badgeCriteria.isAwardAutomatically() && badgeCriteria.allCourseConditionsMet(passed, score)) {
 				automaticRecipients.add(assessedIdentity);
 			}
 		}

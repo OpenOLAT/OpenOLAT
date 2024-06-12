@@ -72,21 +72,18 @@ public class BadgeCriteria {
 		this.conditions = conditions;
 	}
 
-	public boolean allConditionsMet(boolean passed, double score) {
-		boolean allConditionsMet = true;
+	public boolean allCourseConditionsMet(boolean passed, double score) {
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CoursePassedCondition) {
 				if (!passed) {
-					allConditionsMet = false;
-					break;
+					return false;
 				}
 			} else if (badgeCondition instanceof CourseScoreCondition courseScoreCondition) {
 				if (!courseScoreCondition.satisfiesCondition(score)) {
-					allConditionsMet = false;
-					break;
+					return false;
 				}
 			}
 		}
-		return allConditionsMet;
+		return true;
 	}
 }

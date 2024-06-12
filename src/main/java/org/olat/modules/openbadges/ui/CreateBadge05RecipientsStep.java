@@ -185,7 +185,7 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 				} else {
 					boolean passed = assessmentEntry.getPassed() != null ? assessmentEntry.getPassed() : false;
 					double score = assessmentEntry.getScore() != null ? assessmentEntry.getScore().doubleValue() : 0;
-					if (badgeCriteria.allConditionsMet(passed, score)) {
+					if (badgeCriteria.allCourseConditionsMet(passed, score)) {
 						BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
 						rows.add(row);
 						earners.add(assessedIdentity);

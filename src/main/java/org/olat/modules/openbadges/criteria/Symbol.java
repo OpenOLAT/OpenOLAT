@@ -19,52 +19,37 @@
  */
 package org.olat.modules.openbadges.criteria;
 
-import org.olat.core.gui.translator.Translator;
-
 /**
- * Initial date: 2023-06-21<br>
+ * Initial date: 2024-06-12<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CourseScoreCondition implements BadgeCondition {
-	public static final String KEY = "courseScore";
+public enum Symbol {
+	greaterThan(">"),
+	greaterThanOrEqual("≥"),
+	equals("="),
+	lessThanOrEqual("≤"),
+	lessThan("<"),
+	notEqual("≠");
 
-	@Override
-	public String getKey() {
-		return KEY;
+	private final String symbolString;
+
+	Symbol(String symbolString) {
+		this.symbolString = symbolString;
 	}
 
-	@Override
-	public String toString(Translator translator) {
-		return translator.translate("badgeCondition." + KEY, getSymbol().getSymbolString(), Double.toString(getValue()));
+	public String getSymbolString() {
+		return symbolString;
 	}
 
-	public boolean satisfiesCondition(double score) {
-		return Symbol.compare(score, symbol, value);
-	}
-
-	private Symbol symbol;
-
-	private double value;
-
-	public CourseScoreCondition(Symbol symbol, double value) {
-		this.symbol = symbol;
-		this.value = value;
-	}
-
-	public Symbol getSymbol() {
-		return symbol;
-	}
-
-	public void setSymbol(Symbol symbol) {
-		this.symbol = symbol;
-	}
-
-	public double getValue() {
-		return value;
-	}
-
-	public void setValue(double value) {
-		this.value = value;
+	public static boolean compare(double left, Symbol symbol, double right) {
+		return switch (symbol) {
+			case greaterThan -> left > right;
+			case greaterThanOrEqual -> left >= right;
+			case lessThan -> left < right;
+			case lessThanOrEqual -> left <= right;
+			case notEqual -> left != right;
+			case equals -> left == right;
+		};
 	}
 }
