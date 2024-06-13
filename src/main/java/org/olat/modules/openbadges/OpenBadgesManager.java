@@ -179,6 +179,17 @@ public interface OpenBadgesManager {
 	void importBadgeClasses(RepositoryEntry targetEntry, BadgeClasses badgeClasses, File fImportBaseDirectory, Identity author);
 
 	//
+	// Organizations
+	//
+	List<BadgeOrganization> loadLinkedInOrganizations();
+
+	void addLinkedInOrganization(String organizationId, String organizationName);
+
+	void updateBadgeOrganization(BadgeOrganization badgeOrganization);
+
+	void deleteBadgeOrganization(BadgeOrganization badgeOrganization);
+
+	//
 	// Types
 	//
 

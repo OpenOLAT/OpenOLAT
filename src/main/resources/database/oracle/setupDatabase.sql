@@ -4538,6 +4538,16 @@ create table o_badge_entry_config (
    unique(fk_entry),
    primary key (id)
 );
+create table o_badge_organization (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   b_type varchar(64) not null,
+   b_organization_key varchar(80) not null,
+   b_organization_value clob not null,
+   primary key (id)
+);
+
 create table o_gui_prefs (
    id number(20) generated always as identity,
    creationdate date not null,

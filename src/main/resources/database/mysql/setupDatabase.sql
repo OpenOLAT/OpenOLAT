@@ -4463,6 +4463,15 @@ create table o_badge_entry_config (
    unique(fk_entry),
    primary key (id)
 );
+create table o_badge_organization (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   b_type varchar(64) not null,
+   b_organization_key varchar(80) not null,
+   b_organization_value longtext not null,
+   primary key (id)
+);
 
 create table o_gui_prefs (
    id bigint not null auto_increment,
@@ -4883,6 +4892,7 @@ alter table o_badge_class ENGINE = InnoDB;
 alter table o_badge_assertion ENGINE = InnoDB;
 alter table o_badge_category ENGINE = InnoDB;
 alter table o_badge_entry_config ENGINE = InnoDB;
+alter table o_badge_organization ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);

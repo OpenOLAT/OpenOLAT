@@ -93,6 +93,7 @@ import org.olat.modules.openbadges.BadgeCategory;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeClasses;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.BadgeOrganization;
 import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.LinkedInUrl;
 import org.olat.modules.openbadges.OpenBadgesFactory;
@@ -174,6 +175,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private AssessmentToolManager assessmentToolManager;
 
 	private VelocityEngine velocityEngine;
+	@Autowired
+	private BadgeOrganizationDAO badgeOrganizationDAO;
 
 	@Override
 	public void afterPropertiesSet() {
@@ -1378,6 +1381,27 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeClasses.getItems().stream()
 				.filter(bc -> !BadgeClass.BadgeClassStatus.revoked.equals(bc.getStatus()))
 				.forEach(bc -> cloneBadgeClass(bc, targetEntry, author, fImportBaseDirectory));
+	}
+
+	@Override
+	public List<BadgeOrganization> loadLinkedInOrganizations() {
+		return badgeOrganizationDAO.loadBadgeOrganizations(BadgeOrganization.BadgeOrganizationType.linkedInOrganization);
+	}
+
+	@Override
+	public void addLinkedInOrganization(String organizationId, String organizationName) {
+		badgeOrganizationDAO.createBadgeOrganization(BadgeOrganization.BadgeOrganizationType.linkedInOrganization,
+				organizationId, organizationName);
+	}
+
+	@Override
+	public void updateBadgeOrganization(BadgeOrganization badgeOrganization) {
+		badgeOrganizationDAO.updateBadgeOrganization(badgeOrganization);
+	}
+
+	@Override
+	public void deleteBadgeOrganization(BadgeOrganization badgeOrganization) {
+		badgeOrganizationDAO.deleteBadgeOrganization(badgeOrganization);
 	}
 
 	@Override

@@ -276,6 +276,7 @@
 		<class>org.olat.modules.openbadges.model.BadgeCategoryImpl</class>
 		<class>org.olat.modules.openbadges.model.BadgeClassImpl</class>
 		<class>org.olat.modules.openbadges.model.BadgeEntryConfigurationImpl</class>
+		<class>org.olat.modules.openbadges.model.BadgeOrganizationImpl</class>
 		<class>org.olat.modules.openbadges.model.BadgeTemplateImpl</class>
 		<class>org.olat.modules.openmeetings.model.OpenMeetingsRoomReference</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>

@@ -63,3 +63,14 @@ create index idx_media_to_page_part_page_part_idx on o_media_to_page_part (fk_pa
 
 -- Reminder
 alter table o_rem_reminder add r_email_copy_only bool default false;
+
+-- Open Badges
+create table o_badge_organization (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   b_type varchar(64) not null,
+   b_organization_key varchar(80) not null,
+   b_organization_value text not null,
+   primary key (id)
+);

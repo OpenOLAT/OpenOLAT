@@ -56,3 +56,15 @@ alter table o_media_to_page_part add constraint media_to_page_part_page_part_idx
 
 -- Reminders
 alter table o_rem_reminder add column r_email_copy_only bool default false;
+
+-- Open Badges
+create table o_badge_organization (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   b_type varchar(64) not null,
+   b_organization_key varchar(80) not null,
+   b_organization_value longtext not null,
+   primary key (id)
+);
+alter table o_badge_organization ENGINE = InnoDB;

@@ -4487,6 +4487,15 @@ create table o_badge_entry_config (
    unique(fk_entry),
    primary key (id)
 );
+create table o_badge_organization (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   b_type varchar(64) not null,
+   b_organization_key varchar(80) not null,
+   b_organization_value text not null,
+   primary key (id)
+);
 
 create table o_gui_prefs (
    id bigserial,
