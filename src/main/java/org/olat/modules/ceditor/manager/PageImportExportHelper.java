@@ -39,6 +39,7 @@ import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
 import org.hibernate.Hibernate;
@@ -72,6 +73,9 @@ public class PageImportExportHelper {
 			if(part instanceof MediaPart mediaPart) {
 				export(mediaPart, zout);
 			}
+			if (part instanceof QuizPart quizPart) {
+				export(quizPart, zout);
+			}
 			if (part instanceof GalleryPart galleryPart) {
 				export(galleryPart, zout);
 			}
@@ -88,6 +92,9 @@ public class PageImportExportHelper {
 			}
 			if (part instanceof ImageComparisonPart imageComparisonPart) {
 				unproxy(imageComparisonPart);
+			}
+			if (part instanceof QuizPart quizPart) {
+				unproxy(quizPart);
 			}
 		}
 	}
@@ -113,6 +120,15 @@ public class PageImportExportHelper {
 		Hibernate.unproxy(relation.getMediaVersion());
 	}
 
+	private void unproxy(QuizPart quizPart) {
+		if (quizPart.getBackgroundImageMedia() != null) {
+			Hibernate.unproxy(quizPart.getBackgroundImageMedia());
+		}
+		if (quizPart.getBackgroundImageMediaVersion() != null) {
+			Hibernate.unproxy(quizPart.getBackgroundImageMediaVersion());
+		}
+	}
+
 	private void export(GalleryPart galleryPart, ZipOutputStream zout) {
 		for (MediaToPagePart relation : galleryPart.getRelations()) {
 			export(relation, zout);
@@ -135,6 +151,11 @@ public class PageImportExportHelper {
 		} else if (relation.getMedia().getVersions() != null && !relation.getMedia().getVersions().isEmpty()) {
 			export(relation.getMedia().getVersions().get(0), zout);
 		}
+	}
+
+	private void export(QuizPart quizPart, ZipOutputStream zout) {
+		MediaVersion mediaVersion = quizPart.getBackgroundImageMediaVersion();
+		export(mediaVersion, zout);
 	}
 
 	private void export(MediaPart mediaPart, ZipOutputStream zout) {

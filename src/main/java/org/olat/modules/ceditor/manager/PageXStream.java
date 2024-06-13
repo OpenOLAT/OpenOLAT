@@ -106,6 +106,7 @@ public class PageXStream {
 		xstream.aliasType("mediaToPagePart", MediaToPagePartImpl.class);
 		xstream.omitField(MediaVersionImpl.class, "metadata");
 		xstream.aliasType("quizPart", QuizPart.class);
+		xstream.omitField(QuizPart.class, "backgroundImageIdentity");
 		xstream.aliasType("galleryPart", GalleryPart.class);
 		xstream.omitField(MediaToPagePartImpl.class, "identity");
 		xstream.aliasType("imageComparisonPart", ImageComparisonPart.class);

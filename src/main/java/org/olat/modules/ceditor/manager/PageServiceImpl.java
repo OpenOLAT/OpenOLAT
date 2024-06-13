@@ -246,6 +246,10 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 				importMediaPart(mediaPart, mediaOwner, storage);
 			}
 
+			if (newPart instanceof QuizPart quizPart) {
+				importQuizPart(quizPart, mediaOwner, storage);
+			}
+
 			copyBody = pageDao.persistPart(copyBody, newPart);
 
 			if (newPart instanceof GalleryPart galleryPart && part instanceof GalleryPart serializedPart) {
@@ -271,6 +275,18 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 		mediaPart.setMedia(importedMedia.media());
 		mediaPart.setMediaVersion(importedMedia.version());
 		mediaPart.setIdentity(mediaOwner);
+	}
+
+	private void importQuizPart(QuizPart quizPart, Identity mediaOwner, ZipFile storage) {
+		if (quizPart.getBackgroundImageMedia() == null) {
+			return;
+		}
+
+		MediaWithVersion importedMedia = importMedia(quizPart.getBackgroundImageMedia(),
+				quizPart.getBackgroundImageMediaVersion(), mediaOwner, storage);
+		quizPart.setBackgroundImageMedia(importedMedia.media());
+		quizPart.setBackgroundImageMediaVersion(importedMedia.version());
+		quizPart.setBackgroundImageIdentity(mediaOwner);
 	}
 
 	private void importGalleryPart(GalleryPart galleryPart, GalleryPart serializedPart, Identity mediaOwner, ZipFile storage) {
