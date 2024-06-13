@@ -2235,7 +2235,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
-		copySelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), currentContainer, currentContainer,
+		copySelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, currentContainer,
 				translate(submitI18nKey));
 		listenTo(copySelectFolderCtrl);
 		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, itemsToCopy));
