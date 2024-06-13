@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -78,7 +79,8 @@ public class ShowJupyterHubApplicationsController extends BasicController {
 		String courseName = course.getCourseTitle();
 		long participantCount = jupyterManager.getParticipantCount(course, courseEntry, collectedIdentities);
 		String linkText = getTranslator().translate("jupyterHub.application.courseElement",
-				courseElementName, courseName, Long.toString(participantCount));
+				StringHelper.xssScan(courseElementName), StringHelper.xssScan(courseName),
+				Long.toString(participantCount));
 		link.setCustomDisplayText(linkText);
 		String businessPath = "[RepositoryEntry:"+ ltiContext.getEntry().getKey() + "][CourseNode:" + ltiContext.getSubIdent() + "]";
 		link.setUserObject(businessPath);
