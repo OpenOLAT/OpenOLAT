@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -92,8 +93,8 @@ public class ShowZoomApplicationsController extends BasicController {
                             ltiContext.getEntry(), ltiContext.getSubIdent());
                     return null;
                 }
-                String courseElementName = courseNode.getShortName();
-                String courseName = course.getCourseTitle();
+                String courseElementName = StringHelper.xssScan(courseNode.getShortName());
+                String courseName = StringHelper.xssScan(course.getCourseTitle());
                 linkText = getTranslator().translate("zoom.profile.application.courseElement", courseElementName, courseName);
                 link.setCustomDisplayText(linkText);
                 businessPath.append("[RepositoryEntry:").append(ltiContext.getEntry().getKey())
@@ -101,12 +102,14 @@ public class ShowZoomApplicationsController extends BasicController {
                 break;
             case courseTool:
                 course = CourseFactory.loadCourse(ltiContext.getEntry());
-                linkText = getTranslator().translate("zoom.profile.application.courseTool", course.getCourseTitle());
+                linkText = getTranslator().translate("zoom.profile.application.courseTool",
+                        StringHelper.xssScan(course.getCourseTitle()));
                 link.setCustomDisplayText(linkText);
                 businessPath.append("[RepositoryEntry:").append(ltiContext.getEntry().getKey()).append("][zoom:0]");
                 break;
             case groupTool:
-                linkText = getTranslator().translate("zoom.profile.application.groupTool", ltiContext.getBusinessGroup().getName());
+                linkText = getTranslator().translate("zoom.profile.application.groupTool",
+                        StringHelper.xssScan(ltiContext.getBusinessGroup().getName()));
                 link.setCustomDisplayText(linkText);
                 businessPath.append("[BusinessGroup:").append(ltiContext.getBusinessGroup().getKey()).append("][toolzoom:0]");
                 break;
