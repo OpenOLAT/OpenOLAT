@@ -80,7 +80,7 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 		
 		String trashRetentionDaysObj = getStringPropertyValue(TRASH_RETENTION_DAYS, true);
 		if(StringHelper.isLong(trashRetentionDaysObj)) {
-			trashRetentionDays = Integer.valueOf(trashRetentionDays);
+			trashRetentionDays = Integer.valueOf(trashRetentionDaysObj);
 		}
 	}
 	
