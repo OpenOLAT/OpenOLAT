@@ -31,12 +31,15 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
 import org.olat.ims.lti13.LTI13Context;
 import org.olat.modules.zoom.ZoomManager;
 import org.olat.modules.zoom.ZoomProfile;
 import org.olat.modules.zoom.manager.ZoomProfileDAO;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,6 +49,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class ShowZoomApplicationsController extends BasicController {
+
+    private static final Logger log = Tracing.createLoggerFor(ShowZoomApplicationsController.class);
 
     private final VelocityContainer mainVC;
 
@@ -75,12 +80,21 @@ public class ShowZoomApplicationsController extends BasicController {
             return null;
         }
 
+        ICourse course;
+        String linkText;
+
         switch (applicationType) {
             case courseElement:
-                ICourse course = CourseFactory.loadCourse(ltiContext.getEntry());
-                String courseElementName = course.getRunStructure().getNode(ltiContext.getSubIdent()).getShortName();
+                course = CourseFactory.loadCourse(ltiContext.getEntry());
+                CourseNode courseNode = course.getRunStructure().getNode(ltiContext.getSubIdent());
+                if (courseNode == null) {
+                    log.warn("Course node ({}, {}) referenced in LTI context doesn't exist",
+                            ltiContext.getEntry(), ltiContext.getSubIdent());
+                    return null;
+                }
+                String courseElementName = courseNode.getShortName();
                 String courseName = course.getCourseTitle();
-                String linkText = getTranslator().translate("zoom.profile.application.courseElement", courseElementName, courseName);
+                linkText = getTranslator().translate("zoom.profile.application.courseElement", courseElementName, courseName);
                 link.setCustomDisplayText(linkText);
                 businessPath.append("[RepositoryEntry:").append(ltiContext.getEntry().getKey())
                         .append("][CourseNode:").append(ltiContext.getSubIdent()).append("]");
