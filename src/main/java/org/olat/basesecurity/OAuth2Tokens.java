@@ -34,6 +34,8 @@ public interface OAuth2Tokens {
 	
 	public Integer getExpiresIn();
 	
+	public boolean isExpired();
+	
 	public <U> U getUser(Class<U> cl);
 	
 	public void setUser(Object user);

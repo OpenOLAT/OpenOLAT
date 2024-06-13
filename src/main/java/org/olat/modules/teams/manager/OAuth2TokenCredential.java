@@ -56,7 +56,7 @@ public class OAuth2TokenCredential implements TokenCredential {
 
 	@Override
 	public Mono<AccessToken> getToken(TokenRequestContext request) {
-		if(StringHelper.containsNonWhitespace(tokens.getAccessToken())) {
+		if(StringHelper.containsNonWhitespace(tokens.getAccessToken()) && !tokens.isExpired()) {
 			String accessToken = tokens.getAccessToken();
 			return Mono.just(new AccessToken(accessToken, null));
 		}

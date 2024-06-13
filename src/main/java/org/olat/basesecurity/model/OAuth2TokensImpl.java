@@ -19,6 +19,9 @@
  */
 package org.olat.basesecurity.model;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.olat.basesecurity.OAuth2Tokens;
 
 import com.github.scribejava.core.model.OAuth2AccessToken;
@@ -35,6 +38,7 @@ public class OAuth2TokensImpl implements OAuth2Tokens {
 	private String refreshToken;
 	private Integer expiresIn;
 	private Object user;
+	private Date expirationDate;
 	
 	public static OAuth2Tokens valueOf(OAuth2AccessToken oauth2AccessToken) {
 		OAuth2TokensImpl tokens = new OAuth2TokensImpl();
@@ -69,11 +73,25 @@ public class OAuth2TokensImpl implements OAuth2Tokens {
 
 	public void setExpiresIn(Integer expiresIn) {
 		this.expiresIn = expiresIn;
+		if(expiresIn != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.SECOND, expiresIn.intValue());
+			cal.add(Calendar.SECOND, - 30);
+			expirationDate = cal.getTime();
+		} else {
+			expirationDate = null;
+		}
 	}
-	
+
+	@Override
+	public boolean isExpired() {
+		if(expiresIn == null) return false;
+		return expirationDate.compareTo(new Date()) <= 0;
+	}
+
 	public void refresh(OAuth2AccessToken oauth2AccessToken) {
-		this.accessToken = oauth2AccessToken.getAccessToken();
-		this.expiresIn = oauth2AccessToken.getExpiresIn();
+		setAccessToken(oauth2AccessToken.getAccessToken());
+		setExpiresIn(oauth2AccessToken.getExpiresIn());
 	}
 
 	@Override
