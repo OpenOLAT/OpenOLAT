@@ -221,6 +221,7 @@ body.o_dmz {
 			background: none;
 			padding-top: 4px;
 			cursor: not-allowed;
+			width: calc(100% - 20px);
 		}
 		
 		.o_login_button_group {
