@@ -65,7 +65,20 @@
 				border-top-right-radius: 0;
 				border-bottom-right-radius: 0;
 				border-right: none;
-				background-color: $btn-default-bg; 
+				background-color: $btn-default-bg;
+				
+				&:has(.o_realchooser:hover),
+				&:has(.o_realchooser:focus) {
+					outline: 0;
+					color: #333;
+					background-color: #dfdfdf;
+					button {
+						color: #333;
+						background-color: #dfdfdf;
+						border: none;
+						box-shadow: none;
+					}
+				}
 			}
 		
 			.o_filepreview, .o_filemeta {
