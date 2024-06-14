@@ -269,6 +269,7 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	
 	private AssessmentInspection updateStatusAndEndInspection(AssessmentInspection inspection,
 			AssessmentInspectionStatusEnum status, String comment, Action logAction, Identity doer) {
+		inspection = inspectionDao.loadByKey(inspection.getKey());
 		inspection = updateStatusInternal(inspection, status, comment, logAction, doer);
 		
 		Identity assessedIdentity = inspection.getIdentity();
@@ -283,6 +284,11 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	
 	private AssessmentInspection updateStatusInternal(AssessmentInspection inspection,
 			AssessmentInspectionStatusEnum status, String comment, Action logAction, Identity doer) {
+		AssessmentInspectionStatusEnum currentStatus = inspection.getInspectionStatus(); 
+		if(currentStatus == status) {
+			return inspection;// status already changed
+		}
+		
 		String before = AssessmentInspectionXStream.toXml(inspection);
 		inspection.setInspectionStatus(status);
 		if(status == AssessmentInspectionStatusEnum.cancelled) {
@@ -393,6 +399,11 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	@Override
 	public AssessmentInspection endInspection(Identity assessedIdentity, AssessmentInspection inspection, long duration, Identity doer) {
 		inspection = inspectionDao.loadByKey(inspection.getKey());
+		AssessmentInspectionStatusEnum currentStatus = inspection.getInspectionStatus(); 
+		if(currentStatus == AssessmentInspectionStatusEnum.carriedOut) {
+			return inspection;// status already changed
+		}
+		
 		String before = AssessmentInspectionXStream.toXml(inspection);
 		inspection.setInspectionStatus(AssessmentInspectionStatusEnum.carriedOut);
 		if(assessedIdentity.equals(doer)) {
