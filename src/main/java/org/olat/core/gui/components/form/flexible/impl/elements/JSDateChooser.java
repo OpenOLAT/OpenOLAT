@@ -185,6 +185,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 				secondHour = getRequestValue("o_dch_".concat(secondReceiverId));
 				secondMinute = getRequestValue("o_dcm_".concat(secondReceiverId));
 				secondValue = getRootForm().getRequestParameter(secondReceiverId);
+				secondValue = Formatter.formatTwoDigitsYearsAsFourDigitsYears(secondValue);
 			}
 		} catch (NumberFormatException e) {
 			log.error("", e);
