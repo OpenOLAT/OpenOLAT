@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
@@ -41,6 +44,7 @@ import org.olat.core.gui.components.widget.FigureWidget;
 import org.olat.core.gui.components.widget.TextWidget;
 import org.olat.core.gui.components.widget.WidgetFactory;
 import org.olat.core.gui.components.widget.WidgetGroup;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -94,6 +98,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class IdentityAssessmentFiguresController extends BasicController {
 	
 	private static final Size THUMBNAIL_SIZE = new Size(50, 70, false);
+	private static final String CMD_OPEN_CERTIFICATE = "open.cert";
 
 	private Link groupLink;
 	private Link courseLink;
@@ -109,13 +114,16 @@ public class IdentityAssessmentFiguresController extends BasicController {
 	private TextWidget scoreResultsNotVisibleWidget;
 	private ProgressBar scoreProgress;
 	private TextWidget certificateWidget;
-	private TextWidget batchWidget;
+	private TextWidget badgeWidget;
+	
+	private Controller docEditorCtrl;
 	
 	private final boolean links;
 	private final boolean scoreScalingEnabled;
 	private final BusinessGroup businessGroup;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final Formatter formatter;
+	private VFSLeaf certificateLeaf;
 
 	@Autowired
 	private GradeModule gradeModule;
@@ -131,6 +139,8 @@ public class IdentityAssessmentFiguresController extends BasicController {
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
+	@Autowired
+	private DocEditorService docEditorService;
 
 	protected IdentityAssessmentFiguresController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment assessedUserCourseEnv, BusinessGroup businessGroup,
@@ -196,9 +206,9 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		widgetGroup.add(scoreResultsNotVisibleWidget);
 		widgetGroup.add(courseWidget);
 		widgetGroup.add(groupWidget);
-		batchWidget = WidgetFactory.createTextWidget("batch", null, translate("batch.widget.title"), "o_icon_batch");
-		batchWidget.setVisible(false);
-		widgetGroup.add(batchWidget);
+		badgeWidget = WidgetFactory.createTextWidget("badge", null, translate("badge.widget.title"), "o_icon_badge");
+		badgeWidget.setVisible(false);
+		widgetGroup.add(badgeWidget);
 		certificateWidget = WidgetFactory.createTextWidget("certificate", null, translate("certificate.widget.title"), "o_icon_certificate");
 		certificateWidget.setVisible(false);
 		widgetGroup.add(certificateWidget);
@@ -465,49 +475,69 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		
 		certificateWidget.setAdditionalText("<a href=\"#" + certCtrlTitleID + "\">" + translate("goto.certificates") + "</a>");
 		
-		VelocityContainer certThumbCont = createVelocityContainer("certificate_widget_thumb");
-		certThumbCont.setDomReplacementWrapperRequired(false);
-		certificateWidget.setLeftComp(certThumbCont);
-		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
+		certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
 		if (certificateLeaf != null) {
 			VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(certificateLeaf, THUMBNAIL_SIZE.getWidth(), THUMBNAIL_SIZE.getHeight(), true);
 			if (thumbnail != null) {
 				VFSMediaMapper mapper = new VFSMediaMapper(thumbnail);
 				String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(thumbnail.getRelPath() + thumbnail.getLastModified()));
 				String url = registerCacheableMapper(ureq, mapperId, mapper);
-				certThumbCont.contextPut("url", url);
+				String certContainerHtml = "<div class=\"o_text_widget_image\">" 
+						+ "<img src=\"" + url + "\">"
+						+ "</div>";
+				Link certificateLink = LinkFactory.createCustomLink("thumb.link", CMD_OPEN_CERTIFICATE,
+						certContainerHtml, Link.LINK + Link.NONTRANSLATED, mainVC, this);
+				certificateWidget.setLeftComp(certificateLink);
 			}
+		}
+		if (certificateWidget.getLeftComp() == null) {
+			VelocityContainer certThumbCont = createVelocityContainer("certificate_widget_thumb");
+			certThumbCont.setDomReplacementWrapperRequired(false);
+			certificateWidget.setLeftComp(certThumbCont);
 		}
 	}
 
-	public void updateBatch(UserRequest ureq, int numOfBagdeAssertions, BadgeAssertion badgeAssertion, String titleID) {
+	public void updateBadge(UserRequest ureq, int numOfBagdeAssertions, BadgeAssertion badgeAssertion, String titleID) {
 		if (numOfBagdeAssertions <= 0 || badgeAssertion == null) {
-			batchWidget.setVisible(false);
+			badgeWidget.setVisible(false);
 			return;
 		}
 		
-		batchWidget.setVisible(true);
+		badgeWidget.setVisible(true);
 		
 		if (numOfBagdeAssertions == 1) {
-			batchWidget.setValueCssClass(null);
-			batchWidget.setValue(badgeAssertion.getBadgeClass().getNameWithScan());
+			badgeWidget.setValueCssClass(null);
+			badgeWidget.setValue(badgeAssertion.getBadgeClass().getNameWithScan());
 		} else {
-			batchWidget.setValueCssClass("o_widget_text_regular");
-			batchWidget.setValue(translate("batch.of.batches", String.valueOf(1), String.valueOf(numOfBagdeAssertions)));
+			badgeWidget.setValueCssClass("o_widget_text_regular");
+			badgeWidget.setValue(translate("badge.of.badges", String.valueOf(1), String.valueOf(numOfBagdeAssertions)));
 		}
 		
-		batchWidget.setAdditionalText("<a href=\"#" + titleID + "\">" + translate("goto.batches") + "</a>");
+		badgeWidget.setAdditionalText("<a href=\"#" + titleID + "\">" + translate("goto.badges") + "</a>");
 		
-		VelocityContainer batchCont = createVelocityContainer("certificate_widget_thumb");
-		batchCont.setDomReplacementWrapperRequired(false);
-		batchWidget.setLeftComp(batchCont);
+		VelocityContainer badgeCont = createVelocityContainer("certificate_widget_thumb");
+		badgeCont.setDomReplacementWrapperRequired(false);
+		badgeWidget.setLeftComp(badgeCont);
 		VFSLeaf vfsLeaf = openBadgesManager.getBadgeAssertionVfsLeaf(badgeAssertion.getBakedImage());
 		if (vfsLeaf != null) {
 			VFSMediaMapper mapper = new VFSMediaMapper(vfsLeaf);
 			String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsLeaf.getRelPath() + vfsLeaf.getLastModified()));
 			String url = registerCacheableMapper(ureq, mapperId, mapper);
-			batchCont.contextPut("url", url);
+			badgeCont.contextPut("url", url);
 		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (docEditorCtrl == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(docEditorCtrl);
+		docEditorCtrl = null;
 	}
 
 	@Override
@@ -516,9 +546,11 @@ public class IdentityAssessmentFiguresController extends BasicController {
 			doOpenCourse(ureq);
 		} else if(groupLink == source) {
 			doOpenGroup(ureq);
+		} else if (CMD_OPEN_CERTIFICATE.equals(event.getCommand())) {
+			doShowCertificate(ureq);
 		}
 	}
-	
+
 	private void doOpenGroup(UserRequest ureq) {
 		if(businessGroup != null) {
 			List<ContextEntry> ces = new ArrayList<>(1);
@@ -542,5 +574,15 @@ public class IdentityAssessmentFiguresController extends BasicController {
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
 		}
+	}
+	
+	private void doShowCertificate(UserRequest ureq) {
+		if (certificateLeaf == null) {
+			return;
+		}
+
+		DocEditorConfigs configs = DocEditorConfigs.builder().build(certificateLeaf);
+		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW);
+		docEditorCtrl = listenTo(docEditorOpenInfo.getController());
 	}
 }

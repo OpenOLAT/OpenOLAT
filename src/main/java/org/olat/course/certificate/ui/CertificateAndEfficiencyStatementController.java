@@ -256,7 +256,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		badgesCtrl.getInitialComponent().setVisible(badgesCtrl.hasBadgesAssertions()
 				|| (badgeConfig != null && badgeConfig.isAwardEnabled()));
 		if (badgesCtrl.getInitialComponent().isVisible()) {
-			assessmentFiguresCtrl.updateBatch(ureq, badgesCtrl.getNumOfBadgesAssertions(), badgesCtrl.getLastBadgeAssertion(), badgesCtrl.getTitleID());
+			assessmentFiguresCtrl.updateBadge(ureq, badgesCtrl.getNumOfBadgesAssertions(), badgesCtrl.getLastBadgeAssertion(), badgesCtrl.getTitleID());
 		}
 		
 		populateCourseDetails(ureq);
