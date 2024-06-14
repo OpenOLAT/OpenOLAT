@@ -28,7 +28,7 @@ import com.microsoft.graph.models.ThumbnailSet;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MicrosoftDriveItem(DriveItem driveItem, ThumbnailSet thumbnails, boolean directory) {
+public record MicrosoftDriveItem(DriveItem driveItem, ThumbnailSet thumbnails, boolean directory, boolean protectionEnabled, String sensitivityLabel) {
 	
 	public String id() {
 		return driveItem.getId();

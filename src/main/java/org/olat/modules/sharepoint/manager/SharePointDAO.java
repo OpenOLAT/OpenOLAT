@@ -50,7 +50,10 @@ import com.microsoft.graph.models.SiteCollectionResponse;
 import com.microsoft.graph.models.ThumbnailSet;
 import com.microsoft.graph.models.UploadSession;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
-import com.nimbusds.jose.shaded.gson.JsonObject;
+import com.microsoft.kiota.serialization.UntypedBoolean;
+import com.microsoft.kiota.serialization.UntypedNode;
+import com.microsoft.kiota.serialization.UntypedObject;
+import com.microsoft.kiota.serialization.UntypedString;
 
 /**
  * 
@@ -214,13 +217,22 @@ public class SharePointDAO {
 		}
 		
 		List<MicrosoftDriveItem> items = new ArrayList<>(driveItemList.size());
-		for(DriveItem driveItem:driveItemList) {
+		for(DriveItem driveItem:driveItemList) {	
+			boolean protectionEnabled = false;
+			String sensitivityLabel = null;
+			
 			Map<String,Object> datas = driveItem.getAdditionalData();
 			if(datas.containsKey("sensitivityLabel")) {
 				Object element = datas.get("sensitivityLabel");
-				if(element instanceof JsonObject obj && obj.has("protectionEnabled")) {
-					boolean enabled = obj.get("protectionEnabled").getAsBoolean();
-					log.info("driveItem has protection enabled: {}", enabled);
+				if(element instanceof UntypedObject uobject) {
+					Map<String,UntypedNode> untypedMap = uobject.getValue();
+					UntypedNode protection = untypedMap.get("protectionEnabled");
+					UntypedNode protectionDisplayName = untypedMap.get("displayName");
+					protectionEnabled = (protection instanceof UntypedBoolean bool && bool.getValue() != null && bool.getValue().booleanValue());
+					if(protectionDisplayName instanceof UntypedString str) {
+						sensitivityLabel = str.getValue();
+					}
+					log.debug("sensitivityLabel: protection: {} displayName: {}", protectionEnabled, sensitivityLabel);
 				}
 			}
 			
@@ -229,9 +241,9 @@ public class SharePointDAO {
 			if(sets != null && !sets.isEmpty()) {
 				thumbnails = sets.get(0);
 			}
-			
+
 			boolean directory = driveItem.getFolder() != null;
-			items.add(new MicrosoftDriveItem(driveItem, thumbnails, directory));
+			items.add(new MicrosoftDriveItem(driveItem, thumbnails, directory, protectionEnabled, sensitivityLabel));
 		}
 		return items;
 	}
@@ -301,7 +313,12 @@ public class SharePointDAO {
 	}
 	
 	public static boolean accept(MicrosoftDriveItem driveItem, List<String> exclusionsList) {
-		//TODO graph, label needs to be defined
+		if(driveItem.protectionEnabled()) {
+			String sensitivityLabel = driveItem.sensitivityLabel();
+			if(!accept(sensitivityLabel, exclusionsList)) {
+				return false;
+			}
+		}
 		return accept(driveItem.name(), exclusionsList);
 	}
 	
