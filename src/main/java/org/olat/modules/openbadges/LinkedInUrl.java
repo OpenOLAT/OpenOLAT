@@ -34,6 +34,7 @@ public class LinkedInUrl {
 
 	public enum Field {
 		name,
+		organizationId,
 		organizationName,
 		issueYear,
 		issueMonth,

@@ -1227,11 +1227,16 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		linkedInUrlBuilder
 				.add(LinkedInUrl.Field.name, badgeClass.getName())
-				.add(LinkedInUrl.Field.organizationName, badgeClass.getIssuerDisplayString())
 				.add(LinkedInUrl.Field.certId, badgeAssertion.getUuid())
 				.add(LinkedInUrl.Field.certUrl, OpenBadgesFactory.createAssertionPublicUrl(badgeAssertion.getUuid()))
 				.add(LinkedInUrl.Field.issueYear, Integer.toString(cal.get(Calendar.YEAR)))
 				.add(LinkedInUrl.Field.issueMonth, Integer.toString(cal.get(Calendar.MONTH) + 1));
+
+		if (badgeAssertion.getBadgeClass().getBadgeOrganization() != null) {
+			linkedInUrlBuilder.add(LinkedInUrl.Field.organizationId, badgeClass.getBadgeOrganization().getOrganizationKey());
+		} else {
+			linkedInUrlBuilder.add(LinkedInUrl.Field.organizationName, badgeClass.getIssuerDisplayString());
+		}
 
 		Date expiresOn = getBadgeAssertionExpirationDate(badgeAssertion);
 		if (expiresOn != null) {
