@@ -74,3 +74,7 @@ create table o_badge_organization (
    b_organization_value text not null,
    primary key (id)
 );
+
+alter table o_badge_class add fk_badge_organization int8;
+alter table o_badge_class add constraint badge_class_organization_idx foreign key (fk_badge_organization) references o_badge_organization (id);
+create index idx_badge_class_organization_idx on o_badge_class(fk_badge_organization);

@@ -68,3 +68,6 @@ create table o_badge_organization (
    primary key (id)
 );
 alter table o_badge_organization ENGINE = InnoDB;
+
+alter table o_badge_class add fk_badge_organization bigint;
+alter table o_badge_class add constraint badge_class_organization_idx foreign key (fk_badge_organization) references o_badge_organization (id);

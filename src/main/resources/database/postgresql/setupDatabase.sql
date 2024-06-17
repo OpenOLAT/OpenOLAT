@@ -4447,6 +4447,7 @@ create table o_badge_class (
    b_validity_timelapse int8 default 0 not null,
    b_validity_timelapse_unit varchar(32),
    fk_entry int8,
+   fk_badge_organization int8,
    primary key (id)
 );
 create table o_badge_assertion (
@@ -6056,6 +6057,9 @@ create index o_badge_assertion_uuid_idx on o_badge_assertion (b_uuid);
 
 alter table o_badge_class add constraint badge_class_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_badge_class_entry_idx on o_badge_class (fk_entry);
+
+alter table o_badge_class add constraint badge_class_organization_idx foreign key (fk_badge_organization) references o_badge_organization (id);
+create index idx_badge_class_organization_idx on o_badge_class(fk_badge_organization);
 
 alter table o_badge_assertion add constraint badge_assertion_class_idx foreign key (fk_badge_class) references o_badge_class (id);
 create index idx_badge_assertion_class_idx on o_badge_assertion (fk_badge_class);

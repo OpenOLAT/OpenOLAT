@@ -183,6 +183,8 @@ public interface OpenBadgesManager {
 	//
 	List<BadgeOrganization> loadLinkedInOrganizations();
 
+	BadgeOrganization loadLinkedInOrganization(String organizationId);
+
 	void addLinkedInOrganization(String organizationId, String organizationName);
 
 	void updateBadgeOrganization(BadgeOrganization badgeOrganization);

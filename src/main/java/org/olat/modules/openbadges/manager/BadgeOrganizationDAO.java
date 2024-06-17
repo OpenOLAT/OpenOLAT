@@ -52,13 +52,19 @@ public class BadgeOrganizationDAO {
 	}
 
 	public List<BadgeOrganization> loadBadgeOrganizations(BadgeOrganization.BadgeOrganizationType orgType) {
-		String query = new StringBuilder()
-				.append("select org from badgeorganization org")
-				.append("  where org.type=:orgType").toString();
+		String query = "select org from badgeorganization org where org.type=:orgType";
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, BadgeOrganization.class)
 				.setParameter("orgType", orgType).getResultList();
+	}
+
+	public BadgeOrganization loadBadgeOrganization(String organizationKey) {
+		String query = "select org from badgeorganization org where org.organizationKey=:organizationKey";
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, BadgeOrganization.class)
+				.setParameter("organizationKey", organizationKey).getSingleResult();
 	}
 
 	public BadgeOrganization updateBadgeOrganization(BadgeOrganization badgeOrganization) {

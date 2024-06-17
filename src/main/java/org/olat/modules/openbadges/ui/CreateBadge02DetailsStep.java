@@ -22,6 +22,7 @@ package org.olat.modules.openbadges.ui;
 import java.net.URL;
 
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,6 +45,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
 
@@ -85,6 +87,11 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		private IntegerElement validityTimelapseEl;
 		private SingleSelection validityTimelapseUnitEl;
 		private final SelectionValues validityTimelapseUnitKV;
+		private final SelectionValues linkedInOrganizationKV;
+		private SingleSelection linkedInOrganizationEl;
+
+		@Autowired
+		private OpenBadgesManager openBadgesManager;
 
 		private enum Expiration {
 			never, validFor
@@ -112,6 +119,11 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			validityTimelapseUnitKV.add(SelectionValues.entry(TimeUnit.year.name(), translate("form.time.year")));
 
 			issuer = new Profile(new JSONObject(createContext.getBadgeClass().getIssuer()));
+
+			linkedInOrganizationKV = new SelectionValues();
+			openBadgesManager.loadLinkedInOrganizations().forEach((bo) -> {
+				linkedInOrganizationKV.add(SelectionValues.entry(bo.getOrganizationKey(), bo.getOrganizationValue()));
+			});
 
 			initForm(ureq);
 		}
@@ -215,6 +227,15 @@ public class CreateBadge02DetailsStep extends BasicStep {
 				issuer.setEmail(issuerEmailEl.getValue());
 			}
 			badgeClass.setIssuer(issuer.asJsonObject(Constants.TYPE_VALUE_ISSUER).toString());
+
+			if (linkedInOrganizationEl != null) {
+				if (linkedInOrganizationEl.isOneSelected()) {
+					badgeClass.setBadgeOrganization(openBadgesManager.loadLinkedInOrganization(linkedInOrganizationEl.getSelectedKey()));
+				} else {
+					badgeClass.setBadgeOrganization(null);
+				}
+			}
+
 			badgeClass.setValidityEnabled(Expiration.validFor.name().equals(expiration.getSelectedKey()));
 			if (badgeClass.isValidityEnabled()) {
 				badgeClass.setValidityTimelapse(validityTimelapseEl.getIntValue());
@@ -258,6 +279,18 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 			String issuerEmail = issuer.getEmail() != null ? issuer.getEmail() : "";
 			issuerEmailEl = uifactory.addTextElement("class.issuer.email", 128, issuerEmail, formLayout);
+
+			if (!linkedInOrganizationKV.isEmpty()) {
+				linkedInOrganizationEl = uifactory.addDropdownSingleselect("class.linkedin.organization",
+						"linkedin.organization", formLayout, linkedInOrganizationKV.keys(),
+						linkedInOrganizationKV.values(), null);
+				linkedInOrganizationEl.setAllowNoSelection(true);
+				linkedInOrganizationEl.enableNoneSelection();
+
+				if (badgeClass.getBadgeOrganization() != null) {
+					linkedInOrganizationEl.select(badgeClass.getBadgeOrganization().getOrganizationKey(), true);
+				}
+			}
 
 			expiration = uifactory.addRadiosVertical("form.expiration", formLayout, expirationKV.keys(),
 					expirationKV.values());

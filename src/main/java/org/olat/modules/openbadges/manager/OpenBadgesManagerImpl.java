@@ -1389,6 +1389,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public BadgeOrganization loadLinkedInOrganization(String organizationId) {
+		return badgeOrganizationDAO.loadBadgeOrganization(organizationId);
+	}
+
+	@Override
 	public void addLinkedInOrganization(String organizationId, String organizationName) {
 		badgeOrganizationDAO.createBadgeOrganization(BadgeOrganization.BadgeOrganizationType.linkedInOrganization,
 				organizationId, organizationName);

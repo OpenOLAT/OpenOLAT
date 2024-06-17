@@ -30,6 +30,10 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface BadgeClass {
 
+	BadgeOrganization getBadgeOrganization();
+
+	void setBadgeOrganization(BadgeOrganization badgeOrganization);
+
 	enum BadgeClassStatus {
 		preparation, active, deleted, revoked
 	}

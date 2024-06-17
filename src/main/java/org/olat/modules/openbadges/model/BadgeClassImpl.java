@@ -27,6 +27,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeOrganization;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 
@@ -117,6 +118,10 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@ManyToOne(targetEntity = RepositoryEntry.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_entry", nullable = true, insertable = true, updatable = true)
 	private RepositoryEntry entry;
+
+	@ManyToOne(targetEntity = BadgeOrganizationImpl.class, fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "fk_badge_organization", nullable = true, insertable = true, updatable = true)
+	private BadgeOrganization badgeOrganization;
 
 	public BadgeClassImpl() {
 	}
@@ -334,6 +339,16 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Override
 	public void setEntry(RepositoryEntry entry) {
 		this.entry = entry;
+	}
+
+	@Override
+	public BadgeOrganization getBadgeOrganization() {
+		return badgeOrganization;
+	}
+
+	@Override
+	public void setBadgeOrganization(BadgeOrganization badgeOrganization) {
+		this.badgeOrganization = badgeOrganization;
 	}
 
 	@Override
