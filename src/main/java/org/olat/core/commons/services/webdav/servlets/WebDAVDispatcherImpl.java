@@ -39,15 +39,16 @@ import java.util.Stack;
 import java.util.TimeZone;
 import java.util.Vector;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.webdav.WebDAVDispatcher;
@@ -60,6 +61,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.QuotaExceededException;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
@@ -2154,13 +2156,11 @@ public class WebDAVDispatcherImpl
                             ("D", "getetag", resource.getETag());
                     }
                 } else if (property.equals("getlastmodified")) {
-                    if (resource.isDirectory()) {
-                        propertiesNotFound.addElement(property);
-                    } else {
-                        generatedXML.writeProperty
-                            ("D", "getlastmodified", FastHttpDateFormat.formatDate
-                                    (resource.getLastModified(), null));
-                    }
+                	if (resource.getLastModified() == VFSConstants.UNDEFINED) {
+                		generatedXML.writeProperty("D", "getlastmodified", FastHttpDateFormat.formatDate(resource.getCreation(), null));
+                	} else {
+                		generatedXML.writeProperty("D", "getlastmodified", FastHttpDateFormat.formatDate(resource.getLastModified(), null));
+                	}
                 } else if (property.equals("resourcetype")) {
                     if (resource.isDirectory()) {
                         generatedXML.writeElement("D", "resourcetype",
