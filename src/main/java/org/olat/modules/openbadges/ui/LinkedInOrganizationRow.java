@@ -29,24 +29,24 @@ import org.olat.modules.openbadges.BadgeOrganization;
  */
 public class LinkedInOrganizationRow {
 
-	private Object organizationId;
-	private Object organizationName;
+	private String organizationId;
+	private String organizationName;
 	private FormLink toolLink;
 	private BadgeOrganization badgeOrganization;
 
-	public Object getOrganizationId() {
+	public String getOrganizationId() {
 		return organizationId;
 	}
 
-	public void setOrganizationId(Object organizationId) {
+	public void setOrganizationId(String organizationId) {
 		this.organizationId = organizationId;
 	}
 
-	public Object getOrganizationName() {
+	public String getOrganizationName() {
 		return organizationName;
 	}
 
-	public void setOrganizationName(Object organizationName) {
+	public void setOrganizationName(String organizationName) {
 		this.organizationName = organizationName;
 	}
 

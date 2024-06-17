@@ -45,6 +45,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeOrganization;
 import org.olat.modules.openbadges.OpenBadgesManager;
@@ -68,6 +70,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 	private LinkedInOrganizationEditController editController;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
+	private DialogBoxController confirmDeleteController;
 
 	@Autowired
 	private OpenBadgesModule openBadgesModule;
@@ -180,6 +183,11 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 				calloutCtrl.deactivate();
 			}
 			cleanUp();
+		} else if (confirmDeleteController == source) {
+			if (DialogBoxUIFactory.isOkEvent(event) && confirmDeleteController.getUserObject() instanceof LinkedInOrganizationRow row) {
+				doDelete(ureq, row);
+				loadModel();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -240,12 +248,25 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 		listenTo(modalCtrl);
 	}
 
-	private void doDelete(UserRequest ureq, LinkedInOrganizationRow row) {
-		if (guardModalController(editController)) {
-			return;
+	private void doDeleteRequested(UserRequest ureq, LinkedInOrganizationRow row) {
+		boolean inUse = openBadgesManager.isBadgeOrganizationInUse(row.getBadgeOrganization().getKey());
+		if (inUse) {
+			showWarning("linkedin.organization.in.use", row.getOrganizationName());
+		} else {
+			doConfirmDelete(ureq, row);
 		}
+	}
 
-		BadgeOrganization badgeOrganization = row.getBadgeOrganization();
+	private void doConfirmDelete(UserRequest ureq, LinkedInOrganizationRow row) {
+		String name = row.getOrganizationName();
+		String title = translate("confirm.delete.organization.title", name);
+		String text = translate("confirm.delete.organization.text", name);
+		confirmDeleteController = activateOkCancelDialog(ureq, title, text, confirmDeleteController);
+		confirmDeleteController.setUserObject(row);
+	}
+
+	private void doDelete(UserRequest ureq, LinkedInOrganizationRow row) {
+		BadgeOrganization badgeOrganization = openBadgesManager.loadLinkedInOrganization(row.getBadgeOrganization().getKey());
 		openBadgesManager.deleteBadgeOrganization(badgeOrganization);
 	}
 
@@ -299,7 +320,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 			if (editLink == source) {
 				doEdit(ureq, row);
 			} else if (deleteLink == source) {
-				doDelete(ureq, row);
+				doDeleteRequested(ureq, row);
 			}
 		}
 	}
