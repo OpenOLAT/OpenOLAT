@@ -61,7 +61,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.QuotaExceededException;
-import org.olat.core.util.vfs.VFSConstants;
+
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
@@ -2156,7 +2156,7 @@ public class WebDAVDispatcherImpl
                             ("D", "getetag", resource.getETag());
                     }
                 } else if (property.equals("getlastmodified")) {
-                	if (resource.getLastModified() == VFSConstants.UNDEFINED) {
+                	if (resource.getLastModified() < 0) {
                 		generatedXML.writeProperty("D", "getlastmodified", FastHttpDateFormat.formatDate(resource.getCreation(), null));
                 	} else {
                 		generatedXML.writeProperty("D", "getlastmodified", FastHttpDateFormat.formatDate(resource.getLastModified(), null));
