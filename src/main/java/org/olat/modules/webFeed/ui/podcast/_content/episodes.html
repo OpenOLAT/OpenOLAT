@@ -34,6 +34,12 @@
         </div>
     </div>
 
+    #if ($row.getItem().getDescription() && $row.getItem().getDescription() != "")
+        <div class="o_block_large_top">
+            $!helper.getItemDescriptionForBrowser($row.getItem())
+        </div>
+    #end
+
     <div>
         #set($podId = $r.getUniqueId())
         #if ($!row.getItem().getEnclosure())
@@ -57,11 +63,7 @@
                 </script>
             </div>
         #end
-        #if ($row.getItem().getDescription() && $row.getItem().getDescription() != "")
-            <div class="o_block_large_top">
-                $!helper.getItemDescriptionForBrowser($row.getItem())
-            </div>
-        #end
+
 
         <div class="o_feed_footer_card_view">
             $r.escapeHtml($r.render($row.getFeedEntryLinkFurther().getComponent().getComponentName()))
