@@ -101,8 +101,12 @@ public class FlexiTableOneClickSelectionFilter extends FlexiTableFilter implemen
 		String val;
 		if(obj == null) {
 			val = null;
-		} else if(obj instanceof List list && !list.isEmpty()) {
-			val = list.get(0).toString();
+		} else if(obj instanceof List list) {
+			if(list.isEmpty()) {
+				val = null;
+			} else {
+				val = list.get(0).toString();
+			}
 		} else {
 			val = obj.toString();
 		}
