@@ -45,6 +45,8 @@ public class EvaluationFormRuntimeController extends RepositoryEntryRuntimeContr
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if (source == getRuntimeController()) {
 			if (event == EmptyState.EVENT) {
 				doEdit(ureq);
@@ -55,6 +57,8 @@ public class EvaluationFormRuntimeController extends RepositoryEntryRuntimeContr
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		 if(source == toolbarPanel) {
 			if(event instanceof PopEvent pe) {
 				processPopEvent(ureq, pe);

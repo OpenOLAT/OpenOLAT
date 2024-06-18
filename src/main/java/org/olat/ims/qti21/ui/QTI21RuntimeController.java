@@ -186,6 +186,8 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(event instanceof ReloadSettingsEvent) {
 			reloadRuntime = true;
 		} else if(source instanceof AssessmentTestComposerController) {
@@ -213,6 +215,8 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(testStatisticLink == source) {
 			doAssessmentTestStatistics(ureq);
 		} else if(assessmentLink == source) {

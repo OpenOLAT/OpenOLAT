@@ -44,9 +44,11 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(source instanceof FeedMainController) {
-			if(event instanceof ReloadSettingsEvent) {
-				processReloadSettingsEvent((ReloadSettingsEvent)event);
+			if(event instanceof ReloadSettingsEvent reloadSettingsEvent) {
+				processReloadSettingsEvent(reloadSettingsEvent);
 			}
 		}
 		super.event(ureq, source, event);

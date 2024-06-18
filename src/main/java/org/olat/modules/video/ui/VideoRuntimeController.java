@@ -103,6 +103,8 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if (changeVideoLink == source) {
 			doReplaceVideo(ureq);
 		} else if (editVideoLink == source) {
@@ -125,6 +127,8 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(source instanceof VideoResourceEditController) {
 			if(event == Event.CHANGED_EVENT) {
 				VideoDisplayController videoDisplayCtr = (VideoDisplayController)getRuntimeController();
