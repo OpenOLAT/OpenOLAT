@@ -62,6 +62,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
@@ -72,9 +73,9 @@ import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -190,6 +191,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	private final EventBus eventBus;
 	private HistoryPoint launchedFromPoint;
+	private final OLATResourceable eventOres;
 	
 	@Autowired
 	protected ACService acService;
@@ -203,6 +205,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected RepositoryService repositoryService;
 	@Autowired
 	protected RepositoryManager repositoryManager;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private RepositoryHandlerFactory handlerFactory;
 	@Autowired
@@ -242,6 +246,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		assessmentLock = isAssessmentLock(ureq, re, this.reSecurity);
 		
 		this.re = re;
+		eventOres = OresHelper.clone(re);
 		this.showDetails = showDetails;
 		this.allowBookmark = allowBookmark;
 		this.runtimeControllerCreator = runtimeControllerCreator;
@@ -284,6 +289,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
+		coordinatorManager.getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), eventOres);
 	}
 	
 	protected boolean isCorrupted(RepositoryEntry entry) {
@@ -691,6 +698,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			runtimeController.dispose();
 		}
 		eventBus.deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
+		coordinatorManager.getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), eventOres);
         super.doDispose();
 	}
 

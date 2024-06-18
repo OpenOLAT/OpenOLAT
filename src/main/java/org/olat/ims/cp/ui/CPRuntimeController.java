@@ -66,6 +66,8 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(source == toolbarPanel) {
 			if(event instanceof PopEvent popEvent) {
 				if(currentToolCtr == editorCtrl && editorCtrl == popEvent.getController()) {
@@ -82,6 +84,8 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(notificationsCtrl == source) {
 			cmc.deactivate();
 			cleanUp();

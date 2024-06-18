@@ -70,6 +70,8 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(source == toolbarPanel) {
 			if(event instanceof PopEvent popEvent) {
 				if(currentToolCtr instanceof ScormSettingsController && currentToolCtr == popEvent.getController()) {
@@ -86,6 +88,8 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(source == getRuntimeController()) {
 			if(event == Event.BACK_EVENT) {
 				super.doClose(ureq);
@@ -115,8 +119,10 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 	@Override
 	protected void doClose(UserRequest ureq) {
 		Controller runCtrl = getRuntimeController();
-		if(runCtrl instanceof ScormAPIandDisplayController displayController) {
+		if(permanentlyDeleted) {
+			super.doClose(ureq);
+		} else if(runCtrl instanceof ScormAPIandDisplayController displayController) {
 			displayController.doBack(ureq);
-		}
+		} 
 	}
 }

@@ -69,6 +69,8 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		// reload feed for this event and make sure the updated feed object is in the view
 		feedResource = feedManager.loadFeed(feedResource);
 

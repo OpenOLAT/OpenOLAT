@@ -128,6 +128,8 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (guardDeleted(ureq)) return;
+		
 		if(assessmentLink == source) {
 			doAssessmentTool(ureq);
 		} else if(source == toolbarPanel) {
