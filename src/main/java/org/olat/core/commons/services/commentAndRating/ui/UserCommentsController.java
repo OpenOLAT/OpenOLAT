@@ -174,13 +174,12 @@ public class UserCommentsController extends BasicController {
 				// Notify parent about change
 				fireEvent(ureq, UserCommentDisplayController.COMMENT_COUNT_CHANGED);
 			}
-		} else if (source instanceof UserCommentDisplayController) {
-			UserCommentDisplayController commentCtr = (UserCommentDisplayController) source;
+		} else if (source instanceof UserCommentDisplayController commentCtrl) {
 			if (event == UserCommentDisplayController.DELETED_EVENT) {
 				// Remove comment from view
-				commentControllers.remove(commentCtr);
-				userCommentsVC.remove(commentCtr.getInitialComponent());
-				removeAsListenerAndDispose(commentCtr);
+				commentControllers.remove(commentCtrl);
+				userCommentsVC.remove(commentCtrl.getInitialComponent());
+				removeAsListenerAndDispose(commentCtrl);
 				doCountChanged(ureq);
 			} else if (event == UserCommentDisplayController.COMMENT_COUNT_CHANGED) {
 				doCountChanged(ureq);

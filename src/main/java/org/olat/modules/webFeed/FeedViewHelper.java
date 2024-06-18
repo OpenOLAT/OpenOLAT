@@ -46,6 +46,8 @@ import org.olat.course.nodes.feed.blog.BlogToolController;
 import org.olat.modules.webFeed.dispatching.Path;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.model.ItemPublishDateComparator;
+import org.olat.modules.webFeed.ui.FeedItemRow;
+import org.olat.modules.webFeed.ui.FeedItemStatusRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResourceManager;
@@ -219,51 +221,49 @@ public class FeedViewHelper {
 	}
 
 	/**
-	 * Information about the item mode. 
+	 * Information about the item mode.
 	 * 
 	 * @param item
-	 * @return Is it draft, scheduled or published?
+	 * @return String containing information about date and author
 	 */
 	public String getInfo(Item item) {
-		String info = null;
-		
-		if (item == null) {
-			info = "";
-		} else if (item.isDraft()) {
-			info = translator.translate("feed.item.draft");
-		} else if (item.isScheduled()) {
-			info = translator.translate("feed.item.scheduled.for", getPublishDate(item));
-		} else if (item.isPublished()) {
-			info = getPublishInfo(item);
-		}
-		
-		return info;
-	}
-
-	/**
-	 * Get information about publication date and author.
-	 * 
-	 * @param item
-	 * @return
-	 */
-	private String getPublishInfo(Item item) {
-		String publishInfo = "";
+		String info = "";
 		
 		if (item != null) {
 			String date = getPublishDate(item);
 			String author = StringHelper.escapeHtml(item.getAuthor());
 			if (author != null) {
 				if (date != null) {
-					publishInfo = translator.translate("feed.published.by.on", author, date);
+					info = translator.translate("feed.info.by.on", author, date);
 				} else {
-					publishInfo = translator.translate("feed.published.by", author);
+					info = translator.translate("feed.info.by", author);
 				}
 			} else if (date != null) {
-				publishInfo = translator.translate("feed.published.on", date);
+				info = translator.translate("feed.info.on", date);
 			}
 		}
+		
+		return info;
+	}
 
-		return publishInfo;
+	/**
+	 * render Status of given itemRow
+	 *
+	 * @param feedItemRow
+	 * @return String for rendering item status
+	 */
+	public String renderItemStatus(FeedItemRow feedItemRow) {
+		return new FeedItemStatusRenderer(locale).renderItemStatus(feedItemRow);
+	}
+
+	/**
+	 * render Status of given itemRow
+	 *
+	 * @param feedItemRow
+	 * @return String for rendering item status
+	 */
+	public String renderItemStatus(Item feedItem) {
+		return new FeedItemStatusRenderer(locale).renderItemStatus(feedItem);
 	}
 
 	/**
@@ -563,16 +563,18 @@ public class FeedViewHelper {
 	 * @return sorted list of Item objects
 	 */
 	public List<Item> getItemsOnPage(List<Item> items) {
-		List<Item> itemsOnPage = new ArrayList<>(itemsPerPage);
-		
-		final int start = page * itemsPerPage;
-		final int end = Math.min(items.size(), start + itemsPerPage);
-		for (int i = start; i < end; i++) {
-			itemsOnPage.add(items.get(i));
-		}
-		itemsOnPage.sort(new ItemPublishDateComparator());
-		
-		return itemsOnPage;
+		if (items != null) {
+			List<Item> itemsOnPage = new ArrayList<>(itemsPerPage);
+
+			final int start = page * itemsPerPage;
+			final int end = Math.min(items.size(), start + itemsPerPage);
+			for (int i = start; i < end; i++) {
+				itemsOnPage.add(items.get(i));
+			}
+			itemsOnPage.sort(new ItemPublishDateComparator());
+
+			return itemsOnPage;
+		} else return Collections.emptyList();
 	}
 
 	/**

@@ -17,54 +17,54 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.webFeed.ui.podcast;
+package org.olat.modules.webFeed.ui.blog;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.fileresource.types.PodcastFileResource;
+import org.olat.fileresource.types.BlogFileResource;
 import org.olat.modules.webFeed.Item;
-import org.olat.modules.webFeed.ui.ItemFormController;
+import org.olat.modules.webFeed.ui.FeedItemFormController;
 
 /**
- * Provides a form for editing episode data (title, description, file ...)
+ * Form controller for blog posts.
  * 
- * Initial Date: Mar 2, 2009 <br>
+ * <P>
+ * Initial Date: Aug 3, 2009 <br>
  * 
  * @author gwassmann
  */
-public class EpisodeFormController extends ItemFormController {
+public class BlogItemFormController extends FeedItemFormController {
 	
-	public EpisodeFormController(UserRequest ureq, WindowControl control, Item item, Translator translator) {
+	public BlogItemFormController(UserRequest ureq, WindowControl control, Item item, Translator translator) {
 		super(ureq, control, item, translator);
 	}
 	
 	@Override
 	protected String getType() {
-		return PodcastFileResource.TYPE_NAME;
+		return BlogFileResource.TYPE_NAME;
 	}
 	
 	@Override 
 	protected boolean hasContent() {
-		return false;
+		return true;
 	}
 	
 	@Override
 	protected boolean hasDraftMode() {
-		return false;
+		return true;
 	}
 	
 	@Override
 	protected boolean hasMandatoryMedia() {
-		return true;
+		return false;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/learningresources/Course_Element_Podcast/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Blog/");
 		super.initForm(formLayout, listener, ureq);
 	}
-
 }

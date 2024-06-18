@@ -60,20 +60,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * This Controller is responsible for editing a single feed item.
  *
  * Initial date: 16.06.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public abstract class ItemFormController extends FormBasicController {
+public abstract class FeedItemFormController extends FormBasicController {
 
 	private static final String ALLOWED_MIME_TYPES = ".*[.](flv|mp3|mp4|m4v|m4a|aac)";
 
-	private Item item;
+	private final Item item;
 
 	private TextElement title;
 	private RichTextElement description;
 	private RichTextElement content;
 	private FileElement file;
-	private VFSContainer baseDir;
+	private final VFSContainer baseDir;
 	private TextElement widthEl;
 	private TextElement heightEl;
 	private DateChooser publishDateChooser;
@@ -83,7 +83,7 @@ public abstract class ItemFormController extends FormBasicController {
 	@Autowired
 	private MovieService movieService;
 
-	public ItemFormController(UserRequest ureq, WindowControl control, Item item, Translator translator) {
+	public FeedItemFormController(UserRequest ureq, WindowControl control, Item item, Translator translator) {
 		super(ureq, control);
 		this.item = item;
 		this.baseDir = FeedManager.getInstance().getItemContainer(item);

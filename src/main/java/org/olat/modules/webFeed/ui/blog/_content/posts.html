@@ -1,112 +1,69 @@
-<div class="o_blog_posts clearfix">
-#if ($callback.mayCreateItems() && $feed.isInternal() && !$items.isEmpty())
-	<div class="pull-right">
-		$r.render("feed.add.item")
-	</div>
-#end
-<div class="clearfix"></div>
-#if ($items.isEmpty())
-	$r.render("emptyStateCmp")
-	#if ($callback.mayEditMetadata())
-		$r.contextHelpWithWrapper("manual_user/learningresources/Blog/")
-	#end
-#else
-	#foreach( $post in $helper.getItemsOnPage($items) )
-		<div class="o_post o_block_with_datecomp clearfix $!post.extraCSSClass()">
-			<div class="o_head">
-				#if (( $helper.isAuthor($post) && !$post.isDraft()) && $feed.isInternal() && $r.available("feed.artefact.item.$post.getGuid()"))
-					<div class="pull-right">
-						$r.render("feed.artefact.item.$post.getGuid()")
-					</div>
-				#end
-				<h3 class="o_title">
-				#if ( $post.getContent() && $post.getContent() != "" )
-					$r.render("titlelink.to.$post.getGuid()")
-				#else
-					$r.escapeHtml($post.getTitle())
-				#end
-				#if($r.available("date.$post.getGuid()"))
-					<small>
-						$r.render("date.$post.getGuid()")
-					</small>
-				#end
-				</h3>
-				<div class="o_meta">
-				#set ( $info = $helper.getInfo($post) )
-				#if ( $info )
-					$info
-					#if($helper.isModified($post))
-						<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($post))</div>
-					#end
-				#end
-				</div>
-			</div>
-
-			<div class="o_content o_user_content_block">
-				 $!helper.getItemDescriptionForBrowser($post)
-			</div>
-
-			<div class="o_block_footer">
-				<div class="clearfix">
-					<ul class="o_readmore list-inline pull-right">
-						#if ( ($post.getContent() && $post.getContent() != "")
-							|| ($post.getEnclosure() && $post.getEnclosure() != "" ) )
-							<li>$r.render("link.to.$post.getGuid()")</li>
-						#end
-						#if ($feed.isExternal() && $post.getExternalLink())
-							<li><a href="$!post.getExternalLink()" target="_blank">
-								$r.translate("feed.item.original")
-								<i class="o_icon o_icon_start"></i>
-							</a></li>
-						#end
-					</ul>
-
-					#if ($r.available("commentsAndRating.${post.getGuid()}"))
-						$r.render("commentsAndRating.${post.getGuid()}")
-					#end
-				</div>
-			</div>
-
-			#if($feed.isInternal())
-			<div class="o_button_group">
-				#if ($r.available("feed.edit.item.$post.getGuid()") && $r.visible("feed.edit.item.$post.getGuid()"))
-					$r.render("feed.edit.item.$post.getGuid()")
-				#end
-				#if ($r.available("delete.$post.getGuid()") && $r.visible("delete.$post.getGuid()"))
-					$r.render("delete.$post.getGuid()")
-				#end
-			</div>
+<div class="o_post o_block_with_datecomp clearfix o_draft">
+	<div class="o_block_with_datecomp clearfix $!row.getItem().extraCSSClass()">
+		<div class="o_head">
+			#if($r.available("dateComp.$row.getItem().getGuid()"))
+				$r.render("dateComp.$row.getItem().getGuid()")
 			#end
-		</div>
-	#end
 
-	<div class="o_button_group">
-		<ul class="pagination">
-			<li>
-				#if ( $helper.hasOlderItems($items) )
-					$r.getComponent("feed.older.items").setEnabled(true)
-				#else
-					$r.getComponent("feed.older.items").setEnabled(false)
+			#if(($r.available("o-tools-$row.getItem().getGuid()") && $r.visible("o-tools-$row.getItem().getGuid()")))
+				<div class="pull-right">
+					$r.render("o-tools-$row.getItem().getGuid()")
+				</div>
+			#end
+
+			<h3 class="o_title">
+				$r.escapeHtml($r.render($row.getFeedEntryLink().getComponent().getComponentName()))
+			</h3>
+
+			<div class="o_meta">
+				#set ( $info = $helper.getInfo($row.getItem()) )
+				#if ( $info )
+					$helper.renderItemStatus($row)
+					$helper.getInfo($row.getItem())
+					#if($helper.isModified($row.getItem()))
+						<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($row.getItem()))</div>
+					#end
 				#end
-				$r.render("feed.older.items")
-			</li>
-			<li>
-				#if ( $helper.hasNewerItems() )
-					$r.getComponent("feed.startpage").setEnabled(true)
-				#else
-					$r.getComponent("feed.startpage").setEnabled(false)
-				#end
-				$r.render("feed.startpage")
-			</li>
-			<li>
-				#if ( $helper.hasNewerItems() )
-					$r.getComponent("feed.newer.items").setEnabled(true)
-				#else
-					$r.getComponent("feed.newer.items").setEnabled(false)
-				#end
-				$r.render("feed.newer.items")
-			</li>
-		</ul>
+				<div class="o_feed_com_rat_card_view">
+					$r.render($row.getRatingFormItem().getComponent().getComponentName())
+					$r.render($row.getCommentLink().getComponent().getComponentName())
+				</div>
+			</div>
+		</div>
 	</div>
-#end
+
+	<div>
+		#set($podId = $r.getUniqueId())
+		#if ($!row.getItem().getEnclosure())
+			<div class="o_block_large_top o_enclosure">
+				<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($item.getEnclosure())"></div>
+				<script>
+					/* <![CDATA[ */
+					#if ($!helper.getMediaType($item.getEnclosure()) == "video")
+					BPlayer.insertPlayer("$!helper.getMediaUrl($row.getItem())","o_podcast_${podId}_episode",$!helper.getWidth($row.getItem()),$!helper.getHeight($row.getItem()),false,null,"video",undefined,false,false,true);
+					#else
+					BPlayer.insertPlayer("$!helper.getMediaUrl($row.getItem())","o_podcast_${podId}_episode",400,30,false,null,"sound",undefined,false,false,true);
+					#end
+					/* ]]> */
+				</script>
+			</div>
+		#end
+		#if ($row.getItem().getDescription() && $row.getItem().getDescription() != "")
+			<div class="o_block_large_top">
+				$!helper.getItemDescriptionForBrowser($row.getItem())
+			</div>
+		#end
+
+		<div class="o_feed_footer_card_view">
+			$r.escapeHtml($r.render($row.getFeedEntryLinkFurther().getComponent().getComponentName()))
+			<div class="pull-right">
+				#if ($feed.isExternal() && $row.getItem().getExternalLink())
+					<a href="$!row.getItem().getExternalLink()" target="_blank">
+						$r.translate("feed.item.original")
+						<i class="o_icon o_icon_start"></i>
+					</a>
+				#end
+			</div>
+		</div>
+	</div>
 </div>

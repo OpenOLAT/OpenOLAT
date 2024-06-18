@@ -41,7 +41,7 @@ public class MediaCollectorComponentRenderer extends DefaultComponentRenderer {
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		MediaCollectorComponent cmp = (MediaCollectorComponent)source;
-		sb.append("<a class='o_portfolio_collector' ");
+		sb.append("<a class='btn btn-default o_button_ghost o_portfolio_collector' ");
 		if(!cmp.isDomReplacementWrapperRequired() && !cmp.isDomLayoutWrapper()) {
 			sb.append(" id='o_c").append(cmp.getDispatchID()).append("'");
 		}

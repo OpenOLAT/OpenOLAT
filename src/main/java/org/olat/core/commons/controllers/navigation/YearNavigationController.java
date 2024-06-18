@@ -84,6 +84,7 @@ public class YearNavigationController extends BasicController {
 			yearLink.setCustomEnabledLinkCSS("o_year");
 			yearLink.setCustomDisplayText(year.getName());
 			yearLink.setUserObject(year);
+			yearLink.setGhost(true);
 			mainVC.contextPut("year", year);
 			// Reestablish month links
 			monthLinks = new ArrayList<>();
@@ -100,7 +101,9 @@ public class YearNavigationController extends BasicController {
 				monthLinks.add(monthLink);
 			}
 			// enable/disable the navigation links
+			next.setGhost(true);
 			next.setEnabled(model.hasNext());
+			previous.setGhost(true);
 			previous.setEnabled(model.hasPrevious());
 			mainVC.setDirty(true);
 		}

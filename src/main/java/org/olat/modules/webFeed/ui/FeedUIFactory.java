@@ -42,9 +42,6 @@ import org.olat.modules.webFeed.Item;
  */
 public abstract class FeedUIFactory {
 
-	public static final String VC_ITEMS_NAME = "items";
-	public static final String VC_ITEM_NAME = "item";
-	public static final String VC_RIGHT_NAME = "right_column";
 	public static final String VC_INFO_NAME = "info";
 
 	public abstract Translator getTranslator();
@@ -53,20 +50,14 @@ public abstract class FeedUIFactory {
 
 	public abstract VelocityContainer createInfoVelocityContainer(BasicController controller);
 
-	public abstract VelocityContainer createItemsVelocityContainer(BasicController controller);
+	public abstract String getItemPagePath();
 
-	public abstract VelocityContainer createItemVelocityContainer(BasicController controller);
-
-	public abstract VelocityContainer createRightColumnVelocityContainer(BasicController controller);
+	public abstract String getCustomItemsPagePath();
 
 	/* used for course node */
 	public final FeedMainController createMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, FeedSecurityCallback callback,
 			Long courseId, String nodeId) {
 		return new FeedMainController(ores, ureq, wControl, courseId, nodeId, this, callback, null);
-	}
-
-	public final FeedMainController createMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, FeedSecurityCallback callback) {
-		return new FeedMainController(ores, ureq, wControl, null, null, this, callback, null);
 	}
 
 	// with specific FeedItemDisplayConfig
@@ -76,8 +67,7 @@ public abstract class FeedUIFactory {
 
 	public abstract FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item currentItem);
 
-	public ExternalUrlController createExternalUrlController(UserRequest ureq, WindowControl windowControl, Feed feedResource) {
-		return new ExternalUrlController(ureq, windowControl, feedResource);
+	public ExternalFeedUrlController createExternalUrlController(UserRequest ureq, WindowControl windowControl, Feed feedResource) {
+		return new ExternalFeedUrlController(ureq, windowControl, feedResource);
 	}
-
 }

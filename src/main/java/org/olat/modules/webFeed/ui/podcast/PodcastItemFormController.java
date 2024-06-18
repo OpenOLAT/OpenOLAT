@@ -17,54 +17,54 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.webFeed.ui.blog;
+package org.olat.modules.webFeed.ui.podcast;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.fileresource.types.BlogFileResource;
+import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.Item;
-import org.olat.modules.webFeed.ui.ItemFormController;
+import org.olat.modules.webFeed.ui.FeedItemFormController;
 
 /**
- * Form controller for blog posts.
+ * Provides a form for editing episode data (title, description, file ...)
  * 
- * <P>
- * Initial Date: Aug 3, 2009 <br>
+ * Initial Date: Mar 2, 2009 <br>
  * 
  * @author gwassmann
  */
-public class BlogPostFormController extends ItemFormController {
+public class PodcastItemFormController extends FeedItemFormController {
 	
-	public BlogPostFormController(UserRequest ureq, WindowControl control, Item item, Translator translator) {
+	public PodcastItemFormController(UserRequest ureq, WindowControl control, Item item, Translator translator) {
 		super(ureq, control, item, translator);
 	}
 	
 	@Override
 	protected String getType() {
-		return BlogFileResource.TYPE_NAME;
+		return PodcastFileResource.TYPE_NAME;
 	}
 	
 	@Override 
 	protected boolean hasContent() {
-		return true;
+		return false;
 	}
 	
 	@Override
 	protected boolean hasDraftMode() {
-		return true;
+		return false;
 	}
 	
 	@Override
 	protected boolean hasMandatoryMedia() {
-		return false;
+		return true;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/learningresources/Course_Element_Blog/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Podcast/");
 		super.initForm(formLayout, listener, ureq);
 	}
+
 }

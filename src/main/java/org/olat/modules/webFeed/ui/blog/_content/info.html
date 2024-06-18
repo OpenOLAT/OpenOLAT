@@ -1,5 +1,16 @@
 <div class="o_blog_info">
-	<h2><i class="o_icon o_icon-fw o_icon o_FileResource-BLOG_icon"> </i> $r.escapeHtml($!feed.getTitle())</h2>
+	#if ($r.available("subscription"))
+		<div class="pull-right">
+			$r.render("subscription")
+			#if($r.available("toggle"))
+				<b>$r.translate("toggle.timeline.tags")</b> $r.render("toggle")
+			#end
+		</div>
+	#end
+	<h2>
+		<i class="o_icon o_icon-fw o_icon o_FileResource-BLOG_icon"> </i>
+		$r.escapeHtml($!feed.getTitle())
+	</h2>
 	#if ($helper.getImageUrl($feed) && $helper.getImageUrl($feed) != "" && $!r.available($feed.getExternalImageURL()))
 		<img class="o_media" src="$helper.getImageUrl($feed)?thumbnail=180x121${suppressCache}" aria-hidden="true" />
 	#elseif($helper.getImageUrl($feed))
@@ -14,13 +25,12 @@
 			<div class="o_desc o_hint clearfix">$!helper.getFeedDescriptionForBrowser($feed)</div>
 		#end
 
-		<div class="o_subscription">
-			<a href="$!helper.getFeedUrl()" class="o_nowrap" target="_blank"><i class="o_icon o_icon-fw o_icon_rss"> </i> $r.translate("blog.subscribe.to.this.feed")</a>
-		</div>
-		
-		#if ($r.available("subscription"))
-			<div class="pull-right">
-				$r.render("subscription")
+		#if ($helper.getFeedUrl())
+			<div class="btn-group btn-group-xs">
+				<a href="$!helper.getFeedUrl()" class="btn btn-default o_button_ghost" target="_blank" title="$r.translateInAttribute("blog.subscribe.to.this.feed")">
+					<i class="o_icon o_icon-fw o_icon_rss"></i>
+					$r.translate("blog.subscribe.rss")
+				</a>
 			</div>
 		#end
 	</div>

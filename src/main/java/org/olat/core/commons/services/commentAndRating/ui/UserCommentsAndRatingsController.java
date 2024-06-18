@@ -320,8 +320,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 
 	@Override
 	public void event(Event event) {
-		if (event instanceof UserCommentsCountChangedEvent) {
-			UserCommentsCountChangedEvent changedEvent = (UserCommentsCountChangedEvent) event;
+		if (event instanceof UserCommentsCountChangedEvent changedEvent) {
 			if (!changedEvent.isSentByMyself(this) && !canExpandToFullView) {
 				// Update counter in GUI, but only when in minimized mode (otherwise might confuse user)
 				if ( (oresSubPath == null && changedEvent.getOresSubPath() == null)
@@ -329,8 +328,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 					updateCommentCountView();					
 				}
 			}
-		} else if (event instanceof UserRatingChangedEvent) {
-			UserRatingChangedEvent changedEvent = (UserRatingChangedEvent) event;
+		} else if (event instanceof UserRatingChangedEvent changedEvent) {
 			// Update rating in GUI
 			if (!changedEvent.isSentByMyself(this)) {
 				if ( (oresSubPath == null && changedEvent.getOresSubPath() == null)

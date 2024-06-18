@@ -50,7 +50,7 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 	private Feed feedResource;
 
 	private final FeedMainController feedMainCtrl;
-	private ExternalUrlController externalUrlCtrl;
+	private ExternalFeedUrlController externalUrlCtrl;
 	private CloseableModalController cmc;
 
 	@Autowired
@@ -82,19 +82,22 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 			String externalUrl = externalUrlCtrl.getExternalFeedUrlEl();
 			feedManager.updateExternalFeedUrl(feedResource, externalUrl);
 			cmc.deactivate();
+			cleanUpCtrl();
 		}
-		removeAsListenerAndDispose(cmc);
-		cmc = null;
-		removeAsListenerAndDispose(externalUrlCtrl);
-		externalUrlCtrl = null;
 
 		// reload everything
 		if (feedMainCtrl != null && feedResource != null) {
 			feedMainCtrl.setInfos(feedResource, ureq, getWindowControl());
-			feedMainCtrl.getItemsCtrl().resetItems(ureq, feedResource);
 		}
 
 		super.event(ureq, source, event);
+	}
+
+	private void cleanUpCtrl() {
+		removeAsListenerAndDispose(cmc);
+		cmc = null;
+		removeAsListenerAndDispose(externalUrlCtrl);
+		externalUrlCtrl = null;
 	}
 
 	@Override

@@ -107,7 +107,7 @@ public class UserCommentDisplayController extends BasicController {
 		// Creator information
 		TextComponent creator = TextFactory.createTextComponentFromI18nKey("creator", null, null, null, true, userCommentDisplayVC);
 		String name = userManager.getUserDisplayName(userComment.getCreator());
-		creator.setText(translate("comments.comment.creator", new String[]{name}));
+		creator.setText(translate("comments.comment.creator", name));
 		// Portrait
 		if (CoreSpringFactory.containsBean(UserAvatarDisplayControllerCreator.class.getName())) {
 			UserAvatarDisplayControllerCreator avatarControllerCreator = (UserAvatarDisplayControllerCreator) CoreSpringFactory.getBean(UserAvatarDisplayControllerCreator.class);

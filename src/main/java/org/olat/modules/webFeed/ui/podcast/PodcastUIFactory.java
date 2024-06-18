@@ -74,23 +74,18 @@ public class PodcastUIFactory extends FeedUIFactory {
 	}
 
 	@Override
-	public VelocityContainer createItemsVelocityContainer(BasicController controller) {
-		return new VelocityContainer(VC_ITEMS_NAME, this.getClass(), "episodes", translator, controller);
+	public String getItemPagePath() {
+		return Util.getPackageVelocityRoot(this.getClass()) + "/episode.html";
 	}
 
 	@Override
-	public VelocityContainer createItemVelocityContainer(BasicController controller) {
-		return new VelocityContainer(VC_ITEM_NAME, this.getClass(), "episode", translator, controller);
-	}
-
-	@Override
-	public VelocityContainer createRightColumnVelocityContainer(BasicController controller) {
-		return new VelocityContainer(VC_RIGHT_NAME, this.getClass(), VC_RIGHT_NAME, translator, controller);
+	public String getCustomItemsPagePath() {
+		return Util.getPackageVelocityRoot(this.getClass()) + "/episodes.html";
 	}
 
 	@Override
 	public FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item item) {
-		return new EpisodeFormController(ureq, wControl, item, getTranslator());
+		return new PodcastItemFormController(ureq, wControl, item, getTranslator());
 	}
 
 }

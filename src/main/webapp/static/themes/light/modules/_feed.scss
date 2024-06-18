@@ -1,0 +1,41 @@
+/* Feed (Blog/Podcast) */
+
+/* Status style, mainly for in-table renderings */
+.o_status_table {
+	&.o_feed_status_draft {
+		border-color: 		$o-feed-draft-color;
+		color: 				$o-feed-draft-color;
+	}
+	&.o_feed_status_planned {
+		border-color: 		$o-feed-planned-color;
+		color: 				$o-feed-planned-color;
+	}
+	&.o_feed_status_published {
+		border-color: 		$o-feed-published-color;
+		color: 				$o-feed-published-color;
+	}
+}
+
+.o_feed_com_rat_card_view {
+	display: flex;
+	gap: 5px;
+	padding: 10px 0 0 0;
+}
+
+.o_feed_top_spacer {
+	margin-bottom: 34px;
+}
+
+.o_feed_buttons {
+	>a {
+		>span {
+			@media (max-width: $screen-xs-max) {
+				display: none;
+			}
+		}
+	}
+}
+
+.o_feed_footer_card_view {
+	padding: 10px 0 0 0;
+}

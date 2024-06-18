@@ -1,138 +1,78 @@
 <div class="o_podcast_episodes">
-#if ($callback.mayCreateItems() && $feed.isInternal() && !$items.isEmpty())
-	<div class="pull-right">
-		$r.render("feed.add.item")
-	</div>
-#end
-<div class="clearfix"></div>
-#if ($items.isEmpty())
-	$r.render("emptyStateCmp")
-	#if ($callback.mayEditMetadata())
-		$r.contextHelpWithWrapper("manual_user/learningresources/Blog/")
-	#end
-#else
-	<!-- loop over episodes -->
-	#foreach( $episode in $helper.getItemsOnPage($items) )
-		<div class="o_episode o_block_with_datecomp clearfix $!episode.extraCSSClass()">
-			<div class="o_head">
-				#if (( $helper.isAuthor($episode) && !$episode.isDraft()) && $feed.isInternal() && $r.available("feed.artefact.item.$episode.getGuid()"))
-					<div class="pull-right">
-						$r.render("feed.artefact.item.$episode.getGuid()")
-					</div>
-				#end
-				<h3 class="o_title">
-				#if ( $episode.getContent() && $episode.getContent() != "" )
-					$r.render("titlelink.to.$episode.getGuid()")
-				#else
-					$r.escapeHtml($episode.getTitle())
-				#end
-				<i class="o_icon o_icon_$helper.getMediaType($episode.getEnclosure())"></i>
+    <div class="o_episode o_block_with_datecomp clearfix $!row.getItem().extraCSSClass()">
+        <div class="o_head">
+            #if($r.available("dateComp.$row.getItem().getGuid()"))
+                $r.render("dateComp.$row.getItem().getGuid()")
+            #end
 
-				#if($r.available("date.$episode.getGuid()"))
-					<small>
-						$r.render("date.$episode.getGuid()")
-					</small>
-				#end
-				</h3>
-				<div class="o_meta">
-				#set ( $info = $helper.getInfo($episode) )
-				#if ( $info )
-					$info
-					#if($helper.isModified($episode))
-						<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($episode))</div>
-					#end
-				#end
-				</div>
-			</div>
+            #if(($r.available("o-tools-$row.getItem().getGuid()") && $r.visible("o-tools-$row.getItem().getGuid()")))
+                <div class="pull-right">
+                    $r.render("o-tools-$row.getItem().getGuid()")
+                </div>
+            #end
 
-			<div class="o_content o_user_content_block">
-				$!helper.getItemDescriptionForBrowser($episode)
+            <h3 class="o_title">
+                $r.escapeHtml($r.render($row.getFeedEntryLink().getComponent().getComponentName()))
+            </h3>
 
-				#set($podId = $r.getUniqueId())
-				#if ($!episode.getEnclosure())
-				<div class="o_block_large_top o_enclosure">
-					<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($episode.getEnclosure())"></div>
+            <i class="o_icon o_icon_$helper.getMediaType($episode.getEnclosure())"></i>
 
-					<div class="o_block_top">
-						<a href="$!helper.getMediaUrl($episode)" target="_blank">
-							<i class="o_icon o_icon-fw o_filetype_$!helper.getMediaType($episode.getEnclosure())"></i>
-							$r.translate("podcast.episode.download")
-						</a>
-					</div>
+            <div class="o_meta">
+                #set ( $info = $helper.getInfo($row.getItem()) )
+                #if ( $info )
+                    $helper.renderItemStatus($row)
+                    $helper.getInfo($row.getItem())
+                    #if($helper.isModified($row.getItem()))
+                        <div class="text-warning">$r.escapeHtml($helper.getModifierInfo($row.getItem()))</div>
+                    #end
+                #end
+                <div class="o_feed_com_rat_card_view">
+                    $r.render($row.getRatingFormItem().getComponent().getComponentName())
+                    $r.render($row.getCommentLink().getComponent().getComponentName())
+                </div>
+            </div>
+        </div>
+    </div>
 
-					<script>
-					"use strict";
-					#if ($!helper.getMediaType($episode.getEnclosure()) == "video")
-						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_${podId}_episode",$!helper.getWidth($episode),$!helper.getHeight($episode),false,null,"video",undefined,false,false,true);
-					#else
-						BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_${podId}_episode",400,30,false,null,"sound",undefined,false,false,true);
-					#end
-					</script>
-				</div>
-				#end
+    <div>
+        #set($podId = $r.getUniqueId())
+        #if ($!row.getItem().getEnclosure())
+            <div class="o_block_large_top o_enclosure">
+                <div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($episode.getEnclosure())"></div>
 
-			</div>
+                <div class="o_block_top">
+                    <a href="$!helper.getMediaUrl($row.getItem())" target="_blank">
+                        <i class="o_icon o_icon-fw o_filetype_$!helper.getMediaType($row.getItem().getEnclosure())"></i>
+                        $r.translate("podcast.episode.download")
+                    </a>
+                </div>
 
-			<div class="o_block_footer">
-				<div class="clearfix">
-					<ul class="o_readmore list-inline pull-right">
-						#if ( $episode.getContent() && $episode.getContent() != "" )
-							<li>$r.render("link.to.$episode.getGuid()")</li>
-						#end
-						#if ($feed.isExternal() && $episode.getExternalLink())
-							<li><a href="$!episode.getExternalLink()" target="_blank">
-								$r.translate("feed.item.original")
-								<i class="o_icon o_icon_start"></i>
-							</a></li>
-						#end
-					</ul>
+                <script>
+                "use strict";
+                #if ($!helper.getMediaType($row.getItem().getEnclosure()) == "video")
+                    BPlayer.insertPlayer("$!helper.getMediaUrl($row.getItem())","o_podcast_${podId}_episode",$!helper.getWidth($row.getItem()),$!helper.getHeight($row.getItem()),false,null,"video",undefined,false,false,true);
+                #else
+                    BPlayer.insertPlayer("$!helper.getMediaUrl($row.getItem())","o_podcast_${podId}_episode",400,30,false,null,"sound",undefined,false,false,true);
+                #end
+                </script>
+            </div>
+        #end
+        #if ($row.getItem().getDescription() && $row.getItem().getDescription() != "")
+            <div class="o_block_large_top">
+                $!helper.getItemDescriptionForBrowser($row.getItem())
+            </div>
+        #end
 
-					#if ($r.available("commentsAndRating.${episode.getGuid()}"))
-						$r.render("commentsAndRating.${episode.getGuid()}")
-					#end
-				</div>
-			</div>
-
-			#if($feed.isInternal())
-			<div class="o_button_group">
-				#if ($r.available("feed.edit.item.$episode.getGuid()") && $r.visible("feed.edit.item.$episode.getGuid()"))
-					$r.render("feed.edit.item.$episode.getGuid()")
-				#end
-				#if ($r.available("delete.$episode.getGuid()") && $r.visible("delete.$episode.getGuid()"))
-					$r.render("delete.$episode.getGuid()")
-				#end
-			</div>
-			#end
-		</div>
-	#end
-
-	<div class="o_button_group">
-		<ul class="pagination">
-			<li>
-				#if ( $helper.hasOlderItems($items) )
-					$r.getComponent("feed.older.items").setEnabled(true)
-				#else
-					$r.getComponent("feed.older.items").setEnabled(false)
-				#end
-				$r.render("feed.older.items")
-			</li>
-			<li>
-				#if ( $helper.hasNewerItems() )
-					$r.getComponent("feed.startpage").setEnabled(true)
-				#else
-					$r.getComponent("feed.startpage").setEnabled(false)
-				#end
-				$r.render("feed.startpage")
-			</li>
-			<li>
-				#if ( $helper.hasNewerItems() )
-					$r.getComponent("feed.newer.items").setEnabled(true)
-				#else
-					$r.getComponent("feed.newer.items").setEnabled(false)
-				#end
-				$r.render("feed.newer.items")
-			</li>
-		</ul>
-	</div>
-#end
+        <div class="o_feed_footer_card_view">
+            $r.escapeHtml($r.render($row.getFeedEntryLinkFurther().getComponent().getComponentName()))
+            <div class="pull-right">
+                #if ($feed.isExternal() && $row.getItem().getExternalLink())
+                    <a href="$!row.getItem().getExternalLink()" target="_blank">
+                        $r.translate("feed.item.original")
+                        <i class="o_icon o_icon_start"></i>
+                    </a>
+                #end
+            </div>
+        </div>
+    </div>
 </div>

@@ -26,12 +26,12 @@ package org.olat.modules.webFeed.ui;
  * <P>
  * Initial Date: 20.04.2011 <br>
  * 
- * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
+ * @author Roman Haag, roman.haag@frentix.com, https://www.frentix.com
  */
 public class FeedItemDisplayConfig {
-	private boolean showCRInMinimized;
-	private boolean showCRInDetails;
-	private boolean showDateNavigation;
+	private final boolean showCRInMinimized;
+	private final boolean showCRInDetails;
+	private final boolean showDateNavigation;
 
 	/**
 	 * 

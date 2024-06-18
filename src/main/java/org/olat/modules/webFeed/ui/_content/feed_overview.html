@@ -1,0 +1,10 @@
+#if($r.available("feed.add.item"))
+	<div class="btn-group pull-right">
+		$r.render("feed.add.item")
+	</div>
+#else
+	<!-- if there is no button, we still need the 34px margin to the bottom, thus: -->
+	<div class="o_feed_top_spacer"></div>
+#end
+
+$r.render("table")

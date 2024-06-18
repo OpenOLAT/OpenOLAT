@@ -42,14 +42,14 @@ import org.olat.modules.webFeed.manager.ValidatedURL;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class ExternalUrlController extends FormBasicController {
+public class ExternalFeedUrlController extends FormBasicController {
 
 	private final Feed feed;
 
 	private TextElement externalFeedUrlEl;
 	private FormLink cancelButton;
 
-	public ExternalUrlController(UserRequest ureq, WindowControl windowControl, Feed feedResource) {
+	public ExternalFeedUrlController(UserRequest ureq, WindowControl windowControl, Feed feedResource) {
 		super(ureq, windowControl);
 		this.feed = feedResource;
 		initForm(ureq);

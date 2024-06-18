@@ -30,7 +30,6 @@ import org.olat.core.gui.components.date.DateComponentFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -52,37 +51,51 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author gwassmann
  */
-public class ItemController extends BasicController implements Activateable2 {
+public class FeedItemController extends BasicController implements Activateable2 {
+
 	public static final String ACTIVATION_KEY_COMMENTS = "comments";
-	private Link backLink;
-	private UserCommentsAndRatingsController commentsCtr;
+	private final Link backLink;
+	private Link artefactLink;
+	private Link editLink;
+	private Link deleteLink;
+	private final Item item;
+	private UserCommentsAndRatingsController commentsCtrl;
 
 	/**
 	 * @param ureq
 	 * @param wControl
 	 * @param displayConfig 
 	 */
-	public ItemController(UserRequest ureq, WindowControl wControl, Item item, Feed feed, FeedViewHelper helper, FeedUIFactory uiFactory,
-			FeedSecurityCallback callback, Link editButton, Link deleteButton, Controller artefactLink, FeedItemDisplayConfig displayConfig) {
+	public FeedItemController(UserRequest ureq, WindowControl wControl, Item item, Feed feed, FeedViewHelper helper, FeedUIFactory feedUIFactory,
+							  FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig, VelocityContainer vcItem) {
 		super(ureq, wControl);
-		setTranslator(uiFactory.getTranslator());
-		VelocityContainer vcItem = uiFactory.createItemVelocityContainer(this);
+		// using because each feed type has its own translations
+		setTranslator(feedUIFactory.getTranslator());
+		this.item = item;
 		vcItem.contextPut("item", item);
 		vcItem.contextPut("feed", feed);
 		vcItem.contextPut("helper", helper);
 		vcItem.contextPut("callback", callback);
+
 		if (feed.isInternal()) {
-			if (editButton != null) {
-				vcItem.put("editButton", editButton);
+			if (getIdentity().getKey() != null
+					&& getIdentity().getKey().equals(item.getAuthorKey())) {
+				artefactLink = LinkFactory.createLink("artefactButton", "artefactButton", "artefact", "feed.item.artefact", getTranslator(), vcItem, this, Link.BUTTON);
+				artefactLink.setTitle("feed.item.artefact");
+				artefactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eportfolio_add");
+				artefactLink.setGhost(true);
 			}
-			if (deleteButton != null) {
-				vcItem.put("deleteButton", deleteButton);
-			}
-			if (artefactLink != null) {
-				vcItem.put("artefactLink", artefactLink.getInitialComponent());
-			}
+			editLink = LinkFactory.createLink("editButton", "editButton", "edit", "feed.item.edit", getTranslator(), vcItem, this, Link.BUTTON);
+			editLink.setTitle("feed.item.edit");
+			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			editLink.setGhost(true);
+			deleteLink = LinkFactory.createLink("deleteButton", "deleteButton", "delete","delete", getTranslator(), vcItem, this, Link.BUTTON);
+			deleteLink.setTitle("delete");
+			deleteLink.setGhost(true);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
 		}
-		backLink = LinkFactory.createLinkBack(vcItem, this);
+
+		backLink = LinkFactory.createLink("back.link", "backLink", getTranslator(), vcItem, this, Link.LINK_BACK);
 		// Add date component
 		if(item.getDate() != null) {
 			DateComponentFactory.createDateComponentWithYear("dateComp", item.getDate(), vcItem);
@@ -91,34 +104,45 @@ public class ItemController extends BasicController implements Activateable2 {
 		if (displayConfig.isShowCRInDetails()) {
 			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
 			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), callback.mayEditMetadata(), anonym);
-			commentsCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, null, true, true, true);
-			listenTo(commentsCtr);
-			vcItem.put("commentsAndRating", commentsCtr.getInitialComponent());				
+			commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, null, false, secCallback.canRate(), true);
+			listenTo(commentsCtrl);
+			vcItem.put("commentsAndRating", commentsCtrl.getInitialComponent());
+		}
+
+		if (displayConfig.isShowCRInDetails()) {
+			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
+			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), callback.mayEditMetadata(), anonym);
+			commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, null, secCallback.canViewComments(), false, true);
+			listenTo(commentsCtrl);
+			vcItem.put("comments", commentsCtrl.getInitialComponent());
 		}
 		//
 		putInitialPanel(vcItem);
 		// do logging
 		ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_READ, getClass(), LoggingResourceable.wrap(item));
-		 	
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink) {
 			fireEvent(ureq, Event.BACK_EVENT);
+		} else if (source == artefactLink) {
+			fireEvent(ureq, new FeedItemEvent(FeedItemEvent.ARTEFACT_FEED_ITEM, item));
+		} else if (source == editLink) {
+			fireEvent(ureq, new FeedItemEvent(FeedItemEvent.EDIT_FEED_ITEM, item));
+		} else if (source == deleteLink) {
+			fireEvent(ureq, new FeedItemEvent(FeedItemEvent.DELETE_FEED_ITEM, item));
 		}
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries != null && entries.isEmpty()) return;
-		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if (ACTIVATION_KEY_COMMENTS.equals(type)) {
-			// show comments
-			if (commentsCtr != null) {
-				commentsCtr.expandComments(ureq);
+		if (entries != null && !entries.isEmpty()) {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if (ACTIVATION_KEY_COMMENTS.equals(type) && commentsCtrl != null) {
+				// show comments
+				commentsCtrl.expandComments(ureq);
 			}
-		}		
+		}
 	}
 }

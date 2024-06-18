@@ -49,6 +49,7 @@ public class BlogUIFactory extends FeedUIFactory {
 	}
 
 	private BlogUIFactory(Locale locale) {
+		super();
 		setTranslator(locale);
 	}
 
@@ -73,23 +74,18 @@ public class BlogUIFactory extends FeedUIFactory {
 	}
 
 	@Override
-	public VelocityContainer createItemsVelocityContainer(BasicController controller) {
-		return new VelocityContainer(VC_ITEMS_NAME, this.getClass(), "posts", translator, controller);
+	public String getItemPagePath() {
+		return Util.getPackageVelocityRoot(this.getClass()) + "/post.html";
 	}
 
 	@Override
-	public VelocityContainer createItemVelocityContainer(BasicController controller) {
-		return new VelocityContainer(VC_ITEM_NAME, this.getClass(), "post", translator, controller);
-	}
-
-	@Override
-	public VelocityContainer createRightColumnVelocityContainer(BasicController controller) {
-		return new VelocityContainer(VC_RIGHT_NAME, this.getClass(), VC_RIGHT_NAME, translator, controller);
+	public String getCustomItemsPagePath() {
+		return Util.getPackageVelocityRoot(this.getClass()) + "/posts.html";
 	}
 
 	@Override
 	public FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item item) {
-		return new BlogPostFormController(ureq, wControl, item, getTranslator());
+		return new BlogItemFormController(ureq, wControl, item, getTranslator());
 	}
 
 }

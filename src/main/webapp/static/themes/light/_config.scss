@@ -505,6 +505,12 @@ $o-ac-offer-inactive-color			: #8A6D40 !default;
 $o-ac-method-border					: 1px solid #e7e7e7 !default;
 $o-ac-method-border-radius			: $panel-border-radius !default;
 
+/* Feed (Blog/Podcast) */
+$o-feed-draft-color					: $o-repo-review-color;			/* yellow */
+$o-feed-planned-color				: $o-repo-preparation-color;	/* blue */
+$o-feed-published-color				: $o-repo-published-color;		/* green */
+$o-feed-status-color-bright			: #fff;
+
 /* Curriculum in course site */
 $o-coursesite-curriculum-rowelem-height-md :	40px !default;
 

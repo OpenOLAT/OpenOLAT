@@ -11,6 +11,10 @@
   // No need to set list-style: none; since .list-group-item is block level
   padding-left: 0; // reset padding because ul and ol
   margin-bottom: 20px;
+
+  &.o_month {
+    border-top: 1px solid #e7e7e7;
+  }
 }
 
 
@@ -34,6 +38,11 @@
   &:last-child {
     margin-bottom: 0;
     @include border-bottom-radius($list-group-border-radius);
+  }
+
+  &.o_month {
+    background-color: transparent;
+    border: 1px solid transparent;
   }
 
   // Disabled state

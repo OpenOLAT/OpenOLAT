@@ -98,8 +98,7 @@ import org.olat.core.logging.activity.ResourceableTypeList;
 	static {
 		Field[] fields = FeedLoggingAction.class.getDeclaredFields();
 		if (fields != null) {
-			for (int i = 0; i < fields.length; i++) {
-				Field field = fields[i];
+			for (Field field : fields) {
 				if (field.getType() == FeedLoggingAction.class) {
 					try {
 						FeedLoggingAction aLoggingAction = (FeedLoggingAction) field.get(null);

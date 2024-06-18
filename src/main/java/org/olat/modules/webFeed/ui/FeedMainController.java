@@ -21,6 +21,7 @@ package org.olat.modules.webFeed.ui;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -71,7 +72,7 @@ public class FeedMainController extends BasicController implements Activateable2
 	private Feed feed;
 	private VelocityContainer vcMain;
 	private VelocityContainer vcInfo;
-	private ItemsController itemsCtrl;
+	private FeedItemListController feedItemListCtrl;
 	private FeedViewHelper helper;
 	private final FeedUIFactory feedUIFactory;
 	private final FeedSecurityCallback callback;
@@ -114,7 +115,7 @@ public class FeedMainController extends BasicController implements Activateable2
 		this.feedUIFactory = uiFactory;
 		this.callback = callback;
 		this.ores = ores;
-		this.displayConfig = displayConfig;
+		this.displayConfig = Objects.requireNonNullElseGet(displayConfig, () -> new FeedItemDisplayConfig(true, true, true));
 		
 		subsContext = callback.getSubscriptionContext();
 				
@@ -188,9 +189,6 @@ public class FeedMainController extends BasicController implements Activateable2
 			vcInfo.put("subscription", cSubscriptionCtrl.getInitialComponent());
 		}
 
-		VelocityContainer vcRightCol = feedUIFactory.createRightColumnVelocityContainer(this);
-		vcMain.put("rightColumn", vcRightCol);
-
 		if (callback.mayEditMetadata()) {
 			Link editFeedButton = LinkFactory.createButtonSmall("feed.edit", vcInfo, this);
 			editFeedButton.setElementCssClass("o_sel_feed_edit");
@@ -204,9 +202,10 @@ public class FeedMainController extends BasicController implements Activateable2
 
 		vcMain.put("info", vcInfo);
 
-		itemsCtrl = new ItemsController(ureq, wControl, feed, helper, feedUIFactory, callback, vcRightCol, displayConfig);
-		listenTo(itemsCtrl);
-		vcMain.put("items", itemsCtrl.getInitialComponent());
+		feedItemListCtrl = new FeedItemListController(ureq, wControl, feed, callback, feedUIFactory, vcMain, vcInfo, displayConfig, helper);
+		listenTo(feedItemListCtrl);
+
+		vcMain.put("items", feedItemListCtrl.getInitialComponent());
 	}
 
 
@@ -229,7 +228,7 @@ public class FeedMainController extends BasicController implements Activateable2
 		Item item = null;
 		String itemId = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(itemId != null && itemId.startsWith("item=")) {
-			itemId = itemId.substring(5, itemId.length());
+			itemId = itemId.substring(5);
 			try {
 				Long itemKey = Long.parseLong(itemId);
 				item = FeedManager.getInstance().loadItem(itemKey);
@@ -238,7 +237,7 @@ public class FeedMainController extends BasicController implements Activateable2
 			}
 		}
 		if (item != null) {
-			itemsCtrl.activate(ureq, item);
+			feedItemListCtrl.displayFeedItem(ureq, item);
 		}
 	}
 
@@ -256,10 +255,6 @@ public class FeedMainController extends BasicController implements Activateable2
 			vcInfo.contextPut("feed", feed);
 			vcInfo.setDirty(true);
 		}
-	}
-
-	protected ItemsController getItemsCtrl() {
-		return itemsCtrl;
 	}
 
 	protected FeedUIFactory getFeedUIFactory() {

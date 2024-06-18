@@ -1,4 +1,12 @@
 <div class="o_podcast_info">
+	#if ($r.available("subscription"))
+		<div class="pull-right">
+			$r.render("subscription")
+			#if($r.available("toggle"))
+				<b>$r.translate("toggle.timeline.tags")</b> $r.render("toggle")
+			#end
+		</div>
+	#end
 	<h2>	
 		<i class="o_icon o_icon-fw o_icon o_FileResource-PODCAST_icon"></i> 
 		$r.escapeHtml($!feed.getTitle())
@@ -18,29 +26,20 @@
 		#end
 		
 		#if ($helper.getFeedUrl())
-			<div class="o_subscription">
-				$r.render("feedUrlComponent")
-			</div>
 			<div class="btn-group btn-group-xs">
-				<a href="$!helper.getFeedUrl()" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
+				<a href="$!helper.getFeedUrl()" class="btn btn-default o_button_ghost" target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
 					<i class="o_icon o_icon-fw o_icon_rss"></i> 
 					$r.translate("podcast.subscribe.rss")
 				</a>
-				<a href="$!helper.getPodcastAppUrl()" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
+				<a href="$!helper.getPodcastAppUrl()" class="btn btn-default o_button_ghost" target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
 					<i class="o_icon o_icon-fw o_icon_apple"></i> 		
 					$r.translate("podcast.subscribe.itunes")
 				</a>
-				<a href="$!helper.getPodcastAppUrl()" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
+				<a href="$!helper.getPodcastAppUrl()" class="btn btn-default o_button_ghost" target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
 					<i class="o_icon o_icon-fw o_icon_mobile"></i> 		
 					$r.translate("podcast.subscribe.feed")
 				</a>
 			</div>	
 		#end
-		
-		#if ($r.available("subscription"))
-			<div class="pull-right">
-				$r.render("subscription")
-			</div>
-		#end	
 	</div>
 </div>

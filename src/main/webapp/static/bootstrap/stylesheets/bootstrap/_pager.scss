@@ -15,8 +15,6 @@
     > span {
       display: inline-block;
       padding: 5px 14px;
-      background-color: $pager-bg;
-      border: 1px solid $pager-border;
       border-radius: $pager-border-radius;
     }
 
@@ -48,7 +46,6 @@
     > span {
       color: $pager-disabled-color;
       cursor: $cursor-disabled;
-      background-color: $pager-bg;
     }
   }
 }
