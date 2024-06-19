@@ -21,9 +21,13 @@ package org.olat.modules.openbadges.criteria;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.modules.openbadges.OpenBadgesManager;
 
 /**
  * Initial date: 2023-06-21<br>
@@ -72,7 +76,42 @@ public class BadgeCriteria {
 		this.conditions = conditions;
 	}
 
-	public boolean allCourseConditionsMet(boolean passed, double score) {
+	/**
+	 * When copying, cloning or importing a course, we copy course badge classes, and
+	 * the UUID of the copied badge classes changes in the process.
+	 *
+	 * This method detects occurrences of old UUIDs and replaces them with the
+	 * corresponding new UUID.
+
+	 * @param badgeClassUuidMap Maps old UUIDs to new UUIDs.
+	 *
+	 *  @return true if one of the conditions of this BadgeCriteria object has changed during this call.
+	 */
+	public boolean remapBadgeClassUuids(Map<String, String> badgeClassUuidMap) {
+		boolean atLeastOneUuidRemapped = false;
+		for (BadgeCondition condition : conditions) {
+			if (condition instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
+				String uuid = otherBadgeEarnedCondition.getBadgeClassUuid();
+				if (badgeClassUuidMap.containsKey(uuid)) {
+					otherBadgeEarnedCondition.setBadgeClassUuid(badgeClassUuidMap.get(uuid));
+					atLeastOneUuidRemapped = true;
+				}
+			}
+		}
+		return atLeastOneUuidRemapped;
+	}
+
+	public boolean allCourseConditionsMet(boolean passed, double score, Identity identity) {
+		if (!allCourseConditionsMet(passed, score)) {
+			return false;
+		}
+		if (!allOtherBadgeConditionsMet(identity)) {
+			return false;
+		}
+		return true;
+	}
+
+	private boolean allCourseConditionsMet(boolean passed, double score) {
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CoursePassedCondition) {
 				if (!passed) {
@@ -80,6 +119,21 @@ public class BadgeCriteria {
 				}
 			} else if (badgeCondition instanceof CourseScoreCondition courseScoreCondition) {
 				if (!courseScoreCondition.satisfiesCondition(score)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	public boolean allOtherBadgeConditionsMet(Identity recipient) {
+		OpenBadgesManager openBadgesManager = null;
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeCondition) {
+				if (openBadgesManager == null) {
+					openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+				}
+				if (!openBadgesManager.hasBadgeAssertion(recipient, otherBadgeCondition.getBadgeClassUuid())) {
 					return false;
 				}
 			}

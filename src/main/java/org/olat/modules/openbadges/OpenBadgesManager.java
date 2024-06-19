@@ -95,6 +95,8 @@ public interface OpenBadgesManager {
 
 	List<BadgeClass> getBadgeClasses(RepositoryEntry entry);
 
+	List<BadgeClass> getBadgeClassesInCoOwnedCourseSet(RepositoryEntry entry);
+
 	List<BadgeClassWithSizeAndCount> getBadgeClassesWithSizesAndCounts(RepositoryEntry entry);
 
 	List<BadgeClassDAO.BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry);
@@ -136,6 +138,8 @@ public interface OpenBadgesManager {
 	boolean isBadgeAssertionExpired(BadgeAssertion badgeAssertion);
 
 	BadgeAssertion getBadgeAssertion(String uuid);
+
+	boolean hasBadgeAssertion(Identity recipient, String badgeClassUuid);
 
 	VFSLeaf getBadgeAssertionVfsLeaf(String relPath);
 

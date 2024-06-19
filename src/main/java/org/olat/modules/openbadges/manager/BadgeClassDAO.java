@@ -22,6 +22,7 @@ package org.olat.modules.openbadges.manager;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -76,6 +77,43 @@ public class BadgeClassDAO {
 			typedQuery = typedQuery.setParameter("excludedStatus", BadgeClass.BadgeClassStatus.deleted);
 		}
 		return typedQuery.getResultList();
+	}
+
+	/**
+	 * Returns a list of badge classes that belong to courses owned by the owners of the course
+	 * identified by 'courseEntry'.
+	 *
+	 * Only returns badge classes that can be issued (no deleted or revoked badge classes).
+	 *
+	 * Also returns the badge classes of the course identified by 'courseEntry'.
+	 *
+ 	 * @param courseEntry The course to start the search with.
+	 * @return All badge classes that can be issued and that are associated with a course via co-ownership.
+	 */
+	public List<BadgeClass> getBadgeClassesInCoOwnedCourseSet(RepositoryEntry courseEntry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb
+				.append("select coBc from badgeclass coBc")
+				.append(" inner join coBc.entry as coRe")
+				.append(" inner join coRe.groups as coGroupRel")
+				.append(" inner join coGroupRel.group as coGroup")
+				.append(" inner join coGroup.members as coMembership")
+				.append(" where coMembership.role ").in(GroupRoles.owner)
+				.append(" and coBc.status ").in(BadgeClass.BadgeClassStatus.active, BadgeClass.BadgeClassStatus.preparation)
+				.append(" and coMembership.identity.key in (")
+				.append("  select membership.identity.key from repositoryentry re")
+				.append("   inner join re.groups as groupRel")
+				.append("   inner join groupRel.group as group")
+				.append("   inner join group.members as membership")
+				.append("   where membership.role ").in(GroupRoles.owner)
+				.append("   and re.key =: courseEntryKey")
+				.append(" )");
+
+		return dbInstance
+				.getCurrentEntityManager()
+				.createQuery(sb.toString(), BadgeClass.class)
+				.setParameter("courseEntryKey", courseEntry.getKey())
+				.getResultList();
 	}
 
 	public Long getNumberOfBadgeClasses(RepositoryEntryRef entry) {

@@ -71,6 +71,30 @@ public class BadgeAssertionDAO {
 		return badgeAssertions == null || badgeAssertions.isEmpty() ? null : badgeAssertions.get(0);
 	}
 
+	/**
+	 * Is there a badge assertion (a received badge) for the person with key 'recipientKey'
+	 * of the badge with UUID 'badgeClassUuid'?
+	 *
+	 * @param recipientKey Person to perform the check for.
+	 * @param badgeClassUuid Badge class to perform the check for.
+	 * @return true if the person has received the badge.
+	 */
+	public boolean hasBadgeAssertion(Long recipientKey, String badgeClassUuid) {
+		QueryBuilder sb = new QueryBuilder();
+		sb
+				.append("select ba.key from badgeassertion ba")
+				.append(" inner join ba.badgeClass as bc")
+				.append(" where ba.recipient.key = :recipientKey and bc.uuid = :badgeClassUuid");
+
+		List<Long> badgeAssertionKeys = dbInstance
+				.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("recipientKey", recipientKey)
+				.setParameter("badgeClassUuid", badgeClassUuid).getResultList();
+
+		return badgeAssertionKeys != null && !badgeAssertionKeys.isEmpty();
+	}
+
 	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry, boolean nullEntryMeansAll) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ba from badgeassertion ba ");

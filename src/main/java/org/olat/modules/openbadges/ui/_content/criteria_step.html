@@ -23,30 +23,42 @@
 		#end
 		<div class="row">
 			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+				<!-- condition dropdown -->
 				#if($r.visible($condition.getConditionDropdown().getName()))
 					$r.render($condition.getConditionDropdown().getName(), "horizontal", "form")
 				#end
 			</div>
 			<div class="col-xs-offset-1 col-xs-10 col-sm-offset-0 col-sm-5 col-md-4 col-lg-2">
 				<div class="row">
+					<!-- badge dropdown -->
+					#if($r.visible($condition.getBadgesDropdown().getName()))
+					<div class="col-xs-12">
+						$r.render($condition.getBadgesDropdown().getName(), "horizontal", "form")
+					</div>
+					#else
 					<div class="col-xs-5">
+						<!-- comparison symbol -->
 						#if($r.visible($condition.getSymbolDropdown().getName()))
 						$r.render($condition.getSymbolDropdown().getName(), "horizontal", "form")
 						#end
 					</div>
 					<div class="col-xs-5">
+						<!-- value -->
 						#if($r.visible($condition.getValueEl().getComponent().getComponentName()))
 						$r.render($condition.getValueEl().getComponent().getComponentName(), "horizontal", "form")
 						#end
 					</div>
 					<div class="col-xs-2">
+						<!-- unit -->
 						#if($r.visible($condition.getUnitEl().getComponent().getComponentName()))
 						$r.render($condition.getUnitEl().getComponent().getComponentName(), "horizontal", "form")
 						#end
 					</div>
+					#end
 				</div>
 			</div>
 			<div class="col-xs-1">
+				<!-- delete button -->
 				$r.render($condition.getDeleteLink().getComponent().getComponentName())
 			</div>
 		</div>
