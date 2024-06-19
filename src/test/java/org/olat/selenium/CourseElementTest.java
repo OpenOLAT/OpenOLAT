@@ -598,7 +598,7 @@ public class CourseElementTest extends Deployments {
 		OOGraphene.waitElement(podcastElementBy, browser);
 
 		FeedPage.getFeedPage(browser)
-			.assertOnPodcastEpisodeTitle();
+			.assertOnPodcastEpisodeInClassicTable();
 	}
 	
 	
@@ -653,6 +653,7 @@ public class CourseElementTest extends Deployments {
 		
 		OOGraphene.waitElement(By.cssSelector("div.o_blog_info>h2>i.o_FileResource-BLOG_icon"), browser);
 	}
+
 
 	/**
 	 * An author create a course with a blog, open it, add a post. A student
@@ -733,21 +734,24 @@ public class CourseElementTest extends Deployments {
 			.tree()
 			.selectWithTitle(blogNodeTitle);
 		FeedPage participantFeed = FeedPage.getFeedPage(participantDrone);
-		participantFeed.assertOnBlogPost(postTitle);
+		participantFeed
+			.assertOnBlogPostInClassicTable(postTitle);
 		
 		//the author publish a second post in its blog
 		String post2Title = "Blog-RW-2-" + UUID.randomUUID();
 		String post2Summary = "Some explanations as teaser";
 		String post2Content = "Content of the post";
-		feed.addBlogPost()
+		feed
+			.assertOnBlogPost(postTitle)
+			.backToList()
+			.addBlogPost()
 			.fillPostForm(post2Title, post2Summary, post2Content)
 			.publishPost();
 		
 		//the participant must see the new post after some click
 		participantFeed
-			.clickFirstMonthOfPager()
-			.clickFirstMonthOfPager()
-			.assertOnBlogPost(post2Title);
+			.allTableFilter()
+			.assertOnBlogPostInClassicTable(post2Title);
 	}
 	
 

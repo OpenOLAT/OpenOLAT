@@ -245,6 +245,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			// add new entries only for internal feeds
 			FormLink addEntry = uifactory.addFormLink("feed.add.item", "feed.add.item", "feed.add.item", "", formLayout, Link.BUTTON);
 			addEntry.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			addEntry.setElementCssClass("o_sel_feed_add_item");
 			tableEl.setEmptyTableSettings("table.empty.message", null, null, "feed.add.item", "o_icon_add", false);
 		} else {
 			uifactory.addSpacerElement("spacer.external", formLayout, true);

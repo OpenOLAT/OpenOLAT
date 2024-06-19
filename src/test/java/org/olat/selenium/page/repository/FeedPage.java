@@ -51,13 +51,25 @@ public class FeedPage {
 		return new FeedPage(browser);
 	}
 	
+	public FeedPage assertOnBlogPostInClassicTable(String title) {
+		By titleBy = By.xpath("//div[contains(@class,'o_feed')]//div[contains(@class,'o_table_flexi')]//table//td//div/a/span[text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElement(titleBy, browser);
+		return this;
+	}
+	
+	public FeedPage assertOnBlogPostInCardTable(String title) {
+		By titleBy = By.xpath("//div[contains(@class,'o_feed')]//div[contains(@class,'o_table_flexi')]//table//td//div/a/span[text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElement(titleBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Check that the post is visible
 	 * @param title
 	 * @return
 	 */
 	public FeedPage assertOnBlogPost(String title) {
-		By titleBy = By.xpath("//div[contains(@class,'o_post')]//h3[contains(@class,'o_title')]/a/span[text()[contains(.,'" + title + "')]]");
+		By titleBy = By.xpath("//div[contains(@class,'o_post')]//h3[contains(@class,'o_title')][text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(titleBy, browser);
 		return this;
 	}
@@ -68,8 +80,8 @@ public class FeedPage {
 		return this;
 	}
 	
-	public FeedPage assertOnPodcastEpisodeTitle() {
-		By episodeTitleby = By.cssSelector("div.o_podcast_episodes h3.o_title");
+	public FeedPage assertOnPodcastEpisodeInClassicTable() {
+		By episodeTitleby = By.cssSelector("div.o_feed table td>div>a");
 		OOGraphene.waitElementSlowly(episodeTitleby, 20, browser);
 		return this;
 	}
@@ -124,6 +136,20 @@ public class FeedPage {
 		return this;
 	}
 	
+	public FeedPage backToList() {
+		By backBy = By.xpath("//div[contains(@class,'o_post')]//a[i[contains(@class,'o_icon_back')]]");
+		OOGraphene.waitElement(backBy, browser);
+		browser.findElement(backBy).click();
+		return this;
+	}
+	
+	public FeedPage allTableFilter() {
+		By allBy = By.xpath("//div[contains(@class,'o_feed')]//div[@class='o_table_tabs']//a[contains(@href,'tab')][contains(@href,'all')]");
+		OOGraphene.waitElement(allBy, browser);
+		browser.findElement(allBy).click();
+		return this;
+	}
+	
 	/**
 	 * Create the first post of a blog.
 	 * 
@@ -131,7 +157,7 @@ public class FeedPage {
 	 */
 	public FeedPage newBlogPost() {
 		//click the button to create a feed
-		By newPostBy = By.xpath("//div[contains(@class,'o_blog_posts')]//div[contains(@class,'o_empty_state')]//a[contains(@onclick,'empty.state')]");
+		By newPostBy = By.cssSelector("div.o_feed .o_empty_state .o_empty_action a.btn-primary");
 		OOGraphene.waitElement(newPostBy, browser);
 		browser.findElement(newPostBy).click();
 		return this;
@@ -143,7 +169,7 @@ public class FeedPage {
 	 * @return Itself
 	 */
 	public FeedPage addBlogPost() {
-		By addPostBy = By.className("o_sel_feed_item_new");
+		By addPostBy = By.cssSelector("a.o_sel_feed_add_item");
 		OOGraphene.waitElement(addPostBy, browser);
 		browser.findElement(addPostBy).click();
 		return this;
@@ -176,7 +202,7 @@ public class FeedPage {
 	 * @return Itself
 	 */
 	public MediaPage addAsMedia() {
-		By addAsMediaBy = By.cssSelector(".o_post .o_portfolio_collector");
+		By addAsMediaBy = By.xpath("//div[contains(@class,'o_post')]//div[contains(@class,'o_head')]//a[i[contains(@class,'o_icon_eportfolio_add')]]");
 		browser.findElement(addAsMediaBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return new MediaPage(browser);
