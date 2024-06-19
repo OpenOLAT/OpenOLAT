@@ -33,6 +33,7 @@ public class CourseElementSearchParams {
 	
 	private Collection<? extends RepositoryEntryRef> repositoryEntries;
 	private Collection<String> courseElementTypes;
+	private Collection<String> subIdents;
 
 	public Collection<? extends RepositoryEntryRef> getRepositoryEntries() {
 		return repositoryEntries;
@@ -50,4 +51,11 @@ public class CourseElementSearchParams {
 		this.courseElementTypes = courseElementTypes;
 	}
 
+	public Collection<String> getSubIdents() {
+		return subIdents;
+	}
+
+	public void setSubIdents(Collection<String> subIdents) {
+		this.subIdents = subIdents;
+	}
 }

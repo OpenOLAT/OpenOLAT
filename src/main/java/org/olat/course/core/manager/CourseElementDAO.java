@@ -108,7 +108,9 @@ public class CourseElementDAO {
 		if (searchParams.getCourseElementTypes() != null && !searchParams.getCourseElementTypes().isEmpty()) {
 			sb.and().append("ce.type in :courseElementTypes");
 		}
-		
+		if (searchParams.getSubIdents() != null && !searchParams.getSubIdents().isEmpty()) {
+			sb.and().append("ce.subIdent in :subIdents");
+		}
 		TypedQuery<CourseElement> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CourseElement.class);
 		if (searchParams.getRepositoryEntries() != null && !searchParams.getRepositoryEntries().isEmpty()) {
@@ -117,7 +119,10 @@ public class CourseElementDAO {
 		if (searchParams.getCourseElementTypes() != null && !searchParams.getCourseElementTypes().isEmpty()) {
 			query.setParameter("courseElementTypes", searchParams.getCourseElementTypes());
 		}
-		
+		if (searchParams.getSubIdents() != null && !searchParams.getSubIdents().isEmpty()) {
+			query.setParameter("subIdents", searchParams.getSubIdents());
+		}
+
 		return query.getResultList();
 	}
 	

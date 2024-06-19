@@ -145,6 +145,26 @@ public class CourseElementDAOTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(courseElement1, courseElement2)
 				.doesNotContain(courseElementOther);
 	}
+
+	@Test
+	public void shouldLoadByRepositoryEntryAndSubIdent() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		CourseElement courseElement1 = createRandomCourseElement(entry);
+		CourseElement courseElement2 = createRandomCourseElement(entry);
+		CourseElement courseElementOther = createRandomCourseElement(entryOther);
+		dbInstance.commitAndCloseSession();
+
+		CourseElementSearchParams searchParams = new CourseElementSearchParams();
+		searchParams.setRepositoryEntries(Collections.singletonList(entry));
+		searchParams.setSubIdents(Collections.singletonList(courseElement2.getSubIdent()));
+		List<CourseElement> courseElements = sut.load(searchParams);
+
+		assertThat(courseElements)
+				.containsExactlyInAnyOrder(courseElement2)
+				.doesNotContain(courseElement1)
+				.doesNotContain(courseElementOther);
+	}
 	
 	@Test
 	public void shouldDeleteByIds() {
