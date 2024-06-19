@@ -12,10 +12,9 @@
             #end
 
             <h3 class="o_title">
+                <i class="o_icon o_icon-sm o_icon_$helper.getMediaType($row.getItem().getEnclosure())"></i>
                 $r.escapeHtml($r.render($row.getFeedEntryLink().getComponent().getComponentName()))
             </h3>
-
-            <i class="o_icon o_icon_$helper.getMediaType($episode.getEnclosure())"></i>
 
             <div class="o_meta">
                 #set ( $info = $helper.getInfo($row.getItem()) )

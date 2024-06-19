@@ -136,6 +136,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private DialogBoxController deleteDialogBoxCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private CollectArtefactController collectorCtrl;
 
 
 	@Autowired
@@ -377,8 +378,8 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		String quickSearchString = tableEl.getQuickSearchString().toLowerCase();
 		if (StringHelper.containsNonWhitespace(quickSearchString)) {
 			itemRows.removeIf(r -> !r.getItem().getTitle().toLowerCase().contains(quickSearchString)
-					&& !r.getStatus().name().toLowerCase().contains(quickSearchString)
-					&& !r.getAuthor().toLowerCase().contains(quickSearchString));
+					&& (r.getStatus() == null || !r.getStatus().name().toLowerCase().contains(quickSearchString))
+					&& (r.getAuthor() == null || !r.getAuthor().toLowerCase().contains(quickSearchString)));
 		}
 
 
@@ -479,8 +480,9 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		businessPath += "[item=" + feedItem.getKey() + ":0]";
 		BlogEntryMedia media = new BlogEntryMedia(feedRss, feedItem);
 
-		CollectArtefactController collectorCtrl = new CollectArtefactController(ureq, getWindowControl(), media, blogMediaHandler, businessPath);
+		collectorCtrl = new CollectArtefactController(ureq, getWindowControl(), media, blogMediaHandler, businessPath);
 		collectorCtrl.addControllerListener(this);
+		listenTo(collectorCtrl);
 
 		String title = "Media";
 		cmc = new CloseableModalController(getWindowControl(), null, collectorCtrl.getInitialComponent(), true, title, true);
@@ -574,6 +576,9 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			// In case the form is closed by X -> Check if this item has ever been added to the feed.
 			// If not, remove the temp dir
 			cleanupTmpItemMediaDir(currentItem);
+		} else if (source == collectorCtrl && (event.equals(Event.DONE_EVENT) || event.equals(Event.CANCELLED_EVENT))) {
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == deleteDialogBoxCtrl && DialogBoxUIFactory.isYesEvent(event)) {
 			// The user confirmed that the item(s) shall be deleted
 			List<Item> feedItemsToDelete = (List<Item>) ((DialogBoxController) source).getUserObject();
