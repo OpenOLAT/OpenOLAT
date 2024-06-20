@@ -162,6 +162,11 @@ public class CourseModule extends AbstractSpringModule {
 			teaserImageStyleName = teaserImageStyleObj;
 			teaserImageStyle = TeaserImageStyle.valueOf(teaserImageStyleName);
 		}
+
+		String efficiencyStatementObj = getStringPropertyValue(COURSE_EFFICIENCY_STATEMENT_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(efficiencyStatementObj)) {
+			efficiencyStatementEnabled = "true".equals(efficiencyStatementObj);
+		}
 		
 		systemImagesProvided = getStringPropertyValue(COURSE_STYLE_SYSTEM_IMAGES_PROVIDED, systemImagesProvided);
 		
