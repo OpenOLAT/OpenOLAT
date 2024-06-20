@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.1.9</org.springframework.version>
+		<org.springframework.version>6.1.10</org.springframework.version>
 		<org.hibernate.version>6.5.2.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
@@ -82,7 +82,7 @@
 		<swagger.ui.version>5.17.14</swagger.ui.version>
 		<com.mysql.version>8.4.0</com.mysql.version>
 		<org.postgresql.version>42.7.3</org.postgresql.version>
-		<org.infinispan.version>15.0.4.Final</org.infinispan.version>
+		<org.infinispan.version>15.0.5.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.21.0</version.selenium>
 		<activemq.artemis.version>2.35.0</activemq.artemis.version>
