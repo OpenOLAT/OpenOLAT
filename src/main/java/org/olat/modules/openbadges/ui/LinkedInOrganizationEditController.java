@@ -61,7 +61,7 @@ public class LinkedInOrganizationEditController extends FormBasicController {
 		}
 		organizationIdEl = uifactory.addIntegerElement("organizationId", "organization.id",
 				organizationId, formLayout);
-		organizationIdEl.setMinValueCheck(0, "error.integer.positive");
+		organizationIdEl.setMinValueCheck(0, "form.error.positive.integer");
 		organizationIdEl.setMandatory(true);
 
 		String organizationName = "";
