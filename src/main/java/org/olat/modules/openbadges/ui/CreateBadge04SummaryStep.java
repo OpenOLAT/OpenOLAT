@@ -52,6 +52,7 @@ import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
+import org.olat.repository.RepositoryEntry;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -173,16 +174,16 @@ public class CreateBadge04SummaryStep extends BasicStep {
 			List<Object> conditions = new ArrayList<>();
 			for (int i = 0; i < badgeConditions.size(); i++) {
 				BadgeCondition badgeCondition = badgeConditions.get(i);
-				Condition condition = new Condition(badgeCondition, i == 0, getTranslator());
+				Condition condition = new Condition(badgeCondition, i == 0, getTranslator(), createContext.getBadgeClass().getEntry());
 				conditions.add(condition);
 			}
 			flc.contextPut("conditions", conditions);
 		}
 
-		public record Condition(BadgeCondition badgeCondition, boolean first, Translator translator) {
+		public record Condition(BadgeCondition badgeCondition, boolean first, Translator translator, RepositoryEntry courseEntry) {
 			@Override
 			public String toString() {
-				return badgeCondition.toString(translator);
+				return badgeCondition.toString(translator, courseEntry);
 			}
 		}
 

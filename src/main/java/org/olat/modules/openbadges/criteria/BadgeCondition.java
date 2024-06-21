@@ -20,6 +20,7 @@
 package org.olat.modules.openbadges.criteria;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2023-06-21<br>
@@ -29,5 +30,5 @@ import org.olat.core.gui.translator.Translator;
 public interface BadgeCondition {
 	String getKey();
 
-	String toString(Translator translator);
+	String toString(Translator translator, RepositoryEntry courseEntry);
 }

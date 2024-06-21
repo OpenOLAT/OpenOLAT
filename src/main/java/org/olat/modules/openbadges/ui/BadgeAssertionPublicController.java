@@ -151,12 +151,14 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		assert badgeCriteria != null;
 		flc.contextPut("criteriaDescription", badgeCriteria.getDescriptionWithScan());
 
+		RepositoryEntry courseEntry = badgeClass.getEntry();
+
 		flc.contextPut("showConditions", badgeCriteria.isAwardAutomatically());
 		List<BadgeCondition> badgeConditions = badgeCriteria.getConditions();
 		List<Condition> conditions = new ArrayList<>();
 		for (int i = 0; i < badgeConditions.size(); i++) {
 			BadgeCondition badgeCondition = badgeConditions.get(i);
-			Condition condition = new Condition(badgeCondition, i == 0, getTranslator());
+			Condition condition = new Condition(badgeCondition, i == 0, getTranslator(), courseEntry);
 			conditions.add(condition);
 		}
 		flc.contextPut("conditions", conditions);
@@ -166,7 +168,6 @@ public class BadgeAssertionPublicController extends FormBasicController {
 					translate("badge.issued.manually"), formLayout);
 		}
 
-		RepositoryEntry courseEntry = badgeClass.getEntry();
 		if (courseEntry != null) {
 			ICourse course = CourseFactory.loadCourse(courseEntry);
 			uifactory.addStaticTextElement("form.course", course.getCourseTitle(), formLayout);
@@ -228,10 +229,10 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		}
 	}
 
-	public record Condition(BadgeCondition badgeCondition, boolean first, Translator translator) {
+	public record Condition(BadgeCondition badgeCondition, boolean first, Translator translator, RepositoryEntry courseEntry) {
 		@Override
 		public String toString() {
-			return badgeCondition.toString(translator);
+			return badgeCondition.toString(translator, courseEntry);
 		}
 	}
 }

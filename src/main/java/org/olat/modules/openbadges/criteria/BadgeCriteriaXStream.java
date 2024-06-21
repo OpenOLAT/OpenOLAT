@@ -38,7 +38,7 @@ public class BadgeCriteriaXStream {
 	static {
 		Class<?>[] types = new Class[] {
 				BadgeCriteria.class, BadgeCondition.class, CoursePassedCondition.class, CourseScoreCondition.class,
-				OtherBadgeEarnedCondition.class
+				OtherBadgeEarnedCondition.class, CourseElementPassedCondition.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.ignoreUnknownElements();
@@ -47,6 +47,7 @@ public class BadgeCriteriaXStream {
 		xstream.alias(CoursePassedCondition.KEY, CoursePassedCondition.class);
 		xstream.alias(CourseScoreCondition.KEY, CourseScoreCondition.class);
 		xstream.alias(OtherBadgeEarnedCondition.KEY, OtherBadgeEarnedCondition.class);
+		xstream.alias(CourseElementPassedCondition.KEY, CourseElementPassedCondition.class);
 	}
 
 	public static String toXml(BadgeCriteria badgeCriteria) {

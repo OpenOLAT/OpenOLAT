@@ -35,6 +35,10 @@
 					<div class="col-xs-12">
 						$r.render($condition.getBadgesDropdown().getName(), "horizontal", "form")
 					</div>
+					#elseif($r.visible($condition.getCourseElementsDropdown().getName()))
+					<div class="col-xs-12">
+						$r.render($condition.getCourseElementsDropdown().getName(), "horizontal", "form")
+					</div>
 					#else
 					<div class="col-xs-5">
 						<!-- comparison symbol -->

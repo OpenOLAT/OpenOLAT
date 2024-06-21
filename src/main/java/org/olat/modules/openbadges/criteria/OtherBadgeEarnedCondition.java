@@ -23,6 +23,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2024-06-18<br>
@@ -44,7 +45,7 @@ public class OtherBadgeEarnedCondition implements BadgeCondition {
 	}
 
 	@Override
-	public String toString(Translator translator) {
+	public String toString(Translator translator, RepositoryEntry courseEntry) {
 		OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassUuid);
 		return translator.translate("badgeCondition." + KEY, badgeClass.getName());

@@ -31,6 +31,8 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.manager.BadgeClassDAO;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
@@ -122,9 +124,15 @@ public interface OpenBadgesManager {
 	BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 										Identity recipient, Identity savedBy);
 
-	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry, Boolean passed, Float score);
+	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry, List<AssessmentEntry> assessmentEntries);
 
 	void issueBadgesAutomatically(RepositoryEntry courseEntry, Identity awardedBy);
+
+	List<ParticipantAndAssessmentEntries> getParticipantsWithAssessmentEntryList(
+			RepositoryEntry courseEntry, Identity identity, AssessmentToolSecurityCallback securityCallback);
+
+	List<Identity> getAutomaticRecipients(BadgeClass badgeClass,
+										  List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries);
 
 	void issueBadge(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy);
 
@@ -243,4 +251,6 @@ public interface OpenBadgesManager {
 			}
 		}
 	}
+
+	record ParticipantAndAssessmentEntries(Identity participant, List<AssessmentEntry> assessmentEntries) {}
 }

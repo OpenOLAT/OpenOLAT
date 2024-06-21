@@ -769,11 +769,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 
 		Identity recipient = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
-		CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
-		AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(rootNode);
-		openBadgesManager.issueBadgesAutomatically(recipient, awardedBy, courseEntry, assessmentEvaluation.getPassed(),
-				assessmentEvaluation.getScore());
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesByAssessedIdentity(recipient, courseEntry);
+		openBadgesManager.issueBadgesAutomatically(recipient, awardedBy, courseEntry, assessmentEntries);
 	}
 
 	private void generateCertificate(UserCourseEnvironment userCourseEnvironment) {

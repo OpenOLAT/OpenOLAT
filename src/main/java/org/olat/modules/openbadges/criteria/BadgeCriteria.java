@@ -27,6 +27,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 /**
@@ -101,8 +102,11 @@ public class BadgeCriteria {
 		return atLeastOneUuidRemapped;
 	}
 
-	public boolean allCourseConditionsMet(boolean passed, double score, Identity identity) {
-		if (!allCourseConditionsMet(passed, score)) {
+	public boolean allCourseConditionsMet(Identity identity, List<AssessmentEntry> assessmentEntries) {
+		if (!allCourseConditionsMet(assessmentEntries)) {
+			return false;
+		}
+		if (!allCourseElementConditionsMet(assessmentEntries)) {
 			return false;
 		}
 		if (!allOtherBadgeConditionsMet(identity)) {
@@ -111,7 +115,20 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	private boolean allCourseConditionsMet(boolean passed, double score) {
+	private boolean allCourseConditionsMet(List<AssessmentEntry> assessmentEntries) {
+		boolean passed = false;
+		float score = 0;
+		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			if (assessmentEntry.getEntryRoot() != null && assessmentEntry.getEntryRoot()) {
+				if (assessmentEntry.getPassed() != null) {
+					passed = assessmentEntry.getPassed();
+				}
+				if (assessmentEntry.getScore() != null) {
+					score = assessmentEntry.getScore().floatValue();
+				}
+			}
+		}
+
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CoursePassedCondition) {
 				if (!passed) {
@@ -121,6 +138,20 @@ public class BadgeCriteria {
 				if (!courseScoreCondition.satisfiesCondition(score)) {
 					return false;
 				}
+			}
+		}
+		return true;
+	}
+
+	private boolean allCourseElementConditionsMet(List<AssessmentEntry> assessmentEntries) {
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
+				for (AssessmentEntry assessmentEntry : assessmentEntries) {
+					if (courseElementPassedCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
+						return assessmentEntry.getPassed() != null && assessmentEntry.getPassed();
+					}
+				}
+				return false;
 			}
 		}
 		return true;

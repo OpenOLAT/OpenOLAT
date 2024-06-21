@@ -20,6 +20,7 @@
 package org.olat.modules.openbadges.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,10 +46,14 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
+import org.olat.course.core.CourseElement;
+import org.olat.course.core.CourseElementSearchParams;
+import org.olat.course.core.manager.CourseElementDAO;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
+import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CourseScoreCondition;
 import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
@@ -79,6 +84,8 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
+		@Autowired
+		private CourseElementDAO courseElementDao;
 
 		public class Condition {
 			private final String id;
@@ -86,6 +93,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			private final SingleSelection conditionDropdown;
 			private final SingleSelection symbolDropdown;
 			private final SingleSelection badgesDropdown;
+			private final SingleSelection courseElementsDropdown;
 			private final TextElement valueEl;
 			private final StaticTextElement unitEl;
 			private final FormLink deleteLink;
@@ -112,6 +120,10 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						formLayout, badgesKV.keys(), badgesKV.values());
 				badgesDropdown.addActionListener(FormEvent.ONCHANGE);
 
+				courseElementsDropdown = uifactory.addDropdownSingleselect("form.condition.courseElements." + id, null,
+						formLayout, courseElementsKV.keys(), courseElementsKV.values());
+				courseElementsDropdown.addActionListener(FormEvent.ONCHANGE);
+
 				valueEl = uifactory.addTextElement("form.condition.value." + id, "", 32,
 						"", formLayout);
 
@@ -125,6 +137,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 				symbolDropdown.setVisible(false);
 				badgesDropdown.setVisible(false);
+				courseElementsDropdown.setVisible(false);
 				valueEl.setVisible(false);
 				unitEl.setVisible(false);
 
@@ -143,12 +156,18 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					badgesDropdown.setVisible(true);
 					badgesDropdown.select(otherBadgeCondition.getBadgeClassUuid(), true);
 				}
+
+				if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
+					courseElementsDropdown.setVisible(true);
+					courseElementsDropdown.select(courseElementPassedCondition.getSubIdent(), true);
+				}
 			}
 
 			public void updateVisibilities() {
 				String conditionKey = conditionDropdown.getSelectedKey();
 				symbolDropdown.setVisible(false);
 				badgesDropdown.setVisible(false);
+				courseElementsDropdown.setVisible(false);
 				valueEl.setVisible(false);
 				unitEl.setVisible(false);
 				switch (conditionKey) {
@@ -161,6 +180,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						unitEl.setVisible(true);
 					}
 					case OtherBadgeEarnedCondition.KEY -> badgesDropdown.setVisible(true);
+					case CourseElementPassedCondition.KEY -> courseElementsDropdown.setVisible(true);
 				}
 			}
 
@@ -193,6 +213,13 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				return badgesDropdown;
 			}
 
+			/**
+			 * Used in template
+			 */
+			public SingleSelection getCourseElementsDropdown() {
+				return courseElementsDropdown;
+			}
+
 			public TextElement getValueEl() {
 				return valueEl;
 			}
@@ -218,6 +245,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					case OtherBadgeEarnedCondition.KEY -> new OtherBadgeEarnedCondition(
 							badgesDropdown.isOneSelected() ? badgesDropdown.getSelectedKey() : badgesDropdown.getKeys()[0]
 					);
+					case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(
+							courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedKey() : courseElementsDropdown.getKeys()[0]
+					);
 					default -> null;
 				};
 			}
@@ -231,6 +261,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		private final SelectionValues conditionsKV;
 		private final SelectionValues symbolsKV;
 		private final SelectionValues badgesKV;
+		private final SelectionValues courseElementsKV;
 
 		private CreateBadgeClassWizardContext createContext;
 		private TextElement descriptionEl;
@@ -258,11 +289,23 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					.filter((badgeClass) -> !badgeClass.getUuid().equals(createContext.getBadgeClass().getUuid()))
 					.forEach((badgeClass) -> badgesKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName())));
 
+			courseElementsKV = new SelectionValues();
+			if (createContext.getBadgeClass().getEntry() != null) {
+				CourseElementSearchParams courseElementSearchParams = new CourseElementSearchParams();
+				courseElementSearchParams.setRepositoryEntries(Collections.singletonList(createContext.getBadgeClass().getEntry()));
+				courseElementDao.load(courseElementSearchParams).stream()
+						.filter(CourseElement::isAssesseable)
+						.forEach(courseElement -> courseElementsKV.add(SelectionValues.entry(courseElement.getSubIdent(), courseElement.getShortTitle())));
+			}
+
 			conditionsKV = new SelectionValues();
 			conditionsKV.add(SelectionValues.entry(CoursePassedCondition.KEY, translate("form.criteria.condition.course.passed")));
 			conditionsKV.add(SelectionValues.entry(CourseScoreCondition.KEY, translate("form.criteria.condition.course.score")));
 			if (!badgesKV.isEmpty()) {
 				conditionsKV.add(SelectionValues.entry(OtherBadgeEarnedCondition.KEY, translate("form.criteria.condition.otherBadgeEarned")));
+			}
+			if (!courseElementsKV.isEmpty()) {
+				conditionsKV.add(SelectionValues.entry(CourseElementPassedCondition.KEY, translate("form.criteria.condition.course.element.passed")));
 			}
 
 			symbolsKV = new SelectionValues();
@@ -299,11 +342,17 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			newConditionsKV.addAll(conditionsKV);
 
 			Set<String> unusedBadgeKeys = new HashSet<>(Set.of(badgesKV.keys()));
+			Set<String> unusedSubIdents = new HashSet<>(Set.of(courseElementsKV.keys()));
 			for (Condition condition : conditions) {
 				BadgeCondition badgeCondition = condition.asBadgeCondition();
 				if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
 					unusedBadgeKeys.remove(otherBadgeEarnedCondition.getBadgeClassUuid());
 					if (unusedBadgeKeys.isEmpty()) {
+						newConditionsKV.remove(badgeCondition.getKey());
+					}
+				} else if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
+					unusedSubIdents.remove(courseElementPassedCondition.getSubIdent());
+					if (unusedSubIdents.isEmpty()) {
 						newConditionsKV.remove(badgeCondition.getKey());
 					}
 				} else {
@@ -324,6 +373,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				case CoursePassedCondition.KEY -> new CoursePassedCondition();
 				case CourseScoreCondition.KEY -> new CourseScoreCondition(Symbol.greaterThan, 1);
 				case OtherBadgeEarnedCondition.KEY -> new OtherBadgeEarnedCondition(getUnusedBadgeKey());
+				case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(getUnusedSubIdents());
 				default -> null;
 			};
 			if (newBadgeCondition != null) {
@@ -342,6 +392,16 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				}
 			}
 			return unusedBadgeKeys.isEmpty() ? null : unusedBadgeKeys.iterator().next();
+		}
+
+		private String getUnusedSubIdents() {
+			Set<String> unusedSubIdents = new HashSet<>(Set.of(courseElementsKV.keys()));
+			for (Condition condition : conditions) {
+				if (condition.asBadgeCondition() instanceof CourseElementPassedCondition courseElementPassedCondition) {
+					unusedSubIdents.remove(courseElementPassedCondition.getSubIdent());
+				}
+			}
+			return unusedSubIdents.isEmpty() ? null : unusedSubIdents.iterator().next();
 		}
 
 		@Override

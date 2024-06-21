@@ -82,8 +82,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -855,14 +853,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry,
-										 Boolean passed, Float score) {
+										 List<AssessmentEntry> assessmentEntries) {
 		Date issuedOn = new Date();
 		for (BadgeClass badgeClass : getBadgeClasses(courseEntry)) {
 			BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 			if (!badgeCriteria.isAwardAutomatically()) {
 				continue;
 			}
-			if (badgeCriteria.allCourseConditionsMet(passed != null ? passed : false, score != null ? score : 0, recipient)) {
+			if (badgeCriteria.allCourseConditionsMet(recipient, assessmentEntries)) {
 				String uuid = OpenBadgesFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
@@ -874,59 +872,65 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 			return;
 		}
-		List<IdentityWithAssessmentEntry> identitiesWithAssessmentEntries = getIdentitiesWithAssessmentEntries(courseEntry, awardedBy);
+		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false,
+				false, true, true, true,
+				null, null);
+		List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries =
+				getParticipantsWithAssessmentEntryList(courseEntry, awardedBy, secCallback);
 		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
 		for (BadgeClass badgeClass : badgeClasses) {
-			List<Identity> automaticRecipients = getAutomaticRecipients(badgeClass, identitiesWithAssessmentEntries);
+			List<Identity> automaticRecipients = getAutomaticRecipients(badgeClass, participantsAndAssessmentEntries);
 			issueBadge(badgeClass, automaticRecipients, awardedBy);
 		}
 	}
 
-	private record IdentityWithAssessmentEntry(Identity identity, AssessmentEntry assessmentEntry) {}
+	@Override
+	public List<ParticipantAndAssessmentEntries> getParticipantsWithAssessmentEntryList(
+			RepositoryEntry courseEntry, Identity identity, AssessmentToolSecurityCallback securityCallback) {
+		List<ParticipantAndAssessmentEntries> result = new ArrayList<>();
 
-	private List<IdentityWithAssessmentEntry> getIdentitiesWithAssessmentEntries(RepositoryEntry courseEntry, Identity identity) {
-		List<IdentityWithAssessmentEntry> result = new ArrayList<>();
-
-		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource().getResourceableId());
-		String rootIdent = course.getRunStructure().getRootNode().getIdent();
-		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false,
-				false, true, true, true,
-				null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
-				courseEntry, rootIdent, null, secCallback);
+				courseEntry, null, null, securityCallback);
 
-		Map<Long, AssessmentEntry> identityKeyToAssessmentEntry = new HashMap<>();
+		Map<Long, List<AssessmentEntry>> participantKeyToAssessmentEntries = new HashMap<>();
 		assessmentToolManager.getAssessmentEntries(identity, params, null)
 				.stream()
 				.filter(entry -> entry.getIdentity() != null)
-				.forEach(entry -> identityKeyToAssessmentEntry.put(entry.getIdentity().getKey(), entry));
+				.forEach(entry -> {
+					Long participantKey = entry.getIdentity().getKey();
+					if (!participantKeyToAssessmentEntries.containsKey(participantKey)) {
+						participantKeyToAssessmentEntries.put(participantKey, new ArrayList<>());
+					}
+					participantKeyToAssessmentEntries.get(entry.getIdentity().getKey()).add(entry);
+				});
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(identity, params);
 
 		for (Identity assessedIdentity : assessedIdentities) {
-			AssessmentEntry assessmentEntry = identityKeyToAssessmentEntry.get(assessedIdentity.getKey());
-			if (assessmentEntry == null) {
-				log.info("Could not find assessment entry for {}", assessedIdentity.getKey());
+			List<AssessmentEntry> assessmentEntries = participantKeyToAssessmentEntries.get(assessedIdentity.getKey());
+			if (assessmentEntries == null) {
+				log.info("Could not find assessment entries for {}", assessedIdentity.getKey());
 				continue;
 			}
-			result.add(new IdentityWithAssessmentEntry(assessedIdentity, assessmentEntry));
+			result.add(new ParticipantAndAssessmentEntries(assessedIdentity, assessmentEntries));
 		}
 		return result;
 	}
 
-	private List<Identity> getAutomaticRecipients(BadgeClass badgeClass, List<IdentityWithAssessmentEntry> identitiesWithAssessmentEntries) {
+	@Override
+	public List<Identity> getAutomaticRecipients(BadgeClass badgeClass,
+												 List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries) {
 		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+		assert badgeCriteria != null;
 
 		List<Identity> automaticRecipients = new ArrayList<>();
+		if (!badgeCriteria.isAwardAutomatically()) {
+			return automaticRecipients;
+		}
 
-		for (IdentityWithAssessmentEntry identityWithAssessmentEntry : identitiesWithAssessmentEntries) {
-			AssessmentEntry assessmentEntry = identityWithAssessmentEntry.assessmentEntry();
-			Identity assessedIdentity = identityWithAssessmentEntry.identity();
-			boolean passed = assessmentEntry.getPassed() != null ? assessmentEntry.getPassed() : false;
-			double score = assessmentEntry.getScore() != null ? assessmentEntry.getScore().doubleValue() : 0;
-			log.debug("Badge '{}', participant '{}': passed = {}, score = {}",
-					badgeClass.getName(), assessedIdentity.getName(), passed, score);
-			assert badgeCriteria != null;
-			if (badgeCriteria.isAwardAutomatically() && badgeCriteria.allCourseConditionsMet(passed, score, assessedIdentity)) {
+		for (ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries) {
+			List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
+			Identity assessedIdentity = participantAndAssessmentEntries.participant();
+			if (badgeCriteria.allCourseConditionsMet(assessedIdentity, assessmentEntries)) {
 				automaticRecipients.add(assessedIdentity);
 			}
 		}

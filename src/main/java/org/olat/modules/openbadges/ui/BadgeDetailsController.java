@@ -209,7 +209,7 @@ public class BadgeDetailsController extends FormBasicController {
 		List<Condition> conditions = new ArrayList<>();
 		for (int i = 0; i < badgeConditions.size(); i++) {
 			BadgeCondition badgeCondition = badgeConditions.get(i);
-			Condition condition = new Condition(badgeCondition, i == 0, getTranslator());
+			Condition condition = new Condition(badgeCondition, i == 0, getTranslator(), badgeClass.getEntry());
 			conditions.add(condition);
 		}
 		flc.contextPut("conditions", conditions);
@@ -430,10 +430,10 @@ public class BadgeDetailsController extends FormBasicController {
 		}
 	}
 
-	public record Condition(BadgeCondition badgeCondition, boolean first, Translator translator) {
+	public record Condition(BadgeCondition badgeCondition, boolean first, Translator translator, RepositoryEntry courseEntry) {
 		@Override
 		public String toString() {
-			return badgeCondition.toString(translator);
+			return badgeCondition.toString(translator, courseEntry);
 		}
 	}
 

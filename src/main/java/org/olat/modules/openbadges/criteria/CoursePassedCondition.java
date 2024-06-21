@@ -20,6 +20,7 @@
 package org.olat.modules.openbadges.criteria;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2023-06-21<br>
@@ -35,7 +36,7 @@ public class CoursePassedCondition implements BadgeCondition {
 	}
 
 	@Override
-	public String toString(Translator translator) {
+	public String toString(Translator translator, RepositoryEntry courseEntry) {
 		return translator.translate("badgeCondition." + KEY);
 	}
 }
