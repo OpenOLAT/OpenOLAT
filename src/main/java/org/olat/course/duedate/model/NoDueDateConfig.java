@@ -48,6 +48,11 @@ public class NoDueDateConfig implements DueDateConfig {
 	}
 
 	@Override
+	public int getDurationInDays() {
+		return -1;
+	}
+
+	@Override
 	public Date getAbsoluteDate() {
 		return null;
 	}

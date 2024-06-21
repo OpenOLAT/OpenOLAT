@@ -78,10 +78,10 @@ public interface DueDateConfig extends RelativeDueDateConfig, AbsoluteDueDateCon
 	
 	public static DueDateConfig ofPeriodCourseNode(CourseNode courseNode, String relativeKey,
 			String absoluteStartDateKey, String absoluteDateKey,
-			String numOfDaysKey, String relativeToTypeKey) {
+			String numOfDaysKey, String relativeToTypeKey, String durationKey) {
 		return new ModulDueDateConfig(courseNode.getModuleConfiguration(), relativeKey,
 				absoluteStartDateKey, absoluteDateKey,
-				numOfDaysKey, relativeToTypeKey);
+				numOfDaysKey, relativeToTypeKey, durationKey);
 	}
 	
 	public static DueDateConfig ofModuleConfiguration(ModuleConfiguration config, String relativeKey,

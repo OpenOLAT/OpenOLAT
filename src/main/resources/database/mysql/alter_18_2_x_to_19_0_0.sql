@@ -76,6 +76,7 @@ create table o_gta_review_assignment (
    fk_participation bigint,
    primary key (id)
 );
+alter table o_gta_review_assignment ENGINE = InnoDB;
 
 alter table o_gta_review_assignment add constraint assignment_to_gtask_idx foreign key (fk_task) references o_gta_task (id);
 alter table o_gta_review_assignment add constraint assignee_to_gtask_idx foreign key (fk_assignee) references o_bs_identity (id);

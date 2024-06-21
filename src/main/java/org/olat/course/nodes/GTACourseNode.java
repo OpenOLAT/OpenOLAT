@@ -456,6 +456,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 
 				addStatusErrorDescription("error.missing.score.config", GTAEditController.PANE_TAB_GRADING, sdList);
 			}
+			
+			if(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED)) {
+				RepositoryEntry formEntry = MSCourseNode.getEvaluationForm(config);
+				if(formEntry == null) {
+					addStatusErrorDescription("error.missing.score.form", GTAEditController.PANE_TAB_GRADING, sdList);
+				}
+			}
 		}
 		
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
@@ -469,8 +476,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		//at least one step
 		if(!config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT) && !config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 				&& !config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION) && !config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)
-				&& !config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
-				&& !config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION) && !config.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
+				&& !config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD) && !config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)
+				&& !config.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
 			addStatusErrorDescription("error.select.atleastonestep", GTAEditController.PANE_TAB_WORKLOW, sdList);
 		}
 		
@@ -511,6 +518,14 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 							}
 						}
 					}
+				}
+			}
+			
+			// Check peer review
+			if(config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)) {
+				RepositoryEntry formEntry = GTACourseNode.getPeerReviewEvaluationForm(getModuleConfiguration());
+				if(formEntry == null) {
+					addStatusErrorDescription("error.missing.peerreview.survey", GTAEditController.PANE_TAB_PEER_REVIEW, sdList);
 				}
 			}
 			
@@ -1543,6 +1558,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 				Map.entry("gtask.assignment.deadline", getDueDateConfig(GTASK_ASSIGNMENT_DEADLINE)),
 				Map.entry("gtask.submission.deadline", getDueDateConfig(GTASK_SUBMIT_DEADLINE)),
 				Map.entry("gtask.late.submit.deadline", getDueDateConfig(GTASK_LATE_SUBMIT_DEADLINE)),
+				Map.entry("gtask.peerreview.deadline", getDueDateConfig(GTASK_PEER_REVIEW_DEADLINE)),
 				Map.entry("gtask.submission.visibility", getDueDateConfig(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER))
 			);
 	}
@@ -1568,7 +1584,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)
 					? DueDateConfig.ofPeriodCourseNode(this, GTASK_RELATIVE_DATES,
 							GTASK_PEER_REVIEW_DEADLINE_START, GTASK_PEER_REVIEW_DEADLINE,
-							GTASK_PEER_REVIEW_DEADLINE_RELATIVE, GTASK_PEER_REVIEW_DEADLINE_RELATIVE_TO)
+							GTASK_PEER_REVIEW_DEADLINE_RELATIVE, GTASK_PEER_REVIEW_DEADLINE_RELATIVE_TO,
+							GTASK_PEER_REVIEW_DEADLINE_LENGTH)
 					: DueDateConfig.noDueDateConfig();
 		} else if (GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER.equals(key)) {
 			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)

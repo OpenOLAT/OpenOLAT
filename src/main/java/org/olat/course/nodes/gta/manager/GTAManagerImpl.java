@@ -1538,6 +1538,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			IdentityRef assessedIdentity, BusinessGroup assessedGroup, RepositoryEntry courseEntry) {
 		DueDate dueDate = null;
 		if(DueDateConfig.isRelative(relativeDueDateConfig)) {
+			Date startDate = null;
 			Date referenceDate = null;
 			String messageKey = null;
 			String messageArg = null;
@@ -1555,8 +1556,14 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				referenceDate = dueDateService.getRelativeDate(relativeDueDateConfig, courseEntry, assessedGroup);
 			}
 			
+			int duration = relativeDueDateConfig.getDurationInDays();
+			if(duration > 0) {
+				startDate = referenceDate;
+				referenceDate = dueDateService.addNumOfDays(startDate, relativeDueDateConfig.getDurationInDays());
+			}
+			
 			if(referenceDate != null) {
-				dueDate = new DueDate(true, referenceDate, referenceDate, null, null);
+				dueDate = new DueDate(true, referenceDate, referenceDate, null, startDate);
 			} else if(messageKey != null) {
 				dueDate = new DueDate(true, messageKey, messageArg);
 			}

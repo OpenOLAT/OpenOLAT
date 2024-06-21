@@ -30,5 +30,7 @@ public interface RelativeDueDateConfig {
 	public int getNumOfDays();
 	
 	public String getRelativeToType();
+	
+	public int getDurationInDays();
 
 }

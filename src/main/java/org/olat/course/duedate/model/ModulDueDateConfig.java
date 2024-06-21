@@ -39,21 +39,23 @@ public class ModulDueDateConfig implements DueDateConfig {
 	private final String absoluteStartDateKey;
 	private final String numOfDaysKey;
 	private final String raltiveToTypeKey;
+	private final String durationKey;
 	
 	public ModulDueDateConfig(ModuleConfiguration config, String relativeKey, String absoluteDateKey,
 			String numOfDaysKey, String relativeToTypeKey) {
-		this(config, relativeKey, null, absoluteDateKey, numOfDaysKey, relativeToTypeKey);
+		this(config, relativeKey, null, absoluteDateKey, numOfDaysKey, relativeToTypeKey, null);
 	}
 	
 	public ModulDueDateConfig(ModuleConfiguration config, String relativeKey,
 			String absoluteStartDateKey, String absoluteDateKey,
-			String numOfDaysKey, String raltiveToTypeKey) {
+			String numOfDaysKey, String relativeToTypeKey, String durationKey) {
 		this.config = config;
 		this.relativeKey = relativeKey;
 		this.absoluteDateKey = absoluteDateKey;
 		this.absoluteStartDateKey = absoluteStartDateKey;
 		this.numOfDaysKey = numOfDaysKey;
-		this.raltiveToTypeKey = raltiveToTypeKey;
+		this.raltiveToTypeKey = relativeToTypeKey;
+		this.durationKey = durationKey;
 	}
 
 	@Override
@@ -77,6 +79,11 @@ public class ModulDueDateConfig implements DueDateConfig {
 		return isRelative()? config.getStringValue(raltiveToTypeKey): null;
 	}
 	
+	@Override
+	public int getDurationInDays() {
+		return isRelative()? config.getIntegerSafe(durationKey, -1): -1;
+	}
+
 	private boolean isRelative() {
 		return config.getBooleanSafe(relativeKey, false);
 	}

@@ -178,7 +178,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		aggreagtedRow.setNumOfReviewers(aggreagtedRow.getNumOfReviews());
 		
 		String id = Integer.toString(counter++);
-		double progress = aggregatedStatistics.progress() * 100d;
+		double progress = aggregatedStatistics == null ? 0.0d : aggregatedStatistics.progress() * 100d;
 		createProgressPieChart(id, aggreagtedRow, progress);
 		if(progress > 0.0d) {
 			createBoxPlot(id, aggreagtedRow, aggregatedStatistics);

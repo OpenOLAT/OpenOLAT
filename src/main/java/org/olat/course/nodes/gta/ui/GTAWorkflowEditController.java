@@ -357,6 +357,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		String peerReviewLength = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_LENGTH, "");
 		peerReviewPeriodLengthEl = uifactory.addTextElement("peer.review.period.length", 8, peerReviewLength, stepsCont);
 		peerReviewPeriodLengthEl.setVisible(peerReviewEnabled && useRelativeDates);
+		peerReviewPeriodLengthEl.setMandatory(true);
 		
 		//revision
 		revisionEl = uifactory.addToggleButton("revision", "revision.period", translate("on"), translate("off"), stepsCont);
@@ -530,6 +531,17 @@ public class GTAWorkflowEditController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		peerReviewPeriodLengthEl.clearError();
+		if(peerReviewPeriodLengthEl.isVisible()) {
+			if(!StringHelper.containsNonWhitespace(peerReviewPeriodLengthEl.getValue())) {
+				peerReviewPeriodLengthEl.setErrorKey("form.mandatory.hover");
+				allOk &= false;
+			} else if(!StringHelper.isLong(peerReviewPeriodLengthEl.getValue())) {
+				peerReviewPeriodLengthEl.setErrorKey("form.error.positive.integer");
+				allOk &= false;
+			}
+		}
+		
 		taskAssignmentEl.clearError();
 		if(!taskAssignmentEl.isOn() && !submissionEl.isOn()
 				&& !feedbackEl.isOn() && !revisionEl.isOn()
@@ -626,6 +638,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 		config.setStringValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_RELATIVE_TO, peerReviewDueDateConfig.getRelativeToType());
 		config.setDateValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_START, peerReviewDueDateConfig.getAbsoluteStartDate());
 		config.setDateValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE, peerReviewDueDateConfig.getAbsoluteDate());
+		String peerReviewDeadlineLength = peerReviewPeriodLengthEl.getValue();
+		if(StringHelper.isLong(peerReviewDeadlineLength)) {
+			config.setStringValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_LENGTH, peerReviewDeadlineLength);
+		} else {
+			config.remove(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_LENGTH);
+		}
 		
 		boolean sample = sampleEl.isOn();
 		config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION, sample);

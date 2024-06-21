@@ -167,7 +167,7 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 	}
 	
 	private boolean validateAbsoluteDate() {
-		if (!absoluteDateEl.validate()) {
+		if (!relative && !absoluteDateEl.validate()) {
 			setErrorKey("form.error.date");
 			return false;
 		}

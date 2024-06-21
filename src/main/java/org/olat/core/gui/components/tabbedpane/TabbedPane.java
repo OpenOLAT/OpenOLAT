@@ -317,7 +317,8 @@ public class TabbedPane extends Container implements Activateable2 {
 	
 	public int indexOfTab(String displayName) {
 		for(int i=tabPanes.size(); i-->0; ) {
-			if(displayName.equals(tabPanes.get(i).getDisplayName())) {
+			TabPane tabPane = tabPanes.get(i);
+			if(tabPane.isVisible() && displayName.equals(tabPane.getDisplayName())) {
 				return i;
 			}
 		}
