@@ -24,17 +24,21 @@ import org.olat.course.core.CourseElement;
 import org.olat.repository.RepositoryEntry;
 
 /**
- * Initial date: 2024-06-19<br>
+ * Initial date: 2024-06-21<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CourseElementPassedCondition implements BadgeCondition {
-	public static final String KEY = "courseElementPassed";
+public class CourseElementScoreCondition implements BadgeCondition {
+	public static final String KEY = "courseElementScore";
 
 	private String subIdent;
+	private Symbol symbol;
+	private double value;
 
-	public CourseElementPassedCondition(String subIdent) {
+	public CourseElementScoreCondition(String subIdent, Symbol symbol, double value) {
 		this.subIdent = subIdent;
+		this.symbol = symbol;
+		this.value = value;
 	}
 
 	@Override
@@ -46,7 +50,12 @@ public class CourseElementPassedCondition implements BadgeCondition {
 	public String toString(Translator translator, RepositoryEntry courseEntry) {
 		CourseElement courseElement = BadgeCondition.loadCourseElement(courseEntry, subIdent);
 		return translator.translate("badgeCondition." + KEY,
-				courseElement != null ? courseElement.getShortTitle() : "-");
+				courseElement != null ? courseElement.getShortTitle() : "-", getSymbol().getSymbolString(),
+				Double.toString(getValue()));
+	}
+
+	public boolean satisfiesCondition(double score) {
+		return Symbol.compare(score, symbol, value);
 	}
 
 	public String getSubIdent() {
@@ -55,5 +64,21 @@ public class CourseElementPassedCondition implements BadgeCondition {
 
 	public void setSubIdent(String subIdent) {
 		this.subIdent = subIdent;
+	}
+
+	public Symbol getSymbol() {
+		return symbol;
+	}
+
+	public void setSymbol(Symbol symbol) {
+		this.symbol = symbol;
+	}
+
+	public double getValue() {
+		return value;
+	}
+
+	public void setValue(double value) {
+		this.value = value;
 	}
 }

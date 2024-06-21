@@ -153,6 +153,16 @@ public class BadgeCriteria {
 				}
 				return false;
 			}
+
+			if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
+				for (AssessmentEntry assessmentEntry : assessmentEntries) {
+					if (courseElementScoreCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
+						return assessmentEntry.getScore() != null &&
+								courseElementScoreCondition.satisfiesCondition(assessmentEntry.getScore().floatValue());
+					}
+				}
+				return false;
+			}
 		}
 		return true;
 	}
