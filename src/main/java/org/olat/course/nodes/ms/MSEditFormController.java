@@ -120,7 +120,6 @@ public class MSEditFormController extends FormBasicController {
 	private SpacerElement incorporateInCourseAssessmentSpacer;
 	private TextElement scoreScalingEl;
 	private SingleSelection scoreTypeEl;
-	private TextElement evaluationScoreScalingEl;
 	
 	private FormLink showInfoTextsLink;
 
@@ -142,10 +141,7 @@ public class MSEditFormController extends FormBasicController {
 	private final String title;
 	private final String helpUrl;
 	private GradeScale gradeScale;
-	private boolean withEvaluation;
 	private final boolean scoreScalingEnabled;
-	private MinMax formMinMax;
-	private String formEvaluationScoreCalculation;
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
@@ -216,12 +212,6 @@ public class MSEditFormController extends FormBasicController {
 		scoreTypeEl.select("automatic", true);
 		scoreTypeEl.addActionListener(FormEvent.ONCHANGE);
 		
-		String evaluationScale = modConfig.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE);
-		evaluationScoreScalingEl = uifactory.addTextElement("form.score.type.scoring.scale", "form.score.type.scoring.scale", 8, evaluationScale, formLayout);
-		evaluationScoreScalingEl.setDisplaySize(5);
-		evaluationScoreScalingEl.setRegexMatchCheck(scoreRex, "form.error.wrongFloat");
-		evaluationScoreScalingEl.setElementCssClass("o_sel_course_ms_evaluation_scale");
-	
 		// ...minimum value...
 		Float min = modConfig.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		if (min == null) {
@@ -418,20 +408,11 @@ public class MSEditFormController extends FormBasicController {
 		cutVal.setVisible(displayType.isVisible() && displayType.isSelected(0));
 		cutVal.setMandatory(cutVal.isVisible());
 
-		scoreTypeEl.setVisible(scoreGranted.isOn() && withEvaluation);
+		scoreTypeEl.setVisible(scoreGranted.isOn());
 		boolean scoreAuto = scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected() && "automatic".equals(scoreTypeEl.getSelectedKey());
 		minVal.setEnabled(!scoreAuto);
 		maxVal.setEnabled(!scoreAuto);
-		evaluationScoreScalingEl.setVisible(scoreGranted.isOn() && scoreAuto);
 		
-		if(formMinMax != null && scoreAuto) {
-			minVal.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMin()));
-			maxVal.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMax()));
-		}
-		if(evaluationScoreScalingEl.isVisible() && !StringHelper.containsNonWhitespace(evaluationScoreScalingEl.getValue())) {
-			evaluationScoreScalingEl.setValue("1.0");
-		}
-				
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
 				&& (scoreGranted.isOn() || displayPassed.isOn());
 		incorporateInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
@@ -469,7 +450,6 @@ public class MSEditFormController extends FormBasicController {
 		// score flag
 		minVal.clearError();
 		maxVal.clearError();
-		evaluationScoreScalingEl.clearError();
 		if (scoreGranted.isOn()) {
 			if (!minVal.getValue().matches(scoreRex)) {
 				minVal.setErrorKey("form.error.wrongFloat");
@@ -480,11 +460,6 @@ public class MSEditFormController extends FormBasicController {
 				allOk &= false;
 			} else if (Float.parseFloat(minVal.getValue()) > Float.parseFloat(maxVal.getValue())) {
 				maxVal.setErrorKey("form.error.minGreaterThanMax");
-				allOk &= false;
-			}
-			
-			if(withEvaluation && !evaluationScoreScalingEl.getValue().matches(scoreRex)) {
-				evaluationScoreScalingEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
 			}
 		}
@@ -527,28 +502,9 @@ public class MSEditFormController extends FormBasicController {
 		}
 	}
 	
-	public void setEvaluationOn(UserRequest ureq, boolean withEvaluation, MinMax formMinMax, String formScoreCalculation) {
-		this.withEvaluation = withEvaluation;
-		this.formMinMax = withEvaluation ? formMinMax : null;
-		this.formEvaluationScoreCalculation = withEvaluation ? formScoreCalculation : null;
-		update(ureq);
-	}
-	
 	public void setMinMax(Float min, Float max) {
 		minVal.setValue(AssessmentHelper.getRoundedScore(min));
 		maxVal.setValue(AssessmentHelper.getRoundedScore(max));
-	}
-	
-	public Float getEvaluationScale() {
-		String val = evaluationScoreScalingEl != null && evaluationScoreScalingEl.isVisible() ? evaluationScoreScalingEl.getValue() : null;	
-		if(StringHelper.containsNonWhitespace(val)) {
-			try {
-				return Float.valueOf(val);
-			} catch (NumberFormatException e) {
-				// 
-			}
-		}
-		return null;
 	}
 
 	public void updateModuleConfiguration(ModuleConfiguration moduleConfiguration) {
@@ -560,17 +516,9 @@ public class MSEditFormController extends FormBasicController {
 			// do min/max value
 			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, Float.valueOf(minVal.getValue()));
 			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, Float.valueOf(maxVal.getValue()));
-			if(withEvaluation) {
-				String scale = evaluationScoreScalingEl.isVisible()
-						? evaluationScoreScalingEl.getValue()
-						: MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE;
-				moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, scale);
-			}
-			
+
 			if(!scoreTypeEl.isVisible() || (scoreTypeEl.isOneSelected() && MSCourseNode.CONFIG_VALUE_SCORE_MANUAL.equals(scoreTypeEl.getSelectedKey()))) {
 				moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, MSCourseNode.CONFIG_VALUE_SCORE_MANUAL);
-			} else if(StringHelper.containsNonWhitespace(formEvaluationScoreCalculation)) {
-				moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, formEvaluationScoreCalculation);
 			}
 		} else {
 			// remove old config
@@ -583,7 +531,7 @@ public class MSEditFormController extends FormBasicController {
 		// Grade
 		if (gradeEnabledEl != null) {
 			moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isOn());
-			moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_AUTO, Boolean.valueOf(gradeAutoEl.getSelectedKey()).booleanValue());
+			moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_AUTO, Boolean.parseBoolean(gradeAutoEl.getSelectedKey()));
 		} else {
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_GRADE_AUTO);

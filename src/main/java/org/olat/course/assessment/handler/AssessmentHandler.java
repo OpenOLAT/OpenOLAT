@@ -20,6 +20,8 @@
 package org.olat.course.assessment.handler;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -86,6 +88,17 @@ public interface AssessmentHandler extends CourseNodeProvider {
 	public default AssessmentCourseNodeOverviewController getCustomOverviewController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, CourseNode courseNode,
 			AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
+		return null;
+	}
+
+	@SuppressWarnings("unused")
+	public default boolean hasDetailsScoreController(CourseNode courseNode) {
+		return false;
+	}
+	
+	@SuppressWarnings("unused")
+	public default FormBasicController getDetailsScoreController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			UserCourseEnvironment assessedUserCourseEnvironment, CourseNode courseNode) {
 		return null;
 	}
 

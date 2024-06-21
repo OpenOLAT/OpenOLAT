@@ -97,18 +97,25 @@ import org.olat.course.nodes.gta.GTAEvaluationFormProvider;
 import org.olat.course.nodes.gta.GTALearningPathNodeHandler;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAModule;
+import org.olat.course.nodes.gta.GTAPeerReviewEvaluationFormProvider;
+import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.ITALearningPathNodeHandler;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.TaskReviewAssignment;
+import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.manager.GTAResultsExport;
+import org.olat.course.nodes.gta.model.SessionParticipationListStatistics;
+import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.rule.GTAReminderProvider;
 import org.olat.course.nodes.gta.ui.GTADefaultsEditController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTARunController;
+import org.olat.course.nodes.gta.ui.GTAScores;
 import org.olat.course.nodes.ms.MSScoreEvaluationAndDataHelper;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MinMax;
@@ -140,6 +147,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -181,7 +189,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	public static final String GTASK_LATE_SUBMIT_DEADLINE_RELATIVE = "grouptask.late.submit.deadline.relative";
 	public static final String GTASK_LATE_SUBMIT_DEADLINE_RELATIVE_TO = "grouptask.late.submit.deadline.relative.to";
 	public static final String GTASK_REVIEW_AND_CORRECTION = "grouptask.review.and.correction";
+	public static final String GTASK_PEER_REVIEW = "grouptask.peer.review";
 	public static final String GTASK_REVISION_PERIOD = "grouptask.revision.period";
+	public static final String GTASK_PEER_REVIEW_DEADLINE = "grouptask.peer.review.deadline";
+	public static final String GTASK_PEER_REVIEW_DEADLINE_START = "grouptask.peer.review.deadline.start";
+	public static final String GTASK_PEER_REVIEW_DEADLINE_RELATIVE = "grouptask.peer.review.deadline.relative";
+	public static final String GTASK_PEER_REVIEW_DEADLINE_RELATIVE_TO = "grouptask.peer.review.deadline.relative.to";
+	public static final String GTASK_PEER_REVIEW_DEADLINE_LENGTH = "grouptask.peer.review.deadline.length";
 	public static final String GTASK_SAMPLE_SOLUTION = "grouptask.solution";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER = "grouptask.solution.visible.after";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_ALL = "grouptask.solution.visible.all";
@@ -189,6 +203,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE = "grouptask.solution.visible.after.relative";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO = "grouptask.solution.visible.after.relative.to";
 	public static final String GTASK_GRADING = "grouptask.grading";
+	
+	public static final String GTASK_SCORE_PARTS = "grouptask.score.parts";
+	public static final String GTASK_SCORE_PARTS_EVALUATION_FORM = "grouptask.score.parts.evaluation.form";
+	public static final String GTASK_SCORE_PARTS_PEER_REVIEW = "grouptask.score.parts.peer.review";
+	public static final String GTASK_SCORE_PARTS_REVIEW_SUBMITTED = "grouptask.score.parts.review.submitted";
 	
 	public static final String GTASK_TASKS = "grouptask.tasks";
 	
@@ -230,6 +249,32 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	
 	public static final String GTASK_SUBMISSION_TEXT = "grouptask.submission.text";
 	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION = "grouptask.submission.mail.confirmation";
+	
+	public static final String GTASK_PEER_REVIEW_MUTUAL_REVIEW = "grouptask.peer.review.mutual.review";
+	public static final String GTASK_PEER_REVIEW_FORM_OF_REVIEW = "grouptask.peer.review.form.of.review";
+	public static final String GTASK_PEER_REVIEW_DOUBLE_BLINDED_REVIEW = "grouptask.peer.review.double.blinded.review";
+	public static final String GTASK_PEER_REVIEW_SINGLE_BLINDED_REVIEW = "grouptask.peer.review.single.blinded.review";
+	public static final String GTASK_PEER_REVIEW_OPEN_REVIEW = "grouptask.peer.review.open.review";
+	
+	public static final String GTASK_PEER_REVIEW_EVAL_FORM_SOFTKEY = "grouptask.peer.review.evaluation.form.softkey";
+	public static final String GTASK_PEER_REVIEW_ASSIGNMENT = "grouptask.peer.review.assignment";
+	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_SAME_TASK = "grouptask.peer.review.assignment.same.task";
+	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_OTHER_TASK = "grouptask.peer.review.assignment.other.task";
+	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_RANDOM = "grouptask.peer.review.assignment.random";
+	public static final String GTASK_PEER_REVIEW_NUM_OF_REVIEWS = "grouptask.peer.review.num.of.reviews";
+	public static final String GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT = "3";
+	public static final String GTASK_PEER_REVIEW_SCORE_EVAL_FORM = "grouptask.peer.review.score.evaluation";
+	public static final String GTASK_PEER_REVIEW_SCORE_EVAL_FORM_SCALE = "grouptask.peer.review.score.evaluation.form.scale";
+	public static final String GTASK_PEER_REVIEW_SCORE_PRO_REVIEW = "grouptask.peer.review.score.pro.review";
+	public static final String GTASK_PEER_REVIEW_MAX_NUMBER_CREDITABLE_REVIEWS = "grouptask.peer.review.max.number.creditable.reviews";
+	
+	public static final String GTASK_PEER_REVIEW_SCORE_MIN = "grouptask.peer.review.scoreMin";
+	public static final String GTASK_PEER_REVIEW_SCORE_MAX = "grouptask.peer.review.scoreMax";
+	
+	public static final String GTASK_PEER_REVIEW_QUALITY_FEEDBACK = "grouptask.peer.review.quality.feedback";
+	public static final String GTASK_PEER_REVIEW_QUALITY_FEEDBACK_TYPE = "grouptask.peer.review.quality.feedback.type";
+	public static final String GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_YES_NO = "grouptask.peer.review.quality.feedback.yes.no";
+	public static final String GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_STARS = "grouptask.peer.review.quality.feedback.stars";
 
 	public static final String GTASK_MIN_REVISED_DOCS = "grouptask.min.revised.docs";
 	public static final String GTASK_MAX_REVISED_DOCS = "grouptask.max.revised.docs";
@@ -259,10 +304,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
-		return MSCourseNode.getEvaluationForm(getModuleConfiguration());
+		return getEvaluationForm(getModuleConfiguration());
 	}
-	
-
 	
 	@Override
 	public boolean hasBusinessGroups() {
@@ -276,12 +319,40 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		return !areaKeys.isEmpty() || super.hasBusinessGroupAreas();
 	}
 	
+	public static RepositoryEntry getEvaluationForm(ModuleConfiguration config) {
+		return MSCourseNode.getEvaluationForm(config);
+	}
+	
+	public static String getEvaluationFormReference(ModuleConfiguration moduleConfig) {
+		return MSCourseNode.getEvaluationFormReference(moduleConfig);
+	}
+	
 	public static void setEvaluationFormReference(RepositoryEntry re, ModuleConfiguration moduleConfig) {
 		moduleConfig.set(MSCourseNode.CONFIG_KEY_EVAL_FORM_SOFTKEY, re.getSoftkey());
 	}
 	
 	public static void removeEvaluationFormReference(ModuleConfiguration moduleConfig) {
 		moduleConfig.remove(MSCourseNode.CONFIG_KEY_EVAL_FORM_SOFTKEY);
+	}
+	
+	public static RepositoryEntry getPeerReviewEvaluationForm(ModuleConfiguration config) {
+		if (config == null) return null;
+		
+		String repoSoftkey = getPeerReviewEvaluationFormReference(config);
+		return RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoSoftkey, false);
+	}
+	
+	public static String getPeerReviewEvaluationFormReference(ModuleConfiguration moduleConfig) {
+		String repoSoftkey = moduleConfig.getStringValue(GTASK_PEER_REVIEW_EVAL_FORM_SOFTKEY);
+		return StringHelper.containsNonWhitespace(repoSoftkey) ? repoSoftkey : null;
+	}
+	
+	public static void setPeerReviewEvaluationFormReference(RepositoryEntry re, ModuleConfiguration moduleConfig) {
+		moduleConfig.set(GTASK_PEER_REVIEW_EVAL_FORM_SOFTKEY, re.getSoftkey());
+	}
+	
+	public static void removePeerReviewEvaluationFormReference(ModuleConfiguration moduleConfig) {
+		moduleConfig.remove(GTASK_PEER_REVIEW_EVAL_FORM_SOFTKEY);
 	}
 	
 	@Override
@@ -310,6 +381,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			config.setBooleanEntry(GTASK_ASSIGNMENT, gtaModule.hasAssignment());
 			config.setBooleanEntry(GTASK_SUBMIT, gtaModule.hasSubmission());
 			config.setBooleanEntry(GTASK_REVIEW_AND_CORRECTION, gtaModule.hasReviewAndCorrection());
+			config.setBooleanEntry(GTASK_PEER_REVIEW, false);
 			config.setBooleanEntry(GTASK_REVISION_PERIOD, gtaModule.hasRevisionPeriod());
 			config.setBooleanEntry(GTASK_SAMPLE_SOLUTION, gtaModule.hasSampleSolution());
 			config.setBooleanEntry(GTASK_GRADING, gtaModule.hasGrading());
@@ -396,7 +468,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		
 		//at least one step
 		if(!config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT) && !config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
-				&& !config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION) && !config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
+				&& !config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION) && !config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)
+				&& !config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
 				&& !config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION) && !config.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
 			addStatusErrorDescription("error.select.atleastonestep", GTAEditController.PANE_TAB_WORKLOW, sdList);
 		}
@@ -1140,29 +1213,39 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, getIdent());
 		for(AssessmentEntry assessmentEntry:assessmentEntries) {
-			updateScorePassedOnPublish(course, assessmentEntry, publisher, locale);
+			recalculateAndUpdateScore(course.getCourseEnvironment(), assessmentEntry, publisher, locale);
 		}
 		DBFactory.getInstance().commitAndCloseSession();
 	}
 	
-	private void updateScorePassedOnPublish(ICourse course, AssessmentEntry assessmentEntry, Identity publisher, Locale locale) {
-		final RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+	public void recalculateAndUpdateScore(CourseEnvironment courseEnv, Identity assessedIdentity, Identity doer, Locale locale) {
+		AssessmentService assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
+
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, courseEntry, getIdent());
+		recalculateAndUpdateScore(courseEnv, assessmentEntry, doer, locale);
+	}
+	
+	public void recalculateAndUpdateScore(CourseEnvironment courseEnv, AssessmentEntry assessmentEntry, Identity doer, Locale locale) {
+		final RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		final Identity assessedIdentity = assessmentEntry.getIdentity();
 		
 		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		GTAPeerReviewManager peerReviewManager = CoreSpringFactory.getImpl(GTAPeerReviewManager.class);
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		EvaluationFormProvider evaluationFormProvider = getEvaluationFormProvider();
 		
 		IdentityEnvironment ienv = new IdentityEnvironment(assessedIdentity, Roles.userRoles());
-		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, courseEnv);
 	
 		AssessmentEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, userCourseEnv);
 		EvaluationFormSession session = msService.getSession(courseEntry, getIdent(), evaluationFormProvider, assessedIdentity, done);
 	
-		Float updatedScore = getScore(msService, currentEval, session);
+		Float updatedScore = getScore(msService, gtaManager, peerReviewManager, userCourseEnv, currentEval, session).totalScore();
 		Float updatedWeightedScore = null;
 		BigDecimal updatedScoreScale = null;
-		if(ScoreScalingHelper.isEnabled(course)) {
+		if(ScoreScalingHelper.isEnabled(courseEnv)) {
 			updatedScoreScale = ScoreScalingHelper.getScoreScale(this);
 			updatedWeightedScore = ScoreScalingHelper.getWeightedFloatScore(updatedScore, updatedScoreScale);
 		}
@@ -1186,29 +1269,25 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 					updatePerformanceClassIdent, updatedPassed, currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
 					currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
 					currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
-			courseAssessmentService.updateScoreEvaluation(this, scoreEval, userCourseEnv, publisher, false, Role.coach);
+			courseAssessmentService.updateScoreEvaluation(this, scoreEval, userCourseEnv, doer, false, Role.coach);
 			
 			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
 	
-	private Float getScore(MSService msService, AssessmentEvaluation currentEval, EvaluationFormSession session) {
-		Float score = null;
-		ModuleConfiguration config = getModuleConfiguration();
-		String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
-		String scaleConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE);
-		float scale = Float.parseFloat(scaleConfig);
-		if (MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig)) {
-			score = msService.calculateScoreByAvg(session);
-			score = msService.scaleScore(score, scale);
-		} else if (MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)) {
-			score = msService.calculateScoreBySum(session);
-			score = msService.scaleScore(score, scale);
-		}
+	public GTAScores getScore(MSService msService, GTAManager gtaManager, GTAPeerReviewManager peerReviewManager,
+			UserCourseEnvironment assessedUserCourseEnv, AssessmentEvaluation currentEval, EvaluationFormSession session) {
+		
+		Float evaluationFormScore = getEvaluationFormScore(msService, session);
+		Float peerReviewScore = getPeerReviewScore(gtaManager, peerReviewManager, assessedUserCourseEnv);
+		Float awardedReviewScore = getAwardedReviewsScore(gtaManager, peerReviewManager, assessedUserCourseEnv);
+
+		Float score = add(evaluationFormScore, peerReviewScore);
+		score = add(score, awardedReviewScore);
 		if (score == null) {
 			score = currentEval.getScore();
 		}
-		
+
 		// Score has to be in configured range.
 		MinMax minMax = getMinMax();
 		if (score != null) {
@@ -1219,15 +1298,118 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 				score = minMax.getMin();
 			}
 		}
+		return new GTAScores(evaluationFormScore, peerReviewScore, awardedReviewScore, score, minMax);
+	}
+	
+	public Float add(Float val1, Float val2) {
+		if(val1 == null) {
+			return val2;
+		}
+		if(val2 == null ) {
+			return val1;
+		}
+		return Float.valueOf(val1.floatValue() + val2.floatValue());
+	}
+	
+	public Float getEvaluationFormScore(MSService msService, EvaluationFormSession session) {
+		Float score = null;
+		ModuleConfiguration config = getModuleConfiguration();
+		String scoreParts = config.getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
+		boolean evalFormEnabled = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
+		if(evalFormEnabled && scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM)) {
+			String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
+			String scaleConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE);
+			float scale = Float.parseFloat(scaleConfig);
+			if (MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig)) {
+				score = msService.calculateScoreByAvg(session);
+				score = msService.scaleScore(score, scale);
+			} else if (MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)) {
+				score = msService.calculateScoreBySum(session);
+				score = msService.scaleScore(score, scale);
+			}
+		}
+		return score;
+	}
+	
+	public Float getPeerReviewScore(GTAManager gtaManager, GTAPeerReviewManager peerReviewManager,
+			UserCourseEnvironment assessedUserCourseEnv) {
+		Float score = null;
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		String scoreParts = config.getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
+		boolean peerReviewEnabled = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
+		if(peerReviewEnabled && scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_PEER_REVIEW)) {
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			TaskList taskList = gtaManager.getTaskList(assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), this);
+			Task task = gtaManager.getTask(assessedIdentity, taskList);
+			if(task != null) {
+				String scoreKey = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM);
+				boolean addSum = MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreKey);
+				boolean addAverage = MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreKey);
+				
+				// Only done review are taken into account
+				List<TaskReviewAssignmentStatus> statusForScore = List.of(TaskReviewAssignmentStatus.done);
+				List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTask(task);
+				SessionParticipationListStatistics reviewsStatistics = peerReviewManager.loadStatistics(task, assignments, this, statusForScore);
+				for(SessionParticipationStatistics reviewsStatistic:reviewsStatistics.participationsStatistics()) {
+					if(addSum) {
+						score = (float)reviewsStatistic.statistics().sum() + (score == null ? 0.0f : score.floatValue());
+					} else if(addAverage) {
+						score = (float)reviewsStatistic.statistics().average() + (score == null ? 0.0f : score.floatValue());
+					}
+				}
+			}
+		}
+		
+		return score;
+	}
+	
+	public Float getAwardedReviewsScore(GTAManager gtaManager, GTAPeerReviewManager peerReviewManager,
+			UserCourseEnvironment assessedUserCourseEnv) {
+		Float score = null;
+		ModuleConfiguration config = getModuleConfiguration();
+
+		boolean peerReviewEnabled = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
+		String scoreParts = config.getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
+		String pointsProReview = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_PRO_REVIEW, "");
+		String maxNumberOfReviews = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_MAX_NUMBER_CREDITABLE_REVIEWS);
+		if(peerReviewEnabled && scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_REVIEW_SUBMITTED)
+				&& StringHelper.containsNonWhitespace(pointsProReview)) {
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			TaskList taskList = gtaManager.getTaskList(assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), this);
+			if(taskList != null) {
+				int numOfReviewsDone = 0;
+				List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsOfReviewer(taskList, assessedIdentity);
+				for(TaskReviewAssignment assignment:assignments) {
+					if(assignment.getStatus() == TaskReviewAssignmentStatus.done) {
+						numOfReviewsDone++;
+					}
+				}
+				
+				if(numOfReviewsDone > 0) {
+					if(StringHelper.isLong(maxNumberOfReviews)) {
+						int maxReviews = Integer.parseInt(maxNumberOfReviews);
+						if(numOfReviewsDone > maxReviews) {
+							numOfReviewsDone = maxReviews;
+						}
+					}
+					score = (Float.parseFloat(pointsProReview) * numOfReviewsDone) + (score == null ? 0.0f : score.floatValue());
+				}
+			}
+		}
+		
 		return score;
 	}
 	
 	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv,
 			Role by, EvaluationFormSession session, Locale locale) {
 		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		GTAPeerReviewManager peerReviewManager = CoreSpringFactory.getImpl(GTAPeerReviewManager.class);
 		
 		AssessmentEvaluation currentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(this);
-		Float score = getScore(msService, currentEval, session);
+		GTAScores detailledScores = getScore(msService, gtaManager, peerReviewManager, assessedUserCourseEnv, currentEval, session);
+		Float score = detailledScores.totalScore();
 		ScoreEvaluation updateEval = MSScoreEvaluationAndDataHelper.getUpdateScoreEvaluation(assessedUserCourseEnv, this, locale, score);
 		
 		// save
@@ -1279,6 +1461,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	
 	public static EvaluationFormProvider getEvaluationFormProvider() {
 		return new GTAEvaluationFormProvider();
+	}
+	
+	public static EvaluationFormProvider getPeerReviewEvaluationFormProvider() {
+		return new GTAPeerReviewEvaluationFormProvider();
 	}
 
 	@Override
@@ -1377,6 +1563,12 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_LATE_SUBMIT)
 					? DueDateConfig.ofCourseNode(this, GTASK_RELATIVE_DATES, GTASK_LATE_SUBMIT_DEADLINE,
 							GTASK_LATE_SUBMIT_DEADLINE_RELATIVE, GTASK_LATE_SUBMIT_DEADLINE_RELATIVE_TO)
+					: DueDateConfig.noDueDateConfig();
+		} else if (GTASK_PEER_REVIEW_DEADLINE.equals(key)) {
+			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)
+					? DueDateConfig.ofPeriodCourseNode(this, GTASK_RELATIVE_DATES,
+							GTASK_PEER_REVIEW_DEADLINE_START, GTASK_PEER_REVIEW_DEADLINE,
+							GTASK_PEER_REVIEW_DEADLINE_RELATIVE, GTASK_PEER_REVIEW_DEADLINE_RELATIVE_TO)
 					: DueDateConfig.noDueDateConfig();
 		} else if (GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER.equals(key)) {
 			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)

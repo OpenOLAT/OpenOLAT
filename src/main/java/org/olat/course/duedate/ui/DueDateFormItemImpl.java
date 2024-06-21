@@ -53,6 +53,7 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 	private boolean relative;
 	private DueDateConfig initialDueDateConfig;
 	private boolean actionDateOnly;
+	private boolean period;
 	
 	private TextElementImpl numOfDaysEl;
 	private SingleSelection realtiveToDateEl;
@@ -111,6 +112,12 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 			absoluteDateEl.setRootForm(getRootForm());
 			absoluteDateEl.setDateChooserTimeEnabled(true);
 			absoluteDateEl.addActionListener(getAction(), actionDateOnly);
+			absoluteDateEl.setSeparator("to.separator");
+			if(period) {
+				absoluteDateEl.setDate(initialDueDateConfig.getAbsoluteStartDate());
+				absoluteDateEl.setSecondDate(period);
+				absoluteDateEl.setSecondDate(initialDueDateConfig.getAbsoluteDate());
+			}
 		}
 	}
 	
@@ -244,6 +251,14 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 		clearError();
 	}
 
+	public boolean isPeriod() {
+		return period;
+	}
+
+	public void setPeriod(boolean period) {
+		this.period = period;
+	}
+
 	public TextElementImpl getNumOfDaysEl() {
 		return numOfDaysEl;
 	}
@@ -258,9 +273,13 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 
 	@Override
 	public DueDateConfig getDueDateConfig() {
-		return relative
-				? DueDateConfig.relative(getNumOfDays(), realtiveToDateEl.getSelectedKey())
-				: DueDateConfig.absolute(absoluteDateEl.getDate());
+		if(relative) {
+			return DueDateConfig.relative(getNumOfDays(), realtiveToDateEl.getSelectedKey());
+		}
+		if(period) {
+			return DueDateConfig.period(absoluteDateEl.getDate(), absoluteDateEl.getSecondDate());
+		}
+		return DueDateConfig.absolute(absoluteDateEl.getDate());
 	}
 	
 	private int getNumOfDays() {
@@ -287,7 +306,13 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 				: realtiveToDateEl.getKey(0);
 		realtiveToDateEl.select(selectedKey, true);
 		
-		absoluteDateEl.setDate(dueDateConfig.getAbsoluteDate());
+		if(period) {
+			absoluteDateEl.setDate(dueDateConfig.getAbsoluteStartDate());
+			absoluteDateEl.setSecondDate(dueDateConfig.getAbsoluteDate());
+		} else {
+			absoluteDateEl.setDate(dueDateConfig.getAbsoluteDate());
+			absoluteDateEl.setSecondDate(null);
+		}
 	}
 
 	@Override

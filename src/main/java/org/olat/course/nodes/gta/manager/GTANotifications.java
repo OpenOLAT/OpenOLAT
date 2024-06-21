@@ -564,6 +564,8 @@ class GTANotifications {
 				}
 			}
 		}
+		
+		//TODO task probably peer review
 	}
 	
 	private void createAssignedCoachItem(Task task, Identity assessedIdentity, boolean coach) {
@@ -700,7 +702,7 @@ class GTANotifications {
 				}
 			} else if(dueDate != null && dueDate.getDueDate() != null) {
 				if(task == null) {
-					if(inStep(task, TaskProcess.assignment, TaskProcess.submit, TaskProcess.review, TaskProcess.correction, TaskProcess.revision)
+					if(inStep(task, TaskProcess.assignment, TaskProcess.submit, TaskProcess.review, TaskProcess.correction, TaskProcess.revision, TaskProcess.peerreview)
 						&& !dueDate.isRelative() && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)) {
 						solutionDate = dueDate.getDueDate();
 					} else {
@@ -850,7 +852,7 @@ class GTANotifications {
 					return true;
 				} else if((task.getTaskStatus() == TaskProcess.assignment || task.getTaskStatus() == TaskProcess.submit
 						|| task.getTaskStatus() == TaskProcess.review || task.getTaskStatus() == TaskProcess.correction
-						|| task.getTaskStatus() == TaskProcess.revision)
+						|| task.getTaskStatus() == TaskProcess.revision || task.getTaskStatus() == TaskProcess.peerreview)
 						&& gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)) {
 					// steps before solution only if configured to
 					return true;

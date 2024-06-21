@@ -28,6 +28,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -79,6 +80,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private VelocityContainer mainVC;
 	private CourseNodeSegmentPrefs segmentPrefs;
 	private SegmentViewComponent segmentView;
+	private BreadcrumbedStackedPanel runStackPanel;
 	
 	private final GTACourseNode gtaNode;
 	private final UserCourseEnvironment userCourseEnv;
@@ -136,8 +138,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
 		} else if(membership.isParticipant() && userCourseEnv.isParticipant()) {
-			createRun(ureq);
-			putInitialPanel(runCtrl.getInitialComponent());
+			runStackPanel = createRun(ureq);
+			putInitialPanel(runStackPanel);
 		} else {
 			String title = translate("error.not.member.title");
 			String message = translate("error.not.member.message");
@@ -288,11 +290,12 @@ public class GTARunController extends BasicController implements Activateable2 {
 	
 	private Activateable2 doOpenRun(UserRequest ureq) {
 		if(runCtrl == null) {
-			createRun(ureq);
+			runStackPanel = createRun(ureq);
 		}
 		addToHistory(ureq, runCtrl);
 		if(mainVC != null) {
-			mainVC.put("segmentCmp", runCtrl.getInitialComponent());
+			runStackPanel.popUpToRootController(ureq);
+			mainVC.put("segmentCmp", runStackPanel);
 		}
 		return runCtrl;
 	}
@@ -332,12 +335,16 @@ public class GTARunController extends BasicController implements Activateable2 {
 		return manageCtrl;
 	}
 	
-	private GTAParticipantController createRun(UserRequest ureq) {
+	private BreadcrumbedStackedPanel createRun(UserRequest ureq) {
 		removeAsListenerAndDispose(runCtrl);
 		
-		runCtrl = new GTAParticipantController(ureq, getWindowControl(), gtaNode, userCourseEnv);
+		BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("run-participant", getTranslator(), this);
+		stackPanel.setInvisibleCrumb(1);
+		
+		runCtrl = new GTAParticipantController(ureq, getWindowControl(), stackPanel, gtaNode, userCourseEnv);
 		listenTo(runCtrl);
-		return runCtrl;
+		stackPanel.pushController(translate("task"), runCtrl);
+		return stackPanel;
 	}
 	
 	private GTACoachSelectionController createCoach(UserRequest ureq) {

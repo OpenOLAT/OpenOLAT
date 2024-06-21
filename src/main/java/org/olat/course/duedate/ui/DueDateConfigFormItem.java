@@ -41,6 +41,12 @@ public interface DueDateConfigFormItem extends FormItem, FormItemCollection {
 
 	public void setRelative(boolean relative);
 	
+	/**
+	 * 
+	 * @param period
+	 */
+	public void setPeriod(boolean period);
+	
 	public DueDateConfig getDueDateConfig();
 	
 	public void setDueDateConfig(DueDateConfig dueDateConfig);

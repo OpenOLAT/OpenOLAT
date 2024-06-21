@@ -76,6 +76,13 @@ public interface EvaluationFormManager {
 	public EvaluationFormSurvey loadSurvey(EvaluationFormSurveyIdentifier identifier);
 	
 	/**
+	 * 
+	 * @param surveyKey The primary key
+	 * @return The survey or null if not found
+	 */
+	public EvaluationFormSurvey loadSurveyByKey(Long surveyKey);
+	
+	/**
 	 * Load all surveys of an identifier. The purpose of this method is to load all
 	 * surveys by cut the subIdent(s).
 	 * 

@@ -1,0 +1,30 @@
+<div class="form-control-static">
+	<table class="o_gta_score_details">
+		<tbody>
+		#if($r.isNotEmpty($evaluationFormScore))
+			<tr>
+				<td>$r.translate("score.details.evaluation.form")</td>
+				<td>$evaluationFormScore</td>
+			</tr>
+		#end
+		
+		#if($r.isNotEmpty($peerReviewScore))
+			<tr>
+				<td>$r.translate("score.details.peerreview")</td>
+				<td>$peerReviewScore</td>
+			</tr>
+		#end
+		
+		#if($r.isNotEmpty($awardedReviewsScore))
+			<tr>
+				<td>$r.translate("score.details.awarded.reviews")</td>
+				<td>$awardedReviewsScore</td>
+			</tr>
+		#end
+			<tr class="o_gta_score_total">
+				<th>$totalLabel</th>
+				<th>$totalScore</th>
+			</tr>
+		</tbody>
+	</table>
+</div>

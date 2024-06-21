@@ -1,0 +1,13 @@
+<div class="o_gta_user">
+	$r.render("portraits")
+	<div class="o_gta_user_informations">
+		<div class="pull-right">$status</div>
+		<h4>$r.escapeHtml($fullName)</h4>
+		#if($r.isNotEmpty($reviewForm))
+			<p><i class='o_icon o_icon-fw o_icon_info_list'> </i> $r.escapeHtml($reviewForm)</p>
+		#end
+		#if($r.isNotEmpty($reviewPoint))
+			<p><i class='o_icon o_icon-fw o_icon_score'> </i> $r.escapeHtml($reviewPoint)</p>
+		#end
+	</div>
+</div>

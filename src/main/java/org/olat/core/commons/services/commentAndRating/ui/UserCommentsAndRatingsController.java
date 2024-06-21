@@ -29,6 +29,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.rating.RatingComponent;
+import org.olat.core.gui.components.rating.RatingType;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -127,7 +128,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 		userCommentsAndRatingsVC.contextPut("enableRatings", Boolean.valueOf(enableRatings));
 		if (enableRatings) {
 			if (securityCallback.canRate()) {
-				ratingUserC = new RatingComponent("userRating", 0, RATING_MAX, true);
+				ratingUserC = new RatingComponent("userRating", RatingType.stars, 0, RATING_MAX, true);
 				ratingUserC.addListener(this);
 				userCommentsAndRatingsVC.put("ratingUserC", ratingUserC);
 				ratingUserC.setShowRatingAsText(true);
@@ -136,7 +137,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			}
 			
 			if (securityCallback.canViewRatingAverage()) {				
-				ratingAverageC = new RatingComponent("ratingAverageC", 0, RATING_MAX, false);
+				ratingAverageC = new RatingComponent("ratingAverageC", RatingType.stars, 0, RATING_MAX, false);
 				ratingAverageC.addListener(this);
 				userCommentsAndRatingsVC.put("ratingAverageC", ratingAverageC);
 				ratingAverageC.setShowRatingAsText(true);

@@ -34,6 +34,7 @@ public class DueDateConfigImpl implements DueDateConfig {
 	private int numOfDays;
 	private String relativeToType;
 	private Date absoluteDate;
+	private Date absoluteStartDate;
 	
 	@Override
 	public int getNumOfDays() {
@@ -61,5 +62,13 @@ public class DueDateConfigImpl implements DueDateConfig {
 	public void setAbsolutDate(Date absoluteDate) {
 		this.absoluteDate = absoluteDate;
 	}
-	
+
+	@Override
+	public Date getAbsoluteStartDate() {
+		return absoluteStartDate;
+	}
+
+	public void setAbsoluteStartDate(Date date) {
+		this.absoluteStartDate = date;
+	}
 }

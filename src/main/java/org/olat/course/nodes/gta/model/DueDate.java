@@ -33,25 +33,28 @@ public class DueDate {
 	private final Date referenceDueDate;
 	private final Date overridenDueDate;
 	
+	private Date startDate;
+	
 	private final boolean relative; 
 	private final String messageKey;
 	private final String messageArg;
 	
 	public DueDate(boolean relative, String messageKey, String messageArg) {
-		this(relative, null, null, null, messageKey, messageArg);
+		this(relative, null, null, null, null, messageKey, messageArg);
 	}
 	
-	public DueDate(boolean relative, Date dueDate, Date referenceDueDate, Date overridenDueDate) {
-		this(relative, dueDate, referenceDueDate, overridenDueDate, null, null);
+	public DueDate(boolean relative, Date dueDate, Date referenceDueDate, Date overridenDueDate, Date startDate) {
+		this(relative, dueDate, referenceDueDate, overridenDueDate, startDate, null, null);
 	}
 	
-	public DueDate(boolean relative, Date dueDate, Date referenceDueDate, Date overridenDueDate, String messageKey, String messageArg) {
+	public DueDate(boolean relative, Date dueDate, Date referenceDueDate, Date overridenDueDate, Date startDate, String messageKey, String messageArg) {
 		this.dueDate = dueDate;
 		this.relative = relative;
 		this.messageKey = messageKey;
 		this.messageArg = messageArg;
 		this.referenceDueDate = referenceDueDate;
 		this.overridenDueDate = overridenDueDate;
+		this.startDate = startDate;
 	}
 
 	public Date getDueDate() {
@@ -64,6 +67,10 @@ public class DueDate {
 
 	public Date getOverridenDueDate() {
 		return overridenDueDate;
+	}
+	
+	public Date getStartDate() {
+		return startDate;
 	}
 
 	public boolean isRelative() {

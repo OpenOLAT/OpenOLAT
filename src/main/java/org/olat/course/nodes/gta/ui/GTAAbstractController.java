@@ -51,6 +51,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
@@ -109,6 +110,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 	
 	private DueDate assignmentDueDate;
 	private DueDate submissionDueDate;
+	private DueDate peerReviewDueDate;
 	private DueDate lateSubmissionDueDate;
 	private DueDate solutionDueDate;
 	
@@ -116,6 +118,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 	protected GTAManager gtaManager;
 	@Autowired
 	protected RepositoryService repositoryService;
+	@Autowired
+	protected GTAPeerReviewManager peerReviewManager;
 	@Autowired
 	protected BusinessGroupService businessGroupService;
 	@Autowired
@@ -247,6 +251,14 @@ public abstract class GTAAbstractController extends BasicController implements G
 			task = gtaManager.nextStep(task, gtaNode, false, null, Role.auto);
 		}
 		
+		boolean peerReview = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
+		mainVC.contextPut("peerReviewEnabled", peerReview);
+		if(peerReview) {
+			task = stepPeerReview(ureq, task);
+		} else if(task != null && task.getTaskStatus() == TaskProcess.peerreview) {
+			task = gtaManager.nextStep(task, gtaNode, false, null, Role.auto);
+		}
+		
 		boolean solution = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION);
 		mainVC.contextPut("solutionEnabled", solution);
 		if(solution) {
@@ -303,6 +315,18 @@ public abstract class GTAAbstractController extends BasicController implements G
 				|| TaskProcess.revision.equals(status) || TaskProcess.revision.equals(previousStatus)
 				|| TaskProcess.correction.equals(status) || TaskProcess.correction.equals(previousStatus);
 		mainVC.contextPut("collapse_revision", Boolean.valueOf(revision));
+		
+		boolean peerReview = Boolean.TRUE.equals(stepPreferences.getPeerReview())
+				|| TaskProcess.peerreview.equals(status) || TaskProcess.peerreview.equals(previousStatus);
+		mainVC.contextPut("collapse_peerReview", Boolean.valueOf(peerReview));
+		
+		boolean peerReviewAwarded = Boolean.TRUE.equals(stepPreferences.getPeerReviewAwarded())
+				|| TaskProcess.peerreview.equals(status) || TaskProcess.peerreview.equals(previousStatus);
+		mainVC.contextPut("collapse_peerReviewAwarded", Boolean.valueOf(peerReviewAwarded));
+		
+		boolean peerReviewReceived = Boolean.TRUE.equals(stepPreferences.getPeerReviewReceived())
+				|| TaskProcess.peerreview.equals(status) || TaskProcess.peerreview.equals(previousStatus);
+		mainVC.contextPut("collapse_peerReviewReceived", Boolean.valueOf(peerReviewReceived));
 		
 		boolean solution = Boolean.TRUE.equals(stepPreferences.getSolution())
 				|| TaskProcess.solution.equals(status) || TaskProcess.solution.equals(previousStatus);
@@ -596,6 +620,49 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return submittedDocuments == null ? 0 : submittedDocuments.length;
 	}
 	
+	protected Task stepPeerReview(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
+		if(assignedTask != null && assignedTask.getSurvey() == null) {
+			assignedTask = peerReviewManager.loadOrCreateSurvey(assignedTask, courseEntry, gtaNode);	
+		}
+		
+		DueDate dueDate = getPeerReviewDueDate(assignedTask);
+		if(dueDate != null) {
+			if(dueDate.getDueDate() != null) {
+				boolean done = isDone(assignedTask, TaskProcess.peerreview);
+				Date deadline = gtaManager.getDeadlineOf(dueDate, null);
+				DueDateValues dueDateValues = formatDueDate(dueDate, null, ureq.getRequestTimestamp(), done, true, TaskProcess.peerreview);
+				mainVC.contextPut("peerReviewRemainingTime", Long.toString(dueDateValues.remainingTime()));
+				mainVC.contextPut("peerReviewDueDate", dueDateValues.asString());
+	
+				mainVC.contextRemove("peerReviewDueDateMsg");
+				// need an instantiated to go further (import for optional tasks)
+				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.peerreview
+						&& deadline.compareTo(ureq.getRequestTimestamp()) < 0) {
+					//push to the next step
+					assignedTask = gtaManager.nextStep(assignedTask, gtaNode, false, null, Role.auto);
+				}
+			} else if(dueDate.getMessageKey() != null) {
+				mainVC.contextPut("peerReviewDueDateMsg", translate(dueDate.getMessageKey(), dueDate.getMessageArg()));
+				mainVC.contextRemove("peerReviewDueDate");
+			}
+		} 
+		
+		return assignedTask;
+	}
+	
+	protected final DueDate getPeerReviewDueDate(Task assignedTask) {
+		if(peerReviewDueDate == null) {
+			peerReviewDueDate = gtaManager.getPeerReviewDueDate(assignedTask, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
+		}
+		return peerReviewDueDate;
+	}
+	
+	protected final boolean isPeerReviewStarted(UserRequest ureq, Task assignedTask) {
+		DueDate availableDate = getPeerReviewDueDate(assignedTask);
+		return availableDate == null || availableDate.getStartDate() == null ||
+				(availableDate.getStartDate() != null && availableDate.getStartDate().compareTo(ureq.getRequestTimestamp()) <= 0);
+	}
+	
 	protected Task stepReviewAndCorrection(@SuppressWarnings("unused")UserRequest ureq,
 			Task assignedTask, @SuppressWarnings("unused")List<TaskRevision> taskRevisions) {
 		return assignedTask;
@@ -606,7 +673,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		// need an instantiated to go further (import for optional tasks)
 		if(assignedTask != null && assignedTask.getRevisionsDueDate() != null) {
 			Date date =  assignedTask.getRevisionsDueDate();
-			DueDate dueDate = new DueDate(false, date, null, date);
+			DueDate dueDate = new DueDate(false, date, null, date, null);
 			boolean done = isDone(assignedTask, TaskProcess.revision);
 			DueDateValues dueDateValues = formatDueDate(dueDate, null, ureq.getRequestTimestamp(), done, true, TaskProcess.revision);
 			mainVC.contextPut("revisionDueDate", dueDateValues.asString());
@@ -828,6 +895,18 @@ public abstract class GTAAbstractController extends BasicController implements G
 				stepPreferences.setRevision(showHide);
 				mainVC.contextPut("collapse_revision", showHide);
 				break;
+			case "peerReview":
+				stepPreferences.setPeerReview(showHide);
+				mainVC.contextPut("collapse_peerReview", showHide);
+				break;	
+			case "peerReviewAwarded":
+				stepPreferences.setPeerReviewAwarded(showHide);
+				mainVC.contextPut("collapse_peerReviewAwarded", showHide);
+				break;	
+			case "peerReviewReceived":
+				stepPreferences.setPeerReviewReceived(showHide);
+				mainVC.contextPut("collapse_peerReviewReceived", showHide);
+				break;	
 			case "solution":
 				stepPreferences.setSolution(showHide);
 				mainVC.contextPut("collapse_solution", showHide);

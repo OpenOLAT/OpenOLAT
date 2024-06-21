@@ -29,15 +29,15 @@ alter table o_ex_export_metadata add constraint export_to_vfsdata_idx foreign ke
 create index idx_export_to_vfsdata_idx on o_ex_export_metadata(fk_metadata);
 
 -- Content Editor
-alter table o_ce_page_part add column p_storage_path varchar(255);
+alter table o_ce_page_part add p_storage_path varchar(255);
 
 -- Identity
 alter table o_bs_identity add plannedinactivationdate date;
 alter table o_bs_identity add planneddeletiondate date;
 
 -- VFS
-alter table o_vfs_metadata add column f_deleted_date date;
-alter table o_vfs_metadata add column fk_deleted_by number(20);
+alter table o_vfs_metadata add f_deleted_date date;
+alter table o_vfs_metadata add fk_deleted_by number(20);
 
 -- Media to Page Part (Content Editor)
 create table o_media_to_page_part (
@@ -63,6 +63,36 @@ create index idx_media_to_page_part_page_part_idx on o_media_to_page_part (fk_pa
 
 -- Reminders
 alter table o_rem_reminder add r_email_copy_only number default 0;
+
+-- Peer review
+alter table o_gta_task add g_peerreview_due_date date;
+
+alter table o_gta_task add fk_survey number(20);
+
+alter table o_gta_task add constraint gtask_survey_idx foreign key (fk_survey) references o_eva_form_survey (id);
+create index idx_gtask_survey_idx on o_gta_task(fk_survey);
+
+create table o_gta_review_assignment (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   g_assigned number default 1  not null ,
+   g_status varchar(32) default 'open' not null,
+   g_rating decimal default null,
+   fk_task number(20) not null,
+   fk_assignee number(20) not null,
+   fk_participation number(20),
+   primary key (id)
+);
+
+alter table o_gta_review_assignment add constraint assignment_to_gtask_idx foreign key (fk_task) references o_gta_task (id);
+create index idx_assignment_to_gtask_idx on o_gta_review_assignment(fk_task);
+
+alter table o_gta_review_assignment add constraint assignee_to_gtask_idx foreign key (fk_assignee) references o_bs_identity (id);
+create index idx_assignee_to_gtask_idx on o_gta_review_assignment(fk_assignee);
+
+alter table o_gta_review_assignment add constraint assignment_to_fpart_idx foreign key (fk_participation) references o_eva_form_participation (id);
+create index idx_assignment_to_fpart_idx on o_gta_review_assignment(fk_participation);
 
 -- Open Badges
 create table o_badge_organization (

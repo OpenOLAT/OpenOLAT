@@ -15,6 +15,9 @@ $r.render("entries")
 			#end
 		<li><strong>$r.translate("process.correction")</strong>: $r.translate("process.correction.explanation")</li>
 		#end
+		#if($reviewAndCorrectionEnabled)
+		<li><strong>$r.translate("process.peerreview")</strong>: $r.translate("process.peerreview.explanation")</li>
+		#end
 		#if($solutionEnabled)
 		<li><strong>$r.translate("process.solution")</strong>: $r.translate("process.solution.explanation")</li>
 		#end

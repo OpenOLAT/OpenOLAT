@@ -35,6 +35,8 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -432,6 +434,15 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			UserCourseEnvironment assessedUserCourseEnvironment) {
 		return getAssessmentHandler(courseNode).getDetailsEditController(ureq, wControl, stackPanel, courseNode,
 				coachCourseEnv, assessedUserCourseEnvironment);
+	}
+
+	@Override
+	public FormBasicController getDetailsScoreController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			CourseNode courseNode, UserCourseEnvironment assessedUserCourseEnvironment) {
+		AssessmentHandler handler = getAssessmentHandler(courseNode);
+		return handler.hasDetailsScoreController(courseNode)
+				? handler.getDetailsScoreController(ureq, wControl, rootForm, assessedUserCourseEnvironment, courseNode)
+				: null;	
 	}
 	
 	@Override

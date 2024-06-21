@@ -4,5 +4,7 @@
 		$r.render(${item}, "form")
 	#end
 #end
-$r.render("errors")
+#if($r.available("errors"))
+	$r.render("errors")
+#end
 </div>

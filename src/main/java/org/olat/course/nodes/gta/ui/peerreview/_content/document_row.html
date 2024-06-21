@@ -1,0 +1,31 @@
+<div class="o_card o_gta_card o_gta_file_card">
+	#if($row.isOpenInNewWindow())
+		<div class="o_gta_file_thumbnail" onClick="$f.openFfXHREvent(false, false, false), 'oo-opennewwindow-oo', 'true', 'oo-opennewwindow-target', '_blank', 'select_file','$row.id');" role="link">
+	#else
+		<div class="o_gta_file_thumbnail" onClick="$f.ffXHREvent("select_file","$row.id");" role="link">
+	#end
+		<div class="o_gta_file_img">
+			#if($row.isThumbnailAvailable())
+				<img src="${row.getThumbnailUrl()}" alt=""/>
+			#else
+				<div class="o_visual_not_available"></div>
+			#end
+		</div>
+	</div>
+	<div class="o_gta_card_meta o_gta_file_meta">
+		<div class="o_flex_first_grow_base">
+			<div class="o_nowrap">
+				<h4 class="o_gta_file_title o_gta_card_title o_card_title">$r.render("$row.getSelectLinkName()")</h4>
+			</div>
+			#if($row.getToolsLinkName())
+				$r.render($row.getToolsLinkName())
+			#end
+		</div>
+		<div class="o_gta_file_members o_gta_card_members">
+		#if($row.getUserPortraitsName())
+			$r.render($row.getUserPortraitsName())
+		#end
+			<span>$r.escapeHtml($row.authorName)</span>
+		</div>
+	</div>
+</div>

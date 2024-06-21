@@ -101,8 +101,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTACoachedGroupGradingController extends FormBasicController {
 	
 
-	protected static final String USER_PROPS_ID = GTACoachedGroupGradingController.class.getCanonicalName();
-	protected static final int USER_PROPS_OFFSET = 500;
+	public static final String USER_PROPS_ID = GTACoachedGroupGradingController.class.getCanonicalName();
+	public static final int USER_PROPS_OFFSET = 500;
 	
 
 	private FlexiTableElement table;

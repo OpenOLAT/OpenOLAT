@@ -99,6 +99,7 @@
 		<class>org.olat.course.nodes.gta.model.TaskListImpl</class>
 		<class>org.olat.course.nodes.gta.model.TaskRevisionImpl</class>
 		<class>org.olat.course.nodes.gta.model.TaskRevisionDateImpl</class>
+		<class>org.olat.course.nodes.gta.model.TaskReviewAssignmentImpl</class>
 		<class>org.olat.course.nodes.livestream.model.LaunchImpl</class>
 		<class>org.olat.course.nodes.livestream.model.UrlTemplateImpl</class>
 		<class>org.olat.course.nodes.practice.model.PracticeResourceImpl</class>

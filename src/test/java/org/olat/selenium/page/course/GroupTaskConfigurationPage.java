@@ -59,33 +59,32 @@ public class GroupTaskConfigurationPage {
 	}
 	
 	public GroupTaskConfigurationPage enableAssignment(boolean enable) {
-		return enableStep("task.assignment", enable);
+		return enableStep("o_sel_gta_step_assignment", enable);
 	}
 	
 	public GroupTaskConfigurationPage enableSubmission(boolean enable) {
-		return enableStep("submission", enable);
+		return enableStep("o_sel_gta_step_submission", enable);
 	}
 	
 	public GroupTaskConfigurationPage enableReview(boolean enable) {
-		return enableStep("review", enable);
+		return enableStep("o_sel_gta_step_feedback", enable);
 	}
 	
 	public GroupTaskConfigurationPage enableRevision(boolean enable) {
-		return enableStep("revision", enable);
+		return enableStep("o_sel_gta_step_revision", enable);
 	}
 	
 	public GroupTaskConfigurationPage enableSolution(boolean enable) {
-		return enableStep("sample", enable);
+		return enableStep("o_sel_gta_step_solution", enable);
 	}
 	
 	public GroupTaskConfigurationPage enableGrading(boolean enable) {
-		return enableStep("grading", enable);
+		return enableStep("o_sel_gta_step_grading", enable);
 	}
 	
-	private GroupTaskConfigurationPage enableStep(String name, boolean enable) {
-		By checkboxStepBy = By.xpath("//fieldset[contains(@class,'o_sel_course_gta_steps')]//label/input[@name='" + name + "']");
-		WebElement checkboxEl = browser.findElement(checkboxStepBy);
-		OOGraphene.check(checkboxEl, Boolean.valueOf(enable));
+	private GroupTaskConfigurationPage enableStep(String elementCssClass, boolean enable) {
+		String toggleStepSelector = "fieldset.o_sel_course_gta_steps div." + elementCssClass + " button." + elementCssClass;
+		OOGraphene.toggle(toggleStepSelector, enable, true, browser);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

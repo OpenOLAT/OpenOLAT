@@ -1,0 +1,22 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("assign.reviewers"))
+		<li>$r.render("assign.reviewers")</li>
+		<li class="divider"></li>
+	#end
+	#if($r.available("show.reviews"))
+		<li>$r.render("show.reviews")</li>
+	#end
+	#if($r.available("show.review"))
+		<li>$r.render("show.review")</li>
+	#end
+	#if($r.available("add.new.review"))
+		<li>$r.render("add.new.review")</li>
+	#end
+	#if($r.available("invalidate.review"))
+		<li>$r.render("invalidate.review")</li>
+	#end
+	#if($r.available("reopen.review"))
+		<li class="divider"></li>
+		<li>$r.render("reopen.review")</li>
+	#end
+</ul>

@@ -235,6 +235,10 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		}
 	}
 	
+	public void setDoneI18nKey(String i18nKey) {
+		doneLink.setI18nKey(i18nKey, null);
+	}
+	
 	public void setSaveDisplayText(String text) {
 		saveLink.getComponent().setCustomDisplayText(text);
 	}

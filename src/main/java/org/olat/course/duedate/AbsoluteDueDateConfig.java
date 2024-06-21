@@ -30,5 +30,12 @@ import java.util.Date;
 public interface AbsoluteDueDateConfig {
 
 	public Date getAbsoluteDate();
+	
+	/**
+	 * If the period option is enabled.
+	 * 
+	 * @return The start date of the period.
+	 */
+	public Date getAbsoluteStartDate();
 
 }

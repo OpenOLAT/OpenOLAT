@@ -52,10 +52,10 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 		this.numOfRatings = numOfRatings;
 		component = new RatingWithAverageComponent(name, this);
 		
-		averageComponent = new RatingFormItem("ravg_".concat(getName()), averageRating, maxRating, false);
+		averageComponent = new RatingFormItem("ravg_".concat(getName()), RatingType.stars, averageRating, maxRating, false);
 		averageComponent.setCssClass("o_rating_average");
 
-		userComponent = new RatingFormItem("rusr_".concat(getName()), initialUserRating, maxRating, true);
+		userComponent = new RatingFormItem("rusr_".concat(getName()), RatingType.stars, initialUserRating, maxRating, true);
 		userComponent.getFormItemComponent().setTranslateExplanation(true);
 		userComponent.getFormItemComponent().setTranslateRatingLabels(true);
 		userComponent.getFormItemComponent().addListener(component);

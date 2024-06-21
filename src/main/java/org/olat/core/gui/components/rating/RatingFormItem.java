@@ -32,11 +32,11 @@ public class RatingFormItem extends FormItemImpl {
 
 	private final RatingComponent component;
 	
-	public RatingFormItem(String name, float intialRating, int maxRating, boolean allowUserInput) {
+	public RatingFormItem(String name, RatingType type, float intialRating, int maxRating, boolean allowUserInput) {
 		super(name);
-		component = new RatingComponent(name, name, intialRating, maxRating, allowUserInput, this);
+		component = new RatingComponent(name, name, type, intialRating, maxRating, allowUserInput, this);
 	}
-	
+
 	public int getMaxRating() {
 		return component.getRatingSteps();
 	}

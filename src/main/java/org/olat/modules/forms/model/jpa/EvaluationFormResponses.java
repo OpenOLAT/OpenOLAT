@@ -78,7 +78,7 @@ public class EvaluationFormResponses {
 		return responses;
 	}
 
-	private Map<String, List<EvaluationFormResponse>> getResponsesBySession(EvaluationFormSession session) {
+	public Map<String, List<EvaluationFormResponse>> getResponsesBySession(EvaluationFormSession session) {
 		Map<String, List<EvaluationFormResponse>> identifierToResponses = sessionToResponses.get(session);
 		if (identifierToResponses == null) {
 			identifierToResponses = new HashMap<>(0);

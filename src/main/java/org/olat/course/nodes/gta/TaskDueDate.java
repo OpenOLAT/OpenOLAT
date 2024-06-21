@@ -35,6 +35,8 @@ public interface TaskDueDate extends Task {
 	public void setSubmissionDueDate(Date submissionDueDate);
 
 	public void setRevisionsDueDate(Date revisionsDueDate);
+	
+	public void setPeerReviewDueDate(Date peerReviewDueDate);
 
 	public void setSolutionDueDate(Date solutionDueDate);
 

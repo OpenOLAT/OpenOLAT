@@ -37,6 +37,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -72,6 +73,7 @@ import org.olat.course.nodes.gta.ui.events.NeedRevisionEvent;
 import org.olat.course.nodes.gta.ui.events.ReviewedEvent;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
+import org.olat.course.nodes.gta.ui.peerreview.GTACoachPeerReviewController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -97,6 +99,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private GTACoachedParticipantGradingController participantGradingCtrl;
 	private GTACoachRevisionAndCorrectionsController revisionDocumentsCtrl;
 	private ConfirmRevisionsController confirmRevisionsCtrl;
+	private GTACoachPeerReviewController peerReviewController;
 	private DialogBoxController confirmReviewDocumentCtrl;
 	private DialogBoxController confirmCollectCtrl;
 	private DialogBoxController confirmBackToSubmissionCtrl;
@@ -108,6 +111,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private Link resetTaskButton;
 	private Link backToSubmissionLink;
 	private Link collectSubmissionsLink;
+	private final BreadcrumbPanel stackPanel;
 	
 	private final boolean isAdmin;
 	private final boolean withReset;
@@ -118,17 +122,19 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	@Autowired
 	private DocEditorService docEditorService;
 	
-	public GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
+	public GTACoachController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup,
 			boolean withTitle, boolean withGrading, boolean withSubscription, boolean withReset) {
-		this(ureq, wControl, courseEnv, gtaNode, coachCourseEnv, assessedGroup, null,
+		this(ureq, wControl, stackPanel, courseEnv, gtaNode, coachCourseEnv, assessedGroup, null,
 				withTitle, withGrading, withSubscription, withReset);
 	}
 	
-	public GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
+	public GTACoachController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			UserCourseEnvironment coachCourseEnv, Identity assessedIdentity,
 			boolean withTitle, boolean withGrading, boolean withSubscription, boolean withReset) {
-		this(ureq, wControl, courseEnv, gtaNode, coachCourseEnv, null, assessedIdentity,
+		this(ureq, wControl, stackPanel, courseEnv, gtaNode, coachCourseEnv, null, assessedIdentity,
 				withTitle, withGrading, withSubscription, withReset);
 	}
 
@@ -143,11 +149,13 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	 * @param withTitle Allow to remove the title in assessment tool
 	 * @param withGrading Allow to remove the grading panel in assessment tool
 	 */
-	private GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
+	private GTACoachController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup, Identity assessedIdentity,
 			boolean withTitle, boolean withGrading, boolean withSubscription, boolean withReset) {
 		super(ureq, wControl, gtaNode, courseEnv, null, assessedGroup, assessedIdentity, withTitle, withGrading, withSubscription);
 		this.coachCourseEnv = coachCourseEnv;
+		this.stackPanel = stackPanel;
 		this.withReset = withReset;
 		isAdmin = coachCourseEnv.isAdmin();
 		initContainer(ureq);
@@ -320,6 +328,50 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	}
 	
 	@Override
+	protected Task stepPeerReview(UserRequest ureq, Task assignedTask) {
+		assignedTask = super.stepPeerReview(ureq, assignedTask);
+		
+		mainVC.contextPut("review", Boolean.FALSE);
+		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
+					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
+					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
+				setNotAvailableStatusAndCssClass("peeReview");
+			} else if(assignedTask.getTaskStatus() == TaskProcess.peerreview) {
+				if(isPeerReviewStarted(ureq, assignedTask)) {
+					setActiveStatusAndCssClass("peerReview");
+					setPeerReview(ureq, assignedTask);
+				} else {
+					setNotAvailableStatusAndCssClass("peerReview");
+				}
+			} else {
+				setDoneStatusAndCssClass("peerReview");
+				setPeerReview(ureq, assignedTask);
+			}
+		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.peerreview) {
+			if(isPeerReviewStarted(ureq, assignedTask)) {
+				setActiveStatusAndCssClass("peerReview");
+				setPeerReview(ureq, assignedTask);
+			} else {
+				setNotAvailableStatusAndCssClass("peerReview");
+			}
+		} else {
+			setDoneStatusAndCssClass("peerReview");
+			setPeerReview(ureq, assignedTask);
+		}
+		
+		return assignedTask;
+	}
+	
+	private void setPeerReview(UserRequest ureq, Task assignedTask) {
+		peerReviewController = new GTACoachPeerReviewController(ureq, getWindowControl(), stackPanel,
+				taskList, assignedTask, assessedIdentity, courseEnv, courseEntry, gtaNode);
+		listenTo(peerReviewController);
+		mainVC.put("peerReviews", peerReviewController.getInitialComponent());
+	}
+	
+	@Override
 	protected Task stepReviewAndCorrection(UserRequest ureq, Task assignedTask, List<TaskRevision> taskRevisions) {
 		assignedTask = super.stepReviewAndCorrection(ureq, assignedTask, taskRevisions);
 		
@@ -459,11 +511,12 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
 			
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
 					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
-					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
+					|| assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.peerreview) {
 				setNotAvailableStatusAndCssClass("solution");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.solution) {
 				if(isSolutionVisible(ureq, assignedTask) && showSolutions(availableDate)) {
@@ -575,6 +628,15 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	@Override
 	protected DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now,
 			boolean done, boolean userDeadLine, TaskProcess step) {
+		
+		Date start = dueDate.getStartDate();
+		if(start != null && now.before(start)) {
+			DueDateArguments dueDateArgs = formatDueDateArguments(dueDate.getStartDate(), now, false, false, false);
+			boolean dateOnly = dueDate.getStartDate() != null && isDateOnly(dueDate.getStartDate());
+			String i18nKey = dateOnly ? "msg.start.dateonly" : "msg.start";
+			String text = translate(i18nKey, dueDateArgs.args());
+			return new DueDateValues(text, -1L, -1L);
+		}
 		
 		Date refDate = dueDate.getReferenceDueDate();
 		Date refLateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();

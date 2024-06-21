@@ -100,6 +100,10 @@ public class ProgressBarItem extends FormItemImpl {
 		component.setPercentagesEnabled(enabled);
 	}
 	
+	public void setLabelMaxEnabled(boolean enabled) {
+		component.setLabelMaxEnabled(enabled);
+	}
+	
 	public void setInfo(String info) {
 		component.setInfo(info);
 	}

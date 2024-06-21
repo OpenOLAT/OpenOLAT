@@ -28,9 +28,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -86,6 +88,9 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private static final String ASSIGNMENT_COACHES = "coaches";
 	private static final String ASSIGNMENT_COACHES_AND_OWNERS = "coaches-owners";
 	
+	private static final String REVIEW_AND_CORRECTION_KEY = "review-correction";
+	private static final String PEER_REVIEW_KEY = "peer-review";
+	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmChangesCtrl;
 	private AreaSelectionController areaSelectionCtrl;
@@ -102,12 +107,15 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private DueDateConfigFormItem solutionVisibleAfterEl;
 	private DueDateConfigFormItem lateSubmissionDeadlineEl;
 	private MultipleSelectionElement relativeDatesEl;
-	private MultipleSelectionElement taskAssignmentEl;
-	private MultipleSelectionElement reviewEl;
-	private MultipleSelectionElement revisionEl;
-	private MultipleSelectionElement sampleEl;
-	private MultipleSelectionElement gradingEl;
-	private MultipleSelectionElement submissionEl;
+	private FormToggle taskAssignmentEl;
+	private FormToggle feedbackEl;
+	private SingleSelection feedbackTypeEl;
+	private DueDateConfigFormItem peerReviewPeriodEl;
+	private TextElement peerReviewPeriodLengthEl;
+	private FormToggle revisionEl;
+	private FormToggle sampleEl;
+	private FormToggle gradingEl;
+	private FormToggle submissionEl;
 	private MultipleSelectionElement lateSubmissionEl;
 	private FormLayoutContainer stepsCont;
 	private SingleSelection solutionVisibleToAllEl;
@@ -273,11 +281,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 		uifactory.addSpacerElement("s1", stepsCont, false);
 		
 		//assignment
-		String[] assignmentValues = new String[] { translate("task.assignment.enabled") };
-		taskAssignmentEl = uifactory.addCheckboxesHorizontal("task.assignment", "task.assignment", stepsCont, onKeys, assignmentValues);
+		taskAssignmentEl = uifactory.addToggleButton("task.assignment", "task.assignment", translate("on"), translate("off"), stepsCont);
+		taskAssignmentEl.setElementCssClass("o_sel_gta_step_assignment");
+		taskAssignmentEl.setText(translate("task.assignment.enabled"));
 		taskAssignmentEl.addActionListener(FormEvent.ONCHANGE);
 		boolean assignement = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
-		taskAssignmentEl.select(onKeys[0], assignement);
+		taskAssignmentEl.toggle(assignement);
 		
 		assignmentDeadlineEl = DueDateConfigFormItem.create("assignment.deadline", getRelativeToDates(true),
 				useRelativeDates, gtaNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE));
@@ -288,11 +297,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 		uifactory.addSpacerElement("s2", stepsCont, false);
 
 		//turning in
-		String[] submissionValues = new String[] { translate("submission.enabled") };
-		submissionEl = uifactory.addCheckboxesHorizontal("submission", "submission", stepsCont, onKeys, submissionValues);
+		submissionEl = uifactory.addToggleButton("submission", "submission", translate("on"), translate("off"), stepsCont);
+		submissionEl.setElementCssClass("o_sel_gta_step_submission");
+		submissionEl.setText(translate("submission.enabled"));
 		submissionEl.addActionListener(FormEvent.ONCHANGE);
 		boolean submit = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
-		submissionEl.select(onKeys[0], submit);
+		submissionEl.toggle(submit);
 		
 		submissionDeadlineEl = DueDateConfigFormItem.create("submit.deadline", getRelativeToDates(false), useRelativeDates,
 				gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE));
@@ -314,29 +324,57 @@ public class GTAWorkflowEditController extends FormBasicController {
 		
 		uifactory.addSpacerElement("s3", stepsCont, false);
 
-		//review and correction
-		String[] reviewValues = new String[] { translate("review.enabled") };
-		reviewEl = uifactory.addCheckboxesHorizontal("review", "review.and.correction", stepsCont, onKeys, reviewValues);
-		reviewEl.addActionListener(FormEvent.ONCHANGE);
-		boolean review = config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION);
-		reviewEl.select(onKeys[0], review);
+		// feedback: review and correction with coach or peer review
+		feedbackEl = uifactory.addToggleButton("feedback", "feedback", translate("on"), translate("off"), stepsCont);
+		feedbackEl.setElementCssClass("o_sel_gta_step_feedback");
+		feedbackEl.setText(translate("feedback.text"));
+		feedbackEl.addActionListener(FormEvent.ONCHANGE);
+		
+		boolean correctionEnabled = config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION);
+		boolean peerReviewEnabled = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
+		feedbackEl.toggle(correctionEnabled || peerReviewEnabled);
+		
+		SelectionValues feedbackPK = new SelectionValues();
+		feedbackPK.add(SelectionValues.entry(REVIEW_AND_CORRECTION_KEY, translate("feedback.review.and.correction"), translate("feedback.review.and.correction.descr"), null, null, true));
+		feedbackPK.add(SelectionValues.entry(PEER_REVIEW_KEY, translate("feedback.peer.review"), translate("feedback.peer.review.descr"), null, null, true));
+		feedbackTypeEl = uifactory.addCardSingleSelectHorizontal("feedback.type", "feedback.type", stepsCont, feedbackPK);
+		feedbackTypeEl.addActionListener(FormEvent.ONCHANGE);
+		feedbackTypeEl.setVisible(feedbackEl.isOn());
+		if(correctionEnabled) {
+			feedbackTypeEl.select(REVIEW_AND_CORRECTION_KEY, true);
+		} else if(peerReviewEnabled) {
+			feedbackTypeEl.select(PEER_REVIEW_KEY, true);
+		}
+
+		DueDateConfig peerReviewPeriodConfig = gtaNode.getDueDateConfig(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE);
+		peerReviewPeriodEl = DueDateConfigFormItem.create("peer.review.period.visible", getRelativeToDates(false),
+				useRelativeDates, peerReviewPeriodConfig);
+		peerReviewPeriodEl.setPeriod(true);
+		peerReviewPeriodEl.setLabel("peer.review.period.visible", null);
+		peerReviewPeriodEl.setVisible(feedbackEl.isOn() && peerReviewEnabled);
+		stepsCont.add(peerReviewPeriodEl);
+		
+		String peerReviewLength = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_LENGTH, "");
+		peerReviewPeriodLengthEl = uifactory.addTextElement("peer.review.period.length", 8, peerReviewLength, stepsCont);
+		peerReviewPeriodLengthEl.setVisible(peerReviewEnabled && useRelativeDates);
 		
 		//revision
-		String[] revisionValues = new String[] { translate("revision.enabled") };
-		revisionEl = uifactory.addCheckboxesHorizontal("revision", "revision.period", stepsCont, onKeys, revisionValues);
+		revisionEl = uifactory.addToggleButton("revision", "revision.period", translate("on"), translate("off"), stepsCont);
+		revisionEl.setElementCssClass("o_sel_gta_step_revision");
+		revisionEl.setText(translate("revision.enabled"));
 		revisionEl.addActionListener(FormEvent.ONCHANGE);
 		boolean revision = config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
-		revisionEl.select(onKeys[0], revision);
-		revisionEl.setVisible(review);
-		
+		revisionEl.toggle(revision);
+		revisionEl.setVisible(feedbackEl.isOn() && correctionEnabled);		
 		uifactory.addSpacerElement("s4", stepsCont, false);
 
 		//sample solution
-		String[] sampleValues = new String[] { translate("sample.solution.enabled") };
-		sampleEl = uifactory.addCheckboxesHorizontal("sample", "sample.solution", stepsCont, onKeys, sampleValues);
+		sampleEl = uifactory.addToggleButton("sample", "sample.solution", translate("on"), translate("off"), stepsCont);
+		sampleEl.setElementCssClass("o_sel_gta_step_solution");
+		sampleEl.setText(translate("sample.solution.enabled"));
 		sampleEl.addActionListener(FormEvent.ONCHANGE);
 		boolean sample = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION);
-		sampleEl.select(onKeys[0], sample);
+		sampleEl.toggle(sample);
 		
 		DueDateConfig solutionVisibleAfterConfig = gtaNode.getDueDateConfig(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
 		solutionVisibleAfterEl = DueDateConfigFormItem.create("sample.solution.visible.after", getRelativeToDates(false),
@@ -357,11 +395,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 		uifactory.addSpacerElement("s5", stepsCont, false);
 
 		//grading
-		String[] gradingValues = new String[] { translate("grading.enabled") };
-		gradingEl = uifactory.addCheckboxesHorizontal("grading", "grading", stepsCont, onKeys, gradingValues);
+		gradingEl = uifactory.addToggleButton("grading", "grading", translate("on"), translate("off"), stepsCont);
+		gradingEl.setElementCssClass("o_sel_gta_step_grading");
+		gradingEl.setText(translate("grading.enabled"));
 		gradingEl.addActionListener(FormEvent.ONCHANGE);
 		boolean grading = config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
-		gradingEl.select(onKeys[0], grading);
+		gradingEl.toggle(grading);
 	}
 
 	private String[] getSolutionVisibleToAllValues() {
@@ -492,9 +531,9 @@ public class GTAWorkflowEditController extends FormBasicController {
 		}
 		
 		taskAssignmentEl.clearError();
-		if(!taskAssignmentEl.isAtLeastSelected(1) && !submissionEl.isAtLeastSelected(1)
-				&& !reviewEl.isAtLeastSelected(1) && !revisionEl.isAtLeastSelected(1)
-				&& !sampleEl.isAtLeastSelected(1) && !gradingEl.isAtLeastSelected(1)) {
+		if(!taskAssignmentEl.isOn() && !submissionEl.isOn()
+				&& !feedbackEl.isOn() && !revisionEl.isOn()
+				&& !sampleEl.isOn() && !gradingEl.isOn()) {
 
 			taskAssignmentEl.setErrorKey("error.select.atleastonestep");
 			allOk &= false;
@@ -551,7 +590,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		config.setBooleanEntry(GTACourseNode.GTASK_RELATIVE_DATES, relativeDates);
 		
 		// Assignment
-		boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
+		boolean assignment = taskAssignmentEl.isOn();
 		config.setBooleanEntry(GTACourseNode.GTASK_ASSIGNMENT, assignment);
 		DueDateConfig assignmentDueDateConfig = assignment? assignmentDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
 		config.setIntValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, assignmentDueDateConfig.getNumOfDays());
@@ -559,7 +598,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		config.setDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE, assignmentDueDateConfig.getAbsoluteDate());
 		
 		// Submission step
-		boolean turningIn = submissionEl.isAtLeastSelected(1);
+		boolean turningIn = submissionEl.isOn();
 		config.setBooleanEntry(GTACourseNode.GTASK_SUBMIT, turningIn);
 		DueDateConfig submissionDueDateConfig = turningIn? submissionDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
 		config.setIntValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, submissionDueDateConfig.getNumOfDays());
@@ -574,16 +613,21 @@ public class GTAWorkflowEditController extends FormBasicController {
 		config.setStringValue(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE_RELATIVE_TO, lateSubmissionDueDateConfig.getRelativeToType());
 		config.setDateValue(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE, lateSubmissionDueDateConfig.getAbsoluteDate());
 		
-		// Review
-		boolean review = reviewEl.isAtLeastSelected(1);
-		config.setBooleanEntry(GTACourseNode.GTASK_REVIEW_AND_CORRECTION, review);
-		if(review) {
-			config.setBooleanEntry(GTACourseNode.GTASK_REVISION_PERIOD, revisionEl.isAtLeastSelected(1));
-		} else {
-			config.setBooleanEntry(GTACourseNode.GTASK_REVISION_PERIOD, false);
-		}
+		// Review and peer review
+		String feedback = feedbackEl.isOn() ? feedbackTypeEl.getSelectedKey() : "false";
+		boolean correction = REVIEW_AND_CORRECTION_KEY.equals(feedback);
+		boolean peerReview = PEER_REVIEW_KEY.equals(feedback);
+		config.setBooleanEntry(GTACourseNode.GTASK_REVIEW_AND_CORRECTION, correction);
+		config.setBooleanEntry(GTACourseNode.GTASK_PEER_REVIEW, peerReview);
+		config.setBooleanEntry(GTACourseNode.GTASK_REVISION_PERIOD, correction && revisionEl.isOn());
+
+		DueDateConfig peerReviewDueDateConfig = peerReview ? peerReviewPeriodEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		config.setIntValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_RELATIVE, peerReviewDueDateConfig.getNumOfDays());
+		config.setStringValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_RELATIVE_TO, peerReviewDueDateConfig.getRelativeToType());
+		config.setDateValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_START, peerReviewDueDateConfig.getAbsoluteStartDate());
+		config.setDateValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE, peerReviewDueDateConfig.getAbsoluteDate());
 		
-		boolean sample = sampleEl.isAtLeastSelected(1);
+		boolean sample = sampleEl.isOn();
 		config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION, sample);
 		DueDateConfig sampleDueDateConfig = sample ? solutionVisibleAfterEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
 		config.setIntValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, sampleDueDateConfig.getNumOfDays());
@@ -591,7 +635,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		config.setDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, sampleDueDateConfig.getAbsoluteDate());
 		config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, solutionVisibleToAllEl.isSelected(0));
 
-		config.setBooleanEntry(GTACourseNode.GTASK_GRADING, gradingEl.isAtLeastSelected(1));
+		config.setBooleanEntry(GTACourseNode.GTASK_GRADING, gradingEl.isOn());
 		
 		if (documentsCont.isVisible()) {
 			boolean coachUploadAllowed = coachAllowedUploadEl.isAtLeastSelected(1);
@@ -639,12 +683,13 @@ public class GTAWorkflowEditController extends FormBasicController {
 			updateAssignmentDeadline();
 			updateSubmissionDeadline();
 			updateSolutionDeadline();
+			updateRevisions();
 		} else if(sampleEl == source || solutionVisibleAfterEl == source || optionalEl == source) {
 			updateSolutionDeadline();
 			updateDocuments();
-		} else if (reviewEl == source) {
+		} else if (feedbackEl == source || feedbackTypeEl == source) {
 			updateRevisions();
-		} else if(this.coachAssignmentEnabledEl == source) {
+		} else if(coachAssignmentEnabledEl == source) {
 			updateCoaching();
 		} else if(chooseGroupButton == source) {
 			doChooseGroup(ureq);
@@ -665,7 +710,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	
 	private void updateAssignmentDeadline() {
 		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
-		boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
+		boolean assignment = taskAssignmentEl.isOn();
 		
 		assignmentDeadlineEl.setRelativeToDates(getRelativeToDates(true));
 		assignmentDeadlineEl.setVisible(assignment);
@@ -674,7 +719,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	
 	private void updateSubmissionDeadline() {
 		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
-		boolean submit = submissionEl.isAtLeastSelected(1);
+		boolean submit = submissionEl.isOn();
 		
 		submissionDeadlineEl.setRelativeToDates(getRelativeToDates(false));
 		submissionDeadlineEl.setVisible(submit);
@@ -690,7 +735,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	
 	private void updateSolutionDeadline() {
 		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
-		boolean solution = sampleEl.isAtLeastSelected(1);
+		boolean solution = sampleEl.isOn();
 		
 		solutionVisibleAfterEl.setRelativeToDates(getRelativeToDates(false));
 		solutionVisibleAfterEl.setVisible(solution);
@@ -713,7 +758,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		DueDateConfigFormatter.create(getLocale()).addCourseRelativeToDateTypes(relativeToDates, courseRelativeToDateTypes);
 		
 		if(!excludeAssignment) {
-			boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
+			boolean assignment = taskAssignmentEl.isOn();
 			if (assignment) {
 				relativeToDates.add(SelectionValues.entry(GTACourseNode.TYPE_RELATIVE_TO_ASSIGNMENT,
 						getTranslator().translate("relative.to.assignment")));
@@ -724,13 +769,24 @@ public class GTAWorkflowEditController extends FormBasicController {
 	}
 	
 	private void updateRevisions() {
-		boolean review = reviewEl.isAtLeastSelected(1);
-		revisionEl.setVisible(review);
-		revisionEl.select(onKeys[0], config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD));
+		boolean feedback = feedbackEl.isOn();
+		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
+		boolean correctionEnabled = feedbackTypeEl.isKeySelected(REVIEW_AND_CORRECTION_KEY);
+		boolean peerReviewEnabled = feedbackTypeEl.isKeySelected(PEER_REVIEW_KEY);
+		
+		feedbackTypeEl.setVisible(feedback);
+		
+		peerReviewPeriodEl.setRelativeToDates(getRelativeToDates(false));
+		peerReviewPeriodEl.setVisible(feedback  && peerReviewEnabled);
+		peerReviewPeriodEl.setRelative(useRelativeDate);
+		peerReviewPeriodLengthEl.setVisible(feedback && peerReviewEnabled && useRelativeDate);
+		
+		revisionEl.setVisible(feedback && correctionEnabled);
+		revisionEl.toggle(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD));
 	}
 	
 	private void updateDocuments() {
-		boolean visible = taskAssignmentEl.isAtLeastSelected(1) || sampleEl.isAtLeastSelected(1);
+		boolean visible = taskAssignmentEl.isOn() || sampleEl.isOn();
 		documentsCont.setVisible(visible);
 
 		boolean coachUpload = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false);

@@ -72,7 +72,7 @@ public abstract class AbstractGTAAssessmentHandler implements AssessmentHandler 
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUsserCourseEnv) {
 		if (courseNode instanceof GTACourseNode gtaNode) {
-			return new GTAAssessmentDetailsController(ureq, wControl, coachCourseEnv, assessedUsserCourseEnv, gtaNode);
+			return new GTAAssessmentDetailsController(ureq, wControl, stackPanel, coachCourseEnv, assessedUsserCourseEnv, gtaNode);
 		}
 		return new BlankController(ureq, wControl);
 	}

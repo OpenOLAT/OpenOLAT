@@ -44,8 +44,7 @@ public class RatingCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof UserRating) {
-			UserRating userRating = (UserRating) cellValue;
+		if (cellValue instanceof UserRating userRating) {
 			int rating = userRating.getRating() != null? userRating.getRating(): 0;
 			
 			target.append("<div class='o_rating'>");

@@ -56,6 +56,7 @@ public class EditDueDatesController extends FormBasicController {
 	private DateChooser assignmentDueDateEl;
 	private DateChooser submissionDueDateEl;
 	private DateChooser revisionDueDateEl;
+	private DateChooser peerReviewDueDateEl;
 	private DateChooser solutionDueDateEl;
 	
 	private Task task;
@@ -115,6 +116,11 @@ public class EditDueDatesController extends FormBasicController {
 		revisionDueDateEl.setDateChooserTimeEnabled(true);
 		revisionDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD));
 		
+		Date peerReviewDueDate = task.getPeerReviewDueDate();
+		peerReviewDueDateEl = uifactory.addDateChooser("peerreview.duedate", peerReviewDueDate, formLayout);
+		peerReviewDueDateEl.setDateChooserTimeEnabled(true);
+		peerReviewDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW));
+		
 		Date solutionDueDate = task.getSolutionDueDate();
 		solutionDueDateEl = uifactory.addDateChooser("solution.duedate", solutionDueDate, formLayout);
 		solutionDueDateEl.setDateChooserTimeEnabled(true);
@@ -144,10 +150,11 @@ public class EditDueDatesController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		TaskDueDate dueDates = gtaManager.getDueDatesTask(task);
-		log(assignmentDueDateEl.getDate(), submissionDueDateEl.getDate(), revisionDueDateEl.getDate(), solutionDueDateEl.getDate(), dueDates);
+		log(assignmentDueDateEl.getDate(), submissionDueDateEl.getDate(), revisionDueDateEl.getDate(), peerReviewDueDateEl.getDate(), solutionDueDateEl.getDate(), dueDates);
 		dueDates.setAssignmentDueDate(assignmentDueDateEl.getDate());	
 		dueDates.setSubmissionDueDate(submissionDueDateEl.getDate());	
 		dueDates.setRevisionsDueDate(revisionDueDateEl.getDate());
+		dueDates.setPeerReviewDueDate(peerReviewDueDateEl.getDate());
 		dueDates.setSolutionDueDate(solutionDueDateEl.getDate());
 		dueDates = gtaManager.updateTaskDueDate(dueDates);
 		
@@ -166,7 +173,7 @@ public class EditDueDatesController extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
-	private void log(Date newAssignmentDueDate, Date newSubmissionDueDate, Date newRevisionDueDate, Date newSolutionDueDate, TaskDueDate currentDueDates) {
+	private void log(Date newAssignmentDueDate, Date newSubmissionDueDate, Date newRevisionDueDate, Date newReviewsDueDate, Date newSolutionDueDate, TaskDueDate currentDueDates) {
 		getLogger().debug("log: newAssignmentDueDate={}, newSubmissionDueDate={}, newRevisionDueDate={}, newSolutionDueDate={}",
 				newAssignmentDueDate, newSubmissionDueDate, newRevisionDueDate, newSolutionDueDate);
 		gtaManager.logIfChanged(newAssignmentDueDate, currentDueDates.getAssignmentDueDate(), TaskProcess.assignment, task,
@@ -174,6 +181,8 @@ public class EditDueDatesController extends FormBasicController {
 		gtaManager.logIfChanged(newSubmissionDueDate, currentDueDates.getSubmissionDueDate(), TaskProcess.submit, task,
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach, formatter);
 		gtaManager.logIfChanged(newRevisionDueDate, currentDueDates.getRevisionsDueDate(), TaskProcess.revision, task,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach, formatter);
+		gtaManager.logIfChanged(newReviewsDueDate, currentDueDates.getPeerReviewDueDate(), TaskProcess.peerreview, task,
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach, formatter);
 		gtaManager.logIfChanged(newSolutionDueDate, currentDueDates.getSolutionDueDate(), TaskProcess.solution, task,
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach, formatter);

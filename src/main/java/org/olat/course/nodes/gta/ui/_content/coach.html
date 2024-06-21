@@ -191,6 +191,43 @@
 </div>
 #end
 
+#if($peerReviewEnabled)
+<div class="o_step $peerReviewCssClass o_step_peerreview o_expand_ctrl">
+	<div class="o_bar"></div>
+	<div class="o_step_block">
+		<div class="o_header" #if($collapse_peerReview) onclick="$r.javaScriptCommand("hide","step","peerReview")" #else onclick="$r.javaScriptCommand("show","step","peerReview")" #end>
+			<span class="o_process_status_badge $peerReviewCssStatus">$peerReviewStatus</span>
+			<h4 class="o_title">$r.translate("run.peerreviews")</h4>
+			#if($r.isNotEmpty($peerReviewDueDate))
+				<div class="o_meta"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $peerReviewDueDate</div>
+			#end
+			#if($peerReviewDueDateMsg)
+				<div class="o_meta">$r.escapeHtml($peerReviewDueDateMsg)</div>
+			#end
+		</div>
+		<div id="o_step_peerReview_content" class="o_content collapse #if($collapse_peerReview) in #end" aria-expanded="$collapse_peerReview" role="region">
+			#if($r.isNotEmpty($peerReviewsMessage))
+				<p>$peerReviewsMessage</p>
+			#end
+			#if($r.available("peerReviews"))
+				$r.render("peerReviews")
+			#end
+		</div>
+	</div>
+	<div class="o_button_group">
+	#if($collapse_peerReview)
+		<button href="javascript:;" onclick="$r.javaScriptCommand("hide","step","peerReview")" data-toggle="collapse" aria-expanded="$collapse_peerReview" class="btn btn-default o_button_details">
+			<i class="o_icon o_icon_lg o_icon_details_collaps"> </i><span></span>
+		</button>
+	#else
+		<button href="javascript:;" onclick="$r.javaScriptCommand("show","step","peerReview")" data-toggle="collapse" aria-expanded="$collapse_peerReview" class="btn btn-default o_button_details">
+			<i class="o_icon o_icon_lg o_icon_details_expand"> </i><span></span>
+		</button>
+	#end
+	</div>
+</div>
+#end
+
 #if($solutionEnabled)
 <div class="o_step $solutionCssClass o_step_solution o_expand_ctrl">
 	<div class="o_bar"></div>

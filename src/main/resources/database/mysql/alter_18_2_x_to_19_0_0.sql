@@ -57,6 +57,30 @@ alter table o_media_to_page_part add constraint media_to_page_part_page_part_idx
 -- Reminders
 alter table o_rem_reminder add column r_email_copy_only bool default false;
 
+-- Peer review
+alter table o_gta_task add column g_peerreview_due_date datetime;
+
+alter table o_gta_task add column fk_survey bigint;
+
+alter table o_gta_task add constraint gtask_survey_idx foreign key (fk_survey) references o_eva_form_survey (id);
+
+create table o_gta_review_assignment (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_assigned bool not null default true,
+   g_status varchar(32) not null default 'open',
+   g_rating float(65,30) default null,
+   fk_task bigint not null,
+   fk_assignee bigint not null,
+   fk_participation bigint,
+   primary key (id)
+);
+
+alter table o_gta_review_assignment add constraint assignment_to_gtask_idx foreign key (fk_task) references o_gta_task (id);
+alter table o_gta_review_assignment add constraint assignee_to_gtask_idx foreign key (fk_assignee) references o_bs_identity (id);
+alter table o_gta_review_assignment add constraint assignment_to_fpart_idx foreign key (fk_participation) references o_eva_form_participation (id);
+
 -- Open Badges
 create table o_badge_organization (
    id bigint not null auto_increment,

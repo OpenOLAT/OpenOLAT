@@ -58,8 +58,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditMultipleDueDatesController extends FormBasicController {
 	
-	private DateChooser assignmentDueDateEl, submissionDueDateEl, revisionDueDateEl, solutionDueDateEl;
-	private MultipleSelectionElement assignmentTakeOverEl, submissionTakeOverEl, revisionTakeOverEl, solutionTakeOverEl;
+	private DateChooser assignmentDueDateEl;
+	private DateChooser submissionDueDateEl;
+	private DateChooser revisionDueDateEl;
+	private DateChooser peerReviewDueDateEl;
+	private DateChooser solutionDueDateEl;
+	private MultipleSelectionElement assignmentTakeOverEl;
+	private MultipleSelectionElement submissionTakeOverEl;
+	private MultipleSelectionElement revisionTakeOverEl;
+	private MultipleSelectionElement peerReviewTakeOverEl;
+	private MultipleSelectionElement solutionTakeOverEl;
 	
 	private List<Task> tasks;
 	private GTACourseNode gtaNode;
@@ -124,6 +132,13 @@ public class EditMultipleDueDatesController extends FormBasicController {
 		revisionDueDateEl.setDateChooserTimeEnabled(true);
 		initDate(revisionTakeOverEl, revisionDueDateEl, Task::getRevisionsDueDate, config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD));
 		
+		peerReviewTakeOverEl = uifactory.addCheckboxesVertical("peerreview.take.over", "peerreview.duedate", formLayout, takeOverSV.keys(), takeOverSV.values(), 1);
+		peerReviewTakeOverEl.addActionListener(FormEvent.ONCHANGE);
+
+		peerReviewDueDateEl = uifactory.addDateChooser("peerreview.duedate", null, formLayout);
+		peerReviewDueDateEl.setDateChooserTimeEnabled(true);
+		initDate(peerReviewTakeOverEl, peerReviewDueDateEl, Task::getPeerReviewDueDate, config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW));
+		
 		solutionTakeOverEl = uifactory.addCheckboxesVertical("solution.take.over", "solution.duedate", formLayout, takeOverSV.keys(), takeOverSV.values(), 1);
 		solutionTakeOverEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -184,6 +199,8 @@ public class EditMultipleDueDatesController extends FormBasicController {
 			updateDateUI(submissionTakeOverEl, submissionDueDateEl);
 		} else if (source == revisionTakeOverEl) {
 			updateDateUI(revisionTakeOverEl, revisionDueDateEl);
+		} else if (source == peerReviewTakeOverEl) {
+			updateDateUI(peerReviewTakeOverEl, peerReviewDueDateEl);
 		} else if (source == solutionTakeOverEl) {
 			updateDateUI(solutionTakeOverEl, solutionDueDateEl);
 		}
@@ -198,7 +215,6 @@ public class EditMultipleDueDatesController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		for (Task task : tasks) {
-			//gtaManager.getTask(task);
 			TaskDueDate dueDates = gtaManager.getDueDatesTask(task);
 			if (assignmentDueDateEl.isEnabled()) {
 				gtaManager.logIfChanged(assignmentDueDateEl.getDate(), dueDates.getAssignmentDueDate(), TaskProcess.assignment, task,
@@ -214,6 +230,11 @@ public class EditMultipleDueDatesController extends FormBasicController {
 				gtaManager.logIfChanged(revisionDueDateEl.getDate(), dueDates.getRevisionsDueDate(), TaskProcess.revision, task,
 						getIdentity(), task.getIdentity(), task.getBusinessGroup(), courseEnv, gtaNode, Role.coach, formatter);
 				dueDates.setRevisionsDueDate(revisionDueDateEl.getDate());
+			}
+			if (peerReviewDueDateEl.isEnabled()) {
+				gtaManager.logIfChanged(peerReviewDueDateEl.getDate(), dueDates.getPeerReviewDueDate(), TaskProcess.peerreview, task,
+						getIdentity(), task.getIdentity(), task.getBusinessGroup(), courseEnv, gtaNode, Role.coach, formatter);
+				dueDates.setPeerReviewDueDate(peerReviewDueDateEl.getDate());
 			}
 			if (solutionDueDateEl.isEnabled()) {
 				gtaManager.logIfChanged(solutionDueDateEl.getDate(), dueDates.getSolutionDueDate(), TaskProcess.solution, task,

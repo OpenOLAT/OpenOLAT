@@ -108,8 +108,10 @@ import org.olat.core.gui.components.link.ExternalLinkItemImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.math.MathLiveElement;
 import org.olat.core.gui.components.math.MathLiveElementImpl;
+import org.olat.core.gui.components.panel.InfoPanelItem;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
+import org.olat.core.gui.components.rating.RatingType;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.scope.DateScope;
 import org.olat.core.gui.components.scope.FormDateScopeSelection;
@@ -1560,7 +1562,20 @@ public class FormUIFactory {
 	
 	public RatingFormItem addRatingItem(String name, String i18nLabel, float initialRating, int maxRating,
 			boolean allowUserInput, FormItemContainer formLayout) {
-		RatingFormItem ratingCmp = new RatingFormItem(name, initialRating, maxRating, allowUserInput);
+		RatingFormItem ratingCmp = new RatingFormItem(name, RatingType.stars, initialRating, maxRating, allowUserInput);
+		setLabelIfNotNull(i18nLabel, ratingCmp);
+		if(i18nLabel != null) {
+			ratingCmp.showLabel(true);
+		}
+		if(formLayout != null) {
+			formLayout.add(ratingCmp);
+		}
+		return ratingCmp;
+	}
+	
+	public RatingFormItem addRatingItemYesNo(String name, String i18nLabel, float initialRating, int maxRating,
+			boolean allowUserInput, FormItemContainer formLayout) {
+		RatingFormItem ratingCmp = new RatingFormItem(name, RatingType.yesNo, initialRating, maxRating, allowUserInput);
 		setLabelIfNotNull(i18nLabel, ratingCmp);
 		if(i18nLabel != null) {
 			ratingCmp.showLabel(true);
@@ -1620,6 +1635,15 @@ public class FormUIFactory {
 	
 	public EmptyStateItem addEmptyState(String name, String i18nLabel, FormItemContainer formLayaut) {
 		EmptyStateItem item = new EmptyStateItem(name);
+		setLabelIfNotNull(i18nLabel, item);
+		if(formLayaut != null) {
+			formLayaut.add(item);
+		}
+		return item;
+	}
+	
+	public InfoPanelItem addInfoPanel(String name, String i18nLabel, FormItemContainer formLayaut) {
+		InfoPanelItem item = new InfoPanelItem(name);
 		setLabelIfNotNull(i18nLabel, item);
 		if(formLayaut != null) {
 			formLayaut.add(item);

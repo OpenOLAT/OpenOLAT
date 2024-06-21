@@ -31,6 +31,9 @@ public class GTAStepPreferences {
 	private Boolean submit;
 	private Boolean reviewAndCorrection;
 	private Boolean revision;
+	private Boolean peerReview;
+	private Boolean peerReviewAwarded;
+	private Boolean peerReviewReceived;
 	private Boolean solution;
 	private Boolean grading;
 	
@@ -65,7 +68,31 @@ public class GTAStepPreferences {
 	public void setRevision(Boolean revision) {
 		this.revision = revision;
 	}
-	
+
+	public Boolean getPeerReview() {
+		return peerReview;
+	}
+
+	public void setPeerReview(Boolean peerReview) {
+		this.peerReview = peerReview;
+	}
+
+	public Boolean getPeerReviewAwarded() {
+		return peerReviewAwarded;
+	}
+
+	public void setPeerReviewAwarded(Boolean peerReviewAwarded) {
+		this.peerReviewAwarded = peerReviewAwarded;
+	}
+
+	public Boolean getPeerReviewReceived() {
+		return peerReviewReceived;
+	}
+
+	public void setPeerReviewReceived(Boolean peerReviewReceived) {
+		this.peerReviewReceived = peerReviewReceived;
+	}
+
 	public Boolean getSolution() {
 		return solution;
 	}

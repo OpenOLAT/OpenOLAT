@@ -1,0 +1,22 @@
+#if($r.available("backLink"))
+	<div class="o_block_bottom">$r.render("backLink")</div>
+#end
+#if($r.available("assessed.identity.infos"))
+	$r.render("assessed.identity.infos")
+#end
+#if($r.available("reviewer.infos"))
+	$r.render("reviewer.infos")
+#end
+#if($r.available("documents"))
+<fieldset>
+	<legend>$r.translate("review.documents")</legend>
+	$r.render("documents")
+</fieldset>
+#end
+<fieldset class="o_block">
+	<legend>$r.translate("review.assessment")</legend>
+	$r.render("form-execution")
+</fieldset>
+#if($r.available("rating"))
+	$r.render("rating")
+#end

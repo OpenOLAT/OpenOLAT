@@ -192,6 +192,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 	
 	@Override
+	public EvaluationFormSurvey loadSurveyByKey(Long surveyKey) {
+		return evaluationFormSurveyDao.loadSurveyByKey(surveyKey);
+	}
+
+	@Override
 	public List<EvaluationFormSurvey> loadSurveys(EvaluationFormSurveyIdentifier identifier) {
 		return evaluationFormSurveyDao.loadSurveysByResourceable(identifier.getOLATResourceable(), identifier.getSubident(),
 				identifier.getSubident2());

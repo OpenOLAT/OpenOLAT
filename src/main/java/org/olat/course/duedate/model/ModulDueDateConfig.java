@@ -21,6 +21,7 @@ package org.olat.course.duedate.model;
 
 import java.util.Date;
 
+import org.olat.core.util.StringHelper;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.modules.ModuleConfiguration;
 
@@ -35,14 +36,22 @@ public class ModulDueDateConfig implements DueDateConfig {
 	private final ModuleConfiguration config;
 	private final String relativeKey;
 	private final String absoluteDateKey;
+	private final String absoluteStartDateKey;
 	private final String numOfDaysKey;
 	private final String raltiveToTypeKey;
 	
 	public ModulDueDateConfig(ModuleConfiguration config, String relativeKey, String absoluteDateKey,
+			String numOfDaysKey, String relativeToTypeKey) {
+		this(config, relativeKey, null, absoluteDateKey, numOfDaysKey, relativeToTypeKey);
+	}
+	
+	public ModulDueDateConfig(ModuleConfiguration config, String relativeKey,
+			String absoluteStartDateKey, String absoluteDateKey,
 			String numOfDaysKey, String raltiveToTypeKey) {
 		this.config = config;
 		this.relativeKey = relativeKey;
 		this.absoluteDateKey = absoluteDateKey;
+		this.absoluteStartDateKey = absoluteStartDateKey;
 		this.numOfDaysKey = numOfDaysKey;
 		this.raltiveToTypeKey = raltiveToTypeKey;
 	}
@@ -50,6 +59,12 @@ public class ModulDueDateConfig implements DueDateConfig {
 	@Override
 	public Date getAbsoluteDate() {
 		return !isRelative()? config.getDateValue(absoluteDateKey): null;
+	}
+	
+	@Override
+	public Date getAbsoluteStartDate() {
+		return !isRelative() && StringHelper.containsNonWhitespace(absoluteStartDateKey)
+				? config.getDateValue(absoluteStartDateKey): null;
 	}
 
 	@Override

@@ -32,6 +32,7 @@ public enum TaskProcess {
 	review,			// Submission is done, the coach has now access to the submitted docs and reviews them. The coach uploads a corrected version or some feedback.
 	revision,		// The coach decided that the submitted docs are not yet good enough. The student can read the coach feedback and can submit a revised version or additional docs.
 	correction,		// The submission of the revised docs is done, the coach has now access to them. If satisfied he closes the review or sets the process to another revision state.
+	peerreview,		// Other students can review the task and the student can review others work
 	solution,		// The example solutions are now accessible to the student
 	grading,		// The review and correction process are done, the coach can now grade the word
 	graded			// Grading is done and the students gets his results

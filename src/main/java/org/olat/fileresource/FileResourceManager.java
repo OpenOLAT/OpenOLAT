@@ -81,6 +81,11 @@ public class FileResourceManager {
 	public File getFileResourceRoot(OLATResourceable res) {
 		return getFileResourceRootImpl(res).getBasefile();
 	}
+	
+	public File getFileResourceZipDir(OLATResourceable res) {
+		File root = getFileResourceRootImpl(res).getBasefile();
+		return new File(root, ZIPDIR);
+	}
 
 	/**
 	 * @param res

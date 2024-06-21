@@ -212,6 +212,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_info { @include o-add-icon('info-circle'); color: $brand-info}
 .o_icon_info_badge { @include o-add-icon('info-circle');}
 .o_icon_info_ap { @include o-add-icon('info-circle');}
+.o_icon_info_list { @include o-add-icon('clipboard-list');}
 .o_icon_info_msg { @include o-add-icon('exclamation-circle'); color: $brand-danger}
 .o_icon_info_resource { @include o-add-icon('info-circle');}
 .o_icon_inheritance_root { @include o-add-icon('circle-down');}
@@ -374,6 +375,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_radio_on { @include o-add-icon('check-circle', false);}
 .o_icon_rating_on { @include o-add-icon('star');}
 .o_icon_rating_off { @include o-add-icon('star', false);}
+.o_icon_rating_no_on { @include o-add-icon('thumbs-down');}
+.o_icon_rating_no_off { @include o-add-icon('thumbs-down', false);}
+.o_icon_rating_yes_on { @include o-add-icon('thumbs-up');}
+.o_icon_rating_yes_off { @include o-add-icon('thumbs-up', false);}
 .o_icon_reactivate { @include o-add-icon('level-up');}
 .o_icon_read { @include o-add-icon('circle', false);}
 .o_icon_readonly { @include o-add-icon('edit'); color:red;}
@@ -536,6 +541,7 @@ $fa-css-prefix: "o_icon" !default;
  	@include o-add-icon('video-camera', true, false);
 	&:after { position: absolute; top: 28%; left: 50%; margin-left: -0.5em; font-size: 45%; color: white }
 }
+.o_icon_view_all_rubrics { @include o-add-icon('clipboard-check');}
 .o_icon_visitingcard.o_icon_waiting { @include o-add-icon('clock', false);}
 .o_icon_wait { @include o-add-icon('circle-notch');}
 .o_icon_warn { @include o-add-icon('exclamation-triangle'); color: $brand-warning;}

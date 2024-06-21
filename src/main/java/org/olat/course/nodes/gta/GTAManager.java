@@ -427,6 +427,9 @@ public interface GTAManager {
 	public DueDate getLateSubmissionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	
+	public DueDate getPeerReviewDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
+	
 	public DueDate getSolutionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	
@@ -496,6 +499,8 @@ public interface GTAManager {
 	 * @return
 	 */
 	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity, Role by);
+	
+	public Task submitReviews(Task task, GTACourseNode cNode, Identity doerIdentity, Role by);
 	
 	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by);
 	

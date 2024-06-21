@@ -45,20 +45,19 @@ public class DueDateConfigComponentRenderer extends DefaultComponentRenderer {
 		DueDateConfigComponent dueDateCmp = (DueDateConfigComponent)source;
 		DueDateFormItemImpl dueDateItem = dueDateCmp.getFormItem();
 
+
 		sb.append("<div class='form-inline'>");
 		if (dueDateItem.isRelative()) {
 			TextElement numOfDaysEl = dueDateItem.getNumOfDaysEl();
 			if(numOfDaysEl != null && numOfDaysEl.isVisible()) {
 				Component cmp = numOfDaysEl.getComponent();
 				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, new String[] { "form" });
-				cmp.setDirty(false);
 			}
 			sb.append(" <span class=\"form-control-static\">").append(translator.translate("days.after")).append("</span> ");
 			FormItem relativeToEl = dueDateItem.getRealtiveToDateEl();
 			if(relativeToEl != null && relativeToEl.isVisible()) {
 				Component cmp = relativeToEl.getComponent();
 				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, new String[] { "form" });
-				cmp.setDirty(false);
 			}
 		} else {
 			JSDateChooser absoluteDateEl = dueDateItem.getAbsoluteDateEl();
@@ -72,7 +71,6 @@ public class DueDateConfigComponentRenderer extends DefaultComponentRenderer {
 				
 				Component cmp = absoluteDateEl.getComponent();
 				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, new String[] { "form" });
-				cmp.setDirty(false);
 			}
 		}
 		sb.append("</div>");

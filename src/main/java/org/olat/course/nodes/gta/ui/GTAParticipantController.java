@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -70,6 +71,8 @@ import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
+import org.olat.course.nodes.gta.ui.peerreview.GTAParticipantPeerReviewsAwardedListController;
+import org.olat.course.nodes.gta.ui.peerreview.GTAParticipantPeerReviewsReceivedListController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -96,6 +99,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	private Link changeGroupLink;
 	private Link resetTaskButton;
 	private Link optionalTaskButton;
+	private final BreadcrumbedStackedPanel stackPanel;
 
 	private CloseableModalController cmc;
 	private DirectoryController solutionsCtrl;
@@ -111,6 +115,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	private BusinessGroupChooserController businessGroupChooserCtrl;
 	private GTAParticipantRevisionAndCorrectionsController revisionDocumentsCtrl;
 	private ConfirmOptionalTaskAssignmentController confirmOptionalAssignmentCtrl;
+	private GTAParticipantPeerReviewsAwardedListController peerReviewsAwardedListCtrl;
+	private GTAParticipantPeerReviewsReceivedListController peerReviewsReceivedListCtrl;
 
 	private List<BusinessGroup> myGroups;
 	private boolean optionalTaskRefused = false;
@@ -122,9 +128,10 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
-	public GTAParticipantController(UserRequest ureq, WindowControl wControl,
+	public GTAParticipantController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			GTACourseNode gtaNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, gtaNode, userCourseEnv.getCourseEnvironment(), userCourseEnv, true, true, true);
+		this.stackPanel = stackPanel;
 		initContainer(ureq);
 		process(ureq, true);
 	}
@@ -493,6 +500,92 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 	
 	@Override
+	protected Task stepPeerReview(UserRequest ureq, Task assignedTask) {
+		assignedTask = super.stepPeerReview(ureq, assignedTask);
+		assignedTask = stepPeerReviewAwaredRatings(ureq, assignedTask);
+		assignedTask = stepPeerReviewReceivedRatings(ureq, assignedTask);
+		return assignedTask;
+	}
+
+	private Task stepPeerReviewAwaredRatings(UserRequest ureq, Task assignedTask) {
+		mainVC.contextPut("review", Boolean.FALSE);
+		
+		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
+					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
+					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
+				setNotAvailableStatusAndCssClass("peerReviewAwarded");
+			} else if(assignedTask.getTaskStatus() == TaskProcess.peerreview) {
+				if(isPeerReviewStarted(ureq, assignedTask) ) {
+					setReviewStatusAndCssClass("peerReviewAwarded");
+					setPeerReviewsAwardedList(ureq, assignedTask, false);
+				} else {
+					setNotAvailableStatusAndCssClass("peerReviewAwarded");
+				}	
+			} else {
+				setDoneStatusAndCssClass("peerReviewAwarded");
+				setPeerReviewsAwardedList(ureq, assignedTask, true);
+			}
+		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.peerreview) {
+			if(isPeerReviewStarted(ureq, assignedTask) ) {
+				setReviewStatusAndCssClass("peerReviewAwarded");
+				setPeerReviewsAwardedList(ureq, assignedTask, false);
+			} else {
+				setNotAvailableStatusAndCssClass("peerReviewAwarded");
+			}
+		} else {
+			setDoneStatusAndCssClass("peerReviewAwarded");
+			setPeerReviewsAwardedList(ureq, assignedTask, true);
+		}
+
+		return assignedTask;
+	}
+
+	private void setPeerReviewsAwardedList(UserRequest ureq, Task assignedTask, boolean readOnly) {
+		peerReviewsAwardedListCtrl = new GTAParticipantPeerReviewsAwardedListController(ureq, getWindowControl(), stackPanel,
+				courseEnv, gtaNode, taskList, assignedTask, readOnly);
+		listenTo(peerReviewsAwardedListCtrl);
+
+		mainVC.put("peerReviewsAwarded", peerReviewsAwardedListCtrl.getInitialComponent());
+	}
+	
+	private Task stepPeerReviewReceivedRatings(UserRequest ureq, Task assignedTask) {
+		mainVC.contextPut("review", Boolean.FALSE);
+		
+		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
+					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
+					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
+				setNotAvailableStatusAndCssClass("peerReviewReceived");
+			} else if(assignedTask.getTaskStatus() == TaskProcess.peerreview) {
+				setReviewStatusAndCssClass("peerReviewReceived");
+				setPeerReviewsReceivedList(ureq, assignedTask);
+			} else {
+				setDoneStatusAndCssClass("peerReviewReceived");
+				setPeerReviewsReceivedList(ureq, assignedTask);
+			}
+		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.peerreview) {
+			setReviewStatusAndCssClass("peerReviewReceived");
+			setPeerReviewsReceivedList(ureq, assignedTask);
+		} else {
+			setDoneStatusAndCssClass("peerReviewReceived");
+			setPeerReviewsReceivedList(ureq, assignedTask);
+		}
+
+		return assignedTask;
+	}
+	
+	private void setPeerReviewsReceivedList(UserRequest ureq, Task assignedTask) {
+		peerReviewsReceivedListCtrl = new GTAParticipantPeerReviewsReceivedListController(ureq, getWindowControl(),
+				assignedTask, courseEnv, gtaNode);
+		listenTo(peerReviewsReceivedListCtrl);
+
+		mainVC.put("peerReviewsReceived", peerReviewsReceivedListCtrl.getInitialComponent());
+	}
+	
+	@Override
 	protected Task stepReviewAndCorrection(UserRequest ureq, Task assignedTask, List<TaskRevision> taskRevisions) {
 		assignedTask = super.stepReviewAndCorrection(ureq, assignedTask, taskRevisions);
 		
@@ -627,7 +720,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
 					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
-					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
+					|| assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.peerreview) {
 				if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)) {
 					setActiveStatusAndCssClass("solution", "msg.status.available");
 					setSolutions(ureq, assignedTask);
@@ -713,7 +806,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
 					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
-					|| assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.solution) {
+					|| assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.peerreview
+					|| assignedTask.getTaskStatus() == TaskProcess.solution) {
 				setNotAvailableStatusAndCssClass("grading");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.grading) {
 				showGrading = true;
@@ -815,6 +909,15 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	@Override
 	protected DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now,
 			boolean done, boolean userDeadLine, TaskProcess step) {
+		
+		Date start = dueDate.getStartDate();
+		if(start != null && now.before(start)) {
+			DueDateArguments dueDateArgs = formatDueDateArguments(dueDate.getStartDate(), now, false, false, false);
+			boolean dateOnly = dueDate.getStartDate() != null && isDateOnly(dueDate.getStartDate());
+			String i18nKey = dateOnly ? "msg.start.dateonly" : "msg.start";
+			String text = translate(i18nKey, dueDateArgs.args());
+			return new DueDateValues(text, -1L, -1L);
+		}
 		
 		Date refDate = dueDate.getReferenceDueDate();
 		Date refLateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
@@ -1055,9 +1158,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			cleanUpPopups();
 		} else if(submitDocCtrl == source) {
 			boolean hasUploadDocuments = submitDocCtrl.hasUploadDocuments();
-			if(event instanceof SubmitEvent) {
+			if(event instanceof SubmitEvent submitEvent) {
 				Task assignedTask = submitDocCtrl.getAssignedTask();
-				gtaManager.log("Submit", (SubmitEvent)event, assignedTask,
+				gtaManager.log("Submit", submitEvent, assignedTask,
 						getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.user);
 			} else if(event == Event.DONE_EVENT) {
 				cleanUpProcess();
@@ -1066,6 +1169,11 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			
 			if(submitButton != null) {
 				submitButton.setCustomEnabledLinkCSS(hasUploadDocuments ? "btn btn-primary" : "btn btn-default");
+			}
+		} else if(peerReviewsAwardedListCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				cleanUpProcess();
+				process(ureq, true);
 			}
 		} else if(confirmOptionalAssignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {

@@ -104,6 +104,9 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 	@Column(name="g_revisions_due_date", nullable=true, insertable=true, updatable=false)
 	private Date revisionsDueDate;
 	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_peerreview_due_date", nullable=true, insertable=true, updatable=true)
+	private Date peerReviewDueDate;
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_solution_due_date", nullable=true, insertable=true, updatable=false)
 	private Date solutionDueDate;
 	
@@ -281,6 +284,15 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 
 	public void setRevisionsDueDate(Date revisionsDueDate) {
 		this.revisionsDueDate = revisionsDueDate;
+	}
+
+	@Override
+	public Date getPeerReviewDueDate() {
+		return peerReviewDueDate;
+	}
+
+	public void setPeerReviewDueDate(Date peerReviewDueDate) {
+		this.peerReviewDueDate = peerReviewDueDate;
 	}
 
 	@Override

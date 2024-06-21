@@ -15,7 +15,7 @@
 		&.o_enabled {
 			.o_icon:hover {
 				@extend .o_icon_rating_on;					
-			}		
+			}
 		}
 		&:not(.o_enabled) {
 			a {
@@ -38,6 +38,37 @@
 		.o_rating_title, .o_rating_explanation {
 			display: none;
 		}
+	}
+}
+
+.o_rating.o_rating_yesno {
+	.o_rating_items {
+		white-space: nowrap;	
+		.o_icon {
+			color:$brand-info;
+		}
+		&.o_enabled a:hover {
+			.o_icon_rating_no_on {
+				@extend .o_icon_rating_no_off;					
+			}
+			.o_icon_rating_no_off {
+				@extend .o_icon_rating_no_on;					
+			}
+			.o_icon_rating_yes_on {
+				@extend .o_icon_rating_yes_off;					
+			}
+			.o_icon_rating_yes_off {
+				@extend .o_icon_rating_yes_on;					
+			}
+		}
+		
+		.btn-primary>i {
+			color: white;
+		}
+	}
+	
+	.o_rating_explanation {
+		display: none;
 	}
 }
 

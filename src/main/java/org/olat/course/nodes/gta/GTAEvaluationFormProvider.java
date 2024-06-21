@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 21 mai 2024<br>
+ * Initial date: 6 juin 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */

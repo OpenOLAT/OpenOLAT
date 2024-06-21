@@ -21,6 +21,8 @@ package org.olat.course.nodes.gta;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -33,6 +35,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.ui.GTAIdentityListCourseNodeController;
+import org.olat.course.nodes.gta.ui.peerreview.GTAPeerReviewDetailsScoreController;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -92,5 +95,31 @@ public class ITAAssessmentHandler extends AbstractGTAAssessmentHandler implement
 		EvaluationFormProvider evaluationFormProvider = GTACourseNode.getEvaluationFormProvider();
 		return new AssessmentEvaluationFormExecutionController(ureq, wControl, assessedUserCourseEnv, edit, reopen,
 				courseNode, evaluationFormProvider);
+	}
+
+	@Override
+	public boolean hasDetailsScoreController(CourseNode courseNode) {
+		if(courseNode instanceof GTACourseNode gtaNode) {
+			int score = 0;
+			String scoreParts = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
+			boolean evalFormEnabled = gtaNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
+			if(evalFormEnabled && scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM)) {
+				score++;
+			}
+			if(scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_PEER_REVIEW)) {
+				score++;
+			}
+			if(scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_REVIEW_SUBMITTED)) {
+				score++;
+			}
+			return score > 1;
+		}
+		return false;
+	}
+	
+	@Override
+	public FormBasicController getDetailsScoreController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			UserCourseEnvironment assessedUserCourseEnvironment, CourseNode courseNode) {
+		return new GTAPeerReviewDetailsScoreController(ureq, wControl, rootForm, (GTACourseNode)courseNode, assessedUserCourseEnvironment);
 	}
 }

@@ -82,6 +82,21 @@ class EvaluationFormSurveyDAO {
 		return dbInstance.getCurrentEntityManager().merge(surveyImpl);
 	}
 	
+	EvaluationFormSurvey loadSurveyByKey(Long surveyKey) {
+		String query = """
+				select survey from evaluationformsurvey as survey
+				left join fetch survey.formEntry as re
+				left join fetch re.olatResource as reOres
+				where survey.key=:surveyKey
+				""";
+
+		List<EvaluationFormSurvey> surveyList = dbInstance.getCurrentEntityManager()
+				.createQuery(query, EvaluationFormSurvey.class)
+				.setParameter("surveyKey", surveyKey)
+				.getResultList();
+		return surveyList != null && !surveyList.isEmpty() ? surveyList.get(0) : null;
+	}
+	
 	EvaluationFormSurvey loadByResourceable(OLATResourceable ores, String subIdent, String subIdent2) {
 		List<EvaluationFormSurvey> surveys = loadSurveysByResourceable(ores, subIdent, subIdent2);
 		return surveys.isEmpty() ? null : surveys.get(0);

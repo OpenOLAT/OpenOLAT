@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -290,6 +292,10 @@ public interface CourseAssessmentService {
 	 */
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
+	
+	
+	public FormBasicController getDetailsScoreController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			CourseNode courseNode, UserCourseEnvironment assessedUserCourseEnvironment);
 	
 	
 	public EvaluationFormSession getSession(RepositoryEntry courseEntry, CourseNode courseNode, Identity assessedIdentity);

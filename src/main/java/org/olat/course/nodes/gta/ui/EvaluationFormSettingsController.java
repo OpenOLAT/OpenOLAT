@@ -42,11 +42,13 @@ public class EvaluationFormSettingsController extends FormBasicController {
 	
 	private SingleSelection scoreTypeEl;
 	
+	private final String evalConfigurationProperty;
 	private final ModuleConfiguration moduleConfiguration;
 
-	public EvaluationFormSettingsController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfiguration) {
+	public EvaluationFormSettingsController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfiguration, String evalConfigurationProperty) {
 		super(ureq, wControl);
 		this.moduleConfiguration = moduleConfiguration;
+		this.evalConfigurationProperty = evalConfigurationProperty;
 		
 		initForm(ureq);
 	}
@@ -59,7 +61,7 @@ public class EvaluationFormSettingsController extends FormBasicController {
 		scoreTypeEl = uifactory.addRadiosVertical("scoring", "score.evaluation.scoring", formLayout,
 				scorePK.keys(), scorePK.values());
 		
-		String val = moduleConfiguration.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM);
+		String val = moduleConfiguration.getStringValue(evalConfigurationProperty);
 		if(StringHelper.containsNonWhitespace(val) && scorePK.containsKey(val)) {
 			scoreTypeEl.select(val, true);
 		} else {
@@ -90,7 +92,7 @@ public class EvaluationFormSettingsController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String selectedScore = scoreTypeEl.getSelectedKey();
-		moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM, selectedScore);
+		moduleConfiguration.setStringValue(evalConfigurationProperty, selectedScore);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

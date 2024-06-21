@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.forms.EvaluationFormSurvey;
 
 /**
  * 
@@ -40,6 +41,8 @@ public interface Task extends TaskRef {
 	public Date getSubmissionRevisionsDate();
 	
 	public Role getSubmissionRevisionsDoerRole();
+	
+	public Integer getSubmissionNumOfDocs();
 	
 	public Date getCollectionDate();
 	
@@ -58,6 +61,8 @@ public interface Task extends TaskRef {
 	public TaskList getTaskList();
 	
 	public Identity getIdentity();
+	
+	public EvaluationFormSurvey getSurvey();
 	
 	public BusinessGroup getBusinessGroup();
 

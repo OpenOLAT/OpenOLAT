@@ -49,19 +49,28 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	public static final String PANE_TAB_WORKLOW = "pane.tab.workflow";
 	public static final String PANE_TAB_ASSIGNMENT = "pane.tab.assignment";
 	public static final String PANE_TAB_SUBMISSION = "pane.tab.submission";
+	public static final String PANE_TAB_PEER_REVIEW = "pane.tab.peer.review";
 	public static final String PANE_TAB_REVIEW_AND_CORRECTIONS = "pane.tab.review";
 	public static final String PANE_TAB_GRADING = "pane.tab.grading";
 	public static final String PANE_TAB_SOLUTIONS = "pane.tab.solutions";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	private static final String[] paneKeys = {
-			PANE_TAB_WORKLOW, PANE_TAB_ASSIGNMENT, PANE_TAB_SUBMISSION, PANE_TAB_REVIEW_AND_CORRECTIONS,
-			PANE_TAB_GRADING, PANE_TAB_SOLUTIONS};
-	private int workflowPos, assignmentPos, submissionPos, revisionPos, gradingPos, solutionsPos, highScoreTabPosition;
+			PANE_TAB_WORKLOW, PANE_TAB_ASSIGNMENT, PANE_TAB_SUBMISSION, PANE_TAB_PEER_REVIEW,
+			PANE_TAB_REVIEW_AND_CORRECTIONS, PANE_TAB_GRADING, PANE_TAB_SOLUTIONS };
+	private int workflowPos;
+	private int assignmentPos;
+	private int submissionPos;
+	private int peerReviewPos;
+	private int revisionPos;
+	private int gradingPos;
+	private int solutionsPos;
+	private int highScoreTabPosition;
 	
 	private TabbedPane myTabbedPane;
 	private final BreadcrumbPanel stackPanel;
 	
 	private GTAWorkflowEditController workflowCtrl;
+	private GTAPeerReviewEditController peerReviewCtrl;
 	private GTARevisionAndCorrectionEditController revisionCtrl;
 	private GTAAssignmentEditController assignmentCtrl;
 	private GTASubmissionEditController submissionCtrl;
@@ -95,7 +104,9 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		//submission
 		submissionCtrl = new GTASubmissionEditController(ureq, getWindowControl(), config);
 		listenTo(submissionCtrl);
-		//revision
+		//feedback: peer review or revisions
+		peerReviewCtrl = new GTAPeerReviewEditController(ureq, getWindowControl(), stackPanel, config);
+		listenTo(peerReviewCtrl);
 		revisionCtrl = new GTARevisionAndCorrectionEditController(ureq, getWindowControl(), config);
 		listenTo(revisionCtrl);
 		//grading
@@ -118,6 +129,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		workflowPos = tabbedPane.addTab(translate(PANE_TAB_WORKLOW), "o_sel_gta_workflow", workflowCtrl.getInitialComponent());
 		assignmentPos = tabbedPane.addTab(translate(PANE_TAB_ASSIGNMENT), "o_sel_gta_assignment", assignmentCtrl.getInitialComponent());
 		submissionPos = tabbedPane.addTab(translate(PANE_TAB_SUBMISSION), "o_sel_gta_submission", submissionCtrl.getInitialComponent());
+		peerReviewPos = tabbedPane.addTab(translate(PANE_TAB_PEER_REVIEW), peerReviewCtrl.getInitialComponent());
 		revisionPos = tabbedPane.addTab(translate(PANE_TAB_REVIEW_AND_CORRECTIONS), revisionCtrl.getInitialComponent());
 		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), "o_sel_gta_assessment", assessmentCtrl.getInitialComponent());
 		solutionsPos = tabbedPane.addTab(translate(PANE_TAB_SOLUTIONS), "o_sel_gta_solution", solutionsCtrl.getInitialComponent());
@@ -128,7 +140,12 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private void updateEnabledDisabledTabs() {
 		myTabbedPane.setEnabled(assignmentPos, config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT));
 		myTabbedPane.setEnabled(submissionPos, config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT));
-		myTabbedPane.setEnabled(revisionPos, config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION));
+		boolean peerReviewEnabled = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
+		boolean correctionEnabled = config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION);
+		myTabbedPane.setEnabled(peerReviewPos, peerReviewEnabled);
+		myTabbedPane.setEnabled(revisionPos, correctionEnabled);
+		myTabbedPane.setVisible(revisionPos, !peerReviewEnabled);
+		myTabbedPane.setVisible(peerReviewPos, peerReviewEnabled);
 		myTabbedPane.setEnabled(gradingPos, config.getBooleanSafe(GTACourseNode.GTASK_GRADING));
 		myTabbedPane.setEnabled(solutionsPos, config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
 		myTabbedPane.setEnabled(highScoreTabPosition, config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD));
@@ -156,6 +173,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
 				updateEnabledDisabledTabs();
+				updateAssessment(ureq);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(workflowCtrl);
 				workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());
@@ -194,6 +212,15 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				listenTo(revisionCtrl);
 				myTabbedPane.replaceTab(revisionPos, revisionCtrl.getInitialComponent());
 			}
+		} else if(peerReviewCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			} else if(event == Event.CANCELLED_EVENT) {
+				removeAsListenerAndDispose(peerReviewCtrl);
+				peerReviewCtrl = new GTAPeerReviewEditController(ureq, getWindowControl(), stackPanel, config);
+				listenTo(peerReviewCtrl);
+				myTabbedPane.replaceTab(peerReviewPos, peerReviewCtrl.getInitialComponent());
+			}
 		} else if(assessmentCtrl == source) {
 			if (event == Event.DONE_EVENT){
 				assessmentCtrl.updateModuleConfiguration(config);
@@ -226,6 +253,12 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		super.dispatchEvent(ureq, source, event);
 		if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 			workflowCtrl.onNodeConfigChanged();
+		}
+	}
+	
+	private void updateAssessment(UserRequest ureq) {
+		if(assessmentCtrl != null) {
+			assessmentCtrl.update(ureq);
 		}
 	}
 

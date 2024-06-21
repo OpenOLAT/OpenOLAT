@@ -672,6 +672,13 @@
 		font-weight: 		normal;
 		text-transform:		none;
 	}
+	&.o_evaluation_invalid {
+		border-color: 		$o-course-results-evaluation-invalid-color;
+		background-color: 	$o-course-results-evaluation-invalid-bg-color;
+		font-size:			100%;
+		font-weight: 		normal;
+		text-transform:		none;
+	}
 	&.o_evaluation_done {
 		border-color: 		$o-course-results-evaluation-done-color;
 		background-color: 	$o-course-results-evaluation-done-color;
@@ -706,6 +713,13 @@
 	&.o_evaluation_in_progress {
 		border-color: 		$o-course-results-evaluation-in-progress-color;
 		color: 				$o-course-results-evaluation-in-progress-color;
+		font-size:			100%;
+		font-weight: 		normal;
+		text-transform:		none;
+	}
+	&.o_evaluation_invalid {
+		border-color: 		$o-course-results-evaluation-invalid-color;
+		color: 				$o-course-results-evaluation-invalid-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;

@@ -49,10 +49,21 @@ public class RatingRenderer extends DefaultComponentRenderer {
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		RatingComponent rating = (RatingComponent) source;
-		sb.append("<div class='o_rating ");
+		RatingFormItem rfi = rating.getFormItem();
+		RatingType type = rating.getType();
+		
+		sb.append("<div class='o_rating");
+		if(type == RatingType.yesNo) {
+			sb.append(" o_rating_yesno");
+		} else if(type == RatingType.stars) {
+			sb.append(" o_rating_stars");
+		}
 		// Add custom css class
-		if (rating.getCssClass() != null) sb.append(rating.getCssClass());
+		if (rating.getCssClass() != null) {
+			sb.append(" ").append(rating.getCssClass());
+		}
 		sb.append("'>");
+		
 		// Add Title
 		String title = rating.getTitle(); 
 		if (title != null) {
@@ -67,6 +78,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			sb.append(title);				
 			sb.append("</div>"); //o_rating_title
 		}
+		
 		// Add ratings and labels		
 		List<String> labels = rating.getRatingLabel();
 		sb.append("<div class='o_rating_items");
@@ -75,47 +87,12 @@ public class RatingRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("'>");
 
-
-		for (int i = 0; i < labels.size(); i++) {
-			// Add css class
-			sb.append("<a class='o_icon o_icon-lg ");
-			if (rating.getCurrentRating() >= i+1) {
-				sb.append("o_icon_rating_on");				
-			} else {
-				sb.append("o_icon_rating_off");				
-			}								
-			sb.append("'");
-			// Add action
-			if (rating.isAllowUserInput() && rating.isEnabled()) {
-				sb.append(" ");
-				
-				RatingFormItem rfi = rating.getFormItem();
-				NameValuePair cmd = new NameValuePair(VelocityContainer.COMMAND_ID, Integer.toString(i+1));
-				if(rfi == null) {
-					ubu.buildHrefAndOnclick(sb, true, cmd);
-				} else {
-					sb.append("href=\"javascript:;\" onclick=\"javascript:")
-					  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd))
-					  .append("\" ");
-				}
-			} else {
-				// Disabled link
-				sb.append(" href='javascript:;' onclick='return false;'");
-			}
-			// Add item label
-			String label = rating.getRatingLabel(i); 
-			if (label != null) {
-				if (rating.isTranslateRatingLabels()) {
-					if(translator != null) {
-						label = translator.translate(label);
-					} else {
-						label = "";
-					}
-				}
-				sb.append(" title=\"").append(StringHelper.escapeHtml(label)).append("\"");					
-			}
-			sb.append("></a>");
+		if(type == RatingType.stars) {
+			renderStars(sb, rating, labels, ubu, translator);
+		} else {
+			renderYesNo(sb, rating, labels, ubu, translator);
 		}
+		
 		// Add text output
 		if (rating.isShowRatingAsText()) {
 			sb.append("<span class='o_legend'>");
@@ -125,6 +102,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			sb.append("</span>");
 		}
 		sb.append("</div>"); //o_rating_items
+		
 		// Add explanation
 		String expl = rating.getExplanation(); 
 		if (expl != null) {
@@ -140,9 +118,107 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			sb.append("</div>"); //o_rating_explanation
 		}
 		sb.append("</div>");//o_rating
-		if(rating.getFormItem() != null) {
-			RatingFormItem rfi = rating.getFormItem();
+		if(rfi != null) {
 			FormJSHelper.appendFlexiFormDirtyForClick(sb, rfi.getRootForm(), rfi.getFormDispatchId());
+		}
+	}
+	
+	private void renderYesNo(StringOutput sb, RatingComponent rating, List<String> labels, URLBuilder ubu, Translator translator) {
+		if (rating.isAllowUserInput() && rating.isEnabled()) {
+			boolean yes = rating.getCurrentRating() > 0;
+			boolean no = rating.getCurrentRating() < 0;
+			
+			sb.append("<div class=\"btn-group\">");
+			renderYesOrNoButton(sb, rating, labels.get(1), "yes", yes, ubu, translator);
+			renderYesOrNoButton(sb, rating, labels.get(0), "no", no, ubu, translator);
+			sb.append("</div>");
+		} else if(rating.getCurrentRating() > 0.0f) {
+			renderYesOrNo(sb, rating, labels.get(1), "yes", true, ubu, translator);
+		} else if(rating.getCurrentRating() < 0.0f) {
+			renderYesOrNo(sb, rating, labels.get(1), "no", true, ubu, translator);
+		}
+	}
+	
+	private void renderYesOrNoButton(StringOutput sb, RatingComponent rating, String label, String val, boolean selected, URLBuilder ubu, Translator translator) {
+		sb.append("<a class='btn btn-default").append(" btn-primary", selected).append("'");
+		// Add onclick
+		renderAction(sb, rating, val, ubu);
+		// Add title
+		renderTitle(sb, rating, label, translator);
+		sb.append("><i class=\"o_icon o_icon-lg o_icon_rating_").append(val).append("_off", "_on", selected)
+		  .append("\"> </i> ");
+		if (label != null) {
+			if (rating.isTranslateRatingLabels()) {
+				if(translator != null) {
+					label = translator.translate(label);
+				} else {
+					label = "";
+				}
+			}
+			sb.appendHtmlEscaped(label);
+		}
+		sb.append("</a>");
+	}
+	
+	private void renderYesOrNo(StringOutput sb, RatingComponent rating, String label, String val, boolean selected, URLBuilder ubu, Translator translator) {
+		sb.append("<a class='o_icon o_icon-lg o_icon_rating_")
+		  .append(val).append("_on", "_off", selected).append("'");
+		// Add onclick
+		renderAction(sb, rating, val, ubu);
+		// Add title
+		renderTitle(sb, rating, label, translator);
+		sb.append("> </a>");
+	}
+	
+	private void renderStars(StringOutput sb, RatingComponent rating, List<String> labels, URLBuilder ubu, Translator translator) {
+		for (int i = 0; i < labels.size(); i++) {
+			// Add css class
+			sb.append("<a class='o_icon o_icon-lg ");
+			if (rating.getCurrentRating() >= i+1) {
+				sb.append("o_icon_rating_on");			
+			} else {
+				sb.append("o_icon_rating_off");
+			}								
+			sb.append("'");
+			renderAction(sb, rating, Integer.toString(i+1), ubu);
+			
+			// Add item label
+			String label = rating.getRatingLabel(i); 
+			renderTitle(sb, rating, label, translator);
+			sb.append("></a>");
+		}
+	}
+
+	private void renderAction(StringOutput sb, RatingComponent rating, String val, URLBuilder ubu) {
+		RatingFormItem rfi = rating.getFormItem();
+		
+		// Add action
+		sb.append(" href=\"javascript:;\" onclick=\"");
+		if (rating.isAllowUserInput() && rating.isEnabled()) {
+			NameValuePair cmd = new NameValuePair(VelocityContainer.COMMAND_ID, val);
+			if(rfi == null) {
+				ubu.buildHrefAndOnclick(sb, true, cmd);
+			} else {
+				sb.append("javascript:")
+				  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd));
+			}
+		} else {
+			// Disabled link
+			sb.append("return false;");
+		}
+		sb.append("\"");
+	}
+
+	private void renderTitle(StringOutput sb, RatingComponent rating, String label, Translator translator) {
+		if (label != null) {
+			if (rating.isTranslateRatingLabels()) {
+				if(translator != null) {
+					label = translator.translate(label);
+				} else {
+					label = "";
+				}
+			}
+			sb.append(" title=\"").append(StringHelper.escapeHtml(label)).append("\"");					
 		}
 	}
 }

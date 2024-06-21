@@ -149,12 +149,14 @@ public class AssessmentForm extends FormBasicController {
 	private FormLink viewFormEvaluationLink;
 	private FormLink editFormEvaluationLink;
 	private FormLink reopenFormEvaluationLink;
+	private FormLayoutContainer scoreDetailsCont;
 
 	private Controller docEditorCtrl;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDeleteDocCtrl;
 	private Controller evaluationFormExecCtrl;
-	private LightboxController lightboxCtrl; 
+	private LightboxController lightboxCtrl;
+	private FormBasicController detailsScoreCtrl;
 	
 	private final AssessmentConfig assessmentConfig;
 	private final boolean hasScore, hasGrade, autoGrade, hasPassed, hasComment, hasIndividualAssessmentDocs, hasAttempts;
@@ -321,7 +323,7 @@ public class AssessmentForm extends FormBasicController {
 					|| event instanceof ProgressEvent) {
 				updateFormEvaluation();
 				if(event == Event.CHANGED_EVENT) {
-					updateScoreAfterFormEvaluation();
+					updateScoreAfterFormEvaluation(ureq);
 					fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, false));
 				}
 			}
@@ -791,9 +793,17 @@ public class AssessmentForm extends FormBasicController {
 				cut = assessmentConfig.getCutValue();
 			}
 			
-			String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), min, max);
-			if (scoreMinMax != null) {
-				uifactory.addStaticTextElement("score.min.max", scoreMinMax, assessmentCont);
+			detailsScoreCtrl = courseAssessmentService.getDetailsScoreController(ureq, getWindowControl(),
+					mainForm, courseNode, assessedUserCourseEnv);
+			if(detailsScoreCtrl != null) {
+				listenTo(detailsScoreCtrl);
+				scoreDetailsCont =  uifactory.addInlineFormLayout("form.score.details", "form.score.details", assessmentCont);
+				scoreDetailsCont.add(detailsScoreCtrl.getInitialFormItem());
+			} else {
+				String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), min, max);
+				if (scoreMinMax != null) {
+					uifactory.addStaticTextElement("score.min.max", scoreMinMax, assessmentCont);
+				}
 			}
 			
 			// Use init variables from wrapper, already loaded from db
@@ -1014,7 +1024,7 @@ public class AssessmentForm extends FormBasicController {
 		}
 	}
 	
-	private void updateScoreAfterFormEvaluation() {
+	private void updateScoreAfterFormEvaluation(UserRequest ureq) {
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		if (scoreEval == null) {
 			scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
@@ -1025,6 +1035,15 @@ public class AssessmentForm extends FormBasicController {
 				score.setValue(AssessmentHelper.getRoundedScore(scoreValue));
 			}
 			weightedScore.setValue(decorateWeightedScore(scoreValue));
+			
+			removeAsListenerAndDispose(detailsScoreCtrl);
+			detailsScoreCtrl = courseAssessmentService.getDetailsScoreController(ureq, getWindowControl(),
+					mainForm, courseNode, assessedUserCourseEnv);
+			if(detailsScoreCtrl != null) {
+				listenTo(detailsScoreCtrl);
+				scoreDetailsCont.removeAll();
+				scoreDetailsCont.add(detailsScoreCtrl.getInitialFormItem());
+			}
 		}
 	}
 	

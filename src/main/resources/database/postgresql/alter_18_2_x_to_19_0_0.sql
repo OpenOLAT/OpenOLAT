@@ -64,6 +64,36 @@ create index idx_media_to_page_part_page_part_idx on o_media_to_page_part (fk_pa
 -- Reminder
 alter table o_rem_reminder add r_email_copy_only bool default false;
 
+-- Peer review
+alter table o_gta_task add column g_peerreview_due_date timestamp;
+
+alter table o_gta_task add column fk_survey int8;
+
+alter table o_gta_task add constraint gtask_survey_idx foreign key (fk_survey) references o_eva_form_survey (id);
+create index idx_gtask_survey_idx on o_gta_task(fk_survey);
+
+create table o_gta_review_assignment (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_assigned bool not null default true,
+   g_status varchar(32) not null default 'open',
+   g_rating decimal default null,
+   fk_task int8 not null,
+   fk_assignee int8 not null,
+   fk_participation int8,
+   primary key (id)
+);
+
+alter table o_gta_review_assignment add constraint assignment_to_gtask_idx foreign key (fk_task) references o_gta_task (id);
+create index idx_assignment_to_gtask_idx on o_gta_review_assignment(fk_task);
+
+alter table o_gta_review_assignment add constraint assignee_to_gtask_idx foreign key (fk_assignee) references o_bs_identity (id);
+create index idx_assignee_to_gtask_idx on o_gta_review_assignment(fk_assignee);
+
+alter table o_gta_review_assignment add constraint assignment_to_fpart_idx foreign key (fk_participation) references o_eva_form_participation (id);
+create index idx_assignment_to_fpart_idx on o_gta_review_assignment(fk_participation);
+
 -- Open Badges
 create table o_badge_organization (
    id bigserial,

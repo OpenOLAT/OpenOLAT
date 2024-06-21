@@ -53,6 +53,8 @@ public interface TaskRef {
 	public Date getSubmissionDueDate();
 
 	public Date getRevisionsDueDate();
+	
+	public Date getPeerReviewDueDate();
 
 	public Date getSolutionDueDate();
 

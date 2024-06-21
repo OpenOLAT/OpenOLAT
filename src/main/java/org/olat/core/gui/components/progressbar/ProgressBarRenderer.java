@@ -181,6 +181,8 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		if (StringHelper.containsNonWhitespace(ubar.getUnitLabel())) {
 			target.append(" ");
 			target.append(ubar.getUnitLabel());
+		} else if(ubar.isPercentagesEnabled()) {
+			target.append("%");
 		}
 		target.append("</span>");
 		

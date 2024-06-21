@@ -56,6 +56,8 @@ public class RatingComponent extends AbstractComponent {
 	private boolean allowUserInput;
 	private String cssClass;
 	private float currentRating;
+	private final int maxRating;
+	private final RatingType type;
 	private final RatingFormItem ratingItem;
 
 
@@ -69,23 +71,33 @@ public class RatingComponent extends AbstractComponent {
 	 * @param maxRating maximum number that can be rated
 	 * @param allowUserInput
 	 */
-	public RatingComponent(String name, float currentRating, int maxRating, boolean allowUserInput) {
-		this(null, name, currentRating, maxRating, allowUserInput, null);
+	public RatingComponent(String name, RatingType type, float currentRating, int maxRating, boolean allowUserInput) {
+		this(null, name, type, currentRating, maxRating, allowUserInput, null);
 	}
 		
-	public RatingComponent(String id, String name, float currentRating, int maxRating, boolean allowUserInput, RatingFormItem ratingItem) {
+	public RatingComponent(String id, String name, RatingType type, float currentRating, int maxRating, boolean allowUserInput, RatingFormItem ratingItem) {
 		super(id, name);
+		this.type = type;
+		this.maxRating = maxRating;
 		this.ratingItem = ratingItem;
-		if (currentRating > maxRating) 
+		if (currentRating > maxRating) {
 			throw new AssertException("Current rating set to higher value::" + currentRating + " than the maxRating::" + maxRating);
+		}
 		this.allowUserInput = allowUserInput;
 		this.currentRating = currentRating;
 		// use default values for the other stuff
-		ratingLabels = new ArrayList<>(maxRating);
-		for (int i = 0; i < maxRating; i++) {
-			// style: rating.5.3 => 3 out of 5 
-			ratingLabels.add("rating." + maxRating + "."+ (i+1));			
+		if(type == RatingType.stars) {
+			ratingLabels = new ArrayList<>(maxRating);
+			for (int i = 0; i < maxRating; i++) {
+				// style: rating.5.3 => 3 out of 5 
+				ratingLabels.add("rating." + maxRating + "."+ (i+1));			
+			}
+		} else {
+			ratingLabels = new ArrayList<>(2);
+			ratingLabels.add("rating.no");	
+			ratingLabels.add("rating.yes");	
 		}
+		
 		translateRatingLabels = true;
 		title = null;
 		translateTitle = true;
@@ -99,14 +111,28 @@ public class RatingComponent extends AbstractComponent {
 		setDirty(true);
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
 		try {
-			float rating = Float.parseFloat(cmd);
+			float rating;
+			if(type == RatingType.stars) {
+				rating = Float.parseFloat(cmd);
+			} else if(type == RatingType.yesNo) {
+				if("yes".equals(cmd)) {
+					rating = maxRating;
+				} else if("no".equals(cmd)) {
+					rating = -maxRating;
+				} else {
+					rating = 0;
+				}
+			} else {
+				return;
+			}
+
 			// update GUI
 			setCurrentRating(rating);
 			// notify listeners
 			Event event = new RatingEvent(rating);
 			fireEvent(ureq, event);
 		} catch (NumberFormatException e) {
-			log.error("Error while parsing rating value::" + cmd);
+			log.error("Error while parsing rating value::{}", cmd);
 		}		
 	}
 
@@ -120,6 +146,14 @@ public class RatingComponent extends AbstractComponent {
 	//
 	protected RatingFormItem getFormItem() {
 		return ratingItem;
+	}
+	
+	public RatingType getType() {
+		return type;
+	}
+	
+	public int getMaxRating() {
+		return maxRating;
 	}
 
 	// only package scope, used by renderer

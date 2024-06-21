@@ -3311,11 +3311,13 @@ create table o_gta_task (
    g_assignment_due_date date,
    g_submission_due_date date,
    g_revisions_due_date date,
+   g_peerreview_due_date date,
    g_solution_due_date date,
    fk_tasklist number(20) not null,
    fk_identity number(20),
    fk_businessgroup number(20),
    fk_allow_reset_identity number(20),
+   fk_survey number(20),
    primary key (id)
 );
 
@@ -3341,6 +3343,19 @@ create table o_gta_task_revision_date (
   g_date date not null,
   fk_task number(20) not null,
   primary key (id)
+);
+
+create table o_gta_review_assignment (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   g_assigned number default 1  not null ,
+   g_status varchar(32) default 'open' not null,
+   g_rating decimal default null,
+   fk_task number(20) not null,
+   fk_assignee number(20) not null,
+   fk_participation number(20),
+   primary key (id)
 );
 
 create table o_gta_mark (
@@ -5001,6 +5016,8 @@ alter table o_gta_task add constraint gtask_to_bgroup_idx foreign key (fk_busine
 create index idx_gtask_to_bgroup_idx on o_gta_task (fk_businessgroup);
 alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_allow_reset_identity) references o_bs_identity (id);
 create index idx_gtaskreset_to_allower_idx on o_gta_task (fk_allow_reset_identity);
+alter table o_gta_task add constraint gtask_survey_idx foreign key (fk_survey) references o_eva_form_survey (id);
+create index idx_gtask_survey_idx on o_gta_task(fk_survey);
 
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_gta_list_to_repo_entry_idx on o_gta_task_list (fk_entry);
@@ -5012,6 +5029,13 @@ create index idx_task_rev_to_ident_idx on o_gta_task_revision (fk_comment_author
 
 alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
 create index idx_gtaskrev_to_task_idx on o_gta_task_revision_date (fk_task);
+
+alter table o_gta_review_assignment add constraint assignment_to_gtask_idx foreign key (fk_task) references o_gta_task (id);
+create index idx_assignment_to_gtask_idx on o_gta_review_assignment(fk_task);
+alter table o_gta_review_assignment add constraint assignee_to_gtask_idx foreign key (fk_assignee) references o_bs_identity (id);
+create index idx_assignee_to_gtask_idx on o_gta_review_assignment(fk_assignee);
+alter table o_gta_review_assignment add constraint assignment_to_fpart_idx foreign key (fk_participation) references o_eva_form_participation (id);
+create index idx_assignment_to_fpart_idx on o_gta_review_assignment(fk_participation);
 
 alter table o_gta_mark add constraint gtamark_tasklist_idx foreign key (fk_tasklist_id) references o_gta_task_list (id);
 create index idx_gtamark_tasklist_idx on o_gta_mark (fk_tasklist_id);

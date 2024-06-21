@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -60,6 +61,7 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 	
 	private final Link backLink;
 	private final VelocityContainer mainVC;
+	private final BreadcrumbPanel stackPanel;
 	
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
@@ -71,10 +73,11 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 	@Autowired
 	private RepositoryService repositoryService;
 	
-	public GTAAssessmentDetailsController(UserRequest ureq, WindowControl wControl,
+	public GTAAssessmentDetailsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
+		this.stackPanel = stackPanel;
 		this.courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 		this.coachCourseEnv = coachCourseEnv;
 		
@@ -143,8 +146,7 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(groupListCtrl == source) {
-			if(event instanceof SelectBusinessGroupEvent) {
-				SelectBusinessGroupEvent selectEvent = (SelectBusinessGroupEvent)event;
+			if(event instanceof SelectBusinessGroupEvent selectEvent) {
 				doSelectBusinessGroup(ureq, selectEvent.getBusinessGroup());
 				backLink.setVisible(true);
 			}
@@ -170,14 +172,14 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 	
 	private void doSelectBusinessGroup(UserRequest ureq, BusinessGroup group) {
 		removeAsListenerAndDispose(coachingCtrl);
-		coachingCtrl = new GTACoachController(ureq, getWindowControl(),  courseEnv, gtaNode, coachCourseEnv, group, true, true, true, true);
+		coachingCtrl = new GTACoachController(ureq, getWindowControl(), stackPanel, courseEnv, gtaNode, coachCourseEnv, group, true, true, true, true);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 	}
 	
 	private void doSelectParticipant(UserRequest ureq, Identity identity) {
 		removeAsListenerAndDispose(coachingCtrl);
-		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, identity, false, false, true, true);
+		coachingCtrl = new GTACoachController(ureq, getWindowControl(), stackPanel, courseEnv, gtaNode, coachCourseEnv, identity, false, false, true, true);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 	}

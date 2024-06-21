@@ -52,4 +52,8 @@ public class NoDueDateConfig implements DueDateConfig {
 		return null;
 	}
 
+	@Override
+	public Date getAbsoluteStartDate() {
+		return null;
+	}
 }

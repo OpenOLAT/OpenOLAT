@@ -276,18 +276,19 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		remove(formCompName, toBeRemoved);
 	}
 	
-	public void replace(FormItem toBeReplaced, FormItem with){
+	public void replace(FormItem toBeReplaced, FormItem with) {
 		String formCompName = toBeReplaced.getName();
+		replace(formCompName, toBeReplaced, with);
+	}
+	
+	public void replace(String formCompName, FormItem toBeReplaced, FormItem with) {
 		int pos = formComponentsNames.indexOf(formCompName);
 		formComponentsNames.add(pos, with.getName());
 		formComponentsNames.remove(formCompName);
-		/*
-		 * remove the gui representation
-		 */
+		// remove the gui representation
 		formLayoutContainer.remove(toBeReplaced.getComponent());
 		
-		
-	// set the formtranslator, and parent
+		// set the form translator and parent
 		Translator itemTranslator = with.getTranslator();
 		if(itemTranslator != null && !itemTranslator.equals(translator)
 				&& itemTranslator instanceof PackageTranslator itemPt) {
@@ -300,9 +301,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		with.setRootForm(getRootForm());
 		
 		formComponents.put(formCompName, with);
-		/*
-		 * add the gui representation
-		 */
+		// add the gui representation
 		formLayoutContainer.put(formCompName, with.getComponent());
 
 		// Check for multipart data, add upload limit to form

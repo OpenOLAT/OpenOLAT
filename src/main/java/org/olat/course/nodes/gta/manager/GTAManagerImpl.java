@@ -75,6 +75,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.AssignmentResponse.Status;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.IdentityMark;
 import org.olat.course.nodes.gta.Task;
@@ -113,6 +114,7 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.edusharing.EdusharingService;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -147,11 +149,15 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private GTATaskDAO taskDao;
+	@Autowired
 	private GTAIdentityMarkDAO gtaMarkDao;
 	@Autowired
 	private GTATaskRevisionDAO taskRevisionDao;
 	@Autowired
 	private GTATaskRevisionDateDAO taskRevisionDateDao;
+	@Autowired
+	private GTAPeerReviewManager peerReviewManager;
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
@@ -947,17 +953,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 	@Override
 	public Task getTask(TaskRef task) {
-		String q = """
-				select task from gtatask task
-				left join fetch task.businessGroup as businessGroup
-				left join fetch task.identity as ident
-				left join fetch task.taskList as taskList
-				where task.key=:taskKey""";
-		List<Task> tasks = dbInstance.getCurrentEntityManager().createQuery(q, Task.class)
-			.setParameter("taskKey", task.getKey())
-			.getResultList();
-
-		return tasks.isEmpty() ? null : tasks.get(0);
+		return taskDao.loadTask(task);
 	}
 
 	@Override
@@ -1094,7 +1090,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 					task.setTaskName(taskName);
 					task.setTaskStatus(nextStep);
 					task.setAssignmentDate(new Date());
-					task = dbInstance.getCurrentEntityManager().merge(task);
+					task = taskDao.updateTask(task);
 				}	
 				dbInstance.commit();
 				File taskFile = new File(getTasksDirectory(courseEnv, cNode) + File.separator + taskName);
@@ -1106,13 +1102,10 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			if(currentTask.getTaskStatus() == TaskProcess.assignment) {
 				((TaskImpl)currentTask).setTaskStatus(TaskProcess.submit);
 			}
-			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
+			currentTask = taskDao.updateTask(currentTask);
 			syncAssessmentEntry(currentTask, cNode, null, false, doerIdentity, Role.user);
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
-		
-		
-		
 		return response;
 	}
 	
@@ -1254,7 +1247,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 					createSubmissionFromTask(identity, businessGroup, courseEnv, cNode, taskFile, doerIdentity, nextStep);
 				}
 			}
-			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
+			currentTask = taskDao.updateTask(currentTask);
 			syncAssessmentEntry(currentTask, cNode, null, false, doerIdentity, Role.user);
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
@@ -1296,13 +1289,15 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	public Task createAndPersistTask(String taskName, TaskList taskList, TaskProcess status,
 			BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode) {
 		Task task = createTask(taskName, taskList, status, assessedGroup, assessedIdentity, cNode);
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW) && assessedIdentity != null) {
+			EvaluationFormSurvey survey = peerReviewManager.loadOrCreateSurvey(null, cNode, assessedIdentity);
+			((TaskImpl)task).setSurvey(survey);
+		}
 		if(task.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(task);
 		} else {
-			task = dbInstance.getCurrentEntityManager().merge(task);
+			task = taskDao.updateTask(task);
 		}
-		
-		
 		return task;
 	}
 
@@ -1433,7 +1428,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
 		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getAssignmentDueDate() != null) {
 			Date referenceDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
-			assignmentDueDate = new DueDate(false, assignedTask.getAssignmentDueDate(), referenceDate, assignedTask.getAssignmentDueDate());
+			assignmentDueDate = new DueDate(false, assignedTask.getAssignmentDueDate(), referenceDate, assignedTask.getAssignmentDueDate(), null);
 		} else {
 			assignmentDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 		}
@@ -1472,7 +1467,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
 		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getSubmissionDueDate() != null) {
 			Date referenceDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
-			submissionDueDate = new DueDate(false, assignedTask.getSubmissionDueDate(), referenceDate, assignedTask.getSubmissionDueDate());
+			submissionDueDate = new DueDate(false, assignedTask.getSubmissionDueDate(), referenceDate, assignedTask.getSubmissionDueDate(), null);
 		} else {
 			submissionDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 		}
@@ -1487,11 +1482,25 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE);
 		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getSubmissionDueDate() != null) {
 			Date referenceDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
-			lateSubmissionDueDate = new DueDate(false, assignedTask.getSubmissionDueDate(), referenceDate, assignedTask.getSubmissionDueDate());
+			lateSubmissionDueDate = new DueDate(false, assignedTask.getSubmissionDueDate(), referenceDate, assignedTask.getSubmissionDueDate(), null);
 		} else {
 			lateSubmissionDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 		}
 		return lateSubmissionDueDate;
+	}
+	
+	@Override
+	public DueDate getPeerReviewDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
+		DueDate reviewDueDate = null;
+		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE);
+		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getPeerReviewDueDate() != null) {
+			Date referenceDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+			reviewDueDate = new DueDate(false, assignedTask.getPeerReviewDueDate(), referenceDate, assignedTask.getPeerReviewDueDate(), dueDateConfig.getAbsoluteStartDate());
+		} else {
+			reviewDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+		}
+		return reviewDueDate;
 	}
 
 	@Override
@@ -1501,7 +1510,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
 		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getSolutionDueDate() != null) {
 			Date referenceDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
-			solutionDueDate = new DueDate(false, assignedTask.getSolutionDueDate(), referenceDate, assignedTask.getSolutionDueDate());
+			solutionDueDate = new DueDate(false, assignedTask.getSolutionDueDate(), referenceDate, assignedTask.getSolutionDueDate(), null);
 		} else {
 			solutionDueDate = getReferenceDueDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 		}
@@ -1520,7 +1529,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		if(DueDateConfig.isRelative(dueDateConfig)) {
 			dueDate = getRelativeReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 		} else if(DueDateConfig.isAbsolute(dueDateConfig)) {
-			dueDate = new DueDate(false, dueDateConfig.getAbsoluteDate(), dueDateConfig.getAbsoluteDate(), null);
+			dueDate = new DueDate(false, dueDateConfig.getAbsoluteDate(), dueDateConfig.getAbsoluteDate(), null, dueDateConfig.getAbsoluteStartDate());
 		}
 		return dueDate;
 	}
@@ -1547,7 +1556,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			}
 			
 			if(referenceDate != null) {
-				dueDate = new DueDate(true, referenceDate, referenceDate, null);
+				dueDate = new DueDate(true, referenceDate, referenceDate, null, null);
 			} else if(messageKey != null) {
 				dueDate = new DueDate(true, messageKey, messageArg);
 			}
@@ -1587,7 +1596,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		//cascade through the possible steps
 		TaskProcess nextStep = nextStep(currentStep, cNode);
 		taskImpl.setTaskStatus(nextStep);
-		TaskImpl mergedTask = dbInstance.getCurrentEntityManager().merge(taskImpl);
+		TaskImpl mergedTask = taskDao.updateTask(taskImpl);
 		dbInstance.commit();//make the thing definitive
 		syncAssessmentEntry(mergedTask, cNode, null, incrementUserAttempts, doerIdentity, by);
 		return mergedTask;
@@ -1607,6 +1616,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			firstStep = TaskProcess.revision;
 		} else if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
 			firstStep = TaskProcess.correction;
+		} else if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)) {
+			firstStep = TaskProcess.peerreview;	
 		} else if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)) {
 			firstStep = TaskProcess.solution;
 		} else if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
@@ -1630,6 +1641,13 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			case solution: {
 				if(currentStep != TaskProcess.solution && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)) {
 					previousStep = TaskProcess.solution;
+					break;
+				}
+			}
+			
+			case peerreview: {
+				if(currentStep != TaskProcess.peerreview && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)) {
+					previousStep = TaskProcess.peerreview;
 					break;
 				}
 			}
@@ -1698,6 +1716,12 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			case correction: {
 				if(currentStep != TaskProcess.correction && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
 					nextStep = TaskProcess.correction;
+					break;
+				}
+			}
+			case peerreview: {
+				if(currentStep != TaskProcess.peerreview && cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)) {
+					nextStep = TaskProcess.peerreview;
 					break;
 				}
 			}
@@ -1823,6 +1847,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		dueDates.setAssignmentDueDate(null);
 		dueDates.setSubmissionDueDate(null);
 		dueDates.setRevisionsDueDate(null);
+		dueDates.setPeerReviewDueDate(null);
 		dueDates.setSolutionDueDate(null);
 		updateTaskDueDate(dueDates);
 		
@@ -1851,7 +1876,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		taskImpl.setSubmissionRevisionsDoerRole(null);
 		taskImpl.setSubmissionRevisionsNumOfDocs(null);
 
-		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
+		taskImpl = taskDao.updateTask(taskImpl);
 		
 		taskRevisionDao.deleteTaskRevision(taskImpl);
 		taskRevisionDateDao.deleteTaskRevisionDate(taskImpl);
@@ -1921,6 +1946,11 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 	
 	@Override
+	public Task submitReviews(Task task, GTACourseNode cNode, Identity doerIdentity, Role by) {
+		return updateTask(task, TaskProcess.solution, cNode, false, doerIdentity, by);
+	}
+
+	@Override
 	public Task reviewedTask(Task task, GTACourseNode cNode, Identity doerIdentity, Role by) {
 		TaskProcess solution = nextStep(TaskProcess.correction, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
@@ -1934,7 +1964,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		TaskProcess currentStatus = taskImpl.getTaskStatus();
 		taskImpl.setTaskStatus(newStatus);
 		syncDates(taskImpl, newStatus);
-		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
+		taskImpl = taskDao.updateTask(taskImpl);
 		syncAssessmentEntry(taskImpl, cNode, null, incrementUserAttempts, doerIdentity, by);
 		
 		// mark the publishers
@@ -2007,7 +2037,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setTaskStatus(newStatus);
 		taskImpl.setRevisionLoop(iteration);
-		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
+		taskImpl = taskDao.updateTask(taskImpl);
 		//log date
 		createAndPersistTaskRevisionDate(taskImpl, iteration, newStatus);
 		syncAssessmentEntry(taskImpl, cNode, null, incrementUserAttempts, doerIdentity, by);
@@ -2060,7 +2090,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			} else {
 				assessmentStatus = AssessmentEntryStatus.notStarted;
 			}
-		} else if(status == TaskProcess.review || status == TaskProcess.correction || status == TaskProcess.grading) {
+		} else if(status == TaskProcess.review || status == TaskProcess.correction
+				|| status == TaskProcess.peerreview || status == TaskProcess.grading) {
 			assessmentStatus = AssessmentEntryStatus.inReview;
 		} else if(status == TaskProcess.graded) {
 			assessmentStatus = AssessmentEntryStatus.done;
@@ -2159,7 +2190,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		switch(step) {
 			case submit: return getSubmissionDueDate(assignedTask, assessedIdentity, assessedGroup, cNode, entry, true);
 			case assignment: return getAssignmentDueDate(assignedTask, assessedIdentity, assessedGroup, cNode, entry, true);
-			case revision: return assignedTask == null ? null : new DueDate(false, assignedTask.getRevisionsDueDate(), null, assignedTask.getRevisionsDueDate());
+			case revision: return assignedTask == null ? null : new DueDate(false, assignedTask.getRevisionsDueDate(), null, assignedTask.getRevisionsDueDate(), null);
 			case solution: return getSolutionDueDate(assignedTask, assessedIdentity, assessedGroup, cNode, entry, true);
 			default: return null;
 		}

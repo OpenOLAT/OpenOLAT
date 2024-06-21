@@ -40,11 +40,26 @@ public interface DueDateConfig extends RelativeDueDateConfig, AbsoluteDueDateCon
 		return NoDueDateConfig.NO_DUE_DATE_CONFIG;
 	}
 	
+	/**
+	 * 
+	 * @param absoluteDate The date
+	 * @param absoluteEndDate The end date if period is enabled (optional)
+	 * @return
+	 */
 	public static DueDateConfig absolute(Date absoluteDate) {
 		if (absoluteDate == null) return noDueDateConfig();
 		
 		DueDateConfigImpl config = new DueDateConfigImpl();
 		config.setAbsolutDate(absoluteDate);
+		return config;
+	}
+	
+	public static DueDateConfig period(Date absoluteStartDate, Date absoluteDate) {
+		if (absoluteDate == null) return noDueDateConfig();
+		
+		DueDateConfigImpl config = new DueDateConfigImpl();
+		config.setAbsolutDate(absoluteDate);
+		config.setAbsoluteStartDate(absoluteStartDate);
 		return config;
 	}
 	
@@ -56,9 +71,17 @@ public interface DueDateConfig extends RelativeDueDateConfig, AbsoluteDueDateCon
 	}
 	
 	public static DueDateConfig ofCourseNode(CourseNode courseNode, String relativeKey, String absoluteDateKey,
-			String numOfDaysKey, String raltiveToTypeKey) {
+			String numOfDaysKey, String relativeToTypeKey) {
 		return new ModulDueDateConfig(courseNode.getModuleConfiguration(), relativeKey, absoluteDateKey,
-				numOfDaysKey, raltiveToTypeKey);
+				numOfDaysKey, relativeToTypeKey);
+	}
+	
+	public static DueDateConfig ofPeriodCourseNode(CourseNode courseNode, String relativeKey,
+			String absoluteStartDateKey, String absoluteDateKey,
+			String numOfDaysKey, String relativeToTypeKey) {
+		return new ModulDueDateConfig(courseNode.getModuleConfiguration(), relativeKey,
+				absoluteStartDateKey, absoluteDateKey,
+				numOfDaysKey, relativeToTypeKey);
 	}
 	
 	public static DueDateConfig ofModuleConfiguration(ModuleConfiguration config, String relativeKey,
@@ -77,5 +100,7 @@ public interface DueDateConfig extends RelativeDueDateConfig, AbsoluteDueDateCon
 	public static boolean isAbsolute(AbsoluteDueDateConfig config) {
 		return config != null && config.getAbsoluteDate() != null;
 	}
+	
+	
 	
 }

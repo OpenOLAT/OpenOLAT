@@ -49,6 +49,8 @@ import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.model.jpa.EvaluationFormSurveyImpl;
 
 /**
  * 
@@ -91,6 +93,8 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_submission_date", nullable=true, insertable=true, updatable=false)
 	private Date submissionDate;
+	@Column(name="g_submission_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer submissionNumOfDocs;
 	@Enumerated(EnumType.STRING)
 	@Column(name="g_submission_drole", nullable=true, insertable=true, updatable=true)
 	private Role submissionDoerRole;
@@ -132,6 +136,9 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	@Column(name="g_revisions_due_date", nullable=true, insertable=true, updatable=true)
 	private Date revisionsDueDate;
 	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_peerreview_due_date", nullable=true, insertable=true, updatable=true)
+	private Date peerReviewDueDate;
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_solution_due_date", nullable=true, insertable=true, updatable=true)
 	private Date solutionDueDate;
 	
@@ -159,6 +166,10 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_allow_reset_identity", nullable=true, insertable=true, updatable=false)
 	private Identity allowResetIdentity;
+	
+	@ManyToOne(targetEntity=EvaluationFormSurveyImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_survey", nullable=true, insertable=true, updatable=true)
+	private EvaluationFormSurvey survey;
 	
 	public TaskDueDateImpl() {
 		//
@@ -239,6 +250,15 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	
 	public void setSubmissionDate(Date submissionDate) {
 		this.submissionDate = submissionDate;
+	}
+
+	@Override
+	public Integer getSubmissionNumOfDocs() {
+		return submissionNumOfDocs;
+	}
+
+	public void setSubmissionNumOfDocs(Integer submissionNumOfDocs) {
+		this.submissionNumOfDocs = submissionNumOfDocs;
 	}
 
 	@Override
@@ -360,6 +380,16 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	public void setRevisionsDueDate(Date revisionsDueDate) {
 		this.revisionsDueDate = revisionsDueDate;
 	}
+	
+	@Override
+	public Date getPeerReviewDueDate() {
+		return peerReviewDueDate;
+	}
+
+	@Override
+	public void setPeerReviewDueDate(Date peerReviewDueDate) {
+		this.peerReviewDueDate = peerReviewDueDate;
+	}
 
 	@Override
 	public Date getSolutionDueDate() {
@@ -403,6 +433,11 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 
 	public void setTaskList(TaskList taskList) {
 		this.taskList = taskList;
+	}
+	
+	@Override
+	public EvaluationFormSurvey getSurvey() {
+		return survey;
 	}
 
 	@Override

@@ -50,6 +50,8 @@ import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.model.jpa.EvaluationFormSurveyImpl;
 
 /**
  * 
@@ -144,6 +146,9 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	@Column(name="g_revisions_due_date", nullable=true, insertable=true, updatable=false)
 	private Date revisionsDueDate;
 	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_peerreview_due_date", nullable=true, insertable=true, updatable=true)
+	private Date peerReviewDueDate;
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_solution_due_date", nullable=true, insertable=true, updatable=false)
 	private Date solutionDueDate;
 	
@@ -171,6 +176,10 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_allow_reset_identity", nullable=true, insertable=true, updatable=true)
 	private Identity allowResetIdentity;
+	
+	@ManyToOne(targetEntity=EvaluationFormSurveyImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_survey", nullable=true, insertable=true, updatable=true)
+	private EvaluationFormSurvey survey;
 	
 	@Override
 	public Long getKey() {
@@ -399,6 +408,15 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	}
 
 	@Override
+	public Date getPeerReviewDueDate() {
+		return peerReviewDueDate;
+	}
+
+	public void setPeerReviewDueDate(Date peerReviewDueDate) {
+		this.peerReviewDueDate = peerReviewDueDate;
+	}
+
+	@Override
 	public Date getSolutionDueDate() {
 		return solutionDueDate;
 	}
@@ -439,6 +457,15 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 
 	public void setTaskList(TaskList taskList) {
 		this.taskList = taskList;
+	}
+	
+	@Override
+	public EvaluationFormSurvey getSurvey() {
+		return survey;
+	}
+
+	public void setSurvey(EvaluationFormSurvey survey) {
+		this.survey = survey;
 	}
 
 	@Override
