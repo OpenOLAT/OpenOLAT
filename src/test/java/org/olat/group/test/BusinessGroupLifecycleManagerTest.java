@@ -78,6 +78,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 	@Test
 	public void getInactivationDate() {
 		businessGroupModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		waitMessageAreConsumed();
 		
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "Group cycle 40.1", "", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, null);
@@ -106,6 +107,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 	public void getInactivationResponseDelay() {
 		businessGroupModule.setNumberOfInactiveDayBeforeDeactivation(720);
 		businessGroupModule.setNumberOfDayBeforeDeactivationMail(30);
+		waitMessageAreConsumed();
 		
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "Group cycle 41.1", "", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, null);
@@ -135,6 +137,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 	public void getSoftDeleteDate() {
 		businessGroupModule.setNumberOfInactiveDayBeforeSoftDelete(120);
 		businessGroupModule.setNumberOfDayBeforeSoftDeleteMail(30);
+		waitMessageAreConsumed();
 		
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "Group cycle 42.1", "", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, null);
@@ -164,6 +167,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 	@Test
 	public void getDefinitiveDeleteDate() {
 		businessGroupModule.setNumberOfSoftDeleteDayBeforeDefinitivelyDelete(80);
+		waitMessageAreConsumed();
 		
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "Group cycle 42.1", "", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, null);
@@ -257,6 +261,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setGroupLifecycle(BusinessGroupLifecycleTypeEnum.all.name());
 		businessGroupModule.setGroupLifecycleExcludeLti(false);
 		businessGroupModule.setGroupLifecycleExcludeManaged(false);
+		waitMessageAreConsumed();
 		List<BusinessGroup> businessGroupsToInactivate = lifecycleManager.getReadyToInactivateBusinessGroups(beforeDate, reactivationDateLimite);
 		
 		Assert.assertTrue(businessGroupsToInactivate.contains(businessGroup));
@@ -269,6 +274,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setGroupLifecycle(BusinessGroupLifecycleTypeEnum.withoutResources.name());
 		businessGroupModule.setGroupLifecycleExcludeLti(false);
 		businessGroupModule.setGroupLifecycleExcludeManaged(false);
+		waitMessageAreConsumed();
 		businessGroupsToInactivate = lifecycleManager.getReadyToInactivateBusinessGroups(beforeDate, reactivationDateLimite);
 		
 		Assert.assertTrue(businessGroupsToInactivate.contains(businessGroup));
@@ -281,6 +287,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setGroupLifecycle(BusinessGroupLifecycleTypeEnum.all.name());
 		businessGroupModule.setGroupLifecycleExcludeLti(true);
 		businessGroupModule.setGroupLifecycleExcludeManaged(true);
+		waitMessageAreConsumed();
 		businessGroupsToInactivate = lifecycleManager.getReadyToInactivateBusinessGroups(beforeDate, reactivationDateLimite);
 		
 		Assert.assertTrue(businessGroupsToInactivate.contains(businessGroup));
@@ -293,6 +300,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setGroupLifecycle(BusinessGroupLifecycleTypeEnum.withoutResources.name());
 		businessGroupModule.setGroupLifecycleExcludeLti(true);
 		businessGroupModule.setGroupLifecycleExcludeManaged(true);
+		waitMessageAreConsumed();
 		businessGroupsToInactivate = lifecycleManager.getReadyToInactivateBusinessGroups(beforeDate, reactivationDateLimite);
 		
 		Assert.assertTrue(businessGroupsToInactivate.contains(businessGroup));
@@ -421,6 +429,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setNumberOfInactiveDayBeforeDeactivation(720);
 		businessGroupModule.setNumberOfDayBeforeDeactivationMail(30);
 		businessGroupModule.setMailCopyAfterDeactivation(null);
+		waitMessageAreConsumed();
 		
 		// Like the background job
 		ThreadLocalUserActivityLoggerInstaller.initBackgroundUserActivityLogger();
@@ -454,6 +463,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setNumberOfInactiveDayBeforeDeactivation(720);
 		businessGroupModule.setNumberOfDayBeforeDeactivationMail(30);
 		businessGroupModule.setMailCopyAfterDeactivation("copy@openolat.org");
+		waitMessageAreConsumed();
 		
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecycle-4");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach, "Group cycle 4.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -482,6 +492,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setMailBeforeDeactivation(true);
 		businessGroupModule.setNumberOfInactiveDayBeforeDeactivation(720);
 		businessGroupModule.setNumberOfDayBeforeDeactivationMail(30);
+		waitMessageAreConsumed();
 		
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecycle-5");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach, "Group cycle 5.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -511,6 +522,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setMailBeforeDeactivation(true);
 		businessGroupModule.setNumberOfInactiveDayBeforeDeactivation(720);
 		businessGroupModule.setNumberOfDayBeforeDeactivationMail(30);
+		waitMessageAreConsumed();
 		
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecycle-5.1");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach1, "Group cycle 5.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -599,6 +611,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setMailBeforeDeactivation(true);
 		businessGroupModule.setNumberOfInactiveDayBeforeDeactivation(720);
 		businessGroupModule.setNumberOfDayBeforeDeactivationMail(30);
+		waitMessageAreConsumed();
 		
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecylce-6.1");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach1, "Group cycle 6.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -643,6 +656,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setMailBeforeDeactivation(true);
 		businessGroupModule.setNumberOfInactiveDayBeforeDeactivation(720);
 		businessGroupModule.setNumberOfDayBeforeDeactivationMail(30);
+		waitMessageAreConsumed();
 		
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecylce-37.1");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach, "Group cycle 37.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -686,6 +700,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setMailBeforeDeactivation(true);
 		businessGroupModule.setNumberOfInactiveDayBeforeDeactivation(720);
 		businessGroupModule.setNumberOfDayBeforeDeactivationMail(30);
+		waitMessageAreConsumed();
 		
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecylce-7.1");
 		BusinessGroup group = businessGroupService.createBusinessGroup(coach, "Group cycle 7.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -850,6 +865,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setNumberOfInactiveDayBeforeSoftDelete(120);
 		businessGroupModule.setNumberOfDayBeforeSoftDeleteMail(30);
 		businessGroupModule.setMailCopyAfterSoftDelete("copy@openolat.org");
+		waitMessageAreConsumed();
 		
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecycle-14");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach, "Group cycle 14.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -878,6 +894,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setMailBeforeSoftDelete(true);
 		businessGroupModule.setNumberOfInactiveDayBeforeSoftDelete(120);
 		businessGroupModule.setNumberOfDayBeforeSoftDeleteMail(30);
+		waitMessageAreConsumed();
 		
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gp-lifecycle-15.1");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach1, "Group cycle 15.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -966,6 +983,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setMailBeforeSoftDelete(true);
 		businessGroupModule.setNumberOfInactiveDayBeforeSoftDelete(120);
 		businessGroupModule.setNumberOfDayBeforeSoftDeleteMail(30);
+		waitMessageAreConsumed();
 		
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gp-lifecylce-16.1");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach1, "Group cycle 16.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -1009,6 +1027,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setMailBeforeSoftDelete(true);
 		businessGroupModule.setNumberOfInactiveDayBeforeSoftDelete(120);
 		businessGroupModule.setNumberOfDayBeforeSoftDeleteMail(30);
+		waitMessageAreConsumed();
 		
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gp-lifecylce-46.1");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach1, "Group cycle 46.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -1089,6 +1108,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 	public void definitivelyDeleteBusinessGroups() {
 		businessGroupModule.setAutomaticGroupDefinitivelyDeleteEnabled("true");
 		businessGroupModule.setNumberOfSoftDeleteDayBeforeDefinitivelyDelete(80);
+		waitMessageAreConsumed();
 		
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gp-lifecycle-21.1");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach, "Group cycle 21.1", "", BusinessGroup.BUSINESS_TYPE,
@@ -1138,6 +1158,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 	public void definitivelyDeleteBusinessGroupTwice() {
 		businessGroupModule.setAutomaticGroupDefinitivelyDeleteEnabled("true");
 		businessGroupModule.setNumberOfSoftDeleteDayBeforeDefinitivelyDelete(80);
+		waitMessageAreConsumed();
 		
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gp-lifecycle-21.1");
 		BusinessGroup group = businessGroupService.createBusinessGroup(coach, "Group cycle 21.1", "", BusinessGroup.BUSINESS_TYPE,
