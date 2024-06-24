@@ -56,6 +56,7 @@ import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToPagePart;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 
@@ -78,6 +79,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 	private TextAreaElement descriptionEl;
 	private List<StaticTextElement> imageNameEls = new ArrayList<>();
 	private List<FormLink> chooseImageLinks = new ArrayList<>();
+	private List<SingleSelection> imageVersionEls = new ArrayList<>();
 	private List<TextElement> textEls = new ArrayList<>();
 	private List<FormLayoutContainer> imageLayouts = new ArrayList<>();
 	private CloseableModalController cmc;
@@ -150,7 +152,10 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		descriptionEl = uifactory.addTextAreaElement("imagecomparison.description", 3, 60, null, layoutCont);
 		descriptionEl.addActionListener(FormEvent.ONCHANGE);
 
+		// first image
 		addSetImageSection(layoutCont);
+
+		// second image
 		addSetImageSection(layoutCont);
 	}
 
@@ -178,6 +183,11 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		chooseImageLink.setLinkTitle(chooseImageLabel);
 		chooseImageLinks.add(chooseImageLink);
 
+		SingleSelection imageVersionEl = uifactory.addDropdownSingleselect("imageVersion" + index,
+				"imagecomparison.version", imageLayout, new String[0], new String[0]);
+		imageVersionEl.addActionListener(FormEvent.ONCHANGE);
+		imageVersionEls.add(imageVersionEl);
+
 		TextElement textEl = uifactory.addTextElement("text" + index, "imagecomparison.text", 40, null, imageLayout);
 		textEl.addActionListener(FormEvent.ONCHANGE);
 		textEls.add(textEl);
@@ -203,15 +213,48 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		if (imageComparisonElement instanceof ImageComparisonPart imageComparisonPart) {
 			List<MediaToPagePart> relations = mediaToPagePartDAO.loadRelations(imageComparisonPart);
 			if (!relations.isEmpty()) {
-				imageNameEls.get(0).setValue(relations.get(0).getMedia().getTitle());
+				updateImageEl(0, relations.get(0));
+			} else {
+				updateImageEl(0, null);
 			}
 			if (relations.size() >= 2) {
-				imageNameEls.get(1).setValue(relations.get(1).getMedia().getTitle());
+				updateImageEl(1, relations.get(1));
+			} else {
+				updateImageEl(1, null);
 			}
 		}
 		textEls.get(0).setValue(imageComparisonSettings.getText1());
 		textEls.get(1).setValue(imageComparisonSettings.getText2());
 	}
+
+	private void updateImageEl(int index, MediaToPagePart mediaToPagePart) {
+		StaticTextElement imageNameEl = imageNameEls.get(index);
+		if (mediaToPagePart != null) {
+			imageNameEl.setValue(mediaToPagePart.getMedia().getTitle());
+		} else {
+			imageNameEl.setValue("");
+		}
+
+		SingleSelection imageVersionEl = imageVersionEls.get(index);
+		if (mediaToPagePart != null) {
+			imageVersionEl.setVisible(true);
+
+			SelectionValues imageVersionKV = new SelectionValues();
+			mediaToPagePart.getMedia().getVersions()
+					.forEach(mv -> imageVersionKV.add(SelectionValues.entry(mv.getVersionUuid(),
+							PageEditorUIFactory.getVersionName(getTranslator(), mv))));
+			imageVersionEl.setKeysAndValues(imageVersionKV.keys(), imageVersionKV.values(), null);
+
+			if (mediaToPagePart.getMediaVersion() != null) {
+				imageVersionEl.select(mediaToPagePart.getMediaVersion().getVersionUuid(), true);
+			} else if (!imageVersionKV.isEmpty()) {
+				imageVersionEl.select(imageVersionKV.keys()[0], true);
+			}
+		} else {
+			imageVersionEl.setVisible(false);
+		}
+	}
+
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -256,6 +299,10 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 			doSaveImageText(ureq, 0);
 		} else if (textEls.size() >= 2 && textEls.get(1) == source) {
 			doSaveImageText(ureq, 1);
+		} else if (imageVersionEls.size() >= 2 && imageVersionEls.get(0) == source) {
+			doSaveImageVersion(ureq, 0);
+		} else if (imageVersionEls.size() >= 2 && imageVersionEls.get(0) == source) {
+			doSaveImageVersion(ureq, 1);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -300,6 +347,29 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 			updateUI();
 
 			fireEvent(ureq, new ChangePartEvent(reloadedPart));
+		}
+	}
+
+	private void doSaveImageVersion(UserRequest ureq, int index) {
+		if (imageComparisonElement instanceof ImageComparisonPart imageComparisonPart) {
+			ImageComparisonPart reloadedPart = (ImageComparisonPart) pageDAO.loadPart(imageComparisonPart);
+			List<MediaToPagePart> relations = mediaToPagePartDAO.loadRelations(reloadedPart);
+			MediaToPagePart relation = relations.get(index);
+			Media media = relation.getMedia();
+			SingleSelection imageVersionEl = imageVersionEls.get(index);
+			if (imageVersionEl.isOneSelected()) {
+				String imageVersionUuid = imageVersionEl.getSelectedKey();
+				for (MediaVersion mediaVersion : media.getVersions()) {
+					if (mediaVersion.getVersionUuid().equals(imageVersionUuid)) {
+						mediaToPagePartDAO.updateMediaVersion(relations.get(index), mediaVersion, getIdentity());
+						dbInstance.commit();
+						updateUI();
+
+						fireEvent(ureq, new ChangePartEvent(reloadedPart));
+						return;
+					}
+				}
+			}
 		}
 	}
 

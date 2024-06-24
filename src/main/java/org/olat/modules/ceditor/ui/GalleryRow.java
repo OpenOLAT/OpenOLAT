@@ -45,16 +45,8 @@ public class GalleryRow {
 		this.relation = relation;
 		title = StringHelper.truncateText(media.getTitle());
 		description = StringHelper.truncateText(media.getDescription());
-		version = getVersionName(translator, mediaVersion);
+		version = PageEditorUIFactory.getVersionName(translator, mediaVersion);
 		this.mediaVersion = mediaVersion;
-	}
-
-	public static String getVersionName(Translator translator, MediaVersion mediaVersion) {
-		if (mediaVersion == null || mediaVersion.getVersionName() == null ||
-				"0".equals(mediaVersion.getVersionName())) {
-			return translator.translate("gallery.version.last");
-		}
-		return translator.translate("gallery.version.nodate", mediaVersion.getVersionName());
 	}
 
 	public String getId() {

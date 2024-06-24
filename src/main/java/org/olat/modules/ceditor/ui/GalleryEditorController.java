@@ -421,7 +421,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 			MediaToPagePart relation = mediaToPagePartDAO.loadRelation(galleryRow.getRelation().getKey());
 			for (MediaVersion mediaVersion : relation.getMedia().getVersions()) {
 				versionsKV.add(SelectionValues.entry(mediaVersion.getVersionUuid(),
-						GalleryRow.getVersionName(getTranslator(), mediaVersion)));
+						PageEditorUIFactory.getVersionName(getTranslator(), mediaVersion)));
 			}
 
 			versionsDropdown = uifactory.addDropdownSingleselect("versionsDropdown", "gallery.image.version",

@@ -30,6 +30,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
+import org.olat.modules.cemedia.MediaVersion;
 
 /**
  * 
@@ -74,5 +75,13 @@ public class PageEditorUIFactory {
 		if (sourceElement instanceof ImageComparisonPart sourcePart && targetElement instanceof ImageComparisonPart targetPart) {
 			targetPart.setLayoutOptions(sourcePart.getLayoutOptions());
 		}
+	}
+
+	public static String getVersionName(Translator translator, MediaVersion mediaVersion) {
+		if (mediaVersion == null || mediaVersion.getVersionName() == null ||
+				"0".equals(mediaVersion.getVersionName())) {
+			return translator.translate("gallery.version.last");
+		}
+		return translator.translate("gallery.version.nodate", mediaVersion.getVersionName());
 	}
 }

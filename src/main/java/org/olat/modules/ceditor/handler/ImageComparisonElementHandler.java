@@ -28,8 +28,6 @@ import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
@@ -46,7 +44,6 @@ import org.olat.modules.ceditor.model.ImageComparisonType;
 import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.ui.ImageComparisonInspectorController;
 import org.olat.modules.ceditor.ui.ImageComparisonRunController;
-import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 
 /**
  * Initial date: 2024-05-15<br>
@@ -92,7 +89,6 @@ public class ImageComparisonElementHandler implements PageElementHandler, PageEl
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
-		Translator translator = Util.createPackageTranslator(PageEditorV2Controller.class, locale);
 		ImageComparisonPart imageComparisonPart = new ImageComparisonPart();
 		ImageComparisonSettings imageComparisonSettings = imageComparisonPart.getSettings();
 		imageComparisonSettings.setOrientation(ImageComparisonOrientation.horizontal);
