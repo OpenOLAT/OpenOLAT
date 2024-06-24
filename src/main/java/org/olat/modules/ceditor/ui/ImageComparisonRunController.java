@@ -125,7 +125,7 @@ public class ImageComparisonRunController extends BasicController implements Pag
 
 		List<ImageComparisonImageItem> imageComparisonImageItems = mediaToPagePartDAO.loadRelations(imageComparisonPart)
 				.stream().map(this::getMediaVersion).filter(Objects::nonNull)
-				.map(mv -> new ImageComparisonImageItem(Long.toString(mv.getKey()), mv.getMedia().getType(), mv))
+				.map(mv -> new ImageComparisonImageItem(Long.toString(mv.getKey()), mv.getMedia().getType(), mv.getMedia().getAltText(), mv))
 				.toList();
 		if (imageComparisonSettings.getInitialSliderPosition() == null) {
 			mainVC.contextPut("initialSliderPosition", null);
@@ -138,6 +138,18 @@ public class ImageComparisonRunController extends BasicController implements Pag
 		mainVC.contextPut("afterImageId", imageComparisonImageItems.size() < 2 ? AFTER_IMAGE_ID : imageComparisonImageItems.get(1).id);
 		mainVC.contextPut("beforeText", imageComparisonSettings.getText1());
 		mainVC.contextPut("afterText", imageComparisonSettings.getText2());
+
+		mainVC.contextPut("beforeAltText", imageComparisonSettings.getText1());
+		mainVC.contextPut("afterAltText", imageComparisonSettings.getText2());
+		if (imageComparisonImageItems.size() >= 2) {
+			if (StringHelper.containsNonWhitespace(imageComparisonImageItems.get(0).altText)) {
+				mainVC.contextPut("beforeAltText", imageComparisonImageItems.get(0).altText);
+			}
+			if (StringHelper.containsNonWhitespace(imageComparisonImageItems.get(1).altText)) {
+				mainVC.contextPut("afterAltText", imageComparisonImageItems.get(1).altText);
+			}
+		}
+
 		mainVC.contextPut("horizontal", ImageComparisonOrientation.horizontal.equals(imageComparisonSettings.getOrientation()));
 		mainVC.contextPut("wrongRight", ImageComparisonType.wrongRight.equals(imageComparisonSettings.getType()));
 		mainVC.contextPut("description", imageComparisonSettings.getDescription());
@@ -178,7 +190,7 @@ public class ImageComparisonRunController extends BasicController implements Pag
 		return false;
 	}
 
-	public record ImageComparisonImageItem(String id, String type, MediaVersion mediaVersion) {}
+	public record ImageComparisonImageItem(String id, String type, String altText, MediaVersion mediaVersion) {}
 
 	public record ImageComparisonImages(List<ImageComparisonImageItem> items) {
 
