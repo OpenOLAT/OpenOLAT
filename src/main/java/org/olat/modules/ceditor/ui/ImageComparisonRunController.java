@@ -138,6 +138,9 @@ public class ImageComparisonRunController extends BasicController implements Pag
 	}
 
 	private MediaVersion getMediaVersion(MediaToPagePart relation) {
+		if (relation.getMediaVersion() != null) {
+			return relation.getMediaVersion();
+		}
 		return relation.getMedia().getVersions().get(0);
 	}
 

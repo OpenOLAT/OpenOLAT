@@ -114,6 +114,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		formLayout.add("tabs", tabbedPane);
 
 		addImageComparisonTab(formLayout);
+		addDisplayTab(formLayout);
 		addStyleTab(formLayout);
 		addLayoutTab(formLayout);
 
@@ -149,14 +150,20 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		initialSliderPositionEl.setMaxValue(100);
 		initialSliderPositionEl.setStep(5);
 
-		descriptionEl = uifactory.addTextAreaElement("imagecomparison.description", 3, 60, null, layoutCont);
-		descriptionEl.addActionListener(FormEvent.ONCHANGE);
-
 		// first image
 		addSetImageSection(layoutCont);
 
 		// second image
 		addSetImageSection(layoutCont);
+	}
+
+	private void addDisplayTab(FormItemContainer formLayout) {
+		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("display", getTranslator());
+		formLayout.add(layoutCont);
+		tabbedPane.addTab(getTranslator().translate("image.display"), layoutCont);
+
+		descriptionEl = uifactory.addTextAreaElement("imagecomparison.description", 4, 60, null, layoutCont);
+		descriptionEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	private void addSetImageSection(FormLayoutContainer layoutCont) {
@@ -301,7 +308,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 			doSaveImageText(ureq, 1);
 		} else if (imageVersionEls.size() >= 2 && imageVersionEls.get(0) == source) {
 			doSaveImageVersion(ureq, 0);
-		} else if (imageVersionEls.size() >= 2 && imageVersionEls.get(0) == source) {
+		} else if (imageVersionEls.size() >= 2 && imageVersionEls.get(1) == source) {
 			doSaveImageVersion(ureq, 1);
 		}
 		super.formInnerEvent(ureq, source, event);
