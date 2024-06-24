@@ -1831,6 +1831,14 @@ table.o_ce_table {
 		margin-bottom: 10px;
 	}
 
+	.twentytwenty-wrapper {
+		.twentytwenty-container {
+			img.twentytwenty-before, img.twentytwenty-after {
+				width: 100%;
+			}
+		}
+	}
+
 	&.o_wrong_right {
 		.twentytwenty-overlay {
 
