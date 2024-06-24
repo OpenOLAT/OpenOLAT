@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -60,6 +61,11 @@ public class OrganisationServiceTest extends OlatTestCase {
 	private OrganisationDAO organisationDao;
 	@Autowired
 	private OrganisationService organisationService;
+	
+	@AfterClass()
+	public static void waitAll() {
+		waitMessageAreConsumed();
+	}
 	
 	@Test
 	public void getDefaultOrganisation() {

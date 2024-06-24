@@ -1055,6 +1055,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		ae3.setScore(null);
 		assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
+		waitMessageAreConsumed();
 		
 		CoachingAssessmentSearchParams params = new CoachingAssessmentSearchParams();
 		params.setCoach(coach);

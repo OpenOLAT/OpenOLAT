@@ -149,7 +149,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	@AfterClass
 	public static void waitMessageAreConsumed() {
 		OpenOlatEmbeddedActiveMQ mq = CoreSpringFactory.getImpl(OpenOlatEmbeddedActiveMQ.class);
-		waitForCondition(() -> mq.getMessageCount() <= 0, 10000);
+		waitForCondition(() -> mq.getMessageCount() <= 0, 10000, 10);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -170,8 +170,12 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		}
 		
 	}
-	
+
 	protected static boolean waitForCondition(final Callable<Boolean> condition, final int timeoutInMilliseconds) {
+		return waitForCondition(condition, timeoutInMilliseconds, 100);
+	}
+	
+	private static boolean waitForCondition(final Callable<Boolean> condition, final int timeoutInMilliseconds, final int waitTimeInMilliseconds) {
 		final CountDownLatch countDown = new CountDownLatch(1);
 		final AtomicBoolean result = new AtomicBoolean(false);
 		
@@ -179,7 +183,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 			@Override
 			public void run() {
 				try {
-					int numOfTry = (timeoutInMilliseconds / 100) + 2;
+					int numOfTry = (timeoutInMilliseconds / waitTimeInMilliseconds) + 2;
 					for(int i=0; i<numOfTry; i++) {
 						Boolean test = condition.call();
 						if(test != null && test.booleanValue()) {
@@ -189,7 +193,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 							result.set(false);
 						}
 						DBFactory.getInstance().commitAndCloseSession();
-						sleep(100);
+						sleep(waitTimeInMilliseconds);
 					}
 				} catch (Exception e) {
 					log.error("", e);

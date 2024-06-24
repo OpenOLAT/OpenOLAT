@@ -1210,6 +1210,8 @@ public class GTAManagerTest extends OlatTestCase {
 			log.info("Counter: {}", count.get());
 			Assert.assertEquals(50, count.get());
 		}
+		
+		waitMessageAreConsumed();
 	}
 	
 	@Test
@@ -1278,6 +1280,8 @@ public class GTAManagerTest extends OlatTestCase {
 		for(AtomicInteger count:maps.values()) {
 			Assert.assertEquals(numOfPersons / maps.size(), count.get());
 		}
+
+		waitMessageAreConsumed();
 	}
 	
 	@Test

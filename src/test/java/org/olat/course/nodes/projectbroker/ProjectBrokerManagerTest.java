@@ -219,6 +219,8 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		assertEquals("Wrong projectList.size for project-broker C", numberOfProjects, projectListC.size());
 		duration = endTime - startTime; 
 		log.info("getProjectListBy takes " + duration + "ms with " + numberOfProjects + " projects");
+		
+		waitMessageAreConsumed();
 	}
 
 	@Test
@@ -249,6 +251,8 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		long endTime = System.currentTimeMillis();
 		long duration = endTime - startTime; 
 		log.info("tableModel.getValueAt(row, col) for " + PAGE_SIZE + "elements (of " + ITERATION + ") takes " + duration + "ms with " + ITERATION + " projects");
+		
+		waitMessageAreConsumed();
 	}
 
 	@Test

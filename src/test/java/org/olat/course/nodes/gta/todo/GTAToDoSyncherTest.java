@@ -27,11 +27,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.course.CourseFactory;
@@ -84,6 +86,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class GTAToDoSyncherTest extends OlatTestCase {
+
+	private final Logger log = Tracing.createLoggerFor(GTAToDoSyncherTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -254,6 +258,10 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		
 		List<ToDoTask> toDoTasks = getToDoTasks(courseEntry);
+		log.info("Task found: {} for course: {}", toDoTasks.size(), courseEntry.getKey());
+		for(ToDoTask toDoTask:toDoTasks) {
+			log.info("Task found: {} for course: {}, element: {} and title: {}", toDoTask.getKey(), toDoTask.getOriginId(), toDoTask.getOriginSubPath(), toDoTask.getTitle());
+		}
 		assertThat(toDoTasks).hasSize(1);
 		assertThat(getToDoTask(courseEntry, GTAAssignmentToDoProvider.TYPE).getStatus()).isEqualTo(ToDoStatus.done);
 	}
@@ -264,6 +272,7 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		RepositoryEntry courseEntry = createCourseEntry();
 		UserCourseEnvironment userCourseEnv = addParticipant(courseEntry);
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
+		waitMessageAreConsumed();
 		
 		List<ToDoTask> toDoTasks = getToDoTasks(courseEntry);
 		assertThat(toDoTasks).hasSize(1);
@@ -424,6 +433,9 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), false);
 		CourseFactory.publishCourse(course, courseEntry.getEntryStatus(), userCourseEnv.getIdentityEnvironment().getIdentity(), Locale.ENGLISH);
 		dbInstance.commitAndCloseSession();
+
+		// Wait that task element are updated after publishing
+		waitMessageAreConsumed();
 	}
 
 	private Task assignTask(UserCourseEnvironment userCourseEnv) {

@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.IdentityRef;
@@ -66,6 +67,11 @@ public class OrganisationDAOTest extends OlatTestCase {
 	private OrganisationTypeDAO organisationTypeDao;
 	@Autowired
 	private OrganisationService organisationService;
+	
+	@AfterClass()
+	public static void waitAll() {
+		waitMessageAreConsumed();
+	}
 	
 	@Test
 	public void createOrganisation() {
