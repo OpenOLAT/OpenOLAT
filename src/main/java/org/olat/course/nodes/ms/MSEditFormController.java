@@ -119,7 +119,6 @@ public class MSEditFormController extends FormBasicController {
 	private FormToggle incorporateInCourseAssessmentEl;
 	private SpacerElement incorporateInCourseAssessmentSpacer;
 	private TextElement scoreScalingEl;
-	private SingleSelection scoreTypeEl;
 	
 	private FormLink showInfoTextsLink;
 
@@ -202,16 +201,7 @@ public class MSEditFormController extends FormBasicController {
 		Boolean sf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		scoreGranted.toggle(sf == null ? false : sf.booleanValue());
 		scoreGranted.setElementCssClass("o_sel_course_ms_score");
-		
-		SelectionValues scoringPK = new SelectionValues();
-		scoringPK.add(SelectionValues.entry("automatic", translate("form.score.type.scoring.automatic")));
-		scoringPK.add(SelectionValues.entry(MSCourseNode.CONFIG_VALUE_SCORE_MANUAL, translate("form.score.type.scoring.manual")));
-		
-		scoreTypeEl = uifactory.addRadiosVertical("form.score.type.scoring", "form.score.type.scoring", formLayout,
-				scoringPK.keys(), scoringPK.values());
-		scoreTypeEl.select("automatic", true);
-		scoreTypeEl.addActionListener(FormEvent.ONCHANGE);
-		
+
 		// ...minimum value...
 		Float min = modConfig.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		if (min == null) {
@@ -407,11 +397,6 @@ public class MSEditFormController extends FormBasicController {
 		displayType.setVisible(displayPassed.isOn() && gradeDisable);
 		cutVal.setVisible(displayType.isVisible() && displayType.isSelected(0));
 		cutVal.setMandatory(cutVal.isVisible());
-
-		scoreTypeEl.setVisible(scoreGranted.isOn());
-		boolean scoreAuto = scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected() && "automatic".equals(scoreTypeEl.getSelectedKey());
-		minVal.setEnabled(!scoreAuto);
-		maxVal.setEnabled(!scoreAuto);
 		
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
 				&& (scoreGranted.isOn() || displayPassed.isOn());
@@ -511,21 +496,14 @@ public class MSEditFormController extends FormBasicController {
 		// mandatory score flag
 		Boolean sf = Boolean.valueOf(scoreGranted.isOn());
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, sf);
-
 		if (sf.booleanValue()) {
 			// do min/max value
 			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, Float.valueOf(minVal.getValue()));
 			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, Float.valueOf(maxVal.getValue()));
-
-			if(!scoreTypeEl.isVisible() || (scoreTypeEl.isOneSelected() && MSCourseNode.CONFIG_VALUE_SCORE_MANUAL.equals(scoreTypeEl.getSelectedKey()))) {
-				moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, MSCourseNode.CONFIG_VALUE_SCORE_MANUAL);
-			}
 		} else {
 			// remove old config
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-			moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE);
-			moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, MSCourseNode.CONFIG_VALUE_SCORE_NONE);
 		}
 		
 		// Grade

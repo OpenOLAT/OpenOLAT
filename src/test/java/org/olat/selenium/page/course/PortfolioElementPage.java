@@ -40,7 +40,7 @@ public class PortfolioElementPage {
 	
 	public PortfolioElementPage pickPortfolio() {
 		By pickBy = By.cssSelector("a.btn.o_sel_ep_new_map_template");
-		OOGraphene.waitElement(pickBy, 5, browser);
+		OOGraphene.waitElement(pickBy, browser);
 		browser.findElement(pickBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
@@ -48,12 +48,11 @@ public class PortfolioElementPage {
 	}
 	
 	public BinderPage goToPortfolioV2() {
-		By openBy = By.cssSelector("a.o_sel_ep_select_map");
-		OOGraphene.waitElement(openBy, 5, browser);
-		browser.findElement(openBy).click();
-		BinderPage binderPage = new BinderPage(browser);
-		binderPage.assertOnBinder();
-		return binderPage;
+		By openBy = By.cssSelector("fieldset.o_start_info_box a.o_sel_ep_select_map");
+		OOGraphene.waitElement(openBy, browser);
+		OOGraphene.click(openBy, browser);
+		return new BinderPage(browser)
+				.assertOnBinder();
 	}
 
 }
