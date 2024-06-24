@@ -93,7 +93,13 @@ public class MediaUIHelper {
 		}
 		return businessPath;
 	}
-	
+
+	public static String toMediaCenterBusinessPath(Long mediaKey) {
+		String businessPath = "[HomeSite:0][filehub:0][MediaCenter:0]";
+		businessPath += "[Media:" + mediaKey + "]";
+		return businessPath;
+	}
+
 	public static MediaTabComponents addMediaVersionTab(FormItemContainer formLayout, TabbedPaneItem tabbedPane,
 			MediaPart mediaPart, List<MediaVersion> versions,
 			FormUIFactory uifactory, Translator translator) {

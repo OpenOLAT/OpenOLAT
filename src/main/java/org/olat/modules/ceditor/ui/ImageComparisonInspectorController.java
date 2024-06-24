@@ -22,6 +22,7 @@ package org.olat.modules.ceditor.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
@@ -81,6 +82,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 	private List<FormLink> chooseImageLinks = new ArrayList<>();
 	private List<SingleSelection> imageVersionEls = new ArrayList<>();
 	private List<TextElement> textEls = new ArrayList<>();
+	private List<FormLink> mediaCenterLinks = new ArrayList<>();
 	private List<FormLayoutContainer> imageLayouts = new ArrayList<>();
 	private CloseableModalController cmc;
 	private ChooseImageController chooseImageController;
@@ -198,6 +200,10 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		TextElement textEl = uifactory.addTextElement("text" + index, "imagecomparison.text", 40, null, imageLayout);
 		textEl.addActionListener(FormEvent.ONCHANGE);
 		textEls.add(textEl);
+
+		FormLink mediaCenterLink = uifactory.addFormLink("goto.media.center" + index, "goto.media.center", null, imageLayout, Link.LINK);
+		mediaCenterLink.setIconLeftCSS("o_icon o_icon_external_link");
+		mediaCenterLinks.add(mediaCenterLink);
 	}
 
 	private void addStyleTab(FormItemContainer formLayout) {
@@ -310,6 +316,10 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 			doSaveImageVersion(ureq, 0);
 		} else if (imageVersionEls.size() >= 2 && imageVersionEls.get(1) == source) {
 			doSaveImageVersion(ureq, 1);
+		} else if (mediaCenterLinks.size() >= 2 && mediaCenterLinks.get(0) == source) {
+			doShowInMediaCenter(ureq, 0);
+		} else if (mediaCenterLinks.size() >= 2 && mediaCenterLinks.get(1) == source) {
+			doShowInMediaCenter(ureq, 1);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -377,6 +387,17 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 					}
 				}
 			}
+		}
+	}
+
+	private void doShowInMediaCenter(UserRequest ureq, int index) {
+		if (imageComparisonElement instanceof ImageComparisonPart imageComparisonPart) {
+			ImageComparisonPart reloadedPart = (ImageComparisonPart) pageDAO.loadPart(imageComparisonPart);
+			List<MediaToPagePart> relations = mediaToPagePartDAO.loadRelations(reloadedPart);
+			MediaToPagePart relation = relations.get(index);
+			Media media = relation.getMedia();
+			String businessPath = MediaUIHelper.toMediaCenterBusinessPath(media.getKey());
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		}
 	}
 
