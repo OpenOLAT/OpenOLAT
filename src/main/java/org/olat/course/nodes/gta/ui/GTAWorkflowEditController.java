@@ -135,6 +135,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private List<Long> groupKeys;
 	private final RepositoryEntry courseRe;
 	private final boolean isLearningPath;
+	private final boolean individualTask;
 	
 	@Autowired
 	private HelpModule helpModule;
@@ -153,7 +154,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		this.gtaNode = gtaNode;
-		this.config = gtaNode.getModuleConfiguration();
+		config = gtaNode.getModuleConfiguration();
+		individualTask = gtaNode.getType().equals(GTACourseNode.TYPE_INDIVIDUAL);
 		this.courseEditorEnv = courseEditorEnv;
 		
 		//reload to make sure we have the last changes
@@ -339,7 +341,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		feedbackPK.add(SelectionValues.entry(PEER_REVIEW_KEY, translate("feedback.peer.review"), translate("feedback.peer.review.descr"), null, null, true));
 		feedbackTypeEl = uifactory.addCardSingleSelectHorizontal("feedback.type", "feedback.type", stepsCont, feedbackPK);
 		feedbackTypeEl.addActionListener(FormEvent.ONCHANGE);
-		feedbackTypeEl.setVisible(feedbackEl.isOn());
+		feedbackTypeEl.setVisible(feedbackEl.isOn() && individualTask);
 		if(correctionEnabled) {
 			feedbackTypeEl.select(REVIEW_AND_CORRECTION_KEY, true);
 		} else if(peerReviewEnabled) {
@@ -626,7 +628,15 @@ public class GTAWorkflowEditController extends FormBasicController {
 		config.setDateValue(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE, lateSubmissionDueDateConfig.getAbsoluteDate());
 		
 		// Review and peer review
-		String feedback = feedbackEl.isOn() ? feedbackTypeEl.getSelectedKey() : "false";
+		String feedback = "false";
+		if(feedbackEl.isOn()) {
+			if(individualTask) {
+				feedback = feedbackTypeEl.getSelectedKey();
+			} else {
+				feedback = REVIEW_AND_CORRECTION_KEY;
+			}
+		}
+				
 		boolean correction = REVIEW_AND_CORRECTION_KEY.equals(feedback);
 		boolean peerReview = PEER_REVIEW_KEY.equals(feedback);
 		config.setBooleanEntry(GTACourseNode.GTASK_REVIEW_AND_CORRECTION, correction);
@@ -788,18 +798,18 @@ public class GTAWorkflowEditController extends FormBasicController {
 	
 	private void updateRevisions() {
 		boolean feedback = feedbackEl.isOn();
-		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
-		boolean correctionEnabled = feedbackTypeEl.isKeySelected(REVIEW_AND_CORRECTION_KEY);
-		boolean peerReviewEnabled = feedbackTypeEl.isKeySelected(PEER_REVIEW_KEY);
+		feedbackTypeEl.setVisible(feedback && individualTask);
 		
-		feedbackTypeEl.setVisible(feedback);
+		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
+		boolean correctionEnabled = feedbackTypeEl.isVisible() && feedbackTypeEl.isKeySelected(REVIEW_AND_CORRECTION_KEY);
+		boolean peerReviewEnabled = feedbackTypeEl.isVisible() && feedbackTypeEl.isKeySelected(PEER_REVIEW_KEY);
 		
 		peerReviewPeriodEl.setRelativeToDates(getRelativeToDates(false));
 		peerReviewPeriodEl.setVisible(feedback  && peerReviewEnabled);
 		peerReviewPeriodEl.setRelative(useRelativeDate);
 		peerReviewPeriodLengthEl.setVisible(feedback && peerReviewEnabled && useRelativeDate);
 		
-		revisionEl.setVisible(feedback && correctionEnabled);
+		revisionEl.setVisible(feedback && (!individualTask || correctionEnabled));
 		revisionEl.toggle(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD));
 	}
 	

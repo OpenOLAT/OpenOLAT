@@ -148,6 +148,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	private boolean peerReviewEnabled = false;
 	
 	private ModuleConfiguration config;
+	private final boolean individualTask;
 	private final NodeAccessType nodeAccessType;
 	private final RepositoryEntry courseEntry;
 	
@@ -187,6 +188,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		
 		config = gtaNode.getModuleConfiguration();
 		nodeAccessType = NodeAccessType.of(course);
+		individualTask = gtaNode.getType().equals(GTACourseNode.TYPE_INDIVIDUAL);
 		this.gtaNode = gtaNode;
 		this.stackPanel = stackPanel;
 		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -207,9 +209,11 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		evaluationFormContainer.setFormTitle(translate("form.evalutation.title"));
 		evaluationFormContainer.setFormContextHelp("manual_user/learningresources/Course_Element_Task/");
 		initEvaluationFormForm(evaluationFormContainer);
+		evaluationFormContainer.setVisible(individualTask);
 
 		FormLayoutContainer evaluationReferenceContainer = uifactory.addVerticalFormLayout("evaluation.form.entry", null, formLayout);
 		initReferenceForm(evaluationReferenceContainer, ureq);
+		evaluationReferenceContainer.setVisible(individualTask);
 		
 		FormLayoutContainer assessmentContainer = uifactory.addDefaultFormLayout("assessment.form", null, formLayout);
 		assessmentContainer.setFormTitle(translate("grading.configuration.title"));
@@ -225,7 +229,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		evaluationFormEnabledEl = uifactory.addToggleButton("evaluation.enable", "evaluation.enable", translate("on"), translate("off"), formLayout);
 		evaluationFormEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		Boolean evalFormEnabled = config.getBooleanEntry(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
-		evaluationFormEnabledEl.toggle(evalFormEnabled != null && evalFormEnabled.booleanValue());
+		evaluationFormEnabledEl.toggle(individualTask && evalFormEnabled != null && evalFormEnabled.booleanValue());
 	}
 
 	private void initReferenceForm(FormItemContainer formLayout, UserRequest ureq) {
@@ -425,7 +429,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		peerReviewEnabled = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
 		
 		SelectionValues optionsPK = new SelectionValues();
-		if(evaluationFormEnabledEl.isOn()) {
+		if(individualTask && evaluationFormEnabledEl.isOn()) {
 			optionsPK.add(SelectionValues.entry(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM, translate("form.score.total.of.evaluation.form")));
 		}
 		if(peerReviewEnabled) {
@@ -438,7 +442,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	protected void update(UserRequest ureq) {
 		peerReviewEnabled = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
 		
-		boolean evaluationEnabled = evaluationFormEnabledEl.isOn();
+		boolean evaluationEnabled = evaluationFormEnabledEl.isOn() && evaluationFormEnabledEl.isOn();
 		referenceCtrl.getInitialComponent().setVisible(evaluationEnabled);
 
 		boolean scoreEnable = scoreGranted.isOn();
@@ -661,7 +665,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 				allOk &= false;
 			}
 			
-			if(evaluationFormEnabledEl.isOn() && !evaluationScoreScalingEl.getValue().matches(scoreRex)) {
+			if(individualTask && evaluationFormEnabledEl.isOn() && !evaluationScoreScalingEl.getValue().matches(scoreRex)) {
 				evaluationScoreScalingEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
 			}
@@ -767,7 +771,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 			// do min/max value
 			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, Float.valueOf(minValEl.getValue()));
 			moduleConfiguration.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, Float.valueOf(maxValEl.getValue()));
-			if(evaluationFormEnabledEl.isOn()) {
+			if(individualTask && evaluationFormEnabledEl.isOn()) {
 				String scale = evaluationScoreScalingEl.isVisible()
 						? evaluationScoreScalingEl.getValue()
 						: MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE;
@@ -780,6 +784,8 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 				moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, MSCourseNode.CONFIG_VALUE_SCORE_MANUAL);
 			} else if(StringHelper.containsNonWhitespace(formEvaluationScoreCalculation)) {
 				moduleConfiguration.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, formEvaluationScoreCalculation);
+			} else {
+				moduleConfiguration.remove(MSCourseNode.CONFIG_KEY_SCORE);
 			}
 			
 			if(peerReviewEnabled) {
@@ -1007,27 +1013,31 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	}
 
 	private void updateModuleConfigurationEvaluationForm() {
-		boolean evalFormEnabled = evaluationFormEnabledEl.isOn();
-		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED, evalFormEnabled);
-		String currentScoringMethod = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
-		String currentEvalScoringMethod = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM);
-		if (evalFormEnabled) {
-			if(!StringHelper.containsNonWhitespace(currentEvalScoringMethod)) {
-				config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM, MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM);
-			}
-			
-			MinMax minMax = calculateMinMax();
-			if(minMax != null) {
-				config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, minMax.getMin());
-				config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, minMax.getMax());
+		if(individualTask) {
+			boolean evalFormEnabled = evaluationFormEnabledEl.isOn();
+			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED, evalFormEnabled);
+			String currentScoringMethod = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
+			String currentEvalScoringMethod = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM);
+			if (evalFormEnabled) {
+				if(!StringHelper.containsNonWhitespace(currentEvalScoringMethod)) {
+					config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM, MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM);
+				}
+				
+				MinMax minMax = calculateMinMax();
+				if(minMax != null) {
+					config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, minMax.getMin());
+					config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, minMax.getMax());
+				}
+			} else {
+				config.remove(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM);
+				
+				if(MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(currentScoringMethod)
+						|| MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(currentScoringMethod)) {
+					config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, MSCourseNode.CONFIG_VALUE_SCORE_MANUAL);
+				}
 			}
 		} else {
-			config.remove(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM);
-			
-			if(MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(currentScoringMethod)
-					|| MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(currentScoringMethod)) {
-				config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE, MSCourseNode.CONFIG_VALUE_SCORE_MANUAL);
-			}
+			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED, false);
 		}
 	}
 	
