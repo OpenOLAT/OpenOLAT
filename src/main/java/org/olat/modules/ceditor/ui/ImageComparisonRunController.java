@@ -19,6 +19,7 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +37,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -61,6 +64,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class ImageComparisonRunController extends BasicController implements PageRunElement {
+
+	private static final String BEFORE_IMAGE_ID = "beforeImage";
+	private static final String BEFORE_IMAGE_REL_PATH = "/static/images/media/image_regular.svg";
+	private static final String AFTER_IMAGE_ID = "afterImage";
+	private static final String AFTER_IMAGE_REL_PATH = "/static/images/media/image_solid.svg";
 
 	private final VelocityContainer mainVC;
 	private ImageComparisonPart imageComparisonPart;
@@ -126,8 +134,8 @@ public class ImageComparisonRunController extends BasicController implements Pag
 			initialSliderPosition = Math.max(0.001, initialSliderPosition);
 			mainVC.contextPut("initialSliderPosition", initialSliderPosition);
 		}
-		mainVC.contextPut("beforeImageId", imageComparisonImageItems.isEmpty() ? null : imageComparisonImageItems.get(0).id);
-		mainVC.contextPut("afterImageId", imageComparisonImageItems.size() < 2 ? null : imageComparisonImageItems.get(1).id);
+		mainVC.contextPut("beforeImageId", imageComparisonImageItems.isEmpty() ? BEFORE_IMAGE_ID : imageComparisonImageItems.get(0).id);
+		mainVC.contextPut("afterImageId", imageComparisonImageItems.size() < 2 ? AFTER_IMAGE_ID : imageComparisonImageItems.get(1).id);
 		mainVC.contextPut("beforeText", imageComparisonSettings.getText1());
 		mainVC.contextPut("afterText", imageComparisonSettings.getText2());
 		mainVC.contextPut("horizontal", ImageComparisonOrientation.horizontal.equals(imageComparisonSettings.getOrientation()));
@@ -203,6 +211,16 @@ public class ImageComparisonRunController extends BasicController implements Pag
 						mediaResource = new VFSMediaResource(imageVfsLeaf);
 					}
 				}
+			}
+			if (BEFORE_IMAGE_ID.equals(id)) {
+				String path = WebappHelper.getContextRoot() + BEFORE_IMAGE_REL_PATH;
+				LocalFileImpl beforeImageLeaf = new LocalFileImpl(new File(path));
+				mediaResource = new VFSMediaResource(beforeImageLeaf);
+			}
+			if (AFTER_IMAGE_ID.equals(id)) {
+				String path = WebappHelper.getContextRoot() + AFTER_IMAGE_REL_PATH;
+				LocalFileImpl beforeImageLeaf = new LocalFileImpl(new File(path));
+				mediaResource = new VFSMediaResource(beforeImageLeaf);
 			}
 			return mediaResource == null ? new NotFoundMediaResource() : mediaResource;
 		}
