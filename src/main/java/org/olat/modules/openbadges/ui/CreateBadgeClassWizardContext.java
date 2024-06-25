@@ -31,6 +31,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesFactory;
@@ -56,23 +58,35 @@ public class CreateBadgeClassWizardContext {
 	private final SingleRoleRepositoryEntrySecurity reSecurity;
 
 	public boolean showRecipientsStep() {
-		if (courseResourcableId == null) {
+		CourseEnvironment courseEnv = courseEnvironment();
+		if (courseEnv == null) {
 			return false;
+		}
+		List<Identity> identities = ScoreAccountingHelper.loadParticipants(courseEnv);
+		return !identities.isEmpty();
+	}
+
+	public boolean isLearningPath() {
+		CourseEnvironment courseEnv = courseEnvironment();
+		if (courseEnv == null) {
+			return false;
+		}
+		NodeAccessType nodeAccessType  = courseEnv.getCourseConfig().getNodeAccessType();
+		return LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType());
+	}
+
+	private CourseEnvironment courseEnvironment() {
+		if (courseResourcableId == null) {
+			return null;
 		}
 		if (entry == null) {
-			return false;
+			return null;
 		}
 		if (entry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
-			return false;
+			return null;
 		}
 		ICourse course = CourseFactory.loadCourse(courseResourcableId);
-		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		List<Identity> identities = ScoreAccountingHelper.loadParticipants(courseEnv);
-		if (identities.isEmpty()) {
-			return false;
-		}
-
-		return true;
+		return course.getCourseEnvironment();
 	}
 
 	public boolean selectedTemplateIsSvg() {

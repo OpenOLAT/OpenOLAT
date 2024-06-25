@@ -66,7 +66,9 @@ import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -770,7 +772,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 		Identity recipient = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesByAssessedIdentity(recipient, courseEntry);
-		openBadgesManager.issueBadgesAutomatically(recipient, awardedBy, courseEntry, assessmentEntries);
+		NodeAccessType nodeAccessType  = userCourseEnvironment.getCourseEnvironment().getCourseConfig().getNodeAccessType();
+		boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType());
+		openBadgesManager.issueBadgesAutomatically(recipient, awardedBy, courseEntry, learningPath, assessmentEntries);
 	}
 
 	private void generateCertificate(UserCourseEnvironment userCourseEnvironment) {

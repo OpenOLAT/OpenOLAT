@@ -3335,7 +3335,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 
 	private void issueBadgesAutomatically() {
-		openBadgesManager.issueBadgesAutomatically(getRepositoryEntry(), getIdentity());
+		boolean learningPath = false;
+		openBadgesManager.issueBadgesAutomatically(getRepositoryEntry(), learningPath, getIdentity());
 	}
 
 	private void processChangeAssessmentModeEvents(AssessmentModeNotificationEvent event) {

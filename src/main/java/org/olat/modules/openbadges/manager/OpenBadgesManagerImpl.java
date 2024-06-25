@@ -853,14 +853,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry,
-										 List<AssessmentEntry> assessmentEntries) {
+										 boolean learningPath, List<AssessmentEntry> assessmentEntries) {
 		Date issuedOn = new Date();
 		for (BadgeClass badgeClass : getBadgeClasses(courseEntry)) {
 			BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 			if (!badgeCriteria.isAwardAutomatically()) {
 				continue;
 			}
-			if (badgeCriteria.allCourseConditionsMet(recipient, assessmentEntries)) {
+			if (badgeCriteria.allCourseConditionsMet(recipient, learningPath, assessmentEntries)) {
 				String uuid = OpenBadgesFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
@@ -868,7 +868,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void issueBadgesAutomatically(RepositoryEntry courseEntry, Identity awardedBy) {
+	public void issueBadgesAutomatically(RepositoryEntry courseEntry, boolean learningPath, Identity awardedBy) {
 		if (courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 			return;
 		}
@@ -879,7 +879,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				getParticipantsWithAssessmentEntryList(courseEntry, awardedBy, secCallback);
 		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
 		for (BadgeClass badgeClass : badgeClasses) {
-			List<Identity> automaticRecipients = getAutomaticRecipients(badgeClass, participantsAndAssessmentEntries);
+			List<Identity> automaticRecipients = getAutomaticRecipients(badgeClass, learningPath, participantsAndAssessmentEntries);
 			issueBadge(badgeClass, automaticRecipients, awardedBy);
 		}
 	}
@@ -918,7 +918,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public List<Identity> getAutomaticRecipients(BadgeClass badgeClass,
-												 List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries) {
+												 boolean learningPath, List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries) {
 		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 		assert badgeCriteria != null;
 
@@ -930,7 +930,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		for (ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries) {
 			List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
 			Identity assessedIdentity = participantAndAssessmentEntries.participant();
-			if (badgeCriteria.allCourseConditionsMet(assessedIdentity, assessmentEntries)) {
+			if (badgeCriteria.allCourseConditionsMet(assessedIdentity, learningPath, assessmentEntries)) {
 				automaticRecipients.add(assessedIdentity);
 			}
 		}

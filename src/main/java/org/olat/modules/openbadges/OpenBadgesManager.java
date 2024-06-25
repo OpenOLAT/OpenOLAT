@@ -124,15 +124,16 @@ public interface OpenBadgesManager {
 	BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 										Identity recipient, Identity savedBy);
 
-	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry, List<AssessmentEntry> assessmentEntries);
+	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry,
+								  boolean learningPath, List<AssessmentEntry> assessmentEntries);
 
-	void issueBadgesAutomatically(RepositoryEntry courseEntry, Identity awardedBy);
+	void issueBadgesAutomatically(RepositoryEntry courseEntry, boolean learningPath, Identity awardedBy);
 
 	List<ParticipantAndAssessmentEntries> getParticipantsWithAssessmentEntryList(
 			RepositoryEntry courseEntry, Identity identity, AssessmentToolSecurityCallback securityCallback);
 
 	List<Identity> getAutomaticRecipients(BadgeClass badgeClass,
-										  List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries);
+										  boolean learningPath, List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries);
 
 	void issueBadge(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy);
 

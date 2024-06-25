@@ -57,6 +57,7 @@ import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
 import org.olat.modules.openbadges.criteria.CourseElementScoreCondition;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CourseScoreCondition;
+import org.olat.modules.openbadges.criteria.LearningPathProgressCondition;
 import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.criteria.Symbol;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,6 +154,17 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					unitEl.setValue("Pt.");
 				}
 
+				if (badgeCondition instanceof LearningPathProgressCondition learningPathProgressCondition) {
+					symbolDropdown.setVisible(true);
+					symbolDropdown.select(learningPathProgressCondition.getSymbol().name(), true);
+
+					valueEl.setVisible(true);
+					valueEl.setValue(Double.toString(learningPathProgressCondition.getValue()));
+
+					unitEl.setVisible(true);
+					unitEl.setValue("%");
+				}
+
 				if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeCondition) {
 					badgesDropdown.setVisible(true);
 					badgesDropdown.select(otherBadgeCondition.getBadgeClassUuid(), true);
@@ -188,7 +200,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					case CoursePassedCondition.KEY -> {
 						//
 					}
-					case CourseScoreCondition.KEY -> {
+					case CourseScoreCondition.KEY, LearningPathProgressCondition.KEY -> {
 						symbolDropdown.setVisible(true);
 						valueEl.setVisible(true);
 						unitEl.setVisible(true);
@@ -256,6 +268,10 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 							Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
 							StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
 					);
+					case LearningPathProgressCondition.KEY -> new LearningPathProgressCondition(
+							Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
+							StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
+					);
 					case OtherBadgeEarnedCondition.KEY -> new OtherBadgeEarnedCondition(
 							badgesDropdown.isOneSelected() ? badgesDropdown.getSelectedKey() : badgesDropdown.getKeys()[0]
 					);
@@ -320,6 +336,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			conditionsKV = new SelectionValues();
 			conditionsKV.add(SelectionValues.entry(CoursePassedCondition.KEY, translate("form.criteria.condition.course.passed")));
 			conditionsKV.add(SelectionValues.entry(CourseScoreCondition.KEY, translate("form.criteria.condition.course.score")));
+			if (createContext.isLearningPath()) {
+				conditionsKV.add(SelectionValues.entry(LearningPathProgressCondition.KEY, translate("form.criteria.condition.learning.path.progress")));
+			}
 			if (!badgesKV.isEmpty()) {
 				conditionsKV.add(SelectionValues.entry(OtherBadgeEarnedCondition.KEY, translate("form.criteria.condition.otherBadgeEarned")));
 			}
@@ -400,6 +419,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			BadgeCondition newBadgeCondition = switch (key) {
 				case CoursePassedCondition.KEY -> new CoursePassedCondition();
 				case CourseScoreCondition.KEY -> new CourseScoreCondition(Symbol.greaterThan, 1);
+				case LearningPathProgressCondition.KEY -> new LearningPathProgressCondition(Symbol.greaterThan, 50);
 				case OtherBadgeEarnedCondition.KEY -> new OtherBadgeEarnedCondition(getUnusedBadgeKey());
 				case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(getSubIdentsNotUsedInPassedCondition());
 				case CourseElementScoreCondition.KEY -> new CourseElementScoreCondition(getSubIdentsNotUsedInScoreCondition(), Symbol.greaterThan, 1);

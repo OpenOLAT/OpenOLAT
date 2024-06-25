@@ -102,11 +102,14 @@ public class BadgeCriteria {
 		return atLeastOneUuidRemapped;
 	}
 
-	public boolean allCourseConditionsMet(Identity identity, List<AssessmentEntry> assessmentEntries) {
+	public boolean allCourseConditionsMet(Identity identity, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
 		if (!allCourseConditionsMet(assessmentEntries)) {
 			return false;
 		}
 		if (!allCourseElementConditionsMet(assessmentEntries)) {
+			return false;
+		}
+		if (!learningPathConditionMet(learningPath, assessmentEntries)) {
 			return false;
 		}
 		if (!allOtherBadgeConditionsMet(identity)) {
@@ -164,6 +167,29 @@ public class BadgeCriteria {
 				return false;
 			}
 		}
+		return true;
+	}
+
+	private boolean learningPathConditionMet(boolean learningPath, List<AssessmentEntry> assessmentEntries) {
+		if (!learningPath) {
+			return true;
+		}
+
+		double learningPathProgress = 0;
+		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			if (assessmentEntry.getEntryRoot() != null && assessmentEntry.getEntryRoot()) {
+				if (assessmentEntry.getCompletion() != null) {
+					learningPathProgress = assessmentEntry.getCompletion().floatValue() * 100;
+				}
+			}
+		}
+
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof LearningPathProgressCondition learningPathProgressCondition) {
+				return learningPathProgressCondition.satisfiesCondition(learningPathProgress);
+			}
+		}
+
 		return true;
 	}
 

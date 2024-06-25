@@ -45,6 +45,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.OpenBadgesManager;
@@ -163,6 +165,7 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 				//
 			} else if (!badgeCriteria.isAwardAutomatically()) {
 				ICourse course = CourseFactory.loadCourse(createContext.getCourseResourcableId());
+				course.getCourseConfig().getNodeAccessType();
 				String rootIdent = course.getRunStructure().getRootNode().getIdent();
 				SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
 						courseEntry, rootIdent, null, secCallback);
@@ -173,13 +176,16 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 					rows.add(row);
 				}
 			} else {
+				ICourse course = CourseFactory.loadCourse(createContext.getCourseResourcableId());
+				NodeAccessType nodeAccessType  = course.getCourseConfig().getNodeAccessType();
+				boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType());
 				List<OpenBadgesManager.ParticipantAndAssessmentEntries> participantsAndAssessmentEntries =
 						openBadgesManager.getParticipantsWithAssessmentEntryList(courseEntry,
 								getIdentity(), secCallback);
 				for (OpenBadgesManager.ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries) {
 					Identity assessedIdentity = participantAndAssessmentEntries.participant();
 					List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
-					if (badgeCriteria.allCourseConditionsMet(assessedIdentity, assessmentEntries)) {
+					if (badgeCriteria.allCourseConditionsMet(assessedIdentity, learningPath, assessmentEntries)) {
 						BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
 						rows.add(row);
 						earners.add(assessedIdentity);
