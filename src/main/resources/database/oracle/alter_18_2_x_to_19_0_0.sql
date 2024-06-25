@@ -108,3 +108,92 @@ create table o_badge_organization (
 alter table o_badge_class add fk_badge_organization number(20);
 alter table o_badge_class add constraint badge_class_organization_idx foreign key (fk_badge_organization) references o_badge_organization (id);
 create index idx_badge_class_organization_idx on o_badge_class(fk_badge_organization);
+
+-- Topic broker
+create table o_tb_broker (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   t_max_selections number(20),
+   t_selection_start_date date,
+   t_selection_end_date date,
+   t_required_enrollments number(20),
+   t_p_can_edit_r_enrollments number,
+   t_auto_enrollment number,
+   t_enrollment_start_date date,
+   t_enrollment_done_date date,
+   t_p_can_withdraw number,
+   t_withdraw_end_date date,
+   fk_entry number(20),
+   t_subident varchar(64),
+   primary key (id)
+);
+create table o_tb_participant (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   t_boost number(20),
+   t_required_enrollments number(20),
+   fk_broker number(20) not null,
+   fk_identity number(20) not null,
+   primary key (id)
+);
+create table o_tb_topic (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   t_identifier varchar(64),
+   t_title varchar(1024),
+   t_description varchar(4000),
+   t_min_participants number(20),
+   t_max_participants number(20),
+   t_sort_order number(20) not null,
+   t_deleted_date date,
+   fk_deleted_by number(20),
+   fk_creator number(20) not null,
+   fk_broker number(20) not null,
+   primary key (id)
+);
+create table o_tb_selection (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   t_enrolled number not null default 0,
+   t_sort_order number(20) not null,
+   fk_creator number(20) not null,
+   fk_participant number(20) not null,
+   fk_topic number(20) not null,
+   primary key (id)
+);
+create table o_tb_audit_log (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   t_action varchar(32) not null,
+   t_before varchar(4000),
+   t_after varchar(4000),
+   fk_doer number(20),
+   fk_broker number(20),
+   fk_participant number(20),
+   fk_topic number(20),
+   fk_selection number(20),
+   primary key (id)
+);
+
+create index idx_tb_broker_to_re_idx on o_tb_broker (fk_entry);
+create index idx_tb_broker__enr_start_idx on o_tb_broker (t_enrollment_start_date);
+create index idx_tb_part_to_ident_idx on o_tb_participant (fk_identity);
+alter table o_tb_participant add constraint tbpart_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_tbtopic_to_broker_idx on o_tb_topic (fk_broker);
+alter table o_tb_topic add constraint tbtopic_broker_idx foreign key (fk_broker) references o_tb_broker (id);
+create index idx_tbpart_to_broker_idx on o_tb_participant (fk_broker);
+alter table o_tb_participant add constraint tbpart_broker_idx foreign key (fk_broker) references o_tb_broker (id);
+create index idx_tbselection_to_topic_idx on o_tb_selection (fk_topic);
+alter table o_tb_selection add constraint tbselection_topic_idx foreign key (fk_topic) references o_tb_topic (id);
+create index idx_tbselection_to_part_idx on o_tb_selection (fk_participant);
+alter table o_tb_selection add constraint tbselection_part_idx foreign key (fk_participant) references o_tb_participant (id);
+create index idx_tbselection_to_createor_idx on o_tb_selection (fk_creator);
+alter table o_tb_selection add constraint tbselection_creator_idx foreign key (fk_creator) references o_bs_identity (id);
+create index idx_tb_audit_doer_idx on o_tb_audit_log (fk_doer);
+create index idx_tb_audit_broker_idx on o_tb_audit_log (fk_broker);
+create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
+create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);

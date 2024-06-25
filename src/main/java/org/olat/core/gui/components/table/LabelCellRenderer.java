@@ -103,8 +103,13 @@ public abstract class LabelCellRenderer implements FlexiCellRenderer {
 			
 			target.append("</span>");
 			target.append("</div>");
-			
 		}
+	}
+	
+	public String render(Translator translator, Object cellValue) {
+		StringOutput target = new StringOutput();
+		render(target, translator, cellValue);
+		return target.toString();
 	}
 
 }

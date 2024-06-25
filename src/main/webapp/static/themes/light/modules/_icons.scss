@@ -1110,6 +1110,27 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_todo_priority_low { @include o-add-icon('angle-double-down'); color: $brand-primary;}
 .o_icon_todo_date_range { @include o-add-icon('long-arrow-right');}
 
+/* Topic broker */
+.o_icon_topicbroker { @include o-add-icon('clipboard-list');}
+.o_icon_tb_method { @include o-add-icon('shuffle');}
+.o_icon_tb_broker_not_started { @include o-add-icon('circle');}
+.o_icon_tb_broker_selection_in_progress { @include o-add-icon('circle-play');}
+.o_icon_tb_broker_enrollment_done { @include o-add-icon('check-circle');}
+.o_icon_tb_enroll { @include o-add-icon('rotate-right');}
+.o_icon_tb_withdraw { @include o-add-icon('rotate-left');}
+.o_icon_tb_unselect { @include o-add-icon('trash-can', false);}
+.o_icon_tb_participants { @include o-add-icon('user-group');}
+.o_icon_tb_enrollments { @include o-add-icon('clipboard-list');}
+.o_icon_tb_selection_enrolled { @include o-add-icon('check-circle');}
+.o_icon_tb_selection_extra { @include o-add-icon('e');}
+.o_icon_tb_selection_not_enrolled { @include o-add-icon('n');}
+.o_icon_tb_selection_selected { @include o-add-icon('check-circle');}
+.o_icon_tb_selection_waiting_list { @include o-add-icon('hourglass');}
+.o_icon_tb_select_first { @include o-add-icon('arrows-up-to-line');}
+.o_icon_tb_select_last { @include o-add-icon('arrows-down-to-line');}
+.o_icon_tb_run { @include o-add-icon('clock-rotate-left');}
+.o_icon_tb_run_start { @include o-add-icon('circle-play');}
+
 /* Library */
 .o_library_icon { @include o-add-icon('university');}
 

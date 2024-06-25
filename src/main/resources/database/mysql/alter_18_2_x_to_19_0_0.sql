@@ -96,3 +96,92 @@ alter table o_badge_organization ENGINE = InnoDB;
 
 alter table o_badge_class add fk_badge_organization bigint;
 alter table o_badge_class add constraint badge_class_organization_idx foreign key (fk_badge_organization) references o_badge_organization (id);
+
+-- Topic broker
+create table o_tb_broker (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_max_selections int8,
+   t_selection_start_date datetime,
+   t_selection_end_date datetime,
+   t_required_enrollments int8,
+   t_p_can_edit_r_enrollments bool,
+   t_auto_enrollment bool,
+   t_enrollment_start_date datetime,
+   t_enrollment_done_date datetime,
+   t_p_can_withdraw bool,
+   t_withdraw_end_date datetime,
+   fk_entry int8,
+   t_subident varchar(64),
+   primary key (id)
+);
+create table o_tb_participant (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_boost int8,
+   t_required_enrollments int8,
+   fk_broker bigint not null,
+   fk_identity bigint not null,
+   primary key (id)
+);
+create table o_tb_topic (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_identifier varchar(64),
+   t_title varchar(1024),
+   t_description longtext,
+   t_min_participants integer,
+   t_max_participants integer,
+   t_sort_order integer not null,
+   t_deleted_date datetime,
+   fk_deleted_by bigint,
+   fk_creator bigint not null,
+   fk_broker bigint,
+   primary key (id)
+);
+create table o_tb_selection (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_enrolled bool not null default false,
+   t_sort_order integer not null,
+   fk_creator bigint not null,
+   fk_participant bigint not null,
+   fk_topic bigint not null,
+   primary key (id)
+);
+create table o_tb_audit_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   t_action varchar(32) not null,
+   t_before longtext,
+   t_after longtext,
+   fk_doer bigint,
+   fk_broker bigint,
+   fk_participant bigint,
+   fk_topic bigint,
+   fk_selection bigint,
+   primary key (id)
+);
+alter table o_tb_broker ENGINE = InnoDB;
+alter table o_tb_participant ENGINE = InnoDB;
+alter table o_tb_topic ENGINE = InnoDB;
+alter table o_tb_selection ENGINE = InnoDB;
+alter table o_tb_audit_log ENGINE = InnoDB;
+
+create index idx_tb_broker_to_re_idx on o_tb_broker (fk_entry);
+create index idx_tb_broker__enr_start_idx on o_tb_broker (t_enrollment_start_date);
+alter table o_tb_participant add constraint tbpart_broker_idx foreign key (fk_broker) references o_tb_broker (id);
+alter table o_tb_participant add constraint tbpart_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_tb_topic add constraint tbtopic_broker_idx foreign key (fk_broker) references o_tb_broker (id);
+alter table o_tb_selection add constraint tbselection_creator_idx foreign key (fk_creator) references o_bs_identity (id);
+alter table o_tb_selection add constraint tbselection_topic_idx foreign key (fk_topic) references o_tb_topic (id);
+alter table o_tb_selection add constraint tbselection_part_idx foreign key (fk_participant) references o_tb_participant (id);
+create index idx_tb_audit_doer_idx on o_tb_audit_log (fk_doer);
+create index idx_tb_audit_broker_idx on o_tb_audit_log (fk_broker);
+create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
+create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
+

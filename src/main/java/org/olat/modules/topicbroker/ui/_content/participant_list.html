@@ -1,0 +1,13 @@
+<fieldset>
+	<legend class="o_flex_first_grow">
+		<div>$r.translate("participants.title")</div>
+		<div>$statusLabel</div>
+	</legend>
+	$r.render("config")
+	#if($r.available("enrollment.manual.start") && $r.visible("enrollment.manual.start"))
+		<div class="o_button_group o_button_group_right">
+			$r.render("enrollment.manual.start")
+		</div>
+	#end
+	$r.render("table")
+</fieldset>

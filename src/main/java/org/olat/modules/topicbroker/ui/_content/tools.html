@@ -1,0 +1,9 @@
+<ul class="o_dropdown list-unstyled">
+	#foreach($name in $names)
+		#if($name == "divider")
+			<li class="divider"></li>
+		#else
+			<li>$r.render($name)</li>
+		#end
+	#end
+</ul>

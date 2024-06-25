@@ -1,0 +1,19 @@
+#if($enrollmentDone)
+	<div class="o_warning_with_icon">$r.translate("enrollment.manual.done")</div>
+#else
+	<div class="o_important_with_icon">$r.translate("enrollment.manual.info")</div>
+	<div class="o_button_group o_button_group_right">
+		$r.render("enrollment.manual.run.start")
+		#if($r.available("enrollment.manual.runs") && $r.visible("enrollment.manual.runs"))
+			$r.render("enrollment.manual.runs")
+		#end
+	</div>
+	
+	#if($displayRun)
+		<fieldset class="o_block_large">
+			<legend>$r.translate("enrollment.manual.run.title", $displayRun)</legend>
+			$r.render("runOverview")
+		</fieldset>
+	#end
+#end
+$r.render("buttons")

@@ -340,6 +340,11 @@
 		<class>org.olat.modules.teams.model.TeamsAttendeeImpl</class>
 		<class>org.olat.modules.todo.model.ToDoTaskImpl</class>
 		<class>org.olat.modules.todo.model.ToDoTaskTagImpl</class>
+		<class>org.olat.modules.topicbroker.model.TBAuditLogImpl</class>
+		<class>org.olat.modules.topicbroker.model.TBBrokerImpl</class>
+		<class>org.olat.modules.topicbroker.model.TBParticipantImpl</class>
+		<class>org.olat.modules.topicbroker.model.TBSelectionImpl</class>
+		<class>org.olat.modules.topicbroker.model.TBTopicImpl</class>
 		<class>org.olat.modules.video.model.VideoTranscodingImpl</class>
 		<class>org.olat.modules.video.model.VideoMetaImpl</class>
 		<class>org.olat.modules.video.model.VideoTaskSessionImpl</class>

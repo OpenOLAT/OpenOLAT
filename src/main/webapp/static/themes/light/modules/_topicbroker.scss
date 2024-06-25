@@ -1,0 +1,258 @@
+.o_tb_topic_header {
+	display: flex;
+	gap: 20px;
+	.o_tb_topic_teaser_visual {
+		max-width: 300px;
+		max-height: 300px;
+	}
+	.o_tb_topic_meta {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		h2 {
+			margin-top: 0;
+		}
+	}
+}
+.o_tb_selection_detail_header {
+	.o_tb_topic_meta {
+		gap: 10px;
+	}
+	.o_tb_selection_cmds {
+		margin-top: auto;
+	}
+}
+.o_tb_details_separator {
+	border-bottom: $o-tb-details-separator-border-bottom;
+	margin: 30px 0;
+}
+.o_tb_topic_descriptions {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.o_tb_legend {
+	font-weight: bold;
+}
+
+.o_tb_selection {
+	.o_rendertype_custom {
+		.o_tb_topic_table {
+			display: grid;
+			// 230px is minimum. Otherwise "Hinzufügen" has no less space.
+			grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+			gap: 10px;
+		}
+		
+		.o_tb_topic_card {
+			.o_tb_topic_card_thumbnail {
+				&.o_tb_topic_openable {
+					cursor: pointer;
+				}
+				height: $o-tb_topic-card-thumbnail-height;
+				background-color: #fcfcfc;
+				.o_tb_topic_card_img {
+					transition: opacity 200ms ease-in-out;
+					
+					text-align: center;
+					height: 100%;
+					
+					box-sizing: content-box;
+					border-radius: 3px 3px 0px 0px;
+					border-bottom: 1px solid 1px solid #ccc;
+					display: flex;
+					align-items: baseline;
+					width: inherit;
+					overflow: hidden;
+					
+					img {
+						min-height: $o-tb_topic-card-thumbnail-height;
+						width: 100%;
+						object-fit: cover;
+						object-position: top center;
+					}
+				}
+				display: grid;
+				grid-template-areas: "topic-card-thumbnail";
+				>div {
+					grid-area: topic-card-thumbnail;
+				}
+				.o_tb_topic_title_abbr {
+					place-self: start start;
+					margin-top: $o-tb_topic-card-image-margin;
+					margin-left: $o-tb_topic-card-image-margin;
+					min-height: $o-tb-topic-card-title-abbr-size;
+					min-width: $o-tb-topic-card-title-abbr-size;
+					display: grid;
+					align-content: center;
+					color: $o-tb-topic-card-title-abbr-color;
+					background-color: $o-tb-topic-card-title-abbr-bg-color;
+					border: $o-tb-topic-card-title-abbr-border;
+					border-radius: $o-tb-topic-card-title-abbr-border-radius;
+				}
+				.o_tb_topic_status_label {
+					place-self: end start;
+					margin-bottom: $o-tb_topic-card-image-margin;
+					margin-left: $o-tb_topic-card-image-margin;
+				}
+				.o_tb_topic_priority_label {
+					place-self: start end;
+					margin-top: $o-tb_topic-card-image-margin;
+					margin-right: $o-tb_topic-card-image-margin;
+				}
+			}
+			
+			.o_tb_topic_card_meta {
+				padding: 10px;
+				.o_tb_topic_card_title {
+					line-height: 1.2;
+				}
+			}
+			
+			.o_tb_topic_card_cmds {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 10px;
+				padding: 10px;
+				a {
+					width: 100%
+				}
+				.o_tb_select_group {
+					display: flex;
+				}
+			}
+		}
+	}
+}
+
+
+.o_tb_participant_num_cols {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px;
+	.o_tb_participant_num_col {
+		display: flex;
+		gap: 5px;
+		align-items: baseline;
+	}
+	+.form-control-feedback {
+		display: none;
+	}
+}
+
+.o_tb_participant_selections {
+	.o_tb_ps_panel {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 3rem;
+		flex-direction: row;
+		padding: 20px;
+		border: 1px solid #ddd;
+		.o_tb_ps_user {
+			order: -1;
+			min-width: 300px;
+		}
+		.o_tb_ps_config {
+			display: flex;
+			flex-direction: column;
+			flex-grow: 1;
+		}
+		&:before {
+			content: "";
+			border: 1px solid red;
+			align-self: stretch;
+		}
+	}
+}
+
+.o_labeled {
+	&.o_tb_label_broker_not_started {
+		background-color: $o-tb-broker-not-started-color;
+		border-color: $o-tb-broker-not-started-color;
+	}
+	&.o_tb_label_broker_selection_in_progress {
+		background-color: $o-tb-broker-selection-in-progress-color;
+		border-color: $o-tb-broker-selection-in-progress-color;
+	}
+	&.o_tb_label_broker_enrollment_done {
+		background-color: $o-tb-broker-enrollment-done-color;
+		border-color: $o-tb-broker-enrollment-done-color;
+	}
+}
+.o_tb_icon_colored_enrolled {
+	color: 				$o-tb-priority-enrolled-color;
+}
+.o_tb_icon_colored_waiting  {
+	color: 				$o-tb-priority-waiting-color;
+}
+.o_labeled_light {
+	&.o_tb_label_light_selected {
+		color: 				$o-tb-priority-selected-color;
+		border-color: 		$o-tb-priority-selected-color;
+	}
+	&.o_tb_label_light_enrolled {
+		color: 				$o-tb-priority-enrolled-color;
+		border-color: 		$o-tb-priority-enrolled-color;
+	}
+	&.o_tb_label_light_waiting {
+		color: 				$o-tb-priority-waiting-color;
+		border-color: 		$o-tb-priority-waiting-color;
+	}
+	&.o_tb_label_light_not_enrolled {
+		color: 				$o-tb-priority-not-enrolled-color;
+		border-color: 		$o-tb-priority-not-enrolled-color;
+	}
+	&.o_tb_label_light_extra {
+		color: 				$o-tb-priority-extra-color;
+		border-color: 		$o-tb-priority-extra-color;
+	}
+}
+.o_tb_priority_label {
+	display: grid;
+	justify-items: center;
+	min-width: 22px;
+	>div {
+		border-radius: 20px;
+		border: 1px solid;
+		padding: 0 6px;
+	}
+	>.o_tb_priority_selected {
+		color: $o-tb-priority-selected-color;
+		border-color: $o-tb-priority-selected-color;
+		background-color: $o-tb-priority-selected-color-inv;
+	}
+	>.o_tb_priority_enrolled {
+		color: $o-tb-priority-enrolled-color-inv;
+		border-color: $o-tb-priority-enrolled-color-inv;
+		background-color: $o-tb-priority-enrolled-color;
+	}
+	>.o_tb_priority_waiting {
+		color: $o-tb-priority-waiting-color;
+		border-color: $o-tb-priority-waiting-color;
+		background-color: $o-tb-priority-waiting-color-inv;
+	}
+	>.o_tb_priority_not_enrolled {
+		color: $o-tb-priority-not-enrolled-color;
+		border-color: $o-tb-priority-not-enrolled-color;
+		background-color: $o-tb-priority-not-enrolled-color-inv;
+	}
+	>.o_tb_priority_extra {
+		color: $o-tb-priority-extra-color;
+		border-color: $o-tb-priority-extra-color;
+		background-color: $o-tb-priority-extra-color-inv;
+	}
+	>.o_tb_priority_fillin {
+		color: $o-tb-priority-fillin-color;
+		border: none;
+	}
+}
+.o_tb_priority_labels {
+	display: flex;
+	gap: 2px;
+}
+
+.o_tb_config_suffix {
+	display: flex;
+	gap: 10px;
+	align-items: baseline;
+}

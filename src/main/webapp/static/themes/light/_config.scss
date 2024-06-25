@@ -1592,3 +1592,28 @@ $o-scope-toggle-on-bg-hover-color			: lighten($o-scope-toggle-on-bg-color, 10%) 
 $o-scope-pref-wdith							: 180px !default;
 $o-scope-height								: 45px !default;
 $o-scope-title-font-weight					: bold !default;
+
+/* Topic broker */
+$o-tb_topic-card-thumbnail-height			: 172px !default;
+$o-tb_topic-card-image-margin				: 10px !default;
+$o-tb-topic-card-title-abbr-size				: 50px !default;
+$o-tb-topic-card-title-abbr-color			: $btn-primary-color !default;
+$o-tb-topic-card-title-abbr-bg-color			: $btn-primary-bg !default;
+$o-tb-topic-card-title-abbr-border			: 1px solid $btn-primary-color !default;
+$o-tb-topic-card-title-abbr-border-radius	: 4px !default;
+$o-tb-details-separator-border-bottom		: 1px solid $panel-default-border !default;
+$o-tb-broker-enrollment-done-color			: $brand-success !default;
+$o-tb-broker-selection-in-progress-color		: #fcca46 !default;
+$o-tb-broker-not-started-color				: $o-labeled_bg-color !default;
+$o-tb-priority-enrolled-color				: $brand-success !default;
+$o-tb-priority-enrolled-color-inv			: white !default;
+$o-tb-priority-selected-color				: #fcca46 !default;
+$o-tb-priority-selected-color-inv			: white !default;
+$o-tb-priority-extra-color					: purple !default;
+$o-tb-priority-extra-color-inv				: white !default;
+$o-tb-priority-waiting-color					: brown !default;
+$o-tb-priority-waiting-color-inv				: white !default;
+$o-tb-priority-not-enrolled-color			: #aaa !default;
+$o-tb-priority-not-enrolled-color-inv		: white !default;
+$o-tb-priority-fillin-color					: $text-muted !default;
+

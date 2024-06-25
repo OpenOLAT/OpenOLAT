@@ -1,0 +1,30 @@
+<div class="o_tb_topic_header o_tb_topic_detail_header">
+	#if($r.available("thumbnail"))
+		<div class="o_tb_topic_teaser_visual">
+			<div class="o_media o_flex_item_fix">
+				$r.render("thumbnail")
+			</div>
+		</div>
+	#end
+	<div class="o_tb_topic_meta">
+		<div class="o_flex_first_grow">
+			<div>
+				<h2>$r.escapeHtml($title)</h2>
+			</div>
+			<div>
+				#if($r.available("topic.edit"))
+					$r.render("topic.edit")
+				#end
+				#if($r.available("enrollments.edit"))
+					$r.render("enrollments.edit")
+				#end
+			</div>
+		</div>
+		<div class="o_tb_topic_enrollments">
+			<i class="o_icon o_icon-fw o_icon_tb_selection_enrolled o_tb_icon_colored_enrolled"></i> $r.translate("topic.header.enrolled", $numEnrollments)
+		</div>
+		<div class="o_tb_topic_waiting_list">
+			<i class="o_icon o_icon-fw o_icon_tb_selection_waiting_list o_tb_icon_colored_waiting"></i> $r.translate("topic.header.waiting.list", $waitingList)
+		</div>
+	</div>
+</div>

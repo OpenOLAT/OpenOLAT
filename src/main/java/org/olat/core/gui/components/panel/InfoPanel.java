@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.panel;
 
+import java.util.Objects;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -45,7 +47,15 @@ public class InfoPanel extends AbstractComponent {
 	
 	public void setPersistedStatusId(UserRequest ureq, String id) {
 		persistedStatusId = id;
-		status = (String)ureq.getUserSession().getGuiPreferences().get(InfoPanel.class, persistedStatusId);
+		reloadStatus(ureq);
+	}
+
+	public void reloadStatus(UserRequest ureq) {
+		String reloadedStatus = (String)ureq.getUserSession().getGuiPreferences().get(InfoPanel.class, persistedStatusId);
+		if (!Objects.equals(reloadedStatus, status)) {
+			setDirty(true);
+		}
+		status = reloadedStatus;
 	}
 	
 	public String getTitle() {
@@ -62,6 +72,7 @@ public class InfoPanel extends AbstractComponent {
 
 	public void setInformations(String informations) {
 		this.informations = informations;
+		setDirty(true);
 	}
 	
 	public boolean isCollapsed() {

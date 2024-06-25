@@ -1,0 +1,39 @@
+<div class="o_tb_topic_header o_tb_selection_detail_header">
+	#if($r.available("thumbnail"))
+		<div class="o_tb_topic_teaser_visual">
+			<div class="o_media o_flex_item_fix">
+				$r.render("thumbnail")
+			</div>
+		</div>
+	#end
+	<div class="o_tb_topic_meta">
+		<div class="o_flex_first_grow">
+			<div>
+				<h2>$r.escapeHtml($title)</h2>
+			</div>
+			<div>
+				#if($priority)
+					$priority
+				#end
+			</div>
+		</div>
+		#if($status)
+			<div class="o_tb_selection_status">
+				<span class="o_labeled_light $statusCss""><i class="o_icon $statusIcon"> </i> <span>$status</span></span>
+			</div>
+		#end
+		#if($r.available("select") && $r.visible("select"))
+			<div class="o_tb_selection_cmds">
+				<div class="btn-group o_tb_select_group">
+					$r.render("select")
+					$r.render("selectDropdown")
+				</div>
+			</div>
+		#end
+		#if($r.available("unselect") && $r.visible("unselect"))
+			<div class="o_tb_selection_cmds">
+				$r.render("unselect")
+			</div>
+		#end
+	</div>
+</div>

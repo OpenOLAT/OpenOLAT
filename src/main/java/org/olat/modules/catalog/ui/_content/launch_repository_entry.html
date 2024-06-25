@@ -18,7 +18,7 @@
 	#if($r.available("emptyState"))
 		$r.render("emptyState")
 	#end
-	<div id="o_swiper_$launcherId" class="swiper o_entry_cards">
+	<div id="o_swiper_$launcherId" class="swiper o_entry_cards o_swiper_buttons">
 		<div class="swiper-wrapper">
 			#foreach($row in $items)
 				<div class="swiper-slide">

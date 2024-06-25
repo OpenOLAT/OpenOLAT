@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -101,6 +102,7 @@ public class NodeRightsController extends FormBasicController {
 	private final Map<String, NodeRightWrapper> identifierToWrapper = new HashMap<>();
 	private final String contextHelp;
 	private final boolean groupsAvailable;
+	private final boolean autosave;
 	private int counter = 0;
 	
 	@Autowired
@@ -111,6 +113,21 @@ public class NodeRightsController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 	
 
+	public NodeRightsController(UserRequest ureq, WindowControl wControl, Form rootForm, CourseGroupManager courseGroupManager,
+			List<NodeRightType> types, ModuleConfiguration moduleConfigs, String contextHelp) {
+		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
+		this.courseGroupManager = courseGroupManager;
+		this.types = types;
+		this.moduleConfigs = moduleConfigs;
+		this.contextHelp = contextHelp;
+		this.groupsAvailable = courseGroupManager.hasBusinessGroups();
+		this.autosave = false;
+		
+		initNodeRightWrappers(types, moduleConfigs);
+		
+		initForm(ureq);
+	}
+		
 	public NodeRightsController(UserRequest ureq, WindowControl wControl, CourseGroupManager courseGroupManager,
 			List<NodeRightType> types, ModuleConfiguration moduleConfigs, String contextHelp) {
 		super(ureq, wControl);
@@ -119,17 +136,26 @@ public class NodeRightsController extends FormBasicController {
 		this.moduleConfigs = moduleConfigs;
 		this.contextHelp = contextHelp;
 		this.groupsAvailable = courseGroupManager.hasBusinessGroups();
+		this.autosave = true;
 		
+		initNodeRightWrappers(types, moduleConfigs);
+		
+		initForm(ureq);
+	}
+
+	private void initNodeRightWrappers(List<NodeRightType> types, ModuleConfiguration moduleConfigs) {
 		for (NodeRightType type : types) {
 			NodeRightWrapper wrapper = new NodeRightWrapper();
 			identifierToWrapper.put(type.getIdentifier(), wrapper);
 			wrapper.setType(type);
 			
 			NodeRight nodeRight = nodeRightService.getRight(moduleConfigs, type);
-			wrapper.setNodeRight(nodeRight);
+			if (autosave) {
+				wrapper.setNodeRight(nodeRight);
+			} else {
+				wrapper.setNodeRight(nodeRightService.clone(nodeRight));
+			}
 		}
-		
-		initForm(ureq);
 	}
 	
 	/**
@@ -371,8 +397,9 @@ public class NodeRightsController extends FormBasicController {
 				doDeleteGrant(ureq, row.getWrapper(), row.getGrant());
 			}
 		} else if (source instanceof MultipleSelectionElement rolesEl) {
-			NodeRightWrapper wrapper = (NodeRightWrapper)source.getUserObject();
-			doSetRoles(ureq, wrapper, rolesEl);
+			if (source.getUserObject() instanceof NodeRightWrapper wrapper) {
+				doSetRoles(ureq, wrapper, rolesEl);
+			}
 		} else if (source instanceof DateChooser dateChooser) {
 			String name = dateChooser.getName();
 			if (name.startsWith(EL_NAME_START)) {
@@ -567,12 +594,19 @@ public class NodeRightsController extends FormBasicController {
 	}
 
 	private void doSave(UserRequest ureq, NodeRight nodeRight) {
-		nodeRightService.setRight(moduleConfigs, nodeRight);
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+		if (autosave) {
+			nodeRightService.setRight(moduleConfigs, nodeRight);
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+		}
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		if (autosave) {
+			return;
+		}
+		
+		identifierToWrapper.values()
+				.forEach(wrapper -> nodeRightService.setRight(moduleConfigs, wrapper.getNodeRight()));
 	}
 }

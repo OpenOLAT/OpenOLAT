@@ -411,4 +411,16 @@
 		</property>
 	</bean>
 	
+	<!-- Job to auto enroll in topic brokers -->
+	<bean id="topicBrokerEnrollmentTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="topicBrokerEnrollmentJob" />
+		<!-- Once a hour at xx:00:17 -->
+		<property name="cronExpression" value="17 0 * * * ?" />
+		<property name="startDelay" value="30000" />
+	</bean>
+	
+	<bean id="topicBrokerEnrollmentJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="jobClass" value="org.olat.modules.topicbroker.manager.TopicBrokerEnrollmentJob" />
+	</bean>
+	
 </beans>

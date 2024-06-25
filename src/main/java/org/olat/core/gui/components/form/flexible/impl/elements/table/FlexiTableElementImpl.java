@@ -977,6 +977,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	@Override
+	public Set<Integer> getDetailsIndex() {
+		return detailsIndex != null? Set.copyOf(detailsIndex): Set.of();
+	}
+
+	@Override
 	public boolean isDetailsExpended(int row) {
 		if(detailsIndex == null) {
 			return false;
@@ -1209,7 +1214,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(checkbox)) {
 			toogleSelectIndex(ureq, checkbox);
-		} else if(StringHelper.containsNonWhitespace(details)) {
+		} else if(StringHelper.containsNonWhitespace(details) && dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			toogleDetails(details, ureq);
 		} else if(StringHelper.containsNonWhitespace(page)) {
 			int p = Integer.parseInt(page);

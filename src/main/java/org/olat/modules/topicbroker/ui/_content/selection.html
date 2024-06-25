@@ -1,0 +1,20 @@
+<div class="o_tb_selection">
+	$r.render("config")
+	#if($r.available("myEnrollments"))
+		$r.render("myEnrollments")
+	#end
+	<fieldset class="o_block_large">
+		<legend class="o_flex_first_grow">
+			<div>$r.translate("selection.my")</div>
+			<div>$statusLabel</div>
+		</legend>
+		#if($selectionMsg)
+			<div class="o_warning_with_icon">$selectionMsg</div>
+		#end
+		$r.render("selectionTable")
+	</fieldset>
+	<fieldset>
+		<legend>$r.translate("topics.available")</legend>
+		$r.render("topicTable")
+	</fieldset>
+</div>

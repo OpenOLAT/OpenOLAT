@@ -1,0 +1,15 @@
+<div class="o_tb_topic_selections">
+	$r.render("config")
+	<fieldset class="o_block_large">
+		<legend class="o_flex_first_grow">
+			<div>$r.translate("enrollments.title")</div>
+			<div>$statusLabel</div>
+		</legend>
+		$r.render("enrollmentsTable")
+	</fieldset>
+	<fieldset>
+		<legend>$r.translate("waiting.list.title")</legend>
+		$r.render("waitingListTable")
+	</fieldset>
+	$r.render("buttons")
+</div>

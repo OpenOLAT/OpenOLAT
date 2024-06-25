@@ -1,0 +1,63 @@
+<div class="o_card o_tb_topic_card">
+	<div class="o_tb_topic_card_thumbnail">
+		<div class="o_tb_topic_card_img #if($row.getThumbnailCss())$row.getThumbnailCss()#end">
+			#if($row.isThumbnailAvailable())
+				<img src="$row.getThumbnailUrl()" alt=""/>
+			#else
+				<div class="o_tb_topic_row_thumbnail">
+					<div class="o_tb_topic_icon_container">
+						<div class="o_tb_topic_row_thumbnail_icon"><i class="o_icon"></i></div>
+							#if($row.getElementsLabel())
+							<div class="o_tb_topic_elements_labels">
+								$row.getElementsLabel()
+							</div>
+						#end
+					</div>
+				</div>
+				<div class="o_tb_topic_title_abbr">
+					$row.getTitleAbbr()
+				</div>
+			#end
+		</div>
+		#if($row.getStatusLabel())
+			<div class="o_tb_topic_status_label">
+				$row.getStatusLabel()
+			</div>
+		#end
+		#if($row.getPriorityLabel())
+			<div class="o_tb_topic_priority_label">
+				$row.getPriorityLabel()
+			</div>
+		#end
+	</div>
+	<div class="o_tb_topic_card_meta">
+		<div class="o_flex_first_grow_base">
+			<div class="o_nowrap">
+				<h4 class="o_tb_topic_card_title o_card_title o_nowrap">$r.escapeHtml($row.getTitle())</h4>
+			</div>
+		</div>
+		<div class="o_tb_topic_card_participants o_flex_block_one_line_left">
+			<div class="o_nowrap ">
+				$row.participants
+			</div>
+		</div>
+	</div>
+	<div class="o_tb_topic_card_cmds">
+		<div class="o_tb_topic_card_cmds_details">
+			#if($r.available($row.getDetailsButtonName()))
+				$r.render($row.getDetailsButtonName())
+			#end
+		</div>
+		<div class="o_tb_topic_card_cmds_selection">
+			#if($r.available($row.getUnselectButtonName()))
+				$r.render($row.getUnselectButtonName())
+			#end
+			#if($r.available($row.getSelectButtonName()))
+				<div class="btn-group o_tb_select_group">
+					$r.render($row.getSelectButtonName())
+					$r.render($row.getSelectDropdownName())
+				</div>
+			#end
+		</div>
+	</div>
+</div>

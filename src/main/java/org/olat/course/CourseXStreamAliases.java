@@ -78,6 +78,7 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.TUCourseNode;
+import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.course.nodes.ViteroCourseNode;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.nodes.adobeconnect.compatibility.AdobeConnectCompatibilityConfiguration;
@@ -197,6 +198,7 @@ public class CourseXStreamAliases {
 		readXstream.alias("IQSELFCourseNode", IQSELFCourseNode.class);
 		readXstream.alias("IQSURVCourseNode", IQSURVCourseNode.class);
 		readXstream.alias("IQTESTCourseNode", IQTESTCourseNode.class);
+		readXstream.alias("TopicBrokerCourseNode", TopicBrokerCourseNode.class);
 		readXstream.alias("MSCourseNode", MSCourseNode.class);
 		readXstream.alias("PodcastCourseNode", PodcastCourseNode.class);
 		readXstream.alias("PortfolioCourseNode", PortfolioCourseNode.class);

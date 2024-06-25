@@ -1,0 +1,20 @@
+<div class="o_tb_topic_descriptions">
+	#if($r.isNotEmpty($description))
+		<div class="o_tb_topic_description">
+			<div class="o_tb_legend">
+				$r.translate("topic.description")
+			</div>
+			<div>
+				$r.escapeHtml($description)
+			</div>
+		</div>
+	#end
+	<div class="o_tb_topic_participants">
+		<div class="o_tb_legend">
+			$r.translate("topic.participants.num")
+		</div>
+		<div>
+			$participantRange
+		</div>
+	</div>
+</div>

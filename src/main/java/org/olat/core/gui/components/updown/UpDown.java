@@ -43,7 +43,7 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 	
 	private static final ComponentRenderer RENDERER = new UpDownRenderer();
 	
-	public enum Layout { LINK_HORIZONTAL, BUTTON_HORIZONTAL };
+	public enum Layout { LINK_HORIZONTAL, BUTTON_HORIZONTAL }
 	
 	private final Link up;
 	private final Link down;
@@ -69,7 +69,7 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 		up.setCustomDisplayText("");
 		
 		downName = idPrefix + "_down";
-		this.down = createLink(layout, downName);;
+		this.down = createLink(layout, downName);
 		down.setDomReplacementWrapperRequired(false);
 		down.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
 		down.setCustomDisplayText("");
@@ -105,7 +105,7 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 		}
 	}
 	
-	boolean isTopmost() {
+	public boolean isTopmost() {
 		return topmost;
 	}
 
@@ -116,7 +116,7 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 		}
 	}
 
-	boolean isLowermost() {
+	public boolean isLowermost() {
 		return loweremost;
 	}
 

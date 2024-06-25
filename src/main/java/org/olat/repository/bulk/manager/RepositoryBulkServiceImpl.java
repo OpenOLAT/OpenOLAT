@@ -52,6 +52,7 @@ import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -81,6 +82,8 @@ import org.olat.repository.bulk.model.SettingsContext.LifecycleType;
 import org.olat.repository.bulk.model.SettingsContext.Replacement;
 import org.olat.repository.bulk.model.SettingsSteps;
 import org.olat.repository.bulk.model.SettingsSteps.Step;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -98,7 +101,7 @@ import org.springframework.stereotype.Service;
 public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 	
 	@Autowired
-	private DB dbInsance;
+	private DB dbInstance;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
@@ -234,16 +237,16 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 		}
 		
 		for (RepositoryEntry repositoryEntry : entries) {
-			RepositoryEntry updatedEntry = updateRepositoryEntry(context, editables, repositoryEntry, educationalType,
-					taxonomyLevelsAdd, organisationsAdd, publicLifecycle);
+			RepositoryEntry updatedEntry = updateRepositoryEntry(identity, context, editables, repositoryEntry,
+					educationalType, taxonomyLevelsAdd, organisationsAdd, publicLifecycle);
 			updatedEntry = updateRepositoryEntryAccess(context, editables, updatedEntry);
 			updateLicense(context, editables, updatedEntry, licenseType);
 			updateCourse(window, identity, context, editables, updatedEntry, verifiedBlogSoftKey, verifiedWikiSoftKey);
-			dbInsance.commit();
+			dbInstance.commit();
 		}
 	}
 
-	private RepositoryEntry updateRepositoryEntry(SettingsContext context, SettingsBulkEditables editables,
+	private RepositoryEntry updateRepositoryEntry(Identity identity, SettingsContext context, SettingsBulkEditables editables,
 			RepositoryEntry repositoryEntry, RepositoryEntryEducationalType educationalType,
 			List<TaxonomyLevel> taxonomyLevelsAdd, List<Organisation> organisationsAdd,
 			RepositoryEntryLifecycle publicLifecycle) {
@@ -324,12 +327,15 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 		repositoryEntry.setLifecycle(lifecycle);
 		
 		if (changed) {
-			return repositoryManager.setDescriptionAndName(repositoryEntry, repositoryEntry.getDisplayname(),
+			repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry, repositoryEntry.getDisplayname(),
 					repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(), repositoryEntry.getDescription(),
 					repositoryEntry.getTeaser(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
 					repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
 					repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), organisations, taxonomyLevels,
 					repositoryEntry.getEducationalType());
+			dbInstance.commit();
+			MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, identity, Change.modifiedDescription, "authoring");
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 		}
 		return repositoryEntry;
 	}

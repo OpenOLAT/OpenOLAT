@@ -457,6 +457,8 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 */
 	public void addToHistory(UserRequest ureq);
 	
+	public Set<Integer> getDetailsIndex();
+	
 	/**
 	 * Is the details view visible for this particular row?
 	 */

@@ -1,0 +1,239 @@
+/**
+ * <a href="https://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, https://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.topicbroker.ui;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.modules.topicbroker.TBAuditLogSearchParams;
+import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBEnrollmentProcess;
+import org.olat.modules.topicbroker.TBEnrollmentStats;
+import org.olat.modules.topicbroker.TBParticipant;
+import org.olat.modules.topicbroker.TBParticipantCandidates;
+import org.olat.modules.topicbroker.TBParticipantSearchParams;
+import org.olat.modules.topicbroker.TBSelection;
+import org.olat.modules.topicbroker.TBSelectionSearchParams;
+import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicSearchParams;
+import org.olat.modules.topicbroker.TopicBrokerService;
+import org.olat.modules.topicbroker.manager.DefaultEnrollmentProcess;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * 
+ * Initial date: 17 Jun 2024<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
+ *
+ */
+public class TBEnrollmentManualProcessController extends FormBasicController {
+
+	private static final String CMD_SELECT_RUN = "selrun_";
+	
+	private FormSubmit applyLink;
+	private FormLink runStartLink;
+	private DropdownItem runsDropdown;
+
+	private TBEnrollmentRunOverviewController enrollmentRunOverviewCtrl;
+
+	private TBBroker broker;
+	private final List<Identity> identities;
+	private final List<TBParticipant> participants;
+	private final List<TBTopic> topics;
+	private final List<TBSelection> selections;
+	private final List<EnrollmentProcessWrapper> runs = new ArrayList<>(3);
+	private EnrollmentProcessWrapper selectedProcessWrapper;
+	
+	@Autowired
+	private TopicBrokerService topicBrokerService;
+
+	public TBEnrollmentManualProcessController(UserRequest ureq, WindowControl wControl, TBBroker broker,
+			TBParticipantCandidates participantCandidates) {
+		super(ureq, wControl, "enrollment_manual_process");
+		this.broker = broker;
+		identities = participantCandidates.getAllIdentities();
+		
+		TBParticipantSearchParams participantSearchParams = new TBParticipantSearchParams();
+		participantSearchParams.setBroker(broker);
+		participantSearchParams.setIdentities(identities);
+		participants = topicBrokerService.getParticipants(participantSearchParams);
+		
+		TBTopicSearchParams topicSearchParams = new TBTopicSearchParams();
+		topicSearchParams.setBroker(broker);
+		topics = topicBrokerService.getTopics(topicSearchParams);
+		
+		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
+		selectionSearchParams.setBroker(broker);
+		selectionSearchParams.setEnrolledOrMaxSortOrder(broker.getMaxSelections());
+		selectionSearchParams.setFetchParticipant(true);
+		selections = topicBrokerService.getSelections(selectionSearchParams);
+		
+		initForm(ureq);
+		updateEnrollmentDone();
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		runStartLink = uifactory.addFormLink("enrollment.manual.run.start", formLayout, Link.BUTTON);
+		runStartLink.setIconLeftCSS("o_icon o_icon-lg o_icon_tb_run_start");
+		
+		runsDropdown = uifactory.addDropdownMenu("enrollment.manual.runs", null, formLayout, getTranslator());
+		runsDropdown.setOrientation(DropdownOrientation.right);
+		runsDropdown.setIconCSS("o_icon o_icon-lg o_icon_tb_run");
+		runsDropdown.setVisible(false);
+		
+		enrollmentRunOverviewCtrl = new TBEnrollmentRunOverviewController(ureq, getWindowControl(), mainForm, broker);
+		listenTo(enrollmentRunOverviewCtrl);
+		formLayout.add("runOverview", enrollmentRunOverviewCtrl.getInitialFormItem());
+		
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		formLayout.add("buttons", buttonLayout);
+		applyLink = uifactory.addFormSubmitButton("enrollment.manual.apply", buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+	}
+	
+	private void updateEnrollmentDone() {
+		broker = topicBrokerService.getBroker(broker);
+		boolean enrollmentStarted = broker.getEnrollmentStartDate() != null;
+		flc.contextPut("enrollmentDone", enrollmentStarted);
+		applyLink.setVisible(!enrollmentStarted);
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == runStartLink) {
+			doRunEnrollmentProcess();
+		} else if (source instanceof FormLink link) {
+			String cmd = link.getCmd();
+			if (cmd.startsWith(CMD_SELECT_RUN)) {
+				int runNo = Integer.valueOf(cmd.substring(CMD_SELECT_RUN.length()));
+				doSelectRun(runNo);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		updateEnrollmentDone();
+		allOk &= applyLink.isVisible();
+		
+		return allOk;
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
+		if (selectedProcessWrapper != null) {
+			if (isChangesSinceRun()) {
+				showWarning("error.changes.since.last.run");
+			} else {
+				topicBrokerService.updateEnrollmentProcessStart(getIdentity(), broker);
+				selectedProcessWrapper.getProcess().persist(getIdentity());
+				topicBrokerService.updateEnrollmentProcessDone(getIdentity(), broker);
+				fireEvent(ureq, FormEvent.DONE_EVENT);
+			}
+		}
+	}
+	
+	private boolean isChangesSinceRun() {
+		TBAuditLogSearchParams searchParams = new TBAuditLogSearchParams();
+		searchParams.setBroker(broker);
+		searchParams.setOrderAsc(Boolean.FALSE);
+		Date lastAuditLogDate = topicBrokerService.getAuditLog(searchParams, 0, 1).get(0).getCreationDate();
+		return lastAuditLogDate.after(selectedProcessWrapper.getStartDate());
+	}
+
+	private void doRunEnrollmentProcess() {
+		Date startDate = new Date();
+		TBEnrollmentProcess process = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		TBEnrollmentStats enrollmentStats = topicBrokerService.getEnrollmentStats(broker, identities, participants, process.getPreviewSelections());
+		
+		EnrollmentProcessWrapper wrapper = new EnrollmentProcessWrapper(startDate, process, enrollmentStats);
+		runs.add(wrapper);
+		
+		int run = runs.size();
+		String cmd = CMD_SELECT_RUN + run;
+		FormLink selectPosLink = uifactory.addFormLink("selectp_" + run, cmd, "", null, flc, Link.NONTRANSLATED);
+		selectPosLink.setI18nKey(translate("enrollment.manual.run", String.valueOf(run)));
+		runsDropdown.addElement(selectPosLink);
+		
+		doSelectRun(run);
+	}
+	
+	private void doSelectRun(int runNo) {
+		flc.contextPut("displayRun", String.valueOf(runNo));
+		runsDropdown.setTranslatedLabel(translate("enrollment.manual.run", String.valueOf(runNo)));
+		runsDropdown.setVisible(true);
+		
+		EnrollmentProcessWrapper wrapper = runs.get(runNo - 1);
+		selectedProcessWrapper = wrapper;
+		enrollmentRunOverviewCtrl.updateModel(wrapper.getStats());
+	}
+	
+	private static final class EnrollmentProcessWrapper {
+		
+		private final Date startDate;
+		private final TBEnrollmentProcess process;
+		private final TBEnrollmentStats stats;
+		
+		public EnrollmentProcessWrapper(Date startDate, TBEnrollmentProcess process, TBEnrollmentStats stats) {
+			this.startDate = startDate;
+			this.process = process;
+			this.stats = stats;
+		}
+
+		public Date getStartDate() {
+			return startDate;
+		}
+
+		public TBEnrollmentProcess getProcess() {
+			return process;
+		}
+
+		public TBEnrollmentStats getStats() {
+			return stats;
+		}
+		
+	}
+	
+}

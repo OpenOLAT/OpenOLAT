@@ -187,4 +187,8 @@
 		<property name="order" value="210" />
 	</bean>
 	
+	<bean id="topicbroker" class="org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeConfiguration" scope="prototype">
+		<property name="order" value="199" />
+	</bean>
+	
 </beans>
