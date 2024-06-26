@@ -170,7 +170,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private Controller currentNodeController;
 
 	private boolean isInEditor = false;
-	private final boolean leaningPath;
+	private final boolean learningPath;
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
@@ -342,8 +342,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			coursemain.contextPut("oInfoCourse", oInfoCourse);
 		}
 		
-		leaningPath = NodeAccessType.of(course).getType().equals(LearningPathNodeAccessProvider.TYPE);
-		coursemain.contextPut("learningPath", Boolean.valueOf(leaningPath));
+		learningPath = NodeAccessType.of(course).getType().equals(LearningPathNodeAccessProvider.TYPE);
+		coursemain.contextPut("learningPath", Boolean.valueOf(learningPath));
 		
 		// if a disclaimer is enabled, show it first
 		disclaimerAccepted = !courseModule.isDisclaimerEnabled()
@@ -942,7 +942,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if(index >= 0 && index+1 <flatList.size()) {
 			TreeNode nextNode = flatList.get(index + 1);
 			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, nextNode.getIdent());
-			doNodeClick(ureq, tev, leaningPath);
+			doNodeClick(ureq, tev, learningPath);
 		}
 		doScrollTop();
 	}
@@ -954,7 +954,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		TreeNode previousNonDelegatingNode = getPreviousNonDelegatingNode(flatList, currentNode);
 		if (previousNonDelegatingNode != null) {
 			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, previousNonDelegatingNode.getIdent());
-			doNodeClick(ureq, tev, leaningPath);
+			doNodeClick(ureq, tev, learningPath);
 		}
 		doScrollTop();
 	}
@@ -1284,5 +1284,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	public void setDisposedMsgController(Controller disposeMsgController) {
 		super.setDisposedMsgController(disposeMsgController);
 	}
-	
+
+	public boolean isLearningPath() {
+		return learningPath;
+	}
 }

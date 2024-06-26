@@ -3335,7 +3335,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 
 	private void issueBadgesAutomatically() {
-		boolean learningPath = false;
+		boolean learningPath = getRunMainController() != null && getRunMainController().isLearningPath();
 		openBadgesManager.issueBadgesAutomatically(getRepositoryEntry(), learningPath, getIdentity());
 	}
 
