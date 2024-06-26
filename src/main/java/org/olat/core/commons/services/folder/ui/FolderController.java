@@ -1455,8 +1455,8 @@ public class FolderController extends FormBasicController implements Activateabl
 					doCopyMove(ureq,
 							copyUserObject.move(),
 							copySelectFolderCtrl.getSelectedContainer(),
-							copyUserObject.itemsToCopy,
-							null);
+							copyUserObject.itemsToCopy(),
+							copyUserObject.successMessage());
 				}
 			}
 			cleanUp();
@@ -2048,12 +2048,36 @@ public class FolderController extends FormBasicController implements Activateabl
 		copySelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, currentContainer,
 				translate(submitI18nKey));
 		listenTo(copySelectFolderCtrl);
-		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, List.of(vfsItem)));
+		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, List.of(vfsItem), getCopyMoveSuccessMessage(move)));
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				copySelectFolderCtrl.getInitialComponent(), true, translate(titleI18nKey), true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private Consumer<List<String>> getCopyMoveSuccessMessage(boolean move) {
+		return move? this::showMoveSuccessMessage: this::showCopySuccessMessage;
+	}
+	
+	private void showCopySuccessMessage(List<String> filenames) {
+		if (filenames != null && !filenames.isEmpty()) {
+			if (filenames.size() == 1) {
+				showInfo("copy.success.single", filenames.get(0));
+			} else {
+				showInfo("copy.success.multi", String.valueOf(filenames.size()));
+			}
+		}
+	}
+	
+	private void showMoveSuccessMessage(List<String> filenames) {
+		if (filenames != null && !filenames.isEmpty()) {
+			if (filenames.size() == 1) {
+				showInfo("move.success.single", filenames.get(0));
+			} else {
+				showInfo("move.success.multi", String.valueOf(filenames.size()));
+			}
+		}
 	}
 
 	private void doCopyMove(UserRequest ureq, boolean move, VFSContainer targetContainer, List<VFSItem> itemsToCopy,
@@ -2238,7 +2262,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		copySelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, currentContainer,
 				translate(submitI18nKey));
 		listenTo(copySelectFolderCtrl);
-		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, itemsToCopy));
+		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, itemsToCopy, getCopyMoveSuccessMessage(move)));
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				copySelectFolderCtrl.getInitialComponent(), true, translate(titleI18nKey), true);
@@ -2897,7 +2921,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		restoreSelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, startContainer,
 				translate("restore"));
 		listenTo(restoreSelectFolderCtrl);
-		restoreSelectFolderCtrl.setUserObject(new CopyUserObject(true, List.of(vfsItem)));
+		restoreSelectFolderCtrl.setUserObject(new CopyUserObject(true, List.of(vfsItem), null));
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), restoreSelectFolderCtrl.getInitialComponent(),
 				true, translate( "restore"), true);
@@ -2974,7 +2998,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		restoreSelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, rootContainer,
 				translate("restore"));
 		listenTo(restoreSelectFolderCtrl);
-		restoreSelectFolderCtrl.setUserObject(new CopyUserObject(true, selecteditems));
+		restoreSelectFolderCtrl.setUserObject(new CopyUserObject(true, selecteditems, null));
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), restoreSelectFolderCtrl.getInitialComponent(),
 				true, translate( "restore"), true);
@@ -3232,6 +3256,6 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 	}
 	
-	private static record CopyUserObject(Boolean move, List<VFSItem> itemsToCopy) {}
+	private static record CopyUserObject(Boolean move, List<VFSItem> itemsToCopy, Consumer<List<String>> successMessage) {}
 
 }
