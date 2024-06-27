@@ -268,19 +268,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		initFilters();
 
 		if (!itemRows.isEmpty()) {
-			toggleTimelineTags = uifactory.addToggleButton("toggle.timeline.tags", "toggle.timeline.tags", null, null, formLayout);
-			toggleTimelineTags.addActionListener(FormEvent.ONCHANGE);
-			// Persist the toggle setting per user as guiPref
-			Boolean isToggleOn = (Boolean) ureq.getUserSession().getGuiPreferences().get(FeedItemListController.class, "timeline-tags-toggle");
-			boolean toggleOn = isToggleOn != null && isToggleOn;
-			toggleTimelineTags.toggle(toggleOn);
-			// add to info.html
-			vcInfo.put("toggle", toggleTimelineTags.getComponent());
-			if (toggleOn) {
-				// if toggle is on, then add the right column (yearNavCtrl) to the main view
-				vcMain.put("rightColumn", rightColFlc.getFormItemComponent());
-			}
-			loadSideBarTags();
+			loadTimelineTagsToggle(ureq);
 		}
 	}
 
@@ -291,8 +279,14 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	private void loadSideBarTags() {
-		List<TagInfo> tagInfos = feedManager.getTagInfos(feedRss, null);
-		TagComponentFactory.createTagComponent("tags", tagInfos, rightColFlc.getFormItemComponent(), this);
+		if (feedRss.isInternal()) {
+			List<TagInfo> tagInfos = feedManager.getTagInfos(feedRss, null);
+			if (tagInfos != null && !tagInfos.isEmpty()) {
+				TagComponentFactory.createTagComponent("sidebarTags", tagInfos, rightColFlc.getFormItemComponent(), this);
+			} else {
+				rightColFlc.getFormItemComponent().remove("sidebarTags");
+			}
+		}
 	}
 
 	private void loadFeedItems() {
@@ -340,6 +334,22 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 		tableModel.setObjects(itemRows);
 		tableEl.reset(false, true, true);
+	}
+
+	private void loadTimelineTagsToggle(UserRequest ureq) {
+		toggleTimelineTags = uifactory.addToggleButton("toggle.timeline.tags", "toggle.timeline.tags", null, null, flc);
+		toggleTimelineTags.addActionListener(FormEvent.ONCHANGE);
+		// Persist the toggle setting per user as guiPref
+		Boolean isToggleOn = (Boolean) ureq.getUserSession().getGuiPreferences().get(FeedItemListController.class, "timeline-tags-toggle");
+		boolean toggleOn = isToggleOn != null && isToggleOn;
+		toggleTimelineTags.toggle(toggleOn);
+		// add to info.html
+		vcInfo.put("toggle", toggleTimelineTags.getComponent());
+		if (toggleOn) {
+			// if toggle is on, then add the right column (yearNavCtrl) to the main view
+			vcMain.put("rightColumn", rightColFlc.getFormItemComponent());
+		}
+		loadSideBarTags();
 	}
 
 	private void initFilterTabs(UserRequest ureq) {
@@ -590,7 +600,14 @@ public class FeedItemListController extends FormBasicController implements Flexi
 					}
 					// update the view
 					if (itemFormCtrl != null) {
-						displayFeedItem(ureq, currentItem);
+						if (vcMain.getComponent("selected_feed_item") != null) {
+							// in case the selected feed item view is being viewed, then update and display
+							// otherwise stay at table view
+							displayFeedItem(ureq, currentItem);
+						} else {
+							// else means, we are in the table card view, so update sidebarTags, in case of changes
+							loadSideBarTags();
+						}
 						itemFormCtrl.getInitialComponent().setDirty(true);
 					}
 
@@ -659,6 +676,15 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			}
 		}
 		loadModel();
+		// load timelineTagsToggle, if necessary e.g. first item in table
+		if (!itemRows.isEmpty() || toggleTimelineTags == null) {
+			loadTimelineTagsToggle(ureq);
+		} else {
+			// else remove toggle and sidebar e.g. all items deleted
+			vcInfo.remove("toggle");
+			vcMain.remove(rightColFlc.getFormItemComponent());
+			toggleTimelineTags = null;
+		}
 	}
 
 	private void removeSelectedComponent(UserRequest ureq) {

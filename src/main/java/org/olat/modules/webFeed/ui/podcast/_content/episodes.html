@@ -38,7 +38,7 @@
 
     <div class="o_feed_content">
         #if ($row.getItem().getDescription() && $row.getItem().getDescription() != "")
-            <div class="o_block_large_top">
+            <div class="o_feed_item_desc">
                 $!helper.getItemDescriptionForBrowser($row.getItem())
             </div>
         #end

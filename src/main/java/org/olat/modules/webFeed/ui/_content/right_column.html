@@ -2,8 +2,10 @@
 	<div class="o_box">
 		$r.render("navi")
 	</div>
-	<div class="o_feed_tags">
-		<h5>Tags</h5>
-		$r.render("tags")
-	</div>
+	#if($r.available("sidebarTags"))
+		<div class="o_feed_tags">
+			<h5>Tags</h5>
+			$r.render("sidebarTags")
+		</div>
+	#end
 #end

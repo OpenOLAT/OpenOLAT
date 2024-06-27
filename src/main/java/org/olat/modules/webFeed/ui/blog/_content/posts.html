@@ -37,24 +37,8 @@
 
 	<div class="o_feed_content">
 		#if ($row.getItem().getDescription() && $row.getItem().getDescription() != "")
-		<div class="o_block_large_top">
-			$!helper.getItemDescriptionForBrowser($row.getItem())
-		</div>
-		#end
-
-		#set($podId = $r.getUniqueId())
-		#if ($!row.getItem().getEnclosure())
-			<div class="o_block_large_top o_enclosure">
-				<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($item.getEnclosure())"></div>
-				<script>
-					/* <![CDATA[ */
-					#if ($!helper.getMediaType($item.getEnclosure()) == "video")
-					BPlayer.insertPlayer("$!helper.getMediaUrl($row.getItem())","o_podcast_${podId}_episode",$!helper.getWidth($row.getItem()),$!helper.getHeight($row.getItem()),false,null,"video",undefined,false,false,true);
-					#else
-					BPlayer.insertPlayer("$!helper.getMediaUrl($row.getItem())","o_podcast_${podId}_episode",400,30,false,null,"sound",undefined,false,false,true);
-					#end
-					/* ]]> */
-				</script>
+			<div class="o_feed_item_desc">
+				$!helper.getItemDescriptionForBrowser($row.getItem())
 			</div>
 		#end
 	</div>
