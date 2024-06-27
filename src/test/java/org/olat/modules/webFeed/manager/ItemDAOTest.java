@@ -30,12 +30,16 @@ import java.util.List;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
+import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.id.Identity;
+import org.olat.core.util.CodeHelper;
 import org.olat.modules.webFeed.Enclosure;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.model.EnclosureImpl;
 import org.olat.modules.webFeed.model.ItemImpl;
+import org.olat.modules.webFeed.ui.FeedItemDTO;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -44,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 05.05.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class ItemDAOTest extends OlatTestCase {
@@ -55,6 +59,10 @@ public class ItemDAOTest extends OlatTestCase {
 	private FeedDAO feedDao;
 	@Autowired
 	private ItemDAO itemDao;
+	@Autowired
+	private UserRatingsDAO userRatingsDAO;
+	@Autowired
+	private UserCommentsDAO userCommentsDAO;
 	
 	@Test
 	public void createItem() {
@@ -633,6 +641,63 @@ public class ItemDAOTest extends OlatTestCase {
 		assertThat(itemDao.loadItem(item1.getKey())).isNotNull();
 		assertThat(itemDao.loadItem(item2.getKey())).isNotNull();
 		assertThat(itemDao.loadItem(item3.getKey())).isNotNull();
+	}
+
+	@Test
+	public void shouldLoadFilteredItemsWithComRat() {
+		// Create test data
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Feed feed = feedDao.createFeedForResourcable(resource);
+		Item item1 = itemDao.createItem(feed);
+		item1.setGuid(CodeHelper.getGlobalForeverUniqueID());
+		Item item2 = itemDao.createItem(feed);
+		item2.setGuid(CodeHelper.getGlobalForeverUniqueID());
+		Item item3 = itemDao.createItem(feed);
+		item3.setGuid(CodeHelper.getGlobalForeverUniqueID());
+		Item item4 = itemDao.createItem(feed);
+		item4.setGuid(CodeHelper.getGlobalForeverUniqueID());
+		dbInstance.commitAndCloseSession();
+
+		// Add ratings and comments to items
+		addRating(item1, 4);
+		addRating(item3, 3);
+		addComment(item1, "comment1");
+		addComment(item1, "comment12");
+		addComment(item3, "comment3");
+		dbInstance.commitAndCloseSession();
+
+		List<Long> filteredItemIds = Arrays.asList(item1.getKey(), item3.getKey());
+		List<FeedItemDTO> items = itemDao.loadFilteredItemsWithComRat(feed, filteredItemIds);
+
+		// Assertions
+		assertThat(items).hasSize(2);
+
+		FeedItemDTO dto1 = items.stream().filter(dto -> dto.item().equals(item1)).findFirst().orElse(null);
+		FeedItemDTO dto3 = items.stream().filter(dto -> dto.item().equals(item3)).findFirst().orElse(null);
+
+		assertThat(dto1).isNotNull();
+		assertThat(dto1.avgRating()).isEqualTo(4);
+		assertThat(dto1.numOfComments()).isEqualTo(2);
+
+		assertThat(dto3).isNotNull();
+		assertThat(dto3.avgRating()).isEqualTo(3);
+		assertThat(dto3.numOfComments()).isEqualTo(1);
+
+		// Ensure non-selected items are not included
+		assertThat(items.stream().anyMatch(dto -> dto.item().equals(item2))).isFalse();
+		assertThat(items.stream().anyMatch(dto -> dto.item().equals(item4))).isFalse();
+	}
+
+	private void addRating(Item item, int rating) {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("user-1234");
+		// Method to add a rating to an item
+		userRatingsDAO.createRating(author, item.getFeed(), item.getGuid(), rating);
+	}
+
+	private void addComment(Item item, String commentText) {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("user-1234");
+		// Method to add a comment to an item
+		userCommentsDAO.createComment(author, item.getFeed(), item.getGuid(), commentText);
 	}
 	
 }
