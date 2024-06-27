@@ -593,13 +593,14 @@ public class CourseElementTest extends Deployments {
 			.tree()
 			.selectWithTitle(podcastNodeTitle);
 		
-		//check that the title of the podcast is correct
-		By podcastElementBy = By.cssSelector("div.o_podcast_info>h2>i.o_FileResource-PODCAST_icon");
+		//check that the title of the podcast is visible
+		By podcastElementBy = By.xpath("//div[contains(@class,'o_course_node')]//h2[i[contains(@class,'o_podcast_icon')]]/span");
 		OOGraphene.waitElement(podcastElementBy, browser);
 
 		FeedPage.getFeedPage(browser)
 			.assertOnPodcastEpisodeInClassicTable();
 	}
+	
 	
 	
 	/**
@@ -651,7 +652,9 @@ public class CourseElementTest extends Deployments {
 			.tree()
 			.selectWithTitle(blogNodeTitle);
 		
-		OOGraphene.waitElement(By.cssSelector("div.o_blog_info>h2>i.o_FileResource-BLOG_icon"), browser);
+		OOGraphene.waitElement(By.xpath("//div[contains(@class,'o_course_node')]//h2[i[contains(@class,'o_blog_icon')]]/span"), browser);
+		FeedPage.getFeedPage(browser)
+			.assertOnBlogEpisodeInClassicTable();
 	}
 
 

@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.translator.Translator;
 import org.olat.modules.webFeed.Item;
 
 /**

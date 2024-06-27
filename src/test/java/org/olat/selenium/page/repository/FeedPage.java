@@ -80,6 +80,11 @@ public class FeedPage {
 		return this;
 	}
 	
+
+	public FeedPage assertOnBlogEpisodeInClassicTable() {
+		return assertOnPodcastEpisodeInClassicTable();
+	}
+	
 	public FeedPage assertOnPodcastEpisodeInClassicTable() {
 		By episodeTitleby = By.cssSelector("div.o_feed table td>div>a");
 		OOGraphene.waitElementSlowly(episodeTitleby, 20, browser);
@@ -178,13 +183,16 @@ public class FeedPage {
 	public FeedPage fillPostForm(String title, String summary, String content) {
 		//wait that the popup is available
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_feed_form div.o_sel_feed_title input:focus[type='text']");
-		OOGraphene.waitTinymce(browser);
 
 		By titleBy = By.cssSelector("div.o_sel_feed_title input:focus[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
-		OOGraphene.tinymce(summary, "div.o_sel_feed_description", browser);
-		OOGraphene.tinymce(content, "div.o_sel_feed_content", browser);
+		By summaryBy = By.cssSelector("div.o_sel_feed_description div.o_richtext_mce textarea");
+		browser.findElement(summaryBy).sendKeys(summary);
+
+		By contentBy = By.cssSelector("div.o_sel_feed_content div.o_richtext_mce textarea");
+		browser.findElement(contentBy).sendKeys(content);
+
 		return this;
 	}
 	
