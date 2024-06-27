@@ -205,9 +205,14 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						valueEl.setVisible(true);
 						unitEl.setVisible(true);
 					}
+					case CourseElementScoreCondition.KEY -> {
+						courseElementsDropdown.setVisible(true);
+						symbolDropdown.setVisible(true);
+						valueEl.setVisible(true);
+						unitEl.setVisible(true);
+					}
 					case OtherBadgeEarnedCondition.KEY -> badgesDropdown.setVisible(true);
-					case CourseElementPassedCondition.KEY, CourseElementScoreCondition.KEY -> courseElementsDropdown.setVisible(true);
-				}
+					case CourseElementPassedCondition.KEY -> courseElementsDropdown.setVisible(true);				}
 			}
 
 			public String getId() {

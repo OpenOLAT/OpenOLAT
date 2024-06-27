@@ -58,6 +58,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
@@ -173,7 +174,7 @@ public class BadgeDetailsController extends FormBasicController {
 		RepositoryEntry courseEntry = badgeClass.getEntry();
 		if (courseEntry != null) {
 			ICourse course = CourseFactory.loadCourse(courseEntry);
-			courseEl.setI18nKey(course.getCourseTitle());
+			courseEl.setI18nKey(StringHelper.xssScan(course.getCourseTitle()));
 			courseEl.setVisible(true);
 		} else {
 			courseEl.setVisible(false);

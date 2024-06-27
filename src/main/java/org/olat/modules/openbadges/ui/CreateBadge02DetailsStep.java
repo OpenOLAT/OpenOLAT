@@ -271,7 +271,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			descriptionEl.setElementCssClass("o_sel_badge_description o_badge_class_description");
 			descriptionEl.setMandatory(true);
 
-			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuer.getNameWithScan(), formLayout);
+			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuer.getName(), formLayout);
 			issuerNameEl.setMandatory(true);
 
 			String issuerUrl = issuer.getUrl() != null ? issuer.getUrl() : "";
