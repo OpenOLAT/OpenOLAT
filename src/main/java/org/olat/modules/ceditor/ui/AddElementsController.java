@@ -107,6 +107,11 @@ public class AddElementsController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("add_elements");
 		
 		List<CategoryWrapper> categoryWrappers = new ArrayList<>();
+
+		for (PageElementCategory pageElementCategory : PageElementCategory.values()) {
+			getCategoryWrapper(categoryWrappers, pageElementCategory);
+		}
+
 		for(PageElementHandler handler:provider.getCreateHandlers()) {
 			if(handler instanceof InteractiveAddPageElementHandler || handler instanceof SimpleAddPageElementHandler) {
 				CategoryWrapper categoryWrapper = getCategoryWrapper(categoryWrappers, handler.getCategory());
@@ -115,13 +120,15 @@ public class AddElementsController extends BasicController {
 				Link addLink = LinkFactory.createLink(id, "add." + handler.getType(), "add.elements", mainVC, this);
 				addLink.setIconLeftCSS("o_icon o_icon-fw " + handler.getIconCssClass());
 				addLink.setUserObject(handler);
-				addLink.setTooltip("add." + handler.getType());
+				addLink.setTitle("add." + handler.getType());
 				mainVC.put(id, addLink);
 				
 				categoryWrapper.getLinkIds().add(id);
 			}
 		}
-		
+
+		categoryWrappers = categoryWrappers.stream().filter(cw -> !cw.linkIds.isEmpty()).toList();
+
 		mainVC.contextPut("categories", categoryWrappers);
 		putInitialPanel(mainVC);
 	}

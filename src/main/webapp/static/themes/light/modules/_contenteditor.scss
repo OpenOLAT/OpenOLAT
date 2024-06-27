@@ -2686,3 +2686,25 @@ table.o_ce_table {
 		}
 	}
 }
+
+.o_ceditor_add_elements {
+
+	.o_link_wrapper {
+		padding-top: 5px;
+		padding-bottom: 5px;
+	}
+
+	.o_block {
+		h4 {
+			margin-top: 16px;
+		}
+	}
+
+	.o_block:first-child {
+		margin-top: 0;
+
+		h4 {
+			margin-top: 0;
+		}
+	}
+}

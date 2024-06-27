@@ -72,12 +72,12 @@ public class ParagraphPageElementHandler implements PageElementHandler, PageElem
 	@Override
 	public String getIconCssClass() {
 		// For now we use the paragraph icon until we have a minimized paragraph element o_icon_code
-		return "o_icon_paragraph";
+		return "o_icon_align_left";
 	}
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.text;
 	}
 
 	@Override

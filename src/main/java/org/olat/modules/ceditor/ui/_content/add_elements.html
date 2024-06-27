@@ -1,24 +1,12 @@
-<div class="hidden-xs">
+<div class="o_ceditor_add_elements">
 #foreach($category in $categories)
-	<h5 class="o_ce_cat_title">$category.name</h5>
-	<div class="o_ce_add o_button_group o_toolbar">
-		<ul class="o_ce_tools o_tools list-inline">
+	<div class="o_block">
+		<h4>$category.name</h4>
+		<div class="row">
 			#foreach($linkId in $category.linkIds)
-				<li class="o_ce_tool o_tool">$r.render($linkId)</li>
+			<div class="col-sm-6 o_link_wrapper">$r.render($linkId)</div>
 			#end
-		</ul>
-	</div>
-#end
-</div>
-<div class="visible-xs">
-#foreach($category in $categories)
-	<h5 class="o_ce_cat_title">$category.name</h5>
-	<div class="">
-		<ul class="o_ce_add_list list-group">
-			#foreach($linkId in $category.linkIds)
-				<li class="o_ce_add_list_item list-group-item">$r.render($linkId)</li>
-			#end
-		</ul>
+		</div>
 	</div>
 #end
 </div>

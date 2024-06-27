@@ -63,7 +63,7 @@ public class ImageComparisonElementHandler implements PageElementHandler, PageEl
 
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.media;
 	}
 
 	@Override

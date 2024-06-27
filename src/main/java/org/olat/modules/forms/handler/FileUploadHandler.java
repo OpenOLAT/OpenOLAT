@@ -66,7 +66,7 @@ public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAd
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_fileupload";
+		return "o_icon_file_arrow_up";
 	}
 	
 	@Override

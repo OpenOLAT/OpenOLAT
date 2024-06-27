@@ -86,7 +86,7 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.media;
 	}
 
 	@Override

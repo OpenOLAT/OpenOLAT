@@ -71,7 +71,7 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.text;
 	}
 
 	@Override

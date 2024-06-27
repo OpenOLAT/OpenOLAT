@@ -70,7 +70,7 @@ public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPag
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.layout;
+		return PageElementCategory.other;
 	}
 
 	@Override

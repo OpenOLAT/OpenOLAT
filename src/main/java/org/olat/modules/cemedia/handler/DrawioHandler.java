@@ -96,12 +96,12 @@ public class DrawioHandler extends AbstractMediaHandler implements PageElementSt
 	
 	@Override
 	public String getIconCssClass() {
-		return "o_filetype_drawio";
+		return "o_icon_diagram_project";
 	}
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.media;
 	}
 	
 	@Override

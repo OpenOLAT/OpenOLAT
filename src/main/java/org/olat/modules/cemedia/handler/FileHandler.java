@@ -123,7 +123,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.media;
 	}
 	
 	@Override

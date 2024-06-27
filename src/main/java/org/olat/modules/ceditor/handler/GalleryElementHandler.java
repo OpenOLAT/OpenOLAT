@@ -67,7 +67,7 @@ public class GalleryElementHandler implements PageElementHandler, PageElementSto
 
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.media;
 	}
 
 	@Override

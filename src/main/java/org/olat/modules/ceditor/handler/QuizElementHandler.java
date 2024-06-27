@@ -73,12 +73,12 @@ public class QuizElementHandler implements PageElementHandler, PageElementStore<
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_quiz";
+		return "o_icon_question";
 	}
 
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.knowledge;
 	}
 
 	@Override

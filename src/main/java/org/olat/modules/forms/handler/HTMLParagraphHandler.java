@@ -72,12 +72,12 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_paragraph";
+		return "o_icon_align_left";
 	}
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.text;
 	}
 
 	@Override

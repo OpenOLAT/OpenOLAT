@@ -63,7 +63,7 @@ public class MathPageElementHandler implements PageElementHandler, PageElementSt
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.text;
 	}
 
 	@Override

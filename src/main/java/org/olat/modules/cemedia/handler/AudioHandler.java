@@ -107,7 +107,7 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.media;
 	}
 
 	@Override

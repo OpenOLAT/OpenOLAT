@@ -105,7 +105,7 @@ public class PageEditorV2Controller extends BasicController {
 	private DeleteConfirmationController deleteConfirmationCtrl;
 	private DeleteLayoutConfirmationController deleteLayoutConfirmationCtrl;
 	private CloseableCalloutWindowController addCalloutCtrl;
-	
+
 	private int counter;
 	
 	private final PageEditorProvider provider;
@@ -201,10 +201,17 @@ public class PageEditorV2Controller extends BasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(addElementsCtrl == source || addLayoutCtrl == source) {
+		} else if(addElementsCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+			if (event instanceof AddElementEvent aee) {
+				doAddElement(ureq, aee.getReferenceComponent(), aee.getHandler(),
+						aee.getTarget(),  aee.getContainerColumn());
+			}
+		} else if(addLayoutCtrl == source) {
 			addCalloutCtrl.deactivate();
 			cleanUp();
-			if(event instanceof AddElementEvent aee) {
+			if (event instanceof AddElementEvent aee) {
 				doAddElement(ureq, aee.getReferenceComponent(), aee.getHandler(),
 						aee.getTarget(),  aee.getContainerColumn());
 			}
@@ -425,11 +432,12 @@ public class PageEditorV2Controller extends BasicController {
 		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider,
 				PageElementTarget.atTheEnd, getTranslator());
 		addElementsCtrl.addControllerListener(this);
-		
-		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), addElementsCtrl.getInitialComponent(),
-				addElementButton, "", true, "o_sel_add_element_callout");
-		addCalloutCtrl.addControllerListener(this);
-		addCalloutCtrl.activate();
+
+		String title = translate("add.element");
+		cmc = new CloseableModalController(getWindowControl(), null, addElementsCtrl.getInitialComponent(),
+				true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void openAddElementCallout(UserRequest ureq, String dispatchId, ContentEditorFragment referenceFragment,
@@ -437,11 +445,12 @@ public class PageEditorV2Controller extends BasicController {
 		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider,
 				referenceFragment, target, column, getTranslator());
 		listenTo(addElementsCtrl);
-		
-		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				addElementsCtrl.getInitialComponent(), dispatchId, "", true, "o_sel_add_element_callout");
-		listenTo(addCalloutCtrl);
-		addCalloutCtrl.activate();
+
+		String title = translate("add.element");
+		cmc = new CloseableModalController(getWindowControl(), null, addElementsCtrl.getInitialComponent(),
+				true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void openAddLayoutCallout(UserRequest ureq) {

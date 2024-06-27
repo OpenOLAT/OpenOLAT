@@ -67,7 +67,7 @@ public class CodeElementHandler implements PageElementHandler, PageElementStore<
 
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.text;
 	}
 
 	@Override

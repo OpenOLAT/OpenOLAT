@@ -77,7 +77,7 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.text;
 	}
 
 	@Override

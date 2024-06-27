@@ -83,7 +83,7 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.text;
 	}
 	
 	@Override

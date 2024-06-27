@@ -142,6 +142,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_details_expand { @include o-add-icon('angle-down');}
 .o_icon_description { @include o-add-icon('info-circle');}
 .o_icon_dev { @include o-add-icon('bug');}
+.o_icon_diagram_project { @include o-add-icon('diagram-project');}
 .o_icon_disabled { @include o-add-icon('circle', false);}
 .o_icon_disadvantage_compensation { @include o-add-icon('universal-access');}
 .o_icon_dispensation_authorized { @include o-add-icon('check-circle', false); color: $brand-success }
@@ -174,6 +175,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eye_slash { @include o-add-icon('eye-slash');}
 .o_icon_failed { @include o-add-icon('times-circle');}
 .o_icon_fake_participant { @include o-add-icon('street-view');}
+.o_icon_file_arrow_up { @include o-add-icon('file-arrow-up');}
 .o_icon_file_browser { @include o-add-icon('globe');}
 .o_icon_files { @include o-add-icon('copy', false);} // files not in FA6 public set!
 .o_icon_fileupload { @include o-add-icon('file', false);}
@@ -194,6 +196,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_heart { @include o-add-icon('heart');}
 .o_icon_help { @include o-add-icon('question-circle'); cursor: help;}
 .o_icon_home { @include o-add-icon('home');}
+.o_icon_html5 { @include o-add-brand-icon('html5');}
 .o_icon_image { @include o-add-icon('image');}
 .o_icon_image_comparison {
 	position: relative;
@@ -237,6 +240,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_institution { @include o-add-icon('bank');}
 .o_icon_invalidate { @include o-add-icon('circle-minus');}
 .o_icon_italic { @include o-add-icon('italic');}
+.o_icon_keyboard { @include o-add-icon('keyboard', false);}
 .o_icon_landingpage { @include o-add-icon('bullseye');}
 .o_icon_language { @include o-add-icon('globe');}
 .o_icon_layout { @include o-add-icon('file-image', false);}
@@ -360,6 +364,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_provider_twitter { @include o-add-brand-icon('x-twitter');}
 .o_icon_publish { @include o-add-icon('share');}
 .o_icon_pull { @include o-add-icon('hand-back-fist');}
+.o_icon_question { @include o-add-icon('question'); }
 .o_icon_quiz {
 	position: relative;
 	margin-left: -14px;

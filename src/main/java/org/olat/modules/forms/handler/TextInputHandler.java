@@ -64,7 +64,7 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_textinput";
+		return "o_icon_keyboard";
 	}
 	
 	@Override

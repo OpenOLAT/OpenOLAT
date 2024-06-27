@@ -26,10 +26,14 @@ package org.olat.modules.ceditor;
  *
  */
 public enum PageElementCategory {
-	
-	content("category.content"),
+
+	text("category.text"),
 	questionType("category.question.type"),
 	organisational("category.organisational"),
+	media("category.media"),
+	knowledge("category.knowledge"),
+	other("category.other"),
+	content("category.content"),
 	layout("category.layout");
 	
 	private final String i18nKey;

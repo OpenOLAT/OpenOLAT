@@ -72,12 +72,12 @@ public class HTMLRawPageElementHandler implements PageElementHandler, PageElemen
 	@Override
 	public String getIconCssClass() {
 		// For now we use the paragraph icon until we have a minimized paragraph element o_icon_code
-		return "o_icon_code";
+		return "o_icon_html5";
 	}
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.other;
 	}
 
 	@Override

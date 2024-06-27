@@ -62,7 +62,7 @@ public class TablePageElementHandler implements PageElementHandler, PageElementS
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.content;
+		return PageElementCategory.text;
 	}
 
 	@Override

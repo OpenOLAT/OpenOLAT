@@ -60,7 +60,7 @@ public class SpacerElementHandler implements PageElementHandler, SimpleAddPageEl
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.layout;
+		return PageElementCategory.other;
 	}
 
 	@Override

@@ -1059,7 +1059,7 @@ public class PageRunController extends BasicController implements TooledControll
 		
 		@Override
 		public PageElementCategory getCategory() {
-			return PageElementCategory.content;
+			return PageElementCategory.media;
 		}
 
 		@Override
