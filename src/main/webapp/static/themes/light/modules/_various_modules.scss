@@ -790,21 +790,6 @@ ul.o_certificates li {
 			@include box-shadow(none);
 		}
 	}
-	.o_blog_posts {
-		.o_ratings_and_comments {
-			.o_rating_wrapper {
-				float: left;
-				.o_rating_title, .o_rating_explanation, .o_legend {
-					display: none;
-				}		
-			}
-			a.o_comments {
-				span {
-					display: none;
-				}
-			}
-		}
-	}
 	.o_content {
 		@include clearfix();
 	}

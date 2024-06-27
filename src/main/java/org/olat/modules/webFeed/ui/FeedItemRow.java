@@ -20,6 +20,7 @@
 package org.olat.modules.webFeed.ui;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -36,18 +37,17 @@ public class FeedItemRow {
 	private final Item item;
 	private final FormLink feedEntryLink;
 	private final FormLink commentLink;
-	private final Translator translator;
 	private FormLink toolsLink;
 	private FormItem ratingFormItem;
 
-	private String tags;
+	private String formattedTags;
+	private Set<Long> tagKeys;
 
 
-	public FeedItemRow(Item item, FormLink feedEntryLink, FormLink commentLink, Translator translator) {
+	public FeedItemRow(Item item, FormLink feedEntryLink, FormLink commentLink) {
 		this.item = item;
 		this.feedEntryLink = feedEntryLink;
 		this.commentLink = commentLink;
-		this.translator = translator;
 	}
 
 	public Item getItem() {
@@ -60,10 +60,6 @@ public class FeedItemRow {
 
 	public String getAuthor() {
 		return item.getAuthor();
-	}
-
-	public String getTags() {
-		return tags;
 	}
 
 	public String getChangedFrom() {
@@ -90,15 +86,7 @@ public class FeedItemRow {
 		return status;
 	}
 
-	public FormLink getFeedEntryLinkFurther() {
-		feedEntryLink.setIconRightCSS("o_icon o_icon_start");
-		feedEntryLink.setI18nKey(translator.translate("table.feed.entry.link"));
-		return feedEntryLink;
-	}
-
 	public FormLink getFeedEntryLink() {
-		feedEntryLink.setIconRightCSS(null);
-		feedEntryLink.setI18nKey(item.getTitle());
 		return feedEntryLink;
 	}
 
@@ -112,5 +100,21 @@ public class FeedItemRow {
 
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+
+	public Set<Long> getTagKeys() {
+		return tagKeys;
+	}
+
+	public void setTagKeys(Set<Long> tagKeys) {
+		this.tagKeys = tagKeys;
+	}
+
+	public String getFormattedTags() {
+		return formattedTags;
+	}
+
+	public void setFormattedTags(String formattedTags) {
+		this.formattedTags = formattedTags;
 	}
 }

@@ -20,9 +20,9 @@
 package org.olat.modules.webFeed.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -31,11 +31,15 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.controllers.navigation.Dated;
 import org.olat.core.commons.controllers.navigation.NavigationEvent;
 import org.olat.core.commons.controllers.navigation.YearNavigationController;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.model.UserRating;
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.TagComponentFactory;
+import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
+import org.olat.core.commons.services.tag.ui.component.TagComponentEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.date.DateComponentFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -59,6 +63,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
@@ -78,8 +83,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
@@ -90,10 +95,12 @@ import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
+import org.olat.modules.webFeed.FeedTag;
 import org.olat.modules.webFeed.FeedViewHelper;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.model.ItemImpl;
+import org.olat.modules.webFeed.model.ItemPublishDateComparator;
 import org.olat.modules.webFeed.portfolio.BlogEntryMedia;
 import org.olat.modules.webFeed.portfolio.BlogEntryMediaHandler;
 import org.olat.user.UserManager;
@@ -112,6 +119,8 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private Item currentItem;
 	private Feed feedRss;
 	private List<Long> filteredItemKeys;
+	private List<FeedItemDTO> feedItemDTOList;
+	private Set<Long> selectedTagKeys;
 
 	private LockResult lock;
 	private final FeedSecurityCallback feedSecCallback;
@@ -133,10 +142,11 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private FormBasicController itemFormCtrl;
 	private FeedItemController feedItemCtrl;
 	private CloseableModalController cmc;
-	private DialogBoxController deleteDialogBoxCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CollectArtefactController collectorCtrl;
+	private ConfirmationController deletePermanentlyConfirmationCtrl;
+	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
 
 
 	@Autowired
@@ -147,8 +157,6 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private PortfolioV2Module portfolioModule;
 	@Autowired
 	private BlogEntryMediaHandler blogMediaHandler;
-	@Autowired
-	private CommentAndRatingService commentAndRatingService;
 
 
 	/**
@@ -173,13 +181,16 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		// using because each feed type has its own translations
 		setTranslator(feedUIFactory.getTranslator());
 		this.feedRss = feed;
-		this.feedItems = feedManager.loadFilteredAndSortedItems(feed, filteredItemKeys, feedSecCallback, ureq.getIdentity());
 		this.feedSecCallback = feedSecCallback;
 		this.feedUIFactory = feedUIFactory;
 		this.vcMain = vcMain;
 		this.vcInfo = vcInfo;
 		this.displayConfig = displayConfig;
 		this.helper = helper;
+		this.selectedTagKeys = new HashSet<>();
+
+		// loads and fills this.feedItems
+		loadFeedItems();
 
 		String rightColPage = velocity_root + "/right_column.html";
 		rightColFlc = FormLayoutContainer.createCustomFormLayout("right_column", getTranslator(), rightColPage);
@@ -219,10 +230,10 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FeedItemTableModel.ItemsCols.status, new FeedItemStatusRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FeedItemTableModel.ItemsCols.publishDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FeedItemTableModel.ItemsCols.author));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FeedItemTableModel.ItemsCols.tags));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FeedItemTableModel.ItemsCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FeedItemTableModel.ItemsCols.changedFrom));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FeedItemTableModel.ItemsCols.rating.i18nHeaderKey(), FeedItemTableModel.ItemsCols.rating.ordinal(), true, FeedItemTableModel.ItemsCols.rating.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FeedItemTableModel.ItemsCols.comments));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, FeedItemTableModel.ItemsCols.comments.i18nHeaderKey(), FeedItemTableModel.ItemsCols.comments.ordinal(), "openEntry", true, FeedItemTableModel.ItemsCols.comments.name()));
 
 		if (feedRss.isInternal() && feedSecCallback.mayEditItems()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.feed.header.actions", FeedItemTableModel.ItemsCols.toolsLink.ordinal(), "tools",
@@ -230,7 +241,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		}
 
 		uifactory.addSpacerElement("spacer", formLayout, false);
-		tableModel = new FeedItemTableModel(columnsModel);
+		tableModel = new FeedItemTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setCssDelegate(tableModel);
@@ -252,7 +263,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			uifactory.addSpacerElement("spacer.external", formLayout, true);
 		}
 
-		loadModel(ureq);
+		loadModel();
 		initFilterTabs(ureq);
 		initFilters();
 
@@ -269,6 +280,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				// if toggle is on, then add the right column (yearNavCtrl) to the main view
 				vcMain.put("rightColumn", rightColFlc.getFormItemComponent());
 			}
+			loadSideBarTags();
 		}
 	}
 
@@ -278,36 +290,53 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		tableEl.addBatchButton(bulkDeleteButton);
 	}
 
-	public void loadModel(UserRequest ureq) {
+	private void loadSideBarTags() {
+		List<TagInfo> tagInfos = feedManager.getTagInfos(feedRss, null);
+		TagComponentFactory.createTagComponent("tags", tagInfos, rightColFlc.getFormItemComponent(), this);
+	}
+
+	private void loadFeedItems() {
+		feedItemDTOList = feedManager.loadFilteredItemsWithComRat(feedRss, filteredItemKeys, feedSecCallback, getIdentity());
+		feedItemDTOList.sort(Comparator.comparing(FeedItemDTO::item, new ItemPublishDateComparator()));
+		feedItems = new ArrayList<>(feedItemDTOList.stream().map(FeedItemDTO::item).toList());
+	}
+
+	public void loadModel() {
 		itemRows = new ArrayList<>();
 
-		feedItems = feedManager.loadFilteredAndSortedItems(feedRss, filteredItemKeys, feedSecCallback, ureq.getIdentity());
+		loadFeedItems();
 
-		for (Item item : feedItems) {
-			Long commentsAmount = commentAndRatingService.countComments(item.getFeed(), item.getGuid());
-			FormLink commentLink = uifactory.addFormLink("comments_" + item.getGuid(), "openEntry", String.valueOf(commentsAmount), null, null, Link.NONTRANSLATED);
+		for (FeedItemDTO feedItemDTO : feedItemDTOList) {
+			Long numOfComments = feedItemDTO.numOfComments();
+			FormLink commentLink = uifactory.addFormLink("comments_" + feedItemDTO.item().getGuid(), "openEntry", String.valueOf(numOfComments), null, null, Link.NONTRANSLATED);
 			commentLink.setIconLeftCSS("o_icon o_icon_comments_none o_icon-lg");
 
-			FormLink feedEntryLink = uifactory.addFormLink("title_" + item.getGuid(), "openEntry", item.getTitle(), null, null, Link.NONTRANSLATED);
-			FeedItemRow row = new FeedItemRow(item, feedEntryLink, commentLink, getTranslator());
+			FormLink feedEntryLink = uifactory.addFormLink("title_" + feedItemDTO.item().getGuid(), "openEntry", feedItemDTO.item().getTitle(), null, null, Link.NONTRANSLATED);
+			FeedItemRow row = new FeedItemRow(feedItemDTO.item(), feedEntryLink, commentLink);
 			// add Date component
-			if (item.getDate() != null) {
-				DateComponentFactory.createDateComponentWithYear("dateComp." + item.getGuid(), item.getDate(), customItemFlc.getFormItemComponent());
+			if (feedItemDTO.item().getDate() != null) {
+				DateComponentFactory.createDateComponentWithYear("dateComp." + feedItemDTO.item().getGuid(), feedItemDTO.item().getDate(), customItemFlc.getFormItemComponent());
+			}
+
+			List<FeedTag> feedTags = feedManager.getFeedTags(feedRss, List.of(feedItemDTO.item().getKey()));
+			if (feedTags != null && !feedTags.isEmpty()) {
+				List<Tag> tags = feedTags.stream().map(FeedTag::getTag).toList();
+				row.setTagKeys(tags.stream().map(Tag::getKey).collect(Collectors.toSet()));
+				row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), tags));
 			}
 
 			feedEntryLink.setUserObject(row);
 			commentLink.setUserObject(row);
 
-			forgeRatings(row);
+			forgeRating(row, feedItemDTO.avgRating());
 			if (feedRss.isInternal()) {
-				createButtonsForFeedItem(feedRss, row);
+				createButtonsForFeedItem(row);
 			}
 
 			itemRows.add(row);
 		}
 
 		applyFilters(itemRows);
-		itemRows = itemRows.stream().sorted(Comparator.comparing(i -> i.getItem().getLastModified(), Comparator.nullsLast(Comparator.reverseOrder()))).toList();
 
 		tableModel.setObjects(itemRows);
 		tableEl.reset(false, true, true);
@@ -321,13 +350,15 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 
-		FlexiFiltersTab myItemsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("owned", translate("filter.my.entries"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.OWNED, "owned")));
-		tabs.add(myItemsTab);
+		if (feedRss.isInternal()) {
+			FlexiFiltersTab myItemsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("owned", translate("filter.my.entries"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.OWNED, "owned")));
+			tabs.add(myItemsTab);
 
-		FlexiFiltersTab draftTab = FlexiFiltersTabFactory.tabWithImplicitFilters("drafts", translate("filter.drafts"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.STATUS, FeedItemStatusEnum.draft.name())));
-		tabs.add(draftTab);
+			FlexiFiltersTab draftTab = FlexiFiltersTabFactory.tabWithImplicitFilters("drafts", translate("filter.drafts"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FeedItemFilter.STATUS, FeedItemStatusEnum.draft.name())));
+			tabs.add(draftTab);
+		}
 
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, allTab);
@@ -336,7 +367,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 
-		if (tableEl.getSelectedFilterTab().getId().equals("all")) {
+		if (tableEl.getSelectedFilterTab().getId().equals("all") && feedRss.isInternal()) {
 			SelectionValues myEntriesValues = new SelectionValues();
 			myEntriesValues.add((SelectionValues.entry("owned", translate("table.filter.my.entries"))));
 			FlexiTableOneClickSelectionFilter myEntriesFilter = new FlexiTableOneClickSelectionFilter(translate("table.filter.my.entries"),
@@ -344,9 +375,9 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			filters.add(myEntriesFilter);
 		}
 
-		// TODO: Add Tag values
+		List<TagInfo> tagInfos = feedManager.getTagInfos(feedRss, null);
 		FlexiTableTagFilter tagsFilter = new FlexiTableTagFilter(translate("table.filter.tags"),
-				FeedItemFilter.TAGS.name(), Collections.emptyList(), true);
+				FeedItemFilter.TAGS.name(), tagInfos, true);
 		filters.add(tagsFilter);
 
 		FlexiTableTextFilter authorFilter = new FlexiTableTextFilter(translate("table.filter.author"),
@@ -390,14 +421,16 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				String value = filter.getValue();
 				filteredItemKeys = new ArrayList<>();
 				if (value != null && value.equals("owned")) {
-					itemRows.removeIf(r -> !r.getAuthor().equals(UserManager.getInstance().getUserDisplayName(getIdentity().getUser())));
+					itemRows.removeIf(r ->
+							r.getAuthor() == null
+									|| !r.getAuthor().equals(UserManager.getInstance().getUserDisplayName(getIdentity().getUser())));
 				}
 			}
 			if (FeedItemFilter.TAGS.name().equals(filter.getFilter())) {
 				List<String> values = ((FlexiTableTagFilter) filter).getValues();
 				if (values != null && !values.isEmpty()) {
-					Set<Long> selectedTagKeys = values.stream().map(Long::valueOf).collect(Collectors.toSet());
-					// TODO: Tag Impl
+					selectedTagKeys = values.stream().map(Long::valueOf).collect(Collectors.toSet());
+					itemRows.removeIf(r -> r.getTagKeys() == null || r.getTagKeys().stream().noneMatch(selectedTagKeys::contains));
 				}
 			}
 			if (FeedItemFilter.AUTHORS.name().equals(filter.getFilter())) {
@@ -429,12 +462,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		}
 	}
 
-	private void forgeRatings(FeedItemRow itemRow) {
-		List<UserRating> allRatings = commentAndRatingService.getAllRatings(itemRow.getItem().getFeed(), itemRow.getItem().getGuid());
-		UserRating userRating = commentAndRatingService.getRating(getIdentity(), itemRow.getItem().getFeed(), itemRow.getItem().getGuid());
-		double averageRating = userRating == null ? 0.0 : Math.round(allRatings.stream().map(UserRating::getRating).mapToDouble(a -> a).average().orElse(0.0) * 10.0) / 10.0;
-
-		float averageRatingValue = (float) averageRating;
+	private void forgeRating(FeedItemRow itemRow, float averageRatingValue) {
 		RatingFormItem ratingCmp = uifactory.addRatingItem("rat_" + itemRow.getItem().getKey(), null, averageRatingValue, 5, false, null);
 		itemRow.setRatingFormItem(ratingCmp);
 		ratingCmp.setUserObject(itemRow);
@@ -453,10 +481,15 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	public void displayFeedItem(UserRequest ureq, Item feedItem) {
 		// remove toggle for individual item view
 		vcInfo.remove("toggle");
+		vcMain.remove(rightColFlc.getFormItemComponent());
 
 		Feed reloadedFeed = feedManager.loadFeed(feedItem.getFeed());
 		feedItem = feedManager.loadItem(feedItem.getKey());
 		if (feedItem != null) {
+			List<FeedTag> feedTags = feedManager.getFeedTags(feedRss, List.of(feedItem.getKey()));
+			List<Tag> tags = feedTags.stream().map(FeedTag::getTag).toList();
+			String formattedTags = TagUIFactory.getFormattedTags(getLocale(), tags);
+			itemFlc.contextPut("formattedTags", formattedTags);
 			feedItemCtrl = new FeedItemController(ureq, getWindowControl(), feedItem, reloadedFeed, helper, feedUIFactory, feedSecCallback,
 					displayConfig, itemFlc.getFormItemComponent());
 			listenTo(feedItemCtrl);
@@ -464,7 +497,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		}
 	}
 
-	private void createButtonsForFeedItem(Feed feed, FeedItemRow feedItemRow) {
+	private void createButtonsForFeedItem(FeedItemRow feedItemRow) {
 		String guid = feedItemRow.getItem().getGuid();
 		String toolsId = "o-tools-".concat(guid);
 		FormLink toolsLink = uifactory.addFormLink(toolsId, "tools", "", null, customItemFlc, Link.NONTRANSLATED);
@@ -517,7 +550,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		// reload feed for this event and make sure the updated feed object is
 		// in the view
 		feedRss = feedManager.loadFeed(feedRss);
-		feedItems = feedManager.loadFilteredAndSortedItems(feedRss, filteredItemKeys, feedSecCallback, ureq.getIdentity());
+		loadFeedItems();
 
 		if (source == itemFormCtrl) {
 			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
@@ -535,8 +568,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 							if (feedRss != null) {
 								// add it to the navigation controller
 								naviCtrl.add(currentItem);
-								feedItems = feedManager.loadFilteredAndSortedItems(feedRss, filteredItemKeys,
-										feedSecCallback, ureq.getIdentity());
+								loadFeedItems();
 								if (feedItems != null && feedItems.size() == 1) {
 									// Set the base URI of the feed for the
 									// current user. All users
@@ -550,6 +582,11 @@ public class FeedItemListController extends FormBasicController implements Flexi
 							ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_EDIT, getClass(),
 									LoggingResourceable.wrap(currentItem));
 						}
+						List<String> tagsDisplayNames = ((FeedItemFormController) itemFormCtrl).getTagsDisplayNames();
+						feedManager.updateTags(currentItem, tagsDisplayNames);
+						loadFeedItems();
+						// update sidebar with tag information
+						loadSideBarTags();
 					}
 					// update the view
 					if (itemFormCtrl != null) {
@@ -579,23 +616,35 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		} else if (source == collectorCtrl && (event.equals(Event.DONE_EVENT) || event.equals(Event.CANCELLED_EVENT))) {
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == deleteDialogBoxCtrl && DialogBoxUIFactory.isYesEvent(event)) {
-			// The user confirmed that the item(s) shall be deleted
-			List<Item> feedItemsToDelete = (List<Item>) ((DialogBoxController) source).getUserObject();
-			doDeleteFeedItem(feedItemsToDelete);
+		} else if (source == deletePermanentlyConfirmationCtrl || source == bulkDeleteConfirmationCtrl) {
+			List<Item> feedItemsToDelete;
+			if (source == deletePermanentlyConfirmationCtrl) {
+				feedItemsToDelete = (List<Item>) deletePermanentlyConfirmationCtrl.getUserObject();
+			} else {
+				feedItemsToDelete = (List<Item>) bulkDeleteConfirmationCtrl.getUserObject();
+			}
+			if (event == Event.DONE_EVENT) {
+				if (vcMain.getComponent("selected_feed_item") != null) {
+					removeSelectedComponent(ureq);
+				}
+				// The user confirmed that the item(s) shall be deleted
+				doDeleteFeedItem(feedItemsToDelete);
+				// update sidebar with tag information
+				loadSideBarTags();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == feedItemCtrl) {
 			if (event == Event.BACK_EVENT) {
-				vcMain.remove("selected_feed_item");
-				if (toggleTimelineTags != null) {
-					vcInfo.put("toggle", toggleTimelineTags.getComponent());
-				}
+				removeSelectedComponent(ureq);
+				loadSideBarTags();
 				removeAsListenerAndDispose(feedItemCtrl);
 				feedItemCtrl = null;
 			} else if (feedItemCtrl != null && event instanceof FeedItemEvent feedItemEvent) {
 				if (Objects.equals(feedItemEvent.getCommand(), FeedItemEvent.EDIT_FEED_ITEM)) {
 					doEditFeedItem(ureq, feedItemEvent.getItem());
 				} else if (Objects.equals(feedItemEvent.getCommand(), FeedItemEvent.DELETE_FEED_ITEM)) {
-					doConfirmDeleteFeedItem(ureq, List.of(feedItemEvent.getItem()));
+					doConfirmDeleteFeedItems(ureq, List.of(feedItemEvent.getItem()));
 				} else if (Objects.equals(feedItemEvent.getCommand(), FeedItemEvent.ARTEFACT_FEED_ITEM)) {
 					doOpenCollector(ureq, feedItemEvent.getItem());
 				}
@@ -609,7 +658,19 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				}
 			}
 		}
-		loadModel(ureq);
+		loadModel();
+	}
+
+	private void removeSelectedComponent(UserRequest ureq) {
+		vcMain.remove("selected_feed_item");
+		if (toggleTimelineTags != null) {
+			vcInfo.put("toggle", toggleTimelineTags.getComponent());
+			Boolean isToggleOn = (Boolean) ureq.getUserSession().getGuiPreferences().get(FeedItemListController.class, "timeline-tags-toggle");
+
+			if (isToggleOn != null && isToggleOn) {
+				vcMain.put("rightColumn", rightColFlc.getFormItemComponent());
+			}
+		}
 	}
 
 	@Override
@@ -630,25 +691,52 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				doAddFeedItem(ureq);
 			} else if (source == bulkDeleteButton) {
 				List<Item> items = tableEl.getMultiSelectedIndex().stream().map(i -> tableModel.getObject(i).getItem()).toList();
-				doConfirmDeleteFeedItem(ureq, items);
+				doConfirmDeleteFeedItems(ureq, items);
 			} else if (link.getCmd().equals("tools")) {
 				doOpenTools(ureq, (Item) link.getUserObject(), link.getFormDispatchId());
 			}
 		} else if (source == tableEl) {
 			if (event instanceof FlexiTableSearchEvent
 					|| event instanceof FlexiTableFilterTabEvent) {
-				loadModel(ureq);
+				loadModel();
 			} else if (event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				FeedItemRow row = tableModel.getObject(se.getIndex());
 				if ("tools".equals(cmd)) {
 					doOpenTools(ureq, row.getItem(), "o-tools-".concat(row.getItem().getGuid()));
+				} else if ("openEntry".equals(cmd)) {
+					displayFeedItem(ureq, row.getItem());
 				}
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				// empty table button
 				doAddFeedItem(ureq);
 			}
 		}
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (event instanceof TagComponentEvent tagCmpEvent) {
+			FlexiTableFilter tagFilter = tableEl.getFilters().stream().filter(f -> f.getFilter().equals(FeedItemFilter.TAGS.name())).findFirst().orElse(null);
+
+			if (tagFilter != null) {
+					FlexiTableTagFilter tagFilters = (FlexiTableTagFilter) tagFilter;
+					doToggleTag(tagCmpEvent.getTagLink(), tagFilters);
+					loadModel();
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doToggleTag(Link tagLink, FlexiTableTagFilter tagFilter) {
+		TagInfo tagInfo = (TagInfo) tagLink.getUserObject();
+
+		if (tagFilter.isSelected() && selectedTagKeys.contains(tagInfo.getKey())) {
+			selectedTagKeys.remove(tagInfo.getKey());
+		} else {
+			selectedTagKeys.add(tagInfo.getKey());
+		}
+		tagFilter.setValues(selectedTagKeys.stream().map(String::valueOf).toList());
 	}
 
 	private void doAddFeedItem(UserRequest ureq) {
@@ -714,30 +802,78 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		lock = null;
 	}
 
-	private void doConfirmDeleteFeedItem(UserRequest ureq, List<Item> feedItems) {
+	private void doConfirmDeleteFeedItems(UserRequest ureq, List<Item> feedItems) {
+		if (guardModalController(deletePermanentlyConfirmationCtrl)) return;
+
 		if (feedItems.size() == 1) {
-			deleteDialogBoxCtrl = activateYesNoDialog(ureq, null, translate("feed.item.confirm.delete"), deleteDialogBoxCtrl);
-			deleteDialogBoxCtrl.setUserObject(feedItems);
+			Item item = feedItems.get(0);
+			deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+					translate("feed.item.confirm.delete", StringHelper.escapeHtml(item.getTitle())),
+					translate("feed.item.confirmation.confirm.delete"),
+					translate("delete"), true);
+			deletePermanentlyConfirmationCtrl.setUserObject(feedItems);
+			listenTo(deletePermanentlyConfirmationCtrl);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), deletePermanentlyConfirmationCtrl.getInitialComponent(),
+					true, translate("feed.item.delete.permanently.title"), true);
+			listenTo(cmc);
+			cmc.activate();
 		} else {
-			// for bulk
-			deleteDialogBoxCtrl = activateYesNoDialog(ureq, null, translate("feed.item.confirm.delete.bulk"), deleteDialogBoxCtrl);
-			deleteDialogBoxCtrl.setUserObject(feedItems);
+			doConfirmBulkDeletePermanently(ureq, feedItems);
 		}
+	}
+
+	private void doConfirmBulkDeletePermanently(UserRequest ureq, List<Item> feedItems) {
+		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
+
+		List<String> feedItemTitles = feedItems.stream()
+				.map(Item::getTitle)
+				.sorted()
+				.toList();
+
+		bulkDeleteConfirmationCtrl = new BulkDeleteConfirmationController(ureq, getWindowControl(),
+				translate("feed.item.confirm.bulk.delete", String.valueOf(feedItems.size())),
+				translate("feed.item.confirmation.confirm.bulk.delete", String.valueOf(feedItems.size())),
+				translate("delete"),
+				translate("feed.item.confirm.bulk.delete.permanently.label"), feedItemTitles,
+				null);
+		bulkDeleteConfirmationCtrl.setUserObject(feedItems);
+		listenTo(bulkDeleteConfirmationCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
+				true, translate("feed.item.bulk.delete.permanently.title"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> cmps = new ArrayList<>(2);
-		if (rowObject instanceof FeedItemRow feedItemRow && feedItemRow.getFeedEntryLink() != null) {
-			cmps.add(feedItemRow.getFeedEntryLink().getComponent());
+		if (rowObject instanceof FeedItemRow feedItemRow) {
+			if (feedItemRow.getFeedEntryLink() != null) {
+				cmps.add(feedItemRow.getFeedEntryLink().getComponent());
+			}
+			if (feedItemRow.getRatingFormItem() != null) {
+				cmps.add(feedItemRow.getRatingFormItem().getComponent());
+			}
+			if (feedItemRow.getCommentLink() != null) {
+				cmps.add(feedItemRow.getCommentLink().getComponent());
+			}
+			if (feedItemRow.getToolsLink() != null) {
+				cmps.add(feedItemRow.getToolsLink().getComponent());
+			}
 		}
 		return cmps;
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(deletePermanentlyConfirmationCtrl);
+		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		deletePermanentlyConfirmationCtrl = null;
+		bulkDeleteConfirmationCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -809,7 +945,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				doEditFeedItem(ureq, feedItem);
 			} else if (source == deleteLink) {
 				close();
-				doConfirmDeleteFeedItem(ureq, List.of(feedItem));
+				doConfirmDeleteFeedItems(ureq, List.of(feedItem));
 			} else if (source == artefactLink) {
 				close();
 				doOpenCollector(ureq, feedItem);

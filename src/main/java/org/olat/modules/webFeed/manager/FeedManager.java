@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
@@ -36,7 +37,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
+import org.olat.modules.webFeed.FeedTag;
 import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.ui.FeedItemDTO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -116,6 +119,31 @@ public abstract class FeedManager {
 	 * @return the same Feed object with actualized attributes
 	 */
 	public abstract Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry, Identity changedBy);
+
+	/**
+	 * retrieve tag informations
+	 *
+	 * @param feed
+	 * @return list of tagInfo objects
+	 */
+	public abstract List<TagInfo> getTagInfos(Feed feed, Item feedItem);
+
+	/**
+	 * retrieve tags for a given feed with feedItemKeys
+	 *
+	 * @param feed
+	 * @param feedItemKeys
+	 * @return list of tags for a feed/feedItem
+	 */
+	public abstract List<FeedTag> getFeedTags(Feed feed, List<Long> feedItemKeys);
+
+	/**
+	 * update or create tag information for feedItem
+	 *
+	 * @param feedItem
+	 * @param displayNames
+	 */
+	public abstract void updateTags(Item feedItem, List<String> displayNames);
 
 	/**
 	 * Update the feed with the properties in the RepositoryEntry and save it
@@ -225,6 +253,17 @@ public abstract class FeedManager {
 	 * @param feed
 	 */
 	public abstract List<Item> loadPublishedItems(Feed feed);
+
+	/**
+	 * retrieve feedItemDTOs which serve as transfer objects for items, avgRating and numOfComments
+	 *
+	 * @param feed
+	 * @param filteredItemIds only the items with this IDs are loaded. Null or an empty List does not filter by IDs.
+	 * @param callback
+	 * @param identity
+	 * @return feedItemDTOs objects for items, avgRating and numOfComments
+	 */
+	public abstract List<FeedItemDTO> loadFilteredItemsWithComRat(Feed feed, List<Long> filteredItemIds, FeedSecurityCallback callback, Identity identity);
 
 	/**
 	 * Load all Items of a feed and filter them in relation to the identity rights.

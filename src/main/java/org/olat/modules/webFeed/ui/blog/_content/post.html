@@ -1,85 +1,89 @@
-<div class="o_post">
-	<div class="o_block_large_bottom">
-		$r.render("back.link")
-	</div>
-	<div class="o_block_with_datecomp clearfix $!item.extraCSSClass()">
-		<div class="o_head">
-			#if($r.available("dateComp"))
-				$r.render("dateComp")
-			#end
-
-			#if(($r.available("editButton") && $r.visible("editButton")) || ($r.available("deleteButton") && $r.visible("deleteButton")) || ($r.available("artefactButton") && $r.visible("artefactButton")))
-				<div class="o_feed_buttons pull-right">
-					#if ($r.available("artefactButton") && $r.visible("artefactButton"))
-						$r.render("artefactButton")
-					#end
-					#if ($r.available("editButton") && $r.visible("editButton"))
-						$r.render("editButton")
-					#end
-					#if ($r.available("deleteButton") && $r.visible("deleteButton"))
-						$r.render("deleteButton")
-					#end
-				</div>
-			#end
-
-			<h3 class="o_title">
-				$r.escapeHtml($item.getTitle())
-			</h3>
-
-			<div class="o_meta">
-				#set ( $info = $helper.getInfo($item) )
-				#if ( $info )
-					$helper.renderItemStatus($item)
-					$info
-					#if($helper.isModified($item))
-						<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($item))</div>
-					#end
+<div class="o_feed_entry">
+	<div class="o_post">
+		<div class="o_block_large_bottom">
+			$r.render("back.link")
+		</div>
+		<div class="o_block_with_datecomp clearfix $!item.extraCSSClass()">
+			<div class="o_head">
+				#if($r.available("dateComp"))
+					$r.render("dateComp")
 				#end
-				#if($r.available("commentsAndRating"))
-					$r.render("commentsAndRating")
+
+				#if(($r.available("editButton") && $r.visible("editButton")) || ($r.available("deleteButton") && $r.visible("deleteButton")) || ($r.available("artefactButton") && $r.visible("artefactButton")))
+					<div class="o_feed_buttons pull-right">
+						#if ($r.available("artefactButton") && $r.visible("artefactButton"))
+							$r.render("artefactButton")
+						#end
+						#if ($r.available("editButton") && $r.visible("editButton"))
+							$r.render("editButton")
+						#end
+						#if ($r.available("deleteButton") && $r.visible("deleteButton"))
+							$r.render("deleteButton")
+						#end
+					</div>
+				#end
+
+				<h3 class="o_title">
+					$r.escapeHtml($item.getTitle())
+				</h3>
+
+				<div class="o_meta">
+					#set ( $info = $helper.getInfo($item, false) )
+					#if ( $info )
+						$helper.renderItemStatus($item)
+						$info
+						#if ($feed.isExternal() && $item.getExternalLink())
+							<a href="$!item.getExternalLink()" target="_blank">
+								$r.translate("feed.item.original")
+								<i class="o_icon o_icon_start"></i>
+							</a>
+						#end
+						#if($helper.isModified($item))
+							<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($item))</div>
+						#end
+					#end
+					<div class="o_feed_com_rat_card_view">
+						#if($r.available("commentsAndRating"))
+							$r.render("commentsAndRating")
+						#end
+						#if($formattedTags)
+							$formattedTags
+						#end
+					</div>
+				</div>
+			</div>
+
+			<div class="o_feed_content o_feed_detail_content">
+				$!helper.getItemDescriptionForBrowser($item)
+				#set($podId = $r.getUniqueId())
+				#if ($!item.getEnclosure())
+					<div class="o_block_large_top o_enclosure">
+						<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($item.getEnclosure())"></div>
+						<script>
+						/* <![CDATA[ */
+						#if ($!helper.getMediaType($item.getEnclosure()) == "video")
+							BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_${podId}_episode",$!helper.getWidth($item),$!helper.getHeight($item),false,null,"video",undefined,false,false,true);
+						#else
+							BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_${podId}_episode",400,30,false,null,"sound",undefined,false,false,true);
+						#end
+						/* ]]> */
+						</script>
+					</div>
+				#end
+				#if ($item.getContent() && $item.getContent() != "")
+					<div class="o_block_large_top">
+					$!helper.getItemContentForBrowser($item)
+					</div>
 				#end
 			</div>
 		</div>
 
-		<div>
-			$!helper.getItemDescriptionForBrowser($item)
-			#set($podId = $r.getUniqueId())
-			#if ($!item.getEnclosure())								
-				<div class="o_block_large_top o_enclosure">
-					<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($item.getEnclosure())"></div>
-					<script>
-					/* <![CDATA[ */
-					#if ($!helper.getMediaType($item.getEnclosure()) == "video")
-						BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_${podId}_episode",$!helper.getWidth($item),$!helper.getHeight($item),false,null,"video",undefined,false,false,true);
-					#else
-						BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_${podId}_episode",400,30,false,null,"sound",undefined,false,false,true);
-					#end
-					/* ]]> */
-					</script>
-				</div>
-			#end
-			#if ($item.getContent() && $item.getContent() != "")
-				<div class="o_block_large_top">
-				$!helper.getItemContentForBrowser($item)
-				</div>
-			#end
-		</div>
-	</div>
-	
-	<div class="o_block_footer">
-		<div class="clearfix">
-			#if ($feed.isExternal() && $item.getExternalLink())
+		<div class="o_block_footer">
 			<div class="clearfix">
-				<a href="$!item.getExternalLink()" target="_blank" class="pull-right">
-					$r.translate("feed.item.original")
-					<i class="o_icon o_icon_start"></i>
-				</a>
+				#if($r.available("comments"))
+					$r.render("comments")
+				#end
 			</div>
-			#end
-
-			#if($r.available("comments"))
-				$r.render("comments")
-			#end
 		</div>
 	</div>
 </div>

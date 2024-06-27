@@ -22,8 +22,11 @@ package org.olat.modules.webFeed.ui;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -38,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -70,6 +74,7 @@ public abstract class FeedItemFormController extends FormBasicController {
 	private final Item item;
 
 	private TextElement title;
+	private TagSelection tagsEl;
 	private RichTextElement description;
 	private RichTextElement content;
 	private FileElement file;
@@ -80,8 +85,12 @@ public abstract class FeedItemFormController extends FormBasicController {
 	private FormLink draftButton;
 	private FormLink cancelButton;
 
+	private final List<TagInfo> feedTags;
+
 	@Autowired
 	private MovieService movieService;
+	@Autowired
+	private FeedManager feedManager;
 
 	public FeedItemFormController(UserRequest ureq, WindowControl control, Item item, Translator translator) {
 		super(ureq, control);
@@ -91,6 +100,7 @@ public abstract class FeedItemFormController extends FormBasicController {
 			Quota quota = FeedManager.getInstance().getQuota(item.getFeed());
 			baseDir.setLocalSecurityCallback(new FullAccessWithQuotaCallback(quota));
 		}
+		this.feedTags = feedManager.getTagInfos(item.getFeed(), item);
 
 		setTranslator(translator);
 		initForm(ureq);
@@ -114,9 +124,12 @@ public abstract class FeedItemFormController extends FormBasicController {
 		title.setFocus(true);
 		title.setNotEmptyCheck("feed.form.field.is_mandatory");
 
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), feedTags);
+
 		description = uifactory.addRichTextElementForStringData("description", "feed.form.description", item.getDescription(), 12, -1,
-				true, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
+				false, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
 		description.setElementCssClass("o_sel_feed_description");
+		description.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		RichTextConfiguration descRichTextConfig = description.getEditorConfiguration();
 		// set upload dir to the media dir
 		descRichTextConfig.setFileBrowserUploadRelPath("media");
@@ -124,9 +137,10 @@ public abstract class FeedItemFormController extends FormBasicController {
 		// disable XSS unsave buttons for movie (no media in standard profile)
 		descRichTextConfig.disableMedia();
 
-		content = uifactory.addRichTextElementForStringData("content", "feed.form.content", item.getContent(), 18, -1, true,
+		content = uifactory.addRichTextElementForStringData("content", "feed.form.content", item.getContent(), 18, -1, false,
 				baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
 		content.setElementCssClass("o_sel_feed_content");
+		content.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		RichTextConfiguration richTextConfig = content.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
@@ -181,6 +195,7 @@ public abstract class FeedItemFormController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		setValues(ureq);
+
 
 		item.setDraft(false);
 
@@ -375,6 +390,10 @@ public abstract class FeedItemFormController extends FormBasicController {
 		}
 		widthEl.setValue(null);
 		heightEl.setValue(null);
+	}
+
+	protected List<String> getTagsDisplayNames() {
+		return tagsEl.getDisplayNames();
 	}
 
 }

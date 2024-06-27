@@ -38,6 +38,9 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
@@ -73,6 +76,8 @@ import org.olat.modules.webFeed.Enclosure;
 import org.olat.modules.webFeed.ExternalFeedFetcher;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
+import org.olat.modules.webFeed.FeedTag;
+import org.olat.modules.webFeed.FeedTagSearchParams;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.RSSFeed;
 import org.olat.modules.webFeed.SyndFeedMediaResource;
@@ -80,6 +85,7 @@ import org.olat.modules.webFeed.dispatching.FeedMediaDispatcher;
 import org.olat.modules.webFeed.model.EnclosureImpl;
 import org.olat.modules.webFeed.model.FeedImpl;
 import org.olat.modules.webFeed.model.ItemPublishDateComparator;
+import org.olat.modules.webFeed.ui.FeedItemDTO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -115,6 +121,10 @@ public class FeedManagerImpl extends FeedManager {
 	private DB dbInstance;
 	@Autowired
 	private FeedDAO feedDAO;
+	@Autowired
+	private FeedTagDAO feedTagDAO;
+	@Autowired
+	private TagService tagService;
 	@Autowired
 	private ItemDAO itemDAO;
 	@Autowired
@@ -303,6 +313,8 @@ public class FeedManagerImpl extends FeedManager {
 
 		// delete the feed and all items from the database
 		Feed feed = feedDAO.loadFeed(ores);
+		// delete tags related to that feed
+		feedTagDAO.delete(feed);
 		itemDAO.removeItems(feed);
 		feedDAO.removeFeedForResourceable(ores);
 	}
@@ -360,6 +372,28 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	@Override
+	public List<FeedItemDTO> loadFilteredItemsWithComRat(Feed feed, List<Long> filteredItemIds, FeedSecurityCallback callback, Identity identity) {
+		List<FeedItemDTO> feedItemDTOList = itemDAO.loadFilteredItemsWithComRat(feed, filteredItemIds);
+		List<FeedItemDTO> filteredItems = new ArrayList<>();
+
+		if (feed.isExternal()) {
+			// show all items
+			filteredItems = feedItemDTOList;
+		} else {
+			for (FeedItemDTO feedItemDTO : feedItemDTOList) {
+				if (feedItemDTO.item().isPublished() ||
+						(feedItemDTO.item().isScheduled() && callback.mayEditItems()) ||
+						identity.getKey().equals(feedItemDTO.item().getAuthorKey()) ||
+						(feedItemDTO.item().isDraft() && (callback.mayViewAllDrafts() || identity.getKey().equals(feedItemDTO.item().getModifierKey())))) {
+					filteredItems.add(feedItemDTO);
+				}
+			}
+		}
+
+		return filteredItems;
+	}
+
+	@Override
 	public List<Item> loadFilteredAndSortedItems(Feed feed, List<Long> filteredItemIds, FeedSecurityCallback callback, Identity identity) {
 		List<Item> items = itemDAO.loadItems(feed, filteredItemIds);
 		List<Item> filteredItems = new ArrayList<>();
@@ -385,7 +419,7 @@ public class FeedManagerImpl extends FeedManager {
 				}
 			}
 		}
-		Collections.sort(filteredItems, new ItemPublishDateComparator());
+		filteredItems.sort(new ItemPublishDateComparator());
 		return filteredItems;
 	}
 
@@ -443,6 +477,9 @@ public class FeedManagerImpl extends FeedManager {
 	@Override
 	public Feed deleteItem(Item item) {
 		Feed feed = item.getFeed();
+
+		// delete corresponding tags
+		updateTags(item, Collections.emptyList());
 
 		// delete the item from the database
 		itemDAO.removeItem(item);
@@ -572,6 +609,43 @@ public class FeedManagerImpl extends FeedManager {
 		feed.setImageName(imageName);
 
 		return feed;
+	}
+
+	@Override
+	public List<TagInfo> getTagInfos(Feed feed, Item feedItem) {
+		return feedTagDAO.loadFeedTagInfos(feed, feedItem);
+	}
+
+	@Override
+	public List<FeedTag> getFeedTags(Feed feed, List<Long> feedItemKeys) {
+		FeedTagSearchParams searchParams = new FeedTagSearchParams();
+		searchParams.setFeedKey(feed.getKey());
+		searchParams.setFeedItemKeys(feedItemKeys);
+		return feedTagDAO.loadTags(searchParams);
+	}
+
+	@Override
+	public void updateTags(Item feedItem, List<String> displayNames) {
+		Item reloadedFeedItem = loadItem(feedItem.getKey());
+		if (reloadedFeedItem == null) return;
+
+		FeedTagSearchParams searchParams = new FeedTagSearchParams();
+		searchParams.setFeedItemKeys(List.of(reloadedFeedItem.getKey()));
+		List<FeedTag> feedTags = feedTagDAO.loadTags(searchParams);
+		List<Tag> currentTags = feedTags.stream().map(FeedTag::getTag).toList();
+		List<Tag> tags = tagService.getOrCreateTags(displayNames);
+
+		for (Tag tag : tags) {
+			if (!currentTags.contains(tag)) {
+				feedTagDAO.create(reloadedFeedItem.getFeed(), reloadedFeedItem, tag);
+			}
+		}
+
+		for (FeedTag feedTag : feedTags) {
+			if (!tags.contains(feedTag.getTag())) {
+				feedTagDAO.delete(feedTag);
+			}
+		}
 	}
 
 	/**

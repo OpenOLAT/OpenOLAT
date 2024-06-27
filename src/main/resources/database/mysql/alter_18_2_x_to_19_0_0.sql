@@ -172,6 +172,16 @@ alter table o_tb_topic ENGINE = InnoDB;
 alter table o_tb_selection ENGINE = InnoDB;
 alter table o_tb_audit_log ENGINE = InnoDB;
 
+-- feed tag (blod/podcast)
+create table o_feed_tag (
+    id bigint not null auto_increment,
+    creationdate datetime not null,
+    fk_feed bigint not null,
+    fk_feed_item bigint,
+    fk_tag bigint not null,
+    primary key (id)
+);
+
 create index idx_tb_broker_to_re_idx on o_tb_broker (fk_entry);
 create index idx_tb_broker__enr_start_idx on o_tb_broker (t_enrollment_start_date);
 alter table o_tb_participant add constraint tbpart_broker_idx foreign key (fk_broker) references o_tb_broker (id);
@@ -184,4 +194,8 @@ create index idx_tb_audit_doer_idx on o_tb_audit_log (fk_doer);
 create index idx_tb_audit_broker_idx on o_tb_audit_log (fk_broker);
 create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
 create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
+
+-- feed tags
+create index idx_tag_to_feed_idx on o_feed_tag (fk_feed);
+create index idx_tag_to_feed_item_idx on o_feed_tag (fk_feed_item);
 

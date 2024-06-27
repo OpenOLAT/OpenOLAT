@@ -28,10 +28,12 @@ import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.model.ItemImpl;
+import org.olat.modules.webFeed.ui.FeedItemDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +41,7 @@ import org.springframework.stereotype.Service;
  * 
  * Initial date: 02.05.2017<br>
  * 
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 @Service("itemDao")
@@ -166,6 +168,41 @@ public class ItemDAO {
 				.getResultList();
 		
 		return items != null && items.size() == 1? items.get(0): null;
+	}
+
+	public List<FeedItemDTO> loadFilteredItemsWithComRat(Feed feed, List<Long> filteredItemIds) {
+		QueryBuilder qb = new QueryBuilder();
+
+		qb.append("select feeditem," +
+				" (select avg(rat.rating) from userrating rat where (resName = :resname AND resSubPath = feeditem.guid)) as averageRatings," +
+				" (select count(com.key) from usercomment com where (resName = :resname AND resSubPath = feeditem.guid)) as numOfComments");
+		qb.append(" from item feeditem");
+		qb.and().append("feeditem.feed.key=:feedKey");
+		if (filteredItemIds != null && !filteredItemIds.isEmpty()) {
+			qb.and().append("feeditem.key in (:filteredItemIds)");
+		}
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), Object[].class)
+				.setParameter("resname", feed.getResourceableTypeName())
+				.setParameter("feedKey", feed.getKey());
+
+		if (filteredItemIds != null && !filteredItemIds.isEmpty()) {
+			query.setParameter("filteredItemIds", filteredItemIds);
+		}
+
+		List<Object[]> objects = query.getResultList();
+
+		List<FeedItemDTO> feedItemDTOList = new ArrayList<>();
+
+		for (Object[] obj : objects) {
+			Item item = (Item)obj[0];
+			float avgRating = obj[1] != null ? ((Number)obj[1]).floatValue() : 0;
+			long numOfComments = obj[2] != null ? ((Number)obj[2]).longValue() : 0;
+			feedItemDTOList.add(new FeedItemDTO(item, avgRating, numOfComments));
+		}
+
+		return feedItemDTOList;
 	}
 	
 	/**

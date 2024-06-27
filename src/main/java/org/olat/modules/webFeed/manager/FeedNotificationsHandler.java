@@ -144,7 +144,14 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 		Date publishDate = item.getPublishDate();
 		if(item.isPublished()) {
 			if(compareDate.before(publishDate)) {
-				String desc = translator.translate("notifications.entry.published", new String[] { title, author });
+				String translationKey;
+				if (author != null) {
+					translationKey = "notifications.entry.published.author";
+				} else {
+					translationKey = "notifications.entry.published";
+				}
+				String desc = translator.translate(translationKey, title, author);
+
 				items.add(new SubscriptionListItem(desc, urlToSend, businessPath, publishDate, iconCssClass));
 			}
 
@@ -159,9 +166,9 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 					String desc;
 					String modifier = item.getModifier();
 					if(StringHelper.containsNonWhitespace(modifier)) {
-						desc = translator.translate("notifications.entry.modified", new String[] { title, modifier });
+						desc = translator.translate("notifications.entry.modified", title, modifier);
 					} else {
-						desc = translator.translate("notifications.entry.modified", new String[] { title, "???" });
+						desc = translator.translate("notifications.entry.modified", title, "???");
 					}
 					items.add(new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass));
 				}

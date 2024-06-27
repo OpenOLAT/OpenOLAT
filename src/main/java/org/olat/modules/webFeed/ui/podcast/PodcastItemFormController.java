@@ -19,6 +19,8 @@
  */
 package org.olat.modules.webFeed.ui.podcast;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.control.Controller;
@@ -65,6 +67,11 @@ public class PodcastItemFormController extends FeedItemFormController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormContextHelp("manual_user/learningresources/Course_Element_Podcast/");
 		super.initForm(formLayout, listener, ureq);
+	}
+
+	@Override
+	protected List<String> getTagsDisplayNames() {
+		return super.getTagsDisplayNames();
 	}
 
 }

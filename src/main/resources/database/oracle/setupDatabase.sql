@@ -4645,6 +4645,16 @@ create table o_tb_audit_log (
    primary key (id)
 );
 
+-- feed tag (blog/podcast)
+create table o_feed_tag (
+    id number(20) generated always as identity,
+    creationdate date not null,
+    fk_feed number(20) not null,
+    fk_feed_item number(20),
+    fk_tag number(20),
+    primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -6244,5 +6254,9 @@ create index idx_tb_audit_doer_idx on o_tb_audit_log (fk_doer);
 create index idx_tb_audit_broker_idx on o_tb_audit_log (fk_broker);
 create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
 create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
+
+-- feed tags
+create index idx_tag_to_feed_idx on o_feed_tag (fk_feed);
+create index idx_tag_to_feed_item_idx on o_feed_tag (fk_feed_item);
 
 commit

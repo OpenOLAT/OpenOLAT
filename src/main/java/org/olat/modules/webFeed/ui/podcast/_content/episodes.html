@@ -1,4 +1,4 @@
-<div class="o_podcast_episodes">
+<div class="o_feed_entry">
     <div class="o_episode o_block_with_datecomp clearfix $!row.getItem().extraCSSClass()">
         <div class="o_head">
             #if($r.available("dateComp.$row.getItem().getGuid()"))
@@ -17,10 +17,10 @@
             </h3>
 
             <div class="o_meta">
-                #set ( $info = $helper.getInfo($row.getItem()) )
+                #set ( $info = $helper.getInfo($row.getItem(), true) )
                 #if ( $info )
                     $helper.renderItemStatus($row)
-                    $helper.getInfo($row.getItem())
+                    $info
                     #if($helper.isModified($row.getItem()))
                         <div class="text-warning">$r.escapeHtml($helper.getModifierInfo($row.getItem()))</div>
                     #end
@@ -28,18 +28,21 @@
                 <div class="o_feed_com_rat_card_view">
                     $r.render($row.getRatingFormItem().getComponent().getComponentName())
                     $r.render($row.getCommentLink().getComponent().getComponentName())
+                    #if($row.getFormattedTags())
+                        $row.getFormattedTags()
+                    #end
                 </div>
             </div>
         </div>
     </div>
 
-    #if ($row.getItem().getDescription() && $row.getItem().getDescription() != "")
-        <div class="o_block_large_top">
-            $!helper.getItemDescriptionForBrowser($row.getItem())
-        </div>
-    #end
+    <div class="o_feed_content">
+        #if ($row.getItem().getDescription() && $row.getItem().getDescription() != "")
+            <div class="o_block_large_top">
+                $!helper.getItemDescriptionForBrowser($row.getItem())
+            </div>
+        #end
 
-    <div>
         #set($podId = $r.getUniqueId())
         #if ($!row.getItem().getEnclosure())
             <div class="o_block_large_top o_enclosure">
@@ -62,18 +65,5 @@
                 </script>
             </div>
         #end
-
-
-        <div class="o_feed_footer_card_view">
-            $r.escapeHtml($r.render($row.getFeedEntryLinkFurther().getComponent().getComponentName()))
-            <div class="pull-right">
-                #if ($feed.isExternal() && $row.getItem().getExternalLink())
-                    <a href="$!row.getItem().getExternalLink()" target="_blank">
-                        $r.translate("feed.item.original")
-                        <i class="o_icon o_icon_start"></i>
-                    </a>
-                #end
-            </div>
-        </div>
     </div>
 </div>

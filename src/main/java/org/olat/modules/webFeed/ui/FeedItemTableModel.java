@@ -20,7 +20,9 @@
 package org.olat.modules.webFeed.ui;
 
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
@@ -28,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * Initial date: Mai 21, 2024
@@ -35,17 +38,19 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class FeedItemTableModel extends DefaultFlexiTableDataModel<FeedItemRow>
-implements FlexiTableCssDelegate, FilterableFlexiTableModel {
+implements FlexiTableCssDelegate, SortableFlexiTableDataModel<FeedItemRow>, FilterableFlexiTableModel {
 
 	private static final ItemsCols[] COLS = ItemsCols.values();
+	private final Locale locale;
 
-	public FeedItemTableModel(FlexiTableColumnModel columnModel) {
+	public FeedItemTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
 	}
 
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-
+		//
 	}
 
 	@Override
@@ -65,17 +70,30 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		FeedItemRow item = getObject(row);
+		FeedItemRow feedItemRow = getObject(row);
+		return getValueAt(feedItemRow, col);
+	}
+
+	@Override
+	public void sort(SortKey sortKey) {
+		if (sortKey != null) {
+			List<FeedItemRow> rows = new FeedItemListSortDelegate(sortKey, this, locale).sort();
+			super.setObjects(rows);
+		}
+	}
+
+	@Override
+	public Object getValueAt(FeedItemRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			return switch (COLS[col]) {
-				case title -> item.getFeedEntryLink();
-				case status -> item.getStatus();
-				case publishDate -> item.getPublishDate();
-				case author -> item.getAuthor();
-				case tags -> item.getTags();
-				case changedFrom -> item.getChangedFrom();
-				case rating -> item.getRatingFormItem();
-				case comments -> item.getCommentLink();
+				case title -> row.getFeedEntryLink();
+				case status -> row.getStatus();
+				case publishDate -> row.getPublishDate();
+				case author -> row.getAuthor();
+				case tags -> row.getFormattedTags();
+				case changedFrom -> row.getChangedFrom();
+				case rating -> row.getRatingFormItem();
+				case comments -> row.getCommentLink();
 				default -> "ERROR";
 			};
 		}
@@ -102,7 +120,7 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != toolsLink;
 		}
 
 		@Override

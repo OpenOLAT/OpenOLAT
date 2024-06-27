@@ -226,19 +226,19 @@ public class FeedViewHelper {
 	 * @param item
 	 * @return String containing information about date and author
 	 */
-	public String getInfo(Item item) {
+	public String getInfo(Item item, boolean isOverview) {
 		String info = "";
 		
 		if (item != null) {
 			String date = getPublishDate(item);
 			String author = StringHelper.escapeHtml(item.getAuthor());
 			if (author != null) {
-				if (date != null) {
+				if (date != null && !isOverview) {
 					info = translator.translate("feed.info.by.on", author, date);
 				} else {
 					info = translator.translate("feed.info.by", author);
 				}
-			} else if (date != null) {
+			} else if (date != null && !isOverview) {
 				info = translator.translate("feed.info.on", date);
 			}
 		}
@@ -278,7 +278,7 @@ public class FeedViewHelper {
 		if (item != null) {
 			Date date = item.getPublishDate();
 			if (date != null) {
-				publishDate = DateFormat.getDateInstance(DateFormat.MEDIUM, this.locale).format(date);
+				publishDate = DateFormat.getTimeInstance(DateFormat.SHORT, this.locale).format(date);
 			}
 		}
 		

@@ -4594,6 +4594,16 @@ create table o_tb_audit_log (
    primary key (id)
 );
 
+-- feed tag (blog/podcast)
+create table o_feed_tag (
+    id bigserial,
+    creationdate timestamp not null,
+    fk_feed int8 not null,
+    fk_feed_item int8,
+    fk_tag int8,
+    primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -6202,6 +6212,10 @@ create index idx_tb_audit_doer_idx on o_tb_audit_log (fk_doer);
 create index idx_tb_audit_broker_idx on o_tb_audit_log (fk_broker);
 create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
 create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
+
+-- feed tags
+create index idx_tag_to_feed_idx on o_feed_tag (fk_feed);
+create index idx_tag_to_feed_item_idx on o_feed_tag (fk_feed_item);
 
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );
