@@ -616,6 +616,13 @@ form .o_form, form.o_form {
 		display: inline-block;
 		margin-right: 1em;
 	}
+	
+	.o_filemeta_row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 5px;
+		align-items: center;
+	}
 }
 .o_fileinput {
 	position: relative;

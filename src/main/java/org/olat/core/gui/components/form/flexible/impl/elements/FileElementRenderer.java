@@ -97,8 +97,8 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			boolean showReplaceButton = fileElem.isReplaceButton() && (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
 			boolean showDeleteButton = fileElem.isDeleteEnabled() && (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
 			
-			renderFilesMeta(sb, fileComp, hasFile, showDeleteButton, showReplaceButton, trans);
-			if (showInput) {
+			renderFilesMeta(sb, fileComp, hasFile, showDeleteButton, id, showReplaceButton, trans);
+			if (showInput && !showReplaceButton) {
 				renderFileInput(sb, trans, fileElem, id, showReplaceButton);
 			}
 			
@@ -155,7 +155,8 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 		}
 	}
 	
-	private void renderFilesMeta(StringOutput sb, FileElementComponent fileComp, boolean hasFile, boolean showDeleteButton, boolean showReplaceButton, Translator trans) {
+	private void renderFilesMeta(StringOutput sb, FileElementComponent fileComp, boolean hasFile,
+			boolean showDeleteButton, String id, boolean showReplaceButton, Translator trans) {
 		FileElementImpl fileElem = fileComp.getFormItem();
 		
 		sb.append("<div class='o_filemeta'>");
@@ -163,12 +164,12 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			List<FileElementInfos> uploadedFiles = fileElem.getUploadFilesInfos();
 			if(!uploadedFiles.isEmpty()) {
 				for(FileElementInfos fileInfos:uploadedFiles) {
-					renderFileMeta(sb, fileComp, fileInfos.fileName(), fileInfos.iconCssClass(), fileInfos.size(), showDeleteButton, showReplaceButton, trans);
+					renderFileMeta(sb, fileComp, fileInfos.fileName(), fileInfos.iconCssClass(), fileInfos.size(), showDeleteButton, id, showReplaceButton, trans);
 				}
 			} else if(fileElem.getInitialFile() != null) {
 				File initialFile = fileElem.getInitialFile();
 				String iconCssClass = CSSHelper.createFiletypeIconCssClassFor(initialFile.getName());
-				renderFileMeta(sb, fileComp, initialFile.getName(), iconCssClass, initialFile.length(), showDeleteButton, showReplaceButton, trans);
+				renderFileMeta(sb, fileComp, initialFile.getName(), iconCssClass, initialFile.length(), showDeleteButton, id, showReplaceButton, trans);
 			}
 			
 		}
@@ -176,21 +177,17 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderFileMeta(StringOutput sb, FileElementComponent fileComp, String fileName, String iconCssClass, long size,
-			boolean showDeleteButton, boolean showReplaceButton, Translator trans) {
+			boolean showDeleteButton, String id, boolean showReplaceButton, Translator trans) {
 		FileElementImpl fileElem = fileComp.getFormItem();
 		
-		sb.append("<div>");
+		sb.append("<div class='o_filemeta_row'>");
 		sb.append("<i class='").append(CSSHelper.getIconCssClassFor(iconCssClass)).append("'> </i> ")
 		  .append("<span>").appendHtmlEscaped(fileName)
 		  .append("<span class='o_filesize text-muted'>(").append(Formatter.formatBytes(size)).append(")</span>")
 		  .append("</span>");
 		
 		if(showReplaceButton) {
-			sb.append("<div class='o_dnd' aria-hidden='true'>");
-			sb.append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>");
-			sb.append("<i class='o_icon o_icon_upload'> </i> ").append(trans.translate("replace"));
-			sb.append("</span></button></div>");
-			sb.append("</div>");
+			renderFileInput(sb, trans, fileElem, id, showReplaceButton);
 		}
 		
 		if(showDeleteButton) {
@@ -255,7 +252,11 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 		}
 		
 		if(showReplaceButton) {
-			
+			sb.append("<div class='o_dnd' aria-hidden='true'>");
+			sb.append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>");
+			sb.append("<i class='o_icon o_icon_upload'> </i> ").append(trans.translate("replace"));
+			sb.append("</span></button></div>");
+			sb.append("</div>");
 		} else {
 			String dndInfo = fileElem.getDndInformations();
 			if(!StringHelper.containsNonWhitespace(dndInfo)) {
