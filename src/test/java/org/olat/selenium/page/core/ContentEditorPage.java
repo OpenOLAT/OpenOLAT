@@ -62,14 +62,14 @@ public class ContentEditorPage extends ContentViewPage {
 		By addBy = By.xpath("//div[contains(@class,'o_page_container_edit')][" + container + "]//div[contains(@class,'o_page_container_slot')][" + slot + "]//a[contains(@class,'btn')][contains(@class,'o_page_add_in_container')]");
 		OOGraphene.waitElement(addBy, browser);
 		browser.findElement(addBy).click();
-		By addCalloutBy = By.cssSelector("dialog.popover div.o_sel_add_element_callout");
-		OOGraphene.waitElement(addCalloutBy, browser);
+		OOGraphene.waitModalDialog(browser, "div.o_ceditor_add_elements");
 		return this;
 	}
 	
 	public ContentEditorPage addTitle(String title) {
 		By addTitleBy = By.cssSelector("a#o_coadd_el_" + (form ? "form" : "") + "htitle");
 		browser.findElement(addTitleBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitElement(editFragmentBy, browser);
 		By titleBy = By.cssSelector(".o_page_fragment_edit.o_fragment_edited .o_page_edit_title");
 		OOGraphene.waitElement(titleBy, browser);
@@ -98,6 +98,7 @@ public class ContentEditorPage extends ContentViewPage {
 	public ContentEditorPage addImage(String title, File image) {
 		By addImageBy = By.cssSelector("a#o_coadd_el_image");
 		browser.findElement(addImageBy).click();
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_ceditor_add_elements");
 		OOGraphene.waitModalDialog(browser, "div.o_sel_ce_add_image");
 		
 		By uploadButtonBy = By.cssSelector("dialog.modal div.o_sel_ce_add_image a.o_sel_upload_image");
@@ -123,6 +124,7 @@ public class ContentEditorPage extends ContentViewPage {
 	public ContentEditorPage addDocument(String title, File document) {
 		By addDocumentBy = By.cssSelector("a#o_coadd_el_bc");
 		browser.findElement(addDocumentBy).click();
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_ceditor_add_elements");
 		OOGraphene.waitModalDialog(browser, "div.o_sel_ce_add_file");
 		
 		By uploadButtonBy = By.cssSelector("dialog.modal div.o_sel_ce_add_file a.o_sel_upload_file");
@@ -149,6 +151,7 @@ public class ContentEditorPage extends ContentViewPage {
 	public ContentEditorPage addCitation(String title, String citation) {
 		By addCitationBy = By.cssSelector("a#o_coadd_el_citation");
 		browser.findElement(addCitationBy).click();
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_ceditor_add_elements");
 		OOGraphene.waitModalDialog(browser, "div.o_sel_ce_add_citation");
 		
 		By addButtonBy = By.cssSelector("dialog.modal div.o_sel_ce_add_citation a.o_sel_add_citation");

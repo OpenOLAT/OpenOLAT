@@ -209,8 +209,13 @@ public class FeedPage {
 	 * 
 	 * @return Itself
 	 */
-	public MediaPage addAsMedia() {
-		By addAsMediaBy = By.xpath("//div[contains(@class,'o_post')]//div[contains(@class,'o_head')]//a[i[contains(@class,'o_icon_eportfolio_add')]]");
+	public MediaPage addAsMediaInTable() {
+		By toolsBy = By.xpath("//div[contains(@class,'o_feed')]//div[contains(@class,'o_table')]//tr/td/a[i[contains(@class,'o_icon_actions')]]");
+		OOGraphene.waitElement(toolsBy, browser);
+		browser.findElement(toolsBy).click();
+		OOGraphene.waitCallout(browser);
+		
+		By addAsMediaBy = By.xpath("//dialog[contains(@class,'popover')]//ul[contains(@class,'o_dropdown')]//a[i[contains(@class,'o_icon_eportfolio_add')]]");
 		browser.findElement(addAsMediaBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return new MediaPage(browser);

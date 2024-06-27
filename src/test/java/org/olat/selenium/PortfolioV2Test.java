@@ -401,7 +401,7 @@ public class PortfolioV2Test extends Deployments {
 		
 		String mediaTitle = "My very own entry";
 		feed
-			.addAsMedia()
+			.addAsMediaInTable()
 			.fillForumMedia(mediaTitle, "A post I write");
 		UserToolsPage userTools = new UserToolsPage(browser);
 		MediaCenterPage mediaCenter = userTools

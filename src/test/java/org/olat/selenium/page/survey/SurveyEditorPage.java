@@ -49,15 +49,17 @@ public class SurveyEditorPage extends ContentEditorPage {
 	}
 	
 	public SurveyEditorPage addRubricElement() {
-		By addTitleBy = By.cssSelector("a#o_coadd_el_formrubric");
-		browser.findElement(addTitleBy).click();
+		By addRubricsBy = By.cssSelector("a#o_coadd_el_formrubric");
+		browser.findElement(addRubricsBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitElement(editFragmentBy, browser);
 		return this;
 	}
 	
 	public SurveyEditorPage addSingleChoiceElement() {
-		By addTitleBy = By.cssSelector("a#o_coadd_el_formsinglechoice");
-		browser.findElement(addTitleBy).click();
+		By addSingleChoicesBy = By.cssSelector("a#o_coadd_el_formsinglechoice");
+		browser.findElement(addSingleChoicesBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitElement(editFragmentBy, browser);
 		return this;
 	}
@@ -67,8 +69,9 @@ public class SurveyEditorPage extends ContentEditorPage {
 	}
 	
 	public SurveyEditorPage addMultipleChoiceElement() {
-		By addTitleBy = By.cssSelector("a#o_coadd_el_formmultiplechoice");
-		browser.findElement(addTitleBy).click();
+		By addMultipleChoicesBy = By.cssSelector("a#o_coadd_el_formmultiplechoice");
+		browser.findElement(addMultipleChoicesBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitElement(editFragmentBy, browser);
 		return this;
 	}

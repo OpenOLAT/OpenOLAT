@@ -745,8 +745,7 @@ public class CourseElementTest extends Deployments {
 		String post2Summary = "Some explanations as teaser";
 		String post2Content = "Content of the post";
 		feed
-			.assertOnBlogPost(postTitle)
-			.backToList()
+			.assertOnBlogPostInClassicTable(postTitle)
 			.addBlogPost()
 			.fillPostForm(post2Title, post2Summary, post2Content)
 			.publishPost();
