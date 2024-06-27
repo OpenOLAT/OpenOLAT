@@ -864,6 +864,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				String uuid = OpenBadgesFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
+			if (badgeCriteria.allGlobalBadgeConditionsMet(recipient, null)) {
+				String uuid = OpenBadgesFactory.createIdentifier();
+				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
+			}
 		}
 	}
 
@@ -935,6 +939,24 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			}
 		}
 		return automaticRecipients;
+	}
+
+	@Override
+	public List<ParticipantAndAssessmentEntries> associateParticipantsWithAssessmentEntries(List<AssessmentEntry> assessmentEntries) {
+		Map<Identity, List<AssessmentEntry>> participantToAssessmentEntries = new HashMap<>();
+		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			Identity assessedIdentity = assessmentEntry.getIdentity();
+			if (!participantToAssessmentEntries.containsKey(assessedIdentity)) {
+				participantToAssessmentEntries.put(assessedIdentity, new ArrayList<>());
+			}
+			participantToAssessmentEntries.get(assessedIdentity).add(assessmentEntry);
+		}
+		List<ParticipantAndAssessmentEntries> result = new ArrayList<>();
+		for (Identity assessedIdentity : participantToAssessmentEntries.keySet()) {
+			List<AssessmentEntry> participantAssessmentEntries = participantToAssessmentEntries.get(assessedIdentity);
+			result.add(new ParticipantAndAssessmentEntries(assessedIdentity, participantAssessmentEntries));
+		}
+		return result;
 	}
 
 	@Override

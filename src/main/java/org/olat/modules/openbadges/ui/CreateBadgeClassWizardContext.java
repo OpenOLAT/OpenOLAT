@@ -58,6 +58,15 @@ public class CreateBadgeClassWizardContext {
 	private final SingleRoleRepositoryEntrySecurity reSecurity;
 
 	public boolean showRecipientsStep() {
+		if (isGlobalBadge()) {
+			if (!badgeCriteria.isAwardAutomatically()) {
+				return false;
+			}
+			if (!badgeCriteria.hasGlobalBadgeConditions()) {
+				return false;
+			}
+			return true;
+		}
 		CourseEnvironment courseEnv = courseEnvironment();
 		if (courseEnv == null) {
 			return false;
@@ -75,8 +84,12 @@ public class CreateBadgeClassWizardContext {
 		return LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType());
 	}
 
+	public boolean isGlobalBadge() {
+		return !isCourseBadge();
+	}
+
 	private CourseEnvironment courseEnvironment() {
-		if (courseResourcableId == null) {
+		if (isGlobalBadge()) {
 			return null;
 		}
 		if (entry == null) {

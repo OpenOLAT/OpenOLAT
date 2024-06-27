@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -45,6 +46,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.course.core.CourseElement;
 import org.olat.course.core.CourseElementSearchParams;
@@ -57,9 +59,13 @@ import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
 import org.olat.modules.openbadges.criteria.CourseElementScoreCondition;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CourseScoreCondition;
+import org.olat.modules.openbadges.criteria.CoursesPassedCondition;
 import org.olat.modules.openbadges.criteria.LearningPathProgressCondition;
 import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.criteria.Symbol;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -88,6 +94,8 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		private OpenBadgesManager openBadgesManager;
 		@Autowired
 		private CourseElementDAO courseElementDao;
+		@Autowired
+		private RepositoryManager repositoryManager;;
 
 		public class Condition {
 			private final String id;
@@ -96,6 +104,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			private final SingleSelection symbolDropdown;
 			private final SingleSelection badgesDropdown;
 			private final SingleSelection courseElementsDropdown;
+			private final MultipleSelectionElement coursesDropdown;
 			private final TextElement valueEl;
 			private final StaticTextElement unitEl;
 			private final FormLink deleteLink;
@@ -126,6 +135,10 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						formLayout, courseElementsKV.keys(), courseElementsKV.values());
 				courseElementsDropdown.addActionListener(FormEvent.ONCHANGE);
 
+				coursesDropdown = uifactory.addCheckboxesDropdown("form.condition.courses." + id, null,
+						formLayout, coursesKV.keys(), coursesKV.values());
+				coursesDropdown.addActionListener(FormEvent.ONCHANGE);
+
 				valueEl = uifactory.addTextElement("form.condition.value." + id, "", 32,
 						"", formLayout);
 
@@ -140,6 +153,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				symbolDropdown.setVisible(false);
 				badgesDropdown.setVisible(false);
 				courseElementsDropdown.setVisible(false);
+				coursesDropdown.setVisible(false);
 				valueEl.setVisible(false);
 				unitEl.setVisible(false);
 
@@ -187,6 +201,12 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					unitEl.setVisible(true);
 					unitEl.setValue("Pt.");
 				}
+				if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
+					coursesDropdown.setVisible(true);
+					for (Long courseResourceKey : coursesPassedCondition.getCourseResourceKeys()) {
+						coursesDropdown.select(courseResourceKey.toString(), true);
+					}
+				}
 			}
 
 			public void updateVisibilities() {
@@ -194,6 +214,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				symbolDropdown.setVisible(false);
 				badgesDropdown.setVisible(false);
 				courseElementsDropdown.setVisible(false);
+				coursesDropdown.setVisible(false);
 				valueEl.setVisible(false);
 				unitEl.setVisible(false);
 				switch (conditionKey) {
@@ -212,7 +233,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						unitEl.setVisible(true);
 					}
 					case OtherBadgeEarnedCondition.KEY -> badgesDropdown.setVisible(true);
-					case CourseElementPassedCondition.KEY -> courseElementsDropdown.setVisible(true);				}
+					case CourseElementPassedCondition.KEY -> courseElementsDropdown.setVisible(true);
+					case CoursesPassedCondition.KEY -> coursesDropdown.setVisible(true);
+				}
 			}
 
 			public String getId() {
@@ -249,6 +272,13 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			 */
 			public SingleSelection getCourseElementsDropdown() {
 				return courseElementsDropdown;
+			}
+
+			/**
+			 * Used in template
+			 */
+			public MultipleSelectionElement getCoursesDropdown() {
+				return coursesDropdown;
 			}
 
 			public TextElement getValueEl() {
@@ -288,6 +318,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 							Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
 							StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
 					);
+					case CoursesPassedCondition.KEY -> new CoursesPassedCondition(
+							coursesDropdown.getSelectedKeys().stream().map(Long::parseLong).toList()
+					);
 					default -> null;
 				};
 			}
@@ -302,6 +335,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		private final SelectionValues symbolsKV;
 		private final SelectionValues badgesKV;
 		private final SelectionValues courseElementsKV;
+		private final SelectionValues coursesKV;
 
 		private CreateBadgeClassWizardContext createContext;
 		private TextElement descriptionEl;
@@ -325,12 +359,14 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			};
 
 			badgesKV = new SelectionValues();
-			openBadgesManager.getBadgeClassesInCoOwnedCourseSet(createContext.getBadgeClass().getEntry()).stream()
-					.filter((badgeClass) -> !badgeClass.getUuid().equals(createContext.getBadgeClass().getUuid()))
-					.forEach((badgeClass) -> badgesKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName())));
+			if (createContext.isCourseBadge()) {
+				openBadgesManager.getBadgeClassesInCoOwnedCourseSet(createContext.getBadgeClass().getEntry()).stream()
+						.filter((badgeClass) -> !badgeClass.getUuid().equals(createContext.getBadgeClass().getUuid()))
+						.forEach((badgeClass) -> badgesKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName())));
+			}
 
 			courseElementsKV = new SelectionValues();
-			if (createContext.getBadgeClass().getEntry() != null) {
+			if (createContext.isCourseBadge()) {
 				CourseElementSearchParams courseElementSearchParams = new CourseElementSearchParams();
 				courseElementSearchParams.setRepositoryEntries(Collections.singletonList(createContext.getBadgeClass().getEntry()));
 				courseElementDao.load(courseElementSearchParams).stream()
@@ -338,20 +374,33 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						.forEach(courseElement -> courseElementsKV.add(SelectionValues.entry(courseElement.getSubIdent(), courseElement.getShortTitle())));
 			}
 
+			coursesKV = new SelectionValues();
+			if (createContext.isGlobalBadge()) {
+				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), Roles.administratorRoles());
+				params.setResourceTypes(Collections.singletonList("CourseModule"));
+				repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true).stream()
+						.filter(re -> RepositoryEntryStatusEnum.published.equals(re.getEntryStatus()))
+						.forEach(re -> coursesKV.add(SelectionValues.entry(re.getOlatResource().getKey().toString(), re.getDisplayname())));
+			}
+
 			conditionsKV = new SelectionValues();
-			conditionsKV.add(SelectionValues.entry(CoursePassedCondition.KEY, translate("form.criteria.condition.course.passed")));
-			conditionsKV.add(SelectionValues.entry(CourseScoreCondition.KEY, translate("form.criteria.condition.course.score")));
-			if (createContext.isLearningPath()) {
-				conditionsKV.add(SelectionValues.entry(LearningPathProgressCondition.KEY, translate("form.criteria.condition.learning.path.progress")));
+			if (createContext.isCourseBadge()) {
+				conditionsKV.add(SelectionValues.entry(CoursePassedCondition.KEY, translate("form.criteria.condition.course.passed")));
+				conditionsKV.add(SelectionValues.entry(CourseScoreCondition.KEY, translate("form.criteria.condition.course.score")));
+				if (createContext.isLearningPath()) {
+					conditionsKV.add(SelectionValues.entry(LearningPathProgressCondition.KEY, translate("form.criteria.condition.learning.path.progress")));
+				}
+				if (!badgesKV.isEmpty()) {
+					conditionsKV.add(SelectionValues.entry(OtherBadgeEarnedCondition.KEY, translate("form.criteria.condition.otherBadgeEarned")));
+				}
+				if (!courseElementsKV.isEmpty()) {
+					conditionsKV.add(SelectionValues.entry(CourseElementPassedCondition.KEY, translate("form.criteria.condition.course.element.passed")));
+					conditionsKV.add(SelectionValues.entry(CourseElementScoreCondition.KEY, translate("form.criteria.condition.course.element.score")));
+				}
 			}
-			if (!badgesKV.isEmpty()) {
-				conditionsKV.add(SelectionValues.entry(OtherBadgeEarnedCondition.KEY, translate("form.criteria.condition.otherBadgeEarned")));
-			}
-			if (!courseElementsKV.isEmpty()) {
-				conditionsKV.add(SelectionValues.entry(CourseElementPassedCondition.KEY, translate("form.criteria.condition.course.element.passed")));
-			}
-			if (!courseElementsKV.isEmpty()) {
-				conditionsKV.add(SelectionValues.entry(CourseElementScoreCondition.KEY, translate("form.criteria.condition.course.element.score")));
+
+			if (createContext.isGlobalBadge() && !coursesKV.isEmpty()) {
+				conditionsKV.add(SelectionValues.entry(CoursesPassedCondition.KEY, translate("form.criteria.condition.courses.passed")));
 			}
 
 			symbolsKV = new SelectionValues();
@@ -428,6 +477,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				case OtherBadgeEarnedCondition.KEY -> new OtherBadgeEarnedCondition(getUnusedBadgeKey());
 				case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(getSubIdentsNotUsedInPassedCondition());
 				case CourseElementScoreCondition.KEY -> new CourseElementScoreCondition(getSubIdentsNotUsedInScoreCondition(), Symbol.greaterThan, 1);
+				case CoursesPassedCondition.KEY -> new CoursesPassedCondition();
 				default -> null;
 			};
 			if (newBadgeCondition != null) {
@@ -512,8 +562,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			boolean showAwardProcedure = createContext.getCourseResourcableId() != null;
-			flc.contextPut("showAwardProcedure", showAwardProcedure);
+			flc.contextPut("showAwardProcedure", true);
 
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 			boolean awardAutomatically = badgeCriteria.isAwardAutomatically();

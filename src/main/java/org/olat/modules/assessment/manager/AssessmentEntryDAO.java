@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.TypedQuery;
@@ -494,6 +495,31 @@ public class AssessmentEntryDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("identityKey", assessedIdentity.getKey())
+				.getResultList();
+	}
+
+	public List<AssessmentEntry> loadRootAssessmentEntriesForResourceKeys(Set<Long> resourceKeys) {
+		StringBuilder sb = new StringBuilder();
+		sb
+				.append("select data from assessmententry data")
+				.append(" inner join data.repositoryEntry as v")
+				.append(" inner join v.olatResource as ores")
+				.append(" where ores.key in (:resourceKeys)")
+				.append(" and data.entryRoot = true");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("resourceKeys", resourceKeys)
+				.getResultList();
+	}
+
+	public List<AssessmentEntry> loadRootAssessmentEntriesForAssessedIdentity(Identity assessedIdentity) {
+		String queryString = "select data from assessmententry data" +
+				" inner join fetch data.repositoryEntry v" +
+				" where data.identity.key = :assessedIdentityKey" +
+				" and data.entryRoot = true";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(queryString, AssessmentEntry.class)
+				.setParameter("assessedIdentityKey", assessedIdentity.getKey())
 				.getResultList();
 	}
 

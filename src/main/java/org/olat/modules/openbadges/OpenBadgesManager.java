@@ -135,6 +135,9 @@ public interface OpenBadgesManager {
 	List<Identity> getAutomaticRecipients(BadgeClass badgeClass,
 										  boolean learningPath, List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries);
 
+
+	List<ParticipantAndAssessmentEntries> associateParticipantsWithAssessmentEntries(List<AssessmentEntry> assessmentEntries);
+
 	void issueBadge(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy);
 
 	List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass);

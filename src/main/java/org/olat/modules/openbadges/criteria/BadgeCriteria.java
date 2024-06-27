@@ -20,14 +20,17 @@
 package org.olat.modules.openbadges.criteria;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 /**
@@ -102,26 +105,38 @@ public class BadgeCriteria {
 		return atLeastOneUuidRemapped;
 	}
 
-	public boolean allCourseConditionsMet(Identity identity, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
-		if (!allCourseConditionsMet(assessmentEntries)) {
+	/**
+	 * Checks if all the conditions specific to a course of this BadgeCriteria object are
+	 * satisfied.
+	 *
+	 * @param recipient         The recipient to check the conditions for.
+	 * @param learningPath		If true, the assessed course is a learning path
+	 * @param assessmentEntries The assessment entries for the course and the recipient.
+	 * @return True if all conditions of this badge criteria object are satisfied.
+	 */
+	public boolean allCourseConditionsMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
+		if (!allCourseConditionsMet(recipient, assessmentEntries)) {
 			return false;
 		}
-		if (!allCourseElementConditionsMet(assessmentEntries)) {
+		if (!allCourseElementConditionsMet(recipient, assessmentEntries)) {
 			return false;
 		}
-		if (!learningPathConditionMet(learningPath, assessmentEntries)) {
+		if (!learningPathConditionMet(recipient, learningPath, assessmentEntries)) {
 			return false;
 		}
-		if (!allOtherBadgeConditionsMet(identity)) {
+		if (!allOtherBadgeConditionsMet(recipient)) {
 			return false;
 		}
 		return true;
 	}
 
-	private boolean allCourseConditionsMet(List<AssessmentEntry> assessmentEntries) {
+	private boolean allCourseConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
 		boolean passed = false;
 		float score = 0;
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			if (!assessmentEntry.getIdentity().equals(recipient)) {
+				continue;
+			}
 			if (assessmentEntry.getEntryRoot() != null && assessmentEntry.getEntryRoot()) {
 				if (assessmentEntry.getPassed() != null) {
 					passed = assessmentEntry.getPassed();
@@ -146,10 +161,13 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	private boolean allCourseElementConditionsMet(List<AssessmentEntry> assessmentEntries) {
+	private boolean allCourseElementConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
 				for (AssessmentEntry assessmentEntry : assessmentEntries) {
+					if (!assessmentEntry.getIdentity().equals(recipient)) {
+						continue;
+					}
 					if (courseElementPassedCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
 						return assessmentEntry.getPassed() != null && assessmentEntry.getPassed();
 					}
@@ -170,13 +188,16 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	private boolean learningPathConditionMet(boolean learningPath, List<AssessmentEntry> assessmentEntries) {
+	private boolean learningPathConditionMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
 		if (!learningPath) {
 			return true;
 		}
 
 		double learningPathProgress = 0;
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			if (!assessmentEntry.getIdentity().equals(recipient)) {
+				continue;
+			}
 			if (assessmentEntry.getEntryRoot() != null && assessmentEntry.getEntryRoot()) {
 				if (assessmentEntry.getCompletion() != null) {
 					learningPathProgress = assessmentEntry.getCompletion().floatValue() * 100;
@@ -193,7 +214,7 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	public boolean allOtherBadgeConditionsMet(Identity recipient) {
+	private boolean allOtherBadgeConditionsMet(Identity recipient) {
 		OpenBadgesManager openBadgesManager = null;
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeCondition) {
@@ -206,5 +227,69 @@ public class BadgeCriteria {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Check if all global badge conditions for the BadgeCriteria a global badge are met. This is a check for one
+	 * potential badge recipient.
+	 *
+	 * @param recipient         The potential badge recipient.
+	 * @param assessmentEntries List of assessment entries (this call is currently only interested in root entries)
+	 *                          for the potential recipient
+	 *
+	 * @return true if all global badge conditions are met for this recipient
+	 * 		   (or if there are no global badge conditions to be met), false if at least one condition is not met.
+	 */
+	public boolean allGlobalBadgeConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
+		if (!allGlobalCourseConditionsMet(recipient, assessmentEntries)) {
+			return false;
+		}
+		return true;
+	}
+
+	private boolean allGlobalCourseConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
+		List<AssessmentEntry> rootAssessmentEntriesForRecipient = assessmentEntries;
+
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
+				if (rootAssessmentEntriesForRecipient == null) {
+					AssessmentEntryDAO assessmentEntryDAO = CoreSpringFactory.getImpl(AssessmentEntryDAO.class);
+					rootAssessmentEntriesForRecipient = assessmentEntryDAO.loadRootAssessmentEntriesForAssessedIdentity(recipient);
+				}
+				HashSet<Long> toPass = new HashSet<>(coursesPassedCondition.getCourseResourceKeys());
+				for (AssessmentEntry assessmentEntry : rootAssessmentEntriesForRecipient) {
+					if (assessmentEntry.getEntryRoot() == null || !assessmentEntry.getEntryRoot()) {
+						continue;
+					}
+					if (!assessmentEntry.getIdentity().equals(recipient)) {
+						continue;
+					}
+					if (assessmentEntry.getPassed() != null && assessmentEntry.getPassed()) {
+						toPass.remove(assessmentEntry.getRepositoryEntry().getOlatResource().getKey());
+					}
+				}
+				return toPass.isEmpty();
+			}
+		}
+		return true;
+	}
+
+	public Set<Long> getCourseResourceKeys() {
+		Set<Long> keys = new HashSet<>();
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
+				keys.addAll(coursesPassedCondition.getCourseResourceKeys());
+			}
+		}
+		return keys;
+	}
+
+	public boolean hasGlobalBadgeConditions() {
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CoursesPassedCondition) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

@@ -34,12 +34,12 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
  */
 public class BadgeCriteriaXStream {
 
-	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	private static final XStream xstream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
 		Class<?>[] types = new Class[] {
 				BadgeCriteria.class, BadgeCondition.class, CoursePassedCondition.class, CourseScoreCondition.class,
 				OtherBadgeEarnedCondition.class, CourseElementPassedCondition.class, CourseElementScoreCondition.class,
-				LearningPathProgressCondition.class
+				LearningPathProgressCondition.class, CoursesPassedCondition.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.ignoreUnknownElements();
@@ -51,6 +51,7 @@ public class BadgeCriteriaXStream {
 		xstream.alias(CourseElementPassedCondition.KEY, CourseElementPassedCondition.class);
 		xstream.alias(CourseElementScoreCondition.KEY, CourseElementScoreCondition.class);
 		xstream.alias(LearningPathProgressCondition.KEY, LearningPathProgressCondition.class);
+		xstream.alias(CoursesPassedCondition.KEY, CoursesPassedCondition.class);
 	}
 
 	public static String toXml(BadgeCriteria badgeCriteria) {

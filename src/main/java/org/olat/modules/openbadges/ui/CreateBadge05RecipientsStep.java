@@ -48,6 +48,7 @@ import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
@@ -87,6 +88,8 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 		private AssessmentToolManager assessmentToolManager;
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
+		@Autowired
+		private AssessmentEntryDAO assessmentEntryDAO;
 
 		private List<UserPropertyHandler> userPropertyHandlers;
 		private BadgeEarnersTableModel tableModel;
@@ -151,6 +154,39 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 			}
 
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
+
+			List<BadgeEarnerRow> rows = initBadgeEarnerRows();
+
+			tableModel = new BadgeEarnersTableModel(columnsModel, getLocale());
+			tableModel.setObjects(rows);
+			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20,
+					false, getTranslator(), formLayout);
+			tableEl.reset();
+			tableEl.reloadData();
+
+			if (rows.isEmpty()) {
+				tableEl.setVisible(false);
+				description.setValue(translate("form.recipients.preview.description.no.recipients"));
+			} else if (!badgeCriteria.isAwardAutomatically()) {
+				description.setValue(translate("form.recipients.preview.description.manual"));
+				tableEl.setMultiSelect(true);
+				tableEl.setSelectAllEnable(true);
+			}
+		}
+
+		private List<BadgeEarnerRow> initBadgeEarnerRows() {
+			if (createContext.isCourseBadge()) {
+				return initCourseBadgeEarnerRows();
+			} else if (createContext.isGlobalBadge()){
+				return initGlobalBadgeEarnerRows();
+			} else {
+				createContext.setEarners(new ArrayList<>());
+				return new ArrayList<>();
+			}
+		}
+
+		private List<BadgeEarnerRow> initCourseBadgeEarnerRows() {
+			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 			RepositoryEntry courseEntry = createContext.getBadgeClass().getEntry();
 
 			SingleRoleRepositoryEntrySecurity reSecurity = createContext.getReSecurity();
@@ -161,7 +197,8 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 
 			List<BadgeEarnerRow> rows = new ArrayList<>();
 			List<Identity> earners = new ArrayList<>();
-			if (courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
+
+			if (courseEntry != null && courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 				//
 			} else if (!badgeCriteria.isAwardAutomatically()) {
 				ICourse course = CourseFactory.loadCourse(createContext.getCourseResourcableId());
@@ -194,22 +231,36 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 			}
 
 			createContext.setEarners(earners);
+			return rows;
+		}
 
-			tableModel = new BadgeEarnersTableModel(columnsModel, getLocale());
-			tableModel.setObjects(rows);
-			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20,
-					false, getTranslator(), formLayout);
-			tableEl.reset();
-			tableEl.reloadData();
+		private List<BadgeEarnerRow> initGlobalBadgeEarnerRows() {
+			List<BadgeEarnerRow> rows = new ArrayList<>();
+			List<Identity> earners = new ArrayList<>();
 
-			if (rows.isEmpty()) {
-				tableEl.setVisible(false);
-				description.setValue(translate("form.recipients.preview.description.no.recipients"));
-			} else if (!badgeCriteria.isAwardAutomatically()) {
-				description.setValue(translate("form.recipients.preview.description.manual"));
-				tableEl.setMultiSelect(true);
-				tableEl.setSelectAllEnable(true);
+			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
+
+			if (badgeCriteria.isAwardAutomatically()) {
+				Set<Long> courseResourceKeys = badgeCriteria.getCourseResourceKeys();
+				if (!courseResourceKeys.isEmpty()) {
+					List<AssessmentEntry> rootAssessmentEntries =
+							assessmentEntryDAO.loadRootAssessmentEntriesForResourceKeys(courseResourceKeys);
+					List<OpenBadgesManager.ParticipantAndAssessmentEntries> participantsAndAssessmentEntries =
+							openBadgesManager.associateParticipantsWithAssessmentEntries(rootAssessmentEntries);
+					for (OpenBadgesManager.ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries) {
+						Identity assessedIdentity = participantAndAssessmentEntries.participant();
+						List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
+						if (badgeCriteria.allGlobalBadgeConditionsMet(assessedIdentity, assessmentEntries)) {
+							BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
+							rows.add(row);
+							earners.add(assessedIdentity);
+						}
+					}
+				}
 			}
+
+			createContext.setEarners(earners);
+			return rows;
 		}
 	}
 }
