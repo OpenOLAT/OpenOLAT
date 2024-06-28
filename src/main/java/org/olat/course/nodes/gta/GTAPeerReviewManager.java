@@ -53,6 +53,12 @@ public interface GTAPeerReviewManager {
 	
 	public TaskReviewAssignment reopenAssignment(TaskReviewAssignment assignment, GTACourseNode gtaNode, Identity doer);
 	
+	/**
+	 * Special purpose query, returns all assignees of a peer review,
+	 * @return
+	 */
+	public List<Identity> getAssigneesToRemind(TaskList taskList, GTACourseNode gtaNode);
+	
 	
 	public Task loadOrCreateSurvey(Task task, RepositoryEntry courseEntry, GTACourseNode gtaNode);
 	

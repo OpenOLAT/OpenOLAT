@@ -119,6 +119,27 @@ public class GTATaskReviewAssignmentDAO {
 				.getResultList();
 	}
 	
+	
+	public List<Identity> findAssignees(TaskList taskList, List<TaskReviewAssignmentStatus> status) {
+		if(status == null || status.isEmpty()) {
+			status = List.of(TaskReviewAssignmentStatus.values());
+		}
+		
+		String query = """
+				select assignee from taskreviewasssignment assignment
+				inner join assignment.task as task
+				inner join assignment.assignee as assignee
+				inner join fetch assignee.user as assigneeUsr
+				where task.taskList.key=:taskListKey and assignment.status in (:status)
+				""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Identity.class)
+				.setParameter("taskListKey", taskList.getKey())
+				.setParameter("status", status)
+				.getResultList();
+	}
+	
 	public TaskReviewAssignment updateAssignment(TaskReviewAssignment assignment) {
 		((TaskReviewAssignmentImpl)assignment).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(assignment);

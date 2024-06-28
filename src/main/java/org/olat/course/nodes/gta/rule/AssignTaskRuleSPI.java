@@ -67,8 +67,7 @@ public class AssignTaskRuleSPI extends AbstractDueDateTaskRuleSPI {
 
 	@Override
 	protected DueDateConfig getDueDateConfig(CourseNode courseNode) {
-		if (courseNode instanceof GTACourseNode) {
-			GTACourseNode gtaCourseNode = (GTACourseNode)courseNode;
+		if (courseNode instanceof GTACourseNode gtaCourseNode) {
 			return gtaCourseNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
 		}
 		return DueDateConfig.noDueDateConfig();

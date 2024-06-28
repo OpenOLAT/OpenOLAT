@@ -51,7 +51,10 @@ import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.TaskReviewAssignment;
+import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.manager.GTAManagerImpl;
+import org.olat.course.nodes.gta.manager.GTATaskReviewAssignmentDAO;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -87,6 +90,8 @@ public class GTAReminderRuleTest extends OlatTestCase {
 	@Autowired
 	private RepositoryEntryLifecycleDAO reLifeCycleDao;
 	@Autowired
+	private GTATaskReviewAssignmentDAO reviewAssignmentDao;
+	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
@@ -98,6 +103,8 @@ public class GTAReminderRuleTest extends OlatTestCase {
 	private AssignTaskRuleSPI assignTaskRuleSPI;
 	@Autowired
 	private SubmissionTaskRuleSPI submissionTaskRuleSPI;
+	@Autowired
+	private PeerReviewTaskRuleSPI peerReviewTaskRuleSPI;
 	
 	@Test
 	public void assignTask_individual() {
@@ -613,6 +620,67 @@ public class GTAReminderRuleTest extends OlatTestCase {
 			Assert.assertTrue(all.contains(participant1));
 			Assert.assertTrue(all.contains(participant2));
 		}
+	}
+	
+	@Test
+	public void peerreviewTask_individual() {
+		//prepare a course with a volatile task
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-2");
+		Identity assignee = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-2");
+		RepositoryEntry re = deployGTACourse();
+		repositoryEntryRelationDao.addRole(participant1, re, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant2, re, GroupRoles.participant.name());
+		dbInstance.commit();
+		
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(2, Calendar.MONTH);
+		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_PEER_REVIEW, true);
+		node.getModuleConfiguration().setDateValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE, cal.getTime());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("solo.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select a task
+		AssignmentResponse response = gtaManager.selectTask(participant1, tasks, null, node, taskFile);
+		Assert.assertEquals(AssignmentResponse.Status.ok, response.getStatus());
+		TaskReviewAssignment assignment = reviewAssignmentDao.createAssignment(response.getTask(), assignee);
+		assignment.setStatus(TaskReviewAssignmentStatus.inProgress);
+		reviewAssignmentDao.updateAssignment(assignment);
+		dbInstance.commitAndCloseSession();
+
+		
+		//only remind participant 2
+		List<Identity> toRemind = peerReviewTaskRuleSPI.getPeopleToRemind(re, node);
+		Assert.assertEquals(1, toRemind.size());
+		Assert.assertTrue(toRemind.contains(assignee));
+		
+		{ // check before 30 days 
+			ReminderRuleImpl rule = getPeerReviewTaskRules(30, LaunchUnit.day);
+			List<Identity> all = peerReviewTaskRuleSPI.evaluateRule(re, node, rule);
+			
+			Assert.assertEquals(0, all.size());
+		}
+		
+		{ // check before 3 monthes 
+			ReminderRuleImpl rule = getPeerReviewTaskRules(3, LaunchUnit.month);
+			List<Identity> all = peerReviewTaskRuleSPI.evaluateRule(re, node, rule);
+			
+			Assert.assertEquals(1, all.size());
+		}
+	}
+	
+	private ReminderRuleImpl getPeerReviewTaskRules(int amount, LaunchUnit unit) {
+		ReminderRuleImpl rule = new ReminderRuleImpl();
+		rule.setType(PeerReviewTaskRuleSPI.class.getSimpleName());
+		rule.setOperator("<");
+		rule.setRightOperand(Integer.toString(amount));
+		rule.setRightUnit(unit.name());
+		return rule;
 	}
 	
 	private ReminderRuleImpl getSubmitTaskRules(int amount, LaunchUnit unit) {

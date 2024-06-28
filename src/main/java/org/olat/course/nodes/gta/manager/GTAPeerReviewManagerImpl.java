@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.manager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -182,6 +183,13 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 	@Override
 	public TaskReviewAssignment loadAssignment(TaskReviewAssignment assignment) {
 		return taskReviewAssignmentDao.loadByKey(assignment.getKey());
+	}
+
+	@Override
+	public List<Identity> getAssigneesToRemind(TaskList taskList, GTACourseNode gtaNode) {
+		List<TaskReviewAssignmentStatus> status = List.of(TaskReviewAssignmentStatus.open, TaskReviewAssignmentStatus.inProgress);		
+		List<Identity> identities = taskReviewAssignmentDao.findAssignees(taskList, status);
+		return new ArrayList<>(new HashSet<>(identities));
 	}
 
 	@Override

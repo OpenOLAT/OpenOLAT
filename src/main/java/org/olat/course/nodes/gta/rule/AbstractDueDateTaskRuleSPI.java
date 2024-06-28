@@ -62,8 +62,7 @@ public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI 
 	
 	@Override
 	protected List<Identity> getPeopleToRemind(RepositoryEntry entry, CourseNode courseNode) {
-		if (courseNode instanceof GTACourseNode) {
-			GTACourseNode gtaCourseNode = (GTACourseNode)courseNode;
+		if (courseNode instanceof GTACourseNode gtaCourseNode) {
 			ModuleConfiguration config = courseNode.getModuleConfiguration();
 			TaskList taskList = gtaManager.getTaskList(entry, gtaCourseNode);
 			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
@@ -79,10 +78,8 @@ public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI 
 		if(taskList != null) {
 			List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
 			for(Task task:tasks) {
-				if(task.getBusinessGroup() != null) {
-					if (isRuleDone(task)) {
-						doneTasks.add(task.getBusinessGroup());
-					}
+				if(task.getBusinessGroup() != null && isRuleDone(task)) {
+					doneTasks.add(task.getBusinessGroup());
 				}
 			}
 		}
@@ -101,10 +98,8 @@ public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI 
 		List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
 		Set<Identity> doneTasks = new HashSet<>();
 		for(Task task:tasks) {
-			if(task.getIdentity() != null) {
-				if (isRuleDone(task)) {
-					doneTasks.add(task.getIdentity());
-				}
+			if(task.getIdentity() != null && isRuleDone(task)) {
+				doneTasks.add(task.getIdentity());
 			}
 		}
 
@@ -122,8 +117,7 @@ public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI 
 
 	@Override
 	public String getCourseNodeIdent(ReminderRule rule) {
-		if(rule instanceof ReminderRuleImpl) {
-			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+		if(rule instanceof ReminderRuleImpl r) {
 			return r.getLeftOperand();
 		}
 		return null;

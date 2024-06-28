@@ -23,6 +23,7 @@ import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.rule.AssignTaskRuleSPI;
+import org.olat.course.nodes.gta.rule.PeerReviewTaskRuleSPI;
 import org.olat.course.nodes.gta.rule.SubmissionTaskRuleSPI;
 import org.olat.course.reminder.ui.BeforeDueDateRuleEditor;
 import org.olat.modules.reminder.ReminderRule;
@@ -42,13 +43,13 @@ public class BeforeDateTaskRuleEditor extends BeforeDueDateRuleEditor {
 
 	@Override
 	protected DueDateConfig getDueDateConfig(CourseNode courseNode) {
-		if (courseNode instanceof GTACourseNode) {
-			GTACourseNode gtaCourseNode = (GTACourseNode) courseNode;
-			
+		if (courseNode instanceof GTACourseNode gtaCourseNode) {
 			if (AssignTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
 				return gtaCourseNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
 			} else if (SubmissionTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
 				return gtaCourseNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
+			} else if (PeerReviewTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
+				return gtaCourseNode.getDueDateConfig(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE);
 			}
 		}
 		return DueDateConfig.noDueDateConfig();

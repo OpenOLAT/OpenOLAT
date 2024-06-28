@@ -73,6 +73,10 @@ public class GTAReminderProvider implements CourseNodeReminderProvider {
 			if (DueDateConfig.isDueDate(gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE))) {
 				mainTypes.add(SubmissionTaskRuleSPI.class.getSimpleName());
 			}
+			
+			if (DueDateConfig.isDueDate(gtaNode.getDueDateConfig(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE))) {
+				mainTypes.add(PeerReviewTaskRuleSPI.class.getSimpleName());
+			}
 		}
 		
 		return mainTypes;
@@ -82,8 +86,12 @@ public class GTAReminderProvider implements CourseNodeReminderProvider {
 	public String getDefaultMainRuleSPIType(List<String> availableRuleTypes) {
 		if (availableRuleTypes.contains(AssignTaskRuleSPI.class.getSimpleName())) {
 			return AssignTaskRuleSPI.class.getSimpleName();
-		} else if (availableRuleTypes.contains(SubmissionTaskRuleSPI.class.getSimpleName())) {
+		}
+		if (availableRuleTypes.contains(SubmissionTaskRuleSPI.class.getSimpleName())) {
 			return SubmissionTaskRuleSPI.class.getSimpleName();
+		}
+		if (availableRuleTypes.contains(PeerReviewTaskRuleSPI.class.getSimpleName())) {
+			return PeerReviewTaskRuleSPI.class.getSimpleName();
 		}
 		return assessmentReminderProvider.getDefaultMainRuleSPIType(availableRuleTypes);
 	}
