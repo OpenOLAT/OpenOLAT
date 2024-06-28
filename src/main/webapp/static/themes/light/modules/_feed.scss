@@ -61,3 +61,13 @@
 		}
 	}
 }
+
+.o_feed_tags {
+	display: flex;
+	flex-direction: column;
+	> div {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 5px;
+	}
+}
