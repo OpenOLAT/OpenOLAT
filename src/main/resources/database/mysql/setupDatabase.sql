@@ -6035,8 +6035,8 @@ create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
 create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
 
 -- feed tags
-create index idx_tag_to_feed_idx on o_feed_tag (fk_feed);
-create index idx_tag_to_feed_item_idx on o_feed_tag (fk_feed_item);
+alter table o_feed_tag add constraint tag_feed_idx foreign key (fk_feed) references o_feed (id);
+alter table o_feed_tag add constraint tag_feed_item_idx foreign key (fk_feed_item) references o_feed_item (id);
 
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );
