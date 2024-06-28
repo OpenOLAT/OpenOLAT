@@ -79,7 +79,12 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	public PageElementCategory getCategory() {
 		return PageElementCategory.content;
 	}
-	
+
+	@Override
+	public int getSortOrder() {
+		return 0;
+	}
+
 	@Override
 	public boolean acceptMimeType(String mimeType) {
 		return false;

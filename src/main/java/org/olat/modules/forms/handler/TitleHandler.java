@@ -81,6 +81,11 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 10;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		TextComponent cmp = getComponent(element);
 		return new TextRunComponent(cmp, true);

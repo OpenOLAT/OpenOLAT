@@ -81,6 +81,11 @@ public class HTMLRawPageElementHandler implements PageElementHandler, PageElemen
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 20;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		TextComponent cmp = null;
 		if (element instanceof HTMLPart htmlPart) {

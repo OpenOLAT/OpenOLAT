@@ -67,6 +67,11 @@ public class ImageComparisonElementHandler implements PageElementHandler, PageEl
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 30;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if (element instanceof ImageComparisonPart imageComparisonPart) {
 			return new ImageComparisonRunController(ureq, wControl, imageComparisonPart, options.isEditable());

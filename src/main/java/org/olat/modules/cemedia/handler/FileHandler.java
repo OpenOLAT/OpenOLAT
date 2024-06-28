@@ -125,7 +125,12 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	public PageElementCategory getCategory() {
 		return PageElementCategory.media;
 	}
-	
+
+	@Override
+	public int getSortOrder() {
+		return 60;
+	}
+
 	@Override
 	public MediaHandlerUISettings getUISettings(MediaVersion mediaVersion) {
 		return new MediaHandlerUISettings(true, true, "o_icon_refresh", false, null, true, true);

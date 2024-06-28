@@ -95,6 +95,11 @@ public class ContainerHandler implements PageLayoutHandler, EvaluationFormElemen
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 0;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		// rendering is done by the page component
 		Component dummyCmp = new Panel("");

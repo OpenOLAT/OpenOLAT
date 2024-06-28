@@ -85,7 +85,12 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	public PageElementCategory getCategory() {
 		return PageElementCategory.text;
 	}
-	
+
+	@Override
+	public int getSortOrder() {
+		return 60;
+	}
+
 	@Override
 	public MediaHandlerUISettings getUISettings(MediaVersion mediaVersion) {
 		return new MediaHandlerUISettings(true, false, null, false, null, true, false);

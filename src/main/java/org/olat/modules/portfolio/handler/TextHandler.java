@@ -83,7 +83,12 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	public PageElementCategory getCategory() {
 		return PageElementCategory.content;
 	}
-	
+
+	@Override
+	public int getSortOrder() {
+		return 0;
+	}
+
 	@Override
 	public boolean acceptMimeType(String mimeType) {
 		return false;

@@ -103,7 +103,12 @@ public class DrawioHandler extends AbstractMediaHandler implements PageElementSt
 	public PageElementCategory getCategory() {
 		return PageElementCategory.media;
 	}
-	
+
+	@Override
+	public int getSortOrder() {
+		return 70;
+	}
+
 	@Override
 	public boolean acceptMimeType(String mimeType) {
 		return false;

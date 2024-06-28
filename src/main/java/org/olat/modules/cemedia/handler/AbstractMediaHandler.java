@@ -89,6 +89,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 0;
+	}
+
+	@Override
 	public String getSubType(MediaVersion mediaVersion) {
 		return getType();
 	}

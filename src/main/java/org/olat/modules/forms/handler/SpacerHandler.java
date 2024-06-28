@@ -74,6 +74,11 @@ public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPag
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 10;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		if(element instanceof Spacer) {
 			Component cmp = getComponent();

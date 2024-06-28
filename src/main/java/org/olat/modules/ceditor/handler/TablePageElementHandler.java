@@ -66,6 +66,11 @@ public class TablePageElementHandler implements PageElementHandler, PageElementS
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 30;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if(element instanceof TablePart tablePart) {
 			return new TableRunController(ureq, wControl, tablePart, false);

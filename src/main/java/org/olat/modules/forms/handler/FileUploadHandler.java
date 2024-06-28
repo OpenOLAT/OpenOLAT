@@ -75,6 +75,11 @@ public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAd
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 50;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		if(element instanceof FileUpload) {
 			FileUpload fileUpload = (FileUpload) element;

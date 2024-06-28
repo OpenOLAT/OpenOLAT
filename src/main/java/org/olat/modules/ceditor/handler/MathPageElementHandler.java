@@ -67,6 +67,11 @@ public class MathPageElementHandler implements PageElementHandler, PageElementSt
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 40;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		MathLiveComponent cmp = null;
 		if(element instanceof MathPart mathPart) {

@@ -71,6 +71,11 @@ public class GalleryElementHandler implements PageElementHandler, PageElementSto
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 20;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if (element instanceof GalleryPart galleryPart) {
 			return new GalleryRunController(ureq, wControl, galleryPart, options.isEditable());

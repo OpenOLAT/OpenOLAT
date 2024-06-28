@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -117,8 +118,10 @@ public class AddElementsController extends BasicController {
 		}
 
 		mediaCenterHandler = null;
-		for(PageElementHandler handler:provider.getCreateHandlers()) {
-			if(handler instanceof InteractiveAddPageElementHandler || handler instanceof SimpleAddPageElementHandler) {
+		List<PageElementHandler> sortedHandlers = provider.getCreateHandlers().stream()
+				.sorted(Comparator.comparingInt(PageElementHandler::getSortOrder)).toList();
+		for (PageElementHandler handler : sortedHandlers) {
+			if (handler instanceof InteractiveAddPageElementHandler || handler instanceof SimpleAddPageElementHandler) {
 				CategoryWrapper categoryWrapper = getCategoryWrapper(categoryWrappers, handler.getCategory());
 
 				if ("others".equals(handler.getType())) {

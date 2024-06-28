@@ -108,6 +108,11 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	public PageElementCategory getCategory() {
 		return PageElementCategory.media;
 	}
+
+	@Override
+	public int getSortOrder() {
+		return 10;
+	}
 	
 	@Override
 	public boolean acceptMimeType(String mimeType) {

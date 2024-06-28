@@ -81,6 +81,11 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 10;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		if(element instanceof Rubric) {
 			Controller ctrl = new RubricController(ureq, wControl, (Rubric)element);

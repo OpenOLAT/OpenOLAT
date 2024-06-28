@@ -73,6 +73,11 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 40;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		if(element instanceof TextInput) {
 			Controller ctrl = new TextInputController(ureq, wControl, (TextInput)element, false);

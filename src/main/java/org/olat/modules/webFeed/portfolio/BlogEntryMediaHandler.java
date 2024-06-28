@@ -86,6 +86,11 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 0;
+	}
+
+	@Override
 	public boolean acceptMimeType(String mimeType) {
 		return false;
 	}

@@ -81,6 +81,11 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 20;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		TextComponent cmp = getComponent(element);
 		return new TextRunComponent(cmp, true);

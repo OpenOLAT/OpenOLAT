@@ -74,6 +74,11 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 10;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
 			RenderingHints options) {
 		if(element instanceof SessionInformations) {

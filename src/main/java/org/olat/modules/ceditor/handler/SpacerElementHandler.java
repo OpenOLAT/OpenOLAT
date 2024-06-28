@@ -64,6 +64,11 @@ public class SpacerElementHandler implements PageElementHandler, SimpleAddPageEl
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 10;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if(element instanceof SpacerPart) {
 			Component cmp = new SpacerElementComponent("spacer_" + idGenerator.incrementAndGet());

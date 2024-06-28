@@ -72,6 +72,11 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 10;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		String htmlContent = "";
 		String cssClass = "";

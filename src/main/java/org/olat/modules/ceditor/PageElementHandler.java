@@ -37,7 +37,9 @@ public interface PageElementHandler {
 	public String getIconCssClass();
 	
 	public PageElementCategory getCategory();
-	
+
+	public int getSortOrder();
+
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options);
 	
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);

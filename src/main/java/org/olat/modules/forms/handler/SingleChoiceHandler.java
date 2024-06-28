@@ -78,6 +78,11 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 20;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
 			RenderingHints options) {
 		if (element instanceof SingleChoice) {

@@ -84,6 +84,11 @@ public class EvaluationFormHandler implements PageElementHandler {
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 0;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		Controller ctrl = null;
 		if(element instanceof EvaluationFormPart eva) {

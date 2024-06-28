@@ -1063,6 +1063,11 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 
 		@Override
+		public int getSortOrder() {
+			return 0;
+		}
+
+		@Override
 		public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 			return null;
 		}

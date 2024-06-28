@@ -82,6 +82,11 @@ public class QuizElementHandler implements PageElementHandler, PageElementStore<
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 10;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if (element instanceof QuizPart quizPart) {
 			return new QuizRunController(ureq, wControl, quizPart, options.isEditable(), entry, subIdent);

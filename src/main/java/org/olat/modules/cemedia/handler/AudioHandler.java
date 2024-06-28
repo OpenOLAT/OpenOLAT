@@ -111,6 +111,11 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 50;
+	}
+
+	@Override
 	public boolean acceptMimeType(String mimeType) {
 		return mimeTypes.contains(mimeType);
 	}

@@ -70,6 +70,11 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 	}
 
 	@Override
+	public int getSortOrder() {
+		return 0;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		TextComponent cmp = getComponent(element);
 		return new TextRunComponent(cmp, true);
