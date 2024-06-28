@@ -408,6 +408,13 @@ public class VFSManager {
 		return null;
 	}
 	
+	public static long getQuotaULimitKB(VFSContainer container) {
+		VFSContainer inheritingItem = findInheritingSecurityCallbackContainer(container);
+		if (inheritingItem == null || inheritingItem.getLocalSecurityCallback().getQuota() == null)
+			return Quota.UNLIMITED;
+		return inheritingItem.getLocalSecurityCallback().getQuota().getUlLimitKB().longValue();
+	}
+	
 	/**
 	 * Check the quota usage on this VFSContainer. If no security callback
 	 * is provided, this returns -1 (meaning no quota on this folder).

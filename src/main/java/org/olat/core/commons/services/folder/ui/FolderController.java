@@ -2144,20 +2144,24 @@ public class FolderController extends FormBasicController implements Activateabl
 		ListIterator<VFSItem> listIterator = itemsToCopy.listIterator();
 		while (listIterator.hasNext() && vfsStatus == VFSSuccess.SUCCESS) {
 			VFSItem vfsItemToCopy = listIterator.next();
+			// Paranoia: Check isItemNotAvailable and canEdit before every single file.
 			if (!isItemNotAvailable(ureq, targetContainer, false) && canCopy(vfsItemToCopy, null)) {
 				if (canEdit(targetContainer)) {
-					VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
-					if (versionsEnabled && vfsItemToCopy instanceof VFSLeaf newLeaf && targetItem instanceof VFSLeaf currentLeaf && targetItem.canVersion() == VFSStatus.YES) {
-						boolean success = vfsRepositoryService.addVersion(currentLeaf, ureq.getIdentity(), false, "", newLeaf.getInputStream());
-						if (!success) {
-							vfsStatus = VFSSuccess.ERROR_FAILED;
+					vfsStatus = isQuotaAvailable(targetContainer, vfsItemToCopy, move);
+					if (vfsStatus == VFSSuccess.SUCCESS) {
+						VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
+						if (versionsEnabled && vfsItemToCopy instanceof VFSLeaf newLeaf && targetItem instanceof VFSLeaf currentLeaf && targetItem.canVersion() == VFSStatus.YES) {
+							boolean success = vfsRepositoryService.addVersion(currentLeaf, ureq.getIdentity(), false, "", newLeaf.getInputStream());
+							if (!success) {
+								vfsStatus = VFSSuccess.ERROR_FAILED;
+							}
+						} else {
+							vfsItemToCopy = appendMissingLicense(vfsItemToCopy, license);
+							if (targetItem != null) {
+								vfsItemToCopy = makeNameUnique(targetContainer, vfsItemToCopy);
+							}
+							vfsStatus = targetContainer.copyFrom(vfsItemToCopy, getIdentity());
 						}
-					} else {
-						vfsItemToCopy = appendMissingLicense(vfsItemToCopy, license);
-						if (targetItem != null) {
-							vfsItemToCopy = makeNameUnique(targetContainer, vfsItemToCopy);
-						}
-						vfsStatus = targetContainer.copyFrom(vfsItemToCopy, getIdentity());
 					}
 				} else {
 					vfsStatus = VFSSuccess.ERROR_FAILED;
@@ -2168,11 +2172,15 @@ public class FolderController extends FormBasicController implements Activateabl
 						vfsItemToCopy.deleteSilently();
 					}
 				}
+			} else {
+				vfsStatus = VFSSuccess.ERROR_FAILED;
 			}
 		}
 		
 		if (vfsStatus == VFSSuccess.ERROR_QUOTA_EXCEEDED) {
 			showWarning("error.copy.quota.exceeded");
+		} else if (vfsStatus == VFSSuccess.ERROR_QUOTA_ULIMIT_EXCEEDED) {
+			showWarning("error.copy.quota.ulimit.exceeded");
 		} else if (vfsStatus != VFSSuccess.SUCCESS) {
 			showWarning("error.copy");
 		} else if (successMessage != null) {
@@ -2188,6 +2196,21 @@ public class FolderController extends FormBasicController implements Activateabl
 				fireEvent(ureq, addEvent);
 			}
 		}
+	}
+
+	private VFSSuccess isQuotaAvailable(VFSContainer targetContainer, VFSItem vfsItemToCopy, boolean move) {
+		if (!move && vfsItemToCopy instanceof VFSLeaf vfsLeaf) {
+			long sizeKB = vfsLeaf.getSize() / 1024;
+			long quotaULimitKB = VFSManager.getQuotaULimitKB(targetContainer);
+			if (quotaULimitKB != Quota.UNLIMITED && quotaULimitKB < sizeKB) {
+				return VFSSuccess.ERROR_QUOTA_ULIMIT_EXCEEDED;
+			}
+			long quotaLeft = VFSManager.getQuotaLeftKB(targetContainer);
+			if (quotaLeft != Quota.UNLIMITED && quotaLeft < sizeKB) {
+				return VFSSuccess.ERROR_QUOTA_EXCEEDED;
+			}
+		}
+		return VFSSuccess.SUCCESS;
 	}
 
 	private VFSItem makeNameUnique(VFSContainer targetContainer, VFSItem vfsItem) {
