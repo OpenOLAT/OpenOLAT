@@ -2,7 +2,7 @@
 #if($isReadOnly)
 	#set($readOnlyClass = "o_read_only_container")
 #end
-<div id="$r.getCId()" class="o_page_run_gallery $blockLayoutClass $readOnlyClass">
+<div id="$r.getCId()" class="o_page_run_gallery $blockLayoutClass $readOnlyClass o_swiper_buttons">
 	#set($bottomPaddingClass = "")
 	#if($showPagination)
 		#set($bottomPaddingClass = "o_bottom_padding_for_pagination")
