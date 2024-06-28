@@ -2347,7 +2347,7 @@
    		<dependency>
 			<groupId>io.github.sashirestela</groupId>
 			<artifactId>simple-openai</artifactId>
-			<version>3.3.0</version>
+			<version>3.5.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
