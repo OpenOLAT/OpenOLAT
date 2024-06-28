@@ -278,7 +278,7 @@ public class PageEditorV2Controller extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == addElementButton) {
 			doCloseAllEditionEvent(ureq);
-			openAddElementCallout(ureq);
+			openAddElementDialog(ureq);
 		} else if (source == addLayoutButton) {
 			doCloseAllEditionEvent(ureq);
 			openAddLayoutCallout(ureq);
@@ -291,7 +291,7 @@ public class PageEditorV2Controller extends BasicController {
 		} else if(event instanceof CloseInspectorsEvent) {
 			doCloseAllInspectorsEvent(ureq);
 		} else if(event instanceof OpenAddElementEvent aee) {
-			openAddElementCallout(ureq, aee.getDispatchId(), aee.getComponent(), aee.getTarget(), aee.getColumn());
+			openAddElementDialog(ureq, aee.getComponent(), aee.getTarget(), aee.getColumn());
 		} else if(event instanceof OpenAddLayoutEvent ale) {
 			openAddLayoutCallout(ureq, ale.getDispatchId(), ale.getComponent(), ale.getTarget());
 		} else if(event instanceof CloneElementEvent cloneEvent) {
@@ -428,7 +428,7 @@ public class PageEditorV2Controller extends BasicController {
 		return fragment.isEmpty() ? null : fragment.get(0);
 	}
 	
-	private void openAddElementCallout(UserRequest ureq) {
+	private void openAddElementDialog(UserRequest ureq) {
 		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider,
 				PageElementTarget.atTheEnd, getTranslator());
 		addElementsCtrl.addControllerListener(this);
@@ -440,8 +440,8 @@ public class PageEditorV2Controller extends BasicController {
 		cmc.activate();
 	}
 	
-	private void openAddElementCallout(UserRequest ureq, String dispatchId, ContentEditorFragment referenceFragment,
-			PageElementTarget target, int column) {
+	private void openAddElementDialog(UserRequest ureq, ContentEditorFragment referenceFragment,
+									  PageElementTarget target, int column) {
 		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider,
 				referenceFragment, target, column, getTranslator());
 		listenTo(addElementsCtrl);

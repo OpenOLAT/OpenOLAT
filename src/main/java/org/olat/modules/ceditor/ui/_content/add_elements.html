@@ -9,4 +9,10 @@
 		</div>
 	</div>
 #end
+	<div class="o_button_group">
+		#if($r.available("media.center"))
+			$r.render("media.center")
+		#end
+		$r.render("close")
+	</div>
 </div>

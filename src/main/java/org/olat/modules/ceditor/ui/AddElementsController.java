@@ -38,6 +38,7 @@ import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.event.AddElementEvent;
+import org.olat.modules.ceditor.ui.event.CloseElementsEvent;
 import org.olat.modules.ceditor.ui.model.EditorFragment;
 
 /**
@@ -52,7 +53,10 @@ public class AddElementsController extends BasicController {
 	private final PageElementTarget target;
 	private final EditorFragment referenceFragment;
 	private final ContentEditorFragment referenceComponent;
-	
+	private Link closeButton;
+	private Link mediaCenterButton;
+	private PageElementHandler mediaCenterHandler;
+
 	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
 			PageElementTarget target, Translator fallbackTranslator) {
 		super(ureq, wControl, fallbackTranslator);
@@ -112,10 +116,16 @@ public class AddElementsController extends BasicController {
 			getCategoryWrapper(categoryWrappers, pageElementCategory);
 		}
 
+		mediaCenterHandler = null;
 		for(PageElementHandler handler:provider.getCreateHandlers()) {
 			if(handler instanceof InteractiveAddPageElementHandler || handler instanceof SimpleAddPageElementHandler) {
 				CategoryWrapper categoryWrapper = getCategoryWrapper(categoryWrappers, handler.getCategory());
-				
+
+				if ("others".equals(handler.getType())) {
+					mediaCenterHandler = handler;
+					continue;
+				}
+
 				String id = "add.el." + handler.getType();
 				Link addLink = LinkFactory.createLink(id, "add." + handler.getType(), "add.elements", mainVC, this);
 				addLink.setIconLeftCSS("o_icon o_icon-fw " + handler.getIconCssClass());
@@ -130,6 +140,13 @@ public class AddElementsController extends BasicController {
 		categoryWrappers = categoryWrappers.stream().filter(cw -> !cw.linkIds.isEmpty()).toList();
 
 		mainVC.contextPut("categories", categoryWrappers);
+
+		if (mediaCenterHandler != null) {
+			mediaCenterButton = LinkFactory.createButton("media.center", mainVC, this);
+			mediaCenterButton.setIconLeftCSS("o_icon o_icon_image");
+		}
+		closeButton = LinkFactory.createButton("close", mainVC, this);
+
 		putInitialPanel(mainVC);
 	}
 
@@ -150,6 +167,10 @@ public class AddElementsController extends BasicController {
 			if("add.elements".equals(link.getCommand())) {
 				PageElementHandler handler = (PageElementHandler)link.getUserObject();
 				fireEvent(ureq, new AddElementEvent(referenceFragment, referenceComponent, handler, target, containerColumn));
+			} else if(link == closeButton) {
+				fireEvent(ureq, new CloseElementsEvent());
+			} else if(link == mediaCenterButton) {
+				fireEvent(ureq, new AddElementEvent(referenceFragment, referenceComponent, mediaCenterHandler, target, containerColumn));
 			}
 		}
 	}
