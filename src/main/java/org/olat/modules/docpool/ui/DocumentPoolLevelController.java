@@ -88,10 +88,7 @@ public class DocumentPoolLevelController extends BasicController implements Acti
 				documents.setLocalSecurityCallback(secCallback);
 				VFSContainer namedContainer = new NamedContainerImpl(name, documents);
 				
-				FolderControllerConfig config = FolderControllerConfig.builder()
-						.withSearchResourceUrl("[DocumentPool:0][TaxonomyLevel:" + taxonomyLevel.getKey() + "]")
-						.build();
-				folderCtrl = new FolderController(ureq, wControl, namedContainer, config);
+				folderCtrl = new FolderController(ureq, wControl, namedContainer, FolderControllerConfig.defaultConfig());
 				listenTo(folderCtrl);
 				mainVC.put("folder", folderCtrl.getInitialComponent());
 			}

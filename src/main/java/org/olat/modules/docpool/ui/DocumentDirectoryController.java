@@ -47,7 +47,7 @@ public class DocumentDirectoryController extends BasicController implements Acti
 	private final FolderController folderCtrl;
 	
 	public DocumentDirectoryController(UserRequest ureq, WindowControl wControl,
-			VFSContainer documents, String name, String additionalSearchUrl) {
+			VFSContainer documents, String name) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("document_directory");
@@ -57,10 +57,7 @@ public class DocumentDirectoryController extends BasicController implements Acti
 		String rootName = translate("document.pool.templates");
 		VFSContainer namedContainer = new NamedContainerImpl(rootName, documents);
 		
-		FolderControllerConfig config = FolderControllerConfig.builder()
-				.withSearchResourceUrl("[DocumentPool:0]" + additionalSearchUrl)
-				.build();
-		folderCtrl = new FolderController(ureq, wControl, namedContainer, config);
+		folderCtrl = new FolderController(ureq, wControl, namedContainer, FolderControllerConfig.defaultConfig());
 		listenTo(folderCtrl);
 		mainVC.put("folder", folderCtrl.getInitialComponent());
 

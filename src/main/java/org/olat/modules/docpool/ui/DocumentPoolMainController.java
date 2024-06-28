@@ -238,7 +238,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 		String name = translate("document.pool.templates");
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Templates", 0l);
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		DocumentDirectoryController directoryCtrl = new DocumentDirectoryController(ureq, bwControl, directory, name, "[Templates:0]");
+		DocumentDirectoryController directoryCtrl = new DocumentDirectoryController(ureq, bwControl, directory, name);
 		listenTo(directoryCtrl);
 
 		content.pushController(name, directoryCtrl);

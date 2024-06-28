@@ -151,7 +151,6 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 		FolderControllerConfig config = FolderControllerConfig.builder()
 				.withDisplayWebDAVLinkEnabled(false)
 				.withMail(FolderEmailFilter.never)
-				.withSearchResourceUrl("[Identity:" + chosenIdentity.getKey() + "][userfolder:0]")
 				.build();
 		folderRunController = new FolderController(ureq, bwControl, namedFolder, config);
 		listenTo(folderRunController);

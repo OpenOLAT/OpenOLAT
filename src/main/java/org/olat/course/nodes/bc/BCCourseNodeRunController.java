@@ -51,8 +51,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.CourseModule;
-import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -83,7 +81,6 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 		super(ureq, wContr);
 		
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
-		CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 		UserSession usess = ureq.getUserSession();
 		boolean isGuestOnly = usess.getRoles().isGuestOnly();
 		// set logger on this run controller
@@ -161,20 +158,6 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 		
 		if(!noFolder && target != null) {
 			target.setLocalSecurityCallback(scallback);
-
-			VFSContainer courseContainer = null;
-			if(scallback.canWrite() && scallback.canCopy()) {
-				GroupRoles role = GroupRoles.owner;
-				if (userCourseEnv.isParticipant()) {
-					role = GroupRoles.participant;
-				} else if (userCourseEnv.isCoach()) {
-					role = GroupRoles.coach;
-				}
-				if (userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR, role)) {
-					// use course folder as copy source
-					courseContainer = courseEnv.getCourseFolderContainer();
-				}
-			}
 	
 			VFSContainer olatNamed;
 			if(!courseNode.isSharedFolder()){
@@ -195,7 +178,6 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 	
 			FolderControllerConfig config = FolderControllerConfig.builder()
 					.withMail(FolderEmailFilter.valueOf(!userCourseEnv.isCourseReadOnly()))
-					.withExternContainerForCopy(courseContainer)
 					.build();
 			folderCtrl = new FolderController(ureq, getWindowControl(), olatNamed, config );
 			listenTo(folderCtrl);

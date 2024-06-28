@@ -20,8 +20,6 @@
 package org.olat.core.commons.services.folder.ui;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
  * 
@@ -40,10 +38,7 @@ public class FolderControllerConfig {
 	private final boolean displayUnzip;
 	private final boolean fileHub;
 	private final FolderEmailFilter emailFilter;
-	private final VFSItemFilter filter;
 	private final CustomLinkTreeModel customLinkTreeModel;
-	private final VFSContainer externContainerForCopy;
-	private final String searchResourceUrl;
 	
 	private FolderControllerConfig(FolderControllerConfigBuilder builder) {
 		this.displaySubscription = builder.displaySubscription;
@@ -53,10 +48,7 @@ public class FolderControllerConfig {
 		this.displayUnzip = builder.displayUnzip;
 		this.fileHub = builder.fileHub;
 		this.emailFilter = builder.emailFilter;
-		this.filter = builder.filter;
 		this.customLinkTreeModel = builder.customLinkTreeModel;
-		this.externContainerForCopy = builder.externContainerForCopy;
-		this.searchResourceUrl = builder.searchResourceUrl;
 	}
 	
 	public boolean isDisplaySubscription() {
@@ -107,11 +99,8 @@ public class FolderControllerConfig {
 		private boolean displaySearch = true;
 		private boolean displayUnzip = true;
 		private boolean fileHub = false;
-		private String searchResourceUrl = null;
 		private FolderEmailFilter emailFilter = FolderEmailFilter.always;
-		private VFSItemFilter filter = null;
 		private CustomLinkTreeModel customLinkTreeModel = null;
-		private VFSContainer externContainerForCopy = null;
 		
 		private FolderControllerConfigBuilder() {
 			//
@@ -147,28 +136,13 @@ public class FolderControllerConfig {
 			return this;
 		}
 		
-		public FolderControllerConfigBuilder withSearchResourceUrl(String url) {
-			this.searchResourceUrl = url;
-			return this;
-		}
-		
 		public FolderControllerConfigBuilder withMail(FolderEmailFilter emailFilter) {
 			this.emailFilter = emailFilter;
 			return this;
 		}
 		
-		public FolderControllerConfigBuilder withVFSItemFilter(VFSItemFilter filter) {
-			this.filter = filter;
-			return this;
-		}
-		
 		public FolderControllerConfigBuilder withCustomLinkTreeModel(CustomLinkTreeModel model) {
 			this.customLinkTreeModel = model;
-			return this;
-		}
-		
-		public FolderControllerConfigBuilder withExternContainerForCopy(VFSContainer container) {
-			this.externContainerForCopy = container;
 			return this;
 		}
 		
