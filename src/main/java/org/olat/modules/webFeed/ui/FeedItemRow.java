@@ -20,6 +20,7 @@
 package org.olat.modules.webFeed.ui;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -39,6 +40,7 @@ public class FeedItemRow {
 	private FormLink toolsLink;
 	private FormItem ratingFormItem;
 
+	private List<String> tagsDisplayNames;
 	private String formattedTags;
 	private Set<Long> tagKeys;
 
@@ -115,5 +117,13 @@ public class FeedItemRow {
 
 	public void setFormattedTags(String formattedTags) {
 		this.formattedTags = formattedTags;
+	}
+
+	public List<String> getTagsDisplayNames() {
+		return tagsDisplayNames;
+	}
+
+	public void setTagsDisplayNames(List<String> tagsDisplayNames) {
+		this.tagsDisplayNames = tagsDisplayNames;
 	}
 }

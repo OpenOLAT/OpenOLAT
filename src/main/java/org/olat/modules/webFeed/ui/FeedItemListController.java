@@ -24,7 +24,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,6 +35,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagComponentFactory;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
+import org.olat.core.commons.services.tag.ui.component.TagComponent;
 import org.olat.core.commons.services.tag.ui.component.TagComponentEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -134,6 +134,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private final FeedViewHelper helper;
 	private FormLink bulkDeleteButton;
 	private FormToggle toggleTimelineTags;
+	private TagComponent tagsComponent;
 
 	private FlexiTableElement tableEl;
 	private FeedItemTableModel tableModel;
@@ -282,7 +283,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		if (feedRss.isInternal()) {
 			List<TagInfo> tagInfos = feedManager.getTagInfos(feedRss, null);
 			if (tagInfos != null && !tagInfos.isEmpty()) {
-				TagComponentFactory.createTagComponent("sidebarTags", tagInfos, rightColFlc.getFormItemComponent(), this);
+				tagsComponent = TagComponentFactory.createTagComponent("sidebarTags", tagInfos, rightColFlc.getFormItemComponent(), this);
 			} else {
 				rightColFlc.getFormItemComponent().remove("sidebarTags");
 			}
@@ -315,6 +316,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			List<FeedTag> feedTags = feedManager.getFeedTags(feedRss, List.of(feedItemDTO.item().getKey()));
 			if (feedTags != null && !feedTags.isEmpty()) {
 				List<Tag> tags = feedTags.stream().map(FeedTag::getTag).toList();
+				row.setTagsDisplayNames(tags.stream().map(Tag::getDisplayName).toList());
 				row.setTagKeys(tags.stream().map(Tag::getKey).collect(Collectors.toSet()));
 				row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), tags));
 			}
@@ -418,11 +420,8 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private void applyFilters(List<FeedItemRow> itemRows) {
 		String quickSearchString = tableEl.getQuickSearchString().toLowerCase();
 		if (StringHelper.containsNonWhitespace(quickSearchString)) {
-			itemRows.removeIf(r -> !r.getItem().getTitle().toLowerCase().contains(quickSearchString)
-					&& (r.getStatus() == null || !r.getStatus().name().toLowerCase().contains(quickSearchString))
-					&& (r.getAuthor() == null || !r.getAuthor().toLowerCase().contains(quickSearchString)));
+			itemRows.removeIf(row -> !matchesQuickSearch(row, quickSearchString));
 		}
-
 
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 
@@ -441,6 +440,12 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				if (values != null && !values.isEmpty()) {
 					selectedTagKeys = values.stream().map(Long::valueOf).collect(Collectors.toSet());
 					itemRows.removeIf(r -> r.getTagKeys() == null || r.getTagKeys().stream().noneMatch(selectedTagKeys::contains));
+					// update also sidebarTags
+					tagsComponent.updateTagSelection(selectedTagKeys);
+					rightColFlc.getFormItemComponent().put("sidebarTags", tagsComponent);
+				} else {
+					// if tag filter gets cleared out, then refresh sidebar
+					loadSideBarTags();
 				}
 			}
 			if (FeedItemFilter.AUTHORS.name().equals(filter.getFilter())) {
@@ -470,6 +475,52 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				}
 			}
 		}
+	}
+
+	/**
+	 * Checks if the given row value matches the quick search string.
+	 *
+	 * @param row the row to check
+	 * @param quickSearchString the search string in lowercase
+	 * @return true if the row matches the search string, false otherwise
+	 */
+	private boolean matchesQuickSearch(FeedItemRow row, String quickSearchString) {
+		// Check for matches in title
+		if (containsIgnoreCase(row.getItem().getTitle(), quickSearchString)) {
+			return true;
+		}
+		// Check for matches in status
+		if (containsIgnoreCase(row.getStatus() != null ? row.getStatus().name() : null, quickSearchString)) {
+			return true;
+		}
+		// Check for matches in author
+		if (containsIgnoreCase(row.getAuthor(), quickSearchString)) {
+			return true;
+		}
+		// Check for matches in tags
+		return containsTagIgnoreCase(row.getTagsDisplayNames(), quickSearchString);
+	}
+
+	/**
+	 * Checks if the given text contains the search string, ignoring case.
+	 *
+	 * @param text the text to check
+	 * @param searchString the search string in lowercase
+	 * @return true if the text contains the search string, false otherwise
+	 */
+	private boolean containsIgnoreCase(String text, String searchString) {
+		return text != null && text.toLowerCase().contains(searchString);
+	}
+
+	/**
+	 * Checks if the given list of tags contains the search string, ignoring case.
+	 *
+	 * @param tags the list of tags to check
+	 * @param searchString the search string in lowercase
+	 * @return true if any tag contains the search string, false otherwise
+	 */
+	private boolean containsTagIgnoreCase(List<String> tags, String searchString) {
+		return tags != null && tags.stream().anyMatch(searchString::equalsIgnoreCase);
 	}
 
 	private void forgeRating(FeedItemRow itemRow, float averageRatingValue) {
@@ -557,134 +608,197 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		// reload feed for this event and make sure the updated feed object is
-		// in the view
-		feedRss = feedManager.loadFeed(feedRss);
-		loadFeedItems();
+		// Reload feed and ensure the updated feed object is in view
+		reloadFeed();
 
 		if (source == itemFormCtrl) {
-			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
-				if (event.equals(Event.CHANGED_EVENT)) {
-					FileElement mediaFile = currentItem.getMediaFile();
-					if (feedManager.getItemContainer(currentItem) == null) {
-						// Ups, deleted in the meantime by someone else
-						// remove the item from the naviCtrl
-						naviCtrl.remove(currentItem);
-					} else {
-						if (!feedItems.contains(currentItem)) {
-							// Add the modified item if it is not part of the
-							// feed
-							feedRss = feedManager.createItem(feedRss, currentItem, mediaFile);
-							if (feedRss != null) {
-								// add it to the navigation controller
-								naviCtrl.add(currentItem);
-								loadFeedItems();
-								if (feedItems != null && feedItems.size() == 1) {
-									// Set the base URI of the feed for the
-									// current user. All users
-									// have unique URIs.
-									helper.setURIs(currentItem.getFeed());
-								}
-							}
-						} else {
-							// Write item file
-							currentItem = feedManager.updateItem(currentItem, mediaFile);
-							ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_EDIT, getClass(),
-									LoggingResourceable.wrap(currentItem));
-						}
-						List<String> tagsDisplayNames = ((FeedItemFormController) itemFormCtrl).getTagsDisplayNames();
-						feedManager.updateTags(currentItem, tagsDisplayNames);
-						loadFeedItems();
-						// update sidebar with tag information
-						loadSideBarTags();
-					}
-					// update the view
-					if (itemFormCtrl != null) {
-						if (vcMain.getComponent("selected_feed_item") != null) {
-							// in case the selected feed item view is being viewed, then update and display
-							// otherwise stay at table view
-							displayFeedItem(ureq, currentItem);
-						} else {
-							// else means, we are in the table card view, so update sidebarTags, in case of changes
-							loadSideBarTags();
-						}
-						itemFormCtrl.getInitialComponent().setDirty(true);
-					}
-
-				} else {
-					// at Event.CANCELLED_EVENT -> Check if this item has ever been added to the feed.
-					// If not, remove the temp dir
-					cleanupTmpItemMediaDir(currentItem);
-				}
-				// release the lock
-				feedManager.releaseLock(lock);
-
-				// Dispose the cmc and the podcastFormCtr.
-				cmc.deactivate();
-				cleanUp();
-			} else if (event.equals(Event.DONE_EVENT)) {
-				cmc.deactivate();
-				cleanUp();
-			}
+			handleItemFormCtrlEvent(ureq, event);
 		} else if (source == cmc) {
-			// In case the form is closed by X -> Check if this item has ever been added to the feed.
+			// In case the form is closed by X -> Check if this item
+			// has ever been added to the feed. If not, then remove the temp dir
+			handleCmcEvent();
+		} else if (source == collectorCtrl && (event.equals(Event.DONE_EVENT) || event.equals(Event.CANCELLED_EVENT))) {
+			handleCollectorCtrlEvent();
+		} else if (source == deletePermanentlyConfirmationCtrl || source == bulkDeleteConfirmationCtrl) {
+			handleDeleteConfirmationEvent(ureq, source, event);
+		} else if (source == feedItemCtrl) {
+			handleFeedItemCtrlEvent(ureq, event);
+		} else if (source == naviCtrl && event instanceof NavigationEvent navEvent) {
+			handleNavigationEvent(navEvent);
+		}
+
+		loadModel();
+		loadTimelineTagsToggleOrRemove(ureq);
+	}
+
+	private void reloadFeed() {
+		feedRss = feedManager.loadFeed(feedRss);
+		loadFeedItems();
+	}
+
+	private void handleItemFormCtrlEvent(UserRequest ureq, Event event) {
+		if (event.equals(Event.CHANGED_EVENT)) {
+			handleItemChangedEvent(ureq);
+		} else if (event.equals(Event.CANCELLED_EVENT)) {
+			// Check if this item has ever been added to the feed.
 			// If not, remove the temp dir
 			cleanupTmpItemMediaDir(currentItem);
-		} else if (source == collectorCtrl && (event.equals(Event.DONE_EVENT) || event.equals(Event.CANCELLED_EVENT))) {
-			cmc.deactivate();
-			cleanUp();
-		} else if (source == deletePermanentlyConfirmationCtrl || source == bulkDeleteConfirmationCtrl) {
-			List<Item> feedItemsToDelete;
-			if (source == deletePermanentlyConfirmationCtrl) {
-				feedItemsToDelete = (List<Item>) deletePermanentlyConfirmationCtrl.getUserObject();
-			} else {
-				feedItemsToDelete = (List<Item>) bulkDeleteConfirmationCtrl.getUserObject();
-			}
-			if (event == Event.DONE_EVENT) {
-				if (vcMain.getComponent("selected_feed_item") != null) {
-					removeSelectedComponent(ureq);
-				}
-				// The user confirmed that the item(s) shall be deleted
-				doDeleteFeedItem(feedItemsToDelete);
-				// update sidebar with tag information
-				loadSideBarTags();
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if (source == feedItemCtrl) {
-			if (event == Event.BACK_EVENT) {
-				removeSelectedComponent(ureq);
-				loadSideBarTags();
-				removeAsListenerAndDispose(feedItemCtrl);
-				feedItemCtrl = null;
-			} else if (feedItemCtrl != null && event instanceof FeedItemEvent feedItemEvent) {
-				if (Objects.equals(feedItemEvent.getCommand(), FeedItemEvent.EDIT_FEED_ITEM)) {
-					doEditFeedItem(ureq, feedItemEvent.getItem());
-				} else if (Objects.equals(feedItemEvent.getCommand(), FeedItemEvent.DELETE_FEED_ITEM)) {
-					doConfirmDeleteFeedItems(ureq, List.of(feedItemEvent.getItem()));
-				} else if (Objects.equals(feedItemEvent.getCommand(), FeedItemEvent.ARTEFACT_FEED_ITEM)) {
-					doOpenCollector(ureq, feedItemEvent.getItem());
-				}
-			}
-		} else if (source == naviCtrl && event instanceof NavigationEvent navEvent) {
-			List<? extends Dated> selItems = navEvent.getSelectedItems();
-			filteredItemKeys = new ArrayList<>();
-			for (Dated selItem : selItems) {
-				if (selItem instanceof Item item) {
-					filteredItemKeys.add(item.getKey());
-				}
+		}
+		feedManager.releaseLock(lock);
+		deactivateAndCleanUp();
+	}
+
+	private void handleItemChangedEvent(UserRequest ureq) {
+		FileElement mediaFile = currentItem.getMediaFile();
+		if (feedManager.getItemContainer(currentItem) == null) {
+			// Ups, deleted in the meantime by someone else
+			// remove the item from the naviCtrl
+			naviCtrl.remove(currentItem);
+		} else {
+			updateOrAddItemToFeed(mediaFile);
+			updateViewAndSidebar(ureq);
+		}
+	}
+
+	private void updateOrAddItemToFeed(FileElement mediaFile) {
+		// Add the modified item if it is not part of the feed
+		if (!feedItems.contains(currentItem)) {
+			addItemToFeed(mediaFile);
+		} else {
+			updateFeedItem(mediaFile);
+		}
+	}
+
+	private void addItemToFeed(FileElement mediaFile) {
+		feedRss = feedManager.createItem(feedRss, currentItem, mediaFile);
+		if (feedRss != null) {
+			// add it to the navigation controller
+			naviCtrl.add(currentItem);
+			loadFeedItems();
+			if (feedItems != null && feedItems.size() == 1) {
+				// Set the base URI of the feed for the
+				// current user. All user have unique URIs.
+				helper.setURIs(currentItem.getFeed());
 			}
 		}
-		loadModel();
-		// load timelineTagsToggle, if necessary e.g. first item in table
+	}
+
+	private void updateFeedItem(FileElement mediaFile) {
+		// Write item file
+		currentItem = feedManager.updateItem(currentItem, mediaFile);
+		ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_EDIT, getClass(), LoggingResourceable.wrap(currentItem));
+		List<String> tagsDisplayNames = ((FeedItemFormController) itemFormCtrl).getTagsDisplayNames();
+		feedManager.updateTags(currentItem, tagsDisplayNames);
+		loadFeedItems();
+		// update sidebar with tag information
+		loadSideBarTags();
+	}
+
+	private void updateViewAndSidebar(UserRequest ureq) {
+		if (itemFormCtrl != null) {
+			// in case the selected feed item view is being viewed
+			// then update and display. Otherwise, stay at table view
+			if (vcMain.getComponent("selected_feed_item") != null) {
+				displayFeedItem(ureq, currentItem);
+			} else {
+				// else means, we are in the table card view
+				// so update sidebarTags, in case of changes
+				loadSideBarTags();
+			}
+			itemFormCtrl.getInitialComponent().setDirty(true);
+		}
+	}
+
+	private void handleCmcEvent() {
+		cleanupTmpItemMediaDir(currentItem);
+	}
+
+	private void handleCollectorCtrlEvent() {
+		deactivateAndCleanUp();
+	}
+
+	private void handleDeleteConfirmationEvent(UserRequest ureq, Controller source, Event event) {
+		List<Item> feedItemsToDelete = getFeedItemsToDelete(source);
+		if (event == Event.DONE_EVENT) {
+			handleItemsDeletion(ureq, feedItemsToDelete);
+		}
+		deactivateAndCleanUp();
+	}
+
+	private List<Item> getFeedItemsToDelete(Controller source) {
+		return source == deletePermanentlyConfirmationCtrl
+				? (List<Item>) deletePermanentlyConfirmationCtrl.getUserObject()
+				: (List<Item>) bulkDeleteConfirmationCtrl.getUserObject();
+	}
+
+	private void handleItemsDeletion(UserRequest ureq, List<Item> feedItemsToDelete) {
+		// if user is in individual entry view, send him back to table view and delete item
+		if (vcMain.getComponent("selected_feed_item") != null) {
+			removeSelectedComponent(ureq);
+		}
+		doDeleteFeedItem(feedItemsToDelete);
+		// update sidebar with tag information
+		loadSideBarTags();
+	}
+
+	private void handleFeedItemCtrlEvent(UserRequest ureq, Event event) {
+		if (event == Event.BACK_EVENT) {
+			handleBackEvent(ureq);
+		} else if (feedItemCtrl != null && event instanceof FeedItemEvent feedItemEvent) {
+			handleFeedItemEvent(ureq, feedItemEvent);
+		}
+	}
+
+	private void handleBackEvent(UserRequest ureq) {
+		removeSelectedComponent(ureq);
+		loadSideBarTags();
+		removeAsListenerAndDispose(feedItemCtrl);
+		feedItemCtrl = null;
+	}
+
+	private void handleFeedItemEvent(UserRequest ureq, FeedItemEvent feedItemEvent) {
+		String command = feedItemEvent.getCommand();
+		if (FeedItemEvent.EDIT_FEED_ITEM.equals(command)) {
+			doEditFeedItem(ureq, feedItemEvent.getItem());
+		} else if (FeedItemEvent.DELETE_FEED_ITEM.equals(command)) {
+			doConfirmDeleteFeedItems(ureq, List.of(feedItemEvent.getItem()));
+		} else if (FeedItemEvent.ARTEFACT_FEED_ITEM.equals(command)) {
+			doOpenCollector(ureq, feedItemEvent.getItem());
+		}
+	}
+
+	private void handleNavigationEvent(NavigationEvent navEvent) {
+		List<? extends Dated> selItems = navEvent.getSelectedItems();
+		filteredItemKeys = new ArrayList<>();
+		for (Dated selItem : selItems) {
+			if (selItem instanceof Item item) {
+				filteredItemKeys.add(item.getKey());
+			}
+		}
+	}
+
+	/**
+	 * load timelineTagsToggle, if necessary e.g. first item in table
+	 * or remove toggle and sidebar e.g. all items were deleted
+	 * @param ureq
+	 */
+	private void loadTimelineTagsToggleOrRemove(UserRequest ureq) {
 		if (!itemRows.isEmpty() || toggleTimelineTags == null) {
 			loadTimelineTagsToggle(ureq);
 		} else {
-			// else remove toggle and sidebar e.g. all items deleted
-			vcInfo.remove("toggle");
-			vcMain.remove(rightColFlc.getFormItemComponent());
-			toggleTimelineTags = null;
+			removeTimelineTagsToggleAndSidebar();
 		}
+	}
+
+	private void deactivateAndCleanUp() {
+		cmc.deactivate();
+		cleanUp();
+	}
+
+	private void removeTimelineTagsToggleAndSidebar() {
+		vcInfo.remove("toggle");
+		vcMain.remove(rightColFlc.getFormItemComponent());
+		toggleTimelineTags = null;
 	}
 
 	private void removeSelectedComponent(UserRequest ureq) {
@@ -743,12 +857,14 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event instanceof TagComponentEvent tagCmpEvent) {
-			FlexiTableFilter tagFilter = tableEl.getFilters().stream().filter(f -> f.getFilter().equals(FeedItemFilter.TAGS.name())).findFirst().orElse(null);
+			FlexiTableTagFilter tagFilter = (FlexiTableTagFilter) tableEl.getFilters().stream()
+					.filter(f -> f.getFilter().equals(FeedItemFilter.TAGS.name()))
+					.findFirst()
+					.orElse(null);
 
 			if (tagFilter != null) {
-					FlexiTableTagFilter tagFilters = (FlexiTableTagFilter) tagFilter;
-					doToggleTag(tagCmpEvent.getTagLink(), tagFilters);
-					loadModel();
+				doToggleTag(tagCmpEvent.getTagLink(), tagFilter);
+				loadModel();
 			}
 		}
 		super.event(ureq, source, event);

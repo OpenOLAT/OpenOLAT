@@ -21,6 +21,7 @@ package org.olat.core.commons.services.tag.ui.component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
@@ -88,12 +89,27 @@ public class TagComponent extends AbstractComponent implements ComponentCollecti
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link link) {
-			if (link.getElementCssClass().equals(TAG_SELECTED_CSS)) {
-				link.setElementCssClass(TAG_NOT_SELECTED_CSS);
-			} else {
-				link.setElementCssClass(TAG_SELECTED_CSS);
-			}
+			toggleLinkCss(link);
 			fireEvent(ureq, new TagComponentEvent(link));
+		}
+	}
+
+	public void toggleLinkCss(Link link) {
+		if (link.getElementCssClass().equals(TAG_SELECTED_CSS)) {
+			link.setElementCssClass(TAG_NOT_SELECTED_CSS);
+		} else {
+			link.setElementCssClass(TAG_SELECTED_CSS);
+		}
+	}
+
+	public void updateTagSelection(Set<Long> selectedTagKeys) {
+		for (Link tagLink : tagLinks) {
+			TagInfo tagInfo = (TagInfo) tagLink.getUserObject();
+			if (selectedTagKeys.contains(tagInfo.getKey())) {
+				tagLink.setElementCssClass(TAG_SELECTED_CSS);
+			} else {
+				tagLink.setElementCssClass(TAG_NOT_SELECTED_CSS);
+			}
 		}
 	}
 
