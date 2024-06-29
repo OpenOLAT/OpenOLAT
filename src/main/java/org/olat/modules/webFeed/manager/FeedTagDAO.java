@@ -123,7 +123,7 @@ public class FeedTagDAO {
 		qb.append(" , min(tag.displayName)");
 		qb.append(" , count(feedTag.feedItem.key)");
 		if (feedItem != null) {
-			qb.append(" , sum(case when (feedTag.feedItem.key=").append(feedItem.getKey()).append(") then 1 else 0 end) as selected");
+			qb.append(" , sum(case when (feedTag.feedItem.key = :feedItemKey) then 1 else 0 end) as selected");
 		} else {
 			qb.append(" , cast(0 as long) as selected");
 		}
@@ -134,11 +134,17 @@ public class FeedTagDAO {
 		qb.and().append("feedTag.feed.key = :feedKey");
 		qb.groupBy().append("tag.key");
 
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<TagInfo> query = dbInstance.getCurrentEntityManager()
 				.createQuery(qb.toString(), TagInfo.class)
-				.setParameter("feedKey", feed.getKey())
-				.getResultList();
+				.setParameter("feedKey", feed.getKey());
+
+		if (feedItem != null) {
+			query.setParameter("feedItemKey", feedItem.getKey());
+		}
+
+		return query.getResultList();
 	}
+
 
 	/**
 	 * load Tags based on searchParameters, such as feedKey and feedItemKey
@@ -150,6 +156,7 @@ public class FeedTagDAO {
 		qb.append("select feedTag from feedtag feedTag");
 		qb.append(" inner join fetch feedTag.tag tag");
 		qb.append(" left join fetch feedTag.feedItem feedItem");
+		qb.append(" left join fetch feedTag.feed feed");
 
 		if (searchParams.getFeedKey() != null) {
 			qb.and().append("feedTag.feed.key = :feedKey");

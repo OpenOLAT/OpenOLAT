@@ -468,6 +468,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.webFeed.dispatching.PathTest.class,
 	org.olat.modules.webFeed.manager.FeedDAOTest.class,
 	org.olat.modules.webFeed.manager.ItemDAOTest.class,
+	org.olat.modules.webFeed.manager.FeedTagDAOTest.class,
 	org.olat.modules.webFeed.manager.FeedFileStorgeTest.class,
 	org.olat.modules.zoom.manager.ZoomConfigDAOTest.class,
 	org.olat.modules.zoom.manager.ZoomProfileDAOTest.class,
