@@ -283,6 +283,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		if (feedRss.isInternal()) {
 			List<TagInfo> tagInfos = feedManager.getTagInfos(feedRss, null);
 			if (tagInfos != null && !tagInfos.isEmpty()) {
+				tagInfos.sort(Comparator.comparing(TagInfo::getCount).reversed());
 				tagsComponent = TagComponentFactory.createTagComponent("sidebarTags", tagInfos, rightColFlc.getFormItemComponent(), this);
 			} else {
 				rightColFlc.getFormItemComponent().remove("sidebarTags");
