@@ -51,6 +51,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.core.CourseElement;
 import org.olat.course.core.CourseElementSearchParams;
 import org.olat.course.core.manager.CourseElementDAO;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
@@ -371,6 +372,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				courseElementSearchParams.setRepositoryEntries(Collections.singletonList(createContext.getBadgeClass().getEntry()));
 				courseElementDao.load(courseElementSearchParams).stream()
 						.filter(CourseElement::isAssesseable)
+						.filter(ce -> !STCourseNode.TYPE.equals(ce.getType()))
 						.forEach(courseElement -> courseElementsKV.add(SelectionValues.entry(courseElement.getSubIdent(), courseElement.getShortTitle())));
 			}
 

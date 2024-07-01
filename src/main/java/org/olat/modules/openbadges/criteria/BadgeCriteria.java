@@ -31,6 +31,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 /**
@@ -168,8 +169,9 @@ public class BadgeCriteria {
 					if (!assessmentEntry.getIdentity().equals(recipient)) {
 						continue;
 					}
+
 					if (courseElementPassedCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
-						return assessmentEntry.getPassed() != null && assessmentEntry.getPassed();
+						return satisfiesPassedCondition(assessmentEntry);
 					}
 				}
 				return false;
@@ -177,15 +179,50 @@ public class BadgeCriteria {
 
 			if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
 				for (AssessmentEntry assessmentEntry : assessmentEntries) {
+					if (!assessmentEntry.getIdentity().equals(recipient)) {
+						continue;
+					}
+
 					if (courseElementScoreCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
-						return assessmentEntry.getScore() != null &&
-								courseElementScoreCondition.satisfiesCondition(assessmentEntry.getScore().floatValue());
+						return satisfiesScoreCondition(assessmentEntry, courseElementScoreCondition);
 					}
 				}
 				return false;
 			}
 		}
 		return true;
+	}
+
+	private boolean satisfiesPassedCondition(AssessmentEntry assessmentEntry) {
+		if (!AssessmentEntryStatus.done.equals(assessmentEntry.getAssessmentStatus())) {
+			return false;
+		}
+
+		if (assessmentEntry.getUserVisibility() == null || !assessmentEntry.getUserVisibility()) {
+			return false;
+		}
+
+		if (assessmentEntry.getPassed() == null) {
+			return false;
+		}
+
+		return assessmentEntry.getPassed();
+	}
+
+	private boolean satisfiesScoreCondition(AssessmentEntry assessmentEntry, CourseElementScoreCondition scoreCondition) {
+		if (!AssessmentEntryStatus.done.equals(assessmentEntry.getAssessmentStatus())) {
+			return false;
+		}
+
+		if (assessmentEntry.getUserVisibility() == null || !assessmentEntry.getUserVisibility()) {
+			return false;
+		}
+
+		if (assessmentEntry.getScore() == null) {
+			return false;
+		}
+
+		return scoreCondition.satisfiesCondition(assessmentEntry.getScore().floatValue());
 	}
 
 	private boolean learningPathConditionMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
