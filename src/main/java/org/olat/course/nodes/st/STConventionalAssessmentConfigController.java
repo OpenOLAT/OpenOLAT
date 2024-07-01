@@ -148,7 +148,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setFormTitle(translate("score.fieldset.title"));
 		generalCont.setElementCssClass("o_sel_structure_score");
-		generalCont.setFormContextHelp("manual_user/course_elements/Course_Element_Structure/#score");
+		generalCont.setFormContextHelp("manual_user/learningresources/Course_Element_Structure/#score");
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
 		
