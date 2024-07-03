@@ -67,7 +67,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.webauthn4j.converter.exception.DataConversionException;
 import com.webauthn4j.data.client.challenge.Challenge;
 import com.webauthn4j.server.ServerProperty;
-import com.webauthn4j.validator.exception.ValidationException;
 
 
 /**
@@ -491,7 +490,7 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 					}
 				}	
 			}
-		} catch (DataConversionException | ValidationException e) {
+		} catch (DataConversionException e) {
 			getLogger().error("", e);
 		}
 	}

@@ -4555,6 +4555,7 @@ create table o_tb_custom_field_definition (
    t_name varchar(1024),
    t_display_in_table bool not null default false,
    t_sort_order bigint not null,
+   t_deleted_date datetime,
    fk_broker bigint not null,
    primary key (id)
 );
@@ -4565,7 +4566,6 @@ create table o_tb_custom_field (
    t_text text,
    t_filename varchar(1024),
    fk_definition bigint not null,
-   t_deleted_date datetime,
    fk_topic bigint not null,
    fk_metadata bigint,
    primary key (id)
