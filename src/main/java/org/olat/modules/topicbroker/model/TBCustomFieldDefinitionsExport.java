@@ -17,27 +17,26 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.topicbroker;
+package org.olat.modules.topicbroker.model;
 
-import org.olat.core.id.Identity;
-import org.olat.course.nodes.CourseNode;
-import org.olat.repository.RepositoryEntry;
+import java.util.List;
 
 /**
  * 
- * Initial date: 14 Jun 2024<br>
+ * Initial date: 3 Jul 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TopicBrokerCourseNodeService {
-
-	void synchBroker(Identity doer, RepositoryEntry courseEntry, CourseNode courseNode);
+public class TBCustomFieldDefinitionsExport {
 	
-	void createCustomFieldDefinitions(Identity doer, RepositoryEntry courseEntry, String courseNodeIdent,
-			String customFieldDefinitionsXml);
+	private List<TBCustomFieldDefinitionExport> definitions;
 
-	String getCustomFieldDefinitionExportXml(RepositoryEntry courseEntry, String courseNodeIdent);
+	public List<TBCustomFieldDefinitionExport> getDefinitions() {
+		return definitions;
+	}
 
-	void deleteBroker(RepositoryEntry courseEntry, CourseNode courseNode);
+	public void setDefinitions(List<TBCustomFieldDefinitionExport> definitions) {
+		this.definitions = definitions;
+	}
 
 }

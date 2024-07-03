@@ -19,8 +19,12 @@
  */
 package org.olat.course.nodes;
 
+import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -31,7 +35,10 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
@@ -41,6 +48,8 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
@@ -57,6 +66,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  * 
@@ -70,6 +81,7 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode {
 	
 	@SuppressWarnings("deprecation")
 	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(TBRunController.class);
+	private static final String FILENAME_CUSTOM_FIELD_DEFINITIONS = "customfielddefinitions.xml";
 	
 	public static final String TYPE = "topicbroker";
 	public static final String ICON_CSS = "o_icon_topicbroker";
@@ -185,10 +197,19 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode {
 			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
 		}
 		// Configs are synchronized with TBBroker. If you add new configs, you probably
-		// has to upgrade the TBBroker with an Upgrader because the publish process is
+		// have to upgrade the TBBroker with an Upgrader because the publish process is
 		// not run.
 		
 		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+	
+	@Override
+	public List<Entry<String, DueDateConfig>> getNodeSpecificDatesWithLabel() {
+		return List.of(
+				Map.entry("topic.broker.selection.period.start", getDueDateConfig(CONFIG_KEY_SELECTION_START)),
+				Map.entry("topic.broker.selection.period.end", getDueDateConfig(CONFIG_KEY_SELECTION_END)),
+				Map.entry("topic.broker.withdraw.period.end", getDueDateConfig(CONFIG_KEY_WITHDRAW_END))
+			);
 	}
 	
 	@Override
@@ -196,6 +217,12 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode {
 		if (CONFIG_KEY_SELECTION_START.equals(key)) {
 			return DueDateConfig.ofCourseNode(this, CONFIG_KEY_RELATIVE_DATES, CONFIG_KEY_SELECTION_START,
 					CONFIG_KEY_SELECTION_START_RELATIVE, CONFIG_KEY_SELECTION_START_RELATIVE_TO);
+		}
+		if (CONFIG_KEY_SELECTION_END.equals(key)) {
+			return DueDateConfig.absolute(getModuleConfiguration().getDateValue(CONFIG_KEY_SELECTION_END));
+		}
+		if (CONFIG_KEY_WITHDRAW_END.equals(key)) {
+			return DueDateConfig.absolute(getModuleConfiguration().getDateValue(CONFIG_KEY_WITHDRAW_END));
 		}
 		return super.getDueDateConfig(key);
 	}
@@ -212,6 +239,99 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode {
 		TopicBrokerCourseNodeService topicBrokerCourseNodeService = CoreSpringFactory.getImpl(TopicBrokerCourseNodeService.class);
 		topicBrokerCourseNodeService.deleteBroker(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), this);
 		super.cleanupOnDelete(course);
+	}
+	
+	@Override
+	public void exportNode(File fExportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
+		TopicBrokerCourseNodeService topicBrokerCourseNodeService = CoreSpringFactory.getImpl(TopicBrokerCourseNodeService.class);
+		String customFieldDefinitionsXml = topicBrokerCourseNodeService.getCustomFieldDefinitionExportXml(
+				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), this.getIdent());
+		if (!StringHelper.containsNonWhitespace(customFieldDefinitionsXml)) {
+			return;
+		}
+		
+		File nodeDir = new File(fExportDirectory, getIdent());
+		nodeDir.mkdirs();
+		File definitionsFile = new File(nodeDir, FILENAME_CUSTOM_FIELD_DEFINITIONS);
+		FileUtils.save(definitionsFile, customFieldDefinitionsXml, "utf-8");
+	}
+
+	@Override
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation,
+			Locale locale, RepositoryEntryImportExportLinkEnum withReferences) {
+		File nodeDir = new File(importDirectory, getIdent());
+		if (!nodeDir.exists()) {
+			return;
+		}
+		File definitionsFile = new File(nodeDir, FILENAME_CUSTOM_FIELD_DEFINITIONS);
+		if (!definitionsFile.exists()) {
+			return;
+		}
+		
+		String customFieldDefinitionsXml = FileUtils.load(definitionsFile, "utf-8");
+		postCopyImport(owner, course, this.getIdent(), customFieldDefinitionsXml);
+	}
+	
+	@Override
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
+		CourseNode copy = super.createInstanceForCopy(isNewTitle, course, author);
+		postCopy(author, course, this.getIdent(), course, copy.getIdent());
+		return copy;
+	}
+	
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
+		// create custom fields only once
+		if (Processing.editor == processType) {
+			postCopy(envMapper.getAuthor(), sourceCourse, this.getIdent(), course, this.getIdent());
+			
+		}
+		if (context != null) {
+			ModuleConfiguration config = getModuleConfiguration();
+			long dateDifference = context.getDateDifference(getIdent());
+			
+			Date selectionPeriodStart = config.getDateValue(CONFIG_KEY_SELECTION_START);
+			if (selectionPeriodStart != null) {
+				selectionPeriodStart.setTime(selectionPeriodStart.getTime() + dateDifference);
+				config.setDateValue(CONFIG_KEY_SELECTION_START, selectionPeriodStart);
+			}
+			Date selectionPeriodEnd = config.getDateValue(CONFIG_KEY_SELECTION_END);
+			if (selectionPeriodEnd != null) {
+				selectionPeriodEnd.setTime(selectionPeriodEnd.getTime() + dateDifference);
+				config.setDateValue(CONFIG_KEY_SELECTION_END, selectionPeriodEnd);
+			}
+			Date withdrawPeriodEnd = config.getDateValue(CONFIG_KEY_WITHDRAW_END);
+			if (withdrawPeriodEnd != null) {
+				withdrawPeriodEnd.setTime(withdrawPeriodEnd.getTime() + dateDifference);
+				config.setDateValue(CONFIG_KEY_WITHDRAW_END, withdrawPeriodEnd);
+			}
+		}
+	}
+	
+	@Override // Import course elements wizard
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		postCopy(envMapper.getAuthor(), sourceCourse, sourceCourseNode.getIdent(), course, this.getIdent());
+	}
+
+	private void postCopy(Identity author, ICourse sourceCourse, String sourceCourseNodeIdent, ICourse targetCourse, String targetCourseNodeIdent) {
+		TopicBrokerCourseNodeService topicBrokerCourseNodeService = CoreSpringFactory.getImpl(TopicBrokerCourseNodeService.class);
+		String customFieldDefinitionsXml = topicBrokerCourseNodeService.getCustomFieldDefinitionExportXml(
+				sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), sourceCourseNodeIdent);
+		if (!StringHelper.containsNonWhitespace(customFieldDefinitionsXml)) {
+			return;
+		}
+		
+		postCopyImport(author, targetCourse, targetCourseNodeIdent, customFieldDefinitionsXml);
+	}
+
+	private void postCopyImport(Identity doer, ICourse course, String courseNodeIdent, String customFieldDefinitionsXml) {
+		TopicBrokerCourseNodeService topicBrokerCourseNodeService = CoreSpringFactory.getImpl(TopicBrokerCourseNodeService.class);
+		topicBrokerCourseNodeService.createCustomFieldDefinitions(doer,
+				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNodeIdent,
+				customFieldDefinitionsXml);
+		
 	}
 
 }

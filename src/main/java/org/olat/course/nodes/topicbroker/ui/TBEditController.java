@@ -66,7 +66,7 @@ public class TBEditController extends ActivateableTabbableDefaultController {
 		
 		TBBroker broker = topicBrokerService.getOrCreateBroker(getIdentity(),
 				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent());
-		customFieldDefinitionsCtrl = new TBCustomFieldDefinitionListController(ureq, getWindowControl(), broker, translate("config.custim.fields.info"));
+		customFieldDefinitionsCtrl = new TBCustomFieldDefinitionListController(ureq, getWindowControl(), broker, translate("config.custom.fields.info"));
 		listenTo(customFieldDefinitionsCtrl);
 		
 		topicsCtrl = new TBTopicListEditController(ureq, wControl, broker, TBCourseNodeSecurityCallbackFactory.ADMIN_SEC_CALLBACK);

@@ -223,11 +223,16 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	
 	@Override
 	public TBBroker getOrCreateBroker(Identity doer, RepositoryEntry repositoryEntry, String subIdent) {
-		TBBroker broker = brokerDao.loadBroker(repositoryEntry, subIdent);
+		TBBroker broker = getBroker(repositoryEntry, subIdent);
 		if (broker == null) {
 			broker = createBroker(doer, repositoryEntry, subIdent);
 		}
 		return broker;
+	}
+	
+	@Override
+	public TBBroker getBroker(RepositoryEntry repositoryEntry, String subIdent) {
+		return  brokerDao.loadBroker(repositoryEntry, subIdent);
 	}
 	
 	@Override

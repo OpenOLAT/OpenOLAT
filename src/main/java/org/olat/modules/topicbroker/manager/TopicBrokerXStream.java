@@ -25,7 +25,9 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.topicbroker.TBAuditLog.TBFileAuditLog;
 import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.model.TBBrokerImpl;
+import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionExport;
 import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionImpl;
+import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionsExport;
 import org.olat.modules.topicbroker.model.TBCustomFieldImpl;
 import org.olat.modules.topicbroker.model.TBParticipantImpl;
 import org.olat.modules.topicbroker.model.TBProcessInfos;
@@ -55,7 +57,9 @@ public class TopicBrokerXStream {
 				TBTopicImpl.class,
 				TBSelectionImpl.class,
 				TBProcessInfos.class,
-				TBFileAuditLog.class
+				TBFileAuditLog.class,
+				TBCustomFieldDefinitionsExport.class,
+				TBCustomFieldDefinitionExport.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		
@@ -70,6 +74,10 @@ public class TopicBrokerXStream {
 		
 		xstream.alias("TBProcessInfos", TBProcessInfos.class);
 		xstream.alias("TBFileAuditLog", TBFileAuditLog.class);
+		
+		xstream.alias("TBCustomFieldDefinitionsExport", TBCustomFieldDefinitionsExport.class);
+		xstream.alias("TBCustomFieldDefinitionExport", TBCustomFieldDefinitionExport.class);
+		xstream.addImplicitCollection(TBCustomFieldDefinitionsExport.class, "definitions");
 		
 		xstream.alias("RepositoryEntry", RepositoryEntry.class);
 		xstream.omitField(RepositoryEntry.class, "olatResource");

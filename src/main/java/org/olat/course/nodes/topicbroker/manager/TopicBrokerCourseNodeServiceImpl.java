@@ -43,6 +43,7 @@ import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TopicBrokerExportService;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -61,6 +62,8 @@ public class TopicBrokerCourseNodeServiceImpl implements TopicBrokerCourseNodeSe
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
+	@Autowired
+	private TopicBrokerExportService topicBrokerExportService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -158,6 +161,22 @@ public class TopicBrokerCourseNodeServiceImpl implements TopicBrokerCourseNodeSe
 		if (event instanceof EntryChangedEvent entryChangedEvent && entryChangedEvent.isEventOnThisNode()) {
 			synchTopicBrokers(entryChangedEvent.getRepositoryEntryKey(), entryChangedEvent.getIdentityKey());
 		}
+	}
+
+	@Override
+	public void createCustomFieldDefinitions(Identity doer, RepositoryEntry courseEntry, String courseNodeIdent,
+			String customFieldDefinitionsXml) {
+		TBBroker broker = topicBrokerService.getOrCreateBroker(doer, courseEntry, courseNodeIdent);
+		topicBrokerExportService.createCustomFieldDefinitions(doer, broker, customFieldDefinitionsXml);
+	}
+
+	@Override
+	public String getCustomFieldDefinitionExportXml(RepositoryEntry courseEntry, String courseNodeIdent) {
+		TBBroker broker = topicBrokerService.getBroker(courseEntry, courseNodeIdent);
+		if (broker == null) {
+			return null;
+		}
+		return topicBrokerExportService.getCustomFieldDefinitionExportXml(broker);
 	}
 
 	@Override
