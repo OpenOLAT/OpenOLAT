@@ -379,10 +379,24 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			List<String> searchValues = Arrays.stream(searchValue.toLowerCase().split(" ")).filter(StringHelper::containsNonWhitespace).toList();
 			rows.removeIf(row -> 
 					containsNot(searchValues, row.getTitle())
+					&& containsNot(searchValues, row.getCustomFields())
 				);
 		}
 	}
 	
+	private boolean containsNot(List<String> searchValues, List<TBCustomField> customFields) {
+		if (customFields == null || customFields.isEmpty()) {
+			return true;
+		}
+		for (TBCustomField customField : customFields) {
+			if (!containsNot(searchValues, customField.getText()) || !containsNot(searchValues, customField.getFilename())) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
 	private boolean containsNot(List<String> searchValues, String candidate) {
 		if (StringHelper.containsNonWhitespace(candidate)) {
 			String candidateLowerCase = candidate.toLowerCase();

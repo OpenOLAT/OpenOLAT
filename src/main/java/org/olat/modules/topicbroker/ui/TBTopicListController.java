@@ -335,7 +335,6 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		}
 		
 		applyFilters(rows);
-		applySearch(rows);
 		
 		for (TBTopicRow row: rows) {
 			if (!customFieldDefinitionsInTable.isEmpty()) {
@@ -345,6 +344,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			}
 			forgeToolsLink(row);
 		}
+		
+		applySearch(rows);
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(false, false, true);
@@ -379,8 +380,22 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			rows.removeIf(row -> 
 					containsNot(searchValues, row.getIdentifier())
 					&& containsNot(searchValues, row.getTitle())
+					&& containsNot(searchValues, row.getCustomFields())
 				);
 		}
+	}
+	
+	private boolean containsNot(List<String> searchValues, List<TBCustomField> customFields) {
+		if (customFields == null || customFields.isEmpty()) {
+			return true;
+		}
+		for (TBCustomField customField : customFields) {
+			if (!containsNot(searchValues, customField.getText()) || !containsNot(searchValues, customField.getFilename())) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	private boolean containsNot(List<String> searchValues, String candidate) {

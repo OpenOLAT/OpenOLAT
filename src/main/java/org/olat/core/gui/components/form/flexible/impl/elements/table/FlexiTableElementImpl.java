@@ -1237,7 +1237,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				String pos = selectedIndex.substring(index+1);
 				doSelect(ureq, Integer.parseInt(pos));
 			}
-		} else if(StringHelper.containsNonWhitespace(resetQuickSearch)) {
+		} else if(StringHelper.containsNonWhitespace(resetQuickSearch) && dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			resetQuickSearch(ureq);
 		} else if(searchButton != null
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
