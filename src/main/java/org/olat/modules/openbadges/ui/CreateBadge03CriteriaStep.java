@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -339,7 +340,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		private final SelectionValues coursesKV;
 
 		private CreateBadgeClassWizardContext createContext;
-		private TextElement descriptionEl;
+		private MarkdownElement descriptionEl;
 		private SingleSelection awardProcedureCards;
 
 		public CreateBadge03CriteriaForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
@@ -572,9 +573,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 			uifactory.addStaticTextElement("form.criteria.summary.explanation", null,
 					translate("form.criteria.summary.explanation"), formLayout);
-			descriptionEl = uifactory.addTextElement("form.criteria.description", 256,
-					badgeCriteria.getDescription(), formLayout);
-			descriptionEl.setElementCssClass("o_sel_badge_criteria_summary");
+			descriptionEl = uifactory.addMarkdownElement("form.criteria.description",
+					"form.criteria.description", badgeCriteria.getDescriptionWithScan(), formLayout);
+			descriptionEl.setElementCssClass("o_sel_badge_criteria_summary o_badge_criteria_description");
 			descriptionEl.setMandatory(true);
 			uifactory.addStaticTextElement("form.award.procedure.description", null,
 					translate("form.award.procedure.description"), formLayout);

@@ -148,14 +148,17 @@ public class CreateBadge04SummaryStep extends BasicStep {
 			uifactory.addStaticTextElement("name", "form.name", badgeClass.getNameWithScan(), formLayout);
 			uifactory.addStaticTextElement("version", "form.version", badgeClass.getVersionWithScan(), formLayout);
 			uifactory.addStaticTextElement("language", "form.language", badgeClass.getLanguage(), formLayout);
-			MarkdownElement descriptionEl = uifactory.addMarkdownElement("description", "form.description", badgeClass.getDescriptionWithScan(),formLayout);
+			MarkdownElement descriptionEl = uifactory.addMarkdownElement("description", "form.description", badgeClass.getDescriptionWithScan(), formLayout);
 			descriptionEl.setElementCssClass("o_badge_class_description");
 			descriptionEl.setEnabled(false);
 			uifactory.addStaticTextElement("expires", "form.badge.expiry", createExpiryString(badgeClass), formLayout);
 
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
-			uifactory.addStaticTextElement("form.criteria.description", null, badgeCriteria.getDescriptionWithScan(), formLayout);
+			MarkdownElement criteriaDescriptionEl = uifactory.addMarkdownElement("form.criteria.description",
+					null, badgeCriteria.getDescriptionWithScan(), formLayout);
+			criteriaDescriptionEl.setElementCssClass("o_badge_criteria_description");
+			criteriaDescriptionEl.setEnabled(false);
 
 			buildConditionsFromContext();
 

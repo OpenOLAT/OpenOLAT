@@ -157,7 +157,7 @@
 	}
 }
 
-.o_badge_template_description, .o_badge_class_description {
+.o_badge_template_description, .o_badge_class_description, .o_badge_criteria_description {
 	@media (min-width: $screen-sm-min) {
 		&.o_markdown_element {
 			padding-top: 7px;
