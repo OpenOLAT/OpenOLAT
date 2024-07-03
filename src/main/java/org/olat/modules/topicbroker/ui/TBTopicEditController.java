@@ -343,23 +343,27 @@ public class TBTopicEditController extends FormBasicController {
 			topicBrokerService.deleteTopicLeaf(getIdentity(), topic, TopicBrokerService.TOPIC_TEASER_VIDEO);
 		}
 		
-		for (RichTextElement richTextEl : customTextEls) {
-			if (richTextEl.getUserObject() instanceof TBCustomFieldDefinition definition) {
-				String text = richTextEl.getValue();
-				if (StringHelper.containsNonWhitespace(text)) {
-					topicBrokerService.createOrUpdateCustomField(getIdentity(), definition, topic, text);
-				} else {
-					topicBrokerService.deleteCustomFieldPermanently(getIdentity(), definition, topic);
+		if (customTextEls != null) {
+			for (RichTextElement richTextEl : customTextEls) {
+				if (richTextEl.getUserObject() instanceof TBCustomFieldDefinition definition) {
+					String text = richTextEl.getValue();
+					if (StringHelper.containsNonWhitespace(text)) {
+						topicBrokerService.createOrUpdateCustomField(getIdentity(), definition, topic, text);
+					} else {
+						topicBrokerService.deleteCustomFieldPermanently(getIdentity(), definition, topic);
+					}
 				}
 			}
 		}
 		
-		for (FileElement fileElement : customFileEls) {
-			if (fileElement.getUserObject() instanceof TBCustomFieldDefinition definition) {
-				if (fileElement.getUploadFile() != null) {
-					topicBrokerService.createOrUpdateCustomFieldFile(getIdentity(), topic, definition, fileElement.getUploadFile(), fileElement.getUploadFileName());
-				} else if (fileElement.getInitialFile() == null) {
-					topicBrokerService.deleteCustomFieldFilePermanently(getIdentity(), definition, topic);
+		if (customFileEls != null) {
+			for (FileElement fileElement : customFileEls) {
+				if (fileElement.getUserObject() instanceof TBCustomFieldDefinition definition) {
+					if (fileElement.getUploadFile() != null) {
+						topicBrokerService.createOrUpdateCustomFieldFile(getIdentity(), topic, definition, fileElement.getUploadFile(), fileElement.getUploadFileName());
+					} else if (fileElement.getInitialFile() == null) {
+						topicBrokerService.deleteCustomFieldFilePermanently(getIdentity(), definition, topic);
+					}
 				}
 			}
 		}
