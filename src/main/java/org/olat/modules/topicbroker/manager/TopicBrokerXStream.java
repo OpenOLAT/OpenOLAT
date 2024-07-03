@@ -23,7 +23,10 @@ package org.olat.modules.topicbroker.manager;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.topicbroker.TBAuditLog.TBFileAuditLog;
+import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.model.TBBrokerImpl;
+import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionImpl;
+import org.olat.modules.topicbroker.model.TBCustomFieldImpl;
 import org.olat.modules.topicbroker.model.TBParticipantImpl;
 import org.olat.modules.topicbroker.model.TBProcessInfos;
 import org.olat.modules.topicbroker.model.TBSelectionImpl;
@@ -45,7 +48,12 @@ public class TopicBrokerXStream {
 	static {
 		Class<?>[] types = new Class[] {
 				TBBrokerImpl.class,
+				TBCustomFieldDefinitionImpl.class,
+				TBCustomFieldType.class,
+				TBCustomFieldImpl.class,
+				TBParticipantImpl.class,
 				TBTopicImpl.class,
+				TBSelectionImpl.class,
 				TBProcessInfos.class,
 				TBFileAuditLog.class
 		};
@@ -53,6 +61,9 @@ public class TopicBrokerXStream {
 		
 		xstream.alias("TBBroker", TBBrokerImpl.class);
 		xstream.omitField(TBBrokerImpl.class, "repositoryEntry");
+		xstream.alias("TBCustomFieldDefinition", TBCustomFieldDefinitionImpl.class);
+		xstream.alias("TBCustomFieldType", TBCustomFieldType.class);
+		xstream.alias("TBCustomField", TBCustomFieldImpl.class);
 		xstream.alias("TBTopic", TBTopicImpl.class);
 		xstream.alias("TBParticipant", TBParticipantImpl.class);
 		xstream.alias("TBSelection", TBSelectionImpl.class);
@@ -75,6 +86,7 @@ public class TopicBrokerXStream {
 		xstream.alias("Identity", IdentityImpl.class);
 		xstream.omitField(IdentityImpl.class, "version");
 		xstream.omitField(IdentityImpl.class, "creationDate");
+		xstream.omitField(IdentityImpl.class, "plannedInactivationDate");
 		xstream.omitField(IdentityImpl.class, "lastLogin");
 		xstream.omitField(IdentityImpl.class, "status");
 		xstream.omitField(IdentityImpl.class, "user");

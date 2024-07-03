@@ -33,24 +33,24 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
-import org.olat.basesecurity.IdentityImpl;
-import org.olat.core.id.Identity;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.Persistable;
-import org.olat.modules.topicbroker.TBParticipant;
-import org.olat.modules.topicbroker.TBSelection;
+import org.olat.modules.topicbroker.TBCustomField;
+import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBTopic;
 
 /**
  * 
- * Initial date: 4 Jun 2024<br>
+ * Initial date: 29 May 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-@Entity(name="topicbrokerselection")
-@Table(name="o_tb_selection")
-public class TBSelectionImpl implements Persistable, TBSelection {
+@Entity(name="topicbrokercustomfield")
+@Table(name="o_tb_custom_field")
+public class TBCustomFieldImpl implements Persistable, TBCustomField {
 	
-	private static final long serialVersionUID = -4779377112002909464L;
+	private static final long serialVersionUID = -4706512450835129737L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,21 +64,20 @@ public class TBSelectionImpl implements Persistable, TBSelection {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
-	@Column(name="t_enrolled", nullable=false, insertable=true, updatable=true)
-	private boolean enrolled;
-	@Column(name="t_sort_order", nullable=false, insertable=true, updatable=true)
-	private int sortOrder;
-	
-	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
-	@JoinColumn(name="fk_creator", nullable=false, insertable=true, updatable=false)
-	private Identity creator;
-	@ManyToOne(targetEntity=TBParticipantImpl.class, fetch=FetchType.LAZY, optional=false)
-	@JoinColumn(name="fk_participant", nullable=false, insertable=true, updatable=false)
-	private TBParticipant participant;
-	
+	@Column(name="t_text", nullable=true, insertable=true, updatable=true)
+	private String text;
+	@Column(name="t_filename", nullable=true, insertable=true, updatable=true)
+	private String filename;
+
+	@ManyToOne(targetEntity=TBCustomFieldDefinitionImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_definition", nullable=false, insertable=true, updatable=false)
+	private TBCustomFieldDefinition definition;
 	@ManyToOne(targetEntity=TBTopicImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_topic", nullable=false, insertable=true, updatable=false)
 	private TBTopic topic;
+	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_metadata", nullable=true, insertable=true, updatable=true)
+	private VFSMetadata vfsMetadata;
 	
 	@Override
 	public Long getKey() {
@@ -107,41 +106,34 @@ public class TBSelectionImpl implements Persistable, TBSelection {
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
-
+	
 	@Override
-	public boolean isEnrolled() {
-		return enrolled;
-	}
-
-	public void setEnrolled(boolean enrolled) {
-		this.enrolled = enrolled;
+	public String getText() {
+		return text;
 	}
 
 	@Override
-	public int getSortOrder() {
-		return sortOrder;
-	}
-
-	public void setSortOrder(int sortOrder) {
-		this.sortOrder = sortOrder;
+	public void setText(String text) {
+		this.text = text;
 	}
 
 	@Override
-	public Identity getCreator() {
-		return creator;
-	}
-
-	public void setCreator(Identity creator) {
-		this.creator = creator;
+	public String getFilename() {
+		return filename;
 	}
 
 	@Override
-	public TBParticipant getParticipant() {
-		return participant;
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 
-	public void setParticipant(TBParticipant participant) {
-		this.participant = participant;
+	@Override
+	public TBCustomFieldDefinition getDefinition() {
+		return definition;
+	}
+
+	public void setDefinition(TBCustomFieldDefinition definition) {
+		this.definition = definition;
 	}
 
 	@Override
@@ -151,6 +143,15 @@ public class TBSelectionImpl implements Persistable, TBSelection {
 
 	public void setTopic(TBTopic topic) {
 		this.topic = topic;
+	}
+
+	@Override
+	public VFSMetadata getVfsMetadata() {
+		return vfsMetadata;
+	}
+
+	public void setVfsMetadata(VFSMetadata vfsMetadata) {
+		this.vfsMetadata = vfsMetadata;
 	}
 
 	@Override
@@ -169,7 +170,7 @@ public class TBSelectionImpl implements Persistable, TBSelection {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		TBSelectionImpl other = (TBSelectionImpl) obj;
+		TBCustomFieldImpl other = (TBCustomFieldImpl) obj;
 		if (key == null) {
 			if (other.key != null)
 				return false;

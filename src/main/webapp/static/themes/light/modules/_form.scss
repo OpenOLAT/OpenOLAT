@@ -607,6 +607,12 @@ form .o_form, form.o_form {
 .o_filemeta {
   	padding-top: ($padding-base-vertical + 1);
   	padding-bottom: ($padding-base-vertical + 1);
+	
+	>div {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 5px;
+	}
 
 	.o_filesize {
 		margin-left: 0.5em;

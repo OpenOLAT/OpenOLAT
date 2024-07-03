@@ -78,6 +78,7 @@ public class TBTopicImpl implements Persistable, TBTopic {
 
 	@Column(name="t_deleted_date", nullable=true, insertable=true, updatable=true)
 	private Date deletedDate;
+	
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_deleted_by", nullable=false, insertable=true, updatable=true)
 	private Identity deletedBy;
@@ -86,8 +87,8 @@ public class TBTopicImpl implements Persistable, TBTopic {
 	@JoinColumn(name="fk_creator", nullable=false, insertable=true, updatable=false)
 	private Identity creator;
 	
-	@ManyToOne(targetEntity=TBBrokerImpl.class, fetch=FetchType.LAZY, optional=true)
-	@JoinColumn(name="fk_broker", nullable=true, insertable=true, updatable=true)
+	@ManyToOne(targetEntity=TBBrokerImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_broker", nullable=false, insertable=true, updatable=false)
 	private TBBroker broker;
 	
 	@Override

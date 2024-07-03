@@ -17,4 +17,18 @@
 			$participantRange
 		</div>
 	</div>
+	#foreach($customField in $customFields)
+		<div class="o_tb_topic_custom_item">
+			<div class="o_tb_legend">
+				$r.escapeHtml($customField.name)
+			</div>
+			<div>
+				#if($r.isNotEmpty($customField.text))
+					$customField.text
+				#elseif($r.isNotEmpty($customField.fileLinkName))
+					$r.render("$customField.fileLinkName")
+				#end
+			</div>
+		</div>
+	#end
 </div>

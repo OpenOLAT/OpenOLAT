@@ -21,6 +21,7 @@ package org.olat.modules.topicbroker.ui;
 
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -33,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  */
 public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> {
 	
+	public static final int CUSTOM_FIELD_OFFSET = 100;
 	private static final TopicCols[] COLS = TopicCols.values();
 
 	public TBTopicDataModel(FlexiTableColumnModel columnsModel) {
@@ -56,6 +58,11 @@ public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> {
 	}
 
 	public Object getValueAt(TBTopicRow row, int col) {
+		if (col >= CUSTOM_FIELD_OFFSET) {
+			FormItem formItem = row.getCustomFieldItems().get(col - CUSTOM_FIELD_OFFSET);
+			return formItem;
+		}
+		
 		switch(COLS[col]) {
 		case identifier: return row.getIdentifier();
 		case title: return row.getTitle();

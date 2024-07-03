@@ -40,6 +40,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.modules.topicbroker.TBAuditLog;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBTopic;
@@ -85,6 +86,9 @@ public class TBAuditLogImpl implements TBAuditLog, Persistable {
 	@ManyToOne(targetEntity=TBTopicImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_topic", nullable=true, insertable=true, updatable=false)
 	private TBTopic topic;
+	@ManyToOne(targetEntity=TBCustomFieldDefinitionImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_custom_field_definition", nullable=true, insertable=true, updatable=false)
+	private TBCustomFieldDefinition definition;
 	@ManyToOne(targetEntity=TBSelectionImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_selection", nullable=true, insertable=true, updatable=false)
 	private TBSelection selection;
@@ -168,6 +172,15 @@ public class TBAuditLogImpl implements TBAuditLog, Persistable {
 
 	public void setTopic(TBTopic topic) {
 		this.topic = topic;
+	}
+
+	@Override
+	public TBCustomFieldDefinition getDefinition() {
+		return definition;
+	}
+
+	public void setDefinition(TBCustomFieldDefinition definition) {
+		this.definition = definition;
 	}
 
 	@Override

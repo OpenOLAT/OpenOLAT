@@ -19,64 +19,65 @@
  */
 package org.olat.modules.topicbroker.ui;
 
-import org.olat.core.gui.components.form.flexible.FormItem;
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
  * 
- * Initial date: 29 May 2024<br>
+ * Initial date: 26 Jun 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TBSelectionDataModel extends DefaultFlexiTableDataModel<TBSelectionRow> {
+public class TBCustomFieldDefinitionDataModel extends DefaultFlexiTableDataModel<TBCustomFieldDefinitionRow> {
 	
-	public static final int CUSTOM_FIELD_OFFSET = 100;
-	private static final SelectionCols[] COLS = SelectionCols.values();
+	private static final CustomFieldDefinitionCols[] COLS = CustomFieldDefinitionCols.values();
 
-	public TBSelectionDataModel(FlexiTableColumnModel columnsModel) {
+	public TBCustomFieldDefinitionDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	public TBCustomFieldDefinitionRow getObjectByKey(Long key) {
+		List<TBCustomFieldDefinitionRow> rows = getObjects();
+		for (TBCustomFieldDefinitionRow row: rows) {
+			if (row != null && row.getKey().equals(key)) {
+				return row;
+			}
+		}
+		return null;
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		TBSelectionRow project = getObject(row);
+		TBCustomFieldDefinitionRow project = getObject(row);
 		return getValueAt(project, col);
 	}
 
-	public Object getValueAt(TBSelectionRow row, int col) {
-		if (col >= CUSTOM_FIELD_OFFSET) {
-			FormItem formItem = row.getCustomFieldItems().get(col - CUSTOM_FIELD_OFFSET);
-			return formItem;
-		}
-		
+	public Object getValueAt(TBCustomFieldDefinitionRow row, int col) {
 		switch(COLS[col]) {
-		case priority: return row.getPriorityLabel();
-		case title: return row.getTitle();
-		case status: return row;
-		case minParticipants: return row.getMinParticipants();
-		case maxParticipants: return row.getMaxParticipants();
+		case identifier: return row.getIdentifier();
+		case name: return row.getName();
+		case type: return row.getTypeName();
+		case displayInTable: return row.isDisplayInTable();
 		case upDown: return row.getUpDown();
-		case selectionTools: return row.getSelectionToolsLink();
-		case topicTools: return row.getTopicToolsLink();
+		case tools: return row.getToolsLink();
 		default: return null;
 		}
 	}
 	
-	public enum SelectionCols implements FlexiColumnDef {
-		priority("selection.priority"),
-		title("topic.title"),
-		status("selection.status"),
-		minParticipants("topic.participants.min"),
-		maxParticipants("topic.participants.max"),
+	public enum CustomFieldDefinitionCols implements FlexiColumnDef {
+		identifier("custom.field.def.identifier"),
+		name("custom.field.def.name"),
+		type("custom.field.def.type"),
+		displayInTable("custom.field.def.in.table"),
 		upDown("updown"),
-		selectionTools("tools"),
-		topicTools("tools");
+		tools("tools");
 		
 		private final String i18nKey;
 		
-		private SelectionCols(String i18nKey) {
+		private CustomFieldDefinitionCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 		

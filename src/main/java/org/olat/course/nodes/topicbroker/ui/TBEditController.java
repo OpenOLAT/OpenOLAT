@@ -32,6 +32,7 @@ import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.course.nodes.topicbroker.TBCourseNodeSecurityCallbackFactory;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TopicBrokerService;
+import org.olat.modules.topicbroker.ui.TBCustomFieldDefinitionListController;
 import org.olat.modules.topicbroker.ui.TBTopicListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,12 +45,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TBEditController extends ActivateableTabbableDefaultController {
 	
 	private static final String PANE_TAB_CONFIG = "pane.tab.config";
+	private static final String PANE_TAB_CUSTOM_FIELDS = "pane.tab.custom.fields";
 	private static final String PANE_TAB_TOPICS = "pane.tab.topics";
-	private final static String[] paneKeys = { PANE_TAB_CONFIG, PANE_TAB_TOPICS };
+	private final static String[] paneKeys = { PANE_TAB_CONFIG, PANE_TAB_CUSTOM_FIELDS, PANE_TAB_TOPICS };
 	
 	private TabbedPane tabPane;
 	private TBConfigsController configCtrl;
-	private TBTopicListController topicListCtrl;
+	private TBCustomFieldDefinitionListController customFieldDefinitionsCtrl;
+	private TBTopicListController topicsCtrl;
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
@@ -63,8 +66,11 @@ public class TBEditController extends ActivateableTabbableDefaultController {
 		
 		TBBroker broker = topicBrokerService.getOrCreateBroker(getIdentity(),
 				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent());
-		topicListCtrl = new TBTopicListEditController(ureq, wControl, broker, TBCourseNodeSecurityCallbackFactory.ADMIN_SEC_CALLBACK);
-		listenTo(topicListCtrl);
+		customFieldDefinitionsCtrl = new TBCustomFieldDefinitionListController(ureq, getWindowControl(), broker, translate("config.custim.fields.info"));
+		listenTo(customFieldDefinitionsCtrl);
+		
+		topicsCtrl = new TBTopicListEditController(ureq, wControl, broker, TBCourseNodeSecurityCallbackFactory.ADMIN_SEC_CALLBACK);
+		listenTo(topicsCtrl);
 	}
 
 	@Override
@@ -93,7 +99,8 @@ public class TBEditController extends ActivateableTabbableDefaultController {
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_CONFIG), configCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_TOPICS), topicListCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CUSTOM_FIELDS), customFieldDefinitionsCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_TOPICS), topicsCtrl.getInitialComponent());
 	}
 
 }

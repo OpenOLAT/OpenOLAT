@@ -23,6 +23,8 @@ import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -33,24 +35,22 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
-import org.olat.basesecurity.IdentityImpl;
-import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
-import org.olat.modules.topicbroker.TBParticipant;
-import org.olat.modules.topicbroker.TBSelection;
-import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBCustomFieldDefinition;
+import org.olat.modules.topicbroker.TBCustomFieldType;
 
 /**
  * 
- * Initial date: 4 Jun 2024<br>
+ * Initial date: 29 May 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-@Entity(name="topicbrokerselection")
-@Table(name="o_tb_selection")
-public class TBSelectionImpl implements Persistable, TBSelection {
+@Entity(name="topicbrokercustomfielddefinition")
+@Table(name="o_tb_custom_field_definition")
+public class TBCustomFieldDefinitionImpl implements Persistable, TBCustomFieldDefinition {
 	
-	private static final long serialVersionUID = -4779377112002909464L;
+	private static final long serialVersionUID = -8217166836543628080L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,21 +64,24 @@ public class TBSelectionImpl implements Persistable, TBSelection {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
-	@Column(name="t_enrolled", nullable=false, insertable=true, updatable=true)
-	private boolean enrolled;
+	@Column(name="t_identifier", nullable=true, insertable=true, updatable=true)
+	private String identifier;
+	@Enumerated(EnumType.STRING)
+	@Column(name="t_type", nullable=false, insertable=true, updatable=true)
+	private TBCustomFieldType type;
+	@Column(name="t_name", nullable=true, insertable=true, updatable=true)
+	private String name;
+	@Column(name="t_display_in_table", nullable=false, insertable=true, updatable=true)
+	private boolean displayInTable;
 	@Column(name="t_sort_order", nullable=false, insertable=true, updatable=true)
 	private int sortOrder;
 	
-	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
-	@JoinColumn(name="fk_creator", nullable=false, insertable=true, updatable=false)
-	private Identity creator;
-	@ManyToOne(targetEntity=TBParticipantImpl.class, fetch=FetchType.LAZY, optional=false)
-	@JoinColumn(name="fk_participant", nullable=false, insertable=true, updatable=false)
-	private TBParticipant participant;
-	
-	@ManyToOne(targetEntity=TBTopicImpl.class, fetch=FetchType.LAZY, optional=false)
-	@JoinColumn(name="fk_topic", nullable=false, insertable=true, updatable=false)
-	private TBTopic topic;
+	@Column(name="t_deleted_date", nullable=true, insertable=true, updatable=true)
+	private Date deletedDate;
+
+	@ManyToOne(targetEntity=TBBrokerImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_broker", nullable=false, insertable=true, updatable=false)
+	private TBBroker broker;
 	
 	@Override
 	public Long getKey() {
@@ -107,14 +110,45 @@ public class TBSelectionImpl implements Persistable, TBSelection {
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
-
+	
 	@Override
-	public boolean isEnrolled() {
-		return enrolled;
+	public String getIdentifier() {
+		return identifier;
 	}
 
-	public void setEnrolled(boolean enrolled) {
-		this.enrolled = enrolled;
+	@Override
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
+	}
+
+	@Override
+	public TBCustomFieldType getType() {
+		return type;
+	}
+
+	@Override
+	public void setType(TBCustomFieldType type) {
+		this.type = type;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public boolean isDisplayInTable() {
+		return displayInTable;
+	}
+
+	@Override
+	public void setDisplayInTable(boolean displayInTable) {
+		this.displayInTable = displayInTable;
 	}
 
 	@Override
@@ -122,35 +156,27 @@ public class TBSelectionImpl implements Persistable, TBSelection {
 		return sortOrder;
 	}
 
+	@Override
 	public void setSortOrder(int sortOrder) {
 		this.sortOrder = sortOrder;
 	}
 
 	@Override
-	public Identity getCreator() {
-		return creator;
+	public Date getDeletedDate() {
+		return deletedDate;
 	}
 
-	public void setCreator(Identity creator) {
-		this.creator = creator;
-	}
-
-	@Override
-	public TBParticipant getParticipant() {
-		return participant;
-	}
-
-	public void setParticipant(TBParticipant participant) {
-		this.participant = participant;
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
 	}
 
 	@Override
-	public TBTopic getTopic() {
-		return topic;
+	public TBBroker getBroker() {
+		return broker;
 	}
 
-	public void setTopic(TBTopic topic) {
-		this.topic = topic;
+	public void setBroker(TBBroker broker) {
+		this.broker = broker;
 	}
 
 	@Override
@@ -169,7 +195,7 @@ public class TBSelectionImpl implements Persistable, TBSelection {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		TBSelectionImpl other = (TBSelectionImpl) obj;
+		TBCustomFieldDefinitionImpl other = (TBCustomFieldDefinitionImpl) obj;
 		if (key == null) {
 			if (other.key != null)
 				return false;

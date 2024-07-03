@@ -24,8 +24,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -35,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
@@ -66,9 +72,20 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.render.DomWrapperElement;
+import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Roles;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBCustomField;
+import org.olat.modules.topicbroker.TBCustomFieldDefinition;
+import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
+import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
+import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
@@ -97,6 +114,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private static final String CMD_UP = "up";
 	private static final String CMD_DOWN = "down";
 	private static final String CMD_DELETE = "delete";
+	private static final String CMD_OPEN_FILE = "open.file";
 	
 	private InfoPanel configPanel;
 	private FlexiFiltersTab tabAll;
@@ -112,17 +130,22 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private CloseableModalController cmc;
 	private TBTopicEditController topicEditCtrl;
 	private TBTopicSelectionsEditController selectionsEditCtrl;
+	private Controller docEditorCtrl;
 	private ConfirmationController deleteConfirmationCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ToolsController toolsCtrl;
 	
 	private TBBroker broker;
 	private final TBSecurityCallback secCallback;
+	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
 	private List<Long> detailsOpenTopicKeys;
+	private final Roles roles;
 	private int counter = 0;
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
+	@Autowired
+	private DocEditorService docEditorService;
 	@Autowired
 	private UserManager userManager;
 
@@ -131,6 +154,15 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		setTranslator(Util.createPackageTranslator(TBTopicListController.class, getLocale(), getTranslator()));
 		this.broker = broker;
 		this.secCallback = secCallback;
+		
+		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
+		definitionSearchParams.setBroker(broker);
+		customFieldDefinitionsInTable = topicBrokerService.getCustomFieldDefinitions(definitionSearchParams).stream()
+				.filter(TBCustomFieldDefinition::isDisplayInTable)
+				.sorted((d1, d2) -> Integer.compare(d1.getSortOrder(), d2.getSortOrder()))
+				.toList();
+		
+		roles = ureq.getUserSession().getRoles();
 		
 		initForm(ureq);
 		loadModel(ureq);
@@ -223,6 +255,13 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.groupRestrictions));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.createdBy));
 		
+		int columnIndex = TBTopicDataModel.CUSTOM_FIELD_OFFSET;
+		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitionsInTable) {
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
+			columnModel.setHeaderLabel(customFieldDefinition.getName());
+			columnsModel.addFlexiColumnModel(columnModel);
+		}
+		
 		if (secCallback.canEditTopics()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.upDown));
 			
@@ -262,6 +301,15 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		List<TBTopic> topics = topicBrokerService.getTopics(searchParams);
 		int topicsSize = topics.size();
 		
+		TBCustomFieldSearchParams customFieldsSearchParams = new TBCustomFieldSearchParams();
+		customFieldsSearchParams.setBroker(broker);
+		customFieldsSearchParams.setFetchDefinition(true);
+		customFieldsSearchParams.setFetchVfsMetadata(true);
+		Map<Long, Map<Long, TBCustomField>> topicToDefinitionToCustomFields = topicBrokerService
+				.getCustomFields(customFieldsSearchParams).stream()
+				.collect(Collectors.groupingBy(customField -> customField.getTopic().getKey(),
+						Collectors.toMap(customField -> customField.getDefinition().getKey(), Function.identity())));
+		
 		Map<Long, List<TBSelection>> topicKeyToSelections = null;
 		if (isShowSelections()) {
 			TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
@@ -282,13 +330,22 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			forgeSelections(topicKeyToSelections, topic, row);
 			
 			forgeUpDown(row, topicsSize, i);
-			forgeToolsLink(row);
 			
 			rows.add(row);
 		}
 		
 		applyFilters(rows);
 		applySearch(rows);
+		
+		for (TBTopicRow row: rows) {
+			if (!customFieldDefinitionsInTable.isEmpty()) {
+				forgeCustomFields(
+						row,
+						topicToDefinitionToCustomFields.getOrDefault(row.getKey(), Map.of()));
+			}
+			forgeToolsLink(row);
+		}
+		
 		dataModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 		
@@ -302,7 +359,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				});
 		}
 	}
-	
+
 	private void applyFilters(List<TBTopicRow> rows) {
 		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabAll) {
 			return;
@@ -405,6 +462,49 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				&& !StringHelper.containsNonWhitespace(tableEl.getQuickSearchString());
 	}
 	
+	private void forgeCustomFields(TBTopicRow row, Map<Long, TBCustomField> definitionKeyToCustomField) {
+		row.setCustomFields(new ArrayList<>(definitionKeyToCustomField.values()));
+		List<FormItem> customFieldItems = new ArrayList<>(customFieldDefinitionsInTable.size());
+		
+		for (TBCustomFieldDefinition definition : customFieldDefinitionsInTable) {
+			if (TBCustomFieldType.text == definition.getType()) {
+				TBCustomField customField = definitionKeyToCustomField.get(definition.getKey());
+				if (customField != null && StringHelper.containsNonWhitespace(customField.getText())) {
+					String text = Formatter.truncate(customField.getText(), 200);
+					StaticTextElement item = uifactory.addStaticTextElement("customfield_" + counter++, null, text, flc);
+					item.setDomWrapperElement(DomWrapperElement.span);
+					item.setStaticFormElement(false);
+					customFieldItems.add(item);
+				} else {
+					customFieldItems.add(null);
+				}
+			} else if (TBCustomFieldType.file == definition.getType()) {
+				FormLink link = null;
+				TBCustomField customField = definitionKeyToCustomField.get(definition.getKey());
+				if (customField != null && customField.getVfsMetadata() != null) {
+					VFSLeaf topicLeaf = topicBrokerService.getTopicLeaf(row.getTopic(), definition.getIdentifier());
+					if (topicLeaf != null && topicLeaf.exists()) {
+						link = uifactory.addFormLink("openfile_" + counter++, CMD_OPEN_FILE, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+						link.setI18nKey(StringHelper.escapeHtml(topicLeaf.getName()));
+						link.setIconLeftCSS("o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(topicLeaf.getName()));
+						link.setUserObject(topicLeaf);
+						
+						DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, topicLeaf,
+								customField.getVfsMetadata(), false, DocEditorService.MODES_EDIT);
+						if (editorInfo.isNewWindow()) {
+							link.setNewWindow(true, true, false);
+						}
+					}
+				}
+				customFieldItems.add(link);
+			} else {
+				customFieldItems.add(null);
+			}
+		}
+		
+		row.setCustomFieldItems(customFieldItems);
+	}
+	
 	private void forgeToolsLink(TBTopicRow row) {
 		if (!secCallback.canEditTopics()) {
 			return;
@@ -443,7 +543,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	
 	private void doShowDetails(UserRequest ureq, TBTopicRow row) {
 		TBTopicDetailController detailsCtrl = new TBTopicDetailController(ureq, getWindowControl(), mainForm,
-				row.getTopic(), secCallback, row.getNumEnrollments(), row.getWaitingList());
+				row.getTopic(), row.getCustomFields(), secCallback, row.getNumEnrollments(), row.getWaitingList());
 		listenTo(detailsCtrl);
 		// Add as form item to catch the events...
 		flc.add(detailsCtrl.getInitialFormItem());
@@ -494,6 +594,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			loadModel(ureq);
 			cmc.deactivate();
 			cleanUp();
+		} else if (docEditorCtrl == source) {
+			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
 		} else if (toolsCalloutCtrl == source) {
@@ -513,12 +615,14 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		removeAsListenerAndDispose(topicEditCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(selectionsEditCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		topicEditCtrl = null;
 		deleteConfirmationCtrl = null;
 		selectionsEditCtrl = null;
+		docEditorCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -553,7 +657,9 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				loadModel(ureq);
 			}
 		} else if (source instanceof FormLink link) {
-			if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof TBTopicRow row) {
+			if (CMD_OPEN_FILE.equals(link.getCmd()) && link.getUserObject() instanceof VFSLeaf topicLeaf) {
+				doOpenOrDownload(ureq, topicLeaf);
+			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof TBTopicRow row) {
 				doOpenTools(ureq, row, link);
 			}
 		}
@@ -639,6 +745,35 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		cmc.activate();
 	}
 	
+	private void doOpenOrDownload(UserRequest ureq, VFSLeaf topicLeaf) {
+		if (topicLeaf == null || !topicLeaf.exists()) {
+			showWarning("error.file.does.not.exist");
+			return;
+		}
+		
+		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+				ureq.getUserSession().getRoles(), topicLeaf, topicLeaf.getMetaInfo(),
+				false, DocEditorService.MODES_VIEW);
+		if (editorInfo.isEditorAvailable()) {
+			doOpenFile(ureq, topicLeaf);
+		} else {
+			doDownload(ureq, topicLeaf);
+		}
+	}
+	
+	private void doOpenFile(UserRequest ureq, VFSLeaf topicLeaf) {
+		DocEditorConfigs configs = DocEditorConfigs.builder().build(topicLeaf);
+		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs,
+				DocEditorService.MODES_VIEW);
+		docEditorCtrl = listenTo(docEditorOpenInfo.getController());
+	}
+	
+	private void doDownload(UserRequest ureq, VFSLeaf topicLeaf) {
+		VFSMediaResource resource = new VFSMediaResource(topicLeaf);
+		resource.setDownloadable(true);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
 	private void doOpenTools(UserRequest ureq, TBTopicRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -657,7 +792,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		private final VelocityContainer mainVC;
 		
 		private final TBTopicRow row;
-		private final List<String> names = new ArrayList<>(3);
+		private final List<String> names = new ArrayList<>(5);
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, TBTopicRow row) {
 			super(ureq, wControl);
@@ -711,5 +846,5 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			}
 		}
 	}
-
+	
 }

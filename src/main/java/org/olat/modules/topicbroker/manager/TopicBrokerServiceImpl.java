@@ -24,11 +24,14 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeParticipantCandidates;
@@ -37,6 +40,12 @@ import org.olat.modules.topicbroker.TBAuditLogSearchParams;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBBrokerRef;
 import org.olat.modules.topicbroker.TBBrokerSearchParams;
+import org.olat.modules.topicbroker.TBCustomField;
+import org.olat.modules.topicbroker.TBCustomFieldDefinition;
+import org.olat.modules.topicbroker.TBCustomFieldDefinitionRef;
+import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
+import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
+import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBEnrollmentStats;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantRef;
@@ -48,6 +57,8 @@ import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.model.TBBrokerImpl;
+import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionImpl;
+import org.olat.modules.topicbroker.model.TBCustomFieldImpl;
 import org.olat.modules.topicbroker.model.TBSelectionImpl;
 import org.olat.modules.topicbroker.model.TBTopicImpl;
 import org.olat.modules.topicbroker.ui.events.TBBrokerChangedEvent;
@@ -74,9 +85,13 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	@Autowired
 	private TBTopicDAO topicDao;
 	@Autowired
-	private TBSelectionDAO selectionDao;
-	@Autowired
 	private TopicBrokerStorage tbStorage;
+	@Autowired
+	private TBCustomFieldDefinitionDAO customFieldDefinitionDao;
+	@Autowired
+	private TBCustomFieldDAO customFieldDao;
+	@Autowired
+	private TBSelectionDAO selectionDao;
 	@Autowired
 	private TBAuditLogDAO auditLogDao;
 	@Autowired
@@ -101,6 +116,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		}
 		
 		auditLogDao.delete(broker);
+		customFieldDao.deleteCustomFields(broker);
+		customFieldDefinitionDao.deleteDefinitions(broker);
 		selectionDao.deleteSelections(broker);
 		topicDao.deleteTopics(broker);
 		participantDao.deleteParticipants(broker);
@@ -261,9 +278,17 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	
 	@Override
 	public TBParticipant getOrCreateParticipant(Identity doer, TBBroker broker, Identity participantIdentity) {
+		return getOrCreateParticipant(doer, broker, participantIdentity, false);
+	}
+
+	private TBParticipant getOrCreateParticipant(Identity doer, TBBroker broker, Identity participantIdentity, boolean reload) {
 		TBParticipant participant = getParticipant(broker, participantIdentity);
 		if (participant == null) {
 			participant = createParticipant(doer, broker, participantIdentity);
+			if (reload) {
+				// reload to avoid hibernate classes in audit log xml
+				participant = getParticipant(broker, participantIdentity);
+			}
 		}
 		return participant;
 	}
@@ -417,14 +442,12 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		searchParams.setTopic(topic);
 		searchParams.setFetchIdentities(true);
 		searchParams.setFetchBroker(true);
+		if (!active) {
+			searchParams.setDeleted(null);
+		}
 		List<TBTopic> topics = getTopics(searchParams);
 		
-		TBTopic reloadedTopic = !topics.isEmpty()? topics.get(0): null;
-		if (active && reloadedTopic != null && reloadedTopic.getDeletedDate() != null) {
-			reloadedTopic = null;
-		}
-		
-		return reloadedTopic;
+		return !topics.isEmpty()? topics.get(0): null;
 	}
 	
 	@Override
@@ -433,10 +456,10 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	}
 
 	@Override
-	public void storeTopicLeaf(Identity doer, TBTopicRef topic, String identifier, File file, String filename) {
+	public VFSLeaf storeTopicLeaf(Identity doer, TBTopicRef topic, String identifier, File file, String filename) {
 		TBTopic reloadedTopic = getTopic(topic);
 		if (reloadedTopic == null) {
-			return;
+			return null;
 		}
 		
 		VFSLeaf topicLeaf = getTopicLeaf(reloadedTopic, identifier);
@@ -453,12 +476,14 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			filenameAfter = topicLeaf.getName();
 		}
 		
-		if (!Objects.equals(filenameBefore, filenameAfter)) {
-			String before = TopicBrokerXStream.toXml(new TBAuditLog.TBFileAuditLog(identifier, filenameBefore));
-			String after = TopicBrokerXStream.toXml(new TBAuditLog.TBFileAuditLog(identifier, filenameBefore));
-			
-			auditLogDao.create(TBAuditLog.Action.topicUpdateFile, before, after, doer, reloadedTopic);
-		}
+		String before = StringHelper.containsNonWhitespace(filenameBefore)
+				? TopicBrokerXStream.toXml(new TBAuditLog.TBFileAuditLog(identifier, filenameBefore))
+				: null;
+		String after = TopicBrokerXStream.toXml(new TBAuditLog.TBFileAuditLog(identifier, filenameAfter));
+		
+		auditLogDao.create(TBAuditLog.Action.topicUpdateFile, before, after, doer, reloadedTopic);
+		
+		return topicLeaf;
 	}
 
 	@Override
@@ -483,6 +508,237 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		}
 		
 		return tbStorage.getTopicLeaf(topic, identifier);
+	}
+	
+	@Override
+	public TBCustomFieldDefinition createCustomFieldDefinition(Identity doer, TBBrokerRef broker) {
+		TBBroker reloadedBroker = getBroker(broker);
+		if (broker == null) {
+			return null;
+		}
+		
+		String identifier = UUID.randomUUID().toString();
+		identifier = identifier.substring(0, identifier.indexOf('-'));
+		TBCustomFieldDefinition definition = customFieldDefinitionDao.createDefinition(reloadedBroker, identifier);
+		String after = TopicBrokerXStream.toXml(definition);
+		auditLogDao.create(TBAuditLog.Action.cfDefinitionCreate, null, after, doer, definition);
+		
+		return definition;
+	}
+	
+	@Override
+	public TBCustomFieldDefinition updateCustomFieldDefinition(Identity doer, TBCustomFieldDefinitionRef definition,
+			String identifier, String name, TBCustomFieldType type, boolean displayInTable) {
+		TBCustomFieldDefinition reloadedDefinition = getCustomFieldDefinition(definition, true);
+		if (reloadedDefinition == null) {
+			return null;
+		}
+		
+		String before = TopicBrokerXStream.toXml(reloadedDefinition);
+		
+		boolean contentChanged = false;
+		if (!Objects.equals(reloadedDefinition.getIdentifier(), identifier)) {
+			reloadedDefinition.setIdentifier(identifier);
+			contentChanged = true;
+		}
+		if (!Objects.equals(reloadedDefinition.getName(), name)) {
+			reloadedDefinition.setName(name);
+			contentChanged = true;
+		}
+		if (!Objects.equals(reloadedDefinition.getType(), type)) {
+			reloadedDefinition.setType(type);
+			contentChanged = true;
+		}
+		if (reloadedDefinition.isDisplayInTable() != displayInTable) {
+			reloadedDefinition.setDisplayInTable(displayInTable);
+			contentChanged = true;
+		}
+		
+		if (contentChanged) {
+			reloadedDefinition = customFieldDefinitionDao.updateDefinition(reloadedDefinition);
+			
+			String after = TopicBrokerXStream.toXml(reloadedDefinition);
+			auditLogDao.create(TBAuditLog.Action.cfDefinitionUpdateContent, before, after, doer, reloadedDefinition);
+		}
+		
+		return reloadedDefinition;
+	}
+	
+	@Override
+	public void moveCustomFieldDefinition(Identity doer, TBCustomFieldDefinitionRef definition, boolean up) {
+		TBCustomFieldDefinition reloadedDefinition = getCustomFieldDefinition(definition, true);
+		if (reloadedDefinition == null) return;
+		
+		int sortOrder = reloadedDefinition.getSortOrder();
+		TBCustomFieldDefinition swapDefinition = customFieldDefinitionDao.loadNext(reloadedDefinition, up);
+		if (swapDefinition == null) return;
+		int swapSortOrder = swapDefinition.getSortOrder();
+		
+		String before = TopicBrokerXStream.toXml(reloadedDefinition);
+		String beforeSwap = TopicBrokerXStream.toXml(swapDefinition);
+		
+		((TBCustomFieldDefinitionImpl)reloadedDefinition).setSortOrder(swapSortOrder);
+		((TBCustomFieldDefinitionImpl)swapDefinition).setSortOrder(sortOrder);
+		reloadedDefinition = customFieldDefinitionDao.updateDefinition(reloadedDefinition);
+		swapDefinition = customFieldDefinitionDao.updateDefinition(swapDefinition);
+		
+		String after = TopicBrokerXStream.toXml(reloadedDefinition);
+		String afterSwap = TopicBrokerXStream.toXml(swapDefinition);
+		
+		auditLogDao.create(TBAuditLog.Action.cfDefinitionUpdateSortOrder, before, after, doer, reloadedDefinition);
+		auditLogDao.create(TBAuditLog.Action.cfDefinitionUpdateSortOrder, beforeSwap, afterSwap, doer, swapDefinition);
+	}
+	
+	@Override
+	public void deleteCustomFieldDefinitionSoftly(Identity doer, TBCustomFieldDefinitionRef definition) {
+		TBCustomFieldDefinition reloadedDefinition = getCustomFieldDefinition(definition, true);
+		if (reloadedDefinition == null) {
+			return;
+		}
+		
+		String before = TopicBrokerXStream.toXml(reloadedDefinition);
+		
+		((TBCustomFieldDefinitionImpl)reloadedDefinition).setSortOrder(-1);
+		((TBCustomFieldDefinitionImpl)reloadedDefinition).setDeletedDate(new Date());
+		reloadedDefinition = customFieldDefinitionDao.updateDefinition(reloadedDefinition);
+		
+		String after = TopicBrokerXStream.toXml(reloadedDefinition);
+		auditLogDao.create(TBAuditLog.Action.cfDefinitionDeleteSoftly, before, after, doer, reloadedDefinition);
+	}
+	
+	@Override
+	public TBCustomFieldDefinition getCustomFieldDefinition(TBCustomFieldDefinitionRef definition) {
+		return getCustomFieldDefinition(definition, true);
+	}
+	
+	private TBCustomFieldDefinition getCustomFieldDefinition(TBCustomFieldDefinitionRef definition, boolean active) {
+		TBCustomFieldDefinitionSearchParams searchParams = new TBCustomFieldDefinitionSearchParams();
+		searchParams.setDefinition(definition);
+		searchParams.setFetchBroker(true);
+		if (!active) {
+			searchParams.setDeleted(null);
+		}
+		List<TBCustomFieldDefinition> definitions = getCustomFieldDefinitions(searchParams);
+		
+		return !definitions.isEmpty()? definitions.get(0): null;
+	}
+	
+	@Override
+	public List<TBCustomFieldDefinition> getCustomFieldDefinitions(TBCustomFieldDefinitionSearchParams searchParams) {
+		return customFieldDefinitionDao.loadDefinitions(searchParams);
+	}
+
+	private TBCustomField createCustomFile(Identity doer, TBCustomFieldDefinitionRef definition, TBTopicRef topic) {
+		TBCustomFieldDefinition reloadedDefinition = getCustomFieldDefinition(definition);
+		if (reloadedDefinition == null) {
+			return null;
+		}
+		TBTopic reloadedTopic = getTopic(topic);
+		if (reloadedTopic == null) {
+			return null;
+		}
+		
+		TBCustomField customField = customFieldDao.createCustomField(reloadedDefinition, reloadedTopic);
+		String after = TopicBrokerXStream.toXml(customField);
+		
+		auditLogDao.create(TBAuditLog.Action.customFieldUpdateContent, null, after, doer,
+				reloadedDefinition, reloadedTopic);
+		
+		return customField;
+	}
+	
+	@Override
+	public void createOrUpdateCustomField(Identity doer, TBCustomFieldDefinitionRef definition, TBTopicRef topic,
+			String text) {
+		createOrUpdateCustomField(doer, definition, topic, text, null, null);
+	}
+	
+	private void createOrUpdateCustomField(Identity doer, TBCustomFieldDefinitionRef definition, TBTopicRef topic,
+			String text, VFSMetadata vfsMetadata, String filename) {
+		TBCustomField reloadedCustomField = getCustomField(definition, topic, false);
+		if (reloadedCustomField == null) {
+			reloadedCustomField = createCustomFile(doer, definition, topic);
+			if (reloadedCustomField == null) {
+				return;
+			}
+		}
+		
+		String before = TopicBrokerXStream.toXml(reloadedCustomField);
+		
+		boolean contentChanged = false;
+		if (!Objects.equals(reloadedCustomField.getText(), text)) {
+			reloadedCustomField.setText(text);
+			contentChanged = true;
+		}
+		if (!Objects.equals(reloadedCustomField.getFilename(), filename)) {
+			reloadedCustomField.setFilename(filename);
+			contentChanged = true;
+		}
+		if (!Objects.equals(reloadedCustomField.getVfsMetadata(), vfsMetadata)) {
+			((TBCustomFieldImpl)reloadedCustomField).setVfsMetadata(vfsMetadata);
+			contentChanged = true;
+		}
+		
+		if (contentChanged) {
+			reloadedCustomField = customFieldDao.updateCustomField(reloadedCustomField);
+			
+			String after = TopicBrokerXStream.toXml(reloadedCustomField);
+			auditLogDao.create(TBAuditLog.Action.customFieldUpdateContent, before, after, doer,
+					reloadedCustomField.getDefinition(), reloadedCustomField.getTopic());
+		}
+	}
+	
+	@Override
+	public void createOrUpdateCustomFieldFile(Identity doer, TBTopic topic, TBCustomFieldDefinition definition,
+			File uploadFile, String uploadFileName) {
+		TBCustomField reloadedCustomField = getCustomField(definition, topic, false);
+		if (reloadedCustomField instanceof TBCustomFieldImpl impl) {
+			impl.setVfsMetadata(null);
+		}
+		
+		VFSLeaf topicLeaf = storeTopicLeaf(doer, topic, definition.getIdentifier(), uploadFile, uploadFileName);
+		createOrUpdateCustomField(doer, definition, topic, null, topicLeaf.getMetaInfo(), uploadFileName);
+	}
+
+	@Override
+	public void deleteCustomFieldPermanently(Identity doer, TBCustomFieldDefinitionRef definition, TBTopicRef topic) {
+		TBCustomField reloadedCustomField = getCustomField(definition, topic, false);
+		if (reloadedCustomField == null) {
+			return;
+		}
+		
+		String before = TopicBrokerXStream.toXml(reloadedCustomField);
+		customFieldDao.deleteCustomField(reloadedCustomField);
+		auditLogDao.create(TBAuditLog.Action.customFieldDeletePermanently, before, null, doer,
+				reloadedCustomField.getDefinition(), reloadedCustomField.getTopic());
+	}
+	
+	@Override
+	public void deleteCustomFieldFilePermanently(Identity doer, TBCustomFieldDefinition definition, TBTopic topic) {
+		deleteCustomFieldPermanently(doer, definition, topic);
+		deleteTopicLeaf(doer, topic, definition.getIdentifier());
+	}
+	
+	private TBCustomField getCustomField(TBCustomFieldDefinitionRef definition, TBTopicRef topic, boolean active) {
+		TBCustomFieldSearchParams searchParams = new TBCustomFieldSearchParams();
+		searchParams.setDefinition(definition);
+		searchParams.setTopic(topic);
+		if (!active) {
+			searchParams.setDeletedDefinition(null);
+			searchParams.setDeletedTopic(null);
+		}
+		searchParams.setFetchBroker(true);
+		searchParams.setFetchDefinition(true);
+		searchParams.setFetchTopic(true);
+		searchParams.setFetchIdentities(true);
+		List<TBCustomField> customFields = getCustomFields(searchParams);
+		
+		return !customFields.isEmpty()? customFields.get(0): null;
+	}
+	
+	@Override
+	public List<TBCustomField> getCustomFields(TBCustomFieldSearchParams searchParams) {
+		return customFieldDao.loadCustomFields(searchParams);
 	}
 	
 	@Override
@@ -525,7 +781,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		}
 		
 		if (selection == null) {
-			TBParticipant participant = getOrCreateParticipant(doer, reloadedTopic.getBroker(), participantIdentity);
+			TBParticipant participant = getOrCreateParticipant(doer, reloadedTopic.getBroker(), participantIdentity, true);
 			selection = selectionDao.createSelection(doer, participant, reloadedTopic, realSortOrder);
 			
 			String after = TopicBrokerXStream.toXml(selection);
@@ -762,7 +1018,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	@Override
 	public void log(TBAuditLog.Action action, String before, String after, Identity doer, TBBroker broker,
 			TBParticipant participant, TBTopic topic, TBSelection selection) {
-		auditLogDao.create(action, before, after, doer, broker, participant, topic, selection);
+		auditLogDao.create(action, before, after, doer, broker, participant, topic, null, selection);
 	}
 	
 	@Override

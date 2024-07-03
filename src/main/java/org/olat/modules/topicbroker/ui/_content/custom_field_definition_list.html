@@ -1,0 +1,14 @@
+<div>
+	<fieldset>
+		<legend>$r.translate("custom.field.defs.title")</legend>
+		#if ($info)
+			<div class="o_hint">$info</div>
+		#end
+		#if($r.available("custom.field.def.create"))
+			<div class="o_button_group o_button_group_right">
+				$r.render("custom.field.def.create")
+			</div>
+		#end
+		$r.render("table")
+	</fieldset>
+</div>

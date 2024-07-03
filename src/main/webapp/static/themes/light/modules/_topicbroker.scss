@@ -45,6 +45,10 @@
 		}
 		
 		.o_tb_topic_card {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			
 			.o_tb_topic_card_thumbnail {
 				&.o_tb_topic_openable {
 					cursor: pointer;
@@ -109,7 +113,13 @@
 				}
 			}
 			
+			.o_tb_topic_card_custom_fields {
+				margin-top: 10px;
+			}
+			
 			.o_tb_topic_card_cmds {
+				margin-top: auto;
+			
 				display: grid;
 				grid-template-columns: 1fr 1fr;
 				gap: 10px;

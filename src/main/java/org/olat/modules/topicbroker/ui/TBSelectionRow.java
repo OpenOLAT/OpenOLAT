@@ -19,12 +19,16 @@
  */
 package org.olat.modules.topicbroker.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.updown.UpDown;
+import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBSelectionRef;
 import org.olat.modules.topicbroker.TBSelectionStatus;
-import org.olat.modules.topicbroker.TBTopicRef;
+import org.olat.modules.topicbroker.TBTopic;
 
 /**
  * 
@@ -34,12 +38,9 @@ import org.olat.modules.topicbroker.TBTopicRef;
  */
 public class TBSelectionRow {
 	
-	private TBTopicRef topicRef;
+	private TBTopic topic;
 	private TBSelectionRef selectionRef;
-	private String title;
 	private String titleAbbr;
-	private Integer minParticipants;
-	private Integer maxParticipants;
 	private String participants;
 	private String thumbnailUrl;
 	private boolean enrolled;
@@ -47,6 +48,8 @@ public class TBSelectionRow {
 	private String translatedStatus;
 	private String statusLabel;
 	private String priorityLabel;
+	private List<TBCustomField> customFields;
+	private List<FormItem> customFieldItems;
 	private int topicSortOrder;
 	private int selectionSortOrder;
 	private UpDown upDown;
@@ -56,15 +59,15 @@ public class TBSelectionRow {
 	private FormLink unselectButton;
 	private FormLink selectButton;
 	private DropdownItem selectDropdown;
-
-	public TBTopicRef getTopicRef() {
-		return topicRef;
-	}
-
-	public void setTopicRef(TBTopicRef topicRef) {
-		this.topicRef = topicRef;
-	}
 	
+	public TBTopic getTopic() {
+		return topic;
+	}
+
+	public void setTopic(TBTopic topic) {
+		this.topic = topic;
+	}
+
 	public TBSelectionRef getSelectionRef() {
 		return selectionRef;
 	}
@@ -74,11 +77,15 @@ public class TBSelectionRow {
 	}
 
 	public String getTitle() {
-		return title;
+		return topic != null? topic.getTitle(): null;
 	}
-	
-	public void setTitle(String title) {
-		this.title = title;
+
+	public Integer getMinParticipants() {
+		return topic != null? topic.getMinParticipants(): null;
+	}
+
+	public Integer getMaxParticipants() {
+		return topic != null? topic.getMaxParticipants(): null;
 	}
 	
 	public String getTitleAbbr() {
@@ -87,22 +94,6 @@ public class TBSelectionRow {
 
 	public void setTitleAbbr(String titleAbbr) {
 		this.titleAbbr = titleAbbr;
-	}
-
-	public Integer getMinParticipants() {
-		return minParticipants;
-	}
-	
-	public void setMinParticipants(Integer minParticipants) {
-		this.minParticipants = minParticipants;
-	}
-	
-	public Integer getMaxParticipants() {
-		return maxParticipants;
-	}
-	
-	public void setMaxParticipants(Integer maxParticipants) {
-		this.maxParticipants = maxParticipants;
 	}
 	
 	public String getParticipants() {
@@ -163,6 +154,22 @@ public class TBSelectionRow {
 
 	public void setPriorityLabel(String priorityLabel) {
 		this.priorityLabel = priorityLabel;
+	}
+
+	public List<TBCustomField> getCustomFields() {
+		return customFields;
+	}
+
+	public void setCustomFields(List<TBCustomField> customFields) {
+		this.customFields = customFields;
+	}
+
+	public List<FormItem> getCustomFieldItems() {
+		return customFieldItems;
+	}
+
+	public void setCustomFieldItems(List<FormItem> customFieldItems) {
+		this.customFieldItems = customFieldItems;
 	}
 
 	public int getSelectionSortOrder() {

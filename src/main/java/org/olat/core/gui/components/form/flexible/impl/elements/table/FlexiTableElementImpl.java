@@ -1969,7 +1969,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		for(String columnKey:columnKeys) {
 			for(int i=colModel.getColumnCount(); i-->0; ) {
 				FlexiColumnModel col = colModel.getColumnModel(i);
-				if(columnKey.equals(col.getColumnKey())) {
+				if(columnKey != null && columnKey.equals(col.getColumnKey())) {
 					index.add(Integer.valueOf(col.getColumnIndex()));
 				}
 			}

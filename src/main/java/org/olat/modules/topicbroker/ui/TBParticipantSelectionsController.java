@@ -196,11 +196,8 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		for (TBSelection selection : selections) {
 			TBSelectionRow row = new TBSelectionRow();
 			TBTopic topic = selection.getTopic();
-			row.setTopicRef(topic);
-			row.setTitle(topic.getTitle());
+			row.setTopic(topic);
 			row.setTitleAbbr(TBUIFactory.getTitleAbbr(topic.getTitle()));
-			row.setMinParticipants(topic.getMinParticipants());
-			row.setMaxParticipants(topic.getMaxParticipants());
 			row.setTopicSortOrder(topic.getSortOrder());
 			
 			row.setSelectionRef(selection);
@@ -227,7 +224,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 			return;
 		}
 		
-		FormLink selectionToolsLink = uifactory.addFormLink("tools_" + row.getTopicRef().getKey(), "selectionTools", "", null, null, Link.NONTRANSLATED);
+		FormLink selectionToolsLink = uifactory.addFormLink("tools_" + row.getTopic().getKey(), "selectionTools", "", null, null, Link.NONTRANSLATED);
 		selectionToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		selectionToolsLink.setUserObject(row);
 		row.setSelectionToolsLink(selectionToolsLink);
@@ -439,11 +436,11 @@ public class TBParticipantSelectionsController extends FormBasicController {
 				Link link = (Link)source;
 				String cmd = link.getCommand();
 				if (CMD_ENROLL.equals(cmd)) {
-					doEnrollTopic(ureq, row.getTopicRef());
+					doEnrollTopic(ureq, row.getTopic());
 				} else if (CMD_WITHDRAW.endsWith(cmd)) {
-					doWithdrawTopic(ureq, row.getTopicRef());
+					doWithdrawTopic(ureq, row.getTopic());
 				} else if (CMD_UNSELECT.equals(cmd)) {
-					doUnselectTopic(ureq, row.getTopicRef());
+					doUnselectTopic(ureq, row.getTopic());
 				}
 			}
 		}

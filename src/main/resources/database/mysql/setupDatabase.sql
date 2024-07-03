@@ -4546,6 +4546,30 @@ create table o_tb_topic (
    fk_broker bigint,
    primary key (id)
 );
+create table o_tb_custom_field_definition (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_identifier varchar(64),
+   t_type varchar(64),
+   t_name varchar(1024),
+   t_display_in_table bool not null default false,
+   t_sort_order bigint not null,
+   fk_broker bigint not null,
+   primary key (id)
+);
+create table o_tb_custom_field (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_text text,
+   t_filename varchar(1024),
+   fk_definition bigint not null,
+   t_deleted_date datetime,
+   fk_topic bigint not null,
+   fk_metadata bigint,
+   primary key (id)
+);
 create table o_tb_selection (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -4567,6 +4591,7 @@ create table o_tb_audit_log (
    fk_broker bigint,
    fk_participant bigint,
    fk_topic bigint,
+   fk_custom_field_definition bigint,
    fk_selection bigint,
    primary key (id)
 );
@@ -4994,6 +5019,8 @@ alter table o_badge_organization ENGINE = InnoDB;
 alter table o_tb_broker ENGINE = InnoDB;
 alter table o_tb_participant ENGINE = InnoDB;
 alter table o_tb_topic ENGINE = InnoDB;
+alter table o_tb_custom_field_definition ENGINE = InnoDB;
+alter table o_tb_custom_field ENGINE = InnoDB;
 alter table o_tb_selection ENGINE = InnoDB;
 alter table o_tb_audit_log ENGINE = InnoDB;
 
@@ -6026,6 +6053,10 @@ create index idx_tb_broker__enr_start_idx on o_tb_broker (t_enrollment_start_dat
 alter table o_tb_participant add constraint tbpart_broker_idx foreign key (fk_broker) references o_tb_broker (id);
 alter table o_tb_participant add constraint tbpart_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_tb_topic add constraint tbtopic_broker_idx foreign key (fk_broker) references o_tb_broker (id);
+alter table o_tb_custom_field_definition add constraint tbcfielddef_broker_idx foreign key (fk_broker) references o_tb_broker (id);
+alter table o_tb_custom_field add constraint tbcfield_def_idx foreign key (fk_definition) references o_tb_custom_field_definition (id);
+alter table o_tb_custom_field add constraint tbcfield_topic_idx foreign key (fk_topic) references o_tb_topic (id);
+alter table o_tb_custom_field add constraint tbcfield_metadata_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 alter table o_tb_selection add constraint tbselection_creator_idx foreign key (fk_creator) references o_bs_identity (id);
 alter table o_tb_selection add constraint tbselection_topic_idx foreign key (fk_topic) references o_tb_topic (id);
 alter table o_tb_selection add constraint tbselection_part_idx foreign key (fk_participant) references o_tb_participant (id);

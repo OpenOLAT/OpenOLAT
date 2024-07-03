@@ -19,8 +19,12 @@
  */
 package org.olat.modules.topicbroker.ui;
 
+import java.util.List;
+
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.updown.UpDown;
+import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicRef;
 
@@ -42,6 +46,8 @@ public class TBTopicRow implements TBTopicRef {
 	private String groupRestrictions;
 	private String createdByDisplayname;
 	private int sortOrder;
+	private List<TBCustomField> customFields;
+	private List<FormItem> customFieldItems;
 	private UpDown upDown;
 	private FormLink toolsLink;
 	private String detailsComponentName;
@@ -137,6 +143,22 @@ public class TBTopicRow implements TBTopicRef {
 
 	public void setSortOrder(int sortOrder) {
 		this.sortOrder = sortOrder;
+	}
+
+	public List<TBCustomField> getCustomFields() {
+		return customFields;
+	}
+
+	public void setCustomFields(List<TBCustomField> customFields) {
+		this.customFields = customFields;
+	}
+
+	public List<FormItem> getCustomFieldItems() {
+		return customFieldItems;
+	}
+
+	public void setCustomFieldItems(List<FormItem> customFieldItems) {
+		this.customFieldItems = customFieldItems;
 	}
 
 	public UpDown getUpDown() {

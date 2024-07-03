@@ -32,6 +32,7 @@ import org.olat.modules.topicbroker.TBAuditLog;
 import org.olat.modules.topicbroker.TBAuditLogSearchParams;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBBrokerRef;
+import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBTopic;
@@ -52,24 +53,32 @@ public class TBAuditLogDAO {
 	private DB dbInstance;
 	
 	public TBAuditLog create(TBAuditLog.Action action, String before, String after, Identity doer, TBBroker broker) {
-		return create(action, before, after, doer, broker, null, null, null);
+		return create(action, before, after, doer, broker, null, null, null, null);
 	}
 
 	public TBAuditLog create(TBAuditLog.Action action, String before, String after, Identity doer, TBParticipant participant) {
-		return create(action, before, after, doer, participant.getBroker(), participant, null, null);
+		return create(action, before, after, doer, participant.getBroker(), participant, null, null, null);
 	}
 	
 	public TBAuditLog create(TBAuditLog.Action action, String before, String after, Identity doer, TBTopic topic) {
-		return create(action, before, after, doer, topic.getBroker(), null, topic, null);
+		return create(action, before, after, doer, topic.getBroker(), null, topic, null, null);
+	}
+	
+	public TBAuditLog create(TBAuditLog.Action action, String before, String after, Identity doer, TBCustomFieldDefinition definition) {
+		return create(action, before, after, doer, definition.getBroker(), null, null, definition, null);
+	}
+
+	public TBAuditLog create(TBAuditLog.Action action, String before, String after, Identity doer, TBCustomFieldDefinition definition, TBTopic topic) {
+		return create(action, before, after, doer, definition.getBroker(), null, topic, definition, null);
 	}
 
 	public TBAuditLog create(TBAuditLog.Action action, String before, String after, Identity doer, TBSelection selection) {
 		return create(action, before, after, doer, selection.getTopic().getBroker(), selection.getParticipant(),
-				selection.getTopic(), selection);
+				selection.getTopic(), null, selection);
 	}
 	
-	TBAuditLog create(TBAuditLog.Action action, String before, String after, Identity doer,
-			TBBroker broker, TBParticipant participant, TBTopic topic, TBSelection selection) {
+	TBAuditLog create(TBAuditLog.Action action, String before, String after, Identity doer, TBBroker broker,
+			TBParticipant participant, TBTopic topic, TBCustomFieldDefinition definition, TBSelection selection) {
 		TBAuditLogImpl auditLog = new TBAuditLogImpl();
 		auditLog.setCreationDate(new Date());
 		auditLog.setAction(action);
@@ -79,6 +88,7 @@ public class TBAuditLogDAO {
 		auditLog.setBroker(broker);
 		auditLog.setParticipant(participant);
 		auditLog.setTopic(topic);
+		auditLog.setDefinition(definition);
 		auditLog.setSelection(selection);
 		dbInstance.getCurrentEntityManager().persist(auditLog);
 		return auditLog;

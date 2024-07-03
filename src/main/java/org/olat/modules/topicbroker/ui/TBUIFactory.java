@@ -26,6 +26,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBBrokerStatus;
+import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelectionStatus;
 import org.olat.modules.topicbroker.TBTopic;
@@ -217,6 +218,17 @@ public class TBUIFactory {
 					String.valueOf(topic.getMaxParticipants()));
 		}
 		return participants;
+	}
+	
+	public static String getTranslatedType(Translator translator, TBCustomFieldType type) {
+		if (type != null) {
+			switch (type) {
+			case text: return translator.translate("custom.field.def.type.text");
+			case file: return translator.translate("custom.field.def.type.file");
+			default:
+			}
+		}
+		return null;
 	}
 	
 	public static String getConfigInfos(Translator translator, TBBroker broker, boolean withMethod) {

@@ -71,7 +71,7 @@ public class TBParticipantImpl implements Persistable, TBParticipant {
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
 	private Identity identity;
-	@ManyToOne(targetEntity=TBBrokerImpl.class, fetch=FetchType.LAZY, optional=true)
+	@ManyToOne(targetEntity=TBBrokerImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_broker", nullable=false, insertable=true, updatable=false)
 	private TBBroker broker;
 	

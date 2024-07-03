@@ -103,9 +103,9 @@ public class TopicBrokerStorage {
 	
 	private VFSLeaf getFirstLeaf(TBTopic topic, String path) {
 		if (topic != null) {
-			VFSContainer imageContainer = getOrCreateContainer(topic, path);
-			if (!imageContainer.getItems().isEmpty()) {
-				VFSItem vfsItem = imageContainer.getItems().get(0);
+			VFSContainer vfsContainer = getOrCreateContainer(topic, path);
+			if (!vfsContainer.getItems().isEmpty()) {
+				VFSItem vfsItem = vfsContainer.getItems().get(0);
 				if (vfsItem instanceof VFSLeaf) {
 					return (VFSLeaf)vfsItem;
 				}
@@ -114,17 +114,17 @@ public class TopicBrokerStorage {
 		return null;
 	}
 	
-	private void tryToStore(VFSContainer imageContainer, Identity savedBy, File file, String filename) {
-		imageContainer.deleteSilently();
+	private void tryToStore(VFSContainer vfsContainer, Identity savedBy, File file, String filename) {
+		vfsContainer.deleteSilently();
 		
 		String cleandFilename = FileUtils.cleanFilename(filename);
-		VFSLeaf vfsLeaf = VFSManager.resolveOrCreateLeafFromPath(imageContainer, cleandFilename);
+		VFSLeaf vfsLeaf = VFSManager.resolveOrCreateLeafFromPath(vfsContainer, cleandFilename);
 		VFSManager.copyContent(file, vfsLeaf, savedBy);
 	}
 	
 	private void deleteContainer(TBTopic topic, String path) {
-		VFSContainer imageContainer = getOrCreateContainer(topic, path);
-		imageContainer.deleteSilently();
+		VFSContainer vfsContainer = getOrCreateContainer(topic, path);
+		vfsContainer.deleteSilently();
 	}
 
 	public void deleteLeafs(TBBroker broker) {

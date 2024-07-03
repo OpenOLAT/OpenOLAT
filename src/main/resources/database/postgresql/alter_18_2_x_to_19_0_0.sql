@@ -154,6 +154,30 @@ create table o_tb_topic (
    fk_broker int8 not null,
    primary key (id)
 );
+create table o_tb_custom_field_definition (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   t_identifier varchar(64),
+   t_type varchar(64),
+   t_name varchar(1024),
+   t_display_in_table bool not null default false,
+   t_sort_order int8 not null,
+   t_deleted_date timestamp,
+   fk_broker int8 not null,
+   primary key (id)
+);
+create table o_tb_custom_field (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   t_text text,
+   t_filename varchar(1024),
+   fk_definition int8 not null,
+   fk_topic int8 not null,
+   fk_metadata int8,
+   primary key (id)
+);
 create table o_tb_selection (
    id bigserial,
    creationdate timestamp not null,
@@ -175,6 +199,7 @@ create table o_tb_audit_log (
    fk_broker int8,
    fk_participant int8,
    fk_topic int8,
+   fk_custom_field_definition int8,
    fk_selection int8,
    primary key (id)
 );
@@ -197,6 +222,14 @@ create index idx_tbtopic_to_broker_idx on o_tb_topic (fk_broker);
 alter table o_tb_topic add constraint tbtopic_broker_idx foreign key (fk_broker) references o_tb_broker (id);
 create index idx_tbpart_to_broker_idx on o_tb_participant (fk_broker);
 alter table o_tb_participant add constraint tbpart_broker_idx foreign key (fk_broker) references o_tb_broker (id);
+create index idx_tbcfielddef_to_broker_idx on o_tb_custom_field_definition (fk_broker);
+alter table o_tb_custom_field_definition add constraint tbcfielddef_broker_idx foreign key (fk_broker) references o_tb_broker (id);
+create index idx_tbcfield_to_def_idx on o_tb_custom_field (fk_definition);
+alter table o_tb_custom_field add constraint tbcfield_def_idx foreign key (fk_definition) references o_tb_custom_field_definition (id);
+create index idx_tbcfield_to_topic_idx on o_tb_custom_field (fk_topic);
+alter table o_tb_custom_field add constraint tbcfield_topic_idx foreign key (fk_topic) references o_tb_topic (id);
+create index idx_tbcfield_to_metadata_idx on o_tb_custom_field (fk_metadata);
+alter table o_tb_custom_field add constraint tbcfield_metadata_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 create index idx_tbselection_to_topic_idx on o_tb_selection (fk_topic);
 alter table o_tb_selection add constraint tbselection_topic_idx foreign key (fk_topic) references o_tb_topic (id);
 create index idx_tbselection_to_part_idx on o_tb_selection (fk_participant);

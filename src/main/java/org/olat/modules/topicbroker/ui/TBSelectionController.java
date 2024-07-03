@@ -27,6 +27,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -40,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -69,12 +74,21 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
+import org.olat.core.gui.render.DomWrapperElement;
+import org.olat.core.id.Roles;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBCustomField;
+import org.olat.modules.topicbroker.TBCustomFieldDefinition;
+import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
+import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
+import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
@@ -103,6 +117,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private static final String CMD_SELECT_LAST = "select_last";
 	private static final String CMD_SELECT_POS = "select_pos_";
 	private static final String CMD_DETAILS = "details";
+	private static final String CMD_OPEN_FILE = "open.file";
 	
 	private InfoPanel configPanel;
 	private SingleSelection maxEnrollmentsEl;
@@ -116,17 +131,23 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private SelectionToolsController selectionToolsCtrl;
 	private TopicToolsController topicToolsCtrl;
 	private LightboxController lightboxCtrl;
+	private Controller docEditorCtrl;
 	private TBSelectionDetailController detailCtrl;
 
 	private TBBroker broker;
 	private final TBPeriodEvaluator periodEvaluator;
 	private TBParticipant participant;
+	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
 	private int selectionsSize;
+	private final Roles roles;
+	private int counter = 0;
 
 	@Autowired
 	private TopicBrokerService topicBrokerService;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private DocEditorService docEditorService;
 	@Autowired
 	private Coordinator coordinator;
 	
@@ -137,6 +158,14 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		participant = topicBrokerService.getOrCreateParticipant(getIdentity(), broker, getIdentity());
 		statusRenderer = new TBSelectionStatusRenderer();
 		
+		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
+		definitionSearchParams.setBroker(broker);
+		customFieldDefinitionsInTable = topicBrokerService.getCustomFieldDefinitions(definitionSearchParams).stream()
+				.filter(TBCustomFieldDefinition::isDisplayInTable)
+				.sorted((d1, d2) -> Integer.compare(d1.getSortOrder(), d2.getSortOrder()))
+				.toList();
+		
+		roles = ureq.getUserSession().getRoles();
 		coordinator.getEventBus().registerFor(this, null, broker);
 		
 		initForm(ureq);
@@ -200,6 +229,13 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		maxParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		selectionColumnsModel.addFlexiColumnModel(maxParticipantsColumn);
 		
+		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
+		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitionsInTable) {
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
+			columnModel.setHeaderLabel(customFieldDefinition.getName());
+			selectionColumnsModel.addFlexiColumnModel(columnModel);
+		}
+		
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.upDown));
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SelectionCols.selectionTools);
@@ -227,6 +263,13 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		maxParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		maxParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		selectionColumnsModel.addFlexiColumnModel(maxParticipantsColumn);
+		
+		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
+		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitionsInTable) {
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
+			columnModel.setHeaderLabel(customFieldDefinition.getName());
+			selectionColumnsModel.addFlexiColumnModel(columnModel);
+		}
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SelectionCols.topicTools);
 		toolsCol.setAlwaysVisible(true);
@@ -264,6 +307,15 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		searchParams.setBroker(broker);
 		List<TBTopic> topics = topicBrokerService.getTopics(searchParams);
 		
+		TBCustomFieldSearchParams customFieldsSearchParams = new TBCustomFieldSearchParams();
+		customFieldsSearchParams.setBroker(broker);
+		customFieldsSearchParams.setFetchDefinition(true);
+		customFieldsSearchParams.setFetchVfsMetadata(true);
+		Map<Long, Map<Long, TBCustomField>> topicToDefinitionToCustomFields = topicBrokerService
+				.getCustomFields(customFieldsSearchParams).stream()
+				.collect(Collectors.groupingBy(customField -> customField.getTopic().getKey(),
+						Collectors.toMap(customField -> customField.getDefinition().getKey(), Function.identity())));
+		
 		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 		selectionSearchParams.setBroker(broker);
 		selectionSearchParams.setIdentity(getIdentity());
@@ -279,11 +331,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		List<TBSelectionRow> selectionRows = new ArrayList<>();
 		for (TBTopic topic : topics) {
 			TBSelectionRow row = new TBSelectionRow();
-			row.setTopicRef(topic);
-			row.setTitle(topic.getTitle());
+			row.setTopic(topic);
 			row.setTitleAbbr(TBUIFactory.getTitleAbbr(topic.getTitle()));
-			row.setMinParticipants(topic.getMinParticipants());
-			row.setMaxParticipants(topic.getMaxParticipants());
 			row.setParticipants(TBUIFactory.getParticipantRange(getTranslator(), topic));
 			row.setTopicSortOrder(topic.getSortOrder());
 			
@@ -298,6 +347,12 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				selectionRows.add(row);
 			}
 			
+			if (!customFieldDefinitionsInTable.isEmpty()) {
+				forgeCustomFields(
+						row,
+						topicToDefinitionToCustomFields.getOrDefault(row.getTopic().getKey(), Map.of())
+						);
+			}
 			forgeThumbnail(row, topic);
 			forgeToolsLink(row);
 			forgeCardButtons(row);
@@ -335,6 +390,50 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		}
 		return true;
 	}
+	
+	private void forgeCustomFields(TBSelectionRow row, Map<Long, TBCustomField> definitionKeyToCustomField) {
+		row.setCustomFields(new ArrayList<>(definitionKeyToCustomField.values()));
+		List<FormItem> customFieldItems = new ArrayList<>(customFieldDefinitionsInTable.size());
+		
+		for (TBCustomFieldDefinition definition : customFieldDefinitionsInTable) {
+			if (TBCustomFieldType.text == definition.getType()) {
+				TBCustomField customField = definitionKeyToCustomField.get(definition.getKey());
+				if (customField != null && StringHelper.containsNonWhitespace(customField.getText())) {
+					String text = Formatter.truncate(customField.getText(), 200);
+					StaticTextElement item = uifactory.addStaticTextElement("customfield_" + counter++, null, text, flc);
+					item.setLabel("noTransOnlyParam", new String[] {definition.getName()});
+					item.setDomWrapperElement(DomWrapperElement.span);
+					item.setStaticFormElement(false);
+					customFieldItems.add(item);
+				} else {
+					customFieldItems.add(null);
+				}
+			} else if (TBCustomFieldType.file == definition.getType()) {
+				FormLink link = null;
+				TBCustomField customField = definitionKeyToCustomField.get(definition.getKey());
+				if (customField != null && customField.getVfsMetadata() != null) {
+					VFSLeaf topicLeaf = topicBrokerService.getTopicLeaf(row.getTopic(), definition.getIdentifier());
+					if (topicLeaf != null && topicLeaf.exists()) {
+						link = uifactory.addFormLink("openfile_" + counter++, CMD_OPEN_FILE, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+						link.setLabel("noTransOnlyParam", new String[] {definition.getName()});
+						link.setI18nKey(StringHelper.escapeHtml(topicLeaf.getName()));
+						link.setUserObject(topicLeaf);
+						
+						DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, topicLeaf,
+								customField.getVfsMetadata(), false, DocEditorService.MODES_EDIT);
+						if (editorInfo.isNewWindow()) {
+							link.setNewWindow(true, true, false);
+						}
+					}
+				}
+				customFieldItems.add(link);
+			} else {
+				customFieldItems.add(null);
+			}
+		}
+		
+		row.setCustomFieldItems(customFieldItems);
+	}
 
 	private void forgeUpDown(TBSelectionRow row) {
 		if (!periodEvaluator.isSelectionPeriod()) {
@@ -371,46 +470,46 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			return;
 		}
 		
-		FormLink selectionToolsLink = uifactory.addFormLink("tools_" + row.getTopicRef().getKey(), "selectionTools", "", null, null, Link.NONTRANSLATED);
+		FormLink selectionToolsLink = uifactory.addFormLink("tools_" + row.getTopic().getKey(), "selectionTools", "", null, null, Link.NONTRANSLATED);
 		selectionToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		selectionToolsLink.setUserObject(row);
 		row.setSelectionToolsLink(selectionToolsLink);
 		
-		FormLink topicToolsLink = uifactory.addFormLink("tools_" + row.getTopicRef().getKey(), "topicTools", "", null, null, Link.NONTRANSLATED);
+		FormLink topicToolsLink = uifactory.addFormLink("tools_" + row.getTopic().getKey(), "topicTools", "", null, null, Link.NONTRANSLATED);
 		topicToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		topicToolsLink.setUserObject(row);
 		row.setTopicToolsLink(topicToolsLink);
 	}
 	
 	private void forgeCardButtons(TBSelectionRow row) {
-		FormLink detailsButton = uifactory.addFormLink("details_" + row.getTopicRef().getKey(), CMD_DETAILS, "topic.details", null, flc, Link.BUTTON);
+		FormLink detailsButton = uifactory.addFormLink("details_" + row.getTopic().getKey(), CMD_DETAILS, "topic.details", null, flc, Link.BUTTON);
 		detailsButton.setUserObject(row);
 		row.setDetailsButton(detailsButton);
 		
 		if (periodEvaluator.isWithdrawPeriod() && row.getSelectionRef() != null) {
-			FormLink unselectButton = uifactory.addFormLink("unselect_" + row.getTopicRef().getKey(), CMD_UNSELECT, "withdraw", null, flc, Link.BUTTON);
+			FormLink unselectButton = uifactory.addFormLink("unselect_" + row.getTopic().getKey(), CMD_UNSELECT, "withdraw", null, flc, Link.BUTTON);
 			unselectButton.setUserObject(row);
 			row.setUnselectButton(unselectButton);
 		}
 		
 		if (periodEvaluator.isSelectionPeriod() && row.getSelectionRef() == null) {
-			FormLink selectButton = uifactory.addFormLink("select_" + row.getTopicRef().getKey(), CMD_SELECT, "select", null, flc, Link.BUTTON);
+			FormLink selectButton = uifactory.addFormLink("select_" + row.getTopic().getKey(), CMD_SELECT, "select", null, flc, Link.BUTTON);
 			selectButton.setPrimary(true);
 			selectButton.setUserObject(row);
 			row.setSelectButton(selectButton);
 			
-			DropdownItem selectDropdown = uifactory.addDropdownMenu("selectdd_" + row.getTopicRef().getKey(), null, null, flc, getTranslator());
+			DropdownItem selectDropdown = uifactory.addDropdownMenu("selectdd_" + row.getTopic().getKey(), null, null, flc, getTranslator());
 			selectDropdown.setOrientation(DropdownOrientation.right);
 			selectDropdown.setPrimary(true);
 			row.setSelectDropdown(selectDropdown);
 			
-			FormLink selectFirstLink = uifactory.addFormLink("selectf_" + row.getTopicRef().getKey(), CMD_SELECT_FIRST, "", null, flc, Link.NONTRANSLATED);
+			FormLink selectFirstLink = uifactory.addFormLink("selectf_" + row.getTopic().getKey(), CMD_SELECT_FIRST, "", null, flc, Link.NONTRANSLATED);
 			selectFirstLink.setI18nKey(translate("select.pos.first"));
 			selectFirstLink.setIconLeftCSS("o_icon o_icon-fw o_icon_tb_select_first");
 			selectFirstLink.setUserObject(row);
 			selectDropdown.addElement(selectFirstLink);
 			
-			FormLink selectLastLink = uifactory.addFormLink("selectl_" + row.getTopicRef().getKey(), CMD_SELECT_LAST, "", null, flc, Link.NONTRANSLATED);
+			FormLink selectLastLink = uifactory.addFormLink("selectl_" + row.getTopic().getKey(), CMD_SELECT_LAST, "", null, flc, Link.NONTRANSLATED);
 			selectLastLink.setI18nKey(translate("select.pos.last"));
 			selectLastLink.setIconLeftCSS("o_icon o_icon-fw o_icon_tb_select_last");
 			selectLastLink.setUserObject(row);
@@ -420,7 +519,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			
 			for (int i = 1; i <= selectionsSize + 1; i++) {
 				String cmd = CMD_SELECT_POS + i;
-				FormLink selectPosLink = uifactory.addFormLink("selectp_" + row.getTopicRef().getKey() + "_" + i, cmd, "", null, flc, Link.NONTRANSLATED);
+				FormLink selectPosLink = uifactory.addFormLink("selectp_" + row.getTopic().getKey() + "_" + i, cmd, "", null, flc, Link.NONTRANSLATED);
 				selectPosLink.setI18nKey(translate("select.pos", String.valueOf(i)));
 				selectPosLink.setUserObject(row);
 				selectDropdown.addElement(selectPosLink);
@@ -489,6 +588,13 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> cmps = new ArrayList<>();
 		if (rowObject instanceof TBSelectionRow selectionRow) {
+			if (selectionRow.getCustomFieldItems() != null) {
+				for (FormItem formItem : selectionRow.getCustomFieldItems()) {
+					if (formItem != null) {
+						cmps.add(formItem.getComponent());
+					}
+				}
+			}
 			if (selectionRow.getDetailsButton() != null) {
 				cmps.add(selectionRow.getDetailsButton().getComponent());
 			}
@@ -520,6 +626,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		if (source == lightboxCtrl) {
 			loadModel(true);
 			cleanUp();
+		} else if (docEditorCtrl == source) {
+			cleanUp();
 		} else if (selectionToolsCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				if (toolsCalloutCtrl != null) {
@@ -543,11 +651,13 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private void cleanUp() {
 		removeAsListenerAndDispose(detailCtrl);
 		removeAsListenerAndDispose(lightboxCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(selectionToolsCtrl);
 		removeAsListenerAndDispose(topicToolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		detailCtrl = null;
 		lightboxCtrl = null;
+		docEditorCtrl = null;
 		topicToolsCtrl = null;
 		selectionToolsCtrl = null;
 		toolsCalloutCtrl = null;
@@ -558,7 +668,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		if (event instanceof UpDownEvent ude && source instanceof UpDown upDown) {
 			Object userObject = upDown.getUserObject();
 			if (userObject instanceof TBSelectionRow row) {
-				doMoveSelection(row.getTopicRef(), ude.getDirection());
+				doMoveSelection(row.getTopic(), ude.getDirection());
 			}
 		}
 		super.event(ureq, source, event);
@@ -573,25 +683,29 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				loadModel(true);
 			}
 		} else if (source instanceof FormLink link) {
+			String cmd = link.getCmd();
 			if (link.getUserObject() instanceof TBSelectionRow row) {
-				String cmd = link.getCmd();
 				if (CMD_DETAILS.equals(cmd)) {
-					doOpenDetails(ureq, row.getTopicRef());
+					doOpenDetails(ureq, row.getTopic(), row.getCustomFields());
 				} else if (CMD_SELECT.equals(cmd)) {
-					doSelectTopic(row.getTopicRef(), null);
+					doSelectTopic(row.getTopic(), null);
 				} else if (CMD_SELECT_FIRST.equals(cmd)) {
-					doSelectTopic(row.getTopicRef(), Integer.valueOf(1));
+					doSelectTopic(row.getTopic(), Integer.valueOf(1));
 				} else if (CMD_SELECT_LAST.equals(cmd)) {
-					doSelectTopic(row.getTopicRef(), null);
+					doSelectTopic(row.getTopic(), null);
 				} else if (cmd.startsWith(CMD_SELECT_POS)) {
 					int sortOrder = Integer.valueOf(cmd.substring(CMD_SELECT_POS.length()));
-					doSelectTopic(row.getTopicRef(), sortOrder);
+					doSelectTopic(row.getTopic(), sortOrder);
 				} else if (CMD_UNSELECT.equals(cmd)) {
-					doUnselectTopic(row.getTopicRef());
+					doUnselectTopic(row.getTopic());
 				} else if ("selectionTools".equals(cmd)) {
 					doOpenSelectionTools(ureq, row, link);
 				} else if ("topicTools".equals(cmd)) {
 					doOpenTopicTools(ureq, row, link);
+				}
+			} else if (link.getUserObject() instanceof VFSLeaf topicLeaf) {
+				if (CMD_OPEN_FILE.equals(link.getCmd())) {
+					doOpenOrDownload(ureq, topicLeaf);
 				}
 			}
 		}
@@ -670,21 +784,44 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		loadModel(false);
 	}
 	
-	private void doOpenDetails(UserRequest ureq, TBTopicRef topic) {
+	private void doOpenDetails(UserRequest ureq, TBTopic topic, List<TBCustomField> customFields) {
 		removeAsListenerAndDispose(detailCtrl);
 		
-		TBTopic reloadedTopic = topicBrokerService.getTopic(topic);
-		if (reloadedTopic == null) {
-			loadModel(true);
-			return;
-		}
-		
-		detailCtrl = new TBSelectionDetailController(ureq, getWindowControl(), reloadedTopic, participant);
+		detailCtrl = new TBSelectionDetailController(ureq, getWindowControl(), broker, participant, topic, customFields);
 		listenTo(detailCtrl);
 		
 		lightboxCtrl = new LightboxController(ureq, getWindowControl(), detailCtrl);
 		listenTo(lightboxCtrl);
 		lightboxCtrl.activate();
+	}
+	
+	private void doOpenOrDownload(UserRequest ureq, VFSLeaf topicLeaf) {
+		if (topicLeaf == null || !topicLeaf.exists()) {
+			showWarning("error.file.does.not.exist");
+			return;
+		}
+		
+		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+				ureq.getUserSession().getRoles(), topicLeaf, topicLeaf.getMetaInfo(),
+				false, DocEditorService.MODES_VIEW);
+		if (editorInfo.isEditorAvailable()) {
+			doOpenFile(ureq, topicLeaf);
+		} else {
+			doDownload(ureq, topicLeaf);
+		}
+	}
+	
+	private void doOpenFile(UserRequest ureq, VFSLeaf topicLeaf) {
+		DocEditorConfigs configs = DocEditorConfigs.builder().build(topicLeaf);
+		DocEditorOpenInfo docEditorOpenInfo = docEditorService.openDocument(ureq, getWindowControl(), configs,
+				DocEditorService.MODES_VIEW);
+		docEditorCtrl = listenTo(docEditorOpenInfo.getController());
+	}
+	
+	private void doDownload(UserRequest ureq, VFSLeaf topicLeaf) {
+		VFSMediaResource resource = new VFSMediaResource(topicLeaf);
+		resource.setDownloadable(true);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
 	private void doOpenSelectionTools(UserRequest ureq, TBSelectionRow row, FormLink link) {
@@ -762,11 +899,11 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				Link link = (Link)source;
 				String cmd = link.getCommand();
 				if (CMD_UP.equals(cmd)) {
-					doMoveSelection(row.getTopicRef(), Direction.UP);
+					doMoveSelection(row.getTopic(), Direction.UP);
 				} else if (CMD_DOWN.equals(cmd)) {
-					doMoveSelection(row.getTopicRef(), Direction.DOWN);
+					doMoveSelection(row.getTopic(), Direction.DOWN);
 				} else if (CMD_UNSELECT.equals(cmd)) {
-					doUnselectTopic(row.getTopicRef());
+					doUnselectTopic(row.getTopic());
 				}
 			}
 		}
@@ -795,7 +932,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 					
 					for (int i = 1; i <= selectionsSize + 1; i++) {
 						String cmd = CMD_SELECT_POS + i;
-						String name = "selectp_" + row.getTopicRef().getKey() + "_" + i;
+						String name = "selectp_" + row.getTopic().getKey() + "_" + i;
 						Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.NONTRANSLATED);
 						link.setCustomDisplayText(translate("select.pos", String.valueOf(i)));
 						mainVC.put(name, link);
@@ -828,14 +965,14 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				Link link = (Link)source;
 				String cmd = link.getCommand();
 				if (CMD_SELECT_FIRST.equals(cmd)) {
-					doSelectTopic(row.getTopicRef(), Integer.valueOf(1));
+					doSelectTopic(row.getTopic(), Integer.valueOf(1));
 				} else if (CMD_SELECT_LAST.equals(cmd)) {
-					doSelectTopic(row.getTopicRef(), null);
+					doSelectTopic(row.getTopic(), null);
 				} else if (cmd.startsWith(CMD_SELECT_POS)) {
 					int sortOrder = Integer.valueOf(cmd.substring(CMD_SELECT_POS.length()));
-					doSelectTopic(row.getTopicRef(), sortOrder);
+					doSelectTopic(row.getTopic(), sortOrder);
 				} else if (CMD_UNSELECT.equals(cmd)) {
-					doUnselectTopic(row.getTopicRef());
+					doUnselectTopic(row.getTopic());
 				}
 			}
 		}

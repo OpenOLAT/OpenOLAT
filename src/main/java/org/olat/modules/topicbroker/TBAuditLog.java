@@ -44,6 +44,8 @@ public interface TBAuditLog extends CreateInfo {
 	
 	TBTopic getTopic();
 	
+	TBCustomFieldDefinition getDefinition();
+	
 	TBSelection getSelection();
 	
 	enum Action {
@@ -59,6 +61,13 @@ public interface TBAuditLog extends CreateInfo {
 		topicUpdateFile,
 		topicDeleteFile,
 		topicDeleteSoftly,
+		cfDefinitionCreate,
+		cfDefinitionUpdateContent,
+		cfDefinitionUpdateSortOrder,
+		cfDefinitionDeleteSoftly,
+		customFieldCreate,
+		customFieldUpdateContent,
+		customFieldDeletePermanently,
 		selectionCreate,
 		selectionUpdateSortOrder,
 		selectionEnrollManually,

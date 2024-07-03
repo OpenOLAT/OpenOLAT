@@ -75,11 +75,11 @@ public class TBSelectionDetailHeaderController extends FormBasicController {
 	@Autowired
 	private TopicBrokerService topicBrokerService;
 
-	public TBSelectionDetailHeaderController(UserRequest ureq, WindowControl wControl, TBTopic topic, TBParticipant participant) {
+	public TBSelectionDetailHeaderController(UserRequest ureq, WindowControl wControl, TBBroker broker, TBParticipant participant, TBTopic topic) {
 		super(ureq, wControl, "selection_detail_header");
+		this.broker = broker;
 		this.topic = topic;
 		this.participant = participant;
-		broker = topic.getBroker();
 		topicKey = topic.getKey();
 		periodEvaluator = new TBPeriodEvaluator(broker);
 		

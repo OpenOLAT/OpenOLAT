@@ -226,6 +226,19 @@ public class TBTopicDAOTest extends OlatTestCase {
 		assertThat(sut.loadTopics(params)).containsExactlyInAnyOrder(topic1, topic2);
 	}
 	
+	@Test
+	public void shouldLoadTopics_fetch() {
+		TBTopic topic = createRandomTopic();
+		
+		TBTopicSearchParams params = new TBTopicSearchParams();
+		params.setTopic(topic);
+		params.setFetchIdentities(true);
+		params.setFetchBroker(true);
+		sut.loadTopics(params);
+		
+		// Just a syntay test
+	}
+	
 	private TBTopic createRandomTopic() {
 		return createRandomTopic(createRandomBroker());
 	}

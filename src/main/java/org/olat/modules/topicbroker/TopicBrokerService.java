@@ -75,11 +75,36 @@ public interface TopicBrokerService {
 	
 	public List<TBTopic> getTopics(TBTopicSearchParams searchParams);
 	
-	public void storeTopicLeaf(Identity doer, TBTopicRef topic, String identifier, File file, String filename);
+	public VFSLeaf storeTopicLeaf(Identity doer, TBTopicRef topic, String identifier, File file, String filename);
 	
 	public void deleteTopicLeaf(Identity doer, TBTopicRef topic, String identifier);
 	
 	public VFSLeaf getTopicLeaf(TBTopic topic, String identifier);
+	
+	public TBCustomFieldDefinition createCustomFieldDefinition(Identity doer, TBBrokerRef broker);
+	
+	public TBCustomFieldDefinition updateCustomFieldDefinition(Identity doer, TBCustomFieldDefinitionRef definition,
+			String identifier, String name, TBCustomFieldType type, boolean displayInTable);
+	
+	public void moveCustomFieldDefinition(Identity doer, TBCustomFieldDefinitionRef definition, boolean up);
+	
+	public void deleteCustomFieldDefinitionSoftly(Identity doer, TBCustomFieldDefinitionRef definition);
+	
+	public TBCustomFieldDefinition getCustomFieldDefinition(TBCustomFieldDefinitionRef definition);
+	
+	public List<TBCustomFieldDefinition> getCustomFieldDefinitions(TBCustomFieldDefinitionSearchParams searchParams);
+
+	public void createOrUpdateCustomField(Identity doer, TBCustomFieldDefinitionRef definition, TBTopicRef topic,
+			String text);
+	
+	public void createOrUpdateCustomFieldFile(Identity doer, TBTopic topic, TBCustomFieldDefinition definition,
+			File uploadFile, String uploadFileName);
+
+	public void deleteCustomFieldPermanently(Identity doer, TBCustomFieldDefinitionRef definition, TBTopicRef topic);
+
+	public void deleteCustomFieldFilePermanently(Identity doer, TBCustomFieldDefinition definition, TBTopic topic);
+	
+	public List<TBCustomField> getCustomFields(TBCustomFieldSearchParams searchParams);
 	
 	/**
 	 * Create a selection.
