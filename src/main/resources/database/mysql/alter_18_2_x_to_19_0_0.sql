@@ -163,6 +163,7 @@ create table o_tb_custom_field (
    t_filename varchar(1024),
    fk_definition bigint not null,
    fk_topic bigint not null,
+   fk_metadata bigint,
    primary key (id)
 );
 create table o_tb_selection (
@@ -174,7 +175,6 @@ create table o_tb_selection (
    fk_creator bigint not null,
    fk_participant bigint not null,
    fk_topic bigint not null,
-   fk_metadata bigint,
    primary key (id)
 );
 create table o_tb_audit_log (
