@@ -22,9 +22,7 @@ a.o_qpool_status {
 	    color: 				$o-qpool-status-color-bright;
 	}
 	&.o_qpool_status_review {
-	    background-color: 	$o-qpool-review-color;
-	    border-color: 		$o-qpool-review-color;
-	    color: 				$o-qpool-status-color-bright;
+		@extend %o_labeled_yellow;
 	}
 	&.o_qpool_status_revised {
 	    background-color: 	$o-qpool-revised-color;
@@ -47,7 +45,7 @@ a.o_qpool_status {
 	    background-color: 	darken($o-qpool-draft-color,10%);
 	}
 	&.o_qpool_status_review {
-	    background-color: 	darken($o-qpool-review-color,10%);
+		background-color: darken($o-labeled-yellow-bg-color,10%);
 	}
 	&.o_qpool_status_revised {
 	    background-color: 	darken($o-qpool-revised-color,10%);
@@ -68,8 +66,7 @@ a.o_qpool_status {
 	    color: 				$o-qpool-draft-color;
 	}
 	&.o_qpool_status_review_light {
-	    border-color: 		$o-qpool-review-color;
-	    color: 				$o-qpool-review-color-dark;
+		@extend %o_labeled_light_yellow;
 	}
 	&.o_qpool_status_revised_light {
 	    border-color: 		$o-qpool-revised-color;
@@ -93,7 +90,7 @@ a.o_qpool_status {
 }
 .btn-arrow-right.o_qpool_qitem_review {
 	background: $o-qpool-arrow-bg-color;
-	border-bottom-color: $o-qpool-review-color;
+	border-bottom-color: $o-labeled-yellow-border-color;
 	border-bottom-width: $o-qpool-arrow-border-bottom-width
 }
 .btn-arrow-right.o_qpool_qitem_revised {

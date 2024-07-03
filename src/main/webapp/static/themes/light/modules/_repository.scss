@@ -318,10 +318,7 @@ a.o_repo_tools_status {
 	    color: $o-repo-status-color-bright;
 	}
 	&.o_repo_status_review {
-	    background-color:$o-repo-review-color;
-	    border-color: $o-repo-review-color;
-	    color: $o-repo-status-color-bright;
-		text-shadow: 0 0 3px #555;    
+	    @extend %o_labeled_yellow;
 	}
 	&.o_repo_status_coachpublished {
 	    background-color: $o-repo-coachpublished-color;
@@ -356,7 +353,7 @@ a.o_repo_tools_status {
 	    background-color: darken($o-repo-preparation-color,10%);
 	}
 	&.o_repo_status_review {
-	    background-color: darken($o-repo-review-color,10%);
+		background-color: darken($o-labeled-yellow-bg-color,10%);
 	}
 	&.o_repo_status_coachpublished {
 	    background-color: darken($o-repo-coachpublished-color,10%);
@@ -383,8 +380,7 @@ a.o_repo_tools_status {
 	    color: 				$o-repo-preparation-color;
 	}
 	&.o_repo_status_review {
-	    border-color: 		$o-repo-review-color;
-	    color: 				$o-repo-review-color;
+	    @extend %o_labeled_light_yellow;
 	}
 	&.o_repo_status_coachpublished {
 	    border-color: 		$o-repo-published-color;

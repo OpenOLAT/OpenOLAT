@@ -46,9 +46,7 @@
 			color: 				$o-qual-status-color-bright;
 		}
 		&.o_qual_dc_status_ready {
-			background-color: 	$o-qual-dc-ready-color;
-			border-color: 		$o-qual-dc-ready-color;
-			color: 				$o-qual-status-color-bright;
+			@extend %o_labeled_yellow;
 		}
 		&.o_qual_dc_status_running {
 			background-color: 	$o-qual-dc-running-color;
@@ -66,7 +64,7 @@
 			background-color: 	darken($o-qual-dc-preparation-color,10%);
 		}
 		&.o_qual_dc_status_ready {
-			background-color: 	darken($o-qual-dc-ready-color,10%);
+			background-color: darken($o-labeled-yellow-bg-color,10%);
 		}
 		&.o_qual_dc_status_running {
 			background-color: 	darken($o-qual-dc-running-color,10%);
@@ -95,8 +93,7 @@
 			color: 				$o-qual-dc-preparation-color;
 		}
 		&.o_qual_dc_status_ready_light {
-			border-color: 		$o-qual-dc-ready-color;
-			color: 				$o-qual-dc-ready-color-dark;
+			@extend %o_labeled_light_yellow;
 		}
 		&.o_qual_dc_status_running_light {
 			border-color: 		$o-qual-dc-running-color;
@@ -332,8 +329,7 @@
 	color: 				$o-qual-prev-regular-color;
 }
 .o_qual_prev_changed_light {
-	border-color: 		$o-qual-prev-changed-color;
-	color: 				$o-qual-prev-changed-color;
+	@extend %o_labeled_light_yellow;
 }
 .o_qual_prev_blacklisted_light {
 	border-color: 		$o-qual-prev-blacklisted-color;

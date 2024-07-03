@@ -489,7 +489,6 @@ $o-cat2-tax-launcher-square-font-size	: 14px !default;
 
 /* Repository */
 $o-repo-preparation-color			: #4a6785;	/* blue */
-$o-repo-review-color				: #FCCA46;	/* yellow */
 $o-repo-coachpublished-color		: #1DC63F;	/* green-light */
 $o-repo-published-color				: #14892c;	/* green */
 $o-repo-closed-color				: #99583D;	/* brown */
@@ -506,7 +505,6 @@ $o-ac-method-border					: 1px solid #e7e7e7 !default;
 $o-ac-method-border-radius			: $panel-border-radius !default;
 
 /* Feed (Blog/Podcast) */
-$o-feed-draft-color					: $o-repo-review-color;			/* yellow */
 $o-feed-planned-color				: $o-repo-preparation-color;	/* blue */
 $o-feed-published-color				: $o-repo-published-color;		/* green */
 $o-feed-status-color-bright			: #fff;
@@ -987,8 +985,6 @@ $o-box-plot-quartile-fill		 			: lighten($brand-primary, 45%) !default;
 $o-qual-status-color-dark			: #333;
 $o-qual-status-color-bright			: #fff;
 $o-qual-dc-preparation-color		: #4a6785;
-$o-qual-dc-ready-color				: #ffd351;
-$o-qual-dc-ready-color-dark			: #333;
 $o-qual-dc-running-color			: #993333;
 $o-qual-dc-finished-color			: #14892c;
 $o-qual-exec-future-color			: #4a6785;
@@ -1000,7 +996,6 @@ $o-qual-exec-over-color				: #aaa;
 $o-qual-hm-base-background-color	: #337ab7;
 $o-qual-prev-data-collection-color	: $o-repo-trash-color !default;
 $o-qual-prev-regular-color			: $o-repo-preparation-color !default;
-$o-qual-prev-changed-color			: $o-repo-review-color !default;
 $o-qual-prev-blacklisted-color		: $o-repo-deleted-color !default;
 
 /* Invitation */
@@ -1201,6 +1196,10 @@ $o-slider-handler-background-color	: $brand-primary !default;
 $o-labeled_color					: #fff !default;
 $o-labeled_bg-color					: #777 !default;
 $o-labeled-light-bg-color			: $o-toolbar-bg-color !default;
+$o-labeled-yellow-color				: #574000 !default;
+$o-labeled-yellow-bg-color			: #FBD774 !default;
+$o-labeled-yellow-border-color		: #FCCA46 !default;
+$o-labeled-yellow-light-bg-color		: #FFFFFF !default;
 
 /* QPool */
 $o-qpool-arrow-bg-color				: $o-toolbar-bg-color !default;
@@ -1211,8 +1210,6 @@ $o-qpool-arrow-selected-color		: $o-navbar-link-active-color !default;
 $o-qpool-status-color-dark			: #333 !default;
 $o-qpool-status-color-bright		: #fff !default;
 $o-qpool-draft-color				: #4a6785 !default;
-$o-qpool-review-color				: #ffd351 !default;
-$o-qpool-review-color-dark			: #333 !default;
 $o-qpool-revised-color				: #993333 !default;
 $o-qpool-finalVersion-color			: #14892c !default;
 $o-qpool-endOfLife-color			: #aaa !default;
@@ -1607,8 +1604,6 @@ $o-tb-broker-selection-in-progress-color		: #fcca46 !default;
 $o-tb-broker-not-started-color				: $o-labeled_bg-color !default;
 $o-tb-priority-enrolled-color				: $brand-success !default;
 $o-tb-priority-enrolled-color-inv			: white !default;
-$o-tb-priority-selected-color				: #fcca46 !default;
-$o-tb-priority-selected-color-inv			: white !default;
 $o-tb-priority-extra-color					: purple !default;
 $o-tb-priority-extra-color-inv				: white !default;
 $o-tb-priority-waiting-color					: brown !default;

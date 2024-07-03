@@ -181,8 +181,7 @@
 		border-color: $o-tb-broker-not-started-color;
 	}
 	&.o_tb_label_broker_selection_in_progress {
-		background-color: $o-tb-broker-selection-in-progress-color;
-		border-color: $o-tb-broker-selection-in-progress-color;
+		@extend %o_labeled_yellow;
 	}
 	&.o_tb_label_broker_enrollment_done {
 		background-color: $o-tb-broker-enrollment-done-color;
@@ -197,8 +196,7 @@
 }
 .o_labeled_light {
 	&.o_tb_label_light_selected {
-		color: 				$o-tb-priority-selected-color;
-		border-color: 		$o-tb-priority-selected-color;
+		@extend %o_labeled_light_yellow;
 	}
 	&.o_tb_label_light_enrolled {
 		color: 				$o-tb-priority-enrolled-color;
@@ -227,9 +225,7 @@
 		padding: 0 6px;
 	}
 	>.o_tb_priority_selected {
-		color: $o-tb-priority-selected-color;
-		border-color: $o-tb-priority-selected-color;
-		background-color: $o-tb-priority-selected-color-inv;
+		@extend %o_labeled_light_yellow;
 	}
 	>.o_tb_priority_enrolled {
 		color: $o-tb-priority-enrolled-color-inv;

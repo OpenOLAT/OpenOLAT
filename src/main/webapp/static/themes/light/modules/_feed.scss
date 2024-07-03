@@ -3,8 +3,7 @@
 /* Status style, mainly for in-table renderings */
 .o_status_table {
 	&.o_feed_status_draft {
-		border-color: 		$o-feed-draft-color;
-		color: 				$o-feed-draft-color;
+		@extend %o_labeled_light_yellow;
 	}
 	&.o_feed_status_planned {
 		border-color: 		$o-feed-planned-color;

@@ -52,8 +52,9 @@
 	    color: 				#fff;
 	}
 	&.o_user_status_pending {
-	    background-color: 	$o-repo-review-color;
-	    color: 				#fff;
+	    background-color: 	$o-labeled-yellow-bg-color;
+	    color: 				$o-labeled-yellow-color;
+	    border-color: 		$o-labeled-yellow-border-color;
 	}
 	&.o_user_status_deleted {
 	    background-color: 	$o-repo-deleted-color;

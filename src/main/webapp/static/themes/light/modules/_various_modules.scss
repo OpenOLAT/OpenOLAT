@@ -1579,6 +1579,16 @@ a.o_labeled_light {
  		margin-top: -2px;
  	}
  }
+%o_labeled_yellow {
+	color: $o-labeled-yellow-color;
+	background-color: $o-labeled-yellow-bg-color;
+	border-color: $o-labeled-yellow-border-color;
+}
+%o_labeled_light_yellow {
+	color: $o-labeled-yellow-color;
+	background-color: $o-labeled-yellow-light-bg-color;
+	border-color: $o-labeled-yellow-border-color;
+}
  
  /* Multiselect dropdown element */
  .o_ms_button {
