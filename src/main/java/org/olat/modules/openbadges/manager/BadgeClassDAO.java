@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.manager;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -197,6 +198,17 @@ public class BadgeClassDAO {
 
 	public void deleteBadgeClass(BadgeClass badgeClass) {
 		dbInstance.deleteObject(badgeClass);
+	}
+
+	public List<String> getBadgeClassNames(Collection<Long> badgeClassKeys) {
+		QueryBuilder sb = new QueryBuilder();
+		sb
+				.append("select bc.name from badgeclass bc")
+				.append(" where bc.key in (:badgeClassKeys)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("badgeClassKeys", badgeClassKeys)
+				.getResultList();
 	}
 
 	public static class BadgeClassWithUseCount {

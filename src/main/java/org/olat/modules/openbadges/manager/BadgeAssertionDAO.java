@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.manager;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -29,7 +30,6 @@ import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeAssertionImpl;
 import org.olat.repository.RepositoryEntry;
-
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -95,6 +95,23 @@ public class BadgeAssertionDAO {
 		return badgeAssertionKeys != null && !badgeAssertionKeys.isEmpty();
 	}
 
+	public boolean hasBadgeAssertion(Long recipientKey, Long badgeClassKey) {
+		QueryBuilder sb = new QueryBuilder();
+		sb
+				.append("select ba.key from badgeassertion ba")
+				.append(" inner join ba.badgeClass as bc")
+				.append(" where ba.recipient.key = :recipientKey")
+				.append(" and bc.key = :badgeClassKey");
+
+		List<Long> badgeAssertionKeys = dbInstance
+				.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("recipientKey", recipientKey)
+				.setParameter("badgeClassKey", badgeClassKey).getResultList();
+
+		return badgeAssertionKeys != null && !badgeAssertionKeys.isEmpty();
+	}
+
 	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry, boolean nullEntryMeansAll) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ba from badgeassertion ba ");
@@ -128,6 +145,20 @@ public class BadgeAssertionDAO {
 		sb.append("where ba.badgeClass.key = :badgeClassKey ");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class)
 				.setParameter("badgeClassKey", badgeClass.getKey())
+				.getResultList();
+	}
+
+	public List<Identity> getBadgeAssertionIdentities(Collection<Long> badgeClassKeys) {
+		QueryBuilder sb = new QueryBuilder();
+
+		sb
+				.append("select ident from badgeassertion ba ")
+				.append(" inner join ba.recipient ident")
+				.append(" where ba.badgeClass.key in (:badgeClassKeys)");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("badgeClassKeys", badgeClassKeys)
 				.getResultList();
 	}
 

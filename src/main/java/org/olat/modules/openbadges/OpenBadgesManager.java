@@ -103,6 +103,8 @@ public interface OpenBadgesManager {
 
 	List<BadgeClassDAO.BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry);
 
+	List<String> getBadgeClassNames(Collection<Long> badgeClassKeys);
+
 	Long getNumberOfBadgeClasses(RepositoryEntryRef entry);
 
 	BadgeClass getBadgeClass(String uuid);
@@ -151,7 +153,11 @@ public interface OpenBadgesManager {
 
 	BadgeAssertion getBadgeAssertion(String uuid);
 
+	List<Identity> getBadgeAssertionIdentities(Collection<Long> badgeClassKeys);
+
 	boolean hasBadgeAssertion(Identity recipient, String badgeClassUuid);
+
+	boolean hasBadgeAssertion(Identity recipient, Long badgeClassKey);
 
 	VFSLeaf getBadgeAssertionVfsLeaf(String relPath);
 

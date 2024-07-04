@@ -62,6 +62,7 @@ import org.olat.modules.openbadges.criteria.CourseElementScoreCondition;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CourseScoreCondition;
 import org.olat.modules.openbadges.criteria.CoursesPassedCondition;
+import org.olat.modules.openbadges.criteria.GlobalBadgesEarnedCondition;
 import org.olat.modules.openbadges.criteria.LearningPathProgressCondition;
 import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.criteria.Symbol;
@@ -107,6 +108,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			private final SingleSelection badgesDropdown;
 			private final SingleSelection courseElementsDropdown;
 			private final MultipleSelectionElement coursesDropdown;
+			private final MultipleSelectionElement globalBadgesDropdown;
 			private final TextElement valueEl;
 			private final StaticTextElement unitEl;
 			private final FormLink deleteLink;
@@ -141,6 +143,10 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						formLayout, coursesKV.keys(), coursesKV.values());
 				coursesDropdown.addActionListener(FormEvent.ONCHANGE);
 
+				globalBadgesDropdown = uifactory.addCheckboxesDropdown("form.condition.global.badges.earned." + id, null,
+						formLayout, globalBadgesKV.keys(), globalBadgesKV.values());
+				globalBadgesDropdown.addActionListener(FormEvent.ONCHANGE);
+
 				valueEl = uifactory.addTextElement("form.condition.value." + id, "", 32,
 						"", formLayout);
 
@@ -156,6 +162,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				badgesDropdown.setVisible(false);
 				courseElementsDropdown.setVisible(false);
 				coursesDropdown.setVisible(false);
+				globalBadgesDropdown.setVisible(false);
 				valueEl.setVisible(false);
 				unitEl.setVisible(false);
 
@@ -209,6 +216,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						coursesDropdown.select(courseResourceKey.toString(), true);
 					}
 				}
+				if (badgeCondition instanceof GlobalBadgesEarnedCondition) {
+					globalBadgesDropdown.setVisible(true);
+				}
 			}
 
 			public void updateVisibilities() {
@@ -217,6 +227,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				badgesDropdown.setVisible(false);
 				courseElementsDropdown.setVisible(false);
 				coursesDropdown.setVisible(false);
+				globalBadgesDropdown.setVisible(false);
 				valueEl.setVisible(false);
 				unitEl.setVisible(false);
 				switch (conditionKey) {
@@ -237,6 +248,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					case OtherBadgeEarnedCondition.KEY -> badgesDropdown.setVisible(true);
 					case CourseElementPassedCondition.KEY -> courseElementsDropdown.setVisible(true);
 					case CoursesPassedCondition.KEY -> coursesDropdown.setVisible(true);
+					case GlobalBadgesEarnedCondition.KEY -> globalBadgesDropdown.setVisible(true);
 				}
 			}
 
@@ -283,6 +295,13 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				return coursesDropdown;
 			}
 
+			/**
+			 * Used in template
+			 */
+			public MultipleSelectionElement getGlobalBadgesDropdown() {
+				return globalBadgesDropdown;
+			}
+
 			public TextElement getValueEl() {
 				return valueEl;
 			}
@@ -323,6 +342,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					case CoursesPassedCondition.KEY -> new CoursesPassedCondition(
 							coursesDropdown.getSelectedKeys().stream().map(Long::parseLong).toList()
 					);
+					case GlobalBadgesEarnedCondition.KEY -> new GlobalBadgesEarnedCondition(
+							globalBadgesDropdown.getSelectedKeys().stream().map(Long::parseLong).toList()
+					);
 					default -> null;
 				};
 			}
@@ -338,6 +360,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		private final SelectionValues badgesKV;
 		private final SelectionValues courseElementsKV;
 		private final SelectionValues coursesKV;
+		private final SelectionValues globalBadgesKV;
 
 		private CreateBadgeClassWizardContext createContext;
 		private MarkdownElement descriptionEl;
@@ -386,6 +409,14 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						.forEach(re -> coursesKV.add(SelectionValues.entry(re.getOlatResource().getKey().toString(), re.getDisplayname())));
 			}
 
+			globalBadgesKV = new SelectionValues();
+			if (createContext.isGlobalBadge()) {
+				openBadgesManager.getBadgeClasses(null).stream()
+						.filter(badgeClass -> !createContext.getBadgeClass().getKey().equals(badgeClass.getKey()))
+						.map((badgeClass) -> SelectionValues.entry(Long.toString(badgeClass.getKey()), badgeClass.getName()))
+						.forEach(globalBadgesKV::add);
+			}
+
 			conditionsKV = new SelectionValues();
 			if (createContext.isCourseBadge()) {
 				conditionsKV.add(SelectionValues.entry(CoursePassedCondition.KEY, translate("form.criteria.condition.course.passed")));
@@ -402,14 +433,21 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				}
 			}
 
-			if (createContext.isGlobalBadge() && !coursesKV.isEmpty()) {
-				conditionsKV.add(SelectionValues.entry(CoursesPassedCondition.KEY, translate("form.criteria.condition.courses.passed")));
+			if (createContext.isGlobalBadge()) {
+				if (!globalBadgesKV.isEmpty()) {
+					conditionsKV.add(SelectionValues.entry(GlobalBadgesEarnedCondition.KEY, translate("form.criteria.condition.global.badges.earned")));
+				}
+				if (!coursesKV.isEmpty()) {
+					conditionsKV.add(SelectionValues.entry(CoursesPassedCondition.KEY, translate("form.criteria.condition.courses.passed")));
+				}
 			}
 
 			symbolsKV = new SelectionValues();
 			symbolsKV.add(SelectionValues.entry(Symbol.greaterThan.name(), Symbol.greaterThan.getSymbolString()));
 			symbolsKV.add(SelectionValues.entry(Symbol.greaterThanOrEqual.name(), Symbol.greaterThanOrEqual.getSymbolString()));
 			symbolsKV.add(SelectionValues.entry(Symbol.equals.name(), Symbol.equals.getSymbolString()));
+			symbolsKV.add(SelectionValues.entry(Symbol.lessThanOrEqual.name(), Symbol.lessThanOrEqual.getSymbolString()));
+			symbolsKV.add(SelectionValues.entry(Symbol.lessThan.name(), Symbol.lessThan.getSymbolString()));
 
 			initForm(ureq);
 		}
@@ -441,7 +479,6 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 			Set<String> unusedBadgeKeys = new HashSet<>(Set.of(badgesKV.keys()));
 			Set<String> subIdentsNotUsedInPassedCondition = new HashSet<>(Set.of(courseElementsKV.keys()));
-			Set<String> subIdentsNotUsedInScoreCondition = new HashSet<>(Set.of(courseElementsKV.keys()));
 			for (Condition condition : conditions) {
 				BadgeCondition badgeCondition = condition.asBadgeCondition();
 				if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
@@ -454,11 +491,10 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					if (subIdentsNotUsedInPassedCondition.isEmpty()) {
 						newConditionsKV.remove(badgeCondition.getKey());
 					}
-				} else if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
-					subIdentsNotUsedInScoreCondition.remove(courseElementScoreCondition.getSubIdent());
-					if (subIdentsNotUsedInScoreCondition.isEmpty()) {
-						newConditionsKV.remove(badgeCondition.getKey());
-					}
+				} else if (badgeCondition instanceof CourseElementScoreCondition) {
+					// allow more than one course element score condition
+				} else if (badgeCondition instanceof CourseScoreCondition) {
+					// allow more than one course score condition
 				} else {
 					newConditionsKV.remove(badgeCondition.getKey());
 				}
@@ -481,6 +517,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(getSubIdentsNotUsedInPassedCondition());
 				case CourseElementScoreCondition.KEY -> new CourseElementScoreCondition(getSubIdentsNotUsedInScoreCondition(), Symbol.greaterThan, 1);
 				case CoursesPassedCondition.KEY -> new CoursesPassedCondition();
+				case GlobalBadgesEarnedCondition.KEY -> new GlobalBadgesEarnedCondition();
 				default -> null;
 			};
 			if (newBadgeCondition != null) {

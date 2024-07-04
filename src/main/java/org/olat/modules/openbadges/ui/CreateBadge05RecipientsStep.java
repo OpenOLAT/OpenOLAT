@@ -20,7 +20,9 @@
 package org.olat.modules.openbadges.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityModule;
@@ -241,20 +243,35 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
 			if (badgeCriteria.isAwardAutomatically()) {
-				Set<Long> courseResourceKeys = badgeCriteria.getCourseResourceKeys();
+				Map<Identity, OpenBadgesManager.ParticipantAndAssessmentEntries> participantsAndAssessmentEntries = new HashMap<>();
+
+				Set<Long> courseResourceKeys = badgeCriteria.getGlobalCourseResourceKeys();
 				if (!courseResourceKeys.isEmpty()) {
 					List<AssessmentEntry> rootAssessmentEntries =
 							assessmentEntryDAO.loadRootAssessmentEntriesForResourceKeys(courseResourceKeys);
-					List<OpenBadgesManager.ParticipantAndAssessmentEntries> participantsAndAssessmentEntries =
-							openBadgesManager.associateParticipantsWithAssessmentEntries(rootAssessmentEntries);
-					for (OpenBadgesManager.ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries) {
-						Identity assessedIdentity = participantAndAssessmentEntries.participant();
-						List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
-						if (badgeCriteria.allGlobalBadgeConditionsMet(assessedIdentity, assessmentEntries)) {
-							BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
-							rows.add(row);
-							earners.add(assessedIdentity);
+					List<OpenBadgesManager.ParticipantAndAssessmentEntries> newEntries = openBadgesManager.associateParticipantsWithAssessmentEntries(rootAssessmentEntries);
+					for (OpenBadgesManager.ParticipantAndAssessmentEntries newEntry : newEntries) {
+						participantsAndAssessmentEntries.put(newEntry.participant(), newEntry);
+					}
+				}
+
+				Set<Long> badgeClassKeys = badgeCriteria.getGlobalBadgeClassKeys();
+				List<Identity> recipients = openBadgesManager.getBadgeAssertionIdentities(badgeClassKeys);
+				if (recipients != null && !recipients.isEmpty()) {
+					for (Identity recipient : recipients) {
+						if (!participantsAndAssessmentEntries.containsKey(recipient)) {
+							participantsAndAssessmentEntries.put(recipient, new OpenBadgesManager.ParticipantAndAssessmentEntries(recipient, new ArrayList<>()));
 						}
+					}
+				}
+
+				for (OpenBadgesManager.ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries.values()) {
+					Identity assessedIdentity = participantAndAssessmentEntries.participant();
+					List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
+					if (badgeCriteria.allGlobalBadgeConditionsMet(assessedIdentity, assessmentEntries)) {
+						BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
+						rows.add(row);
+						earners.add(assessedIdentity);
 					}
 				}
 			}

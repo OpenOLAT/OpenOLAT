@@ -266,6 +266,18 @@ public class BadgeCriteria {
 		return true;
 	}
 
+	public boolean hasGlobalBadgeConditions() {
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CoursesPassedCondition) {
+				return true;
+			}
+			if (badgeCondition instanceof GlobalBadgesEarnedCondition) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Check if all global badge conditions for the BadgeCriteria a global badge are met. This is a check for one
 	 * potential badge recipient.
@@ -278,40 +290,58 @@ public class BadgeCriteria {
 	 * 		   (or if there are no global badge conditions to be met), false if at least one condition is not met.
 	 */
 	public boolean allGlobalBadgeConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
-		if (!allGlobalCourseConditionsMet(recipient, assessmentEntries)) {
-			return false;
-		}
-		return true;
-	}
-
-	private boolean allGlobalCourseConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
-		List<AssessmentEntry> rootAssessmentEntriesForRecipient = assessmentEntries;
-
 		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
+				if (!globalBadgesEarnedConditionMet(recipient, globalBadgesEarnedCondition)) {
+					return false;
+				}
+			}
 			if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
-				if (rootAssessmentEntriesForRecipient == null) {
-					AssessmentEntryDAO assessmentEntryDAO = CoreSpringFactory.getImpl(AssessmentEntryDAO.class);
-					rootAssessmentEntriesForRecipient = assessmentEntryDAO.loadRootAssessmentEntriesForAssessedIdentity(recipient);
+				if (!coursesPassedConditionMet(recipient, assessmentEntries, coursesPassedCondition)) {
+					return false;
 				}
-				HashSet<Long> toPass = new HashSet<>(coursesPassedCondition.getCourseResourceKeys());
-				for (AssessmentEntry assessmentEntry : rootAssessmentEntriesForRecipient) {
-					if (assessmentEntry.getEntryRoot() == null || !assessmentEntry.getEntryRoot()) {
-						continue;
-					}
-					if (!assessmentEntry.getIdentity().equals(recipient)) {
-						continue;
-					}
-					if (assessmentEntry.getPassed() != null && assessmentEntry.getPassed()) {
-						toPass.remove(assessmentEntry.getRepositoryEntry().getOlatResource().getKey());
-					}
-				}
-				return toPass.isEmpty();
 			}
 		}
 		return true;
 	}
 
-	public Set<Long> getCourseResourceKeys() {
+	private boolean globalBadgesEarnedConditionMet(Identity recipient, GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
+		OpenBadgesManager openBadgesManager = null;
+		for (Long badgeClassKey : globalBadgesEarnedCondition.getBadgeClassKeys()) {
+			if (openBadgesManager == null) {
+				openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+			}
+			if (!openBadgesManager.hasBadgeAssertion(recipient, badgeClassKey)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean coursesPassedConditionMet(Identity recipient, List<AssessmentEntry> assessmentEntries, CoursesPassedCondition coursesPassedCondition) {
+		List<AssessmentEntry> rootAssessmentEntriesForRecipient = assessmentEntries;
+
+		if (rootAssessmentEntriesForRecipient == null) {
+			AssessmentEntryDAO assessmentEntryDAO = CoreSpringFactory.getImpl(AssessmentEntryDAO.class);
+			rootAssessmentEntriesForRecipient = assessmentEntryDAO.loadRootAssessmentEntriesForAssessedIdentity(recipient);
+		}
+
+		HashSet<Long> toPass = new HashSet<>(coursesPassedCondition.getCourseResourceKeys());
+		for (AssessmentEntry assessmentEntry : rootAssessmentEntriesForRecipient) {
+			if (assessmentEntry.getEntryRoot() == null || !assessmentEntry.getEntryRoot()) {
+				continue;
+			}
+			if (!assessmentEntry.getIdentity().equals(recipient)) {
+				continue;
+			}
+			if (assessmentEntry.getPassed() != null && assessmentEntry.getPassed()) {
+				toPass.remove(assessmentEntry.getRepositoryEntry().getOlatResource().getKey());
+			}
+		}
+		return toPass.isEmpty();
+	}
+
+	public Set<Long> getGlobalCourseResourceKeys() {
 		Set<Long> keys = new HashSet<>();
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
@@ -321,12 +351,13 @@ public class BadgeCriteria {
 		return keys;
 	}
 
-	public boolean hasGlobalBadgeConditions() {
+	public Set<Long> getGlobalBadgeClassKeys() {
+		Set<Long> keys = new HashSet<>();
 		for (BadgeCondition badgeCondition : getConditions()) {
-			if (badgeCondition instanceof CoursesPassedCondition) {
-				return true;
+			if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
+				keys.addAll(globalBadgesEarnedCondition.getBadgeClassKeys());
 			}
 		}
-		return false;
+		return keys;
 	}
 }

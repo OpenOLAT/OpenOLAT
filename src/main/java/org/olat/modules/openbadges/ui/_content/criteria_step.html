@@ -29,6 +29,12 @@
 				#end
 			</div>
 			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+				<!-- global badges dropdown -->
+				#if($r.visible($condition.getGlobalBadgesDropdown().getName()))
+					$r.render($condition.getGlobalBadgesDropdown().getName(), "horizontal", "form")
+				#end
+			</div>
+			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
 				<!-- courses dropdown -->
 				#if($r.visible($condition.getCoursesDropdown().getName()))
 					$r.render($condition.getCoursesDropdown().getName(), "horizontal", "form")

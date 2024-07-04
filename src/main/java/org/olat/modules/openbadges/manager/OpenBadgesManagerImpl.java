@@ -106,7 +106,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.manager.RepositoryEntryDAO;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
@@ -647,6 +646,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public List<BadgeClassDAO.BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry) {
 		return badgeClassDAO.getBadgeClassesWithUseCounts(entry);
+	}
+
+	@Override
+	public List<String> getBadgeClassNames(Collection<Long> badgeClassKeys) {
+		return badgeClassDAO.getBadgeClassNames(badgeClassKeys);
 	}
 
 	@Override
@@ -1243,8 +1247,18 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public List<Identity> getBadgeAssertionIdentities(Collection<Long> badgeClassKeys) {
+		return badgeAssertionDAO.getBadgeAssertionIdentities(badgeClassKeys);
+	}
+
+	@Override
 	public boolean hasBadgeAssertion(Identity recipient, String badgeClassUuid) {
 		return badgeAssertionDAO.hasBadgeAssertion(recipient.getKey(), badgeClassUuid);
+	}
+
+	@Override
+	public boolean hasBadgeAssertion(Identity recipient, Long badgeClassKey) {
+		return badgeAssertionDAO.hasBadgeAssertion(recipient.getKey(), badgeClassKey);
 	}
 
 	private void createBadgeAssertionsRoot() {
