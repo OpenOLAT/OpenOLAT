@@ -4,6 +4,9 @@
 		$r.translate("form.title.choose.feed")
 	</legend>
 	$r.render("reference")
+	#if($r.available("metadataConf"))
+		$r.render("metadataConf")
+	#end
 	#if($r.available("rights"))
 		$r.render("rights")
 	#end

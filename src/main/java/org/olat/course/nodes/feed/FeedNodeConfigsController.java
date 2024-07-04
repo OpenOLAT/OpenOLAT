@@ -48,6 +48,7 @@ import org.olat.modules.webFeed.FeedPreviewSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.ui.FeedMainController;
+import org.olat.modules.webFeed.ui.FeedMetadataConfigController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -73,6 +74,7 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 
 	private RepositoryEntryReferenceController referenceCtrl;
 	private Controller nodeRightCtrl;
+	private FeedMetadataConfigController metadataCtrl;
 
 	@Autowired
 	protected FeedManager feedManager;
@@ -125,6 +127,7 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 		mainVC.put("reference", referenceCtrl.getInitialComponent());
 
 		initUserRights(ureq, refRepoEntry);
+		initMetaOptions(ureq);
 
 		// if resource already exists, update UI (iconPanelContent) with labels
 		if (refRepoEntry != null) {
@@ -159,6 +162,16 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 		}
 	}
 
+	private void initMetaOptions(UserRequest ureq) {
+		// clean up
+		removeAsListenerAndDispose(metadataCtrl);
+		metadataCtrl = null;
+
+		metadataCtrl = new FeedMetadataConfigController(ureq, getWindowControl(), feedCourseNode.getModuleConfiguration());
+		listenTo(metadataCtrl);
+		mainVC.put("metadataConf", metadataCtrl.getInitialComponent());
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == nodeRightCtrl) {
@@ -171,6 +184,8 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 			} else if (event == RepositoryEntryReferenceController.PREVIEW_EVENT) {
 				doPreview(ureq);
 			}
+		} else if (source == metadataCtrl) {
+			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);
 	}
@@ -186,7 +201,7 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 		if (repositoryEntry != null) {
 			FeedSecurityCallback callback = new FeedPreviewSecurityCallback();
 			FeedMainController mainController = feedUIFactory.createMainController(repositoryEntry.getOlatResource(), ureq, getWindowControl(),
-					callback, course.getResourceableId(), feedCourseNode.getIdent());
+					callback, course.getResourceableId(), feedCourseNode.getIdent(), feedCourseNode.getModuleConfiguration());
 			listenTo(mainController);
 			stackPanel.pushController(translate("preview"), mainController);
 		} else {

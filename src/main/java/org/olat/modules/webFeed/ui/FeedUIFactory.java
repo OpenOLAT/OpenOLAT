@@ -28,6 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.Item;
@@ -56,13 +57,13 @@ public abstract class FeedUIFactory {
 
 	/* used for course node */
 	public final FeedMainController createMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, FeedSecurityCallback callback,
-			Long courseId, String nodeId) {
-		return new FeedMainController(ores, ureq, wControl, courseId, nodeId, this, callback, null);
+														 Long courseId, String nodeId, ModuleConfiguration moduleConfiguration) {
+		return new FeedMainController(ores, ureq, wControl, courseId, nodeId, this, callback, null, moduleConfiguration);
 	}
 
 	// with specific FeedItemDisplayConfig
 	public final FeedMainController createMainController(final OLATResourceable ores, final UserRequest ureq, final WindowControl wControl, final FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig) {
-		return new FeedMainController(ores, ureq, wControl, null, null, this, callback, displayConfig);
+		return new FeedMainController(ores, ureq, wControl, null, null, this, callback, displayConfig, null);
 	}
 
 	public abstract FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item currentItem);

@@ -212,7 +212,7 @@ public class PodcastHandler implements RepositoryHandler {
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 					return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
-						PodcastUIFactory.getInstance(uureq.getLocale()), callback, null);
+						PodcastUIFactory.getInstance(uureq.getLocale()), callback, null, null);
 				});
 	}
 	

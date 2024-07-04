@@ -46,6 +46,8 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.course.nodes.AbstractFeedCourseNode;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedChangedEvent;
 import org.olat.modules.webFeed.FeedSecurityCallback;
@@ -78,6 +80,7 @@ public class FeedMainController extends BasicController implements Activateable2
 	private final FeedSecurityCallback callback;
 
 	private final SubscriptionContext subsContext;
+	private final ModuleConfiguration moduleConfig;
 	private final FeedItemDisplayConfig displayConfig;
 	private final OLATResourceable ores;
 	
@@ -96,8 +99,8 @@ public class FeedMainController extends BasicController implements Activateable2
 	 *          preview and no editing functionality is enabled.
 	 */
 	public FeedMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, FeedUIFactory uiFactory,
-			FeedSecurityCallback callback) {
-		this(ores, ureq, wControl, null, null, uiFactory, callback, null);
+							  FeedSecurityCallback callback, ModuleConfiguration moduleConfig) {
+		this(ores, ureq, wControl, null, null, uiFactory, callback, null, moduleConfig);
 	}
 
 	/**
@@ -110,15 +113,19 @@ public class FeedMainController extends BasicController implements Activateable2
 	 *          preview and no editing functionality is enabled.
 	 */
 	public FeedMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, Long courseId, String nodeId,
-			FeedUIFactory uiFactory, FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig) {
+							  FeedUIFactory uiFactory, FeedSecurityCallback callback,
+							  FeedItemDisplayConfig displayConfig, ModuleConfiguration moduleConfig) {
 		super(ureq, wControl);
 		this.feedUIFactory = uiFactory;
 		this.callback = callback;
 		this.ores = ores;
-		this.displayConfig = Objects.requireNonNullElseGet(displayConfig, () -> new FeedItemDisplayConfig(true, true, true));
+		this.displayConfig = Objects.requireNonNullElseGet(displayConfig,
+				() -> new FeedItemDisplayConfig(true, true, true));
+		this.moduleConfig = moduleConfig;
 		
 		subsContext = callback.getSubscriptionContext();
-				
+
+
 		setTranslator(uiFactory.getTranslator());
 		feed = feedManager.loadFeed(ores);
 
@@ -180,6 +187,12 @@ public class FeedMainController extends BasicController implements Activateable2
 		vcInfo.contextPut("feed", feed);
 		vcInfo.contextPut("helper", helper);
 		vcInfo.contextPut("suppressCache", "");
+		// if there is no moduleConfig (e.g. learning resource itself) then always show metadata
+		if (moduleConfig != null) {
+			vcInfo.contextPut("showFeedDesc", moduleConfig.getBooleanSafe(AbstractFeedCourseNode.CONFIG_KEY_SHOW_FEED_DESC, false));
+			vcInfo.contextPut("showFeedTitle", moduleConfig.getBooleanSafe(AbstractFeedCourseNode.CONFIG_KEY_SHOW_FEED_TITLE, false));
+			vcInfo.contextPut("showFeedImage", moduleConfig.getBooleanSafe(AbstractFeedCourseNode.CONFIG_KEY_SHOW_FEED_IMAGE, false));
+		}
 
 		if (subsContext != null) {
 			String businessPath = wControl.getBusinessControl().getAsString();

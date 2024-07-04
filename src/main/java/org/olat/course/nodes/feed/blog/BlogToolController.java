@@ -77,7 +77,7 @@ public class BlogToolController extends BasicController implements Activateable2
 			
 			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 			blogCtrl = BlogUIFactory.getInstance(ureq.getLocale()).createMainController(blogEntry.getOlatResource(),
-					ureq, wControl, callback, courseId, SUBSCRIPTION_SUBIDENTIFIER);
+					ureq, wControl, callback, courseId, SUBSCRIPTION_SUBIDENTIFIER, null);
 			listenTo(blogCtrl);
 			
 			putInitialPanel(blogCtrl.getInitialComponent());

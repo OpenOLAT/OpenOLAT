@@ -99,6 +99,9 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	
 	private static final int CURRENT_VERSION = 4;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
+	public static final String CONFIG_KEY_SHOW_FEED_DESC = "showfeeddesc";
+	public static final String CONFIG_KEY_SHOW_FEED_TITLE = "showfeedtitle";
+	public static final String CONFIG_KEY_SHOW_FEED_IMAGE = "showfeedimage";
 	
 	private static final String LEGACY_COACH_MODERATE_ALLOWED = "coach.moderate.allowed";
 	private static final String LEGACY_COACH_POST_ALLOWED = "coach.post.allowed";
@@ -167,7 +170,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 		
 		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		FeedMainController mainCtrl = getFeedUIFactory(ureq.getLocale()).createMainController(entry.getOlatResource(),
-				ureq, wControl, callback, courseId, getIdent());
+				ureq, wControl, callback, courseId, getIdent(), getModuleConfiguration());
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(nodecmd);
 		mainCtrl.activate(ureq, entries, null);
 		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, mainCtrl, userCourseEnv, this, geIconCssClass());
@@ -367,6 +370,18 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 		String repoSoftkey = (String) config.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
 		RepositoryManager rm = RepositoryManager.getInstance();
 		return rm.lookupRepositoryEntryBySoftkey(repoSoftkey, false);
+	}
+
+	public static void setShowFeedDesc(ModuleConfiguration moduleConfig, boolean showFeedDesc) {
+		moduleConfig.setBooleanEntry(CONFIG_KEY_SHOW_FEED_DESC, showFeedDesc);
+	}
+
+	public static void setShowFeedTitle(ModuleConfiguration moduleConfig, boolean showFeedTitle) {
+		moduleConfig.setBooleanEntry(CONFIG_KEY_SHOW_FEED_TITLE, showFeedTitle);
+	}
+
+	public static void setShowFeedImage(ModuleConfiguration moduleConfig, boolean showFeedImage) {
+		moduleConfig.setBooleanEntry(CONFIG_KEY_SHOW_FEED_IMAGE, showFeedImage);
 	}
 	
 	public static void setReference(ModuleConfiguration moduleConfig, RepositoryEntry feedEntry) {

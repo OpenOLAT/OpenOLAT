@@ -215,7 +215,7 @@ public class BlogHandler implements RepositoryHandler {
 				CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 					.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 				return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
-					BlogUIFactory.getInstance(uureq.getLocale()), callback, null);
+					BlogUIFactory.getInstance(uureq.getLocale()), callback, null, null);
 			});
 	}
 
