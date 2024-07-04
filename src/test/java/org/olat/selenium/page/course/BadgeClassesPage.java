@@ -110,8 +110,9 @@ public class BadgeClassesPage {
 	}
 	
 	public BadgeClassesPage details(String description) {
+		By descriptionmarkDownBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_description div.milkdown div.ProseMirror.editor[contenteditable=true]");
+		OOGraphene.waitElement(descriptionmarkDownBy, browser);
 		By descriptionBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_description");
-		OOGraphene.waitElement(descriptionBy, browser);
 		OOGraphene.markdown(descriptionBy, description, browser);
 		return this;
 	}
@@ -125,9 +126,10 @@ public class BadgeClassesPage {
 	}
 	
 	public BadgeClassesPage criteria(String summary) {
-		By criteriaBy = By.cssSelector("div.o_badge_wiz_criteria_step .o_sel_badge_criteria_summary input[type='text']");
-		OOGraphene.waitElement(criteriaBy, browser);
-		browser.findElement(criteriaBy).sendKeys(summary);
+		By criteriaMarkdownBy = By.cssSelector("div.o_badge_wiz_criteria_step .o_sel_badge_criteria_summary div.milkdown div.ProseMirror.editor[contenteditable=true]");
+		OOGraphene.waitElement(criteriaMarkdownBy, browser);
+		By criteriaBy = By.cssSelector("div.o_badge_wiz_criteria_step .o_sel_badge_criteria_summary");
+		OOGraphene.markdown(criteriaBy, summary, browser);
 		return this;
 	}
 	
