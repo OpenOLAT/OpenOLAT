@@ -191,22 +191,19 @@ public class RatingRenderer extends DefaultComponentRenderer {
 
 	private void renderAction(StringOutput sb, RatingComponent rating, String val, URLBuilder ubu) {
 		RatingFormItem rfi = rating.getFormItem();
-		
-		// Add action
-		sb.append(" href=\"javascript:;\" onclick=\"");
 		if (rating.isAllowUserInput() && rating.isEnabled()) {
 			NameValuePair cmd = new NameValuePair(VelocityContainer.COMMAND_ID, val);
 			if(rfi == null) {
 				ubu.buildHrefAndOnclick(sb, true, cmd);
 			} else {
-				sb.append("javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd));
+				sb.append(" href=\"javascript:;\" onclick=\"javascript:")
+				  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd))
+				  .append("\"");
 			}
 		} else {
 			// Disabled link
-			sb.append("return false;");
+			sb.append(" href=\"javascript:;\" onclick=\"javascript:return false;\"");
 		}
-		sb.append("\"");
 	}
 
 	private void renderTitle(StringOutput sb, RatingComponent rating, String label, Translator translator) {
