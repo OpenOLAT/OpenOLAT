@@ -412,7 +412,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			globalBadgesKV = new SelectionValues();
 			if (createContext.isGlobalBadge()) {
 				openBadgesManager.getBadgeClasses(null).stream()
-						.filter(badgeClass -> !createContext.getBadgeClass().getKey().equals(badgeClass.getKey()))
+						.filter(badgeClass -> !badgeClass.getKey().equals(createContext.getBadgeClass().getKey()))
 						.map((badgeClass) -> SelectionValues.entry(Long.toString(badgeClass.getKey()), badgeClass.getName()))
 						.forEach(globalBadgesKV::add);
 			}
