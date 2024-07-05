@@ -45,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TBEditController extends ActivateableTabbableDefaultController {
 	
-	private static final String PANE_TAB_CONFIG = "pane.tab.config";
+	public static final String PANE_TAB_CONFIG = "pane.tab.config";
 	private static final String PANE_TAB_CUSTOM_FIELDS = "pane.tab.custom.fields";
 	private static final String PANE_TAB_TOPICS = "pane.tab.topics";
 	private final static String[] paneKeys = { PANE_TAB_CONFIG, PANE_TAB_CUSTOM_FIELDS, PANE_TAB_TOPICS };

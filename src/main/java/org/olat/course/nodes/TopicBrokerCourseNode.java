@@ -56,6 +56,7 @@ import org.olat.course.noderight.NodeRightService;
 import org.olat.course.noderight.NodeRightType;
 import org.olat.course.noderight.NodeRightTypeBuilder;
 import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeService;
+import org.olat.course.nodes.topicbroker.ui.TBConfigController;
 import org.olat.course.nodes.topicbroker.ui.TBConfigsController;
 import org.olat.course.nodes.topicbroker.ui.TBEditController;
 import org.olat.course.nodes.topicbroker.ui.TBRunCoachController;
@@ -156,11 +157,24 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode {
 		return new NodeRunConstructionResult(ctrl);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public StatusDescription isConfigValid() {
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
+		if (oneClickStatusCache != null) {
+			return oneClickStatusCache[0];
+		}
 		
 		StatusDescription sd = StatusDescription.NOERROR;
+		DueDateConfig dueDateConfig = getDueDateConfig(CONFIG_KEY_SELECTION_START);
+		if (!DueDateConfig.isDueDate(dueDateConfig)) {
+			String shortKey = "error.no.selection.period.short";
+			String longKey = "error.no.selection.period.long";
+			String[] params = new String[] { this.getShortTitle() };
+			String translPackage = Util.getPackageName(TBConfigController.class);
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+			sd.setDescriptionForUnit(getIdent());
+			sd.setActivateableViewIdentifier(TBEditController.PANE_TAB_CONFIG);
+		}
 		return sd;
 	}
 
