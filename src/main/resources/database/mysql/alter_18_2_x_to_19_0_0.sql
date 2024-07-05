@@ -199,16 +199,6 @@ alter table o_tb_custom_field ENGINE = InnoDB;
 alter table o_tb_selection ENGINE = InnoDB;
 alter table o_tb_audit_log ENGINE = InnoDB;
 
--- feed tag (blod/podcast)
-create table o_feed_tag (
-    id bigint not null auto_increment,
-    creationdate datetime not null,
-    fk_feed bigint not null,
-    fk_feed_item bigint,
-    fk_tag bigint not null,
-    primary key (id)
-);
-
 create index idx_tb_broker_to_re_idx on o_tb_broker (fk_entry);
 create index idx_tb_broker__enr_start_idx on o_tb_broker (t_enrollment_start_date);
 alter table o_tb_participant add constraint tbpart_broker_idx foreign key (fk_broker) references o_tb_broker (id);
@@ -226,7 +216,21 @@ create index idx_tb_audit_broker_idx on o_tb_audit_log (fk_broker);
 create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
 create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
 
+-- feed tag (blog/podcast)
+create table o_feed_tag (
+    id bigint not null auto_increment,
+    creationdate datetime not null,
+    fk_feed bigint not null,
+    fk_feed_item bigint,
+    fk_tag bigint not null,
+    primary key (id)
+);
+
 -- feed tags
 alter table o_feed_tag add constraint tag_feed_idx foreign key (fk_feed) references o_feed (id);
 alter table o_feed_tag add constraint tag_feed_item_idx foreign key (fk_feed_item) references o_feed_item (id);
+
+-- webfeed
+alter table o_feed add column f_canrate bool default true;
+alter table o_feed add column f_cancomment bool default true;
 

@@ -204,16 +204,6 @@ create table o_tb_audit_log (
    primary key (id)
 );
 
--- feed tag (blog/podcast)
-create table o_feed_tag (
-    id number(20) generated always as identity,
-    creationdate date not null,
-    fk_feed number(20) not null,
-    fk_feed_item number(20),
-    fk_tag number(20),
-    primary key (id)
-);
-
 create index idx_tb_broker_to_re_idx on o_tb_broker (fk_entry);
 create index idx_tb_broker__enr_start_idx on o_tb_broker (t_enrollment_start_date);
 create index idx_tb_part_to_ident_idx on o_tb_participant (fk_identity);
@@ -241,8 +231,22 @@ create index idx_tb_audit_broker_idx on o_tb_audit_log (fk_broker);
 create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
 create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
 
+-- feed tag (blog/podcast)
+create table o_feed_tag (
+    id number(20) generated always as identity,
+    creationdate date not null,
+    fk_feed number(20) not null,
+    fk_feed_item number(20),
+    fk_tag number(20),
+    primary key (id)
+);
+
 -- feed tags
 create index idx_tag_to_feed_idx on o_feed_tag (fk_feed);
 alter table o_feed_tag add constraint tag_feed_idx foreign key (fk_feed) references o_feed (id);
 create index idx_tag_to_feed_item_idx on o_feed_tag (fk_feed_item);
 alter table o_feed_tag add constraint tag_feed_item_idx foreign key (fk_feed_item) references o_feed_item (id);
+
+-- webfeed
+alter table o_feed add f_canrate number default 1;
+alter table o_feed add f_cancomment number default 1;

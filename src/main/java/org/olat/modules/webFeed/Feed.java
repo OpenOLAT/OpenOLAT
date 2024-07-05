@@ -30,7 +30,7 @@ import org.olat.core.id.OLATResourceable;
  * information of a feed including items.
  * 
  * Initial date: 02.05.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public interface Feed extends OLATResourceable, CreateInfo, ModifiedInfo {
@@ -97,5 +97,29 @@ public interface Feed extends OLATResourceable, CreateInfo, ModifiedInfo {
 	public int getModelVersion();
 	
 	public void setModelVersion(int version);
+
+	/**
+	 * canRate allows to configure a feed regarding the (user) rating, if it is allowed or not
+	 * @return is rating allowed or not
+	 */
+	public boolean getCanRate();
+
+	/**
+	 * canRate allows to configure a feed regarding the (user) rating, if it is allowed or not
+	 * @param canRate set to true or false
+	 */
+	public void setCanRate(boolean canRate);
+
+	/**
+	 * canComment allows to configure a feed regarding the (user) comments, if it is allowed or not
+	 * @return is commenting allowed or not
+	 */
+	public boolean getCanComment();
+
+	/**
+	 * canComment allows to configure a feed regarding the (user) comments, if it is allowed or not
+	 * @param canComment set to true or false
+	 */
+	public void setCanComment(boolean canComment);
 
 }

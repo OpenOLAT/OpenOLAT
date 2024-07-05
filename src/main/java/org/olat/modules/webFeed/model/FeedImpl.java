@@ -62,8 +62,8 @@ public class FeedImpl implements Feed, Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
-	
-	@Column(name="f_resourceable_id", nullable=true, insertable=true, updatable=true)
+
+	@Column(name = "f_resourceable_id", nullable = true, insertable = true, updatable = true)
 	private Long resourceableId;
 	@Column(name="f_resourceable_type", nullable=true, insertable=true, updatable=true)
 	private String resourceableType;
@@ -80,6 +80,10 @@ public class FeedImpl implements Feed, Serializable {
 	private String externalFeedURL;
 	@Column(name="f_external_image_url", nullable=true, insertable=true, updatable=true)
 	private String externalImageURL;
+	@Column(name = "f_canrate", nullable = false, insertable = true, updatable = true)
+	private boolean canRate;
+	@Column(name = "f_cancomment", nullable = false, insertable = true, updatable = true)
+	private boolean canComment;
 	
 	/**
 	 * A feed can either be internal, external or unspecified.
@@ -254,6 +258,26 @@ public class FeedImpl implements Feed, Serializable {
 	}
 
 	@Override
+	public boolean getCanRate() {
+		return canRate;
+	}
+
+	@Override
+	public void setCanRate(boolean canRate) {
+		this.canRate = canRate;
+	}
+
+	@Override
+	public boolean getCanComment() {
+		return canComment;
+	}
+
+	@Override
+	public void setCanComment(boolean canComment) {
+		this.canComment = canComment;
+	}
+
+	@Override
 	public int hashCode() {
 		return getKey() == null ? 43254 : getKey().hashCode();
 	}
@@ -268,5 +292,4 @@ public class FeedImpl implements Feed, Serializable {
 		}
 		return false;
 	}
-	
 }

@@ -5890,6 +5890,8 @@ alter table o_feed_item add constraint feed_item_to_ident_author_fk foreign key 
 create index idx_item_ident_author_idx on o_feed_item (fk_identity_author_id);
 alter table o_feed_item add constraint feed_item_to_ident_modified_fk foreign key (fk_identity_modified_id) references o_bs_identity (id);
 create index idx_item_ident_modified_idx on o_feed_item (fk_identity_modified_id);
+alter table o_feed add f_canrate number default 1;
+alter table o_feed add f_cancomment number default 1;
 
 -- taxonomy
 alter table o_tax_taxonomy add constraint tax_to_group_idx foreign key (fk_group) references o_bs_group (id);

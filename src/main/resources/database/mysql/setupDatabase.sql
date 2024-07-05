@@ -5796,6 +5796,8 @@ alter table o_feed_item add constraint feed_item_to_ident_author_fk foreign key 
 create index idx_item_ident_author_idx on o_feed_item(fk_identity_author_id);
 alter table o_feed_item add constraint feed_item_to_ident_modified_fk foreign key (fk_identity_modified_id) references o_bs_identity (id);
 create index idx_item_ident_modified_idx on o_feed_item(fk_identity_modified_id);
+alter table o_feed add column f_canrate bool default true;
+alter table o_feed add column f_cancomment bool default true;
 
 -- lecture
 alter table o_lecture_block add constraint lec_block_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

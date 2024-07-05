@@ -25,8 +25,12 @@
 					#end
 				#end
 				<div class="o_feed_com_rat_card_view">
-					$r.render($row.getRatingFormItem().getComponent().getComponentName())
-					$r.render($row.getCommentLink().getComponent().getComponentName())
+					#if($feed.getCanRate())
+						$r.render($row.getRatingFormItem().getComponent().getComponentName())
+					#end
+					#if($feed.getCanComment())
+						$r.render($row.getCommentLink().getComponent().getComponentName())
+					#end
 					#if($row.getFormattedTags())
 						$row.getFormattedTags()
 					#end

@@ -51,9 +51,12 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 	
 	private Link quotaLink;
 	private Link metadataLink;
+	private Link optionsLink;
 	
 	private Controller quotaCtrl;
-	
+	private FeedMetadataWrapperController feedMetadataWrapperCtrl;
+	private FeedSettingsOptionsController feedSettingsOptionsCtrl;
+
 	@Autowired
 	private QuotaManager quotaManager;
 
@@ -69,9 +72,9 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 			quotaLink.setElementCssClass("o_sel_repo_quota");
 			buttonsGroup.addButton(quotaLink, false);
 		}
-		metadataLink = LinkFactory.createLink("details.metadata", getTranslator(), this);
-		metadataLink.setElementCssClass("o_sel_metadata");
-		buttonsGroup.addButton(metadataLink, false);
+		optionsLink = LinkFactory.createToolLink("options", translate("tab.options.edit"), this);
+		optionsLink.setElementCssClass("o_sel_repo_options");
+		buttonsGroup.addButton(optionsLink, false);
 	}
 
 	@Override
@@ -82,6 +85,8 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Quota".equalsIgnoreCase(type)) {
 				doOpenQuota(ureq);
+			} else if("Metadata".equalsIgnoreCase(type)) {
+				doOpenMetadata(ureq);
 			}
 		}
 	}
@@ -100,17 +105,21 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(quotaLink == source) {
 			doOpenQuota(ureq);
-		} else if (metadataLink == source) {
-			doOpenMetadata(ureq);
+		} else if (optionsLink == source) {
+			doOpenOptions(ureq);
 		}
 		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void cleanUp() {
-		super.cleanUp();
+		removeAsListenerAndDispose(feedMetadataWrapperCtrl);
+		removeAsListenerAndDispose(feedSettingsOptionsCtrl);
 		removeAsListenerAndDispose(quotaCtrl);
+		feedMetadataWrapperCtrl = null;
+		feedSettingsOptionsCtrl = null;
 		quotaCtrl = null;
+		super.cleanUp();
 	}
 
 	private void doOpenQuota(UserRequest ureq) {
@@ -132,9 +141,19 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 		entry = repositoryService.loadByKey(entry.getKey());
 		boolean readOnly = entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted || entry.getEntryStatus() == RepositoryEntryStatusEnum.trash;
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Metadata"), null);
-		FeedMetadataWrapperController feedMetadataWrapperCtrl = new FeedMetadataWrapperController(ureq, swControl, entry, readOnly);
+		feedMetadataWrapperCtrl = new FeedMetadataWrapperController(ureq, swControl, entry, readOnly);
 		listenTo(feedMetadataWrapperCtrl);
 		mainPanel.setContent(feedMetadataWrapperCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(metadataLink);
+	}
+
+	private void doOpenOptions(UserRequest ureq) {
+		entry = repositoryService.loadByKey(entry.getKey());
+		boolean readOnly = entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted || entry.getEntryStatus() == RepositoryEntryStatusEnum.trash;
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Options"), null);
+		feedSettingsOptionsCtrl = new FeedSettingsOptionsController(ureq, swControl, entry, readOnly);
+		listenTo(feedSettingsOptionsCtrl);
+		mainPanel.setContent(feedSettingsOptionsCtrl.getInitialComponent());
+		buttonsGroup.setSelectedButton(optionsLink);
 	}
 }

@@ -43,7 +43,7 @@
 						#end
 					#end
 					<div class="o_feed_com_rat_card_view">
-						#if($r.available("commentsAndRating"))
+						#if($r.available("commentsAndRating") && $feed.getCanRate())
 							$r.render("commentsAndRating")
 						#end
 						#if($formattedTags)
@@ -80,7 +80,7 @@
 
 		<div class="o_block_footer">
 			<div class="clearfix">
-				#if($r.available("comments"))
+				#if($r.available("comments") && $feed.getCanComment())
 					$r.render("comments")
 				#end
 			</div>

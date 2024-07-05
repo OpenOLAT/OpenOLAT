@@ -20,40 +20,37 @@
 package org.olat.modules.webFeed.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.webFeed.Feed;
-import org.olat.modules.webFeed.manager.FeedManager;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.settings.RepositoryEntryMetadataController;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: Feb 22, 2024
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class FeedMetadataWrapperController extends RepositoryEntryMetadataController {
-
-	@Autowired
-	private FeedManager feedManager;
+public class FeedMetadataWrapperController extends BasicController {
 
 	protected FeedMetadataWrapperController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
-		super(ureq, wControl, entry, readOnly, false);
+		super(ureq, wControl);
+
+		FeedMetadataEditFormController feedMetadataEditFormCtrl = new FeedMetadataEditFormController(ureq, wControl, entry);
+		RepositoryEntryMetadataController repoMetaDataController = new RepositoryEntryMetadataController(ureq, wControl, entry, readOnly, false);
+
+		VelocityContainer wrapper = createVelocityContainer("metadata_wrapper");
+
+		wrapper.put("feedMetadata", feedMetadataEditFormCtrl.getInitialComponent());
+		wrapper.put("repoMetadata", repoMetaDataController.getInitialComponent());
+
+		putInitialPanel(wrapper);
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		Feed feed = feedManager.loadFeed(super.getRepositoryEntry().getOlatResource());
-		if (feed != null && feed.isExternal()) {
-			uifactory.addStaticTextElement("upload.url", feed.getExternalFeedUrl(), flc);
-		}
-		super.initForm(formLayout, listener, ureq);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		// no need
+	protected void event(UserRequest ureq, Component source, Event event) {
+		// nothing to do here
 	}
 }
