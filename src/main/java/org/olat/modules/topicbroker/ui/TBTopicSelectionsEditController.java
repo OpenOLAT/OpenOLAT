@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -36,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -51,8 +54,10 @@ import org.olat.core.gui.components.panel.InfoPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBParticipant;
+import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
@@ -89,6 +94,7 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 	private final TBBroker broker;
 	private final TBTopic topic;
 	private final Long topicKey;
+	private Set<Long> visiblieIdentityKeys;
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
@@ -100,12 +106,17 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 	private BaseSecurityManager securityManager;
 
 	protected TBTopicSelectionsEditController(UserRequest ureq, WindowControl wControl, TBBroker broker,
-			TBTopic topic) {
+			TBTopic topic, TBParticipantCandidates participantCandidates) {
 		super(ureq, wControl, "topic_selections");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.broker = broker;
 		this.topic = topic;
 		this.topicKey = topic.getKey();
+		if (!participantCandidates.isAllIdentitiesVisible()) {
+			visiblieIdentityKeys = participantCandidates.getVisibleIdentities().stream()
+					.map(Identity::getKey)
+					.collect(Collectors.toSet());
+		}
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(TBParticipantDataModel.USAGE_IDENTIFIER,
@@ -167,12 +178,22 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		int colIndex = TBParticipantDataModel.USER_PROPS_OFFSET;
+		int colFirstname = -1;
+		int colLastname = -1;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
-			boolean visible = UserManager.getInstance()
-					.isMandatoryUserProperty(TBParticipantDataModel.USAGE_IDENTIFIER, userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible,
-					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, true, "userProp-" + colIndex));
+			boolean visible = userManager.isMandatoryUserProperty(TBParticipantDataModel.USAGE_IDENTIFIER, userPropertyHandler);
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(visible,
+					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, true, "userProp-" + colIndex);
+			if (UserConstants.FIRSTNAME.equals(userPropertyHandler.getName())) {
+				columnModel.setCellRenderer(new AnonymUserPropRenderer(i));
+				colFirstname = colIndex-1;
+			}
+			if (UserConstants.LASTNAME.equals(userPropertyHandler.getName())) {
+				columnModel.setCellRenderer(new AnonymUserPropRenderer(i));
+				colLastname = colIndex-1;
+			}
+			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		
 		DefaultFlexiColumnModel boostColumn = new DefaultFlexiColumnModel(TBParticipantCols.boost);
@@ -190,12 +211,13 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 		enrolledColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(enrolledColumn);
 		
-		DefaultFlexiColumnModel withdrawColumn = new DefaultFlexiColumnModel("withdraw", -1, "withdraw",
-				new StaticFlexiCellRenderer(translate("withdraw"), "withdraw", null, null, null));
+		DefaultFlexiColumnModel withdrawColumn = new DefaultFlexiColumnModel(TBParticipantCols.withdraw.i18nHeaderKey(),
+				TBParticipantCols.withdraw.ordinal(), "withdraw",
+				new BooleanCellRenderer(null, new StaticFlexiCellRenderer(translate("withdraw"), "withdraw")));
 		withdrawColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(withdrawColumn);
 		
-		enrollmentsDataModel = new TBParticipantDataModel(columnsModel, getLocale());
+		enrollmentsDataModel = new TBParticipantDataModel(columnsModel, getLocale(), colFirstname, colLastname);
 		enrollmentsTableEl = uifactory.addTableElement(getWindowControl(), "enrollmentsTable", enrollmentsDataModel, 20, false, getTranslator(), formLayout);
 		enrollmentsTableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-topic-enrollments" + broker.getKey());
 	}
@@ -204,12 +226,22 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		int colIndex = TBParticipantDataModel.USER_PROPS_OFFSET;
+		int colFirstname = -1;
+		int colLastname = -1;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
-			boolean visible = UserManager.getInstance()
-					.isMandatoryUserProperty(TBParticipantDataModel.USAGE_IDENTIFIER, userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible,
-					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, true, "userProp-" + colIndex));
+			boolean visible = userManager.isMandatoryUserProperty(TBParticipantDataModel.USAGE_IDENTIFIER, userPropertyHandler);
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(visible,
+					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, true, "userProp-" + colIndex);
+			if (UserConstants.FIRSTNAME.equals(userPropertyHandler.getName())) {
+				columnModel.setCellRenderer(new AnonymUserPropRenderer(i));
+				colFirstname = colIndex-1;
+			}
+			if (UserConstants.LASTNAME.equals(userPropertyHandler.getName())) {
+				columnModel.setCellRenderer(new AnonymUserPropRenderer(i));
+				colLastname = colIndex-1;
+			}
+			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		
 		DefaultFlexiColumnModel boostColumn = new DefaultFlexiColumnModel(TBParticipantCols.boost);
@@ -227,12 +259,13 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 		enrolledColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(enrolledColumn);
 		
-		DefaultFlexiColumnModel withdrawColumn = new DefaultFlexiColumnModel("enroll", -1, "enroll",
-				new StaticFlexiCellRenderer(translate("enroll"), "enroll", null, null, null));
-		withdrawColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(withdrawColumn);
+		DefaultFlexiColumnModel enrollColumn = new DefaultFlexiColumnModel(TBParticipantCols.enroll.i18nHeaderKey(),
+				TBParticipantCols.enroll.ordinal(), "enroll",
+				new BooleanCellRenderer(null, new StaticFlexiCellRenderer(translate("enroll"), "enroll")));
+		enrollColumn.setExportable(false);
+		columnsModel.addFlexiColumnModel(enrollColumn);
 		
-		waitingListDataModel = new TBParticipantDataModel(columnsModel, getLocale());
+		waitingListDataModel = new TBParticipantDataModel(columnsModel, getLocale(), colFirstname, colLastname);
 		waitingListTableEl = uifactory.addTableElement(getWindowControl(), "waitingListTable", waitingListDataModel, 20, false, getTranslator(), formLayout);
 		waitingListTableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-topic-waiting-list" + broker.getKey());
 	}
@@ -254,7 +287,15 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 		List<TBParticipantRow> waitingListRows = new ArrayList<>();
 		for (TBSelection topicSelection : topicSelections) {
 			TBParticipant participant = topicSelection.getParticipant();
-			TBParticipantRow row = new TBParticipantRow(participant.getIdentity(), userPropertyHandlers, getLocale());
+			
+			Identity identity = participant.getIdentity();
+			boolean anonym = false;
+			if (visiblieIdentityKeys != null && !visiblieIdentityKeys.contains(identity.getKey())) {
+				identity = new TransientIdentity();
+				anonym = true;
+			}
+			TBParticipantRow row = new TBParticipantRow(identity, userPropertyHandlers, getLocale());
+			row.setAnonym(anonym);
 			row.setBroker(broker);
 			row.setMaxSelections(broker.getMaxSelections());
 			row.setBoost(participant.getBoost());

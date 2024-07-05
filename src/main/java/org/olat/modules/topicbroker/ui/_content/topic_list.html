@@ -19,7 +19,7 @@
 					$r.render("topic.create")
 					$r.render("topic.dropdown")
 				</div>
-			#else
+			#elseif($r.available("topic.create") && $r.visible("topic.create"))
 				$r.render("topic.create")
 			#end
 		</div>

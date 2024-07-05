@@ -71,7 +71,6 @@ public class TBRunCoachController extends BasicController implements Activateabl
 	private Link participantsLink;
 	private Link topicsLink;
 
-	private final UserCourseEnvironment userCourseEnv;
 	private final TBBroker broker;
 	private final TBSecurityCallback secCallback;
 	private final TBParticipantCandidates participantCandidates;
@@ -82,7 +81,6 @@ public class TBRunCoachController extends BasicController implements Activateabl
 	public TBRunCoachController(UserRequest ureq, WindowControl wControl, TopicBrokerCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TBUIFactory.class, getLocale(), getTranslator()));
-		this.userCourseEnv = userCourseEnv;
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		broker = topicBrokerService.getOrCreateBroker(getIdentity(),
 				courseEntry, courseNode.getIdent());

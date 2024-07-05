@@ -46,6 +46,7 @@ public class TBParticipantRow  extends UserPropertiesRow {
 	private int maxSelections;
 	private List<TBSelection> selections;
 	private String detailsComponentName;
+	private boolean anonym = false;
 
 	public TBParticipantRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
@@ -133,6 +134,14 @@ public class TBParticipantRow  extends UserPropertiesRow {
 
 	public void setDetailsComponentName(String detailsComponentName) {
 		this.detailsComponentName = detailsComponentName;
+	}
+
+	public boolean isAnonym() {
+		return anonym;
+	}
+
+	public void setAnonym(boolean anonym) {
+		this.anonym = anonym;
 	}
 
 }

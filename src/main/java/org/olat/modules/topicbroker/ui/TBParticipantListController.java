@@ -221,8 +221,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
 			String propName = userPropertyHandler.getName();
-			boolean visible = UserManager.getInstance()
-					.isMandatoryUserProperty(TBParticipantDataModel.USAGE_IDENTIFIER, userPropertyHandler);
+			boolean visible = userManager.isMandatoryUserProperty(TBParticipantDataModel.USAGE_IDENTIFIER, userPropertyHandler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible,
 					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, true, propName));
 			if (UserConstants.LASTNAME.equals(userPropertyHandler.getName())) {

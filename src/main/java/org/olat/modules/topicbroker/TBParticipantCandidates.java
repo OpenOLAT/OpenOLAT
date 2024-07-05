@@ -33,6 +33,8 @@ public interface TBParticipantCandidates {
 	
 	List<Identity> getAllIdentities();
 	
+	boolean isAllIdentitiesVisible();
+	
 	List<Identity> getVisibleIdentities();
 
 }

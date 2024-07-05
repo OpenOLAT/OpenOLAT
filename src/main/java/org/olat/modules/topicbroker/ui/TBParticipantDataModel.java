@@ -43,10 +43,18 @@ public class TBParticipantDataModel extends DefaultFlexiTableDataModel<TBPartici
 	private static final TBParticipantCols[] COLS = TBParticipantCols.values();
 	
 	private final Locale locale;
+	private final int colFirstname;
+	private final int colLastname;
 	
 	public TBParticipantDataModel(FlexiTableColumnModel columnModel, Locale locale) {
+		this(columnModel, locale, -1, -1);
+	}
+	
+	public TBParticipantDataModel(FlexiTableColumnModel columnModel, Locale locale, int colFirstname, int colLastname) {
 		super(columnModel);
 		this.locale = locale;
+		this.colFirstname = colFirstname;
+		this.colLastname = colLastname;
 	}
 	
 	@Override
@@ -73,8 +81,14 @@ public class TBParticipantDataModel extends DefaultFlexiTableDataModel<TBPartici
 				case waitingList: return row.getWaitingList();
 				case selected: return row.getNumSelections();
 				case priority: return row;
+				case enroll: return Boolean.valueOf(row.isAnonym());
+				case withdraw: return Boolean.valueOf(row.isAnonym());
 				default: return "ERROR";
 			}
+		}
+		
+		if (col == colFirstname || col == colLastname) {
+			return row;
 		}
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
@@ -86,7 +100,9 @@ public class TBParticipantDataModel extends DefaultFlexiTableDataModel<TBPartici
 		enrolled("selection.status.enrolled"),
 		waitingList("selection.status.waiting.list"),
 		selected("selection.status.selected"),
-		priority("selection.priority");
+		priority("selection.priority"),
+		enroll("enroll"),
+		withdraw("withdraw");
 		
 		private final String i18nKey;
 

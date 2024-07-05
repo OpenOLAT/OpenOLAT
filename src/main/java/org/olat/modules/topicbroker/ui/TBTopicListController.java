@@ -566,7 +566,9 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	
 	private void updateCommandUI() {
 		// import only if enrollment not done yet
-		addDropdown.setVisible(broker.getEnrollmentDoneDate() == null);
+		if (addDropdown != null) {
+			addDropdown.setVisible(broker.getEnrollmentDoneDate() == null);
+		}
 	}
 	
 	private void loadConfigInfos(UserRequest ureq) {
@@ -774,7 +776,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			}
 		}
 		
-		selectionsEditCtrl = new TBTopicSelectionsEditController(ureq, getWindowControl(), broker, reloadedTopic);
+		selectionsEditCtrl = new TBTopicSelectionsEditController(ureq, getWindowControl(), broker, reloadedTopic,
+				participantCandidates);
 		listenTo(selectionsEditCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

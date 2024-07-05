@@ -60,6 +60,11 @@ public class TopicBrokerCourseNodeParticipantCandidates implements TBParticipant
 	}
 
 	@Override
+	public boolean isAllIdentitiesVisible() {
+		return admin;
+	}
+
+	@Override
 	public List<Identity> getVisibleIdentities() {
 		return admin
 				? getAllIdentities()
