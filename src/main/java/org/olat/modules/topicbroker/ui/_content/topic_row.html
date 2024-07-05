@@ -42,12 +42,14 @@
 			</div>
 		</div>
 		<div class="o_tb_topic_card_custom_fields">
-			#foreach($customField in $row.customFieldItems)
-				#if($r.available("$customField.getComponent().getComponentName()"))
-					<div class="o_tb_legend">
-						$customField.labelText
-					</div>
-					$r.render("$customField.getComponent().getComponentName()")
+			#if($r.isNotEmpty($row.customFieldItems))
+				#foreach($customField in $row.customFieldItems)
+					#if($r.available("$customField.getComponent().getComponentName()"))
+						<div class="o_tb_legend">
+							$customField.labelText
+						</div>
+						$r.render("$customField.getComponent().getComponentName()")
+					#end
 				#end
 			#end
 		</div>

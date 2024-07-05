@@ -19,7 +19,6 @@
  */
 package org.olat.modules.topicbroker.ui;
 
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -47,8 +46,13 @@ public class TBSelectionDataModel extends DefaultFlexiTableDataModel<TBSelection
 
 	public Object getValueAt(TBSelectionRow row, int col) {
 		if (col >= CUSTOM_FIELD_OFFSET) {
-			FormItem formItem = row.getCustomFieldItems().get(col - CUSTOM_FIELD_OFFSET);
-			return formItem;
+			if (row.getCustomFieldItems() != null) {
+				int index = col - CUSTOM_FIELD_OFFSET;
+				if (row.getCustomFieldItems().size() > index) {
+					return row.getCustomFieldItems().get(index);
+				}
+			}
+			return null;
 		}
 		
 		switch(COLS[col]) {
