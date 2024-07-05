@@ -167,7 +167,7 @@ public class ContentEditorContainerComponentRenderer extends AbstractContentEdit
 					new NameValuePair(VelocityContainer.COMMAND_ID, "add_to_container"),
 					new NameValuePair("fragment", cmp.getComponentName()), // EditorFragment cmpFragment.getCmpId()
 					new NameValuePair("column", Integer.toString(i)));
-			sb.append(" return false;\" class='btn btn-default btn-xs o_page_add_in_container o_button_ghost'><i class='o_icon o_icon_add'> </i>");
+			sb.append(" return false;\" class='btn btn-default btn-s o_page_add_in_container o_button_ghost'><i class='o_icon o_icon_add'> </i>");
 			sb.append(" <span>").append(translator.translate("add.element")).append("</span></a></div>");
 		}
 

@@ -449,6 +449,7 @@ public class PageEditorV2Controller extends BasicController {
 		String title = translate("add.element");
 		cmc = new CloseableModalController(getWindowControl(), null, addElementsCtrl.getInitialComponent(),
 				true, title, true);
+		cmc.setCustomWindowCSS("o_ce_add_element_dialog");
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -144,11 +144,12 @@ public class AddElementsController extends BasicController {
 
 		mainVC.contextPut("categories", categoryWrappers);
 
+		closeButton = LinkFactory.createButton("close", mainVC, this);
+
 		if (mediaCenterHandler != null) {
 			mediaCenterButton = LinkFactory.createButton("media.center", mainVC, this);
 			mediaCenterButton.setIconLeftCSS("o_icon o_icon_image");
 		}
-		closeButton = LinkFactory.createButton("close", mainVC, this);
 
 		putInitialPanel(mainVC);
 	}

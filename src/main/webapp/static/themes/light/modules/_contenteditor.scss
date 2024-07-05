@@ -2712,3 +2712,9 @@ table.o_ce_table {
 		padding-top: 16px;
 	}
 }
+
+.o_ce_add_element_dialog {
+	.modal-dialog.modal-lg {
+		width: unset;
+	}
+}
