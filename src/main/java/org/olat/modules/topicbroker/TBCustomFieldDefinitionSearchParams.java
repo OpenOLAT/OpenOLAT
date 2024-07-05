@@ -33,6 +33,7 @@ public class TBCustomFieldDefinitionSearchParams {
 	private Collection<Long> brokerKeys;
 	private Collection<Long> definitionKeys;
 	private Collection<String> identifiers;
+	private Collection<String> names;
 	private Boolean deleted = Boolean.FALSE;
 	private boolean fetchBroker = false;
 	
@@ -70,6 +71,18 @@ public class TBCustomFieldDefinitionSearchParams {
 
 	public void setIdentifiers(Collection<String> identifiers) {
 		this.identifiers = identifiers;
+	}
+
+	public Collection<String> getNames() {
+		return names;
+	}
+
+	public void setNames(Collection<String> names) {
+		this.names = names;
+	}
+	
+	public void setName(String name) {
+		this.names = List.of(name);
 	}
 
 	public Boolean getDeleted() {

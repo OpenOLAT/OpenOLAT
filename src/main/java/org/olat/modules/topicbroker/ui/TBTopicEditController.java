@@ -31,14 +31,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -75,7 +73,7 @@ public class TBTopicEditController extends FormBasicController {
 	private TextElement maxParticipantsEl;
 	private FileElement teaserImageEl;
 	private FileElement teaserVideoEl;
-	private List<RichTextElement> customTextEls;
+	private List<TextAreaElement> customTextEls;
 	private List<FileElement> customFileEls;
 	
 	private final TBBrokerRef broker;
@@ -153,7 +151,7 @@ public class TBTopicEditController extends FormBasicController {
 			teaserVideoEl.setInitialFile(localFile.getBasefile());
 		}
 		
-		initCustomFields(ureq, formLayout);
+		initCustomFields(formLayout);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -161,7 +159,7 @@ public class TBTopicEditController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
-	private void initCustomFields(UserRequest ureq, FormItemContainer formLayout) {
+	private void initCustomFields(FormItemContainer formLayout) {
 		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
 		definitionSearchParams.setBroker(broker);
 		List<TBCustomFieldDefinition> definitions = topicBrokerService.getCustomFieldDefinitions(definitionSearchParams);
@@ -182,24 +180,21 @@ public class TBTopicEditController extends FormBasicController {
 		for (TBCustomFieldDefinition definition : definitions) {
 			TBCustomField customField = definitionKeyToCustomFields.get(definition.getKey());
 			if (TBCustomFieldType.text == definition.getType()) {
-				initCustomTextField(ureq, customCont, definition, customField);
+				initCustomTextField(customCont, definition, customField);
 			} else if (TBCustomFieldType.file == definition.getType()) {
 				initCustomFileField(customCont, definition);
 			}
 		}
 	}
 
-	private void initCustomTextField(UserRequest ureq, FormLayoutContainer customCont, TBCustomFieldDefinition definition,
-			TBCustomField customField) {
+	private void initCustomTextField(FormLayoutContainer customCont, TBCustomFieldDefinition definition, TBCustomField customField) {
 		if (customTextEls == null) {
 			customTextEls = new ArrayList<>(1);
 		}
 		
-		String value = customField != null? customField.getText(): null;
-		RichTextElement textEl = uifactory.addRichTextElementForStringData("text_" + counter++, null,
-				value, 10, -1, false, null, null, customCont, ureq.getUserSession(), getWindowControl());
-		textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
-		textEl.setLabel("noTransOnlyParam", new String[] {definition.getName()});
+		String text = customField != null? customField.getText(): null;
+		TextAreaElement textEl = uifactory.addTextAreaElement("text_" + counter++, null, 2000, 2, 72, true, false, true, text, customCont);
+		textEl.setLabel("noTransOnlyParam", new String[] {StringHelper.escapeHtml(definition.getName())});
 		textEl.setUserObject(definition);
 		customTextEls.add(textEl);
 	}
@@ -215,7 +210,7 @@ public class TBTopicEditController extends FormBasicController {
 		fileEl.setReplaceButton(true);
 		fileEl.setDeleteEnabled(true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setLabel("noTransOnlyParam", new String[] {definition.getName()});
+		fileEl.setLabel("noTransOnlyParam", new String[] {StringHelper.escapeHtml(definition.getName())});
 		if (topicLeaf instanceof LocalFileImpl localFile) {
 			fileEl.setInitialFile(localFile.getBasefile());
 		}
@@ -254,7 +249,7 @@ public class TBTopicEditController extends FormBasicController {
 			allOk &= false;
 		} else if ((topic == null || !Objects.equals(topic.getIdentifier(), identifierEl.getValue()))
 				&& !topicBrokerService.isTopicIdentifierAvailable(broker, identifierEl.getValue())) {
-			identifierEl.setErrorKey("error.identifier.not.available", Integer.toString(64));
+			identifierEl.setErrorKey("error.identifier.not.available");
 			allOk &= false;
 		}
 		
@@ -344,9 +339,9 @@ public class TBTopicEditController extends FormBasicController {
 		}
 		
 		if (customTextEls != null) {
-			for (RichTextElement richTextEl : customTextEls) {
-				if (richTextEl.getUserObject() instanceof TBCustomFieldDefinition definition) {
-					String text = richTextEl.getValue();
+			for (TextAreaElement textEl : customTextEls) {
+				if (textEl.getUserObject() instanceof TBCustomFieldDefinition definition) {
+					String text = textEl.getValue();
 					if (StringHelper.containsNonWhitespace(text)) {
 						topicBrokerService.createOrUpdateCustomField(getIdentity(), definition, topic, text);
 					} else {

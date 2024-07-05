@@ -30,6 +30,7 @@ import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.course.nodes.topicbroker.TBCourseNodeSecurityCallbackFactory;
+import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeParticipantCandidates;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBCustomFieldDefinitionListController;
@@ -69,7 +70,9 @@ public class TBEditController extends ActivateableTabbableDefaultController {
 		customFieldDefinitionsCtrl = new TBCustomFieldDefinitionListController(ureq, getWindowControl(), broker, translate("config.custom.fields.info"));
 		listenTo(customFieldDefinitionsCtrl);
 		
-		topicsCtrl = new TBTopicListEditController(ureq, wControl, broker, TBCourseNodeSecurityCallbackFactory.ADMIN_SEC_CALLBACK);
+		TopicBrokerCourseNodeParticipantCandidates participantCandidates = new TopicBrokerCourseNodeParticipantCandidates(
+				getIdentity(), courseGroupManager.getCourseEntry(), true);
+		topicsCtrl = new TBTopicListEditController(ureq, wControl, broker, TBCourseNodeSecurityCallbackFactory.ADMIN_SEC_CALLBACK, participantCandidates);
 		listenTo(topicsCtrl);
 	}
 

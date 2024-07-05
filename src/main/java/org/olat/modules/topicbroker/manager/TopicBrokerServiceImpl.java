@@ -532,6 +532,14 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	}
 	
 	@Override
+	public boolean isCustomFieldDefinitionNameAvailable(TBBroker broker, String name) {
+		TBCustomFieldDefinitionSearchParams searchParams = new TBCustomFieldDefinitionSearchParams();
+		searchParams.setBroker(broker);
+		searchParams.setName(name);
+		return customFieldDefinitionDao.loadDefinitions(searchParams).isEmpty();
+	}
+	
+	@Override
 	public TBCustomFieldDefinition updateCustomFieldDefinition(Identity doer, TBCustomFieldDefinitionRef definition,
 			String identifier, String name, TBCustomFieldType type, boolean displayInTable) {
 		TBCustomFieldDefinition reloadedDefinition = getCustomFieldDefinition(definition, true);

@@ -232,7 +232,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
 		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitionsInTable) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
-			columnModel.setHeaderLabel(customFieldDefinition.getName());
+			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
 			selectionColumnsModel.addFlexiColumnModel(columnModel);
 		}
 		
@@ -267,7 +267,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
 		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitionsInTable) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
-			columnModel.setHeaderLabel(customFieldDefinition.getName());
+			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
 			selectionColumnsModel.addFlexiColumnModel(columnModel);
 		}
 		
@@ -413,10 +413,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			if (TBCustomFieldType.text == definition.getType()) {
 				TBCustomField customField = definitionKeyToCustomField.get(definition.getKey());
 				if (customField != null && StringHelper.containsNonWhitespace(customField.getText())) {
-					String text = Formatter.truncate(customField.getText(), 200);
+					String text = Formatter.truncate(Formatter.escWithBR(customField.getText()).toString(), 200);
 					StaticTextElement item = uifactory.addStaticTextElement("customfield_" + counter++, null, text, flc);
-					item.setLabel("noTransOnlyParam", new String[] {definition.getName()});
-					item.setDomWrapperElement(DomWrapperElement.span);
+					item.setLabel("noTransOnlyParam", new String[] {StringHelper.escapeHtml(definition.getName())});
+					item.setDomWrapperElement(DomWrapperElement.div);
 					item.setStaticFormElement(false);
 					customFieldItems.add(item);
 				} else {
@@ -429,7 +429,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 					VFSLeaf topicLeaf = topicBrokerService.getTopicLeaf(row.getTopic(), definition.getIdentifier());
 					if (topicLeaf != null && topicLeaf.exists()) {
 						link = uifactory.addFormLink("openfile_" + counter++, CMD_OPEN_FILE, "", null, flc, Link.LINK + Link.NONTRANSLATED);
-						link.setLabel("noTransOnlyParam", new String[] {definition.getName()});
+						link.setLabel("noTransOnlyParam", new String[] {StringHelper.escapeHtml(definition.getName())});
 						link.setI18nKey(StringHelper.escapeHtml(topicLeaf.getName()));
 						link.setUserObject(topicLeaf);
 						

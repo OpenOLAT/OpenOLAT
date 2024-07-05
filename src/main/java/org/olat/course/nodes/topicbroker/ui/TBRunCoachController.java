@@ -74,6 +74,7 @@ public class TBRunCoachController extends BasicController implements Activateabl
 	private final UserCourseEnvironment userCourseEnv;
 	private final TBBroker broker;
 	private final TBSecurityCallback secCallback;
+	private final TBParticipantCandidates participantCandidates;
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
@@ -87,6 +88,9 @@ public class TBRunCoachController extends BasicController implements Activateabl
 				courseEntry, courseNode.getIdent());
 		
 		secCallback = TBCourseNodeSecurityCallbackFactory.createSecurityCallback(courseNode, userCourseEnv);
+		participantCandidates = new TopicBrokerCourseNodeParticipantCandidates(
+				getIdentity(), userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+				userCourseEnv.isAdmin());
 		
 		mainVC = createVelocityContainer("segments");
 		putInitialPanel(mainVC);
@@ -132,9 +136,6 @@ public class TBRunCoachController extends BasicController implements Activateabl
 	
 	private void doOpenParticipants(UserRequest ureq) {
 		if (participantsCtrl == null) {
-			TBParticipantCandidates participantCandidates = new TopicBrokerCourseNodeParticipantCandidates(
-					getIdentity(), userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-					userCourseEnv.isAdmin());
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
 			participantsCtrl = new TBParticipantListController(ureq, bwControl, broker, secCallback, participantCandidates);
 			listenTo(participantsCtrl);
@@ -148,7 +149,7 @@ public class TBRunCoachController extends BasicController implements Activateabl
 	private void doOpenTopics(UserRequest ureq) {
 		if (topicsCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_TOPICS), null);
-			topicsCtrl = new TBTopicSelectionsController(ureq, bwControl, broker, secCallback);
+			topicsCtrl = new TBTopicSelectionsController(ureq, bwControl, broker, secCallback, participantCandidates);
 			listenTo(topicsCtrl);
 		} else {
 			topicsCtrl.reload(ureq);

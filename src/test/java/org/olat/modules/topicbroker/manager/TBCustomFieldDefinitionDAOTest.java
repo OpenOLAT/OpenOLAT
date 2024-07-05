@@ -194,6 +194,27 @@ public class TBCustomFieldDefinitionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadDefinitions_byNames() {
+		TBBroker broker = createRandomBroker();
+		TBCustomFieldDefinition definition1 = createRandomDefinition(broker);
+		definition1.setName(JunitTestHelper.random());
+		definition1 = sut.updateDefinition(definition1);
+		TBCustomFieldDefinition definition2 = createRandomDefinition(broker);
+		definition2.setName(JunitTestHelper.random());
+		definition2 = sut.updateDefinition(definition2);
+		TBCustomFieldDefinition definition3 = createRandomDefinition(broker);
+		definition3.setName(JunitTestHelper.random());
+		definition3 = sut.updateDefinition(definition3);
+		createRandomDefinition(broker);
+		
+		TBCustomFieldDefinitionSearchParams params = new TBCustomFieldDefinitionSearchParams();
+		params.setNames(List.of(definition1.getName(), definition2.getName()));
+		List<TBCustomFieldDefinition> definitions = sut.loadDefinitions(params);
+		
+		assertThat(definitions).containsExactlyInAnyOrder(definition1, definition2);
+	}
+	
+	@Test
 	public void shouldDefinitions_byDeleted() {
 		TBCustomFieldDefinition definition1 = createRandomDefinition();
 		TBCustomFieldDefinition definition2 = createRandomDefinition();

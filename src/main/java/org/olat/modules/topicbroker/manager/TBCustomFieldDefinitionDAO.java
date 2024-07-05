@@ -144,6 +144,9 @@ public class TBCustomFieldDefinitionDAO {
 		if (params.getIdentifiers() != null && !params.getIdentifiers().isEmpty()) {
 			sb.and().append("definition.identifier in :identifiers");
 		}
+		if (params.getNames() != null && !params.getNames().isEmpty()) {
+			sb.and().append("definition.name in :names");
+		}
 		if (params.getDeleted() != null) {
 			sb.and().append("definition.deletedDate is ").append("not ", params.getDeleted()).append("null");
 		}
@@ -158,6 +161,9 @@ public class TBCustomFieldDefinitionDAO {
 		}
 		if (params.getIdentifiers() != null && !params.getIdentifiers().isEmpty()) {
 			query.setParameter("identifiers", params.getIdentifiers());
+		}
+		if (params.getNames() != null && !params.getNames().isEmpty()) {
+			query.setParameter("names", params.getNames());
 		}
 		return query.getResultList();
 	}

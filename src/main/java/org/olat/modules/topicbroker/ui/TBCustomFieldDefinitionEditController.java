@@ -20,6 +20,7 @@
 package org.olat.modules.topicbroker.ui;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -104,6 +105,10 @@ public class TBCustomFieldDefinitionEditController extends FormBasicController {
 		nameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(nameEl.getValue())) {
 			nameEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		} else if ((definition == null || !Objects.equals(definition.getName(), nameEl.getValue()))
+				&& !topicBrokerService.isCustomFieldDefinitionNameAvailable(broker, nameEl.getValue())) {
+			nameEl.setErrorKey("error.name.not.unique");
 			allOk &= false;
 		}
 		

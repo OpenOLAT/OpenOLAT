@@ -19,6 +19,8 @@
  */
 package org.olat.modules.topicbroker;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 
 /**
@@ -32,5 +34,7 @@ public interface TopicBrokerExportService {
 	void createCustomFieldDefinitions(Identity doer, TBBroker broker, String customFieldDefinitionsXml);
 
 	String getCustomFieldDefinitionExportXml(TBBrokerRef broker);
+	
+	MediaResource createMediaResource(UserRequest ureq, TBBrokerRef broker, TBParticipantCandidates participantCandidates);
 
 }

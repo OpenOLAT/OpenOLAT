@@ -72,6 +72,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Roles;
@@ -86,12 +87,14 @@ import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldType;
+import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
+import org.olat.modules.topicbroker.TopicBrokerExportService;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBTopicDataModel.TopicCols;
 import org.olat.modules.topicbroker.ui.events.TBTopicEditEnrollmentsEvent;
@@ -120,6 +123,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabUnderbooked;
 	private FlexiFiltersTab tabWaitingList;
+	private FormLink exportLink;
 	private FormLink createLink;
 	private DropdownItem addDropdown;
 	private FormLink importLink;
@@ -137,6 +141,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	
 	private TBBroker broker;
 	private final TBSecurityCallback secCallback;
+	private final TBParticipantCandidates participantCandidates;
 	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
 	private List<Long> detailsOpenTopicKeys;
 	private final Roles roles;
@@ -145,15 +150,19 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	@Autowired
 	private TopicBrokerService topicBrokerService;
 	@Autowired
+	private TopicBrokerExportService topicBrokerExportService;
+	@Autowired
 	private DocEditorService docEditorService;
 	@Autowired
 	private UserManager userManager;
 
-	public TBTopicListController(UserRequest ureq, WindowControl wControl, TBBroker broker, TBSecurityCallback secCallback) {
+	public TBTopicListController(UserRequest ureq, WindowControl wControl, TBBroker broker,
+			TBSecurityCallback secCallback, TBParticipantCandidates participantCandidates) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(TBTopicListController.class) + "/topic_list.html");
 		setTranslator(Util.createPackageTranslator(TBTopicListController.class, getLocale(), getTranslator()));
 		this.broker = broker;
 		this.secCallback = secCallback;
+		this.participantCandidates = participantCandidates;
 		
 		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
 		definitionSearchParams.setBroker(broker);
@@ -166,6 +175,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		
 		initForm(ureq);
 		loadModel(ureq);
+		updateUI();
 	}
 
 	protected abstract String getFormInfo();
@@ -207,9 +217,10 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			configPanel.setTitle(translate("configuration"));
 			configPanel.setPersistedStatusId(ureq, "tb-config-" + broker.getKey());
 			formLayout.add("config", new ComponentWrapperElement(configPanel));
-			updateBrokerConfigUI();
 		}
-		updateBrokerStatusUI();
+		
+		exportLink = uifactory.addFormLink("topics.export", formLayout, Link.BUTTON);
+		exportLink.setIconLeftCSS("o_icon o_icon-lg o_icon_download");
 		
 		if (secCallback.canEditTopics()) {
 			createLink = uifactory.addFormLink("topic.create", formLayout, Link.BUTTON);
@@ -258,7 +269,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		int columnIndex = TBTopicDataModel.CUSTOM_FIELD_OFFSET;
 		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitionsInTable) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
-			columnModel.setHeaderLabel(customFieldDefinition.getName());
+			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		
@@ -289,8 +300,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 
 	public void reload(UserRequest ureq) {
 		broker = topicBrokerService.getBroker(broker);
-		updateBrokerStatusUI();
-		updateBrokerConfigUI();
+		updateUI();
 		loadConfigInfos(ureq);
 		loadModel(ureq);
 	}
@@ -485,7 +495,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			if (TBCustomFieldType.text == definition.getType()) {
 				TBCustomField customField = definitionKeyToCustomField.get(definition.getKey());
 				if (customField != null && StringHelper.containsNonWhitespace(customField.getText())) {
-					String text = Formatter.truncate(customField.getText(), 200);
+					String text = Formatter.truncate(Formatter.escWithBR(customField.getText()).toString(), 200);
 					StaticTextElement item = uifactory.addStaticTextElement("customfield_" + counter++, null, text, flc);
 					item.setDomWrapperElement(DomWrapperElement.span);
 					item.setStaticFormElement(false);
@@ -531,6 +541,12 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		row.setToolsLink(toolsLink);
 	}
 	
+	private void updateUI() {
+		updateBrokerStatusUI();
+		updateBrokerConfigUI();
+		updateCommandUI();
+	}
+	
 	private void updateBrokerStatusUI() {
 		if (!isShowStatus()) {
 			return;
@@ -546,6 +562,11 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		
 		String infos = TBUIFactory.getConfigInfos(getTranslator(), broker, true);
 		configPanel.setInformations(infos);
+	}
+	
+	private void updateCommandUI() {
+		// import only if enrollment not done yet
+		addDropdown.setVisible(broker.getEnrollmentDoneDate() == null);
 	}
 	
 	private void loadConfigInfos(UserRequest ureq) {
@@ -658,6 +679,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == createLink){
 			doEditTopic(ureq, null);
+		} else if (source == exportLink) {
+			doExport(ureq);
 		} else if (source == tableEl) {
 			if (event instanceof DetailsToggleEvent) {
 				DetailsToggleEvent dte = (DetailsToggleEvent)event;
@@ -786,6 +809,11 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private void doDownload(UserRequest ureq, VFSLeaf topicLeaf) {
 		VFSMediaResource resource = new VFSMediaResource(topicLeaf);
 		resource.setDownloadable(true);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private void doExport(UserRequest ureq) {
+		MediaResource resource = topicBrokerExportService.createMediaResource(ureq, broker, participantCandidates);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	

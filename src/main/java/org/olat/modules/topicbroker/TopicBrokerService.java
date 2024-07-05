@@ -84,6 +84,8 @@ public interface TopicBrokerService {
 	public VFSLeaf getTopicLeaf(TBTopic topic, String identifier);
 	
 	public TBCustomFieldDefinition createCustomFieldDefinition(Identity doer, TBBrokerRef broker);
+
+	public boolean isCustomFieldDefinitionNameAvailable(TBBroker broker, String name);
 	
 	public TBCustomFieldDefinition updateCustomFieldDefinition(Identity doer, TBCustomFieldDefinitionRef definition,
 			String identifier, String name, TBCustomFieldType type, boolean displayInTable);

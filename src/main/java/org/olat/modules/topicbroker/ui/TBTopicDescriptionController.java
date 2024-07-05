@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -80,7 +81,10 @@ public class TBTopicDescriptionController extends BasicController {
 			for (TBCustomField customField: customFields) {
 				if (TBCustomFieldType.text == customField.getDefinition().getType()) {
 					if (StringHelper.containsNonWhitespace(customField.getText())) {
-						items.add(new CustomFieldItem(customField.getDefinition().getName(), customField.getText(), null));
+						items.add(new CustomFieldItem(
+								customField.getDefinition().getName(),
+								Formatter.escWithBR(customField.getText()).toString(),
+								null));
 					}
 				} else if (TBCustomFieldType.file == customField.getDefinition().getType()) {
 					if (customField.getVfsMetadata() != null) {
