@@ -188,3 +188,40 @@
 		padding-top: 0;
 	}
 }
+
+.o_widget_main.o_badge_widget_main {
+	width: 100%;
+
+	.o_badge_widget_single, .o_badge_widget_slide {
+		display: flex;
+	}
+
+	.o_badge_image {
+		max-width: 70px;
+		max-height: 70px;
+	}
+
+	.o_badge_meta {
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+
+		.o_badge_title {
+			font-weight: bold;
+		}
+
+		.o_badge_date, .o_badge_link, .o_badge_title {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
+	.o_badge_thumbs .swiper-pagination {
+		margin-bottom: -10px;
+	}
+}

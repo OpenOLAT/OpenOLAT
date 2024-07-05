@@ -53,6 +53,7 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.ImageService;
@@ -1259,6 +1260,24 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public boolean hasBadgeAssertion(Identity recipient, Long badgeClassKey) {
 		return badgeAssertionDAO.hasBadgeAssertion(recipient.getKey(), badgeClassKey);
+	}
+
+	@Override
+	public List<BadgeAssertion> getRuleEarnedBadgeAssertions(IdentityRef recipient, RepositoryEntryRef courseEntry, String courseNodeIdent) {
+		if (recipient == null || courseEntry == null || courseNodeIdent == null) {
+			return new ArrayList<>();
+		}
+		return badgeAssertionDAO.getBadgeAssertions(recipient, courseEntry, false).stream()
+				.filter(ba -> couldInvolveCourseNodeRule(ba.getBadgeClass(), courseNodeIdent)).toList();
+	}
+
+	// true if the fact of having earned a badge of 'badgeClass' could be the result of a rule involving 'courseNode'.
+	private boolean couldInvolveCourseNodeRule(BadgeClass badgeClass, String courseNodeIdent) {
+		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+		if (badgeCriteria.conditionForCourseNodeExists(courseNodeIdent)) {
+			return true;
+		}
+		return false;
 	}
 
 	private void createBadgeAssertionsRoot() {

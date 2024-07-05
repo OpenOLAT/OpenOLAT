@@ -23,13 +23,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeAssertionImpl;
-import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -112,7 +113,7 @@ public class BadgeAssertionDAO {
 		return badgeAssertionKeys != null && !badgeAssertionKeys.isEmpty();
 	}
 
-	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry, boolean nullEntryMeansAll) {
+	public List<BadgeAssertion> getBadgeAssertions(IdentityRef recipient, RepositoryEntryRef courseEntry, boolean nullEntryMeansAll) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ba from badgeassertion ba ");
 		sb.append("inner join fetch ba.badgeClass bc ");

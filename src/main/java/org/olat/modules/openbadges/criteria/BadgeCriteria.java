@@ -360,4 +360,20 @@ public class BadgeCriteria {
 		}
 		return keys;
 	}
+
+	public boolean conditionForCourseNodeExists(String courseNodeSubIdent) {
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
+				if (courseElementPassedCondition.getSubIdent().equals(courseNodeSubIdent)) {
+					return true;
+				}
+			}
+			if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
+				if (courseElementScoreCondition.getSubIdent().equals(courseNodeSubIdent)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -104,6 +105,8 @@ public interface OpenBadgesManager {
 	List<BadgeClassDAO.BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry);
 
 	List<String> getBadgeClassNames(Collection<Long> badgeClassKeys);
+
+	List<BadgeAssertion> getRuleEarnedBadgeAssertions(IdentityRef recipient, RepositoryEntryRef courseEntry, String courseNodeIdent);
 
 	Long getNumberOfBadgeClasses(RepositoryEntryRef entry);
 

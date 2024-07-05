@@ -1,0 +1,49 @@
+<div class="o_badge_widget">
+	#if($singleMode)
+		#foreach($ba in $ruleEarnedBadgeAssertions)
+		<div class="o_badge_widget_single">
+			<img class="o_badge_image" src="$mediaUrl/$ba.bakedImage">
+			<div class="o_badge_meta">
+				<div class="o_badge_title">$ba.badgeClass.name</div>
+				<div class="o_badge_date">$r.formatDateAndTime($ba.issuedOn)</div>
+				<div class="o_badge_link"><a href="$badgesUrl">$r.translate("badges")</a></div>
+			</div>
+		</div>
+		#end
+	#end
+
+	#if($sliderMode)
+		<div id="o_swiper_badges_$r.getCId()" class="swiper o_badge_thumbs">
+			<div class="swiper-wrapper">
+				#foreach($ba in $ruleEarnedBadgeAssertions)
+				<div class="swiper-slide o_badge_widget_slide">
+					<img class="o_badge_image" src="$mediaUrl/$ba.bakedImage">
+					<div class="o_badge_meta">
+						<div class="o_badge_title">$ba.badgeClass.name $ba.badgeClass.name</div>
+						<div class="o_badge_date">$r.formatDateAndTime($ba.issuedOn)</div>
+						<div class="o_badge_bottom_spacer"></div>
+					</div>
+				</div>
+				#end
+			</div>
+			<div class="swiper-pagination"></div>
+		</div>
+	#end
+</div>
+
+#if($sliderMode)
+<script>
+	"use strict";
+	var thumbs = new Swiper('#o_swiper_badges_$r.getCId()', {
+		centeredSlides: true,
+		spaceBetween: 10,
+		slidesPerView: 'auto',
+		slideToClickedSlide: true,
+		touchRatio: 0.2,
+		pagination: {
+			el: '.swiper-pagination',
+			clickable: true
+		},
+	});
+</script>
+#end

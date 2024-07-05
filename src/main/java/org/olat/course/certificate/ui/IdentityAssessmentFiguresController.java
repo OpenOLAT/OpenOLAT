@@ -333,9 +333,12 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		
 		boolean gradeApplied = StringHelper.containsNonWhitespace(assessmentEvaluation.getGrade());
 		boolean hasGrade = gradeEnabled && assessmentConfig.hasGrade() && gradeApplied && gradeModule.isEnabled();
-		String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEvaluation.getGradeSystemIdent())
-				? assessmentEvaluation.getGradeSystemIdent()
-				: gradeService.getGradeSystem(courseEntry, courseNode.getIdent()).toString();
+		String gradeSystemident = null;
+		if (hasGrade) {
+			gradeSystemident = StringHelper.containsNonWhitespace(assessmentEvaluation.getGradeSystemIdent())
+					? assessmentEvaluation.getGradeSystemIdent()
+					: gradeService.getGradeSystem(courseEntry, courseNode.getIdent()).toString();
+		}
 		updateGradeUI(hasGrade, resultsVisible, assessmentEvaluation.getPerformanceClassIdent(), assessmentEvaluation.getGrade(), gradeSystemident);
 		
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();

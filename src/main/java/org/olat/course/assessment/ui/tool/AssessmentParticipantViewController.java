@@ -40,6 +40,7 @@ import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.widget.ComponentWidget;
 import org.olat.core.gui.components.widget.FigureWidget;
 import org.olat.core.gui.components.widget.TextWidget;
 import org.olat.core.gui.components.widget.Widget;
@@ -92,6 +93,9 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.modules.openbadges.BadgeAssertion;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.BadgeWidgetController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
@@ -128,6 +132,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	private UserManager userManager;
 	@Autowired
 	private DocEditorService docEditorService;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 
 	public AssessmentParticipantViewController(UserRequest ureq, WindowControl wControl,
 			AssessmentEvaluation assessmentEval, AssessmentConfig assessmentConfig,
@@ -396,6 +402,37 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		widgetGroup.add(scoreWWeightedWidget);
 		widgetGroup.add(attemptsWidget);
 		widgetGroup.addAll(rubricsWidgets);
+		widgetGroup.add(createBadgesWidget(ureq));
+	}
+
+	private ComponentWidget createBadgesWidget(UserRequest ureq) {
+		Identity assessedIdentity = getIdentity();
+		RepositoryEntryRef courseEntry = null;
+		String courseNodeIdent = null;
+		boolean myBadges = true;
+		if (formEvaluationSupplier != null) {
+			assessedIdentity = formEvaluationSupplier.getAssessedIdentity();
+			courseEntry = formEvaluationSupplier.getCourseEntry();
+			courseNodeIdent = formEvaluationSupplier.getCourseNode().getIdent();
+			myBadges = false;
+		}
+		if (gradeSystemSupplier != null) {
+			courseEntry = gradeSystemSupplier.getCourseEntry();
+			courseNodeIdent = gradeSystemSupplier.getSubIdent();
+		}
+		List<BadgeAssertion> ruleEarnedBadgeAssertions = openBadgesManager.getRuleEarnedBadgeAssertions(
+				assessedIdentity, courseEntry, courseNodeIdent);
+		if (!ruleEarnedBadgeAssertions.isEmpty()) {
+			ComponentWidget badgeWidget = WidgetFactory.createComponentWidget("badges", null, "Badges", "o_icon_badge");
+			BadgeWidgetController badgeWidgetController = new BadgeWidgetController(ureq, getWindowControl(),
+					courseEntry, ruleEarnedBadgeAssertions, myBadges);
+			addControllerListener(badgeWidgetController);
+			badgeWidget.setContent(badgeWidgetController.getInitialComponent());
+			badgeWidget.setMainCss("o_badge_widget_main");
+			return badgeWidget;
+		}
+
+		return null;
 	}
 
 	private DocumentWrapper createDocumentWrapper(VFSLeaf document, VelocityContainer docsVC) {
@@ -524,7 +561,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	public interface GradeSystemSupplier {
 		
 		public GradeSystem getGradeSystem();
-		
+		public RepositoryEntryRef getCourseEntry();
+		public String getSubIdent();
 	}
 	
 	public static GradeSystemSupplier gradeSystem(UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
@@ -545,7 +583,16 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		public GradeSystem getGradeSystem() {
 			return CoreSpringFactory.getImpl(GradeService.class).getGradeSystem(courseEntry, subIdent);
 		}
-		
+
+		@Override
+		public RepositoryEntryRef getCourseEntry() {
+			return courseEntry;
+		}
+
+		@Override
+		public String getSubIdent() {
+			return subIdent;
+		}
 	}
 	
 	public interface AssessmentDocumentsSupplier {
@@ -559,7 +606,9 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	public interface FormEvaluationSupplier {
 		
 		public List<RubricValue> getRubricStatistics(FormEvaluationScoreMode scoreMode);
-		
+		public Identity getAssessedIdentity();
+		public RepositoryEntry getCourseEntry();
+		public CourseNode getCourseNode();
 	}
 	
 	public static FormEvaluationSupplier formEvaluation(UserCourseEnvironment userCourseEnv, CourseNode courseNode, AssessmentConfig assessmentConfig) {
@@ -574,6 +623,21 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		@Override
 		public List<RubricValue> getRubricStatistics(FormEvaluationScoreMode scoreMode) {
 			return List.of();
+		}
+
+		@Override
+		public Identity getAssessedIdentity() {
+			return null;
+		}
+
+		@Override
+		public RepositoryEntry getCourseEntry() {
+			return null;
+		}
+
+		@Override
+		public CourseNode getCourseNode() {
+			return null;
 		}
 	}
 	
@@ -597,7 +661,22 @@ public class AssessmentParticipantViewController extends BasicController impleme
 
 			assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		}
-		
+
+		@Override
+		public Identity getAssessedIdentity() {
+			return assessedIdentity;
+		}
+
+		@Override
+		public RepositoryEntry getCourseEntry() {
+			return courseEntry;
+		}
+
+		@Override
+		public CourseNode getCourseNode() {
+			return courseNode;
+		}
+
 		@Override
 		public List<RubricValue> getRubricStatistics(FormEvaluationScoreMode scoreMode) {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
