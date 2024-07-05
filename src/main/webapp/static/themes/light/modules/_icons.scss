@@ -1121,6 +1121,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_broker_not_started { @include o-add-icon('circle');}
 .o_icon_tb_broker_selection_in_progress { @include o-add-icon('circle-play');}
 .o_icon_tb_broker_enrollment_done { @include o-add-icon('check-circle');}
+.o_icon_tb_edit_enrollments { @include o-add-icon('check');}
 .o_icon_tb_enroll { @include o-add-icon('rotate-right');}
 .o_icon_tb_withdraw { @include o-add-icon('rotate-left');}
 .o_icon_tb_unselect { @include o-add-icon('trash-can', false);}

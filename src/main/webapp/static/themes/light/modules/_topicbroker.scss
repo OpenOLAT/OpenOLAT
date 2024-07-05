@@ -103,6 +103,8 @@
 					place-self: start end;
 					margin-top: $o-tb_topic-card-image-margin;
 					margin-right: $o-tb_topic-card-image-margin;
+					transform: scale(1.3);
+					transform-origin: top right;
 				}
 			}
 			
@@ -115,6 +117,9 @@
 			
 			.o_tb_topic_card_custom_fields {
 				margin-top: 10px;
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
 			}
 			
 			.o_tb_topic_card_cmds {

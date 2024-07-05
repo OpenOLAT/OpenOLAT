@@ -76,7 +76,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Roles;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -116,6 +115,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_UP = "up";
 	private static final String CMD_DOWN = "down";
+	private static final String CMD_EDIT_ENROLLMENTS = "edit.enrollments";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_OPEN_FILE = "open.file";
 	
@@ -263,7 +263,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(waitingListColumn);
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.groupRestrictions));
+//		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.groupRestrictions));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.createdBy));
 		
 		int columnIndex = TBTopicDataModel.CUSTOM_FIELD_OFFSET;
@@ -495,7 +495,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			if (TBCustomFieldType.text == definition.getType()) {
 				TBCustomField customField = definitionKeyToCustomField.get(definition.getKey());
 				if (customField != null && StringHelper.containsNonWhitespace(customField.getText())) {
-					String text = Formatter.truncate(Formatter.escWithBR(customField.getText()).toString(), 200);
+					String text = TBUIFactory.formatPrettyText(customField.getText(), 200);
 					StaticTextElement item = uifactory.addStaticTextElement("customfield_" + counter++, null, text, flc);
 					item.setDomWrapperElement(DomWrapperElement.span);
 					item.setStaticFormElement(false);
@@ -859,6 +859,10 @@ public abstract class TBTopicListController extends FormBasicController implemen
 					}
 				}
 				
+				if (secCallback.canEditSelections()) {
+					names.add("divider");
+					addLink("enrollments.edit", CMD_EDIT_ENROLLMENTS, "o_icon o_icon-fw o_icon_tb_edit_enrollments");
+				}
 				names.add("divider");
 				addLink("delete", CMD_DELETE, "o_icon o_icon-fw o_icon_delete_item");
 			}
@@ -886,6 +890,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 					doMoveTopic(ureq, row, Direction.UP);
 				} else if (CMD_DOWN.equals(cmd)) {
 					doMoveTopic(ureq, row, Direction.DOWN);
+				} else if (CMD_EDIT_ENROLLMENTS.equals(cmd)) {
+					doEditSelections(ureq, row);
 				} else if (CMD_DELETE.equals(cmd)) {
 					doConfirmDelete(ureq, row);
 				}

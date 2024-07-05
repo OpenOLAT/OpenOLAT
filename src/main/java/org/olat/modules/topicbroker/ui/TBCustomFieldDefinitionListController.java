@@ -109,7 +109,6 @@ public class TBCustomFieldDefinitionListController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CustomFieldDefinitionCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CustomFieldDefinitionCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CustomFieldDefinitionCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CustomFieldDefinitionCols.displayInTable, new YesNoCellRenderer()));

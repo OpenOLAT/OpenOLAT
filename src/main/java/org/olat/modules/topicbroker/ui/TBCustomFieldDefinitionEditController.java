@@ -26,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,7 +49,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TBCustomFieldDefinitionEditController extends FormBasicController {
 	
-	private StaticTextElement identifierEl;
 	private TextElement nameEl;
 	private SingleSelection typeEl;
 	private FormToggle addToggleButton;
@@ -71,10 +69,6 @@ public class TBCustomFieldDefinitionEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (definition != null) {
-			identifierEl = uifactory.addStaticTextElement("custom.field.def.identifier", definition.getIdentifier(), formLayout);
-		}
-		
 		String title = definition != null? definition.getName(): null;
 		nameEl = uifactory.addTextElement("custom.field.def.name", 100, title, formLayout);
 		nameEl.setMandatory(true);
@@ -123,16 +117,11 @@ public class TBCustomFieldDefinitionEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String identifier = null;
 		if (definition == null) {
 			definition = topicBrokerService.createCustomFieldDefinition(getIdentity(), broker);
-			identifier = definition.getIdentifier();
 		}
 		
-		if (identifierEl != null) {
-			identifier = identifierEl.getValue();
-		}
-		definition = topicBrokerService.updateCustomFieldDefinition(getIdentity(), definition, identifier,
+		definition = topicBrokerService.updateCustomFieldDefinition(getIdentity(), definition, definition.getIdentifier(),
 				nameEl.getValue(), TBCustomFieldType.valueOf(typeEl.getSelectedKey()), addToggleButton.isOn());
 		fireEvent(ureq, FormEvent.DONE_EVENT);
 	}

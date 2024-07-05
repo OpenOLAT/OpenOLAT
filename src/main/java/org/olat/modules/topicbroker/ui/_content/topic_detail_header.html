@@ -12,11 +12,15 @@
 				<h2>$r.escapeHtml($title)</h2>
 			</div>
 			<div>
-				#if($r.available("topic.edit"))
-					$r.render("topic.edit")
-				#end
-				#if($r.available("enrollments.edit"))
+				#if($r.available("editDropdown") && $r.visible("editDropdown"))
+					<div class="btn-group o_tb_select_group">
+						$r.render("enrollments.edit")
+						$r.render("editDropdown")
+					</div>
+				#elseif($r.available("enrollments.edit"))
 					$r.render("enrollments.edit")
+				#elseif($r.available("topic.edit"))
+					$r.render("topic.edit")
 				#end
 			</div>
 		</div>

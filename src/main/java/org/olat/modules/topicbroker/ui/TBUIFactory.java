@@ -272,4 +272,17 @@ public class TBUIFactory {
 		return "<li><span><i class=\"o_icon o o_icon-fw " + iconCss + "\"></i> " + info + "</span></li>";
 	}
 
+	public static String formatPrettyText(String text, Integer truncate) {
+		String formattedText = text;
+		if (truncate != null) {
+			formattedText = Formatter.truncate(formattedText, truncate);
+		}
+		formattedText = StringHelper.escapeHtml(formattedText);
+		formattedText = Formatter.formatURLsAsLinks(formattedText, false);
+		formattedText = Formatter.formatMailsAsLinks(formattedText, false);
+		formattedText = Formatter.formatEmoticonsAsImages(formattedText);
+		formattedText = formattedText.replace("\n", "<br>");
+		return formattedText;
+	}
+
 }

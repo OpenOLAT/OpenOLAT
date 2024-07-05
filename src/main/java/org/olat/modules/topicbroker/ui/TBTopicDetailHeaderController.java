@@ -20,6 +20,8 @@
 package org.olat.modules.topicbroker.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -49,8 +51,9 @@ public class TBTopicDetailHeaderController extends FormBasicController {
 	public static final int IMAGE_WIDTH = 300;
 	public static final int IMAGE_HEIGHT = (IMAGE_WIDTH / 3) * 2;
 
-	private FormLink editLink;
 	private FormLink editEnrollmentsLink;
+	private DropdownItem editDropdown;
+	private FormLink editLink;
 
 	private final TBTopic topic;
 	private final TBSecurityCallback secCallback;
@@ -94,12 +97,22 @@ public class TBTopicDetailHeaderController extends FormBasicController {
 		flc.contextPut("numEnrollments", numEnrollments);
 		flc.contextPut("waitingList", waitingList);
 		
-		if (secCallback.canEditTopics()) {
-			editLink = uifactory.addFormLink("topic.edit", formLayout, Link.BUTTON);
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-		}
 		if (secCallback.canEditSelections()) {
 			editEnrollmentsLink = uifactory.addFormLink("enrollments.edit", formLayout, Link.BUTTON);
+			editEnrollmentsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_tb_edit_enrollments");
+		}
+		if (secCallback.canEditTopics()) {
+			if (editEnrollmentsLink != null) {
+				editDropdown = uifactory.addDropdownMenu("editDropdown", null, null, formLayout, getTranslator());
+				editDropdown.setOrientation(DropdownOrientation.right);
+				
+				editLink = uifactory.addFormLink("topic.edit", formLayout, Link.LINK);
+				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+				editDropdown.addElement(editLink);
+			} else {
+				editLink = uifactory.addFormLink("topic.edit", formLayout, Link.BUTTON);
+				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
+			}
 		}
 	}
 

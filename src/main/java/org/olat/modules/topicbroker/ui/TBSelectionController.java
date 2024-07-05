@@ -76,7 +76,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Roles;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.event.GenericEventListener;
@@ -212,9 +211,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 
 	private void initSelectionTable(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel selectionColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		DefaultFlexiColumnModel priorityColumn = new DefaultFlexiColumnModel(SelectionCols.priority, new TextFlexiCellRenderer(EscapeMode.none));
-		priorityColumn.setAlignment(FlexiColumnModel.ALIGNMENT_CENTER);
-		selectionColumnsModel.addFlexiColumnModel(priorityColumn);
+		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.priority, new TextFlexiCellRenderer(EscapeMode.none)));
 		
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title));
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.status, statusRenderer));
@@ -342,7 +339,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				row.setSelectionSortOrder(selection.getSortOrder());
 				row.setEnrolled(selection.isEnrolled());
 				forgeStatus(row, maxEnrollments, numEnrollments);
-				row.setPriorityLabel(TBUIFactory.getPriorityLabel(getTranslator(), row.getStatus(), selection.getSortOrder()));
+				row.setPriorityLabel("<div class=\"o_tb_priority_labels\">" + TBUIFactory.getPriorityLabel(getTranslator(), row.getStatus(), selection.getSortOrder()) + "</div>");
 				forgeUpDown(row);
 				selectionRows.add(row);
 			}
@@ -413,7 +410,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			if (TBCustomFieldType.text == definition.getType()) {
 				TBCustomField customField = definitionKeyToCustomField.get(definition.getKey());
 				if (customField != null && StringHelper.containsNonWhitespace(customField.getText())) {
-					String text = Formatter.truncate(Formatter.escWithBR(customField.getText()).toString(), 200);
+					String text = TBUIFactory.formatPrettyText(customField.getText(), 200);
 					StaticTextElement item = uifactory.addStaticTextElement("customfield_" + counter++, null, text, flc);
 					item.setLabel("noTransOnlyParam", new String[] {StringHelper.escapeHtml(definition.getName())});
 					item.setDomWrapperElement(DomWrapperElement.div);
@@ -545,7 +542,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		for (int i = selectionRows.size() + 1; i <= broker.getMaxSelections(); i++) {
 			TBSelectionRow row = new TBSelectionRow();
 			row.setSelectionSortOrder(i);
-			row.setPriorityLabel(TBUIFactory.getPriorityLabel(getTranslator(), TBSelectionStatus.fillIn, i));
+			row.setPriorityLabel("<div class=\"o_tb_priority_labels\">" + TBUIFactory.getPriorityLabel(getTranslator(), TBSelectionStatus.fillIn, i) + "</div>");
 			selectionRows.add(row);
 		}
 	}
