@@ -201,6 +201,8 @@ public class FeedDAOTest extends OlatTestCase {
 		feed.setExternalFeedUrl(externalFeedUrl);
 		String externalImageURL = "https://www.example.com/image.png";
 		feed.setExternalImageURL(externalImageURL);
+		feed.setCanRate(false);
+		feed.setCanComment(true);
 		String name = "My Image";
 		feed.setImageName(name);
 		String title = "Display";
@@ -224,6 +226,8 @@ public class FeedDAOTest extends OlatTestCase {
 		Assert.assertEquals(feed.getTitle(), reloaded.getTitle());
 		Assert.assertEquals(resource.getResourceableId(), reloaded.getResourceableId());
 		Assert.assertEquals(resource.getResourceableTypeName(), reloaded.getResourceableTypeName());
+		Assert.assertEquals(feed.getCanRate(), reloaded.getCanRate());
+		Assert.assertEquals(feed.getCanComment(), reloaded.getCanComment());
 	}
 	
 	@Test
