@@ -43,8 +43,8 @@
 						#end
 					#end
 					<div class="o_feed_com_rat_card_view">
-						#if($r.available("commentsAndRating") && $feed.getCanRate())
-							$r.render("commentsAndRating")
+						#if($r.available("ratings") && $feed.getCanRate())
+							$r.render("ratings")
 						#end
 						#if($formattedTags)
 							$formattedTags

@@ -100,22 +100,22 @@ public class FeedItemController extends BasicController implements Activateable2
 		if(item.getDate() != null) {
 			DateComponentFactory.createDateComponentWithYear("dateComp", item.getDate(), vcItem);
 		}
+
 		// Add rating and commenting controller - only when configured
 		if (displayConfig.isShowCRInDetails()) {
 			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
 			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), callback.mayEditMetadata(), anonym);
-			commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, null, false, secCallback.canRate(), true);
-			listenTo(commentsCtrl);
-			vcItem.put("commentsAndRating", commentsCtrl.getInitialComponent());
-		}
+			//ratings
+			UserCommentsAndRatingsController ratingsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, null, false, secCallback.canRate(), true);
+			listenTo(ratingsCtrl);
+			vcItem.put("ratings", ratingsCtrl.getInitialComponent());
 
-		if (displayConfig.isShowCRInDetails()) {
-			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
-			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), callback.mayEditMetadata(), anonym);
+			//comments
 			commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, null, secCallback.canViewComments(), false, true);
 			listenTo(commentsCtrl);
 			vcItem.put("comments", commentsCtrl.getInitialComponent());
 		}
+
 		//
 		putInitialPanel(vcItem);
 		// do logging
