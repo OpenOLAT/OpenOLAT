@@ -247,7 +247,7 @@ public class AssessmentModeListController extends FormBasicController implements
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(editCtrl == source) {
-			toolbarPanel.popUpToController(this);
+			toolbarPanel.popController(editCtrl);
 			removeAsListenerAndDispose(editCtrl);
 			editCtrl = null;
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {

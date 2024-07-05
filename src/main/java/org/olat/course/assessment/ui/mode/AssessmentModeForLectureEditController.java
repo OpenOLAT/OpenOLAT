@@ -336,15 +336,14 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		} else {
 			String title = translate("confirm.status.change.title");
 
-			String text;
-			switch(nextStatus) {
-				case none: text = translate("confirm.status.change.none"); break;
-				case leadtime: text = translate("confirm.status.change.leadtime"); break;
-				case assessment: text = translate("confirm.status.change.assessment"); break;
-				case followup: text = translate("confirm.status.change.followup"); break;
-				case end: text = translate("confirm.status.change.end"); break;
-				default: text = "ERROR";
-			}
+			String text = switch (nextStatus) {
+				case none -> translate("confirm.status.change.none");
+				case leadtime -> translate("confirm.status.change.leadtime");
+				case assessment -> translate("confirm.status.change.assessment");
+				case followup -> translate("confirm.status.change.followup");
+				case end -> translate("confirm.status.change.end");
+				default -> "ERROR";
+			};
 			confirmCtrl = activateOkCancelDialog(ureq, title, text, confirmCtrl);
 		}
 	}

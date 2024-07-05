@@ -661,10 +661,18 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		if(mode.getFollowupTime() > 0) {
 			if(mode.getStatus() != Status.followup || mode.getStatus() != Status.end) {
 				Date now = new Date();
-				Date followupTime = assessmentModeManager.evaluateFollowupTime(now, mode.getFollowupTime());
-				((AssessmentModeImpl)mode).setEnd(now);
-				((AssessmentModeImpl)mode).setEndWithFollowupTime(followupTime);
-				mode.setStatus(Status.followup);
+				// if an assessment mode gets stopped while in leadtime, just end it without follow up
+				// also set begin/end time to the same, because otherwise begin would be after end
+				if (mode.getStatus().equals(Status.leadtime)) {
+					mode.setBegin(now);
+					mode.setEnd(now);
+					mode.setStatus(Status.end);
+				} else {
+					Date followupTime = assessmentModeManager.evaluateFollowupTime(now, mode.getFollowupTime());
+					mode.setEnd(now);
+					mode.setEndWithFollowupTime(followupTime);
+					mode.setStatus(Status.followup);
+				}
 			}
 			mode.setEndStatus(endStatus);
 			mode = dbInstance.getCurrentEntityManager().merge(mode);

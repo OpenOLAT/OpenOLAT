@@ -47,7 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 24 sept. 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ConfirmStopAssessmentModeController extends FormBasicController {
@@ -104,8 +104,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 	}
 	
 	private void initFormExtensionTime(FormItemContainer formLayout) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			String name = StringHelper.escapeHtml(mode.getName());
 			layoutCont.contextPut("msg", translate("confirm.stop.final.text.details", name));
 		}
@@ -115,8 +114,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 		Set<Long> disadvantegCompensationAssessedIdentityKeys = getIdentitiesWithDisadvantageCompensations(assessedIdentityKeys, nodeList);
 		int numOfDisadvantagedUsers = disadvantegCompensationAssessedIdentityKeys.size();
 
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			String name = StringHelper.escapeHtml(mode.getName());
 			layoutCont.contextPut("msg", translate("confirm.stop.text.details", name ));
 

@@ -165,6 +165,13 @@ public class StopAssessmentWarningController extends BasicController implements 
 						stopAssessmentMode.setIconRightCSS("o_icon o_icon-fw o_icon_disadvantage_compensation");
 					}
 					stopAssessmentMode.setUserObject(mode);
+				} else {
+					if (startAssessmentMode != null) {
+						startAssessmentMode.setVisible(false);
+					}
+					if (stopAssessmentMode != null) {
+						stopAssessmentMode.setVisible(false);
+					}
 				}
 			}
 			mainVC.contextPut("modeStatus", mode.getStatus().name());
