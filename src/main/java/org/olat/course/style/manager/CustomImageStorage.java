@@ -103,11 +103,11 @@ public class CustomImageStorage {
 	}
 
 	public void delete(VFSContainer baseContainer) {
-		getCourseContainer(baseContainer).delete();
+		getCourseContainer(baseContainer).deleteSilently();
 	}
 
 	public void delete(VFSContainer baseContainer, CourseNode courseNode) {
-		getCourseNodeContainer(baseContainer, courseNode).delete();
+		getCourseNodeContainer(baseContainer, courseNode).deleteSilently();
 	}
 
 	VFSContainer getCourseContainer(VFSContainer baseContainer) {

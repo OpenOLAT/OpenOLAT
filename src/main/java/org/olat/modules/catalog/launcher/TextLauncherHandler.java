@@ -135,7 +135,7 @@ public class TextLauncherHandler implements CatalogLauncherHandler {
 	}
 	
 	public void deleteLauncherContainer(String i18nSuffix) {
-		getOrCreateLauncherContainer(i18nSuffix).delete();
+		getOrCreateLauncherContainer(i18nSuffix).deleteSilently();
 	}
 	
 	public Config fromXML(String xml) {

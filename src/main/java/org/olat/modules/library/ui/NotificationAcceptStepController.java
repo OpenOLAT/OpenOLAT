@@ -164,7 +164,7 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 			bundle.setContent(subjectTextElement.getValue(), bodyTextElement.getValue());
 			mailManager.sendMessage(bundle);
 			
-			sourceFile.delete();
+			sourceFile.deleteSilently();
 			vfsRepositoryService.deleteMetadata(metaInfo);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} catch (Exception e) {

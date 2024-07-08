@@ -787,7 +787,7 @@ public class CopyServiceImpl implements CopyService {
 			
 			if (targetContainer != null) {
 				for (VFSItem item : targetContainer.getItems()) {
-					item.delete();
+					item.deleteSilently();
 				}
 			}
 			
@@ -812,7 +812,7 @@ public class CopyServiceImpl implements CopyService {
 			
 			if (targetContainer != null) {
 				for (VFSItem item : targetContainer.getItems()) {
-					item.delete();
+					item.deleteSilently();
 				}
 			}
 			

@@ -74,7 +74,7 @@ public abstract class FeedFileResource extends FileResource {
 				// Remember that the resource folder could be a valid folder of a
 				// different resource (when copying the resource).
 				if (resourceContainer.getName().equals(FileResourceManager.ZIPDIR)) {
-					item.delete();
+					item.deleteSilently();
 				}
 			}
 		}

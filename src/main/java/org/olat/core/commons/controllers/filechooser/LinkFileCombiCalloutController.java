@@ -400,14 +400,14 @@ public class LinkFileCombiCalloutController extends BasicController {
 		}
 		if (!ZipUtil.unzip(vfsItem, zipContainer)) {
 			// operation failed - rollback
-			zipContainer.delete();
+			zipContainer.deleteSilently();
 			return null;
 		} else {
 			// check quota
 			long quotaLeftKB = VFSManager.getQuotaLeftKB(currentContainer);
 			if (quotaLeftKB != Quota.UNLIMITED && quotaLeftKB < 0) {
 				// quota exceeded - rollback
-				zipContainer.delete();
+				zipContainer.deleteSilently();
 				getWindowControl().setError(translate("QuotaExceeded"));
 				return null;
 			}

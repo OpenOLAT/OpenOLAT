@@ -258,7 +258,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				if(item != null) {
 					deleteEdusharingUsages(courseEnv, item);
 					transcodingService.deleteMasterFile(item);
-					item.delete();
+					item.deleteSilently();
 				}
 			}
 			storeTaskDefinitions(taskDefinitions, courseEnv, cNode);

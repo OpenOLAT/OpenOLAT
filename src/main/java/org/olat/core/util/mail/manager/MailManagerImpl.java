@@ -484,8 +484,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				int count = countAttachment(path);
 				if(count == 0) {
 					VFSItem item = mailModule.getRootForAttachments().resolve(path);
-					if(item instanceof VFSLeaf) {
-						((VFSLeaf)item).delete();
+					if(item instanceof VFSLeaf vfsLeaf) {
+						vfsLeaf.deleteSilently();
 					}
 				}
 			}

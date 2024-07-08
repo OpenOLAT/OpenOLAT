@@ -263,7 +263,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 				&& posterRes.getWidth() >= videoMetadata.getWidth()) {
 			VFSLeaf oldPosterFile = getPosterframe(videoResource);
 			if(oldPosterFile != null) {
-				oldPosterFile.delete();
+				oldPosterFile.deleteSilently();
 			}
 			VFSContainer masterContainer = getMasterContainer(videoResource);
 			LocalFileImpl newPoster = (LocalFileImpl) masterContainer.createChildLeaf(FILENAME_POSTER_JPG);
@@ -283,7 +283,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	public void deletePosterframe(OLATResource videoResource) {
 		VFSLeaf oldPosterFile = getPosterframe(videoResource);
 		if(oldPosterFile != null) {
-			oldPosterFile.delete();
+			oldPosterFile.deleteSilently();
 		}
 		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(videoResource, true);
 		repositoryManager.deleteImage(repoEntry);
@@ -373,7 +373,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		VFSContainer vfsContainer = getMasterContainer(videoResource);
 		for (VFSItem item : vfsContainer.getItems(new TrackFilter())) {
 			if (item.getName().contains(lang)) {
-				item.delete();
+				item.deleteSilently();
 			}
 		}
 	}
@@ -907,7 +907,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	public void deleteThumbnails(OLATResource videoResource) {
 		VFSContainer thumbnailsContainer = getThumbnailsContainer(videoResource);
 		if (thumbnailsContainer != null) {
-			thumbnailsContainer.delete();
+			thumbnailsContainer.deleteSilently();
 		}
 	}
 
@@ -985,7 +985,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf targetFile = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_VIDEO_MP4);
 		VFSManager.copyContent(masterVideo, targetFile, true, initialAuthor);
-		masterVideo.delete();
+		masterVideo.deleteSilently();
 
 		// calculate video duration
 		long duration = movieService.getDuration(targetFile, FILETYPE_MP4);
@@ -1017,7 +1017,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		// 1) unzip archive
 		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		ZipUtil.unzip(exportArchive, baseContainer);
-		exportArchive.delete();
+		exportArchive.deleteSilently();
 		
 		// 2) update metadata from the repo entry export
 		VideoMeta meta = null;
@@ -1033,7 +1033,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 				meta = videoMetadataDao.copyVideoMetadata(repoEntry, videoMeta);
 			}
 			// now delete the import folder, not used anymore
-			repoentryContainer.delete();
+			repoentryContainer.deleteSilently();
 		}
 		
 		// 3) Set poster image for repo entry
@@ -1213,7 +1213,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	private void uploadPoster(RepositoryEntry entry, String url, Identity changedBy) {
 		VFSLeaf oldPosterFile = getPosterframe(entry.getOlatResource());
 		if(oldPosterFile != null) {
-			oldPosterFile.delete();
+			oldPosterFile.deleteSilently();
 		}
 
 		VFSContainer masterContainer = getMasterContainer(entry.getOlatResource());
@@ -1310,7 +1310,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		if(container == null) {
 			deleteStatus = VFSSuccess.SUCCESS;
 		} else {
-			deleteStatus = container.delete();
+			deleteStatus = container.deleteSilently();
 		}
 		return deleteStatus == VFSSuccess.SUCCESS;
 	}
@@ -1336,7 +1336,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		videoTranscodingDao.deleteVideoTranscoding(videoTranscoding);
 		VFSLeaf videoFile = getTranscodingLeaf(videoTranscoding);
 		if( videoFile != null ) {
-			videoFile.delete();
+			videoFile.deleteSilently();
 		}
 	}
 
@@ -1390,7 +1390,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		}		
 
 		if (chapters.isEmpty()){
-			webvtt.delete();
+			webvtt.deleteSilently();
 			return;
 		}
 
@@ -1596,7 +1596,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 			if (!referencedFileNames.contains(foundFileName) && !referencedMasterFileNames.contains(foundFileName)) {
 				VFSItem itemToDelete = commentsMediaContainer.resolve(foundFileName);
 				if (itemToDelete != null && itemToDelete.exists()) {
-					itemToDelete.delete();
+					itemToDelete.deleteSilently();
 				}
 			}
 		}

@@ -139,7 +139,7 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 		NamedContainerImpl namedFolder = new NamedContainerImpl(filePath, rootFolder);
 		VFSLeaf leaf = (VFSLeaf)namedFolder.resolve(htmlFileName);
 		if (leaf != null) {
-			leaf.delete();
+			leaf.deleteSilently();
 		}
 	  	leaf = namedFolder.createChildLeaf(htmlFileName);
 	  	FileUtils.save(leaf.getOutputStream(false), htmlText, "utf-8");

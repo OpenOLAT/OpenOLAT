@@ -80,7 +80,7 @@ public class CPManagerTest extends OlatTestCase {
 
 	@After
 	public void tearDown() {
-		cp.getRootDir().delete();
+		cp.getRootDir().deleteSilently();
 	}
 	
 	@Test

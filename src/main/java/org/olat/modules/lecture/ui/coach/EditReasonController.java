@@ -181,7 +181,7 @@ public class EditReasonController extends FormBasicController {
 	
 	protected void deleteTempStorage() {
 		if(tempUploadFolder != null) {
-			tempUploadFolder.delete();
+			tempUploadFolder.deleteSilently();
 		}
 	}
 	
@@ -291,7 +291,7 @@ public class EditReasonController extends FormBasicController {
 			if (uobject instanceof VFSLeaf) {
 				VFSLeaf file = (VFSLeaf)uobject;
 				if(tempUploadFolder != null && tempUploadFolder.resolve(file.getName()) != null) {
-					file.delete();
+					file.deleteSilently();
 				} else {
 					noticeWrapper.getAttachmentsToDelete().add(file);
 				}

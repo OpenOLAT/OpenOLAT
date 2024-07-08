@@ -53,6 +53,12 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.velocity.app.VelocityEngine;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
@@ -107,12 +113,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.manager.RepositoryEntryDAO;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.Logger;
-import org.apache.velocity.app.VelocityEngine;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -350,7 +350,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public List<TemplateWithSize> getTemplatesWithSizes(BadgeTemplate.Scope scope) {
-		return getTemplates(scope).stream().map((template) -> new TemplateWithSize(template, sizeForTemplate(template))).toList();
+		return getTemplates(scope).stream().map(template -> new TemplateWithSize(template, sizeForTemplate(template))).toList();
 	}
 
 	private Size sizeForTemplate(BadgeTemplate template) {
@@ -436,6 +436,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return null;
 	}
 
+	@Override
 	public SelectionValues getTemplateTranslationLanguages(Locale displayLocale) {
 		SelectionValues result = new SelectionValues();
 		Collection<String> enabledKeys = i18nModule.getEnabledLanguageKeys();
@@ -486,12 +487,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	private void deleteTemplateImages(String image) {
 		if (getBadgeTemplatesRootContainer().resolve(image) instanceof VFSLeaf imageLeaf) {
-			imageLeaf.delete();
+			imageLeaf.deleteSilently();
 		}
 
 		String previewImage = getTemplateSvgPreviewImage(image);
 		if (getBadgeTemplatesRootContainer().resolve(previewImage) instanceof VFSLeaf previewLeaf) {
-			previewLeaf.delete();
+			previewLeaf.deleteSilently();
 		}
 	}
 
@@ -671,7 +672,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public List<BadgeClassWithSizeAndCount> getBadgeClassesWithSizesAndCounts(RepositoryEntry entry) {
-		return getBadgeClassesWithUseCounts(entry).stream().map((obj) -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(), sizeForBadgeClass(obj.getBadgeClass()), obj.getUseCount())).toList();
+		return getBadgeClassesWithUseCounts(entry).stream().map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(), sizeForBadgeClass(obj.getBadgeClass()), obj.getUseCount())).toList();
 	}
 
 	private Size sizeForBadgeClass(BadgeClass badgeClass) {
@@ -701,7 +702,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 
 		if (getBadgeClassesRootContainer().resolve(badgeClass.getImage()) instanceof VFSLeaf badgeClassImageLeaf) {
-			badgeClassImageLeaf.delete();
+			badgeClassImageLeaf.deleteSilently();
 		}
 
 		badgeCategoryDAO.delete(badgeClass);
@@ -1145,7 +1146,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry,
 																	boolean nullEntryMeansAll) {
-		return getBadgeAssertions(identity, courseEntry, nullEntryMeansAll).stream().map((badgeAssertion) -> new BadgeAssertionWithSize(badgeAssertion, sizeForBadgeAssertion(badgeAssertion))).toList();
+		return getBadgeAssertions(identity, courseEntry, nullEntryMeansAll).stream().map(badgeAssertion -> new BadgeAssertionWithSize(badgeAssertion, sizeForBadgeAssertion(badgeAssertion))).toList();
 	}
 
 	private Size sizeForBadgeAssertion(BadgeAssertion badgeAssertion) {
@@ -1156,6 +1157,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return sizeForVfsLeaf(bakedImageLeaf);
 	}
 
+	@Override
 	public boolean isBadgeAssertionExpired(BadgeAssertion badgeAssertion) {
 		Date expiryDate = getBadgeAssertionExpirationDate(badgeAssertion);
 		if (expiryDate == null) {
@@ -1238,7 +1240,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	private void deleteBadgeAssertionImage(String bakedImage) {
 		if (getBadgeAssertionsRootContainer().resolve(bakedImage) instanceof VFSLeaf imageLeaf) {
-			imageLeaf.delete();
+			imageLeaf.deleteSilently();
 		}
 	}
 
@@ -1288,6 +1290,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 	}
 
+	@Override
 	public String badgeAssertionAsLinkedInUrl(BadgeAssertion badgeAssertion) {
 		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
 		LinkedInUrl.LinkedInUrlBuilder linkedInUrlBuilder = new LinkedInUrl.LinkedInUrlBuilder();

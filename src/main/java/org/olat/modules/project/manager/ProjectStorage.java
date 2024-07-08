@@ -193,7 +193,7 @@ public class ProjectStorage {
 	
 	private void deleteContainer(ProjProjectRef project, String path) {
 		VFSContainer imageContainer = getOrCreateContainer(project, path);
-		imageContainer.delete();
+		imageContainer.deleteSilently();
 	}
 	
 }

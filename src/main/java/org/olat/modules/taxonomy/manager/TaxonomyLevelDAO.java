@@ -628,7 +628,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 	
 	public void deleteImage(TaxonomyLevel level, String path) {
 		VFSContainer imageContainer = VFSManager.getOrCreateContainer(getLevelMediaStorage(level), path);
-		imageContainer.delete();
+		imageContainer.deleteSilently();
 	}
 	
 	private void tryToStore(VFSContainer imageContainer, Identity savedBy, File file, String filename) {

@@ -273,7 +273,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, VFSLeaf document) {
 		if(document != null && document.exists()) {
-			document.delete();
+			document.deleteSilently();
 			
 			//update counter
 			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());

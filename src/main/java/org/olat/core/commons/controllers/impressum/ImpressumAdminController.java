@@ -411,7 +411,7 @@ public class ImpressumAdminController extends FormBasicController {
 		
 		VFSItem file = rootDir.resolve(filePath);
 		if(file != null) {
-			file.delete();
+			file.deleteSilently();
 		}
 	}
 	

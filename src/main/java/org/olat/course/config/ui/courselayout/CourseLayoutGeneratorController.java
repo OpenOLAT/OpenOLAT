@@ -487,8 +487,9 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			// some selections changed, refresh to get new preview
 			prepareStyleEditor(compileCustomConfigFromGuiWrapper());
 		} else if (source == logoDel){
-			VFSItem logo = (VFSItem) logoDel.getUserObject();
-			logo.delete();
+			if (logoDel.getUserObject() instanceof VFSItem vfsItem) {
+				vfsItem.deleteSilently();
+			}
 			refreshLogoImage(ureq);
 		} else if (source == menuEl) {
 			updateMenuUI(true);
@@ -541,7 +542,9 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		if (customBase==null) {
 			customBase = base.createChildContainer(CourseLayoutHelper.CONFIG_KEY_CUSTOM);
 		}
-		if (customBase.resolve("logo" + fileType) != null) customBase.resolve("logo" + fileType).delete();
+		if (customBase.resolve("logo" + fileType) != null) {
+			customBase.resolve("logo" + fileType).deleteSilently();
+		}
 		VFSLeaf targetFile = customBase.createChildLeaf("logo" + fileType);
 		int maxHeight = CourseLayoutHelper.getLogoMaxHeight();
 		int maxWidth = CourseLayoutHelper.getLogoMaxWidth();

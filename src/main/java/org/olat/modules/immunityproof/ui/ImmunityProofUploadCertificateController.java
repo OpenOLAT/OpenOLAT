@@ -161,7 +161,7 @@ public class ImmunityProofUploadCertificateController extends FormBasicControlle
 	@Override
 	protected void doDispose() {
 		if (tempUploadFolder != null) {
-			tempUploadFolder.delete();
+			tempUploadFolder.deleteSilently();
 		}
         super.doDispose();
 	}

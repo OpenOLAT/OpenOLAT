@@ -55,13 +55,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.ICourse;
@@ -377,7 +377,7 @@ public class CourseResourceFolderWebService {
 				vfsRepositoryService.addVersion(existingLeaf, ureq.getIdentity(), false, "REST upload", file);
 				newFile = existingLeaf;
 			} else {
-				existingVFSItem.delete();
+				existingVFSItem.deleteSilently();
 				newFile = container.createChildLeaf(filename);
 				VFSManager.copyContent(file, (VFSLeaf)newFile, ureq.getIdentity());
 			}

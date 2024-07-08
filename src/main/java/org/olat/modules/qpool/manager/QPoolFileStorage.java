@@ -77,11 +77,11 @@ public class QPoolFileStorage {
 	public void deleteDir(String dir) {
 		VFSContainer backupContainer = getBackupContainer(dir);
 		if (backupContainer != null) {
-			backupContainer.delete();
+			backupContainer.deleteSilently();
 		}
 		VFSContainer container = fileStorage.getContainer(dir);
 		if (container != null) {
-			container.delete();
+			container.deleteSilently();
 		}
 	}
 

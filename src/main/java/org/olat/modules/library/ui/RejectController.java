@@ -37,8 +37,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -137,7 +137,7 @@ public class RejectController extends FormBasicController {
 				bundle.setContent(subjectElement.getValue(), messageElement.getValue());
 				mailManager.sendMessage(bundle);
 			}
-			file.delete();
+			file.deleteSilently();
 			fireEvent(ureq, Event.DONE_EVENT);
 		} catch (Exception e) {
 			logError("Cannot send a email to: " + uploaderIdentity, e);

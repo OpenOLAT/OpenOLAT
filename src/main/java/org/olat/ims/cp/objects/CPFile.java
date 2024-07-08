@@ -157,7 +157,7 @@ public class CPFile extends DefaultElement implements CPNode {
 	public void deleteFromFS() {
 		if (file != null) {
 			VFSContainer parentContainer = file.getParentContainer();
-			file.delete();
+			file.deleteSilently();
 			// Delete the parent container if it is empty
 			deleteIfEmpty(parentContainer);
 		}
@@ -173,7 +173,7 @@ public class CPFile extends DefaultElement implements CPNode {
 		if (container != null) {
 			List<VFSItem> items = container.getItems(filter);
 			if (items == null || items.isEmpty()) {
-				container.delete();
+				container.deleteSilently();
 			}
 		}
 	}

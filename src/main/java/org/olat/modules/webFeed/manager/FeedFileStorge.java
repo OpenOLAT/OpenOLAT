@@ -382,7 +382,7 @@ public class FeedFileStorge {
 		if (feedContainer != null) {
 			VFSLeaf leaf = (VFSLeaf) feedContainer.resolve(FEED_FILE_NAME);
 			if (leaf != null) {
-				leaf.delete();
+				leaf.deleteSilently();
 			}
 		}
 	}
@@ -488,7 +488,7 @@ public class FeedFileStorge {
 		if (itemContainer != null) {
 			VFSLeaf leaf = (VFSLeaf) itemContainer.resolve(ITEM_FILE_NAME);
 			if (leaf != null) {
-				leaf.delete();
+				leaf.deleteSilently();
 			}
 		}
 	}
@@ -513,7 +513,7 @@ public class FeedFileStorge {
 				// Resize to same dimension box as with repo meta image
 				VFSLeaf tmpImage = feedMediaContainer.createChildLeaf(Long.toString(CodeHelper.getRAMUniqueID()));
 				imageHelper.scaleImage(imageLeaf, tmpImage, PICTUREWIDTH, PICTUREWIDTH, false);
-				imageLeaf.delete();
+				imageLeaf.deleteSilently();
 				imageLeaf = tmpImage;
 				// Make file system save
 				saveFileName = Formatter.makeStringFilesystemSave(media.getUploadFileName());
@@ -576,7 +576,7 @@ public class FeedFileStorge {
 		VFSContainer feedMediaContainer = getOrCreateFeedMediaContainer(feed);
 		if (feedMediaContainer != null) {
 			for (VFSItem fileItem : feedMediaContainer.getItems(new VFSSystemItemFilter())) {
-				fileItem.delete();
+				fileItem.deleteSilently();
 			}
 		}
 	}
@@ -638,7 +638,7 @@ public class FeedFileStorge {
 			if (itemContainer != null) {
 				VFSLeaf leaf = (VFSLeaf) itemContainer.resolve(fileName);
 				if (leaf != null) {
-					leaf.delete();
+					leaf.deleteSilently();
 				}
 			}
 		}

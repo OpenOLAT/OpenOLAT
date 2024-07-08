@@ -67,11 +67,11 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Solution;
@@ -464,7 +464,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		VFSItem item = solutionContainer.resolve(documentName);
 		if(item != null) {
 			transcodingService.deleteMasterFile(item);
-			item.delete();
+			item.deleteSilently();
 		}
 		gtaManager.removeSolution(solution.solution(), courseEnv, gtaNode);
 		fireEvent(ureq, Event.DONE_EVENT);

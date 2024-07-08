@@ -371,18 +371,18 @@ public class WikiManager {
 					wikiCtn.copyFrom(leaf, savedBy);
 				} else {
 					if (leaf.getName().contains(WikiManager.WIKI_FILE_SUFFIX+"-") || leaf.getName().contains(WikiManager.WIKI_PROPERTIES_SUFFIX+"-")) {
-						leaf.delete(); // delete version history
+						leaf.deleteSilently(); // delete version history
 					} else {
 						mediaCtn.copyFrom(leaf, savedBy);
 					}
 				}
 			}
-			unzippedDir.delete();
+			unzippedDir.deleteSilently();
 			List<VFSItem> zipFiles = rootContainer.getItems(new VFSItemSuffixFilter(new String[] { "zip" }));
 			// delete all zips
 			for (Iterator<VFSItem> iter = zipFiles.iterator(); iter.hasNext();) {
 				VFSLeaf element = (VFSLeaf) iter.next();
-				element.delete();
+				element.deleteSilently();
 			}
 			//reset forum key and author references keys back to default as users and forums may not exist
 			List<VFSItem> propertyLeafs = wikiCtn.getItems(new PropertiesFilter());
@@ -448,8 +448,8 @@ public class WikiManager {
 					// broken pages get automatically cleaned from filesystem
 					String contentFileToBeDeleted = (propertiesFile.getName().substring(0,
 							propertiesFile.getName().length() - WikiManager.WIKI_PROPERTIES_SUFFIX.length()) + WikiManager.WIKI_FILE_SUFFIX);
-					folder.resolve(contentFileToBeDeleted).delete();
-					propertiesFile.delete();
+					folder.resolve(contentFileToBeDeleted).deleteSilently();
+					propertiesFile.deleteSilently();
 					continue;
 				}
 				// index and menu page are loaded by default
@@ -529,7 +529,7 @@ public class WikiManager {
 				String fileName = page.getPageId() + "." + WIKI_FILE_SUFFIX + "-" + page.getVersion();
 				copiedItem.rename(fileName);
 			}
-			item.delete();
+			item.deleteSilently();
 		}
 		// rename existing meta file to version x and copy it to the version
 		// container
@@ -541,7 +541,7 @@ public class WikiManager {
 				String fileName = page.getPageId() + "." + WIKI_PROPERTIES_SUFFIX + "-" + page.getVersion();
 				copiedItem.rename(fileName);
 			}
-			item.delete();
+			item.deleteSilently();
 		}
 		// store recent content file
 		VFSLeaf leaf = wikiContentContainer.createChildLeaf(page.getPageId() + "." + WIKI_FILE_SUFFIX);
@@ -587,9 +587,9 @@ public class WikiManager {
 		VFSContainer versionsContainer = getWikiContainer(ores, VERSION_FOLDER_NAME);
 		//delete content and property file
 		VFSItem item = wikiContentContainer.resolve(page.getPageId() + "." + WIKI_FILE_SUFFIX);
-		if (item != null) item.delete();
+		if (item != null) item.deleteSilently();
 		item = wikiContentContainer.resolve(page.getPageId() + "." + WIKI_PROPERTIES_SUFFIX);
-		if (item != null) item.delete();
+		if (item != null) item.deleteSilently();
 		
 		//delete all version files of the page
 		List<VFSItem> leafs = versionsContainer.getItems(new VFSLeafFilter());
@@ -598,7 +598,7 @@ public class WikiManager {
 				VFSLeaf leaf = (VFSLeaf) iter.next();
 				String filename = leaf.getName();
 				if (filename.startsWith(page.getPageId())) {
-					leaf.delete();
+					leaf.deleteSilently();
 				}
 			}
 		}

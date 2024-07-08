@@ -701,8 +701,8 @@ public class MessageEditController extends FormBasicController {
 		if (source == confirmDeleteAttachmentCtrl) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // ok to really delete this attachment
 				Object userObj = confirmDeleteAttachmentCtrl.getUserObject();
-				if (userObj instanceof VFSLeaf) {
-					((VFSLeaf)userObj).delete();
+				if (userObj instanceof VFSLeaf vfsLeaf) {
+					vfsLeaf.deleteSilently();
 					showInfo("delete.att.ok");
 					createOrUpdateAttachmentListLayout(flc);
 				}
@@ -775,7 +775,7 @@ public class MessageEditController extends FormBasicController {
 
 	private void removeTempUploadedFiles() {
 		if (tempUploadFolder != null) {
-			tempUploadFolder.delete();
+			tempUploadFolder.deleteSilently();
 			tempUploadFolder = null;
 		}
 	}

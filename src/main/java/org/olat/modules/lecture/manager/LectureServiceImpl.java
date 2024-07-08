@@ -817,7 +817,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			List<VFSItem> filesToDelete, Identity updatedBy) {
 		if(!filesToDelete.isEmpty()) {
 			for(VFSItem file:filesToDelete) {
-				file.delete();
+				file.deleteSilently();
 			}
 		}
 	

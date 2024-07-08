@@ -276,7 +276,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 						movieUpload.setInitialFile(((LocalFileImpl)movie).getBasefile());
 					}
 				} else if(movie != null) {
-					movie.delete();
+					movie.deleteSilently();
 					movieUpload.setInitialFile(null);
 				}
 				flc.setDirty(true);

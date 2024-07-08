@@ -19,6 +19,11 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -29,21 +34,16 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 
 /**
  * Initial date: 2022-09-30<br>
@@ -108,6 +108,7 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 		return directoryPath.toString();
 	}
 
+	@Override
 	public void setStatus(VFSMetadata vfsMetadata, int status) {
 		vfsMetadataDAO.setTranscodingStatus(vfsMetadata.getKey(), status);
 		if (status == VFSMetadata.TRANSCODING_STATUS_WAITING) {
@@ -177,7 +178,7 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 				String metaName = masterFilePrefix + name;
 				VFSItem masterItem = parentContainer.resolve(metaName);
 				if (masterItem != null) {
-					masterItem.delete();
+					masterItem.deleteSilently();
 				}
 			}
 		}

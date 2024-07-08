@@ -88,7 +88,7 @@ public class ScormAssessmentManager {
 		VFSContainer scoDirectory = ScormDirectoryHelper.getScoDirectory(username, courseEnv, node);
 		if(scoDirectory == null) return true; //nothing to reset -> ok
 		
-		return (scoDirectory.delete() == VFSSuccess.SUCCESS);
+		return (scoDirectory.deleteSilently() == VFSSuccess.SUCCESS);
 	}
 	
 	//<OLATCE-289>

@@ -35,6 +35,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TypedQuery;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -57,11 +60,11 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.Resourceable;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.CatalogEntryRef;
 import org.olat.repository.RepositoryDeletionModule;
@@ -77,9 +80,6 @@ import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TypedQuery;
 
 /**
  * Description: <br>
@@ -933,7 +933,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			if(imgFile.canMeta() == VFSStatus.YES) {
 				vfsRepositoryService.resetThumbnails(imgFile);
 			}
-			imgFile.delete();
+			imgFile.deleteSilently();
 		}
 	}
 	
@@ -943,7 +943,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			if(currentImage.canMeta() == VFSStatus.YES) {
 				vfsRepositoryService.resetThumbnails(currentImage);
 			}
-			currentImage.delete();
+			currentImage.deleteSilently();
 		}
 		
 		String extension = FileUtils.getFileSuffix(newImageFile.getName());

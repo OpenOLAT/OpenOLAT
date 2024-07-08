@@ -1133,7 +1133,7 @@ public class WikiMainController extends BasicController implements Activateable2
 			if (!element.getFilename().endsWith(METADATA_SUFFIX)) {
 				VFSLeaf file = (VFSLeaf) mediaFolder.resolve(element.getFilename());
 				if (file != null) {
-					file.delete();
+					file.deleteSilently();
 					VFSLeaf metadata = (VFSLeaf) mediaFolder.resolve(element.getFilename() + METADATA_SUFFIX);
 					if (metadata != null) {
 						Properties p = new Properties();

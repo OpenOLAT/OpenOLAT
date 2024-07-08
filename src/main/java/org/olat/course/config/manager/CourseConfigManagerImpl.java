@@ -74,7 +74,7 @@ public class CourseConfigManagerImpl implements CourseConfigManager {
 	public boolean deleteConfigOf(ICourse course) {
 		VFSLeaf configFile = getConfigFile(course);
 		if (configFile != null) {
-			return configFile.delete() == VFSSuccess.SUCCESS;
+			return configFile.deleteSilently() == VFSSuccess.SUCCESS;
 		}
 		return false;
 	}

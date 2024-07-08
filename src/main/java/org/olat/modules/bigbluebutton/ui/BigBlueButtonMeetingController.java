@@ -594,7 +594,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		VFSContainer slidesContainer = bigBlueButtonManager.getSlidesContainer(meeting);
 		VFSItem reloadedDocument = slidesContainer.resolve(document.getName());
 		if(reloadedDocument != null && reloadedDocument.exists()) {
-			reloadedDocument.delete();
+			reloadedDocument.deleteSilently();
 		}
 	}
 	

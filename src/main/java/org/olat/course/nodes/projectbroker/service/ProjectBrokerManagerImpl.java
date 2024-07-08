@@ -462,7 +462,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 			VFSItem item =  iterator.next();
 			// Project.getAttachmentFileName is the previous file-name, will not be deleted; student could have open detail-project page with previous attachemnt-link 
 			if (!item.getName().equals(project.getAttachmentFileName())) {
-				item.delete();
+				item.deleteSilently();
 			}
 		}
 		VFSLeaf newFile = (VFSLeaf)uploadVFSContainer.resolve(fileName);
@@ -502,19 +502,19 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 
 	private void deleteAllAttachmentFilesOfProject(Project project, CourseEnvironment courseEnv, CourseNode cNode) {
 		VFSContainer attachmentDir = VFSManager.olatRootContainer(getAttamchmentRelativeRootPath(project,courseEnv,cNode), null);
-		attachmentDir.delete();
+		attachmentDir.deleteSilently();
 		log.debug("deleteAllAttachmentFilesOfProject path={}", attachmentDir);
 	}
 	
 	private void deleteAllDropboxFilesOfProject(Project project, CourseEnvironment courseEnv, CourseNode cNode) {
 		VFSContainer dropboxDir = VFSManager.olatRootContainer(ProjectBrokerDropboxController.getDropboxBasePathForProject(project,courseEnv,cNode), null);
-		dropboxDir.delete();
+		dropboxDir.deleteSilently();
 		log.debug("deleteAllDropboxFilesOfProject path={}", dropboxDir);
 	}
 	
 	private void deleteAllReturnboxFilesOfProject(Project project, CourseEnvironment courseEnv, CourseNode cNode) {
 		VFSContainer returnboxDir = VFSManager.olatRootContainer(ProjectBrokerReturnboxController.getReturnboxBasePathForProject(project,courseEnv,cNode), null);
-		returnboxDir.delete();
+		returnboxDir.deleteSilently();
 		log.debug("deleteAllReturnboxFilesOfProject path={}", returnboxDir);
 	}
 

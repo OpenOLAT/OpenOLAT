@@ -62,11 +62,11 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.BlogFileResource;
@@ -892,7 +892,7 @@ public class FeedManagerImpl extends FeedManager {
 			String zipFileName = getFeedKind(resource) + ".zip";
 			VFSItem oldArchive = rootContainer.resolve(zipFileName);
 			if (oldArchive != null) {
-				oldArchive.delete();
+				oldArchive.deleteSilently();
 			}
 			ZipUtil.zip(feedContainer.getItems(), rootContainer.createChildLeaf(zipFileName), new VFSSystemItemFilter(), false);
 			return (VFSLeaf) rootContainer.resolve(zipFileName);

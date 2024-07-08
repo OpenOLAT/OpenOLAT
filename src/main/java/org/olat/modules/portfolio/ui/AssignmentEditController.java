@@ -494,7 +494,7 @@ public class AssignmentEditController extends FormBasicController {
 	
 	private void deleteTempStorage() {
 		if(tempUploadFolder != null) {
-			tempUploadFolder.delete();
+			tempUploadFolder.deleteSilently();
 		}
 	}
 
@@ -508,12 +508,10 @@ public class AssignmentEditController extends FormBasicController {
 			}
 		} else if(source == selectFormButton) {
 			doSelectForm(ureq);
-		} else if (source instanceof FormLink) {
-			FormLink activeLink = (FormLink) source;
-			Object uobject = activeLink.getUserObject();
-			if (uobject instanceof VFSLeaf) {
-				VFSLeaf file = (VFSLeaf)uobject;
-				file.delete();
+		} else if (source instanceof FormLink link) {
+			Object uobject = link.getUserObject();
+			if (uobject instanceof VFSLeaf vfsLeaf) {
+				vfsLeaf.deleteSilently();
 			}
 			updateAssignmentDocumentForm(ureq);
 		}

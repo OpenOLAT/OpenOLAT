@@ -102,7 +102,7 @@ public class WikiToZipUtils {
 	public static VFSLeaf getWikiAsZip(VFSContainer rootContainer){
 		List<VFSItem> folders = rootContainer.getItems();
 		VFSLeaf indexLeaf =(VFSLeaf)rootContainer.resolve("index.html");
-		if(indexLeaf != null) indexLeaf.delete();
+		if(indexLeaf != null) indexLeaf.deleteSilently();
 		List<VFSItem> filesTozip = new ArrayList<>();
 		for (Iterator <VFSItem>iter = folders.iterator(); iter.hasNext();) {
 			VFSItem item = iter.next();
@@ -120,7 +120,7 @@ public class WikiToZipUtils {
 			}
 		}
 		VFSLeaf zipFile = (VFSLeaf)rootContainer.resolve("wiki.zip");
-		if(rootContainer.resolve("wiki.zip") != null) zipFile.delete();
+		if(rootContainer.resolve("wiki.zip") != null) zipFile.deleteSilently();
 		ZipUtil.zip(filesTozip, rootContainer.createChildLeaf("wiki.zip"), VFSAllItemsFilter.ACCEPT_ALL, false);
 		return (VFSLeaf)rootContainer.resolve("wiki.zip");
 	}
