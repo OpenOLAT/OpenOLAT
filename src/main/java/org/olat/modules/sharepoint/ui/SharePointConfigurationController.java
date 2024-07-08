@@ -71,7 +71,6 @@ public class SharePointConfigurationController extends FormBasicController {
 	
 	private MultipleSelectionElement adminPropsEl;
 
-	private TextElement searchSitesEl;
 	private TextElement excludeSitesAndDrivesEl;
 	private TextElement excludeLabelsEl;
 	private FormLink addSitesAndDrivesButton;
@@ -140,9 +139,6 @@ public class SharePointConfigurationController extends FormBasicController {
 		
 		addSitesAndDrivesButton = uifactory.addFormLink("add.sites.and.drives", sitesAndDrivesContainer, Link.BUTTON);
 		
-		String sitesSearch = sharePointModule.getSitesSearch();
-		searchSitesEl = uifactory.addTextElement("sites.search", 128, sitesSearch, formLayout);
-		
 		String exclusionSitesAndDrives = toTextArea(sharePointModule.getExcludeSitesAndDrives());
 		excludeSitesAndDrivesEl = uifactory.addTextAreaElement("exclusion.sites", "exclusion.sites", 4000, 4, 60, false, false, false, exclusionSitesAndDrives, formLayout);
 		
@@ -161,7 +157,6 @@ public class SharePointConfigurationController extends FormBasicController {
 		excludeLabelsEl.setVisible(enabled);
 		
 		boolean sitesEnabled = sitesEnabledEl.isOn();
-		searchSitesEl.setVisible(enabled && sitesEnabled);
 		excludeSitesAndDrivesEl.setVisible(enabled && sitesEnabled);
 		adminPropsEl.setVisible(enabled && sitesEnabled);
 		sitesAndDrivesContainer.setVisible(enabled && sitesEnabled);
@@ -235,9 +230,6 @@ public class SharePointConfigurationController extends FormBasicController {
 		sharePointModule.setRolesEnabledList(adminPropsEl.getSelectedKeys());
 		
 		if(enabled) {
-			String sitesSearch = searchSitesEl.getValue();
-			sharePointModule.setSitesSearch(sitesSearch);
-			
 			List<SiteAndDriveConfiguration> configurationsList = sitesAndDrivesConfigurationModel.getObjects();
 			SitesAndDrivesConfiguration configuration = new SitesAndDrivesConfiguration(configurationsList);
 			sharePointModule.setSitesConfiguration(configuration);

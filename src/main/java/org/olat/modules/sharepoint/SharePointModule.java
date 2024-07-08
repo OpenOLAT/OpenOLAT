@@ -54,7 +54,6 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String PROP_ROLES_ENABLED = "sharepoint.roles.enabled";
 	private static final String PROP_EXCLUDE_SITES_AND_DRIVES = "sharepoint.exclude.sites.drives";
 	private static final String PROP_EXCLUDE_LABELS = "sharepoint.exclude.labels";
-	private static final String PROP_SITES_SEARCH = "sharepoint.sites.search";
 	private static final String PROP_SITES_CONFIGURATION = "sharepoint.sites.configuration";
 	
 	@Value("${sharepoint.enabled:false}")
@@ -71,8 +70,6 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	private String excludeSitesAndDrives;
 	@Value("${sharepoint.exclude.labels}")
 	private String excludeLabels;
-	@Value("${sharepoint.sites.search}")
-	private String sitesSearch;
 	@Value("${sharepoint.sites.configuration}")
 	private String sitesConfiguration;
 	
@@ -101,7 +98,6 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 		rolesEnabledList = OrganisationRoles.toValues(toList(rolesEnabled, ","));
 		excludeSitesAndDrives = getStringPropertyValue(PROP_EXCLUDE_SITES_AND_DRIVES, excludeSitesAndDrives);
 		excludeLabels = getStringPropertyValue(PROP_EXCLUDE_LABELS, excludeLabels);
-		sitesSearch = getStringPropertyValue(PROP_SITES_SEARCH, sitesSearch);
 		sitesConfiguration = getStringPropertyValue(PROP_SITES_CONFIGURATION, sitesConfiguration);
 	}
 
@@ -200,15 +196,6 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	public void setExcludeLabels(String exclusionList) {
 		this.excludeLabels = exclusionList;
 		setStringProperty(PROP_EXCLUDE_LABELS, exclusionList, true);
-	}
-	
-	public String getSitesSearch() {
-		return sitesSearch;
-	}
-
-	public void setSitesSearch(String sitesSearch) {
-		this.sitesSearch = sitesSearch;
-		setStringProperty(PROP_SITES_SEARCH, sitesSearch, true);
 	}
 
 	public SitesAndDrivesConfiguration getSitesConfiguration() {

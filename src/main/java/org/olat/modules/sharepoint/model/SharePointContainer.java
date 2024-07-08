@@ -41,7 +41,6 @@ import com.azure.core.credential.TokenCredential;
 public class SharePointContainer extends MergeSource {
 
 	private final SharePointDAO sharePointDao;
-	private final SharePointModule sharePointModule;
 	private final TokenCredential tokenProvider;
 	
 	private final List<String> exclusionsSitesAndDrives;
@@ -52,7 +51,6 @@ public class SharePointContainer extends MergeSource {
 			SharePointModule sharePointModule, SharePointDAO sharePointDao, TokenCredential tokenProvider) {
 		super(parentContainer, name);
 		this.sharePointDao = sharePointDao;
-		this.sharePointModule = sharePointModule;
 		this.tokenProvider = tokenProvider;
 		exclusionsSitesAndDrives = sharePointModule.getExcludeSitesAndDrives();
 		exclusionsLabels = sharePointModule.getExcludeLabels();
@@ -80,22 +78,6 @@ public class SharePointContainer extends MergeSource {
 				siteContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 				if(StringHelper.containsNonWhitespace(config.getDriveId())) {
 					siteContainer.addAllowedDriveId(config.getDriveId());
-				}
-			}
-		} else {
-			String searchQuery = sharePointModule.getSitesSearch();
-			if(!StringHelper.containsNonWhitespace(searchQuery)) {
-				searchQuery = "frentix";
-			}
-			List<MicrosoftSite> sites = sharePointDao.getSites(tokenProvider, searchQuery);
-			if(sites != null) {
-				for(MicrosoftSite site:sites) {
-					if(SharePointDAO.accept(site, exclusionsSitesAndDrives)) {
-						SiteContainer siteContainer = new SiteContainer(this, site, sharePointDao,
-								exclusionsSitesAndDrives, exclusionsLabels, tokenProvider);
-						siteContainer.setLocalSecurityCallback(new ReadOnlyCallback());
-						addContainer(siteContainer);
-					}
 				}
 			}
 		}
