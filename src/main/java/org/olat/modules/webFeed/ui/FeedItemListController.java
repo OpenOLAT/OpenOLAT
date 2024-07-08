@@ -421,7 +421,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 		SelectionValues statusValues = new SelectionValues();
 		List<FeedItemRow> feedItemRows = tableModel.getObjects();
-		List<FeedItemStatusEnum> feedItemStatusEnumList = feedItemRows.stream().map(FeedItemRow::getStatus).toList().stream().distinct().toList();
+		List<FeedItemStatusEnum> feedItemStatusEnumList = feedItemRows.stream().map(FeedItemRow::getStatus).toList().stream().distinct().sorted().toList();
 
 		for (FeedItemStatusEnum statusEnum : feedItemStatusEnumList) {
 			statusValues.add(SelectionValues.entry(statusEnum.name(), translate("feed.item." + statusEnum.name())));
@@ -463,6 +463,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 					rightColFlc.getFormItemComponent().put("sidebarTags", tagsComponent);
 				} else {
 					// if tag filter gets cleared out, then refresh sidebar
+					selectedTagKeys = new HashSet<>();
 					loadSideBarTags();
 				}
 			}
@@ -594,12 +595,9 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 		collectorCtrl = new CollectArtefactController(ureq, getWindowControl(), media, blogMediaHandler, businessPath);
 		collectorCtrl.addControllerListener(this);
-		listenTo(collectorCtrl);
 
 		String title = "Media";
-		cmc = new CloseableModalController(getWindowControl(), null, collectorCtrl.getInitialComponent(), true, title, true);
-		cmc.addControllerListener(this);
-		cmc.activate();
+		activateModalDialog(collectorCtrl, title);
 	}
 
 	@Override
@@ -649,13 +647,11 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			handleFeedItemCtrlEvent(ureq, event);
 		} else if (source == naviCtrl && event instanceof NavigationEvent navEvent) {
 			handleNavigationEvent(navEvent);
-		} else if ((source == bulkAddTagsCtrl || source == bulkRemoveTagsCtrl)) {
-			if (event instanceof FeedItemEvent feedItemEvent) {
-				handleFeedItemEvent(ureq, feedItemEvent);
-			}
+		} else if ((source == bulkAddTagsCtrl || source == bulkRemoveTagsCtrl)
+				&& event instanceof FeedItemEvent feedItemEvent) {
+			handleFeedItemEvent(ureq, feedItemEvent);
 		}
 
-		loadModel();
 		loadTimelineTagsToggleOrRemove(ureq);
 	}
 
@@ -698,36 +694,40 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	private void addItemToFeed(FileElement mediaFile) {
-		feedRss = feedManager.createItem(feedRss, currentItem, mediaFile);
-		if (feedRss != null) {
-			// add it to the navigation controller
+		if (createFeedItem(mediaFile)) {
+			ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_CREATE, getClass(), LoggingResourceable.wrap(currentItem));
 			naviCtrl.add(currentItem);
-			loadFeedItems();
-			if (feedItems != null && feedItems.size() == 1) {
-				// Set the base URI of the feed for the
-				// current user. All user have unique URIs.
-				helper.setURIs(currentItem.getFeed());
-			}
+			setUniqueURIsForUser();
+		}
+	}
+
+	private boolean createFeedItem(FileElement mediaFile) {
+		feedRss = feedManager.createItem(feedRss, currentItem, mediaFile);
+		return feedRss != null;
+	}
+
+	private void setUniqueURIsForUser() {
+		if (feedItems != null && feedItems.size() == 1) {
+			helper.setURIs(currentItem.getFeed());
 		}
 	}
 
 	private void updateFeedItem(FileElement mediaFile) {
-		// Write item file
 		currentItem = feedManager.updateItem(currentItem, mediaFile);
 		ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_EDIT, getClass(), LoggingResourceable.wrap(currentItem));
+	}
+
+	private void updateTags() {
 		List<String> tagsDisplayNames = ((FeedItemFormController) itemFormCtrl).getTagsDisplayNames();
 		feedManager.updateTags(currentItem, tagsDisplayNames);
-		loadFeedItems();
-		// update sidebar with tag information
-		loadSideBarTags();
 	}
+
 
 	private void bulkUpdateFeedItemTags(List<String> tagDisplayNames) {
 		List<Item> selectedItems = tableEl.getMultiSelectedIndex().stream().map(r -> tableModel.getObject(r).getItem()).toList();
 
 		feedManager.bulkAddTags(selectedItems, tagDisplayNames);
-		loadFeedItems();
-		loadSideBarTags();
+		updateWholeModel();
 		deactivateAndCleanUp();
 	}
 
@@ -735,8 +735,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		List<Item> selectedItems = tableEl.getMultiSelectedIndex().stream().map(r -> tableModel.getObject(r).getItem()).toList();
 
 		feedManager.bulkRemoveTags(selectedItems, tagDisplayNames);
-		loadFeedItems();
-		loadSideBarTags();
+		updateWholeModel();
 		deactivateAndCleanUp();
 	}
 
@@ -749,10 +748,19 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			} else {
 				// else means, we are in the table card view
 				// so update sidebarTags, in case of changes
-				loadSideBarTags();
+				updateWholeModel();
 			}
 			itemFormCtrl.getInitialComponent().setDirty(true);
 		}
+	}
+
+	private void updateWholeModel() {
+		if (itemFormCtrl != null) {
+			updateTags();
+		}
+		loadModel();
+		loadSideBarTags();
+		initFilters();
 	}
 
 	private void handleCmcEvent() {
@@ -783,8 +791,8 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			removeSelectedComponent(ureq);
 		}
 		doDeleteFeedItem(feedItemsToDelete);
-		// update sidebar with tag information
-		loadSideBarTags();
+		// update view inclusive with tag information
+		updateWholeModel();
 	}
 
 	private void handleFeedItemCtrlEvent(UserRequest ureq, Event event) {
@@ -815,6 +823,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		} else if (FeedItemEvent.BULK_REMOVE_TAGS.equals(command)) {
 			bulkRemoveFeedItemTags(feedItemEvent.getTagDisplayNames());
 		}
+		updateWholeModel();
 	}
 
 	private void handleNavigationEvent(NavigationEvent navEvent) {
@@ -1075,6 +1084,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		removeAsListenerAndDispose(bulkRemoveTagsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(bulkAddTagsCtrl);
+		removeAsListenerAndDispose(itemFormCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		deletePermanentlyConfirmationCtrl = null;
@@ -1082,6 +1092,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		bulkRemoveTagsCtrl = null;
 		toolsCalloutCtrl = null;
 		bulkAddTagsCtrl = null;
+		itemFormCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 	}
