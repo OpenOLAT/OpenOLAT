@@ -105,7 +105,7 @@ public class GalleryElementHandler implements PageElementHandler, PageElementSto
 		GalleryPart galleryPart = new GalleryPart();
 		GallerySettings gallerySettings = galleryPart.getSettings();
 		gallerySettings.setTitle(translator.translate("gallery.title.default"));
-		gallerySettings.setType(GalleryType.slideshow);
+		gallerySettings.setType(GalleryType.preview);
 		gallerySettings.setColumns(3);
 		gallerySettings.setRows(2);
 		galleryPart.setSettings(gallerySettings);
