@@ -187,12 +187,12 @@ public class FeedPage {
 		By titleBy = By.cssSelector("div.o_sel_feed_title input:focus[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
-		By summaryBy = By.cssSelector("div.o_sel_feed_description div.o_richtext_mce textarea");
-		browser.findElement(summaryBy).sendKeys(summary);
-
 		By contentBy = By.cssSelector("div.o_sel_feed_content div.o_richtext_mce textarea");
 		browser.findElement(contentBy).sendKeys(content);
-
+		
+		By summaryBy = By.cssSelector("div.o_sel_feed_summary div.o_richtext_mce textarea");
+		browser.findElement(summaryBy).sendKeys(summary);
+		
 		return this;
 	}
 	
