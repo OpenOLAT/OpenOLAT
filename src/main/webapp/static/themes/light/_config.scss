@@ -1109,42 +1109,6 @@ $o-hs-histogram-bar-other-color			: $gray-light !default;
 $o-hs-histogram-bar-other-hover-color	: lighten($gray-light, 10%) !default;
 $o-hs-histogram-bar-empty-color			: black !default;
 
-/* Process step component */
-$o-step-border						: 1px solid #e7e7e7 !default;
-$o-step-border-radius				: $panel-border-radius !default;
-$o-step-border-header-padding		: 10px !default;
-$o-step-border-header-bg-color		: #fcfcfc;
-$o-step-border-content-padding			: $panel-body-padding !default;
-$o-step-border-width				: 4px !default;
-$o-step-milestone-size				: ($o-step-border-width * 4) !default;
-$o-step-bubble-font-size			: 19px;
-
-$o-step-padding-top					: 10px !default;
-$o-step-padding-left				: 30px !default;
-$o-step-padding-bottom				: 10px !default;
-$o-step-color						: #999 !default;
-$o-step-active-color				: #F1C232 !default;
-$o-step-active-marker-color			: $o-step-color !default;
-$o-step-notavailable-color			: $o-step-color !default;
-$o-step-notavailable-marker-color	: $o-step-notavailable-color !default;
-$o-step-done-color					: $state-success-text !default;
-$o-step-done-marker-color			: $o-step-done-color;
-
-$o-step-expired-color				: #F1C232 !default;
-$o-step-expired-marker-color		: $o-step-color;
-
-$o-step-meta-color					: $text-muted !default;
-$o-step-meta-size					: $font-size-small !default;
-
-$o-step-status-active-color			: #F1C232;
-$o-step-status-waiting-color		: #F1C232;
-$o-step-status-review-color			: $o-step-status-waiting-color;
-$o-step-status-done-color			: $o-repo-published-color;
-$o-step-status-notavailable-color	: $gray-light !default;
-$o-step-status-expired-color		: #E69138 !default;
-$o-step-status-late-color			: #B45E05 !default;
-$o-step-status-extended-color		: #31708F !default;
-
 /* Radial progress component */
 $o-radial-progress-circle-size			: 120px !default;
 $o-radial-progress-circle-size-sm		: 60px !default;
@@ -1213,6 +1177,46 @@ $o-qpool-draft-color				: #4a6785 !default;
 $o-qpool-revised-color				: #993333 !default;
 $o-qpool-finalVersion-color			: #14892c !default;
 $o-qpool-endOfLife-color			: #aaa !default;
+
+/* Process step component */
+$o-step-border						: 1px solid #e7e7e7 !default;
+$o-step-border-radius				: $panel-border-radius !default;
+$o-step-border-header-padding		: 10px !default;
+$o-step-border-header-bg-color		: #fcfcfc;
+$o-step-border-content-padding			: $panel-body-padding !default;
+$o-step-border-width				: 4px !default;
+$o-step-milestone-size				: ($o-step-border-width * 4) !default;
+$o-step-bubble-font-size			: 19px;
+
+$o-step-padding-top					: 10px !default;
+$o-step-padding-left				: 30px !default;
+$o-step-padding-bottom				: 10px !default;
+$o-step-color						: #999 !default;
+$o-step-active-color				: #F1C232 !default;
+$o-step-active-marker-color			: $o-step-color !default;
+$o-step-notavailable-color			: $o-step-color !default;
+$o-step-notavailable-marker-color	: $o-step-notavailable-color !default;
+$o-step-done-color					: $state-success-text !default;
+$o-step-done-marker-color			: $o-step-done-color;
+
+$o-step-expired-color				: #F1C232 !default;
+$o-step-expired-marker-color		: $o-step-color;
+
+$o-step-meta-color					: $text-muted !default;
+$o-step-meta-size					: $font-size-small !default;
+
+$o-step-status-active-color			: $o-labeled-yellow-color;
+$o-step-status-active-bg-color		: $o-labeled-yellow-bg-color;
+$o-step-status-active-border-color	: $o-labeled-yellow-border-color;
+$o-step-status-waiting-color		: $o-labeled-yellow-color;
+$o-step-status-waiting-bg-color		: $o-labeled-yellow-bg-color;
+$o-step-status-waiting-border-color	: $o-labeled-yellow-border-color;
+$o-step-status-review-color			: $o-step-status-waiting-color;
+$o-step-status-done-color			: $o-repo-published-color;
+$o-step-status-notavailable-color	: $gray-light !default;
+$o-step-status-expired-color		: #E69138 !default;
+$o-step-status-late-color			: #B45E05 !default;
+$o-step-status-extended-color		: #31708F !default;
 
 /* Email */
 $o-email-brand							: $btn-primary-bg !default;

@@ -174,8 +174,9 @@
 	    color: 				#fff;
 	}
 	&.o_process_status_waiting {
-	    background-color: 	$o-step-status-waiting-color;
-	    color: 				#fff;
+	    border-color		: $o-step-status-waiting-border-color;
+	    background-color	: $o-step-status-waiting-bg-color;
+	    color				: $o-step-status-waiting-color;
 	}
 	&.o_process_status_review {
 	    background-color: 	$o-step-status-review-color;
@@ -186,8 +187,9 @@
 	    color: 				#fff;
 	}
 	&.o_process_status_active {
-	    background-color: 	$o-step-status-active-color;
-	    color: 				#fff;
+	    border-color		: $o-step-status-active-border-color;
+	    background-color	: $o-step-status-active-bg-color;
+	    color				: $o-step-status-active-color;
 	}
 	&.o_process_status_expired {
 	    background-color: 	$o-step-status-expired-color;
