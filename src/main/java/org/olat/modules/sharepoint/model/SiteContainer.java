@@ -42,12 +42,13 @@ public class SiteContainer extends AbstractSPContainer {
 	private boolean initialized = false;
 	private List<VFSItem> drives = new ArrayList<>();
 	private final List<String> exclusionsSitesAndDrives;
+	private final List<String> allowedDrivesIds = new ArrayList<>();
 	private List<MicrosoftDrive> microsoftDrives = new ArrayList<>();
 	
 	public SiteContainer(SharePointContainer parentContainer, MicrosoftSite site,
 			SharePointDAO sharePointDao, List<String> exclusionsSitesAndDrives,
 			List<String> exclusionsLabels, TokenCredential tokenProvider) {
-		super(parentContainer, site.name(), sharePointDao, exclusionsLabels, tokenProvider);
+		super(parentContainer, site.preferedName(), sharePointDao, exclusionsLabels, tokenProvider);
 		this.site = site;
 		this.exclusionsSitesAndDrives = exclusionsSitesAndDrives;
 	}
@@ -65,7 +66,8 @@ public class SiteContainer extends AbstractSPContainer {
 			List<MicrosoftDrive> mDrives = sharePointDao.getDrives(site.id(), tokenProvider);
 			if(mDrives != null) {
 				for(MicrosoftDrive mDrive:mDrives) {
-					if(SharePointDAO.accept(mDrive, exclusionsSitesAndDrives)) {
+					if(SharePointDAO.accept(mDrive, exclusionsSitesAndDrives)
+							&& (allowedDrivesIds.isEmpty() || allowedDrivesIds.contains(mDrive.id()))) {
 						drives.add(new SiteDriveContainer(this, mDrive, sharePointDao, exclusionsLabels, tokenProvider));
 					}
 				}
@@ -84,6 +86,10 @@ public class SiteContainer extends AbstractSPContainer {
 			foundItems.addAll(toVFS(drive, driveItems));
 		}
 		return foundItems;
+	}
+	
+	public void addAllowedDriveId(String driveId) {
+		allowedDrivesIds.add(driveId);
 	}
 
 	@Override

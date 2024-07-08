@@ -19,39 +19,35 @@
  */
 package org.olat.modules.sharepoint.model;
 
-import org.olat.core.util.StringHelper;
-
-import com.microsoft.graph.models.Site;
+import java.util.List;
 
 /**
  * 
- * Initial date: 7 déc. 2023<br>
+ * Initial date: 8 juil. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MicrosoftSite(Site site) {
+public class SitesAndDrivesConfiguration {
 	
-	public String id() {
-		return site.getId();
+	private List<SiteAndDriveConfiguration> configurationList;
+	
+	public SitesAndDrivesConfiguration() {
+		//
 	}
 	
-	public String name() {
-		return site.getName();
+	public SitesAndDrivesConfiguration(List<SiteAndDriveConfiguration> configurationList) {
+		this.configurationList = configurationList;
 	}
 	
-	public String displayName() {
-		return site.getDisplayName();
-	}
-	
-	public String preferedName() {
-		String n = displayName();
-		if(!StringHelper.containsNonWhitespace(n)) {
-			n = name();
-		}
-		return n;
+	public boolean hasConfiguration() {
+		return configurationList != null && !configurationList.isEmpty();
 	}
 
-	public static MicrosoftSite valueOf(Site site) {
-		return new MicrosoftSite(site);
+	public List<SiteAndDriveConfiguration> getConfigurationList() {
+		return configurationList;
+	}
+
+	public void setConfigurationList(List<SiteAndDriveConfiguration> configurationList) {
+		this.configurationList = configurationList;
 	}
 }

@@ -68,6 +68,7 @@ public class SharePointDAO {
 	
 	private static final int MAX_ATTEMPTS = 5;
 
+	private static final String[] ATTRS_SITE = new String[] { "id", "name", "displayName" };
 	private static final String[] ATTRS_DRIVE = new String[] { "id", "name", "lastModifiedDateTime", "weburl" };
 	private static final String[] ATTRS_DRIVE_ITEM = new String[] { "id", "name", "lastModifiedDateTime", "weburl", "size", "file", "folder", "sensitivityLabel" };
 	private static final String[] EXPAND_DRIVE_ITEM = new String[] { "thumbnails" };
@@ -79,6 +80,7 @@ public class SharePointDAO {
 					.get(requestConfiguration -> {
 						requestConfiguration.queryParameters.search = search;
 						requestConfiguration.queryParameters.filter = null;
+						requestConfiguration.queryParameters.select = ATTRS_SITE;
 					});
 			
 			List<Site> sitesList = allSites.getValue();
@@ -90,6 +92,24 @@ public class SharePointDAO {
 			return sitesList.stream()
 					.map(MicrosoftSite::valueOf)
 					.toList();
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public MicrosoftSite getSite(String siteId, TokenCredential tokenProvider) {
+		try {
+			Site site = client(tokenProvider)
+					.sites()
+					.bySiteId(siteId)
+					.get(requestConfiguration ->
+						requestConfiguration.queryParameters.select = ATTRS_SITE
+					);
+			if(site == null) {
+				return null;
+			}
+			return MicrosoftSite.valueOf(site);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

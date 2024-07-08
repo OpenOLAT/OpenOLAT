@@ -19,7 +19,9 @@
  */
 package org.olat.modules.sharepoint.model;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.MergeSource;
@@ -44,16 +46,17 @@ public class SharePointContainer extends MergeSource {
 	
 	private final List<String> exclusionsSitesAndDrives;
 	private final List<String> exclusionsLabels;
+	private final SitesAndDrivesConfiguration sitesAndDrivesConfig;
 	
 	public SharePointContainer(VFSContainer parentContainer, String name,
-			SharePointModule sharePointModule, SharePointDAO sharePointDao,
-			List<String> exclusionsSitesAndDrives, List<String> exclusionsLabels, TokenCredential tokenProvider) {
+			SharePointModule sharePointModule, SharePointDAO sharePointDao, TokenCredential tokenProvider) {
 		super(parentContainer, name);
 		this.sharePointDao = sharePointDao;
 		this.sharePointModule = sharePointModule;
 		this.tokenProvider = tokenProvider;
-		this.exclusionsSitesAndDrives = exclusionsSitesAndDrives;
-		this.exclusionsLabels = exclusionsLabels;
+		exclusionsSitesAndDrives = sharePointModule.getExcludeSitesAndDrives();
+		exclusionsLabels = sharePointModule.getExcludeLabels();
+		sitesAndDrivesConfig = sharePointModule.getSitesConfiguration();
 		
 		setLocalSecurityCallback(new ReadOnlyCallback());
 		init();
@@ -61,18 +64,38 @@ public class SharePointContainer extends MergeSource {
 	
 	@Override
 	protected void init() {
-		String searchQuery = sharePointModule.getSitesSearch();
-		if(!StringHelper.containsNonWhitespace(searchQuery)) {
-			searchQuery = "frentix";
-		}
-		List<MicrosoftSite> sites = sharePointDao.getSites(tokenProvider, searchQuery);
-		if(sites != null) {
-			for(MicrosoftSite site:sites) {
-				if(SharePointDAO.accept(site, exclusionsSitesAndDrives)) {
-					SiteContainer siteContainer = new SiteContainer(this, site, sharePointDao,
+		if(sitesAndDrivesConfig != null && sitesAndDrivesConfig.hasConfiguration()) {
+			List<SiteAndDriveConfiguration> configList = sitesAndDrivesConfig.getConfigurationList();
+			
+			Map<String,SiteContainer> idToContainers = new HashMap<>();
+			for(SiteAndDriveConfiguration config:configList) {
+				SiteContainer siteContainer = idToContainers.get(config.getSiteId());
+				if(siteContainer == null) {
+					MicrosoftSite site = sharePointDao.getSite(config.getSiteId(), tokenProvider);
+					siteContainer = new SiteContainer(this, site, sharePointDao,
 							exclusionsSitesAndDrives, exclusionsLabels, tokenProvider);
-					siteContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 					addContainer(siteContainer);
+					idToContainers.put(config.getSiteId(), siteContainer);
+				}
+				siteContainer.setLocalSecurityCallback(new ReadOnlyCallback());
+				if(StringHelper.containsNonWhitespace(config.getDriveId())) {
+					siteContainer.addAllowedDriveId(config.getDriveId());
+				}
+			}
+		} else {
+			String searchQuery = sharePointModule.getSitesSearch();
+			if(!StringHelper.containsNonWhitespace(searchQuery)) {
+				searchQuery = "frentix";
+			}
+			List<MicrosoftSite> sites = sharePointDao.getSites(tokenProvider, searchQuery);
+			if(sites != null) {
+				for(MicrosoftSite site:sites) {
+					if(SharePointDAO.accept(site, exclusionsSitesAndDrives)) {
+						SiteContainer siteContainer = new SiteContainer(this, site, sharePointDao,
+								exclusionsSitesAndDrives, exclusionsLabels, tokenProvider);
+						siteContainer.setLocalSecurityCallback(new ReadOnlyCallback());
+						addContainer(siteContainer);
+					}
 				}
 			}
 		}

@@ -17,41 +17,28 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.sharepoint.model;
+package org.olat.modules.sharepoint.ui;
 
-import org.olat.core.util.StringHelper;
-
-import com.microsoft.graph.models.Site;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Initial date: 7 déc. 2023<br>
+ * Initial date: 8 juil. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MicrosoftSite(Site site) {
-	
-	public String id() {
-		return site.getId();
-	}
-	
-	public String name() {
-		return site.getName();
-	}
-	
-	public String displayName() {
-		return site.getDisplayName();
-	}
-	
-	public String preferedName() {
-		String n = displayName();
-		if(!StringHelper.containsNonWhitespace(n)) {
-			n = name();
-		}
-		return n;
-	}
+public class SiteAndDriveNameRenderer implements FlexiCellRenderer {
 
-	public static MicrosoftSite valueOf(Site site) {
-		return new MicrosoftSite(site);
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof String name) {
+			target.append(name);
+		}
 	}
 }

@@ -55,9 +55,7 @@ public class SharePointServiceImpl implements SharePointService {
 		
 		OAuth2Tokens tokens = usess.getOAuth2Tokens();
 		TokenCredential tokenProvider = microsoftGraphDao.getTokenProvider(tokens);
-		return new SharePointContainer(null, "SharePoint", sharePointModule, sharePointDao,
-				sharePointModule.getExcludeSitesAndDrives(), sharePointModule.getExcludeLabels(),
-				tokenProvider);
+		return new SharePointContainer(null, "SharePoint", sharePointModule, sharePointDao, tokenProvider);
 	}
 
 	@Override

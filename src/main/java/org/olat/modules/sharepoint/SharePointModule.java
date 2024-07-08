@@ -20,13 +20,19 @@
 package org.olat.modules.sharepoint;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.apache.logging.log4j.util.Strings;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.modules.sharepoint.model.SiteConfigurationXstream;
+import org.olat.modules.sharepoint.model.SitesAndDrivesConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,9 +51,11 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String PROP_ENABLED = "sharepoint.enabled";
 	private static final String PROP_SITES_ENABLED = "sharepoint.sites.enabled";
 	private static final String PROP_ONEDRIVE_ENABLED = "sharepoint.onedrive.enabled";
+	private static final String PROP_ROLES_ENABLED = "sharepoint.roles.enabled";
 	private static final String PROP_EXCLUDE_SITES_AND_DRIVES = "sharepoint.exclude.sites.drives";
 	private static final String PROP_EXCLUDE_LABELS = "sharepoint.exclude.labels";
 	private static final String PROP_SITES_SEARCH = "sharepoint.sites.search";
+	private static final String PROP_SITES_CONFIGURATION = "sharepoint.sites.configuration";
 	
 	@Value("${sharepoint.enabled:false}")
 	private boolean enabled;
@@ -55,6 +63,9 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean sitesEnabled;
 	@Value("${sharepoint.onedrive.enabled:false}")
 	private boolean oneDriveEnabled;
+	@Value("${sharepoint.roles.enabled:administrator,learnresourcemanager,author}")
+	private String rolesEnabled;
+	private List<OrganisationRoles> rolesEnabledList;
 	
 	@Value("${sharepoint.exclude.sites.drives}")
 	private String excludeSitesAndDrives;
@@ -62,6 +73,8 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	private String excludeLabels;
 	@Value("${sharepoint.sites.search}")
 	private String sitesSearch;
+	@Value("${sharepoint.sites.configuration}")
+	private String sitesConfiguration;
 	
 	@Autowired
 	public SharePointModule(CoordinatorManager coordinatorManager) {
@@ -84,10 +97,12 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 		if(StringHelper.containsNonWhitespace(oneDriveEnabledObj)) {
 			oneDriveEnabled = "true".equals(oneDriveEnabledObj);
 		}
-		
+		rolesEnabled = getStringPropertyValue(PROP_ROLES_ENABLED, rolesEnabled);
+		rolesEnabledList = OrganisationRoles.toValues(toList(rolesEnabled, ","));
 		excludeSitesAndDrives = getStringPropertyValue(PROP_EXCLUDE_SITES_AND_DRIVES, excludeSitesAndDrives);
 		excludeLabels = getStringPropertyValue(PROP_EXCLUDE_LABELS, excludeLabels);
 		sitesSearch = getStringPropertyValue(PROP_SITES_SEARCH, sitesSearch);
+		sitesConfiguration = getStringPropertyValue(PROP_SITES_CONFIGURATION, sitesConfiguration);
 	}
 
 	@Override
@@ -102,7 +117,7 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
-		setBooleanProperty(PROP_ENABLED, enabled, true);
+		setStringProperty(PROP_ENABLED, Boolean.toString(enabled), true);
 	}
 	
 	public boolean isSitesEnabled() {
@@ -111,7 +126,7 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 
 	public void setSitesEnabled(boolean sitesEnabled) {
 		this.sitesEnabled = sitesEnabled;
-		setBooleanProperty(PROP_SITES_ENABLED, enabled, true);
+		setStringProperty(PROP_SITES_ENABLED, Boolean.toString(sitesEnabled), true);
 	}
 
 	public boolean isOneDriveEnabled() {
@@ -120,17 +135,45 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 
 	public void setOneDriveEnabled(boolean oneDriveEnabled) {
 		this.oneDriveEnabled = oneDriveEnabled;
-		setBooleanProperty(PROP_ONEDRIVE_ENABLED, enabled, true);
+		setStringProperty(PROP_ONEDRIVE_ENABLED, Boolean.toString(oneDriveEnabled), true);
 	}
 
 	public boolean canSharePoint(UserSession usess) {
 		return isEnabled() && isSitesEnabled()
-				&& usess != null && usess.getOAuth2Tokens() != null && usess.getOAuth2Tokens().getUser(User.class) != null;
+				&& usess != null && usess.getOAuth2Tokens() != null && usess.getOAuth2Tokens().getUser(User.class) != null
+				&& isEnabledFor(usess.getRoles());
+	}
+	
+	private boolean isEnabledFor(Roles roles) {
+		for(OrganisationRoles enabledRole:rolesEnabledList) {
+			if(roles.hasRole(enabledRole)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public boolean canOneDrive(UserSession usess) {
 		return isEnabled() && isOneDriveEnabled()
 				&& usess != null && usess.getOAuth2Tokens() != null && usess.getOAuth2Tokens().getUser(User.class) != null;
+	}
+	
+	public List<String> getRolesEnabledList() {
+		return toList(rolesEnabled, ",");
+	}
+	
+	public String getRolesEnabled() {
+		return rolesEnabled;
+	}
+	
+	public void setRolesEnabledList(Collection<String> roles) {
+		setRolesEnabled(Strings.join(roles, ','));
+	}
+
+	public void setRolesEnabled(String rolesEnabled) {
+		this.rolesEnabled = rolesEnabled;
+		rolesEnabledList = OrganisationRoles.toValues(toList(rolesEnabled, ","));
+		setStringProperty(PROP_ROLES_ENABLED, rolesEnabled, true);
 	}
 
 	public List<String> getExcludeSitesAndDrives() {
@@ -167,15 +210,28 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 		this.sitesSearch = sitesSearch;
 		setStringProperty(PROP_SITES_SEARCH, sitesSearch, true);
 	}
-	
+
+	public SitesAndDrivesConfiguration getSitesConfiguration() {
+		return SiteConfigurationXstream.fromXML(sitesConfiguration);
+	}
+
+	public void setSitesConfiguration(SitesAndDrivesConfiguration configuration) {
+		sitesConfiguration = SiteConfigurationXstream.toXML(configuration);
+		setStringProperty(PROP_SITES_CONFIGURATION, sitesConfiguration, true);
+	}
+
 	private String toString(List<String> list) {
 		if(list == null || list.isEmpty()) return "";
 		return String.join("|", list);
 	}
 	
 	private List<String> toList(String val) {
+		return toList(val, "[\n\r|]");
+	}
+	
+	private List<String> toList(String val, String separator) {
 		if(StringHelper.containsNonWhitespace(val)) {
-			String[] array = val.split("[\n\r|]");
+			String[] array = val.split(separator);
 			List<String> list = new ArrayList<>();
 			for(String string:array) {
 				if(StringHelper.containsNonWhitespace(string)) {
