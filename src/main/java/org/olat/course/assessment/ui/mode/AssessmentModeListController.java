@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.mode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,6 +65,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -201,7 +203,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		List<AssessmentMode> modes = new ArrayList<>(assessmentModeMgr.getAssessmentModeFor(entry));
 		// remove filtered assessment modes
 		modes.removeIf(mode ->
-				isExcludedByStatusFilter(mode.getStatus())
+				isExcludedByStatusFilter(mode)
 						|| isExcludedBySearchString(mode));
 
 		model.setObjects(modes);
@@ -223,9 +225,12 @@ public class AssessmentModeListController extends FormBasicController implements
 	 * @param modeStatus
 	 * @return
 	 */
-	private boolean isExcludedByStatusFilter(Status modeStatus) {
+	private boolean isExcludedByStatusFilter(AssessmentMode mode) {
+		Status modeStatus = mode.getStatus();
+		boolean isSameDay = DateUtils.isSameDay(mode.getEnd(), new Date());
 		return (tableEl.getSelectedFilterTab() != null &&
-				tableEl.getSelectedFilterTab().getId().equals("relevant") && modeStatus.equals(Status.end))
+				tableEl.getSelectedFilterTab().getId().equals("relevant")
+				&& (modeStatus.equals(Status.end) && !isSameDay))
 				|| (tableEl.getSelectedFilterTab() != null
 				&& !tableEl.getSelectedFilterTab().getId().equals("all")
 				&& !tableEl.getSelectedFilterTab().getId().equals("relevant")
