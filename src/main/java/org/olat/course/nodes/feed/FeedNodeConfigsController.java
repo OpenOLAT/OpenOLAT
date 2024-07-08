@@ -229,6 +229,8 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 			} else {
 				labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("feed.entries"), String.valueOf(feedManager.loadItems(feed).size())));
 			}
+			labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("feed.comment.status"), feed.getCanRate() ? translate("on") : translate("off")));
+			labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("feed.rating.status"), feed.getCanComment() ? translate("on") : translate("off")));
 		}
 
 		iconPanelContent.setLabelTexts(labelTexts);
