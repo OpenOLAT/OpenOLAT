@@ -86,6 +86,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
@@ -240,8 +241,12 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FeedItemTableModel.ItemsCols.author));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FeedItemTableModel.ItemsCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FeedItemTableModel.ItemsCols.changedFrom));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FeedItemTableModel.ItemsCols.rating.i18nHeaderKey(), FeedItemTableModel.ItemsCols.rating.ordinal(), true, FeedItemTableModel.ItemsCols.rating.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, FeedItemTableModel.ItemsCols.comments.i18nHeaderKey(), FeedItemTableModel.ItemsCols.comments.ordinal(), "openEntry", true, FeedItemTableModel.ItemsCols.comments.name()));
+		if (feedRss.getCanRate()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FeedItemTableModel.ItemsCols.rating.i18nHeaderKey(), FeedItemTableModel.ItemsCols.rating.ordinal(), true, FeedItemTableModel.ItemsCols.rating.name()));
+		}
+		if (feedRss.getCanComment()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, FeedItemTableModel.ItemsCols.comments.i18nHeaderKey(), FeedItemTableModel.ItemsCols.comments.ordinal(), "openCommentEntry", true, FeedItemTableModel.ItemsCols.comments.name()));
+		}
 
 		if (feedRss.isInternal() && feedSecCallback.mayEditItems()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.feed.header.actions", FeedItemTableModel.ItemsCols.toolsLink.ordinal(), "tools",
@@ -321,7 +326,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 		for (FeedItemDTO feedItemDTO : feedItemDTOList) {
 			Long numOfComments = feedItemDTO.numOfComments();
-			FormLink commentLink = uifactory.addFormLink("comments_" + feedItemDTO.item().getGuid(), "openEntry", String.valueOf(numOfComments), null, null, Link.NONTRANSLATED);
+			FormLink commentLink = uifactory.addFormLink("comments_" + feedItemDTO.item().getGuid(), "openCommentEntry", String.valueOf(numOfComments), null, null, Link.NONTRANSLATED);
 			commentLink.setIconLeftCSS("o_icon o_icon_comments_none o_icon-lg");
 
 			FormLink feedEntryLink = uifactory.addFormLink("title_" + feedItemDTO.item().getGuid(), "openEntry", feedItemDTO.item().getTitle(), null, null, Link.NONTRANSLATED);
@@ -884,8 +889,19 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			}
 		} else if (source instanceof FormLink link) {
 			if (link.getCmd().equals("openEntry")) {
-				FeedItemRow row = (FeedItemRow) link.getUserObject();
-				displayFeedItem(ureq, row.getItem());
+				Item feedItem = ((FeedItemRow) link.getUserObject()).getItem();
+				displayFeedItem(ureq, feedItem);
+			} else if (link.getCmd().equals("openCommentEntry")) {
+				// jump directly to comment section in detail feedItem view
+				Item feedItem = ((FeedItemRow) link.getUserObject()).getItem();
+				if (feedItem != null) {
+					displayFeedItem(ureq, feedItem);
+					if (feedItemCtrl != null) {
+						List<ContextEntry> entries = BusinessControlFactory.getInstance()
+								.createCEListFromResourceType(FeedItemController.ACTIVATION_KEY_COMMENTS);
+						feedItemCtrl.activate(ureq, entries, null);
+					}
+				}
 			} else if (link.getCmd().equals("feed.add.item")) {
 				doAddFeedItem(ureq);
 			} else if (source == bulkDeleteButton) {
