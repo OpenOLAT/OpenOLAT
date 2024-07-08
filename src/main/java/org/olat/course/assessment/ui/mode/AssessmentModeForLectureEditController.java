@@ -201,10 +201,10 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
 		formLayout.add(buttonCont);
-		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 		if(status != Status.end) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
+		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 	
 	public AssessmentMode getAssessmentMode() {
