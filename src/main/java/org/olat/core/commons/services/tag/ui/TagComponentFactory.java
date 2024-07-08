@@ -37,8 +37,9 @@ public class TagComponentFactory {
 		//
 	}
 
-	public static TagComponent createTagComponent(String name, List<TagInfo> tagInfos, VelocityContainer vc, ComponentEventListener listener) {
-		TagComponent tagCmp = createTagComponent(name, tagInfos);
+	public static TagComponent createTagComponent(String name, List<TagInfo> tagInfos, VelocityContainer vc,
+												  ComponentEventListener listener, boolean isRemoving) {
+		TagComponent tagCmp = createTagComponent(name, tagInfos, isRemoving);
 		if (listener != null) {
 			tagCmp.addListener(listener);
 		}
@@ -48,8 +49,8 @@ public class TagComponentFactory {
 		return tagCmp;
 	}
 
-	static TagComponent createTagComponent(String name, List<TagInfo> tagInfos) {
-		return new TagComponent(name, tagInfos);
+	static TagComponent createTagComponent(String name, List<TagInfo> tagInfos, boolean isRemoving) {
+		return new TagComponent(name, tagInfos, isRemoving);
 	}
 
 }

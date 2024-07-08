@@ -121,6 +121,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private List<Long> filteredItemKeys;
 	private List<FeedItemDTO> feedItemDTOList;
 	private Set<Long> selectedTagKeys;
+	private List<TagInfo> tagInfos;
 
 	private LockResult lock;
 	private final FeedSecurityCallback feedSecCallback;
@@ -133,6 +134,8 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private final FeedItemDisplayConfig displayConfig;
 	private final FeedViewHelper helper;
 	private FormLink bulkDeleteButton;
+	private FormLink bulkRemoveTags;
+	private FormLink bulkAddTags;
 	private FormToggle toggleTimelineTags;
 	private TagComponent tagsComponent;
 
@@ -148,6 +151,8 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private CollectArtefactController collectorCtrl;
 	private ConfirmationController deletePermanentlyConfirmationCtrl;
 	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
+	private FeedBulkAddTagsController bulkAddTagsCtrl;
+	private FeedBulkRemoveTagsController bulkRemoveTagsCtrl;
 
 
 	@Autowired
@@ -218,7 +223,9 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		}
 
 		initForm(ureq);
-		initMultiSelectionTools(flc);
+		if (feedRss.isInternal()) {
+			initMultiSelectionTools(flc);
+		}
 	}
 
 	@Override
@@ -247,8 +254,10 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setCssDelegate(tableModel);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setMultiSelect(true);
-		tableEl.setSelectAllEnable(true);
+		if (feedRss.isInternal()) {
+			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
+		}
 		customItemFlc.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(customItemFlc.getFormItemComponent(), this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "feed-item-list");
@@ -277,14 +286,22 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		bulkDeleteButton = uifactory.addFormLink("bulk.delete", "delete", "delete", formLayout, Link.BUTTON);
 		bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
 		tableEl.addBatchButton(bulkDeleteButton);
+
+		bulkRemoveTags = uifactory.addFormLink("bulk.delete.tags", "bulk.delete.tags", "bulk.delete.tags", formLayout, Link.BUTTON);
+		bulkRemoveTags.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
+		tableEl.addBatchButton(bulkRemoveTags);
+
+		bulkAddTags = uifactory.addFormLink("bulk.add.tags", "bulk.add.tags", "bulk.add.tags", formLayout, Link.BUTTON);
+		bulkAddTags.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		tableEl.addBatchButton(bulkAddTags);
 	}
 
 	private void loadSideBarTags() {
 		if (feedRss.isInternal()) {
-			List<TagInfo> tagInfos = feedManager.getTagInfos(feedRss, null);
+			tagInfos = feedManager.getTagInfos(feedRss, null);
 			if (tagInfos != null && !tagInfos.isEmpty()) {
 				tagInfos.sort(Comparator.comparing(TagInfo::getCount).reversed());
-				tagsComponent = TagComponentFactory.createTagComponent("sidebarTags", tagInfos, rightColFlc.getFormItemComponent(), this);
+				tagsComponent = TagComponentFactory.createTagComponent("sidebarTags", tagInfos, rightColFlc.getFormItemComponent(), this, false);
 			} else {
 				rightColFlc.getFormItemComponent().remove("sidebarTags");
 			}
@@ -388,7 +405,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			filters.add(myEntriesFilter);
 		}
 
-		List<TagInfo> tagInfos = feedManager.getTagInfos(feedRss, null);
+		tagInfos = feedManager.getTagInfos(feedRss, null);
 		FlexiTableTagFilter tagsFilter = new FlexiTableTagFilter(translate("table.filter.tags"),
 				FeedItemFilter.TAGS.name(), tagInfos, true);
 		filters.add(tagsFilter);
@@ -612,12 +629,18 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		// Reload feed and ensure the updated feed object is in view
 		reloadFeed();
 
-		if (source == itemFormCtrl) {
+		if (event == Event.CANCELLED_EVENT) {
+			deactivateAndCleanUp();
+			// return, so table won't be reloaded and selected items stay selected
+			return;
+		} else if (source == itemFormCtrl) {
 			handleItemFormCtrlEvent(ureq, event);
 		} else if (source == cmc) {
 			// In case the form is closed by X -> Check if this item
 			// has ever been added to the feed. If not, then remove the temp dir
 			handleCmcEvent();
+			deactivateAndCleanUp();
+			return;
 		} else if (source == collectorCtrl && (event.equals(Event.DONE_EVENT) || event.equals(Event.CANCELLED_EVENT))) {
 			handleCollectorCtrlEvent();
 		} else if (source == deletePermanentlyConfirmationCtrl || source == bulkDeleteConfirmationCtrl) {
@@ -626,6 +649,10 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			handleFeedItemCtrlEvent(ureq, event);
 		} else if (source == naviCtrl && event instanceof NavigationEvent navEvent) {
 			handleNavigationEvent(navEvent);
+		} else if ((source == bulkAddTagsCtrl || source == bulkRemoveTagsCtrl)) {
+			if (event instanceof FeedItemEvent feedItemEvent) {
+				handleFeedItemEvent(ureq, feedItemEvent);
+			}
 		}
 
 		loadModel();
@@ -693,6 +720,24 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		loadFeedItems();
 		// update sidebar with tag information
 		loadSideBarTags();
+	}
+
+	private void bulkUpdateFeedItemTags(List<String> tagDisplayNames) {
+		List<Item> selectedItems = tableEl.getMultiSelectedIndex().stream().map(r -> tableModel.getObject(r).getItem()).toList();
+
+		feedManager.bulkAddTags(selectedItems, tagDisplayNames);
+		loadFeedItems();
+		loadSideBarTags();
+		deactivateAndCleanUp();
+	}
+
+	private void bulkRemoveFeedItemTags(List<String> tagDisplayNames) {
+		List<Item> selectedItems = tableEl.getMultiSelectedIndex().stream().map(r -> tableModel.getObject(r).getItem()).toList();
+
+		feedManager.bulkRemoveTags(selectedItems, tagDisplayNames);
+		loadFeedItems();
+		loadSideBarTags();
+		deactivateAndCleanUp();
 	}
 
 	private void updateViewAndSidebar(UserRequest ureq) {
@@ -765,6 +810,10 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			doConfirmDeleteFeedItems(ureq, List.of(feedItemEvent.getItem()));
 		} else if (FeedItemEvent.ARTEFACT_FEED_ITEM.equals(command)) {
 			doOpenCollector(ureq, feedItemEvent.getItem());
+		} else if (FeedItemEvent.BULK_ADD_TAGS.equals(command)) {
+			bulkUpdateFeedItemTags(feedItemEvent.getTagDisplayNames());
+		} else if (FeedItemEvent.BULK_REMOVE_TAGS.equals(command)) {
+			bulkRemoveFeedItemTags(feedItemEvent.getTagDisplayNames());
 		}
 	}
 
@@ -833,6 +882,10 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			} else if (source == bulkDeleteButton) {
 				List<Item> items = tableEl.getMultiSelectedIndex().stream().map(i -> tableModel.getObject(i).getItem()).toList();
 				doConfirmDeleteFeedItems(ureq, items);
+			} else if (source == bulkAddTags) {
+				doBulkAddTags(ureq);
+			} else if (source == bulkRemoveTags) {
+				doBulkRemoveTags(ureq);
 			} else if (link.getCmd().equals("tools")) {
 				doOpenTools(ureq, (Item) link.getUserObject(), link.getFormDispatchId());
 			}
@@ -955,12 +1008,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 					translate("feed.item.confirmation.confirm.delete"),
 					translate("delete"), true);
 			deletePermanentlyConfirmationCtrl.setUserObject(feedItems);
-			listenTo(deletePermanentlyConfirmationCtrl);
-
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), deletePermanentlyConfirmationCtrl.getInitialComponent(),
-					true, translate("feed.item.delete.permanently.title"), true);
-			listenTo(cmc);
-			cmc.activate();
+			activateModalDialog(deletePermanentlyConfirmationCtrl, translate("feed.item.delete.permanently.title"));
 		} else {
 			doConfirmBulkDeletePermanently(ureq, feedItems);
 		}
@@ -981,12 +1029,24 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				translate("feed.item.confirm.bulk.delete.permanently.label"), feedItemTitles,
 				null);
 		bulkDeleteConfirmationCtrl.setUserObject(feedItems);
-		listenTo(bulkDeleteConfirmationCtrl);
+		activateModalDialog(bulkDeleteConfirmationCtrl, translate("feed.item.bulk.delete.permanently.title"));
+	}
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
-				true, translate("feed.item.bulk.delete.permanently.title"), true);
-		listenTo(cmc);
-		cmc.activate();
+	private void doBulkAddTags(UserRequest ureq) {
+		if (guardModalController(bulkAddTagsCtrl)) return;
+
+		bulkAddTagsCtrl = new FeedBulkAddTagsController(ureq, getWindowControl(), tagInfos);
+		activateModalDialog(bulkAddTagsCtrl, translate("feed.item.bulk.add.tags.title"));
+	}
+
+	private void doBulkRemoveTags(UserRequest ureq) {
+		if (guardModalController(bulkRemoveTagsCtrl)) return;
+
+		List<Long> selectedItemKeys = tableEl.getMultiSelectedIndex().stream().map(r -> tableModel.getObject(r).getItem().getKey()).toList();
+
+		List<TagInfo> selectedTagInfos = feedManager.getTagInfosForFeedItems(feedRss, selectedItemKeys);
+		bulkRemoveTagsCtrl = new FeedBulkRemoveTagsController(ureq, getWindowControl(), selectedTagInfos);
+		activateModalDialog(bulkRemoveTagsCtrl, translate("feed.item.bulk.remove.tags.title"));
 	}
 
 	@Override
@@ -1012,12 +1072,16 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private void cleanUp() {
 		removeAsListenerAndDispose(deletePermanentlyConfirmationCtrl);
 		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
+		removeAsListenerAndDispose(bulkRemoveTagsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(bulkAddTagsCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		deletePermanentlyConfirmationCtrl = null;
 		bulkDeleteConfirmationCtrl = null;
+		bulkRemoveTagsCtrl = null;
 		toolsCalloutCtrl = null;
+		bulkAddTagsCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 	}

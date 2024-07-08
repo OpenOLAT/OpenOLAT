@@ -19,6 +19,8 @@
  */
 package org.olat.modules.webFeed.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.control.Event;
 import org.olat.modules.webFeed.Item;
 
@@ -31,18 +33,30 @@ public class FeedItemEvent extends Event {
 
 	private static final long serialVersionUID = 2405172041950251807L;
 
+	public static final String BULK_ADD_TAGS = "bulk-add-tags";
+	public static final String BULK_REMOVE_TAGS = "bulk-remove-tags";
 	public static final String ARTEFACT_FEED_ITEM = "artefact-feed-item";
 	public static final String EDIT_FEED_ITEM = "edit-feed-item";
 	public static final String DELETE_FEED_ITEM = "delete-feed-item";
 
-	private final Item item;
+	private List<String> tagDisplayNames;
+	private Item item;
 
 	public FeedItemEvent(String eventCmd, Item item) {
 		super(eventCmd);
 		this.item = item;
 	}
 
+	public FeedItemEvent(String eventCmd, List<String> tagDisplayNames) {
+		super(eventCmd);
+		this.tagDisplayNames = tagDisplayNames;
+	}
+
 	public Item getItem() {
 		return item;
+	}
+
+	public List<String> getTagDisplayNames() {
+		return tagDisplayNames;
 	}
 }

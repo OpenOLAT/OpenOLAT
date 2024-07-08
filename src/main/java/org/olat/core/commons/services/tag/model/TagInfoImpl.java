@@ -26,7 +26,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 /**
  * 
  * Initial date: 6 Mar 2023<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class TagInfoImpl implements TagInfo {
@@ -35,7 +35,7 @@ public class TagInfoImpl implements TagInfo {
 	private final Date creationDate;
 	private final String displayName;
 	private final Long count;
-	private final boolean selected;
+	private boolean selected;
 
 	public TagInfoImpl(Long key, Date creationDate, String displayName, Long count, Long numSelected) {
 		this(key, creationDate, displayName, count, numSelected > 0);
@@ -73,5 +73,10 @@ public class TagInfoImpl implements TagInfo {
 	public boolean isSelected() {
 		return selected;
 	}
-	
+
+	@Override
+	public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
+
 }

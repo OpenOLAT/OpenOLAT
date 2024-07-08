@@ -112,7 +112,7 @@ public class FeedTagDAO {
 	/**
 	 * load TagInfos for all tags inside a feed with count
 	 * @param feed
-	 * @param feedItem
+	 * @param feedItem select all the tags this feedItem already has, can be null
 	 * @return
 	 */
 	public List<TagInfo> loadFeedTagInfos(Feed feed, Item feedItem) {
@@ -141,6 +141,36 @@ public class FeedTagDAO {
 		if (feedItem != null) {
 			query.setParameter("feedItemKey", feedItem.getKey());
 		}
+
+		return query.getResultList();
+	}
+
+	/**
+	 * load TagInfos for given feedItemKeys
+	 * @param feed
+	 * @param feedItemKeys
+	 * @return list of tagInfo object
+	 */
+	public List<TagInfo> loadFeedTagInfosForFeedItems(Feed feed, List<Long> feedItemKeys) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select new org.olat.core.commons.services.tag.model.TagInfoImpl(");
+		qb.append(" tag.key");
+		qb.append(" , min(tag.creationDate)");
+		qb.append(" , min(tag.displayName)");
+		qb.append(" , count(feedTag.feedItem.key)");
+		qb.append(" , cast(0 as long) as selected");
+		qb.append(")");
+
+		qb.append(" from feedtag feedTag");
+		qb.append(" inner join feedTag.tag tag");
+		qb.and().append("feedTag.feed.key = :feedKey");
+		qb.and().append("feedTag.feedItem.key in :feedItemKeys");
+		qb.groupBy().append("tag.key");
+
+		TypedQuery<TagInfo> query = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), TagInfo.class)
+				.setParameter("feedKey", feed.getKey())
+				.setParameter("feedItemKeys", feedItemKeys);
 
 		return query.getResultList();
 	}

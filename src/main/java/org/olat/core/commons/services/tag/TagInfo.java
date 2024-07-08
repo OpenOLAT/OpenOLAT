@@ -22,13 +22,27 @@ package org.olat.core.commons.services.tag;
 /**
  * 
  * Initial date: 6 Mar 2023<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public interface TagInfo extends Tag {
-	
+
+	/**
+	 * get the number, how often the tag is being used in this context
+	 * @return Long value about the usage
+	 */
 	public Long getCount();
-	
+
+	/**
+	 * information if the tag is selected or not
+	 * @return true/false
+	 */
 	public boolean isSelected();
+
+	/**
+	 * set the information if the tag is selected or not
+	 * @param selected true/false
+	 */
+	public void setSelected(boolean selected);
 	
 }

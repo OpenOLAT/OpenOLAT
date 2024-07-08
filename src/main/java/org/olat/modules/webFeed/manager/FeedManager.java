@@ -121,12 +121,20 @@ public abstract class FeedManager {
 	public abstract Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry, Identity changedBy);
 
 	/**
-	 * retrieve tag informations
+	 * retrieve tag information
 	 *
 	 * @param feed
 	 * @return list of tagInfo objects
 	 */
 	public abstract List<TagInfo> getTagInfos(Feed feed, Item feedItem);
+
+	/**
+	 * retrieve tag information for certain feedItems(keys)
+	 * @param feed
+	 * @param feedItemKeys
+	 * @return list of TagInfo objects filtered by feedItemKeys
+	 */
+	public abstract List<TagInfo> getTagInfosForFeedItems(Feed feed, List<Long> feedItemKeys);
 
 	/**
 	 * retrieve tags for a given feed with feedItemKeys
@@ -144,6 +152,22 @@ public abstract class FeedManager {
 	 * @param displayNames
 	 */
 	public abstract void updateTags(Item feedItem, List<String> displayNames);
+
+	/**
+	 * add 1-n tags to 1-n feedItems
+	 *
+	 * @param feedItems
+	 * @param displayNames
+	 */
+	public abstract void bulkAddTags(List<Item> feedItems, List<String> displayNames);
+
+	/**
+	 * remove selected tags for selected feedItems
+	 *
+	 * @param feedItems
+	 * @param displayNames
+	 */
+	public abstract void bulkRemoveTags(List<Item> feedItems, List<String> displayNames);
 
 	/**
 	 * Update the feed with the properties in the RepositoryEntry and save it

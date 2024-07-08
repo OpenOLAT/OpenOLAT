@@ -45,7 +45,7 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  * Initial date: 19 July 2021<br>
  * >
  * 
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
 public class NodeConfigController extends FormBasicController {
 
@@ -89,10 +89,10 @@ public class NodeConfigController extends FormBasicController {
 		titleEl.setElementCssClass("o_sel_node_editor_title");
 		
 		String shortTitle = null;
-		if (courseNode instanceof GenericCourseNode) {
+		if (courseNode instanceof GenericCourseNode genericCourseNode) {
 			// Only show custom short titles set by the author,
 			// so we have to use the raw short title.
-			shortTitle = ((GenericCourseNode)courseNode).getRawShortTitle();
+			shortTitle = genericCourseNode.getRawShortTitle();
 			shortTitle = Formatter.truncateOnly(shortTitle, SHORT_TITLE_MAX_LENGTH);
 			// Remove the short title if it is not really a custom title.
 			if (!CourseNodeHelper.isCustomShortTitle(longTitle, shortTitle)) {
@@ -202,9 +202,9 @@ public class NodeConfigController extends FormBasicController {
 		}
 		courseNode.setShortTitle(shortTitle);
 		
-		if (courseNode instanceof GenericCourseNode) {
+		if (courseNode instanceof GenericCourseNode genericCourseNode) {
 			// Indicator that migration is done
-			((GenericCourseNode) courseNode).setLearningObjectives(null);
+			genericCourseNode.setLearningObjectives(null);
 		}
 		courseNode.setDescription(descriptionEl.getValue());
 		courseNode.setObjectives(objectivesEl.getValue());

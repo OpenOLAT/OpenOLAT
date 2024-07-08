@@ -75,8 +75,8 @@ public abstract class FeedItemFormController extends FormBasicController {
 
 	private TextElement title;
 	private TagSelection tagsEl;
-	private RichTextElement description;
-	private RichTextElement content;
+	private RichTextElement summaryEl;
+	private RichTextElement contentEl;
 	private FileElement file;
 	private final VFSContainer baseDir;
 	private TextElement widthEl;
@@ -126,28 +126,28 @@ public abstract class FeedItemFormController extends FormBasicController {
 
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), feedTags);
 
-		description = uifactory.addRichTextElementForStringData("description", "feed.form.description", item.getDescription(), 12, -1,
-				false, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
-		description.setElementCssClass("o_sel_feed_description");
-		description.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-		RichTextConfiguration descRichTextConfig = description.getEditorConfiguration();
-		// set upload dir to the media dir
-		descRichTextConfig.setFileBrowserUploadRelPath("media");
-		descRichTextConfig.setPathInStatusBar(false);
-		// disable XSS unsave buttons for movie (no media in standard profile)
-		descRichTextConfig.disableMedia();
-
-		content = uifactory.addRichTextElementForStringData("content", "feed.form.content", item.getContent(), 18, -1, false,
+		contentEl = uifactory.addRichTextElementForStringData("content", "feed.form.content", item.getContent(), 18, -1, false,
 				baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
-		content.setElementCssClass("o_sel_feed_content");
-		content.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
-		RichTextConfiguration richTextConfig = content.getEditorConfiguration();
+		contentEl.setElementCssClass("o_sel_feed_content");
+		contentEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		RichTextConfiguration richTextConfig = contentEl.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
 		richTextConfig.setPathInStatusBar(false);
 		// disable XSS unsave buttons for movie (no media in standard profile)
 		richTextConfig.disableMedia();
-		content.setVisible(hasContent());
+		contentEl.setVisible(hasContent());
+
+		summaryEl = uifactory.addRichTextElementForStringData("summary", "feed.form.summary", item.getDescription(), 12, -1,
+				false, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
+		summaryEl.setElementCssClass("o_sel_feed_summary");
+		summaryEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		RichTextConfiguration descRichTextConfig = summaryEl.getEditorConfiguration();
+		// set upload dir to the media dir
+		descRichTextConfig.setFileBrowserUploadRelPath("media");
+		descRichTextConfig.setPathInStatusBar(false);
+		// disable XSS unsave buttons for movie (no media in standard profile)
+		descRichTextConfig.disableMedia();
 
 		file = uifactory.addFileElement(getWindowControl(), getIdentity(), "file", null, flc);
 		file.setLabel("feed.item.file.label", null);
@@ -195,10 +195,7 @@ public abstract class FeedItemFormController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		setValues(ureq);
-
-
 		item.setDraft(false);
-
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
@@ -209,10 +206,10 @@ public abstract class FeedItemFormController extends FormBasicController {
 	 */
 	private void setValues(UserRequest ureq) {
 		item.setTitle(title.getValue());
-		item.setDescription(description.getValue());
+		item.setDescription(summaryEl.getValue());
 
 		if (hasContent()) {
-			item.setContent(content.getValue());
+			item.setContent(contentEl.getValue());
 		}
 
 		item.setMediaFile(file);

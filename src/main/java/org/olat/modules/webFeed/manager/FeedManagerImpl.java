@@ -617,6 +617,11 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	@Override
+	public List<TagInfo> getTagInfosForFeedItems(Feed feed, List<Long> feedItemKeys) {
+		return feedTagDAO.loadFeedTagInfosForFeedItems(feed, feedItemKeys);
+	}
+
+	@Override
 	public List<FeedTag> getFeedTags(Feed feed, List<Long> feedItemKeys) {
 		FeedTagSearchParams searchParams = new FeedTagSearchParams();
 		searchParams.setFeedKey(feed.getKey());
@@ -644,6 +649,49 @@ public class FeedManagerImpl extends FeedManager {
 		for (FeedTag feedTag : feedTags) {
 			if (!tags.contains(feedTag.getTag())) {
 				feedTagDAO.delete(feedTag);
+			}
+		}
+	}
+
+	@Override
+	public void bulkAddTags(List<Item> feedItems, List<String> displayNames) {
+		for (Item feedItem : feedItems) {
+			Item reloadedFeedItem = loadItem(feedItem.getKey());
+			if (reloadedFeedItem == null) {
+				continue;
+			}
+
+			FeedTagSearchParams searchParams = new FeedTagSearchParams();
+			searchParams.setFeedItemKeys(List.of(reloadedFeedItem.getKey()));
+			List<FeedTag> feedTags = feedTagDAO.loadTags(searchParams);
+			List<Tag> currentTags = feedTags.stream().map(FeedTag::getTag).toList();
+			List<Tag> tags = tagService.getOrCreateTags(displayNames);
+
+			for (Tag tag : tags) {
+				if (!currentTags.contains(tag)) {
+					feedTagDAO.create(reloadedFeedItem.getFeed(), reloadedFeedItem, tag);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void bulkRemoveTags(List<Item> feedItems, List<String> displayNames) {
+		for (Item feedItem : feedItems) {
+			Item reloadedFeedItem = loadItem(feedItem.getKey());
+			if (reloadedFeedItem == null) {
+				continue;
+			}
+
+			FeedTagSearchParams searchParams = new FeedTagSearchParams();
+			searchParams.setFeedItemKeys(List.of(reloadedFeedItem.getKey()));
+			List<FeedTag> feedTags = feedTagDAO.loadTags(searchParams);
+			List<Tag> tags = tagService.getOrCreateTags(displayNames);
+
+			for (FeedTag feedTag : feedTags) {
+				if (tags.contains(feedTag.getTag())) {
+					feedTagDAO.delete(feedTag);
+				}
 			}
 		}
 	}

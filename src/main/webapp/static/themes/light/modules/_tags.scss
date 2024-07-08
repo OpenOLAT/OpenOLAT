@@ -48,6 +48,24 @@
 			}
 		}
 	}
+
+	&.o_tag_selected_remove {
+		background-color: $o-tag-selected-background-color;
+		border-color: $o-tag-selected-border-color;
+
+		&.o_tag_clickable {
+			&:hover {
+				text-decoration: none;
+				background-color: darken($o-tag-selected-background-color, 10%);
+				border-color: darken($o-tag-selected-border-color, 10%);
+			}
+
+			&:active {
+				background-color: darken($o-tag-selected-background-color, 15%);
+				border-color: darken($o-tag-selected-border-color, 15%);
+			}
+		}
+	}
 }
 	
 .o_tags_with_icon {
@@ -122,6 +140,25 @@
 			&:active {
 				background-color: darken($o-tag-selection-selected-background-color, 15%);
 				border-color: darken($o-tag-selection-selected-border-color, 15%);
+			}
+		}
+	}
+
+	&.o_tag_selected_remove {
+		border-color: $o-tag-selection-remove-selected-border-color;
+		background-color: $o-tag-selection-remove-selected-background-color;
+		color: $o-tag-selection-remove-selected-font-color;
+
+		&.o_tag_clickable {
+			&:hover {
+				text-decoration: none;
+				background-color: darken($o-tag-selection-remove-selected-background-color, 10%);
+				border-color: darken($o-tag-selection-remove-selected-border-color, 10%);
+			}
+
+			&:active {
+				background-color: darken($o-tag-selection-remove-selected-background-color, 15%);
+				border-color: darken($o-tag-selection-remove-selected-border-color, 15%);
 			}
 		}
 	}

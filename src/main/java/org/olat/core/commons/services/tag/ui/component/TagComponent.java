@@ -42,16 +42,21 @@ import org.olat.core.gui.control.Event;
 public class TagComponent extends AbstractComponent implements ComponentCollection, ComponentEventListener {
 
 	private static final ComponentRenderer RENDERER = new TagComponentRenderer();
-	private static final String TAG_SELECTED_CSS = "o_tag o_selection_tag o_tag_clickable o_tag_selected";
 	private static final String TAG_NOT_SELECTED_CSS = "o_tag o_selection_tag o_tag_clickable";
+	private String TAG_SELECTED_CSS = "o_tag o_selection_tag o_tag_clickable o_tag_selected";
 
 	private final List<TagInfo> tagInfos;
 	private final List<Link> tagLinks;
 
 
-	public TagComponent(String name, List<TagInfo> tagInfos) {
+	public TagComponent(String name, List<TagInfo> tagInfos, boolean isRemoving) {
 		super(name);
 		this.tagInfos = tagInfos;
+
+		// override default of selected tags, different UI for removing tags
+		if (isRemoving) {
+			TAG_SELECTED_CSS = "o_tag o_selection_tag o_tag_clickable o_tag_selected_remove";
+		}
 
 		this.tagLinks = new ArrayList<>(tagInfos.size());
 		for (TagInfo tagInfo : tagInfos) {
@@ -95,9 +100,12 @@ public class TagComponent extends AbstractComponent implements ComponentCollecti
 	}
 
 	public void toggleLinkCss(Link link) {
+		TagInfo tagInfo = (TagInfo) link.getUserObject();
 		if (link.getElementCssClass().equals(TAG_SELECTED_CSS)) {
+			tagInfo.setSelected(false);
 			link.setElementCssClass(TAG_NOT_SELECTED_CSS);
 		} else {
+			tagInfo.setSelected(true);
 			link.setElementCssClass(TAG_SELECTED_CSS);
 		}
 	}
@@ -106,8 +114,10 @@ public class TagComponent extends AbstractComponent implements ComponentCollecti
 		for (Link tagLink : tagLinks) {
 			TagInfo tagInfo = (TagInfo) tagLink.getUserObject();
 			if (selectedTagKeys.contains(tagInfo.getKey())) {
+				tagInfo.setSelected(true);
 				tagLink.setElementCssClass(TAG_SELECTED_CSS);
 			} else {
+				tagInfo.setSelected(false);
 				tagLink.setElementCssClass(TAG_NOT_SELECTED_CSS);
 			}
 		}
