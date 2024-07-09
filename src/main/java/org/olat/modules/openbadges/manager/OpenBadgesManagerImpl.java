@@ -54,7 +54,6 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.app.VelocityEngine;
 import org.json.JSONArray;
@@ -200,7 +199,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public void createFactoryBadgeTemplates() {
 		try (InputStream jsonInputStream = OpenBadgesManagerImpl.class.getResourceAsStream("_content/badge_templates.json")) {
-			String jsonString = IOUtils.toString(jsonInputStream, StandardCharsets.UTF_8);
+			String jsonString = FileUtils.load(jsonInputStream, "utf-8");
 			JSONObject badgeTemplatesObject = new JSONObject(jsonString);
 			JSONArray badgeTemplates = badgeTemplatesObject.getJSONArray("badgeTemplates");
 			for (int i = 0; i < badgeTemplates.length(); i++) {
