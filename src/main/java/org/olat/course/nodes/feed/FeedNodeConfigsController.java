@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
@@ -223,14 +224,16 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 		List<IconPanelLabelTextContent.LabelText> labelTexts = new ArrayList<>();
 		Feed feed = feedManager.loadFeed(feedResourceable);
 
+		Translator packageTranslator = Util.createPackageTranslator(FeedMainController.class, getLocale());
+
 		if (feed != null) {
 			if (feed.isExternal()) {
 				labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("feed.url"), feed.getExternalFeedUrl()));
 			} else {
 				labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("feed.entries"), String.valueOf(feedManager.loadItems(feed).size())));
 			}
-			labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("feed.comment.status"), feed.getCanRate() ? translate("on") : translate("off")));
-			labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("feed.rating.status"), feed.getCanComment() ? translate("on") : translate("off")));
+			labelTexts.add(new IconPanelLabelTextContent.LabelText(packageTranslator.translate("feed.comment.entries.toggle"), feed.getCanRate() ? translate("on") : translate("off")));
+			labelTexts.add(new IconPanelLabelTextContent.LabelText(packageTranslator.translate("feed.rate.entries.toggle"), feed.getCanComment() ? translate("on") : translate("off")));
 		}
 
 		iconPanelContent.setLabelTexts(labelTexts);
