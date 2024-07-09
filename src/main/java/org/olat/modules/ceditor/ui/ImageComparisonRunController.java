@@ -139,8 +139,14 @@ public class ImageComparisonRunController extends BasicController implements Pag
 		mainVC.contextPut("beforeText", imageComparisonSettings.getText1());
 		mainVC.contextPut("afterText", imageComparisonSettings.getText2());
 
-		mainVC.contextPut("beforeAltText", imageComparisonSettings.getText1());
-		mainVC.contextPut("afterAltText", imageComparisonSettings.getText2());
+		mainVC.contextPut("beforeAltText", translate("imagecomparison.image1"));
+		mainVC.contextPut("afterAltText", translate("imagecomparison.image2"));
+		if (StringHelper.containsNonWhitespace(imageComparisonSettings.getText1())) {
+			mainVC.contextPut("beforeAltText", imageComparisonSettings.getText1());
+		}
+		if (StringHelper.containsNonWhitespace(imageComparisonSettings.getText2())) {
+			mainVC.contextPut("afterAltText", imageComparisonSettings.getText2());
+		}
 		if (imageComparisonImageItems.size() >= 2) {
 			if (StringHelper.containsNonWhitespace(imageComparisonImageItems.get(0).altText)) {
 				mainVC.contextPut("beforeAltText", imageComparisonImageItems.get(0).altText);

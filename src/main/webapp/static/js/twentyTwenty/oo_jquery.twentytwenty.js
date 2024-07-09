@@ -32,7 +32,7 @@
       var afterImg = container.find("img:last");
       var beforeLabel = overlay.find(".twentytwenty-before-label");
       var afterLabel = overlay.find(".twentytwenty-after-label");
-      container.append("<div class='twentytwenty-handle'></div>");
+      container.append("<div tabindex='0' class='twentytwenty-handle'></div>");
       var slider = container.find(".twentytwenty-handle");
       slider.append("<span class='twentytwenty-" + beforeDirection + "-arrow'></span>");
       slider.append("<span class='twentytwenty-" + afterDirection + "-arrow'></span>");
