@@ -259,9 +259,12 @@ public class TBUIFactory {
 				Formatter.getInstance(translator.getLocale()).formatDateAndTime(broker.getSelectionEndDate())));
 		
 		if (broker.isParticipantCanWithdraw()) {
+			String deadline = broker.getWithdrawEndDate() != null
+					? Formatter.getInstance(translator.getLocale()).formatDateAndTime(broker.getWithdrawEndDate())
+					: translator.translate("config.overview.withdraw.deadline.none");
 			infos += createInfo("o_icon_tb_withdraw",
 					translator.translate("config.overview.withdraw.deadline",
-					Formatter.getInstance(translator.getLocale()).formatDateAndTime(broker.getWithdrawEndDate())));
+					deadline));
 		}
 		
 		infos += "</ul>";

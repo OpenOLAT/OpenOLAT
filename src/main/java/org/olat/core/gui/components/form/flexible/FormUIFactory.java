@@ -1633,20 +1633,20 @@ public class FormUIFactory {
 		return link;
 	}
 	
-	public EmptyStateItem addEmptyState(String name, String i18nLabel, FormItemContainer formLayaut) {
+	public EmptyStateItem addEmptyState(String name, String i18nLabel, FormItemContainer formLayout) {
 		EmptyStateItem item = new EmptyStateItem(name);
 		setLabelIfNotNull(i18nLabel, item);
-		if(formLayaut != null) {
-			formLayaut.add(item);
+		if(formLayout != null) {
+			formLayout.add(item);
 		}
 		return item;
 	}
 	
-	public InfoPanelItem addInfoPanel(String name, String i18nLabel, FormItemContainer formLayaut) {
+	public InfoPanelItem addInfoPanel(String name, String i18nLabel, FormItemContainer formLayout) {
 		InfoPanelItem item = new InfoPanelItem(name);
 		setLabelIfNotNull(i18nLabel, item);
-		if(formLayaut != null) {
-			formLayaut.add(item);
+		if(formLayout != null) {
+			formLayout.add(item);
 		}
 		return item;
 	}

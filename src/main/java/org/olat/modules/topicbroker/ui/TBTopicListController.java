@@ -21,9 +21,12 @@ package org.olat.modules.topicbroker.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -86,6 +89,7 @@ import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldType;
+import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TBSelection;
@@ -321,12 +325,29 @@ public abstract class TBTopicListController extends FormBasicController implemen
 						Collectors.toMap(customField -> customField.getDefinition().getKey(), Function.identity())));
 		
 		Map<Long, List<TBSelection>> topicKeyToSelections = null;
+		Set<Long> fullyEnrolledParticipantKeys = Set.of();
 		if (isShowSelections()) {
 			TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
+			selectionSearchParams.setFetchParticipant(true);
 			selectionSearchParams.setBroker(broker);
 			selectionSearchParams.setEnrolledOrIdentities(participantCandidates.getAllIdentities());
-			topicKeyToSelections = topicBrokerService.getSelections(selectionSearchParams).stream()
+			selectionSearchParams.setEnrolledOrMaxSortOrder(broker.getMaxSelections());
+			List<TBSelection> selections = topicBrokerService.getSelections(selectionSearchParams);
+			topicKeyToSelections = selections.stream()
 					.collect(Collectors.groupingBy(selection -> selection.getTopic().getKey()));
+			
+			fullyEnrolledParticipantKeys = new HashSet<>();
+			Map<TBParticipant, List<TBSelection>> participantToEnrollments = selections.stream()
+					.filter(TBSelection::isEnrolled)
+					.collect(Collectors.groupingBy(TBSelection::getParticipant));
+			for (Entry<TBParticipant, List<TBSelection>> pts : participantToEnrollments.entrySet()) {
+				TBParticipant participant = pts.getKey();
+				int numEnrollments = pts.getValue().size();
+				int requiredEnrollments = TBUIFactory.getRequiredEnrollments(broker, participant);
+				if (numEnrollments >= requiredEnrollments) {
+					fullyEnrolledParticipantKeys.add(participant.getKey());
+				}
+			}
 		}
 		
 		topics.sort((r1, r2) -> Integer.compare(r1.getSortOrder(), r2.getSortOrder()));
@@ -338,7 +359,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			row.setCreatedByDisplayname(userManager.getUserDisplayName(topic.getCreator().getKey()));
 			row.setMinEnrollments(topic.getMinParticipants() != null ? topic.getMinParticipants() : 0);
 			
-			forgeSelections(topicKeyToSelections, topic, row);
+			forgeSelections(row, topic, topicKeyToSelections, fullyEnrolledParticipantKeys);
 			
 			forgeUpDown(row, topicsSize, i);
 			
@@ -361,6 +382,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		dataModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 		
+		tableEl.collapseAllDetails();
 		if (detailsOpenTopicKeys != null && !detailsOpenTopicKeys.isEmpty()) {
 			dataModel.getObjects().stream()
 				.filter(row -> detailsOpenTopicKeys.contains(row.getKey()))
@@ -417,17 +439,30 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		return true;
 	}
 
-	private void forgeSelections(Map<Long, List<TBSelection>> topicKeyToSelections, TBTopic topic, TBTopicRow row) {
+	private void forgeSelections(TBTopicRow row, TBTopic topic, Map<Long, List<TBSelection>> topicKeyToSelections, Set<Long> fullyEnrolledParticipantKeys) {
 		if (topicKeyToSelections == null) {
 			return;
 		}
 		List<TBSelection> selections = topicKeyToSelections.getOrDefault(topic.getKey(), List.of());
-		int numEnrollments = (int)selections.stream().filter(TBSelection::isEnrolled).count();
+		
+		int numSelections = selections.size();
+		int numEnrollments = 0;
+		int numWaitingList = 0;
+		for (TBSelection selection : selections) {
+			if (selection.isEnrolled()) {
+				numEnrollments++;
+			} else if (broker.getEnrollmentStartDate() == null || !fullyEnrolledParticipantKeys.contains(selection.getParticipant().getKey())) {
+				// If enrollment process not done, the participant is on waiting list.
+				// If enrollment process done, only not fully enrolled participants are on waiting list
+				numWaitingList++;
+			}
+		}
+		
 		row.setNumEnrollments(numEnrollments);
 		row.setEnrolledString(String.valueOf(numEnrollments));
-		int waitingList = selections.size() - numEnrollments;
-		row.setWaitingList(waitingList);
-		row.setWaitingListString(String.valueOf(waitingList));
+		
+		row.setWaitingList(numWaitingList);
+		row.setWaitingListString(String.valueOf(numWaitingList));
 		
 		if (numEnrollments > topic.getMaxParticipants()) {
 			String enrolledString = "<span title=\"" + translate("topic.selections.message.enrollments.greater.max") + "\"><i class=\"o_icon o_icon_error\"></i> ";
@@ -436,30 +471,24 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			row.setEnrolledString(enrolledString);
 		}
 		if (broker.getEnrollmentStartDate() == null) {
-			if (waitingList < topic.getMinParticipants()) {
+			if (numSelections < topic.getMinParticipants()) {
 				String waitingListString = "<span title=\"" + translate("topic.selections.message.selections.less.min") + "\"><i class=\"o_icon o_icon_warn\"></i> ";
 				waitingListString += row.getWaitingListString();
 				waitingListString += "</span>";
 				row.setWaitingListString(waitingListString);
 			}
-			if (waitingList > topic.getMaxParticipants()) {
+			if (numSelections > topic.getMaxParticipants()) {
 				String waitingListString = "<span title=\"" + translate("topic.selections.message.selections.greater.max") + "\"><i class=\"o_icon o_icon_warn\"></i> ";
 				waitingListString += row.getWaitingListString();
 				waitingListString += "</span>";
 				row.setWaitingListString(waitingListString);
 			}
 		} else {
-			if (waitingList < topic.getMinParticipants()) {
-				String waitingListString = "<span title=\"" + translate("topic.selections.message.selections.less.min") + "\"><i class=\"o_icon o_icon_warn\"></i> ";
-				waitingListString += row.getWaitingListString();
-				waitingListString += "</span>";
-				row.setWaitingListString(waitingListString);
-			}
-			if (waitingList > topic.getMaxParticipants()) {
-				String waitingListString = "<span title=\"" + translate("topic.selections.message.selections.greater.max") + "\"><i class=\"o_icon o_icon_warn\"></i> ";
-				waitingListString += row.getWaitingListString();
-				waitingListString += "</span>";
-				row.setWaitingListString(waitingListString);
+			if (0 < numEnrollments && numEnrollments < topic.getMinParticipants()) {
+				String enrolledString = "<span title=\"" + translate("topic.selections.message.enrollments.less.min") + "\"><i class=\"o_icon o_icon_error\"></i> ";
+				enrolledString += row.getEnrolledString();
+				enrolledString += "</span>";
+				row.setEnrolledString(enrolledString);
 			}
 		}
 	}
@@ -693,6 +722,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 					setDetailsOpenTopics();
 				}
 			} else if (event instanceof FlexiTableFilterTabEvent) {
+				detailsOpenTopicKeys = null;
 				loadModel(ureq);
 			} else if (event instanceof FlexiTableSearchEvent ftse) {
 				loadModel(ureq);
@@ -765,6 +795,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		loadModel(ureq);
 	}
 
+	@SuppressWarnings("null")
 	private void doEditSelections(UserRequest ureq, TBTopicRef topic) {
 		if (guardModalController(selectionsEditCtrl)) return;
 		
@@ -782,7 +813,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		listenTo(selectionsEditCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				selectionsEditCtrl.getInitialComponent(), true, translate("enrollments.edit"), true);
+				selectionsEditCtrl.getInitialComponent(), true, translate("enrollments.edit.title", reloadedTopic.getTitle()), true);
 		listenTo(cmc);
 		cmc.activate();
 	}

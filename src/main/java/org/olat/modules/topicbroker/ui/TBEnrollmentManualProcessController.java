@@ -26,6 +26,8 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.emptystate.EmptyStateItem;
+import org.olat.core.gui.components.emptystate.EmptyStatePrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -65,6 +67,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private FormSubmit applyLink;
 	private FormLink runStartLink;
 	private DropdownItem runsDropdown;
+	private EmptyStateItem emptyState;
 
 	private TBEnrollmentRunOverviewController enrollmentRunOverviewCtrl;
 
@@ -113,6 +116,11 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		runsDropdown.setIconCSS("o_icon o_icon-lg o_icon_tb_run");
 		runsDropdown.setVisible(false);
 		
+		emptyState = uifactory.addEmptyState("emptyState", null, formLayout);
+		emptyState.setIconCss("o_icon o_icon_tb_run_start");
+		emptyState.setMessageI18nKey("enrollment.manual.empty");
+		emptyState.setButtonI18nKey("enrollment.manual.run.start");
+		
 		enrollmentRunOverviewCtrl = new TBEnrollmentRunOverviewController(ureq, getWindowControl(), mainForm, broker);
 		listenTo(enrollmentRunOverviewCtrl);
 		formLayout.add("runOverview", enrollmentRunOverviewCtrl.getInitialFormItem());
@@ -127,13 +135,20 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		broker = topicBrokerService.getBroker(broker);
 		boolean enrollmentStarted = broker.getEnrollmentStartDate() != null;
 		flc.contextPut("enrollmentDone", enrollmentStarted);
-		applyLink.setVisible(!enrollmentStarted);
+		
+		boolean applyAvailable = !enrollmentStarted && !runs.isEmpty();
+		applyLink.setEnabled(applyAvailable);
+		applyLink.setSubmitAndValidate(applyAvailable);
 	}
-	
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == runStartLink) {
 			doRunEnrollmentProcess();
+		} else if (source == emptyState) {
+			if (event instanceof EmptyStatePrimaryActionEvent) {
+				doRunEnrollmentProcess();
+			}
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if (cmd.startsWith(CMD_SELECT_RUN)) {

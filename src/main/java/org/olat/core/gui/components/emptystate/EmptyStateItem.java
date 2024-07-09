@@ -21,7 +21,9 @@ package org.olat.core.gui.components.emptystate;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
@@ -29,13 +31,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EmptyStateItem extends FormItemImpl {
+public class EmptyStateItem extends FormItemImpl implements ComponentEventListener {
 	
 	private final EmptyState component;
 	
 	public EmptyStateItem(String name) {
 		super(name);
 		component = new EmptyState(name);
+		component.addListener(this);
 	}
 	
 	public String getIconCss() {
@@ -62,6 +65,10 @@ public class EmptyStateItem extends FormItemImpl {
 		component.setMessageI18nKey(messageI18nKey);
 	}
 	
+	public void setButtonI18nKey(String buttonI18nKey) {
+		component.setButtonI18nKey(buttonI18nKey);
+	}
+	
 	@Override
 	protected Component getFormItemComponent() {
 		return component;
@@ -70,6 +77,15 @@ public class EmptyStateItem extends FormItemImpl {
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		//
+	}
+	
+	@Override
+	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
+		if (source == component) {
+			if (event == EmptyState.EVENT) {
+				getRootForm().fireFormEvent(ureq, new EmptyStatePrimaryActionEvent(this));
+			}
+		}
 	}
 
 	@Override

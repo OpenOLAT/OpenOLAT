@@ -33,6 +33,7 @@ public class TBPeriodEvaluator {
 	
 	private TBBroker broker;
 	private final boolean canWithdraw;
+	private boolean beforeSelectionPeriod;
 	private final boolean selectionPeriodInit;
 	private boolean selectionPeriod;
 	private final boolean withdrawPeriodInit;
@@ -42,6 +43,7 @@ public class TBPeriodEvaluator {
 	public TBPeriodEvaluator(TBBroker broker) {
 		this.broker = broker;
 		this.canWithdraw = broker.isParticipantCanWithdraw();
+		beforeSelectionPeriod = evaluateBeforeSelectionPeriod();
 		selectionPeriodInit = evaluateSelectionPeriod();
 		selectionPeriod = selectionPeriodInit;
 		withdrawPeriodInit = evaluateWithdrawPeriod();
@@ -53,6 +55,7 @@ public class TBPeriodEvaluator {
 	}
 	
 	public void refresh() {
+		beforeSelectionPeriod = evaluateBeforeSelectionPeriod();
 		selectionPeriod = evaluateSelectionPeriod();
 		withdrawPeriod = evaluateWithdrawPeriod();
 	}
@@ -62,6 +65,23 @@ public class TBPeriodEvaluator {
 				|| withdrawPeriodInit != withdrawPeriod;
 	}
 	
+	public boolean isBeforeSelectionPeriod() {
+		return beforeSelectionPeriod;
+	}
+	
+	private boolean evaluateBeforeSelectionPeriod() {
+		if (broker.getSelectionStartDate() == null || broker.getSelectionEndDate() == null) {
+			return false;
+		}
+		
+		Date now = new Date();
+		if (now.before(broker.getSelectionStartDate())) {
+			return true;
+		}
+		
+		return false;
+	}
+
 	public boolean isSelectionPeriod() {
 		return selectionPeriod;
 	}

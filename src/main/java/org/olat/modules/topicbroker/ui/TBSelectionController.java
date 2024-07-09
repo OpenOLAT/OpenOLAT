@@ -21,7 +21,6 @@ package org.olat.modules.topicbroker.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -279,10 +278,12 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		topicTableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-selection-topics" + broker.getKey());
 		topicTableEl.setSearchEnabled(true);
 		
-		String emptyMsgI18key = broker.getSelectionStartDate() == null || broker.getSelectionStartDate().after(new Date())
-			? "topics.available.empty.message.selection.not.started"
-			: "topics.available.empty.message.no.topics";
-		topicTableEl.setEmptyTableMessageKey(emptyMsgI18key);
+		if (periodEvaluator.isBeforeSelectionPeriod()) {
+			topicTableEl.setEmptyTableSettings("topics.available.empty.message.selection.not.started",
+					"topics.available.empty.message.selection.not.started.hint", "o_icon_topicbroker");
+		} else {
+			topicTableEl.setEmptyTableSettings("topics.available.empty.message.no.topics", null, "o_icon_topicbroker");
+		}
 
 		topicTableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		topicTableEl.setRendererType(FlexiTableRendererType.custom);
@@ -316,6 +317,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 		selectionSearchParams.setBroker(broker);
 		selectionSearchParams.setIdentity(getIdentity());
+		if (!periodEvaluator.isSelectionPeriod() && !periodEvaluator.isBeforeSelectionPeriod()) {
+			selectionSearchParams.setEnrolledOrMaxSortOrder(broker.getMaxSelections());
+		}
 		List<TBSelection> selections = topicBrokerService.getSelections(selectionSearchParams);
 		Map<Long, TBSelection> topicKeyToSelection = selections.stream()
 				.collect(Collectors.toMap(selection -> selection.getTopic().getKey(), Function.identity()));
@@ -362,10 +366,12 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		selectionDataModel.setObjects(selectionRows);
 		selectionTableEl.reset(false, false, true);
 		
-		applySearch(topicRows);
-		topicRows.sort((r1, r2) -> Integer.compare(r1.getTopicSortOrder(), r2.getTopicSortOrder()));
-		topicDataModel.setObjects(topicRows);
-		topicTableEl.reset(false, false, true);
+		if (!periodEvaluator.isBeforeSelectionPeriod()) {
+			applySearch(topicRows);
+			topicRows.sort((r1, r2) -> Integer.compare(r1.getTopicSortOrder(), r2.getTopicSortOrder()));
+			topicDataModel.setObjects(topicRows);
+			topicTableEl.reset(false, false, true);
+		}
 		
 		updateSelectionMessage();
 	}

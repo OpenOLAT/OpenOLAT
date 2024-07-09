@@ -142,14 +142,14 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode {
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
 			controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
-		} else if (userCourseEnv.isParticipant()) {
+		} else if (userCourseEnv.isParticipant() && userCourseEnv.isMemberParticipant()) {
 			controller = new TBRunController(ureq, wControl, this, userCourseEnv);
 		} else if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
 			controller = new TBRunCoachController(ureq, wControl, this, userCourseEnv);
 		} else {
-			Translator trans = Util.createPackageTranslator(MSCourseNode.class, ureq.getLocale());
-			String title = trans.translate("error.no.role.title");
-			String message = trans.translate("error.no.role.message");
+			Translator trans = Util.createPackageTranslator(TBRunController.class, ureq.getLocale());
+			String title = trans.translate("error.not.member.title");
+			String message = trans.translate("error.not.member.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		}
 		

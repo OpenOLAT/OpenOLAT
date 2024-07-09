@@ -325,11 +325,14 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 		enrollmentsTableEl.reset(false, false, true);
 		
 		applyFilters(waitingListTableEl, waitingListRows);
+		if (broker.getEnrollmentStartDate() != null) {
+			waitingListRows.removeIf(row -> row.getNumEnrollments() >= row.getRequiredEnrollments());
+		}
 		waitingListRows.sort(rowComporator);
 		waitingListDataModel.setObjects(waitingListRows);
 		waitingListTableEl.reset(false, false, true);
 	}
-	
+
 	private void applyFilters(FlexiTableElement tableEl, List<TBParticipantRow> rows) {
 		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabAll) {
 			return;
@@ -353,19 +356,15 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 				String.valueOf(row.getNumEnrollments()), 
 				String.valueOf(row.getRequiredEnrollments())));
 		
-		if (broker.getEnrollmentStartDate() == null) {
-			if (row.getNumEnrollments() < row.getRequiredEnrollments()) {
-				String enrolledString = "<span title=\"" + translate("topic.selections.message.too.less.enrollments") + "\"><i class=\"o_icon o_icon_warn\"></i> ";
-				enrolledString += row.getEnrolledString();
-				enrolledString += "</span>";
-				row.setEnrolledString(enrolledString);
-			}
-		}
-		
 		if (broker.getEnrollmentStartDate() != null) {
 			if (!allIdentityKeys.contains(row.getIdentityKey())) {
 				String enrolledString = "<span title=\"" + translate("topic.selections.message.no.participant") + "\"><i class=\"o_icon o_icon_warn\"></i> </span>";
 				enrolledString += row.getEnrolledString();
+				row.setEnrolledString(enrolledString);
+			} else if (row.getNumEnrollments() < row.getRequiredEnrollments()) {
+				String enrolledString = "<span title=\"" + translate("topic.selections.message.too.less.enrollments") + "\"><i class=\"o_icon o_icon_warn\"></i> ";
+				enrolledString += row.getEnrolledString();
+				enrolledString += "</span>";
 				row.setEnrolledString(enrolledString);
 			}
 		}

@@ -197,6 +197,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		if (tab == null) return;
 		
 		tableEl.setSelectedFilterTab(ureq, tab);
+		detailsOpenIdentityKeys = null;
 		loadModel(ureq);
 	}
 
@@ -284,6 +285,9 @@ public class TBParticipantListController extends FormBasicController implements 
 		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 		selectionSearchParams.setBroker(broker);
 		selectionSearchParams.setIdentities(identities);
+		if (broker.getSelectionEndDate() != null && broker.getSelectionEndDate().before(new Date())) {
+			selectionSearchParams.setEnrolledOrMaxSortOrder(broker.getMaxSelections());
+		}
 		selectionSearchParams.setFetchParticipant(true);
 		selectionSearchParams.setFetchTopic(true);
 		Map<Long, List<TBSelection>> identityKeyToSelections = topicBrokerService.getSelections(selectionSearchParams).stream()
@@ -310,9 +314,9 @@ public class TBParticipantListController extends FormBasicController implements 
 		applyFilters(rows);
 		applySearch(rows);
 		dataModel.setObjects(rows);
-		tableEl.collapseAllDetails();
 		tableEl.reset(false, false, true);
 		
+		tableEl.collapseAllDetails();
 		if (detailsOpenIdentityKeys != null && !detailsOpenIdentityKeys.isEmpty()) {
 			dataModel.getObjects().stream()
 				.filter(row -> detailsOpenIdentityKeys.contains(row.getIdentityKey()))
@@ -496,6 +500,7 @@ public class TBParticipantListController extends FormBasicController implements 
 					setDetailsOpenIdentities();
 				}
 			} else if (event instanceof FlexiTableFilterTabEvent) {
+				detailsOpenIdentityKeys = null;
 				loadModel(ureq);
 			} else if (event instanceof FlexiTableSearchEvent ftse) {
 				loadModel(ureq);
