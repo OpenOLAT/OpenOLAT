@@ -175,7 +175,7 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			user.setInstitutionalName(getValue(obj, institutionalNameAttributeName, user.getInstitutionalName()));
 			user.setDepartment(getValue(obj, departmentAttributeName, user.getDepartment()));
 			user.setCountry(getValue(obj, countryAttributeName, user.getCountry()));
-			log.debug("User infos (graph): ", obj);
+			log.debug("User infos (graph): {}", obj);
 		} catch (JSONException | InterruptedException | ExecutionException | IOException e) {
 			log.error("", e);
 		}
