@@ -850,6 +850,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	@Override
+	public void setFilterValue(FlexiTableExtendedFilter filter, Object value) {
+		filtersEl.setFilterValue(filter, value);
+	}
+
+	@Override
 	public boolean isFiltersExpanded() {
 		return filtersEl != null && filtersEl.isExpanded();
 	}

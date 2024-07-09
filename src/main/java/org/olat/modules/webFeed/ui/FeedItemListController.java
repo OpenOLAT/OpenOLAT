@@ -961,7 +961,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		} else {
 			selectedTagKeys.add(tagInfo.getKey());
 		}
-		tagFilter.setValues(selectedTagKeys.stream().map(String::valueOf).toList());
+		tableEl.setFilterValue(tagFilter, selectedTagKeys.stream().map(String::valueOf).toList());
 	}
 
 	private void doAddFeedItem(UserRequest ureq) {

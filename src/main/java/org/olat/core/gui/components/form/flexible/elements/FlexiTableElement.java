@@ -436,6 +436,15 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	
 	public void setFiltersValues(String quickSearch, List<String> implicitFilters, List<FlexiTableFilterValue> values);
 	
+	/**
+	 * Update from an external source the values of a filter. The method
+	 * doesn't trigger an event and will not reload the model.
+	 * 
+	 * @param filter The filter to update
+	 * @param value The value to set
+	 */
+	public void setFilterValue(FlexiTableExtendedFilter filter, Object value);
+	
 	public void expandFilters(boolean expand);
 	
 	public boolean isFiltersExpanded();

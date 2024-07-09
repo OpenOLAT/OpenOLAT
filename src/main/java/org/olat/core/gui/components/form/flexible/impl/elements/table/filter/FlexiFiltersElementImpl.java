@@ -585,6 +585,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	private void doApplyFilterValue(UserRequest ureq, FlexiTableExtendedFilter filter, Object value) {
+		setFilterValue( filter, value);
+		component.fireEvent(ureq, new ChangeFilterEvent(filter));
+	}
+	
+	public void setFilterValue(FlexiTableExtendedFilter filter, Object value) {
 		filter.setValue(value);
 		for(FlexiFilterButton filterButton:filterButtons) {
 			if(filterButton.getFilter() == filter) {
@@ -592,7 +597,6 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 				decorateFilterButton(filter, filterButton);
 			}
 		}
-		component.fireEvent(ureq, new ChangeFilterEvent(filter));
 	}
 	
 	private void decorateFilterButton(FlexiTableExtendedFilter filter, FlexiFilterButton filterButton) {
