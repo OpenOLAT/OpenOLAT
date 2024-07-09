@@ -213,7 +213,7 @@ public class BinderAssessmentController extends FormBasicController {
 			AssessmentSectionWrapper row = sectionToRows.get(page.getSection());
 			if(row != null) {
 				row.setNumOfPages(row.getNumOfPages() + 1);
-				if (!userInfosToPage.isEmpty()) {
+				if (!userInfosToPage.isEmpty() && userInfosToPage.get(page.getKey()) != null) {
 					row.getPageUserStatusList().add(userInfosToPage.get(page.getKey()).getStatus());
 				}
 			}
