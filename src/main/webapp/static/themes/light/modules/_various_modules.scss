@@ -1571,6 +1571,7 @@ a.o_labeled {
 .o_labeled_light,
 a.o_labeled_light {
 	@extend %o_labeled;
+	padding: 2px 5px;
 	font-size: 85%;
 	background-color: 	$o-labeled-light-bg-color;
  }
