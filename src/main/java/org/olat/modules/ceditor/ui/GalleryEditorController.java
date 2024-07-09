@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
@@ -65,6 +66,7 @@ import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,6 +98,8 @@ public class GalleryEditorController extends FormBasicController implements Page
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private MediaDAO mediaDAO;
 	@Autowired
 	private MediaToPagePartDAO mediaToPagePartDAO;
 	@Autowired
@@ -219,7 +223,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 			cleanUp();
 		} else if (chooseImageController == source) {
 			if (event == Event.DONE_EVENT) {
-				doSaveMedia(ureq, chooseImageController.getMediaReference());
+				doSaveMedia(ureq, chooseImageController.getMediaReference(), chooseImageController.getMediaKeys());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -294,7 +298,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 	}
 
 	private void doAddImage(UserRequest ureq) {
-		chooseImageController = new ChooseImageController(ureq, getWindowControl());
+		chooseImageController = new ChooseImageController(ureq, getWindowControl(), true);
 		listenTo(chooseImageController);
 		String title = translate("choose.image");
 		cmc = new CloseableModalController(getWindowControl(), null,
@@ -312,10 +316,19 @@ public class GalleryEditorController extends FormBasicController implements Page
 		fireEvent(ureq, new ChangePartEvent(galleryPart));
 	}
 
-	private void doSaveMedia(UserRequest ureq, Media media) {
+	private void doSaveMedia(UserRequest ureq, Media media, Collection<Long> mediaKeys) {
 		GalleryPart reloadedGalleryPart = (GalleryPart) pageDAO.loadPart(galleryPart);
-		MediaVersion mediaVersion = media.getVersions().get(0);
-		mediaToPagePartDAO.persistRelation(reloadedGalleryPart, media, mediaVersion, getIdentity());
+		if (media != null) {
+			MediaVersion mediaVersion = media.getVersions().get(0);
+			mediaToPagePartDAO.persistRelation(reloadedGalleryPart, media, mediaVersion, getIdentity());
+		}
+		if (mediaKeys != null) {
+			for (Long mediaKey : mediaKeys) {
+				Media mediaItem = mediaDAO.loadByKey(mediaKey);
+				MediaVersion mediaVersion = mediaItem.getVersions().get(0);
+				mediaToPagePartDAO.persistRelation(reloadedGalleryPart, mediaItem, mediaVersion, getIdentity());
+			}
+		}
 		dbInstance.commit();
 		loadModel();
 

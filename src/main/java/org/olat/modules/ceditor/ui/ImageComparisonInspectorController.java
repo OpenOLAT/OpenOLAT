@@ -441,7 +441,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 	}
 
 	private void doChooseImage(UserRequest ureq, int index) {
-		chooseImageController = new ChooseImageController(ureq, getWindowControl());
+		chooseImageController = new ChooseImageController(ureq, getWindowControl(), false);
 		chooseImageController.setUserData(index);
 		listenTo(chooseImageController);
 		String title = translate("choose.image");

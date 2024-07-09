@@ -19,6 +19,8 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import java.util.Collection;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -29,6 +31,7 @@ import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.ui.MediaCenterConfig;
 import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.event.MediaMultiSelectionEvent;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 
 /**
@@ -40,12 +43,13 @@ public class ChooseImageController extends BasicController {
 
 	private final MediaCenterController mediaCenterController;
 	private Media mediaReference;
+	private Collection<Long> mediaKeys;
 	private Object userData;
 
-	public ChooseImageController(UserRequest ureq, WindowControl wControl) {
+	public ChooseImageController(UserRequest ureq, WindowControl wControl, boolean multiSelect) {
 		super(ureq, wControl);
 		MediaCenterConfig mediaCenterConfig = new MediaCenterConfig(true, false, false,
-				true, true, true, "image", null,
+				true, true, multiSelect, false, true, "image", null,
 				MediaCenterController.ALL_TAB_ID, SearchMediaParameters.Access.DIRECT, null);
 		mediaCenterController = new MediaCenterController(ureq, wControl, null, mediaCenterConfig);
 		listenTo(mediaCenterController);
@@ -76,6 +80,9 @@ public class ChooseImageController extends BasicController {
 				} else {
 					fireEvent(ureq, Event.CANCELLED_EVENT);
 				}
+			} else if (event instanceof MediaMultiSelectionEvent mediaMultiSelectionEvent) {
+				mediaKeys = mediaMultiSelectionEvent.getMediaKeys();
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}
 		super.event(ureq, source, event);
@@ -83,5 +90,9 @@ public class ChooseImageController extends BasicController {
 
 	public Media getMediaReference() {
 		return mediaReference;
+	}
+
+	public Collection<Long> getMediaKeys() {
+		return mediaKeys;
 	}
 }

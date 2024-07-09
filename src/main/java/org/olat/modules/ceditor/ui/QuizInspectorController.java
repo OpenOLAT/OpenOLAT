@@ -218,7 +218,7 @@ public class QuizInspectorController extends FormBasicController implements Page
 	}
 
 	private void doChooseImage(UserRequest ureq) {
-		chooseImageController = new ChooseImageController(ureq, getWindowControl());
+		chooseImageController = new ChooseImageController(ureq, getWindowControl(), false);
 		listenTo(chooseImageController);
 		String title = translate("choose.image");
 		cmc = new CloseableModalController(getWindowControl(), null,

@@ -31,27 +31,27 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record MediaCenterConfig(boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard, boolean withMediaSelection,
+public record MediaCenterConfig(boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard, boolean withMediaSelection, boolean withMultiSelect, boolean withMultiSelectDelete,
 		boolean withQuota, String preselectedType, Collection<String> restrictedTypes, String defaultFilterTab, Access access, RepositoryEntry repositoryEntry) {
-	
+
 	public static final MediaCenterConfig valueOfChooser(RepositoryEntry repositoryEntry, boolean withAddMedias, boolean withMediaSelection) {
-		return new MediaCenterConfig(true, withAddMedias, true, false, true, withMediaSelection, null, null,
+		return new MediaCenterConfig(true, withAddMedias, true, false, true, true, true, withMediaSelection, null, null,
 				(repositoryEntry == null ? MediaCenterController.SHARED_TAB_WITH_ME_ID : MediaCenterController.SHARED_TAB_WITH_ENTRY),
 				Access.DIRECT, repositoryEntry);
 	}
 	
 	public static final MediaCenterConfig valueOfUploader(MediaHandler handler,
 			boolean withUploadCard, RepositoryEntry repositoryEntry) {
-		return new MediaCenterConfig(true, false, false, withUploadCard, true, true, handler.getType(), null,
+		return new MediaCenterConfig(true, false, false, withUploadCard, true, false, false, true, handler.getType(), null,
 				(repositoryEntry == null ? MediaCenterController.SHARED_TAB_WITH_ME_ID : MediaCenterController.SHARED_TAB_WITH_ENTRY),
 				Access.DIRECT, repositoryEntry);
 	}
 	
 	public static final MediaCenterConfig valueOfMy() {
-		return new MediaCenterConfig(false, true, true, false, true, true, null, null, MediaCenterController.MY_TAB_ID, Access.DIRECT, null);
+		return new MediaCenterConfig(false, true, true, false, true, true, true, true, null, null, MediaCenterController.MY_TAB_ID, Access.DIRECT, null);
 	}
 	
 	public static final MediaCenterConfig managementConfig() {
-		return new MediaCenterConfig(false, false, true, false, true, false, null, null, MediaCenterController.ALL_TAB_ID, Access.INDIRECT, null);
+		return new MediaCenterConfig(false, false, true, false, true, true, true, false, null, null, MediaCenterController.ALL_TAB_ID, Access.INDIRECT, null);
 	}
 }

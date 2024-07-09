@@ -130,6 +130,7 @@ import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.cemedia.model.SearchMediaParameters.UsedIn;
 import org.olat.modules.cemedia.ui.MediaDataModel.MediaCols;
 import org.olat.modules.cemedia.ui.event.MediaEvent;
+import org.olat.modules.cemedia.ui.event.MediaMultiSelectionEvent;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
 import org.olat.modules.cemedia.ui.medias.AVAudioMediaController;
@@ -184,6 +185,7 @@ public class MediaCenterController extends FormBasicController
 
 	private MediaDataModel model;
 	private FormLink bulkDeleteButton;
+	private FormLink bulkSelectButton;
 	private FormLink newMediaCallout;
 	private FlexiTableElement tableEl;
 	private FormLink addFileLink;
@@ -213,6 +215,8 @@ public class MediaCenterController extends FormBasicController
 	private final boolean withAddMedias;
 	private final boolean withUploadCard;
 	private final boolean withMediaSelection;
+	private final boolean withMultiSelect;
+	private final boolean withMultiSelectDelete;
 	private final String preselectedType;
 	private final Collection<String> restrictedTypes;
 	private final DocTemplates editableFileTypes;
@@ -259,6 +263,8 @@ public class MediaCenterController extends FormBasicController
 		this.withAddMedias = config.withAddMedias();
 		this.withUploadCard = config.withUploadCard();
 		this.withMediaSelection = config.withMediaSelection();
+		this.withMultiSelect = config.withMultiSelect();
+		this.withMultiSelectDelete = config.withMultiSelectDelete();
 		this.preselectedType = config.preselectedType();
 		this.restrictedTypes = config.restrictedTypes();
 		this.repositoryEntry = config.repositoryEntry();
@@ -314,7 +320,8 @@ public class MediaCenterController extends FormBasicController
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setMultiSelect(withMediaSelection);
+		tableEl.setMultiSelect(withMediaSelection && withMultiSelect);
+		tableEl.setSelectAllEnable(withMediaSelection && withMultiSelect && !withMultiSelectDelete);
 		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
 		VelocityContainer row = createVelocityContainer("media_row");
 		row.contextPut("mediaSelection",  Boolean.valueOf(withMediaSelection));
@@ -330,10 +337,15 @@ public class MediaCenterController extends FormBasicController
 
 		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail-" + config.hashCode(), new ThumbnailMapper(model, mediaService));
 		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
-		
-		bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
-		tableEl.addBatchButton(bulkDeleteButton);
-		
+
+		if (withMultiSelectDelete) {
+			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkDeleteButton);
+		} else {
+			bulkSelectButton = uifactory.addFormLink("select", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkSelectButton);
+		}
+
 		if(withUploadCard) {
 			uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add.card.upload", null, formLayout);
 			uploadEl.addActionListener(FormEvent.ONCHANGE);
@@ -839,6 +851,8 @@ public class MediaCenterController extends FormBasicController
 			doAddDrawio(ureq);
 		} else if(bulkDeleteButton == source) {
 			doConfirmDelete(ureq);
+		} else if(bulkSelectButton == source) {
+			doMultiSelect(ureq);
 		} else if(uploadEl == source) {
 			if("ONCHANGE".equals(event.getCommand()) || event instanceof UploadFileElementEvent) {
 				doUpload(ureq);
@@ -1126,6 +1140,12 @@ public class MediaCenterController extends FormBasicController
 	private void doSelect(UserRequest ureq, Long mediaKey) {
 		Media media = mediaService.getMediaByKey(mediaKey);
 		fireEvent(ureq, new MediaSelectionEvent(media));
+	}
+
+	private void doMultiSelect(UserRequest ureq) {
+		Set<Long> mediaKeys = tableEl.getMultiSelectedIndex().stream().map(idx -> model.getObject(idx))
+				.filter(Objects::nonNull).map(MediaRow::getKey).collect(Collectors.toSet());
+		fireEvent(ureq, new MediaMultiSelectionEvent(mediaKeys));
 	}
 	
 	private void doOpenNewMediaCallout(UserRequest ureq, FormLink link) {
