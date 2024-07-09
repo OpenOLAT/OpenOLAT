@@ -248,6 +248,9 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 			imageNameEl.setValue("");
 		}
 
+		FormLink mediaCenterLink = mediaCenterLinks.get(index);
+		mediaCenterLink.setVisible(mediaToPagePart != null);
+
 		SingleSelection imageVersionEl = imageVersionEls.get(index);
 		if (mediaToPagePart != null) {
 			imageVersionEl.setVisible(true);
