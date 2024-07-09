@@ -292,6 +292,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		evaluationScoreScalingEl.setDisplaySize(5);
 		evaluationScoreScalingEl.setElementCssClass("o_sel_course_ms_evaluation_scale");
 		evaluationScoreScalingEl.setMandatory(true);
+		evaluationScoreScalingEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String peerReviewScale = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
 		peerReviewScoreScalingEl = uifactory.addTextElement("form.peer.review.score.scale", "form.peer.review.score.scale", 8, peerReviewScale, formLayout);
@@ -394,6 +395,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		String scaling = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
 		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
 		scoreScalingEl.setExampleKey("score.scaling.example", null);
+		scoreScalingEl.addActionListener(FormEvent.ONCHANGE);
 		
 		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
 		
@@ -440,9 +442,18 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	}
 	
 	protected void update(UserRequest ureq) {
+		update(ureq, false, false);
+	}
+	
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param grantScore The toggle to grant the score has changed
+	 */
+	private void update(UserRequest ureq, boolean grantScore, boolean forceMinMax) {
 		peerReviewEnabled = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
 		
-		boolean evaluationEnabled = evaluationFormEnabledEl.isOn() && evaluationFormEnabledEl.isOn();
+		boolean evaluationEnabled = evaluationFormEnabledEl.isVisible() && evaluationFormEnabledEl.isOn();
 		referenceCtrl.getInitialComponent().setVisible(evaluationEnabled);
 
 		boolean scoreEnable = scoreGranted.isOn();
@@ -477,7 +488,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		cutVal.setMandatory(cutVal.isVisible());
 
 		scoreTypeEl.setVisible(scoreGranted.isOn() && evaluationEnabled);
-		boolean scoreAuto = scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected() && "automatic".equals(scoreTypeEl.getSelectedKey());
+		boolean scoreAuto = isScoreAuto();
 		minValEl.setEnabled(!scoreAuto);
 		maxValEl.setEnabled(!scoreAuto);
 		evaluationScoreScalingEl.setVisible(scoreGranted.isOn() && scoreAuto && evaluationEnabled);
@@ -492,8 +503,14 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 			}
 		}
 		
+		// Set default value
+		if(grantScore && scoreEnable && evaluationEnabled
+				&& scoresSumPK.containsKey(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM)) {
+			scoresSumEl.select(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM, true);
+		}
+		
 		MinMax formMinMax = calculateMinMax();
-		if(formMinMax != null && scoreAuto) {
+		if(formMinMax != null && (scoreAuto || forceMinMax)) {
 			minValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMin()));
 			maxValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMax()));
 		}
@@ -527,6 +544,19 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		infotextCoach.setVisible(showInfoTexts);
 		
 		validateFormLogic(ureq);
+	}
+	
+	private boolean isScoreAuto() {
+		return scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected() && "automatic".equals(scoreTypeEl.getSelectedKey());
+	}
+	
+	private void updateMinMax() {
+		boolean scoreAuto = isScoreAuto();
+		MinMax formMinMax = calculateMinMax();
+		if(formMinMax != null && scoreAuto) {
+			minValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMin()));
+			maxValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMax()));
+		}
 	}
 
 	@Override
@@ -729,7 +759,11 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		if (fiSrc != gradeScaleEditLink) {
+		if (fiSrc == evaluationScoreScalingEl || fiSrc == scoreScalingEl) {
+			//Don't refresh
+		} else if(fiSrc == evaluationFormEnabledEl) {
+			flc.setDirty(true);
+		} else if (fiSrc != gradeScaleEditLink) {
 			super.propagateDirtinessToContainer(fiSrc, fe);
 		}
 	}
@@ -741,6 +775,15 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		} else if (source == showInfoTextsLink) {
 			showInfoTexts = true;
 			update(ureq);
+		} else if(evaluationFormEnabledEl == source) {
+			update(ureq);
+		} else if(evaluationScoreScalingEl == source || scoreScalingEl == source) {
+			updateMinMax();
+		} else if(scoreGranted == source) {
+			update(ureq, scoreGranted.isOn(), true);	
+		} else if(scoreTypeEl == source) {
+			boolean grantScore = isScoreAuto() && scoreGranted.isVisible() && scoreGranted.isOn();
+			update(ureq, grantScore, true);	
 		} else {
 			update(ureq);
 		} 
@@ -959,7 +1002,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		MinMax formMinMax = null;
 		if (formEntry != null) {
 			if(StringHelper.containsNonWhitespace(scoreKey)) {
-				Float scalingFactor = getFloat(scaleEl);
+				Float scalingFactor = scaleEl.isVisible() ? getFloat(scaleEl) : null;
 				float scale = scalingFactor == null ? 1.0f : scalingFactor.floatValue();
 				switch (scoreKey) {
 					case MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM:
