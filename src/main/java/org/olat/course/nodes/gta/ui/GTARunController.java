@@ -54,7 +54,11 @@ import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.BadgeClassesController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,6 +74,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private GTACoachSelectionController coachCtrl;
 	private GTACoachManagementController manageCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
+	private BadgeClassesController badgeClassesCtrl;
+	private BreadcrumbedStackedPanel badgesStackPanel;
 
 	private Link runLink;
 	private Link overviewLink;
@@ -77,6 +83,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private Link manageLink;
 	private Link remindersLink;
 	private Link coachAssignmentLink;
+	private Link badgesLink;
 	private VelocityContainer mainVC;
 	private CourseNodeSegmentPrefs segmentPrefs;
 	private SegmentViewComponent segmentView;
@@ -91,7 +98,9 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private AssessmentService assessmentService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
+
 	public GTARunController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
@@ -131,6 +140,20 @@ public class GTARunController extends BasicController implements Activateable2 {
 					remindersLink = LinkFactory.createLink(name, mainVC, this);
 					segmentView.addSegment(remindersLink, false);
 				}
+			}
+
+			if (openBadgesManager.isEnabled(entry, gtaNode)) {
+				RepositoryManager rm = RepositoryManager.getInstance();
+				RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, entry);
+				badgesStackPanel = new BreadcrumbedStackedPanel("badges-stack", getTranslator(), this);
+				badgeClassesCtrl = new BadgeClassesController(ureq, wControl, entry, reSecurity, badgesStackPanel,
+						null, "form.add.new.badge", "form.edit.badge");
+				listenTo(badgeClassesCtrl);
+				badgesStackPanel.setInvisibleCrumb(0);
+				badgesStackPanel.pushController(translate("run.coach.badges"), badgeClassesCtrl);
+
+				badgesLink = LinkFactory.createLink("run.coach.badges", mainVC, this);
+				segmentView.addSegment(badgesLink, false);
 			}
 			
 			doOpenPreferredSegment(ureq);
@@ -264,6 +287,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 					doManage(ureq);
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
+				} else if (clickedLink == badgesLink) {
+					doOpenBadges(ureq);
 				}
 			}
 		}
@@ -371,6 +396,13 @@ public class GTARunController extends BasicController implements Activateable2 {
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 			segmentView.select(remindersLink);
 			setPreferredSegment(ureq, CourseNodeSegment.reminders, saveSegmentPref);
+		}
+	}
+
+	private void doOpenBadges(UserRequest ureq) {
+		if (badgesLink != null && badgesStackPanel != null) {
+			mainVC.put("segmentCmp", badgesStackPanel);
+			segmentView.select(badgesLink);
 		}
 	}
 }

@@ -89,7 +89,10 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.BadgeAssertion;
@@ -174,6 +177,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private VelocityEngine velocityEngine;
 	@Autowired
 	private BadgeOrganizationDAO badgeOrganizationDAO;
+
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	@Override
 	public void afterPropertiesSet() {
@@ -1527,5 +1533,24 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public boolean isEnabled() {
 		return openBadgesModule.isEnabled();
+	}
+
+	@Override
+	public boolean isEnabled(RepositoryEntry courseEntry, CourseNode courseNode) {
+		if (!isEnabled()) {
+			return false;
+		}
+
+		BadgeEntryConfiguration badgeEntryConfiguration = getConfiguration(courseEntry);
+		if (!badgeEntryConfiguration.isAwardEnabled()) {
+			return false;
+		}
+
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
+		if (assessmentConfig == null || !assessmentConfig.isAssessable()) {
+			return false;
+		}
+
+		return true;
 	}
 }

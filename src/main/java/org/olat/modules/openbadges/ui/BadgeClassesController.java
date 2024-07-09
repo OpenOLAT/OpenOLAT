@@ -39,7 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -65,7 +65,7 @@ import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntrySecurity;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,8 +82,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private static final String CMD_TOOLS = "tools";
 
 	private final RepositoryEntry entry;
-	private final SingleRoleRepositoryEntrySecurity reSecurity;
-	private final BreadcrumbedStackedPanel stackPanel;
+	private final RepositoryEntrySecurity reSecurity;
+	private final BreadcrumbPanel breadcrumbPanel;
 	private final String addKey;
 	private final String editKey;
 	private BadgeClassTableModel tableModel;
@@ -102,14 +102,14 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private OpenBadgesManager openBadgesManager;
 
 	public BadgeClassesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-								  SingleRoleRepositoryEntrySecurity reSecurity, BreadcrumbedStackedPanel stackPanel,
+								  RepositoryEntrySecurity reSecurity, BreadcrumbPanel breadcrumbPanel,
 								  String contextHelp, String addKey, String editKey) {
 		super(ureq, wControl, "badge_classes");
 		flc.contextPut("contextHelp", contextHelp);
 		flc.contextPut("title", entry == null ? translate("form.global.badges") : translate("badges"));
 		this.entry = entry;
 		this.reSecurity = reSecurity;
-		this.stackPanel = stackPanel;
+		this.breadcrumbPanel = breadcrumbPanel;
 		this.addKey = addKey;
 		this.editKey = editKey;
 		initForm(ureq);
@@ -367,7 +367,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		badgeDetailsController = new BadgeDetailsController(ureq, swControl, key, reSecurity);
 		listenTo(badgeDetailsController);
-		stackPanel.pushController(name, badgeDetailsController);
+		breadcrumbPanel.pushController(name, badgeDetailsController);
 	}
 
 	@Override
@@ -407,7 +407,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			}
 		} else if (source == badgeDetailsController) {
 			if (event == FormEvent.BACK_EVENT) {
-				stackPanel.popUpToRootController(ureq);
+				breadcrumbPanel.popUpToRootController(ureq);
 			}
 		}
 		super.event(ureq, source, event);

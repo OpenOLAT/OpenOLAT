@@ -55,8 +55,8 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,7 +191,7 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 			RepositoryEntry courseEntry = createContext.getBadgeClass().getEntry();
 
-			SingleRoleRepositoryEntrySecurity reSecurity = createContext.getReSecurity();
+			RepositoryEntrySecurity reSecurity = createContext.getReSecurity();
 			AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(
 					reSecurity.isEntryAdmin(), reSecurity.isOnlyPrincipal(), reSecurity.isEntryAdmin(),
 					reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(),

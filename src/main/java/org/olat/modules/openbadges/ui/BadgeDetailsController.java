@@ -71,7 +71,7 @@ import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.user.UserManager;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -90,7 +90,7 @@ public class BadgeDetailsController extends FormBasicController {
 
 	private final Long badgeClassKey;
 	private final String mediaUrl;
-	private final SingleRoleRepositoryEntrySecurity reSecurity;
+	private final RepositoryEntrySecurity reSecurity;
 	private FormLink editDetailsButton;
 	private FormLink courseEl;
 	private StaticTextElement validityPeriodEl;
@@ -117,7 +117,7 @@ public class BadgeDetailsController extends FormBasicController {
 	private OpenBadgesManager openBadgesManager;
 
 	public BadgeDetailsController(UserRequest ureq, WindowControl wControl, Long badgeClassKey,
-								  SingleRoleRepositoryEntrySecurity reSecurity) {
+								  RepositoryEntrySecurity reSecurity) {
 		super(ureq, wControl, "badge_details");
 		this.badgeClassKey = badgeClassKey;
 

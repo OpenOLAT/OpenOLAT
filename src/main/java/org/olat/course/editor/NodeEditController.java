@@ -51,7 +51,11 @@ import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.reminder.ui.CourseNodeReminderController;
 import org.olat.course.reminder.ui.ReminderDeletedEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.BadgeClassesController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,7 +70,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	private static final String PANE_TAB_LAYOUT = "pane.tab.layout";
 	private static final String PANE_TAB_REMINDER = "pane.tab.reminder";
 	public static final String PANE_TAB_REMINDER_TODO = "pane.tab.reminder.todos";
-	
+	public static final String PANE_TAB_BADGES = "pane.tab.badges";
+
   /** Configuration key: use spash-scree start page when accessing a course node. Values: true, false **/
   public static final String CONFIG_STARTPAGE = "startpage";
   /** Configuration key: integrate component menu into course menu. Values: true, false **/
@@ -92,7 +97,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	private TabbableController nodeAccessCtrl;
 	private TabbableController childTabsCntrllr;
 	private CourseNodeReminderController reminderCtrl;
-	
+	private BadgeClassesController badgeClassesController;
+
 	private final CourseNodeReminderProvider reminderProvider;
 	private boolean reminderInitiallyEnabled;
 	private int reminderPos;
@@ -106,6 +112,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 
 	public NodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
@@ -170,6 +178,15 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			reminderCtrl = new CourseNodeReminderController(ureq, wControl, stackPanel, courseEntry, reminderProvider, true);
 			listenTo(reminderCtrl);
 			reminderInitiallyEnabled = reminderCtrl.hasDataOrActions();
+		}
+
+		if (openBadgesManager.isEnabled(courseEntry, courseNode)) {
+			RepositoryManager rm = RepositoryManager.getInstance();
+			RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, courseEntry);
+
+			badgeClassesController = new BadgeClassesController(ureq, wControl, courseEntry, reSecurity, stackPanel,
+					null, "form.add.new.badge", "form.edit.badge");
+			listenTo(badgeClassesController);
 		}
 	}
 
@@ -247,6 +264,9 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 					: translate(PANE_TAB_REMINDER);
 			reminderPos = tabbedPane.addTab(displayName, reminderCtrl.getInitialComponent());
 			tabbedPane.setEnabled(reminderPos, reminderInitiallyEnabled);
+		}
+		if (badgeClassesController != null) {
+			tabbedPane.addTab(translate(PANE_TAB_BADGES), badgeClassesController.getInitialComponent());
 		}
 	}
 
