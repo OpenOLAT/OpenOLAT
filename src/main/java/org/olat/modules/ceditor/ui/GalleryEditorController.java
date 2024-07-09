@@ -160,6 +160,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 		row.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new GalleryCssDelegate());
+		tableEl.setEmptyTableSettings("gallery.no.image", null, "o_icon_image");
 
 		galleryImages = new GalleryRunController.GalleryImages(new ArrayList<>());
 		String mapperUrl = registerCacheableMapper(ureq, "gallery-" + galleryPart.getId(),
