@@ -904,7 +904,7 @@ div.o_assessment_inspection_status_list {
 	color: $o-assessment-inspection-carriedout-color;
 }
 .o_labeled_light.o_assessment_inspection_noshow {
-	color: $o-assessment-inspection-noshow-color;
+	@extend %o_labeled_light_yellow;
 }
 .o_labeled_light.o_assessment_inspection_cancelled {
 	color: $o-assessment-inspection-cancelled-color;
