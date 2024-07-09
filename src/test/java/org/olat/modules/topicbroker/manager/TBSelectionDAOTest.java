@@ -167,24 +167,6 @@ public class TBSelectionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadSelections_byParticipants() {
-		TBBroker broker = createRandomBroker();
-		TBParticipant participant1 = createRandomParticipant(broker);
-		TBParticipant participant2 = createRandomParticipant(broker);
-		TBParticipant participant3 = createRandomParticipant(broker);
-		TBTopic topic = createRandomTopic(broker);
-		TBSelection selection1 = createRandomSelection(participant1, topic);
-		TBSelection selection2 = createRandomSelection(participant2, topic);
-		createRandomSelection(participant3, topic);
-		
-		TBSelectionSearchParams params = new TBSelectionSearchParams();
-		params.setParticipants(List.of(participant1, participant2));
-		List<TBSelection> selections = sut.loadSelections(params);
-		
-		assertThat(selections).containsExactlyInAnyOrder(selection1, selection2);
-	}
-	
-	@Test
 	public void shouldLoadSelections_byIdentities() {
 		TBBroker broker = createRandomBroker();
 		TBParticipant participant1 = createRandomParticipant(broker);
@@ -200,6 +182,29 @@ public class TBSelectionDAOTest extends OlatTestCase {
 		List<TBSelection> selections = sut.loadSelections(params);
 		
 		assertThat(selections).containsExactlyInAnyOrder(selection1, selection2);
+	}
+	
+	@Test
+	public void shouldLoadSelections_byEnrolledOrIdentities() {
+		TBBroker broker = createRandomBroker();
+		TBParticipant participant1 = createRandomParticipant(broker);
+		TBParticipant participant2 = createRandomParticipant(broker);
+		TBParticipant participant3 = createRandomParticipant(broker);
+		TBParticipant participant4 = createRandomParticipant(broker);
+		TBTopic topic = createRandomTopic(broker);
+		TBSelection selection1 = createRandomSelection(participant1, topic);
+		TBSelection selection2 = createRandomSelection(participant2, topic);
+		TBSelection selection3 = createRandomSelection(participant3, topic);
+		((TBSelectionImpl)selection3).setEnrolled(true);
+		selection3 = sut.updateSelection(selection3);
+		createRandomSelection(participant4, topic);
+		
+		TBSelectionSearchParams params = new TBSelectionSearchParams();
+		params.setBroker(broker);
+		params.setEnrolledOrIdentities(List.of(participant1.getIdentity(), participant2.getIdentity()));
+		List<TBSelection> selections = sut.loadSelections(params);
+		
+		assertThat(selections).containsExactlyInAnyOrder(selection1, selection2, selection3);
 	}
 	
 	@Test

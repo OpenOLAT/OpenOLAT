@@ -94,7 +94,9 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 	private final TBBroker broker;
 	private final TBTopic topic;
 	private final Long topicKey;
-	private Set<Long> visiblieIdentityKeys;
+	private final TBParticipantCandidates participantCandidates;
+	private Set<Long> allIdentityKeys;
+	private Set<Long> visibleIdentityKeys;
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
@@ -112,8 +114,12 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 		this.broker = broker;
 		this.topic = topic;
 		this.topicKey = topic.getKey();
+		this.participantCandidates = participantCandidates;
+		allIdentityKeys = participantCandidates.getAllIdentities().stream()
+				.map(Identity::getKey)
+				.collect(Collectors.toSet());
 		if (!participantCandidates.isAllIdentitiesVisible()) {
-			visiblieIdentityKeys = participantCandidates.getVisibleIdentities().stream()
+			visibleIdentityKeys = participantCandidates.getVisibleIdentities().stream()
 					.map(Identity::getKey)
 					.collect(Collectors.toSet());
 		}
@@ -273,8 +279,9 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 	private void loadModel() {
 		TBSelectionSearchParams searchParams = new TBSelectionSearchParams();
 		searchParams.setBroker(broker);
+		searchParams.setEnrolledOrIdentities(participantCandidates.getAllIdentities());
 		searchParams.setEnrolledOrMaxSortOrder(broker.getMaxSelections());
-		searchParams.setFetchParticipant(true);
+		searchParams.setFetchIdentity(true);
 		List<TBSelection> selections = topicBrokerService.getSelections(searchParams);
 		List<TBSelection> topicSelections = selections.stream()
 				.filter(selection -> topicKey.equals(selection.getTopic().getKey()))
@@ -290,7 +297,7 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 			
 			Identity identity = participant.getIdentity();
 			boolean anonym = false;
-			if (visiblieIdentityKeys != null && !visiblieIdentityKeys.contains(identity.getKey())) {
+			if (visibleIdentityKeys != null && !visibleIdentityKeys.contains(identity.getKey())) {
 				identity = new TransientIdentity();
 				anonym = true;
 			}
@@ -351,6 +358,14 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 				String enrolledString = "<span title=\"" + translate("topic.selections.message.too.less.enrollments") + "\"><i class=\"o_icon o_icon_warn\"></i> ";
 				enrolledString += row.getEnrolledString();
 				enrolledString += "</span>";
+				row.setEnrolledString(enrolledString);
+			}
+		}
+		
+		if (broker.getEnrollmentStartDate() != null) {
+			if (!allIdentityKeys.contains(row.getIdentityKey())) {
+				String enrolledString = "<span title=\"" + translate("topic.selections.message.no.participant") + "\"><i class=\"o_icon o_icon_warn\"></i> </span>";
+				enrolledString += row.getEnrolledString();
 				row.setEnrolledString(enrolledString);
 			}
 		}

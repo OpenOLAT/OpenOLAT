@@ -79,10 +79,9 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 	private Map<Long, MatchingParticipant> participantKeyToMatchingParticipant;
 	private Map<TopicKeyPriority, List<MatchingParticipant>> topicKeyPriorityToMatchingIdentities;
 
-	public DefaultEnrollmentProcess(TBBroker broker, List<TBParticipant> participants,
-			List<TBTopic> topics, List<TBSelection> selections) {
+	public DefaultEnrollmentProcess(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections) {
 		this.broker = broker;
-		this.participants = participants;
+		this.participants = selections.stream().map(TBSelection::getParticipant).distinct().toList();
 		addActivity(TBAuditLog.Action.processStart, TBProcessInfos.ofProcessStart(participants.size(), topics.size(), selections.size()));
 		
 		maxSelections = broker.getMaxSelections();
@@ -259,6 +258,7 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		BigDecimal priorityCost = getPriorityCost(0);
 		topicKeyPriorityToMatchingIdentities = new HashMap<>();
 		for (TBSelection selection : previewSelections) {
+			MatchingParticipant matchingParticipant = participantKeyToMatchingParticipant.get(selection.getParticipant().getKey());
 			if (selection.isEnrolled()) {
 				// Already enrolled by the coach before the evaluation started
 				if (topicKeysMinNotReached.contains(selection.getTopic().getKey())) {
@@ -268,7 +268,7 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 						addActivity(TBAuditLog.Action.participantWithdraw, participantKeyTopicKey.participantKey(), participantKeyTopicKey.topicKey(), null);
 					}
 				} else {
-					MatchingParticipant participant = participantKeyToMatchingParticipant.get(selection.getParticipant().getKey());
+					MatchingParticipant participant = matchingParticipant;
 					enroll(participant, topicKeyToTopic.get(selection.getTopic().getKey()), priorityCost, TBAuditLog.Action.participantPreEnrolled);
 				}
 			} else {
@@ -276,7 +276,7 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 					TopicKeyPriority topicKeyPriority = new TopicKeyPriority(selection.getTopic().getKey(), selection.getSortOrder());
 					topicKeyPriorityToMatchingIdentities
 						.computeIfAbsent(topicKeyPriority, key -> new ArrayList<>())
-						.add(participantKeyToMatchingParticipant.get(selection.getParticipant().getKey()));
+						.add(matchingParticipant);
 				}
 			}
 		}

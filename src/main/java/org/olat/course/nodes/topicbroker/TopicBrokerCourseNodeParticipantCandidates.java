@@ -42,6 +42,8 @@ public class TopicBrokerCourseNodeParticipantCandidates implements TBParticipant
 	private final Identity doer;
 	private final RepositoryEntry repositoryEntry;
 	private final boolean admin;
+	private List<Identity> allIdentities;
+	private List<Identity> visibleIdentities;
 	
 	public TopicBrokerCourseNodeParticipantCandidates(Identity doer,
 			RepositoryEntry repositoryEntry, boolean admin) {
@@ -53,10 +55,13 @@ public class TopicBrokerCourseNodeParticipantCandidates implements TBParticipant
 
 	@Override
 	public List<Identity> getAllIdentities() {
-		return repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name())
-				.stream()
-				.distinct()
-				.collect(Collectors.toList());
+		if (allIdentities == null) {
+			allIdentities = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name())
+					.stream()
+					.distinct()
+					.collect(Collectors.toList());
+		}
+		return allIdentities;
 	}
 
 	@Override
@@ -66,9 +71,18 @@ public class TopicBrokerCourseNodeParticipantCandidates implements TBParticipant
 
 	@Override
 	public List<Identity> getVisibleIdentities() {
-		return admin
-				? getAllIdentities()
-				: repositoryService.getCoachedParticipants(doer, repositoryEntry);
+		if (visibleIdentities == null) {
+			visibleIdentities = admin
+					? getAllIdentities()
+					: repositoryService.getCoachedParticipants(doer, repositoryEntry);
+		}
+		return visibleIdentities;
+	}
+
+	@Override
+	public void refresh() {
+		allIdentities = null;
+		visibleIdentities = null;
 	}
 
 }

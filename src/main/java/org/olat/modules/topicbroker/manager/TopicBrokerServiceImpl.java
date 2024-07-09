@@ -974,22 +974,18 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			
 			TopicBrokerCourseNodeParticipantCandidates participantCandidates = new TopicBrokerCourseNodeParticipantCandidates(null, repositoryEntry, true);
 			
-			TBParticipantSearchParams participantSearchParams = new TBParticipantSearchParams();
-			participantSearchParams.setBroker(broker);
-			participantSearchParams.setIdentities(participantCandidates.getAllIdentities());
-			List<TBParticipant> participants = getParticipants(participantSearchParams);
+			TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
+			selectionSearchParams.setBroker(broker);
+			selectionSearchParams.setEnrolledOrIdentities(participantCandidates.getAllIdentities());
+			selectionSearchParams.setEnrolledOrMaxSortOrder(broker.getMaxSelections());
+			selectionSearchParams.setFetchIdentity(true);
+			List<TBSelection> selections = getSelections(selectionSearchParams);
 			
 			TBTopicSearchParams topicSearchParams = new TBTopicSearchParams();
 			topicSearchParams.setBroker(broker);
 			List<TBTopic> topics = getTopics(topicSearchParams);
 			
-			TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
-			selectionSearchParams.setBroker(broker);
-			selectionSearchParams.setEnrolledOrMaxSortOrder(broker.getMaxSelections());
-			selectionSearchParams.setFetchParticipant(true);
-			List<TBSelection> selections = getSelections(selectionSearchParams);
-			
-			new DefaultEnrollmentProcess(broker, participants, topics, selections).persist(null);
+			new DefaultEnrollmentProcess(broker, topics, selections).persist(null);
 		}
 		updateEnrollmentProcessDone(null, broker);
 		dbInstance.commitAndCloseSession();

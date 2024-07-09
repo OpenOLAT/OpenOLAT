@@ -324,6 +324,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		if (isShowSelections()) {
 			TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 			selectionSearchParams.setBroker(broker);
+			selectionSearchParams.setEnrolledOrIdentities(participantCandidates.getAllIdentities());
 			topicKeyToSelections = topicBrokerService.getSelections(selectionSearchParams).stream()
 					.collect(Collectors.groupingBy(selection -> selection.getTopic().getKey()));
 		}

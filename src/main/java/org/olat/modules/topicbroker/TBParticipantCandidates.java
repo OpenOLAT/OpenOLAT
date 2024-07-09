@@ -36,5 +36,7 @@ public interface TBParticipantCandidates {
 	boolean isAllIdentitiesVisible();
 	
 	List<Identity> getVisibleIdentities();
+	
+	void refresh();
 
 }

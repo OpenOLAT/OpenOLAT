@@ -21,8 +21,10 @@ package org.olat.modules.topicbroker.manager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -159,19 +161,31 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 			}
 		}
 		
-		List<Identity> identities = participantCandidates.getVisibleIdentities();
 		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 		selectionSearchParams.setBroker(broker);
-		selectionSearchParams.setIdentities(identities);
 		selectionSearchParams.setEnrolledOrMaxSortOrder(reloadedBorker.getMaxSelections());
-		selectionSearchParams.setFetchParticipant(true);
+		selectionSearchParams.setFetchIdentity(true);
 		selectionSearchParams.setFetchTopic(true);
-		Map<Long, Map<Long, TBSelection>> identityKeyToTopicToSelections = topicBrokerService.getSelections(selectionSearchParams).stream()
+		
+		Set<Identity> identities;
+		if (participantCandidates.isAllIdentitiesVisible()) {
+			identities = new HashSet<>(participantCandidates.getAllIdentities());
+			selectionSearchParams.setEnrolledOrIdentities(identities);
+		} else {
+			identities = new HashSet<>(participantCandidates.getVisibleIdentities());
+			selectionSearchParams.setIdentities(identities);
+		}
+		List<TBSelection> selections = topicBrokerService.getSelections(selectionSearchParams);
+		Map<Long, Map<Long, TBSelection>> identityKeyToTopicToSelections = selections.stream()
 				.collect(Collectors.groupingBy(selection -> selection.getParticipant().getIdentity().getKey(),
 						Collectors.toMap(selection -> selection.getTopic().getKey(), Function.identity())));
+		List<Identity> selectionIdentities = selections.stream()
+				.map(selection -> selection.getParticipant().getIdentity())
+				.collect(Collectors.toList());
+		identities.addAll(selectionIdentities);
 		
 		TopicBrokerExcelExport excelExport = new TopicBrokerExcelExport(ureq, topics, customFieldNames,
-				topicKeyToCustomFieldTexts, identities, identityKeyToTopicToSelections);
+				topicKeyToCustomFieldTexts, new ArrayList<>(identities), identityKeyToTopicToSelections);
 		
 		return new TopicBrokerMediaResource(reloadedBorker, topicIdentToFileIdentToLeaf, excelExport);
 	}

@@ -118,11 +118,11 @@ public class TBSelectionDAO {
 		if (params.getBrokerKeys() != null && !params.getBrokerKeys().isEmpty()) {
 			sb.and().append("selection.participant.broker.key in :brokerKeys");
 		}
-		if (params.getParticipantKeys() != null && !params.getParticipantKeys().isEmpty()) {
-			sb.and().append("selection.participant.key in :participantKeys");
-		}
 		if (params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
 			sb.and().append("selection.participant.identity.key in :identityKeys");
+		}
+		if (params.getEnrolledOrIdentityKeys() != null && !params.getEnrolledOrIdentityKeys().isEmpty()) {
+			sb.and().append("(selection.enrolled = true or selection.participant.identity.key in :enrolledOrIdentityKeys)");
 		}
 		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
 			sb.and().append("selection.topic.key in :topicKeys");
@@ -139,11 +139,11 @@ public class TBSelectionDAO {
 		if (params.getBrokerKeys() != null && !params.getBrokerKeys().isEmpty()) {
 			query.setParameter("brokerKeys", params.getBrokerKeys());
 		}
-		if (params.getParticipantKeys() != null && !params.getParticipantKeys().isEmpty()) {
-			query.setParameter("participantKeys", params.getParticipantKeys());
-		}
 		if (params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
 			query.setParameter("identityKeys", params.getIdentityKeys());
+		}
+		if (params.getEnrolledOrIdentityKeys() != null && !params.getEnrolledOrIdentityKeys().isEmpty()) {
+			query.setParameter("enrolledOrIdentityKeys", params.getEnrolledOrIdentityKeys());
 		}
 		if (params.getTopicKeys() != null && !params.getTopicKeys().isEmpty()) {
 			query.setParameter("topicKeys", params.getTopicKeys());

@@ -48,7 +48,6 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientParticipant participant1 = createParticipant(1, null);
 		TBTransientParticipant participant2 = createParticipant(2, null);
 		TBTransientParticipant participant3 = createParticipant(3, null);
-		List<TBParticipant> participants = List.of(participant1, participant2, participant3);
 		
 		TBTransientTopic topic = createTopic(1, 2, 6);
 		List<TBTopic> topics = List.of(topic);
@@ -58,7 +57,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 2, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		assertThat(previewSelections).hasSize(3);
@@ -71,7 +70,6 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientParticipant participant1 = createParticipant(1, null);
 		TBTransientParticipant participant2 = createParticipant(2, null);
 		TBTransientParticipant participant3 = createParticipant(3, null);
-		List<TBParticipant> participants = List.of(participant1, participant2, participant3);
 		
 		// Needs at least 4 participants
 		TBTransientTopic topic = createTopic(1, 4, 6);
@@ -82,7 +80,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 2, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		assertThat(previewSelections.stream().filter(TBSelection::isEnrolled).count()).isEqualTo(0);
@@ -94,7 +92,6 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientParticipant participant1 = createParticipant(1, null);
 		TBTransientParticipant participant2 = createParticipant(2, null);
 		TBTransientParticipant participant3 = createParticipant(3, null);
-		List<TBParticipant> participants = List.of(participant1, participant2, participant3);
 		
 		// Limit to 2 participants
 		TBTransientTopic topic = createTopic(1, 2, 2);
@@ -105,7 +102,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 2, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		assertThat(previewSelections.stream().filter(TBSelection::isEnrolled).count()).isEqualTo(2);
@@ -117,7 +114,6 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientParticipant participant1 = createParticipant(1, 1);
 		TBTransientParticipant participant2 = createParticipant(2, 2);
 		TBTransientParticipant participant3 = createParticipant(3, 3);
-		List<TBParticipant> participants = List.of(participant1, participant2, participant3);
 		
 		TBTransientTopic topic = createTopic(1, 0, 2);
 		List<TBTopic> topics = List.of(topic);
@@ -127,7 +123,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 1, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()
@@ -143,7 +139,6 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientParticipant participant1 = createParticipant(1, null);
 		TBTransientParticipant participant2 = createParticipant(2, null);
 		TBTransientParticipant participant3 = createParticipant(3, null);
-		List<TBParticipant> participants = List.of(participant1, participant2, participant3);
 		
 		TBTransientTopic topic = createTopic(1, 2, 6);
 		List<TBTopic> topics = List.of(topic);
@@ -154,7 +149,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 1, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()
@@ -170,7 +165,6 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientParticipant participant1 = createParticipant(1, null);
 		TBTransientParticipant participant2 = createParticipant(2, null);
 		TBTransientParticipant participant3 = createParticipant(3, null);
-		List<TBParticipant> participants = List.of(participant1, participant2, participant3);
 		
 		TBTransientTopic topic1 = createTopic(1, 2, 6);
 		Long topic1Key = topic1.getKey();
@@ -185,7 +179,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection32 = createSelection(participant3, topic2, 1, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection31, selection32);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()
@@ -202,7 +196,6 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientParticipant participant1 = createParticipant(1, 100);
 		TBTransientParticipant participant2 = createParticipant(2, 100);
 		TBTransientParticipant participant3 = createParticipant(3, null);
-		List<TBParticipant> participants = List.of(participant1, participant2, participant3);
 		
 		TBTransientTopic topic = createTopic(1, 1, 1);
 		List<TBTopic> topics = List.of(topic);
@@ -212,7 +205,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 2, true);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()
@@ -228,7 +221,6 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientParticipant participant1 = createParticipant(1, null);
 		TBTransientParticipant participant2 = createParticipant(2, null);
 		TBTransientParticipant participant3 = createParticipant(3, null);
-		List<TBParticipant> participants = List.of(participant1, participant2, participant3);
 		
 		TBTransientTopic topic1 = createTopic(1, 1, 6);
 		Long topic1Key = topic1.getKey();
@@ -244,7 +236,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection32 = createSelection(participant3, topic2, 2, true);
 		List<TBSelection> selections = List.of(selection1, selection2, selection31, selection32);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys1 = previewSelections.stream()
@@ -267,7 +259,6 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientParticipant participant1 = createParticipant(1, null);
 		TBTransientParticipant participant2 = createParticipant(2, null);
 		TBTransientParticipant participant3 = createParticipant(3, null);
-		List<TBParticipant> participants = List.of(participant1, participant2, participant3);
 		
 		TBTransientTopic topic1 = createTopic(1, 3, 6);
 		Long topic1Key = topic1.getKey();
@@ -283,7 +274,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection32 = createSelection(participant3, topic2, 1, false);
 		List<TBSelection> selections = List.of(selection11, selection12, selection21, selection22, selection31, selection32);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()

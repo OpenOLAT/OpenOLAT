@@ -44,7 +44,6 @@ import org.olat.modules.topicbroker.TBEnrollmentProcess;
 import org.olat.modules.topicbroker.TBEnrollmentStats;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
-import org.olat.modules.topicbroker.TBParticipantSearchParams;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
@@ -84,12 +83,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 			TBParticipantCandidates participantCandidates) {
 		super(ureq, wControl, "enrollment_manual_process");
 		this.broker = broker;
+		participantCandidates.refresh();
 		identities = participantCandidates.getAllIdentities();
-		
-		TBParticipantSearchParams participantSearchParams = new TBParticipantSearchParams();
-		participantSearchParams.setBroker(broker);
-		participantSearchParams.setIdentities(identities);
-		participants = topicBrokerService.getParticipants(participantSearchParams);
 		
 		TBTopicSearchParams topicSearchParams = new TBTopicSearchParams();
 		topicSearchParams.setBroker(broker);
@@ -97,9 +92,12 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		
 		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 		selectionSearchParams.setBroker(broker);
+		selectionSearchParams.setEnrolledOrIdentities(identities);
 		selectionSearchParams.setEnrolledOrMaxSortOrder(broker.getMaxSelections());
 		selectionSearchParams.setFetchParticipant(true);
 		selections = topicBrokerService.getSelections(selectionSearchParams);
+		
+		participants = selections.stream().map(TBSelection::getParticipant).distinct().toList();
 		
 		initForm(ureq);
 		updateEnrollmentDone();
@@ -185,7 +183,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 
 	private void doRunEnrollmentProcess() {
 		Date startDate = new Date();
-		TBEnrollmentProcess process = new DefaultEnrollmentProcess(broker, participants, topics, selections);
+		TBEnrollmentProcess process = new DefaultEnrollmentProcess(broker, topics, selections);
 		TBEnrollmentStats enrollmentStats = topicBrokerService.getEnrollmentStats(broker, identities, participants, process.getPreviewSelections());
 		
 		EnrollmentProcessWrapper wrapper = new EnrollmentProcessWrapper(startDate, process, enrollmentStats);

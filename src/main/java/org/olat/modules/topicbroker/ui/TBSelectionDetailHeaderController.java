@@ -129,7 +129,7 @@ public class TBSelectionDetailHeaderController extends FormBasicController {
 	private void updateUI() {
 		TBSelectionSearchParams searchParams = new TBSelectionSearchParams();
 		searchParams.setBroker(broker);
-		searchParams.setParticipant(participant);
+		searchParams.setIdentity(participant.getIdentity());
 		List<TBSelection> selections = topicBrokerService.getSelections(searchParams);
 		Optional<TBSelection> topicSelection = selections.stream().filter(selection -> topicKey.equals(selection.getTopic().getKey())).findFirst();
 		if (topicSelection.isPresent()) {

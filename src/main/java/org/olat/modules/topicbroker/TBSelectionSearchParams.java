@@ -33,8 +33,8 @@ import org.olat.basesecurity.IdentityRef;
 public class TBSelectionSearchParams {
 	
 	private Collection<Long> brokerKeys;
-	private Collection<Long> participantKeys;
 	private Collection<Long> identityKeys;
+	private Collection<Long> enrolledOrIdentityKeys;
 	private Collection<Long> topicKeys;
 	private Collection<Long> selectionKeys;
 	private Integer enrolledOrMaxSortOrder;
@@ -54,18 +54,6 @@ public class TBSelectionSearchParams {
 	public void setBrokers(Collection<? extends TBBrokerRef> brokers) {
 		brokerKeys = brokers != null? brokers.stream().map(TBBrokerRef::getKey).toList(): null;
 	}
-
-	public Collection<Long> getParticipantKeys() {
-		return participantKeys;
-	}
-	
-	public void setParticipant(TBParticipantRef participant) {
-		participantKeys = participant != null? List.of(participant.getKey()): null;
-	}
-	
-	public void setParticipants(Collection<? extends TBParticipantRef> participants) {
-		participantKeys = participants != null? participants.stream().map(TBParticipantRef::getKey).toList(): null;
-	}
 	
 	public Collection<Long> getIdentityKeys() {
 		return identityKeys;
@@ -77,6 +65,18 @@ public class TBSelectionSearchParams {
 	
 	public void setIdentities(Collection<? extends IdentityRef> identities) {
 		identityKeys = identities != null? identities.stream().map(IdentityRef::getKey).toList(): null;
+	}
+
+	public Collection<Long> getEnrolledOrIdentityKeys() {
+		return enrolledOrIdentityKeys;
+	}
+
+	public void setEnrolledOrIdentity(IdentityRef identity) {
+		enrolledOrIdentityKeys = identity != null? List.of(identity.getKey()): null;
+	}
+	
+	public void setEnrolledOrIdentities(Collection<? extends IdentityRef> identities) {
+		enrolledOrIdentityKeys = identities != null? identities.stream().map(IdentityRef::getKey).toList(): null;
 	}
 
 	public Collection<Long> getTopicKeys() {
