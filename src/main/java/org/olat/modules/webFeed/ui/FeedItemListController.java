@@ -292,13 +292,15 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
 		tableEl.addBatchButton(bulkDeleteButton);
 
-		bulkRemoveTags = uifactory.addFormLink("bulk.delete.tags", "bulk.delete.tags", "bulk.delete.tags", formLayout, Link.BUTTON);
-		bulkRemoveTags.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
-		tableEl.addBatchButton(bulkRemoveTags);
+		if (!tagInfos.isEmpty()) {
+			bulkAddTags = uifactory.addFormLink("bulk.add.tags", "bulk.add.tags", "bulk.add.tags", formLayout, Link.BUTTON);
+			bulkAddTags.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			tableEl.addBatchButton(bulkAddTags);
 
-		bulkAddTags = uifactory.addFormLink("bulk.add.tags", "bulk.add.tags", "bulk.add.tags", formLayout, Link.BUTTON);
-		bulkAddTags.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-		tableEl.addBatchButton(bulkAddTags);
+			bulkRemoveTags = uifactory.addFormLink("bulk.delete.tags", "bulk.delete.tags", "bulk.delete.tags", formLayout, Link.BUTTON);
+			bulkRemoveTags.setIconLeftCSS("o_icon o_icon-fw o_icon_remove");
+			tableEl.addBatchButton(bulkRemoveTags);
+		}
 	}
 
 	private void loadSideBarTags() {
@@ -657,7 +659,9 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			handleFeedItemEvent(ureq, feedItemEvent);
 		}
 
-		loadTimelineTagsToggleOrRemove(ureq);
+		if (vcMain.getComponent("selected_feed_item") == null) {
+			loadTimelineTagsToggleOrRemove(ureq);
+		}
 	}
 
 	private void reloadFeed() {

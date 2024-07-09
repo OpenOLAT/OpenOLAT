@@ -19,6 +19,7 @@
  */
 package org.olat.modules.webFeed.ui;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.commons.services.tag.Tag;
@@ -44,6 +45,7 @@ public class FeedBulkRemoveTagsController extends FormBasicController {
 	protected FeedBulkRemoveTagsController(UserRequest ureq, WindowControl wControl, List<TagInfo> selectedTagInfos) {
 		super(ureq, wControl, "bulk_remove_tags");
 		this.selectedTagInfos = selectedTagInfos;
+		selectedTagInfos.sort(Comparator.comparing(TagInfo::getCount).reversed());
 		initForm(ureq);
 	}
 
