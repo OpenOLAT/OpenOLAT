@@ -45,7 +45,7 @@ public class FeedBulkRemoveTagsController extends FormBasicController {
 	protected FeedBulkRemoveTagsController(UserRequest ureq, WindowControl wControl, List<TagInfo> selectedTagInfos) {
 		super(ureq, wControl, "bulk_remove_tags");
 		this.selectedTagInfos = selectedTagInfos;
-		selectedTagInfos.sort(Comparator.comparing(TagInfo::getCount).reversed());
+		selectedTagInfos.sort(Comparator.comparing(TagInfo::getCount).reversed().thenComparing(t -> t.getDisplayName().toLowerCase()));
 		initForm(ureq);
 	}
 
