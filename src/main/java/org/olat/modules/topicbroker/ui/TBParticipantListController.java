@@ -399,7 +399,7 @@ public class TBParticipantListController extends FormBasicController implements 
 				mainForm, broker, row.getIdentityKey(), row.getSelections(), secCallback.canEditSelections());
 		listenTo(detailsCtrl);
 		// Add as form item to catch the events...
-		flc.add(detailsCtrl.getInitialFormItem());
+		flc.add("detailsform_" + counter++, detailsCtrl.getInitialFormItem());
 		
 		// ... and add the component to the details container.
 		String detailsComponentName = "details_" + counter++;
@@ -506,6 +506,8 @@ public class TBParticipantListController extends FormBasicController implements 
 				loadModel(ureq);
 			}
 		}
+		
+		super.formInnerEvent(ureq, source, event);
 	}
 	
 	@Override

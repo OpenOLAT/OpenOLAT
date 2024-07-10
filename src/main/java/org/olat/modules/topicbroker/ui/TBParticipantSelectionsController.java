@@ -123,7 +123,9 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		boostSV.add(SelectionValues.entry("0", translate("participant.boost.0")));
 		boostSV.add(SelectionValues.entry("1", translate("participant.boost.1")));
 		boostSV.add(SelectionValues.entry("2", translate("participant.boost.2")));
-		boostEl = uifactory.addDropdownSingleselect("participant.boost", formLayout, boostSV.keys(), boostSV.values());
+		String boostElName = "boost_" + participant.getKey();
+		boostEl = uifactory.addDropdownSingleselect(boostElName, boostElName, "participant.boost", formLayout,
+				boostSV.keys(), boostSV.values(), null);
 		boostEl.setMandatory(true);
 		boostEl.setEnabled(canEditParticipant);
 		boostEl.addActionListener(FormEvent.ONCHANGE);
@@ -132,6 +134,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		} else {
 			boostEl.select("0", true);
 		}
+		flc.contextPut("boostName", boostElName);
 		
 		SelectionValues requiredEnrollmentsSV = new SelectionValues();
 		for (int i = 0; i < broker.getRequiredEnrollments(); i++) {
@@ -145,8 +148,9 @@ public class TBParticipantSelectionsController extends FormBasicController {
 					participant.getRequiredEnrollments()),
 					String.valueOf(participant.getRequiredEnrollments())));
 		}
-		requiredEnrollmentsEl = uifactory.addDropdownSingleselect("participant.max.enrollments", formLayout,
-				requiredEnrollmentsSV.keys(), requiredEnrollmentsSV.values());
+		String enrollemntsElName = "enrollments_" + participant.getKey();
+		requiredEnrollmentsEl = uifactory.addDropdownSingleselect(enrollemntsElName, enrollemntsElName, "participant.max.enrollments",
+				formLayout, requiredEnrollmentsSV.keys(), requiredEnrollmentsSV.values(), null);
 		requiredEnrollmentsEl.setMandatory(true);
 		requiredEnrollmentsEl.setEnabled(canEditParticipant);
 		requiredEnrollmentsEl.addActionListener(FormEvent.ONCHANGE);
@@ -155,6 +159,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		} else {
 			requiredEnrollmentsEl.select(String.valueOf(broker.getRequiredEnrollments()), true);
 		}
+		flc.contextPut("enrollemntsName", enrollemntsElName);
 		
 		if (canEditSelections) {
 			topicAddLink = uifactory.addFormLink("topic.add", formLayout, Link.BUTTON);
