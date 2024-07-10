@@ -61,6 +61,7 @@ public class PortfolioWidgetRenderer extends WidgetRenderer {
 		sb.append("</div>");
 		sb.append("</div>");
 		
+		/* TODO: OO-7482: temporarily removed, because not being used properly
 		sb.append("<div class=\"o_widget_binder_date\">");
 		if (widget.getReturnDate() != null) {
 			sb.append("<div class=\"o_widget_binder_date_label\">");
@@ -73,7 +74,7 @@ public class PortfolioWidgetRenderer extends WidgetRenderer {
 			sb.append("<div class=\"o_widget_binder_date_label\">");
 			sb.append("- ").append(widget.getTranslator().translate("portfolio.not.submitted")).append(" -");
 			sb.append("</div>");
-		}
+		} */
 		sb.append("</div>");
 		
 		sb.append("</div>");

@@ -124,9 +124,9 @@ public class PortfolioResultDetailsController extends FormBasicController {
 			String returnDate = "";
 			if(binder.getReturnDate() != null) {
 				returnDate = formatter.formatDateAndTime(binder.getReturnDate());
+				uifactory.addStaticTextElement("map.returnDate." + count, "map.returnDate", returnDate, formLayout);
 			}
-			uifactory.addStaticTextElement("map.returnDate." + count, "map.returnDate", returnDate, formLayout);
-			
+
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons." + count, getTranslator());
 			buttonsCont.setRootForm(mainForm);
 			formLayout.add(buttonsCont);
