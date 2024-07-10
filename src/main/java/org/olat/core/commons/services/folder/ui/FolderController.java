@@ -394,7 +394,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		addFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add", null, formLayout);
 		addFileEl.addActionListener(FormEvent.ONCHANGE);// Needed for selenium tests
-		addFileEl.setChooseButtonLabel(translate("add"));
+		addFileEl.setChooseButtonLabel(translate("upload.files"));
 		addFileEl.setDragAndDropForm(true);
 		addFileEl.setMultiFileUpload(true);
 		
@@ -406,8 +406,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		addBrowserLink.setElementCssClass("o_sel_folder_add_browser");
 		createDropdown.addElement(addBrowserLink);
 		
-		recordSpacer = new SpacerItem("createSpace");
-		createDropdown.addElement(recordSpacer);
+		createDropdown.addElement(new SpacerItem("createSpace"));
 		
 		createDocumentLink = uifactory.addFormLink("document.create", formLayout, Link.LINK);
 		createDocumentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
