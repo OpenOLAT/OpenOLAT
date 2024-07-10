@@ -288,10 +288,6 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	protected void initMultiSelectionTools(FormLayoutContainer formLayout) {
-		bulkDeleteButton = uifactory.addFormLink("bulk.delete", "delete", "delete", formLayout, Link.BUTTON);
-		bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
-		tableEl.addBatchButton(bulkDeleteButton);
-
 		if (!tagInfos.isEmpty()) {
 			bulkAddTags = uifactory.addFormLink("bulk.add.tags", "bulk.add.tags", "bulk.add.tags", formLayout, Link.BUTTON);
 			bulkAddTags.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
@@ -301,13 +297,16 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			bulkRemoveTags.setIconLeftCSS("o_icon o_icon-fw o_icon_remove");
 			tableEl.addBatchButton(bulkRemoveTags);
 		}
+		bulkDeleteButton = uifactory.addFormLink("bulk.delete", "delete", "delete", formLayout, Link.BUTTON);
+		bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
+		tableEl.addBatchButton(bulkDeleteButton);
 	}
 
 	private void loadSideBarTags() {
 		if (feedRss.isInternal()) {
 			tagInfos = feedManager.getTagInfos(feedRss, null);
 			if (tagInfos != null && !tagInfos.isEmpty()) {
-				tagInfos.sort(Comparator.comparing(TagInfo::getCount).reversed());
+				tagInfos.sort(Comparator.comparing(TagInfo::getCount).reversed().thenComparing(t -> t.getDisplayName().toLowerCase()));
 				tagsComponent = TagComponentFactory.createTagComponent("sidebarTags", tagInfos, rightColFlc.getFormItemComponent(), this, false);
 			} else {
 				rightColFlc.getFormItemComponent().remove("sidebarTags");
@@ -753,6 +752,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			// in case the selected feed item view is being viewed
 			// then update and display. Otherwise, stay at table view
 			if (vcMain.getComponent("selected_feed_item") != null) {
+				updateTags();
 				displayFeedItem(ureq, currentItem);
 			} else {
 				// else means, we are in the table card view
