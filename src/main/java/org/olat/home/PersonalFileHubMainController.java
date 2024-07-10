@@ -61,7 +61,6 @@ public class PersonalFileHubMainController extends BasicController implements Ac
 			
 	private SearchInputController searchCtrl;
 	private PersonalFileHubMountPointsController vfsSourcesCtrl;
-	private PersonalFileHubLibrariesController storageesCtrl;
 	
 	@Autowired
 	private SearchModule searchModule;
@@ -88,25 +87,13 @@ public class PersonalFileHubMainController extends BasicController implements Ac
 		vfsSourcesCtrl = new PersonalFileHubMountPointsController(ureq, wControl, stackedPanel, translate("file.hub"));
 		listenTo(vfsSourcesCtrl);
 		mainVC.put("vfsSources", vfsSourcesCtrl.getInitialComponent());
-		
-		mainVC.contextPut("librariesTitle", translate("file.hub.libraries"));
-		storageesCtrl = new PersonalFileHubLibrariesController(ureq, wControl, stackedPanel);
-		listenTo(storageesCtrl);
-		mainVC.put("libraries", storageesCtrl.getInitialComponent());
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("MediaCenter".equalsIgnoreCase(resName)) {
-			storageesCtrl.activate(ureq, entries, state);
-		} else if("Media".equalsIgnoreCase(resName)) {
-			storageesCtrl.activate(ureq, entries, state);
-		} else {
-			vfsSourcesCtrl.activate(ureq, entries, state);
-		}
+		vfsSourcesCtrl.activate(ureq, entries, state);
 	}
 
 	@Override

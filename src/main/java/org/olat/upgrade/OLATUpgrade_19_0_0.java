@@ -128,7 +128,7 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 			try {
 				String availableTools = userToolsModule.getAvailableUserTools();
 				if(!"none".equals(availableTools) && StringHelper.containsNonWhitespace(availableTools)
-						&& (availableTools.contains("PersonalFolderController") || availableTools.contains("MediaCenterPersonalToolController"))) {
+						&& availableTools.contains("PersonalFolderController")) {
 					availableTools += ",org.olat.home.HomeMainController:org.olat.home.PersonalFileHubController";
 					userToolsModule.setAvailableUserTools(availableTools);
 				}
