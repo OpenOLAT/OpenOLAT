@@ -95,7 +95,7 @@ public class CreateBadgeClassWizardContext {
 		if (entry == null) {
 			return null;
 		}
-		if (entry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
+		if (entry.getEntryStatus() != RepositoryEntryStatusEnum.published && entry.getEntryStatus() != RepositoryEntryStatusEnum.preparation) {
 			return null;
 		}
 		ICourse course = CourseFactory.loadCourse(courseResourcableId);
