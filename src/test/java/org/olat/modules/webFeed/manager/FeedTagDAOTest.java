@@ -62,7 +62,7 @@ public class FeedTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateFeedTag() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		Feed feed = feedDAO.createFeedForResourcable(resource);
+		Feed feed = feedDAO.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 
 		Item feedItem = itemDAO.createItem(feed);
@@ -82,7 +82,7 @@ public class FeedTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteFeedTag() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		Feed feed = feedDAO.createFeedForResourcable(resource);
+		Feed feed = feedDAO.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 
 		Item feedItem = itemDAO.createItem(feed);
@@ -105,8 +105,8 @@ public class FeedTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteByFeed() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		Feed feed1 = feedDAO.createFeedForResourcable(resource);
-		Feed feed2 = feedDAO.createFeedForResourcable(resource);
+		Feed feed1 = feedDAO.createFeedForResourceable(resource);
+		Feed feed2 = feedDAO.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 
 		Item feedItem1 = itemDAO.createItem(feed1);
@@ -134,7 +134,7 @@ public class FeedTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteByFeedItem() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		Feed feed = feedDAO.createFeedForResourcable(resource);
+		Feed feed = feedDAO.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 
 		Item feedItem1 = itemDAO.createItem(feed);
@@ -162,7 +162,7 @@ public class FeedTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadFeedTagInfos() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		Feed feed = feedDAO.createFeedForResourcable(resource);
+		Feed feed = feedDAO.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 
 		Item feedItem1 = itemDAO.createItem(feed);
@@ -213,7 +213,7 @@ public class FeedTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadFeedTagInfosForFeedItems() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		Feed feed = feedDAO.createFeedForResourcable(resource);
+		Feed feed = feedDAO.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 
 		Item feedItem1 = itemDAO.createItem(feed);
@@ -254,7 +254,7 @@ public class FeedTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadTags_filterByFeed() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		Feed feed = feedDAO.createFeedForResourcable(resource);
+		Feed feed = feedDAO.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 
 		Item feedItem = itemDAO.createItem(feed);
@@ -272,7 +272,7 @@ public class FeedTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadTags_filterByFeedItems() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		Feed feed = feedDAO.createFeedForResourcable(resource);
+		Feed feed = feedDAO.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 
 		// Create three feed items for the feed

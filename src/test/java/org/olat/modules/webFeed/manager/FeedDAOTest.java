@@ -51,7 +51,7 @@ public class FeedDAOTest extends OlatTestCase {
 	public void createFeed_ores() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		
-		Feed feed = feedDao.createFeedForResourcable(resource);
+		Feed feed = feedDao.createFeedForResourceable(resource);
 		Assert.assertNotNull(feed);
 		dbInstance.commitAndCloseSession();
 
@@ -109,7 +109,7 @@ public class FeedDAOTest extends OlatTestCase {
 	public void copyFeed() {
 		OLATResource source = JunitTestHelper.createRandomResource();
 		OLATResource target = JunitTestHelper.createRandomResource();
-		Feed feed = feedDao.createFeedForResourcable(source);
+		Feed feed = feedDao.createFeedForResourceable(source);
 		dbInstance.commitAndCloseSession();
 		
 		Feed copy = feedDao.copyFeed(feed, target);
@@ -145,7 +145,7 @@ public class FeedDAOTest extends OlatTestCase {
 	public void loadFeed_Long() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 
-		Feed feed = feedDao.createFeedForResourcable(resource);
+		Feed feed = feedDao.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 		
 		Feed reloaded = feedDao.loadFeed(feed.getKey());
@@ -171,7 +171,7 @@ public class FeedDAOTest extends OlatTestCase {
 	public void loadFeed_Resourceable() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 
-		Feed feed = feedDao.createFeedForResourcable(resource);
+		Feed feed = feedDao.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 		
 		Feed reloaded = feedDao.loadFeed(resource);
@@ -187,7 +187,7 @@ public class FeedDAOTest extends OlatTestCase {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 
 		// create and save a feed
-		Feed feed = feedDao.createFeedForResourcable(resource);
+		Feed feed = feedDao.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 		
 		// change the values of the feed
@@ -235,7 +235,7 @@ public class FeedDAOTest extends OlatTestCase {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 
 		// create and save a feed
-		feedDao.createFeedForResourcable(resource);
+		feedDao.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 		
 		// update null
@@ -252,9 +252,9 @@ public class FeedDAOTest extends OlatTestCase {
 		OLATResource resource2 = JunitTestHelper.createRandomResource();
 		OLATResource resource3 = JunitTestHelper.createRandomResource();
 		
-		Feed feed1 = feedDao.createFeedForResourcable(resource1);
-		Feed feed2 = feedDao.createFeedForResourcable(resource2);
-		Feed feed3 = feedDao.createFeedForResourcable(resource3);
+		Feed feed1 = feedDao.createFeedForResourceable(resource1);
+		Feed feed2 = feedDao.createFeedForResourceable(resource2);
+		Feed feed3 = feedDao.createFeedForResourceable(resource3);
 		dbInstance.commitAndCloseSession();
 		
 		// delete 1 feed
@@ -273,7 +273,7 @@ public class FeedDAOTest extends OlatTestCase {
 	@Test
 	public void removeFeed_null() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		Feed feed = feedDao.createFeedForResourcable(resource);
+		Feed feed = feedDao.createFeedForResourceable(resource);
 		dbInstance.commitAndCloseSession();
 		
 		feedDao.removeFeedForResourceable(null);

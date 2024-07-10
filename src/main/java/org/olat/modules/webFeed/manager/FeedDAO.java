@@ -41,12 +41,14 @@ public class FeedDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public Feed createFeedForResourcable(OLATResourceable ores) {
+	public Feed createFeedForResourceable(OLATResourceable ores) {
 		if (ores == null) return null;
 		
 		Feed feed = new FeedImpl(ores);
 		feed.setCreationDate(new Date());
 		feed.setLastModified(feed.getCreationDate());
+		feed.setCanComment(true);
+		feed.setCanRate(true);
 		dbInstance.getCurrentEntityManager().persist(feed);
 		return feed;
 	}

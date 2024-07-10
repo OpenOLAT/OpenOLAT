@@ -187,7 +187,7 @@ public class FeedManagerImpl extends FeedManager {
 		resourceManager.saveOLATResource(ores);
 
 		// create a feed and save it in the database
-		feedDAO.createFeedForResourcable(feedResource);
+		feedDAO.createFeedForResourceable(feedResource);
 
 		// Create a resource folder for storing the images
 		feedFileStorage.getOrCreateFeedContainer(feedResource);
