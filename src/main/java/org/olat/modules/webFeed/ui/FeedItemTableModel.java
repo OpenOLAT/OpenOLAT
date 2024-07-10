@@ -94,6 +94,7 @@ implements FlexiTableCssDelegate, SortableFlexiTableDataModel<FeedItemRow>, Filt
 				case changedFrom -> row.getChangedFrom();
 				case rating -> row.getRatingFormItem();
 				case comments -> row.getCommentLink();
+				case toolsLink -> row.getToolsLink();
 				default -> "ERROR";
 			};
 		}

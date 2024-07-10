@@ -63,6 +63,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -249,8 +250,9 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		}
 
 		if (feedRss.isInternal() && feedSecCallback.mayEditItems()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.feed.header.actions", FeedItemTableModel.ItemsCols.toolsLink.ordinal(), "tools",
-					new ToolsCellRenderer(translate("feed.item.tool.actions"), "tools")));
+			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(FeedItemTableModel.ItemsCols.toolsLink.i18nHeaderKey(), FeedItemTableModel.ItemsCols.toolsLink.ordinal());
+			toolsColumn.setExportable(false);
+			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 
 		uifactory.addSpacerElement("spacer", formLayout, false);
@@ -591,6 +593,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsLink.setGhost(true);
 		toolsLink.setUserObject(feedItemRow.getItem());
+		feedItemRow.setToolsLink(toolsLink);
 	}
 
 	private void doOpenCollector(UserRequest ureq, Item feedItem) {
@@ -1091,9 +1094,6 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			if (feedItemRow.getCommentLink() != null) {
 				cmps.add(feedItemRow.getCommentLink().getComponent());
 			}
-			if (feedItemRow.getToolsLink() != null) {
-				cmps.add(feedItemRow.getToolsLink().getComponent());
-			}
 		}
 		return cmps;
 	}
@@ -1166,10 +1166,10 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				artefactLink = null;
 			}
 
+			links.add(editLink.getComponentName());
 			if (artefactLink != null) {
 				links.add(artefactLink.getComponentName());
 			}
-			links.add(editLink.getComponentName());
 			links.add("-");
 			links.add(deleteLink.getComponentName());
 
