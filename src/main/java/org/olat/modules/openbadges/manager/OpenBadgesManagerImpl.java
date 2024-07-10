@@ -871,15 +871,23 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			if (!badgeCriteria.isAwardAutomatically()) {
 				continue;
 			}
-			if (badgeCriteria.allCourseConditionsMet(recipient, learningPath, assessmentEntries)) {
+			if (isCourseBadge(badgeClass) && badgeCriteria.allCourseConditionsMet(recipient, learningPath, assessmentEntries)) {
 				String uuid = OpenBadgesFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
-			if (badgeCriteria.allGlobalBadgeConditionsMet(recipient, null)) {
+			if (isGlobalBadge(badgeClass) && badgeCriteria.allGlobalBadgeConditionsMet(recipient, null)) {
 				String uuid = OpenBadgesFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
 		}
+	}
+
+	private boolean isCourseBadge(BadgeClass badgeClass) {
+		return badgeClass.getEntry() != null;
+	}
+
+	private boolean isGlobalBadge(BadgeClass badgeClass) {
+		return !isCourseBadge(badgeClass);
 	}
 
 	@Override
