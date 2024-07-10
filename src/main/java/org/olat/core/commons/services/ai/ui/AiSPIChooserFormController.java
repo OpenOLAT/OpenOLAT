@@ -64,6 +64,8 @@ public class AiSPIChooserFormController extends FormBasicController {
 		setFormTitle("ai.title");		
 		setFormDescription("ai.desc");
 		setFormInfo("ai.privacy");
+		setFormWarning("warn.beta.feature");
+
 
 		// Use "-" as key for "disabled" on position 0, then list all other available providers
 		List<AiSPI> spies = aiModule.getAiProviders();

@@ -74,7 +74,7 @@ public class OpenAIAdminConfigFormController extends FormBasicController {
 
 		String chatModel = openAiSPI.getChatModel();
 		chatModelEl = uifactory.addTextElement("ai.openai.chatmodel", "ai.openai.chatmodel", 64, chatModel, formLayout);
-		chatModelEl.setPlaceholderText("GPT-3.5 Turbo");
+		chatModelEl.setPlaceholderText("gpt-3.5-turbo");
 		chatModelEl.setMandatory(true);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

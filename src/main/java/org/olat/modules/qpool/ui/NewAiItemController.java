@@ -116,11 +116,14 @@ public class NewAiItemController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_new_item_form");
+		setFormWarning("warn.beta.feature");
+		setFormDescription("ai.desc");
 
 		contentEl = uifactory.addTextAreaElement("ai.content", 10, 100, "", formLayout);
 		contentEl.setPlaceholderKey("ai.content.placeholder", null);
 		contentEl.setNotLongerThanCheck(6000, "form.error.toolong");
 		contentEl.setNotEmptyCheck();
+		contentEl.setExampleKey("ai.max", new String[]{"6000"});
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);
