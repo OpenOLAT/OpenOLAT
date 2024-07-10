@@ -157,7 +157,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == scoreCtrl || source == efficiencyStatementCtrl
-				|| source == certificatesCtrl || source == recertificationCtrl) {
+				|| source == certificatesCtrl || source == recertificationCtrl || source == badgesCtrl) {
 			fireEvent(ureq, event);
 			updateUI(ureq);
 		}

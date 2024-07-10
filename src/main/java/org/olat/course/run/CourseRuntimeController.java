@@ -1563,6 +1563,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				toolControllerDone(ureq, null);
 			} else if(event instanceof QuickPublishEvent qpe) {
 				toolControllerDone(ureq, qpe.getSelectedCourseNodeIdent());
+			} else if (event == Event.CHANGED_EVENT) {
+				initToolbar();
 			}
 		}  else if(source == leaveDialogBox) {
 			if (event.equals(Event.DONE_EVENT)) {
