@@ -1117,19 +1117,6 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		cmc = null;
 	}
 
-	private static class ToolsCellRenderer extends StaticFlexiCellRenderer {
-
-		public ToolsCellRenderer(String label, String action) {
-			super(null, action, false, false, null, "o_icon o_icon_actions o_icon-fw o_icon-lg", label);
-		}
-
-		@Override
-		protected String getId(Object cellValue, int row, FlexiTableComponent source) {
-			FeedItemRow feedItemRow = (FeedItemRow) source.getFormItem().getTableDataModel().getObject(row);
-			return "o-tools-".concat(feedItemRow.getItem().getGuid());
-		}
-	}
-
 	private class ToolsController extends BasicController {
 
 		private final Link editLink;
@@ -1166,12 +1153,17 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				artefactLink = null;
 			}
 
-			links.add(editLink.getComponentName());
+			if (feedSecCallback.mayEditItems()) {
+				links.add(editLink.getComponentName());
+			}
 			if (artefactLink != null) {
 				links.add(artefactLink.getComponentName());
 			}
-			links.add("-");
-			links.add(deleteLink.getComponentName());
+			if (feedSecCallback.mayDeleteItems()) {
+				links.add("-");
+				links.add(deleteLink.getComponentName());
+			}
+
 
 			putInitialPanel(mainVC);
 		}

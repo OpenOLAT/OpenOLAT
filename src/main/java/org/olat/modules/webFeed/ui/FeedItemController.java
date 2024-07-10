@@ -85,14 +85,18 @@ public class FeedItemController extends BasicController implements Activateable2
 				artefactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eportfolio_add");
 				artefactLink.setGhost(true);
 			}
-			editLink = LinkFactory.createLink("editButton", "editButton", "edit", "feed.item.edit", getTranslator(), vcItem, this, Link.BUTTON);
-			editLink.setTitle("feed.item.edit");
-			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
-			editLink.setGhost(true);
-			deleteLink = LinkFactory.createLink("deleteButton", "deleteButton", "delete","delete", getTranslator(), vcItem, this, Link.BUTTON);
-			deleteLink.setTitle("delete");
-			deleteLink.setGhost(true);
-			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
+			if (callback.mayEditItems()) {
+				editLink = LinkFactory.createLink("editButton", "editButton", "edit", "feed.item.edit", getTranslator(), vcItem, this, Link.BUTTON);
+				editLink.setTitle("feed.item.edit");
+				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+				editLink.setGhost(true);
+			}
+			if (callback.mayDeleteItems()) {
+				deleteLink = LinkFactory.createLink("deleteButton", "deleteButton", "delete","delete", getTranslator(), vcItem, this, Link.BUTTON);
+				deleteLink.setTitle("delete");
+				deleteLink.setGhost(true);
+				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
+			}
 		}
 
 		backLink = LinkFactory.createLink("back.link", "backLink", getTranslator(), vcItem, this, Link.LINK_BACK);
