@@ -351,7 +351,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			commentLink.setUserObject(row);
 
 			forgeRating(row, feedItemDTO.avgRating());
-			if (feedRss.isInternal()) {
+			if (feedRss.isInternal() && (feedSecCallback.mayEditMetadata() || feedSecCallback.mayDeleteItems())) {
 				createButtonsForFeedItem(row);
 			}
 
