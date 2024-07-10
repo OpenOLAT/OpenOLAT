@@ -52,7 +52,7 @@
 		<div class="o_folder_card_modified o_flex_block_one_line_left">
 			<div class="o_nowrap o_muted">
 				#if($row.modified)
-					$row.modified
+					$r.escapeHtml($row.modified)
 				#else
 					&nbsp;
 				#end
