@@ -194,15 +194,20 @@ public class IdentityAssessmentFiguresController extends BasicController {
 	private void initWidgets() {
 		widgetGroup = WidgetFactory.createWidgetGroup("widgets", mainVC);
 		passedWidget = WidgetFactory.createTextWidget("passed", null, translate("passed.success.status"), "o_icon_success_status");
+		passedWidget.setVisible(false);
 		widgetGroup.add(passedWidget);
 		progressWidget = WidgetFactory.createTextWidget("progress", null, translate("learning.progress"), "o_icon_progress");
+		progressWidget.setVisible(false);
 		widgetGroup.add(progressWidget);
 		gradeWidget = WidgetFactory.createFigureWidget("grade", null, null, "o_icon_grade");
+		gradeWidget.setVisible(false);
 		widgetGroup.add(gradeWidget);
 		scoreWidget = WidgetFactory.createFigureWidget("score", null, translate("score"), "o_icon_score");
 		scoreWidget.setAdditionalCssClass("o_widget_progress");
+		scoreWidget.setVisible(false);
 		widgetGroup.add(scoreWidget);
 		scoreResultsNotVisibleWidget = WidgetFactory.createTextWidget("score.rnv", null, translate("score"), "o_icon_score");
+		scoreResultsNotVisibleWidget.setVisible(false);
 		widgetGroup.add(scoreResultsNotVisibleWidget);
 		widgetGroup.add(courseWidget);
 		widgetGroup.add(groupWidget);
@@ -420,6 +425,9 @@ public class IdentityAssessmentFiguresController extends BasicController {
 			scoreResultsNotVisibleWidget.setVisible(false);
 			return;
 		}
+		
+		scoreWidget.setVisible(true);
+		scoreResultsNotVisibleWidget.setVisible(true);
 		
 		scoreWidget.setSubTitle(weighted? translate("score.weighted.subtitle"): null);
 		scoreResultsNotVisibleWidget.setSubTitle(weighted? translate("score.weighted.subtitle"): null);
