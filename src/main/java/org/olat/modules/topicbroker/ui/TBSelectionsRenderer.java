@@ -19,6 +19,9 @@
  */
 package org.olat.modules.topicbroker.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -40,17 +43,19 @@ public class TBSelectionsRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof TBParticipantRow participantRow) {
-			target.append("<div class=\"o_tb_priority_labels\">");
+			List<String> formatedLabels = new ArrayList<>(participantRow.getMaxSelections());
 			for (TBSelection selection : participantRow.getSelections()) {
 				TBSelectionStatus status = TBUIFactory.getSelectionStatus(participantRow.getBroker(),
 						participantRow.getRequiredEnrollments(), participantRow.getNumEnrollments(),
 						true, selection.isEnrolled(), selection.getSortOrder());
-				target.append(TBUIFactory.getPriorityLabel(translator, status, selection.getSortOrder()));
+				formatedLabels.add(TBUIFactory.getPriorityLabel(translator, status, selection.getSortOrder()));
 			}
 			for (int i = participantRow.getNumSelections() + 1; i <= participantRow.getMaxSelections(); i++) {
-				target.append(TBUIFactory.getPriorityLabel(translator, TBSelectionStatus.fillIn, i));
+				formatedLabels.add(TBUIFactory.getPriorityLabel(translator, TBSelectionStatus.fillIn, i));
 			}
-			target.append("</div>");
+			
+			
+			target.append(TBUIFactory.getPriorityLabelsAsRow(formatedLabels));
 		}
 	}
 

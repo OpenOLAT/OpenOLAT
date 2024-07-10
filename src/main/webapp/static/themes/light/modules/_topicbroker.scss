@@ -4,6 +4,7 @@
 	.o_tb_topic_teaser_visual {
 		max-width: 300px;
 		max-height: 300px;
+		overflow-y: hidden;
 	}
 	.o_tb_topic_meta {
 		display: flex;
@@ -85,14 +86,6 @@
 					place-self: start start;
 					margin-top: $o-tb_topic-card-image-margin;
 					margin-left: $o-tb_topic-card-image-margin;
-					min-height: $o-tb-topic-card-title-abbr-size;
-					min-width: $o-tb-topic-card-title-abbr-size;
-					display: grid;
-					align-content: center;
-					color: $o-tb-topic-card-title-abbr-color;
-					background-color: $o-tb-topic-card-title-abbr-bg-color;
-					border: $o-tb-topic-card-title-abbr-border;
-					border-radius: $o-tb-topic-card-title-abbr-border-radius;
 				}
 				.o_tb_topic_status_label {
 					place-self: end start;
@@ -140,6 +133,19 @@
 	}
 }
 
+.o_tb_topic_title_abbr {
+	min-height: $o-tb-topic-card-title-abbr-size;
+	min-width: $o-tb-topic-card-title-abbr-size;
+	max-height: $o-tb-topic-card-title-abbr-size;
+	max-width: $o-tb-topic-card-title-abbr-size;
+	display: grid;
+	align-content: center;
+	justify-content: center;
+	color: $o-tb-topic-card-title-abbr-color;
+	background-color: $o-tb-topic-card-title-abbr-bg-color;
+	border: $o-tb-topic-card-title-abbr-border;
+	border-radius: $o-tb-topic-card-title-abbr-border-radius;
+}
 
 .o_tb_participant_num_cols {
 	display: grid;
@@ -188,6 +194,10 @@
 	&.o_tb_label_broker_selection_in_progress {
 		@extend %o_labeled_yellow;
 	}
+	&.o_tb_label_broker_enrollment_in_progress {
+		background-color: $o-tb-broker-enrollment-in-progress-color;
+		border-color: $o-tb-broker-enrollment-in-progress-color;
+	}
 	&.o_tb_label_broker_enrollment_done {
 		background-color: $o-tb-broker-enrollment-done-color;
 		border-color: $o-tb-broker-enrollment-done-color;
@@ -215,16 +225,18 @@
 		color: 				$o-tb-priority-not-enrolled-color;
 		border-color: 		$o-tb-priority-not-enrolled-color;
 	}
-	&.o_tb_label_light_extra {
-		color: 				$o-tb-priority-extra-color;
-		border-color: 		$o-tb-priority-extra-color;
+	&.o_tb_label_light_surplus {
+		color: 				$o-tb-priority-surplus-color;
+		border-color: 		$o-tb-priority-surplus-color;
 	}
 }
 .o_tb_priority_label {
 	display: grid;
-	justify-items: center;
+	justify-items: stretch;
 	min-width: 22px;
 	>div {
+		display: grid;
+		justify-items: center;
 		border-radius: 20px;
 		border: 1px solid;
 		padding: 0 6px;
@@ -247,10 +259,10 @@
 		border-color: $o-tb-priority-not-enrolled-color;
 		background-color: $o-tb-priority-not-enrolled-color-inv;
 	}
-	>.o_tb_priority_extra {
-		color: $o-tb-priority-extra-color;
-		border-color: $o-tb-priority-extra-color;
-		background-color: $o-tb-priority-extra-color-inv;
+	>.o_tb_priority_surplus {
+		color: $o-tb-priority-surplus-color;
+		border-color: $o-tb-priority-surplus-color;
+		background-color: $o-tb-priority-surplus-color-inv;
 	}
 	>.o_tb_priority_fillin {
 		color: $o-tb-priority-fillin-color;

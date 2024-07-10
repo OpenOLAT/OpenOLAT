@@ -317,9 +317,6 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 		selectionSearchParams.setBroker(broker);
 		selectionSearchParams.setIdentity(getIdentity());
-		if (!periodEvaluator.isSelectionPeriod() && !periodEvaluator.isBeforeSelectionPeriod()) {
-			selectionSearchParams.setEnrolledOrMaxSortOrder(broker.getMaxSelections());
-		}
 		List<TBSelection> selections = topicBrokerService.getSelections(selectionSearchParams);
 		Map<Long, TBSelection> topicKeyToSelection = selections.stream()
 				.collect(Collectors.toMap(selection -> selection.getTopic().getKey(), Function.identity()));
@@ -343,7 +340,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				row.setSelectionSortOrder(selection.getSortOrder());
 				row.setEnrolled(selection.isEnrolled());
 				forgeStatus(row, maxEnrollments, numEnrollments);
-				row.setPriorityLabel("<div class=\"o_tb_priority_labels\">" + TBUIFactory.getPriorityLabel(getTranslator(), row.getStatus(), selection.getSortOrder()) + "</div>");
+				row.setPriorityLabel(TBUIFactory.getPriorityLabelAsRow(getTranslator(), row.getStatus(), selection.getSortOrder()));
 				forgeUpDown(row);
 				selectionRows.add(row);
 			}
@@ -548,7 +545,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		for (int i = selectionRows.size() + 1; i <= broker.getMaxSelections(); i++) {
 			TBSelectionRow row = new TBSelectionRow();
 			row.setSelectionSortOrder(i);
-			row.setPriorityLabel("<div class=\"o_tb_priority_labels\">" + TBUIFactory.getPriorityLabel(getTranslator(), TBSelectionStatus.fillIn, i) + "</div>");
+			row.setPriorityLabel(TBUIFactory.getPriorityLabelAsRow(getTranslator(), TBSelectionStatus.fillIn, i));
 			selectionRows.add(row);
 		}
 	}
@@ -695,6 +692,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == maxEnrollmentsEl) {
 			doUpdateParticipant();
+			loadModel(true);
 		} else if (topicTableEl == source) {
 			if (event instanceof FlexiTableSearchEvent ftse) {
 				loadModel(true);

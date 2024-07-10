@@ -35,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
@@ -171,9 +170,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 
 	private void initSelectionTable(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel selectionColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		DefaultFlexiColumnModel priorityColumn = new DefaultFlexiColumnModel(SelectionCols.priority, new TextFlexiCellRenderer(EscapeMode.none));
-		priorityColumn.setAlignment(FlexiColumnModel.ALIGNMENT_CENTER);
-		selectionColumnsModel.addFlexiColumnModel(priorityColumn);
+		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.priority, new TextFlexiCellRenderer(EscapeMode.none)));
 		
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title));
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.status, statusRenderer));
@@ -209,7 +206,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 			row.setSelectionSortOrder(selection.getSortOrder());
 			row.setEnrolled(selection.isEnrolled());
 			forgeStatus(row, requiredEnrollments, numEnrollments);
-			row.setPriorityLabel(TBUIFactory.getPriorityLabel(getTranslator(), row.getStatus(), selection.getSortOrder()));
+			row.setPriorityLabel(TBUIFactory.getPriorityLabelAsRow(getTranslator(), row.getStatus(), selection.getSortOrder()));
 			
 			forgeToolsLink(row);
 			
@@ -239,7 +236,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		for (int i = selectionRows.size() + 1; i <= broker.getMaxSelections(); i++) {
 			TBSelectionRow row = new TBSelectionRow();
 			row.setSelectionSortOrder(i);
-			row.setPriorityLabel(TBUIFactory.getPriorityLabel(getTranslator(), TBSelectionStatus.fillIn, i));
+			row.setPriorityLabel(TBUIFactory.getPriorityLabelAsRow(getTranslator(), TBSelectionStatus.fillIn, i));
 			selectionRows.add(row);
 		}
 	}

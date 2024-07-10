@@ -105,6 +105,8 @@ public class TBSelectionDetailHeaderController extends FormBasicController {
 				ic.setMaxWithAndHeightToFitWithin(IMAGE_WIDTH, IMAGE_HEIGHT);
 			}
 			flc.put("thumbnail", ic);
+		} else {
+			flc.contextPut("titleAbbr", TBUIFactory.getTitleAbbr(topic.getTitle()));
 		}
 		flc.contextPut("title", topic.getTitle());
 		

@@ -31,7 +31,7 @@ public enum TBSelectionStatus {
 	enrolled,
 	waitingList,
 	notEnrolled,
-	extra,
+	surplus,
 	fillIn
 	;
 

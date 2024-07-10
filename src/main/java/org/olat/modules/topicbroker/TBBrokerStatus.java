@@ -29,6 +29,7 @@ public enum TBBrokerStatus {
 	
 	notStarted,
 	selectionInProgess,
+	enrollmentInProgess,
 	enrollmentDone
 	;
 

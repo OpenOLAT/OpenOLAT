@@ -285,9 +285,6 @@ public class TBParticipantListController extends FormBasicController implements 
 		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 		selectionSearchParams.setBroker(broker);
 		selectionSearchParams.setIdentities(identities);
-		if (broker.getSelectionEndDate() != null && broker.getSelectionEndDate().before(new Date())) {
-			selectionSearchParams.setEnrolledOrMaxSortOrder(broker.getMaxSelections());
-		}
 		selectionSearchParams.setFetchParticipant(true);
 		selectionSearchParams.setFetchTopic(true);
 		Map<Long, List<TBSelection>> identityKeyToSelections = topicBrokerService.getSelections(selectionSearchParams).stream()

@@ -1120,6 +1120,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_method { @include o-add-icon('shuffle');}
 .o_icon_tb_broker_not_started { @include o-add-icon('circle');}
 .o_icon_tb_broker_selection_in_progress { @include o-add-icon('circle-play');}
+.o_icon_tb_broker_enrollment_in_progress { @include o-add-icon('hand-point-up');}
 .o_icon_tb_broker_enrollment_done { @include o-add-icon('check-circle');}
 .o_icon_tb_edit_enrollments { @include o-add-icon('check');}
 .o_icon_tb_enroll { @include o-add-icon('rotate-right');}
@@ -1128,7 +1129,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_participants { @include o-add-icon('user-group');}
 .o_icon_tb_enrollments { @include o-add-icon('clipboard-list');}
 .o_icon_tb_selection_enrolled { @include o-add-icon('check-circle');}
-.o_icon_tb_selection_extra { @include o-add-icon('e');}
+.o_icon_tb_selection_surplus { @include o-add-icon('circle-minus');}
 .o_icon_tb_selection_not_enrolled { @include o-add-icon('n');}
 .o_icon_tb_selection_selected { @include o-add-icon('check-circle');}
 .o_icon_tb_selection_waiting_list { @include o-add-icon('hourglass');}

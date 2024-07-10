@@ -20,6 +20,7 @@
 package org.olat.modules.topicbroker.ui;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
@@ -51,6 +52,9 @@ public class TBUIFactory {
 		if (broker.getEnrollmentDoneDate() != null) {
 			return TBBrokerStatus.enrollmentDone;
 		}
+		if (broker.getSelectionEndDate() != null && broker.getSelectionEndDate().before(new Date())) {
+			return TBBrokerStatus.enrollmentInProgess;
+		}
 		if (broker.getSelectionStartDate() != null && broker.getSelectionStartDate().before(new Date())) {
 			return TBBrokerStatus.selectionInProgess;
 		}
@@ -62,6 +66,7 @@ public class TBUIFactory {
 			switch (status) {
 			case notStarted: return translator.translate("broker.status.not.started");
 			case selectionInProgess: return translator.translate("broker.status.selection.in.progress");
+			case enrollmentInProgess: return translator.translate("broker.status.enrollment.in.progress");
 			case enrollmentDone: return translator.translate("broker.status.enrollment.done");
 			default:
 			}
@@ -74,6 +79,7 @@ public class TBUIFactory {
 			switch (status) {
 			case notStarted: return "o_icon_tb_broker_not_started";
 			case selectionInProgess: return "o_icon_tb_broker_selection_in_progress";
+			case enrollmentInProgess: return "o_icon_tb_broker_enrollment_in_progress";
 			case enrollmentDone: return "o_icon_tb_broker_enrollment_done";
 			default:
 			}
@@ -86,6 +92,7 @@ public class TBUIFactory {
 			switch (status) {
 			case notStarted: return "o_tb_label_broker_not_started";
 			case selectionInProgess: return "o_tb_label_broker_selection_in_progress";
+			case enrollmentInProgess: return "o_tb_label_broker_enrollment_in_progress";
 			case enrollmentDone: return "o_tb_label_broker_enrollment_done";
 			default:
 			}
@@ -111,7 +118,7 @@ public class TBUIFactory {
 		}
 		
 		if (sortOrder > broker.getMaxSelections()) {
-			return TBSelectionStatus.extra;
+			return TBSelectionStatus.surplus;
 		}
 		
 		if (numEnrollments >= requiredEnrollments) { // fully enrolled
@@ -132,7 +139,7 @@ public class TBUIFactory {
 			case enrolled: return translator.translate("selection.status.enrolled");
 			case waitingList: return translator.translate("selection.status.waiting.list");
 			case notEnrolled: return translator.translate("selection.status.not.enrolled");
-			case extra: return translator.translate("selection.status.extra");
+			case surplus: return translator.translate("selection.status.surplus");
 			default:
 			}
 		}
@@ -146,7 +153,7 @@ public class TBUIFactory {
 			case enrolled: return "o_icon_tb_selection_enrolled";
 			case waitingList: return "o_icon_tb_selection_waiting";
 			case notEnrolled: return "o_icon_tb_selection_not_enrolled";
-			case extra: return "o_icon_tb_selection_extra";
+			case surplus: return "o_icon_tb_selection_surplus";
 			default:
 			}
 		}
@@ -160,7 +167,7 @@ public class TBUIFactory {
 			case enrolled: return "o_tb_label_light_enrolled";
 			case waitingList: return "o_tb_label_light_waiting";
 			case notEnrolled: return "o_tb_label_light_not_enrolled";
-			case extra: return "o_tb_label_light_extra";
+			case surplus: return "o_tb_label_light_surplus";
 			case fillIn: return "o_tb_label_light_fillin";
 			default:
 			}
@@ -175,7 +182,7 @@ public class TBUIFactory {
 			case enrolled: return "o_tb_priority_enrolled";
 			case waitingList: return "o_tb_priority_waiting";
 			case notEnrolled: return "o_tb_priority_not_enrolled";
-			case extra: return "o_tb_priority_extra";
+			case surplus: return "o_tb_priority_surplus";
 			case fillIn: return "o_tb_priority_fillin";
 			default:
 			}
@@ -188,14 +195,27 @@ public class TBUIFactory {
 		label += "<div class=\"";
 		label += getPriorityCss(status);
 		label += "\">";
-		if (TBSelectionStatus.extra == status) {
-			label += translator.translate("selection.extra.abbr");
+		if (TBSelectionStatus.surplus == status) {
+			label += translator.translate("selection.surplus.abbr");
 		} else {
 			label += sortOrder;
 		}
 		label += "</div>";
 		label += "</div>";
 		return label;
+	}
+	
+	public static final String getPriorityLabelAsRow(Translator translator, TBSelectionStatus status, int sortOrder) {
+		return getPriorityLabelsAsRow(List.of(getPriorityLabel(translator, status, sortOrder)));
+	}
+	
+	public static final String getPriorityLabelsAsRow(List<String> formatedLabels) {
+		String labels = "<div class=\"o_tb_priority_labels\">";
+		for (String formatedLabel : formatedLabels) {
+			labels += formatedLabel;
+		}
+		labels += "</div>";
+		return labels;
 	}
 
 	public static String getTitleAbbr(String title) {
