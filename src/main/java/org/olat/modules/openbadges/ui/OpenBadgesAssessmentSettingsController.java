@@ -31,12 +31,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.ui.settings.ReloadSettingsEvent;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -149,6 +149,6 @@ public class OpenBadgesAssessmentSettingsController extends FormBasicController 
 
 		configuration = openBadgesManager.updateConfiguration(configuration);
 
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, new ReloadSettingsEvent(false, false, true, false));
 	}
 }
