@@ -49,8 +49,6 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.course.core.CourseElement;
-import org.olat.course.core.CourseElementSearchParams;
 import org.olat.course.core.manager.CourseElementDAO;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.openbadges.OpenBadgesManager;
@@ -392,12 +390,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 			courseElementsKV = new SelectionValues();
 			if (createContext.isCourseBadge()) {
-				CourseElementSearchParams courseElementSearchParams = new CourseElementSearchParams();
-				courseElementSearchParams.setRepositoryEntries(Collections.singletonList(createContext.getBadgeClass().getEntry()));
-				courseElementDao.load(courseElementSearchParams).stream()
-						.filter(CourseElement::isAssesseable)
-						.filter(ce -> !STCourseNode.TYPE.equals(ce.getType()))
-						.forEach(courseElement -> courseElementsKV.add(SelectionValues.entry(courseElement.getSubIdent(), courseElement.getShortTitle())));
+				createContext.assessableCourseNodes().stream()
+						.filter(courseNode -> !STCourseNode.TYPE.equals(courseNode.getType()))
+						.forEach(courseNode -> courseElementsKV.add(SelectionValues.entry(courseNode.getIdent(), courseNode.getShortName())));
 			}
 
 			coursesKV = new SelectionValues();

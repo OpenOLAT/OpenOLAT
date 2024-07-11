@@ -20,6 +20,7 @@
 package org.olat.modules.openbadges.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -31,9 +32,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
@@ -82,6 +86,17 @@ public class CreateBadgeClassWizardContext {
 		}
 		NodeAccessType nodeAccessType  = courseEnv.getCourseConfig().getNodeAccessType();
 		return LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType());
+	}
+
+	public List<CourseNode> assessableCourseNodes() {
+		if (courseResourcableId == null) {
+			return new ArrayList<>();
+		}
+
+		ICourse course = CourseFactory.loadCourse(courseResourcableId);
+		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
+
+		return AssessmentHelper.getAssessableNodes(entry, editorModel, null);
 	}
 
 	public boolean isGlobalBadge() {
