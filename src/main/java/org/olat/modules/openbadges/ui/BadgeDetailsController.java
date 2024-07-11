@@ -91,6 +91,7 @@ public class BadgeDetailsController extends FormBasicController {
 	private final Long badgeClassKey;
 	private final String mediaUrl;
 	private final RepositoryEntrySecurity reSecurity;
+	private String name;
 	private FormLink editDetailsButton;
 	private FormLink courseEl;
 	private StaticTextElement validityPeriodEl;
@@ -166,6 +167,7 @@ public class BadgeDetailsController extends FormBasicController {
 
 	private void loadData() {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassKey);
+		name = badgeClass.getNameWithScan();
 
 		flc.contextPut("img", mediaUrl + "/" + badgeClass.getImage());
 		flc.contextPut("badgeClass", badgeClass);
@@ -258,6 +260,9 @@ public class BadgeDetailsController extends FormBasicController {
 			if (event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				getWindowControl().pop();
 				removeAsListenerAndDispose(addStepsController);
+			}
+			if (event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, event);
 			}
 		} else if (source == issueGlobalBadgeCtrl) {
 			cmc.deactivate();
@@ -521,5 +526,9 @@ public class BadgeDetailsController extends FormBasicController {
 				doViewBadgeInfo(ureq, badgeAssertion);
 			}
 		}
+	}
+
+	public String getName() {
+		return name;
 	}
 }
