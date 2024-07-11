@@ -20,10 +20,12 @@
 package org.olat.user.propertyhandlers;
 
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.id.User;
 
@@ -37,10 +39,13 @@ import org.olat.core.id.User;
  */
 public class PastDatePropertyHandler extends DatePropertyHandler {
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem,
-	 *      java.util.Map)
-	 */
+	@Override
+	public FormItem addFormItem(Locale locale, final User user, String usageIdentifyer, boolean isAdministrativeUser,	FormItemContainer formItemContainer) {
+		DateChooser chooser = (DateChooser)super.addFormItem(locale, user, usageIdentifyer, isAdministrativeUser, formItemContainer);
+		chooser.set2DigitsYearFormat(false);
+		return chooser;
+	}
+	
 	@Override
 	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		boolean isValidDate = super.isValid(user, formItem, formContext);

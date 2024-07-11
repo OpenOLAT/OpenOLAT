@@ -83,6 +83,18 @@ public interface DateChooser extends TextElement {
 	public void setKeepTime(boolean keepTime);
 	
 	public boolean isKeepTime();
+	
+	/**
+	 * @return true year with 2 digits, false with 4 digits
+	 */
+	public boolean is2DigitsYearFormat();
+	
+	/**
+	 * Set the number of digits for the year. Default is true.
+	 * 
+	 * @param shortFormat true set to 2 digits, false set to 4
+	 */
+	public void set2DigitsYearFormat(boolean shortFormat);
 
 	/**
 	 * Enable or disable the hour and minute fields.
