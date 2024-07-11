@@ -28,12 +28,17 @@
     	if(typeof editor === "undefined" || editor == null) {
     		editor = new ContentEditor(this.get(0), options);
     		this.data("data-oo-ceditor", editor);
-    	} else if("editFragment" === options) {
+    	} else if(options && options.resetDrake) {
 			editor.drake.destroy();
     		editor.drake = initDrake(editor.settings);
 		} else {// if the same DOM element exists
-    		editor.initWindowListener(editor.settings);
-    		editor.drake = editor.initDrake(editor.settings);
+			if (editor.initWindowListener) {
+				editor.initWindowListener(editor.settings);
+			}
+
+			if (editor.initDrake && typeof editor.initDrake === "function") {
+				editor.drake = editor.initDrake(editor.settings);
+			}
     	}
     	return editor;
 	};
@@ -43,7 +48,13 @@
 			componentUrl: '',
 			csrfToken: ''
 		}, params);
-		
+
+		if (!this.settings.csrfToken) {
+			if (window.console) {
+				console.log('csrf token missing');
+			}
+		}
+
 		initWindowListener(this.settings);
 		this.container = container;
 		this.drake = initDrake(this.settings);
