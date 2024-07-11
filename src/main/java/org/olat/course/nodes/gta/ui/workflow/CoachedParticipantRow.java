@@ -61,6 +61,7 @@ public class CoachedParticipantRow extends UserPropertiesRow {
 	private DueDate lateSubmissionDueDate;
 	private boolean lateSubmission;
 	private boolean canCollectSubmission;
+	private boolean canViewSubmittedDocuments;
 
 	private boolean correctionsDoneWithoutDocuments;
 	
@@ -68,7 +69,6 @@ public class CoachedParticipantRow extends UserPropertiesRow {
 	private TaskRevision lastRevision;
 	
 	private DueDate solutionDueDate;
-	
 	
 	private FormLink markLink;
 	private String coachFullName;
@@ -160,6 +160,14 @@ public class CoachedParticipantRow extends UserPropertiesRow {
 
 	public void setCanCollectSubmission(boolean canCollectSubmission) {
 		this.canCollectSubmission = canCollectSubmission;
+	}
+
+	public boolean isCanViewSubmittedDocuments() {
+		return canViewSubmittedDocuments;
+	}
+
+	public void setCanViewSubmittedDocuments(boolean canViewSubmittedDocuments) {
+		this.canViewSubmittedDocuments = canViewSubmittedDocuments;
 	}
 
 	public boolean isSubmissionExtended() {

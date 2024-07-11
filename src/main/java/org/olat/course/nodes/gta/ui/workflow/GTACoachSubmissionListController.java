@@ -121,15 +121,34 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 	protected void initConfigurationInfos(InfoPanelItem panel) {
 		StringBuilder infos = new StringBuilder();
 		
-		DueDateConfig dueDateConfig = gtaNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
+		String deadlineInfos = null;
+		String lateDeadlineInfos = null;
+		DueDateConfig dueDateConfig = gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
 		if(dueDateConfig != DueDateConfig.noDueDateConfig()) {
 			String dueDateVal = dueDateConfigToString(dueDateConfig);
 			if(StringHelper.containsNonWhitespace(dueDateVal)) {
-				String deadlineInfos = translate("workflow.deadline.submission", dueDateVal);
-				infos.append("<p><i class='o_icon o_icon-fw o_icon_timelimit'> </i> ").append(deadlineInfos).append("</p>");
+				deadlineInfos = translate("workflow.deadline.submission", dueDateVal);
 			}
 		}
-		
+			
+		DueDateConfig lateDueDateConfig = gtaNode.getDueDateConfig(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE);
+		if(lateDueDateConfig != DueDateConfig.noDueDateConfig()) {
+			String lateDueDateVal = dueDateConfigToString(dueDateConfig);
+			if(StringHelper.containsNonWhitespace(lateDueDateVal)) {
+				lateDeadlineInfos = translate("workflow.deadline.submission.late", lateDueDateVal);
+			}
+		}
+
+		if(deadlineInfos != null || lateDeadlineInfos != null) {
+			String allDeadlinesInfos = deadlineInfos;
+			if(allDeadlinesInfos == null) {
+				allDeadlinesInfos = lateDeadlineInfos;
+			} else if(lateDeadlineInfos != null) {
+				allDeadlinesInfos += " - " + lateDeadlineInfos;
+			}
+			infos.append("<p><i class='o_icon o_icon-fw o_icon_timelimit'> </i> ").append(allDeadlinesInfos).append("</p>");
+		}
+	
 		// Number of documents
 		int minDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		int maxDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
@@ -252,6 +271,7 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 		Task assignedTask = identityRow.getTask();
 
 		//calculate state
+		identityRow.setCanViewSubmittedDocuments(false);
 		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment) {
 				identityRow.setStatus(CoachedParticipantStatus.notAvailable);
@@ -265,7 +285,7 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 				identityRow.setCanCollectSubmission(true);
 			} else {
 				identityRow.setStatus(CoachedParticipantStatus.done);
-
+				identityRow.setCanViewSubmittedDocuments(true);
 			}	
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
 			if(isSubmissionLate(identityRow.getSubmissionDueDate(), identityRow.getLateSubmissionDueDate())) {
@@ -278,6 +298,7 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 			identityRow.setCanCollectSubmission(true);
 		} else {
 			identityRow.setStatus(CoachedParticipantStatus.done);
+			identityRow.setCanViewSubmittedDocuments(true);
 		}
 		
 		if (assignedTask == null || (assignedTask.getTaskStatus() != TaskProcess.submit)) {
@@ -392,7 +413,7 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 			row.setDetailsControllerEl(null);
 		}
 		
-		if(!documentsContainer.getItems(new VFSSystemItemFilter()).isEmpty()) {
+		if(row.isCanViewSubmittedDocuments() && !documentsContainer.getItems(new VFSSystemItemFilter()).isEmpty()) {
 			DirectoryController submittedDocCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
 					"coach.submitted.documents.description", "bulk.submitted.documents", "submission");
 			listenTo(submittedDocCtrl);
@@ -454,9 +475,8 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 	}
 	
 	private void doCollectTask(CoachedParticipantRow row) {
-		Task task = gtaManager.getTask(row.getTask());
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-		doCollectTask(task, assessedIdentity);
+		doCollectTask(row.getTask(), assessedIdentity);
 	}
 	
 	private void doCollectTask(Task task, Identity assessedIdentity) {
@@ -471,6 +491,8 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 		if(task == null && gtaNode.isOptional(courseEnv, userCourseEnv)) {
 			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
 			task = gtaManager.createTask(null, taskList, firstStep, null, assessedIdentity, gtaNode);
+		} else {
+			task = gtaManager.getTask(task);
 		}
 		
 		int numOfDocs = submittedDocuments == null ? 0 : submittedDocuments.length;
@@ -524,7 +546,8 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 	}
 	
 	private boolean canBackToSubmission(CoachedParticipantRow row) {
-		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT) && row.getTask() != null) {
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT) &&
+				(row.getTask() == null || row.getTask().getTaskStatus() != TaskProcess.submit)) {
 			Date now = new Date();
 			DueDate dueDate = row.getSubmissionDueDate();
 			if(!coachCourseEnv.isCourseReadOnly() && (dueDate == null || dueDate.getDueDate() == null || now.before(dueDate.getDueDate()))) {
