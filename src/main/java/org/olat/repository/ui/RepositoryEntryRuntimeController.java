@@ -741,6 +741,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 		if(event.isChangedToolbar()) {
 			initToolsMenu(tools);
+			toolbarPanel.setDirty(true);
 		}
 		if(event.isChangedStatus()) {
 			reloadStatus();

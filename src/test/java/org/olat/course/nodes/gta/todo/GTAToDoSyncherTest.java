@@ -404,6 +404,8 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		CourseFactory.publishCourse(course, status, doer, Locale.ENGLISH);
 		dbInstance.commitAndCloseSession();
 		
+		waitMessageAreConsumed();// Try it
+		
 		return repositoryManager.lookupRepositoryEntry(courseEntry.getKey());
 	}
 	
