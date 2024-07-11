@@ -366,7 +366,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	private void setPeerReview(UserRequest ureq, Task assignedTask) {
 		peerReviewController = new GTACoachPeerReviewController(ureq, getWindowControl(), stackPanel,
-				taskList, assignedTask, assessedIdentity, courseEnv, courseEntry, gtaNode);
+				taskList, assignedTask, assessedIdentity, courseEnv, gtaNode);
 		listenTo(peerReviewController);
 		mainVC.put("peerReviews", peerReviewController.getInitialComponent());
 	}
@@ -491,10 +491,10 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		if(revisions) {
 			if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
-					courseEnv, assignedTask, taskRevisions, gtaNode, coachCourseEnv, null, assessedIdentity, taskListEventResource);
+					courseEnv, assignedTask, taskRevisions, gtaNode, coachCourseEnv, null, assessedIdentity, taskListEventResource, null);
 			} else {
 				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
-					courseEnv, assignedTask, taskRevisions, gtaNode, coachCourseEnv, assessedGroup, null, taskListEventResource);
+					courseEnv, assignedTask, taskRevisions, gtaNode, coachCourseEnv, assessedGroup, null, taskListEventResource, null);
 			}
 			listenTo(revisionDocumentsCtrl);
 			mainVC.put("revisionDocs", revisionDocumentsCtrl.getInitialComponent());

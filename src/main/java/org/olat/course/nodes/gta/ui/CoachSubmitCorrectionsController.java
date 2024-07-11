@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -57,6 +58,7 @@ public class CoachSubmitCorrectionsController extends SubmitDocumentsController 
 	private FormLink reviewedButton;
 	private FormLink needRevisionsButton;
 	
+	private Object userObject;
 	private TaskRevision taskRevision;
 	private final Identity assessedIdentity;
 	private final BusinessGroup assessedGroup;
@@ -79,6 +81,29 @@ public class CoachSubmitCorrectionsController extends SubmitDocumentsController 
 		}
 	}
 	
+	public CoachSubmitCorrectionsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
+			TaskRevision taskRevision, Identity assessedIdentity, BusinessGroup assessedGroup, File documentsDir,
+			VFSContainer documentsContainer, GTACourseNode cNode, CourseEnvironment courseEnv, boolean readOnly,
+			Date deadline, String docI18nKey, VFSContainer submitContainer, String copyEnding, String copyI18nKey, Form rootForm) {
+		super(ureq, wControl,  assignedTask, documentsDir, documentsContainer, -1, -1, assessedIdentity, assessedGroup,
+				cNode, courseEnv, readOnly, true, true, deadline, docI18nKey, submitContainer, copyEnding, copyI18nKey, rootForm);
+		this.assignedTask = assignedTask;
+		this.taskRevision = taskRevision;
+		this.assessedGroup = assessedGroup;
+		this.assessedIdentity = assessedIdentity;
+		if(taskRevision != null) {
+			commentEl.setValue(taskRevision.getComment());
+		}
+	}
+	
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
+
 	public TaskRevision getTaskRevision() {
 		return taskRevision;
 	}

@@ -78,6 +78,14 @@ public class ConfirmRevisionsController extends FormBasicController {
 	public Task getTask() {
 		return assignedTask;
 	}
+	
+	public Identity getAssessedIdentity() {
+		return assessedIdentity;
+	}
+	
+	public BusinessGroup getAssessedGroup() {
+		return assessedGroup;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

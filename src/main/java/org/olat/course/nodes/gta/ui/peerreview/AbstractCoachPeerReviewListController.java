@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
@@ -58,6 +59,7 @@ import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.SessionStatistics;
 import org.olat.course.nodes.gta.ui.GTACoachController;
+import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow.NumOf;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.ui.MultiEvaluationFormController;
@@ -85,6 +87,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	protected GTACoachPeerReviewTreeTableModel tableModel;
 	
 	protected int counter = 0;
+	private final String toolsCmd;
 	protected final int numOfReviews;
 	protected final GTACourseNode gtaNode;
 	protected final RepositoryEntry courseEntry;
@@ -100,12 +103,29 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	@Autowired
 	protected GTAPeerReviewManager peerReviewManager;
 	
-	public AbstractCoachPeerReviewListController(UserRequest ureq, WindowControl wControl,
-			CourseEnvironment courseEnv, RepositoryEntry courseEntry, GTACourseNode gtaNode) {
+	public AbstractCoachPeerReviewListController(UserRequest ureq, WindowControl wControl, String toolsCmd,
+			CourseEnvironment courseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl, "coach_peer_review_list", Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
-		this.courseEntry = courseEntry;
+		courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		this.courseEnv = courseEnv;
 		this.gtaNode = gtaNode;
+		this.toolsCmd = toolsCmd;
+		
+		String numOfReviewsVal = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
+				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
+		numOfReviews = Integer.parseInt(numOfReviewsVal);
+		
+		survey = peerReviewManager.loadOrCreateSurvey(courseEntry, gtaNode, getIdentity());
+	}
+	
+	public AbstractCoachPeerReviewListController(UserRequest ureq, WindowControl wControl, String toolsCmd,
+			CourseEnvironment courseEnv, GTACourseNode gtaNode, Form rootForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "coach_peer_review_list", rootForm);
+		setTranslator(Util.createPackageTranslator(GTACoachController.class, getLocale(), getTranslator()));
+		courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		this.courseEnv = courseEnv;
+		this.gtaNode = gtaNode;
+		this.toolsCmd = toolsCmd;
 		
 		String numOfReviewsVal = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
 				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
@@ -174,7 +194,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	protected void decorateWithAggregatedStatistics(CoachPeerReviewRow aggreagtedRow, SessionStatistics aggregatedStatistics) {
 		List<CoachPeerReviewRow> subRows = aggreagtedRow.getChildrenRows();
 
-		aggreagtedRow.setNumOfReviews(subRows.size() + " / " + numOfReviews);
+		aggreagtedRow.setNumOfReviews(new NumOf(subRows.size(), numOfReviews));
 		aggreagtedRow.setNumOfReviewers(aggreagtedRow.getNumOfReviews());
 		
 		String id = Integer.toString(counter++);
@@ -240,7 +260,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	protected void decorateWithTools(CoachPeerReviewRow row) {
 		// tools
 		String linkName = "tools-" + counter++;
-		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
+		FormLink toolsLink = uifactory.addFormLink(linkName, toolsCmd, "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fw o_icon-lg");
 		toolsLink.setUserObject(row);
 		flc.add(linkName, toolsLink);

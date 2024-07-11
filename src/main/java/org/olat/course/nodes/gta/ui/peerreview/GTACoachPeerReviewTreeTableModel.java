@@ -21,7 +21,6 @@ package org.olat.course.nodes.gta.ui.peerreview;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -43,18 +42,14 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 	
 	private static final CoachReviewCols[] COLS = CoachReviewCols.values();
 	
-	private final Locale locale;
-	
-	public GTACoachPeerReviewTreeTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public GTACoachPeerReviewTreeTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
-		this.locale = locale;
 	}
 	
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<CoachPeerReviewRow> views = new GTACoachPeerReviewTreeTableModelSortDelegate(orderBy, this, locale).sort();
-			super.setObjects(views);
+			//
 		}
 	}
 

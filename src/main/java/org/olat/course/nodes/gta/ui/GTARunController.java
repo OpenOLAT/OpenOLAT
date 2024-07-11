@@ -50,6 +50,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.model.Membership;
+import org.olat.course.nodes.gta.ui.workflow.GTACoachWorkflowController;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -70,6 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTARunController extends BasicController implements Activateable2 {
 	
 	private GTAParticipantController runCtrl;
+	private GTACoachWorkflowController workflowCtrl;
 	private AssessmentCourseNodeOverviewController overviewCtrl;
 	private GTACoachSelectionController coachCtrl;
 	private GTACoachManagementController manageCtrl;
@@ -81,13 +83,16 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private Link overviewLink;
 	private Link coachLink;
 	private Link manageLink;
+	private Link workflowLink;
 	private Link remindersLink;
 	private Link coachAssignmentLink;
 	private Link badgesLink;
 	private VelocityContainer mainVC;
 	private CourseNodeSegmentPrefs segmentPrefs;
 	private SegmentViewComponent segmentView;
+	
 	private BreadcrumbedStackedPanel runStackPanel;
+	private BreadcrumbedStackedPanel workflowStackPanel;
 	
 	private final GTACourseNode gtaNode;
 	private final UserCourseEnvironment userCourseEnv;
@@ -96,6 +101,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private GTAManager gtaManager;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -121,6 +128,13 @@ public class GTARunController extends BasicController implements Activateable2 {
 			coachLink = LinkFactory.createLink("run.coach.participants", mainVC, this);
 			coachLink.setElementCssClass("o_sel_course_gta_coaching");
 			segmentView.addSegment(coachLink, false);
+			
+			if(gtaNode.getType().equals(GTACourseNode.TYPE_INDIVIDUAL)) {
+				workflowLink = LinkFactory.createLink("run.coach.workflow", mainVC, this);
+				workflowLink.setElementCssClass("o_sel_course_gta_workflow");
+				segmentView.addSegment(workflowLink, false);
+			}
+			
 			if(isManagementTabAvalaible(config)) {
 				manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
 				manageLink.setElementCssClass("o_sel_course_gta_management");
@@ -143,8 +157,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			}
 
 			if (openBadgesManager.isEnabled(entry, gtaNode)) {
-				RepositoryManager rm = RepositoryManager.getInstance();
-				RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, entry);
+				RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, entry);
 				badgesStackPanel = new BreadcrumbedStackedPanel("badges-stack", getTranslator(), this);
 				badgeClassesCtrl = new BadgeClassesController(ureq, wControl, entry, reSecurity, badgesStackPanel,
 						null, "form.add.new.badge", "form.edit.badge");
@@ -216,11 +229,19 @@ public class GTARunController extends BasicController implements Activateable2 {
 				}
 			}
 		} else if("management".equalsIgnoreCase(type)) {
-			if(manageLink != null) {
+			if(manageLink != null && manageLink.isVisible()) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doManage(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 				if(segmentView != null) {
 					segmentView.select(manageLink);
+				}
+			}
+		} else if("Workflow".equalsIgnoreCase(type)) {
+			if(workflowLink != null && workflowLink.isVisible()) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				doOpenWorkflow(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+				if(segmentView != null) {
+					segmentView.select(workflowLink);
 				}
 			}
 		} else if("Reminders".equalsIgnoreCase(type)) {
@@ -288,8 +309,10 @@ public class GTARunController extends BasicController implements Activateable2 {
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
 				} else if (clickedLink == badgesLink) {
-					doOpenBadges(ureq);
-				}
+					doOpenBadges();
+				} else if (clickedLink == workflowLink) {
+					doOpenWorkflow(ureq);
+ 				}
 			}
 		}
 	}
@@ -331,6 +354,24 @@ public class GTARunController extends BasicController implements Activateable2 {
 		mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
 		segmentView.select(overviewLink);
 		setPreferredSegment(ureq, CourseNodeSegment.overview, saveSegmentPref);
+	}
+	
+	private GTACoachWorkflowController doOpenWorkflow(UserRequest ureq) {
+		if(workflowCtrl == null) {
+			workflowStackPanel = new BreadcrumbedStackedPanel("run-participant", getTranslator(), this);
+			workflowStackPanel.setInvisibleCrumb(1);
+			
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Workflow"), null);
+			workflowCtrl = new GTACoachWorkflowController(ureq, swControl, workflowStackPanel, userCourseEnv, gtaNode);
+			listenTo(workflowCtrl);
+			
+			// Only used for own peer reviews
+			workflowStackPanel.pushController(translate("process.peerreview"), workflowCtrl);
+		}
+		addToHistory(ureq, workflowCtrl);
+		mainVC.put("segmentCmp", workflowStackPanel);
+		segmentView.select(workflowLink);
+		return workflowCtrl;
 	}
 
 	private Activateable2 doOpenCoach(UserRequest ureq, boolean saveSegmentPref) {
@@ -399,7 +440,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		}
 	}
 
-	private void doOpenBadges(UserRequest ureq) {
+	private void doOpenBadges() {
 		if (badgesLink != null && badgesStackPanel != null) {
 			mainVC.put("segmentCmp", badgesStackPanel);
 			segmentView.select(badgesLink);

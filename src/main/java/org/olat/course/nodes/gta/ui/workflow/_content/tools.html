@@ -1,0 +1,43 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("duedates"))
+	<li>$r.render("duedates")</li>
+	#end
+	#if($r.available("coach.collect.task"))
+	<li>$r.render("coach.collect.task")</li>
+	#end
+	#if($r.available("coach.back.to.submission"))
+	<li>$r.render("coach.back.to.submission")</li>
+	#end
+	#if($r.available("coach.reviewed.button"))
+	<li>$r.render("coach.reviewed.button")</li>
+	#end
+	#if($r.available("coach.need.revision.button"))
+	<li>$r.render("coach.need.revision.button")</li>
+	#end
+	
+	#if($r.available("coach.submit.corrections.to.revision.button"))
+	<li>$r.render("coach.submit.corrections.to.revision.button")</li>
+	#end
+	#if($r.available("coach.close.revision.button"))
+	<li>$r.render("coach.close.revision.button")</li>
+	#end
+	#if($r.available("coach.collect.revisions"))
+	<li>$r.render("coach.collect.revisions")</li>
+	#end
+	
+	#if($r.available("tool.reopen"))
+	<li>$r.render("tool.reopen")</li>
+	#end
+	#if($r.available("tool.set.done"))
+	<li>$r.render("tool.set.done")</li>
+	#end
+	#if($r.available("tool.set.hidden"))
+	<li>$r.render("tool.set.hidden")</li>
+	#end
+	#if($r.available("tool.set.visible"))
+	<li>$r.render("tool.set.visible")</li>
+	#end
+	#if($r.available("reset.attempts"))
+	<li>$r.render("reset.attempts")</li>
+	#end
+</ul>

@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -71,12 +72,12 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.io.SystemFileFilter;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
@@ -94,7 +95,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-class SubmitDocumentsController extends FormBasicController implements GenericEventListener {
+public class SubmitDocumentsController extends FormBasicController implements GenericEventListener {
 	
 	private DocumentTableModel model;
 	private FlexiTableElement tableEl;
@@ -159,6 +160,38 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 			boolean readOnly, boolean externalEditor, boolean embeddedEditor, Date deadline, String docI18nKey,
 			VFSContainer copySourceContainer, String copyEnding, String copyI18nKey) {
 		super(ureq, wControl, "documents", Util.createPackageTranslator(DocEditorController.class, ureq.getLocale()));
+		this.assignedTask = assignedTask;
+		this.documentsDir = documentsDir;
+		this.documentsContainer = documentsContainer;
+		this.copySourceContainer = copySourceContainer;
+		this.minDocs = minDocs;
+		this.maxDocs = maxDocs;
+		this.assessedGroup = assessedGroup;
+		this.assessedIdentity = assessedIdentity;
+		this.docI18nKey = docI18nKey;
+		this.deadline = deadline;
+		this.readOnly = readOnly;
+		this.externalEditor = externalEditor;
+		this.embeddedEditor = embeddedEditor;
+		this.copyEnding = copyEnding;
+		this.copyI18nKey = copyI18nKey;
+		this.config = cNode.getModuleConfiguration();
+		this.gtaNode = cNode;
+		this.courseEnv = courseEnv;
+		initForm(ureq);
+		updateModel(ureq);
+
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, VFSTranscodingService.ores);
+	}
+	
+	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask, File documentsDir,
+			VFSContainer documentsContainer, int minDocs, int maxDocs, Identity assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, CourseEnvironment courseEnv,
+			boolean readOnly, boolean externalEditor, boolean embeddedEditor, Date deadline, String docI18nKey,
+			VFSContainer copySourceContainer, String copyEnding, String copyI18nKey, Form rootForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "documents", rootForm);
+		setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
+
 		this.assignedTask = assignedTask;
 		this.documentsDir = documentsDir;
 		this.documentsContainer = documentsContainer;

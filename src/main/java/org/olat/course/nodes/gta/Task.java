@@ -46,6 +46,8 @@ public interface Task extends TaskRef {
 	
 	public Date getCollectionDate();
 	
+	public Integer getCollectionNumOfDocs();
+
 	public Date getCollectionRevisionsDate();
 	
 	public Date getAcceptationDate();

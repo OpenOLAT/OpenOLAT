@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.id.Identity;
+import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -42,10 +43,11 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	private CoachPeerReviewRow parentRow;
 	private List<CoachPeerReviewRow> childrenRows;
 	
+	private final Task task;
 	private final String fullName;
 	
-	private String numOfReviews;
-	private String numOfReviewers;
+	private NumOf numOfReviews;
+	private NumOf numOfReviewers;
 	private TaskReviewAssignment assignment;
 	private EvaluationFormParticipation participation;
 	
@@ -60,12 +62,13 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	private BoxPlot assessmentPlot;
 	private ProgressBarItem progressBar;
 	
-	public CoachPeerReviewRow(String fullName) {
+	public CoachPeerReviewRow(Task task, String fullName) {
+		this.task = task;
 		this.fullName = fullName;
 	}
 	
-	public CoachPeerReviewRow(TaskReviewAssignment assignment, String fullName, boolean canEdit) {
-		this(fullName);
+	public CoachPeerReviewRow(Task task, TaskReviewAssignment assignment, String fullName, boolean canEdit) {
+		this(task, fullName);
 		this.canEdit = canEdit;
 		this.assignment = assignment;
 		this.assignee = assignment.getAssignee();
@@ -98,6 +101,10 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 		return fullName;
 	}
 	
+	public Task getTask() {
+		return task;
+	}
+	
 	public boolean canEdit() {
 		return canEdit && this.assignment != null
 				&& (assignment.getStatus() == TaskReviewAssignmentStatus.open || assignment.getStatus() == TaskReviewAssignmentStatus.inProgress);
@@ -107,19 +114,19 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 		return assignee;
 	}
 
-	public String getNumOfReviews() {
+	public NumOf getNumOfReviews() {
 		return numOfReviews;
 	}
 
-	public void setNumOfReviews(String numOfReviews) {
+	public void setNumOfReviews(NumOf numOfReviews) {
 		this.numOfReviews = numOfReviews;
 	}
 
-	public String getNumOfReviewers() {
+	public NumOf getNumOfReviewers() {
 		return numOfReviewers;
 	}
 
-	public void setNumOfReviewers(String numOfReviewers) {
+	public void setNumOfReviewers(NumOf numOfReviewers) {
 		this.numOfReviewers = numOfReviewers;
 	}
 
@@ -189,5 +196,9 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+	
+	public record NumOf(int number, int reference) {
+		//
 	}
 }

@@ -1209,12 +1209,19 @@ $o-step-status-active-border-color	: $o-labeled-yellow-border-color;
 $o-step-status-waiting-color		: $o-labeled-yellow-color;
 $o-step-status-waiting-bg-color		: $o-labeled-yellow-bg-color;
 $o-step-status-waiting-border-color	: $o-labeled-yellow-border-color;
+$o-step-status-review-color			: $o-labeled-yellow-color;
+$o-step-status-review-bg-color		: $o-labeled-yellow-bg-color;
+$o-step-status-review-border-color	: $o-labeled-yellow-border-color;
+$o-step-status-done-color			: $o-repo-published-color !default;
 $o-step-status-review-color			: $o-step-status-waiting-color;
 $o-step-status-done-color			: $o-repo-published-color;
 $o-step-status-notavailable-color	: $gray-light !default;
 $o-step-status-expired-color		: #E69138 !default;
 $o-step-status-late-color			: #B45E05 !default;
 $o-step-status-extended-color		: #31708F !default;
+$o-step-status-auto-collect-color	: $brand-danger !default;
+$o-step-status-extended-color		: $brand-info !default;
+$o-step-status-need-revision-color	: $brand-danger !default;
 
 /* Email */
 $o-email-brand							: $btn-primary-bg !default;

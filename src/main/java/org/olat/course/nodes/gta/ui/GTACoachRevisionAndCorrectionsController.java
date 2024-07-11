@@ -28,6 +28,7 @@ import java.util.Map;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.text.TextFactory;
@@ -83,6 +84,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	
 	private final VelocityContainer mainVC;
 	private Link collectButton;
+	private final Form rootForm;
 	
 	private CloseableModalController cmc;
 	private Map<Integer,DirectoryController> loopToRevisionCtrl = new HashMap<>();
@@ -113,7 +115,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	
 	public GTACoachRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			Task assignedTask, List<TaskRevision> taskRevisions, GTACourseNode gtaNode, UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup,
-			Identity assessedIdentity, OLATResourceable taskListEventResource) {
+			Identity assessedIdentity, OLATResourceable taskListEventResource, Form rootForm) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
 		this.courseEnv = courseEnv;
@@ -125,6 +127,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 		this.taskListEventResource = taskListEventResource;
 		this.businessGroupTask = GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
 		currentIteration = assignedTask.getRevisionLoop();
+		this.rootForm = rootForm;
 		
 		mainVC = createVelocityContainer("coach_revisions");
 		putInitialPanel(mainVC);
@@ -133,6 +136,10 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	
 	public Task getAssignedTask() {
 		return assignedTask;
+	}
+	
+	public SubmitDocumentsController getUploadCorrections() {
+		return uploadCorrectionsCtrl;
 	}
 	
 	private void initRevisionProcess(UserRequest ureq) {
@@ -246,7 +253,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 		if(taskRevision != null && StringHelper.containsNonWhitespace(taskRevision.getComment())) {
 			String commentator = userManager.getUserDisplayName(taskRevision.getCommentAuthor());
 			String commentDate = Formatter.getInstance(getLocale()).formatDate(taskRevision.getCommentLastModified());
-			String infos = translate("run.corrections.comment.infos", new String[] { commentDate, commentator });
+			String infos = translate("run.corrections.comment.infos", commentDate, commentator);
 			step.setComment(taskRevision.getComment());
 			step.setCommentInfos(infos);
 			return true;
@@ -269,10 +276,18 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 		}
 		
 		TaskRevision taskRevision = GTAAbstractController.getTaskRevision(revisions, TaskProcess.revision, iteration);// next iteration
-		uploadCorrectionsCtrl = new CoachSubmitRevisionsController(ureq, getWindowControl(), task, taskRevision, iteration,
-				assessedIdentity, assessedGroup, documentsDir, documentsContainer, gtaNode, courseEnv,
-				coachCourseEnv.isCourseReadOnly(), null, "coach.document", revisedContainer,
-				translate("copy.ending.review"), "copy.revision");
+		if(rootForm == null) {
+			uploadCorrectionsCtrl = new CoachSubmitRevisionsController(ureq, getWindowControl(), task, taskRevision, iteration,
+					assessedIdentity, assessedGroup, documentsDir, documentsContainer, gtaNode, courseEnv,
+					coachCourseEnv.isCourseReadOnly(), null, "coach.document", revisedContainer,
+					translate("copy.ending.review"), "copy.revision");
+		} else {
+			uploadCorrectionsCtrl = new CoachSubmitRevisionsController(ureq, getWindowControl(), task, taskRevision, iteration,
+					assessedIdentity, assessedGroup, documentsDir, documentsContainer, gtaNode, courseEnv,
+					coachCourseEnv.isCourseReadOnly(), null, "coach.document", revisedContainer,
+					translate("copy.ending.review"), "copy.revision", rootForm);
+		}
+		
 		listenTo(uploadCorrectionsCtrl);
 		mainVC.put("uploadCorrections", uploadCorrectionsCtrl.getInitialComponent());
 	}

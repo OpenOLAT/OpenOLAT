@@ -1,0 +1,5 @@
+#if(${row.isDetailsControllerAvailable()})
+	$r.render(${row.getDetailsControllerName()})
+#elseif(${row.isCorrectionsDoneWithoutDocuments()})
+	<span><i class='o_icon o_icon_ok'> </i>  $r.translate("coach.corrections.closed")</span>
+#end

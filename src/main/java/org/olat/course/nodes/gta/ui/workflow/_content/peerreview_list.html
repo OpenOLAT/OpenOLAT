@@ -1,0 +1,48 @@
+<fieldset>
+	<legend>$r.translate("workflow.list.peerreview")</legend>
+	$r.render("configuration")
+	
+	<fieldset class="o_gta_workflow_received_reviews"><legend>
+		<h4 onclick="jQuery('#collapse_received_${r.getCId()}').collapse('toggle')">
+			<i id="collapse_received_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($receivedOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+			$r.translate("workflow.list.peerreview.received.title")
+		</h4></legend>
+		<div id="collapse_received_${r.getCId()}" class="collapse #if($receivedOpen) in #end">
+			$r.render("received")
+		</div>
+		<script>
+		jQuery(function() {
+			jQuery('#collapse_received_${r.getCId()}').on('hide.bs.collapse', function () {
+				jQuery('#collapse_received_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				$f.openFfXHREvent(false, false, true), "receivedOpen","false");
+			})
+			jQuery('#collapse_received_${r.getCId()}').on('show.bs.collapse', function () {
+				jQuery('#collapse_received_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$f.openFfXHREvent(false, false, true), "receivedOpen","true");
+			})
+		});
+		</script>
+	</fieldset>
+	
+	<fieldset class="o_gta_workflow_awarded_reviews"><legend>
+		<h4 onclick="jQuery('#collapse_awarded_${r.getCId()}').collapse('toggle')">
+			<i id="collapse_awarded_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($awardedOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+			$r.translate("workflow.list.peerreview.awarded.title")
+		</h4></legend>
+		<div id="collapse_awarded_${r.getCId()}" class="collapse #if($awardedOpen) in #end">
+			$r.render("awarded")
+		</div>
+		<script>
+		jQuery(function() {
+			jQuery('#collapse_awarded_${r.getCId()}').on('hide.bs.collapse', function () {
+				jQuery('#collapse_awarded_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				$f.openFfXHREvent(false, false, true), "awardedOpen","false");
+			})
+			jQuery('#collapse_awarded_${r.getCId()}').on('show.bs.collapse', function () {
+				jQuery('#collapse_awarded_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$f.openFfXHREvent(false, false, true), "awardedOpen","true");
+			})
+		});
+		</script>
+	</fieldset>
+</fieldset>

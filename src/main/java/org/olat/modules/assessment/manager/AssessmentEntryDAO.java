@@ -397,15 +397,32 @@ public class AssessmentEntryDAO {
 	 * @return A list of assessment entries
 	 */
 	public List<AssessmentEntry> loadAssessmentEntryBySubIdent(RepositoryEntryRef entry, String subIdent) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select data from assessmententry data ")
-		   .append(" inner join fetch data.identity ident")
-		   .append(" inner join fetch ident.user identuser")
-		   .append(" left join fetch data.referenceEntry referenceEntry")
-		   .append(" where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent");
+		String query = """
+				select data from assessmententry data
+				inner join fetch data.identity ident
+				inner join fetch ident.user identuser
+				left join fetch data.referenceEntry referenceEntry
+				where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent""";
 
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), AssessmentEntry.class)
+				.createQuery(query, AssessmentEntry.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("subIdent", subIdent)
+				.getResultList();
+	}
+	
+	public List<AssessmentEntry> loadAssessmentEntryBySubIdentWithCoach(RepositoryEntryRef entry, String subIdent) {
+		String query = """
+				select data from assessmententry data
+				inner join fetch data.identity ident
+				inner join fetch ident.user identuser
+				left join fetch data.referenceEntry referenceEntry
+				left join fetch data.coach coach
+				left join fetch coach.user coachUser
+				where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent""";
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, AssessmentEntry.class)
 				.setParameter("repositoryEntryKey", entry.getKey())
 				.setParameter("subIdent", subIdent)
 				.getResultList();

@@ -112,6 +112,8 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_collection_revisions_date", nullable=true, insertable=true, updatable=true)
 	private Date collectionRevisionsDate;
+	@Column(name="g_collection_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer collectionNumOfDocs;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_allow_reset_date", nullable=true, insertable=true, updatable=true)
 	private Date allowResetDate;
@@ -304,6 +306,15 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 
 	public void setCollectionRevisionsDate(Date collectionRevisionsDate) {
 		this.collectionRevisionsDate = collectionRevisionsDate;
+	}
+	
+	@Override
+	public Integer getCollectionNumOfDocs() {
+		return collectionNumOfDocs;
+	}
+
+	public void setCollectionNumOfDocs(Integer collectionNumOfDocs) {
+		this.collectionNumOfDocs = collectionNumOfDocs;
 	}
 
 	@Override

@@ -833,7 +833,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		}
 	}
 	
-	protected static final TaskRevision getTaskRevision(List<TaskRevision> revisionList, TaskProcess status, int revisionLoop) {
+	public static final TaskRevision getTaskRevision(List<TaskRevision> revisionList, TaskProcess status, int revisionLoop) {
 		TaskRevision revision = null;
 		if(revisionList != null && !revisionList.isEmpty()) {
 			for(TaskRevision taskRevision:revisionList) {

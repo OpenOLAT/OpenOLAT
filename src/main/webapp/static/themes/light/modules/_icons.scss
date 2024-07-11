@@ -175,6 +175,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eye_slash { @include o-add-icon('eye-slash');}
 .o_icon_failed { @include o-add-icon('times-circle');}
 .o_icon_fake_participant { @include o-add-icon('street-view');}
+.o_icon_file { @include o-add-icon('file');}
 .o_icon_file_arrow_up { @include o-add-icon('file-arrow-up');}
 .o_icon_file_browser { @include o-add-icon('globe');}
 .o_icon_files { @include o-add-icon('copy', false);} // files not in FA6 public set!
@@ -252,6 +253,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_link { @include o-add-icon('link');}
 .o_icon_link_extern { @include o-add-icon('external-link');}
 .o_icon_list { @include o-add-icon('list');}
+.o_icon_list_check { @include o-add-icon('list-check');}
 .o_icon_list_num { @include o-add-icon('list-ol');}
 .o_icon_lifecycle { @include o-add-icon('power-off');}
 .o_icon_lifecycle_date { @include o-add-icon('calendar');}
@@ -429,6 +431,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_review_remove { @include o-add-icon('minus-square');}
 .o_icon_review_removed { @include o-add-icon('times');}
 .o_icon_reviewer { @include o-add-icon('user-md');}
+.o_icon_revision { @include o-add-icon('thumbs-down');}
 .o_icon_right { @include o-add-icon('arrow-circle-right');}
 .o_icon_rss { @include o-add-icon('rss');}
 .o_icon_rss_unsubscribe { @include o-add-icon('rss'); color: #996633;}

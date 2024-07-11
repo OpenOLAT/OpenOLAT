@@ -55,10 +55,11 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFileFilter;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.nodes.gta.ui.component.DownloadDocumentMapper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,7 +113,7 @@ public class DirectoryController extends BasicController implements Activateable
 		download = new DisplayOrDownloadComponent("download", null);
 		mainVC.put("download", download);
 		
-		if(StringHelper.containsNonWhitespace(i18nBulkDownload) && documentsContainer.getItems().size() > 1) {
+		if(StringHelper.containsNonWhitespace(i18nBulkDownload) && documentsContainer.getItems(new VFSSystemItemFilter()).size() > 1) {
 			bulkReviewLink = LinkFactory.createCustomLink("bulk", "bulk", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
 			bulkReviewLink.setIconLeftCSS("o_icon o_icon_download");
 			bulkReviewLink.setCustomDisplayText(translate(i18nBulkDownload));

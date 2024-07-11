@@ -38,4 +38,8 @@ public record SessionParticipationListStatistics(SessionStatistics aggregatedSta
 		return participationsStatistics.stream()
 			.collect(Collectors.toMap(SessionParticipationStatistics::getParticipation, stats -> stats, (u, v) -> u));
 	}
+	
+	public static final SessionParticipationListStatistics noStatistics() {
+		return new SessionParticipationListStatistics(SessionStatistics.noStatistics(), List.of());
+	}
 }

@@ -140,7 +140,7 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	public enum AssignmentsCols implements FlexiSortableColumnDef {
 		taskTitle("table.header.group.taskTitle"),
 		numberReviews("table.header.num.of.review"),
-		assignment("table.header.asssignment"),
+		assignment("table.header.assignment"),
 		;
 		
 		private final String i18nKey;

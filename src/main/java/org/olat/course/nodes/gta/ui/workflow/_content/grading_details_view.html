@@ -1,0 +1,14 @@
+$r.render("participantView")
+
+#if($r.visible("tool.reopen") || $r.visible("tool.assessment"))
+<div class="o_button_group">
+	#if($r.visible("tool.reopen"))
+		$r.render("tool.reopen")
+	#end
+	#if($r.visible("tool.assessment"))
+		$r.render("tool.assessment")
+	#end
+</div>
+#end
+
+

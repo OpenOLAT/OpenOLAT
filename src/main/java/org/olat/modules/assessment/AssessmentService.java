@@ -91,6 +91,15 @@ public interface AssessmentService {
 	 */
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntryRef entry, String subIdent);
 	
+	/**
+	 * Same as above but fetch the coach.
+	 * 
+	 * @param entry The course entry
+	 * @param subIdent The sub-identifier (ex. course node identifier)
+	 * @return Assessment entries with reference entry and assigned coach
+	 */
+	public List<AssessmentEntry> loadAssessmentEntriesBySubIdentWithCoach(RepositoryEntryRef entry, String subIdent);
+	
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdentWithStatus(RepositoryEntry entry, String subIdent,
 			AssessmentEntryStatus status, boolean excludeZeroScore, boolean userVisibleOnly);
 	
