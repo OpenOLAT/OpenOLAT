@@ -1301,37 +1301,50 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 		});
 	}
 	
+	function fileErrorElement(fileInputElement, errorElementId, errorEl, errorMsg) {
+		fileInputElement.setCustomValidity(errorMsg);
+
+		if (!errorEl) {
+			errorEl = document.createElement('div');
+			errorEl.setAttribute('class','o_error');
+			errorEl.setAttribute('id', errorElementId);
+			fileInputElement.parentNode.parentNode.appendChild(errorEl);
+		}
+		errorEl.textContent = errorMsg;
+		console.log(errorMsg);
+	}
+	
 	function o_handleFilesValidate(files) {
 		let fileInputElement = document.getElementById(inputFileId);
 		let errorElementId = fileInputElement.getAttribute('id') + "_validation_error";
 		let errorEl = document.getElementById(errorElementId);
 		let maxSize = fileInputElement.getAttribute('data-max-size');
-
-		if (maxSize && maxSize > null) {
-			let fileSize = 0;
-			for(const file of files) {
-				fileSize += file.size;
+		
+		let fileSize = 0;
+		let folder = false;
+		for(const file of files) {
+			fileSize += file.size;
+			if(file.size == 0 && file.type == "") {
+				folder = true;
 			}
-
-			if (fileSize > maxSize) {
-				// show a validation error message, reset the fileInputElement and stop processing
-				// to prevent unneeded uploads of potentially really big files
-				let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
-				let msgLimitExceeded = trans.translate('file.upload.error.limit.exeeded');
-				let msgUploadLimit = trans.translate('file.upload.limit');
-				let maxSizeFormatted = o_handleFileFormatSize(maxSize);
-				let errorMsg = msgLimitExceeded + " (" + msgUploadLimit + ": " + maxSizeFormatted + ")";
-				fileInputElement.setCustomValidity(errorMsg);
-
-				if (!errorEl) {
-					errorEl = document.createElement('div');
-					errorEl.setAttribute('class','o_error');
-					errorEl.setAttribute('id', errorElementId);
-					fileInputElement.parentNode.parentNode.appendChild(errorEl);
-				}
-				errorEl.textContent = errorMsg;
-				return false;
-			}	
+		}
+		
+		if (maxSize && maxSize > null && fileSize > maxSize) {
+			// show a validation error message, reset the fileInputElement and stop processing
+			// to prevent unneeded uploads of potentially really big files
+			let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
+			let msgLimitExceeded = trans.translate('file.upload.error.limit.exeeded');
+			let msgUploadLimit = trans.translate('file.upload.limit');
+			let maxSizeFormatted = o_handleFileFormatSize(maxSize);
+			let errorMsg = msgLimitExceeded + " (" + msgUploadLimit + ": " + maxSizeFormatted + ")";
+			fileErrorElement(fileInputElement, errorElementId, errorEl, errorMsg);
+			return false;
+		} else if(folder) {
+			let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.core.commons.services.folder.ui');
+			let folderWarning = trans.translate('warning.draganddrop.folder');
+			fileErrorElement(fileInputElement, errorElementId, errorEl, folderWarning);
+			showMessageBox('warn', '', folderWarning, undefined);
+			return false;
 		}
 		
 		if (errorEl) {
@@ -1344,6 +1357,16 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 		let filename = e.target.getAttribute("data-drag-file");
 		e.dataTransfer.setData("text/openolat-file-transfert", filename);
 	}
+
+	function loadFiles(files) {
+		const listFiles = [];
+		for(const file of files) {
+			if(file.size > 0 && file.type != "") {
+				listFiles.push(file);
+			}
+		}
+		return listFiles;
+	}
 	
 	function handleDrop(e) {
 		let directory = jQuery(e.target)
@@ -1355,7 +1378,12 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 			let data = dt.getData("text/openolat-file-transfert");
 			o_handleFilenames(data, directory);
 		} else if(files.length > 0 && o_handleFilesValidate(files)) {
-			o_handleFiles(files, directory);
+			const filteredFiles = loadFiles(files);
+			
+			for(const file of filteredFiles) {
+				console.log('After', file);
+			}
+			o_handleFiles(filteredFiles, directory);
 		} else {
 			jQuery(e.target).parents("*[data-upload-folder]")
 				.removeClass('o_dnd_over');
