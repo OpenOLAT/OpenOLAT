@@ -1242,7 +1242,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				String pos = selectedIndex.substring(index+1);
 				doSelect(ureq, Integer.parseInt(pos));
 			}
-		} else if(StringHelper.containsNonWhitespace(resetQuickSearch) && dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+		} else if(StringHelper.containsNonWhitespace(resetQuickSearch)
+				&& dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			resetQuickSearch(ureq);
 		} else if(searchButton != null
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
@@ -1254,11 +1255,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			doFilter(ureq, filter);
 		} else if(StringHelper.containsNonWhitespace(removeFilter)) {
 			doFilter(ureq, null);
-		} else if(StringHelper.isLong(treeTableFocus)) {
+		} else if(StringHelper.isLong(treeTableFocus)
+				&& dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			doTreeFocus(Integer.parseInt(treeTableFocus));
-		} else if(StringHelper.isLong(treeTableOpen)) {
+		} else if(StringHelper.isLong(treeTableOpen)
+				&& dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			doTreeOpen(Integer.parseInt(treeTableOpen));
-		} else if(StringHelper.isLong(treeTableClose)) {
+		} else if(StringHelper.isLong(treeTableClose)
+				&& dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			doTreeClose(Integer.parseInt(treeTableClose));
 		} else if(StringHelper.containsNonWhitespace(crumb)) {
 			doCrumb(crumb);

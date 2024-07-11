@@ -409,6 +409,11 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			if (event == FormEvent.BACK_EVENT) {
 				breadcrumbPanel.popUpToRootController(ureq);
 			}
+			if (event == Event.CHANGED_EVENT) {
+				String name = badgeDetailsController.getName();
+				breadcrumbPanel.changeDisplayname(name);
+				loadModel();
+			}
 		}
 		super.event(ureq, source, event);
 	}
