@@ -20,7 +20,6 @@
 package org.olat.selenium.page.core;
 
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.portfolio.MediaCenterPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -42,12 +41,6 @@ public class FileHubPage {
 		By personalFolderBy = By.xpath("//div[@class='o_personal_folder']//h2[i[contains(@class,'o_bc_icon')]]");
 		OOGraphene.waitElement(personalFolderBy, browser);
 		return this;
-	}
-	
-	public MediaCenterPage openMediaCenter() {
-		By mediaCenterBy = By.xpath("//div[@class='o_personal_folder']//a[contains(@onclick,'media')][i[contains(@class,'o_icon_media')]]");
-		browser.findElement(mediaCenterBy).click();
-		return new MediaCenterPage(browser).assertOnMediaCenter();
 	}
 
 }
