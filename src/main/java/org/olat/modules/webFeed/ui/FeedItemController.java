@@ -37,11 +37,13 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
 import org.olat.modules.webFeed.Item;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * This Controller is responsible for displaying a single feed item for reading.
@@ -61,6 +63,9 @@ public class FeedItemController extends BasicController implements Activateable2
 	private final Item item;
 	private UserCommentsAndRatingsController commentsCtrl;
 
+	@Autowired
+	private PortfolioV2Module portfolioModule;
+
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -77,21 +82,23 @@ public class FeedItemController extends BasicController implements Activateable2
 		vcItem.contextPut("helper", helper);
 		vcItem.contextPut("callback", callback);
 
+		boolean ownFeedItem = getIdentity().getKey() != null
+				&& item.getAuthorKey() != null
+				&& getIdentity().getKey().equals(item.getAuthorKey());
 		if (feed.isInternal()) {
-			if (getIdentity().getKey() != null
-					&& getIdentity().getKey().equals(item.getAuthorKey())) {
+			if (ownFeedItem && portfolioModule.isEnabled()) {
 				artefactLink = LinkFactory.createLink("artefactButton", "artefactButton", "artefact", "feed.item.artefact", getTranslator(), vcItem, this, Link.BUTTON);
 				artefactLink.setTitle("feed.item.artefact");
 				artefactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eportfolio_add");
 				artefactLink.setGhost(true);
 			}
-			if (callback.mayEditItems()) {
+			if (callback.mayEditItems() || ownFeedItem) {
 				editLink = LinkFactory.createLink("editButton", "editButton", "edit", "feed.item.edit", getTranslator(), vcItem, this, Link.BUTTON);
 				editLink.setTitle("feed.item.edit");
 				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 				editLink.setGhost(true);
 			}
-			if (callback.mayDeleteItems()) {
+			if (callback.mayDeleteItems() || ownFeedItem) {
 				deleteLink = LinkFactory.createLink("deleteButton", "deleteButton", "delete","delete", getTranslator(), vcItem, this, Link.BUTTON);
 				deleteLink.setTitle("delete");
 				deleteLink.setGhost(true);

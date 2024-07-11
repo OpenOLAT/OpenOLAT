@@ -247,10 +247,11 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, FeedItemTableModel.ItemsCols.comments.i18nHeaderKey(), FeedItemTableModel.ItemsCols.comments.ordinal(), "openCommentEntry", true, FeedItemTableModel.ItemsCols.comments.name()));
 		}
 
-		if (feedRss.isInternal() && feedSecCallback.mayEditItems()) {
+		if (feedRss.isInternal()) {
 			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(FeedItemTableModel.ItemsCols.toolsLink.i18nHeaderKey(), FeedItemTableModel.ItemsCols.toolsLink.ordinal());
 			toolsColumn.setExportable(false);
 			columnsModel.addFlexiColumnModel(toolsColumn);
+			toolsColumn.setAlwaysVisible(false);
 		}
 
 		uifactory.addSpacerElement("spacer", formLayout, false);
@@ -349,7 +350,11 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			commentLink.setUserObject(row);
 
 			forgeRating(row, feedItemDTO.avgRating());
-			if (feedRss.isInternal() && (feedSecCallback.mayEditMetadata() || feedSecCallback.mayDeleteItems())) {
+
+			boolean ownFeedItem = getIdentity().getKey() != null
+					&& feedItemDTO.item().getAuthorKey() != null
+					&& getIdentity().getKey().equals(feedItemDTO.item().getAuthorKey());
+			if (feedRss.isInternal() && (feedSecCallback.mayEditMetadata() || feedSecCallback.mayDeleteItems() || ownFeedItem)) {
 				createButtonsForFeedItem(row);
 			}
 
@@ -1119,7 +1124,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 		private final Link editLink;
 		private final Link deleteLink;
-		private final Link artefactLink;
+		private Link artefactLink;
 		private final Item feedItem;
 
 
@@ -1139,29 +1144,31 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			deleteLink.setTitle("feed.item.delete");
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_trash");
 
+			boolean ownFeedItem = getIdentity().getKey() != null
+					&& feedItem.getAuthorKey() != null
+					&& getIdentity().getKey().equals(feedItem.getAuthorKey());
+
 			// create artefactLink only if feed is internal, the entry is the users own and if portfolioModule is enabled
-			if (feedRss.isInternal()
-					&& getIdentity().getKey() != null
-					&& getIdentity().getKey().equals(feedItem.getAuthorKey())
-					&& portfolioModule.isEnabled()) {
-				artefactLink = LinkFactory.createLink("feed.item.artefact", "artefact", getTranslator(), mainVC, this, Link.LINK);
-				artefactLink.setTitle("feed.item.artefact");
-				artefactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eportfolio_add");
-			} else {
-				artefactLink = null;
-			}
+			if (feedRss.isInternal()) {
+				if (ownFeedItem && portfolioModule.isEnabled()) {
+					artefactLink = LinkFactory.createLink("feed.item.artefact", "artefact", getTranslator(), mainVC, this, Link.LINK);
+					artefactLink.setTitle("feed.item.artefact");
+					artefactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eportfolio_add");
+				} else {
+					artefactLink = null;
+				}
 
-			if (feedSecCallback.mayEditItems()) {
-				links.add(editLink.getComponentName());
+				if (feedSecCallback.mayEditItems() || ownFeedItem) {
+					links.add(editLink.getComponentName());
+				}
+				if (artefactLink != null) {
+					links.add(artefactLink.getComponentName());
+				}
+				if (feedSecCallback.mayDeleteItems() || ownFeedItem) {
+					links.add("-");
+					links.add(deleteLink.getComponentName());
+				}
 			}
-			if (artefactLink != null) {
-				links.add(artefactLink.getComponentName());
-			}
-			if (feedSecCallback.mayDeleteItems()) {
-				links.add("-");
-				links.add(deleteLink.getComponentName());
-			}
-
 
 			putInitialPanel(mainVC);
 		}
