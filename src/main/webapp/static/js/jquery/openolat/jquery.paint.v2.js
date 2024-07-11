@@ -6,7 +6,7 @@
  *  @date Jui. 2021
  */
 (function($) {
-	// IE11 doesn't like use strict here
+	"use strict";
     $.fn.paintV2 = function(options) {
     	var paint = this.data("data-oo-paint-v2");
     	if(typeof paint === "undefined") {
@@ -22,7 +22,8 @@
 			formDispatchFieldId: ''
 		}, params );
 		
-		var inputHolderId = this.settings.inputHolderId;
+		const inputHolderId = this.settings.inputHolderId;
+		const formDispatchFieldId = this.settings.formDispatchFieldId;
 		var wrapperId = 'paintw_' + inputHolderId;
 		var canvas = new fabric.Canvas('paint_' + inputHolderId, {
 			isDrawingMode: false,
@@ -115,6 +116,18 @@
 			});
 		}
 		
+		function flexiFormDirty() {
+			try {
+				setFlexiFormDirty(formDispatchFieldId);
+			} catch(e) {
+				if(window.console) console.log(e);
+			}
+		}
+		canvas.on('object:modified', flexiFormDirty);
+		canvas.on('object:added', flexiFormDirty);
+		canvas.on('object:removed', flexiFormDirty);
+		
+		
 		function isStateful(jsonState, parsedJsonState) {
 			try {
 				return jsonState && parsedJsonState != null
@@ -141,6 +154,7 @@
 					canvas.renderAll();
 				}
 				save();
+				flexiFormDirty();
 			});
 			
 			jQuery("#" + wrapperId + " div.o_group_tools a[data-tool=back]").on('click', function() {
@@ -151,6 +165,7 @@
 					canvas.renderAll();
 				}
 				save();
+				flexiFormDirty();
 			});
 		}
 		
@@ -266,6 +281,7 @@
 							canvas.renderAll();
 						}
 						save();
+						flexiFormDirty();
 					}
 					configureBrush();
 				}
@@ -291,6 +307,7 @@
 							canvas.renderAll();
 						}
 						save();
+						flexiFormDirty();
 					}
 					configureBrush();
 				}
@@ -397,6 +414,7 @@
 				}
 				save();
 				drawBrush();
+				flexiFormDirty();
 			});
 		}
 		
@@ -408,6 +426,7 @@
 					canvas.renderAll();
 				}
 				save();
+				flexiFormDirty();
 			});
 			
 			jQuery('#' + wrapperId + ' a.clearall').on('click', function() {
@@ -442,6 +461,7 @@
 				jQuery('#paintModal button.btn-primary').on('click', function() {
 					canvas.clear();
 					clearAndSave();
+					flexiFormDirty();
 				});
 				jQuery('#paintModal').on('hidden.bs.modal', function (event) {
 					jQuery("#paintModal").remove();
