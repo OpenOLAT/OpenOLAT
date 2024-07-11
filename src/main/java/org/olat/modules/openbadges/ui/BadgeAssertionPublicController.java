@@ -36,6 +36,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -107,7 +108,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		flc.contextPut("badgeClass", badgeClass);
 
 		String recipientName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
-		flc.contextPut("recipientName", recipientName);
+		flc.contextPut("recipientName", StringHelper.xssScan(recipientName));
 
 		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
 		flc.contextPut("issuer", issuer.getNameWithScan());
