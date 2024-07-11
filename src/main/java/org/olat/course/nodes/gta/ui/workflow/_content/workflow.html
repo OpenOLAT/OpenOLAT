@@ -1,3 +1,4 @@
+#if($r.isTrue($menuVisible))
 <div class="o_block o_gta_workflow">
 	$r.render("workflow.list.assignment")
 	$r.render("workflow.list.submission")
@@ -7,6 +8,7 @@
 	$r.render("workflow.list.solution")
 	$r.render("workflow.list.grading")
 </div>
+#end
 #if($r.available("segmentCmp"))
 <div class="o_gta_workflow_content">
 	$r.render("segmentCmp")

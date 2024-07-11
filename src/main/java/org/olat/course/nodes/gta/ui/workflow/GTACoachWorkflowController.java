@@ -151,11 +151,41 @@ public class GTACoachWorkflowController extends BasicController implements Activ
 		gradingLink = LinkFactory.createLink("workflow.list.grading", "workflow.list.grading", "grading", gradingLabel,
 				getTranslator(), mainVC, this, Link.BUTTON | Link.NONTRANSLATED);
 		gradingLink.setElementCssClass("btn-arrow-right o_sel_course_gta_grading_list");
+		gradingLink.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_GRADING));
+		
+		int numOfSteps = countVisible(assignmentsLink, submissionsLink, reviewAndCorrectionLink, revisionLink, peerReviewLink, solutionLink, gradingLink);
+		mainVC.contextPut("menuVisible", Boolean.valueOf(numOfSteps > 1));
 		
 		putInitialPanel(mainVC);
-		
-		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+		openFirstStep(ureq);
+	}
+	
+	private int countVisible(Link... links) {
+		int countVisible = 0;
+		for(Link link:links) {
+			if(link != null && link.isVisible()) {
+				countVisible++;
+			}
+		}
+		return countVisible;
+	}
+	
+	private void openFirstStep(UserRequest ureq) {
+		ModuleConfiguration config = gtaNode.getModuleConfiguration();
+		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
 			doOpenAssignments(ureq);
+		} else if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			doOpenSubmissions(ureq);
+		} else if(config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
+			doOpenReviewAndCorrections(ureq);
+		} else if(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+			doOpenRevisions(ureq);
+		} else if(config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)) {
+			doOpenPeerReview(ureq);
+		} else if(config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)) {
+			doOpenSolution(ureq);
+		} else if(config.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
+			doOpenGrading(ureq);
 		}
 	}
 	

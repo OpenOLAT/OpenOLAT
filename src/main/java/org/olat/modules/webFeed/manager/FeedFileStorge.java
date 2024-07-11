@@ -77,7 +77,7 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
  *   ______...
  *
  * Initial date: 22.05.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -597,8 +597,8 @@ public class FeedFileStorge {
 		if (media != null) {
 			VFSContainer itemMediaContainer = getOrCreateItemMediaContainer(item);
 			if (itemMediaContainer != null) {
-				media.moveUploadFileTo(itemMediaContainer);
-				saveFileName = media.getUploadFileName();
+				VFSLeaf mediaLeaf = media.moveUploadFileTo(itemMediaContainer);
+				saveFileName = mediaLeaf.getName();
 			}
 		}
 
@@ -618,8 +618,8 @@ public class FeedFileStorge {
 		VFSContainer mediaDir = getOrCreateItemMediaContainer(item);
 		if (mediaDir != null && enclosure != null) {
 			VFSLeaf mediaFile = (VFSLeaf) mediaDir.resolve(enclosure.getFileName());
-			if (mediaFile instanceof LocalFileImpl) {
-				file = ((LocalFileImpl) mediaFile).getBasefile();
+			if (mediaFile instanceof LocalFileImpl mediaFileImpl) {
+				file = mediaFileImpl.getBasefile();
 			}
 		}
 

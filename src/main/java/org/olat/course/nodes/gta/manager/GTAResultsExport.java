@@ -194,6 +194,10 @@ public class GTAResultsExport {
 	
 	private Map<Long,Task> getTasks(List<Identity> assessedIdentities, List<BusinessGroup> businessGroups) {
 		TaskList taskList = gtaManager.getTaskList(courseEntry, gtaNode);
+		if(taskList == null) {
+			return new HashMap<>();
+		}
+
 		List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
 		Map<Long,Task> tasksMap;
 		if("ita".equals(gtaNode.getType())) {
