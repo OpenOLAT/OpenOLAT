@@ -1071,7 +1071,6 @@ public class PortfolioV2Test extends Deployments {
 		UserToolsPage participantUserTools = new UserToolsPage(browser);
 		participantUserTools
 			.openUserToolsMenu()
-			.openFileHub()
 			.openMediaCenter()
 			.assertOnMediaCenter()
 			.uploadMedia(imageName, imageFile)
@@ -1084,7 +1083,6 @@ public class PortfolioV2Test extends Deployments {
 		UserToolsPage recipientUserTools = new UserToolsPage(browser);
 		recipientUserTools
 			.openUserToolsMenu()
-			.openFileHub()
 			.openMediaCenter()
 			.assertOnMediaCenter()
 			.shareWithMeFilter()
@@ -1114,7 +1112,6 @@ public class PortfolioV2Test extends Deployments {
 		UserToolsPage userTools = new UserToolsPage(browser);
 		userTools
 			.openUserToolsMenu()
-			.openFileHub()
 			.openMediaCenter()
 			.uploadMedia(documentName, documentFile)
 			.assertOnMediaDetails(documentName);
