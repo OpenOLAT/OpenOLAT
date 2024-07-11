@@ -1174,6 +1174,14 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(entry, getIdent());
 	}
 	
+	public boolean isNodeOptional(CourseEnvironment coursEnv, Identity doer) {
+		NodeAccessType nodeAccessType = NodeAccessType.of(coursEnv);
+		
+		updateModuleConfigDefaults(false, getParent(), nodeAccessType, doer);
+
+		return getModuleConfiguration().getStringValue(GTACourseNode.GTASK_OBLIGATION).equals(AssessmentObligation.optional.name());
+	}
+	
 	public boolean isOptional(CourseEnvironment coursEnv, UserCourseEnvironment userCourseEnv) {
 		NodeAccessType nodeAccessType = NodeAccessType.of(coursEnv);
 		

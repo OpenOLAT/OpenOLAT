@@ -642,7 +642,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		private void buildConditionsFromContext(FormItemContainer formLayout) {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
-			List<BadgeCondition> badgeConditions = badgeCriteria.getConditions();
+			List<BadgeCondition> badgeConditions = badgeCriteria.getConditions().stream()
+					.filter(bc -> StringHelper.containsNonWhitespace(bc.getKey()))
+					.filter(bc -> conditionsKV.containsKey(bc.getKey())).toList();
 			conditions = new ArrayList<>();
 			for (int i = 0; i < badgeConditions.size(); i++) {
 				BadgeCondition badgeCondition = badgeConditions.get(i);

@@ -306,6 +306,10 @@ public class AssessmentForm extends FormBasicController {
 		return !coachComment.getValue().equals(coachCommentValue);
 	}
 	
+	public Identity getAssessedIdentity() {
+		return assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+	}
+	
 	public TextElement getCoachComment() {
 		return coachComment;
 	}

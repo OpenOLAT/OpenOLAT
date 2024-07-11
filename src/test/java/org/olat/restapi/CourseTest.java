@@ -718,10 +718,9 @@ public class CourseTest extends OlatRestTestCase {
 		courseEntry = repositoryManager.setDescriptionAndName(courseEntry, courseEntry.getDisplayname(), "Course ref.", "Course authors",
 				"Course description", "Course teaser", "Course objectives", "Course requirements", "Course credits", "DE", "Zurich", "5 days",
 				null, null, null, educationalType);
-		course.getCourseEnvironment().updateCourseEntry(courseEntry);
-		dbInstance.commitAndCloseSession();
+		Assert.assertEquals("Course ref.", courseEntry.getExternalRef());
 
-		//remove the owner
+		// Login as administrator
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI())

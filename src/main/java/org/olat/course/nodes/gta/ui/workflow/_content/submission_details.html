@@ -1,0 +1,28 @@
+#if(${row.isDetailsControllerAvailable()})
+	$r.render(${row.getDetailsControllerName()})
+#else
+	<strong>$r.translate("coach.waiting.submitted.documents")</strong>
+	<br>
+	#if(${row.hasSubmittedDocs()})
+		$r.translate("coach.waiting.submitted.documents.ready.description")
+	#else 
+		$r.translate("coach.waiting.submitted.documents.description")
+	#end
+#end
+
+#if($r.isNotNull(${row.getCollectDocumentsLinkName()}))
+	<h5>$r.translate("coach.collect.confirm.title")</h5>
+	<p>$r.translate("coach.collect.confirm.desc")</p>
+	<div class="o_button_group">
+		$r.render(${row.getCollectDocumentsLinkName()})
+	</div>
+#end
+		
+#if($r.isNotNull(${row.getBackToSubmissionLinkName()}))
+	<h5>$r.translate("coach.back.to.submission.confirm.title")</h5>
+	<p>$r.translate("coach.back.to.submission.desc")</p>
+	<div class="o_button_group">
+		$r.render(${row.getBackToSubmissionLinkName()})
+	</div>
+#end
+

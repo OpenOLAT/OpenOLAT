@@ -185,6 +185,7 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 		final List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTask(taskToReview);
 		final List<TaskReviewAssignment> allAssignments = peerReviewManager.getAssignmentsForTaskList(taskList);
 		List<PeerReviewAssignmentRow> assignmentRows = tasks.stream()
+				.filter(task -> taskToReview == null || !task.equals(taskToReview))
 				.map(task -> forgeRow(task, assignments, allAssignments))
 				.collect(Collectors.toList());
 		tableModel.setObjects(assignmentRows);

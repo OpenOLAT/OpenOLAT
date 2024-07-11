@@ -47,7 +47,7 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  */
 public class GTAUIFactory {
 	
-	static DocEditorConfigs getEditorConfig(VFSContainer vfsContainer, VFSLeaf vfsLeaf, String filePath, Mode mode, Long courseRepoKey) {
+	public static DocEditorConfigs getEditorConfig(VFSContainer vfsContainer, VFSLeaf vfsLeaf, String filePath, Mode mode, Long courseRepoKey) {
 		VFSEdusharingProvider edusharingProvider = courseRepoKey != null
 				? new LazyRepositoryEdusharingProvider(courseRepoKey)
 				: null;

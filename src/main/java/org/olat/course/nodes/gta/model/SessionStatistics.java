@@ -28,4 +28,8 @@ package org.olat.course.nodes.gta.model;
 public record SessionStatistics(double progress, double min, double max, double average, double sum,
 		double firstQuartile, double median, double thridQuartile, int numOfQuestions, int maxSteps) {
 	//
+	
+	public static SessionStatistics noStatistics() {
+		return new SessionStatistics(0.0d, 0.0d, 0.0d, 0.0d, 0.0d, 0.0d,0.0d, 0.0d, 0, 0);
+	}
 }

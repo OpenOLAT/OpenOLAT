@@ -186,3 +186,52 @@ p.o_gta_reopen_warning {
 	gap: 1em;
 }
 
+.o_gta_workflow {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	align-content: stretch;
+	
+	>a {
+		flex-grow: 1;
+	}
+
+	.btn-arrow-right {
+		height: 56px;
+		padding-left: 16px;
+		padding-right: 22px;
+		margin-bottom: 5px;
+		margin-right: 32px;
+		text-align: right;
+	}
+	.btn-arrow-right span {
+		z-index: 5;
+	}
+	.btn-arrow-right:before {
+		display: none;
+	}
+	.btn-arrow-right:after {
+		width: 38px;
+		height: 38px;
+		right: -19px;
+		top: 8px;
+	}
+	
+	.btn-arrow-right:last-child {
+		padding-right: 16px;
+		margin-right: 0;
+	}
+	.btn-arrow-right:last-child:after {
+		display: none;
+	}
+}
+
+.o_gta_workflow_content {	
+	fieldset div.o_info_with_icon {
+		margin: 0 0 8px 0;
+	}
+}
+
+.o_gta_workflow_received_reviews {
+	margin: 20px 0 20px 0;
+}

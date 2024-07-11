@@ -913,8 +913,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	@Override
 	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode, Collection<? extends IdentityRef> identites) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select task from gtatasklight task ")
-		  .append(" inner join task.taskList tasklist ")
+		sb.append("select task from gtatasklight task")
+		  .append(" inner join task.taskList tasklist")
 		  .append(" where tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent");
 		if (identites != null && !identites.isEmpty()) {
 			sb.append(" and task.identityKey in :identityKeys");
@@ -1290,7 +1290,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode) {
 		Task task = createTask(taskName, taskList, status, assessedGroup, assessedIdentity, cNode);
 		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW) && assessedIdentity != null) {
-			EvaluationFormSurvey survey = peerReviewManager.loadOrCreateSurvey(null, cNode, assessedIdentity);
+			RepositoryEntry courseEntry = taskList.getEntry();
+			EvaluationFormSurvey survey = peerReviewManager.loadOrCreateSurvey(courseEntry, cNode, assessedIdentity);
 			((TaskImpl)task).setSurvey(survey);
 		}
 		if(task.getKey() == null) {

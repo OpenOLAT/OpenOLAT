@@ -20,8 +20,10 @@
 package org.olat.course.nodes.gta.manager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -167,6 +169,7 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 
 	@Override
 	public List<TaskReviewAssignment> getAssignmentsForTask(Task task) {
+		if(task == null || task.getKey() == null) return new ArrayList<>();
 		return taskReviewAssignmentDao.getAssignments(task);
 	}
 	
@@ -195,6 +198,9 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 	@Override
 	public SessionParticipationListStatistics loadStatistics(Task task, List<TaskReviewAssignment> assignments,
 			GTACourseNode gtaNode, List<TaskReviewAssignmentStatus> status) {
+		if(task == null || task.getKey() == null) {
+			return new SessionParticipationListStatistics(SessionStatistics.noStatistics(), new ArrayList<>());
+		}
 		SessionFilter sessionFilter = new TaskSessionFilter(task, status);
 		return loadStatistics(gtaNode, assignments, sessionFilter);
 	}
@@ -232,6 +238,132 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 		SessionStatistics aggregatedStatistics = calculator.calculateStatistics(doneSessions);
 		
 		return new SessionParticipationListStatistics(aggregatedStatistics, statistics);
+	}
+	
+	
+
+	@Override
+	public Map<Task, SessionParticipationListStatistics> loadStatisticsProTask(TaskList taskList,
+			List<TaskReviewAssignment> assignments, GTACourseNode gtaNode, List<TaskReviewAssignmentStatus> status) {
+
+		SessionFilter sessionFilter = new TaskListSessionFilter(taskList, status);
+		
+		RepositoryEntry formEntry = GTACourseNode.getPeerReviewEvaluationForm(gtaNode.getModuleConfiguration());
+		Form form = evaluationFormManager.loadForm(formEntry);
+		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(sessionFilter);
+		
+		final SessionStatisticsCalculator calculator = new SessionStatisticsCalculator(responses, form);
+		
+		Map<Task,List<TaskReviewAssignment>> taskToAssignments = new HashMap<>();
+		for(TaskReviewAssignment assignment:assignments) {
+			List<TaskReviewAssignment> taskAssignments = taskToAssignments
+					.computeIfAbsent(assignment.getTask(), t -> new ArrayList<>());
+			taskAssignments.add(assignment);
+		}
+		
+		final Set<EvaluationFormSession> sessions = responses.getSessions();
+		Map<EvaluationFormParticipation,SessionParticipationStatistics> participationToStatistics = new HashMap<>();
+		for(EvaluationFormSession session:sessions) {
+			SessionStatistics sessionStatistics = calculator.calculateStatistics(session);
+			participationToStatistics.put(session.getParticipation(),
+					new SessionParticipationStatistics(session, session.getParticipation(), sessionStatistics));
+		}
+		
+		final Set<EvaluationFormParticipation> doneParticipations = assignments.stream()
+				.filter(assignment -> TaskReviewAssignmentStatus.done == assignment.getStatus())
+				.map(TaskReviewAssignment::getParticipation)
+				.collect(Collectors.toSet());
+		
+		Map<Task, SessionParticipationListStatistics> taskToSessionParticipationListStatistics = new HashMap<>();
+		for(Map.Entry<Task, List<TaskReviewAssignment>> entry:taskToAssignments.entrySet()) {
+			Task task = entry.getKey();
+			List<TaskReviewAssignment> taskAssignments = entry.getValue();
+			List<EvaluationFormSession> taskSessions = new ArrayList<>();
+			List<SessionParticipationStatistics> statisticsList = new ArrayList<>();
+			for(TaskReviewAssignment taskAssignment:taskAssignments) {
+				if(taskAssignment.getParticipation() != null) {
+					SessionParticipationStatistics statistics = participationToStatistics.get(taskAssignment.getParticipation());
+					if(statistics != null) {
+						statisticsList.add(statistics);
+						taskSessions.add(statistics.getSession());
+					}
+				}	
+			}
+			
+			List<EvaluationFormSession> doneSessions = taskSessions.stream()
+					.filter(session -> doneParticipations.contains(session.getParticipation()))
+					.toList();
+			
+			SessionStatistics aggregatedStatistics = calculator.calculateStatistics(doneSessions);
+			SessionParticipationListStatistics participationsStatistics =
+					new SessionParticipationListStatistics(aggregatedStatistics, statisticsList);
+			
+			taskToSessionParticipationListStatistics.put(task, participationsStatistics);
+		}
+
+		return taskToSessionParticipationListStatistics;
+	}
+	
+	@Override
+	public Map<Identity, SessionParticipationListStatistics> loadStatisticsProAssignee(TaskList taskList,
+			List<TaskReviewAssignment> assignments, GTACourseNode gtaNode, List<TaskReviewAssignmentStatus> status) {
+		
+		SessionFilter sessionFilter = new TaskListSessionFilter(taskList, status);
+		
+		RepositoryEntry formEntry = GTACourseNode.getPeerReviewEvaluationForm(gtaNode.getModuleConfiguration());
+		Form form = evaluationFormManager.loadForm(formEntry);
+		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(sessionFilter);
+		
+		final SessionStatisticsCalculator calculator = new SessionStatisticsCalculator(responses, form);
+		
+		Map<Identity,List<TaskReviewAssignment>> assigneeToAssignments = new HashMap<>();
+		for(TaskReviewAssignment assignment:assignments) {
+			List<TaskReviewAssignment> taskAssignments = assigneeToAssignments
+					.computeIfAbsent(assignment.getAssignee(), t -> new ArrayList<>());
+			taskAssignments.add(assignment);
+		}
+		
+		final Set<EvaluationFormSession> sessions = responses.getSessions();
+		Map<EvaluationFormParticipation,SessionParticipationStatistics> participationToStatistics = new HashMap<>();
+		for(EvaluationFormSession session:sessions) {
+			SessionStatistics sessionStatistics = calculator.calculateStatistics(session);
+			participationToStatistics.put(session.getParticipation(),
+					new SessionParticipationStatistics(session, session.getParticipation(), sessionStatistics));
+		}
+		
+		final Set<EvaluationFormParticipation> doneParticipations = assignments.stream()
+				.filter(assignment -> TaskReviewAssignmentStatus.done == assignment.getStatus())
+				.map(TaskReviewAssignment::getParticipation)
+				.collect(Collectors.toSet());
+		
+		Map<Identity, SessionParticipationListStatistics> taskToSessionParticipationListStatistics = new HashMap<>();
+		for(Map.Entry<Identity, List<TaskReviewAssignment>> entry:assigneeToAssignments.entrySet()) {
+			Identity assignee = entry.getKey();
+			List<TaskReviewAssignment> taskAssignments = entry.getValue();
+			List<EvaluationFormSession> taskSessions = new ArrayList<>();
+			List<SessionParticipationStatistics> statisticsList = new ArrayList<>();
+			for(TaskReviewAssignment taskAssignment:taskAssignments) {
+				if(taskAssignment.getParticipation() != null) {
+					SessionParticipationStatistics statistics = participationToStatistics.get(taskAssignment.getParticipation());
+					if(statistics != null) {
+						statisticsList.add(statistics);
+						taskSessions.add(statistics.getSession());
+					}
+				}	
+			}
+			
+			List<EvaluationFormSession> doneSessions = taskSessions.stream()
+					.filter(session -> doneParticipations.contains(session.getParticipation()))
+					.toList();
+			
+			SessionStatistics aggregatedStatistics = calculator.calculateStatistics(doneSessions);
+			SessionParticipationListStatistics participationsStatistics =
+					new SessionParticipationListStatistics(aggregatedStatistics, statisticsList);
+			
+			taskToSessionParticipationListStatistics.put(assignee, participationsStatistics);
+		}
+
+		return taskToSessionParticipationListStatistics;
 	}
 
 	private static final EvaluationFormSurveyIdentifier getSurveyIdent(RepositoryEntry courseEntry, GTACourseNode node, Identity assessedIdentity) {

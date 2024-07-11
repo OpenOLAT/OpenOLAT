@@ -38,7 +38,6 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -59,19 +58,17 @@ public class GTACoachPeerReviewController extends BasicController {
 	
 	private final TaskList taskList;
 	private final GTACourseNode gtaNode;
-	private final RepositoryEntry courseEntry;
 	private final CourseEnvironment courseEnv;
 	
 	private GTACoachPeerReviewAwardedListController awardedListCtrl;
 	private GTACoachPeerReviewReceivedListController receivedListCtrl;
 	
 	public GTACoachPeerReviewController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			TaskList taskList, Task assignedTask, Identity assessedIdentity,
-			CourseEnvironment courseEnv, RepositoryEntry courseEntry, GTACourseNode gtaNode) {
+			TaskList taskList, Task assignedTask, Identity assessedIdentity, CourseEnvironment courseEnv,
+			GTACourseNode gtaNode) {
 		super(ureq, wControl, Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
 		this.assessedIdentity = assessedIdentity;
 		this.assignedTask = assignedTask;
-		this.courseEntry = courseEntry;
 		this.stackPanel = stackPanel;
 		this.courseEnv = courseEnv;
 		this.taskList = taskList;
@@ -109,7 +106,7 @@ public class GTACoachPeerReviewController extends BasicController {
 	private GTACoachPeerReviewAwardedListController doOpenAwardedPeerReview(UserRequest ureq) {
 		if(awardedListCtrl == null) {
 			awardedListCtrl = new GTACoachPeerReviewAwardedListController(ureq, getWindowControl(),
-					taskList, assessedIdentity, courseEnv, courseEntry, gtaNode);
+					taskList, assessedIdentity, courseEnv, gtaNode);
 			listenTo(awardedListCtrl);
 		}
 		mainVC.put("segmentCmp", awardedListCtrl.getInitialComponent());
@@ -119,7 +116,7 @@ public class GTACoachPeerReviewController extends BasicController {
 	private GTACoachPeerReviewReceivedListController doOpenReceivedPeerReview(UserRequest ureq) {
 		if(receivedListCtrl == null) {
 			receivedListCtrl = new GTACoachPeerReviewReceivedListController(ureq, getWindowControl(), stackPanel,
-					taskList, assignedTask, courseEnv, courseEntry, gtaNode);
+					taskList, assignedTask, courseEnv, gtaNode);
 			listenTo(receivedListCtrl);
 		}
 		mainVC.put("segmentCmp", receivedListCtrl.getInitialComponent());

@@ -140,7 +140,7 @@ public class ForumArchive {
 				applyFormatter(openXmlFormatter);
 			}
 			
-			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
+			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter(locale);
 			writer.createDocument(zout, openXmlFormatter.getOpenXMLDocument());
 			return openXmlFormatter.getAttachments();
 		} catch (Exception e) {

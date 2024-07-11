@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta;
 
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.GTACourseNode;
@@ -37,51 +38,65 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface GTAPeerReviewManager {
 	
-	public List<TaskReviewAssignment> getAssignmentsForTask(Task task);
+	List<TaskReviewAssignment> getAssignmentsForTask(Task task);
 	
-	public List<TaskReviewAssignment> getAssignmentsForTaskList(TaskList taskList);
+	List<TaskReviewAssignment> getAssignmentsForTaskList(TaskList taskList);
 	
-	public List<TaskReviewAssignment> getAssignmentsOfReviewer(TaskList taskList, Identity reviewer);
+	List<TaskReviewAssignment> getAssignmentsOfReviewer(TaskList taskList, Identity reviewer);
 	
-	public TaskReviewAssignment createAssignment(Task task, Identity assignee);
+	TaskReviewAssignment createAssignment(Task task, Identity assignee);
 	
-	public TaskReviewAssignment updateAssignment(TaskReviewAssignment assignment);
+	TaskReviewAssignment updateAssignment(TaskReviewAssignment assignment);
 
-	public TaskReviewAssignment loadAssignment(TaskReviewAssignment assignment);
+	TaskReviewAssignment loadAssignment(TaskReviewAssignment assignment);
 	
-	public TaskReviewAssignment invalidateAssignment(TaskReviewAssignment assignment, GTACourseNode gtaNode, Identity doer);
+	TaskReviewAssignment invalidateAssignment(TaskReviewAssignment assignment, GTACourseNode gtaNode, Identity doer);
 	
-	public TaskReviewAssignment reopenAssignment(TaskReviewAssignment assignment, GTACourseNode gtaNode, Identity doer);
+	TaskReviewAssignment reopenAssignment(TaskReviewAssignment assignment, GTACourseNode gtaNode, Identity doer);
 	
 	/**
 	 * Special purpose query, returns all assignees of a peer review,
 	 * @return
 	 */
-	public List<Identity> getAssigneesToRemind(TaskList taskList, GTACourseNode gtaNode);
+	List<Identity> getAssigneesToRemind(TaskList taskList, GTACourseNode gtaNode);
 	
 	
-	public Task loadOrCreateSurvey(Task task, RepositoryEntry courseEntry, GTACourseNode gtaNode);
+	Task loadOrCreateSurvey(Task task, RepositoryEntry courseEntry, GTACourseNode gtaNode);
 	
-	public EvaluationFormSurvey loadOrCreateSurvey(RepositoryEntry courseEntry, GTACourseNode node, Identity assessedIdentity);
+	EvaluationFormSurvey loadOrCreateSurvey(RepositoryEntry courseEntry, GTACourseNode node, Identity assessedIdentity);
 
-	public EvaluationFormSurvey loadSurvey(Task task);
+	EvaluationFormSurvey loadSurvey(Task task);
 	
-	public EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormSurvey survey, Identity executor);
+	EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormSurvey survey, Identity executor);
 	
-	public EvaluationFormParticipation loadParticipation(EvaluationFormSurvey survey, Identity executor);
+	EvaluationFormParticipation loadParticipation(EvaluationFormSurvey survey, Identity executor);
 	
-	public EvaluationFormSession loadOrCreateSession(EvaluationFormSurvey survey, Identity executor);
+	EvaluationFormSession loadOrCreateSession(EvaluationFormSurvey survey, Identity executor);
 	
-	public EvaluationFormSession loadOrCreateSession(EvaluationFormParticipation participation);
+	EvaluationFormSession loadOrCreateSession(EvaluationFormParticipation participation);
 	
-	public EvaluationFormSession loadSession(EvaluationFormParticipation participation);
-	
-	
-	public SessionParticipationListStatistics loadStatistics(Task task, List<TaskReviewAssignment> assignments,
-			GTACourseNode gtaNode, List<TaskReviewAssignmentStatus> status);
-	
-	public SessionParticipationListStatistics loadStatistics(TaskList taskList, List<TaskReviewAssignment> assignments, Identity reviewer,
-			GTACourseNode gtaNode, List<TaskReviewAssignmentStatus> status);
+	EvaluationFormSession loadSession(EvaluationFormParticipation participation);
 	
 
+	
+	SessionParticipationListStatistics loadStatistics(Task task, List<TaskReviewAssignment> assignments,
+			GTACourseNode gtaNode, List<TaskReviewAssignmentStatus> status);
+	
+	SessionParticipationListStatistics loadStatistics(TaskList taskList, List<TaskReviewAssignment> assignments, Identity reviewer,
+			GTACourseNode gtaNode, List<TaskReviewAssignmentStatus> status);
+	
+	/**
+	 * Calculate the statistics for every tasks in the task list.
+	 * 
+	 * @param taskList
+	 * @param assignments
+	 * @param gtaNode
+	 * @param status
+	 * @return
+	 */
+	Map<Task,SessionParticipationListStatistics> loadStatisticsProTask(TaskList taskList, List<TaskReviewAssignment> assignments,
+			GTACourseNode gtaNode, List<TaskReviewAssignmentStatus> status);
+	
+	Map<Identity, SessionParticipationListStatistics> loadStatisticsProAssignee(TaskList taskList,
+			List<TaskReviewAssignment> assignments, GTACourseNode gtaNode, List<TaskReviewAssignmentStatus> status);
 }

@@ -77,6 +77,8 @@ public interface RepositoryService {
 
 	public RepositoryEntry loadByResourceKey(Long key);
 
+	public RepositoryEntry loadByResourceId(String resourceTypeName, Long resourceId);
+
 	public List<RepositoryEntry> loadRepositoryEntriesByExternalId(String externalId);
 
 	public List<RepositoryEntry> loadRepositoryEntriesByExternalRef(String externalRef);
@@ -85,12 +87,12 @@ public interface RepositoryService {
 
 	public List<RepositoryEntry> loadByResourceKeys(Collection<Long> keys);
 	
-
 	/**
 	 * @param repositoryEntryKey The key of the repository entry
 	 * @return The olat resource of the repository entry
 	 */
 	public OLATResource loadRepositoryEntryResource(Long repositoryEntryKey);
+	
 
 	/**
 	 * @param softkey The soft key of the repository entry

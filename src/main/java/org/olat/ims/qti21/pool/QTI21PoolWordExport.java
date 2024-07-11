@@ -191,7 +191,7 @@ public class QTI21PoolWordExport implements MediaResource {
 			zout = new ZipOutputStream(out);
 			zout.setLevel(9);
 			
-			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
+			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter(locale);
 			writer.createDocument(zout, document);
 		} catch (Exception e) {
 			log.error("", e);

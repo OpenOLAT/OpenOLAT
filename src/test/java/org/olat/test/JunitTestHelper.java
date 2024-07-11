@@ -510,7 +510,7 @@ public class JunitTestHelper {
 			
 			ICourse course = CourseFactory.loadCourse(re);
 			CourseFactory.publishCourse(course, status, initialAuthor, Locale.ENGLISH);
-			return  CoreSpringFactory.getImpl(RepositoryManager.class).lookupRepositoryEntry(re.getKey());
+			return CoreSpringFactory.getImpl(RepositoryManager.class).lookupRepositoryEntry(re.getKey());
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

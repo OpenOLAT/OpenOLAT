@@ -87,7 +87,7 @@ public class MediaUIHelper {
 	}
 	
 	public static String toMediaCenterBusinessPath(ImageElement imageElement) {
-		String businessPath = "[HomeSite:0][filehub:0][MediaCenter:0]";
+		String businessPath = "[HomeSite:0][MediaCenter:0]";
 		if(imageElement instanceof MediaPart part) {
 			businessPath += "[Media:" + part.getMedia().getKey() + "]";
 		}
@@ -95,7 +95,7 @@ public class MediaUIHelper {
 	}
 
 	public static String toMediaCenterBusinessPath(Long mediaKey) {
-		String businessPath = "[HomeSite:0][filehub:0][MediaCenter:0]";
+		String businessPath = "[HomeSite:0][MediaCenter:0]";
 		businessPath += "[Media:" + mediaKey + "]";
 		return businessPath;
 	}

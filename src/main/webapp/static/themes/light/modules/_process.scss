@@ -179,8 +179,9 @@
 	    color				: $o-step-status-waiting-color;
 	}
 	&.o_process_status_review {
-	    background-color: 	$o-step-status-review-color;
-	    color: 				#fff;
+		border-color		: $o-step-status-review-border-color;
+	    background-color	: $o-step-status-review-bg-color;
+	    color				: $o-step-status-review-color;
 	}
 	&.o_process_status_notavailable {
 	    background-color: 	$o-step-status-notavailable-color;
@@ -210,12 +211,33 @@
 }
 
 .o_labeled_light {
-	&.o_process_status_late {
+	&.o_process_status_done {
 		font-weight: normal;
 		text-transform: lowercase;
 	    background-color: #fff;
-	    border-color: $o-step-status-expired-color;
-	    color: $o-step-status-expired-color;
+	    border-color: $o-step-status-done-color;
+	    color: $o-step-status-done-color;
+	}
+	&.o_process_status_waiting {
+		font-weight: normal;
+		text-transform: lowercase;
+	    background-color: #fff;
+	    border-color: $o-step-status-waiting-color;
+	    color: $o-step-status-waiting-color;
+	}
+	&.o_process_status_review {
+		font-weight: normal;
+		text-transform: lowercase;
+	    background-color: #fff;
+	    border-color: $o-step-status-review-color;
+	    color: $o-step-status-review-color;
+	}
+	&.o_process_status_notavailable {
+		font-weight: normal;
+		text-transform: lowercase;
+	    background-color: #fff;
+	    border-color: $o-step-status-notavailable-color;
+	    color: $o-step-status-notavailable-color;
 	}
 	&.o_process_status_extended {
 		font-weight: normal;
@@ -223,6 +245,41 @@
 	    background-color: #fff;
 	    border-color: $o-step-status-extended-color;
 	    color: $o-step-status-extended-color;
+	}
+	&.o_process_status_auto_collect {
+		font-weight: normal;
+		text-transform: lowercase;
+	    background-color: #fff;
+	    border-color: $o-step-status-auto-collect-color;
+	    color: $o-step-status-auto-collect-color;
+	}
+	&.o_process_status_active {
+		font-weight: normal;
+		text-transform: lowercase;
+	    background-color: #fff;
+	    border-color: $o-step-status-active-color;
+	    color: $o-step-status-active-color;
+	}
+	&.o_process_status_expired {
+		font-weight: normal;
+		text-transform: lowercase;
+	    background-color: #fff;
+	    border-color: $o-step-status-expired-color;
+	    color: $o-step-status-expired-color;
+	}
+	&.o_process_status_late {
+		font-weight: normal;
+		text-transform: lowercase;
+	    background-color: #fff;
+	    border-color: $o-step-status-expired-color;
+	    color: $o-step-status-expired-color;
+	}
+	&.o_process_status_need_revision {
+		font-weight: normal;
+		text-transform: lowercase;
+	    background-color: #fff;
+	    border-color: $o-step-status-need-revision-color;
+	    color: $o-step-status-need-revision-color;
 	}
 }
 
