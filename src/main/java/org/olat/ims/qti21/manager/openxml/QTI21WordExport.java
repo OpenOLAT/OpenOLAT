@@ -239,7 +239,7 @@ public class QTI21WordExport implements MediaResource {
 				}
 			}
 
-			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
+			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter(locale);
 			writer.createDocument(zout, document);
 		} catch (Exception e) {
 			log.error("", e);

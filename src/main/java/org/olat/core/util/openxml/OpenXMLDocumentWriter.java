@@ -78,7 +78,7 @@ public class OpenXMLDocumentWriter {
 	public static final String CT_WEB_SETTINGS = "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml";
 	public static final String CT_SETTINGS = "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml";
 	
-	private Locale locale;
+	private final Locale locale;
 	
 	public OpenXMLDocumentWriter() {
 		this(null);
@@ -260,10 +260,15 @@ public class OpenXMLDocumentWriter {
 
 	private void replaceLang(Document stylesDoc) {
 		NodeList langElList = stylesDoc.getElementsByTagName("w:lang");
-		if(langElList.getLength() == 1) {
-			Node langEl = langElList.item(0);
+		if (langElList.getLength() == 0) {
+			return;
+		}
+		
+		String lang = getLang();
+		for (int i = 0; i < langElList.getLength(); i++) {
+			Node langEl = langElList.item(i);
 			NamedNodeMap attributes = langEl.getAttributes();
-			attributes.getNamedItem("w:val").setNodeValue(getLang());
+			attributes.getNamedItem("w:val").setNodeValue(lang);
 		}
 	}
 	

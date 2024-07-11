@@ -210,7 +210,7 @@ public class ProjReportWordExport {
 				exportTimeline(document);
 			}
 			
-			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
+			OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter(translator.getLocale());
 			writer.createDocument(zout, document);
 		} catch (Exception e) {
 			log.error("", e);

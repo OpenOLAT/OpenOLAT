@@ -1098,12 +1098,12 @@ public class RepositoryManager {
 			}
 			reloadedRe.setOrganisations(currentRelations);
 		}
-		dbInstance.commit();
-
 		reloadedRe.setLifecycle(cycle);
 		reloadedRe.setLastModified(new Date());
 		
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		dbInstance.commit();
+		
 		if(cycleToDelete != null) {
 			dbInstance.getCurrentEntityManager().remove(cycleToDelete);
 		}
