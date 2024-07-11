@@ -61,6 +61,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	private boolean timeOnlyEnabled;
 	private boolean dateChooserTimeEnabled;
 	private boolean keepTime;
+	private boolean twoDigitsYearFormat = true;
 	private boolean defaultTimeAtEndOfDay;
 	private String forValidDateErrorKey;
 	private boolean checkForValidDate;
@@ -410,6 +411,16 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	public void setDefaultTimeAtEndOfDay(boolean defaultTimeAtEndOfDay) {
 		this.defaultTimeAtEndOfDay = defaultTimeAtEndOfDay;
 	}
+	
+	@Override
+	public boolean is2DigitsYearFormat() {
+		return twoDigitsYearFormat;
+	}
+
+	@Override
+	public void set2DigitsYearFormat(boolean shortFormat) {
+		twoDigitsYearFormat = shortFormat;
+	}
 
 	public boolean isButtonsEnabled() {
 		return buttonsEnabled;
@@ -444,8 +455,13 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		Calendar cal = Calendar.getInstance();
 		cal.set( 1999, Calendar.MARCH, 1, 0, 0, 0 );
 		String formattedDate = Formatter.getInstance(translator.getLocale()).formatDate(cal.getTime());
-		formattedDate = formattedDate.replace("1999", "yy");
-		formattedDate = formattedDate.replace("99", "yy");
+		if(twoDigitsYearFormat) {
+			formattedDate = formattedDate.replace("1999", "yy");
+			formattedDate = formattedDate.replace("99", "yy");
+		} else {
+			formattedDate = formattedDate.replace("1999", "yyyy");
+			formattedDate = formattedDate.replace("99", "yyyy");
+		}
 		formattedDate = formattedDate.replace("03", "mm");
 		formattedDate = formattedDate.replace("3", "mm");
 		formattedDate = formattedDate.replace("01", "dd");

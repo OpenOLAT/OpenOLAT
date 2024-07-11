@@ -114,7 +114,11 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		sb.append("<script>\n")
 		  .append("\"use strict\";\n")
 		  .append("jQuery(function() {\n")
-		  .append(" jQuery('.o_page_content_editor').ceditor('editFragment');\n");
+		  .append(" jQuery('.o_page_content_editor').ceditor({\n")
+		  .append("  componentUrl: '").append(renderer.getUrlBuilder().getJavascriptURI()).append("',\n")
+		  .append("  csrfToken: '").append(renderer.getCsrfToken()).append("',\n")
+		  .append("  resetDrake: true,\n")
+		  .append("});\n");
 
 		FragmentRendererHelper.renderSelectionFrameJavaScript(sb, cmp.getDispatchID(), cmp.getElement());
 		FragmentRendererHelper.renderAbsolutePositionAlertDivScript(sb, cmp.getDispatchID(), cmp.getElement());
