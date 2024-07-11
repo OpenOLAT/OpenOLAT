@@ -460,9 +460,9 @@ public class CoursesWebService {
 
 	public static ICourse loadCourse(Long courseId) {
 		try {
-			OLATResource resource = OLATResourceManager.getInstance().findResourceable(courseId, "CourseModule");
-			if(resource != null) {
-				return CourseFactory.loadCourse(resource);
+			RepositoryEntry entry = CoreSpringFactory.getImpl(RepositoryService.class).loadByResourceId("CourseModule", courseId);
+			if(entry != null) {
+				return CourseFactory.loadCourse(entry);
 			}
 			return null;
 		} catch(CorruptedCourseException ex) {

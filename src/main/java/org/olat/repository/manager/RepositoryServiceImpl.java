@@ -409,6 +409,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
+	public RepositoryEntry loadByResourceId(String resourceTypeName, Long resourceId) {
+		return repositoryEntryDAO.loadByResourceId(resourceTypeName, resourceId);
+	}
+
+	@Override
 	public OLATResource loadRepositoryEntryResourceBySoftKey(String softkey) {
 		return repositoryEntryDAO.loadRepositoryEntryResourceBySoftKey(softkey);
 	}
