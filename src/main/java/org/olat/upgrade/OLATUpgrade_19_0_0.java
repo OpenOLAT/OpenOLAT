@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -66,15 +65,12 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_19.0.0";
 
-	private static final String UPDATE_FOLDER_USER_TOOL = "UPDATED FOLDER USER TOOL";
 	private static final String PLANNED_INACTIVATION_DATE_IDENTITY = "PLANNED INACTIVATION DATE IDENTITY";
 	private static final String COURSE_REFERENCES = "COURSES REFERENCES";
 	private static final String VFS_DELETED_METADATA = "VFS DELETED METADATA";
 	
 	@Autowired
 	private DB dbInstance;
- 	@Autowired
- 	private UserToolsModule userToolsModule;
 	@Autowired
 	private ReferenceManager referenceManager;
 	@Autowired
@@ -106,7 +102,6 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 		}
 
 		boolean allOk = true;
-		allOk &= updateFolderUserTool(upgradeManager, uhd);
 		allOk &= updatePlannedInactivationDates(upgradeManager, uhd);
 		allOk &= updateCoursesReferences(upgradeManager, uhd);
 		// Should be the last one because it can take some time.
@@ -118,28 +113,6 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_19_0_0 successfully!");
 		} else {
 			log.info(Tracing.M_AUDIT, "OLATUpgrade_19_0_0 not finished, try to restart OpenOlat!");
-		}
-		return allOk;
-	}
-	
-	private boolean updateFolderUserTool(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
-		boolean allOk = true;
-		if (!uhd.getBooleanDataValue(UPDATE_FOLDER_USER_TOOL)) {
-			try {
-				String availableTools = userToolsModule.getAvailableUserTools();
-				if(!"none".equals(availableTools) && StringHelper.containsNonWhitespace(availableTools)
-						&& availableTools.contains("PersonalFolderController")) {
-					availableTools += ",org.olat.home.HomeMainController:org.olat.home.PersonalFileHubController";
-					userToolsModule.setAvailableUserTools(availableTools);
-				}
-				log.info("Update folder user tool.");
-			} catch (Exception e) {
-				log.error("", e);
-				return false;
-			}
-			
-			uhd.setBooleanDataValue(UPDATE_FOLDER_USER_TOOL, allOk);
-			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
 	}
