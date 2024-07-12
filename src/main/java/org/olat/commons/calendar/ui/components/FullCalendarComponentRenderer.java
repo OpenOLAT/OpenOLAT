@@ -171,7 +171,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append("     info.el.setAttribute('id', 'o_cev_' + info.view.type + '_' + info.event.id + '-' + (++count));\n")
 		  .append("     if(info.view.type.lastIndexOf('list', 0) === 0) {\n")
 		  .append("       if(info.event.extendedProps.location !== 'undefined' && info.event.extendedProps.location != null && info.event.extendedProps.location.length > 0) {\n")
-		  .append("         jQuery(info.el).append('<td class=\"fc-list-event-location\"><span><i class=\"o_icon o_icon_home\"> </i> ' + info.event.extendedProps.location + '</span></td>');\n")
+		  .append("         jQuery(info.el).append('<td class=\"fc-list-event-location\"><span><i class=\"o_icon o_icon_home\"> </i> ' + o_escapeHtml(info.event.extendedProps.location) + '</span></td>');\n")
 		  .append("       } else {\n")
 		  .append("         jQuery(info.el).append('<td class=\"fc-list-event-location\"><span> </span></td>');\n")
 		  .append("       }\n")

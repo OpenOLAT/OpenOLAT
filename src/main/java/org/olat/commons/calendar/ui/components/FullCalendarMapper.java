@@ -227,8 +227,7 @@ public class FullCalendarMapper implements Mapper {
 	private void applyLiveStreamClass(JSONObject jsonEvent, KalendarEvent event) throws JSONException {
 		if(StringHelper.containsNonWhitespace(event.getLiveStreamUrl())) {
 			Object classNamesObj = jsonEvent.get("className");
-			if (classNamesObj instanceof String) {
-				String className = (String) classNamesObj;
+			if (classNamesObj instanceof String className) {
 				jsonEvent.put("className", className + " o_cal_event_livestream");
 			} else {
 				jsonEvent.put("className", "o_cal_event_livestream");
