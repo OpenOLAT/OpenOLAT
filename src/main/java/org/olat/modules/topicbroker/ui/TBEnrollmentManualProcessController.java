@@ -221,6 +221,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		EnrollmentProcessWrapper wrapper = runs.get(runNo - 1);
 		selectedProcessWrapper = wrapper;
 		enrollmentRunOverviewCtrl.updateModel(wrapper.getStats());
+		
+		updateEnrollmentDone();
 	}
 	
 	private static final class EnrollmentProcessWrapper {

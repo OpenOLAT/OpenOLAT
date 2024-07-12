@@ -200,6 +200,8 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 			try {
 				log.info("Start migrating deleted vfs metadata.");
 				
+				prepareWikiFile();
+				
 				int counter = 0;
 				List<VFSMetadata> metadatas;
 				do {
@@ -292,6 +294,48 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 			metadata = vfsRepositoryService.updateMetadata(vfsMetadata);
 			log.info(logMessage, metadata.getRelativePath() + "/" + metadata.getFilename());
 		}
+	}
+	
+	private void prepareWikiFile() {
+		log.info("Start prepare wiki vfs metadata.");
+		
+		int counter = 0;
+		List<VFSMetadata> metadatas;
+		do {
+			metadatas = getWikiMetadata(BATCH_SIZE);
+			for(int i=0; i<metadatas.size(); i++) {
+				VFSMetadata metadata = metadatas.get(i);
+				if (metadata instanceof VFSMetadataImpl impl) {
+					impl.setDeleted(false);
+					impl.setDeletedBy(null);
+					impl.setDeletedDate(null);
+					vfsRepositoryService.updateMetadata(impl);
+				}
+				if(i % 25 == 0) {
+					dbInstance.commitAndCloseSession();
+				}
+			}
+			counter += metadatas.size();
+			log.info(Tracing.M_AUDIT, "Prepared wiki vfs metadata: {} total processed ({})", metadatas.size(), counter);
+			dbInstance.commitAndCloseSession();
+		} while (metadatas.size() == BATCH_SIZE);
+		
+		
+		log.info("End prepare wiki vfs metadata.");
+	}
+
+	private List<VFSMetadata> getWikiMetadata(int maxResults) {
+		String query = """
+				select metadata from filemetadata as metadata 
+				where metadata.deleted = true
+				  and metadata.deletedDate is null
+				  and metadata.relativePath like '%wiki%'
+				  and (metadata.filename like '%.wp' or metadata.filename like '%.properties')
+				  """;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, VFSMetadata.class)
+				.setMaxResults(maxResults)
+				.getResultList();
 	}
 	
 }

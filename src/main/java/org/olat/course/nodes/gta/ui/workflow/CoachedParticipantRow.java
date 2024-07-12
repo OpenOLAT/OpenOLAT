@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskLateStatus;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskRevision;
 import org.olat.course.nodes.gta.model.DueDate;
@@ -59,9 +60,9 @@ public class CoachedParticipantRow extends UserPropertiesRow {
 	
 	private DueDate submissionDueDate;
 	private DueDate lateSubmissionDueDate;
-	private boolean lateSubmission;
 	private boolean canCollectSubmission;
 	private boolean canViewSubmittedDocuments;
+	private TaskLateStatus lateStatus;
 
 	private boolean correctionsDoneWithoutDocuments;
 	
@@ -146,14 +147,6 @@ public class CoachedParticipantRow extends UserPropertiesRow {
 		return task == null ? null : task.getSubmissionRevisionsDate();
 	}
 	
-	public boolean isLateSubmission() {
-		return lateSubmission;
-	}
-
-	public void setLateSubmission(boolean lateSubmission) {
-		this.lateSubmission = lateSubmission;
-	}
-	
 	public boolean isCanCollectSubmission() {
 		return canCollectSubmission;
 	}
@@ -170,10 +163,12 @@ public class CoachedParticipantRow extends UserPropertiesRow {
 		this.canViewSubmittedDocuments = canViewSubmittedDocuments;
 	}
 
-	public boolean isSubmissionExtended() {
-		Date overridenDate = getSubmissionDueDate() == null ? null : getSubmissionDueDate().getOverridenDueDate();
-		Date lateOverridenDate = getLateSubmissionDueDate() == null ? null : getLateSubmissionDueDate().getOverridenDueDate();
-		return overridenDate != null || lateOverridenDate != null;
+	public TaskLateStatus getLateStatus() {
+		return lateStatus;
+	}
+
+	public void setLateStatus(TaskLateStatus lateStatus) {
+		this.lateStatus = lateStatus;
 	}
 
 	public Date getCollectionDate() {
