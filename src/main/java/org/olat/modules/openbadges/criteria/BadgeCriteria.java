@@ -73,6 +73,30 @@ public class BadgeCriteria {
 		setDescription(StringHelper.unescapeHtml(FilterFactory.getHtmlTagsFilter().filter(StringHelper.xssScan(description))));
 	}
 
+	public List<BadgeCondition> getConditions(Set<String> acceptedKeys, Set<String> courseElementIdents) {
+		return conditions.stream()
+				.filter(bc -> StringHelper.containsNonWhitespace(bc.getKey()))
+				.filter(bc -> acceptedKeys.contains(bc.getKey()))
+				.filter(bc -> checkCourseElementSubIdent(bc, courseElementIdents))
+				.toList();
+	}
+
+	private boolean checkCourseElementSubIdent(BadgeCondition bc, Set<String> courseElementIdents) {
+		if (bc instanceof CourseElementPassedCondition courseElementPassedCondition) {
+			if (!courseElementIdents.contains(courseElementPassedCondition.getSubIdent())) {
+				return false;
+			}
+		}
+
+		if (bc instanceof CourseElementScoreCondition courseElementScoreCondition) {
+			if (!courseElementIdents.contains(courseElementScoreCondition.getSubIdent())) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public List<BadgeCondition> getConditions() {
 		return conditions;
 	}
