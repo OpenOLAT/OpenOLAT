@@ -405,6 +405,17 @@ public class Form {
 			}
 		}
 	}
+	
+	/**
+	 * This is a hack. Use it with caution, the order of the processing of the
+	 * request parameters is random.
+	 * 
+	 * @param key Typically the form dispatch id
+	 * @param value The value
+	 */
+	public void overrideRequestParameterValue(String key, String value) {
+		requestParams.put(key, new String[]{ value });
+	}
 
 	/**
 	 * Internal helper to add the request parameters to the request param map.

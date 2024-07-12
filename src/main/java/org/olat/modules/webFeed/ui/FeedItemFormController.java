@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.UploadFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
@@ -329,7 +330,7 @@ public abstract class FeedItemFormController extends FormBasicController {
 			setValues(ureq);
 			item.setDraft(true);
 			fireEvent(ureq, Event.CHANGED_EVENT);
-		} else if (source == file && event.wasTriggerdBy(FormEvent.ONCHANGE)) {
+		} else if (source == file && event instanceof UploadFileElementEvent) {
 			fileUploaded();
 		} else if (source == file
 				&& event instanceof DeleteFileElementEvent
@@ -366,10 +367,14 @@ public abstract class FeedItemFormController extends FormBasicController {
 				Size size = movieService.getSize(movie, FileUtils.getFileSuffix(newFilename));
 				if (size != null) {
 					if (size.getWidth() > 1) {
-						widthEl.setValue(Integer.toString(size.getWidth()));
+						String width = Integer.toString(size.getWidth());
+						widthEl.setValue(width);
+						widthEl.getRootForm().overrideRequestParameterValue(widthEl.getFormDispatchId(), width);
 					}
 					if (size.getHeight() > 1) {
-						heightEl.setValue(Integer.toString(size.getHeight()));
+						String height = Integer.toString(size.getHeight());
+						heightEl.setValue(height);
+						heightEl.getRootForm().overrideRequestParameterValue(heightEl.getFormDispatchId(), height);
 					}
 				}
 			}
