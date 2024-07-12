@@ -1244,6 +1244,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				((TaskImpl)currentTask).setTaskStatus(nextStep);
 				if(taskFile != null) {
 					((TaskImpl)currentTask).setTaskName(taskFile.getName());
+					((TaskImpl)currentTask).setAssignmentDate(new Date());
 					createSubmissionFromTask(identity, businessGroup, courseEnv, cNode, taskFile, doerIdentity, nextStep);
 				}
 			}

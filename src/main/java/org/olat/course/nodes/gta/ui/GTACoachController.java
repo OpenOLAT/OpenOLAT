@@ -337,7 +337,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
 					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
 					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
-				setNotAvailableStatusAndCssClass("peeReview");
+				setNotAvailableStatusAndCssClass("peerReview");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.peerreview) {
 				if(isPeerReviewStarted(ureq, assignedTask)) {
 					setActiveStatusAndCssClass("peerReview");
