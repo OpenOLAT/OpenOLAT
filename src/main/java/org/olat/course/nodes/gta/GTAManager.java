@@ -379,6 +379,10 @@ public interface GTAManager {
 
 	public boolean isDueDateEnabled(GTACourseNode cNode);
 	
+	public Date getSyntheticSubmissionDate(Task task);
+	
+	public Date getSyntheticSubmissionDate(TaskLight task);
+	
 	/**
 	 * Check if the submission was done late.
 	 * 

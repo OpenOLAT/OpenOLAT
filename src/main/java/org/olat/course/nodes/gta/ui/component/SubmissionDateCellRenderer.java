@@ -57,8 +57,7 @@ public class SubmissionDateCellRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator trans) {
 
 		Object object = source.getFormItem().getTableDataModel().getObject(row);
-		if(object instanceof CoachedElementRow) {
-			CoachedElementRow ciRow = (CoachedElementRow)object;
+		if(object instanceof CoachedElementRow ciRow) {
 			TaskProcess status = ciRow.getTaskStatus();
 			if(status == null || status == TaskProcess.assignment || status == TaskProcess.submit) {
 				//do nothing

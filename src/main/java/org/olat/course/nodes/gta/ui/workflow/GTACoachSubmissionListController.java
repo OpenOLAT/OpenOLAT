@@ -69,6 +69,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
+import org.olat.course.nodes.gta.TaskLateStatus;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.DueDate;
@@ -263,6 +264,7 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 		identityRow.setLateSubmissionDueDate(lateSubmissionDueDate);
 		
 		status(identityRow);
+		lateStatus(identityRow);
 		
 		return identityRow;
 	}
@@ -277,7 +279,6 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 				identityRow.setStatus(CoachedParticipantStatus.notAvailable);
 			} else if (assignedTask.getTaskStatus() == TaskProcess.submit) {
 				if(isSubmissionLate(identityRow.getSubmissionDueDate(), identityRow.getLateSubmissionDueDate())) {
-					identityRow.setLateSubmission(true);
 					identityRow.setStatus(CoachedParticipantStatus.late);
 				} else {
 					identityRow.setStatus(CoachedParticipantStatus.waiting);
@@ -289,7 +290,6 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 			}	
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
 			if(isSubmissionLate(identityRow.getSubmissionDueDate(), identityRow.getLateSubmissionDueDate())) {
-				identityRow.setLateSubmission(true);
 				identityRow.setStatus(CoachedParticipantStatus.late);
 			} else {
 				identityRow.setStatus(CoachedParticipantStatus.open);
@@ -309,6 +309,40 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 			collectSubmissionsLink.setUserObject(identityRow);
 			identityRow.setCollectDocumentsLink(collectSubmissionsLink);
 		}
+	}
+	
+	private void lateStatus(CoachedParticipantRow identityRow) {
+		if(identityRow.getTaskStatus() != null && identityRow.getTaskStatus() != TaskProcess.assignment && identityRow.getTaskStatus() != TaskProcess.submit) {
+			Task task = identityRow.getTask();
+			int numOfSubmittedDocs = numOfSubmittedDocs(task);
+			Date syntheticSubmissionDate = gtaManager.getSyntheticSubmissionDate(identityRow.getTask());
+			if(syntheticSubmissionDate != null && task.getTaskStatus() != null && numOfSubmittedDocs > 0) {
+				RepositoryEntry courseEntry = null;
+				DueDate submissionDueDate = gtaManager.getSubmissionDueDate(task, identityRow.getAssessedIdentity(), null, gtaNode, courseEntry, true);
+				if(submissionDueDate != null) {
+					Date refDate = submissionDueDate.getReferenceDueDate();
+					Date extensionDate = submissionDueDate.getOverridenDueDate();
+					Date refLateDate = null;
+					if(refDate != null) {
+						DueDate lateSubmissionDueDate =  gtaManager.getLateSubmissionDueDate(task, identityRow.getAssessedIdentity(), null, gtaNode, courseEntry, true);
+						refLateDate = lateSubmissionDueDate == null ? null : lateSubmissionDueDate.getReferenceDueDate();
+					}
+		
+					TaskLateStatus lateStatus = gtaManager.evaluateSubmissionLateStatus(syntheticSubmissionDate, refDate, refLateDate, extensionDate);
+					identityRow.setLateStatus(lateStatus);
+				}
+			}
+		}
+	}
+	
+	private int numOfSubmittedDocs(Task task) {
+		Integer numOfDocs = task.getSubmissionNumOfDocs();
+		Date date = task.getSubmissionDate();
+		if(date == null || (task.getCollectionDate() != null && task.getCollectionDate().after(date))) {
+			numOfDocs = task.getCollectionNumOfDocs();
+		}
+		return numOfDocs == null ? 0 : numOfDocs.intValue();
+
 	}
 	
 	protected final boolean isSubmissionLate(DueDate dueDate, DueDate lateDueDate) {

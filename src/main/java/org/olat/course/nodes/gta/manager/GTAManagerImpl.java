@@ -1435,6 +1435,34 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		}
 		return assignmentDueDate;
 	}
+
+	@Override
+	public Date getSyntheticSubmissionDate(Task task) {
+		if(task == null) return null;
+		
+		Date date = task.getSubmissionDate();
+		if(date == null || (task.getSubmissionRevisionsDate() != null && task.getSubmissionRevisionsDate().after(date))) {
+			date = task.getSubmissionRevisionsDate();
+		}
+		if(date == null || (task.getCollectionDate() != null && task.getCollectionDate().after(date))) {
+			date = task.getCollectionDate();
+		}
+		return date;
+	}
+
+	@Override
+	public Date getSyntheticSubmissionDate(TaskLight task) {
+		if(task == null) return null;
+		
+		Date date = task.getSubmissionDate();
+		if(date == null || (task.getSubmissionRevisionsDate() != null && task.getSubmissionRevisionsDate().after(date))) {
+			date = task.getSubmissionRevisionsDate();
+		}
+		if(date == null || (task.getCollectionDate() != null && task.getCollectionDate().after(date))) {
+			date = task.getCollectionDate();
+		}
+		return date;
+	}
 	
 	@Override
 	public TaskLateStatus evaluateSubmissionLateStatus(Date submissionDate, Date referenceDate, Date referenceLateDate, Date extensionDate) {
