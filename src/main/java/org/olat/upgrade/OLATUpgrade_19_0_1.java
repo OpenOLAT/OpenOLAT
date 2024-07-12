@@ -85,6 +85,13 @@ public class OLATUpgrade_19_0_1 extends OLATUpgrade {
 					availableTools += ",org.olat.home.HomeMainController:org.olat.home.PersonalFileHubController";
 					userToolsModule.setAvailableUserTools(availableTools);
 				}
+				String presetTools = userToolsModule.getDefaultPresetOfUserTools();
+				if(!"none".equals(presetTools) && StringHelper.containsNonWhitespace(presetTools)
+						&& presetTools.contains("FolderRunController")
+						&& !presetTools.contains("PersonalFileHubController")) {
+					presetTools += ",org.olat.home.HomeMainController:org.olat.home.PersonalFileHubController";
+					userToolsModule.setDefaultPresetOfUserTools(presetTools);
+				}
 				log.info("Update folder user tool.");
 			} catch (Exception e) {
 				log.error("", e);
