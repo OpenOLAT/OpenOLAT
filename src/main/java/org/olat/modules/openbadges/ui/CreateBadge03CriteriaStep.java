@@ -120,7 +120,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 				conditionDropdown = uifactory.addDropdownSingleselect("form.condition." + id, null,
 						formLayout, conditionsKV.keys(), conditionsKV.values());
-				conditionDropdown.select(badgeCondition.getKey(), true);
+				if (conditionDropdown.containsKey(badgeCondition.getKey())) {
+					conditionDropdown.select(badgeCondition.getKey(), true);
+				}
 				conditionDropdown.setVisible(true);
 				conditionDropdown.addActionListener(FormEvent.ONCHANGE);
 				conditionDropdown.setUserObject(this);
@@ -188,16 +190,22 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 				if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeCondition) {
 					badgesDropdown.setVisible(true);
-					badgesDropdown.select(otherBadgeCondition.getBadgeClassUuid(), true);
+					if (badgesDropdown.containsKey(otherBadgeCondition.getBadgeClassUuid())) {
+						badgesDropdown.select(otherBadgeCondition.getBadgeClassUuid(), true);
+					}
 				}
 
 				if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
 					courseElementsDropdown.setVisible(true);
-					courseElementsDropdown.select(courseElementPassedCondition.getSubIdent(), true);
+					if (courseElementsDropdown.containsKey(courseElementPassedCondition.getSubIdent())) {
+						courseElementsDropdown.select(courseElementPassedCondition.getSubIdent(), true);
+					}
 				}
 				if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
 					courseElementsDropdown.setVisible(true);
-					courseElementsDropdown.select(courseElementScoreCondition.getSubIdent(), true);
+					if (courseElementsDropdown.containsKey(courseElementScoreCondition.getSubIdent())) {
+						courseElementsDropdown.select(courseElementScoreCondition.getSubIdent(), true);
+					}
 
 					symbolDropdown.setVisible(true);
 					symbolDropdown.select(courseElementScoreCondition.getSymbol().name(), true);
@@ -211,7 +219,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
 					coursesDropdown.setVisible(true);
 					for (Long courseResourceKey : coursesPassedCondition.getCourseResourceKeys()) {
-						coursesDropdown.select(courseResourceKey.toString(), true);
+						if (coursesDropdown.getKeys().contains(courseResourceKey.toString())) {
+							coursesDropdown.select(courseResourceKey.toString(), true);
+						}
 					}
 				}
 				if (badgeCondition instanceof GlobalBadgesEarnedCondition) {
@@ -637,9 +647,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		private void buildConditionsFromContext(FormItemContainer formLayout) {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
-			List<BadgeCondition> badgeConditions = badgeCriteria.getConditions().stream()
-					.filter(bc -> StringHelper.containsNonWhitespace(bc.getKey()))
-					.filter(bc -> conditionsKV.containsKey(bc.getKey())).toList();
+			List<BadgeCondition> badgeConditions = badgeCriteria.getConditions(
+					Set.of(conditionsKV.keys()),
+					Set.of(courseElementsKV.keys()));
 			conditions = new ArrayList<>();
 			for (int i = 0; i < badgeConditions.size(); i++) {
 				BadgeCondition badgeCondition = badgeConditions.get(i);
