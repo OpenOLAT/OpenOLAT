@@ -70,7 +70,7 @@
 	readFromREST('/groups', function(data) {
 		var groups = "Search groups: <input type='text' class='o_small fuzzy-search' /><ul class='list'>";
 		jQuery(data).each(function(i,val){
-			groups += '<li><span class="name">' + val.name + '</span> <small class="text-muted">ID:' + val.key + '</small></li>';
+			groups += '<li><span class="name">' + o_escapeHtml(val.name) + '</span> <small class="text-muted">ID:' + o_escapeHtml(val.key) + '</small></li>';
 		});
 		groups += '</ul>'
 		jQuery('#o_guidemo_groups').html(groups);
@@ -87,7 +87,7 @@
 	readFromREST('/repo/courses', function(data) {
 		var courses = "Search courses: <input type='text' class='o_small fuzzy-search' /><ul class='list'>";
 		jQuery(data).each(function(i,val){
-			courses += '<li><span class="title">' + val.title + '</span> <small class="text-muted">ID:' + val.key + '</small></li>';
+			courses += '<li><span class="title">' + o_escapeHtml(val.title) + '</span> <small class="text-muted">ID:' + o_escapeHtml(val.key) + '</small></li>';
 		});
 		courses += '</ul>'
 		jQuery('#o_guidemo_courses').html(courses);
