@@ -85,6 +85,7 @@ public class TBTopicAddController extends FormBasicController {
 				.forEach(topic -> topicsSV.add(SelectionValues.entry(topic.getKey().toString(), topic.getTitle())));
 		topicEl = uifactory.addDropdownSingleselect("selection.topic", formLayout, topicsSV.keys(), topicsSV.values());
 		topicEl.setMandatory(true);
+		topicEl.setFocus(true);
 		if (topicEl.getKeys().length > 0) {
 			topicEl.select(topicEl.getKey(0), true);
 		}

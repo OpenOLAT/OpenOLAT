@@ -70,6 +70,10 @@ public class TBPeriodEvaluator {
 	}
 	
 	private boolean evaluateBeforeSelectionPeriod() {
+		if (broker.getEnrollmentStartDate() != null || broker.getEnrollmentDoneDate() != null) {
+			return false;
+		}
+		
 		if (broker.getSelectionStartDate() == null || broker.getSelectionEndDate() == null) {
 			return false;
 		}
@@ -87,6 +91,10 @@ public class TBPeriodEvaluator {
 	}
 	
 	private boolean evaluateSelectionPeriod() {
+		if (broker.getEnrollmentStartDate() != null || broker.getEnrollmentDoneDate() != null) {
+			return false;
+		}
+		
 		if (broker.getSelectionStartDate() == null || broker.getSelectionEndDate() == null) {
 			return false;
 		}

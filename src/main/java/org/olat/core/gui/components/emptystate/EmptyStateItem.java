@@ -68,6 +68,10 @@ public class EmptyStateItem extends FormItemImpl implements ComponentEventListen
 	public void setButtonI18nKey(String buttonI18nKey) {
 		component.setButtonI18nKey(buttonI18nKey);
 	}
+
+	public void setButtonLeftIconCss(String buttonLeftIconCss) {
+		component.setButtonLeftIconCss(buttonLeftIconCss);
+	}
 	
 	@Override
 	protected Component getFormItemComponent() {

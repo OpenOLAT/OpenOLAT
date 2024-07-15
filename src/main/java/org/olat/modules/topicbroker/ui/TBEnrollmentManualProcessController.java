@@ -120,6 +120,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		emptyState.setIconCss("o_icon o_icon_tb_run_start");
 		emptyState.setMessageI18nKey("enrollment.manual.empty");
 		emptyState.setButtonI18nKey("enrollment.manual.run.start");
+		emptyState.setButtonLeftIconCss("o_icon o_icon-lg o_icon_tb_run_start");
+		
 		
 		enrollmentRunOverviewCtrl = new TBEnrollmentRunOverviewController(ureq, getWindowControl(), mainForm, broker);
 		listenTo(enrollmentRunOverviewCtrl);

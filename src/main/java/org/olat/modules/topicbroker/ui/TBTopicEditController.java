@@ -78,7 +78,6 @@ public class TBTopicEditController extends FormBasicController {
 	
 	private final TBBrokerRef broker;
 	private TBTopic topic;
-	private Map<Long, TBCustomField> definitionKeyToCustomFields;
 	private int counter = 0;
 	
 	@Autowired
@@ -101,6 +100,7 @@ public class TBTopicEditController extends FormBasicController {
 		String identifier = topic != null? topic.getIdentifier(): null;
 		identifierEl = uifactory.addTextElement("topic.identifier", 64, identifier, standardCont);
 		identifierEl.setMandatory(true);
+		identifierEl.setFocus(true);
 		
 		String title = topic != null? topic.getTitle(): null;
 		titleEl = uifactory.addTextElement("topic.title", 100, title, standardCont);
@@ -172,10 +172,13 @@ public class TBTopicEditController extends FormBasicController {
 		customCont.setRootForm(mainForm);
 		formLayout.add(customCont);
 		
-		TBCustomFieldSearchParams searchParams = new TBCustomFieldSearchParams();
-		searchParams.setTopic(topic);
-		definitionKeyToCustomFields = topicBrokerService.getCustomFields(searchParams).stream()
-				.collect(Collectors.toMap(customField -> customField.getDefinition().getKey(), Function.identity()));
+		Map<Long, TBCustomField> definitionKeyToCustomFields = Map.of();
+		if (topic != null) {
+			TBCustomFieldSearchParams searchParams = new TBCustomFieldSearchParams();
+			searchParams.setTopic(topic);
+			definitionKeyToCustomFields = topicBrokerService.getCustomFields(searchParams).stream()
+					.collect(Collectors.toMap(customField -> customField.getDefinition().getKey(), Function.identity()));
+		}
 		
 		for (TBCustomFieldDefinition definition : definitions) {
 			TBCustomField customField = definitionKeyToCustomFields.get(definition.getKey());

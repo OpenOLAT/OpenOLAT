@@ -75,6 +75,9 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 			sb.append(" multiple ");
 			sb.append(" size=\"3\" ");
 		}
+		if (ssec.isFocus()) {
+			sb.append(" autofocus");
+		}
 		
 		//add ONCHANGE Action to select
 		if(ssec.getAction() == FormEvent.ONCHANGE){

@@ -501,9 +501,11 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		row.setDetailsButton(detailsButton);
 		
 		if (periodEvaluator.isWithdrawPeriod() && row.getSelectionRef() != null) {
-			FormLink unselectButton = uifactory.addFormLink("unselect_" + row.getTopic().getKey(), CMD_UNSELECT, "withdraw", null, flc, Link.BUTTON);
-			unselectButton.setUserObject(row);
-			row.setUnselectButton(unselectButton);
+			if (periodEvaluator.isSelectionPeriod() || row.isEnrolled()) {
+				FormLink unselectButton = uifactory.addFormLink("unselect_" + row.getTopic().getKey(), CMD_UNSELECT, "withdraw", null, flc, Link.BUTTON);
+				unselectButton.setUserObject(row);
+				row.setUnselectButton(unselectButton);
+			}
 		}
 		
 		if (periodEvaluator.isSelectionPeriod() && row.getSelectionRef() == null) {

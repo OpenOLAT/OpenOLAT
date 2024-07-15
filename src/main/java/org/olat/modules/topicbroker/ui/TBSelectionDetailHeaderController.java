@@ -143,13 +143,13 @@ public class TBSelectionDetailHeaderController extends FormBasicController {
 			
 			flc.contextPut("status", TBUIFactory.getTranslatedStatus(getTranslator(), status));
 			flc.contextPut("statusIcon", TBUIFactory.getStatusIconCss(status));
-			flc.contextPut("statusCss", TBUIFactory.getLabelLightCss(status));
+			flc.contextPut("statusCss", TBUIFactory.getLabelCss(status));
 			
 			flc.contextPut("priority", TBUIFactory.getPriorityLabel(getTranslator(), status, selection.getSortOrder()));
 			
 			selectButton.setVisible(false);
 			selectDropdown.setVisible(false);
-			unselectButton.setVisible(periodEvaluator.isSelectionPeriod() || periodEvaluator.isWithdrawPeriod());
+			unselectButton.setVisible(periodEvaluator.isWithdrawPeriod() && (periodEvaluator.isSelectionPeriod() || selection.isEnrolled()));
 		} else {
 			flc.contextRemove("status");
 			flc.contextRemove("priority");

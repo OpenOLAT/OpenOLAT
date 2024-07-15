@@ -47,6 +47,7 @@ import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.duedate.ui.DueDateConfigFormItem;
 import org.olat.course.duedate.ui.DueDateConfigFormatter;
+import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.topicbroker.ui.TBUIFactory;
@@ -376,6 +377,9 @@ public class TBConfigController extends FormBasicController implements Controlle
 			moduleConfig.remove(TopicBrokerCourseNode.CONFIG_KEY_WITHDRAW_END_RELATIVE);
 			moduleConfig.remove(TopicBrokerCourseNode.CONFIG_KEY_WITHDRAW_END);
 		}
+		
+		// The configuration is now ready for the validation in the course node
+		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 	
 	private RepositoryEntryLifecycle getRepositoryEntryLifecycle(RepositoryEntry re) {
