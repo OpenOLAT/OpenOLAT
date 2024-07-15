@@ -37,6 +37,7 @@ import org.olat.modules.project.model.ProjFileImpl;
 import org.olat.modules.project.model.ProjMilestoneImpl;
 import org.olat.modules.project.model.ProjNoteImpl;
 import org.olat.modules.project.model.ProjProjectImpl;
+import org.olat.modules.project.model.ProjReferenceValues;
 import org.olat.modules.project.model.ProjToDoImpl;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoStatus;
@@ -71,7 +72,8 @@ public class ProjectXStream {
 				VFSMetadataImpl.class,
 				ToDoTaskImpl.class,
 				ToDoStatus.class,
-				ToDoPriority.class
+				ToDoPriority.class,
+				ProjReferenceValues.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.alias("Project", ProjProjectImpl.class);
@@ -101,6 +103,8 @@ public class ProjectXStream {
 		xstream.alias("ToDoTask", ToDoTaskImpl.class);
 		xstream.omitField(ToDoTaskImpl.class, "baseGroup");
 		xstream.omitField(ToDoTaskImpl.class, "assigneeRightsEnum");
+		
+		xstream.alias("ReferenceValues", ProjReferenceValues.class);
 	}
 	
 	public static String toXml(Object obj) {

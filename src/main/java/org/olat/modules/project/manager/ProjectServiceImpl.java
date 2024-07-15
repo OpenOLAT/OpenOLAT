@@ -143,6 +143,7 @@ import org.olat.modules.project.model.ProjFileInfoImpl;
 import org.olat.modules.project.model.ProjMemberInfoImpl;
 import org.olat.modules.project.model.ProjMilestoneInfoImpl;
 import org.olat.modules.project.model.ProjNoteInfoImpl;
+import org.olat.modules.project.model.ProjReferenceValues;
 import org.olat.modules.project.model.ProjToDoInfoImpl;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoPriority;
@@ -824,8 +825,19 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			artefactToArtefactDao.create(artefact1.getProject(), doer, artefact1, artefact2);
 			updateContentModified(artefact1, doer);
 			updateContentModified(artefact2, doer);
-			activityDao.create(Action.addReference(artefact1.getType()), null, null, doer, artefact1, artefact2);
-			activityDao.create(Action.addReference(artefact2.getType()), null, null, doer, artefact2, artefact1);
+			
+			ProjArtefactSearchParams artefactSearchParams = new ProjArtefactSearchParams();
+			artefactSearchParams.setArtefacts(List.of(artefact1, artefact2));
+			ProjArtefactItems artefactReferenceItems = getArtefactItems(artefactSearchParams);
+			String artefact1Type = artefact1.getType();
+			String artefact1Name = getArtefactName(artefact1, artefactReferenceItems);
+			String artefact2Type = artefact2.getType();
+			String artefact2Name = getArtefactName(artefact2, artefactReferenceItems);
+			ProjReferenceValues referenceValues1 = new ProjReferenceValues(artefact1Type, artefact1Name, artefact2Type, artefact2Name);
+			ProjReferenceValues referenceValues2 = new ProjReferenceValues(artefact2Type, artefact2Name, artefact1Type, artefact1Name);
+			
+			activityDao.create(Action.addReference(artefact1.getType()), null, ProjectXStream.toXml(referenceValues1), doer, artefact1, artefact2);
+			activityDao.create(Action.addReference(artefact2.getType()), null, ProjectXStream.toXml(referenceValues2), doer, artefact2, artefact1);
 		}
 	}
 	
@@ -835,11 +847,57 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			artefactToArtefactDao.delete(artefact1, artefact2);
 			updateContentModified(artefact1, doer);
 			updateContentModified(artefact2, doer);
-			activityDao.create(Action.removeReference(artefact1.getType()), null, null, doer, artefact1, artefact2);
-			activityDao.create(Action.removeReference(artefact2.getType()), null, null, doer, artefact2, artefact1);
+			
+			ProjArtefactSearchParams artefactSearchParams = new ProjArtefactSearchParams();
+			artefactSearchParams.setArtefacts(List.of(artefact1, artefact2));
+			ProjArtefactItems artefactReferenceItems = getArtefactItems(artefactSearchParams);
+			String artefact1Type = artefact1.getType();
+			String artefact1Name = getArtefactName(artefact1, artefactReferenceItems);
+			String artefact2Type = artefact2.getType();
+			String artefact2Name = getArtefactName(artefact2, artefactReferenceItems);
+			ProjReferenceValues referenceValues1 = new ProjReferenceValues(artefact1Type, artefact1Name, artefact2Type, artefact2Name);
+			ProjReferenceValues referenceValues2 = new ProjReferenceValues(artefact2Type, artefact2Name, artefact1Type, artefact1Name);
+			
+			activityDao.create(Action.removeReference(artefact1.getType()), ProjectXStream.toXml(referenceValues1), null, doer, artefact1, artefact2);
+			activityDao.create(Action.removeReference(artefact2.getType()), ProjectXStream.toXml(referenceValues2), null, doer, artefact2, artefact1);
 		}
 	}
 	
+	private String getArtefactName(ProjArtefact artefact, ProjArtefactItems artefactReferenceItems) {
+		if (artefact == null) {
+			return null;
+		}
+		
+		if (ProjFile.TYPE.equals(artefact.getType())) {
+			ProjFile file = artefactReferenceItems.getFile(artefact);
+			if (file != null && file.getVfsMetadata() != null) {
+				return file.getVfsMetadata().getFilename();
+			}
+		} else if (ProjToDo.TYPE.equals(artefact.getType())) {
+			ProjToDo toDo = artefactReferenceItems.getToDo(artefact);
+			if (toDo != null && toDo.getToDoTask() != null) {
+				return toDo.getToDoTask().getTitle();
+			}
+		} else if (ProjDecision.TYPE.equals(artefact.getType())) {
+			ProjDecision decision = artefactReferenceItems.getDecision(artefact);
+			if (decision != null) {
+				return decision.getTitle();
+			}
+		} else if (ProjNote.TYPE.equals(artefact.getType())) {
+			ProjNote note = artefactReferenceItems.getNote(artefact);
+			if (note != null) {
+				return note.getTitle();
+			}
+		} else if (ProjAppointment.TYPE.equals(artefact.getType())) {
+			ProjAppointment appointment = artefactReferenceItems.getAppointment(artefact);
+			if (appointment != null) {
+				return appointment.getSubject();
+			}
+		}
+		
+		return null;
+	}
+
 	@Override
 	public void updateLinkedArtefacts(Identity doer, ProjArtefact artefact, Set<ProjArtefact> linkedArtefacts) {
 		List<ProjArtefact> currentLinkedArtefacts = getLinkedArtefacts(artefact);
