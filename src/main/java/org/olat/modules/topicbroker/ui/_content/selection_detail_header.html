@@ -36,7 +36,9 @@
 		#end
 		#if($r.available("unselect") && $r.visible("unselect"))
 			<div class="o_tb_selection_cmds">
-				$r.render("unselect")
+				<div>
+					$r.render("unselect")
+				</div>
 			</div>
 		#end
 	</div>

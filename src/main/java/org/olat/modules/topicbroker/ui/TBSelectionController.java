@@ -480,15 +480,39 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 	
 	private void forgeToolsLink(TBSelectionRow row) {
-		if (!periodEvaluator.isSelectionPeriod() && !periodEvaluator.isWithdrawPeriod()) {
-			return;
+		// Selection tools
+		if (periodEvaluator.isSelectionPeriod()) {
+			forgeSelectionToolsLink(row);
 		}
 		
+		if (periodEvaluator.isWithdrawPeriod()) {
+			if (periodEvaluator.isSelectionPeriod() || row.isEnrolled()) {
+				forgeSelectionToolsLink(row);
+			}
+		}
+		
+		// Topic tools
+		if (row.getSelectionRef() == null) {
+			if (periodEvaluator.isSelectionPeriod()) {
+				forgeTopicToolsLink(row);
+			}
+		} else {
+			if (periodEvaluator.isWithdrawPeriod()) {
+				if (periodEvaluator.isSelectionPeriod() || row.isEnrolled()) {
+					forgeTopicToolsLink(row);
+				}
+			}
+		}
+	}
+
+	private void forgeSelectionToolsLink(TBSelectionRow row) {
 		FormLink selectionToolsLink = uifactory.addFormLink("tools_" + row.getTopic().getKey(), "selectionTools", "", null, null, Link.NONTRANSLATED);
 		selectionToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		selectionToolsLink.setUserObject(row);
 		row.setSelectionToolsLink(selectionToolsLink);
-		
+	}
+
+	private void forgeTopicToolsLink(TBSelectionRow row) {
 		FormLink topicToolsLink = uifactory.addFormLink("tools_" + row.getTopic().getKey(), "topicTools", "", null, null, Link.NONTRANSLATED);
 		topicToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		topicToolsLink.setUserObject(row);
@@ -879,7 +903,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			this.row = row;
 			
 			mainVC = createVelocityContainer("tools");
-			putInitialPanel(mainVC);
+			putInitialPanel(mainVC); 
 			
 			if (periodEvaluator.isSelectionPeriod()) {
 				if (!row.getUpDown().isTopmost()) {
@@ -894,7 +918,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			}
 			
 			if (periodEvaluator.isWithdrawPeriod()) {
-				addLink("withdraw", CMD_UNSELECT, "o_icon o_icon-fw o_icon_tb_withdraw");
+				if (periodEvaluator.isSelectionPeriod() || row.isEnrolled()) {
+					addLink("withdraw", CMD_UNSELECT, "o_icon o_icon-fw o_icon_tb_withdraw");
+				}
 			}
 			
 			mainVC.contextPut("names", names);
@@ -956,10 +982,11 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 						names.add(name);
 					}
 				}
-				
 			} else {
 				if (periodEvaluator.isWithdrawPeriod()) {
-					addLink("withdraw", CMD_UNSELECT, "o_icon o_icon-fw o_icon_tb_withdraw");
+					if (periodEvaluator.isSelectionPeriod() || row.isEnrolled()) {
+						addLink("withdraw", CMD_UNSELECT, "o_icon o_icon-fw o_icon_tb_withdraw");
+					}
 				}
 			}
 			
