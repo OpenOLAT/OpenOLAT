@@ -160,6 +160,21 @@ public class TBUIFactory {
 		return null;
 	}
 
+	public static String getLabelCss(TBSelectionStatus status) {
+		if (status != null) {
+			switch (status) {
+			case selected: return "o_tb_label_selected";
+			case enrolled: return "o_tb_label_enrolled";
+			case waitingList: return "o_tb_label_waiting";
+			case notEnrolled: return "o_tb_label_not_enrolled";
+			case surplus: return "o_tb_label_surplus";
+			case fillIn: return "o_tb_label_fillin";
+			default:
+			}
+		}
+		return null;
+	}
+
 	public static String getLabelLightCss(TBSelectionStatus status) {
 		if (status != null) {
 			switch (status) {

@@ -192,7 +192,11 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 		this.buttonI18nKey = buttonI18nKey;
 		setDirty(true);
 	}
-	
+
+	public void setButtonLeftIconCss(String buttonLeftIconCss) {
+		this.button.setIconLeftCSS(buttonLeftIconCss);
+	}
+
 	public String getSecondaryButtonI18nKey() {
 		return secondaryButtonI18nKey;
 	}

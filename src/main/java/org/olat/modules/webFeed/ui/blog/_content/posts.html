@@ -11,9 +11,9 @@
 				</div>
 			#end
 
-		<h3 class="o_title">
-			$r.render("$row.getFeedEntryLink().getComponent().getComponentName()")
-		</h3>
+			<h3 class="o_feed_item_title">
+				$r.render("$row.getFeedEntryLink().getComponent().getComponentName()")
+			</h3>
 
 			<div class="o_meta">
 				#set ( $info = $helper.getInfo($row.getItem(), true) )

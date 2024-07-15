@@ -34,6 +34,13 @@
 		padding: 10px 0 0 0;
 	}
 
+	.o_feed_item_title {
+		margin-top: 0;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
 	.o_feed_top_spacer {
 		margin-bottom: 34px;
 	}

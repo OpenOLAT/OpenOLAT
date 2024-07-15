@@ -244,6 +244,13 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	public void setEnabled(int radioIndex, boolean isEnabled) {
 		// TODO gta
 	}
+	
+	@Override
+	public void setFocus(boolean hasFocus) {
+		if (component != null) {
+			component.setFocus(hasFocus);
+		}
+	}
 
 	/**
 	 * These options is not supported by this element.
