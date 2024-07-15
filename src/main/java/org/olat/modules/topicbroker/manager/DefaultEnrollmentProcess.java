@@ -45,6 +45,7 @@ import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.model.TBParticipantImpl;
 import org.olat.modules.topicbroker.model.TBProcessInfos;
+import org.olat.modules.topicbroker.model.TBProcessSelections;
 import org.olat.modules.topicbroker.model.TBTopicImpl;
 import org.olat.modules.topicbroker.model.TBTransientSelection;
 import org.olat.modules.topicbroker.model.TBTransientTopic;
@@ -100,9 +101,12 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		previewSelections = new ArrayList<>();
 		for (TBSelection selection : selections) {
 			TBTransientSelection copy = TBTransientSelection.copyValuesOf(selection);
-			copy.setTopic(TBTransientTopic.copyKeyOf(selection.getTopic()));
+			copy.setTopic(TBTransientTopic.copyKeyAndTitleOf(selection.getTopic()));
 			copy.setParticipant(selection.getParticipant());
-			previewSelections.add(copy);
+			// Check (again) if it's not a surplus selection
+			if (selection.isEnrolled() || selection.getSortOrder() <= maxSelections) {
+				previewSelections.add(copy);
+			}
 		}
 		
 		resetAndEvaluate();
@@ -147,7 +151,8 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 				participants = new ArrayList<>(participants);
 				participants.removeIf(participant -> participantKeysFullyEnrolled.contains(participant.getKey()));
 				infos.setNumParticipants(Integer.valueOf( participants.size()));
-				addActivity(TBAuditLog.Action.evaluationTopicStart, null, topic.getKey(), infos);
+				infos.setPriority(Integer.valueOf(priority));
+				addActivity(TBAuditLog.Action.evaluationTopicStart, null, topic.getKey(), infos, null);
 				
 				if (!participants.isEmpty()) {
 					participants = sortAndShuffle(topic, participants);
@@ -158,14 +163,15 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 					}
 					for (int i = 0; i<leftEnrollments; i++) {
 						MatchingParticipant participant = participants.get(i);
-						enroll(participant,  topic, priorityCost, TBAuditLog.Action.participantEnroll);
+						enroll(participant,  topic, priority, priorityCost, TBAuditLog.Action.participantEnroll);
 					}
 				}
 				
 				infos = new TBProcessInfos();
 				infos.setNumEnrollments(Integer.valueOf(topic.getNumEnrollments()));
 				infos.setNumEnrollmentsLeft(Integer.valueOf(topic.getLeftEnrollments()));
-				addActivity(TBAuditLog.Action.evaluationTopicEnd, null, topic.getKey(), infos);
+				infos.setPriority(Integer.valueOf(priority));
+				addActivity(TBAuditLog.Action.evaluationTopicEnd, null, topic.getKey(), null, infos);
 			}
 		}
 		
@@ -179,8 +185,8 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		for (MatchingTopic topic : topics) {
 			if (topic.getNumEnrollments() == 0) {
 				topicKeysMinNotReached.add(topic.getKey());
-				addActivity(TBAuditLog.Action.topicExcludeByUnpopularity, null, topic.getKey(), TBProcessInfos
-						.ofUnpupularity(topic.getNumEnrollments(), topic.getMinParticipants(), topic.getLeftEnrollments()));
+				addActivity(TBAuditLog.Action.topicExcludeByUnpopularity, null, topic.getKey(),  TBProcessInfos
+						.ofUnpupularity(topic.getNumEnrollments(), topic.getMinParticipants(), topic.getLeftEnrollments()), null);
 			}
 		}
 		
@@ -189,11 +195,31 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 				.sorted((t1,t2) -> Integer.compare(t1.getNumEnrollments(), t2.getNumEnrollments()))
 				.toList();
 		if (!topicsByNumEnrollments.isEmpty()) {
-			MatchingTopic topic = topicsByNumEnrollments.get(0);
+			// Remove not every time the same topic.
+			List<MatchingTopic> topicsWithSmallestNumEnrollments = getTopicsWithSmallestNumEnrollments(topicsByNumEnrollments);
+			Collections.shuffle(topicsWithSmallestNumEnrollments);
+			
+			MatchingTopic topic = topicsWithSmallestNumEnrollments.get(0);
 			topicKeysMinNotReached.add(topic.getKey());
 			addActivity(TBAuditLog.Action.topicExcludeByUnpopularity, null, topic.getKey(), TBProcessInfos
-					.ofUnpupularity(topic.getNumEnrollments(), topic.getMinParticipants(), topic.getLeftEnrollments()));
+					.ofUnpupularity(topic.getNumEnrollments(), topic.getMinParticipants(), topic.getLeftEnrollments()), null);
 		}
+	}
+
+	/**
+	 * @param topicsByNumEnrollments notEmpty and ordered by number of enrollments.
+	 */
+	private List<MatchingTopic> getTopicsWithSmallestNumEnrollments(List<MatchingTopic> topicsByNumEnrollments) {
+		List<MatchingTopic> topicsWithSmallestNumEnrollments = new ArrayList<>(1);
+		int currentNumEnrollments = topicsByNumEnrollments.get(0).getNumEnrollments();
+		for (MatchingTopic matchingTopic : topicsByNumEnrollments) {
+			if (matchingTopic.getNumEnrollments() <= currentNumEnrollments) {
+				topicsWithSmallestNumEnrollments.add(matchingTopic);
+			} else {
+				return topicsWithSmallestNumEnrollments;
+			}
+		}
+		return topicsWithSmallestNumEnrollments;
 	}
 
 	private List<MatchingParticipant> sortAndShuffle(MatchingTopic topic, List<MatchingParticipant> participants) {
@@ -209,11 +235,11 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 			participantsPerBudget.forEach(participant -> shuffledParticipants.add(participant));
 		}
 		
-		addActivity(TBAuditLog.Action.participantsOrdered, null, topic.getKey(), TBProcessInfos.ofParticipants(shuffledParticipants.size()));
+		addActivity(TBAuditLog.Action.participantsOrdered, null, topic.getKey(), null, TBProcessInfos.ofParticipants(shuffledParticipants.size()));
 		return shuffledParticipants;
 	}
 
-	private void enroll(MatchingParticipant participant, MatchingTopic topic, BigDecimal cost, TBAuditLog.Action action) {
+	private void enroll(MatchingParticipant participant, MatchingTopic topic, int priority, BigDecimal cost, TBAuditLog.Action action) {
 		if (TBAuditLog.Action.participantEnroll == action) {
 			enrolledSelections.add(new ParticipantKeyTopicKey(participant.getKey(), topic.getKey()));
 		}
@@ -228,7 +254,8 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		infos.setBudgetAfter(Float.valueOf(participant.getBudget().floatValue()));
 		infos.setNumEnrollments(Integer.valueOf(participant.getNumEnrollments()));
 		infos.setNumEnrollmentsRequired(Integer.valueOf(participant.getRequiredEnrollments()));
-		addActivity(TBAuditLog.Action.participantEnroll, participant.getKey(), topic.getKey(), infos);
+		infos.setPriority(Integer.valueOf(priority));
+		addActivity(TBAuditLog.Action.participantEnroll, participant.getKey(), topic.getKey(), null, infos);
 
 		if (participant.isMaxEnrollmentsReached()) {
 			participantKeysFullyEnrolled.add(participant.getKey());
@@ -256,29 +283,64 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		
 		
 		BigDecimal priorityCost = getPriorityCost(0);
-		topicKeyPriorityToMatchingIdentities = new HashMap<>();
+		
+		List<TBSelection> selectionsWithoutExcludedTopics = new ArrayList<>();
+		Map<Long, List<TBSelection>> participantKeyToSelectionsWithoutExcludedTopics = new HashMap<>();
 		for (TBSelection selection : previewSelections) {
-			MatchingParticipant matchingParticipant = participantKeyToMatchingParticipant.get(selection.getParticipant().getKey());
 			if (selection.isEnrolled()) {
 				// Already enrolled by the coach before the evaluation started
 				if (topicKeysMinNotReached.contains(selection.getTopic().getKey())) {
 					ParticipantKeyTopicKey participantKeyTopicKey = new ParticipantKeyTopicKey(selection.getParticipant().getKey(), selection.getTopic().getKey());
 					if (!withdrawSelections.contains(participantKeyTopicKey)) {
 						withdrawSelections.add(participantKeyTopicKey);
-						addActivity(TBAuditLog.Action.participantWithdraw, participantKeyTopicKey.participantKey(), participantKeyTopicKey.topicKey(), null);
+						addActivity(TBAuditLog.Action.participantWithdraw, participantKeyTopicKey.participantKey(), participantKeyTopicKey.topicKey(), null, null);
 					}
 				} else {
-					MatchingParticipant participant = matchingParticipant;
-					enroll(participant, topicKeyToTopic.get(selection.getTopic().getKey()), priorityCost, TBAuditLog.Action.participantPreEnrolled);
+					MatchingParticipant participant = participantKeyToMatchingParticipant.get(selection.getParticipant().getKey());
+					enroll(participant, topicKeyToTopic.get(selection.getTopic().getKey()), 0, priorityCost, TBAuditLog.Action.participantPreEnrolled);
 				}
-			} else {
-				if (!topicKeysMinNotReached.contains(selection.getTopic().getKey())) {
-					TopicKeyPriority topicKeyPriority = new TopicKeyPriority(selection.getTopic().getKey(), selection.getSortOrder());
-					topicKeyPriorityToMatchingIdentities
-						.computeIfAbsent(topicKeyPriority, key -> new ArrayList<>())
-						.add(matchingParticipant);
-				}
+			} else if (!topicKeysMinNotReached.contains(selection.getTopic().getKey())) {
+				TBTransientSelection selectionCopy = TBTransientSelection.copyValuesOf(selection);
+				selectionCopy.setTopic(TBTransientTopic.copyKeyAndTitleOf(selection.getTopic()));
+				selectionCopy.setParticipant(selection.getParticipant());
+				selectionsWithoutExcludedTopics.add(selectionCopy);
+				participantKeyToSelectionsWithoutExcludedTopics
+					.computeIfAbsent(selection.getParticipant().getKey(), key -> new ArrayList<>())
+					.add(selectionCopy);
 			}
+		}
+		
+		// Update sortOrder if topic minimum participants not reached
+		for (List<TBSelection> selectionOfParticipant : participantKeyToSelectionsWithoutExcludedTopics.values()) {
+			TBProcessSelections before = new TBProcessSelections();
+			TBProcessSelections after = new TBProcessSelections();
+			boolean sortOrderChanged = false;
+			
+			selectionOfParticipant.sort((s1, s2) -> Integer.compare(s1.getSortOrder(), s2.getSortOrder()));
+			for (int i = 0; i < selectionOfParticipant.size(); i++) {
+				TBSelection selection = selectionOfParticipant.get(i);
+				before.addSelection(selection.getTopic().getKey(), selection.getTopic().getTitle(), selection.getSortOrder());
+				
+				int newSortOrder = i + 1;
+				if (selection.getSortOrder() != newSortOrder) {
+					((TBTransientSelection)selection).setSortOrder(newSortOrder);
+					sortOrderChanged = true;
+				}
+				after.addSelection(selection.getTopic().getKey(), selection.getTopic().getTitle(), selection.getSortOrder());
+			}
+			
+			if (sortOrderChanged) {
+				addActivity(TBAuditLog.Action.participantExcludeTopics, selectionOfParticipant.get(0).getParticipant().getKey(), null, before, after);
+			}
+		}
+		
+		topicKeyPriorityToMatchingIdentities = new HashMap<>();
+		for (TBSelection selection : selectionsWithoutExcludedTopics) {
+			MatchingParticipant matchingParticipant = participantKeyToMatchingParticipant.get(selection.getParticipant().getKey());
+			TopicKeyPriority topicKeyPriority = new TopicKeyPriority(selection.getTopic().getKey(), selection.getSortOrder());
+			topicKeyPriorityToMatchingIdentities
+				.computeIfAbsent(topicKeyPriority, key -> new ArrayList<>())
+				.add(matchingParticipant);
 		}
 	}
 
@@ -312,14 +374,15 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		
 		int counter = 0;
 		for (EvaluationActivity activity : activities) {
-			String after = activity.infos() != null? TopicBrokerXStream.toXml(activity.infos()): null;
+			String before = activity.before() != null? TopicBrokerXStream.toXml(activity.before()): null;
+			String after = activity.after() != null? TopicBrokerXStream.toXml(activity.after()): null;
 			TBParticipant participant = activity.participantKey() != null
 					? dbInstance.getCurrentEntityManager().getReference(TBParticipantImpl.class , activity.participantKey())
 					: null;
 			TBTopic topic  = activity.topicKey() != null
 					? dbInstance.getCurrentEntityManager().getReference(TBTopicImpl.class , activity.topicKey())
 					: null;
-			topicBrokerService.log(activity.action(), null, after, doer, broker, participant, topic, null);
+			topicBrokerService.log(activity.action(), before, after, doer, broker, participant, topic, null);
 			counter = countAndCommit(dbInstance, counter);
 		}
 		
@@ -458,21 +521,21 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 	}
 
 	private void addActivity(TBAuditLog.Action action) {
-		addActivity(action, null, null, null);
+		addActivity(action, null, null, null, null);
 	}
 	
-	private void addActivity(TBAuditLog.Action action, TBProcessInfos infos) {
-		addActivity(action, null, null, infos);
+	private void addActivity(TBAuditLog.Action action, TBProcessInfos before) {
+		addActivity(action, null, null, before, null);
 	}
 	
-	private void addActivity(TBAuditLog.Action action, Long participantKey, Long topicKey, TBProcessInfos infos) {
-		EvaluationActivity activity = new EvaluationActivity(action, participantKey, topicKey, infos);
+	private void addActivity(TBAuditLog.Action action, Long participantKey, Long topicKey, Object before, Object after) {
+		EvaluationActivity activity = new EvaluationActivity(action, participantKey, topicKey, before, after);
 		activities.add(activity);
 		log.debug(activity);
 	}
 	
 	private static record TopicKeyPriority(Long topicKey, int priority) {}
 	private static record ParticipantKeyTopicKey(Long participantKey, Long topicKey) {}
-	private static record EvaluationActivity(TBAuditLog.Action action, Long participantKey, Long topicKey, TBProcessInfos infos) {}
+	private static record EvaluationActivity(TBAuditLog.Action action, Long participantKey, Long topicKey, Object before, Object after) {}
 
 }

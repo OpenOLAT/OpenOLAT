@@ -94,6 +94,7 @@ public interface TBAuditLog extends CreateInfo {
 		participantEnroll,
 		participantPreEnrolled,
 		participantWithdraw,
+		participantExcludeTopics,
 		;
 	}
 	

@@ -170,9 +170,10 @@ public class TBTransientTopic implements TBTopic {
 		this.broker = broker;
 	}
 	
-	public static final TBTransientTopic copyKeyOf(TBTopic source) {
+	public static final TBTransientTopic copyKeyAndTitleOf(TBTopic source) {
 		TBTransientTopic copy = new TBTransientTopic();
 		copy.setKey(source.getKey());
+		copy.setTitle(source.getTitle());
 		return copy;
 	}
 
