@@ -133,7 +133,7 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 	private void appendSubscriptionItem(Item item, Publisher p, Date compareDate, Translator translator, List<SubscriptionListItem> items) {
 		String title = item.getTitle();
 		String author = item.getAuthor();
-		String businessPath = p.getBusinessPath();
+		String businessPath = p.getBusinessPath() + "[FeedItem:" + item.getKey() + "]";
 		String urlToSend = BusinessControlFactory.getInstance()
 					.getURLFromBusinessPathString(businessPath);
 		String iconCssClass = item.extraCSSClass();

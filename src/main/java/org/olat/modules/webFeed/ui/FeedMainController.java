@@ -237,20 +237,21 @@ public class FeedMainController extends BasicController implements Activateable2
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-		
-		Item item = null;
-		String itemId = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(itemId != null && itemId.startsWith("item=")) {
-			itemId = itemId.substring(5);
-			try {
-				Long itemKey = Long.parseLong(itemId);
-				item = FeedManager.getInstance().loadItem(itemKey);
-			} catch (Exception e) {
-				item = FeedManager.getInstance().loadItemByGuid(itemId);
-			}
+
+		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(name != null && name.startsWith("FeedItem")) {
+			Long feedItemKey = entries.get(0).getOLATResourceable().getResourceableId();
+			activateByFeedItem(ureq, feedItemKey);
 		}
-		if (item != null) {
-			feedItemListCtrl.displayFeedItem(ureq, item);
+	}
+
+	private void activateByFeedItem(UserRequest ureq, Long feedItemKey) {
+		Item feedItem = feedManager.loadItem(feedItemKey);
+
+		// check if the feedItem is not null and verify that the requested item
+		// is part of the current feed/ores
+		if (feedItem != null && Objects.equals(feedItem.getFeed().getKey(), feed.getKey())) {
+			feedItemListCtrl.displayFeedItem(ureq, feedItem);
 		}
 	}
 
