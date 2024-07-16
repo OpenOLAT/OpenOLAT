@@ -42,10 +42,10 @@ $r.render("assessmentInfos")
 #if ($accessRights)
 	<fieldset class="o_block_top o_start_info_box">
 		<legend>$r.translate("portfolio.review")</legend>
-		<h4 onclick="jQuery('#collapse_sharedby').collapse('toggle')">
-			<i id="collapse_sharedby_toggler" class="o_icon o_icon-fw #if($sharedByOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>$r.translate("shared.by.me")
+		<h4 onclick="jQuery('#collapse_sharedby_${r.getCId()}').collapse('toggle')">
+			<i id="collapse_sharedby_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($sharedByOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>$r.translate("shared.by.me")
 		</h4>
-		<div id="collapse_sharedby" class="o_portfolio_publication collapse #if($sharedByOpen) in #end">
+		<div id="collapse_sharedby_${r.getCId()}" class="o_portfolio_publication collapse #if($sharedByOpen) in #end">
 			#if (!$isSharedWithCoach)
 				<div class="o_warning_with_icon">$r.translate("portfolio.access.no.coach")</div>
 			#end
@@ -118,18 +118,37 @@ $r.render("assessmentInfos")
 				</li>
 				#end
 			</ul>
-
 		</div>
 		#if ($r.available("shareBinder"))
 			#if ($shareBinderSize.size() > 0)
 				<br>
-				<h4 onclick="jQuery('#collapse_sharedme').collapse('toggle')">
-					<i id="collapse_sharedme_toggler" class="o_icon o_icon-fw #if($sharedMeOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>$r.translate("shared.with.me")
+				<h4 onclick="jQuery('#collapse_sharedme_${r.getCId()}').collapse('toggle')">
+					<i id="collapse_sharedme_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($sharedMeOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>$r.translate("shared.with.me")
 				</h4>
-				<div id="collapse_sharedme" class="collapse #if($sharedMeOpen) in #end">
+				<div id="collapse_sharedme_${r.getCId()}" class="collapse #if($sharedMeOpen) in #end">
 					$r.render("shareBinder")
 				</div>
 			#end
 		#end
+		<script>
+			"use strict";
+			jQuery(function() {
+				jQuery('#collapse_sharedme_${r.getCId()}').on('hide.bs.collapse', function () {
+					jQuery('#collapse_sharedme_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#collapse_sharedme_${r.getCId()}').on('show.bs.collapse', function () {
+					jQuery('#collapse_sharedme_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				})
+			});
+
+			jQuery(function() {
+				jQuery('#collapse_sharedby_${r.getCId()}').on('hide.bs.collapse', function () {
+					jQuery('#collapse_sharedby_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#collapse_sharedby_${r.getCId()}').on('show.bs.collapse', function () {
+					jQuery('#collapse_sharedby_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				})
+			});
+		</script>
 	</fieldset>
 #end
