@@ -1125,6 +1125,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_broker_selection_in_progress { @include o-add-icon('circle-play');}
 .o_icon_tb_broker_enrollment_in_progress { @include o-add-icon('hand-point-up');}
 .o_icon_tb_broker_enrollment_done { @include o-add-icon('check-circle');}
+.o_icon_tb_group_restrictions { @include o-add-icon('lock');}
 .o_icon_tb_edit_enrollments { @include o-add-icon('check');}
 .o_icon_tb_enroll { @include o-add-icon('rotate-right');}
 .o_icon_tb_withdraw { @include o-add-icon('rotate-left');}

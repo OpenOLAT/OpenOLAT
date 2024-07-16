@@ -20,10 +20,13 @@
 package org.olat.modules.topicbroker.ui;
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormItemList;
 import org.olat.core.gui.components.updown.UpDown;
+import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicRef;
@@ -43,7 +46,8 @@ public class TBTopicRow implements TBTopicRef {
 	private String enrolledString;
 	private int waitingList;
 	private String waitingListString;
-	private String groupRestrictions;
+	private List<BusinessGroupShort> groupRestrictions;
+	private FormItemList groupRestrictionLinks;
 	private String createdByDisplayname;
 	private int sortOrder;
 	private List<TBCustomField> customFields;
@@ -79,6 +83,10 @@ public class TBTopicRow implements TBTopicRef {
 
 	public Integer getMaxParticipants() {
 		return topic.getMaxParticipants();
+	}
+	
+	public Set<Long> getGroupRestrictionKeys() {
+		return topic.getGroupRestrictionKeys();
 	}
 
 	public int getMinEnrollments() {
@@ -121,12 +129,20 @@ public class TBTopicRow implements TBTopicRef {
 		this.waitingListString = waitingListString;
 	}
 
-	public String getGroupRestrictions() {
+	public List<BusinessGroupShort> getGroupRestrictions() {
 		return groupRestrictions;
 	}
 
-	public void setGroupRestrictions(String groupRestrictions) {
+	public void setGroupRestrictions(List<BusinessGroupShort> groupRestrictions) {
 		this.groupRestrictions = groupRestrictions;
+	}
+
+	public FormItemList getGroupRestrictionLinks() {
+		return groupRestrictionLinks;
+	}
+
+	public void setGroupRestrictionLinks(FormItemList groupRestrictionLinks) {
+		this.groupRestrictionLinks = groupRestrictionLinks;
 	}
 
 	public String getCreatedByDisplayname() {

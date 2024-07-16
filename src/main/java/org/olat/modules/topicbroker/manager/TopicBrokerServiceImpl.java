@@ -20,13 +20,16 @@
 package org.olat.modules.topicbroker.manager;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -35,6 +38,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeParticipantCandidates;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupRef;
+import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.modules.topicbroker.TBAuditLog;
 import org.olat.modules.topicbroker.TBAuditLogSearchParams;
 import org.olat.modules.topicbroker.TBBroker;
@@ -98,6 +105,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	private Coordinator coordinator;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
 	@Override
 	public TBBroker createBroker(Identity doer, RepositoryEntry repositoryEntry, String subIdent) {
@@ -321,6 +330,20 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	public List<TBParticipant> getParticipants(TBParticipantSearchParams searchParams) {
 		return participantDao.loadParticipants(searchParams);
 	}
+	
+	@Override
+	public Set<Long> filterMembership(IdentityRef identity, Collection<Long> groupKeys) {
+		if (groupKeys == null || groupKeys.isEmpty()) {
+			return Set.of();
+		}
+		
+		List<? extends BusinessGroupRef> groupRefs = groupKeys.stream().map(BusinessGroupRefImpl::new).toList();
+		return businessGroupRelationDao 
+				.filterMembership(groupRefs, identity, GroupRoles.participant.name())
+				.stream()
+				.map(BusinessGroup::getKey)
+				.collect(Collectors.toSet());
+	}
 
 	@Override
 	public TBTopic createTopic(Identity doer, TBBrokerRef broker) {
@@ -370,8 +393,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			reloadedTopic.setMinParticipants(topic.getMinParticipants());
 			contentChanged = true;
 		}
-		if (!Objects.equals(reloadedTopic.getMaxParticipants(), topic.getMaxParticipants())) {
-			reloadedTopic.setMaxParticipants(topic.getMaxParticipants());
+		if (!Objects.equals(equalsString(reloadedTopic.getGroupRestrictionKeys()), equalsString(topic.getGroupRestrictionKeys()))) {
+			reloadedTopic.setGroupRestrictionKeys(topic.getGroupRestrictionKeys());
 			contentChanged = true;
 		}
 		
@@ -385,6 +408,13 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		return reloadedTopic;
 	}
 	
+	private String equalsString(Set<Long> keys) {
+		if (keys == null || keys.isEmpty()) {
+			return null;
+		}
+		return keys.stream().sorted().map(String::valueOf).collect(Collectors.joining(","));
+	}
+
 	@Override
 	public void moveTopic(Identity doer, TBTopicRef topic, boolean up) {
 		TBTopic reloadedTopic = getTopic(topic);

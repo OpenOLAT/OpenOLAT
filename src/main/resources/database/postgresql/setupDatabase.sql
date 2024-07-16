@@ -4562,6 +4562,7 @@ create table o_tb_topic (
    t_description text,
    t_min_participants int8,
    t_max_participants int8,
+   t_group_restrictions varchar(1024),
    t_sort_order int8 not null,
    t_deleted_date timestamp,
    fk_deleted_by int8,

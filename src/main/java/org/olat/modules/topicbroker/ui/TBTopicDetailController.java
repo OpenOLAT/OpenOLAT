@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TBTopic;
@@ -44,15 +45,18 @@ public class TBTopicDetailController extends FormBasicController {
 	private TBTopicDescriptionController descriptionCtrl;
 
 	private final TBTopic topic;
+	private final List<BusinessGroupShort> groupRestrictions;
 	private final List<TBCustomField> customFields;
 	private final TBSecurityCallback secCallback;
 	private final int numEnrollments;
 	private final int waitingList;
 
 	public TBTopicDetailController(UserRequest ureq, WindowControl wControl, Form mainForm, TBTopic topic,
-			List<TBCustomField> customFields, TBSecurityCallback secCallback, int numEnrollments, int waitingList) {
+			List<BusinessGroupShort> groupRestrictions, List<TBCustomField> customFields, TBSecurityCallback secCallback,
+			int numEnrollments, int waitingList) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "topic_details", mainForm);
 		this.topic = topic;
+		this.groupRestrictions = groupRestrictions;
 		this.customFields = customFields;
 		this.secCallback = secCallback;
 		this.numEnrollments = numEnrollments;
@@ -67,7 +71,7 @@ public class TBTopicDetailController extends FormBasicController {
 		formLayout.add(headerCtrl.getInitialFormItem());
 		flc.put("header", headerCtrl.getInitialComponent());
 		
-		descriptionCtrl = new TBTopicDescriptionController(ureq, getWindowControl(), topic, customFields);
+		descriptionCtrl = new TBTopicDescriptionController(ureq, getWindowControl(), topic, groupRestrictions, customFields);
 		listenTo(descriptionCtrl);
 		flc.put("description", descriptionCtrl.getInitialComponent());
 	}

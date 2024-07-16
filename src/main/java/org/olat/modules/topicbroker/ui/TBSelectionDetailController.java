@@ -27,6 +27,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBParticipant;
@@ -44,7 +45,8 @@ public class TBSelectionDetailController extends BasicController {
 	private final TBTopicDescriptionController descriptionCtrl;
 
 	protected TBSelectionDetailController(UserRequest ureq, WindowControl wControl, TBBroker broker,
-			TBParticipant participant, TBTopic topic, List<TBCustomField> customFields) {
+			TBParticipant participant, TBTopic topic, List<BusinessGroupShort> groupRestrictions,
+			List<TBCustomField> customFields) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("selection_detail");
 		putInitialPanel(mainVC);
@@ -53,7 +55,7 @@ public class TBSelectionDetailController extends BasicController {
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
-		descriptionCtrl = new TBTopicDescriptionController(ureq, wControl, topic, customFields);
+		descriptionCtrl = new TBTopicDescriptionController(ureq, wControl, topic, groupRestrictions, customFields);
 		listenTo(descriptionCtrl);
 		mainVC.put("description", descriptionCtrl.getInitialComponent());
 	}

@@ -20,6 +20,7 @@
 package org.olat.modules.topicbroker.ui;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -77,6 +78,15 @@ public class TBTopicAddController extends FormBasicController {
 		TBTopicSearchParams topicSearchParams = new TBTopicSearchParams();
 		topicSearchParams.setBroker(broker);
 		List<TBTopic> topics = topicBrokerService.getTopics(topicSearchParams);
+		
+		Set<Long> allGroupRestrictionKeys = topics.stream()
+				.map(TBTopic::getGroupRestrictionKeys)
+				.filter(Objects::nonNull)
+				.flatMap(Set::stream)
+				.collect(Collectors.toSet());
+		Set<Long> participantGroupKeys = topicBrokerService.filterMembership(participantIdentity, allGroupRestrictionKeys);
+		topics.removeIf(topic -> topic.getGroupRestrictionKeys() != null
+				&& topic.getGroupRestrictionKeys().stream().noneMatch(key -> participantGroupKeys.contains(key)));
 		
 		SelectionValues topicsSV = new SelectionValues();
 		topics.stream()

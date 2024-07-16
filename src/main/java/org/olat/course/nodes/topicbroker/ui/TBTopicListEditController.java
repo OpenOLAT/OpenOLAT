@@ -22,6 +22,7 @@ package org.olat.course.nodes.topicbroker.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.ui.TBTopicListController;
@@ -35,8 +36,9 @@ import org.olat.modules.topicbroker.ui.TBTopicListController;
 public class TBTopicListEditController extends TBTopicListController {
 
 	public TBTopicListEditController(UserRequest ureq, WindowControl wControl, TBBroker broker,
-			TBSecurityCallback secCallback, TBParticipantCandidates participantCandidates) {
-		super(ureq, wControl, broker, secCallback, participantCandidates);
+			TBSecurityCallback secCallback, TBParticipantCandidates participantCandidates,
+			TBGroupRestrictionCandidates groupRestrictionCandidates) {
+		super(ureq, wControl, broker, secCallback, participantCandidates, groupRestrictionCandidates);
 	}
 	
 	@Override

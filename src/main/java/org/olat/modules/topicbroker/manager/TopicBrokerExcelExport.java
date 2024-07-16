@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -112,6 +113,7 @@ public class TopicBrokerExcelExport {
 		row.addCell(col++, translator.translate("topic.description"));
 		row.addCell(col++, translator.translate("topic.participants.min"));
 		row.addCell(col++, translator.translate("topic.participants.max"));
+		row.addCell(col++, translator.translate("topic.group.restriction"));
 		
 		for (String customFieldName : customFieldNames) {
 			row.addCell(col++, customFieldName);
@@ -134,6 +136,11 @@ public class TopicBrokerExcelExport {
 		row.addCell(col++, topic.getDescription());
 		row.addCell(col++, topic.getMinParticipants(), workbook.getStyles().getIntegerStyle());
 		row.addCell(col++, topic.getMaxParticipants(), workbook.getStyles().getIntegerStyle());
+		String groupRestrictions = null;
+		if (topic.getGroupRestrictionKeys() != null) {
+			groupRestrictions = topic.getGroupRestrictionKeys().stream().map(String::valueOf).collect(Collectors.joining(","));
+		}
+		row.addCell(col++,groupRestrictions);
 		for (String customFieldText : customFieldTexts) {
 			row.addCell(col++, customFieldText);
 		}

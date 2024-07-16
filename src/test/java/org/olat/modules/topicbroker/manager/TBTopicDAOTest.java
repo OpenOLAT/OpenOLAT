@@ -24,6 +24,7 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -103,6 +104,8 @@ public class TBTopicDAOTest extends OlatTestCase {
 		topic.setMinParticipants(minParticipants);
 		Integer maxParticipants = 22;
 		topic.setMaxParticipants(maxParticipants);
+		Set<Long> groupRestrictionKeys = Set.of(66l, 23300l);
+		topic.setGroupRestrictionKeys(groupRestrictionKeys);
 		int sortOrder = 5;
 		((TBTopicImpl)topic).setSortOrder(sortOrder);
 		((TBTopicImpl)topic).setDeletedBy(topic.getCreator());
@@ -119,6 +122,7 @@ public class TBTopicDAOTest extends OlatTestCase {
 		assertThat(reloadedTopic.getDescription()).isEqualTo(description);
 		assertThat(reloadedTopic.getMinParticipants()).isEqualTo(minParticipants);
 		assertThat(reloadedTopic.getMaxParticipants()).isEqualTo(maxParticipants);
+		assertThat(reloadedTopic.getGroupRestrictionKeys()).containsExactlyInAnyOrder(66l, 23300l);
 		assertThat(reloadedTopic.getSortOrder()).isEqualTo(sortOrder);
 		assertThat(reloadedTopic.getDeletedBy()).isEqualTo(topic.getCreator());
 		assertThat(reloadedTopic.getDeletedBy()).isNotNull();

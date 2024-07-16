@@ -20,6 +20,7 @@
 package org.olat.modules.topicbroker.model;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.topicbroker.TBBroker;
@@ -41,6 +42,7 @@ public class TBTransientTopic implements TBTopic {
 	private String description;
 	private Integer minParticipants;
 	private Integer maxParticipants;
+	private Set<Long> groupRestrictionKeys;
 	private int sortOrder;
 	private Date deletedDate;
 	private Identity deletedBy;
@@ -123,6 +125,16 @@ public class TBTransientTopic implements TBTopic {
 	@Override
 	public void setMaxParticipants(Integer maxParticipants) {
 		this.maxParticipants = maxParticipants;
+	}
+
+	@Override
+	public Set<Long> getGroupRestrictionKeys() {
+		return groupRestrictionKeys;
+	}
+
+	@Override
+	public void setGroupRestrictionKeys(Set<Long> groupRestrictionKeys) {
+		this.groupRestrictionKeys = groupRestrictionKeys;
 	}
 
 	@Override

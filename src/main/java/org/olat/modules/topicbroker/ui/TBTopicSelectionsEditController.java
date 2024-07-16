@@ -55,6 +55,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
@@ -97,11 +100,14 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 	private final TBParticipantCandidates participantCandidates;
 	private Set<Long> allIdentityKeys;
 	private Set<Long> visibleIdentityKeys;
+	private List<BusinessGroupShort> groupRestrictions;
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -127,6 +133,12 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(TBParticipantDataModel.USAGE_IDENTIFIER,
 				isAdministrativeUser);
+		
+		if (topic.getGroupRestrictionKeys() != null) {
+			groupRestrictions = businessGroupService.loadShortBusinessGroups(topic.getGroupRestrictionKeys()).stream()
+					.sorted((g1, g2) -> g1.getName().compareToIgnoreCase(g2.getName()))
+					.toList();
+		}
 		
 		initForm(ureq);
 		initFilterTabs(ureq);
@@ -380,6 +392,13 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 		infos += TBUIFactory.createInfo("o_icon_tb_participants", translate("topic.participants.label.min.max",
 				String.valueOf(topic.getMinParticipants()),
 				String.valueOf(topic.getMaxParticipants())));
+		
+		if (groupRestrictions != null && !groupRestrictions.isEmpty()) {
+			String groupNames = groupRestrictions.stream()
+					.map(group -> "<i class=\"o_icon o o_icon-fw o_icon_group\"></i> " + StringHelper.escapeHtml(group.getName()))
+					.collect(Collectors.joining("&nbsp;&nbsp;"));
+			infos += TBUIFactory.createInfo("o_icon_tb_group_restrictions", translate("topic.group.restriction.config", groupNames));
+		}
 		
 		infos += "</ul>";
 		configPanel.setInformations(infos);

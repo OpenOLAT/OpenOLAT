@@ -4539,6 +4539,7 @@ create table o_tb_topic (
    t_description longtext,
    t_min_participants integer,
    t_max_participants integer,
+   t_group_restrictions varchar(1024),
    t_sort_order integer not null,
    t_deleted_date datetime,
    fk_deleted_by bigint,
