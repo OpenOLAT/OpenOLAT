@@ -135,18 +135,22 @@ $r.render("assessmentInfos")
 			jQuery(function() {
 				jQuery('#collapse_sharedme_${r.getCId()}').on('hide.bs.collapse', function () {
 					jQuery('#collapse_sharedme_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+					$f.openFfXHREvent(false, false, true), "sharedMeOpen","false");
 				})
 				jQuery('#collapse_sharedme_${r.getCId()}').on('show.bs.collapse', function () {
 					jQuery('#collapse_sharedme_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+					$f.openFfXHREvent(false, false, true), "sharedMeOpen","true");
 				})
 			});
 
 			jQuery(function() {
 				jQuery('#collapse_sharedby_${r.getCId()}').on('hide.bs.collapse', function () {
 					jQuery('#collapse_sharedby_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+					$f.openFfXHREvent(false, false, true), "sharedByOpen","false");
 				})
 				jQuery('#collapse_sharedby_${r.getCId()}').on('show.bs.collapse', function () {
 					jQuery('#collapse_sharedby_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+					$f.openFfXHREvent(false, false, true), "sharedByOpen","true");
 				})
 			});
 		</script>
