@@ -96,7 +96,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 5 mai 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class PracticeConfigurationController extends FormBasicController {
@@ -129,7 +129,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	
 	private int counter = 0;
 	
-	private PracticeCourseNode courseNode;
+	private final PracticeCourseNode courseNode;
 	private final RepositoryEntry courseEntry;
 	private final ModuleConfiguration config;
 
@@ -224,7 +224,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		} else {
 			allTaxonomyLevels = new HashSet<>(1);
 		}
-		taxonomyEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
+		taxonomyEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels.label", formLayout,
 				getWindowControl(), allTaxonomyLevels);
 		taxonomyEl.setDisplayNameHeader(translate("taxonomy.levels"));
 		
@@ -241,7 +241,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		if(selectedLevelsKeys != null) {
 			List<TaxonomyLevel> selectedLevels = allTaxonomyLevels.stream()
 					.filter(level -> selectedLevelsKeys.contains(level.getKey()))
-					.collect(Collectors.toList());
+					.toList();
 			taxonomyEl.setSelection(selectedLevels);
 		}
 
@@ -342,6 +342,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	
 	private void initConfiguration(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("configuration.title"));
+		formLayout.setFormInfo(translate("configuration.hint"));
 		
 		SelectionValues levels = new SelectionValues();
 		for(int i=1; i<=5; i++) {

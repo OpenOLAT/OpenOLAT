@@ -26,7 +26,7 @@ import org.olat.modules.qpool.QuestionItemCollection;
 /**
  * 
  * Initial date: 6 mai 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SharedResourceRow {
@@ -75,7 +75,4 @@ public class SharedResourceRow {
 	public QuestionItemCollection getCollection() {
 		return collection;
 	}
-	
-	
-	
 }

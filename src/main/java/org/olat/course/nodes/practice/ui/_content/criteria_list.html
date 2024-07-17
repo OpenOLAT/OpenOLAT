@@ -1,5 +1,9 @@
 <fieldset class="o_form form o_block" style="position:relative">
 	<legend>$r.translate("criteria")</legend>
+
+	<div class="o_hint">
+		$r.translate("criteria.hint")
+	</div>
 	
 	$r.render("taxonomy.levels", "minimal")
 	<div class="form-group $f.getElementCssClass("wo.taxonomy.levels") clearfix">
