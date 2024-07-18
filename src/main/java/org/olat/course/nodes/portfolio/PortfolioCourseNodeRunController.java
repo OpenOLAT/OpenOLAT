@@ -89,6 +89,9 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.ceditor.ContentElement;
 import org.olat.modules.ceditor.ContentElementType;
 import org.olat.modules.ceditor.ContentRoles;
@@ -170,6 +173,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 	private PortfolioService portfolioService;
 	@Autowired
 	private InvitationModule invitationModule;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
@@ -576,6 +581,9 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 				if (copyBinder == null) {
 					copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent());
 					if (copyBinder != null) {
+						// after user collects binder, set assessmentEntryStatus inProgress
+						AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(getIdentity(), courseEntry, courseNode.getIdent());
+						assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
 						showInfo("map.copied", StringHelper.escapeHtml(templateBinder.getTitle()));
 						ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(copyBinder));
 						ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_TASK_STARTED, getClass());

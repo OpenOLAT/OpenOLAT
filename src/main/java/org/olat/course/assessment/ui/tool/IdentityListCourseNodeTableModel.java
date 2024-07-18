@@ -136,6 +136,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case coachAssignment -> row.getCoachFullName();
 				case tools -> row.getToolsLink();
 				case details -> row.getDetails();
+				case collectedOn -> row.getPortfolioCollectedOnDate();
 				case numOfAuthorisedUsers -> row.getNumOfAuthorisedUsers();
 				case numOfInProgressSections -> row.getNumOfSectionsInProgress();
 				case numOfPublishedEntries -> row.getNumOfEntriesPublished();
@@ -185,6 +186,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		externalGrader("table.header.external.grader"),
 		currentRunStart("table.header.run.start"),
 		coachAssignment("table.header.coach.assignment"),
+		collectedOn("table.header.collected.date"),
 		numOfAuthorisedUsers("table.header.num.authorised.users"),
 		numOfInProgressSections("table.header.num.inprogress.sections"),
 		numOfNewEntries("table.header.num.new.entries"),
