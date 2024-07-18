@@ -151,6 +151,22 @@
 		height: 36px;
 	}
 }
+.datepicker-cell.today {
+	&.focused:not(.selected) {
+		background-color: #fff;
+	}
+	&:not(.selected) {
+		background-color: #fff;
+	}
+	&:not(.selected):not(.disabled) {
+		color: #00ccad;
+		border: 1px solid #00ccad;
+		font-weight: bold;
+	}
+	
+	
+}
+
 
 /*
  * Overwrite some class of typehead needed by the flexi table

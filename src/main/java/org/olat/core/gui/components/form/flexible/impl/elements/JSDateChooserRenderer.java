@@ -160,6 +160,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		sb.append(" const elem = document.getElementById('").append(receiverId).append("');")
 		  .append(" const datepicker = new Datepicker(elem, {\n")
 		  .append("  autohide: true,\n")
+		  .append("  todayHighlight : true,\n")
+		  .append("  todayButton : true,\n")
 		  .append("  orientation: 'auto',\n")
 		  .append("  container: containerSelector,\n")
 		  .append("  format: '").append(format).append("',\n")
