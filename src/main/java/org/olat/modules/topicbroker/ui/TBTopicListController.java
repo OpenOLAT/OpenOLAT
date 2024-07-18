@@ -169,6 +169,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
 	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
 	private List<Long> detailsOpenTopicKeys;
+	private List<TBTopicDetailController> detailCtrls = new ArrayList<>(1);
 	private final Roles roles;
 	private int counter = 0;
 	
@@ -446,6 +447,11 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		tableEl.reset(false, false, true);
 		
 		tableEl.collapseAllDetails();
+		detailCtrls.forEach(ctrl -> {
+			flc.remove(ctrl.getInitialFormItem());
+			removeAsListenerAndDispose(ctrl);
+		});
+		detailCtrls.clear();
 		if (detailsOpenTopicKeys != null && !detailsOpenTopicKeys.isEmpty()) {
 			dataModel.getObjects().stream()
 				.filter(row -> detailsOpenTopicKeys.contains(row.getKey()))
@@ -717,6 +723,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				row.getTopic(), row.getGroupRestrictions(), row.getCustomFields(), secCallback, row.getNumEnrollments(),
 				row.getWaitingList());
 		listenTo(detailsCtrl);
+		detailCtrls.add(detailsCtrl);
 		// Add as form item to catch the events...
 		flc.add(detailsCtrl.getInitialFormItem());
 		
