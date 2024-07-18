@@ -149,9 +149,9 @@ public class EvaluationFormDispatcher implements Dispatcher {
 			String requestUri = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
 			try(StringOutput clientSideWindowCheck = new StringOutput()) {
 				clientSideWindowCheck.append("<!DOCTYPE html>\n<html><head><title>Reload</title><script>")
-					.append("window.location.replace('").append(requestUri).append("?");
+					.append("window.location.replace(\"").append(requestUri).append("?");
 				clientSideWindowCheck
-					.append("oow=' + window.name").append(");")
+					.append("oow=\" + window.name").append(");")
 					.append("</script></head><body></body></html>");
 				ServletUtil.serveStringResource(ureq.getHttpResp(), clientSideWindowCheck);
 			} catch(IOException e) {
