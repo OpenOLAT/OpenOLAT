@@ -82,6 +82,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.gui.util.CSSHelper;
@@ -113,6 +114,9 @@ import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBTopicDataModel.TopicCols;
 import org.olat.modules.topicbroker.ui.events.TBTopicEditEnrollmentsEvent;
 import org.olat.modules.topicbroker.ui.events.TBTopicEditEvent;
+import org.olat.modules.topicbroker.ui.wizard.ImportContext;
+import org.olat.modules.topicbroker.ui.wizard.ImportInputStep;
+import org.olat.modules.topicbroker.ui.wizard.ImportTopicCallback;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -152,6 +156,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private TBTopicEditController topicEditCtrl;
 	private TBTopicSelectionsEditController selectionsEditCtrl;
 	private Controller docEditorCtrl;
+	private StepsMainRunController wizard;
 	private ConfirmationController deleteConfirmationCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ToolsController toolsCtrl;
@@ -273,7 +278,6 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			
 			importLink = uifactory.addFormLink("topics.import", formLayout, Link.LINK);
 			importLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
-			importLink.setEnabled(false);
 			addDropdown.addElement(importLink);
 		}
 		
@@ -736,6 +740,14 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			loadModel(ureq);
 			cmc.deactivate();
 			cleanUp();
+		} else if (wizard == source) {
+			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					loadModel(ureq);
+				}
+				cleanUp();
+			}
 		} else if (deleteConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				doDelete(ureq, (TBTopicRef)deleteConfirmationCtrl.getUserObject());
@@ -771,6 +783,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(topicEditCtrl);
+		removeAsListenerAndDispose(wizard);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(selectionsEditCtrl);
 		removeAsListenerAndDispose(docEditorCtrl);
@@ -778,6 +791,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		topicEditCtrl = null;
+		wizard = null;
 		deleteConfirmationCtrl = null;
 		selectionsEditCtrl = null;
 		docEditorCtrl = null;
@@ -803,6 +817,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			doEditTopic(ureq, null);
 		} else if (source == exportLink) {
 			doExport(ureq);
+		} else if (source == importLink) {
+			doImportTopics(ureq);
 		} else if (source == tableEl) {
 			if (event instanceof DetailsToggleEvent) {
 				DetailsToggleEvent dte = (DetailsToggleEvent)event;
@@ -947,6 +963,14 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private void doExport(UserRequest ureq) {
 		MediaResource resource = topicBrokerExportService.createMediaResource(ureq, broker, participantCandidates);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private void doImportTopics(UserRequest ureq) {
+		removeAsListenerAndDispose(wizard);
+		wizard = new StepsMainRunController(ureq, getWindowControl(), new ImportInputStep(ureq, new ImportContext(broker, groupRestrictionCandidates)),
+				new ImportTopicCallback(getIdentity(), topicBrokerExportService), null, translate("topics.import"), "");
+		listenTo(wizard);
+		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());
 	}
 	
 	private void doOpenTools(UserRequest ureq, TBTopicRow row, FormLink link) {

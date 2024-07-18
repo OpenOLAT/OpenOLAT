@@ -17,31 +17,53 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.topicbroker;
+package org.olat.modules.topicbroker.ui.wizard;
 
 import java.util.List;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.id.Identity;
+import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
 import org.olat.modules.topicbroker.model.TBImportTopic;
 
 /**
  * 
- * Initial date: 1 Jul 2024<br>
+ * Initial date: 17 Jul 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TopicBrokerExportService {
+public class ImportContext {
 	
-	void createCustomFieldDefinitions(Identity doer, TBBroker broker, String customFieldDefinitionsXml);
-
-	String getCustomFieldDefinitionExportXml(TBBrokerRef broker);
+	private final TBBroker broker;
+	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
+	private String input;
+	private List<TBImportTopic> topics;
 	
-	MediaResource createMediaResource(UserRequest ureq, TBBrokerRef broker, TBParticipantCandidates participantCandidates);
-	
-	MediaResource createTopicImportTemplateMediaResource(UserRequest ureq, TBBrokerRef broker, String filename);
+	public ImportContext(TBBroker broker, TBGroupRestrictionCandidates groupRestrictionCandidates) {
+		this.broker = broker;
+		this.groupRestrictionCandidates = groupRestrictionCandidates;
+	}
 
-	void createOrUpdateTopics(Identity doer, TBBroker broker, List<TBImportTopic> importTopics);
+	public TBBroker getBroker() {
+		return broker;
+	}
 
+	public TBGroupRestrictionCandidates getGroupRestrictionCandidates() {
+		return groupRestrictionCandidates;
+	}
+
+	public String getInput() {
+		return input;
+	}
+
+	public void setInput(String input) {
+		this.input = input;
+	}
+
+	public List<TBImportTopic> getTopics() {
+		return topics;
+	}
+
+	public void setTopics(List<TBImportTopic> topics) {
+		this.topics = topics;
+	}
 }
