@@ -252,6 +252,8 @@ public class FeedMainController extends BasicController implements Activateable2
 		// is part of the current feed/ores
 		if (feedItem != null && Objects.equals(feedItem.getFeed().getKey(), feed.getKey())) {
 			feedItemListCtrl.displayFeedItem(ureq, feedItem);
+		} else {
+			vcMain.remove("selected_feed_item");
 		}
 	}
 

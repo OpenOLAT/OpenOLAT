@@ -823,6 +823,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		loadSideBarTags();
 		removeAsListenerAndDispose(feedItemCtrl);
 		feedItemCtrl = null;
+		addToHistory(ureq);
 	}
 
 	private void handleFeedItemEvent(UserRequest ureq, FeedItemEvent feedItemEvent) {
