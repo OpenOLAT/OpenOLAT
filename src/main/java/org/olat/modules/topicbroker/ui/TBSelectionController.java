@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -81,6 +83,8 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBCustomFieldDefinition;
@@ -135,6 +139,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private TBBroker broker;
 	private final TBPeriodEvaluator periodEvaluator;
 	private TBParticipant participant;
+	private Set<Long> participantGroupKeys;
 	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
 	private int selectionsSize;
 	private final Roles roles;
@@ -142,6 +147,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 
 	@Autowired
 	private TopicBrokerService topicBrokerService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
@@ -324,6 +331,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		int maxEnrollments = TBUIFactory.getRequiredEnrollments(broker, participant);
 		int numEnrollments = (int)selections.stream().filter(TBSelection::isEnrolled).count();
 	
+		loadParticipantGroupKeys(topics);
 		
 		List<TBSelectionRow> topicRows = new ArrayList<>(topics.size());
 		List<TBSelectionRow> selectionRows = new ArrayList<>();
@@ -365,6 +373,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		
 		if (!periodEvaluator.isBeforeSelectionPeriod()) {
 			applySearch(topicRows);
+			applyGroupRestricions(topicRows);
 			topicRows.sort((r1, r2) -> Integer.compare(r1.getTopicSortOrder(), r2.getTopicSortOrder()));
 			topicDataModel.setObjects(topicRows);
 			topicTableEl.reset(false, false, true);
@@ -403,6 +412,11 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			return searchValues.stream().noneMatch(searchValue -> candidateLowerCase.indexOf(searchValue) >= 0);
 		}
 		return true;
+	}
+
+	private void applyGroupRestricions(List<TBSelectionRow> rows) {
+		rows.removeIf(row -> row.getGroupRestrictionKeys() != null
+				&& row.getGroupRestrictionKeys().stream().noneMatch(key -> participantGroupKeys.contains(key)));
 	}
 	
 	private void forgeCustomFields(TBSelectionRow row, Map<Long, TBCustomField> definitionKeyToCustomField) {
@@ -480,15 +494,39 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 	
 	private void forgeToolsLink(TBSelectionRow row) {
-		if (!periodEvaluator.isSelectionPeriod() && !periodEvaluator.isWithdrawPeriod()) {
-			return;
+		// Selection tools
+		if (periodEvaluator.isSelectionPeriod()) {
+			forgeSelectionToolsLink(row);
 		}
 		
+		if (periodEvaluator.isWithdrawPeriod()) {
+			if (periodEvaluator.isSelectionPeriod() || row.isEnrolled()) {
+				forgeSelectionToolsLink(row);
+			}
+		}
+		
+		// Topic tools
+		if (row.getSelectionRef() == null) {
+			if (periodEvaluator.isSelectionPeriod()) {
+				forgeTopicToolsLink(row);
+			}
+		} else {
+			if (periodEvaluator.isWithdrawPeriod()) {
+				if (periodEvaluator.isSelectionPeriod() || row.isEnrolled()) {
+					forgeTopicToolsLink(row);
+				}
+			}
+		}
+	}
+
+	private void forgeSelectionToolsLink(TBSelectionRow row) {
 		FormLink selectionToolsLink = uifactory.addFormLink("tools_" + row.getTopic().getKey(), "selectionTools", "", null, null, Link.NONTRANSLATED);
 		selectionToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		selectionToolsLink.setUserObject(row);
 		row.setSelectionToolsLink(selectionToolsLink);
-		
+	}
+
+	private void forgeTopicToolsLink(TBSelectionRow row) {
 		FormLink topicToolsLink = uifactory.addFormLink("tools_" + row.getTopic().getKey(), "topicTools", "", null, null, Link.NONTRANSLATED);
 		topicToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		topicToolsLink.setUserObject(row);
@@ -558,6 +596,19 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		row.setStatus(status);
 		row.setTranslatedStatus(TBUIFactory.getTranslatedStatus(getTranslator(), row.getStatus()));
 		row.setStatusLabel(statusRenderer.render(getTranslator(), row));
+	}
+
+	private void loadParticipantGroupKeys(List<TBTopic> topics) {
+		if (participantGroupKeys != null) {
+			return;
+		}
+		
+		Set<Long> allGroupRestrictionKeys = topics.stream()
+				.map(TBTopic::getGroupRestrictionKeys)
+				.filter(Objects::nonNull)
+				.flatMap(Set::stream)
+				.collect(Collectors.toSet());
+		participantGroupKeys = topicBrokerService.filterMembership(getIdentity(), allGroupRestrictionKeys);
 	}
 	
 	private void updateMaxEnrollmentsEnabledUI() {
@@ -804,7 +855,11 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private void doOpenDetails(UserRequest ureq, TBTopic topic, List<TBCustomField> customFields) {
 		removeAsListenerAndDispose(detailCtrl);
 		
-		detailCtrl = new TBSelectionDetailController(ureq, getWindowControl(), broker, participant, topic, customFields);
+		List<BusinessGroupShort> groupRestrictions = null;
+		if (topic.getGroupRestrictionKeys() != null) {
+			groupRestrictions = businessGroupService.loadShortBusinessGroups(topic.getGroupRestrictionKeys());
+		}
+		detailCtrl = new TBSelectionDetailController(ureq, getWindowControl(), broker, participant, topic, groupRestrictions, customFields);
 		listenTo(detailCtrl);
 		
 		lightboxCtrl = new LightboxController(ureq, getWindowControl(), detailCtrl);
@@ -879,7 +934,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			this.row = row;
 			
 			mainVC = createVelocityContainer("tools");
-			putInitialPanel(mainVC);
+			putInitialPanel(mainVC); 
 			
 			if (periodEvaluator.isSelectionPeriod()) {
 				if (!row.getUpDown().isTopmost()) {
@@ -894,7 +949,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			}
 			
 			if (periodEvaluator.isWithdrawPeriod()) {
-				addLink("withdraw", CMD_UNSELECT, "o_icon o_icon-fw o_icon_tb_withdraw");
+				if (periodEvaluator.isSelectionPeriod() || row.isEnrolled()) {
+					addLink("withdraw", CMD_UNSELECT, "o_icon o_icon-fw o_icon_tb_withdraw");
+				}
 			}
 			
 			mainVC.contextPut("names", names);
@@ -956,10 +1013,11 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 						names.add(name);
 					}
 				}
-				
 			} else {
 				if (periodEvaluator.isWithdrawPeriod()) {
-					addLink("withdraw", CMD_UNSELECT, "o_icon o_icon-fw o_icon_tb_withdraw");
+					if (periodEvaluator.isSelectionPeriod() || row.isEnrolled()) {
+						addLink("withdraw", CMD_UNSELECT, "o_icon o_icon-fw o_icon_tb_withdraw");
+					}
 				}
 			}
 			

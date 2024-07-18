@@ -30,8 +30,10 @@ import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.course.nodes.topicbroker.TBCourseNodeSecurityCallbackFactory;
+import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeGroupRestrictionCandidates;
 import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeParticipantCandidates;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBCustomFieldDefinitionListController;
 import org.olat.modules.topicbroker.ui.TBTopicListController;
@@ -72,7 +74,11 @@ public class TBEditController extends ActivateableTabbableDefaultController {
 		
 		TopicBrokerCourseNodeParticipantCandidates participantCandidates = new TopicBrokerCourseNodeParticipantCandidates(
 				getIdentity(), courseGroupManager.getCourseEntry(), true);
-		topicsCtrl = new TBTopicListEditController(ureq, wControl, broker, TBCourseNodeSecurityCallbackFactory.ADMIN_SEC_CALLBACK, participantCandidates);
+		TBGroupRestrictionCandidates groupRestrictionCandidates = new TopicBrokerCourseNodeGroupRestrictionCandidates(
+				courseGroupManager.getCourseEntry());
+		topicsCtrl = new TBTopicListEditController(ureq, wControl, broker,
+				TBCourseNodeSecurityCallbackFactory.ADMIN_SEC_CALLBACK, participantCandidates,
+				groupRestrictionCandidates);
 		listenTo(topicsCtrl);
 	}
 

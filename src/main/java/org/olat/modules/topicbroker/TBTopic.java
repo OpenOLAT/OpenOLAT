@@ -20,6 +20,7 @@
 package org.olat.modules.topicbroker;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
@@ -52,6 +53,10 @@ public interface TBTopic extends TBTopicRef, ModifiedInfo, CreateInfo {
 	Integer getMaxParticipants();
 	
 	void setMaxParticipants(Integer maxParticipants);
+	
+	Set<Long> getGroupRestrictionKeys();
+	
+	void setGroupRestrictionKeys(Set<Long> groupRestrictionKeys);
 	
 	int getSortOrder();
 	

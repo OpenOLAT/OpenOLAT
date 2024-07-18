@@ -19,9 +19,8 @@
                 <bean class="org.olat.user.DefaultUser">
                         <!-- constructor arg is userName -->
                         <constructor-arg type="java.lang.String" value="administrator" />
-                        <property name="firstName" value="OpenOLAT" />
+                        <property name="firstName" value="OpenOlat" />
                         <property name="lastName" value="Administrator" />
-                        <property name="email" value="admin@olat-newinstallation.org" />
                         <property name="password" value="openolat" />
                         <property name="language" value="${defaultlang}" />
                         <property name="admin" value="true" />

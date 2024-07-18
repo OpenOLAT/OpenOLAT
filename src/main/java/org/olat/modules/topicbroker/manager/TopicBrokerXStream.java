@@ -31,6 +31,8 @@ import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionsExport;
 import org.olat.modules.topicbroker.model.TBCustomFieldImpl;
 import org.olat.modules.topicbroker.model.TBParticipantImpl;
 import org.olat.modules.topicbroker.model.TBProcessInfos;
+import org.olat.modules.topicbroker.model.TBProcessSelection;
+import org.olat.modules.topicbroker.model.TBProcessSelections;
 import org.olat.modules.topicbroker.model.TBSelectionImpl;
 import org.olat.modules.topicbroker.model.TBTopicImpl;
 import org.olat.repository.RepositoryEntry;
@@ -58,6 +60,8 @@ public class TopicBrokerXStream {
 				TBSelectionImpl.class,
 				TBProcessInfos.class,
 				TBFileAuditLog.class,
+				TBProcessSelections.class,
+				TBProcessSelection.class,
 				TBCustomFieldDefinitionsExport.class,
 				TBCustomFieldDefinitionExport.class
 		};
@@ -74,6 +78,8 @@ public class TopicBrokerXStream {
 		
 		xstream.alias("TBProcessInfos", TBProcessInfos.class);
 		xstream.alias("TBFileAuditLog", TBFileAuditLog.class);
+		xstream.alias("TBProcessSelections", TBProcessSelections.class);
+		xstream.alias("TBProcessSelection", TBProcessSelection.class);
 		
 		xstream.alias("TBCustomFieldDefinitionsExport", TBCustomFieldDefinitionsExport.class);
 		xstream.alias("TBCustomFieldDefinitionExport", TBCustomFieldDefinitionExport.class);

@@ -21,6 +21,7 @@ package org.olat.modules.topicbroker.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
@@ -42,10 +44,13 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormItemList;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
@@ -56,6 +61,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -67,6 +73,7 @@ import org.olat.core.gui.components.updown.UpDown;
 import org.olat.core.gui.components.updown.UpDownEvent;
 import org.olat.core.gui.components.updown.UpDownEvent.Direction;
 import org.olat.core.gui.components.updown.UpDownFactory;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -79,16 +86,20 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldType;
+import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSecurityCallback;
@@ -116,11 +127,13 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_UNDERBOOKED = "Underbooked";
 	private static final String TAB_ID_WAITING_LIST = "WaitingList";
+	private static final String FILTER_GROUP = "group";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_UP = "up";
 	private static final String CMD_DOWN = "down";
 	private static final String CMD_EDIT_ENROLLMENTS = "edit.enrollments";
 	private static final String CMD_DELETE = "delete";
+	private static final String CMD_OPEN_GROUP = "open.group";
 	private static final String CMD_OPEN_FILE = "open.file";
 	
 	private InfoPanel configPanel;
@@ -146,6 +159,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private TBBroker broker;
 	private final TBSecurityCallback secCallback;
 	private final TBParticipantCandidates participantCandidates;
+	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
 	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
 	private List<Long> detailsOpenTopicKeys;
 	private final Roles roles;
@@ -159,14 +173,18 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private DocEditorService docEditorService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	public TBTopicListController(UserRequest ureq, WindowControl wControl, TBBroker broker,
-			TBSecurityCallback secCallback, TBParticipantCandidates participantCandidates) {
+			TBSecurityCallback secCallback, TBParticipantCandidates participantCandidates,
+			TBGroupRestrictionCandidates groupRestrictionCandidates) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(TBTopicListController.class) + "/topic_list.html");
 		setTranslator(Util.createPackageTranslator(TBTopicListController.class, getLocale(), getTranslator()));
 		this.broker = broker;
 		this.secCallback = secCallback;
 		this.participantCandidates = participantCandidates;
+		this.groupRestrictionCandidates = groupRestrictionCandidates;
 		
 		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
 		definitionSearchParams.setBroker(broker);
@@ -178,6 +196,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		roles = ureq.getUserSession().getRoles();
 		
 		initForm(ureq);
+		initFilters();
 		loadModel(ureq);
 		updateUI();
 	}
@@ -211,6 +230,24 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, tabAll);
+	}
+	
+	private void initFilters() {
+		List<BusinessGroupShort> businessGroups = businessGroupService.loadShortBusinessGroups(groupRestrictionCandidates.getBusinessGroupKeys());
+		if (businessGroups == null || businessGroups.isEmpty()) {
+			return;
+		}
+		
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(1);
+		
+		SelectionValues groupValues = new SelectionValues();
+		Collections.sort(businessGroups, (g1, g2) -> g1.getName().compareToIgnoreCase(g2.getName()));
+		businessGroups.forEach(group -> groupValues.add(SelectionValues.entry(
+				group.getKey().toString(),
+				StringHelper.escapeHtml(group.getName()))));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("topic.group.restriction"), FILTER_GROUP, groupValues, true));
+		
+		tableEl.setFilters(true, filters, false, false);
 	}
 	
 	@Override
@@ -267,7 +304,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(waitingListColumn);
 		}
 		
-//		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.groupRestrictions));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.groupRestrictions));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.createdBy));
 		
 		int columnIndex = TBTopicDataModel.CUSTOM_FIELD_OFFSET;
@@ -368,7 +405,19 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		
 		applyFilters(rows);
 		
+		Set<Long> allGroupRestrictionKeys = rows.stream()
+				.map(TBTopicRow::getGroupRestrictionKeys)
+				.filter(Objects::nonNull)
+				.flatMap(Set::stream)
+				.collect(Collectors.toSet());
+		Map<Long, BusinessGroupShort> groupKeyToGroup = businessGroupService
+				.loadShortBusinessGroups(allGroupRestrictionKeys)
+				.stream()
+				.collect(Collectors.toMap(BusinessGroupShort::getKey, Function.identity()));
+		
 		for (TBTopicRow row: rows) {
+			forgeGroupRestrictionLinks(row, groupKeyToGroup);
+			
 			if (!customFieldDefinitionsInTable.isEmpty()) {
 				forgeCustomFields(
 						row,
@@ -395,14 +444,26 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	}
 
 	private void applyFilters(List<TBTopicRow> rows) {
-		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabAll) {
-			return;
+		if (tableEl.getSelectedFilterTab() != null) {
+			if (tableEl.getSelectedFilterTab() == tabUnderbooked) {
+				rows.removeIf(row -> row.getNumEnrollments() >= row.getMinEnrollments());
+			} else if (tableEl.getSelectedFilterTab() == tabWaitingList) {
+				rows.removeIf(row -> row.getWaitingList() == 0);
+			}
 		}
 		
-		if (tableEl.getSelectedFilterTab() == tabUnderbooked) {
-			rows.removeIf(row -> row.getNumEnrollments() >= row.getMinEnrollments());
-		} else if (tableEl.getSelectedFilterTab() == tabWaitingList) {
-			rows.removeIf(row -> row.getWaitingList() == 0);
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters == null || filters.isEmpty()) return;
+		
+		for (FlexiTableFilter filter : filters) {
+			if (FILTER_GROUP.equals(filter.getFilter())) {
+				List<String> groups = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (groups != null && !groups.isEmpty()) {
+					Set<Long> groupKeys = groups.stream().map(Long::valueOf).collect(Collectors.toSet());
+					rows.removeIf(row -> row.getGroupRestrictionKeys() == null
+							|| row.getGroupRestrictionKeys().stream().noneMatch(key -> groupKeys.contains(key)));
+				}
+			}
 		}
 	}
 	
@@ -517,6 +578,34 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				&& !StringHelper.containsNonWhitespace(tableEl.getQuickSearchString());
 	}
 	
+	private void forgeGroupRestrictionLinks(TBTopicRow row, Map<Long, BusinessGroupShort> groupKeyToGroup) {
+		if (row.getGroupRestrictionKeys() == null || row.getGroupRestrictionKeys().isEmpty()) {
+			return;
+		}
+		
+		List<BusinessGroupShort> groupRestrictions = new ArrayList<>(row.getGroupRestrictionKeys().size());
+		for (Long groupKey : row.getGroupRestrictionKeys()) {
+			BusinessGroupShort businessGroup = groupKeyToGroup.get(groupKey);
+			if (businessGroup != null) {
+				groupRestrictions.add(businessGroup);
+			}
+		}
+		Collections.sort(groupRestrictions, (g1, g2) -> g1.getName().compareToIgnoreCase(g2.getName()));
+		row.setGroupRestrictions(groupRestrictions);
+		
+		FormItemList links = new FormItemList(groupRestrictions.size());
+		for (BusinessGroupShort group : groupRestrictions) {
+			FormLink link = uifactory.addFormLink("grp_" + counter++, CMD_OPEN_GROUP, null, null, flc, Link.NONTRANSLATED);
+			link.setI18nKey(StringHelper.escapeHtml(group.getName()));
+			link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+			link.setUrl(BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathString("[BusinessGroup:" + group.getKey() + "]"));
+			link.setUserObject(group.getKey());
+			links.add(link);
+		}
+		row.setGroupRestrictionLinks(links);
+	}
+	
 	private void forgeCustomFields(TBTopicRow row, Map<Long, TBCustomField> definitionKeyToCustomField) {
 		row.setCustomFields(new ArrayList<>(definitionKeyToCustomField.values()));
 		List<FormItem> customFieldItems = new ArrayList<>(customFieldDefinitionsInTable.size());
@@ -611,7 +700,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	
 	private void doShowDetails(UserRequest ureq, TBTopicRow row) {
 		TBTopicDetailController detailsCtrl = new TBTopicDetailController(ureq, getWindowControl(), mainForm,
-				row.getTopic(), row.getCustomFields(), secCallback, row.getNumEnrollments(), row.getWaitingList());
+				row.getTopic(), row.getGroupRestrictions(), row.getCustomFields(), secCallback, row.getNumEnrollments(),
+				row.getWaitingList());
 		listenTo(detailsCtrl);
 		// Add as form item to catch the events...
 		flc.add(detailsCtrl.getInitialFormItem());
@@ -728,7 +818,9 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				loadModel(ureq);
 			}
 		} else if (source instanceof FormLink link) {
-			if (CMD_OPEN_FILE.equals(link.getCmd()) && link.getUserObject() instanceof VFSLeaf topicLeaf) {
+			if (CMD_OPEN_GROUP.equals(link.getCmd()) && link.getUserObject() instanceof Long groupKey) {
+				doOpenGroup(ureq, groupKey);
+			} if (CMD_OPEN_FILE.equals(link.getCmd()) && link.getUserObject() instanceof VFSLeaf topicLeaf) {
 				doOpenOrDownload(ureq, topicLeaf);
 			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof TBTopicRow row) {
 				doOpenTools(ureq, row, link);
@@ -754,7 +846,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			}
 		}
 		
-		topicEditCtrl = new TBTopicEditController(ureq, getWindowControl(), broker, reloadedTopic);
+		topicEditCtrl = new TBTopicEditController(ureq, getWindowControl(), broker, reloadedTopic, groupRestrictionCandidates);
 		listenTo(topicEditCtrl);
 		
 		String title = topic == null? translate("topic.create"): translate("topic.edit");
@@ -816,6 +908,11 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				selectionsEditCtrl.getInitialComponent(), true, translate("enrollments.edit.title", reloadedTopic.getTitle()), true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doOpenGroup(UserRequest ureq, Long groupKey) {
+		String businessPath = "[BusinessGroup:" + groupKey + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doOpenOrDownload(UserRequest ureq, VFSLeaf topicLeaf) {

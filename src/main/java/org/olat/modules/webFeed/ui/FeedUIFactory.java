@@ -61,11 +61,6 @@ public abstract class FeedUIFactory {
 		return new FeedMainController(ores, ureq, wControl, courseId, nodeId, this, callback, null, moduleConfiguration);
 	}
 
-	// with specific FeedItemDisplayConfig
-	public final FeedMainController createMainController(final OLATResourceable ores, final UserRequest ureq, final WindowControl wControl, final FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig) {
-		return new FeedMainController(ores, ureq, wControl, null, null, this, callback, displayConfig, null);
-	}
-
 	public abstract FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item currentItem);
 
 	public ExternalFeedUrlController createExternalUrlController(UserRequest ureq, WindowControl windowControl, Feed feedResource) {

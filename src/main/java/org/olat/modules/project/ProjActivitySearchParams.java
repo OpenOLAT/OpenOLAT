@@ -43,6 +43,7 @@ public class ProjActivitySearchParams {
 	private Collection<Long> artefactKeys;
 	private List<DateRange> createdDateRanges;
 	private boolean fetchDoer;
+	private boolean fetchArtefactReference;
 
 	public Collection<Action> getActions() {
 		return actions;
@@ -110,6 +111,14 @@ public class ProjActivitySearchParams {
 
 	public void setFetchDoer(boolean fetchDoer) {
 		this.fetchDoer = fetchDoer;
+	}
+
+	public boolean isFetchArtefactReference() {
+		return fetchArtefactReference;
+	}
+
+	public void setFetchArtefactReference(boolean fetchArtefactReference) {
+		this.fetchArtefactReference = fetchArtefactReference;
 	}
 
 }

@@ -19,7 +19,10 @@
  */
 package org.olat.modules.topicbroker.model;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,6 +39,7 @@ import jakarta.persistence.TemporalType;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBTopic;
 
@@ -73,6 +77,9 @@ public class TBTopicImpl implements Persistable, TBTopic {
 	private Integer minParticipants;
 	@Column(name="t_max_participants", nullable=true, insertable=true, updatable=true)
 	private Integer maxParticipants;
+	@Column(name="t_group_restrictions", nullable=true, insertable=true, updatable=true)
+	private String groupRestrictions;
+	private transient Set<Long> groupRestrictionKeys;
 	@Column(name="t_sort_order", nullable=false, insertable=true, updatable=true)
 	private int sortOrder;
 
@@ -167,6 +174,22 @@ public class TBTopicImpl implements Persistable, TBTopic {
 	@Override
 	public void setMaxParticipants(Integer maxParticipants) {
 		this.maxParticipants = maxParticipants;
+	}
+
+	@Override
+	public Set<Long> getGroupRestrictionKeys() {
+		if (groupRestrictionKeys == null && StringHelper.containsNonWhitespace(groupRestrictions)) {
+			groupRestrictionKeys = Arrays.stream(groupRestrictions.split(",")).map(Long::valueOf).collect(Collectors.toSet());
+		}
+		return groupRestrictionKeys;
+	}
+
+	@Override
+	public void setGroupRestrictionKeys(Set<Long> groupRestrictionKeys) {
+		this.groupRestrictionKeys = groupRestrictionKeys;
+		this.groupRestrictions = groupRestrictionKeys != null && !groupRestrictionKeys.isEmpty()
+				? groupRestrictionKeys.stream().map(String::valueOf).collect(Collectors.joining(","))
+				: null;
 	}
 
 	@Override

@@ -20,11 +20,11 @@
 	}
 }
 .o_tb_selection_detail_header {
-	.o_tb_topic_meta {
-		gap: 10px;
-	}
 	.o_tb_selection_cmds {
 		margin-top: auto;
+		>div {
+			margin-top: 1.5em;
+		}
 	}
 }
 .o_tb_details_separator {

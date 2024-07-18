@@ -20,8 +20,10 @@
 package org.olat.modules.topicbroker;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
@@ -62,6 +64,8 @@ public interface TopicBrokerService {
 	public TBParticipant getOrCreateParticipant(Identity doer, TBBroker broker, Identity participantIdentity);
 	
 	public List<TBParticipant> getParticipants(TBParticipantSearchParams participantSearchParams);
+	
+	public Set<Long> filterMembership(IdentityRef identity, Collection<Long> groupKeys);
 
 	public TBTopic createTopic(Identity doer, TBBrokerRef broker);
 	

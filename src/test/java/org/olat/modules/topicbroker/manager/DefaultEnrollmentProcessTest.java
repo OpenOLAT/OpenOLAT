@@ -134,6 +134,33 @@ public class DefaultEnrollmentProcessTest {
 	}
 	
 	@Test
+	public void shouldEvaluate_ensureBoostIfFirstSelectionUnpopular() {
+		TBBroker broker = createBroker(3, 1);
+		TBTransientParticipant participant1 = createParticipant(1, 1);
+		TBTransientParticipant participant2 = createParticipant(2, 2);
+		TBTransientParticipant participant3 = createParticipant(3, 3);
+		
+		TBTransientTopic topic = createTopic(1, 0, 2);
+		TBTransientTopic topicUnpopuar = createTopic(2, 2, 4);
+		List<TBTopic> topics = List.of(topic, topicUnpopuar);
+		
+		TBTransientSelection selection1 = createSelection(participant1, topic, 1, false);
+		TBTransientSelection selection2 = createSelection(participant2, topic, 1, false);
+		TBTransientSelection selection31 = createSelection(participant3, topicUnpopuar, 1, false);
+		TBTransientSelection selection32 = createSelection(participant3, topic, 2, false);
+		List<TBSelection> selections = List.of(selection1, selection2, selection31, selection32);
+		
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		List<TBSelection> previewSelections = sut.getPreviewSelections();
+		
+		List<Long> enrolledParticipantKeys = previewSelections.stream()
+				.filter(TBSelection::isEnrolled)
+				.map(selection -> selection.getParticipant().getKey())
+				.toList();
+		assertThat(enrolledParticipantKeys).containsExactlyInAnyOrder(participant2.getKey(), participant3.getKey());
+	}
+	
+	@Test
 	public void shouldEvaluate_ignoreTooLowPriorities() {
 		TBBroker broker = createBroker(3, 1);
 		TBTransientParticipant participant1 = createParticipant(1, null);

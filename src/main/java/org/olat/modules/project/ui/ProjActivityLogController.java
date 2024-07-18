@@ -56,6 +56,7 @@ import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.manager.ProjectXStream;
+import org.olat.modules.project.model.ProjReferenceValues;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
@@ -109,6 +110,7 @@ public class ProjActivityLogController extends ActivityLogController {
 		searchParams.setProject(artefact.getProject());
 		searchParams.setArtefacts(List.of(artefact));
 		searchParams.setFetchDoer(true);
+		searchParams.setFetchArtefactReference(true);
 		if (dateRange != null) {
 			searchParams.setCreatedDateRanges(List.of(dateRange));
 		}
@@ -541,17 +543,41 @@ public class ProjActivityLogController extends ActivityLogController {
 	private void addActivityReferenceAddRow(List<ActivityLogRow> rows, ProjActivity activity,
 			ProjArtefactItems artefactReferenceItems) {
 		String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
-		if (StringHelper.containsNonWhitespace(value)) {
-			addRow(rows, activity, "activity.log.message.reference.add", null, value);
+		
+		if (!StringHelper.containsNonWhitespace(value)) {
+			String after = activity.getAfter();
+			if (StringHelper.containsNonWhitespace(after)) {
+				ProjReferenceValues referenceValues = ProjectXStream.fromXml(after, ProjReferenceValues.class);
+				if (referenceValues != null) {
+					value = getArtefactValue(referenceValues.getArtefactReferenceType(), referenceValues.getArtefactReferenceName());
+				}
+			}
 		}
+		if (!StringHelper.containsNonWhitespace(value)) {
+			value = translate("activity.log.unknown.object");
+		}
+		
+		addRow(rows, activity, "activity.log.message.reference.add", null, value);
 	}
 
 	private void addActivityReferenceRemoveRow(List<ActivityLogRow> rows, ProjActivity activity,
 			ProjArtefactItems artefactReferenceItems) {
 		String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
-		if (StringHelper.containsNonWhitespace(value)) {
-			addRow(rows, activity, "activity.log.message.reference.remove", value, null); 
+		
+		if (!StringHelper.containsNonWhitespace(value)) {
+			String before = activity.getBefore();
+			if (StringHelper.containsNonWhitespace(before)) {
+				ProjReferenceValues referenceValues = ProjectXStream.fromXml(before, ProjReferenceValues.class);
+				if (referenceValues != null) {
+					value = getArtefactValue(referenceValues.getArtefactReferenceType(), referenceValues.getArtefactReferenceName());
+				}
+			}
 		}
+		if (!StringHelper.containsNonWhitespace(value)) {
+			value = translate("activity.log.unknown.object");
+		}
+		
+		addRow(rows, activity, "activity.log.message.reference.remove", value, null); 
 	}
 	
 	private void addActivityTagsUpdateRows(List<ActivityLogRow> rows, ProjActivity activity) {
@@ -584,23 +610,48 @@ public class ProjActivityLogController extends ActivityLogController {
 	}
 	
 	private String getArtefactValue(ProjArtefact artefact, ProjArtefactItems artefactItems) {
+		if (artefact == null) {
+			return null;
+		}
+		
 		if (ProjFile.TYPE.equals(artefact.getType())) {
 			ProjFile file = artefactItems.getFile(artefact);
 			if (file != null) {
-				return translate("activity.log.file", ProjectUIFactory.getDisplayName(file));
+				return getArtefactValue(artefact.getType(), ProjectUIFactory.getDisplayName(file));
+			}
+		} else if (ProjToDo.TYPE.equals(artefact.getType())) {
+			ProjToDo toDo = artefactItems.getToDo(artefact);
+			if (toDo != null) {
+				return getArtefactValue(artefact.getType(), ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask()));
+			}
+		} else if (ProjDecision.TYPE.equals(artefact.getType())) {
+			ProjDecision decision = artefactItems.getDecision(artefact);
+			if (decision != null) {
+				return getArtefactValue(artefact.getType(), ProjectUIFactory.getDisplayName(getTranslator(), decision));
 			}
 		} else if (ProjNote.TYPE.equals(artefact.getType())) {
 			ProjNote note = artefactItems.getNote(artefact);
 			if (note != null) {
-				return translate("activity.log.note", ProjectUIFactory.getDisplayName(getTranslator(), note));
+				return getArtefactValue(artefact.getType(), ProjectUIFactory.getDisplayName(getTranslator(), note));
 			}
-		} else if (ProjFile.TYPE.equals(artefact.getType())) {
+		} else if (ProjAppointment.TYPE.equals(artefact.getType())) {
 			ProjAppointment appointment = artefactItems.getAppointment(artefact);
 			if (appointment != null) {
-				return translate("activity.log.appointment", ProjectUIFactory.getDisplayName(getTranslator(), appointment));
+				return getArtefactValue(artefact.getType(), ProjectUIFactory.getDisplayName(getTranslator(), appointment));
 			}
 		}
 		return null;
+	}
+	
+	private String getArtefactValue(String artefactType, String artefactName) {
+		return switch (artefactType) {
+		case ProjFile.TYPE -> translate("activity.log.file", artefactName);
+		case ProjToDo.TYPE -> translate("activity.log.todo", artefactName);
+		case ProjDecision.TYPE -> translate("activity.log.decision", artefactName);
+		case ProjNote.TYPE -> translate("activity.log.note", artefactName);
+		case ProjAppointment.TYPE -> translate("activity.log.appointment", artefactName);
+		default -> null;
+		};
 	}
 	
 	private String getTranslatedRecurrenceRule(String beforeRecurrence) {

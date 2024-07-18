@@ -151,8 +151,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 	private InvitationEmailController addInvitationEmailCtrl;
 	private CloseableModalController cmc;
 
-	private static final Boolean sharedMeOpen = Boolean.TRUE;
-	private static final Boolean sharedByOpen = Boolean.TRUE;
+	private Boolean sharedMeOpen = Boolean.TRUE;
+	private Boolean sharedByOpen = Boolean.TRUE;
 
 	private final UserCourseEnvironment userCourseEnv;
 	private final AssessmentConfig assessmentConfig;
@@ -559,7 +559,18 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == newMapLink) {
+		if ("ONCLICK".equals(event.getCommand())) {
+			String sharedMeVal = ureq.getParameter("sharedMeOpen");
+			if (StringHelper.containsNonWhitespace(sharedMeVal)) {
+				sharedMeOpen = Boolean.valueOf(sharedMeVal);
+				flc.contextPut("sharedMeOpen", sharedMeOpen);
+			}
+			String sharedByVal = ureq.getParameter("sharedByOpen");
+			if (StringHelper.containsNonWhitespace(sharedByVal)) {
+				sharedByOpen = Boolean.valueOf(sharedByVal);
+				flc.contextPut("sharedByOpen", sharedByOpen);
+			}
+		} else if (source == newMapLink) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			if (templateBinder != null) {
 				if (copyBinder == null) {

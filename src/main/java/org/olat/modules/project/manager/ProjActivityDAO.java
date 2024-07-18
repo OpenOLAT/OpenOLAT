@@ -157,6 +157,9 @@ public class ProjActivityDAO {
 			sb.append(" inner join fetch activity.doer doer");
 			sb.append(" inner join fetch doer.user user");
 		}
+		if (searchParams.isFetchArtefactReference()) {
+			sb.append(" left join fetch activity.artefactReference artefactReference");
+		}
 		appendQuery(searchParams, sb);
 		if (maxResults > 0) {
 			sb.orderBy().append("activity.creationDate desc");

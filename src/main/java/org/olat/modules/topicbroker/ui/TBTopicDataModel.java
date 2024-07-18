@@ -70,7 +70,7 @@ public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> {
 		case maxParticipants: return row.getMaxParticipants();
 		case enrolled: return row.getEnrolledString();
 		case waitingList: return row.getWaitingListString();
-		case groupRestrictions: return row.getGroupRestrictions();
+		case groupRestrictions: return row.getGroupRestrictionLinks();
 		case createdBy: return row.getCreatedByDisplayname();
 		case upDown: return row.getUpDown();
 		case tools: return row.getToolsLink();
@@ -85,7 +85,7 @@ public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> {
 		maxParticipants("topic.participants.max"),
 		enrolled("selection.status.enrolled"),
 		waitingList("selection.status.waiting.list"),
-		groupRestrictions("topic.group.restrictions"),
+		groupRestrictions("topic.group.restriction"),
 		createdBy("created.by"),
 		upDown("updown"),
 		tools("tools");

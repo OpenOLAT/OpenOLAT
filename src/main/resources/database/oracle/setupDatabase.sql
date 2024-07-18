@@ -4613,6 +4613,7 @@ create table o_tb_topic (
    t_description varchar(4000),
    t_min_participants number(20),
    t_max_participants number(20),
+   t_group_restrictions varchar(1024),
    t_sort_order number(20) not null,
    t_deleted_date date,
    fk_deleted_by number(20),

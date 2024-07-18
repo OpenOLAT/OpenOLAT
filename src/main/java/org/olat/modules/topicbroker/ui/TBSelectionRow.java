@@ -20,6 +20,7 @@
 package org.olat.modules.topicbroker.ui;
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -86,6 +87,10 @@ public class TBSelectionRow {
 
 	public Integer getMaxParticipants() {
 		return topic != null? topic.getMaxParticipants(): null;
+	}
+	
+	public Set<Long> getGroupRestrictionKeys() {
+		return topic != null? topic.getGroupRestrictionKeys(): null;
 	}
 	
 	public String getTitleAbbr() {

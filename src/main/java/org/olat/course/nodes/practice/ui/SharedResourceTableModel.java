@@ -28,7 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 /**
  * 
  * Initial date: 6 mai 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SharedResourceTableModel extends DefaultFlexiTableDataModel<SharedResourceRow>
@@ -53,12 +53,11 @@ implements SortableFlexiTableDataModel<SharedResourceRow> {
 
 	@Override
 	public Object getValueAt(SharedResourceRow row, int col) {
-		switch(COLS[col]) {
-			case id: return row.getKey();
-			case icon: return getIcon(row);
-			case name: return row.getName();
-			default: return "ERROR";
-		}
+		return switch (COLS[col]) {
+			case id -> row.getKey();
+			case icon -> getIcon(row);
+			case name -> row.getName();
+		};
 	}
 	
 	public String getIcon(SharedResourceRow resource) {

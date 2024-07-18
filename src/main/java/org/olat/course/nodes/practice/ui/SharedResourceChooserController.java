@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -36,6 +35,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -56,7 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 6 mai 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SharedResourceChooserController extends FormBasicController {
@@ -108,6 +111,28 @@ public class SharedResourceChooserController extends FormBasicController {
 		
 		selectButton = uifactory.addFormLink("select", formLayout, Link.BUTTON);
 		tableEl.addBatchButton(selectButton);
+
+		initFilterTabs(ureq);
+	}
+
+	private void initFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithFilters("all", translate("filter.all"),
+				TabSelectionBehavior.clear, List.of());
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+
+		FlexiFiltersTab myListsTab = FlexiFiltersTabFactory.tabWithFilters("myLists", translate("filter.my.lists"),
+				TabSelectionBehavior.clear, List.of());
+		tabs.add(myListsTab);
+
+		FlexiFiltersTab mySharesTab = FlexiFiltersTabFactory.tabWithFilters("myShares", translate("filter.my.shares"),
+				TabSelectionBehavior.clear, List.of());
+		tabs.add(mySharesTab);
+
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 	
 	private void loadModel() {
@@ -122,7 +147,7 @@ public class SharedResourceChooserController extends FormBasicController {
 
 		List<Pool> pools = qPoolService.getPools(getIdentity(), roles).stream()
 				.sorted(Comparator.comparing(Pool::getName))
-				.collect(Collectors.toList());
+				.toList();
 		for(Pool pool:pools) {
 			if(!isInUse(pool)) {
 				rows.add(new SharedResourceRow(pool));
@@ -131,15 +156,27 @@ public class SharedResourceChooserController extends FormBasicController {
 
 		List<BusinessGroup> businessGroups = qPoolService.getResourcesWithSharedItems(getIdentity()).stream()
 				.sorted(Comparator.comparing(BusinessGroup::getName))
-				.collect(Collectors.toList());
+				.toList();
 		for(BusinessGroup businessGroup:businessGroups) {
 			if(!isInUse(businessGroup)) {
 				rows.add(new SharedResourceRow(businessGroup));
 			}
 		}
+
+		applyFilters(rows);
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+
+	private void applyFilters(List<SharedResourceRow> rows) {
+		FlexiFiltersTab selectedFilterTab = tableEl.getSelectedFilterTab();
+
+		if (selectedFilterTab.getId().equals("myLists")) {
+			rows.removeIf(r -> r.getCollection() == null);
+		} else if (selectedFilterTab.getId().equals("myShares")) {
+			rows.removeIf(r -> r.getBusinessGroup() == null);
+		}
 	}
 	
 	private boolean isInUse(QuestionItemCollection collection) {
@@ -163,11 +200,12 @@ public class SharedResourceChooserController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent
+			if(event instanceof SelectionEvent se
 					&& ("select".equals(event.getCommand()) || FlexiTableElement.ROW_SELECT_EVENT.equals(event.getCommand()))) {
-				SelectionEvent se = (SelectionEvent)event;
 				doSelect(tableModel.getObject(se.getIndex()));
 				fireEvent(ureq, Event.DONE_EVENT);
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				loadModel();
 			}
 		} else if(selectButton == source) {
 			if(doMultiSelect()) {

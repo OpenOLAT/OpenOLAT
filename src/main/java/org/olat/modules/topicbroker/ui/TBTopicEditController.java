@@ -20,6 +20,7 @@
 package org.olat.modules.topicbroker.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,24 +32,29 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBBrokerRef;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldType;
+import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +77,7 @@ public class TBTopicEditController extends FormBasicController {
 	private FormLayoutContainer participantsCont;
 	private TextElement minParticipantsEl;
 	private TextElement maxParticipantsEl;
+	private MultipleSelectionElement groupRestrictionsEl;
 	private FileElement teaserImageEl;
 	private FileElement teaserVideoEl;
 	private List<TextAreaElement> customTextEls;
@@ -78,15 +85,20 @@ public class TBTopicEditController extends FormBasicController {
 	
 	private final TBBrokerRef broker;
 	private TBTopic topic;
+	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
 	private int counter = 0;
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
-	protected TBTopicEditController(UserRequest ureq, WindowControl wControl, TBBrokerRef broker, TBTopic topic) {
+	protected TBTopicEditController(UserRequest ureq, WindowControl wControl, TBBrokerRef broker, TBTopic topic,
+			TBGroupRestrictionCandidates groupRestrictionCandidates) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.broker = broker;
 		this.topic = topic;
+		this.groupRestrictionCandidates = groupRestrictionCandidates;
 		initForm(ureq);
 	}
 
@@ -126,6 +138,33 @@ public class TBTopicEditController extends FormBasicController {
 				: null;
 		maxParticipantsEl = uifactory.addTextElement("topic.participants.max", null, 320, maxParticipants, participantsCont);
 		maxParticipantsEl.setDisplaySize(100);
+		
+		
+		Set<Long> businessGroupKeys = new HashSet<>();
+		if (groupRestrictionCandidates.getBusinessGroupKeys() != null) {
+			businessGroupKeys.addAll(groupRestrictionCandidates.getBusinessGroupKeys());
+		}
+		if (topic != null && topic.getGroupRestrictionKeys() != null) {
+			businessGroupKeys.addAll(topic.getGroupRestrictionKeys());
+		}
+		List<BusinessGroupShort> businessGroups = businessGroupService.loadShortBusinessGroups(businessGroupKeys);
+		if (!businessGroups.isEmpty()) {
+			SelectionValues businessGroupSV = new SelectionValues();
+			businessGroups.forEach(businessGroup -> businessGroupSV
+					.add(SelectionValues.entry(businessGroup.getKey().toString(), businessGroup.getName())));
+			
+			groupRestrictionsEl = uifactory.addCheckboxesDropdown("topic.group.restriction",
+					"topic.group.restriction", standardCont, businessGroupSV.keys(), businessGroupSV.values());
+			groupRestrictionsEl.setHelpTextKey("topic.group.restriction.help", null);
+			if (topic != null && topic.getGroupRestrictionKeys() != null) {
+				for (Long groupKey : topic.getGroupRestrictionKeys()) {
+					String key = groupKey.toString();
+					if (groupRestrictionsEl.getKeys().contains(key)) {
+						groupRestrictionsEl.select(key, true);
+					}
+				}
+			}
+		}
 		
 		teaserImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "topic.teaser.image", standardCont);
 		teaserImageEl.setMaxUploadSizeKB(2048, null, null);
@@ -327,6 +366,11 @@ public class TBTopicEditController extends FormBasicController {
 		topic.setDescription(descriptionEl.getValue());
 		topic.setMinParticipants(Integer.parseInt(minParticipantsEl.getValue()));
 		topic.setMaxParticipants(Integer.parseInt(maxParticipantsEl.getValue()));
+		Set<Long> groupRestrictionKeys = null;
+		if (groupRestrictionsEl != null && !groupRestrictionsEl.getSelectedKeys().isEmpty()) {
+			groupRestrictionKeys = groupRestrictionsEl.getSelectedKeys().stream().map(Long::valueOf).collect(Collectors.toSet());
+		}
+		topic.setGroupRestrictionKeys(groupRestrictionKeys);
 		topic = topicBrokerService.updateTopic(getIdentity(), topic);
 		
 		if (teaserImageEl.getUploadFile() != null) {

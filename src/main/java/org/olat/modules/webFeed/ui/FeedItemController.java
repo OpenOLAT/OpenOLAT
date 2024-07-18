@@ -37,6 +37,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
@@ -131,6 +132,8 @@ public class FeedItemController extends BasicController implements Activateable2
 		putInitialPanel(vcItem);
 		// do logging
 		ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_READ, getClass(), LoggingResourceable.wrap(item));
+
+		addToHistory(ureq, OresHelper.createOLATResourceableInstance("FeedItem", item.getKey()), null);
 	}
 
 	@Override

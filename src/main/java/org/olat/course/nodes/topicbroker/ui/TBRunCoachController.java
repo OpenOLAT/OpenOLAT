@@ -39,9 +39,11 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.course.nodes.topicbroker.TBCourseNodeSecurityCallbackFactory;
+import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeGroupRestrictionCandidates;
 import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeParticipantCandidates;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TopicBrokerService;
@@ -74,6 +76,7 @@ public class TBRunCoachController extends BasicController implements Activateabl
 	private final TBBroker broker;
 	private final TBSecurityCallback secCallback;
 	private final TBParticipantCandidates participantCandidates;
+	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
@@ -89,6 +92,8 @@ public class TBRunCoachController extends BasicController implements Activateabl
 		participantCandidates = new TopicBrokerCourseNodeParticipantCandidates(
 				getIdentity(), userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
 				userCourseEnv.isAdmin());
+		groupRestrictionCandidates = new TopicBrokerCourseNodeGroupRestrictionCandidates(
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		
 		mainVC = createVelocityContainer("segments");
 		putInitialPanel(mainVC);
@@ -147,7 +152,7 @@ public class TBRunCoachController extends BasicController implements Activateabl
 	private void doOpenTopics(UserRequest ureq) {
 		if (topicsCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_TOPICS), null);
-			topicsCtrl = new TBTopicSelectionsController(ureq, bwControl, broker, secCallback, participantCandidates);
+			topicsCtrl = new TBTopicSelectionsController(ureq, bwControl, broker, secCallback, participantCandidates, groupRestrictionCandidates);
 			listenTo(topicsCtrl);
 		} else {
 			topicsCtrl.reload(ureq);
