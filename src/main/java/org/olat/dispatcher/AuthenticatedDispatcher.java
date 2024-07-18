@@ -333,14 +333,27 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				requestUri = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
 			}
 			try(StringOutput clientSideWindowCheck = new StringOutput()) {
-				clientSideWindowCheck.append("<!DOCTYPE html>\n<html><head><title>Reload</title><script>")
-					.append("window.location.replace('").append(requestUri).append("?");
-				if(StringHelper.containsNonWhitespace(newWindow)) {
-					clientSideWindowCheck.append("new-window=").append(newWindow).append("&");
+				clientSideWindowCheck.append("<!DOCTYPE html>\n<html><head><title>Reload</title>");
+				
+				if (requestUri.contains("\"") || requestUri.contains("'")) {
+					// Formally those characters are not allowed in URI: "<>^`{|}
+					// Only scan for the most scary ones, others might be used somewhere
+					String escapedRequest = StringHelper.escapeJavaScript(requestUri);
+					clientSideWindowCheck.append("</head><body><h1>Error in URL</h1>")
+					.append("<p>Can not redirect to this URL as it contains invalid elements</p>")
+					.append("<p><b>Invalid URL:</b> ").append(escapedRequest)
+					.append("</p></body>");
+					log.warn("Invalid URL, maybe XSS attempt. URL::" + escapedRequest);
+				} else {
+					clientSideWindowCheck.append("<script>window.location.replace(\"").append(requestUri).append("?");
+					if(StringHelper.containsNonWhitespace(newWindow)) {
+						clientSideWindowCheck.append("new-window=").append(newWindow).append("&");
+					}
+					clientSideWindowCheck
+					.append("oow=\" + window.name").append(");</script></head><body></body>");
 				}
-				clientSideWindowCheck
-					.append("oow=' + window.name").append(");")
-					.append("</script></head><body></body></html>");
+				
+				clientSideWindowCheck.append("</html>");
 				ServletUtil.serveStringResource(ureq.getHttpResp(), clientSideWindowCheck);
 			} catch(IOException e) {
 				log.error("", e);
