@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
@@ -66,6 +67,8 @@ public interface TopicBrokerService {
 	public List<TBParticipant> getParticipants(TBParticipantSearchParams participantSearchParams);
 	
 	public Set<Long> filterMembership(IdentityRef identity, Collection<Long> groupKeys);
+
+	public List<TBGroupRestrictionInfo> getGroupRestrictionInfos(Translator translator, Set<Long> businessGroupKeys);
 
 	public TBTopic createTopic(Identity doer, TBBrokerRef broker);
 	

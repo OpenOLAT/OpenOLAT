@@ -27,9 +27,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBCustomField;
+import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBTopic;
 
@@ -45,7 +45,7 @@ public class TBSelectionDetailController extends BasicController {
 	private final TBTopicDescriptionController descriptionCtrl;
 
 	protected TBSelectionDetailController(UserRequest ureq, WindowControl wControl, TBBroker broker,
-			TBParticipant participant, TBTopic topic, List<BusinessGroupShort> groupRestrictions,
+			TBParticipant participant, TBTopic topic, List<TBGroupRestrictionInfo> groupRestrictions,
 			List<TBCustomField> customFields) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("selection_detail");

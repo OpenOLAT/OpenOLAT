@@ -35,9 +35,8 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
+import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
@@ -59,12 +58,10 @@ public class TBTopicBulkGroupRestrictionController extends FormBasicController {
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 
 	protected TBTopicBulkGroupRestrictionController(UserRequest ureq, WindowControl wControl,
 			List<TBTopic> topics, TBGroupRestrictionCandidates groupRestrictionCandidates) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.topics = topics;
 		this.groupRestrictionCandidates = groupRestrictionCandidates;
 		
@@ -73,16 +70,20 @@ public class TBTopicBulkGroupRestrictionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (groupRestrictionCandidates.getBusinessGroupKeys() != null) {
-			List<BusinessGroupShort> businessGroupsAdd = businessGroupService.loadShortBusinessGroups(groupRestrictionCandidates.getBusinessGroupKeys());
-			if (!businessGroupsAdd.isEmpty()) {
-				SelectionValues businessGroupSV = new SelectionValues();
-				businessGroupsAdd.forEach(businessGroup -> businessGroupSV
-						.add(SelectionValues.entry(businessGroup.getKey().toString(), businessGroup.getName())));
-				
-				groupRestrictionsAddEl = uifactory.addCheckboxesDropdown("topics.bulk.group.restriction.add",
-						"topics.bulk.group.restriction.add", formLayout, businessGroupSV.keys(), businessGroupSV.values());
-			}
+		if (groupRestrictionCandidates.getBusinessGroupKeys() != null && !groupRestrictionCandidates.getBusinessGroupKeys().isEmpty()) {
+			List<TBGroupRestrictionInfo> groupInfoAdd = topicBrokerService
+					.getGroupRestrictionInfos(getTranslator(), groupRestrictionCandidates.getBusinessGroupKeys());
+			SelectionValues businessGroupSV = new SelectionValues();
+			groupInfoAdd.stream()
+					.sorted((i1, i2) -> i1.getGroupName().compareToIgnoreCase(i2.getGroupName()))
+					.forEach(groupInfo -> businessGroupSV
+							.add(SelectionValues.entry(groupInfo.getGroupKey().toString(), groupInfo.getGroupName())));
+			
+			groupRestrictionsAddEl = uifactory.addCheckboxesDropdown("topics.bulk.group.restriction.add",
+					"topics.bulk.group.restriction.add", formLayout, businessGroupSV.keys(), businessGroupSV.values());
+		} else {
+			uifactory.addStaticTextElement("topics.bulk.group.restriction.add", "topics.bulk.group.restriction.add",
+					translate("topic.group.restriction.no.candidates"), formLayout);
 		}
 		
 		Set<Long> allGroupRestrictionKeys = topics.stream()
@@ -90,16 +91,20 @@ public class TBTopicBulkGroupRestrictionController extends FormBasicController {
 			.filter(Objects::nonNull)
 			.flatMap(Set::stream)
 			.collect(Collectors.toSet());
-		
-		
-		List<BusinessGroupShort> businessGroupsRemove = businessGroupService.loadShortBusinessGroups(allGroupRestrictionKeys);
-		if (!businessGroupsRemove.isEmpty()) {
+		if (!allGroupRestrictionKeys.isEmpty()) {
+			List<TBGroupRestrictionInfo> groupInfoRemove = topicBrokerService
+					.getGroupRestrictionInfos(getTranslator(), allGroupRestrictionKeys);
 			SelectionValues businessGroupSV = new SelectionValues();
-			businessGroupsRemove.forEach(businessGroup -> businessGroupSV
-					.add(SelectionValues.entry(businessGroup.getKey().toString(), businessGroup.getName())));
+			groupInfoRemove.stream()
+					.sorted((i1, i2) -> i1.getGroupName().compareToIgnoreCase(i2.getGroupName()))
+					.forEach(businessGroup -> businessGroupSV.add(SelectionValues
+							.entry(businessGroup.getGroupKey().toString(), businessGroup.getGroupName())));
 			
 			groupRestrictionsRemoveEl = uifactory.addCheckboxesDropdown("topics.bulk.group.restriction.remove",
 					"topics.bulk.group.restriction.remove", formLayout, businessGroupSV.keys(), businessGroupSV.values());
+		} else {
+			uifactory.addStaticTextElement("topics.bulk.group.restriction.remove", "topics.bulk.group.restriction.remove",
+					translate("topic.group.restriction.no.candidates"), formLayout);
 		}
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

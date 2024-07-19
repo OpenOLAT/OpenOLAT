@@ -20,10 +20,12 @@
 package org.olat.modules.topicbroker.manager;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -33,6 +35,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
@@ -40,6 +43,8 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeParticipantCandidates;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.modules.topicbroker.TBAuditLog;
@@ -54,6 +59,7 @@ import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBEnrollmentStats;
+import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantRef;
 import org.olat.modules.topicbroker.TBParticipantSearchParams;
@@ -66,6 +72,7 @@ import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.model.TBBrokerImpl;
 import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionImpl;
 import org.olat.modules.topicbroker.model.TBCustomFieldImpl;
+import org.olat.modules.topicbroker.model.TBGroupRestrictionInfoImpl;
 import org.olat.modules.topicbroker.model.TBSelectionImpl;
 import org.olat.modules.topicbroker.model.TBTopicImpl;
 import org.olat.modules.topicbroker.ui.events.TBBrokerChangedEvent;
@@ -105,6 +112,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	private Coordinator coordinator;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
@@ -343,6 +352,28 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 				.stream()
 				.map(BusinessGroup::getKey)
 				.collect(Collectors.toSet());
+	}
+	
+	@Override
+	public List<TBGroupRestrictionInfo> getGroupRestrictionInfos(Translator translator, Set<Long> businessGroupKeys) {
+		if (businessGroupKeys == null || businessGroupKeys.isEmpty()) {
+			return List.of();
+		}
+		
+		Map<Long, String> groupKeyToName = businessGroupService.loadShortBusinessGroups(businessGroupKeys).stream()
+				.collect(Collectors.toMap(BusinessGroupShort::getKey, BusinessGroupShort::getName));
+		
+		List<TBGroupRestrictionInfo> infos = new ArrayList<>(businessGroupKeys.size());
+		for (Long key : businessGroupKeys) {
+			String groupName = groupKeyToName.get(key);
+			if (groupName != null) {
+				infos.add(new TBGroupRestrictionInfoImpl(key, groupName, true));
+			} else {
+				infos.add(new TBGroupRestrictionInfoImpl(key, translator.translate("topic.group.restriction.not.available", String.valueOf(key)), false));
+			}
+		}
+		
+		return infos;
 	}
 
 	@Override

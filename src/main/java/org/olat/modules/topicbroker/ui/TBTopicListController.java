@@ -59,6 +59,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -101,6 +102,7 @@ import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
+import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSecurityCallback;
@@ -137,6 +139,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private static final String CMD_DOWN = "down";
 	private static final String CMD_EDIT_ENROLLMENTS = "edit.enrollments";
 	private static final String CMD_DELETE = "delete";
+	private static final String CMD_DETAILS = "details";
 	private static final String CMD_OPEN_GROUP = "open.group";
 	private static final String CMD_OPEN_FILE = "open.file";
 	
@@ -167,7 +170,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private final TBSecurityCallback secCallback;
 	private final TBParticipantCandidates participantCandidates;
 	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
-	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
+	private final List<TBCustomFieldDefinition> customFieldDefinitions;
 	private List<Long> detailsOpenTopicKeys;
 	private List<TBTopicDetailController> detailCtrls = new ArrayList<>(1);
 	private final Roles roles;
@@ -196,8 +199,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		
 		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
 		definitionSearchParams.setBroker(broker);
-		customFieldDefinitionsInTable = topicBrokerService.getCustomFieldDefinitions(definitionSearchParams).stream()
-				.filter(TBCustomFieldDefinition::isDisplayInTable)
+		customFieldDefinitions = topicBrokerService.getCustomFieldDefinitions(definitionSearchParams).stream()
 				.sorted((d1, d2) -> Integer.compare(d1.getSortOrder(), d2.getSortOrder()))
 				.toList();
 		
@@ -287,8 +289,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.identifier));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.identifier, CMD_DETAILS));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.title, CMD_DETAILS));
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(TopicCols.minParticipants);
 		minParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -316,9 +318,11 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.createdBy));
 		
 		int columnIndex = TBTopicDataModel.CUSTOM_FIELD_OFFSET;
-		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitionsInTable) {
+		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
+			columnModel.setColumnKey(customFieldDefinition.getIdentifier());
 			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
+			columnModel.setDefaultVisible(customFieldDefinition.isDisplayInTable());
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		
@@ -425,19 +429,16 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				.filter(Objects::nonNull)
 				.flatMap(Set::stream)
 				.collect(Collectors.toSet());
-		Map<Long, BusinessGroupShort> groupKeyToGroup = businessGroupService
-				.loadShortBusinessGroups(allGroupRestrictionKeys)
+		Map<Long, TBGroupRestrictionInfo> groupKeyToGroup = topicBrokerService
+				.getGroupRestrictionInfos(getTranslator(), allGroupRestrictionKeys)
 				.stream()
-				.collect(Collectors.toMap(BusinessGroupShort::getKey, Function.identity()));
+				.collect(Collectors.toMap(TBGroupRestrictionInfo::getGroupKey, Function.identity()));
 		
 		for (TBTopicRow row: rows) {
 			forgeGroupRestrictionLinks(row, groupKeyToGroup);
-			
-			if (!customFieldDefinitionsInTable.isEmpty()) {
-				forgeCustomFields(
-						row,
-						topicToDefinitionToCustomFields.getOrDefault(row.getKey(), Map.of()));
-			}
+			forgeCustomFields(
+					row,
+					topicToDefinitionToCustomFields.getOrDefault(row.getKey(), Map.of()));
 			forgeToolsLink(row);
 		}
 		
@@ -598,29 +599,33 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				&& !StringHelper.containsNonWhitespace(tableEl.getQuickSearchString());
 	}
 	
-	private void forgeGroupRestrictionLinks(TBTopicRow row, Map<Long, BusinessGroupShort> groupKeyToGroup) {
+	private void forgeGroupRestrictionLinks(TBTopicRow row, Map<Long, TBGroupRestrictionInfo> groupKeyToGroupInfo) {
 		if (row.getGroupRestrictionKeys() == null || row.getGroupRestrictionKeys().isEmpty()) {
 			return;
 		}
 		
-		List<BusinessGroupShort> groupRestrictions = new ArrayList<>(row.getGroupRestrictionKeys().size());
+		List<TBGroupRestrictionInfo> groupRestrictions = new ArrayList<>(row.getGroupRestrictionKeys().size());
 		for (Long groupKey : row.getGroupRestrictionKeys()) {
-			BusinessGroupShort businessGroup = groupKeyToGroup.get(groupKey);
-			if (businessGroup != null) {
-				groupRestrictions.add(businessGroup);
+			TBGroupRestrictionInfo groupInfo = groupKeyToGroupInfo.get(groupKey);
+			if (groupInfo != null) {
+				groupRestrictions.add(groupInfo);
 			}
 		}
-		Collections.sort(groupRestrictions, (g1, g2) -> g1.getName().compareToIgnoreCase(g2.getName()));
+		Collections.sort(groupRestrictions, (g1, g2) -> g1.getGroupName().compareToIgnoreCase(g2.getGroupName()));
 		row.setGroupRestrictions(groupRestrictions);
 		
 		FormItemList links = new FormItemList(groupRestrictions.size());
-		for (BusinessGroupShort group : groupRestrictions) {
+		for (TBGroupRestrictionInfo groupInfo : groupRestrictions) {
 			FormLink link = uifactory.addFormLink("grp_" + counter++, CMD_OPEN_GROUP, null, null, flc, Link.NONTRANSLATED);
-			link.setI18nKey(StringHelper.escapeHtml(group.getName()));
+			link.setI18nKey(StringHelper.escapeHtml(groupInfo.getGroupName()));
 			link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-			link.setUrl(BusinessControlFactory.getInstance()
-					.getAuthenticatedURLFromBusinessPathString("[BusinessGroup:" + group.getKey() + "]"));
-			link.setUserObject(group.getKey());
+			if (groupInfo.isGroupAvailable()) {
+				link.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathString("[BusinessGroup:" + groupInfo.getGroupKey() + "]"));
+			} else {
+				link.setEnabled(false);
+			}
+			link.setUserObject(groupInfo.getGroupKey());
 			links.add(link);
 		}
 		row.setGroupRestrictionLinks(links);
@@ -628,9 +633,9 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	
 	private void forgeCustomFields(TBTopicRow row, Map<Long, TBCustomField> definitionKeyToCustomField) {
 		row.setCustomFields(new ArrayList<>(definitionKeyToCustomField.values()));
-		List<FormItem> customFieldItems = new ArrayList<>(customFieldDefinitionsInTable.size());
+		List<FormItem> customFieldItems = new ArrayList<>(customFieldDefinitions.size());
 		
-		for (TBCustomFieldDefinition definition : customFieldDefinitionsInTable) {
+		for (TBCustomFieldDefinition definition : customFieldDefinitions) {
 			if (TBCustomFieldType.text == definition.getType()) {
 				TBCustomField customField = definitionKeyToCustomField.get(definition.getKey());
 				if (customField != null && StringHelper.containsNonWhitespace(customField.getText())) {
@@ -738,7 +743,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				.map(i -> dataModel.getObject(i))
 				.filter(Objects::nonNull)
 				.map(TBTopicRow::getKey)
-				.toList();
+				.collect(Collectors.toList());
 	}
 	
 	@Override
@@ -845,7 +850,18 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		} else if (bulkGroupRestrictionButton == source) {
 			doBulkGroupResriction(ureq);
 		} else if (source == tableEl) {
-			if (event instanceof DetailsToggleEvent) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				TBTopicRow row = dataModel.getObject(se.getIndex());
+				if (CMD_DETAILS.equals(cmd)) {
+					if (detailsOpenTopicKeys == null) {
+						detailsOpenTopicKeys = new ArrayList<>(1);
+					}
+					detailsOpenTopicKeys.add(row.getKey());
+					loadModel(ureq);
+				}
+			} else if (event instanceof DetailsToggleEvent) {
 				DetailsToggleEvent dte = (DetailsToggleEvent)event;
 				if (dte.isVisible()) {
 					TBTopicRow row = dataModel.getObject(dte.getRowIndex());

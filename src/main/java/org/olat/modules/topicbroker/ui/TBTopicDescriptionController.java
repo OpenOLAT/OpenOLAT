@@ -42,9 +42,9 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBCustomFieldType;
+import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +69,7 @@ public class TBTopicDescriptionController extends BasicController {
 	private DocEditorService docEditorService;
 
 	protected TBTopicDescriptionController(UserRequest ureq, WindowControl wControl, TBTopic topic,
-			List<BusinessGroupShort> groupRestrictions, List<TBCustomField> customFields) {
+			List<TBGroupRestrictionInfo> groupRestrictions, List<TBCustomField> customFields) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("topic_description");
 		putInitialPanel(mainVC);
@@ -78,15 +78,20 @@ public class TBTopicDescriptionController extends BasicController {
 		mainVC.contextPut("participantRange", TBUIFactory.getParticipantRange(getTranslator(), topic));
 		
 		if (groupRestrictions != null && !groupRestrictions.isEmpty()) {
+			Collections.sort(groupRestrictions,  (i1, i2) -> i1.getGroupName().compareToIgnoreCase(i2.getGroupName()));
 			List<String> groupLinkNames = new ArrayList<>(groupRestrictions.size());
-			for (BusinessGroupShort group : groupRestrictions) {
-				Link link = LinkFactory.createCustomLink("grp_" + group.getKey(), CMD_OPEN_GROUP, null,
+			for (TBGroupRestrictionInfo groupInfo : groupRestrictions) {
+				Link link = LinkFactory.createCustomLink("grp_" + groupInfo.getGroupKey(), CMD_OPEN_GROUP, null,
 						Link.LINK + Link.NONTRANSLATED, mainVC, this);
-				link.setCustomDisplayText(StringHelper.escapeHtml(group.getName()));
+				link.setCustomDisplayText(StringHelper.escapeHtml(groupInfo.getGroupName()));
 				link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-				link.setUrl(BusinessControlFactory.getInstance()
-						.getAuthenticatedURLFromBusinessPathString("[BusinessGroup:" + group.getKey() + "]"));
-				link.setUserObject(group.getKey());
+				if (groupInfo.isGroupAvailable()) {
+					link.setUrl(BusinessControlFactory.getInstance()
+							.getAuthenticatedURLFromBusinessPathString("[BusinessGroup:" + groupInfo.getGroupKey() + "]"));
+				} else {
+					link.setEnabled(false);
+				}
+				link.setUserObject(groupInfo.getGroupKey());
 				groupLinkNames.add(link.getComponentName());
 			}
 			mainVC.contextPut("groups", groupLinkNames);
