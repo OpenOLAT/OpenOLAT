@@ -368,33 +368,38 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	}
 
 	@Override
-	public TBTopic updateTopic(Identity doer, TBTopic topic) {
+	public TBTopic updateTopic(Identity doer, TBTopicRef topic, String identifier, String title, String description,
+			Integer minParticipants, Integer maxParticipants, Set<Long> groupRestricionKeys){
 		TBTopic reloadedTopic = getTopic(topic);
 		if (reloadedTopic == null) {
-			return topic;
+			return null;
 		}
 		
 		String before = TopicBrokerXStream.toXml(reloadedTopic);
 		
 		boolean contentChanged = false;
-		if (!Objects.equals(reloadedTopic.getIdentifier(), topic.getIdentifier())) {
-			reloadedTopic.setIdentifier(topic.getIdentifier());
+		if (!Objects.equals(reloadedTopic.getIdentifier(), identifier)) {
+			reloadedTopic.setIdentifier(identifier);
 			contentChanged = true;
 		}
-		if (!Objects.equals(reloadedTopic.getTitle(), topic.getTitle())) {
-			reloadedTopic.setTitle(topic.getTitle());
+		if (!Objects.equals(reloadedTopic.getTitle(), title)) {
+			reloadedTopic.setTitle(title);
 			contentChanged = true;
 		}
-		if (!Objects.equals(reloadedTopic.getDescription(), topic.getDescription())) {
-			reloadedTopic.setDescription(topic.getDescription());
+		if (!Objects.equals(reloadedTopic.getDescription(), description)) {
+			reloadedTopic.setDescription(description);
 			contentChanged = true;
 		}
-		if (!Objects.equals(reloadedTopic.getMinParticipants(), topic.getMinParticipants())) {
-			reloadedTopic.setMinParticipants(topic.getMinParticipants());
+		if (!Objects.equals(reloadedTopic.getMinParticipants(), minParticipants)) {
+			reloadedTopic.setMinParticipants(minParticipants);
 			contentChanged = true;
 		}
-		if (!Objects.equals(equalsString(reloadedTopic.getGroupRestrictionKeys()), equalsString(topic.getGroupRestrictionKeys()))) {
-			reloadedTopic.setGroupRestrictionKeys(topic.getGroupRestrictionKeys());
+		if (!Objects.equals(reloadedTopic.getMaxParticipants(), maxParticipants)) {
+			reloadedTopic.setMaxParticipants(maxParticipants);
+			contentChanged = true;
+		}
+		if (!Objects.equals(equalsString(reloadedTopic.getGroupRestrictionKeys()), equalsString(groupRestricionKeys))) {
+			reloadedTopic.setGroupRestrictionKeys(groupRestricionKeys);
 			contentChanged = true;
 		}
 		
@@ -402,7 +407,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			reloadedTopic = topicDao.updateTopic(reloadedTopic);
 			
 			String after = TopicBrokerXStream.toXml(reloadedTopic);
-			auditLogDao.create(TBAuditLog.Action.topicUpdateContent, before, after, doer, topic);
+			auditLogDao.create(TBAuditLog.Action.topicUpdateContent, before, after, doer, reloadedTopic);
 		}
 		
 		return reloadedTopic;
@@ -698,6 +703,11 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	
 	private void createOrUpdateCustomField(Identity doer, TBCustomFieldDefinitionRef definition, TBTopicRef topic,
 			String text, VFSMetadata vfsMetadata, String filename) {
+		TBCustomFieldDefinition reloadedDefinition = getCustomFieldDefinition(definition);
+		if (reloadedDefinition == null) {
+			return;
+		}
+		
 		TBCustomField reloadedCustomField = getCustomField(definition, topic, false);
 		if (reloadedCustomField == null) {
 			reloadedCustomField = createCustomFile(doer, definition, topic);

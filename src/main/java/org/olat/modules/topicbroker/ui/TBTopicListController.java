@@ -82,6 +82,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.gui.util.CSSHelper;
@@ -113,6 +114,9 @@ import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBTopicDataModel.TopicCols;
 import org.olat.modules.topicbroker.ui.events.TBTopicEditEnrollmentsEvent;
 import org.olat.modules.topicbroker.ui.events.TBTopicEditEvent;
+import org.olat.modules.topicbroker.ui.wizard.ImportContext;
+import org.olat.modules.topicbroker.ui.wizard.ImportInputStep;
+import org.olat.modules.topicbroker.ui.wizard.ImportTopicCallback;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -144,6 +148,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private FormLink createLink;
 	private DropdownItem addDropdown;
 	private FormLink importLink;
+	private FormLink bulkGroupRestrictionButton;
 	private TBTopicDataModel dataModel;
 	private FlexiTableElement tableEl;
 	private VelocityContainer detailsVC;
@@ -151,7 +156,9 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private CloseableModalController cmc;
 	private TBTopicEditController topicEditCtrl;
 	private TBTopicSelectionsEditController selectionsEditCtrl;
+	private TBTopicBulkGroupRestrictionController bulkGroupRestrictionCtrl;
 	private Controller docEditorCtrl;
+	private StepsMainRunController wizard;
 	private ConfirmationController deleteConfirmationCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ToolsController toolsCtrl;
@@ -162,6 +169,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
 	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
 	private List<Long> detailsOpenTopicKeys;
+	private List<TBTopicDetailController> detailCtrls = new ArrayList<>(1);
 	private final Roles roles;
 	private int counter = 0;
 	
@@ -196,6 +204,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		roles = ureq.getUserSession().getRoles();
 		
 		initForm(ureq);
+		initBulkLinks();
 		initFilters();
 		loadModel(ureq);
 		updateUI();
@@ -273,7 +282,6 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			
 			importLink = uifactory.addFormLink("topics.import", formLayout, Link.LINK);
 			importLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
-			importLink.setEnabled(false);
 			addDropdown.addElement(importLink);
 		}
 		
@@ -328,6 +336,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-" + broker.getKey());
 		tableEl.setSearchEnabled(true);
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 		
 		String page = velocity_root + "/details.html";
 		detailsVC = new VelocityContainer("details_" + counter++, "vc_details", page, getTranslator(), this);
@@ -337,6 +347,11 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		if (isShowSelections()) {
 			initFilterTabs(ureq);
 		}
+	}
+	
+	private void initBulkLinks() {
+		bulkGroupRestrictionButton = uifactory.addFormLink("topics.bulk.group.restriction", flc, Link.BUTTON);
+		tableEl.addBatchButton(bulkGroupRestrictionButton);
 	}
 
 	public void reload(UserRequest ureq) {
@@ -432,6 +447,11 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		tableEl.reset(false, false, true);
 		
 		tableEl.collapseAllDetails();
+		detailCtrls.forEach(ctrl -> {
+			flc.remove(ctrl.getInitialFormItem());
+			removeAsListenerAndDispose(ctrl);
+		});
+		detailCtrls.clear();
 		if (detailsOpenTopicKeys != null && !detailsOpenTopicKeys.isEmpty()) {
 			dataModel.getObjects().stream()
 				.filter(row -> detailsOpenTopicKeys.contains(row.getKey()))
@@ -703,6 +723,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				row.getTopic(), row.getGroupRestrictions(), row.getCustomFields(), secCallback, row.getNumEnrollments(),
 				row.getWaitingList());
 		listenTo(detailsCtrl);
+		detailCtrls.add(detailsCtrl);
 		// Add as form item to catch the events...
 		flc.add(detailsCtrl.getInitialFormItem());
 		
@@ -736,6 +757,14 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			loadModel(ureq);
 			cmc.deactivate();
 			cleanUp();
+		} else if (wizard == source) {
+			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					loadModel(ureq);
+				}
+				cleanUp();
+			}
 		} else if (deleteConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				doDelete(ureq, (TBTopicRef)deleteConfirmationCtrl.getUserObject());
@@ -749,6 +778,10 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				doEditSelections(ureq, teEvent.getTopic());
 			}
 		} else if (selectionsEditCtrl == source) {
+			loadModel(ureq);
+			cmc.deactivate();
+			cleanUp();
+		} else if (bulkGroupRestrictionCtrl == source) {
 			loadModel(ureq);
 			cmc.deactivate();
 			cleanUp();
@@ -771,6 +804,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(topicEditCtrl);
+		removeAsListenerAndDispose(bulkGroupRestrictionCtrl);
+		removeAsListenerAndDispose(wizard);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(selectionsEditCtrl);
 		removeAsListenerAndDispose(docEditorCtrl);
@@ -778,6 +813,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		topicEditCtrl = null;
+		bulkGroupRestrictionCtrl = null;
+		wizard = null;
 		deleteConfirmationCtrl = null;
 		selectionsEditCtrl = null;
 		docEditorCtrl = null;
@@ -803,6 +840,10 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			doEditTopic(ureq, null);
 		} else if (source == exportLink) {
 			doExport(ureq);
+		} else if (source == importLink) {
+			doImportTopics(ureq);
+		} else if (bulkGroupRestrictionButton == source) {
+			doBulkGroupResriction(ureq);
 		} else if (source == tableEl) {
 			if (event instanceof DetailsToggleEvent) {
 				DetailsToggleEvent dte = (DetailsToggleEvent)event;
@@ -859,7 +900,50 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		topicBrokerService.moveTopic(getIdentity(), topic, Direction.UP == direction);
 		loadModel(ureq);
 	}
+
+	private void doBulkGroupResriction(UserRequest ureq) {
+		guardModalController(bulkGroupRestrictionCtrl);
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			showWarning("topics.bulk.group.restriction.empty.selection");
+			return;
+		}
+		
+		List<TBTopic> selectedTopics = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(TBTopicRow::getTopic)
+				.filter(Objects::nonNull)
+				.toList();
+		if (selectedTopics.isEmpty()) {
+			showWarning("topics.bulk.group.restriction.empty.selection");
+			return;
+		}
+		
+		if (groupRestrictionCandidates.getBusinessGroupKeys().isEmpty() && !isAnyGroupRestricionAvailable(selectedTopics)) {
+			showWarning("topics.bulk.group.restriction.empty.selection");
+			return;
+		}
+		
+		bulkGroupRestrictionCtrl = new TBTopicBulkGroupRestrictionController(ureq, getWindowControl(), selectedTopics, groupRestrictionCandidates);
+		listenTo(bulkGroupRestrictionCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkGroupRestrictionCtrl.getInitialComponent(),
+				true, translate("topics.bulk.group.restriction.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
 	
+	private boolean isAnyGroupRestricionAvailable(List<TBTopic> topics) {
+		for (TBTopic topic : topics) {
+			if (topic.getGroupRestrictionKeys() != null && !topic.getGroupRestrictionKeys().isEmpty()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private void doConfirmDelete(UserRequest ureq, TBTopicRef topic) {
 		if (guardModalController(deleteConfirmationCtrl)) return;
 		
@@ -947,6 +1031,14 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private void doExport(UserRequest ureq) {
 		MediaResource resource = topicBrokerExportService.createMediaResource(ureq, broker, participantCandidates);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private void doImportTopics(UserRequest ureq) {
+		removeAsListenerAndDispose(wizard);
+		wizard = new StepsMainRunController(ureq, getWindowControl(), new ImportInputStep(ureq, new ImportContext(broker, groupRestrictionCandidates)),
+				new ImportTopicCallback(getIdentity(), topicBrokerExportService), null, translate("topics.import"), "");
+		listenTo(wizard);
+		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());
 	}
 	
 	private void doOpenTools(UserRequest ureq, TBTopicRow row, FormLink link) {

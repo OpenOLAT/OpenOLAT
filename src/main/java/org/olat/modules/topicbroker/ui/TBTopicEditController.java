@@ -361,17 +361,14 @@ public class TBTopicEditController extends FormBasicController {
 			return;
 		}
 		
-		topic.setIdentifier(identifierEl.getValue());
-		topic.setTitle(titleEl.getValue());
-		topic.setDescription(descriptionEl.getValue());
-		topic.setMinParticipants(Integer.parseInt(minParticipantsEl.getValue()));
-		topic.setMaxParticipants(Integer.parseInt(maxParticipantsEl.getValue()));
 		Set<Long> groupRestrictionKeys = null;
 		if (groupRestrictionsEl != null && !groupRestrictionsEl.getSelectedKeys().isEmpty()) {
 			groupRestrictionKeys = groupRestrictionsEl.getSelectedKeys().stream().map(Long::valueOf).collect(Collectors.toSet());
 		}
 		topic.setGroupRestrictionKeys(groupRestrictionKeys);
-		topic = topicBrokerService.updateTopic(getIdentity(), topic);
+		topic = topicBrokerService.updateTopic(getIdentity(), topic, identifierEl.getValue(), titleEl.getValue(),
+				descriptionEl.getValue(), Integer.parseInt(minParticipantsEl.getValue()),
+				Integer.parseInt(maxParticipantsEl.getValue()), groupRestrictionKeys);
 		
 		if (teaserImageEl.getUploadFile() != null) {
 			topicBrokerService.storeTopicLeaf(getIdentity(), topic, TopicBrokerService.TOPIC_TEASER_IMAGE, teaserImageEl.getUploadFile(), teaserImageEl.getUploadFileName());

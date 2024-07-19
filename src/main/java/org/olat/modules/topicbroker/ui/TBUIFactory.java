@@ -27,6 +27,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBBrokerStatus;
+import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelectionStatus;
@@ -321,6 +322,27 @@ public class TBUIFactory {
 		formattedText = Formatter.formatEmoticonsAsImages(formattedText);
 		formattedText = formattedText.replace("\n", "<br>");
 		return formattedText;
+	}
+
+	public static String getImportColumns(Translator translator, List<TBCustomFieldDefinition> definitions) {
+		String columns = "<ul class=\"list-unstyled\">";
+		columns += "<li><strong>" + translator.translate("topic.identifier") + " *</strong></li>";
+		columns += "<li><strong>" + translator.translate("topic.title") + " *</strong></li>";
+		columns += "<li>" + translator.translate("topic.description") + "</li>";
+		columns += "<li><strong>" + translator.translate("topic.participants.min") + " *</strong></li>";
+		columns += "<li><strong>" + translator.translate("topic.participants.max") + " *</strong></li>";
+		columns += "<li>" + translator.translate("topic.group.restriction") + "</li>";
+		
+		if (definitions != null && !definitions.isEmpty()) {
+			for (TBCustomFieldDefinition definition : definitions) {
+				if (TBCustomFieldType.text == definition.getType()) {
+					columns += "<li>" + StringHelper.escapeHtml(definition.getName()) + "</li>";
+				}
+			}
+		}
+		
+		columns += "</ul>";
+		return columns;
 	}
 
 }

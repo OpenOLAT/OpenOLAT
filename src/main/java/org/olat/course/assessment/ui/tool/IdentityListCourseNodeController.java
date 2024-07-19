@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
@@ -85,6 +86,8 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -698,6 +701,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 
 	private void initPortfolioStatusDataColumns(FlexiTableColumnModel columnsModel) {
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.collectedOn));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfAuthorisedUsers));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfInProgressSections));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfNewEntries));
@@ -892,6 +896,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if (binder != null) {
 			List<AccessRights> accessRights = portfolioService.getAccessRights(binder);
 			List<Section> sections = portfolioService.getSections(binder);
+			row.setPortfolioCollectedOnDate(binder.getCopyDate());
 
 			// Count non-owner authorized users
 			long numOfAuthorisedUsers = accessRights.stream()
@@ -934,8 +939,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCourseCoach(binder, accessRightsByIdentity);
 
 			if (secCallback.canAssess(binder)) {
-				FormLink openBinderLink = uifactory.addFormLink(String.valueOf(binder.getKey()), "open_binder", "open", null, flc, Link.BUTTON);
-				openBinderLink.setUserObject(row);
+				FormLink openBinderLink = uifactory.addFormLink(String.valueOf(binder.getKey()), "open_binder", "open", null, flc, Link.LINK);
 				row.setOpenBinderLink(openBinderLink);
 			}
 		}
@@ -1372,8 +1376,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			if("tools".equals(link.getCmd())) {
 				doOpenTools(ureq, (AssessedIdentityElementRow)link.getUserObject(), link);
 			} else if("open_binder".equals(link.getCmd())) {
-				AssessedIdentityElementRow row = (AssessedIdentityElementRow) link.getUserObject();
-				doSelect(ureq, row);
+				doOpenBinder(ureq, link.getName());
 			}
 		}
 		
@@ -1470,9 +1473,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if(courseNode.getParent() == null) return false;
 
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		String locksubkey = AssessmentIdentityCourseNodeController.lockKey(courseNode, assessedIdentity);
-		if(CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, locksubkey)) {
-			LockEntry lock = CoordinatorManager.getInstance().getCoordinator().getLocker().getLockEntry(course, locksubkey);
+		String lockSubKey = AssessmentIdentityCourseNodeController.lockKey(courseNode, assessedIdentity);
+		if(CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, lockSubKey)) {
+			LockEntry lock = CoordinatorManager.getInstance().getCoordinator().getLocker().getLockEntry(course, lockSubKey);
 			if(lock != null && lock.getOwner() != null && !lock.getOwner().equals(getIdentity())) {
 				String msg = DialogBoxUIFactory.getLockedMessage(ureq, lock, "assessmentLock", getTranslator());
 				getWindowControl().setWarning(msg);
@@ -1481,6 +1484,13 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 		
 		return false;
+	}
+
+	private void doOpenBinder(UserRequest ureq, String binderKey) {
+		String resourceUrl = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][SharedWithMe:0][Binder:" + binderKey + "]";
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+		NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
 	
 	private Controller doSelect(UserRequest ureq, AssessedIdentityElementRow row) {

@@ -71,7 +71,8 @@ public interface TopicBrokerService {
 	
 	public boolean isTopicIdentifierAvailable(TBBrokerRef broker, String identifier);
 	
-	public TBTopic updateTopic(Identity doer, TBTopic topic);
+	public TBTopic updateTopic(Identity doer, TBTopicRef topic, String identifier, String title, String description,
+			Integer minParticipants, Integer maxParticipants, Set<Long> groupRestricionKeys);
 	
 	public void moveTopic(Identity doer, TBTopicRef topic, boolean up);
 	

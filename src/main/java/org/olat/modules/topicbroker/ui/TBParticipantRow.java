@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -37,6 +38,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class TBParticipantRow  extends UserPropertiesRow {
 	
 	private TBBroker broker;
+	private TBParticipant participant;
 	private Integer boost;
 	private int prioritySortOrder;
 	private int requiredEnrollments;
@@ -58,6 +60,14 @@ public class TBParticipantRow  extends UserPropertiesRow {
 
 	public void setBroker(TBBroker broker) {
 		this.broker = broker;
+	}
+
+	public TBParticipant getParticipant() {
+		return participant;
+	}
+
+	public void setParticipant(TBParticipant participant) {
+		this.participant = participant;
 	}
 
 	public Integer getBoost() {

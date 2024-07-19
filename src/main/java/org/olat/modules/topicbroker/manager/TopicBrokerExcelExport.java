@@ -58,6 +58,7 @@ public class TopicBrokerExcelExport {
 	private final List<TBTopic> topics;
 	private final List<String> customFieldNames;
 	private final Map<Long, List<String>> topicKeyToCustomFieldTexts;
+	private final boolean participantsSheet;
 	private final List<Identity> identities;
 	private final Map<Long, Map<Long, TBSelection>> identityKeyToTopicToSelections;
 	private final Translator translator;
@@ -69,11 +70,12 @@ public class TopicBrokerExcelExport {
 	private UserManager userManager;
 
 	public TopicBrokerExcelExport(UserRequest ureq, List<TBTopic> topics, List<String> customFieldNames,
-			Map<Long, List<String>> topicKeyToCustomFieldTexts, List<Identity> identities,
-			Map<Long, Map<Long, TBSelection>> identityKeyToTopicToSelections) {
+			Map<Long, List<String>> topicKeyToCustomFieldTexts, boolean participantsSheet,
+			List<Identity> identities, Map<Long, Map<Long, TBSelection>> identityKeyToTopicToSelections) {
 		this.topics = topics;
 		this.customFieldNames = customFieldNames;
 		this.topicKeyToCustomFieldTexts = topicKeyToCustomFieldTexts;
+		this.participantsSheet = participantsSheet;
 		this.identities = identities;
 		this.identityKeyToTopicToSelections = identityKeyToTopicToSelections;
 		CoreSpringFactory.autowireObject(this);
@@ -88,10 +90,15 @@ public class TopicBrokerExcelExport {
 	}
 	
 	public void export(OutputStream out) {
-		List<String> sheetNames = List.of(translator.translate("export.topics"), translator.translate("export.participants"));
-		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 2, sheetNames)) {
+		List<String> sheetNames = participantsSheet
+				? List.of(translator.translate("export.topics"), translator.translate("export.participants"))
+				: List.of(translator.translate("export.topics"));
+	
+		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, sheetNames.size(), sheetNames)) {
 			addTopics(workbook);
-			addSelections(workbook);
+			if (participantsSheet) {
+				addSelections(workbook);
+			}
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -133,7 +140,7 @@ public class TopicBrokerExcelExport {
 		int col = 0;
 		row.addCell(col++, topic.getIdentifier());
 		row.addCell(col++, topic.getTitle());
-		row.addCell(col++, topic.getDescription());
+		row.addCell(col++, topic.getDescription(), workbook.getStyles().getBottomAlignStyle());
 		row.addCell(col++, topic.getMinParticipants(), workbook.getStyles().getIntegerStyle());
 		row.addCell(col++, topic.getMaxParticipants(), workbook.getStyles().getIntegerStyle());
 		String groupRestrictions = null;
@@ -142,7 +149,7 @@ public class TopicBrokerExcelExport {
 		}
 		row.addCell(col++,groupRestrictions);
 		for (String customFieldText : customFieldTexts) {
-			row.addCell(col++, customFieldText);
+			row.addCell(col++, customFieldText, workbook.getStyles().getBottomAlignStyle());
 		}
 	}
 

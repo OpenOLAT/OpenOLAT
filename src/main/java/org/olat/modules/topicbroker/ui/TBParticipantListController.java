@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -119,6 +120,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	private final List<Identity> identities;
 	private final MapperKey avatarMapperKey;
 	private List<Long> detailsOpenIdentityKeys;
+	private List<TBParticipantSelectionsController> detailCtrls = new ArrayList<>(1);
 	private int counter = 0;
 	
 	@Autowired
@@ -127,6 +129,8 @@ public class TBParticipantListController extends FormBasicController implements 
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private BaseSecurityManager securityManager;
 	@Autowired
 	private MapperService mapperService;
 
@@ -298,6 +302,7 @@ public class TBParticipantListController extends FormBasicController implements 
 			row.setMaxSelections(broker.getMaxSelections());
 			
 			TBParticipant participant = identityKeyToParticipant.get(identity.getKey());
+			row.setParticipant(participant);
 			List<TBSelection> identitySelections = identityKeyToSelections.getOrDefault(identity.getKey(), List.of());
 			row.setSelections(identitySelections);
 			if (participant != null) {
@@ -314,6 +319,11 @@ public class TBParticipantListController extends FormBasicController implements 
 		tableEl.reset(false, false, true);
 		
 		tableEl.collapseAllDetails();
+		detailCtrls.forEach(ctrl -> {
+			flc.remove(ctrl.getInitialFormItem());
+			removeAsListenerAndDispose(ctrl);
+		});
+		detailCtrls.clear();
 		if (detailsOpenIdentityKeys != null && !detailsOpenIdentityKeys.isEmpty()) {
 			dataModel.getObjects().stream()
 				.filter(row -> detailsOpenIdentityKeys.contains(row.getIdentityKey()))
@@ -392,9 +402,16 @@ public class TBParticipantListController extends FormBasicController implements 
 	}
 	
 	private void doShowDetails(UserRequest ureq, TBParticipantRow row) {
+		TBParticipant participant = row.getParticipant();
+		if (participant == null) {
+			Identity participantIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+			participant = topicBrokerService.getOrCreateParticipant(getIdentity(), broker, participantIdentity);
+		}
+		
 		TBParticipantSelectionsController detailsCtrl = new TBParticipantSelectionsController(ureq, getWindowControl(),
-				mainForm, broker, row.getIdentityKey(), row.getSelections(), secCallback.canEditSelections());
+				mainForm, broker, participant, row.getSelections(), secCallback.canEditSelections());
 		listenTo(detailsCtrl);
+		detailCtrls.add(detailsCtrl);
 		// Add as form item to catch the events...
 		flc.add("detailsform_" + counter++, detailsCtrl.getInitialFormItem());
 		

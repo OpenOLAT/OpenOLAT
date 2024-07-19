@@ -22,7 +22,6 @@ package org.olat.modules.topicbroker.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -49,7 +48,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Identity;
+import org.olat.core.util.CodeHelper;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
@@ -84,33 +83,31 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private SelectionToolsController selectionToolsCtrl;
 
-	private  TBBroker broker;
-	private TBParticipant participant;
+	private TBBroker broker;
+	private final TBParticipant participant;
 	private final List<TBSelection> selections;
 	private final int selectionsSize;
 	private boolean canEditSelections;
 	private boolean canEditParticipant;
+	private final String toolsSuffix;
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
-	@Autowired
-	private BaseSecurityManager securityManager;
 
 	public TBParticipantSelectionsController(UserRequest ureq, WindowControl wControl, Form mainForm, TBBroker broker,
-			Long participnatIdentityKey, List<TBSelection> selections, boolean canEditSelections) {
+			TBParticipant participant, List<TBSelection> selections, boolean canEditSelections) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "participant_selections", mainForm);
 		
 		// Show the same data as in the row. So no reload.
 		this.broker = broker;
+		this.participant = participant;
 		this.selections = selections;
 		this.selectionsSize = selections.size();
 		this.canEditSelections = canEditSelections;
 		this.canEditParticipant = canEditSelections && broker.getEnrollmentStartDate() == null;
 		
-		Identity participantIdentity = securityManager.loadIdentityByKey(participnatIdentityKey);
-		participant = topicBrokerService.getOrCreateParticipant(getIdentity(), broker, participantIdentity);
-		
 		statusRenderer = new TBSelectionStatusRenderer();
+		toolsSuffix = "_" + participant.getKey();
 		
 		initForm(ureq);
 		loadModel();
@@ -226,7 +223,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 			return;
 		}
 		
-		FormLink selectionToolsLink = uifactory.addFormLink("tools_" + row.getTopic().getKey(), "selectionTools", "", null, null, Link.NONTRANSLATED);
+		FormLink selectionToolsLink = uifactory.addFormLink("tools_" + CodeHelper.getRAMUniqueID(), "selectionTools" + toolsSuffix, "", null, null, Link.NONTRANSLATED);
 		selectionToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		selectionToolsLink.setUserObject(row);
 		row.setSelectionToolsLink(selectionToolsLink);
@@ -304,7 +301,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		} else if (source instanceof FormLink link) {
 			if (link.getUserObject() instanceof TBSelectionRow row) {
 				String cmd = link.getCmd();
-				if ("selectionTools".equals(cmd)) {
+				if (cmd.startsWith("selectionTools") && cmd.endsWith(toolsSuffix)) {
 					doOpenSelectionTools(ureq, row, link);
 				}
 			}
@@ -333,7 +330,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		}
 		participant.setRequiredEnrollments(maxEnrollments);
 		
-		participant = topicBrokerService.updateParticipant(getIdentity(), participant);
+		topicBrokerService.updateParticipant(getIdentity(), participant);
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -356,7 +353,6 @@ public class TBParticipantSelectionsController extends FormBasicController {
 			topicBrokerService.enroll(getIdentity(), participant.getIdentity(), reloadedTopic, false);
 		}
 		
-		loadModel();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -367,7 +363,6 @@ public class TBParticipantSelectionsController extends FormBasicController {
 			topicBrokerService.withdraw(getIdentity(), participant.getIdentity(), reloadedTopic, false);
 		}
 		
-		loadModel();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -378,7 +373,6 @@ public class TBParticipantSelectionsController extends FormBasicController {
 			topicBrokerService.unselect(getIdentity(), participant.getIdentity(), topic);
 		}
 		
-		loadModel();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

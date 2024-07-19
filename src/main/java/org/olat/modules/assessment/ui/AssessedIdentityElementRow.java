@@ -37,7 +37,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 /**
  * 
  * Initial date: 06.10.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessedIdentityElementRow extends UserPropertiesRow {
@@ -56,6 +56,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private Date lastModified;
 	private Date lastUserModified;
 	private Date lastCoachModified;
+	private Date portfolioCollectedOnDate;
 	private int numOfAssessmentDocs;
 	private AssessmentEntryStatus status;
 	private String graderFullName;
@@ -285,5 +286,13 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public void setOpenBinderLink(FormLink openBinderLink) {
 		this.openBinderLink = openBinderLink;
+	}
+
+	public Date getPortfolioCollectedOnDate() {
+		return portfolioCollectedOnDate;
+	}
+
+	public void setPortfolioCollectedOnDate(Date portfolioCollectedOnDate) {
+		this.portfolioCollectedOnDate = portfolioCollectedOnDate;
 	}
 }

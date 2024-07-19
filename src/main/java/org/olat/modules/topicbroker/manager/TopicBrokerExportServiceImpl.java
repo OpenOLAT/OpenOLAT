@@ -20,10 +20,12 @@
 package org.olat.modules.topicbroker.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,6 +52,7 @@ import org.olat.modules.topicbroker.TopicBrokerExportService;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionExport;
 import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionsExport;
+import org.olat.modules.topicbroker.model.TBImportTopic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -185,7 +188,7 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 		identities.addAll(selectionIdentities);
 		
 		TopicBrokerExcelExport excelExport = new TopicBrokerExcelExport(ureq, topics, customFieldNames,
-				topicKeyToCustomFieldTexts, new ArrayList<>(identities), identityKeyToTopicToSelections);
+				topicKeyToCustomFieldTexts, true, new ArrayList<>(identities), identityKeyToTopicToSelections);
 		
 		return new TopicBrokerMediaResource(reloadedBorker, topicIdentToFileIdentToLeaf, excelExport);
 	}
@@ -198,6 +201,51 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 	private void add(Map<String, Map<String, VFSLeaf>> topicIdentToFileIdentToLeaf, TBTopic topic, String fileIdentitfier, VFSLeaf topicLeaf) {
 		topicIdentToFileIdentToLeaf.computeIfAbsent(topic.getIdentifier(), identigier -> new HashMap<>(1))
 				.put(fileIdentitfier, topicLeaf);
+	}
+	
+	@Override
+	public MediaResource createTopicImportTemplateMediaResource(UserRequest ureq, TBBrokerRef broker, String filename) {
+		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
+		definitionSearchParams.setBroker(broker);
+		List<String> customFieldNames = topicBrokerService.getCustomFieldDefinitions(definitionSearchParams)
+				.stream()
+				.filter(definition -> TBCustomFieldType.text == definition.getType())
+				.sorted((d1, d2) -> Integer.compare(d1.getSortOrder(), d2.getSortOrder()))
+				.map(TBCustomFieldDefinition::getName)
+				.toList();
+		
+		TopicBrokerExcelExport excelExport = new TopicBrokerExcelExport(ureq, Collections.emptyList(), customFieldNames,
+				Map.of(), false, List.of(), Map.of());
+		return new TopicBrokerExcelMediaResource(excelExport, filename);
+	}
+
+	@Override
+	public void createOrUpdateTopics(Identity doer, TBBroker broker, List<TBImportTopic> importTopics) {
+		TBTopicSearchParams searchParams = new TBTopicSearchParams();
+		searchParams.setBroker(broker);
+		Map<String, TBTopic> identToTopic = topicBrokerService.getTopics(searchParams).stream()
+				.collect(Collectors.toMap(TBTopic::getIdentifier, Function.identity(), (u, v) -> v));
+		
+		for (TBImportTopic importTopic : importTopics) {
+			if (!StringHelper.containsNonWhitespace(importTopic.getMessage())) {
+				TBTopic topicImported = importTopic.getTopic();
+				TBTopic topicExisting = identToTopic.get(topicImported.getIdentifier());
+				if (topicExisting == null) {
+					topicExisting = topicBrokerService.createTopic(doer, broker);
+				}
+				topicBrokerService.updateTopic(doer, topicExisting, topicImported.getIdentifier(),
+						topicImported.getTitle(), topicImported.getDescription(), topicImported.getMinParticipants(),
+						topicImported.getMaxParticipants(), topicImported.getGroupRestrictionKeys());
+				
+				Map<TBCustomFieldDefinition,String> definitionToValue = importTopic.getCustomFieldDefinitionToValue();
+				if (definitionToValue != null) {
+					for (Entry<TBCustomFieldDefinition, String> entry : definitionToValue.entrySet()) {
+						topicBrokerService.createOrUpdateCustomField(doer, entry.getKey(), topicExisting, entry.getValue());
+					}
+				}
+			}
+		}
+		
 	}
 
 }
