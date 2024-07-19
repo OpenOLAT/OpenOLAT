@@ -220,7 +220,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		FlexiTableColumnModel selectionColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.priority, new TextFlexiCellRenderer(EscapeMode.none)));
 		
-		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title));
+		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title, CMD_DETAILS));
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.status, statusRenderer));
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(SelectionCols.minParticipants);
@@ -271,9 +271,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		selectionColumnsModel.addFlexiColumnModel(maxParticipantsColumn);
 		
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
-		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitionsInTable) {
+		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
 			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
+			columnModel.setDefaultVisible(customFieldDefinition.isDisplayInTable());
 			selectionColumnsModel.addFlexiColumnModel(columnModel);
 		}
 		
@@ -630,7 +631,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 
 	private void updateSelectionMessage() {
-		if (selectionsSize < broker.getMaxSelections()) {
+		if ((periodEvaluator.isBeforeSelectionPeriod() || periodEvaluator.isSelectionPeriod()) && selectionsSize < broker.getMaxSelections()) {
 			String selectionMsg = translate("selection.msg.not.all.selected", new String[] {
 					String.valueOf(selectionsSize), String.valueOf(broker.getMaxSelections()),
 					String.valueOf(broker.getMaxSelections() - selectionsSize)});
@@ -748,6 +749,15 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		if (source == maxEnrollmentsEl) {
 			doUpdateParticipant();
 			loadModel(true);
+		} else if (selectionTableEl == source) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				TBSelectionRow row = selectionDataModel.getObject(se.getIndex());
+				if (CMD_DETAILS.equals(cmd)) {
+					doOpenDetails(ureq, row.getTopic(), row.getCustomFields());
+				}
+			}
 		} else if (topicTableEl == source) {
 			if (event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -814,6 +824,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			broker = topicBrokerService.getBroker(broker);
 			periodEvaluator.setBroker(broker);
 			updateMaxEnrollmentsEnabledUI();
+			updateSelectionMessage();
 			updateBrokerStatusUI();
 			updateBrokerConfigUI();
 		}

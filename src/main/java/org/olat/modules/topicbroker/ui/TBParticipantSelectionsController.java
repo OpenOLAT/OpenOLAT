@@ -86,7 +86,6 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	private TBBroker broker;
 	private final TBParticipant participant;
 	private final List<TBSelection> selections;
-	private final int selectionsSize;
 	private boolean canEditSelections;
 	private boolean canEditParticipant;
 	private final String toolsSuffix;
@@ -102,7 +101,6 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		this.broker = broker;
 		this.participant = participant;
 		this.selections = selections;
-		this.selectionsSize = selections.size();
 		this.canEditSelections = canEditSelections;
 		this.canEditParticipant = canEditSelections && broker.getEnrollmentStartDate() == null;
 		
@@ -247,7 +245,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	}
 
 	private void updateSelectionMessage(int requiredEnrollments, int numEnrollments) {
-		if (broker.getEnrollmentDoneDate() != null && selectionsSize < broker.getMaxSelections()) {
+		if (broker.getEnrollmentDoneDate() != null && numEnrollments < requiredEnrollments) {
 			String selectionMsg = translate("participant.msg.too.less.enrollments.highlighted", 
 					String.valueOf(numEnrollments), String.valueOf(requiredEnrollments));
 			flc.contextPut("selectionMsg", selectionMsg);
