@@ -45,6 +45,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
+import org.olat.core.id.Roles;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -138,7 +139,7 @@ public class PreferencesFormController extends FormBasicController {
 		userManager.setUserCharset(tobeChangedIdentity, charset.getSelectedKey());
 		
 		if (documentEditorEl != null && documentEditorEl.isOneSelected()) {
-			docEditorService.setPreferredEditorType(getIdentity(), documentEditorEl.getSelectedKey());
+			docEditorService.setPreferredEditorType(tobeChangedIdentity, documentEditorEl.getSelectedKey());
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
@@ -265,14 +266,15 @@ public class PreferencesFormController extends FormBasicController {
 		}
 		
 		// Document editor
-		List<DocEditor> editors = docEditorService.getExternalEditors(getIdentity(), ureq.getUserSession().getRoles());
+		Roles tobeChangedRoles = securityManager.getRoles(tobeChangedIdentity);
+		List<DocEditor> editors = docEditorService.getExternalEditors(tobeChangedIdentity, tobeChangedRoles);
 		if (editors.size() >= 2) {
 			SelectionValues editorKV = new SelectionValues();
 			editors.stream()
 					.sorted((e1, e2) -> e1.getDisplayName(getLocale()).compareTo(e2.getDisplayName(getLocale())))
 					.forEach(e -> editorKV.add(SelectionValues.entry(e.getType(), e.getDisplayName(getLocale()))));
 			documentEditorEl = uifactory.addDropdownSingleselect("form.document.editor", formLayout, editorKV.keys(), editorKV.values());
-			String preferredEditorType = docEditorService.getPreferredEditorType(getIdentity());
+			String preferredEditorType = docEditorService.getPreferredEditorType(tobeChangedIdentity);
 			if (Arrays.asList(documentEditorEl.getKeys()).contains(preferredEditorType)) {
 				documentEditorEl.select(preferredEditorType, true);
 			}
