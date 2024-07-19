@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.portfolio.ui;
@@ -57,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 19.07.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CourseTemplateSearchController extends FormBasicController {
@@ -124,20 +124,19 @@ public class CourseTemplateSearchController extends FormBasicController {
 	
 	private void loadCourseModel(CourseNode courseNode, UserCourseEnvironment uce,
 			List<CourseTemplateRow> rows, Set<CurrentBinder> currentSet) {
-		if(courseNode instanceof PortfolioCourseNode) {
-			PortfolioCourseNode pNode = (PortfolioCourseNode)courseNode;
+		if(courseNode instanceof PortfolioCourseNode pfNode) {
 			TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(uce)
 					.withFilter(AccessibleFilter.create())
 					.build()
-					.getNodeById(pNode.getIdent());
+					.getNodeById(pfNode.getIdent());
 			if (treeNode != null && treeNode.isAccessible()) {
-				RepositoryEntry refEntry = pNode.getReferencedRepositoryEntry();
+				RepositoryEntry refEntry = pfNode.getReferencedRepositoryEntry();
 				if(refEntry != null && "BinderTemplate".equals(refEntry.getOlatResource().getResourceableTypeName())) {
 					RepositoryEntry courseEntry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 					
-					CurrentBinder binderKey = new CurrentBinder(courseEntry.getKey(), pNode.getIdent());
+					CurrentBinder binderKey = new CurrentBinder(courseEntry.getKey(), pfNode.getIdent());
 					if(!currentSet.contains(binderKey)) {
-						rows.add(new CourseTemplateRow(courseEntry, pNode, refEntry));
+						rows.add(new CourseTemplateRow(courseEntry, pfNode, refEntry));
 					}
 				}
 			}
@@ -151,8 +150,7 @@ public class CourseTemplateSearchController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				CourseTemplateRow row = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
@@ -168,16 +166,8 @@ public class CourseTemplateSearchController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
-	private static class CurrentBinder {
-		
-		private final Long courseEntryKey;
-		private final String nodeIdent;
-		
-		public CurrentBinder(Long courseEntryKey, String nodeIdent) {
-			this.courseEntryKey = courseEntryKey;
-			this.nodeIdent = nodeIdent;
-		}
+
+	private record CurrentBinder(Long courseEntryKey, String nodeIdent) {
 
 		@Override
 		public int hashCode() {
@@ -189,8 +179,7 @@ public class CourseTemplateSearchController extends FormBasicController {
 			if(this == obj) {
 				return true;
 			}
-			if(obj instanceof CurrentBinder) {
-				CurrentBinder cb = (CurrentBinder)obj;
+			if(obj instanceof CurrentBinder cb) {
 				return courseEntryKey.equals(cb.courseEntryKey)
 						&& nodeIdent.equals(cb.nodeIdent);
 			}
