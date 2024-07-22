@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 
 /**
  * <P>
@@ -73,7 +74,11 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 		super.validate(ureq, vr);
 		
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		jsa.addRequiredStaticJsFile("js/datepicker/datepicker-full.min.js");
+		if(Settings.isDebuging()) {
+			jsa.addRequiredStaticJsFile("js/datepicker/datepicker-full.js");
+		} else {
+			jsa.addRequiredStaticJsFile("js/datepicker/datepicker-full.min.js");
+		}
 		
 		Locale locale = ureq.getLocale();
 		String language = locale.getLanguage();
@@ -83,6 +88,8 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 			} else {
 				language += "-CN";
 			}
+		} else if("en".equals(language)) {
+			language += "-GB";
 		}
 		jsa.addRequiredStaticJsFile("js/datepicker/locales/" + language + ".js");
 	}

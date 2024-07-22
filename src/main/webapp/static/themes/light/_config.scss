@@ -1063,6 +1063,10 @@ $o-datecomp-month-color			: #fff !default;
 $o-datecomp-day-bg				: $body-bg !default;
 $o-datecomp-day-color			: $text-color !default;
 
+/* Date picker component */
+$o-datepicker-today-color		: $brand-primary !default;
+$o-datepicker-today-border-color: $brand-primary !default;
+
 /* Highscore component */
 $o-hs-position-title-color			: gradient !default;
 $o-hs-position-title-size			: 3em !default;

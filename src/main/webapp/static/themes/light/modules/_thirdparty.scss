@@ -159,14 +159,11 @@
 		background-color: #fff;
 	}
 	&:not(.selected):not(.disabled) {
-		color: #00ccad;
-		border: 1px solid #00ccad;
+		color: $o-datepicker-today-color;
+		border: 1px solid $o-datepicker-today-border-color;
 		font-weight: bold;
 	}
-	
-	
 }
-
 
 /*
  * Overwrite some class of typehead needed by the flexi table
