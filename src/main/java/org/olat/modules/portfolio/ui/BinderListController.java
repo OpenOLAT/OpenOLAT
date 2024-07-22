@@ -74,6 +74,9 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderRef;
@@ -145,6 +148,8 @@ public class BinderListController extends FormBasicController
 	private PortfolioV2Module portfolioModule;
 	@Autowired
 	protected PortfolioService portfolioService;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	public BinderListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, "binder_list");
@@ -602,7 +607,7 @@ public class BinderListController extends FormBasicController
 		searchCourseTemplateCtrl = new CourseTemplateSearchController(ureq, getWindowControl());			
 		listenTo(searchCourseTemplateCtrl);
 
-		String title = translate("create.empty.binder.from.template");
+		String title = translate("create.empty.binder.from.course");
 		cmc = new CloseableModalController(getWindowControl(), title, searchCourseTemplateCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
@@ -622,6 +627,9 @@ public class BinderListController extends FormBasicController
 			copyBinder = synchedBinder.getBinder();
 			
 			if(copyBinder != null) {
+				// after user collects binder, set assessmentEntryStatus inProgress
+				AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(getIdentity(), courseEntry, courseNode.getIdent());
+				assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
 				showInfo("map.copied", StringHelper.escapeHtml(templateBinder.getTitle()));
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(copyBinder));
 				ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_TASK_STARTED, getClass());

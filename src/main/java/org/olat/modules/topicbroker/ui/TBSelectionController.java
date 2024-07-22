@@ -58,6 +58,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -83,14 +84,13 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldType;
+import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
@@ -140,6 +140,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private final TBPeriodEvaluator periodEvaluator;
 	private TBParticipant participant;
 	private Set<Long> participantGroupKeys;
+	private final List<TBCustomFieldDefinition> customFieldDefinitions;
 	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
 	private int selectionsSize;
 	private final Roles roles;
@@ -147,8 +148,6 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 
 	@Autowired
 	private TopicBrokerService topicBrokerService;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
@@ -165,9 +164,11 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		
 		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
 		definitionSearchParams.setBroker(broker);
-		customFieldDefinitionsInTable = topicBrokerService.getCustomFieldDefinitions(definitionSearchParams).stream()
-				.filter(TBCustomFieldDefinition::isDisplayInTable)
+		customFieldDefinitions = topicBrokerService.getCustomFieldDefinitions(definitionSearchParams).stream()
 				.sorted((d1, d2) -> Integer.compare(d1.getSortOrder(), d2.getSortOrder()))
+				.toList();
+		customFieldDefinitionsInTable = customFieldDefinitions.stream()
+				.filter(TBCustomFieldDefinition::isDisplayInTable)
 				.toList();
 		
 		roles = ureq.getUserSession().getRoles();
@@ -211,15 +212,15 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			updateMaxEnrollmentsEnabledUI();
 		}
 		
-		initSelectionTable(formLayout, ureq);
-		initTopicsTable(formLayout, ureq);
+		initSelectionTable(formLayout);
+		initTopicsTable(formLayout);
 	}
 
-	private void initSelectionTable(FormItemContainer formLayout, UserRequest ureq) {
+	private void initSelectionTable(FormItemContainer formLayout) {
 		FlexiTableColumnModel selectionColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.priority, new TextFlexiCellRenderer(EscapeMode.none)));
 		
-		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title));
+		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title, CMD_DETAILS));
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.status, statusRenderer));
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(SelectionCols.minParticipants);
@@ -233,13 +234,16 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		selectionColumnsModel.addFlexiColumnModel(maxParticipantsColumn);
 		
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
-		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitionsInTable) {
+		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
 			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
+			columnModel.setDefaultVisible(customFieldDefinition.isDisplayInTable());
 			selectionColumnsModel.addFlexiColumnModel(columnModel);
 		}
 		
-		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.upDown));
+		if (periodEvaluator.isSelectionPeriod()) {
+			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.upDown));
+		}
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SelectionCols.selectionTools);
 		toolsCol.setAlwaysVisible(true);
@@ -249,12 +253,11 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		
 		selectionDataModel = new TBSelectionDataModel(selectionColumnsModel);
 		selectionTableEl = uifactory.addTableElement(getWindowControl(), "selectionTable", selectionDataModel, 20, false, getTranslator(), formLayout);
-		selectionTableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-selection" + broker.getKey());
 	}
 
-	private void initTopicsTable(FormItemContainer formLayout, UserRequest ureq) {
+	private void initTopicsTable(FormItemContainer formLayout) {
 		FlexiTableColumnModel selectionColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title));
+		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title, CMD_DETAILS));
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.status, statusRenderer));
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(SelectionCols.minParticipants);
@@ -268,9 +271,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		selectionColumnsModel.addFlexiColumnModel(maxParticipantsColumn);
 		
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
-		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitionsInTable) {
+		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
 			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
+			columnModel.setDefaultVisible(customFieldDefinition.isDisplayInTable());
 			selectionColumnsModel.addFlexiColumnModel(columnModel);
 		}
 		
@@ -282,7 +286,6 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		
 		topicDataModel = new TBSelectionDataModel(selectionColumnsModel);
 		topicTableEl = uifactory.addTableElement(getWindowControl(), "topicTable", topicDataModel, 20, false, getTranslator(), formLayout);
-		topicTableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-selection-topics" + broker.getKey());
 		topicTableEl.setSearchEnabled(true);
 		
 		if (periodEvaluator.isBeforeSelectionPeriod()) {
@@ -628,7 +631,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 
 	private void updateSelectionMessage() {
-		if (selectionsSize < broker.getMaxSelections()) {
+		if ((periodEvaluator.isBeforeSelectionPeriod() || periodEvaluator.isSelectionPeriod()) && selectionsSize < broker.getMaxSelections()) {
 			String selectionMsg = translate("selection.msg.not.all.selected", new String[] {
 					String.valueOf(selectionsSize), String.valueOf(broker.getMaxSelections()),
 					String.valueOf(broker.getMaxSelections() - selectionsSize)});
@@ -746,8 +749,24 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		if (source == maxEnrollmentsEl) {
 			doUpdateParticipant();
 			loadModel(true);
+		} else if (selectionTableEl == source) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				TBSelectionRow row = selectionDataModel.getObject(se.getIndex());
+				if (CMD_DETAILS.equals(cmd)) {
+					doOpenDetails(ureq, row.getTopic(), row.getCustomFields());
+				}
+			}
 		} else if (topicTableEl == source) {
-			if (event instanceof FlexiTableSearchEvent ftse) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				TBSelectionRow row = topicDataModel.getObject(se.getIndex());
+				if (CMD_DETAILS.equals(cmd)) {
+					doOpenDetails(ureq, row.getTopic(), row.getCustomFields());
+				}
+			} else if (event instanceof FlexiTableSearchEvent ftse) {
 				loadModel(true);
 			}
 		} else if (source instanceof FormLink link) {
@@ -805,6 +824,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			broker = topicBrokerService.getBroker(broker);
 			periodEvaluator.setBroker(broker);
 			updateMaxEnrollmentsEnabledUI();
+			updateSelectionMessage();
 			updateBrokerStatusUI();
 			updateBrokerConfigUI();
 		}
@@ -855,9 +875,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private void doOpenDetails(UserRequest ureq, TBTopic topic, List<TBCustomField> customFields) {
 		removeAsListenerAndDispose(detailCtrl);
 		
-		List<BusinessGroupShort> groupRestrictions = null;
+		List<TBGroupRestrictionInfo> groupRestrictions = null;
 		if (topic.getGroupRestrictionKeys() != null) {
-			groupRestrictions = businessGroupService.loadShortBusinessGroups(topic.getGroupRestrictionKeys());
+			groupRestrictions = topicBrokerService.getGroupRestrictionInfos(getTranslator(), topic.getGroupRestrictionKeys());
 		}
 		detailCtrl = new TBSelectionDetailController(ureq, getWindowControl(), broker, participant, topic, groupRestrictions, customFields);
 		listenTo(detailCtrl);

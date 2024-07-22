@@ -300,6 +300,10 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		return columnKey;
 	}
 
+	public void setColumnKey(String columnKey) {
+		this.columnKey = columnKey;
+	}
+
 	@Override
 	public int getColumnIndex() {
 		return columnIndex;

@@ -31,8 +31,6 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -78,7 +76,6 @@ import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBParticipantDataModel.TBParticipantCols;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,7 +115,6 @@ public class TBParticipantListController extends FormBasicController implements 
 	private final TBSecurityCallback secCallback;
 	private final TBParticipantCandidates participantCandidates;
 	private final List<Identity> identities;
-	private final MapperKey avatarMapperKey;
 	private List<Long> detailsOpenIdentityKeys;
 	private List<TBParticipantSelectionsController> detailCtrls = new ArrayList<>(1);
 	private int counter = 0;
@@ -131,8 +127,6 @@ public class TBParticipantListController extends FormBasicController implements 
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private BaseSecurityManager securityManager;
-	@Autowired
-	private MapperService mapperService;
 
 	public TBParticipantListController(UserRequest ureq, WindowControl wControl, TBBroker broker,
 			TBSecurityCallback secCallback, TBParticipantCandidates participantCandidates) {
@@ -146,8 +140,6 @@ public class TBParticipantListController extends FormBasicController implements 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(TBParticipantDataModel.USAGE_IDENTIFIER,
 				isAdministrativeUser);
-		
-		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
 		
 		initForm(ureq);
 		initFilterTabs(ureq);
@@ -169,11 +161,13 @@ public class TBParticipantListController extends FormBasicController implements 
 				TabSelectionBehavior.reloadData);
 		tabs.add(tabBoosted);
 		
-		tabOpenSelection = FlexiFiltersTabFactory.tab(
-				TAB_ID_OPEN_SELECTION,
-				translate("tab.open.selection"),
-				TabSelectionBehavior.reloadData);
-		tabs.add(tabOpenSelection);
+		if (broker.getEnrollmentStartDate() == null && broker.getEnrollmentStartDate() == null) {
+			tabOpenSelection = FlexiFiltersTabFactory.tab(
+					TAB_ID_OPEN_SELECTION,
+					translate("tab.open.selection"),
+					TabSelectionBehavior.reloadData);
+			tabs.add(tabOpenSelection);
+		}
 		
 		tabWaitingList = FlexiFiltersTabFactory.tab(
 				TAB_ID_WAITING_LIST,
@@ -522,12 +516,6 @@ public class TBParticipantListController extends FormBasicController implements 
 		}
 		
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	@Override
-	protected void doDispose() {
-		super.doDispose();
-		mapperService.cleanUp(List.of(avatarMapperKey));
 	}
 
 	@Override

@@ -701,7 +701,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 
 	private void initPortfolioStatusDataColumns(FlexiTableColumnModel columnsModel) {
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.collectedOn));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, IdentityCourseElementCols.collectedOn));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfAuthorisedUsers));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfInProgressSections));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.numOfNewEntries));

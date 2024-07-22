@@ -85,6 +85,9 @@ public class TBCustomFieldDefinitionEditController extends FormBasicController {
 		}
 		
 		addToggleButton = uifactory.addToggleButton("custom.field.def.in.table", "custom.field.def.in.table", translate("on"), translate("off"), formLayout);
+		if (definition != null && definition.isDisplayInTable()) {
+			addToggleButton.toggleOn();
+		}
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

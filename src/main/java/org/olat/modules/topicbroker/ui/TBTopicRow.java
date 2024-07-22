@@ -26,8 +26,8 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormItemList;
 import org.olat.core.gui.components.updown.UpDown;
-import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBCustomField;
+import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicRef;
 
@@ -46,7 +46,7 @@ public class TBTopicRow implements TBTopicRef {
 	private String enrolledString;
 	private int waitingList;
 	private String waitingListString;
-	private List<BusinessGroupShort> groupRestrictions;
+	private List<TBGroupRestrictionInfo> groupRestrictions;
 	private FormItemList groupRestrictionLinks;
 	private String createdByDisplayname;
 	private int sortOrder;
@@ -129,11 +129,11 @@ public class TBTopicRow implements TBTopicRef {
 		this.waitingListString = waitingListString;
 	}
 
-	public List<BusinessGroupShort> getGroupRestrictions() {
+	public List<TBGroupRestrictionInfo> getGroupRestrictions() {
 		return groupRestrictions;
 	}
 
-	public void setGroupRestrictions(List<BusinessGroupShort> groupRestrictions) {
+	public void setGroupRestrictions(List<TBGroupRestrictionInfo> groupRestrictions) {
 		this.groupRestrictions = groupRestrictions;
 	}
 

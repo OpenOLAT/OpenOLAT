@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -46,8 +47,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBBrokerRef;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBCustomFieldDefinition;
@@ -90,8 +89,6 @@ public class TBTopicEditController extends FormBasicController {
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 
 	protected TBTopicEditController(UserRequest ureq, WindowControl wControl, TBBrokerRef broker, TBTopic topic,
 			TBGroupRestrictionCandidates groupRestrictionCandidates) {
@@ -147,11 +144,13 @@ public class TBTopicEditController extends FormBasicController {
 		if (topic != null && topic.getGroupRestrictionKeys() != null) {
 			businessGroupKeys.addAll(topic.getGroupRestrictionKeys());
 		}
-		List<BusinessGroupShort> businessGroups = businessGroupService.loadShortBusinessGroups(businessGroupKeys);
-		if (!businessGroups.isEmpty()) {
+		if (!businessGroupKeys.isEmpty()) {
 			SelectionValues businessGroupSV = new SelectionValues();
-			businessGroups.forEach(businessGroup -> businessGroupSV
-					.add(SelectionValues.entry(businessGroup.getKey().toString(), businessGroup.getName())));
+			topicBrokerService.getGroupRestrictionInfos(getTranslator(), businessGroupKeys).stream()
+					.sorted((i1, i2) -> i1.getGroupName().compareToIgnoreCase(i2.getGroupName()))
+					.forEach(info -> businessGroupSV.add(
+							SelectionValues.entry(info.getGroupKey().toString(),
+							info.getGroupName())));
 			
 			groupRestrictionsEl = uifactory.addCheckboxesDropdown("topic.group.restriction",
 					"topic.group.restriction", standardCont, businessGroupSV.keys(), businessGroupSV.values());
@@ -164,6 +163,10 @@ public class TBTopicEditController extends FormBasicController {
 					}
 				}
 			}
+		} else {
+			StaticTextElement groupRestrictionNoGroupsEl = uifactory.addStaticTextElement("topic.group.restriction",
+					"topic.group.restriction", translate("topic.group.restriction.no.candidates"), standardCont);
+			groupRestrictionNoGroupsEl.setHelpTextKey("topic.group.restriction.help", null);
 		}
 		
 		teaserImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "topic.teaser.image", standardCont);
@@ -180,7 +183,7 @@ public class TBTopicEditController extends FormBasicController {
 		
 		teaserVideoEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "topic.teaser.video", standardCont);
 		teaserVideoEl.setMaxUploadSizeKB(102400, null, null);
-		teaserVideoEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ VIDEO_MIME_TYPES.toString()} );
+		teaserVideoEl.limitToMimeType(VIDEO_MIME_TYPES, "error.mimetype", new String[]{ VIDEO_MIME_TYPES.toString()} );
 		teaserVideoEl.setReplaceButton(true);
 		teaserVideoEl.setDeleteEnabled(true);
 		teaserVideoEl.setPreview(ureq.getUserSession(), true);
