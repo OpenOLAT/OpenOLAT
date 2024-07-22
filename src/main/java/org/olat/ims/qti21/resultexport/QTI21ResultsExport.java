@@ -288,7 +288,7 @@ public class QTI21ResultsExport {
 			
 			AssessmentEntry assessmentEntry = assessmentEntryMap.get(assessedIdentity);
 			List<AssessmentTestSession> currentSessions = sessions.get(assessedIdentity.getKey());
-			AssessedMember member = createAssessedMemberDetail(zout, assessedIdentity, currentSessions, assessmentEntry, false);
+			AssessedMember member = createAssessedMemberDetail(zout, assessedIdentity, currentSessions, assessmentEntry, true);
 			assessedMembers.add(member);
 		}
 		return assessedMembers;
