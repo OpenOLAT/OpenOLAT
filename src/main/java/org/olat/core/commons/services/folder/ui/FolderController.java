@@ -3155,7 +3155,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 			
 			if (canCopy(vfsItem, vfsMetadata)) {
-				addLink("copy.to", CMD_MOVE, "o_icon o_icon-fw o_icon_copy");
+				addLink("copy.to", CMD_COPY, "o_icon o_icon-fw o_icon_copy");
 				divider = true;
 			}
 			
