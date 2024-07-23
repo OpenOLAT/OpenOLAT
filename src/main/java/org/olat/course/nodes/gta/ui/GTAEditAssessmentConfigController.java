@@ -302,10 +302,12 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		
 		String pointsProReview = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_PRO_REVIEW);
 		pointsProReviewEl = uifactory.addTextElement("form.score.pro.review", "form.score.pro.review", 8, pointsProReview, formLayout);
+		pointsProReviewEl.setMandatory(true);
 		pointsProReviewEl.setDisplaySize(5);
 
 		String maxNumberCreditableReviews = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_MAX_NUMBER_CREDITABLE_REVIEWS);
 		maxNumberCreditableReviewsEl = uifactory.addTextElement("form.max.number.creditable.review", "form.max.number.creditable.review", 8, maxNumberCreditableReviews, formLayout);
+		maxNumberCreditableReviewsEl.setMandatory(true);
 		maxNumberCreditableReviewsEl.setDisplaySize(5);
 	
 		// ...minimum value...
@@ -489,9 +491,8 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 
 		scoreTypeEl.setVisible(scoreGranted.isOn() && evaluationEnabled);
 		boolean scoreAuto = isScoreAuto();
-		minValEl.setEnabled(!scoreAuto);
-		maxValEl.setEnabled(!scoreAuto);
 		evaluationScoreScalingEl.setVisible(scoreGranted.isOn() && scoreAuto && evaluationEnabled);
+		getLogger().debug("Score auto: {} evaluationEnabled: {} peerReviewEnabled {} ", scoreAuto, evaluationEnabled, peerReviewEnabled);
 		
 		scoresSumEl.setVisible(scoreGranted.isOn() && scoreAuto && (evaluationEnabled || peerReviewEnabled));
 		SelectionValues scoresSumPK = getScoreSumsOptions();
@@ -508,6 +509,9 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 				&& scoresSumPK.containsKey(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM)) {
 			scoresSumEl.select(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM, true);
 		}
+		
+		minValEl.setEnabled(!scoreAuto);
+		maxValEl.setEnabled(!scoreAuto);
 		
 		MinMax formMinMax = calculateMinMax();
 		if(formMinMax != null && (scoreAuto || forceMinMax)) {
@@ -527,9 +531,14 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		}
 
 		boolean scoreReview = scoresSumEl.isKeySelected(GTACourseNode.GTASK_SCORE_PARTS_REVIEW_SUBMITTED);
-		pointsProReviewEl.setVisible(scoreEnable && peerReviewEnabled && scoreReview);
-		maxNumberCreditableReviewsEl.setVisible(scoreEnable && peerReviewEnabled && scoreReview);
-				
+		pointsProReviewEl.setVisible(scoreEnable && peerReviewEnabled && scoreReview && scoreAuto);
+		maxNumberCreditableReviewsEl.setVisible(scoreEnable && peerReviewEnabled && scoreReview && scoreAuto);
+		if(maxNumberCreditableReviewsEl.isVisible() && !StringHelper.containsNonWhitespace(maxNumberCreditableReviewsEl.getValue())) {
+			String numOfReviews = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
+					GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
+			maxNumberCreditableReviewsEl.setValue(numOfReviews);
+		}
+		
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
 				&& (scoreGranted.isOn() || displayPassed.isOn());
 		incorporateInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
@@ -547,11 +556,12 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	}
 	
 	private boolean isScoreAuto() {
-		return scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected() && "automatic".equals(scoreTypeEl.getSelectedKey());
+		return (scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected() && "automatic".equals(scoreTypeEl.getSelectedKey()))
+				|| (!scoreTypeEl.isVisible() && (peerReviewEnabled || (evaluationFormEnabledEl.isVisible() && evaluationFormEnabledEl.isOn())));
 	}
 	
 	private void updateMinMax() {
-		boolean scoreAuto = isScoreAuto();
+		boolean scoreAuto = isScoreAuto() || !scoreTypeEl.isVisible();
 		MinMax formMinMax = calculateMinMax();
 		if(formMinMax != null && scoreAuto) {
 			minValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMin()));
@@ -671,8 +681,8 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		}
 		
 		scoresSumEl.clearError();
-		if(scoresSumEl.isVisible() && scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected()
-				&& !MSCourseNode.CONFIG_VALUE_SCORE_MANUAL.equals(scoreTypeEl.getSelectedKey())
+		if(scoresSumEl.isVisible() && scoreGranted.isVisible() && scoreGranted.isOn()
+				&& (!scoreTypeEl.isVisible() || (scoreTypeEl.isOneSelected() && !MSCourseNode.CONFIG_VALUE_SCORE_MANUAL.equals(scoreTypeEl.getSelectedKey())))
 				&& scoresSumEl.getSelectedKeys().isEmpty()) {
 			scoresSumEl.setErrorKey("error.score.sum.at.least.one");
 			allOk &= false;
@@ -723,13 +733,13 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		allOk &= ScoreScalingHelper.validateScoreScaling(evaluationScoreScalingEl);
 		allOk &= ScoreScalingHelper.validateScoreScaling(peerReviewScoreScalingEl);
 		
-		allOk &= validateFloat(pointsProReviewEl, true);
-		allOk &= validateFloat(maxNumberCreditableReviewsEl, false);
+		allOk &= validateFloat(pointsProReviewEl, true, true);
+		allOk &= validateFloat(maxNumberCreditableReviewsEl, true, false);
 		
 		return allOk;
 	}
 	
-	private boolean validateFloat(TextElement el, boolean floatAllow) {
+	private boolean validateFloat(TextElement el, boolean mandatory, boolean floatAllow) {
 		boolean allOk = true;
 		
 		el.clearError();
@@ -751,6 +761,8 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 						allOk = false;
 					}
 				}
+			} else if(mandatory) {
+				el.setErrorKey("form.legende.mandatory");
 			}
 		}
 		
@@ -959,8 +971,10 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	}
 	
 	private MinMax calculateMinMax() {
-		MinMax formMinMax = calculateMinMax(MSCourseNode.getEvaluationForm(config),
+		// Min. max. from the evaluation form
+		MinMax formMinMax = calculateMinMax(referenceCtrl.getRepositoryEntry(),
 				config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM), evaluationScoreScalingEl);
+		// Min. max. from the peer review form
 		MinMax peerReviewMinMax = calculateMinMax(GTACourseNode.getPeerReviewEvaluationForm(config),
 				config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM), peerReviewScoreScalingEl);
 		
