@@ -31,6 +31,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -166,10 +167,11 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("  container: containerSelector,\n")
 		  .append("  format: '").append(format).append("',\n")
 		  .append("  language: '").append(locale.getLanguage()).append("'\n")
-		  .append(" });\n")
-		  .append(" elem.addEventListener('show', function() {\n")
-		  .append("  elem.setAttribute('data-oo-validation', 'suspend');\n");
+		  .append(" });\n");
 		
+		// On show
+		sb.append(" elem.addEventListener('show', function() {\n")
+		  .append("  elem.setAttribute('data-oo-validation', 'suspend');\n");
 		if(jsdci.getDefaultValue() instanceof JSDateChooser defaultValue) {
 			String id = defaultValue.getTextElementComponent().getFormDispatchId();
 			sb.append("  const focusedDate = document.getElementById('").append(id).append("').datepicker.getFocusedDate();\n")
@@ -177,11 +179,11 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			  .append("    datepicker.setFocusedDate(focusedDate);\n")
 			  .append("  }\n");
 		}
+		sb.append(" });\n");
 		
-		sb.append(" });\n")
-		  .append(" elem.addEventListener('changeDate', function(date, viewDate) { ")
-		  .append("   setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n");
-		  
+		// On change date
+		sb.append(" elem.addEventListener('changeDate', function(date, viewDate) { ")
+		  .append("   setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n"); 
 		if(jsdci.getPushDateValueTo() instanceof JSDateChooser pushDateValueTo) {
 			String pushId = pushDateValueTo.getTextElementComponent().getFormDispatchId();
 			sb.append("   const pushEl = document.getElementById('").append(pushId).append("');\n")
@@ -190,10 +192,14 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			  .append("     var cDate = datepicker.getDate();\n")
 			  .append("     pushEl.datepicker.setDate(cDate);\n")
 			  .append("   }\n");
-		} 
-		  
-		sb.append(" });\n")
-		  .append(" elem.addEventListener('hide', function() {\n")
+		}
+		if(jsdci.getAction() == FormEvent.ONCHANGE || jsdci.getAction() == FormEvent.ONCLICK) {
+			sb.append("   ").append(FormJSHelper.getJSFnCallFor(jsdci.getRootForm(), receiverId, jsdci.getAction())).append(";\n");
+		}
+		sb.append(" });\n");
+		
+		// On hide
+		sb.append(" elem.addEventListener('hide', function() {\n")
 		  .append("  elem.setAttribute('data-oo-validation', null);\n")
 		  .append(" });\n")
 		  .append("});")
