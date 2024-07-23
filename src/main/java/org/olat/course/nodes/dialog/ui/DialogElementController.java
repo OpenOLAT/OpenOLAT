@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
@@ -94,6 +95,8 @@ public class DialogElementController extends BasicController implements Activate
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private FolderModule folderModule;
 	@Autowired
 	private ForumManager forumManager;
 	@Autowired
@@ -269,15 +272,19 @@ public class DialogElementController extends BasicController implements Activate
 	private void doDownload(UserRequest ureq) {
 		VFSLeaf file = dialogElmsMgr.getDialogLeaf(element);
 		if(file != null) {
-			VFSMediaResource mediaResource = new VFSMediaResource(file);
-			mediaResource.setDownloadable(true);
-			ureq.getDispatchResult().setResultingMediaResource(mediaResource);
-			ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DOWNLOADED, getClass(),
-					LoggingResourceable.wrapBCFile(element.getFilename()));
+			doDownload(ureq, file);
 		} else {
 			ureq.getDispatchResult().setResultingMediaResource(new NotFoundMediaResource());
 			logError("No file to discuss: " + element, null);
 		}
+	}
+	
+	private void doDownload(UserRequest ureq, VFSLeaf file) {
+		VFSMediaResource mediaResource = new VFSMediaResource(file);
+		mediaResource.setDownloadable(true);
+		ureq.getDispatchResult().setResultingMediaResource(mediaResource);
+		ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DOWNLOADED, getClass(),
+				LoggingResourceable.wrapBCFile(element.getFilename()));
 	}
 
 	private void doEditMetadata(UserRequest ureq) {
@@ -295,11 +302,17 @@ public class DialogElementController extends BasicController implements Activate
 	private void doOpenFile(UserRequest ureq) {
 		VFSContainer dialogContainer = dialogElmsMgr.getDialogContainer(element);
 		VFSItem vfsItem = dialogContainer.resolve(element.getFilename());
-		DocEditorConfigs configs = DocEditorConfigs.builder()
-				.withMode(DocEditor.Mode.VIEW)
-				.withDownloadEnabled(true)
-				.build((VFSLeaf) vfsItem);
-		docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW).getController();
-		listenTo(docEditorCtrl);
+		if(vfsItem instanceof VFSLeaf file) {
+			if(folderModule.isForceDownload(file)) {
+				doDownload(ureq, file);
+			} else {
+				DocEditorConfigs configs = DocEditorConfigs.builder()
+						.withMode(DocEditor.Mode.VIEW)
+						.withDownloadEnabled(true)
+						.build(file);
+				docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW).getController();
+				listenTo(docEditorCtrl);
+			}
+		}
 	}
 }
