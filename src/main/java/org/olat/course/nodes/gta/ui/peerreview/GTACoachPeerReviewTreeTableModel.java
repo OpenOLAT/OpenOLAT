@@ -120,7 +120,6 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 			case identityFullName -> row;
 			case numOfReviewers -> row.getNumOfReviewers();
 			case numOfReviews -> row.getNumOfReviews();
-			case progress -> row.getProgressBar();
 			case plot -> row.getAssessmentPlot();
 			case median -> row.getMedian();
 			case average -> row.getAverage();
@@ -142,7 +141,6 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 		identityFullName("table.header.reviewed.identity"),
 		numOfReviewers("table.header.num.of.reviewers"),
 		numOfReviews("table.header.num.of.reviews"),
-		progress("table.header.review.progress"),
 		plot("table.header.review.plot"),
 		median("table.header.median"),
 		average("table.header.average"),

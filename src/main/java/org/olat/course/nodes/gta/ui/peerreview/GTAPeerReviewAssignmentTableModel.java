@@ -127,8 +127,8 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	}
 	
 	private String getNumberOfReviews(PeerReviewAssignmentRow assignmentRow) {
-		return new StringBuilder(6).append(assignmentRow.getNumOfReviewers()).append("/")
-				.append(assignmentRow.getNumOfTasksToReviews()).toString();
+		return new StringBuilder(6).append(assignmentRow.getNumOfTasksToReviews()).append("/")
+				.append(assignmentRow.getNumOfReviewers()).toString();
 	}
 	
 	@Override
@@ -140,7 +140,7 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	public enum AssignmentsCols implements FlexiSortableColumnDef {
 		taskTitle("table.header.group.taskTitle"),
 		numberReviews("table.header.num.of.review"),
-		assignment("table.header.assignment"),
+		assignment("table.header.assignment")
 		;
 		
 		private final String i18nKey;

@@ -110,7 +110,7 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 			}
 
 			BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), 10, (float)min, (float)max, (float)average,
-					(float)firstQuartile, (float)thirdQuartile, (float)median, "o_rubric_sufficient");
+					(float)firstQuartile, (float)thirdQuartile, (float)median, "o_rubric_default");
 			row.setBoxPlot(assessmentsPlot);
 		}
 

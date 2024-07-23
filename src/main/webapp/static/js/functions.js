@@ -2722,10 +2722,12 @@ function o_ffSetFocus(type, formId, formItemId) {
 			
 			if(el.classList.contains('o_date_day')) {
 				const datepicker = el.datepicker;
-				datepicker.datepicker.setOptions({ showOnFocus: false });
-				jQuery(el).focus();
-				datepicker.datepicker.setOptions({ showOnFocus: true });
-				focusApplied = true;
+				if(datepicker !== undefined) {
+					datepicker.setOptions({ showOnFocus: false });
+					jQuery(el).focus();
+					datepicker.setOptions({ showOnFocus: true });
+					focusApplied = true;
+				}
 			} else if(!el.disabled) {
 				if(tagName == "INPUT"
 					&& el.type === "text" && el.value != "") {

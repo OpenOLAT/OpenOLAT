@@ -49,7 +49,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
@@ -87,8 +86,6 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private GTAPeerReviewManager peerReviewManager;
 	
 	public GTACoachPeerReviewAwardedListController(UserRequest ureq, WindowControl wControl,
 			TaskList taskList, Identity reviewer, CourseEnvironment courseEnv, GTACourseNode gtaNode) {
@@ -120,8 +117,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(new FullNameNodeRenderer());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.identityFullName, nodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.numOfReviews,
-				new NumOfCellRenderer(reviewers != null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.progress));
+				new NumOfCellRenderer(reviewers != null, translate("warning.awarded.reviewers"))));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.plot));
 		if(isSumConfigured()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sum));

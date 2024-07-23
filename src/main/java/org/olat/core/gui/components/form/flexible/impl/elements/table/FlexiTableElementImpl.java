@@ -1266,7 +1266,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			doTreeClose(Integer.parseInt(treeTableClose));
 		} else if(StringHelper.containsNonWhitespace(crumb)) {
 			doCrumb(crumb);
-		} else if(StringHelper.containsNonWhitespace(openCloseAll)) {
+		} else if(StringHelper.containsNonWhitespace(openCloseAll)
+				&& dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			if("openall".equals(openCloseAll)) {
 				doOpenAll();
 			} else if("closeall".equals(openCloseAll)) {

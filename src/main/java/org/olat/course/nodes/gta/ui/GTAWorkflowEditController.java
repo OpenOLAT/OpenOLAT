@@ -357,8 +357,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 		stepsCont.add(peerReviewPeriodEl);
 		
 		String peerReviewLength = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_LENGTH, "");
-		peerReviewPeriodLengthEl = uifactory.addTextElement("peer.review.period.length", 8, peerReviewLength, stepsCont);
+		peerReviewPeriodLengthEl = uifactory.addTextElement("peer.review.period.length", 4, peerReviewLength, stepsCont);
 		peerReviewPeriodLengthEl.setVisible(peerReviewEnabled && useRelativeDates);
+		peerReviewPeriodLengthEl.setMaxLength(4);
+		peerReviewPeriodLengthEl.setDisplaySize(4);
+		peerReviewPeriodLengthEl.setElementCssClass("form-inline");
+		peerReviewPeriodLengthEl.setTextAddOn(translate("days"));
 		peerReviewPeriodLengthEl.setMandatory(true);
 		
 		//revision

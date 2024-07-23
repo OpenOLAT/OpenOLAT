@@ -140,8 +140,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(new FullNameNodeRenderer());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.identityFullName, nodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.numOfReviewers,
-				new NumOfCellRenderer(assessedIdentities != null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.progress));
+				new NumOfCellRenderer(assessedIdentities != null, translate("warning.received.reviews"))));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.plot));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.median));
 		if(isSumConfigured()) {
@@ -328,7 +327,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 				taskList, task, gtaNode);
 		listenTo(assignmentsCtrl);
 		
-		String title = "";
+		String title = translate("review.assignment.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				assignmentsCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);

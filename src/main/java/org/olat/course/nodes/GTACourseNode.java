@@ -254,6 +254,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	public static final String GTASK_PEER_REVIEW_FORM_OF_REVIEW = "grouptask.peer.review.form.of.review";
 	public static final String GTASK_PEER_REVIEW_DOUBLE_BLINDED_REVIEW = "grouptask.peer.review.double.blinded.review";
 	public static final String GTASK_PEER_REVIEW_SINGLE_BLINDED_REVIEW = "grouptask.peer.review.single.blinded.review";
+	public static final String GTASK_PEER_REVIEW_FORM_OF_REVIEW_DEFAULT = GTASK_PEER_REVIEW_DOUBLE_BLINDED_REVIEW;
 	public static final String GTASK_PEER_REVIEW_OPEN_REVIEW = "grouptask.peer.review.open.review";
 	
 	public static final String GTASK_PEER_REVIEW_EVAL_FORM_SOFTKEY = "grouptask.peer.review.evaluation.form.softkey";
@@ -261,6 +262,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_SAME_TASK = "grouptask.peer.review.assignment.same.task";
 	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_OTHER_TASK = "grouptask.peer.review.assignment.other.task";
 	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_RANDOM = "grouptask.peer.review.assignment.random";
+	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_DEFAULT = GTASK_PEER_REVIEW_ASSIGNMENT_SAME_TASK;
+	
 	public static final String GTASK_PEER_REVIEW_NUM_OF_REVIEWS = "grouptask.peer.review.num.of.reviews";
 	public static final String GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT = "3";
 	public static final String GTASK_PEER_REVIEW_SCORE_EVAL_FORM = "grouptask.peer.review.score.evaluation";

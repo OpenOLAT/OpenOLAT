@@ -163,7 +163,7 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 				translate("peer.review.open.review.desc"), null, null, true));
 		formReviewEl = uifactory.addCardSingleSelectHorizontal("peer.review.form.review", "peer.review.form.review", formLayout, formReviewPK);
 		formReviewEl.setElementCssClass("o_radio_cards_sm");
-		String formReview = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW);
+		String formReview = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW, GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW_DEFAULT);
 		if(StringHelper.containsNonWhitespace(formReview) && formReviewPK.containsKey(formReview)) {
 			formReviewEl.select(formReview, true);
 		}
@@ -177,7 +177,8 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 		assignmentsPK.add(SelectionValues.entry(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_RANDOM, translate("peer.review.assignment.random"),
 				translate("peer.review.assignment.random.desc"), null, null, true));
 		assignmentEl = uifactory.addCardSingleSelectHorizontal("peer.review.assignment", "peer.review.assignment", formLayout, assignmentsPK);
-		String assignment = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT);
+		String assignment = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT,
+				GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_DEFAULT);
 		if(StringHelper.containsNonWhitespace(assignment) && assignmentsPK.containsKey(assignment)) {
 			assignmentEl.select(assignment, true);
 		}

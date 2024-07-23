@@ -22,6 +22,7 @@ package org.olat.modules.cemedia.ui.medias;
 import java.util.Arrays;
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
@@ -92,6 +93,8 @@ public class FileMediaController extends BasicController implements PageElementE
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private FolderModule folderModule;
+	@Autowired
 	private MediaService mediaService;
 	@Autowired
 	private DocEditorService docEditorService;
@@ -155,8 +158,10 @@ public class FileMediaController extends BasicController implements PageElementE
 		
 		if (item instanceof VFSLeaf leaf) {
 			vfsLeaf = leaf;
+			VFSMediaMapper mapper = new VFSMediaMapper(vfsLeaf);
+			mapper.setForceDownloadHtml(folderModule.isForceDownload());
 			String mapperUri = registerCacheableMapper(ureq,
-					"File-Media-" + media.getKey() + "-" + vfsLeaf.getLastModified(), new VFSMediaMapper(vfsLeaf));
+					"File-Media-" + media.getKey() + "-" + vfsLeaf.getLastModified(), mapper);
 			mainVC.contextPut("mapperUri", mapperUri);
 		} else {
 			mainVC.contextRemove("mapperUri");

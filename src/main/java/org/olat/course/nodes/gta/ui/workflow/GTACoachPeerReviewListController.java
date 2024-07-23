@@ -104,7 +104,8 @@ public class GTACoachPeerReviewListController extends AbstractWorkflowListContro
 		infos.append("<p><i class='o_icon o_icon-fw o_icon_group'> </i> ").append(numOfReviewsInfos).append("</p>");
 		
 		String assignmentInfos = "";
-		String assignment = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT);
+		String assignment = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT,
+				GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_DEFAULT);
 		if(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_SAME_TASK.equals(assignment)) {
 			assignmentInfos = translate("peer.review.assignment.same.task");
 		} else if(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_OTHER_TASK.equals(assignment)) {
@@ -114,7 +115,8 @@ public class GTACoachPeerReviewListController extends AbstractWorkflowListContro
 		}
 		
 		String formReviewInfos = "";
-		String formReview = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW);
+		String formReview = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW,
+				GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW_DEFAULT);
 		if(GTACourseNode.GTASK_PEER_REVIEW_DOUBLE_BLINDED_REVIEW.equals(formReview)) {
 			formReviewInfos = translate("peer.review.double.blinded.review");
 		} else if(GTACourseNode.GTASK_PEER_REVIEW_SINGLE_BLINDED_REVIEW.equals(formReview)) {

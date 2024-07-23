@@ -40,10 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
-import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
-import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
-import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -199,7 +195,6 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		
 		String id = Integer.toString(counter++);
 		double progress = aggregatedStatistics == null ? 0.0d : aggregatedStatistics.progress() * 100d;
-		createProgressPieChart(id, aggreagtedRow, progress);
 		if(progress > 0.0d) {
 			createBoxPlot(id, aggreagtedRow, aggregatedStatistics);
 		}
@@ -212,21 +207,9 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		}
 		
 		String id = Integer.toString(counter++);
-		createProgressPieChart(id, row, progress);
 		if(progress > 0.0d) {
 			createBoxPlot(id, row, sessionStatistics.statistics());
 		}
-	}
-	
-	protected ProgressBarItem createProgressPieChart(String id, CoachPeerReviewRow row, double progress) {
-		ProgressBarItem progressItem = uifactory.addProgressBar("progress-".concat(id), null, 20, (float)progress, 100f, null, flc);
-		progressItem.setRenderStyle(RenderStyle.pie);
-		progressItem.setRenderSize(RenderSize.inline);
-		progressItem.setLabelAlignment(LabelAlignment.right);
-		progressItem.setLabelMaxEnabled(false);
-		progressItem.setPercentagesEnabled(true);
-		row.setProgressBar(progressItem);
-		return progressItem;
 	}
 	
 	protected BoxPlot createBoxPlot(String id, CoachPeerReviewRow row, SessionStatistics statistics) {
@@ -252,7 +235,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), statistics.maxSteps(),
 				(float)min, (float)max, (float)average,
 				(float)firstQuartile, (float)thirdQuartile, (float)median,
-				"o_rubric_sufficient");
+				"o_rubric_default");
 		row.setAssessmentPlot(assessmentsPlot);
 		return assessmentsPlot;
 	}
