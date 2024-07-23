@@ -119,7 +119,7 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 	
 	private void initWidgetsForm(FormItemContainer formLayout) {
 		
-		BoxPlot assessmentsPlot = new BoxPlot("plot-assessments", 200, 10f, 140f, 30f, 50f, 90f, 85f, "o_rubric_sufficient");
+		BoxPlot assessmentsPlot = new BoxPlot("plot-assessments", 200, 10f, 140f, 30f, 50f, 90f, 85f, "o_rubric_default");
 		assessmentsWidget = WidgetFactory.createComponentWidget("assessments", null, translate("review.all.assessment"), "o_icon_success_status");
 		assessmentsWidget.setContent(assessmentsPlot);
 		
@@ -247,7 +247,8 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 	private void doViewReview(UserRequest ureq, ParticipantPeerReviewAssignmentRow sessionRow) {
 		removeAsListenerAndDispose(evaluationFormExecCtrl);
 		
-		String mode = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW);
+		String mode = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW,
+				GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW_DEFAULT);
 		boolean anonym = GTACourseNode.GTASK_PEER_REVIEW_DOUBLE_BLINDED_REVIEW.equals(mode)
 				|| GTACourseNode.GTASK_PEER_REVIEW_SINGLE_BLINDED_REVIEW.equals(mode);
 		String reviewerFullName = sessionRow.getReviewerName();

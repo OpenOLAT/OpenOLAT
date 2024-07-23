@@ -24,7 +24,6 @@ import java.util.List;
 import org.olat.core.gui.components.boxplot.BoxPlot;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
-import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
@@ -60,7 +59,6 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	private boolean canEdit;
 	private FormLink toolsLink;
 	private BoxPlot assessmentPlot;
-	private ProgressBarItem progressBar;
 	
 	public CoachPeerReviewRow(Task task, String fullName) {
 		this.task = task;
@@ -144,18 +142,6 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 
 	public void setAssignment(TaskReviewAssignment assignment) {
 		this.assignment = assignment;
-	}
-	
-	public float getProgress() {
-		return progressBar == null ? 0.0f : progressBar.getActual();
-	}
-
-	public ProgressBarItem getProgressBar() {
-		return progressBar;
-	}
-
-	public void setProgressBar(ProgressBarItem progressBar) {
-		this.progressBar = progressBar;
 	}
 
 	public Double getMedian() {

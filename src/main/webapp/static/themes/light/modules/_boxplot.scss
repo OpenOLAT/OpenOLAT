@@ -61,7 +61,14 @@ svg.o_bp {
 			fill:  $o-evaluation-sufficient-fill;
 		}
 	}
-	
+	&.o_rubric_default {
+			.o_bp_v_s, .o_bp_v_e, .o_bp_v_l, .o_bp_v_a, .o_bp_v_m {
+			stroke: $o-evaluation-default-color;
+		}
+		.o_bp_v_b {
+			fill:  $o-evaluation-default-fill;
+		}
+	}
 }
 
 

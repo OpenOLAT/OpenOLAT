@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow.NumOf;
 
 /**
@@ -36,20 +37,26 @@ import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow.NumOf;
 public class NumOfCellRenderer implements FlexiCellRenderer {
 	
 	private final boolean withWarning;
+	private final String warningText;
 	
-	public NumOfCellRenderer(boolean withWarning) {
+	public NumOfCellRenderer(boolean withWarning, String warningText) {
 		this.withWarning = withWarning;
+		this.warningText = warningText;
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof NumOf numOf) {
-			target.append("<span>").append(numOf.number()).append("/").append(numOf.reference());
+			target.append("<span>");
 			if(withWarning && numOf.number() < numOf.reference()) {
-				target.append(" <i class='o_icon o_icon-fw o_icon_important'> </i>");
+				target.append("<i class='o_icon o_icon-fw o_icon_important'");
+				if(StringHelper.containsNonWhitespace(warningText)) {
+					target.append(" title=\"").append(warningText).append("\"");
+				}
+				target.append("> </i> ");
 			}
-			target.append("</span>");
+			target.append(numOf.number()).append("/").append(numOf.reference()).append("</span>");
 		}
 	}
 }

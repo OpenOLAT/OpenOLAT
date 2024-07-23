@@ -211,7 +211,8 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 	private void doStartReview(UserRequest ureq, ParticipantPeerReviewAssignmentRow sessionRow) {
 		removeAsListenerAndDispose(evaluationFormExecCtrl);
 		
-		String mode = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW);
+		String mode = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW,
+				GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW_DEFAULT);
 		boolean anonym = GTACourseNode.GTASK_PEER_REVIEW_DOUBLE_BLINDED_REVIEW.equals(mode);
 		String assessedFullName = sessionRow.getAssessedIdentityName();
 		GTAEvaluationFormExecutionOptions options = GTAEvaluationFormExecutionOptions.valueOf(true, false, anonym, assessedFullName, true, true, false);

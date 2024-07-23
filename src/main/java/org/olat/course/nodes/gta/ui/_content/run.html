@@ -161,7 +161,7 @@
 	<div class="o_step_block">
 		<div class="o_header" #if($collapse_peerReviewAwarded) onclick="$r.javaScriptCommand("hide","step","peerReviewAwarded")" #else onclick="$r.javaScriptCommand("show","step","peerReviewAwarded")" #end>
 			<span class="o_process_status_badge $peerReviewAwardedCssStatus">$peerReviewAwardedStatus</span>
-			<h4 class="o_title">$r.translate("run.peerreviews")</h4>
+			<h4 class="o_title">$r.translate("run.peerreviews.awarded")</h4>
 			#if($r.isNotEmpty($peerReviewDueDate))
 				<div id="o_step_peerreview_duedate" class="o_meta" data-remaining-time="$peerReviewRemainingTime"><i class="o_icon o_icon-fw o_icon_timelimit"> </i> $peerReviewDueDate</div>
 			#end
