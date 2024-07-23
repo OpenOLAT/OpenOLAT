@@ -21,11 +21,11 @@ package org.olat.core.util.vfs;
 
 import java.io.File;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 
@@ -37,6 +37,7 @@ public class VFSMediaMapper implements Mapper {
 	
 	private VFSLeaf vfsLeaf;
 	private boolean useMaster = false;
+	private boolean forceDownloadHtml = false;
 	
 	public VFSMediaMapper() {
 	}
@@ -45,12 +46,21 @@ public class VFSMediaMapper implements Mapper {
 		this.vfsLeaf = vfsLeaf;
 	}
 
-	public void setUseMaster(boolean useMaster) {
-		this.useMaster = useMaster;
-	}
-
 	public VFSMediaMapper(File file) {
 		this.vfsLeaf = new LocalFileImpl(file);
+	}
+
+	/**
+	 * Force download possible unsecure type of file like HTML, JavaScript, SVG...
+	 * 
+	 * @param forceDownloadHtml
+	 */
+	public void setForceDownloadHtml(boolean forceDownloadHtml) {
+		this.forceDownloadHtml = forceDownloadHtml;
+	}
+
+	public void setUseMaster(boolean useMaster) {
+		this.useMaster = useMaster;
 	}
 
 	public void setMediaFile(VFSLeaf vfsLeaf) {
@@ -70,6 +80,7 @@ public class VFSMediaMapper implements Mapper {
 		if(vfsLeaf != null && vfsLeaf.exists()) {
 			VFSMediaResource mediaResource = new VFSMediaResource(vfsLeaf);
 			mediaResource.setUseMaster(useMaster);
+			mediaResource.setDownloadable(forceDownloadHtml);
 			return mediaResource;
 		}
 		return new NotFoundMediaResource();

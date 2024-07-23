@@ -29,12 +29,14 @@ package org.olat.core.commons.modules.bc;
 import java.io.File;
 import java.nio.file.Path;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.vfs.VFSItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -127,6 +129,26 @@ public class FolderModule extends AbstractSpringModule {
 	public void setForceDownload(boolean enable) {
 		String enabled = enable ? "true" : "false";
 		setStringProperty(CONFIG_FORCE_DOWNLOAD, enabled, true);
+	}
+	
+	/**
+	 * 
+	 * @param item The item
+	 * @return
+	 */
+	public boolean isForceDownload(VFSItem item) {
+		if(isForceDownload()) {
+			String mimeType = WebappHelper.getMimeType(item.getName());
+			//html, xhtml and javascript are set to force download
+			if (mimeType == null
+					|| "text/html".equals(mimeType)
+					|| "application/xhtml+xml".equals(mimeType)
+					|| "application/javascript".equals(mimeType)
+					|| "image/svg+xml".equals(mimeType)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public String getCanonicalRoot() {

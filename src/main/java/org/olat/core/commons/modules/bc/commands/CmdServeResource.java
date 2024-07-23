@@ -136,7 +136,7 @@ public class CmdServeResource implements FolderCommand {
 						encoding = enc;
 						if (useLoaded) {
 							StringMediaResource smr = new StringMediaResource();
-							String mimetype = forceDownload ? VFSMediaResource.MIME_TYPE_FORCE_DOWNLOAD : "text/html;charset=" + enc;
+							String mimetype = forceDownload ? VFSMediaResource.MIME_TYPE_OCTET_STREAM : "text/html;charset=" + enc;
 							smr.setContentType(mimetype);
 							smr.setEncoding(enc);
 							smr.setData(page);

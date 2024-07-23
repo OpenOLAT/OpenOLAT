@@ -30,6 +30,8 @@ import java.io.InputStream;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.image.ImageUtils;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.gui.media.MediaResource;
@@ -40,9 +42,8 @@ import org.olat.core.util.WebappHelper;
 
 public class VFSMediaResource implements MediaResource {
 
-	private static final String MIME_TYPE_OCTET_STREAM = "application/octet-stream";
-	//use this pseudo mime-type to force download on ie 6
-	public static final String MIME_TYPE_FORCE_DOWNLOAD = "application/force-download";
+	public static final String MIME_TYPE_OCTET_STREAM = "application/octet-stream";
+
 	private VFSLeaf vfsLeaf;
 	private boolean useMaster = false;
 	private VFSLeaf vfsMasterLeaf;
@@ -90,30 +91,23 @@ public class VFSMediaResource implements MediaResource {
 
 	@Override
 	public String getContentType() {
-		String mimeType;
+		String mimeType = WebappHelper.getMimeType(getLeaf().getName());
 		if(downloadable) {
-			mimeType = WebappHelper.getMimeType(getLeaf().getName());
 			//html, xhtml and javascript are set to force download
-			if (mimeType == null || "text/html".equals(mimeType)
-					|| "application/xhtml+xml".equals(mimeType)
-					|| "application/javascript".equals(mimeType)
-					|| "image/svg+xml".equals(mimeType)) {
-				mimeType = MIME_TYPE_FORCE_DOWNLOAD;
+			if (CoreSpringFactory.getImpl(FolderModule.class).isForceDownload(getLeaf())) {
+				mimeType = MIME_TYPE_OCTET_STREAM;
 				unknownMimeType = true;
 			} else if (encoding != null) {
 				mimeType = mimeType + ";charset=" + encoding;
 			}
+		} else if (mimeType == null) {
+			mimeType = MIME_TYPE_OCTET_STREAM;
+			unknownMimeType = true;
 		} else {
-			mimeType = WebappHelper.getMimeType(getLeaf().getName());
-			if (mimeType == null) {
-				mimeType = MIME_TYPE_OCTET_STREAM;
-				unknownMimeType = true;
-			} else {
-				// if any encoding is set, append it for the browser
-				if (encoding != null) {
-					mimeType = mimeType + ";charset=" + encoding;
-					unknownMimeType = false;
-				}
+			// if any encoding is set, append it for the browser
+			if (encoding != null) {
+				mimeType = mimeType + ";charset=" + encoding;
+				unknownMimeType = false;
 			}
 		}
 		return mimeType;
