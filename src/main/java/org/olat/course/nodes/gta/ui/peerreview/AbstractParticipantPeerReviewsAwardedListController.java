@@ -106,11 +106,12 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 			if(sessionStatistics.statistics().numOfQuestions() > 10) {
 				firstQuartile = sessionStatistics.statistics().firstQuartile();
 				median = sessionStatistics.statistics().median();
-				thirdQuartile = sessionStatistics.statistics().thridQuartile();
+				thirdQuartile = sessionStatistics.statistics().thirdQuartile();
 			}
 
-			BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), 10, (float)min, (float)max, (float)average,
-					(float)firstQuartile, (float)thirdQuartile, (float)median, "o_rubric_default");
+			BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), sessionStatistics.statistics().maxSteps(),
+					(float)min, (float)max, (float)average,
+					(float)firstQuartile, (float)thirdQuartile, (float)median, null);
 			row.setBoxPlot(assessmentsPlot);
 		}
 

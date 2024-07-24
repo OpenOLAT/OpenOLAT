@@ -75,8 +75,12 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	public static final String IN_PROGRESS_TAB_ID = "InProgress";
 	public static final String DONE_TAB_ID = "Done";
 	public static final String INVALID_TAB_ID = "Invalid";
+	public static final String UNSUFFICIENT_REVIEWS_TAB_ID = "UnsufficientReviews";
+	public static final String UNSUFFICIENT_REVIEWERS_TAB_ID = "UnsufficientReviewers";
 	
 	public static final String FILTER_ASSIGNMENT_STATUS = "assignment-status";
+	public static final String FILTER_UNSUFFICIENT_REVIEWERS = "assignment-unsufficient-reviewers";
+	public static final String FILTER_UNSUFFICIENT_REVIEWS = "assignment-unsufficient-reviews";
 	
 	private FlexiFiltersTab allTab;
 	protected FlexiTableElement tableEl;
@@ -151,9 +155,13 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		FlexiTableMultiSelectionFilter assignmentStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.assignment.status"),
 				FILTER_ASSIGNMENT_STATUS, assignmentStatusPK, true);
 		filters.add(assignmentStatusFilter);
+		
+		initFilters(filters);
 	
 		tableEl.setFilters(true, filters, false, false);
 	}
+	
+	protected abstract void initFilters(List<FlexiTableExtendedFilter> filters);
 	
 	protected void initFiltersPresets(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
@@ -183,9 +191,13 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STATUS, List.of(TaskReviewAssignmentStatus.invalidate.name()))));
 		tabs.add(invalidTab);
 		
+		initFiltersPresets(ureq, tabs);
+		
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
+	
+	protected abstract void initFiltersPresets(UserRequest ureq, List<FlexiFiltersTab> tabs);
 	
 	protected void decorateWithAggregatedStatistics(CoachPeerReviewRow aggreagtedRow, SessionStatistics aggregatedStatistics) {
 		List<CoachPeerReviewRow> subRows = aggreagtedRow.getChildrenRows();
@@ -229,13 +241,12 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		if(statistics.numOfQuestions() > 10) {
 			firstQuartile = statistics.firstQuartile();
 			median = statistics.median();
-			thirdQuartile = statistics.thridQuartile();
+			thirdQuartile = statistics.thirdQuartile();
 		}
 		
 		BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), statistics.maxSteps(),
 				(float)min, (float)max, (float)average,
-				(float)firstQuartile, (float)thirdQuartile, (float)median,
-				"o_rubric_default");
+				(float)firstQuartile, (float)thirdQuartile, (float)median, null);
 		row.setAssessmentPlot(assessmentsPlot);
 		return assessmentsPlot;
 	}

@@ -77,8 +77,8 @@ public class SessionStatisticsCalculator {
 		double min = values.get(0).doubleValue();
 		double max = values.get(values.size() - 1).doubleValue();
 		double median = calculateMedian(values);
-		double firstQuartile = percentile(values, 0.25d);
-		double thirdQuartile = percentile(values, 0.75d);
+		double firstQuartile = percentile(values, 25d);
+		double thirdQuartile = percentile(values, 75d);
 		
 		double total = calculateTotal(values);
 		double average = calculateAverage(values);
@@ -153,8 +153,8 @@ public class SessionStatisticsCalculator {
 		return median;
 	}
 	
-	public double percentile(List<Double> values, double percentile) {
-		int index = (int) Math.ceil((percentile / 100) * values.size());
+	public static double percentile(List<Double> values, double percentile) {
+		int index = (int) Math.ceil((percentile / 100.0) * values.size());
 		if(index <= 0) {
 			return 0.0d;
 		}
