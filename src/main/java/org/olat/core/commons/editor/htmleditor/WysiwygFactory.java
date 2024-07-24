@@ -81,7 +81,14 @@ public class WysiwygFactory {
 			VFSContainer rootDir, String filePath, String mediaPath, boolean editorCheckEnabled, boolean versions,
 			VFSEdusharingProvider edusharingProvider) {
 		return new HTMLEditorController(ureq, wControl, rootDir, filePath, null, null, mediaPath, editorCheckEnabled,
-				versions, edusharingProvider);
+				versions, true, true, false, edusharingProvider);
+	}
+	
+	public static HTMLEditorController createReadOnlyController(UserRequest ureq, WindowControl wControl,
+			VFSContainer rootDir, String filePath, String mediaPath, boolean editorCheckEnabled, boolean versions,
+			VFSEdusharingProvider edusharingProvider) {
+		return new HTMLEditorController(ureq, wControl, rootDir, filePath, null, null, mediaPath,
+				editorCheckEnabled, versions, false, false, true, edusharingProvider);
 	}
 
 	/**
@@ -129,7 +136,8 @@ public class WysiwygFactory {
 			CustomLinkTreeModel customLinkTreeModel, CustomLinkTreeModel toolLinkTreeModel,
 			VFSEdusharingProvider edusharingProvider) {
 		return new HTMLEditorController(ureq, wControl, baseContainer, relFilePath,
-				customLinkTreeModel, toolLinkTreeModel, null, editorCheckEnabled, version, edusharingProvider);
+				customLinkTreeModel, toolLinkTreeModel, null,
+				editorCheckEnabled, version, true, true, false, edusharingProvider);
 	}
 
 	/**

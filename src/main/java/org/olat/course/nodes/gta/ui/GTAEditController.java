@@ -214,6 +214,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 			}
 		} else if(peerReviewCtrl == source) {
 			if(event == Event.DONE_EVENT) {
+				updateAssessment(ureq);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(peerReviewCtrl);

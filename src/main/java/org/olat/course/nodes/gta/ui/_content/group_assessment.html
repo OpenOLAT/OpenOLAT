@@ -4,11 +4,15 @@
 <div id="collapse_group_${r.getCId()}" class="collapse #if($groupOpen) in #end">$r.render("group")</div>
 <script>
 jQuery(function() {
-	jQuery('#collapse_group_${r.getCId()}').on('hide.bs.collapse', function () {
+	jQuery('#collapse_group_${r.getCId()}').on('hide.bs.collapse', function (e) {
+		if(e.target.getAttribute('id').indexOf("collapse_group_") != 0) return;
+		
 		jQuery('#collapse_group_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
 		$r.javaScriptCommand("panel","groupOpen","false");
 	})
-	jQuery('#collapse_group_${r.getCId()}').on('show.bs.collapse', function () {
+	jQuery('#collapse_group_${r.getCId()}').on('show.bs.collapse', function (e) {
+		if(e.target.getAttribute('id').indexOf("collapse_group_") != 0) return;
+		
 		jQuery('#collapse_group_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 		$r.javaScriptCommand("panel","groupOpen","true");
 	})
@@ -22,11 +26,15 @@ jQuery(function() {
 <div id="collapse_identity_${r.getCId()}" class="collapse #if($identityOpen) in #end">$r.render("identity")</div>
 <script>
 jQuery(function() {
-	jQuery('#collapse_identity_${r.getCId()}').on('hide.bs.collapse', function () {
+	jQuery('#collapse_identity_${r.getCId()}').on('hide.bs.collapse', function (e) {
+		if(e.target.getAttribute('id').indexOf("collapse_identity_") != 0) return;
+		
 		jQuery('#collapse_identity_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
 		$r.javaScriptCommand("panel","identityOpen","false");
 	})
-	jQuery('#collapse_identity_${r.getCId()}').on('show.bs.collapse', function () {
+	jQuery('#collapse_identity_${r.getCId()}').on('show.bs.collapse', function (e) {
+		if(e.target.getAttribute('id').indexOf("collapse_identity_") != 0) return;
+		
 		jQuery('#collapse_identity_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 		$r.javaScriptCommand("panel","identityOpen","true");
 	})
