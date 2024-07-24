@@ -82,7 +82,7 @@
 		<swagger.ui.version>5.17.14</swagger.ui.version>
 		<com.mysql.version>9.0.0</com.mysql.version>
 		<org.postgresql.version>42.7.3</org.postgresql.version>
-		<org.infinispan.version>15.0.5.Final</org.infinispan.version>
+		<org.infinispan.version>15.0.6.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.23.0</version.selenium>
 		<activemq.artemis.version>2.35.0</activemq.artemis.version>
@@ -1601,7 +1601,7 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.17.0</version>
+			<version>1.17.1</version>
 		</dependency>
 		<dependency>
 			<!-- Used by at least commons-validator -->
@@ -2043,7 +2043,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.14.0</version>
+			<version>3.15.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -2178,7 +2178,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.16.0</version>
+			<version>1.16.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
@@ -2189,7 +2189,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.13.0</version>
+			<version>1.13.1</version>
 		</dependency>
 <!-- Thanks for using https://jar-download.com -->
 
@@ -2367,7 +2367,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.26.0</version>
+			<version>3.26.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
