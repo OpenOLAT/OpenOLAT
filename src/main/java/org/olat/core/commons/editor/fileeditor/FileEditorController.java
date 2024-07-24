@@ -35,6 +35,7 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.HTMLReadOnlyController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -70,6 +71,8 @@ public class FileEditorController extends BasicController implements Activateabl
 	private boolean temporaryLock;
 	
 	@Autowired
+	private FolderModule folderModule;
+	@Autowired
 	private VFSLockManager vfsLockManager;
 	@Autowired
 	private DocEditorService docEditorService;
@@ -82,6 +85,7 @@ public class FileEditorController extends BasicController implements Activateabl
 		wControl.getWindowBackOffice().getWindow().addListener(this);
 		
 		VelocityContainer mainVC = createVelocityContainer("file_editor");
+		mainVC.contextPut("cssClass", "");
 
 		boolean isEdit = Mode.EDIT.equals(configs.getMode());
 		if (isEdit) {
@@ -123,6 +127,16 @@ public class FileEditorController extends BasicController implements Activateabl
 					htmlCtrl.getRichTextConfiguration().disableMedia();
 				}
 				
+				editCtrl = htmlCtrl;
+			} else if(folderModule.isForceDownload()) {
+				mainVC.contextPut("cssClass", "tox-noborder");
+				HTMLEditorController htmlCtrl = WysiwygFactory.createReadOnlyController(ureq, getWindowControl(), config.getVfsContainer(),
+						config.getFilePath(), config.getMediaPath(), true, configs.isVersionControlled(), config.getEdusharingProvider());
+				htmlCtrl.setNewFile(false);
+				htmlCtrl.getRichTextConfiguration().setAllowCustomMediaFactory(config.isAllowCustomMediaFactory());
+				if (config.isDisableMedia()) {
+					htmlCtrl.getRichTextConfiguration().disableMedia();
+				}
 				editCtrl = htmlCtrl;
 			} else {
 				editCtrl = new HTMLReadOnlyController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), vfsLeaf.getName(), false);

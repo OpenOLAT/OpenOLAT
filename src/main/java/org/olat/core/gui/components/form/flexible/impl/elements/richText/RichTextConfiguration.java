@@ -384,6 +384,46 @@ public class RichTextConfiguration implements Disposable {
 
 		tinyConfig = TinyConfig.fileEditorConfig;
 	}
+	
+	/**
+	 * Method to add a read only configuration for the file based editor
+	 * 
+	 * @param usess
+	 * @param externalToolbar
+	 * @param guiTheme
+	 * @param baseContainer
+	 * @param relFilePath
+	 * @param customLinkTreeModel
+	 * @param toolLinkTreeModel
+	 */
+	public void setConfigProfileFileEditorReadOnly(UserSession usess, Theme guiTheme, VFSContainer baseContainer, String relFilePath) {
+		setConfigBasics(guiTheme);
+		
+		// Line 1
+		setReadOnly(true);
+		setFullscreenEnabled(true, false);
+		setInsertDateTimeEnabled(true, usess.getLocale());
+		// Plugins without buttons
+		setNoneditableContentEnabled(true, null);
+		TinyMCECustomPluginFactory customPluginFactory = CoreSpringFactory.getImpl(TinyMCECustomPluginFactory.class);
+		List<TinyMCECustomPlugin> enabledCustomPlugins = customPluginFactory.getCustomPlugionsForProfile();
+		for (TinyMCECustomPlugin tinyMCECustomPlugin : enabledCustomPlugins) {
+			setCustomPluginEnabled(tinyMCECustomPlugin);
+		}
+
+		// Allow editing of all kind of HTML elements and attributes
+		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, EXTENDED_VALID_ELEMENTS_VALUE_FULL + "," + MATHML_VALID_ELEMENTS);
+		setQuotedConfigValue(INVALID_ELEMENTS, INVALID_ELEMENTS_FILE_FULL_VALUE_UNSAVE);
+
+		// Setup file and link browser
+		if (baseContainer != null) {
+			setFileBrowserCallback(baseContainer, null, toolLinkTreeModel, IMAGE_SUFFIXES_VALUES,
+					MEDIA_SUFFIXES_VALUES, FLASH_PLAYER_SUFFIXES_VALUES);
+			setDocumentMediaBase(baseContainer, relFilePath, usess);
+		}
+
+		tinyConfig = TinyConfig.readOnlyConfig;
+	}
 
 	/**
 	 * Internal helper to generate the common configurations which are used by each
