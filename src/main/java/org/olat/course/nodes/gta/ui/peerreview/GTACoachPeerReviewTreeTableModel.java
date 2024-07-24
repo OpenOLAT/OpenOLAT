@@ -29,7 +29,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow.NumOf;
 
 /**
  * 
@@ -56,13 +58,28 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 	@Override
 	public void filter(String quickSearch, List<FlexiTableFilter> filters) {
 		if(filters != null && (StringHelper.containsNonWhitespace(quickSearch) || (!filters.isEmpty() && filters.get(0) != null))) {
+			List<CoachPeerReviewRow> filteredRows = backupRows;
+
 			String searchString = StringHelper.containsNonWhitespace(quickSearch) ? quickSearch.toLowerCase() : null;
 			TaskReviewAssignmentStatus assignmentStatus = getFilterStatus(filters);
-			List<CoachPeerReviewRow> filteredRows = backupRows.stream()
-						.filter(row -> acceptSearch(row, searchString) && acceptStatus(row, assignmentStatus))
-						.toList();
-			List<CoachPeerReviewRow> filteredRowsWithParents = preserveParents(filteredRows);
-			super.setFilteredObjects(filteredRowsWithParents);
+			if(StringHelper.containsNonWhitespace(quickSearch) || assignmentStatus != null) {
+				filteredRows = filteredRows.stream()
+							.filter(row -> acceptSearch(row, searchString) && acceptStatus(row, assignmentStatus))
+							.toList();
+				filteredRows = preserveParents(filteredRows);
+			}
+			
+			boolean unsufficientReviews = isUnsufficientNumber(AbstractCoachPeerReviewListController.FILTER_UNSUFFICIENT_REVIEWS, filters);
+			boolean unsufficientReviewers = isUnsufficientNumber(AbstractCoachPeerReviewListController.FILTER_UNSUFFICIENT_REVIEWERS, filters);
+			if(unsufficientReviews || unsufficientReviewers) {
+				filteredRows = filteredRows.stream()
+					.filter(row -> acceptUnsufficientNumberOf(row.getNumOfReviewers(), unsufficientReviewers)
+							&& acceptUnsufficientNumberOf(row.getNumOfReviews(), unsufficientReviews))
+					.toList();
+				filteredRows = preserveChildren(filteredRows);
+			}
+			
+			super.setFilteredObjects(new ArrayList<>(filteredRows));
 		} else {
 			setObjects(backupRows);
 		}
@@ -88,12 +105,35 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 		return finalRows;
 	}
 	
+	private List<CoachPeerReviewRow> preserveChildren(List<CoachPeerReviewRow> filteredRows) {
+		List<CoachPeerReviewRow> finalRows = new ArrayList<>(backupRows.size());
+		
+		for(CoachPeerReviewRow row:filteredRows) {
+			finalRows.add(row);
+			if(row.getParent() == null && row.getChildrenRows() != null && !row.getChildrenRows().isEmpty()) {
+				List<CoachPeerReviewRow> children = row.getChildrenRows();
+				for(CoachPeerReviewRow child:children) {
+					if(!filteredRows.contains(child)) {
+						finalRows.add(child);
+					}
+				}
+			}
+		}
+		
+		return finalRows;
+	}
+	
 	private TaskReviewAssignmentStatus getFilterStatus(List<FlexiTableFilter> filters) {
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AbstractCoachPeerReviewListController.FILTER_ASSIGNMENT_STATUS);
 		if(statusFilter != null) {
 			return TaskReviewAssignmentStatus.secureValueOf(statusFilter.getValue(), null);
 		}
 		return null;
+	}
+	
+	private boolean isUnsufficientNumber(String filterId, List<FlexiTableFilter> filters) {
+		FlexiTableFilter unsufficientFilter = FlexiTableFilter.getFilter(filters, filterId);
+		return unsufficientFilter != null && filterId.equals(unsufficientFilter.getValue());
 	}
 	
 	private boolean acceptSearch(CoachPeerReviewRow row, String searchString) {
@@ -106,6 +146,11 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 	
 	private boolean acceptStatus(CoachPeerReviewRow row, TaskReviewAssignmentStatus assignmentStatus) {
 		return assignmentStatus == null || row.getAssignmentStatus() == assignmentStatus;
+	}
+	
+	private boolean acceptUnsufficientNumberOf(NumOf row, boolean unsufficientNumber) {
+		if(!unsufficientNumber) return true;
+		return row != null && row.number() < row.reference();
 	}
 
 	@Override
@@ -121,9 +166,9 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 			case numOfReviewers -> row.getNumOfReviewers();
 			case numOfReviews -> row.getNumOfReviews();
 			case plot -> row.getAssessmentPlot();
-			case median -> row.getMedian();
-			case average -> row.getAverage();
-			case sum -> row.getSum();
+			case median -> AssessmentHelper.getRoundedScore(row.getMedian());
+			case average -> AssessmentHelper.getRoundedScore(row.getAverage());
+			case sum -> AssessmentHelper.getRoundedScore(row.getSum());
 			case sessionStatus -> row;
 			case editReview -> Boolean.valueOf(row.canEdit());
 			case tools -> row.getToolsLink();

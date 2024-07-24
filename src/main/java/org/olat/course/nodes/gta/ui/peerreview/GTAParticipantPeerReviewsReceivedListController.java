@@ -52,6 +52,7 @@ import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.model.SessionParticipationListStatistics;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
+import org.olat.course.nodes.gta.model.SessionStatistics;
 import org.olat.course.nodes.gta.ui.peerreview.GTAParticipantPeerReviewTableModel.ReviewCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -70,6 +71,7 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 	
 	private static final String CMD_VIEW = "view";
 	
+	private BoxPlot assessmentsPlot;
 	private WidgetGroup widgetGroup;
 	private FormItem widgetGroupItem;
 	private FigureWidget reviewersWidget;
@@ -118,8 +120,8 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 	}
 	
 	private void initWidgetsForm(FormItemContainer formLayout) {
-		
-		BoxPlot assessmentsPlot = new BoxPlot("plot-assessments", 200, 10f, 140f, 30f, 50f, 90f, 85f, "o_rubric_default");
+
+		assessmentsPlot = new BoxPlot("plot-assessments", 0, 0f, 0f, 0f, 0f, 0f, 0f, null);
 		assessmentsWidget = WidgetFactory.createComponentWidget("assessments", null, translate("review.all.assessment"), "o_icon_success_status");
 		assessmentsWidget.setContent(assessmentsPlot);
 		
@@ -165,7 +167,13 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 		List<TaskReviewAssignmentStatus> statusForStats = List.of(TaskReviewAssignmentStatus.done);
 		SessionParticipationListStatistics statisticsList = peerReviewManager.loadStatistics(task, assignments, gtaNode, statusForStats);
 		Map<EvaluationFormParticipation, SessionParticipationStatistics> statisticsMap = statisticsList.toParticipationsMap();
-		
+			
+		loadTableModel(assignments, statisticsMap);
+		loadBoxPlotModel(statisticsList.aggregatedStatistics());
+	}
+
+	private void loadTableModel(List<TaskReviewAssignment> assignments,
+			Map<EvaluationFormParticipation, SessionParticipationStatistics> statisticsMap) {
 		int count = 0;
 		List<ParticipantPeerReviewAssignmentRow> rows = new ArrayList<>(assignments.size());
 		for(TaskReviewAssignment assignment:assignments) {
@@ -178,6 +186,33 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+
+	private void loadBoxPlotModel(SessionStatistics sessionStatistics) {
+		double firstQuartile = 0.0d;
+		double thirdQuartile = 0.0d;
+		double median = 0.0d;
+		double min = 0.0d;
+		double max = 0.0d;
+		double average = 0.0d;
+		int maxSteps = 5;
+		
+		if(sessionStatistics != null) {
+			min = sessionStatistics.min();
+			max = sessionStatistics.max();
+			average = sessionStatistics.average();
+			maxSteps = sessionStatistics.maxSteps();
+			if(sessionStatistics.numOfQuestions() > 10) {
+				firstQuartile = sessionStatistics.firstQuartile();
+				median = sessionStatistics.median();
+				thirdQuartile = sessionStatistics.thirdQuartile();
+			}
+		}
+
+		assessmentsPlot = new BoxPlot("plot-assessments", maxSteps,
+				(float)min, (float)max, (float)average,
+				(float)firstQuartile, (float)thirdQuartile, (float)median, null);
+		assessmentsWidget.setContent(assessmentsPlot);
 	}
 	
 	@Override

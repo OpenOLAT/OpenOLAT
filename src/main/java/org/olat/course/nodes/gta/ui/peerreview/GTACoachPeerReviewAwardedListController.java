@@ -28,6 +28,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -38,8 +40,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -119,12 +126,9 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.numOfReviews,
 				new NumOfCellRenderer(reviewers != null, translate("warning.awarded.reviewers"))));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.plot));
-		if(isSumConfigured()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sum));
-		}
-		if(isAverageConfigured()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.average));
-		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.median));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.average));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sum));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sessionStatus,
 				new TaskReviewAssignmentStatusCellRenderer(getLocale(), true)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.review.view", translate("review.view"), "view"));
@@ -143,6 +147,22 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		initFiltersPresets(ureq);
 	}
 	
+	@Override
+	protected void initFilters(List<FlexiTableExtendedFilter> filters) {
+		SelectionValues statusValues = new SelectionValues();
+		statusValues.add(SelectionValues.entry(FILTER_UNSUFFICIENT_REVIEWS, translate("filter.unsufficient.reviews")));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.unsufficient.reviews"),
+				FILTER_UNSUFFICIENT_REVIEWS, statusValues, true));
+	}
+
+	@Override
+	protected void initFiltersPresets(UserRequest ureq, List<FlexiFiltersTab> tabs) {
+		FlexiFiltersTab insufficientTab = FlexiFiltersTabFactory.tabWithImplicitFilters(UNSUFFICIENT_REVIEWS_TAB_ID, translate("filter.unsufficient.reviews"),
+				TabSelectionBehavior.clear, List.of(
+						FlexiTableFilterValue.valueOf(FILTER_UNSUFFICIENT_REVIEWS, List.of(FILTER_UNSUFFICIENT_REVIEWS))));
+		tabs.add(insufficientTab);
+	}
+
 	@Override
 	protected void loadModel() {
 		List<CoachPeerReviewRow> rows = new ArrayList<>();
