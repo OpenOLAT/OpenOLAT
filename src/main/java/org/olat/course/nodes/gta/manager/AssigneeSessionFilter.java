@@ -55,7 +55,7 @@ public class AssigneeSessionFilter implements SessionFilter {
 		  .append("  inner join gtatask task on (task.survey.key=sessionFilter.survey.key)")
 		  .append("  inner join taskreviewasssignment assignment on (task.key=assignment.task.key)");
 		
-		sb.where().append(" assignment.assignee.key=:assigneeKey and task.taskList.key=:taskListKey");
+		sb.where().append(" assignment.assignee.key=:assigneeKey and assignment.assigned=true and task.taskList.key=:taskListKey");
 		if(status != null && !status.isEmpty()) {
 			sb.and().append(" assignment.status in :status");
 		}

@@ -73,7 +73,32 @@ public class GTATaskReviewAssignmentDAO {
 		return assignmentList != null && !assignmentList.isEmpty() ? assignmentList.get(0) : null;
 	}
 	
+	/**
+	 * @param task The task for the assignments
+	 * @return All assignments flagged as assigned (assignment was not removed)
+	 */
 	public List<TaskReviewAssignment> getAssignments(Task task) {
+		String query = """
+				select assignment from taskreviewasssignment assignment
+				inner join fetch assignment.task as task
+				inner join fetch assignment.assignee as assignee
+				left join fetch assignment.participation as surveyParticipation
+				where task.key=:taskKey and assignment.assigned=true
+				""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, TaskReviewAssignment.class)
+				.setParameter("taskKey", task.getKey())
+				.getResultList();
+	}
+	
+	/**
+	 * Lists the assignments, removed one too
+	 * 
+	 * @param task The task for the assignments
+	 * @return All assignments flagged as assigned (assignment was not removed)
+	 */
+	public List<TaskReviewAssignment> getAssignmentsWithRemovedOnes(Task task) {
 		String query = """
 				select assignment from taskreviewasssignment assignment
 				inner join fetch assignment.task as task
@@ -94,6 +119,21 @@ public class GTATaskReviewAssignmentDAO {
 				inner join fetch assignment.task as task
 				inner join fetch assignment.assignee as assignee
 				left join fetch assignment.participation as surveyParticipation
+				where task.taskList.key=:taskListKey and assignment.assigned=true
+				""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, TaskReviewAssignment.class)
+				.setParameter("taskListKey", taskList.getKey())
+				.getResultList();
+	}
+	
+	public List<TaskReviewAssignment> getAssignmentsWithRemovedOnes(TaskList taskList) {
+		String query = """
+				select assignment from taskreviewasssignment assignment
+				inner join fetch assignment.task as task
+				inner join fetch assignment.assignee as assignee
+				left join fetch assignment.participation as surveyParticipation
 				where task.taskList.key=:taskListKey
 				""";
 		
@@ -109,7 +149,7 @@ public class GTATaskReviewAssignmentDAO {
 				inner join fetch assignment.task as task
 				inner join fetch assignment.assignee as assignee
 				left join fetch assignment.participation as surveyParticipation
-				where assignee.key=:reviewerKey and task.taskList.key=:taskListKey
+				where assignee.key=:reviewerKey and task.taskList.key=:taskListKey and assignment.assigned=true
 				""";
 		
 		return dbInstance.getCurrentEntityManager()
@@ -130,7 +170,7 @@ public class GTATaskReviewAssignmentDAO {
 				inner join assignment.task as task
 				inner join assignment.assignee as assignee
 				inner join fetch assignee.user as assigneeUsr
-				where task.taskList.key=:taskListKey and assignment.status in (:status)
+				where task.taskList.key=:taskListKey and assignment.status in (:status) and assignment.assigned=true
 				""";
 		
 		return dbInstance.getCurrentEntityManager()

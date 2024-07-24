@@ -168,14 +168,18 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 	}
 
 	@Override
-	public List<TaskReviewAssignment> getAssignmentsForTask(Task task) {
+	public List<TaskReviewAssignment> getAssignmentsForTask(Task task, boolean withRemovedOnes) {
 		if(task == null || task.getKey() == null) return new ArrayList<>();
-		return taskReviewAssignmentDao.getAssignments(task);
+		return withRemovedOnes
+				? taskReviewAssignmentDao.getAssignmentsWithRemovedOnes(task)
+				: taskReviewAssignmentDao.getAssignments(task);
 	}
 	
 	@Override
-	public List<TaskReviewAssignment> getAssignmentsForTaskList(TaskList taskList) {
-		return taskReviewAssignmentDao.getAssignments(taskList);
+	public List<TaskReviewAssignment> getAssignmentsForTaskList(TaskList taskList, boolean withRemovedOnes) {
+		return withRemovedOnes
+				? taskReviewAssignmentDao.getAssignmentsWithRemovedOnes(taskList)
+				: taskReviewAssignmentDao.getAssignments(taskList);
 	}
 
 	@Override

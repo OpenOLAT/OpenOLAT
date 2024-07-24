@@ -179,7 +179,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	}
 	
 	private void loadModelList(List<CoachPeerReviewRow> rows) {
-		List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTaskList(taskList);
+		List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTaskList(taskList, false);
 		Map<Identity,List<TaskReviewAssignment>> assigneeToAssignments = new HashMap<>();
 		for(TaskReviewAssignment assignment:assignments) {
 			List<TaskReviewAssignment> taskAssignments = assigneeToAssignments

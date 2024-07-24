@@ -161,7 +161,7 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 	}
 	
 	private void loadModel() {
-		List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTask(task);
+		List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTask(task, false);
 		setNumberOfReviewers(assignments.size());
 
 		List<TaskReviewAssignmentStatus> statusForStats = List.of(TaskReviewAssignmentStatus.done);

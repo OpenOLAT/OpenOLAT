@@ -502,12 +502,12 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	@Override
 	protected Task stepPeerReview(UserRequest ureq, Task assignedTask) {
 		assignedTask = super.stepPeerReview(ureq, assignedTask);
-		assignedTask = stepPeerReviewAwaredRatings(ureq, assignedTask);
+		assignedTask = stepPeerReviewAwardedRatings(ureq, assignedTask);
 		assignedTask = stepPeerReviewReceivedRatings(ureq, assignedTask);
 		return assignedTask;
 	}
 
-	private Task stepPeerReviewAwaredRatings(UserRequest ureq, Task assignedTask) {
+	private Task stepPeerReviewAwardedRatings(UserRequest ureq, Task assignedTask) {
 		mainVC.contextPut("review", Boolean.FALSE);
 		
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
@@ -555,26 +555,31 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
-			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
+			if(assignedTask == null
+					|| assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
 					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
-					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
+					|| assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.peerreview
+					|| !isPeerReviewReceivedRatingsDateVisible(assignedTask)) {
 				setNotAvailableStatusAndCssClass("peerReviewReceived");
-			} else if(assignedTask.getTaskStatus() == TaskProcess.peerreview) {
-				setReviewStatusAndCssClass("peerReviewReceived");
-				setPeerReviewsReceivedList(ureq, assignedTask);
-			} else {
-				setDoneStatusAndCssClass("peerReviewReceived");
+			} else  {
+				setDoneStatusAndCssClass("peerReviewReceived", "msg.status.available");
 				setPeerReviewsReceivedList(ureq, assignedTask);
 			}
-		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.peerreview) {
-			setReviewStatusAndCssClass("peerReviewReceived");
+		} else if(assignedTask != null
+				&& isPeerReviewReceivedRatingsDateVisible(assignedTask)
+				&& (assignedTask.getTaskStatus() == TaskProcess.solution || assignedTask.getTaskStatus() == TaskProcess.grading || assignedTask.getTaskStatus() == TaskProcess.graded)) {
+			setDoneStatusAndCssClass("peerReviewReceived", "msg.status.available");
 			setPeerReviewsReceivedList(ureq, assignedTask);
 		} else {
-			setDoneStatusAndCssClass("peerReviewReceived");
-			setPeerReviewsReceivedList(ureq, assignedTask);
+			setNotAvailableStatusAndCssClass("peerReviewReceived");
 		}
 
 		return assignedTask;
+	}
+	
+	private boolean isPeerReviewReceivedRatingsDateVisible(Task assignedTask) {
+		DueDate dueDate = getPeerReviewDueDate(assignedTask);
+		return (dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().compareTo(new Date()) < 0);
 	}
 	
 	private void setPeerReviewsReceivedList(UserRequest ureq, Task assignedTask) {

@@ -53,6 +53,7 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
+import org.olat.modules.forms.ui.ProgressEvent;
 import org.olat.user.UserAvatarMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -177,6 +178,8 @@ public class GTAEvaluationFormExecutionController extends BasicController {
 					updateAssignmentAndScore();
 				}
 				fireEvent(ureq, event);
+			} else if(event instanceof ProgressEvent pe) {
+				updateAssignmentStatus(TaskReviewAssignmentStatus.inProgress);
 			}
 		} else if(ratingCtrl == source) {
 			if(event == Event.DONE_EVENT) {
