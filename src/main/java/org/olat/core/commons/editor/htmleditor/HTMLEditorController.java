@@ -133,6 +133,8 @@ public class HTMLEditorController extends FormBasicController implements Activat
 	private boolean editorCheckEnabled = true; // default
 	private boolean versionsEnabled = true;
 	private boolean buttonsEnabled = true;
+	private boolean readOnly = false;
+	private boolean metadataEnabled = true;
 	private String fileError;
 	private VFSEdusharingProvider edusharingProvider;
 	private Object userObject;
@@ -168,9 +170,10 @@ public class HTMLEditorController extends FormBasicController implements Activat
 	 */
 	public HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
 			String relFilePath, CustomLinkTreeModel customLinkTreeModel, CustomLinkTreeModel toolLinkTreeModel,
-			String mediaPath, boolean editorCheckEnabled, boolean versions, VFSEdusharingProvider edusharingProvider) {
+			String mediaPath, boolean editorCheckEnabled, boolean versions, boolean withButtons, boolean withMetadata, boolean readOnly, VFSEdusharingProvider edusharingProvider) {
 		super(ureq, wControl, "htmleditor");
-		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, toolLinkTreeModel, mediaPath, editorCheckEnabled, versions, true, edusharingProvider);
+		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, toolLinkTreeModel, mediaPath,
+				editorCheckEnabled, versions, withButtons, withMetadata, readOnly, edusharingProvider);
 		initForm(ureq);
 	}
 	
@@ -180,17 +183,21 @@ public class HTMLEditorController extends FormBasicController implements Activat
 			boolean versions, boolean withButtons, VFSEdusharingProvider edusharingProvider, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "htmleditor", rootForm);
 		// set some basic variables
-		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, null, mediaPath, editorCheckEnabled, versions, withButtons, edusharingProvider);
+		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, null, mediaPath,
+				editorCheckEnabled, versions, withButtons, true, false, edusharingProvider);
 		initForm(ureq);
 	}
 	
 	private void initEditorForm(VFSContainer bContainer, String relFilePath, CustomLinkTreeModel linkTreeModel,
-			CustomLinkTreeModel toolLinkTreeModel, String mPath, boolean editorCheck, boolean versions, boolean withButtons,
+			CustomLinkTreeModel toolLinkTreeModel, String mPath,
+			boolean editorCheck, boolean versions, boolean withButtons, boolean withMetadata, boolean readOnly,
 			VFSEdusharingProvider edusharingProvider) {
 		
 		this.baseContainer = bContainer;
 		this.fileRelPath = relFilePath;
 		this.mediaPath = mPath;
+		this.readOnly = readOnly;
+		this.metadataEnabled = withMetadata;
 		this.versionsEnabled = versions;
 		this.buttonsEnabled = withButtons;
 		this.customLinkTreeModel = linkTreeModel;
@@ -211,7 +218,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 		}		
 		
 		// check if someone else is already editing the file
-		if (fileLeaf instanceof LocalFileImpl) {
+		if (!readOnly && fileLeaf instanceof LocalFileImpl) {
 			// Cast to LocalFile necessary because the VFSItem is missing some
 			// ID mechanism that identifies an item within the system
 			lockResourceable = createLockResourceable(fileLeaf);
@@ -362,13 +369,24 @@ public class HTMLEditorController extends FormBasicController implements Activat
 			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
 			vc.contextPut("fileToLargeError", fileError);
 		} else {
-			htmlElement = uifactory.addRichTextElementForFileData("rtfElement", null, body, -1, -1, baseContainer,
-					fileName, customLinkTreeModel, toolLinkTreeModel, formLayout, ureq.getUserSession(),
-					getWindowControl());
-			//
+			if(readOnly) {
+				htmlElement = uifactory.addRichTextElementForFileDataReadOnly("rtfElement", null, body, -1, -1, baseContainer,
+						fileName, formLayout, ureq.getUserSession(),
+						getWindowControl());
+			} else {
+				htmlElement = uifactory.addRichTextElementForFileData("rtfElement", null, body, -1, -1, baseContainer,
+						fileName, customLinkTreeModel, toolLinkTreeModel, formLayout, ureq.getUserSession(),
+						getWindowControl());
+			}
+			
 			// Add resize handler
 			RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 
-			editorConfiguration.setEditorHeight("full");
+			if(readOnly && !buttonsEnabled && !metadataEnabled) {
+				editorConfiguration.setEditorHeight("100vh");
+			} else {
+				editorConfiguration.setEditorHeight("full");
+			}
+			
 			if(StringHelper.containsNonWhitespace(mediaPath)) {
 				editorConfiguration.setFileBrowserUploadRelPath(mediaPath);
 			}
@@ -381,14 +399,16 @@ public class HTMLEditorController extends FormBasicController implements Activat
 				saveClose = uifactory.addFormLink("saveandclosebuttontext", formLayout, Link.BUTTON);
 			}
 			
-			// Add some file metadata		
-			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
-			metadataVC = createVelocityContainer("metadata");		
-			vc.put("metadata", metadataVC);		
-			long lm = fileLeaf.getLastModified();
-			metadataVC.contextPut("lastModified", Formatter.getInstance(ureq.getLocale()).formatDateAndTime(new Date(lm)));
-			metadataVC.contextPut("charSet", charSet);
-			metadataVC.contextPut("fileName", fileName);			
+			// Add some file metadata
+			if(metadataEnabled) {
+				VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
+				metadataVC = createVelocityContainer("metadata");
+				vc.put("metadata", metadataVC);
+				long lm = fileLeaf.getLastModified();
+				metadataVC.contextPut("lastModified", Formatter.getInstance(ureq.getLocale()).formatDateAndTime(new Date(lm)));
+				metadataVC.contextPut("charSet", charSet);
+				metadataVC.contextPut("fileName", fileName);
+			}
 		}
 	}
 	
@@ -438,7 +458,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 	 * @param metadataEnabled true: show metadata; false: hide metadata
 	 */
 	public void setShowMetadataEnabled(boolean metadataEnabled) {
-		VelocityContainer vc = (VelocityContainer) this.flc.getComponent();
+		VelocityContainer vc = (VelocityContainer)flc.getComponent();
 		if (metadataEnabled) {
 			vc.put("metadata", metadataVC);		
 		} else {
@@ -567,8 +587,10 @@ public class HTMLEditorController extends FormBasicController implements Activat
 		}
 		
 		// Update last modified date in view
-		long lm = fileLeaf.getLastModified();
-		metadataVC.contextPut("lastModified", Formatter.getInstance(getLocale()).formatDateAndTime(new Date(lm)));
+		if(metadataVC != null) {
+			long lm = fileLeaf.getLastModified();
+			metadataVC.contextPut("lastModified", Formatter.getInstance(getLocale()).formatDateAndTime(new Date(lm)));
+		}
 		// Set new content as default value in element
 		htmlElement.setNewOriginalValue(content);
 		return true;

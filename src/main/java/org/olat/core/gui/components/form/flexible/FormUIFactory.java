@@ -1164,6 +1164,23 @@ public class FormUIFactory {
 		return rte;
 	}
 	
+	public RichTextElement addRichTextElementForFileDataReadOnly(String name, final String i18nLabel, String initialValue,
+			final int rows, int cols, VFSContainer baseContainer, String relFilePath,
+			FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
+		// Create richt text element with bare bone configuration
+		RichTextElement rte = new RichTextElementImpl(name, initialValue, rows, cols, formLayout.getTranslator().getLocale());
+		setLabelIfNotNull(i18nLabel, rte);
+		// Now configure editor
+		rte.getEditorConfiguration().setConfigProfileFileEditorReadOnly(usess,
+				wControl.getWindowBackOffice().getWindow().getGuiTheme(),
+				baseContainer, relFilePath);
+		rte.getEditorConfiguration().setStatusBar(false);
+		rte.getEditorConfiguration().setPathInStatusBar(false);
+		// Add to form and finish
+		formLayout.add(rte);
+		return rte;
+	}
+	
 	public MathLiveElement addMathLiveElement(String name, String i18nLabel, String formula, FormItemContainer formLayout) {
 		// Create rich text element with bare bone configuration
 		MathLiveElement mle = new MathLiveElementImpl(name);

@@ -34,8 +34,14 @@ public class TinyConfig {
 	protected static final TinyConfig minimalisticConfig;
 	protected static final TinyConfig veryMinimalisticWithLinksConfig;
 	protected static final TinyConfig veryMinimalisticConfig;
+	protected static final TinyConfig readOnlyConfig;
 	protected static final TinyConfig paragraphEditorConfig;
-
+	
+	//read only profile
+	static {
+		String plugins = "lists,hr,charmap,image,insertdatetime,table,visualchars,visualblocks,noneditable,emoticons,paste,link,quotespliter,olatmatheditor,olatmovieviewer,tabfocus,visualchars,visualblocks,noneditable,media";
+		readOnlyConfig = new TinyConfig(plugins, null, "");
+	}
 	//min profile
 	static {
 		String plugins = "lists,hr,emoticons,paste,link,quotespliter,tabfocus,visualchars,noneditable";
