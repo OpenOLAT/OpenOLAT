@@ -23,7 +23,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskRef;
 import org.olat.course.nodes.gta.model.TaskImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +67,21 @@ public class GTATaskDAO {
 			.getResultList();
 
 		return tasks.isEmpty() ? null : tasks.get(0);
+	}
+	
+	public List<Task> getTasks(TaskList taskList, GTACourseNode cNode) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select task from gtatask task")
+		  .append(" inner join task.taskList tasklist");
+		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			sb.append(" inner join fetch task.businessGroup bGroup");
+		} else {
+			sb.append(" inner join fetch task.identity identity");
+		}
+		sb.append(" where tasklist.key=:taskListKey");
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Task.class)
+				.setParameter("taskListKey", taskList.getKey())
+				.getResultList();
 	}
 
 }

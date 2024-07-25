@@ -2,6 +2,11 @@
 	<legend>$r.translate("workflow.list.peerreview")</legend>
 	$r.render("configuration")
 	
+	#if($r.visible("automatic.assignment"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("automatic.assignment")
+	</div>
+	#end
 	<fieldset class="o_gta_workflow_received_reviews"><legend>
 		<h4 onclick="jQuery('#collapse_received_${r.getCId()}').collapse('toggle')">
 			<i id="collapse_received_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($receivedOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
@@ -11,6 +16,7 @@
 			$r.render("received")
 		</div>
 		<script>
+		"use strict";
 		jQuery(function() {
 			jQuery('#collapse_received_${r.getCId()}').on('hide.bs.collapse', function () {
 				jQuery('#collapse_received_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -33,6 +39,7 @@
 			$r.render("awarded")
 		</div>
 		<script>
+		"use strict";
 		jQuery(function() {
 			jQuery('#collapse_awarded_${r.getCId()}').on('hide.bs.collapse', function () {
 				jQuery('#collapse_awarded_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');

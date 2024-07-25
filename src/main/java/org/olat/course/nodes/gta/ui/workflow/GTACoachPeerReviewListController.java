@@ -21,15 +21,20 @@ package org.olat.course.nodes.gta.ui.workflow;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.InfoPanelItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.duedate.DueDateConfig;
@@ -38,6 +43,7 @@ import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.ui.peerreview.GTACoachPeerReviewAwardedListController;
 import org.olat.course.nodes.gta.ui.peerreview.GTACoachPeerReviewReceivedListController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -48,12 +54,15 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class GTACoachPeerReviewListController extends AbstractWorkflowListController {
 	
 	private final BreadcrumbPanel stackPanel;
+	private FormLink automaticAssignmentButton;
 
 	private Boolean awardedOpen = Boolean.TRUE;
 	private Boolean receivedOpen = Boolean.TRUE;
 	
+	private CloseableModalController cmc;
 	private GTACoachPeerReviewAwardedListController peerReviewAwardedListCtrl;
 	private GTACoachPeerReviewReceivedListController peerReviewReceivedListCtrl;
+	private ConfirmAutomaticAssignmentController confirmAutomaticAssignmentCtrl;
 	
 	public GTACoachPeerReviewListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			UserCourseEnvironment coachCourseEnv, List<Identity> identities, GTACourseNode gtaNode) {
@@ -73,6 +82,10 @@ public class GTACoachPeerReviewListController extends AbstractWorkflowListContro
 			layoutCont.contextPut("receivedOpen", receivedOpen);
 		}
 		
+		automaticAssignmentButton = uifactory.addFormLink("automatic.assignment", formLayout, Link.BUTTON);
+		automaticAssignmentButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mix");
+		automaticAssignmentButton.setVisible(isAllowToAssign());
+		
 		TaskList taskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
 		peerReviewReceivedListCtrl = new GTACoachPeerReviewReceivedListController(ureq, getWindowControl(),
 				stackPanel, taskList, assessedIdentities,
@@ -84,6 +97,13 @@ public class GTACoachPeerReviewListController extends AbstractWorkflowListContro
 				taskList, assessedIdentities, courseEnv, gtaNode, mainForm);
 		listenTo(peerReviewAwardedListCtrl);
 		formLayout.add("awarded", peerReviewAwardedListCtrl.getInitialFormItem());
+	}
+	
+	protected boolean isAllowToAssign() {
+		String permissions = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_PERMISSION,
+				GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_PERMISSION_DEFAULT);
+		return !coachCourseEnv.isCourseReadOnly() &&			
+				(coachCourseEnv.isAdmin() || (coachCourseEnv.isCoach() && permissions.contains(GroupRoles.coach.name())));
 	}
 	
 	protected void initConfigurationInfos(InfoPanelItem panel) {
@@ -133,8 +153,32 @@ public class GTACoachPeerReviewListController extends AbstractWorkflowListContro
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(confirmAutomaticAssignmentCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				peerReviewAwardedListCtrl.loadModel();
+				peerReviewReceivedListCtrl.loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmAutomaticAssignmentCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmAutomaticAssignmentCtrl = null;
+		cmc = null;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if ("ONCLICK".equals(event.getCommand())) {
+		if(automaticAssignmentButton == source) {
+			doConfirmAutomaticAssignment(ureq);
+		} else if ("ONCLICK".equals(event.getCommand())) {
 			String receivedOpenVal = ureq.getParameter("receivedOpen");
 			if (StringHelper.containsNonWhitespace(receivedOpenVal)) {
 				receivedOpen = Boolean.valueOf(receivedOpenVal);
@@ -152,5 +196,18 @@ public class GTACoachPeerReviewListController extends AbstractWorkflowListContro
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doConfirmAutomaticAssignment(UserRequest ureq) {
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		TaskList taskList = gtaManager.createIfNotExists(courseEntry, gtaNode);
+		confirmAutomaticAssignmentCtrl = new ConfirmAutomaticAssignmentController(ureq, getWindowControl(),
+				courseEntry, taskList, gtaNode);
+		listenTo(confirmAutomaticAssignmentCtrl);
+		
+		String title = translate("automatic.assignment.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmAutomaticAssignmentCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

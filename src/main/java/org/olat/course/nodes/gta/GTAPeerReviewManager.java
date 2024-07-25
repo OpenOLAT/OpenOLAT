@@ -66,6 +66,8 @@ public interface GTAPeerReviewManager {
 	 */
 	List<Identity> getAssigneesToRemind(TaskList taskList, GTACourseNode gtaNode);
 	
+	void assign(RepositoryEntry courseEntry, TaskList taskList, GTACourseNode gtaNode);
+	
 	
 	Task loadOrCreateSurvey(Task task, RepositoryEntry courseEntry, GTACourseNode gtaNode);
 	

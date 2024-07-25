@@ -263,6 +263,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_OTHER_TASK = "grouptask.peer.review.assignment.other.task";
 	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_RANDOM = "grouptask.peer.review.assignment.random";
 	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_DEFAULT = GTASK_PEER_REVIEW_ASSIGNMENT_SAME_TASK;
+	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_PERMISSION = "grouptask.peer.review.assignment.permission";
+	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_PERMISSION_DEFAULT = "";
 	
 	public static final String GTASK_PEER_REVIEW_NUM_OF_REVIEWS = "grouptask.peer.review.num.of.reviews";
 	public static final String GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT = "3";

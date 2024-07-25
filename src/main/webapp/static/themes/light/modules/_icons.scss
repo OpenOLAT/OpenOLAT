@@ -278,6 +278,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_message { @include o-add-icon('envelope');}
 .o_icon_message_open { @include o-add-icon('envelope-open');}
 .o_icon_metadata { @include o-add-icon('circle-info');}
+.o_icon_mix { @include o-add-icon('arrows-rotate');}
 .o_icon_mobile { @include o-add-icon('mobile');}
 .o_icon_move { @include o-add-icon('arrows');}
 .o_icon_objectives { @include o-add-icon('bullseye');}

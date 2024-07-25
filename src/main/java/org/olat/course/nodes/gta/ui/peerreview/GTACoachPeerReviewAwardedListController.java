@@ -164,7 +164,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	}
 
 	@Override
-	protected void loadModel() {
+	public void loadModel() {
 		List<CoachPeerReviewRow> rows = new ArrayList<>();
 		if(reviewer != null) {
 			List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsOfReviewer(taskList, reviewer);

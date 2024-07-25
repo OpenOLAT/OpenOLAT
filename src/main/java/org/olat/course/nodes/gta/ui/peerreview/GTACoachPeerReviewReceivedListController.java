@@ -195,7 +195,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	}
 	
 	@Override
-	protected void loadModel() {
+	public void loadModel() {
 		List<CoachPeerReviewRow> rows = new ArrayList<>();
 		if(assignedTask != null) {
 			Identity assessedIdentity = assignedTask.getIdentity();
