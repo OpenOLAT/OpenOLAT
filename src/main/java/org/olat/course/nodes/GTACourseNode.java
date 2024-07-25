@@ -1375,7 +1375,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 				
 				// Only done review are taken into account
 				List<TaskReviewAssignmentStatus> statusForScore = List.of(TaskReviewAssignmentStatus.done);
-				List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTask(task);
+				List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTask(task, false);
 				SessionParticipationListStatistics reviewsStatistics = peerReviewManager.loadStatistics(task, assignments, this, statusForScore);
 				for(SessionParticipationStatistics reviewsStatistic:reviewsStatistics.participationsStatistics()) {
 					if(addSum) {

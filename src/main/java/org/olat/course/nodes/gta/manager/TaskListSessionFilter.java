@@ -52,7 +52,7 @@ public class TaskListSessionFilter implements SessionFilter {
 		sb.append("  inner join sessionFilter.participation participationFilter");
 		sb.append("  inner join gtatask task on (task.survey.key=sessionFilter.survey.key)");
 		sb.append("  inner join taskreviewasssignment assignment on (assignment.participation.key=participationFilter.key)");
-		sb.where().append(" task.taskList.key=:taskListKey");
+		sb.where().append(" task.taskList.key=:taskListKey and assignment.assigned=true");
 		if(status != null && !status.isEmpty()) {
 			sb.and().append(" assignment.status in :status");
 		}

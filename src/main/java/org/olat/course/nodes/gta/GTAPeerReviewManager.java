@@ -38,9 +38,15 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface GTAPeerReviewManager {
 	
-	List<TaskReviewAssignment> getAssignmentsForTask(Task task);
+	/**
+	 * 
+	 * @param task The task
+	 * @param withRemovedOnes true to return assignments which was removed too
+	 * @return A list of assignments
+	 */
+	List<TaskReviewAssignment> getAssignmentsForTask(Task task, boolean withRemovedOnes);
 	
-	List<TaskReviewAssignment> getAssignmentsForTaskList(TaskList taskList);
+	List<TaskReviewAssignment> getAssignmentsForTaskList(TaskList taskList, boolean withRemovedOnes);
 	
 	List<TaskReviewAssignment> getAssignmentsOfReviewer(TaskList taskList, Identity reviewer);
 	

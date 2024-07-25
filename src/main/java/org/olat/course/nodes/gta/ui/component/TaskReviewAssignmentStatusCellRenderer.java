@@ -67,7 +67,31 @@ public class TaskReviewAssignmentStatusCellRenderer extends LabelCellRenderer {
 			return assignment.getStatus();
 		}
 		if(val instanceof CoachPeerReviewRow peerReviewRow) {
-			return peerReviewRow.getAssignmentStatus();
+			if(peerReviewRow.getParent() != null) {
+				return peerReviewRow.getAssignmentStatus();
+			}
+			
+			if(peerReviewRow.getChildrenRows() != null && !peerReviewRow.getChildrenRows().isEmpty()) {
+				boolean onlyOpen = true;
+				boolean onlyDone = true;
+				for(CoachPeerReviewRow childRow:peerReviewRow.getChildrenRows()) {
+					if(childRow.getAssignmentStatus() == TaskReviewAssignmentStatus.invalidate
+							|| childRow.getAssignmentStatus() == TaskReviewAssignmentStatus.disabled) {
+						continue;
+					}
+					
+					if(childRow.getAssignmentStatus() != null && childRow.getAssignmentStatus() != TaskReviewAssignmentStatus.open) {
+						onlyOpen &= false;
+					}
+					if(childRow.getAssignmentStatus() != null && childRow.getAssignmentStatus() != TaskReviewAssignmentStatus.done) {
+						onlyDone &= false;
+					}
+				}
+				if(onlyDone) {
+					return TaskReviewAssignmentStatus.done;
+				}
+				return onlyOpen ? TaskReviewAssignmentStatus.open : TaskReviewAssignmentStatus.inProgress;
+			}
 		}
 		return null;
 	}
@@ -91,8 +115,6 @@ public class TaskReviewAssignmentStatusCellRenderer extends LabelCellRenderer {
 		} else if(status == TaskReviewAssignmentStatus.invalidate) {
 			return trans.translate("assessment.evaluation.status.invalid");	
 		}
-		
-		
 		return trans.translate("assessment.evaluation.status.open");
 	}
 	

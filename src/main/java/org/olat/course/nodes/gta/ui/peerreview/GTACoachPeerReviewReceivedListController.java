@@ -199,7 +199,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		List<CoachPeerReviewRow> rows = new ArrayList<>();
 		if(assignedTask != null) {
 			Identity assessedIdentity = assignedTask.getIdentity();
-			List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTask(assignedTask);
+			List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTask(assignedTask, false);
 			SessionParticipationListStatistics statistics = peerReviewManager
 					.loadStatistics(assignedTask, assignments, gtaNode, STATUS_FOR_STATS);
 			loadModelRow(assessedIdentity, assignedTask, assignments, statistics, rows);
@@ -215,7 +215,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		Map<Identity,Task> identityToTask = tasks.stream()
 				.collect(Collectors.toMap(Task::getIdentity, task -> task, (u, v) -> u));		
 
-		List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTaskList(taskList);
+		List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTaskList(taskList, false);
 		Map<Task,List<TaskReviewAssignment>> taskToAssignments = new HashMap<>();
 		for(TaskReviewAssignment assignment:assignments) {
 			List<TaskReviewAssignment> taskAssignments = taskToAssignments
