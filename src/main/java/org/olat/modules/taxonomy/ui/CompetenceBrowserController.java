@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -172,7 +173,7 @@ public class CompetenceBrowserController extends FormBasicController {
 						.findFirst().orElse(null)
 				));	
 			// Sort rows
-			rows.sort(new FlexiTreeNodeComparator());
+			rows.sort(new TaxonomyTreeNodeComparator());
 		}
 		
 		tableModel.setObjects(rows);
@@ -289,6 +290,40 @@ public class CompetenceBrowserController extends FormBasicController {
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			//
+		}
+	}
+	
+	private static class TaxonomyTreeNodeComparator extends FlexiTreeNodeComparator {
+		
+		@Override
+		protected int compareNodes(FlexiTreeTableNode o1, FlexiTreeTableNode o2) {
+			CompetenceBrowserTableRow r1 = (CompetenceBrowserTableRow)o1;
+			CompetenceBrowserTableRow r2 = (CompetenceBrowserTableRow)o2;
+
+			int c = 0;
+			if(r1 == null || r2 == null) {
+				c = compareNullObjects(r1, r2);
+			} else {
+				Integer s1 = r1.getSortOrder();
+				Integer s2 = r2.getSortOrder();
+	
+				if(s1 == null || s2 == null) {
+					c = -compareNullObjects(s1, s2);
+				} else {
+					c = s1.compareTo(s2);
+				}
+				
+				if(c == 0) {
+					String c1 = r1.getDisplayName();
+					String c2 = r2.getDisplayName();
+					if(c1 == null || c2 == null) {
+						c = -compareNullObjects(c1, s2);
+					} else {
+						c = c1.compareTo(c2);
+					}
+				}
+			}
+			return c;
 		}
 	}
 }
