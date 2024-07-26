@@ -882,18 +882,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 	@Override
 	public List<Task> getTasks(TaskList taskList, GTACourseNode cNode) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select task from gtatask task ")
-		  .append(" inner join task.taskList tasklist ");
-		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			sb.append(" inner join fetch task.businessGroup bGroup ");
-		} else {
-			sb.append(" inner join fetch task.identity identity ");
-		}
-		sb.append(" where tasklist.key=:taskListKey");
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Task.class)
-				.setParameter("taskListKey", taskList.getKey())
-				.getResultList();
+		return taskDao.getTasks(taskList, cNode);
 	}
 	
 	@Override

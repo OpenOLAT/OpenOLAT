@@ -23,8 +23,11 @@ import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FIL
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.apache.logging.log4j.util.Strings;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -80,6 +83,7 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 	private SingleSelection formReviewEl;
 	private SingleSelection assignmentEl;
 	private MultipleSelectionElement relationshipEl;
+	private MultipleSelectionElement automaticAssignmentPermissionEl;
 	private FormToggle qualityFeedbackEnableEl;
 	private SingleSelection qualityFeedbackTypeEl;
 	private ComponentWrapperElement referenceEl;
@@ -120,7 +124,11 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 		initConfigurationForm(configurationCont);
 		initConfigurationQualityForm(configurationCont);
 		
-		FormLayoutContainer buttonCont = uifactory.addButtonsFormLayout("buttons", null, configurationCont);
+		FormLayoutContainer permissionsCont = uifactory.addDefaultFormLayout("permissions", null, formLayout);
+		permissionsCont.setFormTitle(translate("peer.review.permissions.title"));
+		initPermissionsForm(permissionsCont);
+		
+		FormLayoutContainer buttonCont = uifactory.addButtonsFormLayout("buttons", null, permissionsCont);
 		uifactory.addFormSubmitButton("save", "save", buttonCont);
 	}
 	
@@ -225,6 +233,21 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 				GTACourseNode.GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_YES_NO);
 		if(qualityFeedbackPK.containsKey(feedbackType)) {
 			qualityFeedbackTypeEl.select(feedbackType, true);
+		}
+	}
+	
+	private void initPermissionsForm(FormItemContainer formLayout) {
+		SelectionValues rolesPK = new SelectionValues();
+		rolesPK.add(SelectionValues.entry(GroupRoles.coach.name(), translate("automatic.assignment.role.coach")));
+		automaticAssignmentPermissionEl = uifactory.addCheckboxesVertical("automatic.assignment.permissions", formLayout,
+				rolesPK.keys(), rolesPK.values(), 1);
+		String permissions = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_PERMISSION,
+				GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_PERMISSION_DEFAULT);
+		String[] roles = permissions.split(",");
+		for(String role:roles) {
+			if(StringHelper.containsNonWhitespace(role) && rolesPK.containsKey(role)) {
+				automaticAssignmentPermissionEl.select(role, true);
+			}
 		}
 	}
 	
@@ -374,6 +397,10 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 		} else {
 			config.remove(GTACourseNode.GTASK_PEER_REVIEW_QUALITY_FEEDBACK_TYPE);
 		}
+		
+		//Automatic assignment
+		Collection<String> roles = automaticAssignmentPermissionEl.getSelectedKeys();
+		config.setStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_PERMISSION, Strings.join(roles, ','));
 	}
 	
 	private void doSaveEvaluation(UserRequest ureq, RepositoryEntry formEntry) {

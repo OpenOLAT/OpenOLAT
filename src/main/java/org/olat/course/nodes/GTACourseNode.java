@@ -263,6 +263,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_OTHER_TASK = "grouptask.peer.review.assignment.other.task";
 	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_RANDOM = "grouptask.peer.review.assignment.random";
 	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_DEFAULT = GTASK_PEER_REVIEW_ASSIGNMENT_SAME_TASK;
+	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_PERMISSION = "grouptask.peer.review.assignment.permission";
+	public static final String GTASK_PEER_REVIEW_ASSIGNMENT_PERMISSION_DEFAULT = "";
 	
 	public static final String GTASK_PEER_REVIEW_NUM_OF_REVIEWS = "grouptask.peer.review.num.of.reviews";
 	public static final String GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT = "3";
@@ -1360,6 +1362,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	public Float getPeerReviewScore(GTAManager gtaManager, GTAPeerReviewManager peerReviewManager,
 			UserCourseEnvironment assessedUserCourseEnv) {
 		Float score = null;
+		int numOfReviews = 0;
 		ModuleConfiguration config = getModuleConfiguration();
 		
 		String scoreParts = config.getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
@@ -1383,8 +1386,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 					} else if(addAverage) {
 						score = (float)reviewsStatistic.statistics().average() + (score == null ? 0.0f : score.floatValue());
 					}
+					numOfReviews++;
 				}
 			}
+		}
+		
+		if(numOfReviews > 1 && score != null) {
+			score = score.floatValue() / numOfReviews;
 		}
 		
 		return score;

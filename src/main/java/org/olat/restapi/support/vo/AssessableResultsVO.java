@@ -42,8 +42,10 @@ public class AssessableResultsVO {
 	private String nodeIdent;
 	
 	private Float score;
+	private Float weightedScore;
 	private Boolean passed;
 	private Float maxScore;
+	private Float weightedMaxScore;
 	
 	private Boolean userVisible;
 
@@ -113,6 +115,22 @@ public class AssessableResultsVO {
 
 	public void setMaxScore(Float maxScore) {
 		this.maxScore = maxScore;
+	}
+
+	public Float getWeightedScore() {
+		return weightedScore;
+	}
+
+	public void setWeightedScore(Float weightedScore) {
+		this.weightedScore = weightedScore;
+	}
+
+	public Float getWeightedMaxScore() {
+		return weightedMaxScore;
+	}
+
+	public void setWeightedMaxScore(Float weightedMaxScore) {
+		this.weightedMaxScore = weightedMaxScore;
 	}
 
 	public String getGrade() {

@@ -22,10 +22,13 @@ package org.olat.course.assessment.bulk;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -48,6 +51,8 @@ import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,6 +77,8 @@ public class ValidationStepForm extends StepFormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public ValidationStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm, RepositoryEntryRef courseEntry) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "validation");
@@ -121,6 +128,8 @@ public class ValidationStepForm extends StepFormBasicController {
 	}
 	
 	private void doValidateRows(BulkAssessmentDatas datas) {
+		List<Identity> participants = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		Set<Identity> participantsSet = new HashSet<>(participants);
 		List<BulkAssessmentRow> rows = datas.getRows();
 		
 		List<String> assessedIdList = new ArrayList<>(rows.size());
@@ -136,6 +145,9 @@ public class ValidationStepForm extends StepFormBasicController {
 			Identity foundIdentity = idToIdentityMap.get(row.getAssessedId());
 			if(foundIdentity == null) {
 				invalidDatas.add(new UserData(row, null));
+			} else if(!participantsSet.contains(foundIdentity)) {
+				invalidDatas.add(new UserData(row, foundIdentity));
+				
 			} else {
 				row.setIdentityKey(foundIdentity.getKey());
 				validDatas.add(new UserData(row, foundIdentity));

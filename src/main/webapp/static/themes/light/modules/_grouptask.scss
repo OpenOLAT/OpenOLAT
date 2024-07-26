@@ -186,6 +186,14 @@ p.o_gta_reopen_warning {
 	gap: 1em;
 }
 
+.o_process .o_step_peerreview .o_labeled_light,
+.o_gta_workflow_content .o_gta_workflow_received_reviews .o_labeled_light,
+.o_gta_workflow_content .o_gta_workflow_awarded_reviews .o_labeled_light {
+	padding: 2px 5px;
+	font-size: 85%;
+	text-transform: lowercase;
+}
+
 .o_gta_workflow {
 	display: flex;
 	flex-direction: row;

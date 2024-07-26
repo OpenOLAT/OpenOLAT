@@ -364,6 +364,8 @@ public class CourseAssessmentWebService {
 		AssessmentEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
 		results.setScore(scoreEval.getScore());
 		results.setMaxScore(scoreEval.getMaxScore());
+		results.setWeightedScore(scoreEval.getWeightedScore());
+		results.setWeightedMaxScore(scoreEval.getWeightedMaxScore());
 		results.setPassed(scoreEval.getPassed());
 		results.setGrade(scoreEval.getGrade());
 		results.setPerformanceClassIdent(scoreEval.getPerformanceClassIdent());

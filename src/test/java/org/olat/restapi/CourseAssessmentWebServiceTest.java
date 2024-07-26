@@ -236,7 +236,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(participant, course.getCourseEnvironment());
 		
-		ScoreEvaluation userEval = new ScoreEvaluation(3.0f, 4.5f, new BigDecimal("1.5"), null, null, null, Boolean.FALSE,
+		ScoreEvaluation userEval = new ScoreEvaluation(3.0f, 3.0f, new BigDecimal("1"), null, null, null, Boolean.FALSE,
 				AssessmentEntryStatus.inProgress, Boolean.FALSE, new Date(), 50.0d, AssessmentRunStatus.running, null);
 		courseAssessmentService.updateScoreEvaluation(courseNode, userEval, assessedUserCourseEnv, coach, true, Role.user);
 		
@@ -253,6 +253,9 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(GTA_NODE_IDENT, result.getNodeIdent());
 		Assert.assertEquals(3.0f, result.getScore().floatValue(), 0.00001);
 		Assert.assertEquals(10.0f, result.getMaxScore().floatValue(), 0.00001);
+		Assert.assertEquals(3.0f, result.getWeightedScore().floatValue(), 0.00001);
+		// Not define
+		Assert.assertNull(result.getWeightedMaxScore());
 		Assert.assertEquals(Boolean.FALSE, result.getPassed());
 		Assert.assertEquals(1, result.getAttempts().intValue());
 		Assert.assertNull(result.getLastCoachModified());
@@ -296,7 +299,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 		final RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		final String rootIdent = course.getRunStructure().getRootNode().getIdent();
 		
-		this.waitForCondition(new Callable<Boolean>() {
+		waitForCondition(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
 				AssessmentEntry entry = assessmentEntryDao.loadAssessmentEntry(identity, courseEntry, rootIdent);

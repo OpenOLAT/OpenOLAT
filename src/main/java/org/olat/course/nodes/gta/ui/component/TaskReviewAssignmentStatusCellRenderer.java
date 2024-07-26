@@ -27,6 +27,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow;
 import org.olat.course.nodes.gta.ui.peerreview.ParticipantPeerReviewAssignmentRow;
 
@@ -43,7 +44,8 @@ public class TaskReviewAssignmentStatusCellRenderer extends LabelCellRenderer {
 	
 	public TaskReviewAssignmentStatusCellRenderer(Locale locale, boolean light) {
 		this.light = light;
-		trans = Util.createPackageTranslator(AssessmentStatusCellRenderer.class, locale);
+		trans = Util.createPackageTranslator(AssessmentStatusCellRenderer.class, locale,
+				Util.createPackageTranslator(GTACoachController.class, locale));
 	}
 
 	@Override
@@ -111,7 +113,7 @@ public class TaskReviewAssignmentStatusCellRenderer extends LabelCellRenderer {
 		if(status == TaskReviewAssignmentStatus.inProgress) {
 			return trans.translate("assessment.evaluation.status.inProgress");
 		} else if(status == TaskReviewAssignmentStatus.done) {
-			return trans.translate("assessment.evaluation.status.done");	
+			return trans.translate("task.review.status.done");	
 		} else if(status == TaskReviewAssignmentStatus.invalidate) {
 			return trans.translate("assessment.evaluation.status.invalid");	
 		}

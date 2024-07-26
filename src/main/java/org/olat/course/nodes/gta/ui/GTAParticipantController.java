@@ -518,7 +518,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				setNotAvailableStatusAndCssClass("peerReviewAwarded");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.peerreview) {
 				if(isPeerReviewStarted(ureq, assignedTask) ) {
-					setReviewStatusAndCssClass("peerReviewAwarded");
+					setActiveStatusAndCssClass("peerReviewAwarded");
 					setPeerReviewsAwardedList(ureq, assignedTask, false);
 				} else {
 					setNotAvailableStatusAndCssClass("peerReviewAwarded");
@@ -529,7 +529,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.peerreview) {
 			if(isPeerReviewStarted(ureq, assignedTask) ) {
-				setReviewStatusAndCssClass("peerReviewAwarded");
+				setActiveStatusAndCssClass("peerReviewAwarded");
 				setPeerReviewsAwardedList(ureq, assignedTask, false);
 			} else {
 				setNotAvailableStatusAndCssClass("peerReviewAwarded");

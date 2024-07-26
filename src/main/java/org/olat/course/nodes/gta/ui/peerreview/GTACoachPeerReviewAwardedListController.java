@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -56,6 +57,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
@@ -66,6 +68,7 @@ import org.olat.course.nodes.gta.model.SessionStatistics;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.component.NumOfCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskReviewAssignmentStatusCellRenderer;
+import org.olat.course.nodes.gta.ui.component.TaskStepStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.peerreview.GTACoachPeerReviewTreeTableModel.CoachReviewCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -91,6 +94,8 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
+	@Autowired
+	private GTAManager gtaManager;
 	@Autowired
 	private UserManager userManager;
 	
@@ -131,6 +136,9 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sum));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sessionStatus,
 				new TaskReviewAssignmentStatusCellRenderer(getLocale(), true)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.taskStepStatus,
+				new TaskStepStatusCellRenderer(getTranslator())));
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.review.view", translate("review.view"), "view"));
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CoachReviewCols.tools);
@@ -164,21 +172,25 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	}
 
 	@Override
-	protected void loadModel() {
+	public void loadModel() {
 		List<CoachPeerReviewRow> rows = new ArrayList<>();
+		List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
+		Map<Identity,Task> identityToTask = tasks.stream()
+				.collect(Collectors.toMap(Task::getIdentity, task -> task, (u, v) -> u));	
+		
 		if(reviewer != null) {
 			List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsOfReviewer(taskList, reviewer);
 			SessionParticipationListStatistics statistics = peerReviewManager.loadStatistics(taskList, assignments, reviewer, gtaNode, STATUS_FOR_STATS);
-			loadModelRow(reviewer, assignments, statistics, rows);
+			loadModelRow(reviewer, assignments, statistics, identityToTask, rows);
 		} else {
-			loadModelList(rows);
+			loadModelList(rows, identityToTask);
 		}
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
-	private void loadModelList(List<CoachPeerReviewRow> rows) {
+	private void loadModelList(List<CoachPeerReviewRow> rows, Map<Identity,Task> identityToTask) {
 		List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTaskList(taskList, false);
 		Map<Identity,List<TaskReviewAssignment>> assigneeToAssignments = new HashMap<>();
 		for(TaskReviewAssignment assignment:assignments) {
@@ -199,12 +211,12 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 			if(statistics == null) {
 				statistics = SessionParticipationListStatistics.noStatistics();
 			}
-			loadModelRow(reviewerIdentity, assigneeAssignments, statistics, rows);
+			loadModelRow(reviewerIdentity, assigneeAssignments, statistics, identityToTask, rows);
 		}
 	}
 	
 	private void loadModelRow(Identity reviewerIdentity, List<TaskReviewAssignment> assignments,
-			SessionParticipationListStatistics statistics, List<CoachPeerReviewRow> rows) {
+			SessionParticipationListStatistics statistics, Map<Identity,Task> identityToTask, List<CoachPeerReviewRow> rows) {
 		String reviewerFullName = userManager.getUserDisplayName(reviewerIdentity);
 		CoachPeerReviewRow surveyExecutorIdentityRow = new CoachPeerReviewRow(null, reviewerFullName);
 		List<CoachPeerReviewRow> sessionRows = new ArrayList<>();
@@ -225,12 +237,14 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		}
 		
 		// Fill statistics
-		forgeSurveyExecutorIdentityRow(surveyExecutorIdentityRow, statistics.aggregatedStatistics());
+		Task reviewerOwnTask = identityToTask.get(reviewerIdentity);
+		forgeSurveyExecutorIdentityRow(surveyExecutorIdentityRow, statistics.aggregatedStatistics(), reviewerOwnTask);
 	}
 	
-	private void forgeSurveyExecutorIdentityRow(CoachPeerReviewRow surveyExecutorIdentityRow, SessionStatistics aggregatedStatistics) {
+	private void forgeSurveyExecutorIdentityRow(CoachPeerReviewRow surveyExecutorIdentityRow, SessionStatistics aggregatedStatistics, Task reviewerOwnTask) {
 		decorateWithAggregatedStatistics(surveyExecutorIdentityRow, aggregatedStatistics);
 		decorateWithTools(surveyExecutorIdentityRow);
+		decorateWithStatus(surveyExecutorIdentityRow, reviewerOwnTask);
 	}
 	
 	private CoachPeerReviewRow forgeSessionRow(TaskReviewAssignment assignment, SessionParticipationStatistics sessionStatistics) {
@@ -240,10 +254,11 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		CoachPeerReviewRow sessionRow = new CoachPeerReviewRow(task, assignment, assessedIdentityFullName, false);
 
 		decorateWithStatistics(sessionRow, sessionStatistics);
+		decorateWithStatus(sessionRow, assignment.getTask());
 		decorateWithTools(sessionRow);
 		return sessionRow;
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(toolsCtrl == source) {

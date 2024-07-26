@@ -24,19 +24,25 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.AssignmentType;
 import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.manager.AssignmentCalculator.Participant;
 import org.olat.course.nodes.gta.model.SessionParticipationListStatistics;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.SessionStatistics;
@@ -51,6 +57,8 @@ import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -63,10 +71,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 	
+	private static final Logger log = Tracing.createLoggerFor(GTAPeerReviewManagerImpl.class);
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private GTATaskDAO taskDao;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
@@ -200,6 +212,48 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 	}
 
 	@Override
+	public void assign(RepositoryEntry courseEntry, TaskList taskList, GTACourseNode gtaNode) {
+		List<Task> allTasks = taskDao.getTasks(taskList, gtaNode);
+		List<Identity> allParticipants = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		List<TaskReviewAssignment> allAssignments = taskReviewAssignmentDao.getAssignmentsWithRemovedOnes(taskList);
+		Map<TaskReviewAssignmentKey, TaskReviewAssignment> allAssignmentsMap = allAssignments.stream()
+				.collect(Collectors.toMap(TaskReviewAssignmentKey::valueOf, assignment -> assignment, (u, v) -> u));
+		
+		String numOfReviews = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
+				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
+		int numberOfReviews = Integer.parseInt(numOfReviews);
+		
+		String typeOfAssignment = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT,
+				GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_DEFAULT);
+		
+		AssignmentType assignmentType = AssignmentType.keyOf(typeOfAssignment);
+		AssignmentCalculator assignmentCalculator = new AssignmentCalculator(allParticipants, allTasks, allAssignments);
+		List<Participant> participants = assignmentCalculator
+				.assign(assignmentType, numberOfReviews);
+		
+		for(Participant participant:participants) {
+			Identity assignee = participant.participant();
+			List<Task> tasksToReview = participant.plannedAwardedReviews();
+			for(Task taskToReview:tasksToReview) {
+				Identity toReview = taskToReview.getIdentity();
+				log.debug("Assignment for {} {} to review {} {}", assignee.getUser().getLastName(), assignee.getUser().getFirstName(),
+						toReview.getUser().getLastName(), toReview.getUser().getFirstName());
+				
+				TaskReviewAssignmentKey assignmentkey = new TaskReviewAssignmentKey(taskToReview, assignee);
+				TaskReviewAssignment currentAssignment = allAssignmentsMap.get(assignmentkey);
+				if(currentAssignment == null) {
+					createAssignment(taskToReview, assignee);
+				} else {
+					currentAssignment.setAssigned(true);
+					updateAssignment(currentAssignment);
+				}
+			}
+		}
+		
+		dbInstance.commitAndCloseSession();
+	}
+
+	@Override
 	public SessionParticipationListStatistics loadStatistics(Task task, List<TaskReviewAssignment> assignments,
 			GTACourseNode gtaNode, List<TaskReviewAssignmentStatus> status) {
 		if(task == null || task.getKey() == null) {
@@ -243,8 +297,6 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 		
 		return new SessionParticipationListStatistics(aggregatedStatistics, statistics);
 	}
-	
-	
 
 	@Override
 	public Map<Task, SessionParticipationListStatistics> loadStatisticsProTask(TaskList taskList,
@@ -374,5 +426,30 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 		EvaluationFormProvider provider = GTACourseNode.getPeerReviewEvaluationFormProvider();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(provider.getSurveyTypeName(), courseEntry.getKey());
 		return EvaluationFormSurveyIdentifier.of(ores, node.getIdent(), assessedIdentity.getKey().toString());
+	}
+	
+	public record TaskReviewAssignmentKey(Task task, Identity assignee) {
+		
+		public static final TaskReviewAssignmentKey valueOf(TaskReviewAssignment assignment) {
+			return new TaskReviewAssignmentKey(assignment.getTask(), assignment.getAssignee());
+		}
+		
+		@Override
+		public int hashCode() {
+			return (task == null ? 23486 : task.hashCode())
+					+ (assignee == null ? -54812 : assignee.hashCode());
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof TaskReviewAssignmentKey key) {
+				return task != null && Objects.equals(task, key.task())
+						&& assignee != null && Objects.equals(assignee, key.assignee());
+			}
+			return false;
+		}	
 	}
 }
