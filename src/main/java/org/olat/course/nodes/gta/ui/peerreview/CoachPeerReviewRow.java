@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 
@@ -53,6 +54,8 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	private Double median;
 	private Double average;
 	private Double sum;
+	
+	private CoachedParticipantStatus stepStatus;
 	
 	private Identity assignee;
 	
@@ -166,6 +169,14 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 
 	public void setSum(Double sum) {
 		this.sum = sum;
+	}
+	
+	public CoachedParticipantStatus getStepStatus() {
+		return stepStatus;
+	}
+
+	public void setStepStatus(CoachedParticipantStatus status) {
+		this.stepStatus = status;
 	}
 
 	public BoxPlot getAssessmentPlot() {

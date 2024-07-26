@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui.peerreview;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,14 +50,20 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAPeerReviewManager;
+import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.SessionStatistics;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow.NumOf;
+import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.portfolio.ui.MultiEvaluationFormController;
 import org.olat.repository.RepositoryEntry;
@@ -100,6 +107,8 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	private ConfirmInvalidateReviewController confirmInvalidateReviewCtrl;
 	private ConfirmReopenReviewController confirmReopenReviewCtrl;
 
+	@Autowired
+	private GTAManager gtaManager;
 	@Autowired
 	protected GTAPeerReviewManager peerReviewManager;
 	
@@ -260,6 +269,42 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		flc.add(linkName, toolsLink);
 		
 		row.setToolsLink(toolsLink);
+	}
+	
+	protected void decorateWithStatus(CoachPeerReviewRow row, Task identityTask) {
+		ModuleConfiguration config = gtaNode.getModuleConfiguration();
+		
+		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			if(identityTask == null || identityTask.getTaskStatus() == TaskProcess.assignment || identityTask.getTaskStatus() == TaskProcess.submit
+					|| identityTask.getTaskStatus() == TaskProcess.review || identityTask.getTaskStatus() == TaskProcess.correction
+					|| identityTask.getTaskStatus() == TaskProcess.revision) {
+
+				row.setStepStatus(CoachedParticipantStatus.notAvailable);
+			} else if(identityTask.getTaskStatus() == TaskProcess.peerreview) {
+				if(isPeerReviewStarted(identityTask)) {
+					row.setStepStatus(CoachedParticipantStatus.open);
+				} else {
+					row.setStepStatus(CoachedParticipantStatus.notAvailable);
+				}
+			} else {
+				row.setStepStatus(CoachedParticipantStatus.done);
+			}
+		} else if(identityTask == null || identityTask.getTaskStatus() == TaskProcess.peerreview) {
+			if(identityTask != null && isPeerReviewStarted(identityTask)) {
+				row.setStepStatus(CoachedParticipantStatus.open);
+			} else {
+				row.setStepStatus(CoachedParticipantStatus.notAvailable);
+			}
+		} else {
+			row.setStepStatus(CoachedParticipantStatus.done);
+		}
+	}
+	
+	protected final boolean isPeerReviewStarted(Task assignedTask) {
+		DueDate availableDate = gtaManager.getPeerReviewDueDate(assignedTask, assignedTask.getIdentity(), null, gtaNode, courseEntry, true);
+		return availableDate == null || availableDate.getStartDate() == null ||
+				(availableDate.getStartDate() != null && availableDate.getStartDate().compareTo(new Date()) <= 0);
 	}
 	
 	@Override

@@ -1362,6 +1362,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	public Float getPeerReviewScore(GTAManager gtaManager, GTAPeerReviewManager peerReviewManager,
 			UserCourseEnvironment assessedUserCourseEnv) {
 		Float score = null;
+		int numOfReviews = 0;
 		ModuleConfiguration config = getModuleConfiguration();
 		
 		String scoreParts = config.getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
@@ -1385,8 +1386,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 					} else if(addAverage) {
 						score = (float)reviewsStatistic.statistics().average() + (score == null ? 0.0f : score.floatValue());
 					}
+					numOfReviews++;
 				}
 			}
+		}
+		
+		if(numOfReviews > 1 && score != null) {
+			score = score.floatValue() / numOfReviews;
 		}
 		
 		return score;
