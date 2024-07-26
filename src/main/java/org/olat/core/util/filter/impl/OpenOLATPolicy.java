@@ -50,7 +50,7 @@ public class OpenOLATPolicy {
 	private static final Pattern SPECIALPROTOCOLS = Pattern.compile("(\\s)*(mailto:|tel:)[\\+\\p{L}\\p{N}]+[\\p{L}\\p{N}\\p{Zs}\\.\\#@\\$%\\+&;:\\-_~,\\?=/!\\(\\)]*(\\s)*");	
 	private static final Pattern HTMLCLASS = Pattern.compile("[a-zA-Z0-9\\s,-_]+");
 	private static final Pattern ANYTHING = Pattern.compile(".*");
-	private static final Pattern ONSITEURL = Pattern.compile("([\\p{L}\\p{N}\\p{Zs}/\\.\\?=&\\-~_]|ccrep:)+");
+	private static final Pattern ONSITEURL = Pattern.compile("([\\p{L}\\p{N}\\p{Zs}/\\.\\?=&\\-~_\\%]|ccrep:)+");
 	private static final Pattern DATA_MOVIE = Pattern.compile("([\\p{L}\\p{N}\\p{Zs}/\\,'\\.\\?=&\\s\\-~_\\(\\):/]|&[0-9]{2};)*");
 	private static final Pattern ANCHOR = Pattern.compile("#[a-zA-Z0-9_]*");
 	private static final Pattern QTI_IDENTIFIER = HTMLCLASS;
