@@ -65,12 +65,12 @@ public class XSSFilterParamTest {
 			{ "hello<b/>", "hello<b></b>" },// was skipped <b> // 12
 			{ "<b><b><b>hello", "<b><b><b>hello</b></b></b>" },
 			{ "</b><b>", "<b></b>" }, // was skipped
-			{ "<b><i>hello</b>", "<b><i>hello</i></b>" },
+/* 20 */	{ "<b><i>hello</b>", "<b><i>hello</i></b>" },
 			{ "<b><i><em>hello</em></b>", "<b><i><em>hello</em></i></b>" },
 			// test_end_slashes()
 			{ "<img src='test.html' />", "<img src=\"test.html\" />" },
 			{ "<img/>", "<img />" },
-/* 20 */	{ "<b/></b>", "<b></b>" }, // was empty
+			{ "<b/></b>", "<b></b>" }, // was empty
 			// test_balancing_angle_brackets()
 			{ "<img src=\"foo\"", "<img src=\"foo\" />" },
 			{ "b>", "b&gt;" },
@@ -154,13 +154,13 @@ public class XSSFilterParamTest {
 			{ "<span style=\"font-family: serif, arial;\">preformated</span>", "<span style=\"font-family:serif , &#39;arial&#39;\">preformated</span>" },
 			{ "<span class=\"schoen\">irgendwas</span>", "<span class=\"schoen\">irgendwas</span>" },
 			// test_style_rgb(){
-			{ "<p style=\"background-color: rgb(0%,0,0);\">background</p>", "<p style=\"background-color:rgb( 0% , 0 , 0 )\">background</p>" },
+/* 90 */	{ "<p style=\"background-color: rgb(0%,0,0);\">background</p>", "<p style=\"background-color:rgb( 0% , 0 , 0 )\">background</p>" },
 			{ "<p style=\"background-color: rgba(100%,0,0);\">background</p>", "<p style=\"background-color:rgba( 100% , 0 , 0 )\">background</p>" },
 			{ "<p style=\"background-color: rgb(100,50,50);\">background</p>", "<p style=\"background-color:rgb( 100 , 50 , 50 )\">background</p>" },
 			// test_tiny_lists(){
 			//lists (output without \n as policy has formatOutput = false		
 			{ "<ul>\n<li>a list: adsf</li>\n<li>adsf</li>\n<li>adsfas</li>\n</ul>", "<ul><li>a list: adsf</li><li>adsf</li><li>adsfas</li></ul>" },
-/* 90 */	{ "<ol style=\"font-size: 20pt;\">\n<li>numbered list</li>\n<li>adf</li>\n<li>asdfa</li>\n</ol>", "<ol style=\"font-size:20pt\"><li>numbered list</li><li>adf</li><li>asdfa</li></ol>" },
+			{ "<ol style=\"font-size: 20pt;\">\n<li>numbered list</li>\n<li>adf</li>\n<li>asdfa</li>\n</ol>", "<ol style=\"font-size:20pt\"><li>numbered list</li><li>adf</li><li>asdfa</li></ol>" },
 			// test_tiny_tables()
 			//tables
 			{ "<table border=\"1\" style=\"width: 268px; height: 81px;\" class=\"table\">\n<caption>bliblablue</caption>\n<tbody>\n<tr>\n<td>\n<p>adsfadsf</p>\n</td>\n<td>asdf</td>\n</tr>\n<tr>\n<td>asf</td>\n<td>\n<p>asdf</p>\n</td>\n</tr>\n</tbody>\n</table>",
@@ -179,22 +179,24 @@ public class XSSFilterParamTest {
 			{ "<i class=\"o_icon o_icon_dev\"> </i> ", "<i class=\"o_icon o_icon_dev\"> </i> " },
 			// test_figure() {
 			// for now i tags must have at least a space to not b removed
-			{ "<figure class=\"image\"><img src=\"bla.png\" /><figcaption>gugs</figcaption></figure>", "<figure class=\"image\"><img src=\"bla.png\" /><figcaption>gugs</figcaption></figure>" },
+/* 100 */	{ "<figure class=\"image\"><img src=\"bla.png\" /><figcaption>gugs</figcaption></figure>", "<figure class=\"image\"><img src=\"bla.png\" /><figcaption>gugs</figcaption></figure>" },
 			// more
 			{ "&lt;script&gt;alert('hello');&lt;//script&gt;", "&lt;script&gt;alert(&#39;hello&#39;);&lt;//script&gt;" },
 			// Make sure the accent are not transformed in HTML entities (which would be a killer for QTI fill-in-blanks)
 			{ "St\u00E9phane Ross\u00E9", "St\u00E9phane Ross\u00E9" },
-			{ "<a href=\"http://localhost/win?test=go&go=test\">Test</a>",
-				"<a href=\"http://localhost/win?test&#61;go&amp;go&#61;test\">Test</a>" },
-/* 100 */	{ "<img src=\"/olat/edusharing/preview?objectUrl=ccrep://OpenOLAT/d5130470-14b4-4ad4-88b7-dfb3ebe943da&version=1.0\" data-es_identifier=\"2083dbe64f00b07232b11608ec0842fc\" data-es_objecturl=\"ccrep://OpenOLAT/d5130470-14b4-4ad4-88b7-dfb3ebe943da\" data-es_version=\"1.0\" data-es_version_current=\"1.0\" data-es_mediatype='i23' data-es_mimetype=\"image/png\" data-es_width=\"1000\" data-es_height=\"446\" data-es_first_edit=\"false\" class=\"edusharing\" alt=\"Bildschirmfoto 2018-11-07 um 16.09.49.png\" title=\"Bildschirmfoto 2018-11-07 um 16.09.49.png\" width=\"1000\" height=\"446\">",
+			{ "<a href=\"http://localhost/win?test=go&go=test\">Test</a>", "<a href=\"http://localhost/win?test&#61;go&amp;go&#61;test\">Test</a>" },
+			{ "<a href=\"https://www.openolat.com/Doc%2BTest.pdg\">Doc.pf</a>", "<a href=\"https://www.openolat.com/Doc%2BTest.pdg\">Doc.pf</a>" },
+			{ "<img src=\"/olat/edusharing/preview?objectUrl=ccrep://OpenOLAT/d5130470-14b4-4ad4-88b7-dfb3ebe943da&version=1.0\" data-es_identifier=\"2083dbe64f00b07232b11608ec0842fc\" data-es_objecturl=\"ccrep://OpenOLAT/d5130470-14b4-4ad4-88b7-dfb3ebe943da\" data-es_version=\"1.0\" data-es_version_current=\"1.0\" data-es_mediatype='i23' data-es_mimetype=\"image/png\" data-es_width=\"1000\" data-es_height=\"446\" data-es_first_edit=\"false\" class=\"edusharing\" alt=\"Bildschirmfoto 2018-11-07 um 16.09.49.png\" title=\"Bildschirmfoto 2018-11-07 um 16.09.49.png\" width=\"1000\" height=\"446\">",
 				"<img src=\"/olat/edusharing/preview?objectUrl&#61;ccrep://OpenOLAT/d5130470-14b4-4ad4-88b7-dfb3ebe943da&amp;version&#61;1.0\" data-es_identifier=\"2083dbe64f00b07232b11608ec0842fc\" data-es_objecturl=\"ccrep://OpenOLAT/d5130470-14b4-4ad4-88b7-dfb3ebe943da\" data-es_version=\"1.0\" data-es_version_current=\"1.0\" data-es_mediatype=\"i23\" data-es_mimetype=\"image/png\" data-es_width=\"1000\" data-es_height=\"446\" data-es_first_edit=\"false\" class=\"edusharing\" alt=\"Bildschirmfoto 2018-11-07 um 16.09.49.png\" title=\"Bildschirmfoto 2018-11-07 um 16.09.49.png\" width=\"1000\" height=\"446\" />"	
 			},
 			{ "<a href=\"javascript:parent.gotonode(100055283652712)\">Test</a>", "<a href=\"javascript:parent.gotonode(100055283652712)\">Test</a>" },
 			{ "<a href='javascript:parent.gototool(\"blog\")'>Blog</a>", "<a href=\"javascript:parent.gototool(&#34;blog&#34;)\">Blog</a>" },
 			{ "<a href=\"javascript:parent.gototool('blog')\">Blog</a>", "<a href=\"javascript:parent.gototool(&#39;blog&#39;)\">Blog</a>" },
 			{ "<a href=\"media/LTT ZUJ SCM 09.09.2019.pdf\">doc</a>", "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>" },
-			{ "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>", "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>" },
-/* 110 */	{ "<p><img class=\"b_float_left\" src=\"media/IMG 1484.jpg\" width=\"74\" height=\"74\" /></p>", "<p><img class=\"b_float_left\" src=\"media/IMG%201484.jpg\" width=\"74\" height=\"74\" /></p>" },
+/* 110 */	{ "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>", "<a href=\"media/LTT%20ZUJ%20SCM%2009.09.2019.pdf\">doc</a>" },
+			{ "<a href=\"Doc%2BTest.pdg\">Doc.pf</a>", "<a href=\"Doc%2BTest.pdg\">Doc.pf</a>" },
+			
+			{ "<p><img class=\"b_float_left\" src=\"media/IMG 1484.jpg\" width=\"74\" height=\"74\" /></p>", "<p><img class=\"b_float_left\" src=\"media/IMG%201484.jpg\" width=\"74\" height=\"74\" /></p>" },
 			// link with anchor
 			{ "<a href=\"#Summary\">Summary</a>", "<a href=\"#Summary\">Summary</a>" },
 			{ "<a href=\"#Title_1\">Title 1</a>", "<a href=\"#Title_1\">Title 1</a>" },
@@ -205,10 +207,12 @@ public class XSSFilterParamTest {
 			{ "<audio src=\"http://localhost/win/video.mp4\"></audio>", "<audio src=\"http://localhost/win/video.mp4\"></audio>" },
 			// some variables found in mails (exact match)
 			{ "<a href=\"$courseUrl\">Href with variable</a>", "<a href=\"$courseUrl\">Href with variable</a>" },
-			{ "<a href=\"$groupUrl\">Href with variable</a>", "<a href=\"$groupUrl\">Href with variable</a>" },
+/* 120 */	{ "<a href=\"$groupUrl\">Href with variable</a>", "<a href=\"$groupUrl\">Href with variable</a>" },
 			{ "<a href=\"$curriculumUrl\">Href with variable</a>", "<a href=\"$curriculumUrl\">Href with variable</a>" },
-/* 120 */	{ "<a href=\"$courseUrlNotValid\">Href with variable</a>", "<a>Href with variable</a>" },
+			{ "<a href=\"$courseUrlNotValid\">Href with variable</a>", "<a>Href with variable</a>" },
 			{ "<a href=\"not$courseUrl\">Href with variable</a>", "<a>Href with variable</a>" },
+			
+			
 			// Check escaping (make sure that the characters are not replaced by HTML entities)
 			{ "<p>\u00E9\u00E8\u00E0 - \u00F6\u00FC\u00CB</p>", "<p>\u00E9\u00E8\u00E0 - \u00F6\u00FC\u00CB</p>" },
 			// QTI
@@ -216,7 +220,7 @@ public class XSSFilterParamTest {
 			{ "<p>Noch ein <hottext identifier=\"ht1d99ebc4470bf7ecbf7e5bc05662\">Hello&lt;&gt;</hottext>&nbsp;</p>", "<p>Noch ein <hottext identifier=\"ht1d99ebc4470bf7ecbf7e5bc05662\">Hello&lt;&gt;</hottext>\u00A0</p>" },
 			{ "<p>New text <inlinechoiceinteraction responseidentifier=\"RESPONSE_1\" data-qti-solution=\"Gap\" data-qti-solution-empty=\"false\" shuffle=\"true\"></inlinechoiceinteraction></p>", "<p>New text <inlinechoiceinteraction responseidentifier=\"RESPONSE_1\" data-qti-solution=\"Gap\" data-qti-solution-empty=\"false\" shuffle=\"true\"></inlinechoiceinteraction></p>" },
 			{ "<p><object id=\"olatFlashMovieViewer812952\" class=\"olatFlashMovieViewer\" data=\"https://nanoo.tv/link/v/tkZZtEcN\" type=\"video\" width=\"384\" height=\"216\" data-oo-movie=\"'https://nanoo.tv/link/v/tkZZtEcN','olatFlashMovieViewer812952',384,216,0,0,'video',undefined,false,false,true,undefined\"></object></p>", "<p><object id=\"olatFlashMovieViewer812952\" class=\"olatFlashMovieViewer\" data=\"https://nanoo.tv/link/v/tkZZtEcN\" type=\"video\" width=\"384\" height=\"216\" data-oo-movie=\"&#39;https://nanoo.tv/link/v/tkZZtEcN&#39;,&#39;olatFlashMovieViewer812952&#39;,384,216,0,0,&#39;video&#39;,undefined,false,false,true,undefined\"></object></p>" },
-			{ "<p><object id=\"olatFlashMovieViewer931705\" class=\"olatFlashMovieViewer\" data=\"https://youtu.be/BIFbjAFF-hg?si=yH-thf-uu1BfmEzg\" type=\"video\" name=\"olatFlashMovieViewer931705\" width=\"640\" height=\"480\" data-oo-movie=\"'https://youtu.be/BIFbjAFF-hg?si=yH-thf-uu1BfmEzg','olatFlashMovieViewer931705',640,480,'',0,'video',undefined,false,false,true,''\"> </object></p>", "<p><object id=\"olatFlashMovieViewer931705\" class=\"olatFlashMovieViewer\" data=\"https://youtu.be/BIFbjAFF-hg?si&#61;yH-thf-uu1BfmEzg\" type=\"video\" width=\"640\" height=\"480\" data-oo-movie=\"&#39;https://youtu.be/BIFbjAFF-hg?si&#61;yH-thf-uu1BfmEzg&#39;,&#39;olatFlashMovieViewer931705&#39;,640,480,&#39;&#39;,0,&#39;video&#39;,undefined,false,false,true,&#39;&#39;\"> </object></p>" },
+/* 130 */	{ "<p><object id=\"olatFlashMovieViewer931705\" class=\"olatFlashMovieViewer\" data=\"https://youtu.be/BIFbjAFF-hg?si=yH-thf-uu1BfmEzg\" type=\"video\" name=\"olatFlashMovieViewer931705\" width=\"640\" height=\"480\" data-oo-movie=\"'https://youtu.be/BIFbjAFF-hg?si=yH-thf-uu1BfmEzg','olatFlashMovieViewer931705',640,480,'',0,'video',undefined,false,false,true,''\"> </object></p>", "<p><object id=\"olatFlashMovieViewer931705\" class=\"olatFlashMovieViewer\" data=\"https://youtu.be/BIFbjAFF-hg?si&#61;yH-thf-uu1BfmEzg\" type=\"video\" width=\"640\" height=\"480\" data-oo-movie=\"&#39;https://youtu.be/BIFbjAFF-hg?si&#61;yH-thf-uu1BfmEzg&#39;,&#39;olatFlashMovieViewer931705&#39;,640,480,&#39;&#39;,0,&#39;video&#39;,undefined,false,false,true,&#39;&#39;\"> </object></p>" },
 			{ "<p><object id=\"olatFlashMovieViewer931705\" data=\"https://openolat.com/test vidéo.mp4\" data-oo-movie=\"'https://openolat.com/test vidéo.mp4','olatFlashMovieViewer931705',640,480,'',0,'video',undefined,false,false,true,''\"> </object></p>", "<p><object id=\"olatFlashMovieViewer931705\" data=\"https://openolat.com/test%20vid\u00E9o.mp4\" data-oo-movie=\"&#39;https://openolat.com/test vid\u00E9o.mp4&#39;,&#39;olatFlashMovieViewer931705&#39;,640,480,&#39;&#39;,0,&#39;video&#39;,undefined,false,false,true,&#39;&#39;\"> </object></p>" },
 			
 			//
