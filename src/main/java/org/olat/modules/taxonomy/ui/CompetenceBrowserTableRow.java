@@ -130,6 +130,10 @@ public class CompetenceBrowserTableRow implements FlexiTreeTableNode {
 		return null;
 	}
 	
+	public Integer getSortOrder() {
+		return taxonomyLevel == null ? null : taxonomyLevel.getSortOrder();
+	}
+
 	public Long getKey() {
 		if (taxonomyLevel != null) {
 			return taxonomyLevel.getKey();
