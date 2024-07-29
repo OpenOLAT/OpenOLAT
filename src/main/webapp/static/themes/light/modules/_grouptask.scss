@@ -243,3 +243,43 @@ p.o_gta_reopen_warning {
 .o_gta_workflow_received_reviews {
 	margin: 20px 0 20px 0;
 }
+
+.o_gta_portrait {
+	display: grid;
+	grid-template-columns: 1fr 2fr auto;
+	padding: 10px;
+	
+	.o_gta_assignee {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		gap: 1em;
+		
+		span {
+			font-weight: bold;
+		}
+	}
+	
+	.o_gta_task {
+		border-left: 1px solid $panel-default-border;
+		
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		padding: 0 10px;
+		gap: 1em;
+		
+		>label {
+			margin: 0;
+			padding: 0;
+		}
+	}
+	
+	.o_gta_status {
+		align-self: start;
+	}
+}
+
+

@@ -326,7 +326,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(assignReviewers == source) {
-			doAssignReviewers(ureq, assignedTask);
+			doAssignReviewers(ureq, tableModel.getObject(0));
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				CoachPeerReviewRow row = tableModel.getObject(se.getIndex());
@@ -350,9 +350,10 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		//
 	}
 	
-	private void doAssignReviewers(UserRequest ureq, Task task) {
+	private void doAssignReviewers(UserRequest ureq, CoachPeerReviewRow row) {
+		TaskReviewAssignmentStatus assignmentStatus = TaskReviewAssignmentStatusCellRenderer.getStatus(row);
 		assignmentsCtrl = new GTAPeerReviewAssignmentController(ureq, getWindowControl(),
-				taskList, task, gtaNode);
+				taskList, row.getTask(), assignmentStatus, gtaNode);
 		listenTo(assignmentsCtrl);
 		
 		String title = translate("review.assignment.title");
@@ -454,7 +455,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if(assignReviewerLink == source) {
 				fireEvent(ureq, Event.DONE_EVENT);
-				doAssignReviewers(ureq, row.getTask());
+				doAssignReviewers(ureq, row);
 			} else if(showReviewsLink == source) {
 				fireEvent(ureq, Event.DONE_EVENT);
 				doCompareEvaluationFormSessions(ureq, row);
