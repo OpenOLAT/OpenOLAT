@@ -70,7 +70,7 @@ public class SessionStatisticsCalculator {
 	private SessionStatistics calculateStatistics(Collector collector) {
 		List<Double> values = collector.getValues();
 		if(values.isEmpty()) {
-			return null;
+			return SessionStatistics.noStatistics();
 		}
 		Collections.sort(values);
 		

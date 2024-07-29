@@ -260,6 +260,7 @@ class GTANotifications {
 		
 		if(coach && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
 			task = checkSubmitStep(assessedIdentity, null, task);
+			task = checkPeerReviewtStep(assessedIdentity, task);
 			//show after the step submit, if submission date after compare date
 			if(task != null && notInStep(task, TaskProcess.assignment, TaskProcess.submit)
 					&& task.getSubmissionDate() != null && task.getSubmissionDate().after(compareDate)) {
@@ -781,6 +782,19 @@ class GTANotifications {
 				int numOfDocs = getNumberOfSubmittedDocuments(assessedIdentity, assessedGroup);
 				task = gtaManager.submitTask(task, gtaNode, numOfDocs, null, Role.auto);
 				gtaManager.log("Submit", "submit documents", task, null, assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.auto);
+			}
+		}
+		return task;
+	}
+	
+	private Task checkPeerReviewtStep(Identity assessedIdentity, Task task) {
+		if(task != null && task.getTaskStatus() == TaskProcess.submit) {
+			RepositoryEntry re = courseEnv.getCourseGroupManager().getCourseEntry();
+			DueDate dueDate = gtaManager.getPeerReviewDueDate(task, assessedIdentity, null, gtaNode, re, true);
+			Date deadline = gtaManager.getDeadlineOf(dueDate, null);
+			if(deadline != null &&  deadline.before(new Date())) {
+				task = gtaManager.submitReviews(task, gtaNode, null, Role.auto);
+				gtaManager.log("Close peer-reviews", "Close peer-reviews", task, null, assessedIdentity, null, courseEnv, gtaNode, Role.auto);
 			}
 		}
 		return task;

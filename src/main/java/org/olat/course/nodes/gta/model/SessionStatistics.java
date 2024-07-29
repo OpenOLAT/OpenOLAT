@@ -27,9 +27,9 @@ package org.olat.course.nodes.gta.model;
  */
 public record SessionStatistics(double progress, double min, double max, double average, double sum,
 		double firstQuartile, double median, double thirdQuartile, int numOfQuestions, int maxSteps) {
-	//
+	public static final SessionStatistics NO_STATISTICS = new SessionStatistics(0.0d, 0.0d, 0.0d, 0.0d, 0.0d, 0.0d,0.0d, 0.0d, 0, 0);
 	
 	public static SessionStatistics noStatistics() {
-		return new SessionStatistics(0.0d, 0.0d, 0.0d, 0.0d, 0.0d, 0.0d,0.0d, 0.0d, 0, 0);
+		return NO_STATISTICS;
 	}
 }

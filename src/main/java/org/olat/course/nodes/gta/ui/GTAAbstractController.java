@@ -639,7 +639,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.peerreview
 						&& deadline.compareTo(ureq.getRequestTimestamp()) < 0) {
 					//push to the next step
-					assignedTask = gtaManager.nextStep(assignedTask, gtaNode, false, null, Role.auto);
+					assignedTask = gtaManager.submitReviews(assignedTask, gtaNode, null, Role.auto);
 				}
 			} else if(dueDate.getMessageKey() != null) {
 				mainVC.contextPut("peerReviewDueDateMsg", translate(dueDate.getMessageKey(), dueDate.getMessageArg()));
