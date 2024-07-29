@@ -513,11 +513,6 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		minValEl.setEnabled(!scoreAuto);
 		maxValEl.setEnabled(!scoreAuto);
 		
-		MinMax formMinMax = calculateMinMax();
-		if(formMinMax != null && (scoreAuto || forceMinMax)) {
-			minValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMin()));
-			maxValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMax()));
-		}
 		boolean scoreEvaluationForm = scoresSumEl.isKeySelected(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM);
 		evaluationScoreScalingEl.setVisible(scoreEnable && scoreAuto && evaluationEnabled && scoreEvaluationForm);
 		if(evaluationScoreScalingEl.isVisible() && !StringHelper.containsNonWhitespace(evaluationScoreScalingEl.getValue())) {
@@ -537,6 +532,12 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 			String numOfReviews = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
 					GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
 			maxNumberCreditableReviewsEl.setValue(numOfReviews);
+		}
+		
+		MinMax formMinMax = calculateUIMinMax();
+		if(formMinMax != null && (scoreAuto || forceMinMax)) {
+			minValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMin()));
+			maxValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMax()));
 		}
 		
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
@@ -560,9 +561,9 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 				|| (!scoreTypeEl.isVisible() && (peerReviewEnabled || (evaluationFormEnabledEl.isVisible() && evaluationFormEnabledEl.isOn())));
 	}
 	
-	private void updateMinMax() {
+	private void updateUIMinMax() {
 		boolean scoreAuto = isScoreAuto() || !scoreTypeEl.isVisible();
-		MinMax formMinMax = calculateMinMax();
+		MinMax formMinMax = calculateUIMinMax();
 		if(formMinMax != null && scoreAuto) {
 			minValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMin()));
 			maxValEl.setValue(AssessmentHelper.getRoundedScore(formMinMax.getMax()));
@@ -790,7 +791,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		} else if(evaluationFormEnabledEl == source) {
 			update(ureq);
 		} else if(evaluationScoreScalingEl == source || scoreScalingEl == source) {
-			updateMinMax();
+			updateUIMinMax();
 		} else if(scoreGranted == source) {
 			update(ureq, scoreGranted.isOn(), true);	
 		} else if(scoreTypeEl == source) {
@@ -816,7 +817,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		this.config = moduleConfiguration;
 		peerReviewEnabled = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
 		
-		updateModuleConfigurationEvaluationForm();
+		updateModuleConfigurationEvaluationForm(true);
 
 		// mandatory score flag
 		Boolean scoreEnabled = Boolean.valueOf(scoreGranted.isOn());
@@ -970,74 +971,50 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		return sessions.size();
 	}
 	
-	private MinMax calculateMinMax() {
-		// Min. max. from the evaluation form
-		MinMax formMinMax = calculateMinMax(referenceCtrl.getRepositoryEntry(),
-				config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM), evaluationScoreScalingEl);
-		// Min. max. from the peer review form
-		MinMax peerReviewMinMax = calculateMinMax(GTACourseNode.getPeerReviewEvaluationForm(config),
-				config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM), peerReviewScoreScalingEl);
+	private MinMax calculateUIMinMax() {
+		Float evaluationScoreScale = toFloat(evaluationScoreScalingEl);
+		Float peerReviewScoreScale = toFloat(peerReviewScoreScalingEl);
+		Integer pointsProReview = toInteger(pointsProReviewEl);
+		Integer maxNumberCreditableReviews = toInteger(maxNumberCreditableReviewsEl);
+		String scoreParts = String.join(",", scoresSumEl.getSelectedKeys());
 		
-		Float min = formMinMax == null ? 0.0f : formMinMax.getMin();
-		Float max = formMinMax == null ? 0.0f : formMinMax.getMax();
-		if(peerReviewMinMax != null) {
-			min = add(min, peerReviewMinMax.getMin());
-			max = add(max, peerReviewMinMax.getMax());
-		}
+		return GTACourseNode.calculateMinMaxTotal(config, evaluationScoreScale, peerReviewScoreScale,
+				maxNumberCreditableReviews, pointsProReview, scoreParts);
+	}
+	
+	private MinMax calculatePersistedMinMax() {
+		Float peerReviewScoreScale = GTACourseNode.getFloatConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		Float evaluationScoreScale = GTACourseNode.getFloatConfiguration(config,
+				MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		Integer pointsProReview = GTACourseNode.getIntegerConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_SCORE_PRO_REVIEW, null);
+		Integer maxNumberCreditableReviews = GTACourseNode.getIntegerConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_MAX_NUMBER_CREDITABLE_REVIEWS,
+				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS);
+		String scoreParts = config.getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
 		
-		if(maxNumberCreditableReviewsEl.isVisible() && StringHelper.isLong(maxNumberCreditableReviewsEl.getValue())
-				&& pointsProReviewEl.isVisible() && isFloat(pointsProReviewEl.getValue())) {
-			int maxNumber = Integer.parseInt(maxNumberCreditableReviewsEl.getValue());
-			float pointsPerReview = Float.parseFloat(pointsProReviewEl.getValue());
-			min = add(min, 0.0f);
-			max = add(max, maxNumber * pointsPerReview);
-			
-		}
-		return MinMax.of(min, max);
+		return GTACourseNode.calculateMinMaxTotal(config, evaluationScoreScale, peerReviewScoreScale,
+				maxNumberCreditableReviews, pointsProReview, scoreParts);
 	}
 	
-	private Float add(Float val1, Float val2) {
-		return val1 == null ? val2 : (val2 == null ? val1 : Float.valueOf(val1.floatValue() + val2.floatValue()));
-	}
-	
-	private boolean isFloat(String val) {
-		if (StringHelper.containsNonWhitespace(val)) {
-			try {
-				Float.parseFloat(val);
-				return true;
-			} catch (NumberFormatException e) {
-				// 
-			}
-		}
-		return false;
-	}
-	
-	private MinMax calculateMinMax(RepositoryEntry formEntry, String scoreKey, TextElement scaleEl) {
-		MinMax formMinMax = null;
-		if (formEntry != null) {
-			if(StringHelper.containsNonWhitespace(scoreKey)) {
-				Float scalingFactor = scaleEl.isVisible() ? getFloat(scaleEl) : null;
-				float scale = scalingFactor == null ? 1.0f : scalingFactor.floatValue();
-				switch (scoreKey) {
-					case MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM:
-						formMinMax = msService.calculateMinMaxSum(formEntry, scale);
-						break;
-					case MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG:
-						formMinMax = msService.calculateMinMaxAvg(formEntry, scale);
-						break;
-					default:
-						break;
-				}
-			}
-		}
-		return formMinMax;
-	}
-	
-	private Float getFloat(TextElement el) {
+	private Float toFloat(TextElement el) {
 		String val = el != null && el.isVisible() ? el.getValue() : null;	
 		if(StringHelper.containsNonWhitespace(val)) {
 			try {
 				return Float.valueOf(val);
+			} catch (NumberFormatException e) {
+				// 
+			}
+		}
+		return null;
+	}
+	
+	private Integer toInteger(TextElement el) {
+		String val = el != null && el.isVisible() ? el.getValue() : null;	
+		if(StringHelper.containsNonWhitespace(val)) {
+			try {
+				return Integer.valueOf(val);
 			} catch (NumberFormatException e) {
 				// 
 			}
@@ -1064,12 +1041,12 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		} else {
 			MSCourseNode.removeEvaluationFormReference(config);
 		}
-		updateModuleConfigurationEvaluationForm();
+		updateModuleConfigurationEvaluationForm(false);
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		updateSettingsPanel();
 	}
 
-	private void updateModuleConfigurationEvaluationForm() {
+	private void updateModuleConfigurationEvaluationForm(boolean useUIValues) {
 		if(individualTask) {
 			boolean evalFormEnabled = evaluationFormEnabledEl.isOn();
 			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED, evalFormEnabled);
@@ -1080,7 +1057,9 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 					config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM, MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM);
 				}
 				
-				MinMax minMax = calculateMinMax();
+				MinMax minMax = useUIValues
+						? calculateUIMinMax()
+						: calculatePersistedMinMax();
 				if(minMax != null) {
 					config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, minMax.getMin());
 					config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, minMax.getMax());

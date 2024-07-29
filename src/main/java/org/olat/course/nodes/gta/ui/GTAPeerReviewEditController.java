@@ -94,6 +94,7 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 	private final ModuleConfiguration config;
 
 	private EvaluationFormExecutionController previewCtr;
+	private EvaluationFormSettingsController settingsCtrl;
 	private RepositoryEntryReferenceController referenceCtrl;
 
 	@Autowired
@@ -300,7 +301,9 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 	@Override
 	public Controller getEditSettingsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry repositoryEntry) {
-		EvaluationFormSettingsController settingsCtrl = new EvaluationFormSettingsController(ureq, wControl, config,
+		removeAsListenerAndDispose(settingsCtrl);
+		
+		settingsCtrl = new EvaluationFormSettingsController(ureq, wControl, config,
 				GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM);
 		listenTo(settingsCtrl);
 		return settingsCtrl;
@@ -331,7 +334,17 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 			} else if (event == RepositoryEntryReferenceController.PREVIEW_EVENT) {
 				doPreview(ureq, referenceCtrl.getRepositoryEntry());
 			}
+		} else if(settingsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doSaveEvaluation(ureq, referenceCtrl.getRepositoryEntry());
+				cleanUp();
+			}
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(settingsCtrl);
+		settingsCtrl = null;
 	}
 
 	@Override
@@ -410,44 +423,27 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 		if(!StringHelper.containsNonWhitespace(currentEvalScoringMethod)) {
 			config.setStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM, MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM);
 		}
-			
-		MinMax minMax = calculateMinMax();
+
+		Float peerReviewScale = GTACourseNode.getFloatConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		Float evaluationScale = GTACourseNode.getFloatConfiguration(config,
+				MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		Integer scoreProReview = GTACourseNode.getIntegerConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_SCORE_PRO_REVIEW, null);
+		Integer maxNumberCreditableReviews = GTACourseNode.getIntegerConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_MAX_NUMBER_CREDITABLE_REVIEWS,
+				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS);
+		String scoreParts = config.getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
+
+		MinMax minMax = GTACourseNode.calculateMinMaxTotal(config, evaluationScale, peerReviewScale,
+				maxNumberCreditableReviews, scoreProReview, scoreParts);
 		if(minMax != null) {
-			config.set(GTACourseNode.GTASK_PEER_REVIEW_SCORE_MIN, minMax.getMin());
-			config.set(GTACourseNode.GTASK_PEER_REVIEW_SCORE_MAX, minMax.getMax());
+			config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, minMax.getMin());
+			config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, minMax.getMax());
 		}
 
 		updateSettingsPanel();
 		fireEvent(ureq, Event.DONE_EVENT);
-	}
-	
-	private MinMax calculateMinMax() {
-		RepositoryEntry formEntry = GTACourseNode.getPeerReviewEvaluationForm(config);
-		if (formEntry == null) {
-			return null;
-		}
-		
-		String scoreKey = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM);
-		
-		MinMax formMinMax = null;
-		if(StringHelper.containsNonWhitespace(scoreKey)) {
-			float scale = 1.0f;
-			String scaleConfig = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
-			if(StringHelper.containsNonWhitespace(scaleConfig)) {
-				scale = Float.parseFloat(scaleConfig);
-			}
-			switch (scoreKey) {
-				case MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM:
-					formMinMax = msService.calculateMinMaxSum(formEntry, scale);
-					break;
-				case MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG:
-					formMinMax = msService.calculateMinMaxAvg(formEntry, scale);
-					break;
-				default:
-					break;
-			}
-		}
-		return formMinMax;
 	}
 	
 	private void doPreview(UserRequest ureq, RepositoryEntry formEntry) {
