@@ -307,6 +307,70 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		return MSCourseNode.getMinMax(getModuleConfiguration());
 	}
 	
+	public static MinMax calculateMinMaxTotal(ModuleConfiguration config, Float evaluationScoreScale, Float peerReviewScoreScale,
+			Integer maxNumberCreditableReviews, Integer pointsProReview, String scoreParts) {
+		MinMax evaluationMinMax = null;
+		if(scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM)) {
+			RepositoryEntry evaluationFormEntry = GTACourseNode.getEvaluationForm(config);
+			evaluationMinMax = calculateMinMax(evaluationFormEntry, config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_EVAL_FORM),
+					evaluationScoreScale);
+		}
+		// Min. max. from the peer review form
+		MinMax peerReviewMinMax = null;
+		if(scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_PEER_REVIEW)) {
+			RepositoryEntry peerReviewFormEntry = GTACourseNode.getPeerReviewEvaluationForm(config);
+			peerReviewMinMax = calculateMinMax(peerReviewFormEntry, config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM),
+					peerReviewScoreScale);
+		}
+		
+		MinMax submittedReview = null;
+		if(scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_REVIEW_SUBMITTED)) {
+			int numberOfReviews = maxNumberCreditableReviews == null ? 1 : maxNumberCreditableReviews.intValue();
+			float pointsPerReview = pointsProReview.floatValue();
+			submittedReview = MinMax.of(0.0f, pointsPerReview * numberOfReviews);
+		}
+	
+		return MinMax.add(evaluationMinMax, peerReviewMinMax, submittedReview);
+	}
+	
+	public static MinMax calculateMinMax(RepositoryEntry formEntry, String scoreKey, Float scalingFactor) {
+		MinMax formMinMax = null;
+		if (formEntry != null) {
+			if(StringHelper.containsNonWhitespace(scoreKey)) {
+				float scale = scalingFactor == null ? 1.0f : scalingFactor.floatValue();
+				MSService msService = CoreSpringFactory.getImpl(MSService.class);
+				
+				switch (scoreKey) {
+					case MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM:
+						formMinMax = msService.calculateMinMaxSum(formEntry, scale);
+						break;
+					case MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG:
+						formMinMax = msService.calculateMinMaxAvg(formEntry, scale);
+						break;
+					default:
+						break;
+				}
+			}
+		}
+		return formMinMax;
+	}
+	
+	public static Float getFloatConfiguration(ModuleConfiguration config, String key, String defaultValue) {
+		String scaleConfig = config.getStringValue(key, defaultValue);
+		if(StringHelper.containsNonWhitespace(scaleConfig)) {
+			return Float.valueOf(scaleConfig);
+		}
+		return null;
+	}
+	
+	public static Integer getIntegerConfiguration(ModuleConfiguration config, String key, String defaultValue) {
+		String scaleConfig = config.getStringValue(key, defaultValue);
+		if(StringHelper.containsNonWhitespace(scaleConfig)) {
+			return Integer.valueOf(scaleConfig);
+		}
+		return null;
+	}
+	
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return getEvaluationForm(getModuleConfiguration());
@@ -1310,8 +1374,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		Float peerReviewScore = getPeerReviewScore(gtaManager, peerReviewManager, assessedUserCourseEnv);
 		Float awardedReviewScore = getAwardedReviewsScore(gtaManager, peerReviewManager, assessedUserCourseEnv);
 
-		Float score = add(evaluationFormScore, peerReviewScore);
-		score = add(score, awardedReviewScore);
+		Float score = MinMax.add(evaluationFormScore, peerReviewScore);
+		score = MinMax.add(score, awardedReviewScore);
 		if (score == null) {
 			score = currentEval.getScore();
 		}
@@ -1327,16 +1391,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			}
 		}
 		return new GTAScores(evaluationFormScore, peerReviewScore, awardedReviewScore, score, minMax);
-	}
-	
-	public Float add(Float val1, Float val2) {
-		if(val1 == null) {
-			return val2;
-		}
-		if(val2 == null ) {
-			return val1;
-		}
-		return Float.valueOf(val1.floatValue() + val2.floatValue());
 	}
 	
 	public Float getEvaluationFormScore(MSService msService, EvaluationFormSession session) {

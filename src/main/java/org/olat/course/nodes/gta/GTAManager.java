@@ -504,6 +504,15 @@ public interface GTAManager {
 	 */
 	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity, Role by);
 	
+	/**
+	 * The method doesn't touch the evaluations. It only move the task a step further.
+	 * 
+	 * @param task The task
+	 * @param cNode The course node
+	 * @param doerIdentity The identity of the user which does the action
+	 * @param by Who does the action
+	 * @return The updated task
+	 */
 	public Task submitReviews(Task task, GTACourseNode cNode, Identity doerIdentity, Role by);
 	
 	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by);
@@ -517,11 +526,11 @@ public interface GTAManager {
 	/**
 	 * This method doesn't recalculate the score. It only resets the task.
 	 * 
-	 * @param task
-	 * @param cNode
-	 * @param courseEnv
-	 * @param doerIdentity
-	 * @return
+	 * @param task The task
+	 * @param cNode The course node
+	 * @param courseEnv The course environment
+	 * @param doerIdentity The identity of the user which does the action
+	 * @return The updated task
 	 */
 	public Task resetCourseNode(Task task, Identity assessedIdentity, BusinessGroup businessGroup, GTACourseNode cNode, CourseEnvironment courseEnv, Identity doerIdentity);
 	

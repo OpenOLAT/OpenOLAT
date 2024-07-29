@@ -155,9 +155,9 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 	protected ParticipantPeerReviewAssignmentRow forgeRow(TaskReviewAssignment assignment, Task task, SessionParticipationStatistics sessionStatistics, int pos) {
 		ParticipantPeerReviewAssignmentRow row = super.forgeRow(assignment, task, sessionStatistics, pos);
 		// Start evaluation link
-		if(assignment.getParticipation() == null || assignment.getStatus() == null
+		if(!readOnly && (assignment.getParticipation() == null || assignment.getStatus() == null
 				|| assignment.getStatus() ==  TaskReviewAssignmentStatus.open
-				|| assignment.getStatus() == TaskReviewAssignmentStatus.inProgress) {
+				|| assignment.getStatus() == TaskReviewAssignmentStatus.inProgress)) {
 			String executeLinkName = "execute-" + (++counter);
 			FormLink executeLink = uifactory.addFormLink(executeLinkName, CMD_EXECUTE, "review.execute", null, flc, Link.LINK);
 			executeLink.setUserObject(row);

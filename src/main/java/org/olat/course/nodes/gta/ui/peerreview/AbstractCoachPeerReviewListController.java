@@ -214,22 +214,22 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		aggreagtedRow.setNumOfReviews(new NumOf(subRows.size(), numOfReviews));
 		aggreagtedRow.setNumOfReviewers(aggreagtedRow.getNumOfReviews());
 		
-		String id = Integer.toString(counter++);
 		double progress = aggregatedStatistics == null ? 0.0d : aggregatedStatistics.progress() * 100d;
-		if(progress > 0.0d) {
+		if(progress > 0.0d && aggregatedStatistics != SessionStatistics.NO_STATISTICS) {
+			String id = Integer.toString(counter++);
 			createBoxPlot(id, aggreagtedRow, aggregatedStatistics);
 		}
 	}
 
 	protected void decorateWithStatistics(CoachPeerReviewRow row, SessionParticipationStatistics sessionStatistics) {
-		double progress = 0.0d;
-		if(sessionStatistics != null) {
-			progress = sessionStatistics.statistics().progress() * 100d;
-		}
-		
-		String id = Integer.toString(counter++);
-		if(progress > 0.0d) {
-			createBoxPlot(id, row, sessionStatistics.statistics());
+		if(sessionStatistics != null && sessionStatistics.statistics() != null
+				&& sessionStatistics.statistics() != SessionStatistics.NO_STATISTICS) {
+			SessionStatistics statistics = sessionStatistics.statistics();
+			double progress = statistics.progress() * 100d;
+			if(progress > 0.0d) {
+				String id = Integer.toString(counter++);
+				createBoxPlot(id, row, statistics);
+			}
 		}
 	}
 	

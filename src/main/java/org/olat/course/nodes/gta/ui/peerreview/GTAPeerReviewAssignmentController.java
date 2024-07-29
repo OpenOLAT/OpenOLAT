@@ -33,12 +33,13 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -56,6 +57,7 @@ import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
+import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupGradingController;
 import org.olat.course.nodes.gta.ui.peerreview.GTAPeerReviewAssignmentTableModel.AssignmentsCols;
@@ -71,11 +73,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTAPeerReviewAssignmentController extends FormBasicController {
 
+	private static final String ALL_TAB_ID = "All";
+	private static final String ASSIGNED_TAB_ID = "Assigned";
+	private static final String NOT_ASSIGNED_TAB_ID = "ANotAssignedll";
 	protected static final String ASSIGNED = "Assigned";
-	protected static final String ALL_ASSIGNED = "All";
 	protected static final String NOT_ASSIGNED = "NotAssigned";
 	protected static final String FILTER_ASSIGNMENT_STATUS = "assignment-status";
-	protected static final String ASSIGN = "assign";
+	protected static final String FILTER_TASK_NAME = "task-name";
+	
+	private static final String ASSIGN = "assign";
 	
 	private FlexiTableElement tableEl;
 	private GTAPeerReviewAssignmentTableModel tableModel;
@@ -87,6 +93,8 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 	private final GTACourseNode gtaNode;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
+	private final TaskPortraitController taskPortraitCtrl;
+	
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
@@ -96,12 +104,16 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 	@Autowired
 	private GTAPeerReviewManager peerReviewManager;
 	
-	public GTAPeerReviewAssignmentController(UserRequest ureq, WindowControl wControl, TaskList taskList, Task taskToReview, GTACourseNode gtaNode) {
+	public GTAPeerReviewAssignmentController(UserRequest ureq, WindowControl wControl, TaskList taskList,
+			Task taskToReview, TaskReviewAssignmentStatus assignmentStatus, GTACourseNode gtaNode) {
 		super(ureq, wControl, "asssign_reviewers", Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.taskToReview = taskToReview;
 		this.taskList = taskList;
 		this.gtaNode = gtaNode;
+		
+		taskPortraitCtrl = new TaskPortraitController(ureq, getWindowControl(), taskToReview, assignmentStatus);
+		listenTo(taskPortraitCtrl);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -111,13 +123,17 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 		assignmentPK.add(SelectionValues.entry(ASSIGN, ""));
 		
 		initForm(ureq);
+		loadModel();
 		initFilters();
 		initFiltersPresets(ureq);
-		loadModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.put("portrait", taskPortraitCtrl.getInitialComponent());
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		int i=0;
@@ -150,13 +166,21 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
 		
 		SelectionValues assignmentStatusKV = new SelectionValues();
-		assignmentStatusKV.add(SelectionValues.entry(ALL_ASSIGNED, translate("filter.assignment.status.all")));
 		assignmentStatusKV.add(SelectionValues.entry(ASSIGNED, translate("filter.assignment.status.assigned")));
 		assignmentStatusKV.add(SelectionValues.entry(NOT_ASSIGNED, translate("filter.assignment.status.not.assigned")));
 
-		FlexiTableSingleSelectionFilter coachFilter = new FlexiTableSingleSelectionFilter(translate("filter.assignment.status"),
+		FlexiTableMultiSelectionFilter coachFilter = new FlexiTableMultiSelectionFilter(translate("filter.assignment.status"),
 				FILTER_ASSIGNMENT_STATUS, assignmentStatusKV, true);
 		filters.add(coachFilter);
+		
+		SelectionValues taskNamesKV = new SelectionValues();
+		List<String> taskNames = tableModel.getTaskNames();
+		for(String taskName:taskNames) {
+			taskNamesKV.add(SelectionValues.entry(taskName, taskName));
+		}
+		FlexiTableMultiSelectionFilter taskFilter = new FlexiTableMultiSelectionFilter(translate("filter.taskname"),
+				FILTER_TASK_NAME, taskNamesKV, true);
+		filters.add(taskFilter);
 
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -164,15 +188,15 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 	private void initFiltersPresets(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
-		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_ASSIGNED, translate("filter.assignment.status.all"),
-				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STATUS, ALL_ASSIGNED)));
+		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.assignment.status.all"),
+				TabSelectionBehavior.clear, List.of());
 		tabs.add(allTab);
 
-		FlexiFiltersTab assignedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ASSIGNED, translate("filter.assignment.status.assigned"),
+		FlexiFiltersTab assignedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ASSIGNED_TAB_ID, translate("filter.assignment.status.assigned"),
 				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STATUS, ASSIGNED)));
 		tabs.add(assignedTab);
 
-		FlexiFiltersTab notAssignedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NOT_ASSIGNED, translate("filter.assignment.status.not.assigned"),
+		FlexiFiltersTab notAssignedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NOT_ASSIGNED_TAB_ID, translate("filter.assignment.status.not.assigned"),
 				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STATUS, NOT_ASSIGNED)));
 		tabs.add(notAssignedTab);
 

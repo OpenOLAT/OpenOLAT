@@ -22,6 +22,7 @@ package org.olat.course.nodes.gta.ui.peerreview;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -31,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupGradingController;
 
@@ -65,8 +67,11 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 		if(filters != null && (StringHelper.containsNonWhitespace(quickSearch) || (!filters.isEmpty() && filters.get(0) != null))) {
 			String searchString = StringHelper.containsNonWhitespace(quickSearch) ? quickSearch.toLowerCase() : null;
 			String assignmentStatus = getFilterStatus(filters);
+			List<String> taskNames = getFilterTaskName(filters);
 			List<PeerReviewAssignmentRow> filteredRows = backupRows.stream()
-						.filter(row -> acceptSearch(row, searchString) && acceptStatus(row, assignmentStatus))
+						.filter(row -> acceptSearch(row, searchString)
+								&& acceptStatus(row, assignmentStatus)
+								&& acceptTaskNames(row, taskNames))
 						.collect(Collectors.toList());
 			super.setObjects(filteredRows);
 		} else {
@@ -78,6 +83,14 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, GTAPeerReviewAssignmentController.FILTER_ASSIGNMENT_STATUS);
 		if(statusFilter != null) {
 			return statusFilter.getValue();
+		}
+		return null;
+	}
+	
+	private List<String> getFilterTaskName(List<FlexiTableFilter> filters) {
+		FlexiTableFilter taskNameFilter = FlexiTableFilter.getFilter(filters, GTAPeerReviewAssignmentController.FILTER_TASK_NAME);
+		if(taskNameFilter instanceof FlexiTableMultiSelectionFilter taskNamesFilter) {
+			return taskNamesFilter.getValues();
 		}
 		return null;
 	}
@@ -98,9 +111,20 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	
 	private boolean acceptStatus(PeerReviewAssignmentRow row, String assignmentStatus) {
 		return assignmentStatus == null
-				|| GTAPeerReviewAssignmentController.ALL_ASSIGNED.equals(assignmentStatus)
 				|| (row.isAssigned() && GTAPeerReviewAssignmentController.ASSIGNED.equals(assignmentStatus))
 				|| (!row.isAssigned() && GTAPeerReviewAssignmentController.NOT_ASSIGNED.equals(assignmentStatus));
+	}
+
+	private boolean acceptTaskNames(PeerReviewAssignmentRow row, List<String> taskNames) {
+		if(taskNames == null || taskNames.isEmpty()) return true;
+		return row.getTaskName() != null && taskNames.contains(row.getTaskName());
+	}
+	
+	public List<String> getTaskNames() {
+		Set<String> names = backupRows.stream()
+				.map(PeerReviewAssignmentRow::getTaskName)
+				.collect(Collectors.toSet());
+		return new ArrayList<>(names);
 	}
 
 	@Override
@@ -113,7 +137,7 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	public Object getValueAt(PeerReviewAssignmentRow assignmentRow, int col) {
 		if(col >= 0 && col < COLS.length) {
 			return switch(COLS[col]) {
-				case taskTitle -> assignmentRow.getTaskTitle();
+				case taskTitle -> assignmentRow.getTaskName();
 				case numberReviews -> getNumberOfReviews(assignmentRow);
 				case assignment -> assignmentRow.getAssignmentEl();
 				default -> "ERROR";

@@ -83,22 +83,33 @@ public class GTAPeerReviewDetailsScoreController extends FormBasicController {
 			
 			AssessmentEvaluation currentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 			GTAScores scores = courseNode.getScore(msService, gtaManager, peerReviewManager, assessedUserCourseEnv, currentEval, session);
-			if(scores.evaluationFormScore() != null) {
-				layoutCont.contextPut("evaluationFormScore", AssessmentHelper.getRoundedScore(scores.evaluationFormScore()));
+			String scoreParts = courseNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
+			if(scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM)) {
+				setScore(scores.evaluationFormScore(), "evaluationFormScore", layoutCont);
 			}
-			if(scores.peerReviewScore() != null) {
-				layoutCont.contextPut("peerReviewScore", AssessmentHelper.getRoundedScore(scores.peerReviewScore()));
+			if(scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_PEER_REVIEW)) {
+				setScore(scores.peerReviewScore(), "peerReviewScore", layoutCont);
 			}
-			if(scores.awardedReviewScore() != null) {
-				layoutCont.contextPut("awardedReviewsScore", AssessmentHelper.getRoundedScore(scores.awardedReviewScore()));
+			if(scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_REVIEW_SUBMITTED)) {
+				setScore(scores.awardedReviewScore(), "awardedReviewsScore", layoutCont);
 			}
 
 			Float total = scores.totalScore();
 			Float maxTotal = scores.minMax() == null ? null : scores.minMax().getMax();
 			String totalLabel = translate("score.details.total", AssessmentHelper.getRoundedScore(maxTotal));
 			layoutCont.contextPut("totalLabel", totalLabel);
-			layoutCont.contextPut("totalScore", AssessmentHelper.getRoundedScore(total));
+			String totalAsString = getRoundedScore(total);
+			layoutCont.contextPut("totalScore", totalAsString);
 		}
+	}
+	
+	private String getRoundedScore(Float score) {
+		return score == null ? "-" : AssessmentHelper.getRoundedScore(score);
+	}
+	
+	private void setScore(Float score, String key, FormLayoutContainer layoutCont) {
+		String scoreAsString = getRoundedScore(score);
+		layoutCont.contextPut(key, scoreAsString);
 	}
 
 	@Override

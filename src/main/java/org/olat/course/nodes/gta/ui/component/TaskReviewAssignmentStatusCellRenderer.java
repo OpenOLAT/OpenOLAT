@@ -64,7 +64,7 @@ public class TaskReviewAssignmentStatusCellRenderer extends LabelCellRenderer {
 		return stringOutput.toString();
 	}
 
-	protected TaskReviewAssignmentStatus getStatus(Object val) {
+	public static TaskReviewAssignmentStatus getStatus(Object val) {
 		if(val instanceof ParticipantPeerReviewAssignmentRow assignment) {
 			return assignment.getStatus();
 		}

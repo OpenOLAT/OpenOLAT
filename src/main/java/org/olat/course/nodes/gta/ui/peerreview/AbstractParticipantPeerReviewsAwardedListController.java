@@ -33,6 +33,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
+import org.olat.course.nodes.gta.model.SessionStatistics;
 import org.olat.course.nodes.gta.ui.GTAParticipantController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,12 +82,13 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 		// Some loading
 		
 		double progressVal = 0.0d;
-		String id = Integer.toString(counter++);
 		
-		if(sessionStatistics != null) {
+		if(sessionStatistics != null && sessionStatistics.statistics() != null
+				&& sessionStatistics.statistics() != SessionStatistics.NO_STATISTICS) {
 			progressVal = sessionStatistics.statistics().progress() * 100f;
 		}
 
+		String id = Integer.toString(counter++);
 		ProgressBarItem progress = uifactory.addProgressBar("progress-".concat(id), null, 20, (float)progressVal, 100f, null, flc);
 		progress.setRenderStyle(RenderStyle.pie);
 		progress.setRenderSize(RenderSize.inline);
@@ -117,7 +119,4 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 
 		return row;
 	}
-	
-	
-
 }

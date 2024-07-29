@@ -53,7 +53,7 @@ public class PeerReviewAssignmentRow extends UserPropertiesRow {
 		this.assignment = assignment;
 	}
 	
-	public String getTaskTitle() {
+	public String getTaskName() {
 		return task == null ? null : task.getTaskName();
 	}
 	

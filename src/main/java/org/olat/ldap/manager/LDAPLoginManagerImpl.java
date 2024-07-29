@@ -1607,9 +1607,6 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		for(OrganisationRoles roleToModify:OrganisationRoles.managersRoles()) {
 			enhancedRolesBy = syncRole(synchronizedRoles, fullSync, ldapRoles, roleToModify, enhancedRolesBy);
 		}
-		if("Rohrer".equals(identity.getUser().getLastName())) {
-			System.out.println();
-		}
 		if(rolesBy == null || !rolesBy.same(enhancedRolesBy)) {
 			securityManager.updateRoles(null, identity, enhancedRolesBy);
 		}

@@ -35,6 +35,32 @@ public interface MinMax {
 		return new MinMaxImpl(min, max);
 	}
 	
+	public static MinMax add(MinMax... minMaxList) {
+		Float min = null;
+		Float max = null;
+		
+		if(minMaxList != null && minMaxList.length > 0) {
+			for(MinMax minMax:minMaxList) {
+				if(minMax != null) {
+					min = add(minMax.getMin(), min);
+					max = add(minMax.getMax(), max);
+				}
+			}
+		}
+		
+		return (min == null && max == null) ? null : MinMax.of(min, max);
+	}
+	
+	public static Float add(Float val1, Float val2) {
+		if(val1 == null) {
+			return val2;
+		}
+		if(val2 == null ) {
+			return val1;
+		}
+		return Float.valueOf(val1.floatValue() + val2.floatValue());
+	}
+	
 	static final class MinMaxImpl implements MinMax {
 		
 		private final Float min;
