@@ -989,9 +989,13 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 				MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
 		Integer pointsProReview = GTACourseNode.getIntegerConfiguration(config,
 				GTACourseNode.GTASK_PEER_REVIEW_SCORE_PRO_REVIEW, null);
+		
+		Integer numOfReviews = GTACourseNode.getIntegerConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
+				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
 		Integer maxNumberCreditableReviews = GTACourseNode.getIntegerConfiguration(config,
 				GTACourseNode.GTASK_PEER_REVIEW_MAX_NUMBER_CREDITABLE_REVIEWS,
-				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS);
+				numOfReviews == null ? "1" : numOfReviews.toString());
 		String scoreParts = config.getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
 		
 		return GTACourseNode.calculateMinMaxTotal(config, evaluationScoreScale, peerReviewScoreScale,
