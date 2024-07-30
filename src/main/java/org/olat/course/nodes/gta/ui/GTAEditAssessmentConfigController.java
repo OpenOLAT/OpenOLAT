@@ -489,7 +489,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		cutVal.setVisible(displayType.isVisible() && displayType.isSelected(0));
 		cutVal.setMandatory(cutVal.isVisible());
 
-		scoreTypeEl.setVisible(scoreGranted.isOn() && evaluationEnabled);
+		scoreTypeEl.setVisible(scoreGranted.isOn() && (peerReviewEnabled || evaluationEnabled));
 		boolean scoreAuto = isScoreAuto();
 		evaluationScoreScalingEl.setVisible(scoreGranted.isOn() && scoreAuto && evaluationEnabled);
 		getLogger().debug("Score auto: {} evaluationEnabled: {} peerReviewEnabled {} ", scoreAuto, evaluationEnabled, peerReviewEnabled);
@@ -557,8 +557,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	}
 	
 	private boolean isScoreAuto() {
-		return (scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected() && "automatic".equals(scoreTypeEl.getSelectedKey()))
-				|| (!scoreTypeEl.isVisible() && (peerReviewEnabled || (evaluationFormEnabledEl.isVisible() && evaluationFormEnabledEl.isOn())));
+		return (scoreTypeEl.isVisible() && scoreTypeEl.isOneSelected() && "automatic".equals(scoreTypeEl.getSelectedKey()));
 	}
 	
 	private void updateUIMinMax() {
@@ -790,6 +789,9 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 			update(ureq);
 		} else if(evaluationFormEnabledEl == source) {
 			update(ureq);
+			if(scoresSumEl.isVisible() && evaluationFormEnabledEl.isOn()) {
+				scoresSumEl.select(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM, true);
+			}
 		} else if(evaluationScoreScalingEl == source || scoreScalingEl == source) {
 			updateUIMinMax();
 		} else if(scoreGranted == source) {
