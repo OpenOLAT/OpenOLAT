@@ -155,13 +155,6 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 	}
 	
 	private void initConfigurationForm(FormItemContainer formLayout) {
-		// Relation ship
-		SelectionValues relationshipPK = new SelectionValues();
-		boolean mutualRelationship = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW_MUTUAL_REVIEW, false);
-		relationshipPK.add(SelectionValues.entry(GTACourseNode.GTASK_PEER_REVIEW_MUTUAL_REVIEW, translate("peer.review.mutual.review")));
-		relationshipEl = uifactory.addCheckboxesHorizontal("peer.review.relationship", formLayout, relationshipPK.keys(), relationshipPK.values());
-		relationshipEl.select(GTACourseNode.GTASK_PEER_REVIEW_MUTUAL_REVIEW, mutualRelationship);
-		
 		// Form of the review
 		SelectionValues formReviewPK = new SelectionValues();
 		formReviewPK.add(SelectionValues.entry(GTACourseNode.GTASK_PEER_REVIEW_DOUBLE_BLINDED_REVIEW, translate("peer.review.double.blinded.review"),
@@ -186,11 +179,19 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 		assignmentsPK.add(SelectionValues.entry(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_RANDOM, translate("peer.review.assignment.random"),
 				translate("peer.review.assignment.random.desc"), null, null, true));
 		assignmentEl = uifactory.addCardSingleSelectHorizontal("peer.review.assignment", "peer.review.assignment", formLayout, assignmentsPK);
+		assignmentEl.addActionListener(FormEvent.ONCHANGE);
 		String assignment = config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT,
 				GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_DEFAULT);
 		if(StringHelper.containsNonWhitespace(assignment) && assignmentsPK.containsKey(assignment)) {
 			assignmentEl.select(assignment, true);
 		}
+		
+		// Relation ship
+		SelectionValues relationshipPK = new SelectionValues();
+		boolean mutualRelationship = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW_MUTUAL_REVIEW, false);
+		relationshipPK.add(SelectionValues.entry(GTACourseNode.GTASK_PEER_REVIEW_MUTUAL_REVIEW, translate("peer.review.mutual.review")));
+		relationshipEl = uifactory.addCheckboxesHorizontal("peer.review.relationship", formLayout, relationshipPK.keys(), relationshipPK.values());
+		relationshipEl.select(GTACourseNode.GTASK_PEER_REVIEW_MUTUAL_REVIEW, mutualRelationship);
 		
 		// Number of reviews	
 		SelectionValues numOfReviewsPK = new SelectionValues();
@@ -375,7 +376,7 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(qualityFeedbackEnableEl == source) {
+		if(qualityFeedbackEnableEl == source || assignmentEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -383,6 +384,10 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 	
 	private void updateUI() {
 		qualityFeedbackTypeEl.setVisible(qualityFeedbackEnableEl.isOn());
+	
+		boolean assignmentSameTask = assignmentEl.isOneSelected()
+				&& GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_SAME_TASK.equals(assignmentEl.getSelectedKey());
+		relationshipEl.setVisible(assignmentSameTask);
 	}
 
 	@Override
@@ -398,7 +403,7 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 		config.setStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW, formReview);
 		String assignment = assignmentEl.getSelectedKey();
 		config.setStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT, assignment);
-		boolean mutualRelationship = relationshipEl.isAtLeastSelected(1);
+		boolean mutualRelationship = relationshipEl.isVisible() && relationshipEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_PEER_REVIEW_MUTUAL_REVIEW, mutualRelationship);
 		
 		// Quality feedback

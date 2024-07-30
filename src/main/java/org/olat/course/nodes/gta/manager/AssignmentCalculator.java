@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.gta.manager;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,10 +46,11 @@ import org.olat.course.nodes.gta.TaskReviewAssignment;
 public class AssignmentCalculator {
 	
 	private static final Logger logger = Tracing.createLoggerFor(AssignmentCalculator.class);
-	
-	private static final Random rnd = new SecureRandom();
+
+    private static final Random random = new Random();
 	
 	private final List<Task> allTasks;
+	private final Map<Identity,Task> allTasksMap;
 	private final Set<Long> allCourseParticipantsKeys;
 	private final List<TaskReviewAssignment> allAssignments;
 	
@@ -60,49 +60,98 @@ public class AssignmentCalculator {
 				.collect(Collectors.toSet());
 		this.allAssignments = allAssignments;
 		this.allTasks = allTasks;
+		allTasksMap = allTasks.stream()
+				.collect(Collectors.toMap(Task::getIdentity, task -> task, (u,v) -> u));
 	}
 	
-	public List<Participant> assign(AssignmentType assignmentType, int numberOfReviews) {
+	public List<Participant> assign(AssignmentType assignmentType, int numberOfReviews, boolean mutual) {
 		List<Participant> participants = loadCurrentState();
 		
-		List<Participant> toReviewList = new ArrayList<>(participants);
 		for(Participant participant:participants) {
-			Collections.shuffle(toReviewList, rnd);
-			awardReviews(participant, toReviewList, assignmentType, numberOfReviews);
+			List<Participant> toReviewList = new ArrayList<>(participants);
+			Collections.shuffle(toReviewList, random);
+			awardReviews(participant, toReviewList, assignmentType, numberOfReviews, mutual);
 		}
 		return participants;
 	}
 	
-	private void awardReviews(Participant participant, List<Participant> toReviewList, AssignmentType assignmentType, int numberOfReviews) {
+	private void awardReviews(Participant participant, List<Participant> toReviewList,
+			AssignmentType assignmentType, int numberOfReviews, boolean mutual) {
 		logger.debug("Assignment for: {}", participant.participant().getUser().getLastName());
 		
 		for(Participant toReview:toReviewList) {
 			if(participant.numberOfAwardedReviews() >= numberOfReviews) {
 				break;
 			}
-			if(participant.participant().equals(toReview.participant())
-					|| excludeMatchingByTask(participant.task(), toReview.task(), assignmentType)
-					|| participant.isTaskAlreadyAwarded(toReview.task())
-					|| toReview.numberOfReceivedReviews() >= numberOfReviews) {
+			if(exclude(participant, toReview, assignmentType, numberOfReviews)) {
 				continue;
 			}
-
-			// Awarded: list of the reviews the participant needs to do
-			participant.plannedAwardedReviews().add(toReview.task());
-			// Received: list of the reviews made by others
-			toReview.plannedReceivedReviews().add(participant.participant());
+			
+			if(mutual) {
+				// Check if the identity to review can review the participant
+				if(!exclude(toReview, participant, assignmentType, numberOfReviews)
+						&& toReview.numberOfAwardedReviews() < numberOfReviews) {
+					// Awarded: list of the reviews the participant needs to do
+					participant.plannedAwardedReviews().add(toReview.task());
+					toReview.plannedAwardedReviews().add(participant.task());
+					
+					// Received: list of the reviews made by others
+					toReview.plannedReceivedReviews().add(participant.participant());
+					participant.plannedReceivedReviews().add(toReview.participant());
+				}
+			} else {
+				// Awarded: list of the reviews the participant needs to do
+				participant.plannedAwardedReviews().add(toReview.task());
+				// Received: list of the reviews made by others
+				toReview.plannedReceivedReviews().add(participant.participant());
+			}
 		}
 	}
+	
+	private boolean exclude(Participant participant, Participant toReview,
+			AssignmentType assignmentType, int numberOfReviews) {
+		return (participant.participant().equals(toReview.participant())
+				|| excludeMatchingByTask(participant, toReview, assignmentType)
+				|| participant.isTaskAlreadyAwarded(toReview.task())
+				|| toReview.numberOfReceivedReviews() >= numberOfReviews);
+	}
 
-	private boolean excludeMatchingByTask(Task participantTask, Task reviewerTask, AssignmentType assignmentType) {
-		String participantTaskName = participantTask.getTaskName();
-		String reviewerTaskName = reviewerTask.getTaskName();
+	private boolean excludeMatchingByTask(Participant participant, Participant reviewer, AssignmentType assignmentType) {
 		return switch(assignmentType) {
-			case SAME_TASK -> participantTaskName != null && reviewerTaskName != null && !participantTaskName.equals(reviewerTaskName);
-			case OTHER_TASK -> participantTaskName != null && reviewerTaskName != null && participantTaskName.equals(reviewerTaskName);
+			case SAME_TASK -> excludeMatchingBySameTask(participant, reviewer);
+			case OTHER_TASK -> excludeMatchingByOtherTask(participant, reviewer);
 			case RANDOM -> false;
 			default -> false;
 		};
+	}
+	
+	private boolean excludeMatchingBySameTask(Participant participant, Participant reviewer) {
+		String participantTaskName = participant.getTaskName();
+		String reviewerTaskName = reviewer.getTaskName();
+		return participantTaskName != null && reviewerTaskName != null && !participantTaskName.equals(reviewerTaskName);
+	}
+	
+	private boolean excludeMatchingByOtherTask(Participant participantTask, Participant reviewerTask) {
+		String participantTaskName = participantTask.getTaskName();
+		String reviewerTaskName = reviewerTask.getTaskName();
+		
+		Set<String> alreadyAwardedTaskName = participantTask.plannedAwardedReviews().stream()
+				.map(Task::getTaskName)
+				.collect(Collectors.toSet());
+		for(TaskReviewAssignment assignment:participantTask.awardedReviews()) {
+			Identity assignee = assignment.getAssignee();
+			Task taskOfAssignee = allTasksMap.get(assignee);
+			if(taskOfAssignee != null && StringHelper.containsNonWhitespace(taskOfAssignee.getTaskName())) {
+				alreadyAwardedTaskName.add(taskOfAssignee.getTaskName());
+			}
+		}
+		
+		if(alreadyAwardedTaskName.isEmpty()) {
+			return participantTaskName != null && reviewerTaskName != null
+					&& participantTaskName.equals(reviewerTaskName);
+		}
+		return participantTaskName != null && reviewerTaskName != null
+				&& !alreadyAwardedTaskName.contains(reviewerTaskName);
 	}
 	
 	private List<Participant> loadCurrentState() {
@@ -144,6 +193,10 @@ public class AssignmentCalculator {
 			List<TaskReviewAssignment> awardedReviews, List<TaskReviewAssignment> receivedReviews,
 			List<Task> plannedAwardedReviews, List<Identity> plannedReceivedReviews) {
 		
+		public String getTaskName() {
+			return task == null ? null : task.getTaskName();
+		}
+
 		public boolean isTaskAlreadyAwarded(Task task) {
 			for(TaskReviewAssignment awardedReview:awardedReviews) {
 				if(task.equals(awardedReview.getTask())) {
