@@ -154,8 +154,8 @@ public class FeedItemController extends BasicController implements Activateable2
 		if (entries != null && !entries.isEmpty()) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if (ACTIVATION_KEY_COMMENTS.equals(type) && commentsCtrl != null) {
-				// show comments
-				commentsCtrl.expandComments(ureq);
+				// TODO show comments
+				// commentsCtrl.expandComments(ureq);
 			}
 		}
 	}

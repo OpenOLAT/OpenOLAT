@@ -25,16 +25,19 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,17 +61,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author gnaegi
  */
 public class UserCommentFormController extends FormBasicController {
-	private UserComment parentComment;
+
+	private final UserComment parentComment;
 	private UserComment toBeUpdatedComment;
 	private RichTextElement commentElem;
+	private TextElement commentsPreElem;
 
 	private final String resSubPath;
 	private final OLATResourceable ores;
 	private boolean subscribeOnce = true;
-	private PublishingInformations publishingInformations;
+	private final PublishingInformations publishingInformations;
 
-	@Autowired
-	private UserManager userManager;
+	private static final int MAX_COMMENT_LENGTH = 4000;
+
 	@Autowired
 	private NotificationsManager notificationsManager;
 	@Autowired
@@ -82,12 +87,14 @@ public class UserCommentFormController extends FormBasicController {
 	 * @param wControl
 	 * @param parentComment
 	 * @param toBeUpdatedComment
-	 * @param commentManager
+	 * @param ores
+	 * @param resSubPath
+	 * @param publishingInformations
 	 */
 	UserCommentFormController(UserRequest ureq, WindowControl wControl,
-			UserComment parentComment, UserComment toBeUpdatedComment,
-			OLATResourceable ores, String resSubPath,
-			PublishingInformations publishingInformations) {
+							  UserComment parentComment, UserComment toBeUpdatedComment,
+							  OLATResourceable ores, String resSubPath,
+							  PublishingInformations publishingInformations) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.ores = ores;
 		this.resSubPath = resSubPath;
@@ -98,95 +105,131 @@ public class UserCommentFormController extends FormBasicController {
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener,
-			UserRequest ureq) {
-		// Add parent and parent first / last name
-		if (parentComment != null) {
-			String name = userManager.getUserDisplayName(parentComment.getCreator());
-			String[] args = new String[] {name};
-			setFormTitle("comments.form.reply.title", args);
-		} else {
-			setFormTitle("comments.form.new.title");
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (parentComment == null) {
+			commentsPreElem = uifactory.addTextElement("commentsPreElem", null, 25, "", formLayout);
+			commentsPreElem.setPlaceholderKey("comments.form.placeholder", null);
+			commentsPreElem.addActionListener(FormEvent.ONCLICK);
 		}
 
-		commentElem = uifactory.addRichTextElementForStringDataMinimalistic(
-				"commentElem", null, "", -1, -1, formLayout, getWindowControl());
-		commentElem.setMaxLength(4000);
-		FormLayoutContainer buttonContainer = FormLayoutContainer
-				.createButtonLayout("buttonContainer", getTranslator());
+		commentElem = uifactory.addRichTextElementForStringData(
+				"commentElem", null, "", 12, -1,
+				false, null, null,
+				formLayout, ureq.getUserSession(), getWindowControl());
+		commentElem.setPlaceholderKey("comments.form.placeholder", null);
+		commentElem.setMaxLength(MAX_COMMENT_LENGTH);
+		commentElem.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		commentElem.setVisible(parentComment != null);
+
+		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add(buttonContainer);
 
+		uifactory.addFormSubmitButton("submit", "comments.button.submit", buttonContainer);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("submit", buttonContainer);
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
 		String commentText = commentElem.getValue();
-		if(commentText.length() <= 4000) {
+
+		if (commentText.length() <= MAX_COMMENT_LENGTH) {
 			commentElem.clearError();
 		} else {
-			commentElem.setErrorKey("input.toolong", new String[]{"4000"});
-			allOk &= false;
+			commentElem.setErrorKey("input.toolong", Integer.toString(MAX_COMMENT_LENGTH));
+			allOk = false;
 		}
 		return allOk;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == commentsPreElem || (source == commentElem && event.equals(Event.CANCELLED_EVENT))) {
+			toggleCommentFormElem();
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
+	}
+
+	private void toggleCommentFormElem() {
+		if (parentComment == null) {
+			commentsPreElem.setVisible(!commentsPreElem.isVisible());
+			commentElem.setVisible(!commentElem.isVisible());
+		}
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String commentText = commentElem.getValue();
 		if (StringHelper.containsNonWhitespace(commentText)) {
-			if(publishingInformations != null) {
-				if(subscribeOnce) {
-					Subscriber subscriber = notificationsManager.getSubscriber(getIdentity(), publishingInformations.getContext());
-					if(subscriber == null) {
-						notificationsManager.subscribe(getIdentity(), publishingInformations.getContext(), publishingInformations.getData());
-						fireEvent(ureq, new UserCommentsSubscribeNotificationsEvent());
-					}
-					subscribeOnce = false;
-				}
-				notificationsManager.markPublisherNews(publishingInformations.getContext(), null, false);
-			}
-			
+			handleSubscription(ureq);
+
 			if (toBeUpdatedComment == null) {
-				if (parentComment == null) {
-					// create new comment
-					toBeUpdatedComment = commentAndRatingService.createComment(getIdentity(), ores, resSubPath, commentText);
-					// notify listeners that we finished.
-					fireEvent(ureq, Event.CHANGED_EVENT);
-				} else {
-					// reply to parent comment
-					toBeUpdatedComment = commentAndRatingService.replyTo(parentComment, getIdentity(), commentText);
-					if (toBeUpdatedComment == null) {
-						showError("comments.coment.reply.error");
-						fireEvent(ureq, Event.FAILED_EVENT);
-					} else {
-						fireEvent(ureq, Event.CHANGED_EVENT);
-					}
-				}
+				toBeUpdatedComment = handleCommentCreation(commentText, ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else {
 				toBeUpdatedComment = commentAndRatingService.updateComment(toBeUpdatedComment, commentText);
-				if (toBeUpdatedComment == null) {
-					showError("comments.coment.update.error");
-					fireEvent(ureq, Event.FAILED_EVENT);
-				} else {
-					fireEvent(ureq, Event.CHANGED_EVENT);
-				}
+				handleUpdateResult(ureq);
 			}
+		}
+	}
+
+	private void handleSubscription(UserRequest ureq) {
+		if (publishingInformations != null) {
+			if (subscribeOnce) {
+				Subscriber subscriber = notificationsManager.getSubscriber(getIdentity(), publishingInformations.getContext());
+				if (subscriber == null) {
+					notificationsManager.subscribe(getIdentity(), publishingInformations.getContext(), publishingInformations.getData());
+					fireEvent(ureq, new UserCommentsSubscribeNotificationsEvent());
+				}
+				subscribeOnce = false;
+			}
+			notificationsManager.markPublisherNews(publishingInformations.getContext(), null, false);
+		}
+	}
+
+	private UserComment handleCommentCreation(String commentText, UserRequest ureq) {
+		UserComment newComment;
+		if (parentComment == null) {
+			// Create new comment
+			newComment = commentAndRatingService.createComment(getIdentity(), ores, resSubPath, commentText);
+		} else {
+			// Reply to parent comment
+			newComment = commentAndRatingService.replyTo(parentComment, getIdentity(), commentText);
+			if (newComment == null) {
+				showError("comments.coment.reply.error");
+				fireEvent(ureq, Event.FAILED_EVENT);
+			}
+		}
+		return newComment;
+	}
+
+	private void handleUpdateResult(UserRequest ureq) {
+		if (toBeUpdatedComment == null) {
+			showError("comments.coment.update.error");
+			fireEvent(ureq, Event.FAILED_EVENT);
+		} else {
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
+		if (commentElem.isVisible()) {
+			commentElem.setValue("");
+			toggleCommentFormElem();
+			flc.setDirty(false);
+		}
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	/**
-	 * @return the updated or new created comment. Only package scope
+	 * @return the updated or newly created comment. Only package scope
 	 */
 	UserComment getComment() {
 		return toBeUpdatedComment;
+	}
+
+	public boolean isCommentElemVisible() {
+		return commentElem.isVisible();
 	}
 }

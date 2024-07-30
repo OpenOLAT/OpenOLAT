@@ -301,7 +301,6 @@ public class CatalogController extends FormBasicController implements GenericEve
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), roles.isAdministrator(), roles.isGuestOnly());
 		commentsController =
 				new UserCommentsAndRatingsController(ureq, getWindowControl(), libraryOres, item.getId(), secCallback, null, true, true, true);
-		commentsController.expandComments(ureq);
 		commentsController.setUserObject(item);
 		listenTo(commentsController);
 

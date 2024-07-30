@@ -365,7 +365,6 @@ public class PageRunController extends BasicController implements TooledControll
 				}
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
 				commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, null, true, false, true);
-				commentsCtrl.expandComments(ureq);
 				listenTo(commentsCtrl);
 			}
 			mainVC.put("comments", commentsCtrl.getInitialComponent());
@@ -447,7 +446,7 @@ public class PageRunController extends BasicController implements TooledControll
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Comment".equalsIgnoreCase(resName)) {
 			Long commentId = entries.get(0).getOLATResourceable().getResourceableId();
-			commentsCtrl.expandCommentsAt(ureq, commentId);
+			commentsCtrl.expandCommentsAt(commentId);
 		}
 	}
 
@@ -489,10 +488,6 @@ public class PageRunController extends BasicController implements TooledControll
 				doEditPage(ureq);
 			} else if(event instanceof EditPageMetadataEvent) {
 				doEditMetadata(ureq);
-			}
-		} else if(commentsCtrl == source) {
-			if(event == Event.CANCELLED_EVENT) {
-				commentsCtrl.collapseComments();
 			}
 		} else if(confirmPublishCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
