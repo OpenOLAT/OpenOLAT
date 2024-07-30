@@ -326,8 +326,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		MinMax submittedReview = null;
 		if(scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_REVIEW_SUBMITTED)) {
 			int numberOfReviews = maxNumberCreditableReviews == null ? 1 : maxNumberCreditableReviews.intValue();
-			float pointsPerReview = pointsProReview.floatValue();
-			submittedReview = MinMax.of(0.0f, pointsPerReview * numberOfReviews);
+			float pointsProReviewFloat = pointsProReview == null ? 0.0f : pointsProReview.floatValue();
+			submittedReview = MinMax.of(0.0f, pointsProReviewFloat * numberOfReviews);
 		}
 	
 		return MinMax.add(evaluationMinMax, peerReviewMinMax, submittedReview);
