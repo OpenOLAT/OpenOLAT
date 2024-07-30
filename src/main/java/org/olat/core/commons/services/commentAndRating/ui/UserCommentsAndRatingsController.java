@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.commons.services.commentAndRating.ui;
@@ -58,7 +58,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author gnaegi
  */
 public class UserCommentsAndRatingsController extends BasicController implements GenericEventListener {
+
 	private static final int RATING_MAX = 5;
+
 	// Events
 	public static final Event EVENT_COMMENT_LINK_CLICKED = new Event("comment_link_clicked");
 	public static final Event EVENT_RATING_CHANGED = new Event("rating_changed");
@@ -67,26 +69,29 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	private final OLATResourceable userAndCommentsRatingsChannel;
 	private final boolean canExpandToFullView;
 	private Object userObject;
-	// Comments 
+
+	// Comments
 	private Link commentsCountLink;
 	private Long commentsCount;
-	private UserCommentsController commentsCtr;
+	private UserCommentsController commentsCtrl;
+
 	// Ratings
 	private RatingComponent ratingUserC;
 	private RatingComponent ratingAverageC;
 	private UserRating userRating;
+
 	// Controller state
-	private boolean isExpanded = false; // default
 	private ContextualSubscriptionController subscriptionCtrl;
-	
+
 	// Configuration
 	private final String oresSubPath;
 	private final OLATResourceable ores;
 	private final PublishingInformations publishingInformations;
 	private final CommentAndRatingSecurityCallback securityCallback;
-	
+
 	@Autowired
 	private CommentAndRatingService commentAndRatingService;
+
 
 	/**
 	 * Constructor for a user combined user comments and ratings controller. Use
@@ -103,29 +108,52 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 * @param canExpandToFullView
 	 */
 	public UserCommentsAndRatingsController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String oresSubPath,
-			CommentAndRatingSecurityCallback securityCallback, PublishingInformations publishingInformations,
-			boolean enableComments, boolean enableRatings, boolean canExpandToFullView) {
+											CommentAndRatingSecurityCallback securityCallback, PublishingInformations publishingInformations,
+											boolean enableComments, boolean enableRatings, boolean canExpandToFullView) {
 		super(ureq, wControl);
 		this.ores = ores;
 		this.oresSubPath = oresSubPath;
 		this.securityCallback = securityCallback;
 		this.publishingInformations = publishingInformations;
-		userCommentsAndRatingsVC = createVelocityContainer("userCommentsAndRatings");
 		this.canExpandToFullView = canExpandToFullView;
+		userCommentsAndRatingsVC = createVelocityContainer("userCommentsAndRatings");
 		putInitialPanel(userCommentsAndRatingsVC);
+
 		// Add comments views
 		if (enableComments && securityCallback.canViewComments()) {
-			userCommentsAndRatingsVC.contextPut("enableComments", Boolean.valueOf(enableComments));
-			// Link with comments count to expand view
-			commentsCountLink = LinkFactory.createLink("comments.count", userCommentsAndRatingsVC, this);
-			commentsCountLink.setTitle("comments.count.tooltip");
-			commentsCountLink.setDomReplacementWrapperRequired(false);
-			// Init view with values from DB
-			updateCommentCountView();
+			initCommentsView(enableComments);
 		}
+
 		// Add ratings view
+		initRatingsView(enableRatings);
+
+		// Initialize subscription controller
+		initSubscriptionCtrl(ureq);
+
+		// Initialize comments controller if comments are enabled
+		if (enableComments) {
+			initCommentsCtrl(ureq);
+		}
+
+		// Register to event channel for comments count change events
+		userAndCommentsRatingsChannel = ores;
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), userAndCommentsRatingsChannel);
+	}
+
+	private void initCommentsView(boolean enableComments) {
+		userCommentsAndRatingsVC.contextPut("enableComments", Boolean.valueOf(enableComments));
+		// Link with comments count to expand view
+		commentsCountLink = LinkFactory.createLink("comments.count", userCommentsAndRatingsVC, this);
+		commentsCountLink.setTitle("comments.count.tooltip");
+		commentsCountLink.setDomReplacementWrapperRequired(false);
+		// Init view with values from DB
+		updateCommentCountView();
+	}
+
+	private void initRatingsView(boolean enableRatings) {
 		userCommentsAndRatingsVC.contextPut("viewIdent", CodeHelper.getRAMUniqueID());
 		userCommentsAndRatingsVC.contextPut("enableRatings", Boolean.valueOf(enableRatings));
+
 		if (enableRatings) {
 			if (securityCallback.canRate()) {
 				ratingUserC = new RatingComponent("userRating", RatingType.stars, 0, RATING_MAX, true);
@@ -135,8 +163,8 @@ public class UserCommentsAndRatingsController extends BasicController implements
 				ratingUserC.setTitle("rating.personal.title");
 				ratingUserC.setCssClass("o_rating_personal");
 			}
-			
-			if (securityCallback.canViewRatingAverage()) {				
+
+			if (securityCallback.canViewRatingAverage()) {
 				ratingAverageC = new RatingComponent("ratingAverageC", RatingType.stars, 0, RATING_MAX, false);
 				ratingAverageC.addListener(this);
 				userCommentsAndRatingsVC.put("ratingAverageC", ratingAverageC);
@@ -145,58 +173,34 @@ public class UserCommentsAndRatingsController extends BasicController implements
 				ratingAverageC.setTranslateExplanation(false);
 				ratingAverageC.setCssClass("o_rating_average");
 			}
+
 			// Init view with values from DB
 			updateRatingView();
 		}
-		
+	}
+
+	private void initSubscriptionCtrl(UserRequest ureq) {
 		if (publishingInformations != null) {
 			subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(),
 					publishingInformations.getContext(), publishingInformations.getData());
 			listenTo(subscriptionCtrl);
 			userCommentsAndRatingsVC.put("subscription", subscriptionCtrl.getInitialComponent());
 		}
-		
-		// Register to event channel for comments count change events
-		userAndCommentsRatingsChannel = ores;
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), userAndCommentsRatingsChannel);
-
 	}
 
-	/**
-	 * Method to manually expand the comments view
-	 * 
-	 * @param ureq
-	 */
-	public void expandComments(UserRequest ureq) {
-		if (canExpandToFullView) { 
-			commentsCtr = new UserCommentsController(ureq, getWindowControl(), ores, oresSubPath, publishingInformations, securityCallback);
-			listenTo(commentsCtr);
-			userCommentsAndRatingsVC.put("commentsCtr", commentsCtr.getInitialComponent());
-			isExpanded = true;
-			// Update our counter view in case changed since last loading
-			if (getCommentsCount() != commentsCtr.getCommentsCount()) {
-				updateCommentCountView();			
-			}
+	private void initCommentsCtrl(UserRequest ureq) {
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, oresSubPath, publishingInformations, securityCallback);
+		listenTo(commentsCtrl);
+		userCommentsAndRatingsVC.put("commentsCtrl", commentsCtrl.getInitialComponent());
+
+		// Update our counter view in case changed since last loading
+		if (getCommentsCount() != commentsCtrl.getCommentsCount()) {
+			updateCommentCountView();
 		}
 	}
 	
-	public void expandCommentsAt(UserRequest ureq, Long commentId) {
-		expandComments(ureq);
-		commentsCtr.scrollTo(commentId);
-	}
-
-	/**
-	 * Method to manually collapse the comments view
-	 * 
-	 * @param ureq
-	 */
-	public void collapseComments() {
-		if (canExpandToFullView) {
-			userCommentsAndRatingsVC.remove(commentsCtr.getInitialComponent());
-			removeAsListenerAndDispose(commentsCtr);
-			commentsCtr = null;
-			isExpanded = false;
-		}
+	public void expandCommentsAt(Long commentId) {
+		commentsCtrl.scrollTo(commentId);
 	}
 
 	/**
@@ -209,6 +213,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			String css = commentsCount > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
 			commentsCountLink.setCustomEnabledLinkCSS("o_comments");
 			commentsCountLink.setIconLeftCSS(css);
+			userCommentsAndRatingsVC.contextPut("commentsCount", commentsCount);
 		}
 	}
 	
@@ -253,17 +258,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// Forward comments counter links to parent listeners
 		if (source == commentsCountLink) {
-			if (canExpandToFullView) {
-				if (isExpanded) {
-					// Collapse
-					collapseComments();
-				} else {
-					// Expand now
-					expandComments(ureq);
-				}
-			}
 			fireEvent(ureq, EVENT_COMMENT_LINK_CLICKED);
-
 		} else if (source == ratingUserC) {
 			// Update user rating - convert component floats to integers (only discrete values possible)
 			Integer newRating = Float.valueOf(ratingUserC.getCurrentRating()).intValue();
@@ -285,7 +280,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == commentsCtr) {
+		if (source == commentsCtrl) {
 			if(event instanceof UserCommentsSubscribeNotificationsEvent) {
 				if(subscriptionCtrl != null && !subscriptionCtrl.isSubscribed()) {
 					subscriptionCtrl.loadModel();

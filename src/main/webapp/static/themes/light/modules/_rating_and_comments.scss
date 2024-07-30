@@ -78,20 +78,58 @@
 			float: left;
 			margin: 0 1em 0 0;
 		}
-		.o_reply, .o_delete {
-			float: right;		
+		.o_tools {
+			float: right;
 		}
-		h5 {
+		.o_comment_meta {
+			display: flex;
+			flex-direction: column;
+			gap: 0.3rem;
+			.o_comment_author {
+				font-weight: bold;
+			}
+		}
+		.o_comment {
 			@extend %o_small;
+			border-left: none;
+			font-size: 14px;
+			padding: 5px 0 0 42px;
+			a {
+				text-decoration: none;
+				&:hover,
+				&:focus {
+					text-decoration: none;
+				}
+			}
 		}
-		.o_comment { 
-			@extend %o_small;
+		.o_comments_form {
+			display: flex;
+			.o_comments_form_reply {
+				width: 100%;
+				margin-top: -20px;
+			}
 		}
+
 		/* a reply to a comment */		
-		.o_comment_wrapper {
-			margin-left: $padding-large-horizontal; 		
+		.o_comment_reply {
+			margin-left: $padding-large-horizontal;
 		}
-		
+		.o_comment_reply_block {
+			border-left: 2px solid $blockquote-border-color;
+		}
+	}
+	.o_comments_form_init {
+		display: flex;
+		padding: 0 0 15px 0;
+		.o_avatar_pre {
+			padding: 0 10px 0 0;
+		}
+		.o_avatar {
+			padding: 20px 10px 0 0;
+		}
+		.o_comments_form_ctrl {
+			width: 100%;
+		}
 	}
 } 
 

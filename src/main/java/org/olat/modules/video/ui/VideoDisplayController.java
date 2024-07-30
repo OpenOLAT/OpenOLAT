@@ -213,9 +213,6 @@ public class VideoDisplayController extends BasicController {
 				}
 				commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), commentsEntry.getOlatResource(), subIdent,
 						ratingSecCallback, publishingInformations, displayOptions.isShowComments(), displayOptions.isShowRating(), true);
-				if (displayOptions.isShowComments()) {					
-					commentsAndRatingCtr.expandComments(ureq);
-				}
 				listenTo(commentsAndRatingCtr);				
 				mainVC.put("commentsAndRating", commentsAndRatingCtr.getInitialComponent());
 			}

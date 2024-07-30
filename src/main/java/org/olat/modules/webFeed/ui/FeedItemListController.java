@@ -85,7 +85,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
@@ -903,15 +902,10 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				Item feedItem = ((FeedItemRow) link.getUserObject()).getItem();
 				displayFeedItem(ureq, feedItem);
 			} else if (link.getCmd().equals("openCommentEntry")) {
-				// jump directly to comment section in detail feedItem view
+				// TODO: jump directly to comment section in detail feedItem view
 				Item feedItem = ((FeedItemRow) link.getUserObject()).getItem();
 				if (feedItem != null) {
 					displayFeedItem(ureq, feedItem);
-					if (feedItemCtrl != null) {
-						List<ContextEntry> entries = BusinessControlFactory.getInstance()
-								.createCEListFromResourceType(FeedItemController.ACTIVATION_KEY_COMMENTS);
-						feedItemCtrl.activate(ureq, entries, null);
-					}
 				}
 			} else if (link.getCmd().equals("feed.add.item")) {
 				doAddFeedItem(ureq);

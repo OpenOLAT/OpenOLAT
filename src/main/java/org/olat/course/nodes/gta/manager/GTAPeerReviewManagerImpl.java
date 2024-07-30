@@ -219,17 +219,19 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 		Map<TaskReviewAssignmentKey, TaskReviewAssignment> allAssignmentsMap = allAssignments.stream()
 				.collect(Collectors.toMap(TaskReviewAssignmentKey::valueOf, assignment -> assignment, (u, v) -> u));
 		
-		String numOfReviews = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
+		final String numOfReviews = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
 				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
-		int numberOfReviews = Integer.parseInt(numOfReviews);
+		final int numberOfReviews = Integer.parseInt(numOfReviews);
 		
-		String typeOfAssignment = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT,
+		final String typeOfAssignment = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT,
 				GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_DEFAULT);
+		
+		final boolean mutual = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW_MUTUAL_REVIEW);
 		
 		AssignmentType assignmentType = AssignmentType.keyOf(typeOfAssignment);
 		AssignmentCalculator assignmentCalculator = new AssignmentCalculator(allParticipants, allTasks, allAssignments);
 		List<Participant> participants = assignmentCalculator
-				.assign(assignmentType, numberOfReviews);
+				.assign(assignmentType, numberOfReviews, mutual);
 		
 		for(Participant participant:participants) {
 			Identity assignee = participant.participant();
@@ -247,6 +249,7 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 					currentAssignment.setAssigned(true);
 					updateAssignment(currentAssignment);
 				}
+				log.debug("{} review {}", assignee.getUser().getLastName(), toReview.getUser().getLastName());
 			}
 		}
 		

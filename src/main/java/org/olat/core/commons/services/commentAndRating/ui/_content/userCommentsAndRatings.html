@@ -14,7 +14,12 @@
 	</div>
 	#end
 	#if ($enableComments)
-		$r.render("comments.count")
+		<fieldset>
+			<legend>$commentsCount Kommentare</legend>
+			#if ($r.available("commentsCtrl"))
+				$r.render("commentsCtrl")
+			#end
+		</fieldset>
 	#end
 	#if($r.available("subscription"))
 		<div class="o_notifications">$r.render("subscription")</div>
@@ -23,16 +28,12 @@
 
 ## Display user rating when hovering over rating area
 #if($r.available("ratingUserC"))
-<script>
-jQuery(function(){
-	jQuery('#o_rating_wrapper_$viewIdent').hover(
-		function(){ jQuery('#o_rating_$viewIdent').show(); jQuery('#o_rating_avg_$viewIdent').hide(); },
-	  	function(){ jQuery('#o_rating_$viewIdent').hide(); jQuery('#o_rating_avg_$viewIdent').show(); }  
-	);
-});
-</script>
-#end
-
-#if ($r.available("commentsCtr"))
-	$r.render("commentsCtr")
+	<script>
+		jQuery(function(){
+			jQuery('#o_rating_wrapper_$viewIdent').hover(
+				function(){ jQuery('#o_rating_$viewIdent').show(); jQuery('#o_rating_avg_$viewIdent').hide(); },
+				function(){ jQuery('#o_rating_$viewIdent').hide(); jQuery('#o_rating_avg_$viewIdent').show(); }
+			);
+		});
+	</script>
 #end

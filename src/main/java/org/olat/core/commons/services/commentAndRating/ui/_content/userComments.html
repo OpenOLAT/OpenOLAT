@@ -1,22 +1,23 @@
 <div class="o_block">
-	#if($commentControllers && $commentControllers.size() > 0 && $r.available("createCommentFormCtr"))
-		<div class="o_block">
-			<a id="o_comment_form_link" href="javascript:;" onclick="o_scrollToElement('#o_comment_form'); return false;">
-				$r.translate("comments.create.goto") <i class="o_icon o_icon_start"> </i></a>
-		</div>
-	#end
 	<div class="o_comments">
+		#if($r.available("createCommentFormCtrl"))
+			<div class="o_comments_form_init">
+				<div class="#if($isCommentElemVisible) o_avatar #else o_avatar_pre #end">
+					$r.render("avatarCtrl")
+				</div>
+				<div class="o_comments_form_ctrl">
+					$r.render("createCommentFormCtrl")
+				</div>
+			</div>
+		#end
 		#foreach($commentController in $commentControllers)
 			$r.render("$commentController.getViewCompName()")
 		#end
-		#if($r.available("createCommentFormCtr"))
-			<a id="o_comment_form" aria-hidden="true"></a>
-			$r.render("createCommentFormCtr")
-		#end
 	</div>
 </div>
+
 #if(${goToComment.isTrue()})
-<script>
-o_scrollToElement('#o_comment_$goToCommentId');
-</script> 
+	<script>
+		o_scrollToElement('#o_comment_$goToCommentId');
+	</script>
 #end
