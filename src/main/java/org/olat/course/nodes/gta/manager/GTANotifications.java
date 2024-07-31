@@ -565,8 +565,6 @@ class GTANotifications {
 				}
 			}
 		}
-		
-		//TODO task probably peer review
 	}
 	
 	private void createAssignedCoachItem(Task task, Identity assessedIdentity, boolean coach) {

@@ -803,11 +803,21 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	    EvaluationFormProvider evaluationFormProvider = GTACourseNode.getEvaluationFormProvider();
 	    MSCourseNodeRunController msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, gtaNode, evaluationFormProvider, false, false);
 	    if(msCtrl.hasScore() || msCtrl.hasPassed() || msCtrl.hasComment()) {
-	    	showGrading = true; 
+	    	// Peer-review has precedence
+	    	if(config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)) {
+	    		if(assignedTask != null && (assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.grading)) {
+	    			showGrading = true;
+	    		} else {
+	    			setNotAvailableStatusAndCssClass("grading");
+	    		}
+	    	} else {
+	    		showGrading = true;
+	    	}
 	    } else if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
 			
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
@@ -818,7 +828,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			} else if(assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.grading) {
 				showGrading = true;
 			}	
-		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.grading){
+		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.graded || assignedTask.getTaskStatus() == TaskProcess.grading) {
 			showGrading = true;
 		}
 		

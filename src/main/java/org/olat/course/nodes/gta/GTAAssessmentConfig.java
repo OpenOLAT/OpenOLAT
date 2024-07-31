@@ -104,7 +104,7 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 
 	@Override
 	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
-		return coachCanNotEdit? Boolean.FALSE: Boolean.TRUE;
+		return Boolean.FALSE;
 	}
 
 	@Override
