@@ -31,9 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.gta.Task;
-import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.ui.GTACoachController;
-import org.olat.course.nodes.gta.ui.component.TaskReviewAssignmentStatusCellRenderer;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UsersPortraitsComponent;
@@ -57,7 +55,7 @@ public class TaskPortraitController extends BasicController {
 	@Autowired
 	private MapperService mapperService;
 	
-	public TaskPortraitController(UserRequest ureq, WindowControl wControl, Task task, TaskReviewAssignmentStatus assignmentStatus) {
+	public TaskPortraitController(UserRequest ureq, WindowControl wControl, Task task) {
 		super(ureq, wControl, Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
 
 		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
@@ -74,9 +72,6 @@ public class TaskPortraitController extends BasicController {
 		mainVC.contextPut("task_fullname", userManager.getUserDisplayName(task.getIdentity()));		
 		mainVC.contextPut("taskName", task.getTaskName());		
 
-		TaskReviewAssignmentStatusCellRenderer statusRenderer = new TaskReviewAssignmentStatusCellRenderer(getLocale(), false);
-		mainVC.contextPut("label", statusRenderer.render(assignmentStatus));	
-		
 		putInitialPanel(mainVC);
 	}
 

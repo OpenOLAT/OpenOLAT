@@ -191,7 +191,6 @@ p.o_gta_reopen_warning {
 .o_gta_workflow_content .o_gta_workflow_awarded_reviews .o_labeled_light {
 	padding: 2px 5px;
 	font-size: 85%;
-	text-transform: lowercase;
 }
 
 .o_gta_workflow {
@@ -246,7 +245,7 @@ p.o_gta_reopen_warning {
 
 .o_gta_portrait {
 	display: grid;
-	grid-template-columns: 1fr 2fr auto;
+	grid-template-columns: 1fr 2fr;
 	padding: 10px;
 	
 	.o_gta_assignee {
@@ -275,10 +274,6 @@ p.o_gta_reopen_warning {
 			margin: 0;
 			padding: 0;
 		}
-	}
-	
-	.o_gta_status {
-		align-self: start;
 	}
 }
 
