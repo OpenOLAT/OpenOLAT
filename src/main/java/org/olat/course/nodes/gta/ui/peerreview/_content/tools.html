@@ -15,6 +15,10 @@
 	#if($r.available("invalidate.review"))
 		<li>$r.render("invalidate.review")</li>
 	#end
+	#if($r.available("coach.reopen.peerreview"))
+		<li class="divider"></li>
+		<li>$r.render("coach.reopen.peerreview")</li>
+	#end
 	#if($r.available("reopen.review"))
 		<li class="divider"></li>
 		<li>$r.render("reopen.review")</li>

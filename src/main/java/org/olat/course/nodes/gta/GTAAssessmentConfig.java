@@ -98,7 +98,8 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	@Override
 	public boolean hasFormEvaluation() {
 		String formSoftKey = MSCourseNode.getEvaluationFormReference(config);
-		return StringHelper.containsNonWhitespace(formSoftKey);
+		return StringHelper.containsNonWhitespace(formSoftKey)
+				&& config.getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
 	}
 
 	@Override

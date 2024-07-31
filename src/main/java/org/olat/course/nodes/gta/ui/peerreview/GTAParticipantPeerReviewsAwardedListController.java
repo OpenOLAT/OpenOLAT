@@ -116,6 +116,8 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "awarded.reviews", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
+		
+		tableEl.setEmptyTableMessageKey("table.awarded.reviews.empty");
 	}
 	
 	private void initInformations(InfoPanelItem panel) {
