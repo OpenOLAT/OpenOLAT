@@ -173,7 +173,8 @@ public class DirectoryController extends BasicController implements Activateable
 			}
 
 			String cssClass = CSSHelper.createFiletypeIconCssClassFor(document.getName());
-			linkNames.add(new DocumentInfos(link.getComponentName(), downoadLink.getComponentName(), previewLinkCompName, createdBy, lastModified, cssClass));
+			linkNames.add(new DocumentInfos(link.getComponentName(), downoadLink.getComponentName(), previewLinkCompName,
+					StringHelper.escapeHtml(createdBy), lastModified, cssClass));
 		}
 		mainVC.contextPut("linkNames", linkNames);
 		if(bulkReviewLink != null) {

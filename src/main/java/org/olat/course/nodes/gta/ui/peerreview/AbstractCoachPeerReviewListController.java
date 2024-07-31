@@ -170,7 +170,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		filters.add(assignmentStatusFilter);
 		
 		SelectionValues stepStatusPK = new SelectionValues();
-		stepStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.open.name(), translate("msg.status.waiting")));// I know
+		stepStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.waiting.name(), translate(CoachedParticipantStatus.waiting.i18nKey())));
 		stepStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.done.name(), translate(CoachedParticipantStatus.done.i18nKey())));
 		stepStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.notAvailable.name(), translate(CoachedParticipantStatus.notAvailable.i18nKey())));
 		FlexiTableMultiSelectionFilter stepStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.step.status"),
@@ -216,7 +216,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		
 		FlexiFiltersTab stepOpenTab = FlexiFiltersTabFactory.tabWithImplicitFilters(STEP_OPEN_TAB_ID, translate(CoachedParticipantStatus.waiting.i18nKey()),
 				TabSelectionBehavior.clear, List.of(
-						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STEP_STATUS, List.of(CoachedParticipantStatus.open.name()))));
+						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STEP_STATUS, List.of(CoachedParticipantStatus.waiting.name()))));
 		tabs.add(stepOpenTab);
 		
 		FlexiFiltersTab stepNotAvailableTab = FlexiFiltersTabFactory.tabWithImplicitFilters(STEP_NOT_AVAILABLE_TAB_ID, translate(CoachedParticipantStatus.notAvailable.i18nKey()),
@@ -310,7 +310,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 				row.setStepStatus(CoachedParticipantStatus.notAvailable);
 			} else if(identityTask.getTaskStatus() == TaskProcess.peerreview) {
 				if(isPeerReviewStarted(identityTask)) {
-					row.setStepStatus(CoachedParticipantStatus.open);
+					row.setStepStatus(CoachedParticipantStatus.waiting);
 				} else {
 					row.setStepStatus(CoachedParticipantStatus.notAvailable);
 				}
@@ -319,7 +319,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 			}
 		} else if(identityTask == null || identityTask.getTaskStatus() == TaskProcess.peerreview) {
 			if(identityTask != null && isPeerReviewStarted(identityTask)) {
-				row.setStepStatus(CoachedParticipantStatus.open);
+				row.setStepStatus(CoachedParticipantStatus.waiting);
 			} else {
 				row.setStepStatus(CoachedParticipantStatus.notAvailable);
 			}
