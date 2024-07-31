@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.ui.SubmitDocumentsController.SubmittedSolution;
@@ -92,9 +93,11 @@ public class DocumentUploadController extends FormBasicController {
 		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isOwner()) {
 			// check if it is an individual or group task
 			if (assignedTask.getIdentity() != null) {
-				uifactory.addStaticTextElement("assessedParticipant", "participants", userManager.getUserDisplayName(assignedTask.getIdentity()), formLayout);
+				String name = userManager.getUserDisplayName(assignedTask.getIdentity());
+				uifactory.addStaticTextElement("assessedParticipant", "participants", StringHelper.escapeHtml(name), formLayout);
 			} else if (assignedTask.getBusinessGroup() != null) {
-				uifactory.addStaticTextElement("assessedGroup", "choosed.groups", assignedTask.getBusinessGroup().getName(), formLayout);
+				String name = assignedTask.getBusinessGroup().getName();
+				uifactory.addStaticTextElement("assessedGroup", "choosed.groups", StringHelper.escapeHtml(name), formLayout);
 			}
 			// check if TaskStatus translation exists, otherwise don't show any
 			if (!translate("process." + assignedTask.getTaskStatus().name()).startsWith(Translator.NO_TRANSLATION_ERROR_PREFIX)) {
