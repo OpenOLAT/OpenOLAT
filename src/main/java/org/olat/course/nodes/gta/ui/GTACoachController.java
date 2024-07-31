@@ -103,6 +103,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private DialogBoxController confirmReviewDocumentCtrl;
 	private DialogBoxController confirmCollectCtrl;
 	private DialogBoxController confirmBackToSubmissionCtrl;
+	private DialogBoxController confirmReopenPeerReviewCtrl;
 	private DialogBoxController confirmResetTaskCtrl;
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
@@ -110,6 +111,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private Link emailLink;
 	private Link resetTaskButton;
 	private Link backToSubmissionLink;
+	private Link reopenPeerReviewLink;
 	private Link collectSubmissionsLink;
 	private final BreadcrumbPanel stackPanel;
 	
@@ -331,6 +333,10 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	protected Task stepPeerReview(UserRequest ureq, Task assignedTask) {
 		assignedTask = super.stepPeerReview(ureq, assignedTask);
 		
+		if(reopenPeerReviewLink != null) {
+			mainVC.remove(reopenPeerReviewLink);
+		}
+		
 		mainVC.contextPut("review", Boolean.FALSE);
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
@@ -360,7 +366,17 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			setDoneStatusAndCssClass("peerReview");
 			setPeerReview(ureq, assignedTask);
 		}
-		
+
+		if (assignedTask != null 
+				&& assignedTask.getTaskStatus() != TaskProcess.assignment
+				&& assignedTask.getTaskStatus() != TaskProcess.submit
+				&& assignedTask.getTaskStatus() != TaskProcess.review
+				&& assignedTask.getTaskStatus() != TaskProcess.revision
+				&& assignedTask.getTaskStatus() != TaskProcess.correction
+				&& assignedTask.getTaskStatus() != TaskProcess.peerreview) {
+			reopenPeerReview(assignedTask);
+		}
+
 		return assignedTask;
 	}
 	
@@ -369,6 +385,17 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				taskList, assignedTask, assessedIdentity, courseEnv, gtaNode);
 		listenTo(peerReviewController);
 		mainVC.put("peerReviews", peerReviewController.getInitialComponent());
+	}
+	
+	private void reopenPeerReview(Task assignedTask) {
+		if(config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW) && assignedTask != null) {
+			Date now = new Date();
+			DueDate dueDate = getPeerReviewDueDate(assignedTask);
+			if(!coachCourseEnv.isCourseReadOnly() && (dueDate == null || dueDate.getDueDate() == null || now.before(dueDate.getDueDate()))) {
+				reopenPeerReviewLink = LinkFactory.createButton("coach.reopen.peerreview", mainVC, this);
+				reopenPeerReviewLink.setUserObject(assignedTask);
+			}
+		}
 	}
 	
 	@Override
@@ -730,6 +757,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			doConfirmCollectTask(ureq, (Task)collectSubmissionsLink.getUserObject());
 		} else if(backToSubmissionLink == source) {
 			doConfirmBackToSubmission(ureq, (Task)backToSubmissionLink.getUserObject());
+		} else if(reopenPeerReviewLink == source) {
+			doConfirmReopenPeerReview(ureq, (Task)reopenPeerReviewLink.getUserObject());
 		} else if(resetTaskButton == source) {
 			doConfirmResetTask(ureq, (Task)resetTaskButton.getUserObject());
 		}
@@ -776,7 +805,12 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				Task assignedTask = (Task)confirmBackToSubmissionCtrl.getUserObject();
 				doBackToSubmission(ureq, assignedTask);
 			}
-		}  else if(confirmResetTaskCtrl == source) {
+		} else if(confirmReopenPeerReviewCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				Task assignedTask = (Task)confirmReopenPeerReviewCtrl.getUserObject();
+				doReopenPeerReview(ureq, assignedTask);
+			}
+		} else if(confirmResetTaskCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				Task assignedTask = (Task)confirmResetTaskCtrl.getUserObject();
 				doAllowResetTask(ureq, assignedTask);
@@ -962,6 +996,30 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			cleanUpProcess();
 			process(ureq, true);
 		}
+	}
+	
+	private void doConfirmReopenPeerReview(UserRequest ureq, Task assignedTask) {
+		if (assessedGroup != null) {
+			return;
+		}
+		
+		String toName = userManager.getUserDisplayName(assessedIdentity);			
+		String title = translate("coach.reopen.peerreview.confirm.title");
+		String text = translate("coach.reopen.peerreview.confirm.text", toName);
+		text = "<div class='o_warning'>" + text + "</div>";
+		confirmReopenPeerReviewCtrl = activateOkCancelDialog(ureq, title, text, confirmReopenPeerReviewCtrl);
+		confirmReopenPeerReviewCtrl.setUserObject(assignedTask);
+		listenTo(confirmReopenPeerReviewCtrl);
+	}
+	
+	private void doReopenPeerReview(UserRequest ureq, Task task) {
+		task = gtaManager.updateTask(task, TaskProcess.peerreview, gtaNode, false, getIdentity(), Role.coach);
+		
+		gtaManager.log("Reopen peer-review", "revert status of task to peer-review", task,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
+		
+		cleanUpProcess();
+		process(ureq, true);
 	}
 	
 	private void doConfirmResetTask(UserRequest ureq, Task assignedTask) {

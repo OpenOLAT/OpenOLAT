@@ -28,10 +28,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow.NumOf;
+import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 
 /**
  * 
@@ -61,10 +63,13 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 			List<CoachPeerReviewRow> filteredRows = backupRows;
 
 			String searchString = StringHelper.containsNonWhitespace(quickSearch) ? quickSearch.toLowerCase() : null;
-			TaskReviewAssignmentStatus assignmentStatus = getFilterStatus(filters);
-			if(StringHelper.containsNonWhitespace(quickSearch) || assignmentStatus != null) {
+			TaskReviewAssignmentStatus assignmentStatus = getFilterAssignmentStatus(filters);
+			List<CoachedParticipantStatus> stepStatus = getFilterStepStatus(filters);
+			if(StringHelper.containsNonWhitespace(quickSearch) || assignmentStatus != null || stepStatus != null) {
 				filteredRows = filteredRows.stream()
-							.filter(row -> acceptSearch(row, searchString) && acceptStatus(row, assignmentStatus))
+							.filter(row -> acceptSearch(row, searchString)
+									&& acceptAssignmentStatus(row, assignmentStatus)
+									&& acceptStepStatus(row, stepStatus))
 							.toList();
 				filteredRows = preserveParents(filteredRows);
 			}
@@ -123,10 +128,18 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 		return finalRows;
 	}
 	
-	private TaskReviewAssignmentStatus getFilterStatus(List<FlexiTableFilter> filters) {
-		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AbstractCoachPeerReviewListController.FILTER_ASSIGNMENT_STATUS);
+	private TaskReviewAssignmentStatus getFilterAssignmentStatus(List<FlexiTableFilter> filters) {
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AbstractCoachPeerReviewListController.FILTER_ASSIGNMENT_SESSION_STATUS);
 		if(statusFilter != null) {
 			return TaskReviewAssignmentStatus.secureValueOf(statusFilter.getValue(), null);
+		}
+		return null;
+	}
+	
+	private List<CoachedParticipantStatus> getFilterStepStatus(List<FlexiTableFilter> filters) {
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AbstractCoachPeerReviewListController.FILTER_ASSIGNMENT_STEP_STATUS);
+		if(statusFilter instanceof FlexiTableMultiSelectionFilter stepStatusFilter) {
+			return CoachedParticipantStatus.toList(stepStatusFilter.getValues());
 		}
 		return null;
 	}
@@ -144,8 +157,13 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 		return true;
 	}
 	
-	private boolean acceptStatus(CoachPeerReviewRow row, TaskReviewAssignmentStatus assignmentStatus) {
+	private boolean acceptAssignmentStatus(CoachPeerReviewRow row, TaskReviewAssignmentStatus assignmentStatus) {
 		return assignmentStatus == null || row.getAssignmentStatus() == assignmentStatus;
+	}
+	
+	private boolean acceptStepStatus(CoachPeerReviewRow row, List<CoachedParticipantStatus> statusList) {
+		CoachedParticipantStatus status = row.getStepStatus();
+		return statusList == null || statusList.isEmpty() || (status != null && statusList.contains(status));
 	}
 	
 	private boolean acceptUnsufficientNumberOf(NumOf row, boolean unsufficientNumber) {

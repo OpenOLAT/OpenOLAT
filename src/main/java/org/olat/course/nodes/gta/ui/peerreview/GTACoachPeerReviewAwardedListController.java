@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui.peerreview;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,14 +55,18 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.SessionParticipationListStatistics;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.SessionStatistics;
@@ -70,7 +75,9 @@ import org.olat.course.nodes.gta.ui.component.NumOfCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskReviewAssignmentStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskStepStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.peerreview.GTACoachPeerReviewTreeTableModel.CoachReviewCols;
+import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +99,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	private final List<Identity> reviewers;
 	
 	private ToolsController toolsCtrl;
+	private DialogBoxController confirmReopenPeerReviewCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	@Autowired
@@ -218,7 +226,8 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	private void loadModelRow(Identity reviewerIdentity, List<TaskReviewAssignment> assignments,
 			SessionParticipationListStatistics statistics, Map<Identity,Task> identityToTask, List<CoachPeerReviewRow> rows) {
 		String reviewerFullName = userManager.getUserDisplayName(reviewerIdentity);
-		CoachPeerReviewRow surveyExecutorIdentityRow = new CoachPeerReviewRow(null, reviewerFullName);
+		Task reviewerOwnTask = identityToTask.get(reviewerIdentity);
+		CoachPeerReviewRow surveyExecutorIdentityRow = new CoachPeerReviewRow(reviewerOwnTask, reviewerFullName);
 		List<CoachPeerReviewRow> sessionRows = new ArrayList<>();
 		rows.add(surveyExecutorIdentityRow);
 		surveyExecutorIdentityRow.setChildrenRows(sessionRows);
@@ -237,7 +246,6 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		}
 		
 		// Fill statistics
-		Task reviewerOwnTask = identityToTask.get(reviewerIdentity);
 		forgeSurveyExecutorIdentityRow(surveyExecutorIdentityRow, statistics.aggregatedStatistics(), reviewerOwnTask);
 	}
 	
@@ -263,6 +271,11 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		if(toolsCtrl == source) {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
+		} else if(confirmReopenPeerReviewCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				CoachPeerReviewRow row = (CoachPeerReviewRow)confirmReopenPeerReviewCtrl.getUserObject();
+				doReopenPeerReview(row);
+			}
 		} else if(toolsCalloutCtrl == source) {
 			cleanUp();
 		}
@@ -300,6 +313,29 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	protected void formOK(UserRequest ureq) {
 		//
 	}
+	
+	private void doConfirmReopenPeerReview(UserRequest ureq, CoachPeerReviewRow row) {
+		String toName = row.getFullName();			
+		String title = translate("coach.reopen.peerreview.confirm.title");
+		String text = translate("coach.reopen.peerreview.confirm.text", toName);
+		text = "<div class='o_warning'>" + text + "</div>";
+		confirmReopenPeerReviewCtrl = activateOkCancelDialog(ureq, title, text, confirmReopenPeerReviewCtrl);
+		confirmReopenPeerReviewCtrl.setUserObject(row);
+		listenTo(confirmReopenPeerReviewCtrl);
+	}
+	
+	private void doReopenPeerReview(CoachPeerReviewRow row) {
+		if(row.getParent() != null || row.getTask() == null) return;
+		
+		Task task = row.getTask();
+		task = gtaManager.updateTask(task, TaskProcess.peerreview, gtaNode, false, getIdentity(), Role.coach);
+		Identity assessedIdentity = task.getIdentity();
+		
+		gtaManager.log("Reopen peer-review", "revert status of task to peer-review", task,
+				getIdentity(), assessedIdentity, null, courseEnv, gtaNode, Role.coach);
+		
+		loadModel();
+	}
 
 	private void doOpenTools(UserRequest ureq, CoachPeerReviewRow row, FormLink link) {
 		if(toolsCtrl != null) return;
@@ -316,12 +352,12 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		toolsCalloutCtrl.activate();
 	}
 	
-
 	private class ToolsController extends BasicController {
 		private Link showReviewLink;
 		private Link showReviewsLink;
 		private Link invalidateReviewLink;
 		private Link reopenReviewLink;
+		private Link reopenPeerReviewLink;
 		private VelocityContainer mainVC;
 		
 		private CoachPeerReviewRow row;
@@ -335,6 +371,14 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 			if(row.getParent() == null) {
 				showReviewsLink = LinkFactory.createLink("show.reviews", "show.reviews", getTranslator(), mainVC, this, Link.LINK);
 				showReviewsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eye");
+				
+				Date now = new Date();
+				DueDate dueDate = gtaManager.getPeerReviewDueDate(row.getTask(), row.getTask().getIdentity(), null, gtaNode, courseEntry, true);
+				if(row.getStepStatus() == CoachedParticipantStatus.done
+						&& (dueDate == null || dueDate.getDueDate() == null || now.before(dueDate.getDueDate()))) {
+					reopenPeerReviewLink = LinkFactory.createLink("coach.reopen.peerreview", "coach.reopen.peerreview", getTranslator(), mainVC, this, Link.LINK);
+					reopenPeerReviewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
+				}
 			} else {
 				showReviewLink = LinkFactory.createLink("show.review", "show.review", getTranslator(), mainVC, this, Link.LINK);
 				showReviewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eye");
@@ -363,6 +407,9 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 			} else if(reopenReviewLink == source) {
 				fireEvent(ureq, Event.DONE_EVENT);
 				doReopenReview(ureq, row);
+			} else if(reopenPeerReviewLink == source) {
+				fireEvent(ureq, Event.DONE_EVENT);
+				doConfirmReopenPeerReview(ureq, row);
 			}
 		}
 	}

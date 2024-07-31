@@ -84,8 +84,12 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	public static final String INVALID_TAB_ID = "Invalid";
 	public static final String UNSUFFICIENT_REVIEWS_TAB_ID = "UnsufficientReviews";
 	public static final String UNSUFFICIENT_REVIEWERS_TAB_ID = "UnsufficientReviewers";
+	public static final String STEP_OPEN_TAB_ID = "StepOpen";
+	public static final String STEP_NOT_AVAILABLE_TAB_ID = "StepNotAvailable";
+	public static final String STEP_DONE_TAB_ID = "StepDone";
 	
-	public static final String FILTER_ASSIGNMENT_STATUS = "assignment-status";
+	public static final String FILTER_ASSIGNMENT_SESSION_STATUS = "assignment-session-status";
+	public static final String FILTER_ASSIGNMENT_STEP_STATUS = "assignment-step-status";
 	public static final String FILTER_UNSUFFICIENT_REVIEWERS = "assignment-unsufficient-reviewers";
 	public static final String FILTER_UNSUFFICIENT_REVIEWS = "assignment-unsufficient-reviews";
 	
@@ -162,8 +166,16 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		assignmentStatusPK.add(SelectionValues.entry(TaskReviewAssignmentStatus.done.name(), translate("filter.assignment.status.done")));
 		assignmentStatusPK.add(SelectionValues.entry(TaskReviewAssignmentStatus.invalidate.name(), translate("filter.assignment.status.invalid")));
 		FlexiTableMultiSelectionFilter assignmentStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.assignment.status"),
-				FILTER_ASSIGNMENT_STATUS, assignmentStatusPK, true);
+				FILTER_ASSIGNMENT_SESSION_STATUS, assignmentStatusPK, true);
 		filters.add(assignmentStatusFilter);
+		
+		SelectionValues stepStatusPK = new SelectionValues();
+		stepStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.open.name(), translate("msg.status.waiting")));// I know
+		stepStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.done.name(), translate(CoachedParticipantStatus.done.i18nKey())));
+		stepStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.notAvailable.name(), translate(CoachedParticipantStatus.notAvailable.i18nKey())));
+		FlexiTableMultiSelectionFilter stepStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.step.status"),
+				FILTER_ASSIGNMENT_STEP_STATUS, stepStatusPK, true);
+		filters.add(stepStatusFilter);
 		
 		initFilters(filters);
 	
@@ -182,25 +194,40 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		
 		FlexiFiltersTab openTab = FlexiFiltersTabFactory.tabWithImplicitFilters(OPEN_TAB_ID, translate("filter.assignment.status.open"),
 					TabSelectionBehavior.clear, List.of(
-							FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STATUS, List.of(TaskReviewAssignmentStatus.open.name()))));
+							FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_SESSION_STATUS, List.of(TaskReviewAssignmentStatus.open.name()))));
 		tabs.add(openTab);
 		
 		FlexiFiltersTab inProgressTab = FlexiFiltersTabFactory.tabWithImplicitFilters(IN_PROGRESS_TAB_ID, translate("filter.assignment.status.in.progress"),
 				TabSelectionBehavior.clear, List.of(
-						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STATUS, List.of(TaskReviewAssignmentStatus.inProgress.name()))));
+						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_SESSION_STATUS, List.of(TaskReviewAssignmentStatus.inProgress.name()))));
 		tabs.add(inProgressTab);
 		
 		FlexiFiltersTab doneTab = FlexiFiltersTabFactory.tabWithImplicitFilters(DONE_TAB_ID, translate("filter.assignment.status.done"),
 				TabSelectionBehavior.clear, List.of(
-						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STATUS, List.of(TaskReviewAssignmentStatus.done.name()))));
+						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_SESSION_STATUS, List.of(TaskReviewAssignmentStatus.done.name()))));
 		tabs.add(doneTab);
 		
 		FlexiFiltersTab invalidTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INVALID_TAB_ID, translate("filter.assignment.status.invalid"),
 				TabSelectionBehavior.clear, List.of(
-						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STATUS, List.of(TaskReviewAssignmentStatus.invalidate.name()))));
+						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_SESSION_STATUS, List.of(TaskReviewAssignmentStatus.invalidate.name()))));
 		tabs.add(invalidTab);
 		
 		initFiltersPresets(ureq, tabs);
+		
+		FlexiFiltersTab stepOpenTab = FlexiFiltersTabFactory.tabWithImplicitFilters(STEP_OPEN_TAB_ID, translate(CoachedParticipantStatus.waiting.i18nKey()),
+				TabSelectionBehavior.clear, List.of(
+						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STEP_STATUS, List.of(CoachedParticipantStatus.open.name()))));
+		tabs.add(stepOpenTab);
+		
+		FlexiFiltersTab stepNotAvailableTab = FlexiFiltersTabFactory.tabWithImplicitFilters(STEP_NOT_AVAILABLE_TAB_ID, translate(CoachedParticipantStatus.notAvailable.i18nKey()),
+				TabSelectionBehavior.clear, List.of(
+						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STEP_STATUS, List.of(CoachedParticipantStatus.notAvailable.name()))));
+		tabs.add(stepNotAvailableTab);
+		
+		FlexiFiltersTab stepDoneTab = FlexiFiltersTabFactory.tabWithImplicitFilters(STEP_DONE_TAB_ID, translate(CoachedParticipantStatus.done.i18nKey()),
+				TabSelectionBehavior.clear, List.of(
+						FlexiTableFilterValue.valueOf(FILTER_ASSIGNMENT_STEP_STATUS, List.of(CoachedParticipantStatus.done.name()))));
+		tabs.add(stepDoneTab);
 		
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, allTab);

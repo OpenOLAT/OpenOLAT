@@ -211,6 +211,12 @@
 			#end
 			#if($r.available("peerReviews"))
 				$r.render("peerReviews")
+				
+				#if($r.available("coach.reopen.peerreview"))
+				<div class="o_button_group">
+					$r.render("coach.reopen.peerreview")
+				</div>
+				#end
 			#end
 		</div>
 	</div>
