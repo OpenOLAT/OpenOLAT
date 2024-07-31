@@ -72,7 +72,6 @@ public class GTAToDoSyncher implements CourseNodeToDoSyncher {
 
 	private static final List<TaskProcess> OPEN_ASSIGNMENT = Arrays.stream(TaskProcess.values()).takeWhile(p -> p != TaskProcess.submit).toList();
 	private static final List<TaskProcess> OPEN_SUBMIT = Arrays.stream(TaskProcess.values()).takeWhile(p -> p != TaskProcess.review).toList();
-	//TODO task
 	private static final List<TaskProcess> OPEN_REVISION = List.of(TaskProcess.revision);
 	
 	private final GTAManager gtaManager;
