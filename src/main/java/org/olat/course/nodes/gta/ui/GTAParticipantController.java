@@ -579,7 +579,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	
 	private boolean isPeerReviewReceivedRatingsDateVisible(Task assignedTask) {
 		DueDate dueDate = getPeerReviewDueDate(assignedTask);
-		return (dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().compareTo(new Date()) < 0);
+		return dueDate == null
+				|| (dueDate.getDueDate() != null && dueDate.getDueDate().compareTo(new Date()) < 0);
 	}
 	
 	private void setPeerReviewsReceivedList(UserRequest ureq, Task assignedTask) {

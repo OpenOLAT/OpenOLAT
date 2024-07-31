@@ -57,7 +57,6 @@ import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
-import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupGradingController;
 import org.olat.course.nodes.gta.ui.peerreview.GTAPeerReviewAssignmentTableModel.AssignmentsCols;
@@ -105,14 +104,14 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 	private GTAPeerReviewManager peerReviewManager;
 	
 	public GTAPeerReviewAssignmentController(UserRequest ureq, WindowControl wControl, TaskList taskList,
-			Task taskToReview, TaskReviewAssignmentStatus assignmentStatus, GTACourseNode gtaNode) {
+			Task taskToReview, GTACourseNode gtaNode) {
 		super(ureq, wControl, "asssign_reviewers", Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.taskToReview = taskToReview;
 		this.taskList = taskList;
 		this.gtaNode = gtaNode;
 		
-		taskPortraitCtrl = new TaskPortraitController(ureq, getWindowControl(), taskToReview, assignmentStatus);
+		taskPortraitCtrl = new TaskPortraitController(ureq, getWindowControl(), taskToReview);
 		listenTo(taskPortraitCtrl);
 		
 		Roles roles = ureq.getUserSession().getRoles();

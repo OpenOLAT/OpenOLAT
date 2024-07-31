@@ -271,7 +271,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		row.setToolsLink(toolsLink);
 	}
 	
-	protected void decorateWithStatus(CoachPeerReviewRow row, Task identityTask) {
+	protected void decorateWithStepStatus(CoachPeerReviewRow row, Task identityTask) {
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)

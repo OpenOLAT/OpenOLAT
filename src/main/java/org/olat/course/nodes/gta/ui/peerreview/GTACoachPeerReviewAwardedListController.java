@@ -244,7 +244,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	private void forgeSurveyExecutorIdentityRow(CoachPeerReviewRow surveyExecutorIdentityRow, SessionStatistics aggregatedStatistics, Task reviewerOwnTask) {
 		decorateWithAggregatedStatistics(surveyExecutorIdentityRow, aggregatedStatistics);
 		decorateWithTools(surveyExecutorIdentityRow);
-		decorateWithStatus(surveyExecutorIdentityRow, reviewerOwnTask);
+		decorateWithStepStatus(surveyExecutorIdentityRow, reviewerOwnTask);
 	}
 	
 	private CoachPeerReviewRow forgeSessionRow(TaskReviewAssignment assignment, SessionParticipationStatistics sessionStatistics) {
@@ -254,7 +254,6 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		CoachPeerReviewRow sessionRow = new CoachPeerReviewRow(task, assignment, assessedIdentityFullName, false);
 
 		decorateWithStatistics(sessionRow, sessionStatistics);
-		decorateWithStatus(sessionRow, assignment.getTask());
 		decorateWithTools(sessionRow);
 		return sessionRow;
 	}
