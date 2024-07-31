@@ -85,7 +85,7 @@
 		<org.infinispan.version>15.0.6.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.23.0</version.selenium>
-		<activemq.artemis.version>2.35.0</activemq.artemis.version>
+		<activemq.artemis.version>2.36.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.2</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.2</jakarta.xml.ws-api>
