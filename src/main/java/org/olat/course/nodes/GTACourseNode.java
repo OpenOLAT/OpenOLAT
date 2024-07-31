@@ -303,12 +303,33 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		return false;
 	}
 	
-	private MinMax getMinMax() {
-		return MSCourseNode.getMinMax(getModuleConfiguration());
+	/**
+	 * Calculate the values min/max based on the configuration of the course element.
+	 * 
+	 * @return Min/max values
+	 */
+	public static MinMax calculateMinMax(ModuleConfiguration config) {
+		Float peerReviewScoreScale = GTACourseNode.getFloatConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		Float evaluationScoreScale = GTACourseNode.getFloatConfiguration(config,
+				MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
+		Float pointsProReview = GTACourseNode.getFloatConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_SCORE_PRO_REVIEW, null);
+		
+		Integer numOfReviews = GTACourseNode.getIntegerConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
+				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
+		Integer maxNumberCreditableReviews = GTACourseNode.getIntegerConfiguration(config,
+				GTACourseNode.GTASK_PEER_REVIEW_MAX_NUMBER_CREDITABLE_REVIEWS,
+				numOfReviews == null ? "1" : numOfReviews.toString());
+		String scoreParts = config.getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
+		
+		return calculateMinMaxTotal(config, evaluationScoreScale, peerReviewScoreScale,
+				maxNumberCreditableReviews, pointsProReview, scoreParts);
 	}
 	
 	public static MinMax calculateMinMaxTotal(ModuleConfiguration config, Float evaluationScoreScale, Float peerReviewScoreScale,
-			Integer maxNumberCreditableReviews, Integer pointsProReview, String scoreParts) {
+			Integer maxNumberCreditableReviews, Float pointsProReview, String scoreParts) {
 		MinMax evaluationMinMax = null;
 		if(scoreParts.contains(GTACourseNode.GTASK_SCORE_PARTS_EVALUATION_FORM)) {
 			RepositoryEntry evaluationFormEntry = GTACourseNode.getEvaluationForm(config);
@@ -1381,7 +1402,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		}
 
 		// Score has to be in configured range.
-		MinMax minMax = getMinMax();
+		MinMax minMax = calculateMinMax(getModuleConfiguration());
 		if (score != null) {
 			if(minMax.getMax().floatValue() < score.floatValue()) {
 				score = minMax.getMax();

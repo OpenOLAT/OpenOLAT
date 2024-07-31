@@ -976,7 +976,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	private MinMax calculateUIMinMax() {
 		Float evaluationScoreScale = toFloat(evaluationScoreScalingEl);
 		Float peerReviewScoreScale = toFloat(peerReviewScoreScalingEl);
-		Integer pointsProReview = toInteger(pointsProReviewEl);
+		Float pointsProReview = toFloat(pointsProReviewEl);
 		Integer maxNumberCreditableReviews = toInteger(maxNumberCreditableReviewsEl);
 		String scoreParts = String.join(",", scoresSumEl.getSelectedKeys());
 		
@@ -985,23 +985,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	}
 	
 	private MinMax calculatePersistedMinMax() {
-		Float peerReviewScoreScale = GTACourseNode.getFloatConfiguration(config,
-				GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
-		Float evaluationScoreScale = GTACourseNode.getFloatConfiguration(config,
-				MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
-		Integer pointsProReview = GTACourseNode.getIntegerConfiguration(config,
-				GTACourseNode.GTASK_PEER_REVIEW_SCORE_PRO_REVIEW, null);
-		
-		Integer numOfReviews = GTACourseNode.getIntegerConfiguration(config,
-				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
-				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
-		Integer maxNumberCreditableReviews = GTACourseNode.getIntegerConfiguration(config,
-				GTACourseNode.GTASK_PEER_REVIEW_MAX_NUMBER_CREDITABLE_REVIEWS,
-				numOfReviews == null ? "1" : numOfReviews.toString());
-		String scoreParts = config.getStringValue(GTACourseNode.GTASK_SCORE_PARTS, "");
-		
-		return GTACourseNode.calculateMinMaxTotal(config, evaluationScoreScale, peerReviewScoreScale,
-				maxNumberCreditableReviews, pointsProReview, scoreParts);
+		return GTACourseNode.calculateMinMax(config);
 	}
 	
 	private Float toFloat(TextElement el) {

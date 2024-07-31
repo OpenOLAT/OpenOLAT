@@ -433,7 +433,7 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 				GTACourseNode.GTASK_PEER_REVIEW_SCORE_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
 		Float evaluationScale = GTACourseNode.getFloatConfiguration(config,
 				MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
-		Integer scoreProReview = GTACourseNode.getIntegerConfiguration(config,
+		Float scoreProReview = GTACourseNode.getFloatConfiguration(config,
 				GTACourseNode.GTASK_PEER_REVIEW_SCORE_PRO_REVIEW, null);
 		Integer numOfReviews = GTACourseNode.getIntegerConfiguration(config,
 				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,

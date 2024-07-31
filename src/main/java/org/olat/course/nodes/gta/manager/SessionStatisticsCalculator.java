@@ -55,7 +55,7 @@ public class SessionStatisticsCalculator {
 		Collector collector = new Collector();
 		for(EvaluationFormSession session:sessions) {
 			Map<String, List<EvaluationFormResponse>> responsesMap = responses.getResponsesBySession(session);
-			collectValues(collector, responsesMap);
+			collectValuesBySession(collector, responsesMap);
 		}
 		return calculateStatistics(collector);
 	}
@@ -63,7 +63,7 @@ public class SessionStatisticsCalculator {
 	SessionStatistics calculateStatistics(EvaluationFormSession session) {
 		Map<String, List<EvaluationFormResponse>> responsesMap = responses.getResponsesBySession(session);
 		Collector collector = new Collector();
-		collectValues(collector, responsesMap);
+		collectValuesBySession(collector, responsesMap);
 		return calculateStatistics(collector);
 	}
 	
@@ -80,15 +80,18 @@ public class SessionStatisticsCalculator {
 		double firstQuartile = percentile(values, 25d);
 		double thirdQuartile = percentile(values, 75d);
 		
-		double total = calculateTotal(values);
+		// Average of the sum pro session
+		double sum = calculateAverage(collector.getSessionsSum());
 		double average = calculateAverage(values);
 		double progress = calculateProgress(collector.getNumOfResponses() + collector.getNumOfResponsesWithNothing(), collector.getNumOfSilders());
 		
-		return new SessionStatistics(progress, min, max, average, total,
+		return new SessionStatistics(progress, min, max, average, sum,
 				firstQuartile, median, thirdQuartile, collector.getNumOfResponses(), collector.getMaxSteps());
 	}
 	
-	private void collectValues(Collector collector, Map<String, List<EvaluationFormResponse>> responsesMap) {
+	private void collectValuesBySession(Collector collector, Map<String, List<EvaluationFormResponse>> responsesMap) {
+		List<Double> values = new ArrayList<>();
+		
 		for (AbstractElement element : form.getElements()) {
 			if (Rubric.TYPE.equals(element.getType())) {
 				Rubric rubric = (Rubric) element;
@@ -109,14 +112,17 @@ public class SessionStatisticsCalculator {
 						
 							double val = sliderResponse.getNumericalResponse().doubleValue() * weight;
 							collector.addValue(val);
+							values.add(val);
 						}
 					}
 				}
 			}
 		}
+		
+		collector.addSessionSum(calculateSum(values));
 	}
 	
-	private double calculateTotal(List<Double> values) {
+	private double calculateSum(List<Double> values) {
 		double total = 0.0d;
 		for(Double value:values) {
 			total += value.doubleValue();
@@ -125,7 +131,7 @@ public class SessionStatisticsCalculator {
 	}
 	
 	private double calculateAverage(List<Double> values) {
-		double total = calculateTotal(values);
+		double total = calculateSum(values);
 		return total / values.size();
 	}
 	
@@ -163,7 +169,8 @@ public class SessionStatisticsCalculator {
 	
 	private static class Collector {
 		
-		private List<Double> values = new ArrayList<>();
+		private final List<Double> values = new ArrayList<>();
+		private final List<Double> sessionsSum = new ArrayList<>();
 		
 		private int numOfSilders = 0;
 		private int numOfResponses = 0;
@@ -185,6 +192,10 @@ public class SessionStatisticsCalculator {
 			values.add(Double.valueOf(val));
 		}
 		
+		public void addSessionSum(double val) {
+			sessionsSum.add(val);
+		}
+		
 		public void addSliders(int val) {
 			numOfSilders += val;
 		}
@@ -199,6 +210,10 @@ public class SessionStatisticsCalculator {
 
 		public List<Double> getValues() {
 			return new ArrayList<>(values);
+		}
+		
+		public List<Double> getSessionsSum() {
+			return sessionsSum;
 		}
 
 		public int getNumOfSilders() {
