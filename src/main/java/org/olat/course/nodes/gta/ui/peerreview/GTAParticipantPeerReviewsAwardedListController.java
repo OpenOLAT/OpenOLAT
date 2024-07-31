@@ -97,7 +97,8 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		InfoPanelItem panel = uifactory.addInfoPanel("reviews.infos", null, formLayout);
-		panel.setTitle(translate("peer.review.step1.title"));
+		panel.setTitle(translate("peer.review.steps.instructions"));
+		panel.setPersistedStatusId(ureq, "peer-review-as-participant");
 		initInformations(panel);
 		
 		closeReviewsButton = uifactory.addFormLink("close.peer.reviews", formLayout, Link.BUTTON);
@@ -122,7 +123,8 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 	
 	private void initInformations(InfoPanelItem panel) {
 		StringBuilder infos = new StringBuilder(256);
-		infos.append(translate("peer.review.step1.desc"));
+		infos.append("<h4>").append(translate("peer.review.step1.title")).append("</h4>")
+	    	 .append(translate("peer.review.step1.desc"));
 		
 		String pointsProReview = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_SCORE_PRO_REVIEW);
 		if(StringHelper.containsNonWhitespace(pointsProReview)) {
