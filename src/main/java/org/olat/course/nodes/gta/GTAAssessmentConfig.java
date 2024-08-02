@@ -104,7 +104,10 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 
 	@Override
 	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
-		return Boolean.FALSE;
+		if(config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)) {
+			return Boolean.FALSE;
+		}
+		return coachCanNotEdit? Boolean.FALSE: Boolean.TRUE;
 	}
 
 	@Override
@@ -127,7 +130,8 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 		return config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
-				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
+				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
 	}
 
 	@Override

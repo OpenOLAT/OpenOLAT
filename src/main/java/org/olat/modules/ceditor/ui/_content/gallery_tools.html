@@ -1,4 +1,7 @@
 <ul class="o_dropdown list-unstyled">
+	#if($r.available("gotoMediaCenter"))
+	<li>$r.render("gotoMediaCenter")</li>
+	#end
 	#if($r.available("chooseVersion"))
 	<li>$r.render("chooseVersion")</li>
 	#end

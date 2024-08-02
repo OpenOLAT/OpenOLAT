@@ -40,12 +40,12 @@
 					<div class="o_use_slide_spacer">
 						<div class="o_slide_spacer"></div>
 						<div class="o_slide_image_wrapper">
-							<img src="$mapperUrl/${galleryImageItem.id()}">
+							<img data-id="${galleryImageItem.id()}" src="$mapperUrl/${galleryImageItem.id()}">
 						</div>
 					</div>
 					#end
 					#if($previewMode)
-					<img src="$mapperUrl/${galleryImageItem.id()}">
+					<img data-id="${galleryImageItem.id()}" src="$mapperUrl/${galleryImageItem.id()}">
 					#end
 					#if($slideShowMode)
 					<div class="o_title_and_description">
@@ -223,6 +223,10 @@
 					setSlideSpacers();
 					setGridModeHeight();
 				#end
+			},
+			click: function(swiper, pointerup) {
+				${r.openJavaScriptCommand("open_lightbox")},
+				'id', pointerup.target.dataset.id);
 			},
 		},
 	});

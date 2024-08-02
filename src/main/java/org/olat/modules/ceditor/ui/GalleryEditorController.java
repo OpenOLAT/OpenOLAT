@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -39,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -68,6 +70,7 @@ import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -129,14 +132,18 @@ public class GalleryEditorController extends FormBasicController implements Page
 		addImageButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.up.getI18nKey(),
+		DefaultFlexiColumnModel upColumn = new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.up.getI18nKey(),
 				GalleryModel.GalleryColumn.up.ordinal(), UP_ACTION, new BooleanCellRenderer(
-						new StaticFlexiCellRenderer(translate("gallery.up"), UP_ACTION), null
-		)));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.down.getI18nKey(),
+				new StaticFlexiCellRenderer(translate("gallery.up"), UP_ACTION), null
+		));
+		upColumn.setColumnCssClass("o_up");
+		columnModel.addFlexiColumnModel(upColumn);
+		DefaultFlexiColumnModel downColumn = new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.down.getI18nKey(),
 				GalleryModel.GalleryColumn.down.ordinal(), DOWN_ACTION, new BooleanCellRenderer(
-						new StaticFlexiCellRenderer(translate("gallery.down"), DOWN_ACTION), null
-		)));
+				new StaticFlexiCellRenderer(translate("gallery.down"), DOWN_ACTION), null
+		));
+		downColumn.setColumnCssClass("o_down");
+		columnModel.addFlexiColumnModel(downColumn);
 		DefaultFlexiColumnModel titleColumn = new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.title.getI18nKey(),
 				GalleryModel.GalleryColumn.title.ordinal());
 		titleColumn.setColumnCssClass("o_gallery_image_title");
@@ -160,7 +167,8 @@ public class GalleryEditorController extends FormBasicController implements Page
 		row.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new GalleryCssDelegate());
-		tableEl.setEmptyTableSettings("gallery.no.image", null, "o_icon_image");
+		tableEl.setEmptyTableSettings("gallery.no.image", null, "o_icon_image",
+				"addremove.add.text", "o_icon_add", false);
 
 		galleryImages = new GalleryRunController.GalleryImages(new ArrayList<>());
 		String mapperUrl = registerCacheableMapper(ureq, "gallery-" + galleryPart.getId(),
@@ -239,6 +247,8 @@ public class GalleryEditorController extends FormBasicController implements Page
 					MediaToPagePart relation = mediaToPagePartDAO.loadRelation(galleryRow.getRelation().getKey());
 					mediaToPagePartDAO.deleteRelation(relation);
 					loadModel();
+
+					fireEvent(ureq, new ChangePartEvent(galleryPart));
 				}
 			}
 		} else if (chooseVersionController == source) {
@@ -279,6 +289,8 @@ public class GalleryEditorController extends FormBasicController implements Page
 			if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof GalleryRow galleryRow) {
 				doOpenTools(ureq, link, galleryRow);
 			}
+		} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+			doAddImage(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -347,6 +359,13 @@ public class GalleryEditorController extends FormBasicController implements Page
 		fireEvent(ureq, new ChangePartEvent(galleryPart));
 	}
 
+	private void doGotoMediaCenter(UserRequest ureq, GalleryRow galleryRow) {
+		MediaToPagePart relation = mediaToPagePartDAO.loadRelation(galleryRow.getRelation().getKey());
+		Long mediaKey = relation.getMedia().getKey();
+		String businessPath = MediaUIHelper.toMediaCenterBusinessPath(mediaKey);
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+
 	private void doChooseVersion(UserRequest ureq, GalleryRow galleryRow) {
 		chooseVersionController = new ChooseVersionController(ureq, getWindowControl(), galleryRow);
 		listenTo(chooseVersionController);
@@ -385,6 +404,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 
 	private class ToolsController extends BasicController {
 
+		private final Link gotoMediaCenter;
 		private final Link chooseVersionLink;
 		private final Link removeLink;
 		private final GalleryRow galleryRow;
@@ -395,12 +415,19 @@ public class GalleryEditorController extends FormBasicController implements Page
 
 			VelocityContainer mainVC = createVelocityContainer("gallery_tools");
 
+			gotoMediaCenter = LinkFactory.createLink("goto.media.center", "goto.media.center",
+					getTranslator(), mainVC, this, Link.LINK);
+			gotoMediaCenter.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
+			mainVC.put("gotoMediaCenter", gotoMediaCenter);
+
 			chooseVersionLink = LinkFactory.createLink("gallery.choose.version", "choose.version", getTranslator(),
 					mainVC, this, Link.LINK);
+			chooseVersionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_code_branch");
 			mainVC.put("chooseVersion", chooseVersionLink);
 
 			removeLink = LinkFactory.createLink("remove", "remove", getTranslator(), mainVC, this,
 					Link.LINK);
+			removeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_remove");
 			mainVC.put("remove", removeLink);
 
 			putInitialPanel(mainVC);
@@ -409,7 +436,9 @@ public class GalleryEditorController extends FormBasicController implements Page
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
-			if (source == chooseVersionLink) {
+			if (source == gotoMediaCenter) {
+				doGotoMediaCenter(ureq, galleryRow);
+			} else if (source == chooseVersionLink) {
 				doChooseVersion(ureq, galleryRow);
 			} else if (source == removeLink) {
 				doConfirmRemove(ureq, galleryRow);

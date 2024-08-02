@@ -27,11 +27,13 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
+import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.util.StringHelper;
@@ -69,6 +71,7 @@ public class GalleryRunController extends BasicController implements PageRunElem
 	private MediaToPagePartDAO mediaToPagePartDAO;
 	@Autowired
 	private MediaService mediaService;
+	private LightboxController lightboxController;
 
 	public GalleryRunController(UserRequest ureq, WindowControl wControl, GalleryPart galleryPart, boolean editable) {
 		super(ureq, wControl);
@@ -156,12 +159,42 @@ public class GalleryRunController extends BasicController implements PageRunElem
 				setBlockLayoutClass(galleryPart.getSettings());
 				updateUI();
 			}
+		} else if (source == lightboxController) {
+			cleanUp();
 		}
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(lightboxController);
+		lightboxController = null;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if ("open_lightbox".equals(event.getCommand())) {
+			doOpenLightbox(ureq, ureq.getParameter("id"));
+		}
+	}
+
+	private void doOpenLightbox(UserRequest ureq, String id) {
+		GalleryImageItem image = galleryImages.getImageById(id);
+		if (image == null) {
+			return;
+		}
+
+		ImageComponent imageComponent = new ImageComponent(ureq.getUserSession(), "image");
+
+		MediaHandler mediaHandler = mediaService.getMediaHandler(image.type());
+		if (mediaHandler instanceof ImageHandler imageHandler) {
+			VFSItem imageVfsItem = imageHandler.getImage(image.mediaVersion);
+			if (imageVfsItem instanceof VFSLeaf imageVfsLeaf) {
+				imageComponent.setMedia(imageVfsLeaf);
+			}
+		}
+
+		lightboxController = new LightboxController(ureq, getWindowControl(), imageComponent);
+		listenTo(lightboxController);
+		lightboxController.activate();
 	}
 
 	@Override
