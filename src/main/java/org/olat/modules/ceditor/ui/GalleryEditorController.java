@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -160,7 +161,8 @@ public class GalleryEditorController extends FormBasicController implements Page
 		row.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new GalleryCssDelegate());
-		tableEl.setEmptyTableSettings("gallery.no.image", null, "o_icon_image");
+		tableEl.setEmptyTableSettings("gallery.no.image", null, "o_icon_image",
+				"addremove.add.text", "o_icon_add", false);
 
 		galleryImages = new GalleryRunController.GalleryImages(new ArrayList<>());
 		String mapperUrl = registerCacheableMapper(ureq, "gallery-" + galleryPart.getId(),
@@ -279,6 +281,8 @@ public class GalleryEditorController extends FormBasicController implements Page
 			if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof GalleryRow galleryRow) {
 				doOpenTools(ureq, link, galleryRow);
 			}
+		} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+			doAddImage(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
