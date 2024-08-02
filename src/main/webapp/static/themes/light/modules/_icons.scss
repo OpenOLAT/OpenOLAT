@@ -45,6 +45,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_add_member { @include o-add-icon('user-plus');}
 .o_icon_add_search { @include o-add-icon('search-plus');}
 .o_icon_arrow_right { @include o-add-icon('arrow-right');}
+.o_icon_arrow_up_right_from_square { @include o-add-icon('arrow-up-right-from-square');}
 .o_icon_audio { @include o-add-icon('volume-up');}
 .o_icon_audio_record { @include o-add-icon('microphone');}
 .o_icon_back { @include o-add-icon('chevron-left');}
@@ -102,6 +103,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_close_tree { @include o-add-icon('caret-down');}
 .o_icon_close_togglebox { @include o-add-icon('caret-down');}
 .o_icon_code { @include o-add-icon('code');}
+.o_icon_code_branch { @include o-add-icon('code-branch');}
 .o_icon_coach { @include o-add-icon('graduation-cap');}
 .o_icon_color_picker { @include o-add-icon('tint');}
 .o_icon_column { @include o-add-icon('align-justify');}

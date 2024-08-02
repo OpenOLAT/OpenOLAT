@@ -1770,6 +1770,16 @@ table.o_ce_table {
 }
 
 .o_page_edit_gallery {
+	.o_rendertype_classic {
+		.o_gallery_images_table {
+			th {
+				&.o_up, &.o_down {
+					width: 32px;
+				}
+			}
+		}
+	}
+
 	.o_rendertype_custom {
 		.o_gallery_images_table {
 			margin-top: 5px;
