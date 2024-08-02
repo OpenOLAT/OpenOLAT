@@ -247,6 +247,8 @@ public class GalleryEditorController extends FormBasicController implements Page
 					MediaToPagePart relation = mediaToPagePartDAO.loadRelation(galleryRow.getRelation().getKey());
 					mediaToPagePartDAO.deleteRelation(relation);
 					loadModel();
+
+					fireEvent(ureq, new ChangePartEvent(galleryPart));
 				}
 			}
 		} else if (chooseVersionController == source) {
