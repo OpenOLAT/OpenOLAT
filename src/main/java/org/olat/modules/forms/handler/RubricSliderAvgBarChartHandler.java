@@ -20,6 +20,7 @@
 package org.olat.modules.forms.handler;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
@@ -45,10 +46,9 @@ public class RubricSliderAvgBarChartHandler implements EvaluationFormReportHandl
 	}
 
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			SessionFilter filter, ReportHelper reportHelper) {
-		if (element instanceof Rubric) {
-			Rubric rubric = (Rubric) element;
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
+			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
+		if (element instanceof Rubric rubric) {
 			Controller ctrl = new RubricSliderAvgBarChartController(ureq, windowControl, rubric, filter);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}

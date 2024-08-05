@@ -464,6 +464,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_slide_down { @include o-add-icon('chevron-down');}
 .o_icon_slide_up { @include o-add-icon('chevron-up');}
 .o_icon_spacer { @include o-add-icon('arrows-h');}
+.o_icon_splider_chart { @include o-add-icon('spider');}
 .o_icon_split { @include o-add-icon('unlink');}
 .o_icon_sort { @include o-add-icon('sort');}
 .o_icon_sort_asc { @include o-add-icon('sort-asc');}

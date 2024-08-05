@@ -34,18 +34,24 @@ public class SliderStatisticImpl implements SliderStatistic {
 	private final Long numberOfResponses;
 	private final Double sum;
 	private final Double median;
+	private final Double firstQuartile;
+	private final Double thirdQuartile;
 	private final Double avg;
 	private final Double variance;
 	private final Double stdDev;
 	private final StepCounts stepCounts;
 	private final RubricRating rating;
 	
-	public SliderStatisticImpl(Long numberOfResponses, Double sum, Double median, Double avg,
-			Double variance, Double stdDev, StepCounts stepCounts, RubricRating rating) {
+	public SliderStatisticImpl(Long numberOfResponses, Double sum,
+			Double median, Double firstQuartile, Double thirdQuartile,
+			Double avg, Double variance, Double stdDev,
+			StepCounts stepCounts, RubricRating rating) {
 		super();
 		this.numberOfResponses = numberOfResponses;
 		this.sum = sum;
 		this.median = median;
+		this.firstQuartile = firstQuartile;
+		this.thirdQuartile = thirdQuartile;
 		this.avg = avg;
 		this.variance = variance;
 		this.stdDev = stdDev;
@@ -62,6 +68,11 @@ public class SliderStatisticImpl implements SliderStatistic {
 	public Long getNumberOfResponses() {
 		return numberOfResponses;
 	}
+	
+	@Override
+	public Long getNumberOfComments() {
+		return stepCounts != null? stepCounts.getNumberOfComments(): null;
+	}
 
 	@Override
 	public Double getSum() {
@@ -71,6 +82,16 @@ public class SliderStatisticImpl implements SliderStatistic {
 	@Override
 	public Double getMedian() {
 		return median;
+	}
+
+	@Override
+	public Double getFirstQuartile() {
+		return firstQuartile;
+	}
+
+	@Override
+	public Double getThirdQuartile() {
+		return thirdQuartile;
 	}
 
 	@Override
@@ -86,6 +107,16 @@ public class SliderStatisticImpl implements SliderStatistic {
 	@Override
 	public Double getStdDev() {
 		return stdDev;
+	}
+	
+	@Override
+	public int getMin() {
+		return stepCounts != null? stepCounts.getMin(): 0;
+	}
+
+	@Override
+	public int getMax() {
+		return stepCounts != null? stepCounts.getMax(): 0;
 	}
 
 	@Override

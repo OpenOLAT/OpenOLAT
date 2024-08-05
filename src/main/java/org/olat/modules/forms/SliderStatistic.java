@@ -32,6 +32,10 @@ public interface SliderStatistic extends StepCounts {
 	public Double getSum();
 
 	public Double getMedian();
+	
+	public Double getFirstQuartile();
+
+	public Double getThirdQuartile();
 
 	public Double getAvg();
 

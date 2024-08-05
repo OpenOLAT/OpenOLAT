@@ -106,10 +106,10 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 	}
 
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
-		if (element instanceof TableElement) {
-			Controller ctrl = new TableRunController(ureq, windowControl, (TableElement)element, true);
+		if (element instanceof TableElement tableElement) {
+			Controller ctrl = new TableRunController(ureq, windowControl, tableElement, true);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;

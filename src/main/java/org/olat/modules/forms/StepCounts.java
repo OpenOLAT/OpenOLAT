@@ -32,5 +32,11 @@ public interface StepCounts {
 	int getNumberOfSteps();
 	
 	Long getNumberOfNoResponses();
+	
+	Long getNumberOfComments();
+	
+	int getMin();
+	
+	int getMax();
 
 }

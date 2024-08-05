@@ -163,9 +163,8 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 	}
 
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			SessionFilter filter, ReportHelper reportHelper) {
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
+			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		return new EvaluationFormComponentReportElement(getComponent(element));
 	}
-
 }

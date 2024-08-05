@@ -33,10 +33,10 @@ import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageLayoutHandler;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.ContainerLayout;
@@ -170,7 +170,7 @@ public class ContainerHandler implements PageLayoutHandler, EvaluationFormElemen
 	}
 	
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		return new EvaluationFormComponentReportElement(new Panel(""));
 	}

@@ -20,6 +20,7 @@
 package org.olat.modules.forms.handler;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
@@ -44,10 +45,9 @@ public class RubricRadarHandler implements EvaluationFormReportHandler {
 	}
 
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
-		if (element instanceof Rubric) {
-			Rubric rubric = (Rubric) element;
+		if (element instanceof Rubric rubric) {
 			Controller ctrl = new RubricRadarController(ureq, windowControl, rubric, filter, reportHelper);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}

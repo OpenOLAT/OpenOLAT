@@ -22,7 +22,6 @@ package org.olat.course.nodes.gta.ui.peerreview;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.boxplot.BoxPlot;
@@ -46,7 +45,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -56,6 +54,7 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.manager.ParticipationsFilter;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.SessionStatistics;
@@ -64,8 +63,10 @@ import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow.NumOf;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.forms.EvaluationFormSurvey;
-import org.olat.modules.portfolio.ui.MultiEvaluationFormController;
+import org.olat.modules.ceditor.DataStorage;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -102,11 +103,10 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	protected final int numOfReviews;
 	protected final GTACourseNode gtaNode;
 	protected final RepositoryEntry courseEntry;
-	private final EvaluationFormSurvey survey;
 	protected final CourseEnvironment courseEnv;
 	
 	protected CloseableModalController cmc;
-	private MultiEvaluationFormController multiEvaluationFormCtrl;
+	private GTAMultiEvaluationsFormController multiEvaluationFormCtrl;
 	private GTAEvaluationFormExecutionController evaluationFormExecCtrl;
 	private ConfirmInvalidateReviewController confirmInvalidateReviewCtrl;
 	private ConfirmReopenReviewController confirmReopenReviewCtrl;
@@ -115,6 +115,8 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	private GTAManager gtaManager;
 	@Autowired
 	protected GTAPeerReviewManager peerReviewManager;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	
 	public AbstractCoachPeerReviewListController(UserRequest ureq, WindowControl wControl, String toolsCmd,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode) {
@@ -127,8 +129,6 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		String numOfReviewsVal = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
 				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
 		numOfReviews = Integer.parseInt(numOfReviewsVal);
-		
-		survey = peerReviewManager.loadOrCreateSurvey(courseEntry, gtaNode, getIdentity());
 	}
 	
 	public AbstractCoachPeerReviewListController(UserRequest ureq, WindowControl wControl, String toolsCmd,
@@ -143,8 +143,6 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		String numOfReviewsVal = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
 				GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS_DEFAULT);
 		numOfReviews = Integer.parseInt(numOfReviewsVal);
-		
-		survey = peerReviewManager.loadOrCreateSurvey(courseEntry, gtaNode, getIdentity());
 	}
 	
 	protected boolean isSumConfigured() {
@@ -374,12 +372,25 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	}
 	
 	protected void doCompareEvaluationFormSessions(UserRequest ureq, CoachPeerReviewRow row) {
-		List<Identity> otherEvaluators = row.getChildrenRows().stream()
-				.map(CoachPeerReviewRow::getAssignee)
-				.collect(Collectors.toList());
-			
-		multiEvaluationFormCtrl = new MultiEvaluationFormController(ureq, getWindowControl(), row.getAssignee(),
-				otherEvaluators, survey, false, true, true, false);
+		RepositoryEntry formEntry = GTACourseNode.getPeerReviewEvaluationForm(gtaNode.getModuleConfiguration());
+		org.olat.modules.forms.model.xml.Form form = evaluationFormManager.loadForm(formEntry);
+		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
+		
+		List<Long> participationsKeys = row.getChildrenRows().stream()
+				.filter(r -> r.getParticipation() != null)
+				.map(CoachPeerReviewRow::getParticipation)
+				.map(EvaluationFormParticipation::getKey).toList();
+		
+		List<TaskReviewAssignment> assignments = row.getChildrenRows().stream()
+				.filter(r -> r.getParticipation() != null && r.getAssignment() != null)
+				.map(CoachPeerReviewRow::getAssignment)
+				.toList();
+
+		SessionFilter filter = new ParticipationsFilter(participationsKeys);
+		GTAPeerReviewLegendNameGenerator legendNameGenerator = GTAPeerReviewLegendNameGenerator.mapSubRows(row); 
+		multiEvaluationFormCtrl = new GTAMultiEvaluationsFormController(ureq, getWindowControl(),
+				form, storage, filter, legendNameGenerator, gtaNode, assignments);
+		listenTo(multiEvaluationFormCtrl);
 		
 		String title = translate("review.assessment.all.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

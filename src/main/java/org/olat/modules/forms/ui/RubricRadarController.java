@@ -70,7 +70,7 @@ public class RubricRadarController extends FormBasicController {
 		this.rubric = rubric;
 		this.reportHelper = reportHelper;
 		List<String> responseIdentifiers = rubric.getSliders().stream().map(Slider::getId).collect(Collectors.toList());
-		identifierToResponses = reportDAO.getResponses(responseIdentifiers , filter, Limit.all()).stream()
+		identifierToResponses = reportDAO.getResponses(responseIdentifiers, false, filter, Limit.all()).stream()
 				.collect(Collectors.groupingBy(EvaluationFormResponse::getResponseIdentifier));
 
 		initForm(ureq);

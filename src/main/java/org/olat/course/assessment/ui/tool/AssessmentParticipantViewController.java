@@ -719,7 +719,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				StepCounts stepCounts = StepCountsBuilder.builder(rubric.getSteps())
 						.withCount(step, Long.valueOf(1))
 						.build();
-				SliderStatistic sliderStatistic = new SliderStatisticImpl(null, null, null, null, null, null, stepCounts, null);
+				SliderStatistic sliderStatistic = new SliderStatisticImpl(null, null, null, null, null, null, null, null, stepCounts, null);
 				slidersStatisticImpl.put(slider, sliderStatistic);
 			}
 			return slidersStatisticImpl;

@@ -20,6 +20,7 @@
 package org.olat.modules.forms.handler;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.SessionFilter;
@@ -36,7 +37,7 @@ public interface EvaluationFormReportHandler {
 	
 	public String getType();
 
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper);
 
 }

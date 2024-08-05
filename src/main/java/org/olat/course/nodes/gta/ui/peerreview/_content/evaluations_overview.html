@@ -1,0 +1,17 @@
+$r.render("evaluations")
+
+#if($r.isNotEmpty($ratings))
+<div class="o_gta_feedbacks_overview panel panel-default">
+	<div><strong>$r.translate("quality.feedback.input")</strong></div>
+	#foreach($rating in $ratings)
+	<div class="o_gta_feedback">
+		<span><strong>$r.escapeHtml(${rating.user()})</strong></span>
+		$r.render(${rating.ratingId()})
+	</div>
+	#end
+</div>
+#end
+
+<div class="o_button_group">
+	$r.render("close")
+</div>

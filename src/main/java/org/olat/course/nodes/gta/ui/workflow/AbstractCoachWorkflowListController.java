@@ -140,7 +140,6 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 		panel.setTitle(translate("workflow.infos.configuration"));
 		initConfigurationInfos(panel);
 		
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		initUserColumnsModel(columnsModel);
 		initColumnsModel(columnsModel);

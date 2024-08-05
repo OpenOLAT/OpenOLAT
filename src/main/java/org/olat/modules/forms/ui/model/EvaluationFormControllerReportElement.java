@@ -28,7 +28,7 @@ import org.olat.core.gui.control.Controller;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class EvaluationFormControllerReportElement implements EvaluationFormReportElement {
+public class EvaluationFormControllerReportElement implements EvaluationFormReportComponentElement {
 	
 	private final Controller controller;
 

@@ -136,8 +136,8 @@ public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPag
 	}
 
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			SessionFilter filter, ReportHelper reportHelper) {
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
+			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		return new EvaluationFormComponentReportElement(getComponent());
 	}
 }

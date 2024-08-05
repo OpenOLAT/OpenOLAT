@@ -186,6 +186,18 @@ p.o_gta_reopen_warning {
 	gap: 1em;
 }
 
+.o_gta_feedbacks_overview {
+	padding: 1em;
+	
+	.o_gta_feedback {
+		margin-bottom: 0.5em;
+	}
+	
+	.o_gta_feedback:last-child {
+		margin-bottom: 0;
+	}
+}
+
 .o_process .o_step_peerreview .o_labeled_light,
 .o_gta_workflow_content .o_gta_workflow_received_reviews .o_labeled_light,
 .o_gta_workflow_content .o_gta_workflow_awarded_reviews .o_labeled_light {

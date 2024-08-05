@@ -20,6 +20,7 @@
 package org.olat.modules.forms.handler;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
@@ -46,10 +47,9 @@ public class TextInputLegendTextHandler implements EvaluationFormReportHandler {
 	}
 
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
-		if (element instanceof TextInput) {
-			TextInput textInput = (TextInput) element;
+		if (element instanceof TextInput textInput) {
 			ResponseFormatter responseFormatter = TextInputLegendTextDataSource.createResponseFormatter(textInput,
 					ureq.getLocale());
 			TextInputLegendTextDataSource dataSource = new TextInputLegendTextDataSource(textInput.getId(), filter,

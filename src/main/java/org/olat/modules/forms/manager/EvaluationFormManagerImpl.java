@@ -74,6 +74,7 @@ import org.olat.modules.forms.SlidersStatistic;
 import org.olat.modules.forms.SlidersStepCounts;
 import org.olat.modules.forms.StepCounts;
 import org.olat.modules.forms.handler.FormDataElementStorage;
+import org.olat.modules.forms.handler.RubricHandler;
 import org.olat.modules.forms.model.SlidersStepCountsImpl;
 import org.olat.modules.forms.model.StepCountsBuilder;
 import org.olat.modules.forms.model.jpa.CalculatedLong;
@@ -400,8 +401,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 	
 	@Override
-	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, SessionFilter filter, Limit limit) {
-		return evaluationFormReportDao.getResponses(responseIdentifiers, filter, limit);
+	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, boolean withNoResponses, SessionFilter filter, Limit limit) {
+		return evaluationFormReportDao.getResponses(responseIdentifiers, withNoResponses, filter, limit);
 	}
 
 	@Override
@@ -644,12 +645,18 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		List<CalculatedLong> countedNoResponses = rubric.isNoResponseEnabled()
 				? evaluationFormReportDao.getCountNoResponsesByIdentifiers(responseIdentifiers, filter)
 				: Collections.emptyList();
+		
+		List<String> commentIdentifiers = rubric.getSliders().stream().map(RubricHandler::getSliderCommentId).collect(Collectors.toList());
+		List<CalculatedLong> countedComments = rubric.isSliderCommentsEnabled()
+				? evaluationFormReportDao.getCountCommentsByIdentifiers(commentIdentifiers, filter)
+				: Collections.emptyList();
 				
 		SlidersStepCountsImpl slidersStepCounts = new SlidersStepCountsImpl();
 		for (Slider slider: rubric.getSliders()) {
 			StepCountsBuilder stepCountsBuilder = rubricStatisticCalculator.getStepCounts(slider, rubric.getSteps(), countedResponses);
 			Long numOfNoRespones = rubricStatisticCalculator.getCountNoResponses(slider, countedNoResponses);
-			stepCountsBuilder.withCountNoResponses(numOfNoRespones);
+			Long numOfComments = rubricStatisticCalculator.getCountComments(slider, countedComments);
+			stepCountsBuilder.withCountNoResponses(numOfNoRespones).withCountComments(numOfComments);
 			StepCounts stepCounts = stepCountsBuilder.build();
 			slidersStepCounts.put(slider, stepCounts);
 		}

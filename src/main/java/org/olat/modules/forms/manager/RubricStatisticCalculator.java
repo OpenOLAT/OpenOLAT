@@ -28,6 +28,7 @@ import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.SlidersStatistic;
 import org.olat.modules.forms.SlidersStepCounts;
 import org.olat.modules.forms.StepCounts;
+import org.olat.modules.forms.handler.RubricHandler;
 import org.olat.modules.forms.model.RubricStatisticImpl;
 import org.olat.modules.forms.model.SliderStatisticImpl;
 import org.olat.modules.forms.model.SlidersStatisticImpl;
@@ -56,13 +57,16 @@ class RubricStatisticCalculator {
 				Long count = getCount(stepCounts);
 				SumMean sumMean = getSumMean(stepCounts, rubric.getScaleType());
 				Double median = getMedian(stepCounts, rubric.getScaleType());
+				Double firstQuartile = getPercentile(stepCounts, rubric.getScaleType(), 25d);
+				Double thirdQuartile = getPercentile(stepCounts, rubric.getScaleType(), 75d);
 				Double variance = getVariance(stepCounts, rubric.getScaleType(), sumMean.getMean());
 				Double stdDev = getStdDev(variance);
 				RubricRating rating = RubricRatingEvaluator.rate(rubric, sumMean.getMean());
-				sliderStatistic = new SliderStatisticImpl(count, sumMean.getSum(), median,
+				sliderStatistic = new SliderStatisticImpl(count, sumMean.getSum(),
+						median, firstQuartile, thirdQuartile,
 						sumMean.getMean(), variance, stdDev, stepCounts, rating);
 			} else {
-				sliderStatistic = new SliderStatisticImpl(null, null, null, null, null, null, null, null);
+				sliderStatistic = new SliderStatisticImpl(null, null, null, null, null, null, null, null, null, null);
 			}
 			slidersStatistic.put(slider, sliderStatistic);
 		}
@@ -84,10 +88,14 @@ class RubricStatisticCalculator {
 		StepCounts stepCountsWeighted = getTotalStepCounts(rubric, slidersStepCounts, true).build();
 		SumMean sumMean = getSumMean(stepCountsWeighted, rubric.getScaleType());
 		Double median = getMedian(stepCountsWeighted, rubric.getScaleType());
+		Double firstQuartile = getPercentile(stepCountsWeighted, rubric.getScaleType(), 25d);
+		Double thirdQuartile = getPercentile(stepCountsWeighted, rubric.getScaleType(), 75d);
+		
 		Double variance = getVariance(stepCountsWeighted, rubric.getScaleType(), sumMean.getMean());
 		Double stdDev = getStdDev(variance);
 		RubricRating rating = RubricRatingEvaluator.rate(rubric, sumMean.getMean());
-		SliderStatistic totalStatistic = new SliderStatisticImpl(count, sumMean.getSum(), median, sumMean.getMean(),
+		SliderStatistic totalStatistic = new SliderStatisticImpl(count, sumMean.getSum(),
+				median, firstQuartile, thirdQuartile, sumMean.getMean(),
 				variance, stdDev, stepCountsUnweighted, rating);
 		return totalStatistic;
 	}
@@ -127,6 +135,16 @@ class RubricStatisticCalculator {
 			}
 		}
 		return Long.valueOf(noResponses);
+	}
+	
+	Long getCountComments(Slider slider, List<CalculatedLong> countedComments) {
+		final String sliderCommentId = RubricHandler.getSliderCommentId(slider);
+		for (CalculatedLong calculatedLong: countedComments) {
+			if (calculatedLong.getIdentifier().equals(sliderCommentId)) {
+				return calculatedLong.getValue();
+			}
+		}
+		return 0l;
 	}
 
 	StepCountsBuilder getStepCounts(Slider slider, int numberOfSteps, List<CalculatedLong> countedResponses) {
@@ -172,14 +190,7 @@ class RubricStatisticCalculator {
 	}
 	
 	Double getMedian(StepCounts stepCounts, ScaleType scaleType) {
-		List<Double> values = new ArrayList<>();
-		for (int step = 1; step <= stepCounts.getNumberOfSteps(); step++) {
-			long stepCount = stepCounts.getStepCount(step);
-			double stepValue = scaleType.getStepValue(stepCounts.getNumberOfSteps(), step);
-			for (int i = 0; i < stepCount; i++) {
-				values.add(stepValue);
-			}
-		}
+		List<Double> values = listValues(stepCounts, scaleType);
 		if (values.isEmpty()) return null;
 		
 		double median;
@@ -188,6 +199,31 @@ class RubricStatisticCalculator {
 		else
 			median = values.get(values.size() / 2);
 		return median;
+	}
+	
+	Double getPercentile(StepCounts stepCounts, ScaleType scaleType, double percentile) {
+		List<Double> values = listValues(stepCounts, scaleType);
+		if (values.size() < 10) {
+			return null;
+		}
+		
+		int index = (int) Math.ceil((percentile / 100.0) * values.size());
+		if(index <= 0) {
+			return null;
+		}
+		return values.get(index - 1);
+	}
+	
+	List<Double> listValues(StepCounts stepCounts, ScaleType scaleType) {
+		List<Double> values = new ArrayList<>();
+		for (int step = 1; step <= stepCounts.getNumberOfSteps(); step++) {
+			long stepCount = stepCounts.getStepCount(step);
+			double stepValue = scaleType.getStepValue(stepCounts.getNumberOfSteps(), step);
+			for (int i = 0; i < stepCount; i++) {
+				values.add(stepValue);
+			}
+		}
+		return values;
 	}
 	
 	Double getVariance(StepCounts stepCounts, ScaleType scaleType, Double mean) {

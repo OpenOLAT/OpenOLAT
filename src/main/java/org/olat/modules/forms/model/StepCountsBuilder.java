@@ -33,6 +33,7 @@ public class StepCountsBuilder {
 	
 	private final Long[] stepCounts;
 	private Long countNoResponses;
+	private Long countComments;
 
 	public static StepCountsBuilder builder(int numberOfSteps) {
 		return new StepCountsBuilder(numberOfSteps);
@@ -53,6 +54,11 @@ public class StepCountsBuilder {
 		return this;
 	}
 	
+	public StepCountsBuilder withCountComments(Long countComments) {
+		this.countComments = countComments;
+		return this;
+	}
+	
 	public StepCounts build() {
 		return new StepCountsImpl(this);
 	}
@@ -61,10 +67,12 @@ public class StepCountsBuilder {
 		
 		private final Long[] stepCounts;
 		private Long countNoResponses;
+		private Long countComments;
 		
 		public StepCountsImpl(StepCountsBuilder builder) {
 			this.stepCounts = Arrays.copyOf(builder.stepCounts, builder.stepCounts.length);
 			this.countNoResponses = builder.countNoResponses;
+			this.countComments = builder.countComments;
 		}
 		
 		@Override
@@ -85,7 +93,31 @@ public class StepCountsBuilder {
 		public Long getNumberOfNoResponses() {
 			return countNoResponses;
 		}
+		
+		@Override
+		public Long getNumberOfComments() {
+			return countComments;
+		}
 
+		@Override
+		public int getMin() {
+			for(int i=1; i<stepCounts.length; i++) {
+				if(stepCounts[i] != null && stepCounts[i].longValue() > 0) {
+					return i;
+				}
+			}
+			return 0;
+		}
+
+		@Override
+		public int getMax() {
+			for(int i=stepCounts.length; i-->1; ) {
+				if(stepCounts[i] != null && stepCounts[i].longValue() > 0) {
+					return i;
+				}
+			}
+			return 0;
+		}
 	}
 
 }
