@@ -187,7 +187,7 @@ public interface EvaluationFormManager {
 	 */
 	public EvaluationFormSession reopenSession(EvaluationFormSession session);
 	
-	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, SessionFilter filter, Limit limit);
+	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, boolean withNoResponses, SessionFilter filter, Limit limit);
 
 	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session,
 			String value);

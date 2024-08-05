@@ -57,7 +57,7 @@ public class EvaluationFormReportDAO {
 	public Long getResponsesCount(List<String> responseIdentifiers, SessionFilter filter, Limit limit) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select count(response.key)");
-		getResponsesAppendFrom(sb, filter, false);
+		getResponsesAppendFrom(sb, filter, false, false);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);
@@ -66,16 +66,16 @@ public class EvaluationFormReportDAO {
 	}
 	
 	public List<EvaluationFormResponse> getResponses(String responseIdentifier, SessionFilter filter, Limit limit) {
-		return getResponses(singletonList(responseIdentifier) , filter, limit);
+		return getResponses(singletonList(responseIdentifier), false, filter, limit);
 	}
 	
-	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, SessionFilter filter, Limit limit) {
+	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, boolean withNoResponse, SessionFilter filter, Limit limit) {
 		if (responseIdentifiers == null || responseIdentifiers.isEmpty() || filter == null)
-			return new ArrayList<>();;
+			return new ArrayList<>();
 		
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select response");
-		getResponsesAppendFrom(sb, filter, true);
+		getResponsesAppendFrom(sb, filter, withNoResponse, true);
 		
 		TypedQuery<EvaluationFormResponse> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), EvaluationFormResponse.class);
@@ -83,14 +83,16 @@ public class EvaluationFormReportDAO {
 		return query.getResultList();
 	}
 
-	private void getResponsesAppendFrom(QueryBuilder sb, SessionFilter filter, boolean fetch) {
+	private void getResponsesAppendFrom(QueryBuilder sb, SessionFilter filter, boolean withNoResponse, boolean fetch) {
 		sb.append("  from evaluationformresponse as response");
 		sb.append(" inner join").append(" fetch", fetch).append(" response.session");
 		sb.append(" where response.responseIdentifier in (:responseIdentifiers)");
 		sb.append("   and response.session.key in (");
 		sb.append(filter.getSelectKeys());
 		sb.append("       )");
-		sb.append("   and (response.noResponse = false or response.noResponse is null)");
+		if(!withNoResponse) {
+			sb.append("   and (response.noResponse = false or response.noResponse is null)");
+		}
 	}
 
 	private void getResponsesAppendParameters(Query query, List<String> responseIdentifiers, SessionFilter filter,
@@ -161,6 +163,28 @@ public class EvaluationFormReportDAO {
 		sb.append(filter.getSelectKeys());
 		sb.append("       )");
 		sb.append("   and response.noResponse = true");
+		sb.append(" group by response.responseIdentifier");
+		
+		TypedQuery<CalculatedLong> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CalculatedLong.class)
+				.setParameter("responseIdentifiers", responseIdentifiers);
+		filter.addParameters(query);
+		return query.getResultList();
+	}
+	
+	public List<CalculatedLong> getCountCommentsByIdentifiers(List<String> responseIdentifiers,
+			SessionFilter filter) {
+		if (responseIdentifiers == null || responseIdentifiers.isEmpty() || filter == null)
+			return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(response.responseIdentifier, count(response))");
+		sb.append("  from evaluationformresponse as response");
+		sb.append(" where response.responseIdentifier in (:responseIdentifiers)");
+		sb.append("   and response.session.key in (");
+		sb.append(filter.getSelectKeys());
+		sb.append("       )");
+		sb.append("   and response.stringuifiedResponse is not null and response.stringuifiedResponse <> ''");
 		sb.append(" group by response.responseIdentifier");
 		
 		TypedQuery<CalculatedLong> query = dbInstance.getCurrentEntityManager()

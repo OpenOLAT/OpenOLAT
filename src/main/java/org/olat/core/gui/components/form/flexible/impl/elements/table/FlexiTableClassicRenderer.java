@@ -426,6 +426,13 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		int columnIndex = fcm.getColumnIndex();
 		Object cellValue = columnIndex >= 0 ? 
 				dataModel.getValueAt(row, columnIndex) : null;
+		renderCellValue(renderer, target, ftC, fcm, cellValue, row, ubu, translator, renderResult);
+		target.append("</td>");
+	}
+	
+	private void renderCellValue(Renderer renderer, StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, Object cellValue,
+			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
+		FlexiTableElementImpl ftE = ftC.getFormItem();
 		if (cellValue instanceof FormItem formItem) {
 			if(formItem instanceof JSDateChooser dChooser) {
 				dChooser.setContainerId(ftC.getDispatchID());
@@ -444,7 +451,6 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		} else {
 			fcm.getCellRenderer().render(renderer, target, cellValue, row, ftC, ubu, translator);
 		}
-		target.append("</td>");
 	}
 
 	private void renderFormItem(Renderer renderer, StringOutput target, URLBuilder ubu, Translator translator,
@@ -484,6 +490,10 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			if(selection) {
 				target.append("<td> </td>");
 			}
+			if(ftE.hasDetailsRenderer()) {
+				target.append("<td> </td>");
+			}
+			
 			for (int j = 0; j<numOfCols; j++) {
 				FlexiColumnModel fcm = columnsModel.getColumnModel(j);
 				if(fcm.isSelectAll()) {
@@ -506,10 +516,12 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		}
 
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
-		if(dataModel instanceof FlexiTableFooterModel) {
-			FlexiTableFooterModel footerDataModel = (FlexiTableFooterModel)dataModel;
+		if(dataModel instanceof FlexiTableFooterModel footerDataModel) {
 			target.append("<tr id='footer_").append(ftC.getFormDispatchId()).append("' class='o_table_footer'>");		
 			if(selection) {
+				target.append("<td> </td>");
+			}
+			if(ftE.hasDetailsRenderer()) {
 				target.append("<td> </td>");
 			}
 			
@@ -532,7 +544,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 					} else {
 						String cssClass = getAlignmentCssClass(alignment);
 						target.append("<td class=\"").append(cssClass).append("\">");
-						fcm.getFooterCellRenderer().render(renderer, target, cellValue, 0, ftC, ubu, translator);
+						renderCellValue(renderer, target, ftC, fcm, cellValue, j, ubu, translator, renderResult);
 						target.append("</td>");
 					}
 				}

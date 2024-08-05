@@ -35,9 +35,9 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.ui.ComponentsFactory;
@@ -155,8 +155,8 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 	}
 
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			SessionFilter filter, ReportHelper reportHelper) {
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
+			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		return new EvaluationFormComponentReportElement(getComponent(element));
 	}
 

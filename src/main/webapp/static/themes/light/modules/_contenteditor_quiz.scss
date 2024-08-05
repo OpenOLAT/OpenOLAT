@@ -163,6 +163,15 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 					background-color: unset;
 					min-height: unset;
 				}
+
+				.o_assessmentitem_status {
+					&.correct {
+						border-color: darken($o-qti-status-correct-color, 10%);
+					}
+					&.incorrect {
+						border-color: darken($o-qti-status-incorrect-color, 10%);
+					}
+				}
 			}
 
 			.choiceInteraction {

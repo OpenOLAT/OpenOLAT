@@ -150,7 +150,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.review.view", translate("review.view"), "view"));
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CoachReviewCols.tools);
-		toolsCol.setIconHeader("o_icon o_icon-fw o_icon_actions");
+		toolsCol.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_actions");
 		toolsCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(toolsCol);
 		

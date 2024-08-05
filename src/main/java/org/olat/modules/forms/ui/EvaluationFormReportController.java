@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
@@ -40,7 +41,9 @@ import org.olat.modules.forms.handler.RubricTableHandler;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.ui.model.EvaluationFormReportComponentElement;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
+import org.olat.modules.forms.ui.model.EvaluationFormReportFormItemElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -98,11 +101,18 @@ public class EvaluationFormReportController extends FormBasicController {
 		for (AbstractElement element: elements) {
 			EvaluationFormReportHandler reportHandler = provider.getReportHandler(element);
 			if (reportHandler != null) {
-				EvaluationFormReportElement reportElement = reportHandler.getReportElement(ureq, getWindowControl(), element, filter,
+				EvaluationFormReportElement reportElement = reportHandler.getReportElement(ureq, getWindowControl(), mainForm, element, filter,
 						reportHelper);
-				String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
-				flc.put(cmpId, reportElement.getReportComponent());
-				fragments.add(new ReportFragment(reportHandler.getType(), cmpId, reportElement));
+				if(reportElement instanceof EvaluationFormReportComponentElement reportComponentElement) {
+					Component cmp = reportComponentElement.getReportComponent();
+					String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
+					flc.put(cmpId, cmp);
+					fragments.add(new ReportFragment(reportHandler.getType(), cmpId, reportElement));
+				} else if(reportElement instanceof EvaluationFormReportFormItemElement reportItemElement) {
+					FormItem item = reportItemElement.getReportFormItem();
+					flc.add(item.getFormDispatchId(), item);
+					fragments.add(new ReportFragment(reportHandler.getType(), item.getFormDispatchId(), reportElement));
+				}
 				if (RubricTableHandler.TYPE.equals(reportHandler.getType()) && Rubric.TYPE.equals(element.getType())) {
 					rubrics.add((Rubric) element);
 				}

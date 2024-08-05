@@ -19,8 +19,6 @@
  */
 package org.olat.modules.forms.ui.model;
 
-import org.olat.core.gui.components.Component;
-
 /**
  * 
  * Initial date: 20.07.2018<br>
@@ -28,8 +26,7 @@ import org.olat.core.gui.components.Component;
  *
  */
 public interface EvaluationFormReportElement {
-
-	public Component getReportComponent();
 	
-	public void dispose();
+	void dispose();
+	
 }

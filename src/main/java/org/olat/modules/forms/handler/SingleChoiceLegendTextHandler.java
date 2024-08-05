@@ -20,6 +20,7 @@
 package org.olat.modules.forms.handler;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
@@ -46,10 +47,9 @@ public class SingleChoiceLegendTextHandler implements EvaluationFormReportHandle
 	}
 
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			SessionFilter filter, ReportHelper reportHelper) {
-		if (element instanceof SingleChoice) {
-			SingleChoice singleChoice = (SingleChoice) element;
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
+			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
+		if (element instanceof SingleChoice singleChoice) {
 			LegendTextDataSource dataSource = new SingleChoiceLegendTextDataSource(singleChoice, filter, reportHelper);
 			Controller ctrl = new LegendTextController(ureq, windowControl, dataSource, reportHelper);
 			return new EvaluationFormControllerReportElement(ctrl);

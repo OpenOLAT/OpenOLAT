@@ -20,6 +20,7 @@
 package org.olat.modules.forms.handler;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
@@ -46,10 +47,9 @@ public class MultipleChoiceBarChartHandler  implements EvaluationFormReportHandl
 	}
 
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
-		if (element instanceof MultipleChoice) {
-			MultipleChoice multipleChoice = (MultipleChoice) element;
+		if (element instanceof MultipleChoice multipleChoice) {
 			BarSeriesDataSource dataSource = new MultipleChoiceDataSource(multipleChoice, filter);
 			Controller ctrl = new BarChartController(ureq, windowControl, dataSource);
 			return new EvaluationFormControllerReportElement(ctrl);

@@ -168,7 +168,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		columnsModel.addFlexiColumnModel(leaveCol);
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CoachReviewCols.tools);
-		toolsCol.setIconHeader("o_icon o_icon-fw o_icon_actions");
+		toolsCol.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_actions");
 		toolsCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(toolsCol);
 		

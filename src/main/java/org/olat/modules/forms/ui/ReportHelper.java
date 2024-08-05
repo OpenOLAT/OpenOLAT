@@ -49,6 +49,7 @@ public class ReportHelper {
 	private final ColorGenerator colorGenerator;
 	private final LegendNameGenerator legendNameGenerator;
 	private final Comparator<EvaluationFormSession> comparator;
+	private final boolean legendDependentOnExecutor;
 	
 	private final Map<EvaluationFormSession, Legend> sessionKeyToData = new HashMap<>();
 	private final Map<EvaluationFormParticipation, Legend> participationToLegend = new HashMap<>();
@@ -90,13 +91,15 @@ public class ReportHelper {
 		} else {
 			this.comparator = new KeyComparator();
 		}
+		
+		this.legendDependentOnExecutor = builder.legendDependentOnExecutor;
 	}
 	
 	public Comparator<EvaluationFormSession> getComparator() {
 		return comparator;
 	}
 
-	Legend getLegend(EvaluationFormSession session) {
+	public Legend getLegend(EvaluationFormSession session) {
 		Legend legend = sessionKeyToData.get(session);
 		if (legend == null && session.getParticipation() != null) {
 			legend = participationToLegend.get(session.getParticipation());
@@ -135,7 +138,7 @@ public class ReportHelper {
 			if (participation != null) {
 				participationToLegend.put(participation, legend);
 				Identity executor = participation.getExecutor();
-				if (executor != null) {
+				if (executor != null && legendDependentOnExecutor) {
 					executorToLegend.put(executor, legend);
 				}
 			}
@@ -154,6 +157,7 @@ public class ReportHelper {
 		private boolean hasColors = false;
 		private LegendNameGenerator legendNameGenerator;
 		private Comparator<EvaluationFormSession> comparator;
+		private boolean legendDependentOnExecutor = true;
 		
 		Builder(Locale locale) {
 			this.locale = locale;
@@ -184,12 +188,23 @@ public class ReportHelper {
 			return this;
 		}
 		
+		/**
+		 * Default true, set to false if the legend show an other name as the executor of the session.
+		 * 
+		 * @param legendDependentOnExecutor
+		 * @return Itself
+		 */
+		public Builder withLegendDependentOnExecutor(boolean legendDependentOnExecutor) {
+			this.legendDependentOnExecutor = legendDependentOnExecutor;
+			return this;
+		}
+		
 		public ReportHelper build() {
 			return new ReportHelper(this);
 		}
 	}
 	
-	final static class Legend {
+	public static final class Legend {
 		
 		private final String name;
 		private final String color;
@@ -201,15 +216,15 @@ public class ReportHelper {
 			this.anonymous = anonymous;
 		}
 
-		String getName() {
+		public String getName() {
 			return name;
 		}
 
-		String getColor() {
+		public String getColor() {
 			return color;
 		}
 
-		boolean isAnonymous() {
+		public boolean isAnonymous() {
 			return anonymous;
 		}
 

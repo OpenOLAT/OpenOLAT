@@ -220,7 +220,7 @@ public class MSServiceImpl implements MSService {
 					.map(Slider::getId)
 					.collect(Collectors.toList());
 			SessionFilter filter = SessionFilterFactory.create(getSurveysIdentifier(ores, nodeIdent, evaluationFormProvider));
-			List<EvaluationFormResponse> responses = evaluationFormManager.getResponses(responseIdentifiers, filter , Limit.all());
+			List<EvaluationFormResponse> responses = evaluationFormManager.getResponses(responseIdentifiers, false, filter, Limit.all());
 			Map<EvaluationFormSession, List<EvaluationFormResponse>> sessionToResponses = responses.stream()
 					.collect(Collectors.groupingBy(EvaluationFormResponse::getSession));
 			
@@ -359,7 +359,7 @@ public class MSServiceImpl implements MSService {
 			StepCounts stepCounts = StepCountsBuilder.builder(rubric.getSteps())
 					.withCount(step, Long.valueOf(1))
 					.build();
-			SliderStatistic sliderStatistic = new SliderStatisticImpl(null, null, null, null, null, null, stepCounts, null);
+			SliderStatistic sliderStatistic = new SliderStatisticImpl(null, null, null, null, null, null, null, null, stepCounts, null);
 			slidersStatisticImpl.put(slider, sliderStatistic);
 		}
 		return slidersStatisticImpl;

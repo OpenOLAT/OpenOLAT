@@ -118,7 +118,7 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	}
 	
 	@Override
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
+	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof ImageElement imageElement) {
 			Controller ctrl = new ImageRunController(ureq, windowControl, dataStorage, imageElement, new StandardMediaRenderingHints(false), true);

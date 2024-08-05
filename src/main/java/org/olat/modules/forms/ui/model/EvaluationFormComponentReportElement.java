@@ -27,7 +27,7 @@ import org.olat.core.gui.components.Component;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class EvaluationFormComponentReportElement implements EvaluationFormReportElement {
+public class EvaluationFormComponentReportElement implements EvaluationFormReportComponentElement {
 	
 	private final Component component;
 

@@ -1,0 +1,6 @@
+#foreach($text in $texts)
+<div class="o_block_small">
+	<label>$r.escapeHtml(${text.user()})</label><br>
+	<textarea class="form-control textarea o_fixed_font_with disabled" disabled>$r.xssScan(${text.text()})</textarea>
+</div>
+#end

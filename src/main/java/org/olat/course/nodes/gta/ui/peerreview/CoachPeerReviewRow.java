@@ -49,6 +49,7 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	private NumOf numOfReviews;
 	private NumOf numOfReviewers;
 	private TaskReviewAssignment assignment;
+	
 	private EvaluationFormParticipation participation;
 	
 	private Double median;
@@ -137,6 +138,10 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	
 	public TaskReviewAssignmentStatus getAssignmentStatus() {
 		return assignment == null ? null : assignment.getStatus();
+	}
+	
+	public EvaluationFormParticipation getParticipation() {
+		return participation;
 	}
 	
 	public EvaluationFormParticipationStatus getParticipationStatus() {
