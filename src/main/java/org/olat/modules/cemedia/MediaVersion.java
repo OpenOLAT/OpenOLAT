@@ -51,6 +51,8 @@ public interface MediaVersion extends CreateInfo, StoredData {
 	
 	VFSMetadata getMetadata();
 
+	void setMetadata(VFSMetadata metadata);
+
 	MediaVersionMetadata getVersionMetadata();
 
 	void setVersionMetadata(MediaVersionMetadata versionMetadata);

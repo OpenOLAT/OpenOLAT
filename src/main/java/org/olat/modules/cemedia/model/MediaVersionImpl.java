@@ -204,6 +204,7 @@ public class MediaVersionImpl implements Persistable, MediaVersion {
 		return metadata;
 	}
 
+	@Override
 	public void setMetadata(VFSMetadata metadata) {
 		this.metadata = metadata;
 	}
