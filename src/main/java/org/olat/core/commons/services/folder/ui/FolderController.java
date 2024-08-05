@@ -2655,9 +2655,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void doBulkConfirmDeleteSoftly(UserRequest ureq) {
 		if (guardModalController(deleteSoftlyConfirmationCtrl)) return;
-		if (!canDelete(currentContainer)) {
-			return;
-		}
 		
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		if (selectedIndex == null || selectedIndex.isEmpty()) {
