@@ -155,7 +155,19 @@
 					jQuery(obj).css('height', '100%');
 				}
 			});
-		})
+		});
+	}
+	#end
+
+	#if($slideShowMode)
+	function setSlideBottomPaddings() {
+		jQuery(function() {
+			var pagination = jQuery('#o_swiper_${r.getCId()} .swiper-pagination');
+			var paginationHeight = pagination.height();
+			var slides = jQuery('#o_swiper_${r.getCId()} .swiper-slide.o_bottom_padding_for_pagination');
+			var slideHeight = paginationHeight + 5;
+			slides.css('paddingBottom', `${slideHeight}px`);
+		});
 	}
 	#end
 
@@ -218,6 +230,7 @@
 				#end
 				#if($slideShowMode)
 					setSlideSpacers();
+					setSlideBottomPaddings();
 				#end
 				#if($gridMode)
 					setSlideSpacers();
