@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -360,6 +361,9 @@ public class CourseHandler implements RepositoryHandler {
 
 		// import badges
 		importBadgesAndConfiguration(re, fImportBaseDirectory, initialAuthor);
+		
+		// Create metadata in the database
+		CoreSpringFactory.getImpl(VFSRepositoryService.class).synchMetadatas(course.getCourseBaseContainer());
 		
 		//clean up export folder
 		cleanExportAfterImport(fImportBaseDirectory);
