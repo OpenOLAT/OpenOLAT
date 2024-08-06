@@ -77,7 +77,7 @@ public class FileUploadListingController extends BasicController {
 		if (showCount > 0) {
 			Long showAll = dataSource.getAllResponsesCount();
 			if (showAll > showCount) {
-				mainVC.contextPut("downloadInfo", translate("file.upload.download.info", new String[] { showCount.toString(), showAll.toString() }));
+				mainVC.contextPut("downloadInfo", translate("file.upload.download.info", showCount.toString(), showAll.toString()));
 			}
 			downloadLink = LinkFactory.createLink("file.upload.download.link", mainVC, this);
 		} else {

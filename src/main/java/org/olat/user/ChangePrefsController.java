@@ -84,18 +84,19 @@ public class ChangePrefsController extends BasicController {
 	 * @param ureq The user request
 	 * @param wControl The current window controller
 	 * @param changeableIdentity The subject whose profile should be changed
+	 * @param showSuccessMessage TODO
 	 */
-	public ChangePrefsController(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) {
+	public ChangePrefsController(UserRequest ureq, WindowControl wControl, Identity changeableIdentity, boolean showSuccessMessage) {
 		super(ureq, wControl);
 
 		myContent = createVelocityContainer("prefs");
-		initPanels(ureq, wControl, changeableIdentity);
+		initPanels(ureq, wControl, changeableIdentity, showSuccessMessage);
 		putInitialPanel(myContent);
 	}
 	
-	public void initPanels(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) {
+	public void initPanels(UserRequest ureq, WindowControl wControl, Identity changeableIdentity, boolean showSuccessMessage) {
 		removeAsListenerAndDispose(generalPrefsCtr);
-		generalPrefsCtr = new PreferencesFormController(ureq, wControl, changeableIdentity);
+		generalPrefsCtr = new PreferencesFormController(ureq, wControl, changeableIdentity, showSuccessMessage);
 		listenTo(generalPrefsCtr);
 		
 		removeAsListenerAndDispose(specialPrefsCtr);

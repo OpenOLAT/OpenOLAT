@@ -79,13 +79,13 @@ public class ProjTimelineActivityRowsFactory {
 	public void addActivityRows(UserRequest ureq, List<ProjTimelineRow> rows, ActivityRowData activityRowData,
 			ProjArtefactItems artefactItems, Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
 		switch (activityRowData.lastActivity().getActionTarget()) {
-		case project: addActivityProjectRows(ureq, rows, activityRowData);
-		case file: addActivityFileRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
-		case toDo: addActivityToDoRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
-		case decision: addActivityDecisionRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
-		case note: addActivityNoteRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
-		case appointment: addActivityAppointmentRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
-		case milestone: addActivityMilestoneRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
+		case project: addActivityProjectRows(ureq, rows, activityRowData); break;
+		case file: addActivityFileRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys); break;
+		case toDo: addActivityToDoRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys); break;
+		case decision: addActivityDecisionRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys); break;
+		case note: addActivityNoteRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys); break;
+		case appointment: addActivityAppointmentRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys); break;
+		case milestone: addActivityMilestoneRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys); break;
 		default: //
 		}
 	}
@@ -157,10 +157,28 @@ public class ProjTimelineActivityRowsFactory {
 	private void addActivityFileRows(List<ProjTimelineRow> rows, ActivityRowData activityRowData, ProjArtefactItems artefactItems,
 			Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
 		ProjActivity activity = activityRowData.lastActivity();
-		if (activity.getArtefact() == null) {
-			return;
+		
+		ProjFile file = null;
+		if (activity.getArtefact() != null) {
+			file = artefactItems.getFile(activity.getArtefact());
 		}
-		ProjFile file = artefactItems.getFile(activity.getArtefact());
+		
+		// File is permanently deleted
+		if (file == null && StringHelper.containsNonWhitespace(activity.getAfter())) {
+			try {
+				file = ProjectXStream.fromXml(activity.getAfter(), ProjFile.class);
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		if (file == null && StringHelper.containsNonWhitespace(activity.getBefore())) {
+			try {
+				file = ProjectXStream.fromXml(activity.getBefore(), ProjFile.class);
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		
 		if (file == null) {
 			return;
 		}
@@ -346,7 +364,9 @@ public class ProjTimelineActivityRowsFactory {
 		
 		Set<Long> identityKeys = new HashSet<>(2);
 		identityKeys.addAll(activityRowData.doerKeys);
-		identityKeys.addAll(artefactKeyToIdentityKeys.getOrDefault(activity.getArtefact().getKey(), Set.of()));
+		if (activity.getArtefact() != null) {
+			identityKeys.addAll(artefactKeyToIdentityKeys.getOrDefault(activity.getArtefact().getKey(), Set.of()));
+		}
 		row.setIdentityKeys(identityKeys);
 		
 		row.setMessage(getMessageWithCount(message, activityRowData.numActivities()));

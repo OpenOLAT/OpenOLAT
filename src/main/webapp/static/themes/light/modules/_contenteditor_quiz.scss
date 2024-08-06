@@ -168,6 +168,10 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 					&.correct {
 						border-color: darken($o-qti-status-correct-color, 10%);
 					}
+					&.solution {
+						border-color: darken($o-qti-status-correct-color, 10%);
+						background-color: $o-qti-status-correct-color;
+					}
 					&.incorrect {
 						border-color: darken($o-qti-status-incorrect-color, 10%);
 					}
@@ -381,10 +385,6 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 					}
 				}
 
-				.o_solution_wrapper {
-					margin-top: 20px;
-				}
-
 				.modalFeedback.o_togglebox_wrapper {
 					margin-top: 20px;
 
@@ -460,6 +460,15 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 }
 
 .o_page_edit_quiz {
+
+	.o_rendertype_classic {
+		th {
+			&.o_up, &.o_down {
+				width: 32px;
+			}
+		}
+	}
+
 	.o_quiz_edit_header {
 		display: flex;
 

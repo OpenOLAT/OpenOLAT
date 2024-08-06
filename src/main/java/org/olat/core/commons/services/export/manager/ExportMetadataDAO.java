@@ -132,16 +132,16 @@ public class ExportMetadataDAO {
 	
 	public boolean metadataInUse(VFSMetadata metadata) {
 		String query = """
-				select exp from exportmetadata exp
-				inner join fetch exp.metadata vfsMetadata
-				where vfsMetadata.key<:metadataKey""";
+				select exp.key from exportmetadata exp
+				inner join exp.metadata vfsMetadata
+				where vfsMetadata.key=:metadataKey""";
 		
 		List<Long> used = dbInstance.getCurrentEntityManager().createQuery(query, Long.class)
 				.setParameter("metadataKey", metadata.getKey())
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return used != null && !used.isEmpty() && used.get(0) == null && used.get(0).longValue() > 0l;
+		return used != null && !used.isEmpty() && used.get(0) != null && used.get(0).longValue() > 0l;
 	}
 	
 	public void deleteMetadata(ExportMetadata metadata) {

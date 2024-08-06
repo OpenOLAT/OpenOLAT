@@ -113,7 +113,8 @@ public class RubricRadarController extends FormBasicController {
 					EvaluationFormSession responseSession = response.getSession();
 					if(!series.containsKey(responseSession)) {
 						Legend legend = reportHelper.getLegend(responseSession);
-						series.put(responseSession, new RadarSeries(legend.getName(), legend.getColor()));
+						String name = StringHelper.escapeHtml(legend.getName());
+						series.put(responseSession, new RadarSeries(name, legend.getColor()));
 					}
 					if(response.getNumericalResponse() != null ) {
 						double value = response.getNumericalResponse().doubleValue();

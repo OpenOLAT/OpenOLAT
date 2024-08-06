@@ -174,7 +174,7 @@ public class UserSettingsController extends BasicController implements Activatea
 		if(preferencesCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Preferences", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			preferencesCtrl = new ChangePrefsController(ureq, bwControl, getIdentity());
+			preferencesCtrl = new ChangePrefsController(ureq, bwControl, getIdentity(), true);
 			listenTo(preferencesCtrl);
 		}
 		mainVC.put("segmentCmp", preferencesCtrl.getInitialComponent());

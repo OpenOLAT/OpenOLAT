@@ -70,8 +70,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author gwassmann
  */
 public class PreferencesFormController extends FormBasicController {
-	private Identity tobeChangedIdentity;
-	
+
 	private SingleSelection charset;
 	private SingleSelection language;
 	private SingleSelection mailSystem;
@@ -79,6 +78,9 @@ public class PreferencesFormController extends FormBasicController {
 	private SingleSelection documentEditorEl;
 	
 	private static final String[] mailIntern = new String[]{"intern.only","send.copy"};
+	
+	private Identity tobeChangedIdentity;
+	private final boolean showSuccessMessage;
 	
 	@Autowired
 	private I18nModule i18nModule;
@@ -106,10 +108,12 @@ public class PreferencesFormController extends FormBasicController {
 	 * @param wControl
 	 * @param tobeChangedIdentity the Identity which preferences are displayed and
 	 *          edited. Not necessarily the same as ureq.getIdentity()
+	 * @param showSuccessMessage 
 	 */
-	public PreferencesFormController(UserRequest ureq, WindowControl wControl, Identity tobeChangedIdentity) {
+	public PreferencesFormController(UserRequest ureq, WindowControl wControl, Identity tobeChangedIdentity, boolean showSuccessMessage) {
 		super(ureq, wControl, Util.createPackageTranslator(UserAdminController.class, ureq.getLocale()));
 		this.tobeChangedIdentity = tobeChangedIdentity;
+		this.showSuccessMessage = showSuccessMessage;
 		initForm(ureq);
 	}
 
@@ -130,8 +134,10 @@ public class PreferencesFormController extends FormBasicController {
 		}
 
 		if (userManager.updateUserFromIdentity(tobeChangedIdentity)) {
-			// Language change needs logout / login
-			showInfo("preferences.successful");
+			if (showSuccessMessage) {
+				// Language change needs logout / login
+				showInfo("preferences.successful");
+			}
 		} else {
 			showInfo("preferences.unsuccessful");
 		}

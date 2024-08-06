@@ -366,7 +366,7 @@ public class UserAdminController extends BasicController implements Activateable
 			userProfileCtr.resetForm(ureq, editedIdentity);
 		}
 		if(prefsCtr instanceof ChangePrefsController changePrefsCtrl) {
-			changePrefsCtrl.initPanels(ureq, getWindowControl(), editedIdentity);
+			changePrefsCtrl.initPanels(ureq, getWindowControl(), editedIdentity, false);
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -469,7 +469,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 		if(isAdminOf || isUserManagerOf || isRolesManagerOf) {
 			userTabP.addTab(ureq, translate(NLS_EDIT_UPREFS), uureq -> {
-				prefsCtr = new ChangePrefsController(uureq, getWindowControl(), identity);
+				prefsCtr = new ChangePrefsController(uureq, getWindowControl(), identity, false);
 				listenTo(prefsCtr);
 				return prefsCtr.getInitialComponent();
 			});

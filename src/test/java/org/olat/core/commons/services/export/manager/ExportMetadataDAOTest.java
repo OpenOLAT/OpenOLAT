@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.export.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Date;
 import java.util.List;
@@ -31,6 +32,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportMetadata;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.repository.RepositoryEntry;
@@ -48,6 +51,8 @@ public class ExportMetadataDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private VFSMetadataDAO vfsMetadataDAO;
 	@Autowired
 	private ExportMetadataDAO exportMetadataDao;
 	
@@ -97,6 +102,21 @@ public class ExportMetadataDAOTest extends OlatTestCase {
 		List<ExportMetadata> expiredMetadata = exportMetadataDao.expiredExports(now);
 		assertThat(expiredMetadata)
 			.contains(metadata);
+	}
+	
+	@Test
+	public void metadataInUse() {
+		// Create an export with a VFS metadata
+		String rnd = random();
+		ExportMetadata metadata = exportMetadataDao.createMetadata("Export rnd", null, null, ArchiveType.COMPLETE, null, true, null, "", null, null);
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + rnd, "file", null);
+		metadata.setMetadata(vfsMetadata);
+		metadata = exportMetadataDao.updateMetadata(metadata);
+		dbInstance.commit();
+		Assert.assertNotNull(metadata.getMetadata());
+		
+		boolean inUse = exportMetadataDao.metadataInUse(vfsMetadata);
+		Assert.assertTrue(inUse);
 	}
 	
 	@Test

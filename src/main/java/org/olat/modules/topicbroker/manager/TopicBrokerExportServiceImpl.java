@@ -138,8 +138,8 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 		searchParams.setBroker(broker);
 		List<TBTopic> topics = topicBrokerService.getTopics(searchParams);
 		
-		Map<Long, List<String>> topicKeyToCustomFieldTexts = new HashMap<>();
-		Map<String, Map<String, VFSLeaf>> topicIdentToFileIdentToLeaf = new HashMap<>();
+		Map<Long, List<String>> topicKeyToCustomFieldTexts = new HashMap<>(topics.size());
+		Map<String, Map<String, VFSLeaf>> topicIdentToFileIdentToLeaf = new HashMap<>(topics.size());
 		for (TBTopic topic : topics) {
 			VFSLeaf topicLeaf = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TOPIC_TEASER_IMAGE);
 			add(topicIdentToFileIdentToLeaf, topic, EXPORT_TEASER_IMAGE, topicLeaf);
@@ -187,10 +187,20 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 				.collect(Collectors.toList());
 		identities.addAll(selectionIdentities);
 		
+		ArrayList<Identity> allIdentities = new ArrayList<>(identities);
 		TopicBrokerExcelExport excelExport = new TopicBrokerExcelExport(ureq, topics, customFieldNames,
-				topicKeyToCustomFieldTexts, true, new ArrayList<>(identities), identityKeyToTopicToSelections);
+				topicKeyToCustomFieldTexts, true, allIdentities, identityKeyToTopicToSelections);
 		
-		return new TopicBrokerMediaResource(reloadedBorker, topicIdentToFileIdentToLeaf, excelExport);
+		Map<String, TopicBrokerExcelExport> topicIdentToExcelExport = new HashMap<>(topics.size());
+		for (TBTopic topic : topics) {
+			List<TBTopic> topicList = new ArrayList<>(1);
+			topicList.add(topic);
+			TopicBrokerExcelExport topicExcelExport = new TopicBrokerExcelExport(ureq, topicList, customFieldNames,
+					topicKeyToCustomFieldTexts, true, allIdentities, identityKeyToTopicToSelections);
+			topicIdentToExcelExport.put(topic.getIdentifier(), topicExcelExport);
+		}
+		
+		return new TopicBrokerMediaResource(reloadedBorker, topicIdentToFileIdentToLeaf, excelExport, topicIdentToExcelExport);
 	}
 
 	private void add(Map<Long, List<String>> topicKeyToCustomFieldTexts, TBTopic topic, String text) {

@@ -50,12 +50,14 @@ public class TopicBrokerMediaResource implements MediaResource {
 	private final TBBroker broker;
 	private final Map<String, Map<String, VFSLeaf>> topicIdentToFileIdentToLeaf;
 	private final TopicBrokerExcelExport excelExport;
+	private final Map<String, TopicBrokerExcelExport> topicIdentToExcelExport;
 
 	public TopicBrokerMediaResource(TBBroker broker, Map<String, Map<String, VFSLeaf>> topicIdentToFileIdentToLeaf,
-			TopicBrokerExcelExport excelExport) {
+			TopicBrokerExcelExport excelExport, Map<String, TopicBrokerExcelExport> topicIdentToExcelExport) {
 		this.broker = broker;
 		this.topicIdentToFileIdentToLeaf = topicIdentToFileIdentToLeaf;
 		this.excelExport = excelExport;
+		this.topicIdentToExcelExport = topicIdentToExcelExport;
 	}
 
 	@Override
@@ -94,6 +96,7 @@ public class TopicBrokerMediaResource implements MediaResource {
 		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);
 		hres.setHeader("Content-Description", urlEncodedLabel);
 		
+		String topicsPath = "topics/";
 		String filesPath = "files/";
 		
 		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
@@ -101,7 +104,7 @@ public class TopicBrokerMediaResource implements MediaResource {
 			
 			if (topicIdentToFileIdentToLeaf != null && !topicIdentToFileIdentToLeaf.isEmpty()) {
 				for (Entry<String, Map<String, VFSLeaf>> entry : topicIdentToFileIdentToLeaf.entrySet()) {
-					String topicPath = filesPath + entry.getKey() + "/";
+					String topicPath = topicsPath + StringHelper.transformDisplayNameToFileSystemName(entry.getKey()) + "/" + filesPath;
 					for (Entry<String, VFSLeaf> fileIdentToLeaf : entry.getValue().entrySet()) {
 						String filePath = topicPath + fileIdentToLeaf.getKey() + "/";
 						VFSLeaf vfsLeaf = fileIdentToLeaf.getValue();
@@ -119,6 +122,23 @@ public class TopicBrokerMediaResource implements MediaResource {
 							}
 						} else {
 							zout.putNextEntry(new ZipEntry(filePath));
+						}
+					}
+				}
+			}
+			
+			if (topicIdentToExcelExport != null && !topicIdentToExcelExport.isEmpty()) {
+				for (Entry<String, TopicBrokerExcelExport> entry : topicIdentToExcelExport.entrySet()) {
+					TopicBrokerExcelExport topicExcelExport = entry.getValue();
+					if (topicExcelExport != null) {
+						String topicPath = topicsPath + StringHelper.transformDisplayNameToFileSystemName(entry.getKey()) + "/";
+						try (ShieldOutputStream sout = new ShieldOutputStream(zout);) {
+							String filename = topicPath + StringHelper.transformDisplayNameToFileSystemName("topicbroker_" + entry.getKey()) + ".xlsx";
+							zout.putNextEntry(new ZipEntry(filename));
+							topicExcelExport.export(sout);
+							zout.closeEntry();
+						} catch(Exception e) {
+							log.error(e);
 						}
 					}
 				}

@@ -186,7 +186,11 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			renderItemStatus(renderer, sb, itemSessionState, translator);
 		}
 		if (component.isPageMode()) {
-			renderAnswerCorrectnessFeedback(renderer, sb, itemSessionState, translator);
+			if (component.isShowPageModeSolution()) {
+				renderItemStatusMessage(renderer, "solution", "solution", sb, translator);
+			} else {
+				renderAnswerCorrectnessFeedback(renderer, sb, itemSessionState, translator);
+			}
 		}
 		if(component.isShowQuestionLevel()) {
 			renderQuestionLevels(component.getQuestionLevel(), component.getMaxQuestionLevel(), sb, translator);
@@ -198,20 +202,12 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		//TODO prompt
 		
 		//render itemBody
+		if (component.isShowPageModeSolution()) {
+			renderer.setPageModeSolutionMode(true);
+		}
 		assessmentItem.getItemBody().getBlocks().forEach((block)
 				-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
-
-		// solution
-		if (component.isShowPageModeSolution()) {
-			sb.append("<div class='o_solution_wrapper'>");
-			sb.append("<h4 class='itemTitle'>");
-			sb.append(StringHelper.escapeHtml(translator.translate("solution"))).append("</h4>");
-			renderer.setPageModeSolutionMode(true);
-			getSolutionBlocks(assessmentItem.getItemBody().getBlocks()).forEach((block)
-					-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
-			renderer.setPageModeSolutionMode(false);
-			sb.append("</div>");
-		}
+		renderer.setPageModeSolutionMode(false);
 
 		//comment
 		renderComment(renderer, sb, component, itemSessionState, translator);
