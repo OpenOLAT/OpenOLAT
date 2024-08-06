@@ -61,6 +61,7 @@
 
 #if("not-checked" == $checked)
 <script>
+"use strict";
 function checkSEBKeys () {
 	// if the SafeExamBrowser.security.updateKeys() function is not defined (for example on login from a normal
 	// browser or with an older SEB version), this will throw an error and not go in the didUpdateSEBKeys() callback
@@ -77,9 +78,16 @@ function didUpdateSEBKeys () {
 	${r.openJavaScriptCommand('checkSEBKeys')}, 'configKey', configKey, 'browserExamKey', browserExamKey, 'urlForKeyHash', currentPage);
 }
 
+function checkSEBHeaders () {
+	var currentPage = window.location.toString();
+	${r.openJavaScriptCommand('checkSEBHeaders')}, 'urlForKeyHash', currentPage);
+}
+
 jQuery(function() {
-	if(SafeExamBrowser) {
+	if(typeof SafeExamBrowser !== "undefined") {
 		checkSEBKeys();
+	} else {
+		checkSEBHeaders();
 	}
 });
 </script>

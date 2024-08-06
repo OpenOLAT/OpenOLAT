@@ -67,14 +67,15 @@
 
 #if("not-checked" == $checked)
 <script>
-function checkSEBKeys () {
+"use strict";
+function checkSEBKeys() {
 	// if the SafeExamBrowser.security.updateKeys() function is not defined (for example on login from a normal
 	// browser or with an older SEB version), this will throw an error and not go in the didUpdateSEBKeys() callback
 	// function, so the ajax request to AssessmentModeGuardController will not be sent
 	SafeExamBrowser.security.updateKeys(didUpdateSEBKeys);
 }
 
-function didUpdateSEBKeys () {
+function didUpdateSEBKeys() {
 	jQuery("div.o_error.o_assessment_mode_error").addClass("hide");
 	
 	var configKey = SafeExamBrowser.security.configKey;
@@ -83,9 +84,16 @@ function didUpdateSEBKeys () {
 	$f.openFfXHREvent(false, false, false), 'cid', 'checkSEBKeys', 'configKey', configKey, 'browserExamKey', browserExamKey, 'urlForKeyHash', currentPage);
 }
 
+function checkSEBHeaders() {
+	var currentPage = window.location.toString();
+	$f.openFfXHREvent(false, false, false), 'cid', 'checkSEBHeaders', 'urlForKeyHash', currentPage);
+}
+
 jQuery(function() {
-	if(SafeExamBrowser) {
+	if(typeof SafeExamBrowser !== "undefined") {
 		checkSEBKeys();
+	} else {
+		checkSEBHeaders();
 	}
 });
 </script>

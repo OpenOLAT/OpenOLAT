@@ -19,8 +19,6 @@
  */
 package org.olat.core.commons.fullWebApp;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -65,7 +63,6 @@ public class UnlockGuardController extends BasicController implements LockGuardC
 		this.pushUpdate = forcePush;
 		
 		mainVC = createVelocityContainer("unlock");
-		mainVC.contextPut("checked", hasSEBHeaders(ureq) ? "checked" : "not-checked");
 		
 		mainContinueButton = LinkFactory.createCustomLink("continue-main", "continue-main", "unlock.continue.main", Link.BUTTON, mainVC, this);
 		mainContinueButton.setElementCssClass("o_sel_assessment_continue");
@@ -87,14 +84,6 @@ public class UnlockGuardController extends BasicController implements LockGuardC
 		//register for assessment mode
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
-	}
-
-	public boolean hasSEBHeaders(UserRequest ureq) {
-		HttpServletRequest request = ureq.getHttpReq();
-		String safeExamHash1 = request.getHeader("x-safeexambrowser-requesthash");
-		String safeExamHash2 = request.getHeader("x-safeexambrowser-configkeyhash");
-		return StringHelper.containsNonWhitespace(safeExamHash1)
-				|| StringHelper.containsNonWhitespace(safeExamHash2);
 	}
 	
 	@Override

@@ -97,14 +97,14 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		mapperUri = registerCacheableMapper(ureq, "seb-settings", new SettingsMapper(guards));
 		
 		initForm(ureq);
-		syncInspections(ureq);
+		syncInspections(ureq, null);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("inspections", guards);
-			layoutCont.contextPut("checked", SafeExamBrowserValidator.hasSEBHeaders(ureq) ? "checked" : "not-checked");
+			layoutCont.contextPut("checked", "not-checked");
 		}
 		
 		mainContinueButton = uifactory.addFormLink("continue-main", "current.inspection.continue", null, formLayout, Link.BUTTON);
@@ -121,13 +121,13 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		formLayout.add("quit-seb-main", mainSEBQuitButton);
 	}
 
-	private void syncInspections(UserRequest ureq) {
+	private void syncInspections(UserRequest ureq, Boolean useHeaders) {
 		List<ResourceGuard> guardsList = new ArrayList<>();
 		
 		String quitUrl = null;
 		for(TransientAssessmentInspection inspection:inspections) {
 			if(inspection != null) {
-				ResourceGuard guard = syncAssessmentInspection(ureq, inspection);
+				ResourceGuard guard = syncAssessmentInspection(ureq, inspection, useHeaders);
 				if(guard != null) {
 					guardsList.add(guard);
 				}
@@ -191,7 +191,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		return null;
 	}
 	
-	private ResourceGuard syncAssessmentInspection(UserRequest ureq, TransientAssessmentInspection inspection) {
+	private ResourceGuard syncAssessmentInspection(UserRequest ureq, TransientAssessmentInspection inspection, Boolean useHeaders) {
 		Date now = new Date();
 		Date from = inspection.getFromDate();
 		Date to = inspection.getToDate();
@@ -216,7 +216,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			allowed &= ipInRange;
 		}
 		if(StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserKey())) {
-			boolean safeExamCheck = isSafelyAllowed(ureq, inspection.getSafeExamBrowserKey(), null);
+			boolean safeExamCheck = isSafelyAllowed(ureq, inspection.getSafeExamBrowserKey(), null, useHeaders);
 			if(!safeExamCheck) {
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>")
 				  .append(translate("error.safe.exam")).append("</h4>")
@@ -224,7 +224,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			}
 			allowed &= safeExamCheck;
 		} else if(StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserConfigPList())) {
-			boolean safeExamCheck = isSafelyAllowed(ureq, null, inspection.getSafeExamBrowserConfigPListKey());
+			boolean safeExamCheck = isSafelyAllowed(ureq, null, inspection.getSafeExamBrowserConfigPListKey(), useHeaders);
 			if(!safeExamCheck) {
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>")
 				  .append(translate("error.safe.exam")).append("</h4>")
@@ -310,13 +310,13 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		return "-";
 	}
 	
-	private boolean isSafelyAllowed(UserRequest ureq, String safeExamBrowserKeys, String configurationKey) {
+	private boolean isSafelyAllowed(UserRequest ureq, String safeExamBrowserKeys, String configurationKey, Boolean useHeaders) {
 		String safeExamHash = ureq.getParameter("configKey");
 		String url = ureq.getParameter("urlForKeyHash");
 		String browserExamKey = ureq.getParameter("browserExamKey");
 		getLogger().info("SEB requests parameters - configkey: {}, url: {}, browser exam key: {}", safeExamHash, url, browserExamKey);
-		return SafeExamBrowserValidator.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey)
-				|| SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, url, safeExamBrowserKeys, configurationKey);
+		return (useHeaders != null && useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey))
+				|| (useHeaders != null && !useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, url, safeExamBrowserKeys, configurationKey));
 	}
 	
 	private String updateButtons(TransientAssessmentInspection inspection, Date now, FormLink start) {
@@ -368,9 +368,14 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			} else if(("continue".equals(cmd) || "continue-main".equals(cmd))) {
 				continueAfterAssessmentInspection(ureq, link.getUserObject());
 			}
-		} else if("ONCLICK".equals(event.getCommand()) && "checkSEBKeys".equals(ureq.getParameter("cid"))) {
-			syncInspections(ureq);
-			flc.contextPut("checked", "checked");
+		} else if("ONCLICK".equals(event.getCommand())) {
+			if("checkSEBKeys".equals(ureq.getParameter("cid"))) {
+				syncInspections(ureq, Boolean.FALSE);
+				flc.contextPut("checked", "checked");
+			} else if("checkSEBHeaders".equals(ureq.getParameter("cid"))) {
+				syncInspections(ureq, Boolean.TRUE);
+				flc.contextPut("checked", "checked");
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
