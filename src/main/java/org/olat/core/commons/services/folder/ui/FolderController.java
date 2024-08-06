@@ -2692,10 +2692,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void doBulkDeleteSoftly(UserRequest ureq) {
-		if (!canDelete(currentContainer)) {
-			return;
-		}
-		
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		if (selectedIndex == null || selectedIndex.isEmpty()) {
 			return;
