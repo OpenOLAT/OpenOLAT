@@ -275,7 +275,7 @@ public class MailListController extends BasicController implements Activateable2
 				String businessPath = entry.getKey();
 				String contextName = entry.getValue();
 				if(!uniqueNames.containsKey(contextName)) {
-					MailContextShortName cxt = new MailContextShortName(contextName, new HashSet<String>());
+					MailContextShortName cxt = new MailContextShortName(contextName, new HashSet<>());
 					filters.add(cxt);
 					uniqueNames.put(contextName, cxt);
 				}
@@ -361,7 +361,8 @@ public class MailListController extends BasicController implements Activateable2
 							boolean detailedErrorOutput = roles.isAdministrator() || roles.isSystemAdmin();
 							MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, getLocale());
 						} else {
-							showInfo("mail.action.send.real.success", mail.getSubject());
+							String subject = StringHelper.escapeHtml(mail.getSubject());
+							showInfo("mail.action.send.real.success", subject);
 						}
 					}				
 					reloadModel();
