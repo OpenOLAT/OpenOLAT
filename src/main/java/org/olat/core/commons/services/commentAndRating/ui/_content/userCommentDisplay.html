@@ -1,4 +1,8 @@
 <div id="o_comment_$comment.key" class="o_comment_wrapper clearfix #if($r.isNotNull($comment.getParent()) && $r.isNull($comment.getParent().getParent())) o_comment_reply #end">
+	#if($r.isNotNull($comment.getParent()))
+		<blockquote class="o_comment o_user_content_block o_comment_reply_block">
+	#end
+
 	#if($r.available("avatarCtrl"))
 		<div class="o_avatar">
 			$r.render("avatarCtrl")
@@ -26,12 +30,15 @@
 		#end
 	</div>
 
-	<blockquote class="o_comment o_user_content_block #if($r.isNotNull($comment.getParent())) o_comment_reply_block #end">
-		$comment.getComment()
-		#if ($r.available("replyLink"))
-			$r.render("replyLink")
-		#end
+	#if($r.isNull($comment.getParent()))
+		<blockquote class="o_comment o_user_content_block">
+	#end
+	$comment.getComment()
+	#if ($r.available("replyLink"))
+		$r.render("replyLink")
+	#end
 	</blockquote>
+
 	#if ($r.available("replyCommentFormCtrl"))
 		<div class="o_comments_form">
 			<div class="o_avatar">

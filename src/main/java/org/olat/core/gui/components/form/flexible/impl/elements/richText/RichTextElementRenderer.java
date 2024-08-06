@@ -181,8 +181,12 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append(rows).append("em;");
 		}
-		sb.append("\">")
-		  .append(value)
+		sb.append("\"");
+		if (te.hasFocus()) {
+			sb.append(" autofocus");
+		}
+		sb.append(">");
+		sb.append(value)
 		  .append("</textarea>");
 		FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), domID);
 		FormJSHelper.appendPreventEnterPropagation(sb, domID);
