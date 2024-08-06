@@ -132,7 +132,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		updateModel();
 	}
 
-	public void updateModel() {
+	private void updateModel() {
 		List<LargeFilesTableContentRow> rows = new ArrayList<>();
 		
 		int maxResults = 100;
@@ -216,6 +216,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 			}
 		}
 
+		// Collections.sort(rows, (row1, row2) -> (row2.getSize().intValue() - row1.getSize().intValue()));
 		Collections.sort(rows, new SizeComparator());
 
 		if(maxResults != 0 && maxResults < rows.size()) {
@@ -576,9 +577,9 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private static class SizeComparator implements Comparator<LargeFilesTableContentRow> {
 		@Override
 		public int compare(LargeFilesTableContentRow o1, LargeFilesTableContentRow o2) {
-			long s1 = o1.getSize() == null ? 0l : Math.abs(o1.getSize().longValue());
-			long s2 = o2.getSize() == null ? 0l : Math.abs(o2.getSize().longValue());
-			return Long.compare(s1, s2);
+			long s1 = o1.getSize() == null ? 0 : Math.abs(o1.getSize().longValue());
+			long s2 = o2.getSize() == null ? 0 : Math.abs(o2.getSize().longValue());
+			return Long.compare(s2, s1);
 		}
 	}
 }
