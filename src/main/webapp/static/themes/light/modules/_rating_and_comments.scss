@@ -74,6 +74,13 @@
 
 .o_comments { 
 	.o_comment_wrapper {
+		>blockquote {
+			.o_comment_meta {
+				>small:before {
+					display: none;
+				}
+			}
+		}
 		.o_avatar { 
 			float: left;
 			margin: 0 1em 0 0;
@@ -94,7 +101,7 @@
 			border-left: none;
 			font-size: 14px;
 			padding: 5px 0 0 42px;
-			a {
+			>a {
 				text-decoration: none;
 				&:hover,
 				&:focus {
@@ -116,6 +123,13 @@
 		}
 		.o_comment_reply_block {
 			border-left: 2px solid $blockquote-border-color;
+			padding: 5px 0 0 28px;
+			>p {
+				margin: 5px 44px 10px;
+			}
+			.o_reply {
+				margin-left: 40px;
+			}
 		}
 	}
 	.o_comments_form_init {

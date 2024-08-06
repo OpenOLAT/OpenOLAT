@@ -96,15 +96,13 @@ public class TopicBrokerMediaResource implements MediaResource {
 		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);
 		hres.setHeader("Content-Description", urlEncodedLabel);
 		
-		String topicsPath = "topics/";
-		String filesPath = "files/";
-		
 		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			
+			String filesPath = "topic files/";
 			if (topicIdentToFileIdentToLeaf != null && !topicIdentToFileIdentToLeaf.isEmpty()) {
 				for (Entry<String, Map<String, VFSLeaf>> entry : topicIdentToFileIdentToLeaf.entrySet()) {
-					String topicPath = topicsPath + StringHelper.transformDisplayNameToFileSystemName(entry.getKey()) + "/" + filesPath;
+					String topicPath = filesPath + StringHelper.transformDisplayNameToFileSystemName(entry.getKey()) + "/";
 					for (Entry<String, VFSLeaf> fileIdentToLeaf : entry.getValue().entrySet()) {
 						String filePath = topicPath + fileIdentToLeaf.getKey() + "/";
 						VFSLeaf vfsLeaf = fileIdentToLeaf.getValue();
@@ -127,13 +125,13 @@ public class TopicBrokerMediaResource implements MediaResource {
 				}
 			}
 			
+			String topicsPath = "topic enrollments/";
 			if (topicIdentToExcelExport != null && !topicIdentToExcelExport.isEmpty()) {
 				for (Entry<String, TopicBrokerExcelExport> entry : topicIdentToExcelExport.entrySet()) {
 					TopicBrokerExcelExport topicExcelExport = entry.getValue();
 					if (topicExcelExport != null) {
-						String topicPath = topicsPath + StringHelper.transformDisplayNameToFileSystemName(entry.getKey()) + "/";
 						try (ShieldOutputStream sout = new ShieldOutputStream(zout);) {
-							String filename = topicPath + StringHelper.transformDisplayNameToFileSystemName("topicbroker_" + entry.getKey()) + ".xlsx";
+							String filename = topicsPath + StringHelper.transformDisplayNameToFileSystemName("enrollments_" + entry.getKey()) + ".xlsx";
 							zout.putNextEntry(new ZipEntry(filename));
 							topicExcelExport.export(sout);
 							zout.closeEntry();

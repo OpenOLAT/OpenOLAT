@@ -59,6 +59,7 @@ public class TopicBrokerExcelExport {
 	private final List<String> customFieldNames;
 	private final Map<Long, List<String>> topicKeyToCustomFieldTexts;
 	private final boolean participantsSheet;
+	private final boolean enrollmentColumn;
 	private final List<Identity> identities;
 	private final Map<Long, Map<Long, TBSelection>> identityKeyToTopicToSelections;
 	private final Translator translator;
@@ -71,13 +72,14 @@ public class TopicBrokerExcelExport {
 
 	public TopicBrokerExcelExport(UserRequest ureq, List<TBTopic> topics, List<String> customFieldNames,
 			Map<Long, List<String>> topicKeyToCustomFieldTexts, boolean participantsSheet,
-			List<Identity> identities, Map<Long, Map<Long, TBSelection>> identityKeyToTopicToSelections) {
+			boolean enrollmentColumn, List<Identity> identities, Map<Long, Map<Long, TBSelection>> identityKeyToTopicToSelections) {
 		this.topics = topics;
 		this.customFieldNames = customFieldNames;
 		this.topicKeyToCustomFieldTexts = topicKeyToCustomFieldTexts;
 		this.participantsSheet = participantsSheet;
 		this.identities = identities;
 		this.identityKeyToTopicToSelections = identityKeyToTopicToSelections;
+		this.enrollmentColumn = enrollmentColumn;
 		CoreSpringFactory.autowireObject(this);
 
 		Collections.sort(topics, (t1, t2) -> t1.getTitle().compareToIgnoreCase(t2.getTitle()));
@@ -172,7 +174,9 @@ public class TopicBrokerExcelExport {
 		
 		for (TBTopic topic : topics) {
 			row.addCell(col++, translator.translate("export.topic.priority", topic.getIdentifier()), workbook.getStyles().getBottomAlignStyle());
-			row.addCell(col++, translator.translate("export.topic.selected", topic.getIdentifier()), workbook.getStyles().getBottomAlignStyle());
+			if (enrollmentColumn) {
+				row.addCell(col++, translator.translate("export.topic.selected", topic.getIdentifier()), workbook.getStyles().getBottomAlignStyle());
+			}
 		}
 	}
 
@@ -201,14 +205,18 @@ public class TopicBrokerExcelExport {
 			TBSelection selection = topicKeyToSelection.get(topic.getKey());
 			if (selection != null) {
 				row.addCell(col++, selection.getSortOrder(), workbook.getStyles().getIntegerStyle());
-				if (selection.isEnrolled()) {
-					row.addCell(col++, "X");
-				} else {
-					col++;
+				if (enrollmentColumn) {
+					if (selection.isEnrolled()) {
+						row.addCell(col++, "X");
+					} else {
+						col++;
+					}
 				}
 			} else {
 				col++;
-				col++;
+				if (enrollmentColumn) {
+					col++;
+				}
 			}
 		}
 	}

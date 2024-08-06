@@ -110,7 +110,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		
 		mainVC = createVelocityContainer("choose_mode");
 		mainVC.contextPut("guards", guards);
-		mainVC.contextPut("checked", SafeExamBrowserValidator.hasSEBHeaders(ureq) ? "checked" : "not-checked");
+		mainVC.contextPut("checked", "not-checked");
 		
 		mainContinueButton = LinkFactory.createCustomLink("continue-main", "continue-main", "current.mode.continue", Link.BUTTON, mainVC, this);
 		mainContinueButton.setElementCssClass("o_sel_assessment_continue");
@@ -125,7 +125,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		mainSEBQuitButton.setVisible(false);
 		mainVC.put("quit-main", mainSEBQuitButton);
 		
-		syncAssessmentModes(ureq);
+		syncAssessmentModes(ureq, null);
 		
 		putInitialPanel(mainVC);
 		
@@ -152,7 +152,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	public boolean updateLockRequests(UserRequest ureq) {
 		boolean f;
 		if(pushUpdate) {
-			syncAssessmentModes(ureq);
+			syncAssessmentModes(ureq, null);
 			f = true;
 			pushUpdate = false;
 		} else {
@@ -161,13 +161,13 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		return f;
 	}
 	
-	private void syncAssessmentModes(UserRequest ureq) {
+	private void syncAssessmentModes(UserRequest ureq, Boolean useHeaders) {
 		List<ResourceGuard> modeWrappers = new ArrayList<>();
 		
 		String quitUrl = null;
 		for(TransientAssessmentMode mode:modes) {
 			if(mode != null) {
-				ResourceGuard wrapper = syncAssessmentMode(ureq, mode);
+				ResourceGuard wrapper = syncAssessmentMode(ureq, mode, useHeaders);
 				if(wrapper != null) {
 					modeWrappers.add(wrapper);
 				}
@@ -206,7 +206,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		return null;
 	}
 	
-	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
+	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode, Boolean useHeaders) {
 		Date now = new Date();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
 		Date endWithFollowupTime = mode.getEndWithFollowupTime();
@@ -238,7 +238,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			allowed &= ipInRange;
 		}
 		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey())) {
-			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, mode.getSafeExamBrowserKey(), null);
+			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, mode.getSafeExamBrowserKey(), null, useHeaders);
 			if(!safeExamCheck) {
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 				sb.append(translate("error.safe.exam"));
@@ -247,7 +247,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			}
 			allowed &= safeExamCheck;
 		} else if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList())) {
-			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, null, mode.getSafeExamBrowserConfigPListKey());
+			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, null, mode.getSafeExamBrowserConfigPListKey(), useHeaders);
 			if(!safeExamCheck) {
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 				sb.append(translate("error.safe.exam"));
@@ -280,13 +280,13 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		return guard;
 	}
 	
-	private boolean isSafelyAllowed(UserRequest ureq, String safeExamBrowserKeys, String configurationKey) {
+	private boolean isSafelyAllowed(UserRequest ureq, String safeExamBrowserKeys, String configurationKey, Boolean useHeaders) {
 		String safeExamHash = ureq.getParameter("configKey");
 		String url = ureq.getParameter("urlForKeyHash");
 		String browserExamKey = ureq.getParameter("browserExamKey");
 		getLogger().debug("SEB requests parameters - configkey: {}, url: {}, browser exam key: {}", safeExamHash, url, browserExamKey);
-		return SafeExamBrowserValidator.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey)
-				|| SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, url, safeExamBrowserKeys, configurationKey);
+		return (useHeaders != null && useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey))
+				|| (useHeaders != null && !useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, url, safeExamBrowserKeys, configurationKey));
 	}
 	
 	private String updateButtons(TransientAssessmentMode mode, Date now, Link go, Link cont, ExternalLink quit) {
@@ -497,7 +497,10 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			}
 		} else if(source == mainVC) {
 			if("checkSEBKeys".equals(event.getCommand())) {
-				syncAssessmentModes(ureq);
+				syncAssessmentModes(ureq, Boolean.FALSE);
+				mainVC.contextPut("checked", "checked");
+			} else if("checkSEBHeaders".equals(event.getCommand())) {
+				syncAssessmentModes(ureq, Boolean.TRUE);
 				mainVC.contextPut("checked", "checked");
 			}
 		}

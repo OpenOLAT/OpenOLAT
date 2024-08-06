@@ -31,6 +31,7 @@ import org.olat.core.gui.components.emptystate.EmptyStatePrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -63,11 +64,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TBEnrollmentManualProcessController extends FormBasicController {
 
 	private static final String CMD_SELECT_RUN = "selrun_";
+	private static final String[] KEYS = new String[] { "xx" };
 	
 	private FormSubmit applyLink;
 	private FormLink runStartLink;
 	private DropdownItem runsDropdown;
 	private EmptyStateItem emptyState;
+	private MultipleSelectionElement emailNotificationEl;
 
 	private TBEnrollmentRunOverviewController enrollmentRunOverviewCtrl;
 
@@ -122,10 +125,18 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		emptyState.setButtonI18nKey("enrollment.manual.run.start");
 		emptyState.setButtonLeftIconCss("o_icon o_icon-lg o_icon_tb_run_start");
 		
-		
 		enrollmentRunOverviewCtrl = new TBEnrollmentRunOverviewController(ureq, getWindowControl(), mainForm, broker);
 		listenTo(enrollmentRunOverviewCtrl);
 		formLayout.add("runOverview", enrollmentRunOverviewCtrl.getInitialFormItem());
+		
+		FormLayoutContainer emailCont = FormLayoutContainer.createDefaultFormLayout("emailCont", getTranslator());
+		emailCont.setFormTitle(translate("enrollment.manual.email.title"));
+		emailCont.setRootForm(mainForm);
+		formLayout.add("email", emailCont);
+		
+		emailNotificationEl = uifactory.addCheckboxesHorizontal("enrollment.manual.email.notification", emailCont, KEYS,
+				new String[] { translate("enrollment.manual.email.notification.value") });
+		emailNotificationEl.select(KEYS[0], true);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -184,7 +195,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 			} else {
 				topicBrokerService.updateEnrollmentProcessStart(getIdentity(), broker);
 				selectedProcessWrapper.getProcess().persist(getIdentity());
-				topicBrokerService.updateEnrollmentProcessDone(getIdentity(), broker);
+				topicBrokerService.updateEnrollmentProcessDone(getIdentity(), broker, emailNotificationEl.isAtLeastSelected(1));
 				fireEvent(ureq, FormEvent.DONE_EVENT);
 			}
 		}

@@ -32,6 +32,8 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -66,6 +68,8 @@ public class UserCommentFormController extends FormBasicController {
 	private UserComment toBeUpdatedComment;
 	private RichTextElement commentElem;
 	private TextElement commentsPreElem;
+	private FormSubmit submitButton;
+	private FormCancel cancelButton;
 
 	private final String resSubPath;
 	private final OLATResourceable ores;
@@ -124,8 +128,10 @@ public class UserCommentFormController extends FormBasicController {
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add(buttonContainer);
 
-		uifactory.addFormSubmitButton("submit", "comments.button.submit", buttonContainer);
-		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
+		submitButton = uifactory.addFormSubmitButton("submit", "comments.button.submit", buttonContainer);
+		submitButton.setVisible(false);
+		cancelButton = uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
+		cancelButton.setVisible(false);
 	}
 
 	@Override
@@ -133,7 +139,10 @@ public class UserCommentFormController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		String commentText = commentElem.getValue();
 
-		if (commentText.length() <= MAX_COMMENT_LENGTH) {
+		if (!StringHelper.containsNonWhitespace(commentText) || commentText.equals("<p></p>")) {
+			commentElem.setErrorKey("comments.form.input.invalid");
+			allOk = false;
+		} else if (commentText.length() <= MAX_COMMENT_LENGTH) {
 			commentElem.clearError();
 		} else {
 			commentElem.setErrorKey("input.toolong", Integer.toString(MAX_COMMENT_LENGTH));
@@ -154,6 +163,9 @@ public class UserCommentFormController extends FormBasicController {
 		if (parentComment == null) {
 			commentsPreElem.setVisible(!commentsPreElem.isVisible());
 			commentElem.setVisible(!commentElem.isVisible());
+			submitButton.setVisible(!submitButton.isVisible());
+			cancelButton.setVisible(!cancelButton.isVisible());
+			commentElem.setFocus(commentElem.isVisible());
 		}
 	}
 
@@ -216,6 +228,7 @@ public class UserCommentFormController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		if (commentElem.isVisible()) {
 			commentElem.setValue("");
+			commentElem.clearError();
 			toggleCommentFormElem();
 			flc.setDirty(false);
 		}

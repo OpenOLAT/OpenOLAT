@@ -52,7 +52,7 @@ public interface TopicBrokerService {
 
 	public void updateEnrollmentProcessStart(Identity doer, TBBrokerRef broker);
 	
-	public void updateEnrollmentProcessDone(Identity doer, TBBrokerRef broker);
+	public void updateEnrollmentProcessDone(Identity doer, TBBrokerRef broker, boolean sendEmails);
 	
 	public TBBroker getOrCreateBroker(Identity doer, RepositoryEntry repositoryEntry, String subIdent);
 
