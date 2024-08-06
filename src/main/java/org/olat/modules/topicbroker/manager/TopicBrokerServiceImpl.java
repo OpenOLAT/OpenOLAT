@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
@@ -40,6 +41,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeParticipantCandidates;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
@@ -108,6 +112,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	private TBSelectionDAO selectionDao;
 	@Autowired
 	private TBAuditLogDAO auditLogDao;
+	@Autowired
+	private TopicBrokerMailing mailing;
 	@Autowired
 	private Coordinator coordinator;
 	@Autowired
@@ -222,7 +228,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	}
 
 	@Override
-	public void updateEnrollmentProcessDone(Identity doer, TBBrokerRef broker) {
+	public void updateEnrollmentProcessDone(Identity doer, TBBrokerRef broker, boolean sendEmails) {
 		TBBroker reloadedBroker = getBroker(broker);
 		if (reloadedBroker == null || reloadedBroker.getEnrollmentDoneDate() != null) {
 			return;
@@ -236,9 +242,54 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			
 			String after = TopicBrokerXStream.toXml(reloadedBroker);
 			auditLogDao.create(TBAuditLog.Action.brokerEnrollmentDone, before, after, doer, reloadedBroker);
+			
+			if (sendEmails) {
+				sendEnrollmentEmails(reloadedBroker);
+			}
 		}
 	}
 	
+	private void sendEnrollmentEmails(TBBroker broker) {
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(broker.getRepositoryEntry().getKey());
+		
+		if (repositoryEntry == null || repositoryEntry.getEntryStatus().decommissioned()) {
+			return;
+		}
+		
+		ICourse course = CourseFactory.loadCourse(repositoryEntry);
+		if (course == null) {
+			return;
+		}
+		
+		CourseNode courseNode = course.getRunStructure().getNode(broker.getSubIdent());
+		if (courseNode == null) {
+			return;
+		}
+		
+		TBParticipantSearchParams participantSearchParams = new TBParticipantSearchParams();
+		participantSearchParams.setBroker(broker);
+		Map<Long, TBParticipant> identityKeyToParticipant = getParticipants(participantSearchParams).stream()
+				.collect(Collectors.toMap(participant -> participant.getIdentity().getKey(), Function.identity()));
+		
+		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
+		selectionSearchParams.setBroker(broker);
+		selectionSearchParams.setEnrolledOrMaxSortOrder(Integer.valueOf(-1)); // only enrollments
+		selectionSearchParams.setFetchTopic(true);
+		Map<Long, List<TBSelection>> identityKeyToEnrolledSelections = getSelections(selectionSearchParams).stream()
+				.collect(Collectors.groupingBy(selction -> selction.getParticipant().getIdentity().getKey()));
+		
+		TopicBrokerCourseNodeParticipantCandidates participantCandidates = new TopicBrokerCourseNodeParticipantCandidates(
+				null, repositoryEntry, true);
+		for (Identity identity : participantCandidates.getAllIdentities()) {
+			mailing.sendEnrollmentEmail(identity,
+					broker,
+					identityKeyToParticipant.get(identity.getKey()),
+					identityKeyToEnrolledSelections.get(identity.getKey()),
+					repositoryEntry,
+					courseNode);
+		}
+	}
+
 	@Override
 	public TBBroker getOrCreateBroker(Identity doer, RepositoryEntry repositoryEntry, String subIdent) {
 		TBBroker broker = getBroker(repositoryEntry, subIdent);
@@ -1041,7 +1092,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		// Update the dates without running the enrollment process to avoid getting the
 		// same broker during the next job run if repository entry is not in a right status.
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(broker.getRepositoryEntry().getKey());
-		if (repositoryEntry != null && repositoryEntry.getEntryStatus().decommissioned()) {
+		if (repositoryEntry != null && !repositoryEntry.getEntryStatus().decommissioned()) {
 			
 			TopicBrokerCourseNodeParticipantCandidates participantCandidates = new TopicBrokerCourseNodeParticipantCandidates(null, repositoryEntry, true);
 			
@@ -1058,7 +1109,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			
 			new DefaultEnrollmentProcess(broker, topics, selections).persist(null);
 		}
-		updateEnrollmentProcessDone(null, broker);
+		updateEnrollmentProcessDone(null, broker, true);
 		dbInstance.commitAndCloseSession();
 	}
 	
