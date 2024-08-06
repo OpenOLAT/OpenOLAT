@@ -24,7 +24,6 @@ import java.util.StringTokenizer;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
@@ -41,14 +40,6 @@ public class SafeExamBrowserValidator {
 	
 	private SafeExamBrowserValidator() {
 		//
-	}
-	
-	public static boolean hasSEBHeaders(UserRequest ureq) {
-		HttpServletRequest request = ureq.getHttpReq();
-		String safeExamHash1 = request.getHeader("x-safeexambrowser-requesthash");
-		String safeExamHash2 = request.getHeader("x-safeexambrowser-configkeyhash");
-		return StringHelper.containsNonWhitespace(safeExamHash1)
-				|| StringHelper.containsNonWhitespace(safeExamHash2);
 	}
 	
 	/**
@@ -101,7 +92,6 @@ public class SafeExamBrowserValidator {
 				safe = true;
 			}
 		}
-		
 		return safe;
 	}
 	
