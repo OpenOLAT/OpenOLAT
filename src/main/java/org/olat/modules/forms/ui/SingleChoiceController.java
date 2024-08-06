@@ -116,6 +116,7 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 				singleChoiceEl.enableNoneSelection(translate("single.choice.select"));
 		}
 		singleChoiceEl.setAllowNoSelection(true);
+		singleChoiceEl.setEscapeHtml(true);
 
 		setBlockLayoutClass(singleChoice.getLayoutSettings());
 	}

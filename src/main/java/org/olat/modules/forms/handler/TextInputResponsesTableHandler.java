@@ -34,6 +34,7 @@ import org.olat.modules.forms.ui.model.TextInputLegendTextDataSource.ResponseFor
 import org.olat.modules.forms.ui.multireport.TextInputResponsesController;
 
 /**
+ * List all texts.
  * 
  * Initial date: 5 août 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com

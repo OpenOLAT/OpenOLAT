@@ -32,6 +32,8 @@ import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 import org.olat.modules.forms.ui.multireport.ChoiceResponsesTableController;
 
 /**
+ * Show the results as a table with the choices and a details table with the list
+ * of users who select the choice.
  * 
  * Initial date: 5 août 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
