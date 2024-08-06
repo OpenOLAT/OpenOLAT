@@ -21,6 +21,7 @@ package org.olat.admin.sysinfo;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -113,8 +114,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 	private FormLink resetButton;
 	private FormLink cleanupMetadataButton;
 
-	private List<LargeFilesTableContentRow> rows;
-
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
 	private DialogBoxController confirmMetadataCleanupBox;
@@ -133,8 +132,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 		updateModel();
 	}
 
-	public void updateModel() {
-		rows = new ArrayList<>();
+	private void updateModel() {
+		List<LargeFilesTableContentRow> rows = new ArrayList<>();
 		
 		int maxResults = 100;
 		int downloadCountMin = 0;
@@ -217,7 +216,8 @@ public class LargeFilesController extends FormBasicController implements Extende
 			}
 		}
 
-		Collections.sort(rows, (row1, row2) -> (row2.getSize().intValue() - row1.getSize().intValue()));
+		// Collections.sort(rows, (row1, row2) -> (row2.getSize().intValue() - row1.getSize().intValue()));
+		Collections.sort(rows, new SizeComparator());
 
 		if(maxResults != 0 && maxResults < rows.size()) {
 			rows = rows.subList(0, maxResults);
@@ -378,8 +378,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == largeFilesTableElement) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent te = (SelectionEvent) event;
+			if(event instanceof SelectionEvent te) {
 				String cmd = te.getCommand();
 				LargeFilesTableContentRow contentRow = largeFilesTableModel.getObject(te.getIndex());
 				if("selectAuthor".equals(cmd)) {
@@ -400,9 +399,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 			resetForm();
 		} else if(cleanupMetadataButton == source) {
 			doConfirmMetadataCleanup(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink) source;
-
+		} else if(source instanceof FormLink link) {
 			if("contextInfo".equals(link.getCmd())) {
 				removeAsListenerAndDispose(pathInfoCalloutCtrl);
 
@@ -517,6 +514,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		String bodyEnd = translate("largefiles.mail.end");
 
 		bodyFiles.append("<ul>");
+		List<LargeFilesTableContentRow> rows = largeFilesTableModel.getObjects();
 		for(LargeFilesTableContentRow row:rows) {
 			if (row.getFileInitializedBy() != null && row.getFileInitializedBy().equals(user)) {
 				bodyFiles.append("<li><strong>" + row.getName() + "</strong>")
@@ -574,5 +572,14 @@ public class LargeFilesController extends FormBasicController implements Extende
 
 	private void openUser(UserRequest ureq, Long userKey) {
 		NewControllerFactory.getInstance().launch("[UserAdminSite:0][usearch:0][table:0][Identity:" + userKey.toString() + "]", ureq, getWindowControl());
+	}
+	
+	private static class SizeComparator implements Comparator<LargeFilesTableContentRow> {
+		@Override
+		public int compare(LargeFilesTableContentRow o1, LargeFilesTableContentRow o2) {
+			long s1 = o1.getSize() == null ? 0 : Math.abs(o1.getSize().longValue());
+			long s2 = o2.getSize() == null ? 0 : Math.abs(o2.getSize().longValue());
+			return Long.compare(s2, s1);
+		}
 	}
 }

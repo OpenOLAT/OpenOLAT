@@ -1478,6 +1478,26 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		Assert.assertNotNull(authentication);
 	}
 	
+	/**
+	 * a to be the first to be called.
+	 */
+	@Test
+	public void syncDeactivatedUser() {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+
+		Identity identity = userManager.findUniqueIdentityByEmail("hhuerlimann@openolat.com");
+		Assert.assertNotNull(identity);
+		identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_INACTIVE, null);
+		dbInstance.commitAndCloseSession();
+
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		Identity reactivatedIdentity = userManager.findUniqueIdentityByEmail("hhuerlimann@openolat.com");
+		Assert.assertEquals(Identity.STATUS_ACTIV, reactivatedIdentity.getStatus());	
+	}
+	
 	@Test
 	public void renameLDAPViaRest() throws Exception {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());

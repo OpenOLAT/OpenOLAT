@@ -366,8 +366,17 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(locationEl != fiSrc) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(compulsoryEl == source) {
+		if(locationEl == source) {
+			// Do nothing
+		} else if(compulsoryEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);

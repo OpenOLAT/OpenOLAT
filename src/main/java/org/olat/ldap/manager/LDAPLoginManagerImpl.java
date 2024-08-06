@@ -580,6 +580,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		
 		Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
+		if (identity.getStatus().equals(Identity.STATUS_INACTIVE)) {
+			// Reactivate previously deactivated users
+			identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_ACTIV, null);
+		}	
 		User user = identity.getUser();
 		// remove user identifyer - can not be changed later
 		olatPropertyMap.remove(LDAPConstants.LDAP_USER_IDENTIFYER);
@@ -1702,6 +1706,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				}
 				
 				if (identity != null) {
+					if(identity.getStatus().equals(Identity.STATUS_INACTIVE)) {
+						// Reactivate previously deactivated users
+						identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_ACTIV, null);
+					}
+					
 					Map<String, String> changedAttrMap = prepareUserPropertyForSync(userAttrs, identity);
 					if (changedAttrMap != null) {
 						changedMapIdentityMap.put(identity, changedAttrMap);
