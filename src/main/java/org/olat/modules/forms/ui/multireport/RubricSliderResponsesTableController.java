@@ -68,7 +68,7 @@ public class RubricSliderResponsesTableController extends FormBasicController im
 	protected static final int ANSWER = 500;
 	
 	private FormLink tableViewEl;
-	private FormLink spiderViewEl;
+	private FormLink radarViewEl;
 	
 	private FlexiTableElement tableEl;
 	private RubricSliderResponsesTableModel tableModel;
@@ -107,13 +107,13 @@ public class RubricSliderResponsesTableController extends FormBasicController im
 		tableViewEl.setIconLeftCSS("o_icon o_icon-lg o_icon_table");
 		tableViewEl.setElementCssClass("active");
 		tableViewEl.setTitle(translate("table.view"));
-		spiderViewEl = uifactory.addFormLink("spider.view", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		spiderViewEl.setIconLeftCSS("o_icon o_icon-lg o_icon_splider_chart");
-		spiderViewEl.setTitle(translate("spider.view"));
+		radarViewEl = uifactory.addFormLink("radar.view", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		radarViewEl.setIconLeftCSS("o_icon o_icon-lg o_icon_radar_chart");
+		radarViewEl.setTitle(translate("radar.view"));
 		
 		initTableForm(formLayout);
 		
-		formLayout.add("spiderDiagram", rubricRadarCtrl.getInitialFormItem());
+		formLayout.add("radarDiagram", rubricRadarCtrl.getInitialFormItem());
 		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("tableView", Boolean.TRUE);
@@ -234,7 +234,7 @@ public class RubricSliderResponsesTableController extends FormBasicController im
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableViewEl == source) {
 			switchView(true);
-		} else if(spiderViewEl == source) {
+		} else if(radarViewEl == source) {
 			switchView(false);
 		} else if(tableEl == source) {
 			if(event instanceof DetailsToggleEvent toggleEvent) {
@@ -245,7 +245,7 @@ public class RubricSliderResponsesTableController extends FormBasicController im
 	}
 	
 	private void switchView(boolean table) {
-		spiderViewEl.setElementCssClass(table ? "" : "active");
+		radarViewEl.setElementCssClass(table ? "" : "active");
 		tableViewEl.setElementCssClass(table ? "active" : "");
 		flc.contextPut("tableView", Boolean.valueOf(table));
 	}

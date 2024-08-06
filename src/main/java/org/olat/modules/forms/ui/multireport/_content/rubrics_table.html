@@ -1,9 +1,9 @@
 <div class="o_button_grou o_button_group_right"><div class="btn-group">
 	$r.render("table.view")
-	$r.render("spider.view")
+	$r.render("radar.view")
 </div></div>
 #if($r.isTrue($tableView))
 	$r.render("questions")
 #else
-	$r.render("spiderDiagram")
+	$r.render("radarDiagram")
 #end
