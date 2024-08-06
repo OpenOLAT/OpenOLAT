@@ -210,9 +210,11 @@ p.o_gta_reopen_warning {
 	flex-direction: row;
 	align-items: stretch;
 	align-content: stretch;
+	flex-wrap: wrap;
 	
 	>a {
 		flex-grow: 1;
+		flex-basis: 120px;
 	}
 
 	.btn-arrow-right {
