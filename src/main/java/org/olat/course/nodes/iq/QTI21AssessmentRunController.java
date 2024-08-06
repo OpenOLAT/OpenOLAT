@@ -502,6 +502,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	 */
 	private void initTimeLimits() {
 		Long timeLimitInSeconds = getAssessmentTestMaxTimeLimit();
+		
+		int extraMinutes = 0;
+		if(courseNode != null && userCourseEnv != null && compensation != null ) {
+			extraMinutes = compensation.getExtraTime().intValue() / 60;
+			mainVC.contextPut("disadvantageCompensationMessage", translate("block.disadvantage.compensation",
+					Integer.toString(extraMinutes)));
+			if(timeLimitInSeconds != null) {
+				timeLimitInSeconds += compensation.getExtraTime().longValue();
+			}
+		}
+		
 		if(timeLimitInSeconds != null && timeLimitInSeconds.longValue() > 0l) {
 			long lhours = timeLimitInSeconds / 3600;
 			String minutes = Long.toString((timeLimitInSeconds % 3600) / 60);
@@ -512,12 +523,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("timeLimitMessage", translate("block.time.limit.hour", hours, minutes));
 			}
 			mainVC.contextPut("timeLimit", Formatter.formatHourAndSeconds(timeLimitInSeconds * 1000l));
-		}
-		
-		if(courseNode != null && userCourseEnv != null && compensation != null ) {
-			int extraMinutes = compensation.getExtraTime().intValue() / 60;
-			mainVC.contextPut("disadvantageCompensationMessage", translate("block.disadvantage.compensation",
-					Integer.toString(extraMinutes)));
 		}
 	}
 	
