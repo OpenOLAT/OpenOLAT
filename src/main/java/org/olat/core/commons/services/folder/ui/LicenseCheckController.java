@@ -58,6 +58,7 @@ public class LicenseCheckController extends FormBasicController {
 	private TextElement licensorEl;
 	private TextAreaElement licenseFreetextEl;
 	
+	private final boolean suppressVersion;
 	private final VFSContainer targetContainer;
 	private final List<VFSItem> itemsToCopy;
 	private final int numMissingLicenses;
@@ -68,10 +69,11 @@ public class LicenseCheckController extends FormBasicController {
 	@Autowired
 	private FolderLicenseHandler licenseHandler;
 
-	protected LicenseCheckController(UserRequest ureq, WindowControl wControl, VFSContainer targetContainer,
+	protected LicenseCheckController(UserRequest ureq, WindowControl wControl, boolean suppressVersion, VFSContainer targetContainer,
 			List<VFSItem> itemsToCopy, int numMissingLicenses, Consumer<List<String>> successMessage) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(LicenseUIFactory.class, getLocale(), getTranslator()));
+		this.suppressVersion = suppressVersion;
 		this.targetContainer = targetContainer;
 		this.itemsToCopy = itemsToCopy;
 		this.numMissingLicenses = numMissingLicenses;
@@ -120,6 +122,10 @@ public class LicenseCheckController extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
+	public boolean isSuppressVersion() {
+		return suppressVersion;
+	}
+
 	public VFSContainer getTargetContainer() {
 		return targetContainer;
 	}
