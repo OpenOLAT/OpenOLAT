@@ -168,6 +168,10 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 					&.correct {
 						border-color: darken($o-qti-status-correct-color, 10%);
 					}
+					&.solution {
+						border-color: darken($o-qti-status-correct-color, 10%);
+						background-color: $o-qti-status-correct-color;
+					}
 					&.incorrect {
 						border-color: darken($o-qti-status-incorrect-color, 10%);
 					}
@@ -379,10 +383,6 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 					.o_qti_item_meta {
 						margin-top: 8px;
 					}
-				}
-
-				.o_solution_wrapper {
-					margin-top: 20px;
 				}
 
 				.modalFeedback.o_togglebox_wrapper {

@@ -828,6 +828,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qti_summary_ended { @include o-add-icon('times-circle'); color: $brand-danger;}
 .o_icon_qti_summary_correct { @include o-add-icon('check-circle'); color: $brand-success;}
 .o_icon_qti_signature { @include o-add-icon('file-code');}
+.o_icon_qti_solution { @include o-add-icon('lightbulb');}
 
 /* assessment inspection */
 .o_icon_assessment_inspection_scheduled { @include o-add-icon('clock'); }
