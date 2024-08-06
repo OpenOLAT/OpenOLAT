@@ -59,7 +59,7 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 	
 	private final Taxonomy taxonomy;
 	private TaxonomyLevel movedLevel;
-	private List<TaxonomyLevel> levelsToMove;
+	private final List<TaxonomyLevel> levelsToMove;
 	private Set<TaxonomyLevelType> allowedTypes;
 	private Set<TreeNode> targetableNodes = new HashSet<>();
 	
@@ -199,20 +199,20 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 	private boolean isParent() {
 		boolean parent = false;
 		for(TaxonomyLevel levelToMove:levelsToMove) {
-			parent |= isParent(levelToMove);
+			parent |= isChild(levelToMove);
 		}
 		return parent;
 	}
 	
-	private boolean isParent(TaxonomyLevel levelToMove) {
+	private boolean isChild(TaxonomyLevel levelToMove) {
 		TreeNode nodeToMove = taxonomyModel
 				.getNodeById(TaxonomyAllTreesBuilder.nodeKey(levelToMove));
 		TreeNode selectedNode = taxonomyEl.getSelectedNode();
 		if(selectedNode == taxonomyModel.getRootNode()) {
 			return false;//can move to root
 		}
-		for(INode node=nodeToMove; node != null; node = node.getParent()) {
-			if(selectedNode == node) {
+		for(INode node=selectedNode; node != null; node = node.getParent()) {
+			if(selectedNode == nodeToMove) {
 				return true;
 			}
 		}
