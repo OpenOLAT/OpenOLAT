@@ -187,16 +187,22 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 				.collect(Collectors.toList());
 		identities.addAll(selectionIdentities);
 		
-		ArrayList<Identity> allIdentities = new ArrayList<>(identities);
 		TopicBrokerExcelExport excelExport = new TopicBrokerExcelExport(ureq, topics, customFieldNames,
-				topicKeyToCustomFieldTexts, true, allIdentities, identityKeyToTopicToSelections);
+				topicKeyToCustomFieldTexts, true, true, new ArrayList<>(identities), identityKeyToTopicToSelections);
 		
+		Map<Long, List<TBSelection>> topicKeyToEnrollments = selections.stream()
+				.filter(TBSelection::isEnrolled)
+				.collect(Collectors.groupingBy(selection -> selection.getTopic().getKey()));
 		Map<String, TopicBrokerExcelExport> topicIdentToExcelExport = new HashMap<>(topics.size());
 		for (TBTopic topic : topics) {
 			List<TBTopic> topicList = new ArrayList<>(1);
 			topicList.add(topic);
+			List<TBSelection> enrollments = topicKeyToEnrollments.get(topic.getKey());
+			List<Identity> topicIdentities = enrollments != null && !enrollments.isEmpty()
+					? enrollments.stream().map(selection -> selection.getParticipant().getIdentity()).collect(Collectors.toList())
+					: new ArrayList<>(0);
 			TopicBrokerExcelExport topicExcelExport = new TopicBrokerExcelExport(ureq, topicList, customFieldNames,
-					topicKeyToCustomFieldTexts, true, allIdentities, identityKeyToTopicToSelections);
+					topicKeyToCustomFieldTexts, true, false, topicIdentities, identityKeyToTopicToSelections);
 			topicIdentToExcelExport.put(topic.getIdentifier(), topicExcelExport);
 		}
 		
@@ -225,7 +231,7 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 				.toList();
 		
 		TopicBrokerExcelExport excelExport = new TopicBrokerExcelExport(ureq, Collections.emptyList(), customFieldNames,
-				Map.of(), false, List.of(), Map.of());
+				Map.of(), false, true, List.of(), Map.of());
 		return new TopicBrokerExcelMediaResource(excelExport, filename);
 	}
 
