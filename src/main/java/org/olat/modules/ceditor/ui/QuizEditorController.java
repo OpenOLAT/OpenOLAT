@@ -34,11 +34,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -150,20 +152,22 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.up.getI18nKey(),
+		DefaultFlexiColumnModel upColumn = new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.up.getI18nKey(),
 				QuestionModel.QuestionColumns.up.ordinal(), UP_ACTION, new BooleanCellRenderer(
-						new StaticFlexiCellRenderer(translate("quiz.up"), UP_ACTION), null
-		)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.down.getI18nKey(),
+				new StaticFlexiCellRenderer(translate("quiz.up"), UP_ACTION), null
+		));
+		upColumn.setColumnCssClass("o_up");
+		columnsModel.addFlexiColumnModel(upColumn);
+		DefaultFlexiColumnModel downColumn = new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.down.getI18nKey(),
 				QuestionModel.QuestionColumns.down.ordinal(), DOWN_ACTION, new BooleanCellRenderer(
 				new StaticFlexiCellRenderer(translate("quiz.down"), DOWN_ACTION), null
-		)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.title.getI18nKey(), QuestionModel.QuestionColumns.title.ordinal()));
+		));
+		downColumn.setColumnCssClass("o_down");
+		columnsModel.addFlexiColumnModel(downColumn);
+		FlexiCellRenderer titleRenderer = new StaticFlexiCellRenderer(EDIT_ACTION, new TextFlexiCellRenderer());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.title.getI18nKey(),
+				QuestionModel.QuestionColumns.title.ordinal(), EDIT_ACTION, titleRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.type.getI18nKey(), QuestionModel.QuestionColumns.type.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.edit.getI18nKey(),
-				QuestionModel.QuestionColumns.edit.ordinal(), EDIT_ACTION, new BooleanCellRenderer(
-				new StaticFlexiCellRenderer(translate("quiz.edit"), EDIT_ACTION), null
-		)));
 		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(QuestionModel.QuestionColumns.tools.getI18nKey(),
 				QuestionModel.QuestionColumns.tools.ordinal());
 		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
@@ -172,6 +176,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 
 		tableModel = new QuestionModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "quiz.questions", tableModel, getTranslator(), formLayout);
+		tableEl.setCustomizeColumns(false);
 		updateUI();
 	}
 

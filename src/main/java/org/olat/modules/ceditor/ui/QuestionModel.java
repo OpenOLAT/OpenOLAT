@@ -44,7 +44,6 @@ public class QuestionModel extends DefaultFlexiTableDataModel<QuestionRow> {
 			case down -> row < (getRowCount() - 1);
 			case title -> questionRow.getTitle();
 			case type -> questionRow.getType();
-			case edit -> true;
 			case tools -> questionRow.getToolLink();
 		};
 	}
@@ -54,7 +53,6 @@ public class QuestionModel extends DefaultFlexiTableDataModel<QuestionRow> {
 		down("quiz.down"),
 		title("quiz.title"),
 		type("quiz.type"),
-		edit("quiz.edit"),
 		tools("quiz.tools");
 
 		private final String i18nKey;
