@@ -328,6 +328,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 				break;
 			case showSolution:
 				qtiWorksCtrl.qtiEl.getComponent().showPageModeSolution();
+				fireEvent(ureq, qe);
 				break;
 			case response:
 				handleResponses(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment(), qe.getFormItemSource());

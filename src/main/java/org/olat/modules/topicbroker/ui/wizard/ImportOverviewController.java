@@ -112,6 +112,7 @@ public class ImportOverviewController extends StepFormBasicController {
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicImportCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicImportCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicImportCols.description));
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(TopicImportCols.minParticipants);
 		minParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -283,6 +284,8 @@ public class ImportOverviewController extends StepFormBasicController {
 				topic.setTitle(title);
 				if (!StringHelper.containsNonWhitespace(topic.getTitle())) {
 					importTopic.setMessage(translate("import.error.mandatory.title"));
+				} else if (title.length() > TBTopic.TITLE_MAX_LENGTH) {
+					importTopic.setMessage(translate("import.error.title.too.long", String.valueOf(TBTopic.TITLE_MAX_LENGTH)));
 				}
 			} else {
 				importTopic.setMessage(translate("import.error.mandatory.title"));
@@ -293,6 +296,8 @@ public class ImportOverviewController extends StepFormBasicController {
 			topic.setIdentifier(identifier);
 			if (identifiersInLines.contains(identifier)) {
 				importTopic.setMessage(translate("import.error.identifier.multi"));
+			} else if (identifier.length() > TBTopic.IDENTIFIER_MAX_LENGTH) {
+				importTopic.setMessage(translate("import.error.identifier.too.long", String.valueOf(TBTopic.IDENTIFIER_MAX_LENGTH)));
 			} else {
 				identifiersInLines.add(identifier);
 			}
@@ -304,12 +309,15 @@ public class ImportOverviewController extends StepFormBasicController {
 	}
 	
 	private List<String[]> getLines(String input) {
+		// Escape quota characters inside multi column lines
+		String escapedInput = escapeQuotes(input);
+		
 		CSVParser parser = new CSVParserBuilder()
 				.withSeparator('\t')
 				.build();
 		
 		List<String[]> lines = new ArrayList<>();
-		try(CSVReader reader = new CSVReaderBuilder(new StringReader(input))
+		try(CSVReader reader = new CSVReaderBuilder(new StringReader(escapedInput))
 					.withCSVParser(parser)
 					.build()) {
 			
@@ -323,6 +331,34 @@ public class ImportOverviewController extends StepFormBasicController {
 			logError("", e);
 		}
 		return lines;
+	}
+
+	private String escapeQuotes(String input) {
+		String[] tokens = input.split("\t");
+		for (int i = 0; i < tokens.length; i++) {
+			String token = tokens[i];
+			
+			boolean multiline = false;
+			if (token.startsWith("\"") && token.contains("\n")) {
+				multiline = true;
+				// Remove multi line quotes
+				token = token.substring(1, token.length() - 1);
+			}
+			
+			// Excel escapes quotes as two quotes
+			token = token.replaceAll("\"\"", "\"");
+			// Escape quotes inside the token
+			token = token.replaceAll("\"", "\\\\\"");
+			
+			if (multiline) {
+				// Add multi line quotes again
+				token = "\"" + token + "\"";
+			}
+			
+			tokens[i] = token;
+		}
+		
+		return Arrays.stream(tokens).collect(Collectors.joining("\t"));
 	}
 	
 	public static class TBTopicImportDataModel extends DefaultFlexiTableDataModel<TBImportTopic> {
@@ -348,6 +384,7 @@ public class ImportOverviewController extends StepFormBasicController {
 			switch(COLS[col]) {
 			case identifier: return row.getIdentifier();
 			case title: return row.getTitle();
+			case description: return row.getDescription();
 			case minParticipants: return row.getMinParticipants();
 			case maxParticipants: return row.getMaxParticipants();
 			case groupRestrictions: return row.getGroupRestrictions();
@@ -361,6 +398,7 @@ public class ImportOverviewController extends StepFormBasicController {
 		public enum TopicImportCols implements FlexiColumnDef {
 			identifier("topic.identifier"),
 			title("topic.title"),
+			description("topic.description"),
 			minParticipants("topic.participants.min"),
 			maxParticipants("topic.participants.max"),
 			groupRestrictions("topic.group.restriction"),

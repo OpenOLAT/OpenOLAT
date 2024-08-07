@@ -268,6 +268,8 @@ public class QuizRunController extends BasicController implements PageRunElement
 			if (event instanceof QTIWorksAssessmentItemEvent qtiWorksAssessmentItemEvent) {
 				if (QTIWorksAssessmentItemEvent.Event.next.name().equals(qtiWorksAssessmentItemEvent.getCommand())) {
 					doNext(ureq);
+				} else if (QTIWorksAssessmentItemEvent.Event.showSolution.name().equals(qtiWorksAssessmentItemEvent.getCommand())) {
+					mainVC.contextPut("quizOutcomeClass", "o_correct");
 				}
 			}
 		}
