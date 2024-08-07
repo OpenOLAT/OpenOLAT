@@ -153,15 +153,11 @@ class UserBulkChangeStep01 extends BasicStep {
 				boolean loginDenied = chkStatus.isAtLeastSelected(1) && setStatus.isOneSelected()
 						&& Integer.toString(Identity.STATUS_LOGIN_DENIED).equals(setStatus.getSelectedKey());
 				sendLoginDeniedEmail.setVisible(loginDenied);
-			} else if(source instanceof MultipleSelectionElement
-					&& ((MultipleSelectionElement)source).getUserObject() instanceof RoleChange) {
-				MultipleSelectionElement check = (MultipleSelectionElement)source;
-				RoleChange change = (RoleChange)check.getUserObject();
+			} else if(source instanceof MultipleSelectionElement check
+					&& check.getUserObject() instanceof RoleChange change) {
 				change.getSet().setVisible(change.getCheck().isAtLeastSelected(1));
-			} else if(source instanceof SingleSelection
-					&& ((SingleSelection)source).getUserObject() instanceof RoleChange) {
-				SingleSelection actionEl = (SingleSelection)source;
-				RoleChange change = (RoleChange)actionEl.getUserObject();
+			} else if(source instanceof SingleSelection actionEl
+					&& actionEl.getUserObject() instanceof RoleChange change) {
 				if(OrganisationRoles.user.equals(change.getRole())) {
 					if(actionEl.isOneSelected() && "remove".equals(actionEl.getSelectedKey())) {
 						actionEl.setWarningKey("warning.remove.user");
@@ -237,12 +233,16 @@ class UserBulkChangeStep01 extends BasicStep {
 						OrganisationRoles.poolmanager, OrganisationRoles.curriculummanager,
 						OrganisationRoles.lecturemanager, OrganisationRoles.qualitymanager,
 						OrganisationRoles.projectmanager, OrganisationRoles.linemanager,
-						OrganisationRoles.principal, OrganisationRoles.administrator
+						OrganisationRoles.principal
 				};
 
 				for(OrganisationRoles role:roleArr) {
 					initRole(role, innerFormLayout);
 				}
+			}
+			
+			if(roles.isAdministrator()) {
+				initRole(OrganisationRoles.administrator, innerFormLayout);
 			}
 
 			// status
