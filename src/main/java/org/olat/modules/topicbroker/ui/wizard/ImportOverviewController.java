@@ -304,12 +304,15 @@ public class ImportOverviewController extends StepFormBasicController {
 	}
 	
 	private List<String[]> getLines(String input) {
+		// Escape quota characters inside multi column lines
+		String escapedInput = escapeQuotes(input);
+		
 		CSVParser parser = new CSVParserBuilder()
 				.withSeparator('\t')
 				.build();
 		
 		List<String[]> lines = new ArrayList<>();
-		try(CSVReader reader = new CSVReaderBuilder(new StringReader(input))
+		try(CSVReader reader = new CSVReaderBuilder(new StringReader(escapedInput))
 					.withCSVParser(parser)
 					.build()) {
 			
@@ -323,6 +326,32 @@ public class ImportOverviewController extends StepFormBasicController {
 			logError("", e);
 		}
 		return lines;
+	}
+
+	private String escapeQuotes(String input) {
+		String[] tokens = input.split("\t");
+		for (int i = 0; i < tokens.length; i++) {
+			String token = tokens[i];
+			
+			boolean multiline = false;
+			if (token.startsWith("\"") && token.contains("\n")) {
+				multiline = true;
+				// Remove multi line quotes
+				token = token.substring(1, token.length() - 1);
+			}
+			
+			// Escape quotes inside the token
+			token = token.replaceAll("\"", "\\\\\"");
+			
+			if (multiline) {
+				// Add multi line quotes again
+				token = "\"" + token + "\"";
+			}
+			
+			tokens[i] = token;
+		}
+		
+		return Arrays.stream(tokens).collect(Collectors.joining("\t"));
 	}
 	
 	public static class TBTopicImportDataModel extends DefaultFlexiTableDataModel<TBImportTopic> {
