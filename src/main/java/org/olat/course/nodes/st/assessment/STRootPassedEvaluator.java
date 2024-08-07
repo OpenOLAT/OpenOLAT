@@ -34,6 +34,7 @@ import org.olat.course.nodes.st.assessment.PassCounter.Counts;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.RootPassedEvaluator;
 import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -89,6 +90,9 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		// Points
 		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_POINTS)) {
 			Float score = currentEvaluation.getScore();
+			if (currentEvaluation.getWeightedScore() != null && ScoreScalingHelper.isEnabled(courseNode)) {
+				score = currentEvaluation.getWeightedScore();
+			}
 			if (score != null) {
 				int cutValue = config.getIntegerSafe(STCourseNode.CONFIG_PASSED_POINTS_CUT, Integer.MAX_VALUE);
 				if (score.floatValue() >= cutValue) {
