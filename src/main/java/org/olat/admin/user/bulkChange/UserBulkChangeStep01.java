@@ -207,12 +207,16 @@ class UserBulkChangeStep01 extends BasicStep {
 						OrganisationRoles.poolmanager, OrganisationRoles.curriculummanager,
 						OrganisationRoles.lecturemanager, OrganisationRoles.qualitymanager,
 						OrganisationRoles.projectmanager, OrganisationRoles.linemanager,
-						OrganisationRoles.principal, OrganisationRoles.administrator
+						OrganisationRoles.principal
 				};
 
 				for(OrganisationRoles role:roleArr) {
 					initRole(role, innerFormLayout);
 				}
+			}
+			
+			if(roles.isAdministrator()) {
+				initRole(OrganisationRoles.administrator, innerFormLayout);
 			}
 		}
 		

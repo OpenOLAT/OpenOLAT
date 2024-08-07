@@ -129,7 +129,8 @@ public class NoteController extends FormBasicController implements GenericEventL
 		editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		formLayout.add(editButton);
 		
-		noteField = uifactory.addRichTextElementForStringData("noteField", null, n.getNoteText(), 20, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		String text = n.getNoteText();
+		noteField = uifactory.addRichTextElementForStringData("noteField", null, text, 20, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		noteField.setEnabled(false);
 		noteField.setMaxLength(NOTE_MAX_LENGTH);
 
@@ -157,8 +158,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 
 	@Override
 	public void event(Event event) {
-		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
-			OLATResourceableJustBeforeDeletedEvent bdev = (OLATResourceableJustBeforeDeletedEvent) event;
+		if (event instanceof OLATResourceableJustBeforeDeletedEvent bdev) {
 			Long key = n.getKey();
 			if (key != null) { // already persisted
 				if (bdev.getOresId().equals(key)) {
@@ -175,7 +175,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 		String text = noteField.getValue();
 		noteField.clearError();
 		if(text.length() > NOTE_MAX_LENGTH) {
-			noteField.setErrorKey("input.toolong", new String[]{ Integer.toString(NOTE_MAX_LENGTH) });
+			noteField.setErrorKey("input.toolong", Integer.toString(NOTE_MAX_LENGTH));
 			allOk &= false;
 		}
 		
