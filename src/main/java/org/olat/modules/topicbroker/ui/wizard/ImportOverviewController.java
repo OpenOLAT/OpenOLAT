@@ -345,6 +345,8 @@ public class ImportOverviewController extends StepFormBasicController {
 				token = token.substring(1, token.length() - 1);
 			}
 			
+			// Excel escapes quotes as two quotes
+			token = token.replaceAll("\"\"", "\"");
 			// Escape quotes inside the token
 			token = token.replaceAll("\"", "\\\\\"");
 			
