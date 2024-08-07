@@ -336,6 +336,8 @@ public class FormParticipationListController extends FormBasicController impleme
 			} else {
 				params.setParticipants(null);
 			}
+		} else {
+			params.setParticipants(List.of(ParticipantType.member));
 		}
 		
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, "status");
