@@ -74,6 +74,8 @@ import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageReference;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.model.ContainerSettings;
+import org.olat.modules.ceditor.model.QuizQuestion;
+import org.olat.modules.ceditor.model.QuizSettings;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
@@ -158,6 +160,8 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 	private PageToTaxonomyCompetenceDAO pageToTaxonomyCompetenceDao;
 	@Autowired
 	private MediaToPagePartDAO mediaToPagePartDAO;
+	@Autowired
+	private ContentEditorQti contentEditorQti;
 
 	@Override
 	public Page getPageByKey(Long key) {
@@ -247,7 +251,7 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 			}
 
 			if (newPart instanceof QuizPart quizPart) {
-				importQuizPart(quizPart, mediaOwner, storage);
+				importQuizMedia(quizPart, mediaOwner, storage);
 			}
 
 			copyBody = pageDao.persistPart(copyBody, newPart);
@@ -257,6 +261,9 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 			}
 			if (newPart instanceof ImageComparisonPart imageComparisonPart) {
 				importImageComparisonPart(imageComparisonPart, mediaOwner, storage);
+			}
+			if (newPart instanceof QuizPart quizPart) {
+				importQuizQuestions(quizPart, storage);
 			}
 
 			mapKeys.put(part.getKey().toString(), newPart.getKey().toString());
@@ -277,7 +284,7 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 		mediaPart.setIdentity(mediaOwner);
 	}
 
-	private void importQuizPart(QuizPart quizPart, Identity mediaOwner, ZipFile storage) {
+	private void importQuizMedia(QuizPart quizPart, Identity mediaOwner, ZipFile storage) {
 		if (quizPart.getBackgroundImageMedia() == null) {
 			return;
 		}
@@ -287,6 +294,36 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 		quizPart.setBackgroundImageMedia(importedMedia.media());
 		quizPart.setBackgroundImageMediaVersion(importedMedia.version());
 		quizPart.setBackgroundImageIdentity(mediaOwner);
+	}
+
+	private void importQuizQuestions(QuizPart quizPart, ZipFile storage) {
+		String sourceStoragePath = quizPart.getStoragePath();
+		String targetStoragePath = contentEditorQti.generateStoragePath(quizPart);
+
+		quizPart.setStoragePath(targetStoragePath);
+
+		QuizSettings quizSettings = quizPart.getSettings();
+		for (QuizQuestion quizQuestion : quizSettings.getQuestions()) {
+			importQuizQuestion(quizQuestion, sourceStoragePath, targetStoragePath, storage);
+		}
+		quizPart.setSettings(quizSettings);
+
+		pageDao.merge(quizPart);
+	}
+
+	private void importQuizQuestion(QuizQuestion quizQuestion, String sourceStoragePath, String targetStoragePath, ZipFile storage) {
+		String id = quizQuestion.getId();
+		String sourceQuizQuestionStoragePath = sourceStoragePath + File.separator + id;
+		String targetQuizQuestionStoragePath = targetStoragePath + File.separator + id;
+		String targetQuizQuestionXmlFilePath = targetQuizQuestionStoragePath + File.separator + id + ".xml";
+		quizQuestion.setXmlFilePath(targetQuizQuestionXmlFilePath);
+		for (Enumeration<? extends ZipEntry> entries = storage.entries(); entries.hasMoreElements(); ) {
+			ZipEntry entry = entries.nextElement();
+			String entryPath = entry.getName();
+			if (entryPath.startsWith(sourceQuizQuestionStoragePath)) {
+				unzip(sourceQuizQuestionStoragePath, entry, storage, fileStorage.getFile(targetQuizQuestionStoragePath));
+			}
+		}
 	}
 
 	private void importGalleryPart(GalleryPart galleryPart, GalleryPart serializedPart, Identity mediaOwner, ZipFile storage) {

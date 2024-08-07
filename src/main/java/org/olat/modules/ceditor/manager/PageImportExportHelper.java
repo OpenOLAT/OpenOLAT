@@ -36,6 +36,7 @@ import org.olat.core.util.ZipUtil;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.model.QuizQuestion;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
 import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -156,6 +157,23 @@ public class PageImportExportHelper {
 	private void export(QuizPart quizPart, ZipOutputStream zout) {
 		MediaVersion mediaVersion = quizPart.getBackgroundImageMediaVersion();
 		export(mediaVersion, zout);
+		quizPart.getSettings().getQuestions().forEach((quizQuestion) -> export(quizQuestion, zout));
+	}
+
+	private void export(QuizQuestion quizQuestion, ZipOutputStream zout) {
+		String relativeFilePath = quizQuestion.getXmlFilePath();
+		if (!StringHelper.containsNonWhitespace(relativeFilePath)) {
+			return;
+		}
+
+		int index = relativeFilePath.lastIndexOf(File.separator);
+		if (index == -1) {
+			return;
+		}
+
+		String relativeDirPath = relativeFilePath.substring(0, index);
+		File questionDir = new File(FolderConfig.getCanonicalRoot(), relativeDirPath);
+		ZipUtil.addPathToZip(relativeDirPath, questionDir.toPath(), zout);
 	}
 
 	private void export(MediaPart mediaPart, ZipOutputStream zout) {
@@ -164,7 +182,7 @@ public class PageImportExportHelper {
 	}
 
 	private void export(MediaVersion mediaVersion, ZipOutputStream zout) {
-		if(StringHelper.containsNonWhitespace(mediaVersion.getStoragePath())) {
+		if (mediaVersion != null && StringHelper.containsNonWhitespace(mediaVersion.getStoragePath())) {
 			File mediaDir = new File(FolderConfig.getCanonicalRoot(), mediaVersion.getStoragePath());
 			ZipUtil.addPathToZip(mediaVersion.getStoragePath(), mediaDir.toPath(), zout);
 		}
