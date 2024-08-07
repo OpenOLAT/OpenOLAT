@@ -94,6 +94,8 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 	private SingleSelection passedTypeEl;
 	private IntegerElement passedCutValueEl;
 	private MultipleSelectionElement passedNodesEl;
+	private SingleSelection passedNodesTypeEl;
+	private TextElement numberOfNodesToPassEl;
 	private TextElement passedExpressionEl;
 	private SingleSelection failedTypeEl;
 	private FormLayoutContainer gradeConfigCont;
@@ -253,6 +255,23 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		
 		passedExpressionEl = uifactory.addTextAreaElement("tpassedexpr", "scorecalc.passed", 5000, 6, 45, true, false, sc.getPassedExpression(), passedCont);
 		passedExpressionEl.setExampleKey("rules.example", EXAMPLE_PASSED);
+		
+		SelectionValues passedNodesPK = new SelectionValues();
+		passedNodesPK.add(SelectionValues.entry(ScoreCalculator.PASSED_NODES_TYPE_ALL, translate("scform.passedtype.nodes.all")));
+		passedNodesPK.add(SelectionValues.entry(ScoreCalculator.PASSED_NODES_TYPE_PARTIAL, translate("scform.passedtype.nodes.partial")));
+		passedNodesTypeEl = uifactory.addRadiosVertical("scform.passedtype.nodes", passedCont, passedNodesPK.keys(), passedNodesPK.values());
+		if (sc != null && StringHelper.containsNonWhitespace(sc.getPassedNodesType()) && passedNodesPK.containsKey(sc.getPassedNodesType())) {
+			passedNodesTypeEl.select(sc.getPassedNodesType(), true);
+		} else {
+			passedNodesTypeEl.select(ScoreCalculator.PASSED_NODES_TYPE_ALL, true);
+		}
+		passedNodesTypeEl.addActionListener(FormEvent.ONCLICK);
+		
+		String numberOfNodesToPass = sc.getNumberOfNodesToPass() > 0 ? Integer.toString(sc.getNumberOfNodesToPass()) : "";
+		numberOfNodesToPassEl = uifactory.addTextElement("scform.number.nodes.to.pass", 8, numberOfNodesToPass, passedCont);
+		numberOfNodesToPassEl.setElementCssClass("form-inline");
+		numberOfNodesToPassEl.setDisplaySize(8);
+		numberOfNodesToPassEl.setTextAddOn("scform.number.nodes.to.pass.addon");
 		
 		String[] failedTypeKeys = new String[]{
 				FailedEvaluationType.failedAsNotPassed.name(),
@@ -443,6 +462,11 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 			passedNodesEl.clearError();
 		}
 		
+		passedNodesTypeEl.setVisible(passedEnabled && !passedExpertMode && !passedCut);
+		boolean partialNodes = passedNodesTypeEl.isVisible() && passedNodesTypeEl.isOneSelected()
+				&& ScoreCalculator.PASSED_NODES_TYPE_PARTIAL.equals(passedNodesTypeEl.getSelectedKey());
+		numberOfNodesToPassEl.setVisible(partialNodes);
+		
 		passedExpressionEl.setVisible(passedEnabled && passedExpertMode);
 	}
 	
@@ -511,7 +535,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		} else if (source == passedExpertToggleButton) {
 			passedExpertMode = passedExpertToggleButton.isOn();
 			updatePassedUI();
-		} else if (source == passedTypeEl) {
+		} else if (source == passedTypeEl || source == passedNodesTypeEl) {
 			updatePassedUI();
 		} else if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
@@ -554,7 +578,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		passedNodesEl.clearError();
 		if (passedNodesEl.isVisible()) {
 			if (passedTypeEl.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_INHERIT)) {
-				if (passedNodesEl.getSelectedKeys().size() == 0) {
+				if (passedNodesEl.getSelectedKeys().isEmpty()) {
 					passedNodesEl.setErrorKey("scform.passedNodeIndents.error");
 					allOk &= false;
 				} else if (passedNodesEl.getSelectedKeys().contains(DELETED_NODE_IDENTIFYER)) {
@@ -586,6 +610,29 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 			}
 		}
 		
+		numberOfNodesToPassEl.clearError();
+		if(numberOfNodesToPassEl.isVisible()) {
+			int numOfNodes = passedNodesEl.getSelectedKeys().size();
+			if(StringHelper.containsNonWhitespace(numberOfNodesToPassEl.getValue())) {
+				try {
+					int numOfNodesToPass = Integer.parseInt(numberOfNodesToPassEl.getValue());
+					if(numOfNodesToPass <= 0) {
+						numberOfNodesToPassEl.setErrorKey("form.error.positive.integer");
+						allOk &= false;
+					} else if(numOfNodesToPass > numOfNodes) {
+						numberOfNodesToPassEl.setErrorKey("scform.number.nodes.to.pass.error");
+						allOk &= false;
+					}
+				} catch(Exception e) {
+					numberOfNodesToPassEl.setErrorKey("form.error.positive.integer");
+					allOk &= false;
+				}
+			} else {
+				numberOfNodesToPassEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+		}
+
 		return allOk;
 	}
 	
@@ -667,15 +714,23 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 				sc.setPassedType(ScoreCalculator.PASSED_TYPE_NONE);
 				sc.setPassedCutValue(0);
 				sc.setPassedNodes(null);
+				sc.setPassedNodesType(null);
+				sc.setNumberOfNodesToPass(-1);
 			} else {
 				sc.setPassedExpertMode(false);
 				if (passedTypeEl.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_CUTVALUE)) {
 					sc.setPassedType(ScoreCalculator.PASSED_TYPE_CUTVALUE);
 					sc.setPassedCutValue(passedCutValueEl.getIntValue());
+					sc.setPassedNodesType(null);
+					sc.setNumberOfNodesToPass(-1);
 				} else if (passedTypeEl.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_INHERIT)) {
 					sc.setPassedType(ScoreCalculator.PASSED_TYPE_INHERIT);
 					sc.setPassedNodes(new ArrayList<>(passedNodesEl.getSelectedKeys()));
+					sc.setPassedNodesType(passedNodesTypeEl.getSelectedKey());
+					sc.setNumberOfNodesToPass(Integer.parseInt(numberOfNodesToPassEl.getValue()));
 				}
+				String passedExp = sc.getPassedExpressionFromEasyModeConfiguration();
+				System.out.println(passedExp);
 				sc.setPassedExpression(sc.getPassedExpressionFromEasyModeConfiguration());
 			}
 			sc.setFailedType(FailedEvaluationType.valueOf(failedTypeEl.getSelectedKey()));
@@ -683,6 +738,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 			sc.setPassedExpertMode(false);
 			sc.setPassedType(ScoreCalculator.PASSED_TYPE_NONE);
 			sc.setPassedExpression(null);
+			sc.setNumberOfNodesToPass(-1);
 		}
 		
 		if (sc.getScoreExpression() == null && sc.getPassedExpression() == null) {
