@@ -130,6 +130,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	@Override
 	public TBBroker createBroker(Identity doer, RepositoryEntry repositoryEntry, String subIdent) {
 		TBBroker broker = brokerDao.createBroker(repositoryEntry, subIdent);
+		broker = getBroker(broker);
 		String after = TopicBrokerXStream.toXml(broker);
 		auditLogDao.create(TBAuditLog.Action.brokerCreate, null, after, doer, broker);
 		
@@ -555,8 +556,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			if (topic != null && topic.getSortOrder() != i) {
 				String before = TopicBrokerXStream.toXml(topic);
 				((TBTopicImpl)topic).setSortOrder(i);
-				String after = TopicBrokerXStream.toXml(topic);
 				topicDao.updateTopic(topic);
+				String after = TopicBrokerXStream.toXml(topic);
 				
 				auditLogDao.create(TBAuditLog.Action.topicUpdateSortOrder, before, after, doer, topic);
 			}

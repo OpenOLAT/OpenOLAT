@@ -239,6 +239,8 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 	public void createOrUpdateTopics(Identity doer, TBBroker broker, List<TBImportTopic> importTopics) {
 		TBTopicSearchParams searchParams = new TBTopicSearchParams();
 		searchParams.setBroker(broker);
+		searchParams.setFetchBroker(true);
+		searchParams.setFetchIdentities(true);
 		Map<String, TBTopic> identToTopic = topicBrokerService.getTopics(searchParams).stream()
 				.collect(Collectors.toMap(TBTopic::getIdentifier, Function.identity(), (u, v) -> v));
 		
