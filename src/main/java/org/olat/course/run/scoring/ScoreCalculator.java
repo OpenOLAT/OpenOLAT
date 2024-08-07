@@ -1,4 +1,5 @@
 /**
+
 * OLAT - Online Learning and Training<br>
 * http://www.olat.org
 * <p>
@@ -58,6 +59,10 @@ public class ScoreCalculator implements Serializable {
 	/** config flag: passed inherited from other course nodes **/
 	public static final String PASSED_TYPE_INHERIT = "inherit";
 	
+	public static final String PASSED_NODES_TYPE_ALL = "allnodes";
+	public static final String PASSED_NODES_TYPE_PARTIAL = "partialnodes";
+	
+	
 	private boolean expertMode = false;
 	// The legacy expertMode is the fallback of the two individual expert modes.
 	private Boolean scoreExpertMode;
@@ -72,6 +77,9 @@ public class ScoreCalculator implements Serializable {
 	private String passedType;
 	private List<String> passedNodes;
 	private int passedCutValue;
+	
+	private String passedNodesType;
+	private int numberOfNodesToPass = -1;
 	
 	private FailedEvaluationType failedType;
 	
@@ -157,14 +165,26 @@ public class ScoreCalculator implements Serializable {
 	public String getPassedExpressionFromEasyModeConfiguration() {
 		if (getPassedType() == null || getPassedType().equals(PASSED_TYPE_NONE)) return null;
 		StringBuilder sb = new StringBuilder();
-		if (getPassedType().equals(PASSED_TYPE_INHERIT) && getPassedNodes() != null && getPassedNodes().size() > 0) {
+		if (getPassedType().equals(PASSED_TYPE_INHERIT) && getPassedNodes() != null && !getPassedNodes().isEmpty()) {
 			sb.append("(");
-			for(Iterator<String> iter = getPassedNodes().iterator(); iter.hasNext(); ) {
-				String nodeIdent = iter.next();
-				sb.append("getPassed(\"");
-				sb.append(nodeIdent);
-				sb.append("\")");			
-				if (iter.hasNext()) sb.append(" & ");
+			if(PASSED_NODES_TYPE_PARTIAL.equals(getPassedNodesType())) {
+				sb.append("getPassedNodes(");
+				for(Iterator<String> iter = getPassedNodes().iterator(); iter.hasNext(); ) {
+					sb.append("\"")
+					  .append(iter.next())
+					  .append("\",");
+				}
+				int numOfNodes = getNumberOfNodesToPass();
+				sb.append("\"").append(numOfNodes).append("\"");
+				sb.append(")");	
+			} else {
+				for(Iterator<String> iter = getPassedNodes().iterator(); iter.hasNext(); ) {
+					String nodeIdent = iter.next();
+					sb.append("getPassed(\"");
+					sb.append(nodeIdent);
+					sb.append("\")");			
+					if (iter.hasNext()) sb.append(" & ");
+				}
 			}
 			sb.append(")");
 		} 
@@ -247,6 +267,22 @@ public class ScoreCalculator implements Serializable {
 		this.passedType = passedType;
 	}
 	
+	public String getPassedNodesType() {
+		return passedNodesType;
+	}
+	
+	public void setPassedNodesType(String passedNodesType) {
+		this.passedNodesType = passedNodesType;
+	}
+	
+	public int getNumberOfNodesToPass() {
+		return numberOfNodesToPass;
+	}
+
+	public void setNumberOfNodesToPass(int numberOfNodesToPass) {
+		this.numberOfNodesToPass = numberOfNodesToPass;
+	}
+
 	public FailedEvaluationType getFailedType() {
 		return failedType;
 	}

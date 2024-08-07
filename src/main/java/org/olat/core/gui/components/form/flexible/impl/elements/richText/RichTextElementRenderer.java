@@ -128,6 +128,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 
 		String value = te.getRawValue();
 		if(StringHelper.containsNonWhitespace(value)) {
+			value = StringHelper.xssScan(value);
 			String mapperUri = te.getEditorConfiguration().getMapperURI();
 			if(StringHelper.containsNonWhitespace(mapperUri)) {
 				value = FilterFactory.getBaseURLToMediaRelativeURLFilter(mapperUri).filter(value);

@@ -32,12 +32,14 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -93,6 +95,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TopicBrokerServiceImpl implements TopicBrokerService {
+
+	private static final Logger log = Tracing.createLoggerFor(TopicBrokerServiceImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -126,6 +130,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	@Override
 	public TBBroker createBroker(Identity doer, RepositoryEntry repositoryEntry, String subIdent) {
 		TBBroker broker = brokerDao.createBroker(repositoryEntry, subIdent);
+		broker = getBroker(broker);
 		String after = TopicBrokerXStream.toXml(broker);
 		auditLogDao.create(TBAuditLog.Action.brokerCreate, null, after, doer, broker);
 		
@@ -525,6 +530,38 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		
 		auditLogDao.create(TBAuditLog.Action.topicUpdateSortOrder, before, after, doer, reloadedTopic);
 		auditLogDao.create(TBAuditLog.Action.topicUpdateSortOrder, beforeSwap, afterSwap, doer, swapTopic);
+	}
+	
+	@Override
+	public void updateTopicSortOrder(Identity doer, TBBrokerRef broker, List<String> orderedIdentificators) {
+		TBTopicSearchParams searchParams = new TBTopicSearchParams();
+		searchParams.setBroker(broker);
+		searchParams.setFetchBroker(true);
+		searchParams.setFetchIdentities(true);
+		List<TBTopic> topics = getTopics(searchParams);
+		
+		Set<String> currentIdentifiers = topics.stream().map(TBTopic::getIdentifier).collect(Collectors.toSet());
+		currentIdentifiers.removeAll(orderedIdentificators);
+		if (!currentIdentifiers.isEmpty()) {
+			log.info("Update topic sort order of broker {} failed. Identifiers not present: {}", broker.getKey(),
+					currentIdentifiers.stream().collect(Collectors.joining(", ")));
+			return;
+		}
+		
+		Map<String, TBTopic> identifierToTopic = topics.stream().collect(Collectors.toMap(TBTopic::getIdentifier, Function.identity()));
+		
+		for (int i = 1; i <= orderedIdentificators.size(); i++) {
+			String identifier = orderedIdentificators.get(i-1);
+			TBTopic topic = identifierToTopic.get(identifier);
+			if (topic != null && topic.getSortOrder() != i) {
+				String before = TopicBrokerXStream.toXml(topic);
+				((TBTopicImpl)topic).setSortOrder(i);
+				topicDao.updateTopic(topic);
+				String after = TopicBrokerXStream.toXml(topic);
+				
+				auditLogDao.create(TBAuditLog.Action.topicUpdateSortOrder, before, after, doer, topic);
+			}
+		}
 	}
 	
 	@Override

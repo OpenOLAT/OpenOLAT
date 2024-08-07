@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
@@ -320,6 +321,9 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			Serializable val;
 			if(filter instanceof FlexiTableMultiSelectionFilter) {
 				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				val = values == null ? null : new ArrayList<>(values);
+			} else if (filter instanceof FlexiTableTagFilter tagFilter) {
+				List<String> values = tagFilter.getValues();
 				val = values == null ? null : new ArrayList<>(values);
 			} else {
 				val = filter.getValue();

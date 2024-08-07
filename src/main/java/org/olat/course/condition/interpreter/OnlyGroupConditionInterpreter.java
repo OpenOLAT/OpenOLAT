@@ -27,6 +27,7 @@ package org.olat.course.condition.interpreter;
 
 import org.olat.course.condition.interpreter.score.GetAverageScoreFunction;
 import org.olat.course.condition.interpreter.score.GetPassedFunction;
+import org.olat.course.condition.interpreter.score.GetPassedNodesFunction;
 import org.olat.course.condition.interpreter.score.GetPassedWithCourseIdFunction;
 import org.olat.course.condition.interpreter.score.GetScoreFunction;
 import org.olat.course.condition.interpreter.score.GetScoreWithCourseIdFunction;
@@ -111,6 +112,7 @@ public class OnlyGroupConditionInterpreter extends ConditionInterpreter{
 
 		// functions to calculate score
 		env.addFunction(GetPassedFunction.name, new DummyBooleanFunction(userCourseEnv));
+		env.addFunction(GetPassedNodesFunction.name, new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(GetScoreFunction.name, new DummyDoubleFunction(userCourseEnv));
 		env.addFunction(GetAverageScoreFunction.NAME, new DummyDoubleFunction(userCourseEnv));
 		env.addFunction(GetPassedWithCourseIdFunction.name, new DummyBooleanFunction(userCourseEnv));
