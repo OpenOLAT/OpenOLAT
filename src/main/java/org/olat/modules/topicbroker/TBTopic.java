@@ -34,6 +34,9 @@ import org.olat.core.id.ModifiedInfo;
  */
 public interface TBTopic extends TBTopicRef, ModifiedInfo, CreateInfo {
 	
+	public static final int IDENTIFIER_MAX_LENGTH = 64;
+	public static final int TITLE_MAX_LENGTH = 200;
+	
 	String getIdentifier();
 	
 	void setIdentifier(String identifier);

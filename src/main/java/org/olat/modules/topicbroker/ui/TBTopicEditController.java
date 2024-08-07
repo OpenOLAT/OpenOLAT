@@ -107,12 +107,12 @@ public class TBTopicEditController extends FormBasicController {
 		formLayout.add(standardCont);
 		
 		String identifier = topic != null? topic.getIdentifier(): null;
-		identifierEl = uifactory.addTextElement("topic.identifier", 64, identifier, standardCont);
+		identifierEl = uifactory.addTextElement("topic.identifier", TBTopic.IDENTIFIER_MAX_LENGTH, identifier, standardCont);
 		identifierEl.setMandatory(true);
 		identifierEl.setFocus(true);
 		
 		String title = topic != null? topic.getTitle(): null;
-		titleEl = uifactory.addTextElement("topic.title", 100, title, standardCont);
+		titleEl = uifactory.addTextElement("topic.title", TBTopic.TITLE_MAX_LENGTH, title, standardCont);
 		titleEl.setMandatory(true);
 		
 		String description = topic != null? topic.getDescription(): null;
@@ -289,8 +289,8 @@ public class TBTopicEditController extends FormBasicController {
 		if (!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
 			identifierEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if (identifierEl.getValue().length() > 64) {
-			identifierEl.setErrorKey("form.error.toolong", Integer.toString(64));
+		} else if (identifierEl.getValue().length() > TBTopic.IDENTIFIER_MAX_LENGTH) {
+			identifierEl.setErrorKey("form.error.toolong", String.valueOf(TBTopic.IDENTIFIER_MAX_LENGTH));
 			allOk &= false;
 		} else if ((topic == null || !Objects.equals(topic.getIdentifier(), identifierEl.getValue()))
 				&& !topicBrokerService.isTopicIdentifierAvailable(broker, identifierEl.getValue())) {
@@ -301,6 +301,9 @@ public class TBTopicEditController extends FormBasicController {
 		titleEl.clearError();
 		if (!StringHelper.containsNonWhitespace(titleEl.getValue())) {
 			titleEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		} else if (identifierEl.getValue().length() > TBTopic.TITLE_MAX_LENGTH) {
+			identifierEl.setErrorKey("form.error.toolong", String.valueOf(TBTopic.TITLE_MAX_LENGTH));
 			allOk &= false;
 		}
 		

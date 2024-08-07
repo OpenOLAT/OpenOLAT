@@ -112,6 +112,7 @@ public class ImportOverviewController extends StepFormBasicController {
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicImportCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicImportCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicImportCols.description));
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(TopicImportCols.minParticipants);
 		minParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -283,6 +284,8 @@ public class ImportOverviewController extends StepFormBasicController {
 				topic.setTitle(title);
 				if (!StringHelper.containsNonWhitespace(topic.getTitle())) {
 					importTopic.setMessage(translate("import.error.mandatory.title"));
+				} else if (title.length() > TBTopic.TITLE_MAX_LENGTH) {
+					importTopic.setMessage(translate("import.error.title.too.long", String.valueOf(TBTopic.TITLE_MAX_LENGTH)));
 				}
 			} else {
 				importTopic.setMessage(translate("import.error.mandatory.title"));
@@ -293,6 +296,8 @@ public class ImportOverviewController extends StepFormBasicController {
 			topic.setIdentifier(identifier);
 			if (identifiersInLines.contains(identifier)) {
 				importTopic.setMessage(translate("import.error.identifier.multi"));
+			} else if (identifier.length() > TBTopic.IDENTIFIER_MAX_LENGTH) {
+				importTopic.setMessage(translate("import.error.identifier.too.long", String.valueOf(TBTopic.IDENTIFIER_MAX_LENGTH)));
 			} else {
 				identifiersInLines.add(identifier);
 			}
@@ -377,6 +382,7 @@ public class ImportOverviewController extends StepFormBasicController {
 			switch(COLS[col]) {
 			case identifier: return row.getIdentifier();
 			case title: return row.getTitle();
+			case description: return row.getDescription();
 			case minParticipants: return row.getMinParticipants();
 			case maxParticipants: return row.getMaxParticipants();
 			case groupRestrictions: return row.getGroupRestrictions();
@@ -390,6 +396,7 @@ public class ImportOverviewController extends StepFormBasicController {
 		public enum TopicImportCols implements FlexiColumnDef {
 			identifier("topic.identifier"),
 			title("topic.title"),
+			description("topic.description"),
 			minParticipants("topic.participants.min"),
 			maxParticipants("topic.participants.max"),
 			groupRestrictions("topic.group.restriction"),
