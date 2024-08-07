@@ -78,8 +78,8 @@ public class TBParticipantDataModel extends DefaultFlexiTableDataModel<TBPartici
 				case boost: return row.getBoost();
 				case prioritySortOrder: return row.getPrioritySortOrder();
 				case enrolled: return row.getEnrolledString();
-				case waitingList: return row.getWaitingList();
-				case selected: return row.getNumSelections();
+				case waitingList: return row.getMaxSelections() > row.getWaitingList() ? row.getWaitingList() : row.getMaxSelections();
+				case selected: return row.getMaxSelections() > row.getNumSelections() ? row.getNumSelections() : row.getMaxSelections();
 				case priority: return row;
 				case enroll: return Boolean.valueOf(row.isAnonym());
 				case withdraw: return Boolean.valueOf(row.isAnonym());

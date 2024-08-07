@@ -206,7 +206,7 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode {
 			config.setStringValue(CONFIG_KEY_SELECTIONS_PER_PARTICIPANT, "3");
 			config.setBooleanEntry(CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS, false);
 			config.setBooleanEntry(CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW, false);
-			config.setBooleanEntry(CONFIG_KEY_ENROLLMENT_AUTO, true);
+			config.setBooleanEntry(CONFIG_KEY_ENROLLMENT_AUTO, false);
 			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
 			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
 		}

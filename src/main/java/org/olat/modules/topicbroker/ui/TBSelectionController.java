@@ -56,6 +56,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -81,6 +82,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -196,12 +198,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			formLayout.add(myEnrollmentsCont);
 			
 			SelectionValues maxEnrollmentsSV = new SelectionValues();
-			for (int i = 0; i < broker.getRequiredEnrollments().intValue(); i++) {
+			for (int i = 0; i <= broker.getRequiredEnrollments().intValue(); i++) {
 				maxEnrollmentsSV.add(SelectionValues.entry(String.valueOf(i), String.valueOf(i)));
 			}
-			maxEnrollmentsSV.add(SelectionValues.entry(
-					String.valueOf(broker.getRequiredEnrollments()),
-					translate("participant.max.enrollments.default", String.valueOf(broker.getRequiredEnrollments()))));
 			if (participant.getRequiredEnrollments() != null && participant.getRequiredEnrollments() > broker.getRequiredEnrollments()) {
 				maxEnrollmentsSV.add(SelectionValues.entry(String.valueOf(
 						participant.getRequiredEnrollments()),
@@ -213,7 +212,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		}
 		
 		initSelectionTable(formLayout);
-		initTopicsTable(formLayout);
+		initTopicsTable(ureq, formLayout);
 	}
 
 	private void initSelectionTable(FormItemContainer formLayout) {
@@ -255,7 +254,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		selectionTableEl = uifactory.addTableElement(getWindowControl(), "selectionTable", selectionDataModel, 20, false, getTranslator(), formLayout);
 	}
 
-	private void initTopicsTable(FormItemContainer formLayout) {
+	private void initTopicsTable(UserRequest ureq, FormItemContainer formLayout) {
 		FlexiTableColumnModel selectionColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title, CMD_DETAILS));
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.status, statusRenderer));
@@ -285,7 +284,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		selectionColumnsModel.addFlexiColumnModel(toolsCol);
 		
 		topicDataModel = new TBSelectionDataModel(selectionColumnsModel);
-		topicTableEl = uifactory.addTableElement(getWindowControl(), "topicTable", topicDataModel, 20, false, getTranslator(), formLayout);
+		topicTableEl = uifactory.addTableElement(getWindowControl(), "topicTable", topicDataModel, 250, false, getTranslator(), formLayout);
 		topicTableEl.setSearchEnabled(true);
 		
 		if (periodEvaluator.isBeforeSelectionPeriod()) {
@@ -301,6 +300,22 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		VelocityContainer rowVC = createVelocityContainer("topic_row");
 		rowVC.setDomReplacementWrapperRequired(false);
 		topicTableEl.setRowRenderer(rowVC, this);
+		
+		loadTopicRenderStyle(ureq);
+	}
+	
+	private void loadTopicRenderStyle(UserRequest ureq) {
+		Preferences prefs = ureq.getUserSession().getGuiPreferences();
+		String renderType = (String)prefs.get(TBSelectionController.class, "tb-available-topics-renderer-" + broker.getKey());
+		if (StringHelper.containsNonWhitespace(renderType)) {
+			topicTableEl.setRendererType(FlexiTableRendererType.valueOf(renderType));
+		}
+	}
+	
+	private void saveTopicRenderStyle(UserRequest ureq) {
+		Preferences prefs = ureq.getUserSession().getGuiPreferences();
+		String renderType = topicTableEl.getRendererType().name();
+		prefs.putAndSave(TBSelectionController.class, "tb-available-topics-renderer-" + broker.getKey(), renderType);
 	}
 	
 	private void loadModel(boolean refreshPeriodEvaluator) {
@@ -632,9 +647,13 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 
 	private void updateSelectionMessage() {
 		if ((periodEvaluator.isBeforeSelectionPeriod() || periodEvaluator.isSelectionPeriod()) && selectionsSize < broker.getMaxSelections()) {
-			String selectionMsg = translate("selection.msg.not.all.selected", new String[] {
+			int numPossibleSelections = broker.getMaxSelections() - selectionsSize;
+			String messageI18nKey = numPossibleSelections < 2
+					? "selection.msg.not.all.selected.single"
+					: "selection.msg.not.all.selected.multi";
+			String selectionMsg = translate(messageI18nKey, new String[] {
 					String.valueOf(selectionsSize), String.valueOf(broker.getMaxSelections()),
-					String.valueOf(broker.getMaxSelections() - selectionsSize)});
+					String.valueOf(numPossibleSelections)});
 			flc.contextPut("selectionMsg", selectionMsg);
 		} else {
 			flc.contextRemove("selectionMsg");
@@ -768,6 +787,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				}
 			} else if (event instanceof FlexiTableSearchEvent ftse) {
 				loadModel(true);
+			} else if (event instanceof FlexiTableRenderEvent gtre) {
+				saveTopicRenderStyle(ureq);
 			}
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
