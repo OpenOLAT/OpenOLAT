@@ -242,6 +242,7 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 		Map<String, TBTopic> identToTopic = topicBrokerService.getTopics(searchParams).stream()
 				.collect(Collectors.toMap(TBTopic::getIdentifier, Function.identity(), (u, v) -> v));
 		
+		List<String> orderedIdentificators = new ArrayList<>(importTopics.size());
 		for (TBImportTopic importTopic : importTopics) {
 			if (!StringHelper.containsNonWhitespace(importTopic.getMessage())) {
 				TBTopic topicImported = importTopic.getTopic();
@@ -252,6 +253,7 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 				topicBrokerService.updateTopic(doer, topicExisting, topicImported.getIdentifier(),
 						topicImported.getTitle(), topicImported.getDescription(), topicImported.getMinParticipants(),
 						topicImported.getMaxParticipants(), topicImported.getGroupRestrictionKeys());
+				orderedIdentificators.add(topicImported.getIdentifier());
 				
 				Map<TBCustomFieldDefinition,String> definitionToValue = importTopic.getCustomFieldDefinitionToValue();
 				if (definitionToValue != null) {
@@ -262,6 +264,7 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 			}
 		}
 		
+		topicBrokerService.updateTopicSortOrder(doer, broker, orderedIdentificators);
 	}
 
 }

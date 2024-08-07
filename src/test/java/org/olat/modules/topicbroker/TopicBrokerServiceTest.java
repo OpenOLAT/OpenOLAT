@@ -111,6 +111,45 @@ public class TopicBrokerServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldUpdateTopicsSortOrder() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		TBBroker broker = createRandomBroker(identity);
+		TBTopic topic1 = createRandomTopic(identity, broker);
+		TBTopic topic2 = createRandomTopic(identity, broker);
+		TBTopic topic3 = createRandomTopic(identity, broker);
+		
+		List<String> orderedIdentificators = List.of(
+				topic2.getIdentifier(),
+				topic3.getIdentifier(),
+				topic1.getIdentifier());
+		sut.updateTopicSortOrder(identity, broker, orderedIdentificators);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.getTopic(topic2).getSortOrder()).isEqualTo(1);
+		assertThat(sut.getTopic(topic3).getSortOrder()).isEqualTo(2);
+		assertThat(sut.getTopic(topic1).getSortOrder()).isEqualTo(3);
+	}
+	
+	@Test
+	public void shouldUpdateTopicsSortOrder_topicMissing() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		TBBroker broker = createRandomBroker(identity);
+		TBTopic topic1 = createRandomTopic(identity, broker);
+		TBTopic topic2 = createRandomTopic(identity, broker);
+		TBTopic topic3 = createRandomTopic(identity, broker);
+		
+		List<String> orderedIdentificators = List.of(
+				topic2.getIdentifier(),
+				topic3.getIdentifier());
+		sut.updateTopicSortOrder(identity, broker, orderedIdentificators);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.getTopic(topic1).getSortOrder()).isEqualTo(1);
+		assertThat(sut.getTopic(topic2).getSortOrder()).isEqualTo(2);
+		assertThat(sut.getTopic(topic3).getSortOrder()).isEqualTo(3);
+	}
+	
+	@Test
 	public void shouldSelect_sortOrder() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		TBBroker broker = createRandomBroker(identity);
@@ -175,6 +214,7 @@ public class TopicBrokerServiceTest extends OlatTestCase {
 
 	private TBTopic createRandomTopic(Identity identity, TBBroker broker) {
 		TBTopic topic = sut.createTopic(identity, broker);
+		topic = sut.updateTopic(identity, topic, random(), random(), random(), 0, 6, null);
 		dbInstance.commitAndCloseSession();
 		
 		return topic;

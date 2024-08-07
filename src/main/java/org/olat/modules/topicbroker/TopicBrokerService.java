@@ -79,6 +79,17 @@ public interface TopicBrokerService {
 	
 	public void moveTopic(Identity doer, TBTopicRef topic, boolean up);
 	
+	/**
+	 * Updates the sort order of the topics. Prerequisite: The orderedIdentificators
+	 * must contain the identifiers of all existing themes. If this is not the case,
+	 * not a single sortOrder will be updated.
+	 * 
+	 * @param doer
+	 * @param broker
+	 * @param orderedIdentificators the new order of the topics
+	 */
+	public void updateTopicSortOrder(Identity doer, TBBrokerRef broker, List<String> orderedIdentificators);
+	
 	public void deleteTopicSoftly(Identity doer, TBTopicRef topic);
 	
 	public TBTopic getTopic(TBTopicRef topic);
