@@ -27,14 +27,15 @@ import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -67,9 +68,9 @@ public class UserCommentFormController extends FormBasicController {
 	private final UserComment parentComment;
 	private UserComment toBeUpdatedComment;
 	private RichTextElement commentElem;
-	private TextElement commentsPreElem;
 	private FormSubmit submitButton;
 	private FormCancel cancelButton;
+	private FormLink preButtonArea;
 
 	private final String resSubPath;
 	private final OLATResourceable ores;
@@ -111,9 +112,10 @@ public class UserCommentFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (parentComment == null) {
-			commentsPreElem = uifactory.addTextElement("commentsPreElem", null, 25, "", formLayout);
-			commentsPreElem.setPlaceholderKey("comments.form.placeholder", null);
-			commentsPreElem.addActionListener(FormEvent.ONCLICK);
+			// fake text area, which is clickable and tabable (for a11y reasons)
+			preButtonArea = uifactory.addFormLink("comments.form.placeholder", formLayout, Link.BUTTON);
+			preButtonArea.setIconLeftCSS("o_icon o_icon-fw o_icon_pencil");
+			preButtonArea.setElementCssClass("o_fake_comment_text_area");
 		}
 
 		commentElem = uifactory.addRichTextElementForStringData(
@@ -129,9 +131,9 @@ public class UserCommentFormController extends FormBasicController {
 		formLayout.add(buttonContainer);
 
 		submitButton = uifactory.addFormSubmitButton("submit", "comments.button.submit", buttonContainer);
-		submitButton.setVisible(false);
+		submitButton.setVisible(parentComment != null);
 		cancelButton = uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
-		cancelButton.setVisible(false);
+		cancelButton.setVisible(parentComment != null);
 	}
 
 	@Override
@@ -153,7 +155,7 @@ public class UserCommentFormController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == commentsPreElem || (source == commentElem && event.equals(Event.CANCELLED_EVENT))) {
+		if (source == preButtonArea || (source == commentElem && event.equals(Event.CANCELLED_EVENT))) {
 			toggleCommentFormElem();
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
@@ -161,7 +163,7 @@ public class UserCommentFormController extends FormBasicController {
 
 	private void toggleCommentFormElem() {
 		if (parentComment == null) {
-			commentsPreElem.setVisible(!commentsPreElem.isVisible());
+			preButtonArea.setVisible(!preButtonArea.isVisible());
 			commentElem.setVisible(!commentElem.isVisible());
 			submitButton.setVisible(!submitButton.isVisible());
 			cancelButton.setVisible(!cancelButton.isVisible());

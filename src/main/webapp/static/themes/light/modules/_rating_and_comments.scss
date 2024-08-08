@@ -145,7 +145,26 @@
 			width: 100%;
 		}
 	}
-} 
+}
+
+.o_fake_comment_text_area {
+	text-align: left;
+	cursor: text;
+	width: 100%;
+	height: $input-height-base;
+	font-size: $font-size-base;
+	line-height: $line-height-base;
+	color: $input-color;
+	background-color: $input-bg;
+	background-image: none;
+	border-radius: $input-border-radius;
+	@include box-shadow(inset 0 1px 1px rgba(0, 0, 0, .075));
+	@include transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
+
+	.form-control-static {
+		padding-top: 0;
+	}
+}
 
 .o_ratings_and_comments {
 	.o_rating_wrapper {
