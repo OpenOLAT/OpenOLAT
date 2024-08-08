@@ -226,9 +226,8 @@ class UserBulkChangeStep00 extends BasicStep {
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-			if(source instanceof MultipleSelectionElement && source.getUserObject() instanceof FormItem) {
-				MultipleSelectionElement checkbox = (MultipleSelectionElement)source;
-				FormItem item = (FormItem)checkbox.getUserObject();
+			if(source instanceof MultipleSelectionElement checkbox
+					&& source.getUserObject() instanceof FormItem item) {
 				item.setVisible(checkbox.isAtLeastSelected(1));
 			}
 			super.formInnerEvent(ureq, source, event);

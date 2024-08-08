@@ -116,7 +116,8 @@ public class UserBulkChangeManager implements InitializingBean {
 			List<String> notUpdatedIdentities, boolean isAdministrativeUser,
 			Translator trans, Identity actingIdentity, Roles actingRoles) {
 
-		Translator transWithFallback = userManager.getPropertyHandlerTranslator(trans);
+		Translator transWithFallback = userManager.getPropertyHandlerTranslator(Util
+				.createPackageTranslator(UserBulkChangeManager.class, trans.getLocale(), trans));
 		String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
 		SyntaxValidator syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 
@@ -136,10 +137,8 @@ public class UserBulkChangeManager implements InitializingBean {
 			boolean updateError = false;
 			
 			boolean canManagedCritical = actingRoles.isManagerOf(OrganisationRoles.administrator, roles)
-					|| actingRoles.isManagerOf(OrganisationRoles.rolesmanager, roles)
-					|| (actingRoles.isManagerOf(OrganisationRoles.usermanager, roles)
-							&& !roles.isAdministrator() && !roles.isSystemAdmin()
-							&& !roles.isRolesManager());
+					|| (actingRoles.isManagerOf(OrganisationRoles.rolesmanager, roles) && !roles.isAdministrator() && !roles.isSystemAdmin())
+					|| (actingRoles.isManagerOf(OrganisationRoles.usermanager, roles) && !roles.isAdministrator() && !roles.isSystemAdmin() && !roles.isRolesManager());
 
 			// change pwd
 			if (attributeChangeMap.containsKey(CRED_IDENTIFYER)) {
@@ -149,7 +148,7 @@ public class UserBulkChangeManager implements InitializingBean {
 					if (!validationResult.isValid()) {
 						String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(),
 								transWithFallback.getLocale());
-						errorDesc = transWithFallback.translate("error.password", new String[] { descriptions });
+						errorDesc = transWithFallback.translate("error.password", descriptions);
 						updateError = true;
 					}
 				} else {
@@ -159,7 +158,9 @@ public class UserBulkChangeManager implements InitializingBean {
 				if (canManagedCritical) {
 					olatAuthManager.changePasswordAsAdmin(identity, password);
 				} else {
-					errorDesc = transWithFallback.translate("error.password");
+					errorDesc = transWithFallback.translate("error.password",
+							transWithFallback.translate("error.password.cannot.manage.critical"));
+					updateError = true;
 				}
 			}
 
@@ -232,7 +233,7 @@ public class UserBulkChangeManager implements InitializingBean {
 			// persist changes:
 			if (updateError) {
 				String errorOutput = identity.getKey() + ": " + errorDesc;
-				log.debug("error during bulkChange of users, following user could not be updated: {}", errorOutput);
+				log.info("error during bulkChange of users, following user could not be updated: {}: {}", identity.getKey(), errorDesc);
 				notUpdatedIdentities.add(errorOutput); 
 			} else {
 				userManager.updateUserFromIdentity(identity);

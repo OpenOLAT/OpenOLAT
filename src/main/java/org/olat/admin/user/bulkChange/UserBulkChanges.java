@@ -100,6 +100,4 @@ public class UserBulkChanges extends GroupChanges {
 	public void setSendLoginDeniedEmail(boolean sendLoginDeniedEmail) {
 		this.sendLoginDeniedEmail = sendLoginDeniedEmail;
 	}
-
-
 }
