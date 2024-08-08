@@ -141,7 +141,7 @@ public class UserCommentFormController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		String commentText = commentElem.getValue();
 
-		if (!StringHelper.containsNonWhitespace(commentText) || commentText.equals("<p></p>")) {
+		if (!StringHelper.containsNonWhitespace(commentText) || containsEmptyPTag(commentText)) {
 			commentElem.setErrorKey("comments.form.input.invalid");
 			allOk = false;
 		} else if (commentText.length() <= MAX_COMMENT_LENGTH) {
@@ -151,6 +151,32 @@ public class UserCommentFormController extends FormBasicController {
 			allOk = false;
 		}
 		return allOk;
+	}
+
+	private static boolean containsEmptyPTag(String str) {
+		String startTag = "<p>";
+		String endTag = "</p>";
+
+		// Find the first occurrence of the start tag
+		int startIndex = str.indexOf(startTag);
+		while (startIndex != -1) {
+			// Find the corresponding end tag
+			int endIndex = str.indexOf(endTag, startIndex + startTag.length());
+			if (endIndex != -1) {
+				// Get the content between the tags
+				String content = str.substring(startIndex + startTag.length(), endIndex);
+				// Check if the content is empty or contains only whitespace
+				if (!StringHelper.containsNonWhitespace(content)) {
+					return true;
+				}
+				// Move past this end tag to search for the next start tag
+				startIndex = str.indexOf(startTag, endIndex + endTag.length());
+			} else {
+				// No matching end tag found, stop searching
+				break;
+			}
+		}
+		return false;
 	}
 
 	@Override
