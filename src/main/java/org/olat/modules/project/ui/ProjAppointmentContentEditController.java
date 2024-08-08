@@ -80,7 +80,8 @@ public class ProjAppointmentContentEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (appointment == null) {
-			appointment = projectService.createAppointment(getIdentity(), new ProjectBCFactory(), project, appointmentContentEditForm.getStartDate());
+			appointment = projectService.createAppointment(getIdentity(), new ProjectBCFactory(), project,
+					appointmentContentEditForm.getStartDate(), appointmentContentEditForm.getEndDate());
 		}
 		
 		projectService.updateAppointment(getIdentity(), new ProjectBCFactory(), appointment, 

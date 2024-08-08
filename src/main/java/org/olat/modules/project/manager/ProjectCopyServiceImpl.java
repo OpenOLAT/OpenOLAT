@@ -228,7 +228,7 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 			Map<ProjArtefact, ProjArtefact> artefactToArtefactCopy, ProjAppointment appointment) {
 		if (appointment == null) return;
 		
-		ProjAppointment appointmentCopy = projectService.createAppointment(doer, bcFactory, projectCopy, null);
+		ProjAppointment appointmentCopy = projectService.createAppointment(doer, bcFactory, projectCopy, null, null);
 		activityDao.create(Action.appointmentCopyInitialized, null, null, doer, appointmentCopy.getArtefact());
 		projectService.updateAppointment(doer, bcFactory, appointmentCopy,
 				null,
