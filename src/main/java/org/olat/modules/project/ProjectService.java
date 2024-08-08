@@ -254,7 +254,7 @@ public interface ProjectService {
 	 * Appointments
 	 */
 	
-	public ProjAppointment createAppointment(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Date startDay);
+	public ProjAppointment createAppointment(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Date startDay, Date endDay);
 
 	public void updateAppointment(Identity doer, ProjectBCFactory bcFactory, ProjAppointmentRef appointment,
 			Date startDate, Date endDate, String subject, String description, String location, String color,

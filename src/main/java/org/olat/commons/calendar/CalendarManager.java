@@ -438,4 +438,13 @@ public interface CalendarManager {
 	public OLATResourceable getOresHelperFor(Kalendar cal);
 	
 	
+	/**
+	 * Make a deep copy of an event. The id is cloned and the same as the original event.
+	 * 
+	 * @param event The event
+	 * @return A copy
+	 */
+	public KalendarEvent cloneKalendarEvent(KalendarEvent event);
+	
+	
 }

@@ -94,8 +94,9 @@ public class ProjCalendarHelper {
 		Kalendar cal = calendarManager.getCalendar(CalendarManager.TYPE_USER, identity.getName());
 		for (KalendarEvent event : cal.getEvents()) {
 			if (appointment.getIdentifier().equals(event.getExternalId())) {
-				updateEvent(bcFactory, appointment, event);
-				calendarManager.updateEventFrom(cal, event);
+				KalendarEvent copyEvent = calendarManager.cloneKalendarEvent(event);
+				updateEvent(bcFactory, appointment, copyEvent);
+				calendarManager.updateEventFrom(cal, copyEvent);
 				return;
 			}
 		}
