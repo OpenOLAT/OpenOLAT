@@ -344,6 +344,12 @@ public class PageRunController extends BasicController implements TooledControll
 			mainVC.contextPut("edited", Boolean.FALSE);	
 		}
 	}
+
+	private void resetEditPageToggle() {
+		if (pageMetaCtrl instanceof PageMetadataCompactController pageMetadataCompactController) {
+			pageMetadataCompactController.resetEditToggle();
+		}
+	}
 	
 	private void loadModel(UserRequest ureq, boolean reloadComments) {
 		mainVC.contextPut("pageTitle", page.getTitle());
@@ -742,6 +748,7 @@ public class PageRunController extends BasicController implements TooledControll
 				String i18nMsg = lockEntry.isDifferentWindows() ? "warning.page.locked.same.user" : "warning.page.locked";
 				String[] i18nParams = new String[] { StringHelper.escapeHtml(userManager.getUserDisplayName(lockEntry.getOwner())), Formatter.getInstance(getLocale()).formatTime(new Date(lockEntry.getLockAquiredTime())) };
 				showWarning(i18nMsg, i18nParams);
+				resetEditPageToggle();
 			}
 		}
 	}

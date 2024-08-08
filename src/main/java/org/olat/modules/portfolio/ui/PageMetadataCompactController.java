@@ -85,6 +85,10 @@ public class PageMetadataCompactController extends FormBasicController {
 		}
 	}
 
+	public void resetEditToggle() {
+		editLink.toggleOff();
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
