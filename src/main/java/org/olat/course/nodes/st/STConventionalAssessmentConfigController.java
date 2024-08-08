@@ -726,12 +726,17 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 				} else if (passedTypeEl.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_INHERIT)) {
 					sc.setPassedType(ScoreCalculator.PASSED_TYPE_INHERIT);
 					sc.setPassedNodes(new ArrayList<>(passedNodesEl.getSelectedKeys()));
-					sc.setPassedNodesType(passedNodesTypeEl.getSelectedKey());
-					sc.setNumberOfNodesToPass(Integer.parseInt(numberOfNodesToPassEl.getValue()));
+					
+					String passedNodeType = passedNodesTypeEl.getSelectedKey();
+					sc.setPassedNodesType(passedNodeType);
+					if(ScoreCalculator.PASSED_NODES_TYPE_PARTIAL.equals(passedNodeType) && StringHelper.isLong(numberOfNodesToPassEl.getValue())) {
+						sc.setNumberOfNodesToPass(Integer.parseInt(numberOfNodesToPassEl.getValue()));
+					} else {
+						sc.setNumberOfNodesToPass(-1);
+					}
 				}
 				String passedExp = sc.getPassedExpressionFromEasyModeConfiguration();
-				System.out.println(passedExp);
-				sc.setPassedExpression(sc.getPassedExpressionFromEasyModeConfiguration());
+				sc.setPassedExpression(passedExp);
 			}
 			sc.setFailedType(FailedEvaluationType.valueOf(failedTypeEl.getSelectedKey()));
 		} else {
@@ -743,7 +748,6 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		
 		if (sc.getScoreExpression() == null && sc.getPassedExpression() == null) {
 			sc = null;
-			return;
 		}
 	}
 	
