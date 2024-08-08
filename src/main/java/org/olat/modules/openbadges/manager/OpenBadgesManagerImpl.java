@@ -111,6 +111,8 @@ import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.modules.openbadges.v2.Assertion;
+import org.olat.modules.openbadges.v2.Constants;
+import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -561,7 +563,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		targetClass.setVersion(sourceClass.getVersion());
 		targetClass.setName(sourceClass.getName());
 		targetClass.setDescription(sourceClass.getDescription());
-		targetClass.setIssuer(sourceClass.getIssuer());
+		targetClass.setIssuer(cloneIssuerString(sourceClass.getIssuer(), targetEntry));
 		targetClass.setLanguage(sourceClass.getLanguage());
 		targetClass.setValidityEnabled(sourceClass.isValidityEnabled());
 		targetClass.setValidityTimelapse(sourceClass.getValidityTimelapse());
@@ -579,6 +581,27 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 
 		return targetClass;
+	}
+
+	private String cloneIssuerString(String sourceIssuerString, RepositoryEntry targetEntry) {
+		if (targetEntry == null) {
+			return sourceIssuerString;
+		}
+
+		if (!StringHelper.containsNonWhitespace(sourceIssuerString)) {
+			return sourceIssuerString;
+		}
+
+		String urlPart = "/url/RepositoryEntry/";
+		int index = sourceIssuerString.indexOf(urlPart);
+		if (index != -1) {
+			Profile profile = new Profile(new JSONObject(sourceIssuerString));
+			String clonedUrl = Settings.getServerContextPathURI() + urlPart + targetEntry.getKey();
+			profile.setUrl(clonedUrl);
+			return profile.asJsonObject(Constants.TYPE_VALUE_ISSUER).toString();
+		}
+
+		return sourceIssuerString;
 	}
 
 	private void copyFile(File sourceDirectory, String sourceFileName, VFSContainer targetContainer,
