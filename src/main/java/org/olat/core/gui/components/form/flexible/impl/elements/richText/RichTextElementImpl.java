@@ -253,10 +253,8 @@ public class RichTextElementImpl extends AbstractTextElement implements
 				component.setCurrentTextMode(TextMode.multiLine);
 			} else if(TextMode.oneLine.name().equals(cmd)) {
 				component.setCurrentTextMode(TextMode.oneLine);
-			} else if(StringHelper.containsNonWhitespace(browser)) {
-				component.dispatchRequest(ureq);
-				component.setDirty(false);
-			} else if (StringHelper.containsNonWhitespace(recordAudio)) {
+			} else if(StringHelper.containsNonWhitespace(browser)
+					|| StringHelper.containsNonWhitespace(recordAudio)) {
 				component.dispatchRequest(ureq);
 				component.setDirty(false);
 			}
@@ -273,13 +271,11 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		VFSContainer baseContainer = configuration.getLinkBrowserBaseContainer();
 		VFSItem item = baseContainer.resolve(name);
 		
-		VFSLeaf newFile = null;
-		if(item == null) {
-			newFile = baseContainer.createChildLeaf(name);
-		} else {
+		VFSLeaf newFile;
+		if(item != null) {
 			name = VFSManager.rename(baseContainer, name);
-			newFile = baseContainer.createChildLeaf(name);
-		}	
+		}
+		newFile = baseContainer.createChildLeaf(name);
 		VFSManager.copyContent(file, newFile, ureq.getIdentity());
 		JSONObject response = new JSONObject();
 		response.put("location", newFile.getName());
@@ -339,23 +335,6 @@ public class RichTextElementImpl extends AbstractTextElement implements
 					"the submit button first the onchange event will be triggered and you have to click twice to submit the data. ");
 		}
 	}
-	
-	public static class TextModeState {
-		
-		private final TextMode currentMode;
-		private final List<TextMode> availableTextModes;
-		
-		public TextModeState(TextMode currentMode, List<TextMode> availableTextModes) {
-			this.currentMode = currentMode;
-			this.availableTextModes = availableTextModes;
-		}
 
-		public TextMode getCurrentMode() {
-			return currentMode;
-		}
-
-		public List<TextMode> getAvailableTextModes() {
-			return availableTextModes;
-		}
-	}
+	public record TextModeState(TextMode currentMode, List<TextMode> availableTextModes) { }
 }

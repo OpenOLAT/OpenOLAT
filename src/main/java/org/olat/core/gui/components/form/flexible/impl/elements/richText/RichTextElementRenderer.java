@@ -77,8 +77,8 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			TextMode currentTextMode;
 			if(te.getEditorConfiguration().getTextModes().size() > 1) {
 				TextModeState textModeState = te.getAvailableTextModes();
-				currentTextMode = textModeState.getCurrentMode();
-				List<TextMode> modes = textModeState.getAvailableTextModes();
+				currentTextMode = textModeState.currentMode();
+				List<TextMode> modes = textModeState.availableTextModes();
 				if(!modes.isEmpty()) {
 					Form form = te.getRootForm();
 					sb.append("<div class='o_richtext_mce_modes'><div class='btn-group'>");
