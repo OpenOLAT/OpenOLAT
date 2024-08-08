@@ -262,7 +262,7 @@ public class LTIRunController extends BasicController {
 			
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval, assessmentConfig,
-					null, null, null, null);
+					null, null, null, null, false, false);
 			listenTo(assessmentParticipantViewCtrl);
 			startPage.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 

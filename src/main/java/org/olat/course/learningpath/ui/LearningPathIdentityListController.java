@@ -61,6 +61,7 @@ import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.LearningPathIdentityDataModel.LearningPathIdentityCols;
+import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -166,7 +167,12 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.progress,
 				new LearningProgressCompletionCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.passed, new PassedCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.score, new ScoreCellRenderer()));
+		
+		boolean scoreScaling = ScoreScalingHelper.isEnabled(coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode());
+		if (scoreScaling) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.scoreWeighted, new ScoreCellRenderer()));
+		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!scoreScaling, LearningPathIdentityCols.score, new ScoreCellRenderer()));
 		
 		dataModel = new LearningPathIdentityDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -226,8 +232,9 @@ public class LearningPathIdentityListController extends FormBasicController impl
 			Double completion = assessmentEntry != null ? assessmentEntry.getCompletion(): null;
 			Boolean passed = assessmentEntry != null ? assessmentEntry.getPassed(): null;
 			BigDecimal score = assessmentEntry != null && assessmentEntry.getScore() != null? assessmentEntry.getScore(): null;
+			BigDecimal weightedScore = assessmentEntry != null && assessmentEntry.getWeightedScore() != null? assessmentEntry.getWeightedScore(): null;
 			LearningPathIdentityRow row = new LearningPathIdentityRow(coachedIdentity, userPropertyHandlers,
-					getLocale(), completion, passed, score);
+					getLocale(), completion, passed, score, weightedScore);
 			rows.add(row);
 		}
 		dataModel.setObjects(rows);

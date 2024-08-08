@@ -39,13 +39,15 @@ public class LearningPathIdentityRow extends UserPropertiesRow implements Comple
 	private final Double completion;
 	private final Boolean passed;
 	private final BigDecimal score;
+	private final BigDecimal weightedScore;
 
 	public LearningPathIdentityRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale,
-			Double completion, Boolean passed, BigDecimal score) {
+			Double completion, Boolean passed, BigDecimal score, BigDecimal weightedScore) {
 		super(identity, userPropertyHandlers, locale);
 		this.completion = completion;
 		this.passed = passed;
 		this.score = score;
+		this.weightedScore = weightedScore;
 	}
 
 	@Override
@@ -60,6 +62,10 @@ public class LearningPathIdentityRow extends UserPropertiesRow implements Comple
 
 	public BigDecimal getScore() {
 		return score;
+	}
+
+	public BigDecimal getWeightedScore() {
+		return weightedScore;
 	}
 
 }

@@ -85,7 +85,7 @@ public class GTACoachGradingDetailsController extends FormBasicController implem
 		FormEvaluationSupplier formEvaluationSupplier = formEvaluation(assessedUserCourseEnv, gtaNode, assessmentConfig);
 		
 		participantViewController = new AssessmentParticipantViewController(ureq, getWindowControl(),
-				assessmentEval, assessmentConfig, this, gradeSystemSupplier, formEvaluationSupplier, null);
+				assessmentEval, assessmentConfig, this, gradeSystemSupplier, formEvaluationSupplier, null, false, false);
 		listenTo(participantViewController);
 		
 		initForm(ureq);
