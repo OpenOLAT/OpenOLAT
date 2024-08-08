@@ -598,13 +598,28 @@ public class LoginModule extends AbstractSpringModule {
 	/**
 	 * Must be called upon each login attempt. Returns true
 	 * if number of login attempts has reached the set limit.
-	 * @param login
+	 * 
+	 * @param login The user name
 	 * @return True if further logins will be prevented (i.e. max attempts reached).
 	 */
 	public final boolean registerFailedLoginAttempt(String login) {
-		if (!attackPreventionEnabled) return false;
-		Integer numAttempts = failedLoginCache.get(login);
+		return registerFailedLoginAttempt(login, 1);
+	}
+	
+	/**
+	 * Must be called upon each login attempt. Returns true
+	 * if number of login attempts has reached the set limit.
+	 * 
+	 * @param login The user name
+	 * @param attemptsFactor Multiple the max number of attempts (Windows WebDAV client will send 7 requests at once, don't block at the first real attempt)
+	 * @return True if further logins will be prevented (i.e. max attempts reached).
+	 */
+	public final boolean registerFailedLoginAttempt(String login, int attemptsFactor) {
+		if (!attackPreventionEnabled) {
+			return false;
+		}
 		
+		Integer numAttempts = failedLoginCache.get(login);
 		if (numAttempts == null) { // create new entry
 			numAttempts = Integer.valueOf(1);
 			failedLoginCache.put(login, numAttempts);
@@ -612,7 +627,7 @@ public class LoginModule extends AbstractSpringModule {
 			numAttempts = Integer.valueOf(numAttempts.intValue() + 1);
 			failedLoginCache.update(login, numAttempts);
 		}		
-		return (numAttempts.intValue() > attackPreventionMaxAttempts);
+		return (numAttempts.intValue() > (attemptsFactor * attackPreventionMaxAttempts));
 	}
 	
 	/**

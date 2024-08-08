@@ -122,6 +122,9 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 
 	public Identity digestAuthentication(String httpMethod, DigestAuthentication digestAuth) {
 		String username = digestAuth.getUsername();
+		if(loginModule.isLoginBlocked(username)) {
+			return null;
+		}
 		
 		List<String> providers = new ArrayList<>(3);
 		providers.add(PROVIDER_HA1);
@@ -138,6 +141,8 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				}
 			}
 		}
+		
+		registerLoginFailed(username, 5);
 		return null;
 	}
 	
@@ -165,6 +170,10 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 
 	@Override
 	public Identity authenticate(String login, String password, AuthenticationStatus status) {
+		if(loginModule.isLoginBlocked(login)) {
+			return null;
+		}
+		
 		List<String> providers = new ArrayList<>(3);
 		providers.add(PROVIDER_WEBDAV);
 		if (userModule.isEmailUnique()) {
@@ -175,7 +184,11 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		List<Authentication> authentications = securityManager.findAuthenticationsByAuthusername(login, providers);
 		if(authentications == null || authentications.isEmpty()) {
 			//fallback to standard OLAT authentication
-			return olatAuthenticationSpi.authenticate(login, password, status);
+			Identity authIdentity = olatAuthenticationSpi.authenticate(login, password, status);
+			if(authIdentity == null) {
+				registerLoginFailed(login, 1);
+			}
+			return authIdentity;
 		}
 		
 		Identity authenticatedIdentity = authentications.get(0).getIdentity();
@@ -194,7 +207,16 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				return authentication.getIdentity();
 			}
 		}
+		registerLoginFailed(login, 1);
 		return null;
+	}
+	
+	private void registerLoginFailed(String login, int concurrentFactor) {
+		if (loginModule.registerFailedLoginAttempt(login, concurrentFactor)) {
+			log.info("Too many failed login attempts for {}.", login);
+		} else {
+			log.warn("Login failed: {}", login);
+		}
 	}
 	
 	@Override
