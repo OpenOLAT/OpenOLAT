@@ -1254,7 +1254,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	private void doConfirmDelete(UserRequest ureq) {
 		catModificationLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, getIdentity(), LOCK_TOKEN, getWindow());
 		if ( catModificationLock.isSuccess()) {
-			String[] trnslP = { catalogEntry.getName() };
+			String[] trnslP = { StringHelper.escapeHtml(catalogEntry.getName()) };
 			dialogDeleteSubtree = activateYesNoDialog(ureq, null, translate("dialog.modal.subtree.delete.text", trnslP), dialogDeleteSubtree);
 		} else {
 			showLockError();
@@ -1262,7 +1262,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, CatalogEntryRow row) {
-		String[] trnslP = { row.getDisplayname() };
+		String[] trnslP = { StringHelper.escapeHtml(row.getDisplayname()) };
 		dialogDeleteLink = activateYesNoDialog(ureq, null, translate("dialog.modal.leaf.delete.text", trnslP), dialogDeleteLink);
 		dialogDeleteLink.setUserObject(row);
 	}
