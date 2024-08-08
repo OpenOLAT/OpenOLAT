@@ -135,7 +135,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, wControl, assessmentEval,
 				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode),
-				formEvaluation(userCourseEnv, courseNode, assessmentConfig), panelInfo);
+				formEvaluation(userCourseEnv, courseNode, assessmentConfig), panelInfo, false, false);
 		listenTo(assessmentParticipantViewCtrl);
 		myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 		

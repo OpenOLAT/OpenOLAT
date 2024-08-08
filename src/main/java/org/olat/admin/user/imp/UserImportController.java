@@ -58,6 +58,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
@@ -100,6 +101,7 @@ public class UserImportController extends BasicController {
 	private VelocityContainer mainVC;
 	private Link startLink;
 	
+	private final Roles actingRoles;
 	private final Organisation preselectedOrganisation;
 	
 	private StepsMainRunController importStepsController;
@@ -137,6 +139,8 @@ public class UserImportController extends BasicController {
 		super(ureq, wControl);
 		this.preselectedOrganisation = preselectedOrganisation;
 		this.canCreateOLATPassword = canCreateOLATPassword;
+		actingRoles = ureq.getUserSession().getRoles();
+		
 		mainVC = createVelocityContainer("importindex");
 		startLink = LinkFactory.createButton("import.start", mainVC, this);
 		startLink.setElementCssClass("o_sel_id_start_import_user_button");
@@ -224,7 +228,17 @@ public class UserImportController extends BasicController {
 	}
 	
 	private Identity doUpdateIdentity(UpdateIdentity userToUpdate, Boolean updateUsers, Boolean updatePassword, ImportReport report) {
-		Identity identity;
+		Identity identity = userToUpdate.getIdentity();
+		Roles roles = securityManager.getRoles(identity, true);
+		boolean canManagedCritical = actingRoles.isManagerOf(OrganisationRoles.administrator, roles)
+				|| (actingRoles.isManagerOf(OrganisationRoles.rolesmanager, roles) && !roles.isAdministrator() && !roles.isSystemAdmin())
+				|| (actingRoles.isManagerOf(OrganisationRoles.usermanager, roles) && !roles.isAdministrator() && !roles.isSystemAdmin() && !roles.isRolesManager());
+		
+		if(!canManagedCritical) {
+			report.addError(translate("error.not.enough.privileges"));
+			return identity;
+		}
+
 		if(updateUsers != null && updateUsers.booleanValue()) {
 			identity = userToUpdate.getIdentity(true);
 			String oldEmail = loadEmail(identity);
@@ -232,10 +246,8 @@ public class UserImportController extends BasicController {
 				report.incrementUpdatedUser();
 				securityManager.deleteInvalidAuthenticationsByEmail(oldEmail);
 			}
-		} else {
-			identity = userToUpdate.getIdentity();
 		}
-		
+
 		String password = userToUpdate.getPassword();
 		if(StringHelper.containsNonWhitespace(password)) {
 			if(password.startsWith(SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {

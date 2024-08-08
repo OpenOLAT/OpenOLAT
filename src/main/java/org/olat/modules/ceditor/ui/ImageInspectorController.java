@@ -317,6 +317,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		
 		String[] descriptionValues = new String[] { translate("image.description.show") };
 		descriptionEnableEl = uifactory.addCheckboxesHorizontal("image.description", "image.description", layoutCont, onKeys, descriptionValues);
+		descriptionEnableEl.setAjaxOnly(true);
 		descriptionEnableEl.addActionListener(FormEvent.ONCHANGE);
 		
 		descriptionEl = uifactory.addTextAreaElement("image.description.content", 4, 60, null, layoutCont);

@@ -463,7 +463,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController implem
 			if (Mode.none != assessmentConfig.getScoreMode() || Mode.none != assessmentConfig.getPassedMode()) {
 				assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(),
 						assessmentEval, assessmentConfig, this, gradeSystem(userCourseEnv, courseNode),
-						formEvaluation(userCourseEnv, courseNode, assessmentConfig), panelInfo);
+						formEvaluation(userCourseEnv, courseNode, assessmentConfig), panelInfo, false, false);
 				listenTo(assessmentParticipantViewCtrl);
 				assessmentInfosContainer.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 				

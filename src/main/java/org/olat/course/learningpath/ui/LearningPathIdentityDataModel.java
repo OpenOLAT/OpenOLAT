@@ -64,6 +64,7 @@ implements SortableFlexiTableDataModel<LearningPathIdentityRow>, ExportableFlexi
 				case progress: return row;
 				case completion: return row.getCompletion();
 				case passed: return row.getPassed();
+				case scoreWeighted: return row.getWeightedScore();
 				case score: return row.getScore();
 				default: return "ERROR";
 			}
@@ -96,6 +97,7 @@ implements SortableFlexiTableDataModel<LearningPathIdentityRow>, ExportableFlexi
 		progress("table.header.completion"),
 		completion("table.header.completion"),
 		passed("table.header.passed"),
+		scoreWeighted("table.header.score.weighted"),
 		score("table.header.score");
 		
 		private final String i18nKey;

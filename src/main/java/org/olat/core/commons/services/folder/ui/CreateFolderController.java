@@ -69,6 +69,7 @@ public class CreateFolderController extends FormBasicController {
 		textElementEl = uifactory.addTextElement("fileName", "folder.name", -1, "", formLayout);
 		textElementEl.setDisplaySize(20);
 		textElementEl.setMandatory(true);
+		textElementEl.setFocus(true);
 		textElementEl.setElementCssClass("o_sel_folder_new_folder_name");
 		
 		FormLayoutContainer formButtons = FormLayoutContainer.createButtonLayout("formButton", getTranslator());

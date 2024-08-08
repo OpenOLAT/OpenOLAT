@@ -19,7 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -108,6 +108,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class AssessmentParticipantViewController extends BasicController implements Activateable2 {
+	
+	private final static DecimalFormat SCALE_FORMAT = new DecimalFormat("0.#");
 
 	private int counter = 0;
 	private final VelocityContainer mainVC;
@@ -121,6 +123,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	private final GradeSystemSupplier gradeSystemSupplier;
 	private final FormEvaluationSupplier formEvaluationSupplier;
 	private final PanelInfo panelInfo;
+	private final boolean displayWeightedScoreAsScore;
+	private final boolean avgScoreConfig;
 	private String mapperUri;
 	private final Roles roles;
 	
@@ -138,7 +142,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	public AssessmentParticipantViewController(UserRequest ureq, WindowControl wControl,
 			AssessmentEvaluation assessmentEval, AssessmentConfig assessmentConfig,
 			AssessmentDocumentsSupplier assessmentDocumentsSupplier, GradeSystemSupplier gradeSystemSupplier,
-			FormEvaluationSupplier formEvaluationSupplier, PanelInfo panelInfo) {
+			FormEvaluationSupplier formEvaluationSupplier, PanelInfo panelInfo, boolean displayWeightedScoreAsScore,
+			boolean avgScoreConfig) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
@@ -150,6 +155,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		this.gradeSystemSupplier = gradeSystemSupplier;
 		this.formEvaluationSupplier = formEvaluationSupplier;
 		this.panelInfo = panelInfo;
+		this.displayWeightedScoreAsScore = displayWeightedScoreAsScore;
+		this.avgScoreConfig = avgScoreConfig;
 		roles = ureq.getUserSession().getRoles();
 		
 		mainVC = createVelocityContainer("participant_view");
@@ -211,7 +218,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 			
 			Float maxScore = assessmentConfig.getMaxScore();
 			if (maxScore != null && maxScore > 0) {
-				scoreWidget.setDesc(translate("score.of", AssessmentHelper.getRoundedScore(maxScore)));
+				String scoreDescI18nKey = avgScoreConfig ? "score.of.avg": "score.of";
+				scoreWidget.setDesc(translate(scoreDescI18nKey, AssessmentHelper.getRoundedScore(maxScore)));
 				
 				scoreProgress = new ProgressBar("scoreProgress", 100, progress, maxScore, null);
 				scoreProgress.setWidthInPercent(true);
@@ -222,23 +230,36 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				scoreWidget.setAdditionalCssClass("o_widget_progress");
 			}
 			
-			BigDecimal scoreScale = assessmentEval.getScoreScale();
-			if(scoreScale != null && assessmentConfig.isScoreScalingEnabled()
-					&& !ScoreScalingHelper.equals(BigDecimal.ONE, scoreScale)) {
-				
-				if (resultsVisible) {
-					
-					String scale = assessmentConfig.getScoreScale();
-					String i18nLabel =  ScoreScalingHelper.isFractionScale(scale)
-							? "score.weighted.fraction" : "score.weighted.decorated";
-					scoreWWeightedWidget = WidgetFactory.createFigureWidget("scoreWeighted", null,
-							translate("score"), translate("score.weighted.subtitle"), "o_icon_score_unbalanced",
-							AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore()), null,
-							translate(i18nLabel, scale), null, null, null);
+			if (assessmentConfig.isScoreScalingEnabled()) {
+				if (displayWeightedScoreAsScore) {
+					Float weightedScore = assessmentEval.getWeightedScore();
+					if (weightedScore != null) {
+						scoreWidget.setSubTitle(translate("score.weighted.subtitle"));
+						scoreWidget.setValue(AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore()));
+						if (assessmentEval.getWeightedMaxScore() != null) {
+							scoreWidget.setDesc(translate("score.of", AssessmentHelper.getRoundedScore(assessmentEval.getWeightedMaxScore())));
+						}
+					}
 				} else {
-					scoreWWeightedWidget = WidgetFactory.createTextWidget("scoreWeighted", null, translate("score"),
-							translate("score.weighted.subtitle"), "o_icon_score_unbalanced",
-							translate("assessment.value.not.visible"), null, null, null, null);
+					if (resultsVisible) {
+						String weightedScore = AssessmentHelper.getRoundedScore(assessmentEval.getWeightedScore());
+						String weightedMaxScore = AssessmentHelper.getRoundedScore(assessmentEval.getWeightedMaxScore());
+						String scale = "";
+						try {
+							scale = SCALE_FORMAT.format(Double.valueOf(assessmentConfig.getScoreScale()));
+						} catch (NumberFormatException e) {
+							// should not happen
+						}
+						String i18nLabel =  ScoreScalingHelper.isFractionScale(scale)
+								? "score.weighted.fraction.desc" : "score.weighted.decorated.desc";
+						scoreWWeightedWidget = WidgetFactory.createFigureWidget("scoreWeighted", null,
+								translate("score"), translate("score.weighted.subtitle"), "o_icon_score_unbalanced",
+								weightedScore, null, translate(i18nLabel, weightedMaxScore, scale), null, null, null);
+					} else {
+						scoreWWeightedWidget = WidgetFactory.createTextWidget("scoreWeighted", null, translate("score"),
+								translate("score.weighted.subtitle"), "o_icon_score_unbalanced",
+								translate("assessment.value.not.visible"), null, null, null, null);
+					}
 				}
 			}
 		}

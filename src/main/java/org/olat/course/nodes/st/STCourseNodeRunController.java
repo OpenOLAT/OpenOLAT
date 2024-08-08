@@ -122,9 +122,11 @@ public class STCourseNodeRunController extends BasicController {
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		if (userCourseEnv.isParticipant() && (hasScore || hasPassed)) {
+			String scoreKey = stCourseNode.getModuleConfiguration().getStringValue(STCourseNode.CONFIG_SCORE_KEY);
+			boolean avgScoreConfig = STCourseNode.CONFIG_SCORE_VALUE_AVG.equals(scoreKey);
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
 			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), se,
-					assessmentConfig, null, gradeSystem(userCourseEnv, stCourseNode), null, null);
+					assessmentConfig, null, gradeSystem(userCourseEnv, stCourseNode), null, null, true, avgScoreConfig);
 			listenTo(assessmentParticipantViewCtrl);
 			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 			

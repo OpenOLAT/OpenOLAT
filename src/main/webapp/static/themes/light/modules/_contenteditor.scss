@@ -1147,6 +1147,16 @@
 		width: 100%;
 		font-size: 0;
 
+		a.o_popover {
+			font-size: 14px;
+		}
+
+		figure.o_image figcaption {
+			font-size: 14px;
+			padding-top: 4px;
+			padding-bottom: 4px;
+		}
+
 		img {
 			border: 1px $o-portfolio-media-content-background-color solid;
 			border-radius: $o-panel-placeholder-border-radius;

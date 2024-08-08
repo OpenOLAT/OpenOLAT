@@ -141,7 +141,7 @@ public class CurriculumElementLearningPathListController extends FormBasicContro
 		for (Identity identity : identities) {
 			Double completion = identityKeyToCompletion.get(identity.getKey());
 			LearningPathIdentityRow row = new LearningPathIdentityRow(identity, userPropertyHandlers,
-					getLocale(), completion, null, null);
+					getLocale(), completion, null, null, null);
 			rows.add(row);
 		}
 		dataModel.setObjects(rows);

@@ -28,8 +28,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,6 +40,7 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.test.JunitTestHelper;
@@ -49,6 +48,8 @@ import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 
@@ -62,6 +63,8 @@ public class WebDAVManagerTest extends OlatTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private LoginModule loginModule;
 	@Autowired
 	private OLATAuthManager authManager;
 	@Autowired
@@ -179,6 +182,36 @@ public class WebDAVManagerTest extends OlatTestCase {
 		
 		UserSession deniedSession = webDAVManager.handleDigestAuthentication(digested, request);
 		Assert.assertNull(deniedSession);
+	}
+	
+	@Test
+	public void blockedDigestAuthentication() {
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-6");
+		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword(), new AuthenticationStatus());
+		dbInstance.commitAndCloseSession();// derived WebDAV authentications saved
+		
+		HttpServletRequest request = new MockHttpServletRequest();
+		String username = id.getUser().getEmail();
+		String nonce = UUID.randomUUID().toString();
+		String uri = "https://www.openolat.com";
+		String cnonce = UUID.randomUUID().toString();
+		String nc = "nc";
+		String qop = "auth";
+		String token = username + ":" + WebDAVManagerImpl.BASIC_AUTH_REALM + ":" + JunitTestHelper.PWD;
+		String digestedToken = Encoder.encrypt(token, null, Algorithm.md5_iso_8859_1);
+		String ha2 = Encoder.md5hash( ":" + uri);
+		String response = digestedToken + ":" + nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + ha2 + "-error";// Add an error
+		String digestedReponse = Encoder.md5hash(response);
+		
+		for(int i=10; i-->0; ) {
+			DigestAuthentication digested = new DigestAuthentication(username, WebDAVManagerImpl.BASIC_AUTH_REALM, nonce, uri, cnonce, nc, digestedReponse, qop);
+			UserSession usess = webDAVManager.handleDigestAuthentication(digested, request);
+			Assert.assertNull(usess);
+			dbInstance.commit();
+		}
+		
+		boolean blocked = loginModule.isLoginBlocked(username);
+		Assert.assertTrue(blocked);
 	}
 	
 	@Test

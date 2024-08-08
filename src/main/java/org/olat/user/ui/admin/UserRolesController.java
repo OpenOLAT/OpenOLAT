@@ -58,6 +58,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -225,16 +226,21 @@ public class UserRolesController extends FormBasicController {
 					roleKeys.toArray(new String[roleKeys.size()]),
 					roleValues.toArray(new String[roleValues.size()]));
 		if(organisations.size() > 1 || !organisation.getIdentifier().equals(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER)) {
-			rolesEl.setLabel("rightsForm.roles.for", new String[] { organisation.getDisplayName() });
+			rolesEl.setLabel("rightsForm.roles.for", new String[] { StringHelper.escapeHtml(organisation.getDisplayName()) });
 		}
 		rolesEl.setUserObject(new RolesElement(roleKeys, organisation, rolesEl));
 		rolesEl.addActionListener(FormEvent.ONCHANGE);
+		
+		boolean editedHasSomePermissions = editedRoles.isSystemAdmin() || editedRoles.isAdministrator() || editedRoles.isPrincipal()
+				|| editedRoles.isManager() || editedRoles.isAuthor();
 		
 		if(admin) {
 			rolesEl.setEnabled(new HashSet<>(roleKeys), true);
 		} else if(userManager) {
 			Set<String> enabled = new HashSet<>();
-			enabled.add(OrganisationRoles.invitee.name());
+			if(!editedHasSomePermissions) {
+				enabled.add(OrganisationRoles.invitee.name());
+			}
 			enabled.add(OrganisationRoles.user.name());
 			enabled.add(OrganisationRoles.author.name());
 			rolesEl.setEnabled(enabled, true);
@@ -243,7 +249,9 @@ public class UserRolesController extends FormBasicController {
 			rolesEl.setEnabled(disabled, false);
 		} else if(rolesManager) {
 			Set<String> enabled = new HashSet<>();
-			enabled.add(OrganisationRoles.invitee.name());
+			if(!editedHasSomePermissions) {
+				enabled.add(OrganisationRoles.invitee.name());
+			}
 			enabled.add(OrganisationRoles.user.name());
 			enabled.add(OrganisationRoles.author.name());
 			enabled.add(OrganisationRoles.curriculummanager.name());
@@ -372,13 +380,25 @@ public class UserRolesController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addToOrganisationButton == source) {
 			doAddToOrganisation(ureq);
-		} else if(source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement el = (MultipleSelectionElement)source;
-			if(el.getUserObject() instanceof RolesElement) {
-				((RolesElement)el.getUserObject()).checkInvitee();
-			}
+		} else if(source instanceof MultipleSelectionElement el
+				&& el.getUserObject() instanceof RolesElement uoRoles) {
+			validateInvitee(uoRoles);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void validateInvitee(RolesElement rolesEl) {
+		if(!rolesEl.hasInviteeSelected()) return;
+		
+		for(MultipleSelectionElement el:rolesEls) {
+			if(el.getUserObject() instanceof RolesElement uoRoles) {
+				if(uoRoles.hasInviteeSelected()) {
+					uoRoles.checkInvitee();
+				} else {
+					uoRoles.deselectAll();
+				}
+			}
+		}
 	}
 	
 	private void doAddToOrganisation(UserRequest ureq) {
@@ -418,10 +438,32 @@ public class UserRolesController extends FormBasicController {
 	 */
 	private void saveFormData() {
 		editedRoles = securityManager.getRoles(editedIdentity, false);
+		
+		checkInviteeInAllOrganisations();
 
 		for(MultipleSelectionElement rolesEl:rolesEls) {
-			if(rolesEl.isEnabled()) {
-				saveOrganisationRolesFormData((RolesElement)rolesEl.getUserObject());
+			if(rolesEl.isEnabled()
+					&& rolesEl.getUserObject() instanceof RolesElement rolesElement) {
+				saveOrganisationRolesFormData(rolesElement);
+			}
+		}
+	}
+	
+	private void checkInviteeInAllOrganisations() {
+		boolean isInvitee = false;
+		for(MultipleSelectionElement rolesEl:rolesEls) {
+			if(rolesEl.getUserObject() instanceof RolesElement rolesElement) {
+				rolesElement.checkInvitee();// Double check
+				isInvitee |= rolesElement.hasInviteeSelected();
+			}
+		}
+		
+		if(isInvitee) {
+			for(MultipleSelectionElement rolesEl:rolesEls) {
+				if(rolesEl.getUserObject() instanceof RolesElement rolesElement
+						&& !rolesElement.hasInviteeSelected()) {
+					rolesElement.deselectAll();
+				}
 			}
 		}
 	}
@@ -473,7 +515,7 @@ public class UserRolesController extends FormBasicController {
 		securityManager.updateRoles(getIdentity(), editedIdentity, updatedRoles);
 	}
 	
-	public class RolesElement {
+	public static class RolesElement {
 		
 		private final List<String> roleKeys;
 		private final Organisation organisation;
@@ -512,6 +554,15 @@ public class UserRolesController extends FormBasicController {
 			if(roleKeys.contains(k.name()) && enabled) {
 				rolesEl.select(k.name(), enabled);
 			}
+		}
+		
+		public void deselectAll() {
+			rolesEl.uncheckAll();
+		}
+		
+		public boolean hasInviteeSelected() {
+			Collection<String> keys = rolesEl.getSelectedKeys();
+			return keys.contains(OrganisationRoles.invitee.name());
 		}
 		
 		public void checkInvitee() {
