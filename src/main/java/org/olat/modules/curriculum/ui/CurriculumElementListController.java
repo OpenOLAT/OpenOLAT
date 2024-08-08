@@ -551,8 +551,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		if(source instanceof FormLink link) {
 			if("start".equals(link.getCmd())) {
 				CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)link.getUserObject();
 				doOpen(ureq, row, null);
@@ -578,8 +577,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 				doOpenCalendars(ureq, row);
 			}
 		} else if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				CurriculumElementWithViewsRow row = tableModel.getObject(se.getIndex());
 				if (row.isMember()) {
 					doOpen(ureq, row, null);					

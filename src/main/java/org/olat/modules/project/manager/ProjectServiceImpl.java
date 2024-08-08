@@ -1890,12 +1890,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	/*
 	 * Appointments
 	 */
-	
 	@Override
-	public ProjAppointment createAppointment(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Date startDay) {
-		// Add some time to start after the creation of the activity (below)
-		Date startDate = startDay != null? DateUtils.copyTime(startDay, DateUtils.addMinutes(new Date(), 1)): null;
-		Date endDate = startDate != null? DateUtils.addHours(startDate, 1): null;
+	public ProjAppointment createAppointment(Identity doer, ProjectBCFactory bcFactory, ProjProject project, Date startDate, Date endDate) {
 		return createAppointment(doer, bcFactory, true, project, startDate, endDate);
 	}
 	

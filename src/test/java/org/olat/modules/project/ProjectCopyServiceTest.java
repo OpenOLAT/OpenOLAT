@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.project.manager.ProjArtefactToArtefactDAO;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoPriority;
@@ -271,8 +272,8 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		ProjProject project = projectService.createProject(doer, new ProjectBCFactory(), doer);
 		Date startDate = new Date();
-		ProjAppointment appointment = projectService.createAppointment(doer, new ProjectBCFactory(), project, startDate);
-		Date endDate =  new Date();
+		Date endDate =  DateUtils.addHours(startDate, 1);
+		ProjAppointment appointment = projectService.createAppointment(doer, new ProjectBCFactory(), project, startDate, endDate);
 		String subject = random();
 		String description = random();
 		String location = random();
@@ -349,7 +350,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		projectService.deleteNoteSoftly(doer, note2);
 		ProjNote note3 = projectService.createNote(doer, project);
 		projectService.updateNote(doer, note2, null, "2", null);
-		ProjAppointment appointment = projectService.createAppointment(doer, new ProjectBCFactory(), project, new Date());
+		ProjAppointment appointment = projectService.createAppointment(doer, new ProjectBCFactory(), project, new Date(), DateUtils.addHours(new Date(), 1));
 		projectService.linkArtefacts(doer, note1.getArtefact(), appointment.getArtefact());
 		projectService.linkArtefacts(doer, note1.getArtefact(), note2.getArtefact());
 		projectService.linkArtefacts(doer, note1.getArtefact(), note3.getArtefact());

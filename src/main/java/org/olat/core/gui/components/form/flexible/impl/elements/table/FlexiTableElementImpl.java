@@ -1258,11 +1258,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(StringHelper.isLong(treeTableFocus)
 				&& dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			doTreeFocus(Integer.parseInt(treeTableFocus));
-		} else if(StringHelper.isLong(treeTableOpen)
-				&& dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+		} else if(StringHelper.isLong(treeTableOpen) && matchDispatchUri(dispatchuri)) {
 			doTreeOpen(Integer.parseInt(treeTableOpen));
-		} else if(StringHelper.isLong(treeTableClose)
-				&& dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+		} else if(StringHelper.isLong(treeTableClose) && matchDispatchUri(dispatchuri)) {
 			doTreeClose(Integer.parseInt(treeTableClose));
 		} else if(StringHelper.containsNonWhitespace(crumb)) {
 			doCrumb(crumb);
@@ -1316,6 +1314,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(getFormDispatchId().equals(dispatchuri) && doSelect(ureq)) {
 			//do select
 		}
+	}
+	
+	private boolean matchDispatchUri(String dispatchUri) {
+		return dispatchUri!= null && (
+				dispatchUri.equals(component.getFormDispatchId())
+				|| dispatchUri.equals(getRootForm().getFormItemContainer().getFormDispatchId()));
 	}
 	
 	private boolean doSelect(UserRequest ureq) {

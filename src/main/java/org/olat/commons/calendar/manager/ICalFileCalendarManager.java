@@ -708,6 +708,12 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		return vEvent;
 	}
 	
+	@Override
+	public KalendarEvent cloneKalendarEvent(KalendarEvent event) {
+		VEvent ve = getVEvent(event);
+		return getKalendarEvent(ve);
+	}
+	
 	/**
 	 * Build a KalendarEvent out of a source VEvent.
 	 * @param event
