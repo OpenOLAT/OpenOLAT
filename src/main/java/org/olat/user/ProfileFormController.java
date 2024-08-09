@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -112,6 +113,7 @@ public class ProfileFormController extends FormBasicController {
 	private boolean portraitDeleted = false;
 	private boolean logoDeleted = false;
 	private boolean emailChanged = false;
+	private final boolean canManageCritical;
 	private String changedEmail;
 	private String currentEmail;
 	
@@ -121,6 +123,8 @@ public class ProfileFormController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private RegistrationManager registrationManager;
 	@Autowired
@@ -161,8 +165,12 @@ public class ProfileFormController extends FormBasicController {
 		this.identityToModify = identityToModify;
 		logoEnabled = userModule.isLogoByProfileEnabled();
 		
-		final Roles roles = securityManager.getRoles(identityToModify);
-		inviteeOnly = roles.isInviteeOnly();
+		final Roles editedRoles = securityManager.getRoles(identityToModify);
+		final Roles actingRoles = ureq.getUserSession().getRoles();
+		canManageCritical = securityModule.isUserAllowedCriticalUserChanges(actingRoles, editedRoles)
+				|| identityToModify.equals(getIdentity());
+		
+		inviteeOnly = editedRoles.isInviteeOnly();
 		usageIdentifier = inviteeOnly ? USAGE_INVITEE_IDENTIFIER : USAGE_USER_IDENTIFIER;
 		this.isAdministrativeUser = isAdministrativeUser;
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifier, isAdministrativeUser);
@@ -209,13 +217,13 @@ public class ProfileFormController extends FormBasicController {
 			String propertyName = userPropertyHandler.getName();
 			formItems.put(propertyName, formItem);
 			
-			if (formItem instanceof TextElement) {
+			if (formItem instanceof TextElement textElement) {
 				// it's a text field, so get the value of this property into the text field
-				TextElement textElement = (TextElement)formItem;
 				textElement.setValue(user.getProperty(propertyName, getLocale()));
-			} else if (formItem instanceof MultipleSelectionElement) {
+				textElement.setEnabled(textElement.isEnabled()
+						&& (!UserConstants.SECURITY_CRITICAL_PROPERTIES.contains(propertyName) || canManageCritical));
+			} else if (formItem instanceof MultipleSelectionElement checkbox) {
 				// it's a checkbox, so set the box to checked if the corresponding property is set to "true"
-				MultipleSelectionElement checkbox = (MultipleSelectionElement)formItem;
 				String value = user.getProperty(propertyName, getLocale());
 				if (value != null) {
 					checkbox.select(propertyName, value.equals("true"));

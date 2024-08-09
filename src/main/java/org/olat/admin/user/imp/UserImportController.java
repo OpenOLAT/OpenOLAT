@@ -61,6 +61,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -230,12 +231,9 @@ public class UserImportController extends BasicController {
 	private Identity doUpdateIdentity(UpdateIdentity userToUpdate, Boolean updateUsers, Boolean updatePassword, ImportReport report) {
 		Identity identity = userToUpdate.getIdentity();
 		Roles roles = securityManager.getRoles(identity, true);
-		boolean canManagedCritical = actingRoles.isManagerOf(OrganisationRoles.administrator, roles)
-				|| (actingRoles.isManagerOf(OrganisationRoles.rolesmanager, roles) && !roles.isAdministrator() && !roles.isSystemAdmin())
-				|| (actingRoles.isManagerOf(OrganisationRoles.usermanager, roles) && !roles.isAdministrator() && !roles.isSystemAdmin() && !roles.isRolesManager());
-		
+		boolean canManagedCritical = securityModule.isUserAllowedCriticalUserChanges(actingRoles, roles);
 		if(!canManagedCritical) {
-			report.addError(translate("error.not.enough.privileges"));
+			getLogger().info(Tracing.M_AUDIT, "Not engough privieleges to update user: {}", identity);
 			return identity;
 		}
 
@@ -247,7 +245,8 @@ public class UserImportController extends BasicController {
 				securityManager.deleteInvalidAuthenticationsByEmail(oldEmail);
 			}
 		}
-
+		
+		
 		String password = userToUpdate.getPassword();
 		if(StringHelper.containsNonWhitespace(password)) {
 			if(password.startsWith(SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
@@ -275,6 +274,7 @@ public class UserImportController extends BasicController {
 				&& !organisationservice.hasRole(identity, preselectedOrganisation, OrganisationRoles.user)) {
 			organisationservice.addMember(preselectedOrganisation, identity, OrganisationRoles.user);
 		}
+
 		return identity;
 	}
 	

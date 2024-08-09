@@ -24,8 +24,10 @@
 */
 package org.olat.core.id;
 
-public class UserConstants {
+import java.util.List;
 
+public class UserConstants {
+	
 	/**
 	 * User fields keys
 	 */
@@ -104,5 +106,8 @@ public class UserConstants {
 	public static final String NOTIFICATION_INTERVAL = "notification_interval";
 	/** PRESENCEMESSAGEPUBLIC user field identifier. */
 	public static final String PRESENCEMESSAGEPUBLIC = "presenceMessagePublic";
+
+	
+	public static final List<String> SECURITY_CRITICAL_PROPERTIES = List.of(EMAIL, INSTITUTIONALEMAIL, NICKNAME);
 
 }

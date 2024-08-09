@@ -171,7 +171,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		flc.getFormItemComponent().put("home", homeLink);
 		
 		Roles roles = securityManager.getRoles(student);
-		if (coachingModule.isResetPasswordEnabled() && !(roles.isAuthor() || roles.isManager() || roles.isAdministrator() || roles.isSystemAdmin() || roles.isPrincipal())) {
+		if (coachingModule.isResetPasswordEnabled() && !(roles.isMoreThanUser())) {
 			resetLink = LinkFactory.createButton("reset.link", flc.getFormItemComponent(), this);
 			resetLink.setIconLeftCSS("o_icon o_icon_password");
 			flc.getFormItemComponent().put("reset", resetLink);
