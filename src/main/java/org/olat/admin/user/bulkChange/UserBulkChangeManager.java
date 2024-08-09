@@ -34,6 +34,7 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
 import org.olat.admin.user.UserAdminController;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
@@ -97,6 +98,8 @@ public class UserBulkChangeManager implements InitializingBean {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
@@ -137,98 +140,94 @@ public class UserBulkChangeManager implements InitializingBean {
 			String errorDesc = "";
 			boolean updateError = false;
 			
-			boolean canManagedCritical = actingRoles.isManagerOf(OrganisationRoles.administrator, roles)
-					|| (actingRoles.isManagerOf(OrganisationRoles.rolesmanager, roles) && !roles.isAdministrator() && !roles.isSystemAdmin())
-					|| (actingRoles.isManagerOf(OrganisationRoles.usermanager, roles) && !roles.isAdministrator() && !roles.isSystemAdmin() && !roles.isRolesManager());
-
-			// change pwd
-			if (attributeChangeMap.containsKey(CRED_IDENTIFYER)) {
-				String password = attributeChangeMap.get(CRED_IDENTIFYER);
-				if (StringHelper.containsNonWhitespace(password)) {
-					ValidationResult validationResult = syntaxValidator.validate(password, identity);
-					if (!validationResult.isValid()) {
-						String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(),
-								transWithFallback.getLocale());
-						errorDesc = transWithFallback.translate("error.password", descriptions);
-						updateError = true;
+			boolean canManagedCritical2 = securityModule.isUserAllowedCriticalUserChanges(actingRoles, roles);
+			if(canManagedCritical2) {
+				// change pwd
+				if (attributeChangeMap.containsKey(CRED_IDENTIFYER)) {
+					String password = attributeChangeMap.get(CRED_IDENTIFYER);
+					if (StringHelper.containsNonWhitespace(password)) {
+						ValidationResult validationResult = syntaxValidator.validate(password, identity);
+						if (!validationResult.isValid()) {
+							String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(),
+									transWithFallback.getLocale());
+							errorDesc = transWithFallback.translate("error.password", descriptions);
+							updateError = true;
+						}
+					} else {
+						password = null;
 					}
-				} else {
-					password = null;
+					
+					olatAuthManager.changePasswordAsAdmin(identity, password);
+				}
+	
+				// set language
+				String userLanguage = user.getPreferences().getLanguage();
+				if (attributeChangeMap.containsKey(LANG_IDENTIFYER)) {
+					String inputLanguage = attributeChangeMap.get(LANG_IDENTIFYER);
+					if (!userLanguage.equals(inputLanguage)) {
+						Preferences preferences = user.getPreferences();
+						preferences.setLanguage(inputLanguage);
+						user.setPreferences(preferences);
+					}
+				}
+	
+				Context vcContext = new VelocityContext();
+				// set all properties as context
+				setUserContext(identity, vcContext);
+				// loop for each property configured in
+				// src/serviceconfig/org/olat/_spring/olat_userconfig.xml -> Key:
+				// org.olat.admin.user.bulkChange.UserBulkChangeStep00
+				for (int k = 0; k < userPropertyHandlers.size(); k++) {
+					UserPropertyHandler propHandler = userPropertyHandlers.get(k);
+					String propertyName = propHandler.getName();
+					if (attributeChangeMap.containsKey(propertyName)) {
+						String inputFieldValue = attributeChangeMap.get(propertyName);
+						inputFieldValue = inputFieldValue.replace("$", "$!");
+						String evaluatedInputFieldValue = evaluateValueWithUserContext(inputFieldValue, vcContext);	
+						
+						// validate evaluated property-value
+						ValidationError validationError = new ValidationError();
+						// do validation checks with users current locale!
+						Locale locale = transWithFallback.getLocale();
+						if (!propHandler.isValidValue(identity.getUser(), evaluatedInputFieldValue, validationError, locale)) {
+							errorDesc = transWithFallback.translate(validationError.getErrorKey(), validationError.getArgs()) + " (" + evaluatedInputFieldValue + ")";
+							updateError = true;
+							break;
+						}
+						
+						String userValue = identity.getUser().getProperty(propertyName, null);
+						if (!evaluatedInputFieldValue.equals(userValue)) {
+							String stringValue = propHandler.getStringValue(evaluatedInputFieldValue, locale);
+							propHandler.setUserProperty(user, stringValue);
+						}
+					}
+	
+				} // for property handlers
+	
+				// set roles for identity
+				// loop over securityGroups defined above
+				Map<OrganisationRoles,String> roleChangeMap = userBulkChanges.getRoleChangeMap();
+				if(!roleChangeMap.isEmpty()) {
+					changeRoles(identity, roleChangeMap, userBulkChanges.getOrganisation(), actingIdentity);
 				}
 				
-				if (canManagedCritical) {
-					olatAuthManager.changePasswordAsAdmin(identity, password);
-				} else {
-					errorDesc = transWithFallback.translate("error.password",
-							transWithFallback.translate("error.password.cannot.manage.critical"));
-					updateError = true;
-				}
-			}
-
-			// set language
-			String userLanguage = user.getPreferences().getLanguage();
-			if (attributeChangeMap.containsKey(LANG_IDENTIFYER)) {
-				String inputLanguage = attributeChangeMap.get(LANG_IDENTIFYER);
-				if (!userLanguage.equals(inputLanguage)) {
-					Preferences preferences = user.getPreferences();
-					preferences.setLanguage(inputLanguage);
-					user.setPreferences(preferences);
-				}
-			}
-
-			Context vcContext = new VelocityContext();
-			// set all properties as context
-			setUserContext(identity, vcContext);
-			// loop for each property configured in
-			// src/serviceconfig/org/olat/_spring/olat_userconfig.xml -> Key:
-			// org.olat.admin.user.bulkChange.UserBulkChangeStep00
-			for (int k = 0; k < userPropertyHandlers.size(); k++) {
-				UserPropertyHandler propHandler = userPropertyHandlers.get(k);
-				String propertyName = propHandler.getName();
-				String userValue = identity.getUser().getProperty(propertyName, null);
-				String inputFieldValue = "";
-				if (attributeChangeMap.containsKey(propertyName)) {
-					inputFieldValue = attributeChangeMap.get(propertyName);
-					inputFieldValue = inputFieldValue.replace("$", "$!");
-					String evaluatedInputFieldValue = evaluateValueWithUserContext(inputFieldValue, vcContext);	
-					
-					// validate evaluated property-value
-					ValidationError validationError = new ValidationError();
-					// do validation checks with users current locale!
-					Locale locale = transWithFallback.getLocale();
-					if (!propHandler.isValidValue(identity.getUser(), evaluatedInputFieldValue, validationError, locale)) {
-						errorDesc = transWithFallback.translate(validationError.getErrorKey(), validationError.getArgs()) + " (" + evaluatedInputFieldValue + ")";
-						updateError = true;
-						break;
+				// set status
+				if (userBulkChanges.getStatus() != null) {
+					Integer status = userBulkChanges.getStatus();	
+					String newStatusText = getStatusText(status);
+					Integer oldStatus = identity.getStatus();
+					String oldStatusText = getStatusText(oldStatus);
+					if(!oldStatus.equals(status) && Identity.STATUS_LOGIN_DENIED.equals(status) && userBulkChanges.isSendLoginDeniedEmail()) {
+						sendLoginDeniedEmail(identity);
 					}
-
-					if (!evaluatedInputFieldValue.equals(userValue)) {
-						String stringValue = propHandler.getStringValue(evaluatedInputFieldValue, locale);
-							propHandler.setUserProperty(user, stringValue);
-					}
+					identity = securityManager.saveIdentityStatus(identity, status, actingIdentity);
+					log.info(Tracing.M_AUDIT, "User::{} changed account status for user::{} from::{} to::{}",
+							actingIdentity.getKey(), identity.getKey(), oldStatusText, newStatusText);
 				}
-
-			} // for property handlers
-
-			// set roles for identity
-			// loop over securityGroups defined above
-			Map<OrganisationRoles,String> roleChangeMap = userBulkChanges.getRoleChangeMap();
-			if(!roleChangeMap.isEmpty()) {
-				changeRoles(identity, roleChangeMap, userBulkChanges.getOrganisation(), actingIdentity);
-			}
-			
-			// set status
-			if (canManagedCritical && userBulkChanges.getStatus() != null) {
-				Integer status = userBulkChanges.getStatus();	
-				String newStatusText = getStatusText(status);
-				Integer oldStatus = identity.getStatus();
-				String oldStatusText = getStatusText(oldStatus);
-				if(!oldStatus.equals(status) && Identity.STATUS_LOGIN_DENIED.equals(status) && userBulkChanges.isSendLoginDeniedEmail()) {
-					sendLoginDeniedEmail(identity);
-				}
-				identity = securityManager.saveIdentityStatus(identity, status, actingIdentity);
-				log.info(Tracing.M_AUDIT, "User::{} changed account status for user::{} from::{} to::{}",
-						actingIdentity.getKey(), identity.getKey(), oldStatusText, newStatusText);
+			} else {
+				errorDesc = transWithFallback.translate("error.property",
+						transWithFallback.translate("error.cannot.manage.critical"));
+				updateError = true;
 			}
 
 			// persist changes:

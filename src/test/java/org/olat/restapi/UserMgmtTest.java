@@ -1451,7 +1451,45 @@ public class UserMgmtTest extends OlatRestTestCase {
 		Identity identity = securityManager.loadIdentityByKey(id.getKey());
 		String institutionalEmail = identity.getUser().getInstitutionalEmail();
 		Assert.assertTrue(institutionalEmail == null || institutionalEmail.isEmpty());
-	}	
+	}
+	
+	@Test
+	public void updateAdminUser_denied() throws IOException, URISyntaxException {
+		String login = "rolemanager-" + UUID.randomUUID();
+		User user = userManager.createUser(login, login, login + "@openolat.com");
+		Identity id = securityManager.createAndPersistIdentityAndUser(null, login, null, user, "OLAT", BaseSecurity.DEFAULT_ISSUER, null, login, "2change-very-often", null);
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		organisationService.addMember(organisation, id, OrganisationRoles.user);
+		organisationService.addMember(organisation, id, OrganisationRoles.rolesmanager);
+		dbInstance.commitAndCloseSession();
+	
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(login, "2change-very-often"));
+		
+		String newEmail = login + "@on.frentix.com";
+		// Find administrator
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("username")
+				.queryParam("username","administrator").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		UserVO adminVo = conn.parse(response, UserVO.class);
+		adminVo.setEmail(newEmail);
+		
+		URI updateRequest = UriBuilder.fromUri(getContextURI()).path("users").path(adminVo.getKey().toString()).build();
+		HttpPost updateMethod = conn.createPost(updateRequest, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(updateMethod, adminVo);
+		updateMethod.addHeader("Accept-Language", "en");
+		
+		HttpResponse updateResponse = conn.execute(updateMethod);
+		int  statusCode = updateResponse.getStatusLine().getStatusCode();
+		Assert.assertEquals(403, statusCode);
+		EntityUtils.consume(updateResponse.getEntity());
+		
+		Identity identity = securityManager.loadIdentityByKey(adminVo.getKey());
+		Assert.assertNotEquals(newEmail, identity.getUser().getEmail());
+	}
+	
 	
 	@Test
 	public void testDeleteUser() throws IOException, URISyntaxException {

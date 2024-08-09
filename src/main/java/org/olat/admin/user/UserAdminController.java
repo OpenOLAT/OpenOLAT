@@ -412,8 +412,12 @@ public class UserAdminController extends BasicController implements Activateable
 		if(identityRoles.hasRole(OrganisationRoles.sysadmin)) {
 			return getIdentity().equals(editedIdentity)
 					|| organisationService.hasRole(getIdentity(), OrganisationRoles.sysadmin)
-					|| managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
-					|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles);
+					|| managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
+		}
+		if(identityRoles.hasRole(OrganisationRoles.administrator)) {
+			return getIdentity().equals(editedIdentity)
+					|| organisationService.hasRole(getIdentity(), OrganisationRoles.administrator)
+					|| managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
 		}
 		
 		if(identityRoles.getOrganisations().isEmpty()) {
