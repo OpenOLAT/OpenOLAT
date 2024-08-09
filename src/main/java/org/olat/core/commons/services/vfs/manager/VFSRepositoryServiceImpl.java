@@ -866,7 +866,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
-	public void copyTo(VFSLeaf source, VFSLeaf target, VFSContainer parentTarget, Identity savedBy) {
+	public void copyTo(VFSItem source, VFSItem target, VFSContainer parentTarget, Identity savedBy) {
 		if(source.canMeta() != VFSStatus.YES || target.canMeta() != VFSStatus.YES) return;
 		
 		VFSMetadata sourceMetadata = source.getMetaInfo();
@@ -877,8 +877,9 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				if(targetMetadata == null) {
 					VFSMetadata parentMetadata = getMetadataFor(parentTarget);
 					String relativePath = getRelativePath(targetFile.getParentFile());
-					targetMetadata = metadataDao.createMetadata(UUID.randomUUID().toString(), relativePath, targetFile.getName(),
-							new Date(), targetFile.length(), false, targetFile.toURI().toString(), "file", parentMetadata);
+					targetMetadata = metadataDao.createMetadata(UUID.randomUUID().toString(), relativePath,
+							targetFile.getName(), new Date(), target instanceof VFSContainer ? 0 : targetFile.length(),
+							target instanceof VFSContainer, targetFile.toURI().toString(), "file", parentMetadata);
 				}
 				targetMetadata.copyValues(sourceMetadata, true);
 				if(source.canVersion() == VFSStatus.YES || target.canVersion() == VFSStatus.YES) {

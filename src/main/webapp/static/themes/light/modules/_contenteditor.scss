@@ -2738,3 +2738,11 @@ table.o_ce_table {
 		width: unset;
 	}
 }
+
+.basicLightbox {
+	&.o_lightbox_close_border.o_image_gallery_lightbox {
+		.basicLightbox__placeholder {
+			overflow-y: auto;
+		}
+	}
+}

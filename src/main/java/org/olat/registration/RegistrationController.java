@@ -459,7 +459,6 @@ public class RegistrationController extends BasicController implements Activatea
 				String body = translate("login.body", username) + SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
 				sendMessage(email, subject, body);
 			}
-			showError("email.notsent");
 		}
 	}
 	

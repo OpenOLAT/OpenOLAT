@@ -192,7 +192,7 @@ public class GalleryRunController extends BasicController implements PageRunElem
 			}
 		}
 
-		lightboxController = new LightboxController(ureq, getWindowControl(), imageComponent);
+		lightboxController = new LightboxController(ureq, getWindowControl(), imageComponent, "o_image_gallery_lightbox");
 		listenTo(lightboxController);
 		lightboxController.activate();
 	}
