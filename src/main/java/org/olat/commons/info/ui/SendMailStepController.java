@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageManager;

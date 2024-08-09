@@ -1485,7 +1485,7 @@
 						<test.env.msgraph.app.secret>${test.env.msgraph.app.secret}</test.env.msgraph.app.secret>
 						<test.env.msgraph.app.tenant>${test.env.msgraph.app.tenant}</test.env.msgraph.app.tenant>
 						<test.env.msgraph.teams.producer>${test.env.msgraph.teams.producer}</test.env.msgraph.teams.producer>
-						<arquillian.launch>tomcat-8-managed</arquillian.launch>
+						<arquillian.launch>tomcat-10-managed</arquillian.launch>
 						<webdriver.http.factory>jdk-http-client</webdriver.http.factory>
 						<webdriver.browser>${test.env.webdriver.browser}</webdriver.browser>
 						<webdriver.chrome.driver>${test.env.webdriver.chrome.driver}</webdriver.chrome.driver>
@@ -2020,7 +2020,7 @@
 		<dependency>
 			<groupId>org.sakaiproject.basiclti</groupId>
 			<artifactId>basiclti-util</artifactId>
-			<version>2.10.jee9</version>
+			<version>2.10.3</version>
 		</dependency>
 		<!-- J2EE dependencies but provided -->
 		<dependency>
@@ -2140,11 +2140,6 @@
 			<version>4.5.14</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.6</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.14.0</version>
@@ -2152,7 +2147,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.11.0</version>
+			<version>1.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.opencsv</groupId>
@@ -2510,8 +2505,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
-			<artifactId>arquillian-tomcat-managed-8</artifactId>
-			<version>1.1.0.Final</version>
+			<artifactId>arquillian-tomcat-managed-10</artifactId>
+			<version>1.2.1.Final</version>
 		<scope>test</scope>
       	</dependency>
 		<dependency>

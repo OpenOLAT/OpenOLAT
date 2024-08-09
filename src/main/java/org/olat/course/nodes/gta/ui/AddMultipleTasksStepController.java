@@ -27,7 +27,7 @@ import java.util.List;
 import net.sf.jazzlib.ZipEntry;
 import net.sf.jazzlib.ZipInputStream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;

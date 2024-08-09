@@ -22,7 +22,6 @@ package org.olat.core.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,9 +33,9 @@ public class FormatterTest {
 	
 	@Test
 	public void testEscapeHtml() {
-		Assert.assertEquals("abcdef&amp;&lt;&gt;", StringEscapeUtils.escapeHtml("abcdef&<>"));
-		Assert.assertEquals("&amp;#256;&lt;ba&gt;abcdef&amp;&lt;&gt;", StringEscapeUtils.escapeHtml("&#256;<ba>abcdef&<>"));
-		Assert.assertEquals("&amp;#256;\n&lt;ba&gt;\nabcdef&amp;&lt;&gt;", StringEscapeUtils.escapeHtml("&#256;\n<ba>\nabcdef&<>"));
+		Assert.assertEquals("abcdef&amp;&lt;&gt;", StringHelper.escapeHtml("abcdef&<>"));
+		Assert.assertEquals("&amp;#256;&lt;ba&gt;abcdef&amp;&lt;&gt;", StringHelper.escapeHtml("&#256;<ba>abcdef&<>"));
+		Assert.assertEquals("&amp;#256;\n&lt;ba&gt;\nabcdef&amp;&lt;&gt;", StringHelper.escapeHtml("&#256;\n<ba>\nabcdef&<>"));
 	}
 	
 	@Test

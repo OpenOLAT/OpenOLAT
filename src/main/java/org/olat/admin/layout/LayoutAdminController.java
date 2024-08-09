@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.olat.admin.SystemAdminMainController;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
@@ -202,7 +202,7 @@ public class LayoutAdminController extends FormBasicController {
 				URL url = new URL(value);
 				allOk &= StringHelper.containsNonWhitespace(url.getHost());
 			} catch (MalformedURLException e) {
-				el.setErrorKey("linkUrl.invalid", null);
+				el.setErrorKey("linkUrl.invalid");
 				showError("linkUrl.invalid");
 				allOk &= false;
 			}
