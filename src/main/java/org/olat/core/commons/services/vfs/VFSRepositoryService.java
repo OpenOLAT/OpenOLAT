@@ -173,7 +173,7 @@ public interface VFSRepositoryService {
 	 * @param parentTarget The parent container of the target (useful if the target is not fully initialized)
 	 * @param savedBy 
 	 */
-	public void copyTo(VFSLeaf source, VFSLeaf target, VFSContainer parentTarget, Identity savedBy);
+	public void copyTo(VFSItem source, VFSItem target, VFSContainer parentTarget, Identity savedBy);
 	
 	/**
 	 * This rename the metadata and the versions but not the file itself.

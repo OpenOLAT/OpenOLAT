@@ -217,52 +217,52 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		}
 		
 		// add either file bla.txt or folder blu as a child of this folder
-		if (source instanceof VFSContainer) {
-			// copy recursively
-			VFSContainer sourcecontainer = (VFSContainer)source;
-			// check if this is a containing container...
-			if (VFSManager.isSelfOrParent(sourcecontainer, this)) {
+		if (source instanceof VFSContainer sourceContainer) {
+			if (VFSManager.isSelfOrParent(sourceContainer, this)) {
 				log.warn("Cannot copy file {}  overlapping", this);
 				return VFSSuccess.ERROR_OVERLAPPING;
 			}
 			
 			// "copy" the container means creating a folder with that name
 			// and let the children copy
-
+			
 			// create the folder
-			LocalFolderImpl rootcopyfolder = new LocalFolderImpl(new File(basefile, sourcename), this);
-			List<VFSItem> children = sourcecontainer.getItems(new VFSOrFilter(List.of(new VFSRevisionsAndThumbnailsFilter(), new VFSSystemItemFilter())));
-			for (VFSItem chd:children) {
-				VFSSuccess status = rootcopyfolder.copyFrom(chd, false, savedBy);
+			LocalFolderImpl targetContainer = new LocalFolderImpl(new File(basefile, sourcename), this);
+			if (targetContainer.canMeta() == VFSStatus.YES) {
+				VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+				vfsRepositoryService.copyTo(sourceContainer, targetContainer, this, savedBy);
+			}
+			
+			// copy recursively
+			List<VFSItem> children = sourceContainer.getItems(new VFSOrFilter(List.of(new VFSRevisionsAndThumbnailsFilter(), new VFSSystemItemFilter())));
+			for (VFSItem child : children) {
+				VFSSuccess status = targetContainer.copyFrom(child , false, savedBy);
 				if (status != VFSSuccess.SUCCESS) {
-					log.warn("Cannot copy file {} with status {}", chd, status);
+					log.warn("Cannot copy file {} with status {}", child , status);
 				}
 			}
-		} else if (source instanceof VFSLeaf) {
-			// copy single item
-			VFSLeaf s = (VFSLeaf) source;
-			// check quota
+		} else if (source instanceof VFSLeaf sourceLeaf) {
 			if (checkQuota) {
 				long quotaLeft = VFSManager.getQuotaLeftKB(this);
-				if(quotaLeft != Quota.UNLIMITED && quotaLeft < (s.getSize() / 1024)) {
-					log.warn("Cannot copy file {} quota exceeded {}", s, quotaLeft);
+				if(quotaLeft != Quota.UNLIMITED && quotaLeft < (sourceLeaf.getSize() / 1024)) {
+					log.warn("Cannot copy file {} quota exceeded {}", sourceLeaf, quotaLeft);
 					return VFSSuccess.ERROR_QUOTA_EXCEEDED;
 				}
 			}
 			
 			File fTarget = new File(basefile, sourcename);
-			try(InputStream in=s.getInputStream()) {
+			try(InputStream in = sourceLeaf.getInputStream()) {
 				FileUtils.bcopy(in, fTarget, "VFScopyFrom");
 			} catch (Exception e) {
 				return VFSSuccess.ERROR_FAILED;
 			}
 			
 			VFSItem target = resolve(sourcename);
-			if (target instanceof VFSLeaf vfsLeaf) {
-				if (vfsLeaf.canMeta() == VFSStatus.YES) {
+			if (target instanceof VFSLeaf targetLeaf) {
+				if (targetLeaf.canMeta() == VFSStatus.YES) {
 					VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-					vfsRepositoryService.itemSaved(vfsLeaf, savedBy);
-					vfsRepositoryService.copyTo(s, vfsLeaf, this, savedBy);
+					vfsRepositoryService.itemSaved(targetLeaf, savedBy);
+					vfsRepositoryService.copyTo(sourceLeaf, targetLeaf, this, savedBy);
 				}
 			}
 		} else {
