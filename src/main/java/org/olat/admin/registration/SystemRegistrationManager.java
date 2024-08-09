@@ -33,10 +33,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
-import jakarta.ws.rs.core.UriBuilder;
-
-import org.apache.commons.lang.math.RandomUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -72,6 +70,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import jakarta.ws.rs.core.UriBuilder;
+
 /**
  * Description:<br>
  * This manager offers methods to store registration preferences and to register
@@ -91,6 +91,8 @@ public class SystemRegistrationManager implements InitializingBean {
 	private static final String SCHEDULER_NAME = "system.registration";
 	private static final String TRIGGER = "system_registration_trigger";
 	public static final String PRODUCT = "openolat";
+	
+	private Random rnd = new Random();
 
 	@Value("${cluster.mode}")
 	private String clusterMode;
@@ -130,9 +132,9 @@ public class SystemRegistrationManager implements InitializingBean {
 	private String createCronTriggerExpression() {
 		// Create a random hour and minute for the cronjob so that not every
 		// installation registers at the same time
-		int min = RandomUtils.nextInt(59);
-		int hour = RandomUtils.nextInt(23);
-		int day = RandomUtils.nextInt(6) + 1;
+		int min = rnd.nextInt(59);
+		int hour = rnd.nextInt(23);
+		int day = rnd.nextInt(6) + 1;
 		return "0 " + min + " " + hour + " ? * "+ day;
 	}
 

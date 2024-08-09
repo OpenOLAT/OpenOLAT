@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;

@@ -22,7 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
