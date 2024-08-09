@@ -37,6 +37,7 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -55,6 +56,7 @@ public class LightboxController extends BasicController {
 
 	private VelocityContainer mainVC;
 	private String lightboxId;
+	private String customClass;
 
 	public LightboxController(UserRequest ureq, WindowControl wControl, Controller contentCtrl) {
 		super(ureq, wControl);
@@ -63,8 +65,9 @@ public class LightboxController extends BasicController {
 		init(contentCtrl.getInitialComponent());
 	}
 	
-	public LightboxController(UserRequest ureq, WindowControl wControl, Component content) {
+	public LightboxController(UserRequest ureq, WindowControl wControl, Component content, String customClass) {
 		super(ureq, wControl);
+		this.customClass = customClass;
 		init(content);
 	}
 
@@ -88,7 +91,8 @@ public class LightboxController extends BasicController {
 		
 		lightboxId = "lb" + CodeHelper.getRAMUniqueID();
 		mainVC.contextPut("lightboxId", lightboxId);
-		
+		mainVC.contextPut("customClass", StringHelper.containsNonWhitespace(customClass) ? customClass : "");
+
 		JSAndCSSComponent js = new JSAndCSSComponent("js", JS_PATH, CSS_PATH);
 		mainVC.put("js", js);
 	}

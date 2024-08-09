@@ -7,7 +7,7 @@
 <script>
 	if (typeof $lightboxId === 'undefined') {
 		var $lightboxId = basicLightbox.create(document.querySelector("#$id"), {
-			className: "o_lightbox_close_border",
+			className: "o_lightbox_close_border $customClass",
 			onShow: () => {
 				## set modal hint for screenreaders
 				${lightboxId}.element().querySelector( '.basicLightbox__placeholder').setAttribute("aria-modal", true);
