@@ -274,6 +274,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					dbInstance.commit();
 				}
 			}
+		} else if (item instanceof VFSContainer && data instanceof VFSMetadataImpl metadataImpl) {
+			// Sanity check: Delete a container only if it is in a trash.
+			// Some metadata are flagged as deleted due to bugs in previous OO releases.
+			if (data.isDeleted() && !item.getRelPath().contains(TRASH_NAME)) {
+				metadataImpl.setDeletedBy(null);
+				metadataImpl.setDeleted(false);
+				metadataImpl.setDeletedDate(null);
+				metadataDao.updateMetadata(metadataImpl);
+				dbInstance.commit();
+			}
 		}
 		
 		return deleted;
@@ -290,7 +300,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			return;
 		}
 		
-		metadataDao.getDescendants(vfsMetadata, Boolean.FALSE).forEach(this::checkMetadata);
+		metadataDao.getDescendants(vfsMetadata, null).forEach(this::checkMetadata);
 		
 		File directory = toFile(vfsMetadata);
 		if (directory != null) {
@@ -575,10 +585,28 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 	protected void deleteRetentionExceededPermanently(Date deletionDateBefore) {
 		List<VFSMetadata> retentionExceeded = getDeletedDateBeforeMetadatas(deletionDateBefore);
+		// Delete first all files and the all folders to prevent recursive mismatches.
+		List<VFSContainer> containers = new ArrayList<>();
 		for (VFSMetadata metadata : retentionExceeded) {
 			VFSItem item = getItemFor(metadata);
-			item.deleteSilently();
+			if (item instanceof VFSContainer container) {
+				// Sanity check: Delete a container only if it is in a trash.
+				// Some metadata are flagged as deleted due to bugs in previous OO releases.
+				if (container.getRelPath().contains(TRASH_NAME) || !item.exists()) {
+					containers.add(container);
+				} else if (metadata instanceof VFSMetadataImpl metadataImpl) {
+					metadataImpl.setDeletedBy(null);
+					metadataImpl.setDeleted(false);
+					metadataImpl.setDeletedDate(null);
+					metadataDao.updateMetadata(metadataImpl);
+					deleteThumbnailsOfMetadata(metadata);
+					log.info("Container unmarked from deleted (was not in trash) {} {}", metadata, item);
+				}
+			} else {
+				item.deleteSilently();
+			}
 		}
+		containers.forEach(VFSContainer::deleteSilently);
 	}
 
 	protected void deleteExpiredFiles() {

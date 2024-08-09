@@ -65,7 +65,7 @@ public class UpdateIdentity implements Identity {
 	}
 
 	public Identity getIdentity() {
-		return getIdentity(false);
+		return identity;
 	}
 	
 	public Identity getIdentity(boolean transferNewProperties) {

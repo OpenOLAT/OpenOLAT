@@ -297,6 +297,17 @@ public class Roles implements Serializable {
 				|| isRolesManager()
 				|| isUserManager();
 	}
+	
+	/**
+	 * @return true if has some privileges, author, manager, principal or (system) administrator
+	 */
+	public boolean isMoreThanUser() {
+		return isAuthor()
+				|| isManager()
+				|| isPrincipal()
+				|| isAdministrator()
+				|| isSystemAdmin();
+	}
 
 	public boolean isInvitee() {
 		return hasRole(OrganisationRoles.invitee);

@@ -366,7 +366,7 @@ public class UserWebService {
 			Identity id = securityManager
 					.createAndPersistIdentityAndUserWithOrganisation(identityName, user.getLogin(), user.getExternalId(), newUser,
 							provider, BaseSecurity.DEFAULT_ISSUER, null, user.getLogin(), user.getPassword(), null, null);
-			post(newUser, user, getLocale(request));
+			post(newUser, user, getLocale(request));// Can always save e-mail of new user
 			userManager.updateUser(id, newUser);
 			return Response.ok(get(id)).build();
 		}
@@ -1000,6 +1000,7 @@ public class UserWebService {
 		if(user == null) {
 			return Response.serverError().status(Status.NO_CONTENT).build();
 		}
+		
 		if(!isUserManagerOf(identityKey, request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
@@ -1010,8 +1011,15 @@ public class UserWebService {
 		}
 		
 		User retrievedUser = retrievedIdentity.getUser();
+		Roles actingRoles = getRoles(request);
+		Roles editedRoles = securityManager.getRoles(retrievedIdentity, true);
+		if(!securityModule.isUserAllowedCriticalUserChanges(actingRoles, editedRoles)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
 		List<ErrorVO> errors = validateUser(retrievedUser, user, request);
 		if(errors.isEmpty()) {
+			
 			if(StringHelper.containsNonWhitespace(user.getExternalId())
 					&& !user.getExternalId().equals(retrievedIdentity.getExternalId())) {
 				retrievedIdentity = securityManager.setExternalId(retrievedIdentity, user.getExternalId());

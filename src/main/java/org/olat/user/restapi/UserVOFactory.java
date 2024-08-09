@@ -153,8 +153,8 @@ public class UserVOFactory {
 					String parsedValue;
 					if(propertyHandler instanceof DatePropertyHandler) {
 						parsedValue = formatDbDate(value, locale);
-					} else if(propertyHandler instanceof GenderPropertyHandler) {
-						parsedValue = parseGender(value, (GenderPropertyHandler)propertyHandler, locale);
+					} else if(propertyHandler instanceof GenderPropertyHandler genderHandler) {
+						parsedValue = parseGender(value, genderHandler, locale);
 					} else {
 						parsedValue = propertyHandler.getStringValue(value, locale);
 					}
@@ -169,8 +169,8 @@ public class UserVOFactory {
 		String parsedValue;
 		if(propertyHandler instanceof DatePropertyHandler) {
 			parsedValue = parseDate(value, locale);
-		} else if(propertyHandler instanceof GenderPropertyHandler) {
-			parsedValue = parseGender(value, (GenderPropertyHandler)propertyHandler, locale);
+		} else if(propertyHandler instanceof GenderPropertyHandler genderHandler) {
+			parsedValue = parseGender(value, genderHandler, locale);
 		} else {
 			parsedValue = propertyHandler.getStringValue(value, locale);
 		}
@@ -181,8 +181,8 @@ public class UserVOFactory {
 		String formatedValue;
 		if(propertyHandler instanceof DatePropertyHandler) {
 			formatedValue = formatDbDate(value, locale);
-		} else if(propertyHandler instanceof GenderPropertyHandler) {
-			formatedValue = parseGender(value, (GenderPropertyHandler)propertyHandler, locale);
+		} else if(propertyHandler instanceof GenderPropertyHandler genderHandler) {
+			formatedValue = parseGender(value, genderHandler, locale);
 		} else {
 			formatedValue = propertyHandler.getStringValue(value, locale);
 		}
