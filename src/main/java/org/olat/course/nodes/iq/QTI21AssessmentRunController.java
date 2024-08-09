@@ -542,14 +542,14 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				Date endTestDate = getDueDate(IQEditController.CONFIG_KEY_END_TEST_DATE);
 				String end = null;
 				if(endTestDate != null) {
-					end = formatter.formatDateAndTime(endTestDate);
-					mainVC.contextPut("endTestDate", end);
-					
 					// add eventually compensation for disadvantage
 					if(compensation != null) {
 						int extraSeconds = compensation.getExtraTime().intValue();
 						endTestDate = DateUtils.addSeconds(endTestDate, extraSeconds);
 					}
+					
+					end = formatter.formatDateAndTime(endTestDate);
+					mainVC.contextPut("endTestDate", end);
 				}
 				
 				Date now = ureq.getRequestTimestamp();
