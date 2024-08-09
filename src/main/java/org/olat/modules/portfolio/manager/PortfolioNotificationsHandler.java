@@ -19,7 +19,7 @@
  */
 package org.olat.modules.portfolio.manager;
 
- import static org.apache.commons.lang.time.DateUtils.isSameDay;
+ import static org.apache.commons.lang3.time.DateUtils.isSameDay;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -27,7 +27,7 @@ package org.olat.admin;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.admin.site.AdminSite;

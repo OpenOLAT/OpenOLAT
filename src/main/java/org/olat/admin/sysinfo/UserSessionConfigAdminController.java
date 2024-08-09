@@ -19,7 +19,7 @@
  */
 package org.olat.admin.sysinfo;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.olat.admin.AdminModule;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;

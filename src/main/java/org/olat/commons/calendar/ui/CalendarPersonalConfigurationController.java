@@ -22,7 +22,7 @@ package org.olat.commons.calendar.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.manager.ImportCalendarManager;
 import org.olat.commons.calendar.manager.ImportToCalendarManager;

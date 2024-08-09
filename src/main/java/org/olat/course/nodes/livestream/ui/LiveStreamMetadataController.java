@@ -22,7 +22,7 @@ package org.olat.course.nodes.livestream.ui;
 import java.util.Date;
 import java.util.Locale;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
