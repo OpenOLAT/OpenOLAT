@@ -71,10 +71,10 @@
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.5</apache.cxf>
-		<apache.pdfbox>3.0.2</apache.pdfbox>
+		<apache.pdfbox>3.0.3</apache.pdfbox>
 		<apache.poi>5.3.0</apache.poi>
 		<apache.log4j>2.23.1</apache.log4j>
-		<org.slf4j>2.0.13</org.slf4j>
+		<org.slf4j>2.0.15</org.slf4j>
 		<org.bouncycastle>1.78.1</org.bouncycastle>
 		<io.jsonwebtoken>0.12.6</io.jsonwebtoken>
 		<io.undertow>2.3.15.Final</io.undertow>
@@ -82,7 +82,7 @@
 		<swagger.ui.version>5.17.14</swagger.ui.version>
 		<com.mysql.version>9.0.0</com.mysql.version>
 		<org.postgresql.version>42.7.3</org.postgresql.version>
-		<org.infinispan.version>15.0.6.Final</org.infinispan.version>
+		<org.infinispan.version>15.0.7.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.23.0</version.selenium>
 		<activemq.artemis.version>2.36.0</activemq.artemis.version>
@@ -2043,7 +2043,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.15.0</version>
+			<version>3.16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
