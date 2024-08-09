@@ -269,7 +269,9 @@ public class UserRolesController extends FormBasicController {
 			disabled.removeAll(enabled);
 			rolesEl.setEnabled(disabled, false);
 		} else {
-			rolesEl.setEnabled(new HashSet<>(), false);
+			rolesEl.setEnabled(new HashSet<>(), true);
+			Set<String> disabled = new HashSet<>(roleKeys);
+			rolesEl.setEnabled(disabled, false);
 		}
 		
 		rolesEls.add(rolesEl);
