@@ -625,4 +625,23 @@ public class CourseEditorPageFragment {
 		OOGraphene.waitElement(mainId, browser);
 		return new CoursePageFragment(browser);
 	}
+	
+	/**
+	 * Same as clickToolbarBack but click the first element of the path and
+	 * wait until the last element disappears.
+	 * 
+	 * @return Itself
+	 */
+	public CoursePageFragment clickToolbarFirstCrumb() {
+		By crumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_breadcrumb_crumb.o_first_crumb");
+		OOGraphene.waitElement(crumbBy, browser);
+		browser.findElement(crumbBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By lastCrumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_breadcrumb_crumb.o_last_crumb.o_nowrap");
+		OOGraphene.waitElementDisappears(lastCrumbBy, 5, browser);
+		By mainId = By.id("o_main");
+		OOGraphene.waitElement(mainId, browser);
+		return new CoursePageFragment(browser);
+	}
 }
