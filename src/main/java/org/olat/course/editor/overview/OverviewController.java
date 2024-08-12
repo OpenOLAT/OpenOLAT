@@ -37,6 +37,7 @@ import org.olat.course.ICourse;
 import org.olat.course.config.ui.CourseScoreController;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.overview.OverviewListController.Model;
+import org.olat.course.editor.overview.OverviewListController.OverviewListOptions;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.STCourseNode;
@@ -60,8 +61,9 @@ public class OverviewController extends BasicController {
 		if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
 			initInfos(ureq, mainVC, course);
 		}
-		
-		overviewListCtrl = new OverviewListController(ureq, getWindowControl(), course, Model.EDITOR);
+
+		OverviewListOptions listOptions = OverviewListOptions.defaultOptions();
+		overviewListCtrl = new OverviewListController(ureq, getWindowControl(), course, Model.EDITOR, listOptions);
 		listenTo(overviewListCtrl);
 		mainVC.put("list", overviewListCtrl.getInitialComponent());
 		

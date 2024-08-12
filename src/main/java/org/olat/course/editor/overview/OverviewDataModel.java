@@ -113,7 +113,7 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		}
 	}
 	
-	private Object getIncorporateInCourseAssessment(OverviewRow row) {
+	public Object getIncorporateInCourseAssessment(OverviewRow row) {
 		if(usedModel == Model.EDITOR) {
 			return row.getIncorporateInCourseAssessmentEl();
 		}
