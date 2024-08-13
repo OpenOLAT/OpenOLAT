@@ -220,9 +220,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			.builder()
 			.build();
 		securityOptions.setContentSecurityPolicy(policy);
+		securityOptions.setStrictSanitize(false);
 		
 		iframeCtr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres,
 				deliveryOptions, securityOptions, true, radomizeDelivery);
+
 		listenTo(iframeCtr);
 		displayContent.put("contentpackage", iframeCtr.getInitialComponent());
 		displayContent.contextPut("frameId", SCORM_CONTENT_FRAME);

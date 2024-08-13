@@ -185,7 +185,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName,
-				allowRelativeLinks, null, ores, deliveryOptions, userCourseEnv.getCourseEnvironment().isPreview(), repoKey);
+				allowRelativeLinks, null, ores, deliveryOptions, null, userCourseEnv.getCourseEnvironment().isPreview(), repoKey);
 		spCtr.setAllowDownload(true);
 		
 		// only for inline integration: register for controller event to forward a olatcmd to the course,

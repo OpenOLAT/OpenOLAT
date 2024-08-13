@@ -195,7 +195,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 			Long courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
 			SinglePageController spCtr = new SinglePageController(ureq, wControl, userCourseEnv.getCourseEnvironment().getCourseFolderContainer(),
-					relPath, allowRelativeLinks.booleanValue(), null, ores, deliveryOptions,
+					relPath, allowRelativeLinks.booleanValue(), null, ores, deliveryOptions, null,
 					courseEnv.isPreview(), courseRepoKey);
 			// check if user is allowed to edit the page in the run view
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
