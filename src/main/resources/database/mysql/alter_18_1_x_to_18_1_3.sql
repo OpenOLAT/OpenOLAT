@@ -1,8 +1,8 @@
 -- LTI 1.3
 create table o_lti_context (
    id bigint not null auto_increment,
-   creationdate timestamp not null,
-   lastmodified timestamp not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
    l_context_id varchar(255) not null,
    l_resource_id varchar(255),
    l_target_url varchar(1024),

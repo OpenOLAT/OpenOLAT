@@ -74,6 +74,35 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		Assert.assertEquals(uriProtocol, metadata.getProtocol());
 	}
 	
+	/**
+	 * Check an issue with MariaDB and the type TIMESTAMP
+	 */
+	@Test
+	public void createAndLoadMetadata() {
+		String uuid = UUID.randomUUID().toString();
+		String relativePath = "/bcroot/hello/maria/";
+		String filename = "maria.jpg";
+		String uri = "file:///Users/frentix/Documents/bcroot/maria/world/maria.jpg";
+		String uriProtocol = "file";
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(uuid, relativePath, filename, new Date(), 10l, false, uri, uriProtocol, null);
+		dbInstance.commitAndCloseSession();
+		
+		VFSMetadata reloadedMetadata = vfsMetadataDao.loadMetadata(metadata.getKey());
+		Assert.assertNotNull(reloadedMetadata);
+		Assert.assertNotNull(reloadedMetadata.getKey());
+		Assert.assertNotNull(reloadedMetadata.getCreationDate());
+		Assert.assertNotNull(reloadedMetadata.getLastModified());
+		Assert.assertEquals(uuid, reloadedMetadata.getUuid());
+		Assert.assertEquals(relativePath, reloadedMetadata.getRelativePath());
+		Assert.assertEquals(filename, reloadedMetadata.getFilename());
+		Assert.assertFalse(reloadedMetadata.isDirectory());
+		Assert.assertEquals(uri, reloadedMetadata.getUri());
+		Assert.assertEquals(uriProtocol, reloadedMetadata.getProtocol());
+		// MariaDB set some unexpected default values
+		Assert.assertNull(uriProtocol, reloadedMetadata.getExpirationDate());
+		Assert.assertNull(uriProtocol, reloadedMetadata.getLockedDate());
+	}
+	
 	@Test
 	public void getMetadata_uuid() {
 		String uuid = UUID.randomUUID().toString();
