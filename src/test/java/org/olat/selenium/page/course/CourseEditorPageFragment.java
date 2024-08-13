@@ -618,12 +618,17 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CoursePageFragment clickToolbarBack() {
-		browser.findElement(toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
-		
-		By mainId = By.id("o_main");
-		OOGraphene.waitElement(mainId, browser);
-		return new CoursePageFragment(browser);
+		try {
+			browser.findElement(toolbarBackBy).click();
+			OOGraphene.waitBusy(browser);
+			
+			By mainId = By.id("o_main");
+			OOGraphene.waitElement(mainId, browser);
+			return new CoursePageFragment(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Clicktoolbarback", browser);
+			throw e;
+		}
 	}
 	
 	/**
@@ -633,15 +638,20 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CoursePageFragment clickToolbarFirstCrumb() {
-		By crumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_breadcrumb_crumb.o_first_crumb");
-		OOGraphene.waitElement(crumbBy, browser);
-		browser.findElement(crumbBy).click();
-		OOGraphene.waitBusy(browser);
-		
-		By lastCrumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_breadcrumb_crumb.o_last_crumb.o_nowrap");
-		OOGraphene.waitElementDisappears(lastCrumbBy, 5, browser);
-		By mainId = By.id("o_main");
-		OOGraphene.waitElement(mainId, browser);
-		return new CoursePageFragment(browser);
+		try {
+			By crumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_breadcrumb_crumb.o_first_crumb");
+			OOGraphene.waitElement(crumbBy, browser);
+			browser.findElement(crumbBy).click();
+			OOGraphene.waitBusy(browser);
+			
+			By lastCrumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_breadcrumb_crumb.o_last_crumb.o_nowrap");
+			OOGraphene.waitElementDisappears(lastCrumbBy, 5, browser);
+			By mainId = By.id("o_main");
+			OOGraphene.waitElement(mainId, browser);
+			return new CoursePageFragment(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Clicktoolbarfirstcrumb", browser);
+			throw e;
+		}
 	}
 }
