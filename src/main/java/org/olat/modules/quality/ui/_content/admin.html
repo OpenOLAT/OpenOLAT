@@ -1,4 +1,6 @@
 $r.render("general")
-$r.render("suggestion")
-$r.render("preview")
-$r.render("todo")
+#if($enabled)
+	$r.render("suggestion")
+	$r.render("preview")
+	$r.render("todo")
+#end
