@@ -28,6 +28,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.ICourse;
 import org.olat.course.editor.overview.OverviewListController;
 import org.olat.course.editor.overview.OverviewListController.Model;
+import org.olat.course.editor.overview.OverviewListController.OverviewListOptions;
 
 /**
  * 
@@ -42,7 +43,8 @@ public class CourseOverviewController extends BasicController {
 	public CourseOverviewController(UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl);
 		
-		overviewListCtrl = new OverviewListController(ureq, wControl, course, Model.RUN);
+		OverviewListOptions listOptions = new OverviewListOptions(true, false, false, true);
+		overviewListCtrl = new OverviewListController(ureq, wControl, course, Model.RUN, listOptions);
 		listenTo(overviewListCtrl);
 		
 		VelocityContainer mainVC = createVelocityContainer("course_overview");

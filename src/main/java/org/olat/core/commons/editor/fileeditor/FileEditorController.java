@@ -32,10 +32,8 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
-import org.olat.core.commons.editor.htmleditor.HTMLReadOnlyController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
-import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -70,8 +68,6 @@ public class FileEditorController extends BasicController implements Activateabl
 	private final Access access;
 	private boolean temporaryLock;
 	
-	@Autowired
-	private FolderModule folderModule;
 	@Autowired
 	private VFSLockManager vfsLockManager;
 	@Autowired
@@ -128,7 +124,7 @@ public class FileEditorController extends BasicController implements Activateabl
 				}
 				
 				editCtrl = htmlCtrl;
-			} else if(folderModule.isForceDownload()) {
+			} else {
 				mainVC.contextPut("cssClass", "tox-noborder");
 				HTMLEditorController htmlCtrl = WysiwygFactory.createReadOnlyController(ureq, getWindowControl(), config.getVfsContainer(),
 						config.getFilePath(), config.getMediaPath(), true, configs.isVersionControlled(), config.getEdusharingProvider());
@@ -138,8 +134,6 @@ public class FileEditorController extends BasicController implements Activateabl
 					htmlCtrl.getRichTextConfiguration().disableMedia();
 				}
 				editCtrl = htmlCtrl;
-			} else {
-				editCtrl = new HTMLReadOnlyController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), vfsLeaf.getName(), false);
 			}
 		}
 		else {

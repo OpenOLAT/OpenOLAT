@@ -705,10 +705,10 @@ public class CourseElementTest extends Deployments {
 		
 		//open the course and see the blog
 		CoursePageFragment course = courseEditor
-			.clickToolbarBack();
+			.clickToolbarFirstCrumb();
 		course
 			.tree()
-			.selectWithTitle(blogNodeTitle);
+			.assertWithTitleSelected(blogNodeTitle);
 		
 		String postTitle = "BlogPost-RW-1-" + UUID.randomUUID();
 		String postSummary = "Some explanations as teaser";
@@ -735,7 +735,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment participantCourse = new CoursePageFragment(participantDrone);
 		participantCourse
 			.tree()
-			.selectWithTitle(blogNodeTitle);
+			.assertWithTitleSelected(blogNodeTitle);
 		FeedPage participantFeed = FeedPage.getFeedPage(participantDrone);
 		participantFeed
 			.assertOnBlogPostInClassicTable(postTitle);

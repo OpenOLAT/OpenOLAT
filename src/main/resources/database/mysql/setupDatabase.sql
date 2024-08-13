@@ -2381,9 +2381,9 @@ create table o_vfs_metadata (
    f_license_type_name varchar(256),
    f_license_text mediumtext,
    f_licensor text(4000),
-   f_locked_date timestamp,
+   f_locked_date datetime default null,
    f_locked bool default false,
-   f_expiration_date datetime,
+   f_expiration_date datetime default null,
    f_migrated varchar(12),
    f_m_path_keys varchar(1024),
    fk_locked_identity bigint,
@@ -3081,8 +3081,8 @@ create table o_lti_tool_deployment (
 
 create table o_lti_context (
    id bigint not null auto_increment,
-   creationdate timestamp not null,
-   lastmodified timestamp not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
    l_context_id varchar(255) not null,
    l_resource_id varchar(255),
    l_target_url varchar(1024),
@@ -3272,7 +3272,7 @@ create table o_gta_task_revision (
    lastmodified datetime not null,
    g_status varchar(36) not null,
    g_rev_loop mediumint not null default 0,
-   g_date timestamp,
+   g_date datetime,
    g_rev_comment mediumtext,
    g_rev_comment_lastmodified datetime,
    fk_task bigint not null,
@@ -3759,7 +3759,7 @@ create table o_lic_license_type (
 
 create table o_lic_license_type_activation (
   id bigint not null auto_increment,
-  creationdate timestamp not null,
+  creationdate datetime not null,
   l_handler_type varchar(128) not null,
   fk_license_type_id bigint not null,
   primary key (id)
@@ -3767,7 +3767,7 @@ create table o_lic_license_type_activation (
 
 create table o_lic_license (
   id bigint not null auto_increment,
-  creationdate timestamp not null,
+  creationdate datetime not null,
   lastmodified datetime not null,
   l_resname varchar(50) not null,
   l_resid bigint not null,

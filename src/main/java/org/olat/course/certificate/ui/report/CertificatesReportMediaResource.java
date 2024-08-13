@@ -37,6 +37,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -116,6 +117,8 @@ public class CertificatesReportMediaResource extends OpenXMLWorkbookResource {
 		
 		// course
 		headerRow.addCell(col++, translator.translate("report.course.displayname"));
+		headerRow.addCell(col++, translator.translate("report.course.externalid"));
+		headerRow.addCell(col++, translator.translate("report.course.externalref"));
 		
 		// user properties
 		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
@@ -179,6 +182,8 @@ public class CertificatesReportMediaResource extends OpenXMLWorkbookResource {
 			int col = 0;
 			Row row = sheet.newRow();
 			row.addCell(col++, entry.getDisplayname());
+			row.addCell(col++, StringHelper.blankIfNull(entry.getExternalId()));
+			row.addCell(col++, StringHelper.blankIfNull(entry.getExternalRef()));
 			
 			for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 				if(userPropertyHandler == null) continue;
@@ -227,7 +232,7 @@ public class CertificatesReportMediaResource extends OpenXMLWorkbookResource {
 			if(with == With.validCertificate && (certificate != null && (certificate.getNextRecertificationDate() == null || certificate.getNextRecertificationDate().after(now)))) {
 				return true;
 			}
-			if(with == With.expiredCertificate && (certificate != null && (certificate.getNextRecertificationDate() != null || certificate.getNextRecertificationDate().before(now)))) {
+			if(with == With.expiredCertificate && (certificate != null && (certificate.getNextRecertificationDate() != null && certificate.getNextRecertificationDate().before(now)))) {
 				return true;
 			}
 		}

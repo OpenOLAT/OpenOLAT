@@ -610,13 +610,17 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	protected void deleteExpiredFiles() {
+		int count = 0;
 		List<VFSMetadata> expiredList = metadataDao.getExpiredMetadatas(new Date());
 		for(VFSMetadata metadata:expiredList) {
 			VFSItem item = getItemFor(metadata);
-			if(item instanceof VFSLeaf) {
-				((VFSLeaf)item).deleteSilently();
+			if(item instanceof VFSLeaf leaf) {
+				log.info(Tracing.M_AUDIT, "Delete expired file: {} / {}", leaf.getRelPath(), leaf.getName());
+				leaf.deleteSilently();
+				count++;
 			}
 		}
+		log.info(Tracing.M_AUDIT, "{} expired file(s) deleted", count);
 	}
 	@Override
 	public List<VFSMetadata> getDeletedDateBeforeMetadatas(Date reference) {

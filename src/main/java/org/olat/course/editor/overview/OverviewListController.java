@@ -103,11 +103,13 @@ public class OverviewListController extends FormBasicController implements Flexi
 	private static final String ALL_TAB_ID = "All";
 	private static final String ASSESSABLE_TAB_ID = "Assessable";
 	private static final String FILTER_ASSESSABLE = "assessable";
+	private static final String FILTER_INCLUDE_IN_COURSE_ASSESSMENT = "in-course-assessment";
 	
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab assessableTab;
 	private FlexiTableElement tableEl;
 	private OverviewDataModel dataModel;
+	private FlexiTableOneClickSelectionFilter assessableFilter;
 	private FormLink bulkLink;
 
 	private CloseableModalController cmc;
@@ -118,6 +120,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 	private int counter = 0;
 	private ICourse course;
 	private final Model usedModel;
+	private final OverviewListOptions listOptions;
 	private final boolean learningPath;
 	private final boolean scoreScalingEnabled;
 	private final boolean ignoreInCourseAssessmentAvailable;
@@ -129,12 +132,13 @@ public class OverviewListController extends FormBasicController implements Flexi
 	@Autowired
 	private NodeAccessService nodeAccessService;
 
-	public OverviewListController(UserRequest ureq, WindowControl wControl, ICourse course, Model usedModel) {
+	public OverviewListController(UserRequest ureq, WindowControl wControl, ICourse course, Model usedModel, OverviewListOptions listOptions) {
 		super(ureq, wControl, "overview_list");
 		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
 		this.course = course;
 		this.usedModel = usedModel;
+		this.listOptions = listOptions;
 		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
 		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
@@ -174,7 +178,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		deletedModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(deletedModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OverviewCols.longTitle));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.shortTitle));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(listOptions.isShowShortTitleDefault(), OverviewCols.shortTitle));
 		DefaultFlexiColumnModel descriptionModel = new DefaultFlexiColumnModel(OverviewCols.description);
 		descriptionModel.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.none));
 		descriptionModel.setDefaultVisible(false);
@@ -196,7 +200,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		columnsModel.addFlexiColumnModel(displayModel);
 		
 		if (learningPath) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.duration));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(listOptions.isShowLearningTimeDefault(), OverviewCols.duration));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.start, new DueDateConfigCellRenderer(getLocale())));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.end, new DueDateConfigCellRenderer(getLocale())));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.obligation));
@@ -212,7 +216,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		scoreMinModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(scoreMinModel);
 		DefaultFlexiColumnModel scoreMaxModel = new DefaultFlexiColumnModel(OverviewCols.scoreMax);
-		scoreMaxModel.setDefaultVisible(false);
+		scoreMaxModel.setDefaultVisible(listOptions.isShowMaxScoreDefault());
 		columnsModel.addFlexiColumnModel(scoreMaxModel);
 		DefaultFlexiColumnModel passedModel = new DefaultFlexiColumnModel(OverviewCols.passed);
 		passedModel.setCellRenderer(new OnOffCellRenderer(getTranslator()));
@@ -259,16 +263,27 @@ public class OverviewListController extends FormBasicController implements Flexi
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course-editor-overview");
 		
+		// Set some default values for the filters before loading the model
+		if(listOptions.isDefaultValueAssessableFilter()) {
+			tableEl.setFilterValue(assessableFilter, FILTER_ASSESSABLE);
+		}
+
 		loadModel();
 	}
 	
 	protected void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
-		SelectionValues statusValues = new SelectionValues();
-		statusValues.add(SelectionValues.entry(FILTER_ASSESSABLE, translate("filter.assessable")));
-		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.assessable"),
-				FILTER_ASSESSABLE, statusValues, true));
+		SelectionValues assessableValues = new SelectionValues();
+		assessableValues.add(SelectionValues.entry(FILTER_ASSESSABLE, translate("filter.assessable")));
+		assessableFilter = new FlexiTableOneClickSelectionFilter(translate("filter.assessable"),
+				FILTER_ASSESSABLE, assessableValues, true);
+		filters.add(assessableFilter);
+		
+		SelectionValues includeValues = new SelectionValues();
+		includeValues.add(SelectionValues.entry(FILTER_INCLUDE_IN_COURSE_ASSESSMENT, translate("filter.in.course.assessment")));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.in.course.assessment"),
+				FILTER_INCLUDE_IN_COURSE_ASSESSMENT, includeValues, true));
 
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -305,26 +320,45 @@ public class OverviewListController extends FormBasicController implements Flexi
 	}
 	
 	private void filterModel(List<OverviewRow> rows) {
-		Set<FlexiTreeTableNode> toRetains = null;
+		boolean filterAssessable = isFilterSelected(FILTER_ASSESSABLE);
+		boolean filterIncludeInCourseAssessment = isFilterSelected(FILTER_INCLUDE_IN_COURSE_ASSESSMENT);
 		
-		FlexiTableFilter assessableFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ASSESSABLE);
-		if (assessableFilter != null) {
-			List<String> filterValues = ((FlexiTableExtendedFilter)assessableFilter).getValues();
-			if(filterValues != null && filterValues.contains(FILTER_ASSESSABLE)) {
-				toRetains = new HashSet<>();
-				for(OverviewRow row:rows) {
-					if(row.getAssessmentConfig().isAssessable()) {
-						for(FlexiTreeTableNode aRow=row; aRow != null; aRow = aRow.getParent()) {
-							toRetains.add(aRow);
-						}
+		if(filterAssessable || filterIncludeInCourseAssessment) {
+			Set<FlexiTreeTableNode> toRetains = new HashSet<>();
+			
+			for(OverviewRow row:rows) {
+				if((!filterAssessable || row.getAssessmentConfig().isAssessable())
+						&& (!filterIncludeInCourseAssessment || acceptIncludeInCourseAssessment(row))) {
+					for(FlexiTreeTableNode aRow=row; aRow != null; aRow = aRow.getParent()) {
+						toRetains.add(aRow);
 					}
 				}
 			}
-		}
-		
-		if(toRetains != null && !toRetains.isEmpty()) {
+			
 			rows.retainAll(toRetains);
 		}
+	}
+	
+	private boolean acceptIncludeInCourseAssessment(OverviewRow row) {
+		Object include = dataModel.getIncorporateInCourseAssessment(row);
+		if(include instanceof FormToggle fToggle) {
+			return fToggle.isOn();
+		}
+		if(include instanceof Boolean bInclude) {
+			return bInclude.booleanValue();
+		}
+		return false;
+	}
+	
+	private boolean isFilterSelected(String id) {
+		FlexiTableFilter assessableFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), id);
+		if (assessableFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)assessableFilter).getValues();
+			if(filterValues != null && filterValues.contains(id)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void forgeRows(List<OverviewRow> rows, INode node, int recursionLevel, OverviewRow parent) {
@@ -620,5 +654,41 @@ public class OverviewListController extends FormBasicController implements Flexi
 	public enum Model {
 		RUN,
 		EDITOR
+	}
+	
+	public static class OverviewListOptions {
+		
+		private final boolean showMaxScoreDefault;
+		private final boolean showShortTitleDefault;
+		private final boolean showLearningTimeDefault;
+		private final boolean defaultValueAssessableFilter;
+		
+		public OverviewListOptions(boolean showMaxScoreDefault, boolean showShortTitleDefault, boolean showLearningTimeDefault,
+				boolean defaultValueAssessableFilter) {
+			this.showMaxScoreDefault = showMaxScoreDefault;
+			this.showShortTitleDefault = showShortTitleDefault;
+			this.showLearningTimeDefault = showLearningTimeDefault;
+			this.defaultValueAssessableFilter = defaultValueAssessableFilter;
+		}
+		
+		public static OverviewListOptions defaultOptions() {
+			return new OverviewListOptions(false, true, true, false);
+		}
+
+		public boolean isShowMaxScoreDefault() {
+			return showMaxScoreDefault;
+		}
+
+		public boolean isShowShortTitleDefault() {
+			return showShortTitleDefault;
+		}
+
+		public boolean isShowLearningTimeDefault() {
+			return showLearningTimeDefault;
+		}
+
+		public boolean isDefaultValueAssessableFilter() {
+			return defaultValueAssessableFilter;
+		}
 	}
 }

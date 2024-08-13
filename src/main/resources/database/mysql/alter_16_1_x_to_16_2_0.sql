@@ -8,7 +8,7 @@ alter table o_as_mode_course add column a_safeexambrowserconfig_dload bool not n
 alter table o_as_entry modify column a_user_visibility bit null;
 
 -- VFS metadata
-alter table o_vfs_metadata add column f_expiration_date timestamp;
+alter table o_vfs_metadata add column f_expiration_date datetime default null;
 create index f_exp_date_idx on o_vfs_metadata (f_expiration_date);
 
 -- Task
