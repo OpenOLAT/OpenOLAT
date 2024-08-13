@@ -203,7 +203,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		if(deliveryOptions != null && (fullWindow == ScormDisplayEnum.fullWidthHeight || fullWindow == ScormDisplayEnum.fullWidthHeightWithBack)) {
 			deliveryOptions.setHeight(DeliveryOptions.CONFIG_HEIGHT_IGNORE);
 		}
-		iframeCtr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres, deliveryOptions, true, radomizeDelivery);
+		iframeCtr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres, deliveryOptions, true, radomizeDelivery, false);
 		listenTo(iframeCtr);
 		displayContent.put("contentpackage", iframeCtr.getInitialComponent());
 		displayContent.contextPut("frameId", SCORM_CONTENT_FRAME);

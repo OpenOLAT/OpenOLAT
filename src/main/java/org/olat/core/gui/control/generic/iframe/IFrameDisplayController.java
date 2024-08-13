@@ -122,7 +122,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot, OLATResourceable ores) {
-		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, ores, null, false, false);
+		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, ores, null, false, false, false);
 	}
 	/**
 	 * 
@@ -131,7 +131,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param rootDir VFSItem that points to the root folder of the resource
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir) {
-		this(ureq, wControl, rootDir, null, null, null, false, false);
+		this(ureq, wControl, rootDir, null, null, null, false, false, false);
 	}
 	/**
 	 * 
@@ -141,7 +141,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, OLATResourceable ores, DeliveryOptions deliveryOptions) {
-		this(ureq, wControl, rootDir, null, ores, deliveryOptions, false, false);
+		this(ureq, wControl, rootDir, null, ores, deliveryOptions, false, false, false);
 	}
 	/**
 	 * 
@@ -152,7 +152,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param enableTextmarking to enable textmakring of the content in the iframe enable it here
 	 */
 	public IFrameDisplayController(final UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String frameId,
-			OLATResourceable contextResourceable, DeliveryOptions options, boolean persistMapper, boolean randomizeMapper) {
+			OLATResourceable contextResourceable, DeliveryOptions options,
+			boolean persistMapper, boolean randomizeMapper, boolean strictSanitizer) {
 		super(ureq, wControl);
 
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID		
@@ -180,7 +181,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, iFrameId,
 					null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
 		}
-
+		contentMapper.setStrictSanitize(strictSanitizer);
 		contentMapper.setDeliveryOptions(options);
 		
 		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);

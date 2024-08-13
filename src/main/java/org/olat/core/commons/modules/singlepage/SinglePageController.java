@@ -96,7 +96,13 @@ public class SinglePageController extends BasicController implements Activateabl
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks) {
 		//default behavior is to show the home link in a single page
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, false, null);
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, false, null, false);
+	}
+	
+	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
+			boolean allowRelativeLinks, boolean strictSanitize) {
+		//default behavior is to show the home link in a single page
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, false, null, strictSanitize);
 	}
 
 	 /**
@@ -122,12 +128,12 @@ public class SinglePageController extends BasicController implements Activateabl
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config,
 			boolean randomizeMapper) {
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, frameId, contextResourcable, config, randomizeMapper, null);
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, frameId, contextResourcable, config, randomizeMapper, null, false);
 	}
 	
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config,
-			boolean randomizeMapper, Long courseRepoKey) {
+			boolean randomizeMapper, Long courseRepoKey, boolean strictSanitize) {
 		super(ureq, wControl);
 		
 		SimpleStackedPanel mainP = new SimpleStackedPanel("iframemain");
@@ -144,15 +150,15 @@ public class SinglePageController extends BasicController implements Activateabl
 		BusinessControl bc = getWindowControl().getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
 		if ( ce != null ) { // a context path is left for me
-			log.debug("businesscontrol (for further jumps) would be:"+bc);
+			log.debug("businesscontrol (for further jumps) would be: {}", bc);
 			OLATResourceable ores = ce.getOLATResourceable();
-			log.debug("OLATResourceable=" + ores);
+			log.debug("OLATResourceable={}", ores);
 			String typeName = ores.getResourceableTypeName();
 			// typeName format: 'path=/test1/test2/readme.txt'
 			// First remove prefix 'path='
 			String path = typeName.substring("path=".length());
 			if  (path.length() > 0) {
-			  log.debug("direct navigation to container-path=" + path);
+			  log.debug("direct navigation to container-path={}", path);
 			  jumpIn = true;
 			  startURI = path;
 			}
@@ -183,7 +189,7 @@ public class SinglePageController extends BasicController implements Activateabl
 		
 		// Display in iframe when
 		idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer,
-				frameId, contextResourcable, deliveryOptions, false, randomizeMapper);
+				frameId, contextResourcable, deliveryOptions, false, randomizeMapper, strictSanitize);
 		listenTo(idc);
 			
 		idc.setCurrentURI(startURI);
