@@ -28,6 +28,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.iframe.SecurityOptions;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -46,7 +47,9 @@ public class HTMLReadOnlyController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("readonly");
 		
-		singlePageCtrl = new SinglePageController(ureq, wControl, rootContainer, fileName, false, true);
+		SecurityOptions securityOptions = new SecurityOptions();
+		securityOptions.setStrictSanitize(true);
+		singlePageCtrl = new SinglePageController(ureq, wControl, rootContainer, fileName, securityOptions);
 		listenTo(singlePageCtrl);
 		mainVC.put("content", singlePageCtrl.getInitialComponent());
 		

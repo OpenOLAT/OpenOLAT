@@ -28,6 +28,7 @@ package org.olat.core.gui.control.generic.iframe;
 public class SecurityOptions {
 
 	private String contentSecurityPolicy;
+	private boolean strictSanitize = false;
 	
 	public String getContentSecurityPolicy() {
 		return contentSecurityPolicy;
@@ -35,5 +36,13 @@ public class SecurityOptions {
 	
 	public void setContentSecurityPolicy(String contentSecurityPolicy) {
 		this.contentSecurityPolicy = contentSecurityPolicy;
+	}
+
+	public boolean isStrictSanitize() {
+		return strictSanitize;
+	}
+
+	public void setStrictSanitize(boolean strictSanitize) {
+		this.strictSanitize = strictSanitize;
 	}
 }

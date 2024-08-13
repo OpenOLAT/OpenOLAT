@@ -145,7 +145,7 @@ public class CPDisplayController extends BasicController implements Activateable
 			listenTo(searchCtrl);
 		}
 		
-		cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(), rootContainer, null, ores, deliveryOptions, null, false, randomizeMapper, false);
+		cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(), rootContainer, null, ores, deliveryOptions, null, false, randomizeMapper);
 		cpContentCtr.setAllowDownload(true);
 		listenTo(cpContentCtr);
 		myContent.put("cpContent", cpContentCtr.getInitialComponent());

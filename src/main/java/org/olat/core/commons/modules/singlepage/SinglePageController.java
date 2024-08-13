@@ -47,6 +47,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
+import org.olat.core.gui.control.generic.iframe.SecurityOptions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
@@ -96,13 +97,13 @@ public class SinglePageController extends BasicController implements Activateabl
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks) {
 		//default behavior is to show the home link in a single page
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, false, null, false);
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, null, false, null);
 	}
 	
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
-			boolean allowRelativeLinks, boolean strictSanitize) {
+			SecurityOptions securityOptions) {
 		//default behavior is to show the home link in a single page
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, false, null, strictSanitize);
+		this(ureq, wControl, rootContainer, fileName, false, null, null, null, securityOptions, false, null);
 	}
 
 	 /**
@@ -128,12 +129,13 @@ public class SinglePageController extends BasicController implements Activateabl
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config,
 			boolean randomizeMapper) {
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, frameId, contextResourcable, config, randomizeMapper, null, false);
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, frameId, contextResourcable, config, null, randomizeMapper, null);
 	}
 	
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
-			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config,
-			boolean randomizeMapper, Long courseRepoKey, boolean strictSanitize) {
+			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable,
+			DeliveryOptions config, SecurityOptions securityOptions,
+			boolean randomizeMapper, Long courseRepoKey) {
 		super(ureq, wControl);
 		
 		SimpleStackedPanel mainP = new SimpleStackedPanel("iframemain");
@@ -189,7 +191,7 @@ public class SinglePageController extends BasicController implements Activateabl
 		
 		// Display in iframe when
 		idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer,
-				frameId, contextResourcable, deliveryOptions, null, false, randomizeMapper, strictSanitize);
+				frameId, contextResourcable, deliveryOptions, securityOptions, false, randomizeMapper);
 		listenTo(idc);
 			
 		idc.setCurrentURI(startURI);
