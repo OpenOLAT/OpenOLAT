@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -306,9 +307,15 @@ public class DialogElementController extends BasicController implements Activate
 			if(folderModule.isForceDownload(file)) {
 				doDownload(ureq, file);
 			} else {
+				HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(dialogContainer, file.getName())
+						.withAllowCustomMediaFactory(false)
+						.withDisableMedia(true)
+						.build();
+				
 				DocEditorConfigs configs = DocEditorConfigs.builder()
 						.withMode(DocEditor.Mode.VIEW)
 						.withDownloadEnabled(true)
+						.addConfig(htmlEditorConfig)
 						.build(file);
 				docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW).getController();
 				listenTo(docEditorCtrl);
