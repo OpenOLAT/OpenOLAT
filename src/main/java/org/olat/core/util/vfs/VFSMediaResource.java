@@ -28,9 +28,6 @@ package org.olat.core.util.vfs;
 
 import java.io.InputStream;
 
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.image.ImageUtils;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
@@ -38,6 +35,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 
 public class VFSMediaResource implements MediaResource {
@@ -94,7 +93,7 @@ public class VFSMediaResource implements MediaResource {
 		String mimeType = WebappHelper.getMimeType(getLeaf().getName());
 		if(downloadable) {
 			//html, xhtml and javascript are set to force download
-			if (CoreSpringFactory.getImpl(FolderModule.class).isForceDownload(getLeaf())) {
+			if (FolderModule.isContentSusceptibleToForceDownload(mimeType)) {
 				mimeType = MIME_TYPE_OCTET_STREAM;
 				unknownMimeType = true;
 			} else if (encoding != null) {

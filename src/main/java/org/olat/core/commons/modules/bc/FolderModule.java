@@ -138,17 +138,23 @@ public class FolderModule extends AbstractSpringModule {
 	 */
 	public boolean isForceDownload(VFSItem item) {
 		if(isForceDownload()) {
-			String mimeType = WebappHelper.getMimeType(item.getName());
-			//html, xhtml and javascript are set to force download
-			if (mimeType == null
-					|| "text/html".equals(mimeType)
-					|| "application/xhtml+xml".equals(mimeType)
-					|| "application/javascript".equals(mimeType)
-					|| "image/svg+xml".equals(mimeType)) {
-				return true;
-			}
+			return isContentSusceptibleToForceDownload(item);
 		}
 		return false;
+	}
+	
+	public boolean isContentSusceptibleToForceDownload(VFSItem item) {
+		String mimeType = WebappHelper.getMimeType(item.getName());
+		//html, xhtml and javascript are set to force download
+		return isContentSusceptibleToForceDownload(mimeType);
+	}
+	
+	public static boolean isContentSusceptibleToForceDownload(String mimeType) {
+		return (mimeType == null
+				|| "text/html".equals(mimeType)
+				|| "application/xhtml+xml".equals(mimeType)
+				|| "application/javascript".equals(mimeType)
+				|| "image/svg+xml".equals(mimeType));
 	}
 	
 	public String getCanonicalRoot() {

@@ -129,9 +129,7 @@ public class FolderManager {
 			// Excel, Word and PowerPoint not allowed to open inline, they will show
 			// an unsupported WebDAV loginpromt!
 			String mimeType = WebappHelper.getMimeType(name);
-			if (mimeType != null && !"text/html".equals(mimeType) && !"application/xhtml+xml".equals(mimeType)) {
-				download = true;
-			}					
+			download = FolderModule.isContentSusceptibleToForceDownload(mimeType);					
 		}
 		return download;
 	}
