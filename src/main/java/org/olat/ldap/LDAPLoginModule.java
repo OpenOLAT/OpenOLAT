@@ -233,7 +233,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		}
 		
 		// check SSL certifications, throws Startup Exception if certificate is not found
-		if(isSslEnabled()) {
+		if(isSslEnabled() && StringHelper.containsNonWhitespace(getTrustStoreLocation())) {
 			if (!checkServerCertValidity(0)) {
 				log.error("LDAP enabled but no valid server certificate found. Please fix!");
 			} else if (!checkServerCertValidity(30)) {
