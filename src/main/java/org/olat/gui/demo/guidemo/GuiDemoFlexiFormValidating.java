@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -43,7 +44,7 @@ public class GuiDemoFlexiFormValidating extends FormBasicController {
 	private TextElement firstNameEl;
 	private TextElement lastNameEl;
 	private TextElement inlineEditEl;
-	private RichTextElement descriptionEl;
+	private RichTextElement descriptionEl, multiLineEl;
 	private DateChooser birthdayEl;
 	private SingleSelection colorRadioEl;
 	private SingleSelection colorDropdownEl;
@@ -90,6 +91,15 @@ public class GuiDemoFlexiFormValidating extends FormBasicController {
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("description", "description", "<p>Hello</p>",
 				6, 60, null, formLayout, ureq.getUserSession(), getWindowControl());
 		descriptionEl.setNotEmptyCheck("guidemo.flexi.form.mustbefilled");
+
+		// dynamic multi-line element that can be one line, multi line or even formatted
+		multiLineEl = uifactory.addRichTextElementForStringDataCompact("multiLineEl", "description", null,
+				6, 60, null, formLayout, ureq.getUserSession(), getWindowControl());
+		multiLineEl.setNotEmptyCheck("guidemo.flexi.form.mustbefilled");
+		// demo of a placeholder in formatted
+		multiLineEl.setPlaceholderText("look ma, I can do placeholder!");
+		multiLineEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
+
 		
 		colorRadioEl = uifactory.addRadiosVertical("inlined.preferred.color.radio", formLayout, colors.keys(), colors.values());
 		

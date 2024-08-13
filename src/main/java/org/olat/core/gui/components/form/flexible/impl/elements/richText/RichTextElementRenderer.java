@@ -148,7 +148,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append(" value=\"").append(htmlVal).append("\" ")
 		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction()));
 		if (te.hasPlaceholder()) {
-			sb.append(" placeholder=\"").append(te.getPlaceholder()).append("\"");
+			sb.append(" placeholder=\"").appendHtmlAttributeEscaped(te.getPlaceholder()).append("\"");
 		}
 		if (te.hasFocus()) {
 			sb.append(" autofocus");
@@ -183,6 +183,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			sb.append(rows).append("em;");
 		}
 		sb.append("\"");
+		if (te.hasPlaceholder()) {
+			sb.append(" placeholder=\"").appendHtmlAttributeEscaped(te.getPlaceholder()).append("\"");
+		}		
 		if (te.hasFocus()) {
 			sb.append(" autofocus");
 		}
@@ -343,6 +346,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		sb.append("\" name=\"");
 		sb.append(domID);
 		sb.append("\" ");
+		if (te.hasPlaceholder()) {
+			sb.append(" placeholder=\"").appendHtmlAttributeEscaped(te.getPlaceholder()).append("\"");
+		}
 		StringBuilder rawData = FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction());
 		sb.append(rawData.toString());
 		sb.append(" style=\"");

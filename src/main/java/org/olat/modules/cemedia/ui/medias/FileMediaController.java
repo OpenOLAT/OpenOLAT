@@ -22,6 +22,7 @@ package org.olat.modules.cemedia.ui.medias;
 import java.util.Arrays;
 import java.util.List;
 
+import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -159,7 +160,9 @@ public class FileMediaController extends BasicController implements PageElementE
 		if (item instanceof VFSLeaf leaf) {
 			vfsLeaf = leaf;
 			VFSMediaMapper mapper = new VFSMediaMapper(vfsLeaf);
-			mapper.setForceDownloadHtml(folderModule.isForceDownload());
+			// Force download if config o
+			boolean forceDownload = folderModule.isForceDownload() || isEditingExcluded();
+			mapper.setForceDownloadHtml(forceDownload);
 			String mapperUri = registerCacheableMapper(ureq,
 					"File-Media-" + media.getKey() + "-" + vfsLeaf.getLastModified(), mapper);
 			mainVC.contextPut("mapperUri", mapperUri);
@@ -175,15 +178,26 @@ public class FileMediaController extends BasicController implements PageElementE
 		if (vfsLeaf != null && !hints.isToPdf() && !hints.isOnePage()) {
 			DocEditorDisplayInfo editorInfo = getEditorDisplayInfo() ;
 			if (editorInfo.isEditorAvailable()) {
-				editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.BUTTON_XSMALL, mainVC, this);
-				editLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
-				editLink.setGhost(true);
-				Translator buttonTranslator = Util.createPackageTranslator(DocEditorController.class, getLocale());
-				editLink.setCustomDisplayText(editorInfo.getModeButtonLabel(buttonTranslator));
-				if (editorInfo.isNewWindow()) {
-					editLink.setNewWindow(true, true);
+				createEditLink(editorInfo, Mode.EDIT);
+			} else {
+				DocEditorDisplayInfo viewOnly = getEditorDisplayInfoViewOnly();
+				if (viewOnly.isEditorAvailable()) {
+					createEditLink(viewOnly, Mode.VIEW);
 				}
+				
 			}
+		}
+	}
+	
+	private void createEditLink(DocEditorDisplayInfo editorInfo, Mode mode) {
+		editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.BUTTON_XSMALL, mainVC, this);
+		Translator buttonTranslator = Util.createPackageTranslator(DocEditorController.class, getLocale());
+		editLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
+		editLink.setGhost(true);
+		editLink.setCustomDisplayText(editorInfo.getModeButtonLabel(buttonTranslator));
+		editLink.setUserObject(mode);
+		if (editorInfo.isNewWindow()) {
+			editLink.setNewWindow(true, true);
 		}
 	}
 	
@@ -192,6 +206,10 @@ public class FileMediaController extends BasicController implements PageElementE
 			return docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf, vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_EDIT_VIEW);
 		}
 		return DocEditorDisplayInfo.noEditorAvailable();
+	}
+	
+	private DocEditorDisplayInfo getEditorDisplayInfoViewOnly() {
+		return docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf, vfsLeaf.getMetaInfo(), true, DocEditorService.MODES_VIEW);
 	}
 
 	private boolean isEditingExcluded() {
@@ -231,11 +249,20 @@ public class FileMediaController extends BasicController implements PageElementE
 		VFSItem vfsItem = container.resolve(version.getRootFilename());
 		if(vfsItem instanceof VFSLeaf docLeaf) {
 			vfsLeaf = docLeaf;
+			
+			HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(container, vfsItem.getName())
+				.withAllowCustomMediaFactory(false)
+				.withDisableMedia(true)
+				.build();
+			
 			DocEditorConfigs configs = DocEditorConfigs.builder()
 					.withMode(mode)
 					.withFireSavedEvent(true)
+					.addConfig(htmlEditorConfig)
 					.build(vfsLeaf);
-			docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_EDIT_VIEW).getController();
+			// Force view only mode if needed
+			List<Mode> modesAndFallback = mode == Mode.VIEW ? DocEditorService.MODES_VIEW : DocEditorService.MODES_EDIT_VIEW;
+			docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, modesAndFallback).getController();
 			listenTo(docEditorCtrl);
 		} else {
 			showError("error.missing.file");

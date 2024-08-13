@@ -40,6 +40,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.id.Identity;
 import org.olat.modules.topicbroker.TBAuditLogSearchParams;
 import org.olat.modules.topicbroker.TBBroker;
@@ -72,6 +74,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private EmptyStateItem emptyState;
 	private MultipleSelectionElement emailNotificationEl;
 
+	private CloseableModalController cmc;
+	private ConfirmationController doneConfirmationCtrl;
 	private TBEnrollmentRunOverviewController enrollmentRunOverviewCtrl;
 
 	private TBBroker broker;
@@ -155,6 +159,26 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (doneConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				saveEnrollments();
+				fireEvent(ureq, FormEvent.DONE_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+		
+	private void cleanUp() {
+		removeAsListenerAndDispose(doneConfirmationCtrl);
+		removeAsListenerAndDispose(cmc);
+		doneConfirmationCtrl = null;
+		cmc = null;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == runStartLink) {
 			doRunEnrollmentProcess();
@@ -189,6 +213,26 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		doConfirmApply(ureq);
+	}
+	
+	private void doConfirmApply(UserRequest ureq) {
+		String textI18nKey = emailNotificationEl.isAtLeastSelected(1)
+				? "enrollment.manual.confirm.text.email" 
+				: "enrollment.manual.confirm.text" ;
+		doneConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate(textI18nKey, String.valueOf(selectedProcessWrapper.getStats().getNumEnrollments())),
+				translate("enrollment.manual.confirm.confirm"),
+				translate("enrollment.manual.confirm.button"));
+		listenTo(doneConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), doneConfirmationCtrl.getInitialComponent(),
+				true, translate("enrollment.manual.confirm.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void saveEnrollments() {
 		if (selectedProcessWrapper != null) {
 			if (isChangesSinceRun()) {
 				showWarning("error.changes.since.last.run");
@@ -196,7 +240,6 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 				topicBrokerService.updateEnrollmentProcessStart(getIdentity(), broker);
 				selectedProcessWrapper.getProcess().persist(getIdentity());
 				topicBrokerService.updateEnrollmentProcessDone(getIdentity(), broker, emailNotificationEl.isAtLeastSelected(1));
-				fireEvent(ureq, FormEvent.DONE_EVENT);
 			}
 		}
 	}
@@ -220,19 +263,21 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		int run = runs.size();
 		String cmd = CMD_SELECT_RUN + run;
 		FormLink selectPosLink = uifactory.addFormLink("selectp_" + run, cmd, "", null, flc, Link.NONTRANSLATED);
-		selectPosLink.setI18nKey(translate("enrollment.manual.run", String.valueOf(run)));
+		selectPosLink.setI18nKey(translate("enrollment.manual.run.num", String.valueOf(run), String.valueOf(enrollmentStats.getNumEnrollments())));
 		runsDropdown.addElement(selectPosLink);
 		
 		doSelectRun(run);
 	}
 	
 	private void doSelectRun(int runNo) {
-		flc.contextPut("displayRun", String.valueOf(runNo));
-		runsDropdown.setTranslatedLabel(translate("enrollment.manual.run", String.valueOf(runNo)));
-		runsDropdown.setVisible(true);
-		
 		EnrollmentProcessWrapper wrapper = runs.get(runNo - 1);
 		selectedProcessWrapper = wrapper;
+		
+		flc.contextPut("displayRun", String.valueOf(runNo));
+		runsDropdown.setTranslatedLabel(translate("enrollment.manual.run.num", String.valueOf(runNo),
+				String.valueOf(selectedProcessWrapper.getStats().getNumEnrollments())));
+		runsDropdown.setVisible(true);
+		
 		enrollmentRunOverviewCtrl.updateModel(wrapper.getStats());
 		
 		updateEnrollmentDone();

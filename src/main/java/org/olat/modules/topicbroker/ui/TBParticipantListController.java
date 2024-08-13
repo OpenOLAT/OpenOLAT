@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -67,6 +68,9 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.ContactMessage;
+import org.olat.modules.co.ContactFormController;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
@@ -102,6 +106,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	private FlexiFiltersTab tabWaitingList;
 	private FlexiFiltersTab tabEnrolledPartially;
 	private FlexiFiltersTab tabEnrolledFully;
+	private FormLink bulkEmailButton;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private FormLink enrollmentManualStartLink;
 	private TBParticipantDataModel dataModel;
@@ -110,6 +115,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	
 	private CloseableModalController cmc;
 	private TBEnrollmentManualProcessController enrollmentManualCtrl;
+	private ContactFormController contactCtrl;
 
 	private TBBroker broker;
 	private final TBSecurityCallback secCallback;
@@ -142,6 +148,7 @@ public class TBParticipantListController extends FormBasicController implements 
 				isAdministrativeUser);
 		
 		initForm(ureq);
+		initBulkLinks();
 		initFilterTabs(ureq);
 		loadModel(ureq);
 	}
@@ -257,11 +264,19 @@ public class TBParticipantListController extends FormBasicController implements 
 		tableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-participants" + broker.getKey());
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setSearchEnabled(true);
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 		
 		String page = velocity_root + "/details.html";
 		detailsVC = new VelocityContainer("details_" + counter++, "vc_details", page, getTranslator(), this);
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
+	}
+	
+	private void initBulkLinks() {
+		bulkEmailButton = uifactory.addFormLink("participants.bulk.email", flc, Link.BUTTON);
+		bulkEmailButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
+		tableEl.addBatchButton(bulkEmailButton);
 	}
 	
 	public void reload(UserRequest ureq) {
@@ -478,6 +493,11 @@ public class TBParticipantListController extends FormBasicController implements 
 			loadModel(ureq);
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == contactCtrl) {
+			if (cmc != null) {
+				cmc.deactivate();
+			}
+			cleanUp();
 		} else if (source instanceof TBParticipantSelectionsController) {
 			if (event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
@@ -490,8 +510,10 @@ public class TBParticipantListController extends FormBasicController implements 
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(enrollmentManualCtrl);
+		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(cmc);
 		enrollmentManualCtrl = null;
+		contactCtrl = null;
 		cmc = null;
 	}
 
@@ -499,6 +521,8 @@ public class TBParticipantListController extends FormBasicController implements 
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == enrollmentManualStartLink) {
 			doEnrollmentManual(ureq);
+		} else if (bulkEmailButton == source) {
+			doBulkEmail(ureq);
 		} else if (source == tableEl) {
 			if (event instanceof DetailsToggleEvent) {
 				DetailsToggleEvent dte = (DetailsToggleEvent)event;
@@ -533,6 +557,42 @@ public class TBParticipantListController extends FormBasicController implements 
 				enrollmentManualCtrl.getInitialComponent(), true, translate("enrollment.manual.start"), true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doBulkEmail(UserRequest ureq) {
+		if (guardModalController(contactCtrl)) return;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			showWarning("participants.bulk.email.empty.selection");
+			return;
+		}
+		
+		List<Long> selectedIdentityKeys = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(TBParticipantRow::getIdentityKey)
+				.filter(Objects::nonNull)
+				.toList();
+		List<Identity> selectedIdentities = securityManager.loadIdentityByKeys(selectedIdentityKeys);
+		if (selectedIdentities.isEmpty()) {
+			showWarning("participants.bulk.email.empty.selection");
+			return;
+		}
+		
+		ContactMessage contactMessage = new ContactMessage(getIdentity());
+		ContactList contactList = new ContactList(translate("participants.bulk.email.contacts"));
+		contactList.addAllIdentites(identities);
+		contactMessage.addEmailTo(contactList);
+		
+		removeAsListenerAndDispose(contactCtrl);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, contactMessage);
+		listenTo(contactCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent(),
+				true, translate("participants.bulk.email"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 }

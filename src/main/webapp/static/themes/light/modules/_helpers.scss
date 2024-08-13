@@ -495,6 +495,9 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }	
+.o_wrap_anywhere, %o_wrap_anywhere {
+	word-wrap: anywhere
+}
 
 /* titles with subtitles */
 .o_titled_wrapper {

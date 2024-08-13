@@ -22,6 +22,7 @@ package org.olat.modules.quality.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -39,7 +40,7 @@ public class QualityAdminController extends BasicController {
 	private QualityAdminSuggestionController suggestionCtrl;
 	private QualityAdminPreviewController previewCtrl;
 	private QualityAdminToDoController toDoCtrl;
-
+	
 	public QualityAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
@@ -62,6 +63,21 @@ public class QualityAdminController extends BasicController {
 		mainVC.put("todo", toDoCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
+		updateUI();
+	}
+
+	private void updateUI() {
+		mainVC.contextPut("enabled", generalCtrl.isEnabled());
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == generalCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				updateUI();
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

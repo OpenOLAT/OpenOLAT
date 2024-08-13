@@ -20,12 +20,15 @@
 package org.olat.modules.quality.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
@@ -52,6 +55,7 @@ public class QualityAdminGeneralController extends FormBasicController {
 	public QualityAdminGeneralController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		initForm(ureq);
+		updateFromUI();
 	}
 
 	@Override
@@ -60,6 +64,7 @@ public class QualityAdminGeneralController extends FormBasicController {
 		
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("admin.enabled", formLayout, onKeys, onValues);
+		enableEl.addActionListener(FormEvent.ONCHANGE);
 		if (qualityModule.isEnabled()) {
 			enableEl.select(onKeys[0], true);
 		}
@@ -74,21 +79,42 @@ public class QualityAdminGeneralController extends FormBasicController {
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 	}
+
+	public boolean isEnabled() {
+		return enableEl.isAtLeastSelected(1);
+	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == enableEl) {
+			updateFromUI();
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void updateFromUI() {
+		boolean enabled = enableEl.isAtLeastSelected(1);
+		fromEmailEl.setVisible(enabled);
+		fromNameEl.setVisible(enabled);
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		fromEmailEl.clearError();
 		fromNameEl.clearError();
-		if (StringHelper.containsNonWhitespace(fromEmailEl.getValue())) {
-			if (!MailHelper.isValidEmailAddress(fromEmailEl.getValue())) {
-				fromEmailEl.setErrorKey("error.email.invalid");
+		if (fromEmailEl.isVisible()) {
+			if (StringHelper.containsNonWhitespace(fromEmailEl.getValue())) {
+				if (!MailHelper.isValidEmailAddress(fromEmailEl.getValue())) {
+					fromEmailEl.setErrorKey("error.email.invalid");
+					allOk = false;
+				}
+			} else if (StringHelper.containsNonWhitespace(fromNameEl.getValue())) {
+				fromNameEl.setErrorKey("error.email.name.no.address");
 				allOk = false;
 			}
-		} else if (StringHelper.containsNonWhitespace(fromNameEl.getValue())) {
-			fromNameEl.setErrorKey("error.email.name.no.address");
-			allOk = false;
 		}
 		
 		return allOk;
