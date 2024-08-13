@@ -1071,7 +1071,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				selectionEl.setUserObject(row);
 				titleEl.setUserObject(row);
 				
-				if (editorInfo.isNewWindow()) {
+				if (editorInfo.isNewWindow() && !folderModule.isForceDownload(row.getVfsItem())) {
 					selectionEl.setNewWindow(true, true, false);
 					titleEl.setNewWindow(true, true, false);
 					row.setOpenInNewWindow(true);
@@ -1871,6 +1871,18 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void doOpenFile(UserRequest ureq, FolderRow row) {
+		if (isItemNotAvailable(ureq, row, true)) return;
+		
+		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf) {
+			if(folderModule.isForceDownload(vfsLeaf)) {
+				doDownload(ureq, row);
+			} else {
+				doOpenFileInEditor(ureq, row);
+			}
+		}
+	}
+	
+	private void doOpenFileInEditor(UserRequest ureq, FolderRow row) {
 		if (isItemNotAvailable(ureq, row, true)) return;
 		
 		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf) {
@@ -3207,7 +3219,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				if (CMD_FOLDER.equals(cmd)) {
 					doOpenFolder(ureq, row);
 				} else if (CMD_FILE.equals(cmd)) {
-					doOpenFile(ureq, row);
+					doOpenFileInEditor(ureq, row);
 				} else if (CMD_DOWNLOAD.equals(cmd)) {
 					doDownload(ureq, row);
 				} else if (CMD_MOVE.equals(cmd)) {
