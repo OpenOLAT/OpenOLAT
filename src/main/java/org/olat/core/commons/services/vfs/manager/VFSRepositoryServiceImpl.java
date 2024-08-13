@@ -234,7 +234,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				metadata = metadataDao.getMetadatas(counter, batchSize);
 				int deleted = 0;
 				for(VFSMetadata data:metadata) {
-					deleted += checkMetadata(data);
+					// not sure if revision check needed at all
+					deleted += checkMetadata(data, true);
 				}
 				counter += metadata.size() - deleted;
 				totalDeleted += deleted;
@@ -254,16 +255,18 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 	}
 	
-	private int checkMetadata(VFSMetadata data) {
+	private int checkMetadata(VFSMetadata data, boolean preventDeleteIfRevision) {
 		int deleted = 0;
 		
 		VFSItem item = getItemFor(data);
 		if(item == null || !item.exists() || item.getName().startsWith("._oo_")) {
 			boolean exists = false;
-			List<VFSRevision> revisions = getRevisions(data);
-			for(VFSRevision revision:revisions) {
-				File revFile = getRevisionFile(revision);
-				exists = revFile != null && revFile.exists();
+			if (preventDeleteIfRevision) {
+				List<VFSRevision> revisions = getRevisions(data);
+				for(VFSRevision revision:revisions) {
+					File revFile = getRevisionFile(revision);
+					exists = revFile != null && revFile.exists();
+				}
 			}
 			
 			if(!exists) {
@@ -300,7 +303,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			return;
 		}
 		
-		metadataDao.getDescendants(vfsMetadata, null).forEach(this::checkMetadata);
+		metadataDao.getDescendants(vfsMetadata, null).forEach(metadata -> checkMetadata(metadata, false));
 		
 		File directory = toFile(vfsMetadata);
 		if (directory != null) {
