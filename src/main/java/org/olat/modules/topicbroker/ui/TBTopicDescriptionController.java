@@ -118,6 +118,7 @@ public class TBTopicDescriptionController extends BasicController {
 							Link link = LinkFactory.createCustomLink(linkName, CMD_OPEN_FILE, null,
 									Link.LINK + Link.NONTRANSLATED, mainVC, this);
 							link.setCustomDisplayText(topicLeaf.getName());
+							link.setElementCssClass("o_wrap_anywhere");
 							link.setIconLeftCSS(
 									"o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(topicLeaf.getName()));
 

@@ -1221,7 +1221,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			toogleSelectIndex(ureq, checkbox);
 		} else if(StringHelper.containsNonWhitespace(details) && dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			toogleDetails(details, ureq);
-		} else if(StringHelper.containsNonWhitespace(page)) {
+		} else if(StringHelper.containsNonWhitespace(page) && dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			int p = Integer.parseInt(page);
 			setPage(p);
 		 } else if(StringHelper.containsNonWhitespace(pagesize)) {

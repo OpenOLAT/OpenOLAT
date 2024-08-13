@@ -463,6 +463,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 						link = uifactory.addFormLink("openfile_" + counter++, CMD_OPEN_FILE, "", null, flc, Link.LINK + Link.NONTRANSLATED);
 						link.setLabel("noTransOnlyParam", new String[] {StringHelper.escapeHtml(definition.getName())});
 						link.setI18nKey(StringHelper.escapeHtml(topicLeaf.getName()));
+						link.setElementCssClass("o_wrap_anywhere");
 						link.setUserObject(topicLeaf);
 						
 						DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, topicLeaf,
