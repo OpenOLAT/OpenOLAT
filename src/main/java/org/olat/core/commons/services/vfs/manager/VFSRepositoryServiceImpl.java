@@ -587,6 +587,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	protected void deleteRetentionExceededPermanently(Date deletionDateBefore) {
+		int count = 0;
 		List<VFSMetadata> retentionExceeded = getDeletedDateBeforeMetadatas(deletionDateBefore);
 		// Delete first all files and the all folders to prevent recursive mismatches.
 		List<VFSContainer> containers = new ArrayList<>();
@@ -603,13 +604,22 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					metadataImpl.setDeletedDate(null);
 					metadataDao.updateMetadata(metadataImpl);
 					deleteThumbnailsOfMetadata(metadata);
-					log.info("Container unmarked from deleted (was not in trash) {} {}", metadata, item);
+					log.info(Tracing.M_AUDIT, "Container unmarked from deleted (was not in trash) {} {}", metadata, item);
 				}
 			} else {
+				log.info(Tracing.M_AUDIT, "Delete file from trash: {} / {}", item.getRelPath(), item.getName());
 				item.deleteSilently();
+				count++;
 			}
 		}
-		containers.forEach(VFSContainer::deleteSilently);
+		
+		for (VFSContainer item : containers) {
+			log.info(Tracing.M_AUDIT, "Delete directory from trash: {} / {}", item.getRelPath(), item.getName());
+			item.deleteSilently();
+			count++;
+		}
+		
+		log.info(Tracing.M_AUDIT, "{} items deleted from trash", count);
 	}
 
 	protected void deleteExpiredFiles() {
