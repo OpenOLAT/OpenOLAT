@@ -82,6 +82,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
@@ -152,6 +153,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private DropdownItem addDropdown;
 	private FormLink importLink;
 	private FormLink bulkGroupRestrictionButton;
+	private FormLink bulkDeleteButton;
 	private TBTopicDataModel dataModel;
 	private FlexiTableElement tableEl;
 	private VelocityContainer detailsVC;
@@ -356,6 +358,12 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private void initBulkLinks() {
 		bulkGroupRestrictionButton = uifactory.addFormLink("topics.bulk.group.restriction", flc, Link.BUTTON);
 		tableEl.addBatchButton(bulkGroupRestrictionButton);
+		
+		if (secCallback.canEditTopics()) {
+			bulkDeleteButton = uifactory.addFormLink("delete", flc, Link.BUTTON);
+			bulkDeleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			tableEl.addBatchButton(bulkDeleteButton);
+		}
 	}
 
 	public void reload(UserRequest ureq) {
@@ -771,8 +779,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				cleanUp();
 			}
 		} else if (deleteConfirmationCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				doDelete(ureq, (TBTopicRef)deleteConfirmationCtrl.getUserObject());
+			if (event == Event.DONE_EVENT && deleteConfirmationCtrl.getUserObject() instanceof TopicRefs topics) {
+				doDelete(ureq, topics);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -849,6 +857,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			doImportTopics(ureq);
 		} else if (bulkGroupRestrictionButton == source) {
 			doBulkGroupResriction(ureq);
+		} else if (bulkDeleteButton == source) {
+			doBulkConfirmDelete(ureq);
 		} else if (source == tableEl) {
 			if (event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -973,7 +983,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				translate("topic.delete.confirmation.message", StringHelper.escapeHtml(reloadedTopic.getTitle())),
 				translate("topic.delete.confirmation.confirm"),
 				translate("topic.delete.confirmation.button"), true);
-		deleteConfirmationCtrl.setUserObject(reloadedTopic);
+		deleteConfirmationCtrl.setUserObject(new TopicRefs(List.of(reloadedTopic)));
 		listenTo(deleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
@@ -982,8 +992,47 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		cmc.activate();
 	}
 	
-	private void doDelete(UserRequest ureq, TBTopicRef topic) {
-		topicBrokerService.deleteTopicSoftly(getIdentity(), topic);
+	private void doBulkConfirmDelete(UserRequest ureq) {
+		guardModalController(deleteConfirmationCtrl);
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			showWarning("topics.bulk.delete.empty.selection");
+			return;
+		}
+		
+		List<TBTopic> selectedTopics = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(TBTopicRow::getTopic)
+				.filter(Objects::nonNull)
+				.toList();
+		if (selectedTopics.isEmpty()) {
+			showWarning("topics.bulk.delete.empty.selection");
+			return;
+		}
+		
+		List<String> topicNames = selectedTopics.stream()
+				.map(topic -> StringHelper.escapeHtml(topic.getTitle()))
+				.toList();
+		deleteConfirmationCtrl = new BulkDeleteConfirmationController(ureq, getWindowControl(), 
+				translate("topics.bulk.delete.text", String.valueOf(selectedTopics.size())),
+				translate("topics.bulk.delete.confirm", String.valueOf(selectedTopics.size())),
+				translate("topics.bulk.delete.button"),
+				translate("topics.bulk.delete.topics"),
+				topicNames,
+				null);
+		deleteConfirmationCtrl.setUserObject(new TopicRefs(selectedTopics));
+		listenTo(deleteConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
+				true, translate("topics.bulk.delete.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doDelete(UserRequest ureq, TopicRefs topics) {
+		topics.topics().forEach(topic -> topicBrokerService.deleteTopicSoftly(getIdentity(), topic));
 		loadModel(ureq);
 	}
 
@@ -1135,5 +1184,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			}
 		}
 	}
+	
+	private record TopicRefs(List<? extends TBTopicRef> topics) {}
 	
 }
