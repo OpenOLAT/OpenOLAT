@@ -94,11 +94,13 @@ public class OLATUpgrade_19_0_3 extends OLATUpgrade {
 				
 				int counter = 0;
 				int updated = 0;
+				Long lastKey = Long.valueOf(0);
 				List<VFSMetadata> metadatas;
 				do {
-					metadatas = getDeletedMetadata(BATCH_SIZE);
+					metadatas = getDeletedMetadata(BATCH_SIZE, lastKey);
 					for(int i=0; i<metadatas.size(); i++) {
 						VFSMetadata metadata = metadatas.get(i);
+						lastKey = metadata.getKey();
 						
 						VFSItem item = vfsRepositoryService.getItemFor(metadata);
 						if (metadata instanceof VFSMetadataImpl metadataImpl 
@@ -134,13 +136,16 @@ public class OLATUpgrade_19_0_3 extends OLATUpgrade {
 		return allOk;
 	}
 	
-	private List<VFSMetadata> getDeletedMetadata(int maxResults) {
+	private List<VFSMetadata> getDeletedMetadata(int maxResults, Long lastKey) {
 		String query = """
 				select metadata from filemetadata as metadata 
 				where metadata.deleted = true
-				  and metadata.directory = true""";
+				  and metadata.directory = true
+				  and metadata.key > :lastKey
+				order by metadata.key""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, VFSMetadata.class)
+				.setParameter("lastKey", lastKey)
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
