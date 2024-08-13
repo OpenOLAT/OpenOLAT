@@ -110,6 +110,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 	private FlexiTableElement tableEl;
 	private OverviewDataModel dataModel;
 	private FlexiTableOneClickSelectionFilter assessableFilter;
+	private FlexiTableOneClickSelectionFilter includeInCourseAssessmentFilter;
 	private FormLink bulkLink;
 
 	private CloseableModalController cmc;
@@ -267,6 +268,9 @@ public class OverviewListController extends FormBasicController implements Flexi
 		if(listOptions.isDefaultValueAssessableFilter()) {
 			tableEl.setFilterValue(assessableFilter, FILTER_ASSESSABLE);
 		}
+		if(listOptions.isDefaultValueIncludeInCourseAssessmentFilter()) {
+			tableEl.setFilterValue(includeInCourseAssessmentFilter, FILTER_INCLUDE_IN_COURSE_ASSESSMENT);
+		}
 
 		loadModel();
 	}
@@ -282,8 +286,9 @@ public class OverviewListController extends FormBasicController implements Flexi
 		
 		SelectionValues includeValues = new SelectionValues();
 		includeValues.add(SelectionValues.entry(FILTER_INCLUDE_IN_COURSE_ASSESSMENT, translate("filter.in.course.assessment")));
-		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.in.course.assessment"),
-				FILTER_INCLUDE_IN_COURSE_ASSESSMENT, includeValues, true));
+		includeInCourseAssessmentFilter = new FlexiTableOneClickSelectionFilter(translate("filter.in.course.assessment"),
+				FILTER_INCLUDE_IN_COURSE_ASSESSMENT, includeValues, true);
+		filters.add(includeInCourseAssessmentFilter);
 
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -662,17 +667,19 @@ public class OverviewListController extends FormBasicController implements Flexi
 		private final boolean showShortTitleDefault;
 		private final boolean showLearningTimeDefault;
 		private final boolean defaultValueAssessableFilter;
+		private final boolean defaultValueIncludeInCourseAssessmentFilter;
 		
 		public OverviewListOptions(boolean showMaxScoreDefault, boolean showShortTitleDefault, boolean showLearningTimeDefault,
-				boolean defaultValueAssessableFilter) {
+				boolean defaultValueAssessableFilter, boolean defaultValueIncludeInCourseAssessmentFilter) {
 			this.showMaxScoreDefault = showMaxScoreDefault;
 			this.showShortTitleDefault = showShortTitleDefault;
 			this.showLearningTimeDefault = showLearningTimeDefault;
 			this.defaultValueAssessableFilter = defaultValueAssessableFilter;
+			this.defaultValueIncludeInCourseAssessmentFilter = defaultValueIncludeInCourseAssessmentFilter;
 		}
 		
 		public static OverviewListOptions defaultOptions() {
-			return new OverviewListOptions(false, true, true, false);
+			return new OverviewListOptions(false, true, true, false, false);
 		}
 
 		public boolean isShowMaxScoreDefault() {
@@ -689,6 +696,10 @@ public class OverviewListController extends FormBasicController implements Flexi
 
 		public boolean isDefaultValueAssessableFilter() {
 			return defaultValueAssessableFilter;
+		}
+
+		public boolean isDefaultValueIncludeInCourseAssessmentFilter() {
+			return defaultValueIncludeInCourseAssessmentFilter;
 		}
 	}
 }

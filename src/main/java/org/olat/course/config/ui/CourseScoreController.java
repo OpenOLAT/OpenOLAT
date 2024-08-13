@@ -84,6 +84,8 @@ public class CourseScoreController extends FormBasicController {
 	private SingleSelection passedByPassedEl;
 	private MultipleSelectionElement passedByScoreEl;
 	
+	private InfoPanelItem passedEnableInfosEl;
+	private StaticTextElement passedLabelEl;
 	private TextElement passedNumberCutEl;
 	private TextElement passedPointsCutEl;
 	private FormLink passedByProgressButton;
@@ -218,10 +220,10 @@ public class CourseScoreController extends FormBasicController {
 			passedEnableEl.toggleOff();
 		}
 		
-		InfoPanelItem passedEnableInfosEl = uifactory.addInfoPanel("passed.info", null, settingsCont);
+		passedEnableInfosEl = uifactory.addInfoPanel("passed.info", null, settingsCont);
 		passedEnableInfosEl.setInformations(translate("options.passed.infos"));
 		
-		StaticTextElement passedLabelEl = uifactory.addStaticTextElement("options.passed", "options.passed", "", settingsCont);
+		passedLabelEl = uifactory.addStaticTextElement("options.passed", "options.passed", "", settingsCont);
 		passedLabelEl.setHelpTextKey("options.passed.help", null);
 		
 		SelectionValues passedByProgressSV = new SelectionValues();
@@ -250,8 +252,13 @@ public class CourseScoreController extends FormBasicController {
 		passedByPassedEl.addActionListener(FormEvent.ONCHANGE);
 		passedByPassedEl.setEnabled(editable);
 		passedByPassedEl.setVisible(passedEnableEl.isOn());
-		passedByPassedEl.select(STCourseNode.CONFIG_PASSED_ALL, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL));
-		passedByPassedEl.select(STCourseNode.CONFIG_PASSED_NUMBER, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER));
+		if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)) {
+			passedByPassedEl.select(STCourseNode.CONFIG_PASSED_ALL, true);
+		} else if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER)) {
+			passedByPassedEl.select(STCourseNode.CONFIG_PASSED_NUMBER, true);	
+		} else {
+			passedByPassedEl.select(PASSED_NONE, true);	
+		}
 		
 		String passedNumberCut = moduleConfig.has(STCourseNode.CONFIG_PASSED_NUMBER_CUT)
 				? String.valueOf(moduleConfig.getIntegerSafe(STCourseNode.CONFIG_PASSED_NUMBER_CUT, 1))
@@ -371,11 +378,17 @@ public class CourseScoreController extends FormBasicController {
 			coachesCanEl.select(STCourseNode.CONFIG_PASSED_MANUALLY, false);
 		}
 		
+		passedByProgressElCont.setVisible(passedEnabled);
+		passedEnableInfosEl.setVisible(passedEnabled);
+		passedLabelEl.setVisible(passedEnabled);
+		
 		boolean passedNumber = passedEnabled && passedByPassedEl.isOneSelected() && STCourseNode.CONFIG_PASSED_NUMBER.equals(passedByPassedEl.getSelectedKey());
 		passedNumberCutEl.setVisible(passedNumber);
+		passedNumberCutOverviewCont.setVisible(passedEnabled);
 		
 		boolean passedPoints = passedEnabled && passedByScoreEl.isKeySelected(STCourseNode.CONFIG_PASSED_POINTS);
 		passedPointsCutEl.setVisible(passedPoints);
+		passedPointsCutOverviewCont.setVisible(passedEnabled);
 		
 		settingsCont.setElementCssClass(null);
 		if (!mandatoryNodesAvailable && passedByProgressEl.isKeySelected(STCourseNode.CONFIG_PASSED_PROGRESS)) {

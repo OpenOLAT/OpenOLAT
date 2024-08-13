@@ -58,6 +58,12 @@ public class InfoPanelItem extends FormItemImpl {
 	}
 	
 	@Override
+	public void setElementCssClass(String elementCssClass) {
+		infoPanel.setElementCssClass(elementCssClass);
+		super.setElementCssClass(elementCssClass);
+	}
+
+	@Override
 	protected InfoPanel getFormItemComponent() {
 		return infoPanel;
 	}
