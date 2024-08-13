@@ -93,6 +93,7 @@ public class IFrameDeliveryMapper implements Mapper {
 	private transient long suppressEndlessReload;
 	
 	private String contentSecurityPolicy;
+	private boolean strictSanitize = false;
 	
 	public IFrameDeliveryMapper() {
 		//for XStream
@@ -167,6 +168,10 @@ public class IFrameDeliveryMapper implements Mapper {
 		if(customCssDelegate.getCustomCSS() != null) {
 			customCssURL = customCssDelegate.getCustomCSS().getCSSURLIFrame();
 		}
+	}
+	
+	public void setStrictSanitize(boolean strictSanitize) {
+		this.strictSanitize = strictSanitize;
 	}
 
 	@Override
@@ -243,13 +248,17 @@ public class IFrameDeliveryMapper implements Mapper {
 		
 		VFSLeaf vfsLeaf = null;
 		//only files are allowed, but somehow it happened that folders showed up here
-		if (vfsItem instanceof VFSLeaf) {
-			vfsLeaf = (VFSLeaf)vfsItem;
+		if (vfsItem instanceof VFSLeaf leaf) {
+			vfsLeaf = leaf;
 		}
 		return vfsLeaf;
 	}
 	
 	private MediaResource deliverJavascriptFile(VFSLeaf vfsLeaf) {
+		if(strictSanitize) {
+			return new NotFoundMediaResource();
+		}
+
 		VFSMediaResource vmr = new VFSMediaResource(vfsLeaf);
 		// set the encoding; could be null if this page starts with .js file
 		// (not very common...).
@@ -308,6 +317,10 @@ public class IFrameDeliveryMapper implements Mapper {
 			if(accept == null || accept.indexOf(XHTML_CONTENT_TYPE) < 0) {
 				contentType = DEFAULT_CONTENT_TYPE;
 			}
+		}
+		
+		if(strictSanitize) {
+			page = StringHelper.xssScan(page);
 		}
 		
 		String mimetype = contentType + ";charset=" + StringHelper.check4xMacRoman(enc);
@@ -396,7 +409,7 @@ public class IFrameDeliveryMapper implements Mapper {
 				sb.appendJQuery();
 			}
 			
-			if(prototypeEnabled != null && prototypeEnabled.booleanValue()) {
+			if(prototypeEnabled != null && prototypeEnabled.booleanValue() && !strictSanitize) {
 				sb.appendPrototype();
 			}
 			

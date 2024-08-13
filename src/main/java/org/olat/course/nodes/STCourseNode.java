@@ -196,7 +196,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			Long courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
 			SinglePageController spCtr = new SinglePageController(ureq, wControl, userCourseEnv.getCourseEnvironment().getCourseFolderContainer(),
 					relPath, allowRelativeLinks.booleanValue(), null, ores, deliveryOptions,
-					courseEnv.isPreview(), courseRepoKey);
+					courseEnv.isPreview(), courseRepoKey, false);
 			// check if user is allowed to edit the page in the run view
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 			GroupRoles role = GroupRoles.owner;

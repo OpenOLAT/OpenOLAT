@@ -96,7 +96,13 @@ public class SinglePageController extends BasicController implements Activateabl
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks) {
 		//default behavior is to show the home link in a single page
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, false, null);
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, false, null, false);
+	}
+	
+	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
+			boolean allowRelativeLinks, boolean strictSanitize) {
+		//default behavior is to show the home link in a single page
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, false, null, strictSanitize);
 	}
 
 	 /**
@@ -122,12 +128,12 @@ public class SinglePageController extends BasicController implements Activateabl
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config,
 			boolean randomizeMapper) {
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, frameId, contextResourcable, config, randomizeMapper, null);
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, frameId, contextResourcable, config, randomizeMapper, null, false);
 	}
 	
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config,
-			boolean randomizeMapper, Long courseRepoKey) {
+			boolean randomizeMapper, Long courseRepoKey, boolean strictSanitize) {
 		super(ureq, wControl);
 		
 		SimpleStackedPanel mainP = new SimpleStackedPanel("iframemain");
@@ -183,7 +189,7 @@ public class SinglePageController extends BasicController implements Activateabl
 		
 		// Display in iframe when
 		idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer,
-				frameId, contextResourcable, deliveryOptions, null, false, randomizeMapper);
+				frameId, contextResourcable, deliveryOptions, null, false, randomizeMapper, strictSanitize);
 		listenTo(idc);
 			
 		idc.setCurrentURI(startURI);

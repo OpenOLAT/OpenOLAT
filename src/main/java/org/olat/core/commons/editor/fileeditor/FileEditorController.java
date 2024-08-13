@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
+import org.olat.core.commons.editor.htmleditor.HTMLReadOnlyController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
 import org.olat.core.commons.services.doceditor.Access;
@@ -125,16 +126,8 @@ public class FileEditorController extends BasicController implements Activateabl
 				
 				editCtrl = htmlCtrl;
 			} else {
-				mainVC.contextPut("cssClass", "tox-noborder");
-				HTMLEditorController htmlCtrl = WysiwygFactory.createReadOnlyController(ureq, getWindowControl(), config.getVfsContainer(),
-						config.getFilePath(), config.getMediaPath(), true, configs.isVersionControlled(), config.getEdusharingProvider());
-				htmlCtrl.setNewFile(false);
-				htmlCtrl.getRichTextConfiguration().setAllowCustomMediaFactory(config.isAllowCustomMediaFactory());
-				if (config.isDisableMedia()) {
-					htmlCtrl.getRichTextConfiguration().disableMedia();
-				}
-				editCtrl = htmlCtrl;
-			}
+ 				editCtrl = new HTMLReadOnlyController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), vfsLeaf.getName(), false);
+ 			}
 		}
 		else {
 			editCtrl = new TextEditorController(ureq, getWindowControl(), vfsLeaf, "utf-8", !isEdit, configs.isVersionControlled());
@@ -147,8 +140,8 @@ public class FileEditorController extends BasicController implements Activateabl
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(editCtrl instanceof Activateable2) {
-			((Activateable2)editCtrl).activate(ureq, entries, state);
+		if(editCtrl instanceof Activateable2 activateableCtrl) {
+			activateableCtrl.activate(ureq, entries, state);
 		}
 	}
 
