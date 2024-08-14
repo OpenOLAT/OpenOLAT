@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -44,6 +45,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.iframe.SecurityOptions;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
 import org.olat.core.gui.util.CSSHelper;
@@ -87,7 +89,8 @@ public class DirectoryController extends BasicController implements Activateable
 
 	@Autowired
 	private UserManager userManager;
-
+	@Autowired
+	private FolderModule folderModule;
 	@Autowired
 	private DocEditorService docEditorService;
 	
@@ -204,7 +207,12 @@ public class DirectoryController extends BasicController implements Activateable
 			if ("download".equalsIgnoreCase(link.getCommand())) {
 				doDownload(ureq, (VFSLeaf) link.getUserObject());
 			} else if ("preview".equalsIgnoreCase(link.getCommand())) {
-				doOpenPreview(ureq, (VFSLeaf) link.getUserObject());
+				VFSLeaf document = (VFSLeaf)link.getUserObject();
+				if(folderModule.isForceDownload(document)) {
+					doDownload(ureq, document);
+				} else {
+					doOpenPreview(ureq, document);
+				}
 			}
 		} 
 	}
@@ -241,7 +249,8 @@ public class DirectoryController extends BasicController implements Activateable
 
 	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
 		if (vfsLeaf.getName().endsWith(".html")) {
-			previewCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, vfsLeaf.getName(), false);
+			SecurityOptions securityOptions = SecurityOptions.sanitize();
+			previewCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, vfsLeaf.getName(), securityOptions);
 			listenTo(previewCtrl);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(), true, vfsLeaf.getName());

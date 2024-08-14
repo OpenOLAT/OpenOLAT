@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
 
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -38,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.iframe.SecurityOptions;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -72,6 +74,8 @@ public class GTAAssignedTaskController extends BasicController {
 	
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private FolderModule folderModule;
 	@Autowired
 	private DocEditorService docEditorService;
 	
@@ -183,16 +187,19 @@ public class GTAAssignedTaskController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source instanceof Link previewLink) {
-			if ("preview".equals(((Link) source).getCommand())) {
+			if ("preview".equals(previewLink.getCommand()) && previewLink.getUserObject() instanceof VFSLeaf document) {
 				if (taskFile.getName().endsWith(".html")) {
-					doPreview(ureq);
+					if(folderModule.isForceDownload(document)) {
+						doDownload(ureq, document);
+					} else {
+						doPreview(ureq);
+					}
 				} else {
-					doOpenPreview(ureq, (VFSLeaf) previewLink.getUserObject());
+					doOpenPreview(ureq, document);
 				}
-			} else if ("download.task".equals(((Link) source).getCommand())) {
-				VFSMediaResource vdr = new VFSMediaResource((VFSLeaf) previewLink.getUserObject());
-				vdr.setDownloadable(true);
-				ureq.getDispatchResult().setResultingMediaResource(vdr);
+			} else if ("download.task".equals(previewLink.getCommand())
+					&& previewLink.getUserObject() instanceof VFSLeaf document) {
+				doDownload(ureq, document);
 			}
 		}
 	}
@@ -216,6 +223,12 @@ public class GTAAssignedTaskController extends BasicController {
 		docEditorCtrl = null;
 	}
 	
+	private void doDownload(UserRequest ureq, VFSLeaf vfsLeaf) {
+		VFSMediaResource vdr = new VFSMediaResource(vfsLeaf);
+		vdr.setDownloadable(true);
+		ureq.getDispatchResult().setResultingMediaResource(vdr);
+	}
+	
 	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
 		VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, vfsLeaf, vfsLeaf.getName(), Mode.VIEW, null);
@@ -226,9 +239,10 @@ public class GTAAssignedTaskController extends BasicController {
 	private void doPreview(UserRequest ureq) {
 		if(guardModalController(viewTaskCtrl)) return;
 		
+		SecurityOptions securityOptions = SecurityOptions.sanitize();
 		VFSContainer tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		viewTaskCtrl = new SinglePageController(ureq, getWindowControl(), tasksContainer, taskFile.getName(),
-				false, null, null, TaskHelper.getStandardDeliveryOptions(), false);
+				false, null, null, TaskHelper.getStandardDeliveryOptions(), securityOptions, false, null);
 		listenTo(viewTaskCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), viewTaskCtrl.getInitialComponent(), true, taskFile.getName());
