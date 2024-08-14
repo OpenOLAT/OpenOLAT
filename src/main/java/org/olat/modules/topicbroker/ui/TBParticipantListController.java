@@ -582,7 +582,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		
 		ContactMessage contactMessage = new ContactMessage(getIdentity());
 		ContactList contactList = new ContactList(translate("participants.bulk.email.contacts"));
-		contactList.addAllIdentites(identities);
+		contactList.addAllIdentites(selectedIdentities);
 		contactMessage.addEmailTo(contactList);
 		
 		removeAsListenerAndDispose(contactCtrl);
