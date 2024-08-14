@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -87,7 +88,8 @@ public class DirectoryController extends BasicController implements Activateable
 
 	@Autowired
 	private UserManager userManager;
-
+	@Autowired
+	private FolderModule folderModule;
 	@Autowired
 	private DocEditorService docEditorService;
 	
@@ -204,7 +206,12 @@ public class DirectoryController extends BasicController implements Activateable
 			if ("download".equalsIgnoreCase(link.getCommand())) {
 				doDownload(ureq, (VFSLeaf) link.getUserObject());
 			} else if ("preview".equalsIgnoreCase(link.getCommand())) {
-				doOpenPreview(ureq, (VFSLeaf) link.getUserObject());
+				VFSLeaf document = (VFSLeaf)link.getUserObject();
+				if(folderModule.isForceDownload(document)) {
+					doDownload(ureq, document);
+				} else {
+					doOpenPreview(ureq, document);
+				}
 			}
 		} 
 	}
@@ -241,7 +248,7 @@ public class DirectoryController extends BasicController implements Activateable
 
 	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
 		if (vfsLeaf.getName().endsWith(".html")) {
-			previewCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, vfsLeaf.getName(), false);
+			previewCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, vfsLeaf.getName(), false, true);
 			listenTo(previewCtrl);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(), true, vfsLeaf.getName());
