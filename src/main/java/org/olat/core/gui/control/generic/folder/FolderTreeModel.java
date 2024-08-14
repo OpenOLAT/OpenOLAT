@@ -27,8 +27,8 @@
 package org.olat.core.gui.control.generic.folder;
 
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -36,9 +36,9 @@ import java.util.Locale;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
@@ -97,11 +97,8 @@ public class FolderTreeModel extends GenericTreeModel {
 		if (children.size() == 0) return false;
 
 		// sort the children
-		Collections.sort(children, new Comparator<VFSItem>(){
-			final Collator c = collator;
-			public int compare(final VFSItem o1, final VFSItem o2) {
-				return c.compare(o1.getName(), o2.getName());
-			}});
+		children = new ArrayList<>(children);
+		Collections.sort(children, (o1, o2) -> collator.compare(o1.getName(), o2.getName()));
 
 		boolean addedAtLeastOneChild = false;
 		for (Iterator<VFSItem> iter = children.iterator(); iter.hasNext();) {
@@ -139,9 +136,7 @@ public class FolderTreeModel extends GenericTreeModel {
 		return addedAtLeastOneChild;
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.tree.GenericTreeModel#getRootNode()
-	 */
+	@Override
 	public GenericTreeNode getRootNode() {
 		return (GenericTreeNode)super.getRootNode();
 	}
