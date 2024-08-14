@@ -45,6 +45,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.iframe.SecurityOptions;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
 import org.olat.core.gui.util.CSSHelper;
@@ -248,7 +249,8 @@ public class DirectoryController extends BasicController implements Activateable
 
 	private void doOpenPreview(UserRequest ureq, VFSLeaf vfsLeaf) {
 		if (vfsLeaf.getName().endsWith(".html")) {
-			previewCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, vfsLeaf.getName(), false, true);
+			SecurityOptions securityOptions = SecurityOptions.sanitize();
+			previewCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, vfsLeaf.getName(), securityOptions);
 			listenTo(previewCtrl);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(), true, vfsLeaf.getName());

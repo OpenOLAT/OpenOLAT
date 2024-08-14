@@ -30,6 +30,12 @@ public class SecurityOptions {
 	private String contentSecurityPolicy;
 	private boolean strictSanitize = false;
 	
+	public static SecurityOptions sanitize() {
+		SecurityOptions securityOptions = new SecurityOptions();
+		securityOptions.setStrictSanitize(true);
+		return securityOptions;
+	}
+	
 	public String getContentSecurityPolicy() {
 		return contentSecurityPolicy;
 	}
