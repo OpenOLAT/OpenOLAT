@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
@@ -98,6 +99,8 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 	private AVModule avModule;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private FolderModule folderModule;
 	@Autowired
 	private DocEditorService docEditorService;
 	@Autowired
@@ -232,7 +235,7 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 		
 		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
 				vfsMetadata, true, DocEditorService.MODES_VIEW);
-		if (editorInfo.isNewWindow()) {
+		if (editorInfo.isNewWindow() && !folderModule.isForceDownload(vfsLeaf)) {
 			link.setNewWindow(true, true, false);
 			classicLink.setNewWindow(true, true, false);
 			row.setOpenInNewWindow(true);
@@ -323,15 +326,18 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 	
 	private void doOpenOrDownload(UserRequest ureq, GTADocumentRow row) {
 		VFSLeaf vfsLeaf = row.getDocument();
-		VFSMetadata vfsMetadata = row.getDocumentMetadata();
-		
-		DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
-				ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
-				true, DocEditorService.MODES_VIEW);
-		if (editorInfo.isEditorAvailable()) {
-			doOpenFile(ureq, vfsLeaf);
-		} else {
+		if(folderModule.isForceDownload(vfsLeaf)) {
 			doDownload(ureq, vfsLeaf);
+		} else {
+			VFSMetadata vfsMetadata = row.getDocumentMetadata();
+			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
+					ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata,
+					true, DocEditorService.MODES_VIEW);
+			if (editorInfo.isEditorAvailable()) {
+				doOpenFile(ureq, vfsLeaf);
+			} else {
+				doDownload(ureq, vfsLeaf);
+			}
 		}
 	}
 	
