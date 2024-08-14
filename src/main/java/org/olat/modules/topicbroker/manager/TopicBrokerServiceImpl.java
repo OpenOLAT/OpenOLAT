@@ -216,6 +216,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	
 	@Override
 	public void updateEnrollmentProcessStart(Identity doer, TBBrokerRef broker) {
+		dbInstance.commitAndCloseSession(); // to avoid hibernate proxy
 		TBBroker reloadedBroker = getBroker(broker);
 		if (reloadedBroker == null || reloadedBroker.getEnrollmentStartDate() != null) {
 			return;
@@ -376,6 +377,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		TBParticipantSearchParams searchParams = new TBParticipantSearchParams();
 		searchParams.setBroker(broker);
 		searchParams.setIdentity(identity);
+		searchParams.setFetchBroker(true);
+		searchParams.setFetchIdentity(true);
 		List<TBParticipant> participants = getParticipants(searchParams);
 		
 		return !participants.isEmpty()? participants.get(0): null;
