@@ -45,10 +45,12 @@ public class CSPModule extends AbstractSpringModule {
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FONT_SRC = "'self' data:";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_CONNECT_SRC = "'self' https://youtu.be https://www.youtube.com";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FRAME_SRC = "'self' https://player.vimeo.com https://youtu.be https://www.youtube.com https://s.ytimg.com https://applications.zoom.us https://www.nanoo.tv";
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FRAME_ANCESTORS_SRC = "'self'";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_WORKER_SRC = "'self' blob:";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_MEDIA_SRC = "'self' blob: https://vimeo.com https://player.vimeo.com https://youtu.be https://www.youtube.com";
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_OBJECT_SRC = "'self'";
-	
+	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FORM_ACTION = "'self'";
+
 	private static final String CSRF = "csrf";
 	private static final String FORCE_TOP_FRAME = "forceTopFrame";
 	private static final String X_FRAME_OPTIONS_SAMEORIGIN = "xFrameOptionsSameOrigin";
@@ -63,9 +65,11 @@ public class CSPModule extends AbstractSpringModule {
 	private static final String CONTENT_SECURITY_POLICY_FONT_SRC = "base.security.contentSecurityPolicy.fontSrc";
 	private static final String CONTENT_SECURITY_POLICY_CONNECT_SRC = "base.security.contentSecurityPolicy.connectSrc";
 	private static final String CONTENT_SECURITY_POLICY_FRAME_SRC = "base.security.contentSecurityPolicy.frameSrc";
+	private static final String CONTENT_SECURITY_POLICY_FRAME_ANCESTORS = "base.security.contentSecurityPolicy.frameAncestors";
 	private static final String CONTENT_SECURITY_POLICY_WORKER_SRC = "base.security.contentSecurityPolicy.workerSrc";
 	private static final String CONTENT_SECURITY_POLICY_MEDIA_SRC = "base.security.contentSecurityPolicy.mediaSrc";
 	private static final String CONTENT_SECURITY_POLICY_OBJECT_SRC = "base.security.contentSecurityPolicy.objectSrc";
+	private static final String CONTENT_SECURITY_POLICY_FORM_ACTION = "base.security.contentSecurityPolicy.formAction";
 
 	@Value("${base.security.csrf:disabled}")
 	private String csrf;
@@ -97,13 +101,16 @@ public class CSPModule extends AbstractSpringModule {
 	private String contentSecurityPolicyConnectSrc;
 	@Value("${base.security.contentSecurityPolicy.frameSrc:}")
 	private String contentSecurityPolicyFrameSrc;
+	@Value("${base.security.contentSecurityPolicy.frameAncestors:}")
+	private String contentSecurityPolicyFrameAncestors;
 	@Value("${base.security.contentSecurityPolicy.workerSrc:}")
 	private String contentSecurityPolicyWorkerSrc;
 	@Value("${base.security.contentSecurityPolicy.mediaSrc:}")
 	private String contentSecurityPolicyMediaSrc;
 	@Value("${base.security.contentSecurityPolicy.objectSrc:}")
 	private String contentSecurityPolicyObjectSrc;
-	
+	@Value("${base.security.contentSecurityPolicy.formAction:}")
+	private String contentSecurityPolicyFormAction;
 	@Autowired
 	private List<CSPDirectiveProvider> directiveProviders;
 	
@@ -176,6 +183,10 @@ public class CSPModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			contentSecurityPolicyFrameSrc = enabled;
 		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_FRAME_ANCESTORS, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyFrameAncestors = enabled;
+		}
 		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_WORKER_SRC, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			contentSecurityPolicyWorkerSrc = enabled;
@@ -187,6 +198,10 @@ public class CSPModule extends AbstractSpringModule {
 		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_OBJECT_SRC, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			contentSecurityPolicyObjectSrc = enabled;
+		}
+		enabled = getStringPropertyValue(CONTENT_SECURITY_POLICY_FORM_ACTION, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			contentSecurityPolicyFormAction = enabled;
 		}
 	}
 
@@ -326,6 +341,15 @@ public class CSPModule extends AbstractSpringModule {
 		setStringProperty(CONTENT_SECURITY_POLICY_FRAME_SRC, policy, true);
 	}
 	
+	public String getContentSecurityPolicyFrameAncestors() {
+		return contentSecurityPolicyFrameAncestors;
+	}
+
+	public void setContentSecurityPolicyFrameAncestors(String policy) {
+		this.contentSecurityPolicyFrameAncestors = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_FRAME_ANCESTORS, policy, true);
+	}
+	
 	public String getContentSecurityPolicyWorkerSrc() {
 		return contentSecurityPolicyWorkerSrc;
 	}
@@ -351,6 +375,15 @@ public class CSPModule extends AbstractSpringModule {
 	public void setContentSecurityPolicyObjectSrc(String policy) {
 		this.contentSecurityPolicyObjectSrc = policy;
 		setStringProperty(CONTENT_SECURITY_POLICY_OBJECT_SRC, policy, true);
+	}
+	
+	public String getContentSecurityPolicyFormAction() {
+		return contentSecurityPolicyFormAction;
+	}
+
+	public void setContentSecurityPolicyFormAction(String policy) {
+		this.contentSecurityPolicyFormAction = policy;
+		setStringProperty(CONTENT_SECURITY_POLICY_FORM_ACTION, policy, true);
 	}
 
 	public List<CSPDirectiveProvider> getDirectiveProviders() {

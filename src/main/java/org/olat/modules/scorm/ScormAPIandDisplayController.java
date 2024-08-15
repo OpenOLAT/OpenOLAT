@@ -210,16 +210,18 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		}
 		
 		SecurityOptions securityOptions = new SecurityOptions();
-		// Most packages need eval()
-		CSPBuilder builder = new CSPBuilder(cspModule);
-		String policy = builder
-			.defaultDirectives()
-			.configurationDirectives()
-			.scriptSrc()
-			.allowUnsafeEval()
-			.builder()
-			.build();
-		securityOptions.setContentSecurityPolicy(policy);
+		if(cspModule.isContentSecurityPolicyEnabled() || cspModule.isContentSecurityPolicyReportOnlyEnabled()) {
+			// Most packages need eval()
+			CSPBuilder builder = new CSPBuilder(cspModule);
+			String policy = builder
+				.defaultDirectives()
+				.configurationDirectives()
+				.scriptSrc()
+				.allowUnsafeEval()
+				.builder()
+				.build();
+			securityOptions.setContentSecurityPolicy(policy);
+		}
 		securityOptions.setStrictSanitize(false);
 		
 		iframeCtr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres,
