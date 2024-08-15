@@ -170,6 +170,7 @@
 									</aggregations>
 									<excludes>
 										<exclude>**/jw/*</exclude>
+										<exclude>**/d3/*</exclude>
 										<exclude>**/dragula/*</exclude>
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
@@ -217,6 +218,7 @@
 									</aggregations>
 									<excludes>
 										<exclude>**/*.min.js</exclude>
+										<exclude>**/d3/*</exclude>
 										<exclude>**/jw/*</exclude>
 										<exclude>**/dragula/*</exclude>
 										<exclude>**/fullcalendar/*</exclude>
@@ -309,6 +311,7 @@
 										</aggregation>
 									</aggregations>
 									<excludes>
+										<exclude>**/d3/*</exclude>
 										<exclude>**/jw/*</exclude>
 										<exclude>**/dragula/*</exclude>
 										<exclude>**/fullcalendar/*</exclude>
@@ -350,7 +353,6 @@
 											<output>${basedir}/src/main/webapp/static/js/js.plugins.min.css</output>
 											<removeIncluded>false</removeIncluded>
 											<includes>
-												<include>${basedir}/src/main/webapp/static/js/fullcalendar/main.min.css</include>
 												<include>${basedir}/target/jquery/tagify/tagify.min.css</include>
 												<include>${basedir}/target/jquery/jquery/cropper/cropper.min.css</include>
 												<include>${basedir}/target/jquery/jquery/sliderpips/jquery-ui-slider-pips.min.css</include>
@@ -361,10 +363,10 @@
 										</aggregation>
 									</aggregations>
 									<excludes>
+										<exclude>**/d3/*</exclude>
 										<exclude>**/jw/*</exclude>
 										<exclude>**/dragula/*</exclude>
-										<exclude>**/fullcalendar/fullcalendar.js</exclude>
-										<exclude>**/fullcalendar/fullcalendar.min.js</exclude>
+										<exclude>**/fullcalendar/*</exclude>
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/paella/**/*</exclude>
