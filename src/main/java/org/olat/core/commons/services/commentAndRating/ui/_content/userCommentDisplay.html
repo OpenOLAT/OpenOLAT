@@ -28,15 +28,48 @@
 				</a>
 			</div>
 		#end
-	</div>
 
 	#if($r.isNull($comment.getParent()))
+		</div>
 		<blockquote class="o_comment o_user_content_block">
 	#end
 	$comment.getComment()
+	#if($commentLeafs)
+		<div class="o_attachments o_attachments_preview">
+			#foreach($commentLeaf in $commentLeafs)
+				<div class="o_attachment">
+					#set($thumbnailUrl = "$thumbnail_" + $commentLeaf.getMetaInfo().getKey())
+					#set($fileSuffix = "$fileSuffix_" + $commentLeaf.getMetaInfo().getKey())
+					#set($fileName = "$fileName_" + $commentLeaf.getMetaInfo().getKey())
+					#set($isThumbnailAvailable = "#evaluate($thumbnailUrl)")
+
+					<div class="o_attachment_thumbnail_preview" onclick="$r.javaScriptCommand(${commentLeaf.getMetaInfo().getKey()});">
+						#if($isThumbnailAvailable.indexOf("/") != -1)
+							<img src="#evaluate(${thumbnailUrl})" alt=""/>
+						#else
+							<div class="o_visual_not_available"></div>
+							<div class="o_attachment_title">#evaluate($fileName)</div>
+						#end
+						<div class="o_labeled_light o_file_suffix">#evaluate($fileSuffix)</div>
+
+						<div class="o_attachment_thumbnail_action"> $r.render("prev-" + $commentLeaf.getMetaInfo().getKey()) </div>
+						<div class="o_attachment_thumbnail_action" style="margin-left: 45px;"> $r.render("download-" + $commentLeaf.getMetaInfo().getKey()) </div>
+					</div>
+				</div>
+			#end
+		</div>
+	#end
+
+	<!-- Covering special case for reply
+		 the structure is slightly different then non-replies-->
+	#if($r.isNotNull($comment.getParent()))
+		</div>
+	#end
+
 	#if ($r.available("replyLink"))
 		$r.render("replyLink")
 	#end
+
 	</blockquote>
 
 	#if ($r.available("replyCommentFormCtrl"))

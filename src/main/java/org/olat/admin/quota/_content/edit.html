@@ -66,6 +66,11 @@
 			<tr class='#if($r.isTrue($feedsDef))info#end'><td>$r.translate("qd.feeds")</td><td>$r.formatBytes($feedsQuotaBytes) ($feeds.getQuotaKB())</td>
 			#set ($feedsUlLimitBytes = $feeds.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($feedsUlLimitBytes) ($feeds.getUlLimitKB())</td></tr>
+
+			#set ($commentsQuotaBytes = $comments.getQuotaKB() * 1000)
+			<tr class='#if($r.isTrue($commentsDef))info#end'><td>$r.translate("qd.comments")</td><td>$r.formatBytes($commentsQuotaBytes) ($comments.getQuotaKB())</td>
+				#set ($commentsUlLimitBytes = $comments.getUlLimitKB() * 1000)
+				<td>$r.formatBytes($commentsUlLimitBytes) ($comments.getUlLimitKB())</td></tr>
 		</tbody>
 	</table>
 </div>

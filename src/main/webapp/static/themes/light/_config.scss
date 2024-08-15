@@ -86,6 +86,18 @@ $o-color-error-text-bg			: #FFF8F6 !default;
 /* 	Add standard bootstrap variables to the mix */
 @import "../../bootstrap/stylesheets/bootstrap/variables";
 
+/* General purpose brand based style */
+$o-brand-box-border				: darken($brand-primary, 5%) !default;
+$o-brand-box-bg 				: rgba($brand-primary,0.1) !default;
+$o-brand-text-on-bg 			: $text-color !default;
+$o-brand-text					: $brand-primary !default;
+/* Override if color contrast not high enough */
+@if contrast($brand-primary, #FFF) < 4.5 {
+	$o-brand-box-border				: darken($brand-primary, 20%) !default;
+	$o-brand-box-bg 				: rgba($brand-primary, 0.2) !default;
+	$o-brand-text					: darken($brand-primary, 15%) !default;
+}
+
 /* ---- OpenOLAT specific configurations ---- */
 $o-images-path : "../light/images/" !default; 
 

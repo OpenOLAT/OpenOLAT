@@ -32,6 +32,8 @@ import org.olat.core.commons.services.commentAndRating.model.UserCommentsCount;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * Description:<br>
@@ -210,6 +212,20 @@ public interface CommentAndRatingService {
 	 * @param int number of deleted comments and ratings
 	 */
 	public int deleteAll(OLATResourceable ores, String oresSubPath);
+
+	/**
+	 * Retrieve the storage container for a given comment
+	 * @param comment
+	 * @return VFSContainer, which is the attachment storage location for the given comment
+	 */
+	public VFSContainer getCommentContainer(UserComment comment);
+
+	/**
+	 * Retrieve the attachments of a given comment
+	 * @param comment
+	 * @return list of attachments
+	 */
+	public List<VFSLeaf> getCommentLeafs(UserComment comment);
 
 	/**
 	 * Delete all comments and ratings for this resource while ignoring the

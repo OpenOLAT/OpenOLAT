@@ -138,6 +138,8 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_PFNODES, defaultQuotaPfNodeFolder);
 		Quota defaultQuotaFeed = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS, defaultQuotaFeed);
+		Quota defaultQuotaComment = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COMMENTS);
+		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_COMMENTS, defaultQuotaComment);
 	}
 
 	/**
@@ -618,6 +620,8 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 			} else {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_USERS;
 			}
+		} else if (path.startsWith("/comments/")) {
+			identifier = QuotaConstants.IDENTIFIER_DEFAULT_COMMENTS;
 		}
 		return identifier;
 	}
