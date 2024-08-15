@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.csp;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * 
@@ -39,6 +40,14 @@ public interface CSPDirectiveProvider {
 
 	public Collection<String> getFrameSrcUrls();
 
+	public default Collection<String> getFrameAncestorsUrls() {
+		return List.of();
+	}
+
 	public Collection<String> getMediaSrcUrls();
+	
+	public default Collection<String> getFormAction() {
+		return List.of();
+	}
 
 }

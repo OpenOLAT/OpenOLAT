@@ -43,12 +43,15 @@ public class CSPBuilder {
 	private static final Logger log = Tracing.createLoggerFor(CSPBuilder.class);
 	
 	private final Directive defaultSrc;
+	private final Directive upgradeInsecureRequests;
+	private final Directive formAction;
 	private final ScriptSrcDirective scriptSrc;
 	private final Directive styleSrc;
 	private final Directive imgSrc;
 	private final Directive fontSrc;
 	private final Directive connectSrc;
 	private final Directive frameSrc;
+	private final Directive frameAncestors;
 	private final Directive mediaSrc;
 	private final Directive objectSrc;
 	private final Directive workerSrc;
@@ -57,9 +60,13 @@ public class CSPBuilder {
 	
 	public CSPBuilder(CSPModule securityModule) {
 		List<CSPDirectiveProvider> directiveProviders = securityModule.getDirectiveProviders();
+		upgradeInsecureRequests = new Directive("upgrade-insecure-requests", null, null, null);
 		defaultSrc = new Directive("default-src", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_DEFAULT_SRC,
 				null,
 				null);
+		formAction = new Directive("form-action", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_FORM_ACTION,
+				securityModule.getContentSecurityPolicyFormAction(),
+				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getFormAction));
 		scriptSrc = new ScriptSrcDirective("script-src", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_SCRIPT_SRC,
 				securityModule.getContentSecurityPolicyScriptSrc(),
 				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getScriptSrcUrls),
@@ -79,6 +86,9 @@ public class CSPBuilder {
 		frameSrc = new Directive("frame-src", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_FRAME_SRC,
 				securityModule.getContentSecurityPolicyFrameSrc(),
 				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getFrameSrcUrls));
+		frameAncestors = new Directive("frame-ancestors", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_FRAME_ANCESTORS_SRC,
+				securityModule.getContentSecurityPolicyFrameAncestors(),
+				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getFrameAncestorsUrls));
 		mediaSrc = new Directive("media-src", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_MEDIA_SRC,
 				securityModule.getContentSecurityPolicyMediaSrc(),
 				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getMediaSrcUrls));
@@ -89,8 +99,8 @@ public class CSPBuilder {
 				securityModule.getContentSecurityPolicyWorkerSrc(),
 				null);
 		
-		directives = List.of(defaultSrc, scriptSrc, styleSrc, imgSrc, imgSrc, fontSrc, connectSrc, frameSrc,
-				mediaSrc, objectSrc, workerSrc);
+		directives = List.of(defaultSrc, formAction, scriptSrc, styleSrc, imgSrc, imgSrc, fontSrc, connectSrc, frameSrc,
+				frameAncestors, mediaSrc, objectSrc, workerSrc);
 	}
 	
 	private static String getProvidedUrls(List<CSPDirectiveProvider> directiveProviders, Function<CSPDirectiveProvider, Collection<String>> urlMethod) {
@@ -116,8 +126,16 @@ public class CSPBuilder {
 		return null;
 	}
 	
+	public Directive upgradeInsecureRequests() {
+		return upgradeInsecureRequests;
+	}
+	
 	public Directive defaultSrc() {
 		return defaultSrc;
+	}
+	
+	public Directive formAction() {
+		return formAction;
 	}
 	
 	public ScriptSrcDirective scriptSrc() {
@@ -142,6 +160,10 @@ public class CSPBuilder {
 	
 	public Directive frameSrc() {
 		return frameSrc;
+	}
+	
+	public Directive frameAncestors() {
+		return frameAncestors;
 	}
 	
 	public Directive mediaSrc() {
@@ -173,13 +195,19 @@ public class CSPBuilder {
 	public String build() {
 		StringBuilder header = new StringBuilder(1024);
 		header.append("report-uri ").append(Settings.getServerContextPath()).append("/csp/;");
+		if(!Settings.isSecurePortAvailable()) {
+			upgradeInsecureRequests.hide();
+		}
+		upgradeInsecureRequests.append(header);
 		defaultSrc.append(header);
+		formAction.append(header);
 		scriptSrc.append(header);
 		styleSrc.append(header);
 		imgSrc.append(header);
 		fontSrc.append(header);
 		connectSrc.append(header);
 		frameSrc.append(header);
+		frameAncestors.append(header);
 		mediaSrc.append(header);
 		objectSrc.append(header);
 		workerSrc.append(header);
@@ -188,7 +216,7 @@ public class CSPBuilder {
 	
 	public class ScriptSrcDirective extends Directive {
 		
-		private boolean allowUnsafeEval;
+		private boolean allowUnsafeEval = false;
 
 		public ScriptSrcDirective(String name, String baseDirective, String configuredDirective, String providersDirectives,
 				boolean allowUnsafeEval) {
@@ -317,7 +345,7 @@ public class CSPBuilder {
 					header.append(" ").append(providersDirectives);
 				}
 			}
-			if(useConfiguration) {
+			if(useConfiguration && StringHelper.containsNonWhitespace(configuredDirectives)) {
 				header.append(" ").append(configuredDirectives);
 			}
 			if(StringHelper.containsNonWhitespace(getAdditionalDirectives())) {
