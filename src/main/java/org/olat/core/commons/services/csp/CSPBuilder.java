@@ -99,8 +99,8 @@ public class CSPBuilder {
 				securityModule.getContentSecurityPolicyWorkerSrc(),
 				null);
 		
-		directives = List.of(defaultSrc, scriptSrc, styleSrc, imgSrc, imgSrc, fontSrc, connectSrc, frameSrc,
-				mediaSrc, objectSrc, workerSrc);
+		directives = List.of(defaultSrc, formAction, scriptSrc, styleSrc, imgSrc, imgSrc, fontSrc, connectSrc, frameSrc,
+				frameAncestors, mediaSrc, objectSrc, workerSrc);
 	}
 	
 	private static String getProvidedUrls(List<CSPDirectiveProvider> directiveProviders, Function<CSPDirectiveProvider, Collection<String>> urlMethod) {
