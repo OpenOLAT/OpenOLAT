@@ -198,7 +198,7 @@ public class LoginModule extends AbstractSpringModule {
 	@Value("${password.max.age.sysadmin}")
 	private int passwordMaxAgeSysAdmin;
 	
-	@Value("${password.history:0}")
+	@Value("${password.history:10}")
 	private int passwordHistory;
 
 	@Value("${invitation.login:enabled}")
