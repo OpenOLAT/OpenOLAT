@@ -71,7 +71,7 @@ public class CSPModule extends AbstractSpringModule {
 	private static final String CONTENT_SECURITY_POLICY_OBJECT_SRC = "base.security.contentSecurityPolicy.objectSrc";
 	private static final String CONTENT_SECURITY_POLICY_FORM_ACTION = "base.security.contentSecurityPolicy.formAction";
 
-	@Value("${base.security.csrf:disabled}")
+	@Value("${base.security.csrf:enabled}")
 	private String csrf;
 	@Value("${base.security.frameOptionsSameOrigine:enabled}")
 	private String xFrameOptionsSameorigin;
