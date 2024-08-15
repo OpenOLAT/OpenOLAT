@@ -191,11 +191,9 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		if(Settings.isDebuging()) {
-			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/fullcalendar/main.js");
-			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/fullcalendar/locales-all.js");
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/fullcalendar/index.global.js");
 		} else {
-			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/fullcalendar/main.min.js");
-			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/fullcalendar/locales-all.min.js");
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/fullcalendar/index.global.min.js");
 		}
 	}
 	

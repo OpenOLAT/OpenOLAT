@@ -117,7 +117,11 @@
 					left: true, right: true, bottom: true, top: true
 				},
 				invert: 'none',
-				square: true
+				modifiers: [
+					interact.modifiers.aspectRatio({
+      					ratio: 1
+      				})
+    			]
    			}).draggable({
 				modifiers: [
       				interact.modifiers.restrictRect({
