@@ -61,12 +61,14 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 	private MultipleSelectionElement contentSecurityPolicyReportOnlyEl;
 	
 	private TextElement defaultSrcEl;
+	private TextElement formActionEl;
 	private TextElement scriptSrcEl;
 	private TextElement styleSrcEl;
 	private TextElement imgSrcEl;
 	private TextElement fontSrcEl;
 	private TextElement connectSrcEl;
 	private TextElement frameSrcEl;
+	private TextElement frameAncestorsEl;
 	private TextElement mediaSrcEl;
 	private TextElement objectSrcEl;
 	private TextElement pluginTypeEl;
@@ -167,6 +169,10 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 		defaultSrcEl = uifactory.addTextElement("sec.csp.default.src", 512, defaultSrcPolicy, cspOptionsCont);
 		defaultSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("default-src"), EXAMPLE });
 		
+		String formActionPolicy = cspModule.getContentSecurityPolicyFormAction();
+		formActionEl = uifactory.addTextElement("sec.csp.form.action", 512, formActionPolicy, cspOptionsCont);
+		formActionEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("form-action"), EXAMPLE });
+		
 		String scriptSrcPolicy = cspModule.getContentSecurityPolicyScriptSrc();
 		scriptSrcEl = uifactory.addTextElement("sec.csp.script.src", 512, scriptSrcPolicy, cspOptionsCont);
 		scriptSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("script-src"), EXAMPLE });
@@ -191,6 +197,10 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 		frameSrcEl = uifactory.addTextElement("sec.csp.frame.src", 512, frameSrcPolicy, cspOptionsCont);
 		frameSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("frame-src"), EXAMPLE });
 		
+		String frameAncestorsPolicy = cspModule.getContentSecurityPolicyFrameAncestors();
+		frameAncestorsEl = uifactory.addTextElement("sec.csp.frame.ancestors", 512, frameAncestorsPolicy, cspOptionsCont);
+		frameAncestorsEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("frame-ancestors"), EXAMPLE });
+
 		String mediaSrcPolicy = cspModule.getContentSecurityPolicyMediaSrc();
 		mediaSrcEl = uifactory.addTextElement("sec.csp.media.src", 512, mediaSrcPolicy, cspOptionsCont);
 		mediaSrcEl.setExampleKey("sec.csp.default.value", new String[] { headersProvider.getDefaultDirective("nedia-src"), EXAMPLE });
@@ -232,24 +242,28 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 		if(cspEnabled) {
 			cspModule.setContentSecurityPolicyReportOnly(contentSecurityPolicyReportOnlyEl.isAtLeastSelected(1));
 			cspModule.setContentSecurityPolicyDefaultSrc(defaultSrcEl.getValue());
+			cspModule.setContentSecurityPolicyFormAction(formActionEl.getValue());
 			cspModule.setContentSecurityPolicyScriptSrc(scriptSrcEl.getValue());
 			cspModule.setContentSecurityPolicyStyleSrc(styleSrcEl.getValue());
 			cspModule.setContentSecurityPolicyImgSrc(imgSrcEl.getValue());
 			cspModule.setContentSecurityPolicyFontSrc(fontSrcEl.getValue());
 			cspModule.setContentSecurityPolicyConnectSrc(connectSrcEl.getValue());
 			cspModule.setContentSecurityPolicyFrameSrc(frameSrcEl.getValue());
+			cspModule.setContentSecurityPolicyFrameAncestors(frameAncestorsEl.getValue());
 			cspModule.setContentSecurityPolicyMediaSrc(mediaSrcEl.getValue());
 			cspModule.setContentSecurityPolicyObjectSrc(objectSrcEl.getValue());
 			cspModule.setContentSecurityPolicyPluginType(pluginTypeEl.getValue());
 		} else {
 			cspModule.setContentSecurityPolicyReportOnly(false);
 			cspModule.setContentSecurityPolicyDefaultSrc(null);
+			cspModule.setContentSecurityPolicyFormAction(null);
 			cspModule.setContentSecurityPolicyScriptSrc(null);
 			cspModule.setContentSecurityPolicyStyleSrc(null);
 			cspModule.setContentSecurityPolicyImgSrc(null);
 			cspModule.setContentSecurityPolicyFontSrc(null);
 			cspModule.setContentSecurityPolicyConnectSrc(null);
 			cspModule.setContentSecurityPolicyFrameSrc(null);
+			cspModule.setContentSecurityPolicyFrameAncestors(null);
 			cspModule.setContentSecurityPolicyMediaSrc(null);
 			cspModule.setContentSecurityPolicyObjectSrc(null);
 			cspModule.setContentSecurityPolicyPluginType(null);

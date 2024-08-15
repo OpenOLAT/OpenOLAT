@@ -65,8 +65,7 @@ public class HeadersFilter implements Filter {
 	}
 	
 	private void addSecurityHeaders(ServletResponse response) {
-		if(response instanceof HttpServletResponse) {
-			HttpServletResponse httpResponse = (HttpServletResponse)response;	
+		if(response instanceof HttpServletResponse httpResponse) {
 			if(securityModule.isStrictTransportSecurityEnabled()) {
 				httpResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
 			}
@@ -79,7 +78,8 @@ public class HeadersFilter implements Filter {
 			if(securityModule.isContentSecurityPolicyEnabled()) {
 				String header = securityModule.isContentSecurityPolicyReportOnlyEnabled()
 						? "Content-Security-Policy-Report-Only" : "Content-Security-Policy";
-				httpResponse.setHeader(header, buildContentSecurityPolicy());
+				String policy = buildContentSecurityPolicy();
+				httpResponse.setHeader(header, policy);
 			}
 		}
 	}
@@ -89,8 +89,14 @@ public class HeadersFilter implements Filter {
 		String reportUri = Settings.getServerContextPath() + "/csp/";
 		appendDirective(sb, "report-uri", null, reportUri);
 		
-		//policy
+		//Policies
+		
+		// Apply this one only if https available
+		if(securityModule.isStrictTransportSecurityEnabled() && Settings.isSecurePortAvailable()) {
+			sb.append("upgrade-insecure-requests;");
+		}
 		appendDirective(sb, "default-src", null, CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_DEFAULT_SRC);
+		appendFormActionDirective(sb, false);
 		appendConnectSrcDirective(sb, false);
 		appendScriptSrcDirective(sb, false);
 		appendDirective(sb, "style-src", securityModule.getContentSecurityPolicyStyleSrc(),
@@ -100,7 +106,9 @@ public class HeadersFilter implements Filter {
 		appendDirective(sb, "worker-src", securityModule.getContentSecurityPolicyWorkerSrc(),
 				CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_WORKER_SRC);
 		appendFrameSrcDirective(sb, false);
+		appendFrameAncestorsDirective(sb, false);
 		appendMediaSrcDirective(sb, false);
+		
 		appendDirective(sb, "object-src", securityModule.getContentSecurityPolicyObjectSrc(),
 				CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_OBJECT_SRC);
 		appendDirective(sb, "plugin-types", securityModule.getContentSecurityPolicyPluginType(),
@@ -114,6 +122,7 @@ public class HeadersFilter implements Filter {
 			case "default-src": 
 				appendDirective(sb, "default-src", null, CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_DEFAULT_SRC);
 				break;
+			case "form-action": appendFormActionDirective(sb, true); break;
 			case "script-src": appendScriptSrcDirective(sb, true); break;
 			case "style-src":
 				appendDirective(sb, "style-src", null, CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_STYLE_SRC);
@@ -122,6 +131,7 @@ public class HeadersFilter implements Filter {
 			case "font-src": appendFontSrcDirective(sb, true); break;
 			case "connect-src": appendConnectSrcDirective(sb, true); break;
 			case "frame-src": appendFrameSrcDirective(sb, true); break;
+			case "frame-ancestors": appendFrameAncestorsDirective(sb, true); break;
 			case "media-src": appendMediaSrcDirective(sb, true); break;
 			case "object-src":
 				appendDirective(sb, "object-src", null, CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_OBJECT_SRC);
@@ -193,6 +203,26 @@ public class HeadersFilter implements Filter {
 		sb.append(" ").append(getProvidedUrls(CSPDirectiveProvider::getFrameSrcUrls)).append(";");
 	}
 	
+	private void appendFrameAncestorsDirective(StringBuilder sb, boolean standard) {
+		sb.append("frame-ancestors ")
+		  .append(CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_FRAME_ANCESTORS_SRC);
+		if(!standard && StringHelper.containsNonWhitespace(securityModule.getContentSecurityPolicyFrameAncestors())) {
+			sb.append(" ").append(securityModule.getContentSecurityPolicyFrameAncestors());
+		}
+		
+		sb.append(" ").append(getProvidedUrls(CSPDirectiveProvider::getFrameAncestorsUrls)).append(";");
+	}
+	
+	private void appendFormActionDirective(StringBuilder sb, boolean standard) {
+		sb.append("form-action ")
+		  .append(CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_FORM_ACTION);
+		if(!standard && StringHelper.containsNonWhitespace(securityModule.getContentSecurityPolicyFormAction())) {
+			sb.append(" ").append(securityModule.getContentSecurityPolicyFormAction());
+		}
+		
+		sb.append(" ").append(getProvidedUrls(CSPDirectiveProvider::getFormAction)).append(";");
+	}
+	
 	private void appendDirective(StringBuilder sb, String directiveName, String options, String mandatoryOptions) {
 		if(StringHelper.containsNonWhitespace(options) || StringHelper.containsNonWhitespace(mandatoryOptions)) {
 			sb.append(directiveName)
@@ -212,12 +242,13 @@ public class HeadersFilter implements Filter {
 				.map(urlMethod)
 				.filter(Objects::nonNull)
 				.flatMap(Collection::stream)
-				.map(this::normalizeUrl)
+				.map(HeadersFilter::normalizeUrl)
 				.filter(Objects::nonNull)
+				.distinct()
 				.collect(Collectors.joining(" "));
 	}
 	
-	private String normalizeUrl(String urlString) {
+	public static String normalizeUrl(String urlString) {
 		try {
 			URL url = new URL(urlString);
 			String protocol = url.getProtocol();
