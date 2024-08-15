@@ -51,6 +51,7 @@
 				<bean id="upgrade_19_0_0" class="org.olat.upgrade.OLATUpgrade_19_0_0"/>
 				<bean id="upgrade_19_0_1" class="org.olat.upgrade.OLATUpgrade_19_0_1"/>
 				<bean id="upgrade_19_0_3" class="org.olat.upgrade.OLATUpgrade_19_0_3"/>
+				<bean id="upgrade_19_1_0" class="org.olat.upgrade.OLATUpgrade_19_1_0"/>
 			</list>
 		</property>
 	</bean>

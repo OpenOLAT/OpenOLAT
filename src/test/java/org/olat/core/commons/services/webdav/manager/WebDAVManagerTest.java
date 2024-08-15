@@ -19,26 +19,17 @@
  */
 package org.olat.core.commons.services.webdav.manager;
 
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.Logger;
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationStatus;
@@ -49,8 +40,6 @@ import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 /**
  * 
  * Initial date: 21.05.2013<br>
@@ -58,8 +47,6 @@ import jakarta.servlet.http.HttpServletRequest;
  *
  */
 public class WebDAVManagerTest extends OlatTestCase {
-	
-	private static final Logger log = Tracing.createLoggerFor(WebDAVManagerTest.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -71,39 +58,6 @@ public class WebDAVManagerTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private WebDAVManagerImpl webDAVManager;
-	
-	@Test
-	public void handleBasicAuthentication() {
-		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-1");
-
-		String credentialsClearText = id.getLogin() + ":" + id.getPassword();
-		String credentials = StringHelper.encodeBase64(credentialsClearText);
-		HttpServletRequest request = new MockHttpServletRequest();
-		UserSession usess = webDAVManager.handleBasicAuthentication(credentials, request);
-		Assert.assertNotNull(usess);
-		dbInstance.commit();
-	}
-	
-	@Test
-	public void handleBasicAuthentication_denied() {
-		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-2");
-		authManager.authenticate(id.getIdentity(), id.getLogin(), id.getPassword(), new AuthenticationStatus());
-		dbInstance.commitAndCloseSession();// derived WebDAV authentications saved
-
-		// login successful
-		String credentialsClearText = id.getLogin() + ":" + id.getPassword();
-		String credentials = StringHelper.encodeBase64(credentialsClearText);
-		HttpServletRequest request = new MockHttpServletRequest();
-		UserSession usess = webDAVManager.handleBasicAuthentication(credentials, request);
-		Assert.assertNotNull(usess);
-		
-		Identity identity = securityManager.saveIdentityStatus(id.getIdentity(), Identity.STATUS_LOGIN_DENIED, id.getIdentity());
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(identity);
-		
-		UserSession usessDenied = webDAVManager.handleBasicAuthentication(credentials, request);
-		Assert.assertNull(usessDenied);
-	}
 	
 	@Test
 	public void handleDigestAuthentication() {
@@ -212,82 +166,5 @@ public class WebDAVManagerTest extends OlatTestCase {
 		
 		boolean blocked = loginModule.isLoginBlocked(username);
 		Assert.assertTrue(blocked);
-	}
-	
-	@Test
-	public void testSetIdentityAsActiv() {
-		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("dav-user-4");
-		String credentialsClearText = id.getLogin() + ":" + id.getPassword();
-		String credentials = StringHelper.encodeBase64(credentialsClearText);
-		
-		final int maxLoop = 50; // => 4000 x 11ms => 44sec => finished in 50sec
-		final int numThreads = 10;
-
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
-
-		CountDownLatch latch = new CountDownLatch(numThreads);
-		ActivThread[] threads = new ActivThread[numThreads];
-		for(int i=0; i<threads.length;i++) {
-			threads[i] = new ActivThread(maxLoop, latch, exceptionHolder, webDAVManager, credentials);
-		}
-
-		for(int i=0; i<threads.length;i++) {
-			threads[i].start();
-		}
-		
-		try {
-			latch.await(120, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			exceptionHolder.add(e);
-		}
-		
-		// if not -> they are in deadlock and the db did not detect it
-		for (Exception exception : exceptionHolder) {
-			log.error("exception: ", exception);
-		}
-		assertTrue("Exceptions #" + exceptionHolder.size(), exceptionHolder.size() == 0);				
-	}
-	
-	private static class ActivThread extends Thread {
-		
-		private final int maxLoop;
-		private final CountDownLatch countDown;
-		private final List<Exception> exceptionHolder;
-		private final WebDAVManagerImpl webDAVManager;
-		private final String credentials;
-		
-		public ActivThread(int maxLoop, CountDownLatch countDown, List<Exception> exceptionHolder, WebDAVManagerImpl webDAVManager, String credentials) {
-			this.maxLoop = maxLoop;
-			this.countDown = countDown;
-			this.exceptionHolder = exceptionHolder;
-			this.webDAVManager = webDAVManager;
-			this.credentials = credentials;
-		}
-		
-		@Override
-		public void run() {
-			try {
-				sleep(10);
-				for (int i=0; i<maxLoop; i++) {
-					try {
-						HttpServletRequest request = new MockHttpServletRequest();
-						webDAVManager.handleBasicAuthentication(credentials, request);
-						DBFactory.getInstance().commit();
-					} catch (Exception e) {
-						exceptionHolder.add(e);
-					} finally {
-						try {
-							DBFactory.getInstance().commitAndCloseSession();
-						} catch (Exception e) {
-							// ignore
-						}
-					}
-				}
-			} catch (Exception e) {
-				exceptionHolder.add(e);
-			} finally {
-				countDown.countDown();
-			}
-		}
 	}
 }

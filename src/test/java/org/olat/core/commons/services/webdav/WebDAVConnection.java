@@ -86,7 +86,7 @@ public class WebDAVConnection implements Closeable {
 		this.protocol = protocol;
 		this.host = host;
 		this.port = port;
-		
+
 		HttpClientBuilder builder = HttpClientBuilder.create()
 				.setDefaultCookieStore(cookieStore)
 				.setDefaultCredentialsProvider(provider);
@@ -107,7 +107,7 @@ public class WebDAVConnection implements Closeable {
 	
 	public void setCredentials(String username, String password) {
 		provider.setCredentials(
-				new AuthScope(host, port, "OLAT WebDAV Access", "Basic"),
+				new AuthScope(host, port, "OLAT WebDAV Access", "Digest"),
 				new UsernamePasswordCredentials(username, password));
 	}
 	

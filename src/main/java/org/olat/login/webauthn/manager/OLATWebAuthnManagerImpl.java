@@ -39,7 +39,6 @@ import org.olat.basesecurity.RecoveryKey;
 import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.manager.RecoveryKeyDAO;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -202,11 +201,6 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 	public void deleteOlatAuthentication(Identity identity, Identity doer) {
 		Authentication olatAuthentication = authenticationDao.getAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		if(olatAuthentication != null) {
-			// Copy
-			Authentication webdavAuthentication = authenticationDao.getAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV, BaseSecurity.DEFAULT_ISSUER);
-			if(webdavAuthentication == null) {
-				authenticationDao.copyAuthentication(olatAuthentication, WebDAVAuthManager.PROVIDER_WEBDAV);
-			}
 			authenticationDao.deleteAuthentication(olatAuthentication);
 		}
 	}

@@ -601,10 +601,6 @@ public class AuthenticationDAO {
 	public void deleteAuthentication(Authentication auth) {
 		if(auth == null || auth.getKey() == null) return;//nothing to do
 		try {
-			StringBuilder sb = new StringBuilder();
-			sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
-			  .append(" where auth.key=:authKey");
-
 			AuthenticationImpl authRef = dbInstance.getCurrentEntityManager().find(AuthenticationImpl.class,  auth.getKey());
 			if(authRef != null) {
 				dbInstance.getCurrentEntityManager().remove(authRef);
@@ -620,11 +616,12 @@ public class AuthenticationDAO {
 		sb.append(" where auth.authusername=:authusername");
 		sb.append("   and auth.provider in (:providers)");
 		
+		@SuppressWarnings("deprecation")
 		List<String> providers = Arrays.asList(
 				WebDAVAuthManager.PROVIDER_HA1_EMAIL,
 				WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL,
-				WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL,
-				WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL);
+				WebDAVAuthManager.LEGACY_PROVIDER_WEBDAV_EMAIL,
+				WebDAVAuthManager.LEGACY_PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL);
 		
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())

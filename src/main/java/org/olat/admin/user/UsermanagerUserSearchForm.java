@@ -159,7 +159,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 			authKeysValues.add(SelectionValues.entry(OLATWebAuthnManager.PASSKEY, translate("search.form.constraint.auth.PASSKEY")));
 		}
 		if(webDAVModule.isEnabled()) {
-			authKeysValues.add(SelectionValues.entry(WebDAVAuthManager.PROVIDER_WEBDAV, translate("search.form.constraint.auth.WEBDAV")));
+			authKeysValues.add(SelectionValues.entry(WebDAVAuthManager.PROVIDER_HA1, translate("search.form.constraint.auth.WEBDAV")));
 		}
 		
 		// add additional no authentication element

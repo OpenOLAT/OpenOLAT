@@ -1043,9 +1043,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 				if(!WebDAVAuthManager.PROVIDER_HA1.equals(provider)
 						&& !WebDAVAuthManager.PROVIDER_HA1_EMAIL.equals(provider)
 						&& !WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL.equals(provider)
-						&& !WebDAVAuthManager.PROVIDER_WEBDAV.equals(provider)
-						&& !WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL.equals(provider)
-						&& !WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL.equals(provider)) {
+						&& !WebDAVAuthManager.LEGACY_PROVIDER_WEBDAV.equals(provider)
+						&& !WebDAVAuthManager.LEGACY_PROVIDER_WEBDAV_EMAIL.equals(provider)
+						&& !WebDAVAuthManager.LEGACY_PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL.equals(provider)) {
 					authusername = authentication.getAuthusername();
 				}
 			}

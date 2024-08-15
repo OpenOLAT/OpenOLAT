@@ -29,6 +29,10 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -36,8 +40,6 @@ import org.olat.core.commons.services.webdav.WebDAVManager;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
-import org.olat.core.gui.media.ServletUtil;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -45,7 +47,6 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.SessionInfo;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -54,14 +55,9 @@ import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
-import org.olat.login.auth.AuthenticationStatus;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 /**
  * Initial Date:  16.04.2003
@@ -202,14 +198,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 				log.debug("Do authentication: {} for session {}", basic, getHttpSessionId(request));
 
 				// We only handle HTTP Basic authentication
-				if (basic.equalsIgnoreCase("Basic")) {
-					cacheKey = authHeader;
-					usess = timedSessionCache.get(new CacheKey(remoteAddr, authHeader));
-					if (usess == null || !usess.isAuthenticated()) {
-						String credentials = st.nextToken();
-						usess = handleBasicAuthentication(credentials, request);
-					}
-				} else if (basic.equalsIgnoreCase("Digest")) {
+				if (basic.equalsIgnoreCase("Digest")) {
 					DigestAuthentication digestAuth = DigestAuthentication.parse(authHeader);
 					cacheKey = digestAuth.getUsername();
 					usess = timedSessionCache.get(new CacheKey(remoteAddr, digestAuth.getUsername()));
@@ -260,15 +249,9 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		// and cache them so that it doesn't have to
 		// prompt you again.
 
-		if(proposeBasicAuthentication(request)) {
-			log.debug("Add basic authentication: {} {}", getHttpSessionId(request), ServletUtil.getUserAgent(request));
-			response.addHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\", charset=\"UTF-8\"");
-		}
-		if(webdavModule.isDigestAuthenticationEnabled()) {
-			log.debug("Add digest authentication: {}", getHttpSessionId(request));
-			String nonce = UUID.randomUUID().toString().replace("-", "");
-			response.addHeader("WWW-Authenticate", "Digest realm=\"" + BASIC_AUTH_REALM + "\", qop=\"auth\", nonce=\"" + nonce + "\", charset=\"UTF-8\"");
-		}
+		log.debug("Add digest authentication: {}", getHttpSessionId(request));
+		String nonce = UUID.randomUUID().toString().replace("-", "");
+		response.addHeader("WWW-Authenticate", "Digest realm=\"" + BASIC_AUTH_REALM + "\", qop=\"auth\", nonce=\"" + nonce + "\", charset=\"UTF-8\"");
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		return null;
 	}
@@ -283,48 +266,13 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		return session == null ? null : session.getId();
 	}
 	
-	private boolean proposeBasicAuthentication(HttpServletRequest request) {
-		String userAgent = ServletUtil.getUserAgent(request);
-		if(StringHelper.containsNonWhitespace(userAgent)) {
-			String[] exclusionList = webdavModule.getBasicAuthenticationExclusionList();
-			for(String exclusion:exclusionList) {
-				if(userAgent.contains(exclusion) && webdavModule.isDigestAuthenticationEnabled()) {
-					return false;
-				}
-			}
-		}
-		return request.isSecure() || Settings.isJUnitTest();
-	}
+
 
 	protected UserSession handleDigestAuthentication(DigestAuthentication digestAuth, HttpServletRequest request) {
 		Identity identity = webDAVAuthManager.digestAuthentication(request.getMethod(), digestAuth);
 		if(identity != null && securityManager.isIdentityLoginAllowed(identity, WebDAVAuthManager.PROVIDER_HA1)) {
 			log.debug("WebDAV Digest authentication of: {}", identity);
 			return afterAuthorization(identity, request);
-		}
-		return null;
-	}
-	
-	protected UserSession handleBasicAuthentication(String credentials, HttpServletRequest request) {
-		String userPass = StringHelper.decodeBase64(credentials);
-
-		// The decoded string is in the form
-		// "userID:password".
-		int p = userPass.indexOf(':');
-		if (p != -1) {
-			String userID = userPass.substring(0, p);
-			String password = userPass.substring(p + 1);
-			
-			// Validate user ID and password
-			// and set valid true if valid.
-			// In this example, we simply check
-			// that neither field is blank
-			AuthenticationStatus status = new AuthenticationStatus();
-			Identity identity = webDAVAuthManager.authenticate(userID, password, status);
-			if (identity != null && securityManager.isIdentityLoginAllowed(identity, WebDAVAuthManager.PROVIDER_WEBDAV)) {
-				log.debug("WebDAV Basic authentication of: {}", identity);
-				return afterAuthorization(identity, request);
-			}
 		}
 		return null;
 	}

@@ -47,6 +47,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -162,14 +163,14 @@ public class JunitTestHelper {
 		String login = getRandomizedLoginName(prefixLogin);
 		return createAndPersistIdentityAsUser(login);
 	}
-	
+
 	public static final IdentityWithLogin createAndPersistRndUser(String prefixLogin) {
 		String login = getRandomizedLoginName(prefixLogin);
 		String password = PWD;
 		Identity identity = createAndPersistIdentityAsUser(login, password);
 		return new IdentityWithLogin(identity, login, password);
 	}
-	
+
 	private static final String getRandomizedLoginName(String prefixLogin) {
 		if(StringHelper.containsNonWhitespace(prefixLogin)) {
 			if(!prefixLogin.endsWith("-")) {
@@ -205,6 +206,16 @@ public class JunitTestHelper {
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
 	}
+
+	public static IdentityWithLogin createAndPersistWebDAVAuthentications(IdentityWithLogin identityWithLogin) {
+		createAndPersistWebDAVAuthentications(identityWithLogin.getIdentity(), identityWithLogin.getLogin(),  identityWithLogin.getPassword());
+		return identityWithLogin;
+	}
+	
+	public static void createAndPersistWebDAVAuthentications(Identity identity, String login, String pwd) {
+		WebDAVAuthManager webdavAuthManager = CoreSpringFactory.getImpl(WebDAVAuthManager.class);
+		webdavAuthManager.upgradePassword(identity, login, pwd);
+	}
 	
 	/**
 	 * Return the identity with the specified login or
@@ -216,7 +227,8 @@ public class JunitTestHelper {
 	 */
 	public static final Identity findIdentityByLogin(String login) {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		Authentication auth = securityManager.findAuthenticationByAuthusername(login, "OLAT", BaseSecurity.DEFAULT_ISSUER);
+		Authentication auth = securityManager.findAuthenticationByAuthusername(login,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
 		if (auth != null) {
 			return auth.getIdentity();
 		}

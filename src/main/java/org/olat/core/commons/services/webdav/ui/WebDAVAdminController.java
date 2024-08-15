@@ -47,7 +47,6 @@ public class WebDAVAdminController extends FormBasicController {
 	private MultipleSelectionElement excludeClientsEl;
 	private MultipleSelectionElement enableModuleEl;
 	private MultipleSelectionElement enableLinkEl;
-	private MultipleSelectionElement enableDigestEl;
 	private MultipleSelectionElement enableTermsFoldersEl;
 	private MultipleSelectionElement enableManagedFoldersEl;
 	private MultipleSelectionElement enableCurriculumElementFoldersEl;
@@ -83,9 +82,6 @@ public class WebDAVAdminController extends FormBasicController {
 		enableLinkEl = uifactory.addCheckboxesHorizontal("webdavLink", "webdav.link", formLayout, onKeys, values);
 		enableLinkEl.select("xx", webDAVModule.isLinkEnabled());
 		
-		enableDigestEl = uifactory.addCheckboxesHorizontal("webdavDigest", "webdav.digest", formLayout, onKeys, values);
-		enableDigestEl.select("xx", webDAVModule.isDigestAuthenticationEnabled());
-
 		String excludedUserAgents = webDAVModule.getUserAgentExclusionList();
 		excludeClientsEl = uifactory.addCheckboxesHorizontal("webdavExclusion", "webdav.client.exclusion", formLayout, onKeys, values);
 		excludeClientsEl.select("xx", StringHelper.containsNonWhitespace(excludedUserAgents));
@@ -137,7 +133,6 @@ public class WebDAVAdminController extends FormBasicController {
 		boolean enabled = enableModuleEl.isAtLeastSelected(1);
 		
 		enableLinkEl.setVisible(enabled);
-		enableDigestEl.setVisible(enabled);
 		enableTermsFoldersEl.setVisible(enabled);
 		learnersAsParticipantEl.setVisible(enabled);
 		learnersBookmarkEl.setVisible(enabled);
@@ -153,7 +148,6 @@ public class WebDAVAdminController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		webDAVModule.setLinkEnabled(enableLinkEl.isAtLeastSelected(1));
-		webDAVModule.setDigestAuthenticationEnabled(enableDigestEl.isAtLeastSelected(1));
 		webDAVModule.setTermsFoldersEnabled(enableTermsFoldersEl.isAtLeastSelected(1));
 		webDAVModule.setCurriculumElementFoldersEnabled(enableCurriculumElementFoldersEl.isAtLeastSelected(1));
 		webDAVModule.setEnableLearnersParticipatingCourses(learnersAsParticipantEl.isAtLeastSelected(1));

@@ -20,7 +20,6 @@
 package org.olat.basesecurity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -176,12 +175,12 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsRndUser("eq-1-");
 		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsRndUser("eq-2-");
 		
-		assertFalse("Wrong equals implementation, different types are recognized as equals ",ident1.equals(Integer.valueOf(1)));
-		assertFalse("Wrong equals implementation, different users are recognized as equals ",ident1.equals(ident2));
-		assertFalse("Wrong equals implementation, null value is recognized as equals ",ident1.equals(null));
-		assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",ident1.equals(ident1));
+		Assert.assertFalse("Wrong equals implementation, different types are recognized as equals ",ident1.equals(Integer.valueOf(1)));
+		Assert.assertFalse("Wrong equals implementation, different users are recognized as equals ",ident1.equals(ident2));
+		Assert.assertFalse("Wrong equals implementation, null value is recognized as equals ",ident1.equals(null));
+		Assert.assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",ident1.equals(ident1));
 		Identity ident1_2 = securityManager.loadIdentityByKey(ident1.getKey());
-		assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",ident1.equals(ident1_2));
+		Assert.assertTrue("Wrong equals implementation, same users are NOT recognized as equals ",ident1.equals(ident1_2));
 	}
 	
 	@Test
@@ -189,10 +188,10 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsRndUser("hash-1");
 		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsRndUser("hash-2");
 		
-		assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",ident1.hashCode() == ident1.hashCode());
-		assertFalse("Wrong hashCode implementation, different users have same hash-code",ident1.hashCode() == ident2.hashCode());
+		Assert.assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",ident1.hashCode() == ident1.hashCode());
+		Assert.assertFalse("Wrong hashCode implementation, different users have same hash-code",ident1.hashCode() == ident2.hashCode());
 		Identity ident1_2 = securityManager.loadIdentityByKey(ident1.getKey());
-		assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",ident1.hashCode() == ident1_2.hashCode());
+		Assert.assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",ident1.hashCode() == ident1_2.hashCode());
 	}
 
 	@Test
@@ -706,7 +705,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertNotNull(auth);
 		Assert.assertNotNull(updatedAuth);
 		Assert.assertEquals(auth, updatedAuth);
-		Assert.assertFalse(credentials.equals(updatedAuth.getCredential()));
+		Assert.assertNotEquals(credentials, updatedAuth.getCredential());
 		dbInstance.commitAndCloseSession();
 		
 		Authentication auth2 = securityManager.findAuthentication(ident, "OLAT", BaseSecurity.DEFAULT_ISSUER);
@@ -716,7 +715,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertNotNull(notUpdatedAuth);
 		Assert.assertSame(auth2, notUpdatedAuth);
 		Assert.assertEquals(credentials2, notUpdatedAuth.getCredential());
-		Assert.assertFalse(credentials.equals(notUpdatedAuth.getCredential()));
+		Assert.assertNotEquals(credentials, notUpdatedAuth.getCredential());
 		dbInstance.commitAndCloseSession();
 	}
 	
@@ -772,10 +771,6 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 				email, "secret", Encoder.Algorithm.sha512);
 		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER, null,
 				email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL, BaseSecurity.DEFAULT_ISSUER, null,
-				email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER, null,
-				email, "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
 		// User with email address exists: The authentications are valid.
@@ -784,8 +779,6 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_EMAIL, BaseSecurity.DEFAULT_ISSUER));
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER));
-		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL, BaseSecurity.DEFAULT_ISSUER));
-		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER));
 		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, "OLAT", BaseSecurity.DEFAULT_ISSUER));
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(identityWithLogin.getLogin(), "OLAT", BaseSecurity.DEFAULT_ISSUER));
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, "del-mail", BaseSecurity.DEFAULT_ISSUER));
@@ -801,8 +794,6 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		
 		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_EMAIL, BaseSecurity.DEFAULT_ISSUER));
 		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER));
-		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL, BaseSecurity.DEFAULT_ISSUER));
-		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER));
 		Assert.assertNull(securityManager.findAuthenticationByAuthusername(email, "OLAT", BaseSecurity.DEFAULT_ISSUER));
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(identityWithLogin.getLogin(), "OLAT", BaseSecurity.DEFAULT_ISSUER));
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, "del-mail", BaseSecurity.DEFAULT_ISSUER));

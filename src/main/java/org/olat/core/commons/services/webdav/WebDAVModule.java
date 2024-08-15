@@ -43,7 +43,6 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final String WEBDAV_ENABLED = "webdav.enabled";
 	private static final String WEBDAV_LINKS_ENABLED = "webdav.links.enabled";
-	private static final String DIGEST_AUTH_ENABLED = "auth.digest.enabled";
 	private static final String TERMS_FOLDERS_ENABLED = "webdav.termsfolders.enabled";
 	private static final String LEARNERS_BOOKMARKS_COURSE = "webdav.learners.bookmarks.courses";
 	private static final String LEARNERS_PARTICIPATING_COURSES = "webdav.learners.participating.courses";
@@ -59,8 +58,6 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean enabled;
 	@Value("${webdav.links.enabled:true}")
 	private boolean linkEnabled;
-	@Value("${auth.digest.enabled:true}")
-	private boolean digestAuthenticationEnabled;
 	@Value("${webdav.termsfolders.enabled:true}")
 	private boolean termsFoldersEnabled;
 	@Value("${webdav.managed.folders.enabled:false}")
@@ -98,11 +95,6 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 		String linkEnabledObj = getStringPropertyValue(WEBDAV_LINKS_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(linkEnabledObj)) {
 			linkEnabled = "true".equals(linkEnabledObj);
-		}
-		
-		String digestEnabledObj = getStringPropertyValue(DIGEST_AUTH_ENABLED, true);
-		if(StringHelper.containsNonWhitespace(digestEnabledObj)) {
-			digestAuthenticationEnabled = "true".equals(digestEnabledObj);
 		}
 
 		String termsFoldersEnabledObj = getStringPropertyValue(TERMS_FOLDERS_ENABLED, true);
@@ -163,16 +155,6 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 		this.linkEnabled = linkEnabled;
 		String enabledStr = linkEnabled ? "true" : "false";
 		setStringProperty(WEBDAV_LINKS_ENABLED, enabledStr, true);
-	}
-
-	public boolean isDigestAuthenticationEnabled() {
-		return digestAuthenticationEnabled;
-	}
-	
-	public void setDigestAuthenticationEnabled(boolean digestAuthenticationEnabled) {
-		this.digestAuthenticationEnabled = digestAuthenticationEnabled;
-		String enabledStr = digestAuthenticationEnabled ? "true" : "false";
-		setStringProperty(DIGEST_AUTH_ENABLED, enabledStr, true);
 	}
 	
 	public boolean isTermsFoldersEnabled() {

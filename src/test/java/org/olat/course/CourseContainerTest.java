@@ -82,7 +82,7 @@ public class CourseContainerTest extends WebDAVTestCase {
 	public void putCourseFolderAsOwner() 
 	throws IOException, URISyntaxException {
 		//create a user
-		IdentityWithLogin author = JunitTestHelper.createAndPersistRndUser("course-webdav-1-");
+		IdentityWithLogin author = createAndPersistRndUser("course-webdav-1-");
 		deployCourse("Kurs", author.getIdentity(), null, null);
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -116,7 +116,7 @@ public class CourseContainerTest extends WebDAVTestCase {
 	public void putFolderElementAsOwner() 
 	throws IOException, URISyntaxException {
 		//create a user
-		IdentityWithLogin author = JunitTestHelper.createAndPersistRndUser("course-webdav-1-");
+		IdentityWithLogin author = createAndPersistRndUser("course-webdav-1-");
 		deployCourse("Kurs", author.getIdentity(), null, null);
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -149,8 +149,8 @@ public class CourseContainerTest extends WebDAVTestCase {
 	public void getNotCourseFolderAsParticipant() 
 	throws IOException, URISyntaxException {
 		//create a user
-		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("course-webdav-2-");
-		IdentityWithLogin participant = JunitTestHelper.createAndPersistRndUser("course-webdav-3-");
+		IdentityWithLogin author = createAndPersistRndAuthor("course-webdav-2-");
+		IdentityWithLogin participant = createAndPersistRndUser("course-webdav-3-");
 		deployCourse("Teilnehmer", author.getIdentity(), null, participant.getIdentity());
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -175,8 +175,8 @@ public class CourseContainerTest extends WebDAVTestCase {
 	public void putNotCourseFolderAsParticipant() 
 	throws IOException, URISyntaxException {
 		//create a user
-		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("course-webdav-2-");
-		IdentityWithLogin participant = JunitTestHelper.createAndPersistRndUser("course-webdav-3-");
+		IdentityWithLogin author = createAndPersistRndAuthor("course-webdav-2-");
+		IdentityWithLogin participant = createAndPersistRndUser("course-webdav-3-");
 		deployCourse("Teilnehmer", author.getIdentity(), null, participant.getIdentity());
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -203,8 +203,8 @@ public class CourseContainerTest extends WebDAVTestCase {
 	public void getFolderElementAsParticipant() 
 	throws IOException, URISyntaxException {
 		//create a user
-		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("course-webdav-2-");
-		IdentityWithLogin participant = JunitTestHelper.createAndPersistRndUser("course-webdav-3-");
+		IdentityWithLogin author = createAndPersistRndAuthor("course-webdav-2-");
+		IdentityWithLogin participant = createAndPersistRndUser("course-webdav-3-");
 		deployCourse("Teilnehmer", author.getIdentity(), null, participant.getIdentity());
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -230,8 +230,8 @@ public class CourseContainerTest extends WebDAVTestCase {
 	public void getNotCoachFolderAsParticipant() 
 	throws IOException, URISyntaxException {
 		//create a n author which is coach too
-		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("course-webdav-4-");
-		IdentityWithLogin participant = JunitTestHelper.createAndPersistRndUser("course-webdav-5-");
+		IdentityWithLogin author = createAndPersistRndAuthor("course-webdav-4-");
+		IdentityWithLogin participant = createAndPersistRndUser("course-webdav-5-");
 		deployCourse("Coaches", author.getIdentity(), null, participant.getIdentity());
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -256,7 +256,7 @@ public class CourseContainerTest extends WebDAVTestCase {
 	public void getCoachFolderAsCoach() 
 	throws IOException, URISyntaxException {
 		//create a n author which is coach too
-		IdentityWithLogin coach = JunitTestHelper.createAndPersistRndUser("course-webdav-3-");
+		IdentityWithLogin coach = createAndPersistRndUser("course-webdav-3-");
 		deployCourse("Coaches", coach.getIdentity(), coach.getIdentity(), null);
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -282,8 +282,8 @@ public class CourseContainerTest extends WebDAVTestCase {
 	public void putNotCourseFolderAsCoach() 
 	throws IOException, URISyntaxException {
 		//create a user
-		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("course-webdav-2-");
-		IdentityWithLogin participant = JunitTestHelper.createAndPersistRndUser("course-webdav-3-");
+		IdentityWithLogin author = createAndPersistRndAuthor("course-webdav-2-");
+		IdentityWithLogin participant = createAndPersistRndUser("course-webdav-3-");
 		deployCourse("Teilnehmer", author.getIdentity(), null, participant.getIdentity());
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -310,8 +310,8 @@ public class CourseContainerTest extends WebDAVTestCase {
 	public void putNotFolderElementAsCoach() 
 	throws IOException, URISyntaxException {
 		//create a user
-		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("course-webdav-2-");
-		IdentityWithLogin participant = JunitTestHelper.createAndPersistRndUser("course-webdav-3-");
+		IdentityWithLogin author = createAndPersistRndAuthor("course-webdav-2-");
+		IdentityWithLogin participant = createAndPersistRndUser("course-webdav-3-");
 		deployCourse("Coaching", author.getIdentity(), null, participant.getIdentity());
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -343,8 +343,8 @@ public class CourseContainerTest extends WebDAVTestCase {
 	public void getNotAsRandom() 
 	throws IOException, URISyntaxException {
 		//create a user
-		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("course-webdav-2-");
-		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("course-webdav-3-");
+		IdentityWithLogin author = createAndPersistRndAuthor("course-webdav-2-");
+		IdentityWithLogin user = createAndPersistRndUser("course-webdav-3-");
 		deployCourse("Coaching", author.getIdentity(), null, null);
 
 		WebDAVConnection conn = new WebDAVConnection();
@@ -376,4 +376,19 @@ public class CourseContainerTest extends WebDAVTestCase {
 		dbInstance.commitAndCloseSession();
 		return re;
 	}
+	
+	private IdentityWithLogin createAndPersistRndUser(String prefixLogin) {
+		return JunitTestHelper.createAndPersistWebDAVAuthentications(
+				JunitTestHelper.createAndPersistRndUser(prefixLogin));
+	}
+	
+	private IdentityWithLogin createAndPersistRndAuthor(String prefixLogin) {
+		return JunitTestHelper.createAndPersistWebDAVAuthentications(
+				JunitTestHelper.createAndPersistRndAuthor(prefixLogin));
+	}
+	
+	private IdentityWithLogin createAndPersistRndAdmin(String prefixLogin) {
+		return JunitTestHelper.createAndPersistWebDAVAuthentications(
+				JunitTestHelper.createAndPersistRndAdmin(prefixLogin));
+	}	
 }
