@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -122,6 +123,8 @@ public class LoginModule extends AbstractSpringModule {
 	
 	private static final String LOGIN_FAQ_URL = "login.faq.url";
 	
+	private static final Set<Encoder.Algorithm> CONSIDERED_SECURE_HASH_ALGRITHM = Set.of(Encoder.Algorithm.sha512, Encoder.Algorithm.argon2id, Encoder.Algorithm.pbkdf2);
+	
 	@Autowired
 	private List<AuthenticationProvider> authenticationProviders;
 	
@@ -200,6 +203,9 @@ public class LoginModule extends AbstractSpringModule {
 	
 	@Value("${password.history:10}")
 	private int passwordHistory;
+	
+	@Value("${password.encoder:argon2}")
+	private String passwordEncoder;
 
 	@Value("${invitation.login:enabled}")
 	private String invitationEnabled;
@@ -539,7 +545,8 @@ public class LoginModule extends AbstractSpringModule {
 	}
 	
 	public Encoder.Algorithm getDefaultHashAlgorithm() {
-		return Encoder.Algorithm.sha512;
+		Encoder.Algorithm algorithm = Encoder.Algorithm.secureValueOf(passwordEncoder, Encoder.Algorithm.argon2id);
+		return CONSIDERED_SECURE_HASH_ALGRITHM.contains(algorithm) ? algorithm : Encoder.Algorithm.argon2id;
 	}
 	
 	/**

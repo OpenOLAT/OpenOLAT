@@ -1,0 +1,13 @@
+<div class="o_badge_wiz_starting_point_step o_form form-horizontal">
+	<legend>$r.translate("form.choose.a.starting.point")</legend>
+	<div class="form-group row clearfix">
+		$r.render("form.starting.point", "label", "col-sm-2")
+		$r.render("form.starting.point")
+	</div>
+	#if($r.visible("table"))
+	<legend>&nbsp;</legend>
+	#end
+	<div class="form-group clearfix">
+		$r.render("table") $r.render("table", "error")
+	</div>
+</div>

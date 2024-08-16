@@ -20,6 +20,8 @@
 
 package org.olat.core.commons.services.commentAndRating.manager;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
@@ -31,6 +33,11 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.ims.cp.ui.VFSMediaFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -156,6 +163,30 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 		int delCount = userCommentsDao.deleteAllComments(ores, resSubPath);
 		delCount += userRatingsDao.deleteAllRatings(ores, resSubPath);
 		return delCount;
+	}
+
+	@Override
+	public VFSContainer getCommentContainer(UserComment comment) {
+		String pathToCommentDir = "/comments/" + comment.getResId() + "/" + comment.getKey() + "/";
+		return VFSManager.olatRootContainer(pathToCommentDir, null);
+	}
+
+	@Override
+	public List<VFSLeaf> getCommentLeafs(UserComment comment) {
+		VFSContainer container = getCommentContainer(comment);
+		List<VFSLeaf> files = new ArrayList<>();
+
+		VFSMediaFilter mediaFilter = new VFSMediaFilter(false);
+		List<VFSItem> items = container.getItems(mediaFilter);
+		for (VFSItem item : items) {
+			if (item instanceof VFSLeaf leaf) {
+				files.add(leaf);
+			}
+		}
+		if (!files.isEmpty()) {
+			return files;
+		}
+		return Collections.emptyList();
 	}
 
 	@Override

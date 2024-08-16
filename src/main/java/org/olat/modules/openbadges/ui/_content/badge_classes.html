@@ -12,7 +12,9 @@
 <fieldset class="o_form o_badge_classes">
 	<legend>$title #if($r.isNull(contextHelp)) $r.contextHelpWithWrapper($contextHelp) #end</legend>
 	<div class="o_button_group">
-		$r.render("add")
+		#if($r.available("create") && $r.visible("create"))
+			$r.render("create")
+		#end
 	</div>
 	$r.render("table")
 </fieldset>

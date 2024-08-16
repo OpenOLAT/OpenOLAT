@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.admin.quota;
@@ -24,7 +24,7 @@ package org.olat.admin.quota;
  * <p>
  * Initial Date: 23.05.2007 <br>
  * 
- * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
+ * @author Florian Gnaegi, frentix GmbH, https://www.frentix.com
  */
 public class QuotaConstants {
 	static final String IDENTIFIER_DEFAULT = "::DEFAULT::";
@@ -39,5 +39,6 @@ public class QuotaConstants {
 	public static final String IDENTIFIER_DEFAULT_NODES = IDENTIFIER_DEFAULT + "NODEFOLDERS";
 	public static final String IDENTIFIER_DEFAULT_PFNODES = IDENTIFIER_DEFAULT + "NODEPARTFOLDERS";
 	public static final String IDENTIFIER_DEFAULT_FEEDS = IDENTIFIER_DEFAULT + "BLOGSPODCASTS";
+	public static final String IDENTIFIER_DEFAULT_COMMENTS = IDENTIFIER_DEFAULT + "COMMENTS";
 
 }

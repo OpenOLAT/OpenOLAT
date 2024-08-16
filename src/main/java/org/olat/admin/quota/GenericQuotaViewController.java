@@ -96,6 +96,7 @@ public class GenericQuotaViewController extends BasicController {
 		initDefaultQuota("nodefolder", QuotaConstants.IDENTIFIER_DEFAULT_NODES, defQuotaIdent);
 		initDefaultQuota("pfNodefolder", QuotaConstants.IDENTIFIER_DEFAULT_PFNODES, defQuotaIdent);
 		initDefaultQuota("feeds", QuotaConstants.IDENTIFIER_DEFAULT_FEEDS, defQuotaIdent);
+		initDefaultQuota("comments", QuotaConstants.IDENTIFIER_DEFAULT_COMMENTS, defQuotaIdent);
 	}
 	
 	private void initDefaultQuota(String key, String identifier, String defaultIdentifier) {

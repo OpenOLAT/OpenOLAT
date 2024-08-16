@@ -123,6 +123,14 @@ public interface OpenBadgesManager {
 
 	void deleteBadgeClassAndAssertions(BadgeClass badgeClass);
 
+	boolean hasCourseBadgeClasses(Identity author);
+
+	List<BadgeClassDAO.BadgeClassWithUseCount> getCourseBadgeClassesWithUseCounts(Identity identity);
+
+	List<BadgeClassWithSizeAndCount> getCourseBadgeClassesWithSizesAndCounts(Identity identity);
+
+	File copyBadgeClass(Long existingBadgeToCopy, BadgeClass badgeClass);
+
 	//
 	// Assertion
 	//

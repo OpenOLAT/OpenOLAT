@@ -230,7 +230,7 @@ public class CalendarPage {
 	}
 	
 	public CalendarPage assertZeroEvent() {
-		By eventsBy = By.xpath("//div[@class='fc-daygrid-day-events']/div");
+		By eventsBy = By.xpath("//div[@class='fc-daygrid-day-events']/div[@class='fc-daygrid-event-harness']/a");
 		List<WebElement> eventEls = browser.findElements(eventsBy);
 		Assert.assertEquals(0, eventEls.size());
 		return this;

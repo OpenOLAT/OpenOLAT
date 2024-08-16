@@ -553,6 +553,29 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeClassDAO.createBadgeClass(badgeClass);
 	}
 
+	public File copyBadgeClass(Long sourceBadgeClassKey, BadgeClass targetBadgeClass) {
+		BadgeClass sourceClass = badgeClassDAO.getBadgeClass(sourceBadgeClassKey);
+		targetBadgeClass.setVersion(sourceClass.getVersion());
+		targetBadgeClass.setName(sourceClass.getName());
+		targetBadgeClass.setDescription(sourceClass.getDescription());
+		targetBadgeClass.setIssuer(cloneIssuerString(sourceClass.getIssuer(), targetBadgeClass.getEntry()));
+		targetBadgeClass.setLanguage(sourceClass.getLanguage());
+		targetBadgeClass.setValidityEnabled(sourceClass.isValidityEnabled());
+		targetBadgeClass.setValidityTimelapse(sourceClass.getValidityTimelapse());
+		targetBadgeClass.setValidityTimelapseUnit(sourceClass.getValidityTimelapseUnit());
+		targetBadgeClass.setCriteria(sourceClass.getCriteria());
+		targetBadgeClass.setImage(OpenBadgesFactory.createBadgeClassFileName(targetBadgeClass.getUuid(), sourceClass.getImage()));
+
+		VFSLeaf sourceImageLeaf = getBadgeClassVfsLeaf(sourceClass.getImage());
+		File targetFile = new File(WebappHelper.getTmpDir(), "copied_" + targetBadgeClass.getImage());
+		try {
+			FileUtils.copyToFile(sourceImageLeaf.getInputStream(), targetFile, "");
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		return targetFile;
+	}
+
 	private BadgeClass cloneBadgeClass(BadgeClass sourceClass, RepositoryEntry targetEntry, Identity author,
 									   File sourceDirectory) {
 		BadgeClassImpl targetClass = new BadgeClassImpl();
@@ -801,6 +824,22 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			log.error("Could not set a target file name for {}.", targetFileName);
 		}
 		return null;
+	}
+
+	@Override
+	public boolean hasCourseBadgeClasses(Identity author) {
+		return badgeClassDAO.hasCourseBadgeClasses(author);
+	}
+
+	@Override
+	public List<BadgeClassDAO.BadgeClassWithUseCount> getCourseBadgeClassesWithUseCounts(Identity identity) {
+		return badgeClassDAO.getCourseBadgeClassesWithUseCounts(identity);
+	}
+
+	@Override
+	public List<BadgeClassWithSizeAndCount> getCourseBadgeClassesWithSizesAndCounts(Identity identity) {
+		return getCourseBadgeClassesWithUseCounts(identity).stream()
+				.map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(), sizeForBadgeClass(obj.getBadgeClass()), obj.getUseCount())).toList();
 	}
 
 	//

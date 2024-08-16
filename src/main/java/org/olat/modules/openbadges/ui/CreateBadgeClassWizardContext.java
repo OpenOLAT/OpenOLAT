@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.json.JSONObject;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
@@ -40,6 +41,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesFactory;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
@@ -60,6 +62,15 @@ public class CreateBadgeClassWizardContext {
 
 	private final RepositoryEntry entry;
 	private final RepositoryEntrySecurity reSecurity;
+
+	public boolean showStartingPointStep(Identity author) {
+		if (isGlobalBadge()) {
+			return false;
+		}
+
+		OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+		return openBadgesManager.hasCourseBadgeClasses(author);
+	}
 
 	public boolean showRecipientsStep() {
 		if (isGlobalBadge()) {
@@ -164,6 +175,8 @@ public class CreateBadgeClassWizardContext {
 	private File temporaryBadgeImageFile;
 	private String targetBadgeImageFileName;
 	private List<Identity> earners;
+	private boolean startFromScratch = false;
+	private Long sourceBadgeClassKey;
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry, RepositoryEntrySecurity reSecurity) {
 		this.entry = entry;
@@ -316,5 +329,43 @@ public class CreateBadgeClassWizardContext {
 
 	public RepositoryEntrySecurity getReSecurity() {
 		return reSecurity;
+	}
+
+	public boolean isStartFromScratch() {
+		return startFromScratch;
+	}
+
+	public void setStartFromScratch(boolean startFromScratch) {
+		this.startFromScratch = startFromScratch;
+	}
+
+	public Long getSourceBadgeClassKey() {
+		return sourceBadgeClassKey;
+	}
+
+	public void setSourceBadgeClassKey(Long sourceBadgeClassKey) {
+		this.sourceBadgeClassKey = sourceBadgeClassKey;
+	}
+
+	public void copyFromExistingBadge() {
+		if (sourceBadgeClassKey == null) {
+			return;
+		}
+
+		OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+		File targetImageFile = openBadgesManager.copyBadgeClass(sourceBadgeClassKey, badgeClass);
+		temporaryBadgeImageFile = targetImageFile;
+		targetBadgeImageFileName = targetImageFile.getName();
+		selectedTemplateKey = OWN_BADGE_KEY;
+		selectedTemplateImage = null;
+		badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+	}
+
+	public void startFromScratch() {
+		temporaryBadgeImageFile = null;
+		targetBadgeImageFileName = null;
+		selectedTemplateKey = null;
+		selectedTemplateImage = null;
+		initCriteria();
 	}
 }

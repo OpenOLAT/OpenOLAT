@@ -1,0 +1,32 @@
+<div class="o_comments">
+	#if($r.available("comments.form.placeholder"))
+		$r.render("comments.form.placeholder")
+	#end
+	$r.render("commentElem")
+    <div class="o_button_container">
+		$r.render("buttonContainer")
+    </div>
+	#if("uploadedFiles")
+		<div class="o_attachments o_attachments_upload">
+			#foreach($vfsLeaf in $uploadedFiles.keySet())
+				<div class="o_attachment">
+					#if($r.isNotNull($uploadedFiles.get($vfsLeaf)))
+						<div class="o_achievement_card o_attachment_thumbnail">
+							<img src="${uploadedFiles.get($vfsLeaf)}" alt=""/>
+						</div>
+					#else
+						<div class="o_visual_not_available"></div>
+					#end
+					<div class="o_attachment_meta">
+						#set($fileMetaData = "$metaData_" + $vfsLeaf.getMetaInfo().getKey())
+						<h5>$r.render("prev-" + $vfsLeaf.getMetaInfo().getKey())</h5>
+						<small class="o_muted">
+							#evaluate($fileMetaData)
+						</small>
+					</div>
+					$r.render("delete-" + $vfsLeaf.getMetaInfo().getKey())
+				</div>
+			#end
+		</div>
+	#end
+</div>

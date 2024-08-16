@@ -326,6 +326,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_others { @include o-add-icon('star');}
 .o_icon_owner { @include o-add-icon('key');}
 .o_icon_pageing { @include o-add-icon('ellipsis-h');}
+.o_icon_paperclip { @include o-add-icon('paperclip');}
 .o_icon_paragraph { @include o-add-icon('paragraph');}
 .o_icon_passed { @include o-add-icon('check-circle');}
 .o_icon_passed_undefined { @include o-add-icon('dot-circle', false);}

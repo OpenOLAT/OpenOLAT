@@ -771,7 +771,7 @@ public class AssessmentTest extends Deployments {
 		
 		BadgeClassesPage badges = course
 			.badgesAdministration()
-			.addBadgeClass()
+			.createBadgeClass()
 			.selectClass(badgeClassName)
 			.nextToCustomization()
 			.customize("Selenium the test")
@@ -896,7 +896,7 @@ public class AssessmentTest extends Deployments {
 		
 		BadgeClassesPage badges = course
 			.badgesAdministration()
-			.addBadgeClass()
+			.createBadgeClass()
 			.selectClass(badgeClassName)
 			.nextToCustomization()
 			.customize("Selenium the test")

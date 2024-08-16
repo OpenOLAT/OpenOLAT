@@ -43,6 +43,8 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -142,6 +144,11 @@ public class UserCommentsDAO {
 		return dbInstance.getCurrentEntityManager().merge(comment);
 	}
 
+	private VFSContainer getCommentContainer(UserComment comment) {
+		String pathToCommentDir = "/comments/" + comment.getResId() + "/" + comment.getKey() + "/";
+		return VFSManager.olatRootContainer(pathToCommentDir, null);
+	}
+
 
 	public int deleteComment(UserComment comment, boolean deleteReplies) {
 		int counter = 0;
@@ -161,6 +168,8 @@ public class UserCommentsDAO {
 			// Since we have a many-to-one we first have to recursively delete
 			// the replies to prevent foreign key constraints
 			for (UserComment reply : replies) {
+				// delete attachment of each reply
+				getCommentContainer(reply).deleteSilently();
 				counter += deleteComment(reply, true);
 			}
 		} else {
@@ -171,6 +180,8 @@ public class UserCommentsDAO {
 				dbInstance.getCurrentEntityManager().merge(reply);
 			}
 		}
+		// also delete the corresponding attachments
+		getCommentContainer(comment).deleteSilently();
 		// Now delete this comment and finish
 		dbInstance.getCurrentEntityManager().remove(comment);
 		// do Logging
@@ -243,6 +254,7 @@ public class UserCommentsDAO {
 				comment.setComment("User has been deleted");
 				dbInstance.getCurrentEntityManager().merge(comment);
 			} else {
+				getCommentContainer(comment).deleteSilently();
 				dbInstance.getCurrentEntityManager().remove(comment);
 			}
 			
@@ -299,6 +311,7 @@ public class UserCommentsDAO {
 		
 		if(comments != null && !comments.isEmpty()) {
 			for(UserCommentImpl comment:comments) {
+				getCommentContainer(comment).deleteSilently();
 				em.remove(comment);
 			}
 		}
@@ -322,6 +335,7 @@ public class UserCommentsDAO {
 			.setParameter("resId", ores.getResourceableId())
 			.getResultList();
 		for(UserCommentImpl comment:comments) {
+			getCommentContainer(comment).deleteSilently();
 			em.remove(comment);
 		}
 		updateDelegateRatings(ores, null, false);

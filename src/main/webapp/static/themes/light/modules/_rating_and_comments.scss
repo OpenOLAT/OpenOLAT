@@ -72,7 +72,12 @@
 	}
 }
 
-.o_comments { 
+.o_comments {
+
+	.o_button_container {
+		padding: $padding-large-horizontal 0 $padding-large-horizontal 0;
+	}
+
 	.o_comment_wrapper {
 		>blockquote {
 			.o_comment_meta {
@@ -143,6 +148,95 @@
 		}
 		.o_comments_form_ctrl {
 			width: 100%;
+		}
+	}
+
+	.o_attachments {
+		display: flex;
+		flex-wrap: wrap;
+
+		&.o_attachments_upload {
+			flex-direction: column;
+		}
+		&.o_attachments_preview {
+			gap: $padding-large-vertical;
+		}
+
+		.o_attachment {
+			display: flex;
+			align-items: flex-end;
+			padding-bottom:$padding-large-vertical;
+
+			.o_attachment_thumbnail {
+				padding: 0 0 $padding-large-horizontal 0;
+			}
+			.o_attachment_thumbnail_preview {
+				display: grid;
+				padding: 0 0 $padding-large-horizontal 0;
+				height: 100%;
+				width: 100%;
+
+				> img {
+					border-radius: $border-radius-large;
+					transition: opacity 0.3s ease;
+				}
+
+				.o_file_suffix {
+					position: absolute;
+					margin: $padding-base-vertical 0 0 $padding-base-vertical;
+					color: $o-brand-text;
+					border-color: $o-brand-box-border;
+				}
+
+				.o_visual_not_available {
+					width: 135px;
+					height: $o-portrait-size;
+					background-color: $o-brand-box-bg;
+					border: solid 1px $o-brand-box-border;
+					border-radius: $border-radius-large;
+				}
+
+				.o_attachment_title {
+					position: absolute;
+					color: $o-brand-text;
+					margin-left: $padding-large-vertical;
+					margin-top: 50px;
+					max-width: 110px;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+
+				.o_attachment_thumbnail_action {
+					display: none;
+					position: absolute;
+					margin-top: 65px;
+				}
+			}
+
+			.o_attachment_thumbnail_preview:hover {
+				> img {
+					opacity: 0.5;
+					cursor: pointer;
+				}
+				.o_attachment_title {
+					display: none;
+				}
+				.o_file_suffix {
+					display: none;
+				}
+				.o_attachment_thumbnail_action {
+					display: block;
+				}
+			}
+
+			.o_attachment_meta {
+				display: flex;
+				flex-direction: column;
+			}
+
+			.o_sel_comment_attachment_delete {
+				margin-left: auto;
+			}
 		}
 	}
 }

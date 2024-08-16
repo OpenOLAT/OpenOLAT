@@ -105,7 +105,7 @@ public class BadgeDetailsController extends FormBasicController {
 	private CloseableModalController cmc;
 	private BadgeAssertionPublicController badgeAssertionPublicController;
 	private CreateBadgeClassWizardContext createBadgeClassContext;
-	private StepsMainRunController addStepsController;
+	private StepsMainRunController stepsController;
 	private IssueGlobalBadgeController issueGlobalBadgeCtrl;
 	private IssueCourseBadgeController issueCourseBadgeCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
@@ -256,10 +256,10 @@ public class BadgeDetailsController extends FormBasicController {
 		} else if (source == badgeAssertionPublicController) {
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == addStepsController) {
+		} else if (source == stepsController) {
 			if (event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				getWindowControl().pop();
-				removeAsListenerAndDispose(addStepsController);
+				removeAsListenerAndDispose(stepsController);
 			}
 			if (event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
@@ -352,10 +352,10 @@ public class BadgeDetailsController extends FormBasicController {
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 
-		addStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("form.edit.badge"), "o_sel_add_badge_wizard");
-		listenTo(addStepsController);
-		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
+		stepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("form.edit.badge"), "o_sel_edit_badge_wizard");
+		listenTo(stepsController);
+		getWindowControl().pushAsModalDialog(stepsController.getInitialComponent());
 	}
 
 	private void doAwardBadge(UserRequest ureq) {

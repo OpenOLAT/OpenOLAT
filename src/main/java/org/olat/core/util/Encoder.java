@@ -26,8 +26,8 @@
 
 package org.olat.core.util;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -40,6 +40,8 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
+import org.bouncycastle.crypto.params.Argon2Parameters;
 import org.olat.core.logging.Tracing;
 
 
@@ -89,6 +91,10 @@ public class Encoder {
 		 */
 		pbkdf2("PBKDF2WithHmacSHA1", 20000, true, null),
 		/**
+		 * Argon 2 with 2 iterations, par
+		 */
+		argon2id("Argon2", 3, true, null),
+		/**
 		 * SHA-256 with one iteration no salted
 		 */
 		sha256Exam("SHA-256", 1, false, null),
@@ -136,6 +142,17 @@ public class Encoder {
 			}
 			return md5;
 		}
+		
+		public static final Algorithm secureValueOf(String val, Algorithm defaultAlgorithm) {
+			if(StringHelper.containsNonWhitespace(val)) {
+				for(Algorithm value:values()) {
+					if(value.name().equals(val)) {
+						return value;
+					}
+				}
+			}
+			return defaultAlgorithm;
+		}
 	}
 
 	/**
@@ -158,13 +175,13 @@ public class Encoder {
 			String HEXES = "0123456789abcdef";
 			
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
-            byte[] array = md.digest(s.getBytes("UTF-8"));
+            byte[] array = md.digest(s.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < array.length; ++i) {
                 sb.append(HEXES.charAt((array[i] & 0xF0) >> 4)).append(HEXES.charAt((array[i]  & 0x0F)));
             }
             return sb.toString();
-		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+		} catch (NoSuchAlgorithmException e) {
 			log.error("", e);
 			return null;
     	}
@@ -178,12 +195,12 @@ public class Encoder {
 				return md5(s, null, algorithm.getCharset());
 			case md5_iso_8859_1:
 				return md5(s, salt, algorithm.getCharset());
-			case sha1:
-			case sha256:
-			case sha512:
+			case sha1, sha256, sha512:
 				return digest(s, salt, algorithm);
 			case pbkdf2:
 				return secretKey(s, salt, algorithm);
+			case argon2id:
+				return argon2id(s, salt, algorithm);
 			case aes:
 				return encodeAes(s, "rk6R9pQy7dg3usJk", salt, algorithm.getIterations());
 			default: return md5(s, salt, algorithm.getCharset());
@@ -221,12 +238,12 @@ public class Encoder {
 			if(salt != null) {
 				digest.update(salt.getBytes());
 			}
-			byte[] input = password.getBytes("UTF-8");
+			byte[] input = password.getBytes(StandardCharsets.UTF_8);
 			for(int i=algorithm.getIterations(); i-->0; ) {
 				input = digest.digest(input);
 			}
 			return byteToBase64(input);
-		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+		} catch (NoSuchAlgorithmException e) {
 			log.error("", e);
 			return null;
 		}
@@ -238,6 +255,31 @@ public class Encoder {
 			SecretKeyFactory f = SecretKeyFactory.getInstance(algorithm.getAlgorithm());
 			return byteToBase64(f.generateSecret(spec).getEncoded());
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public static String argon2id(String password, String salt, Algorithm algorithm) {
+		try {
+			int iterations = algorithm.getIterations();
+			int memLimit = 19456;
+			int hashLength = 128;
+			int parallelism = 1;
+		        
+			Argon2Parameters.Builder builder = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
+				.withVersion(Argon2Parameters.ARGON2_VERSION_13)
+				.withIterations(iterations)
+				.withMemoryAsKB(memLimit)
+				.withParallelism(parallelism)
+				.withSalt(salt.getBytes());
+		    
+			Argon2BytesGenerator generate = new Argon2BytesGenerator();
+			generate.init(builder.build());
+			byte[] result = new byte[hashLength];
+			generate.generateBytes(password.getBytes(StandardCharsets.UTF_8), result, 0, result.length);
+			return byteToBase64(result);
+		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
@@ -267,7 +309,7 @@ public class Encoder {
 		try {
 			Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
 			cipher.init(Cipher.ENCRYPT_MODE, generateKey(secretKey, salt, iteration));
-			byte[] encrypted = cipher.doFinal(password.getBytes("UTF-8"));
+			byte[] encrypted = cipher.doFinal(password.getBytes(StandardCharsets.UTF_8));
 			return asHexString(encrypted);
 		} catch (Exception e) {
 			log.error("", e);
@@ -293,7 +335,7 @@ public class Encoder {
 		return keyFactory.generateSecret(keySpec);
 	}
 	
-    private static final String asHexString(byte buf[]) {
+    private static final String asHexString(byte[] buf) {
         StringBuilder strbuf = new StringBuilder(buf.length * 2);
         int i;
         for (i = 0; i < buf.length; i++) {
@@ -307,11 +349,11 @@ public class Encoder {
     
     private static final byte[] toByteArray(String hexString) {
         int arrLength = hexString.length() >> 1;
-        byte buf[] = new byte[arrLength];
+        byte[] buf = new byte[arrLength];
         for (int ii = 0; ii < arrLength; ii++) {
             int index = ii << 1;
-            String l_digit = hexString.substring(index, index + 2);
-            buf[ii] = (byte) Integer.parseInt(l_digit, 16);
+            String ldigit = hexString.substring(index, index + 2);
+            buf[ii] = (byte) Integer.parseInt(ldigit, 16);
         }
         return buf;
     }

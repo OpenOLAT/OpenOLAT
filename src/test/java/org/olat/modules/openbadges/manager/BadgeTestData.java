@@ -19,11 +19,16 @@
  */
 package org.olat.modules.openbadges.manager;
 
+import java.util.Date;
+
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesFactory;
+import org.olat.modules.openbadges.model.BadgeAssertionImpl;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.test.JunitTestHelper;
 
 /**
  * Initial date: 2023-08-29<br>
@@ -52,5 +57,19 @@ public class BadgeTestData {
 		CoreSpringFactory.getImpl(BadgeClassDAO.class).createBadgeClass(badgeClassImpl);
 
 		return badgeClassImpl;
+	}
+
+	public static BadgeAssertionImpl createTestBadgeAssertion(BadgeClass badgeClass, String recipientLogin, Identity awardedBy) {
+		String uuid = OpenBadgesFactory.createIdentifier();
+		String recipientObject = "{}";
+		String verification = "{}";
+		Date issuedOn = new Date();
+		Identity recipient = JunitTestHelper.createAndPersistIdentityAsUser(recipientLogin);
+		BadgeAssertionImpl badgeAssertionImpl = new BadgeAssertionImpl();
+
+		CoreSpringFactory.getImpl(BadgeAssertionDAO.class).createBadgeAssertion(uuid, recipientObject, badgeClass,
+				verification, issuedOn, recipient, awardedBy);
+
+		return badgeAssertionImpl;
 	}
 }

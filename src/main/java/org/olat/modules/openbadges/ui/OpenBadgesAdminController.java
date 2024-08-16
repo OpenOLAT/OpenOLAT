@@ -169,7 +169,7 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 		removeAsListenerAndDispose(globalBadgesCtrl);
 		WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(TYPE_GLOBAL_BADGES, 0L), null);
 		globalBadgesCtrl = new BadgeClassesController(ureq, windowControl, null, null, stackPanel,
-				"manual_admin/administration/e-Assessment_openBadges/", "form.add.global.badge",
+				"manual_admin/administration/e-Assessment_openBadges/", "form.create.new.badge",
 				"form.edit.badge");
 		listenTo(globalBadgesCtrl);
 
