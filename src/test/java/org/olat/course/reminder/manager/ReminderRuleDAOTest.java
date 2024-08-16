@@ -351,14 +351,14 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadNextRecertificationBefore() {
-		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity identity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity identity5 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity identity6 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity1);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(identity4);
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Reminder-next-1");
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Reminder-next-2");
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Reminder-next-3");
+		Identity identity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("Reminder-next-4");
+		Identity identity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("Reminder-next-5");
+		Identity identity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("Reminder-next-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 		
 		Date dueDate = new Date();
@@ -382,7 +382,7 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		Certificate certificate51 = certificatesManager.generateCertificate(new CertificateInfos(identity5, null, null, null, null, ""), entry2, null, config);
 		certificate51.setNextRecertificationDate(DateUtils.addDays(dueDate, -5));
 		dbInstance.getCurrentEntityManager().persist(certificate51);
-		// Compare date onyl, no time
+		// Compare date only, no time
 		Certificate certificate61 = certificatesManager.generateCertificate(new CertificateInfos(identity6, null, null, null, null, ""), entry, null, config);
 		certificate61.setNextRecertificationDate(DateUtils.addHours(dueDate, 2));
 		dbInstance.getCurrentEntityManager().persist(certificate61);
