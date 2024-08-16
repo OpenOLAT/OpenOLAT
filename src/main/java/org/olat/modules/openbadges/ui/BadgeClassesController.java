@@ -84,16 +84,16 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private final RepositoryEntry entry;
 	private final RepositoryEntrySecurity reSecurity;
 	private final BreadcrumbPanel breadcrumbPanel;
-	private final String addKey;
+	private final String createKey;
 	private final String editKey;
 	private BadgeClassTableModel tableModel;
 	private FlexiTableElement tableEl;
-	private FormLink addLink;
+	private FormLink createLink;
 	private CreateBadgeClassWizardContext createBadgeClassContext;
 	private DialogBoxController confirmDeleteUnusedClassCtrl;
 	private DialogBoxController confirmDeleteUsedClassCtrl;
 	private DialogBoxController confirmRevokeAllBadgesCtrl;
-	private StepsMainRunController addStepsController;
+	private StepsMainRunController stepsController;
 	private BadgeDetailsController badgeDetailsController;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ToolsController toolsCtrl;
@@ -103,14 +103,14 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	public BadgeClassesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 								  RepositoryEntrySecurity reSecurity, BreadcrumbPanel breadcrumbPanel,
-								  String contextHelp, String addKey, String editKey) {
+								  String contextHelp, String createKey, String editKey) {
 		super(ureq, wControl, "badge_classes");
 		flc.contextPut("contextHelp", contextHelp);
 		flc.contextPut("title", entry == null ? translate("form.global.badges") : translate("badges"));
 		this.entry = entry;
 		this.reSecurity = reSecurity;
 		this.breadcrumbPanel = breadcrumbPanel;
-		this.addKey = addKey;
+		this.createKey = createKey;
 		this.editKey = editKey;
 		initForm(ureq);
 		loadModel();
@@ -151,8 +151,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(),
 				formLayout);
 
-		addLink = uifactory.addFormLink("add", addKey, null, formLayout, Link.BUTTON);
-		addLink.setElementCssClass("o_sel_badge_classes_add");
+		createLink = uifactory.addFormLink("create", createKey, null, formLayout, Link.BUTTON);
+		createLink.setElementCssClass("o_sel_badge_classes_create");
 	}
 
 	private void loadModel() {
@@ -177,8 +177,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == addLink) {
-			doAdd(ureq);
+		if (source == createLink) {
+			doCreate(ureq);
 		} else if (source == tableEl) {
 			if (event instanceof SelectionEvent selectionEvent) {
 				String command = selectionEvent.getCommand();
@@ -245,9 +245,11 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		}
 	}
 
-	private void doAdd(UserRequest ureq) {
+	private void doCreate(UserRequest ureq) {
 		createBadgeClassContext = new CreateBadgeClassWizardContext(entry, reSecurity);
-		Step start = new CreateBadge00ImageStep(ureq, createBadgeClassContext);
+		Step start = createBadgeClassContext.showStartingPointStep(getIdentity()) ?
+				new CreateBadge00StartingPointStep(ureq, createBadgeClassContext) :
+				new CreateBadge00ImageStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass badgeClass = createBadgeClass(createBadgeClassContext);
@@ -256,10 +258,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 
-		addStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate(addKey), "o_sel_add_badge_wizard");
-		listenTo(addStepsController);
-		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
+		stepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate(createKey), "o_sel_create_badge_wizard");
+		listenTo(stepsController);
+		getWindowControl().pushAsModalDialog(stepsController.getInitialComponent());
 	}
 
 	private BadgeClass createBadgeClass(CreateBadgeClassWizardContext createContext) {
@@ -303,10 +305,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 
-		addStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate(editKey), "o_sel_add_badge_wizard");
-		listenTo(addStepsController);
-		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
+		stepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate(editKey), "o_sel_edit_badge_wizard");
+		listenTo(stepsController);
+		getWindowControl().pushAsModalDialog(stepsController.getInitialComponent());
 	}
 
 	private void doConfirmDelete(UserRequest ureq, BadgeClassRow row) {
@@ -377,10 +379,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				calloutCtrl.deactivate();
 			}
 			cleanUp();
-		} else if (source == addStepsController) {
+		} else if (source == stepsController) {
 			if (event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				getWindowControl().pop();
-				removeAsListenerAndDispose(addStepsController);
+				removeAsListenerAndDispose(stepsController);
 			}
 		} else if (source == confirmDeleteUnusedClassCtrl) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {

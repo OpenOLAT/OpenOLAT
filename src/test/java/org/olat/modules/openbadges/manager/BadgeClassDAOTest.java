@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.manager;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -177,5 +178,76 @@ public class BadgeClassDAOTest extends OlatTestCase {
 		Assert.assertNull(badgeClass1Test);
 		Assert.assertNotNull(badgeClass2Test);
 		Assert.assertEquals(badgeClass2.getName(), badgeClass2Test.getName());
+	}
+
+	@Test
+	public void testHasCourseBadgeClasses() {
+		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-1");
+		RepositoryEntry course1 = JunitTestHelper.deployBasicCourse(author1);
+
+		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-2");
+		RepositoryEntry course2 = JunitTestHelper.deployBasicCourse(author2);
+
+		Identity author3 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-3");
+
+		createTestBadgeClass("Test 1", "image1.svg", course1);
+		createTestBadgeClass("Test 2", "image2.svg", course2);
+
+		boolean author1HasClass = badgeClassDAO.hasCourseBadgeClasses(author1);
+		boolean author2HasClass = badgeClassDAO.hasCourseBadgeClasses(author2);
+		boolean author3HasClass = badgeClassDAO.hasCourseBadgeClasses(author3);
+
+		Assert.assertTrue(author1HasClass);
+		Assert.assertTrue(author2HasClass);
+		Assert.assertFalse(author3HasClass);
+	}
+
+	@Test
+	public void testGetCourseBadgeClassesWithCounts() {
+		// Arrange:
+		//
+		// author 1 has course 1 with badge class 1 with badge assertion 1
+		// author 2 has course 2 with badge class 2 with badge assertion 2
+		// author 2 has course 2 with badge class 3 with badge assertion 3
+		// author 2 has course 2 with badge class 3 with badge assertion 4
+		// author 3 has no courses
+
+		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-1");
+		RepositoryEntry course1 = JunitTestHelper.deployBasicCourse(author1);
+
+		BadgeClass badgeClass1 = createTestBadgeClass("Test 1", "image1.svg", course1);
+		BadgeTestData.createTestBadgeAssertion(badgeClass1, "recipient1", author1);
+
+		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-2");
+		RepositoryEntry course2 = JunitTestHelper.deployBasicCourse(author2);
+
+		BadgeClass badgeClass2 = createTestBadgeClass("Test 2", "image2.svg", course2);
+		BadgeTestData.createTestBadgeAssertion(badgeClass2, "recipient2", author2);
+
+		BadgeClass badgeClass3 = createTestBadgeClass("Test 3", "image3.svg", course2);
+		BadgeTestData.createTestBadgeAssertion(badgeClass3, "recipient3", author2);
+		BadgeTestData.createTestBadgeAssertion(badgeClass3, "recipient4", author2);
+
+		Identity author3 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-3");
+
+		// Act:
+		List<BadgeClassDAO.BadgeClassWithUseCount> badgeClassesAuthor1 = badgeClassDAO.getCourseBadgeClassesWithUseCounts(author1);
+		List<BadgeClassDAO.BadgeClassWithUseCount> badgeClassesAuthor2 = badgeClassDAO.getCourseBadgeClassesWithUseCounts(author2);
+		List<BadgeClassDAO.BadgeClassWithUseCount> badgeClassesAuthor3 = badgeClassDAO.getCourseBadgeClassesWithUseCounts(author3);
+
+		// Assert:
+
+		Assert.assertEquals(1, badgeClassesAuthor1.size());
+		Assert.assertEquals(1, badgeClassesAuthor1.get(0).getUseCount().longValue());
+
+		Assert.assertEquals(2, badgeClassesAuthor2.size());
+		List<BadgeClassDAO.BadgeClassWithUseCount> sortedBadgeClassesAuthor2 = badgeClassesAuthor2.stream()
+				.sorted(Comparator.comparing(a -> a.getBadgeClass().getName())).toList();
+		Assert.assertEquals(badgeClass2.getUuid(), sortedBadgeClassesAuthor2.get(0).getBadgeClass().getUuid());
+		Assert.assertEquals(badgeClass3.getUuid(), sortedBadgeClassesAuthor2.get(1).getBadgeClass().getUuid());
+		Assert.assertEquals(1, sortedBadgeClassesAuthor2.get(0).getUseCount().longValue());
+		Assert.assertEquals(2, sortedBadgeClassesAuthor2.get(1).getUseCount().longValue());
+
+		Assert.assertEquals(0, badgeClassesAuthor3.size());
 	}
 }

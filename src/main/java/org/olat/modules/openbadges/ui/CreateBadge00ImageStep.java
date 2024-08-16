@@ -97,6 +97,9 @@ public class CreateBadge00ImageStep extends BasicStep {
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
+		if (createBadgeClassContext.showStartingPointStep(getIdentity())) {
+			return super.getInitialPrevNextFinishConfig();
+		}
 		return PrevNextFinishConfig.NEXT;
 	}
 

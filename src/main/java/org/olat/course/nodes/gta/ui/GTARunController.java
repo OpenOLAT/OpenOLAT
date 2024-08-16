@@ -160,7 +160,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 				RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, entry);
 				badgesStackPanel = new BreadcrumbedStackedPanel("badges-stack", getTranslator(), this);
 				badgeClassesCtrl = new BadgeClassesController(ureq, wControl, entry, reSecurity, badgesStackPanel,
-						null, "form.add.new.badge", "form.edit.badge");
+						null, "form.create.new.badge", "form.edit.badge");
 				listenTo(badgeClassesCtrl);
 				badgesStackPanel.setInvisibleCrumb(0);
 				badgesStackPanel.pushController(translate("run.coach.badges"), badgeClassesCtrl);

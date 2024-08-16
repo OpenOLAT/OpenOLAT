@@ -27,6 +27,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.Identity;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
@@ -142,6 +143,19 @@ public class BadgeClassDAO {
 		return typedQuery.getResultList().get(0);
 	}
 
+	/**
+	 * Returns a list of badge classes with their use count. The use count is the number of badge assertions for
+	 * each badge class.
+	 *
+	 * If a course repository entry is specified, only returns badge classes that belong to the specified course.
+	 *
+	 * If no course repository entry is specified, only returns badge classes that do not belong to any course.
+	 * These are global badges.
+	 *
+	 * @param entry The course repository entry. Can be null, which means that no course repository entry is specified.
+	 *
+	 * @return A list of badge classes with their use count
+	 */
 	public List<BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry) {
 		return getBadgeClassesWithUseCounts(entry, true);
 	}
@@ -209,6 +223,68 @@ public class BadgeClassDAO {
 				.createQuery(sb.toString(), String.class)
 				.setParameter("badgeClassKeys", badgeClassKeys)
 				.getResultList();
+	}
+
+	/**
+	 * Returns true if the specified author owns any course badges.
+	 *
+	 * @param author Author to perform the check for.
+	 *
+	 * @return true if the author owns at least one course badge.
+	 */
+	public boolean hasCourseBadgeClasses(Identity author) {
+		QueryBuilder sb = new QueryBuilder();
+
+		sb
+				.append("select count(bc.key) from badgeclass bc")
+				.append(" inner join bc.entry as re")
+				.append(" inner join re.groups as groupRel")
+				.append(" inner join groupRel.group as group")
+				.append(" inner join group.members as membership")
+				.append(" where membership.role ").in(GroupRoles.owner)
+				.append(" and membership.identity.key = :authorKey")
+				.append(" and bc.status ").in(BadgeClass.BadgeClassStatus.active, BadgeClass.BadgeClassStatus.preparation);
+
+		return !dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("authorKey", author.getKey())
+				.getSingleResult().equals(Long.valueOf(0));
+	}
+
+	/**
+	 * Returns a list of badge classes with their use count (number of badge assertions per badge class).
+	 *
+	 * The list includes the badge classes that the specified 'author' has access to through course ownership.
+	 * So it is all the badges of all the courses that the author is an owner of.
+	 *
+	 * @param author The author to use for the course ownership check.
+
+	 * @return A list of badge classes with their respective number of badge assertions.
+	 */
+	public List<BadgeClassWithUseCount> getCourseBadgeClassesWithUseCounts(Identity author) {
+		QueryBuilder sb = new QueryBuilder();
+
+		sb
+				.append("select bc,")
+				.append(" (select count(ba.key) from badgeassertion ba")
+				.append("   where ba.badgeClass.key = bc.key")
+				.append(" ) as useCount")
+				.append(" from badgeclass bc")
+				.append(" inner join bc.entry as re")
+				.append(" inner join re.groups as groupRel")
+				.append(" inner join groupRel.group as group")
+				.append(" inner join group.members as membership")
+				.append(" where membership.role ").in(GroupRoles.owner)
+				.append(" and membership.identity.key = :authorKey")
+				.append(" and bc.status ").in(BadgeClass.BadgeClassStatus.active, BadgeClass.BadgeClassStatus.preparation);
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("authorKey", author.getKey())
+				.getResultList()
+				.stream()
+				.map(BadgeClassWithUseCount::new)
+				.toList();
 	}
 
 	public static class BadgeClassWithUseCount {

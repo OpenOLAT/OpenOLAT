@@ -45,10 +45,10 @@ public class BadgeClassesPage {
 		return this;
 	}
 	
-	public BadgeClassesPage addBadgeClass() {
-		By addClassBy = By.cssSelector("fieldset.o_badge_classes a.o_sel_badge_classes_add");
-		OOGraphene.waitElement(addClassBy, browser);
-		browser.findElement(addClassBy).click();
+	public BadgeClassesPage createBadgeClass() {
+		By createClassBy = By.cssSelector("fieldset.o_badge_classes a.o_sel_badge_classes_create");
+		OOGraphene.waitElement(createClassBy, browser);
+		browser.findElement(createClassBy).click();
 		
 		OOGraphene.waitModalDialog(browser);
 		return this;
