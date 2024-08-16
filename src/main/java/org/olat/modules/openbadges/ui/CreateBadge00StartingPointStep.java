@@ -125,7 +125,7 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 				if (createBadgeClassContext.isStartFromScratch()) {
 					createBadgeClassContext.startFromScratch();
 				} else {
-					createBadgeClassContext.copyFromExistingBadge();
+					createBadgeClassContext.copyFromExistingBadge(getTranslator());
 				}
 				updateUI();
 			} else if (source == tableEl) {
@@ -133,6 +133,7 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 					BadgesRow row = tableModel.getObject(selectionEvent.getIndex());
 					Long key = row.badgeClassWithSizeAndCount().badgeClass().getKey();
 					createBadgeClassContext.setSourceBadgeClassKey(key);
+					createBadgeClassContext.copyFromExistingBadge(getTranslator());
 				} else if (event instanceof FlexiTableSearchEvent){
 					loadModel();
 				}
@@ -208,8 +209,8 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 
 			tableModel = new BadgesTableModel(columnModel, getLocale());
 
-			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(),
-					formLayout);
+			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 3,
+					true, getTranslator(), formLayout);
 			tableEl.setSelection(true, false, true);
 
 			initFilters();
@@ -259,7 +260,9 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 						}
 						return show;
 					})
-					.map(BadgesRow::new).toList();
+					.map(result -> new BadgesRow(result, result.badgeClass().getEntry().getDisplayname(),
+							result.badgeClass().getEntry().getExternalRef()))
+					.toList();
 			tableModel.setObjects(rows);
 			tableEl.reset(true, true, true);
 		}

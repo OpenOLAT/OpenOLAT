@@ -3,4 +3,7 @@
 	#if($r.available("revoke"))
 	<li>$r.render("revoke")</li>
 	#end
+	#if($r.available("copy"))
+	<li>$r.render("copy")</li>
+	#end
 </ul>

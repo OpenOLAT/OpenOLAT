@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
@@ -347,13 +348,13 @@ public class CreateBadgeClassWizardContext {
 		this.sourceBadgeClassKey = sourceBadgeClassKey;
 	}
 
-	public void copyFromExistingBadge() {
+	public void copyFromExistingBadge(Translator translator) {
 		if (sourceBadgeClassKey == null) {
 			return;
 		}
 
 		OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
-		File targetImageFile = openBadgesManager.copyBadgeClass(sourceBadgeClassKey, badgeClass);
+		File targetImageFile = openBadgesManager.copyBadgeClassWithTemporaryImage(sourceBadgeClassKey, badgeClass, translator);
 		temporaryBadgeImageFile = targetImageFile;
 		targetBadgeImageFileName = targetImageFile.getName();
 		selectedTemplateKey = OWN_BADGE_KEY;
