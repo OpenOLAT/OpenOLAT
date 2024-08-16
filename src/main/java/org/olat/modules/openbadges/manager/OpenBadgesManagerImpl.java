@@ -553,21 +553,39 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeClassDAO.createBadgeClass(badgeClass);
 	}
 
-	public File copyBadgeClass(Long sourceBadgeClassKey, BadgeClass targetBadgeClass) {
-		BadgeClass sourceClass = badgeClassDAO.getBadgeClass(sourceBadgeClassKey);
-		targetBadgeClass.setVersion(sourceClass.getVersion());
-		targetBadgeClass.setName(sourceClass.getName());
-		targetBadgeClass.setDescription(sourceClass.getDescription());
-		targetBadgeClass.setIssuer(cloneIssuerString(sourceClass.getIssuer(), targetBadgeClass.getEntry()));
-		targetBadgeClass.setLanguage(sourceClass.getLanguage());
-		targetBadgeClass.setValidityEnabled(sourceClass.isValidityEnabled());
-		targetBadgeClass.setValidityTimelapse(sourceClass.getValidityTimelapse());
-		targetBadgeClass.setValidityTimelapseUnit(sourceClass.getValidityTimelapseUnit());
-		targetBadgeClass.setCriteria(sourceClass.getCriteria());
-		targetBadgeClass.setImage(OpenBadgesFactory.createBadgeClassFileName(targetBadgeClass.getUuid(), sourceClass.getImage()));
+	@Override
+	public void copyBadgeClass(Long sourceClassKey, Translator translator, Identity author) {
+		BadgeClass sourceClass = badgeClassDAO.getBadgeClass(sourceClassKey);
 
+		BadgeClassImpl targetClass = new BadgeClassImpl();
+		targetClass.setUuid(OpenBadgesFactory.createIdentifier());
+		targetClass.setEntry(sourceClass.getEntry());
+
+		copyBadgeClassFields(sourceClass, targetClass);
+
+		targetClass.setName(sourceClass.getName() + " " + translator.translate("badge.copy.suffix"));
+
+		badgeClassDAO.createBadgeClass(targetClass);
+
+		VFSContainer classesContainer = getBadgeClassesRootContainer();
+		if (classesContainer.resolve(sourceClass.getImage()) instanceof LocalFileImpl sourceLeaf) {
+			copyFile(classesContainer, sourceLeaf.getBasefile(), targetClass.getImage(), author);
+		}
+	}
+
+	@Override
+	public File copyBadgeClassWithTemporaryImage(Long sourceClassKey, BadgeClass targetClass, Translator translator) {
+		BadgeClass sourceClass = badgeClassDAO.getBadgeClass(sourceClassKey);
+
+		copyBadgeClassFields(sourceClass, targetClass);
+
+		targetClass.setName(sourceClass.getName() + " " + translator.translate("badge.copy.suffix"));
+
+		// get the source image
 		VFSLeaf sourceImageLeaf = getBadgeClassVfsLeaf(sourceClass.getImage());
-		File targetFile = new File(WebappHelper.getTmpDir(), "copied_" + targetBadgeClass.getImage());
+
+		// copy the source image to a temporary target file and return the temporary file
+		File targetFile = new File(WebappHelper.getTmpDir(), "copied_" + targetClass.getImage());
 		try {
 			FileUtils.copyToFile(sourceImageLeaf.getInputStream(), targetFile, "");
 		} catch (IOException e) {
@@ -576,23 +594,37 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return targetFile;
 	}
 
-	private BadgeClass cloneBadgeClass(BadgeClass sourceClass, RepositoryEntry targetEntry, Identity author,
-									   File sourceDirectory) {
-		BadgeClassImpl targetClass = new BadgeClassImpl();
-		targetClass.setEntry(targetEntry);
-		targetClass.setUuid(OpenBadgesFactory.createIdentifier());
-		targetClass.setSalt(OpenBadgesFactory.createSalt(targetClass));
+	/**
+	 * Copies fields from a 'sourceClass' to a 'targetClass'.
+	 * The 'targetClass' must have the fields 'uuid' and 'entry' set already. All other fields in
+	 * 'targetClass' are overwritten with values from 'sourceClass'.
+	 *
+	 * @param sourceClass A badge class object to be used as the source.
+	 * @param targetClass A badge class object to be used as the target.
+	 */
+	private void copyBadgeClassFields(BadgeClass sourceClass, BadgeClass targetClass) {
 		targetClass.setStatus(BadgeClass.BadgeClassStatus.preparation);
+		targetClass.setSalt(OpenBadgesFactory.createSalt(targetClass));
 		targetClass.setVersion(sourceClass.getVersion());
 		targetClass.setName(sourceClass.getName());
 		targetClass.setDescription(sourceClass.getDescription());
-		targetClass.setIssuer(cloneIssuerString(sourceClass.getIssuer(), targetEntry));
 		targetClass.setLanguage(sourceClass.getLanguage());
 		targetClass.setValidityEnabled(sourceClass.isValidityEnabled());
 		targetClass.setValidityTimelapse(sourceClass.getValidityTimelapse());
 		targetClass.setValidityTimelapseUnit(sourceClass.getValidityTimelapseUnit());
 		targetClass.setCriteria(sourceClass.getCriteria());
+		targetClass.setIssuer(cloneIssuerString(sourceClass.getIssuer(), targetClass.getEntry()));
 		targetClass.setImage(OpenBadgesFactory.createBadgeClassFileName(targetClass.getUuid(), sourceClass.getImage()));
+	}
+
+	private BadgeClass cloneBadgeClass(BadgeClass sourceClass, RepositoryEntry targetEntry, Identity author,
+									   File sourceDirectory) {
+		BadgeClassImpl targetClass = new BadgeClassImpl();
+		targetClass.setEntry(targetEntry);
+		targetClass.setUuid(OpenBadgesFactory.createIdentifier());
+
+		copyBadgeClassFields(sourceClass, targetClass);
+
 		badgeClassDAO.createBadgeClass(targetClass);
 
 		VFSContainer classesContainer = getBadgeClassesRootContainer();

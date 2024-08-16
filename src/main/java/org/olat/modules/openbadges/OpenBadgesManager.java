@@ -30,6 +30,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.CourseNode;
@@ -129,7 +130,9 @@ public interface OpenBadgesManager {
 
 	List<BadgeClassWithSizeAndCount> getCourseBadgeClassesWithSizesAndCounts(Identity identity);
 
-	File copyBadgeClass(Long existingBadgeToCopy, BadgeClass badgeClass);
+	void copyBadgeClass(Long sourceClassKey, Translator translator, Identity author);
+
+	File copyBadgeClassWithTemporaryImage(Long sourceClassKey, BadgeClass targetClass, Translator translator);
 
 	//
 	// Assertion

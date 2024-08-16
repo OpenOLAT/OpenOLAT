@@ -26,5 +26,7 @@ import org.olat.modules.openbadges.OpenBadgesManager;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public record BadgesRow(OpenBadgesManager.BadgeClassWithSizeAndCount badgeClassWithSizeAndCount) {
+public record BadgesRow(OpenBadgesManager.BadgeClassWithSizeAndCount badgeClassWithSizeAndCount,
+						String courseName,
+						String courseReference) {
 }

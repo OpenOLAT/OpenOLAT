@@ -211,6 +211,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 		private final Link deleteLink;
 		private Link revokeLink;
+		private Link copyLink;
 		private final BadgeClassRow row;
 
 		protected ToolsController(UserRequest ureq, WindowControl wControl, BadgeClassRow row) {
@@ -230,6 +231,9 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				mainVC.put("revoke", revokeLink);
 			}
 
+			copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
+			mainVC.put("copy", copyLink);
+
 			putInitialPanel(mainVC);
 		}
 
@@ -241,8 +245,17 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				doConfirmDelete(ureq, row);
 			} else if (source == revokeLink) {
 				doConfirmRevoke(ureq, row);
+			} else if (source == copyLink) {
+				doCopy(row);
 			}
 		}
+	}
+
+	private void doCopy(BadgeClassRow row) {
+		openBadgesManager.copyBadgeClass(row.badgeClassWithSizeAndCount().badgeClass().getKey(),
+				getTranslator(), getIdentity());
+
+		loadModel();
 	}
 
 	private void doCreate(UserRequest ureq) {
