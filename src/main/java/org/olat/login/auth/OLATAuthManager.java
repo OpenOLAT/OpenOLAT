@@ -219,8 +219,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 		// find OLAT authentication provider
 		if (securityManager.checkCredentials(authentication, password))	{
 			Algorithm algorithm = Algorithm.find(authentication.getAlgorithm());
-			if(Algorithm.md5.equals(algorithm)) {
-				Algorithm defAlgorithm = loginModule.getDefaultHashAlgorithm();
+			Algorithm defAlgorithm = loginModule.getDefaultHashAlgorithm();
+			if(Algorithm.md5.equals(algorithm) || algorithm != defAlgorithm) {
 				authentication = securityManager.updateCredentials(authentication, password, defAlgorithm);
 			}
 			Identity identity = authentication.getIdentity();
