@@ -317,6 +317,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	public void markPublisherNews(Identity ident, OLATResource courseResource) {
+		if(!"CourseModule".equals(courseResource.getResourceableTypeName())) return;
+		
 		ICourse course = CourseFactory.loadCourse(courseResource);
 		SubscriptionContext subsContext = getSubscriptionContext(course);
 		if (subsContext != null) {
