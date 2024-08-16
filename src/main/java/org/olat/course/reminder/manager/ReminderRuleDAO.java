@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -283,7 +284,7 @@ public class ReminderRuleDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("olatResourceKey", entry.getOlatResource().getKey())
-				.setParameter("referenceDate", referenceDate)
+				.setParameter("referenceDate", referenceDate, TemporalType.DATE)
 				.getResultList();
 	}
 }
