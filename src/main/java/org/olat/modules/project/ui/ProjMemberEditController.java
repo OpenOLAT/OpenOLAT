@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectRole;
 import org.olat.user.DisplayPortraitController;
@@ -73,7 +74,7 @@ public class ProjMemberEditController extends FormBasicController {
 			layoutCont.getFormItemComponent().put("userDescr", userDescrCtrl.getInitialComponent());
 			
 			FormLayoutContainer titleCont = FormLayoutContainer.createDefaultFormLayout("title", getTranslator());
-			titleCont.setFormTitle(translate("member.edit.roles.title", project.getTitle()));
+			titleCont.setFormTitle(translate("member.edit.roles.title", StringHelper.escapeHtml(project.getTitle())));
 			formLayout.add("title", titleCont);
 			
 			boolean ownerAllowed = !initialRoles.contains(ProjectRole.invitee);
