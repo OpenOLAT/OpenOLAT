@@ -2938,6 +2938,14 @@ function o_extraTinyDirty(editor) {
 	});
 }
 
+function o_debounce(func, timeout = 300){
+	let timer;
+	return (...args) => {
+		clearTimeout(timer);
+		timer = setTimeout(() => { func.apply(this, args); }, timeout);
+	};
+} 
+
 /*
  * For flexi tables 
  */

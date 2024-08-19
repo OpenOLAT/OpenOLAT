@@ -12,7 +12,7 @@ var BTinyHelper = {
 	openLinkBrowser : function (editorId, callback, value, meta) {
 		if(callback != null) {
 			BTinyHelper.currentCallback = callback;
-			var ffxhrevent = tinymce.activeEditor.settings.ffxhrevent;
+			let ffxhrevent = tinymce.activeEditor.getParam("ffxhrevent");
 			o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, '2', false, false, true, true, 'browser', meta.filetype);
 		}
 	},
@@ -20,7 +20,7 @@ var BTinyHelper = {
 	recordAudio : function (editorId, callback, value, meta) {
 		if(callback != null) {
 			BTinyHelper.currentCallback = callback;
-			var ffxhrevent = tinymce.activeEditor.settings.ffxhrevent;
+			let ffxhrevent = tinymce.activeEditor.getParam("ffxhrevent");
 			o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, '2', false, false, true, true, 'recordAudio', meta.filetype);
 		}
 	},
@@ -29,7 +29,7 @@ var BTinyHelper = {
 	writeLinkSelectionToTiny : function (link, width, height) {
 		if (link != "") {
 			try {
-				var infos = { "link" : link, "width": width, "height": height };
+				let infos = { "link" : link, "width": width, "height": height };
 				BTinyHelper.currentCallback(link, infos);
 			} catch(e) {
 				if(window.console) console.log(e);
@@ -42,14 +42,16 @@ var BTinyHelper = {
 	// - relative-absolute links: media that belong to the framework from the static dir
 	// - absolute links: media an links to external sites
 	linkConverter : function (url, node, on_save, name) {
-		var editor = tinymce.activeEditor;
+		let editor = tinymce.activeEditor;
 		if(editor === undefined || editor == null) {
 			//do nothing
 		} else {
-			var settings = editor.settings;
-			if (!settings.convert_urls || (node && node.nodeName == 'LINK') || url.indexOf('file:') === 0) {
+			let convertUrls = editor.getParam("convert_urls");
+			let relativeUrls = editor.getParam("relative_urls");
+			let removeScriptHost = editor.getParam("remove_script_host");
+			if (!convertUrls || (node && node.nodeName == 'LINK') || url.indexOf('file:') === 0) {
 				// Don't convert link href since thats the CSS files that gets loaded into the editor also skip local file URLs
-			} else if (settings.relative_urls) {
+			} else if (relativeUrls) {
 				// Convert to relative, but only if not a brasato framework URL. Relative links are removed by the XSS filter.
 				if (url.indexOf('/') == 0
 					|| url.indexOf(o_info.uriprefix.replace(/auth/g,'url')) != -1
@@ -68,7 +70,7 @@ var BTinyHelper = {
 				}
 			} else {
 				// Convert to absolute
-				url = editor.documentBaseURI.toAbsolute(url, settings.remove_script_host);			
+				url = editor.documentBaseURI.toAbsolute(url, removeScriptHost);			
 			}
 		}
 

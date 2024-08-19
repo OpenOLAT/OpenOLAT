@@ -952,7 +952,7 @@ public class RichTextConfiguration implements Disposable {
 		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext, inlineChoice);
 		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext,~inlinechoiceinteraction,~inlinechoice");
 		//TINYMCE6 void_elements
-		setQuotedConfigValue("short_ended_elements", SHORT_ENDED_ELEMENTS);
+		setQuotedConfigValue("void_elements", SHORT_ENDED_ELEMENTS);
 		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, "textentryinteraction[*],hottext[*],inlinechoiceinteraction[*],inlinechoice[*]");
 	}
 

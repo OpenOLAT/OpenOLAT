@@ -39,18 +39,18 @@ public class TinyConfig {
 	
 	//read only profile
 	static {
-		String plugins = "lists,hr,charmap,image,insertdatetime,table,visualchars,visualblocks,noneditable,emoticons,paste,link,quotespliter,olatmatheditor,olatmovieviewer,tabfocus,visualchars,visualblocks,noneditable,media";
+		String plugins = "lists,charmap,image,insertdatetime,table,visualchars,visualblocks,emoticons,link,quotespliter,olatmatheditor,olatmovieviewer,visualchars,visualblocks,media";
 		readOnlyConfig = new TinyConfig(plugins, null, "");
 	}
 	//min profile
 	static {
-		String plugins = "lists,hr,emoticons,paste,link,quotespliter,tabfocus,visualchars,noneditable";
+		String plugins = "lists,emoticons,link,quotespliter,visualchars";
 		String toolbar1 = "undo redo | bold italic underline | alignjustify alignright aligncenter alignleft | forecolor backcolor | bullist numlist | link unlink emoticons | removeformat";
 		minimalisticConfig = new TinyConfig(plugins, null, toolbar1);
 	}
 	//standard profile
 	static {
-		String plugins = "lists,hr,emoticons,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable";
+		String plugins = "lists,emoticons,link,charmap,quotespliter,olatmatheditor,visualchars,visualblocks";
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer olatrecordaudio media image link | olatmatheditor hr charmap insertdatetime emoticons'}",
@@ -62,7 +62,7 @@ public class TinyConfig {
 	}
 	//compact profile
 	static {
-		String plugins = "lists,hr,charmap,image,insertdatetime,table,visualchars,visualblocks,noneditable,emoticons,paste,link,quotespliter,olatmatheditor,olatmovieviewer,tabfocus,visualchars,visualblocks,noneditable,media";
+		String plugins = "lists,charmap,image,insertdatetime,table,visualchars,visualblocks,emoticons,link,quotespliter,olatmatheditor,olatmovieviewer,visualchars,visualblocks,media";
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 				"insert: {title: 'Insert', items: 'olatmovieviewer olatrecordaudio media image link | olatmatheditor hr charmap insertdatetime emoticons'}",
@@ -75,25 +75,25 @@ public class TinyConfig {
 	}
 	//invisible
 	static {
-		String plugins = "hr,charmap,image,insertdatetime,table,visualchars,visualblocks,noneditable,emoticons,paste,link,quotespliter,olatmatheditor,olatmovieviewer,tabfocus,visualchars,visualblocks,noneditable,media";
+		String plugins = "charmap,image,insertdatetime,table,visualchars,visualblocks,emoticons,link,quotespliter,olatmatheditor,olatmovieviewer,visualchars,visualblocks,media";
 		String tools1 = "bold italic underline | image olatmatheditor";
 		veryMinimalisticConfig = new TinyConfig(plugins, null, tools1);
 	}
 	static {
-		String plugins = "colorpicker,textcolor,hr,charmap,image,insertdatetime,table,visualchars,visualblocks,noneditable,emoticons,paste,link,quotespliter,olatmatheditor,olatmovieviewer,tabfocus,visualchars,visualblocks,noneditable,media";
+		String plugins = "colorpicker,textcolor,charmap,image,insertdatetime,table,visualchars,visualblocks,emoticons,link,quotespliter,olatmatheditor,olatmovieviewer,visualchars,visualblocks,media";
 		String tools1 = "bold italic underline | image olatmatheditor | link unlink";
 		veryMinimalisticWithLinksConfig = new TinyConfig(plugins, null, tools1);
 	}
 	
 	//paragraph editor for content editor
 	static {
-		String plugins = "lists,hr,noneditable,paste,link,olatmatheditor,tabfocus,noneditable";
+		String plugins = "lists,link,olatmatheditor";
 		String tools1 = "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | fontsizeselect forecolor backcolor | bullist numlist | link | olatmatheditor removeformat";
 		paragraphEditorConfig = new TinyConfig(plugins, null, tools1);
 	}
 	//full profile
 	static {
-		String plugins = "advlist,lists,hr,emoticons,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable,table";
+		String plugins = "advlist,lists,emoticons,link,charmap,quotespliter,olatmatheditor,visualchars,visualblocks,table";
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 				"insert: {title: 'Insert', items: 'olatmovieviewer olatrecordaudio media image link | olatmatheditor hr charmap insertdatetime emoticons'}",
@@ -106,7 +106,7 @@ public class TinyConfig {
 	}
 	//file profile
 	static {
-		String plugins = "advlist,lists,hr,link,charmap,image,importcss,insertdatetime,code,table,tabfocus,visualchars,visualblocks,noneditable,fullscreen,anchor,olatmatheditor,olatmovieviewer,searchreplace,emoticons,paste,media";
+		String plugins = "advlist,lists,link,charmap,image,importcss,insertdatetime,code,table,visualchars,visualblocks,fullscreen,anchor,olatmatheditor,olatmovieviewer,searchreplace,emoticons,media";
 		String[] menu = {
 			  "edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer olatrecordaudio media image link | olatmatheditor hr charmap anchor insertdatetime emoticons'}",

@@ -479,11 +479,6 @@ public class OOGraphene {
 		((JavascriptExecutor)browser).executeScript("tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
-	public static final void tinymceFocus(WebDriver browser) {
-		waitTinymce(browser);
-		((JavascriptExecutor)browser).executeScript("tinymce.activeEditor.execCommand('mceFocus', true)");
-	}
-	
 	public static final void tinymceExec(String content, WebDriver browser) {
 		waitTinymce(browser);
 		((JavascriptExecutor)browser).executeScript("tinymce.activeEditor.execCommand('mceSetContent', true, '" + content + "')");
@@ -496,7 +491,7 @@ public class OOGraphene {
 		WebElement tinyIdEl = browser.findElement(tinyIdBy);
 		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
 		waitTinymceById(tinyId, browser);
-		((JavascriptExecutor)browser).executeScript("tinymce.editors['" + tinyId + "'].setContent('" + content + "')");
+		((JavascriptExecutor)browser).executeScript("tinymce.activeEditor.editorManager.get('" + tinyId + "').setContent('" + content + "')");
 	}
 	
 	/**
@@ -513,7 +508,7 @@ public class OOGraphene {
 		WebElement tinyIdEl = browser.findElement(tinyIdBy);
 		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
 		waitTinymceById(tinyId, browser);
-		((JavascriptExecutor)browser).executeScript("tinymce.editors['" + tinyId + "'].insertContent('" + content + "')");
+		((JavascriptExecutor)browser).executeScript("tinymce.activeEditor.editorManager.get('" + tinyId + "').insertContent('" + content + "')");
 	}
 	
 	/**

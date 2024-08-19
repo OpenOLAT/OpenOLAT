@@ -160,6 +160,20 @@ body.tox-dialog__disable-scroll {
 	}
 }
 
+.o_richtext_mce .tox {
+	&.tox-tinymce {
+		border: 1px solid $input-border;
+  		border-radius: $input-border-radius;
+	}
+	
+	.tox-toolbar__group {
+		padding: 0 5px 0 6px;
+	}
+
+	.tox-promotion {
+		display: none;
+	}
+}
 
 /* END tiny defaults, now add OpenOLAT overrides and extensions */
 

@@ -279,10 +279,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("          }\n")
 		  .append("        }\n")
 		  
-		  .append("        var global = tinymce.util.Tools.resolve('tinymce.util.Delay');\n")
-		  .append("        var debouncedUpdate = global.debounce(function () {\n")
+		  .append("        var debouncedUpdate = o_debounce(function () {\n")
 		  .append("          return updateDirty();\n")
-		  .append("        }, 300);\n")
+		  .append("        });\n")
 		  .append("        ed.on('SetContent BeforeAddUndo Undo Redo ViewUpdate keyup', debouncedUpdate);\n");
 		
 		sb.append("      });\n")

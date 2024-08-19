@@ -105,6 +105,8 @@ public class FIBEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		String question = itemBuilder.getQuestion();
+		System.out.println("Read: " + question);
+		
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", question, 16, -1, itemContainer,
 				formLayout, ureq.getUserSession(),  getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
@@ -234,6 +236,7 @@ public class FIBEditorController extends FormBasicController {
 		//set the question with the text entries
 		String questionText = textEl.getValue();
 		extractSolution(questionText);
+		System.out.println(questionText);
 		itemBuilder.setQuestion(questionText);
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.fib));

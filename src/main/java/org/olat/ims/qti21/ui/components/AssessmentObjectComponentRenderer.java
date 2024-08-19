@@ -1413,7 +1413,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		sb.append("  theme: 'silver',\n")
 		  .append("  browser_spellcheck: true,\n")
-		  .append("  plugins: 'paste,advlist,lists,charmap,noneditable,olatmatheditor,hr',\n")
+		  .append("  plugins: 'paste,advlist,lists,charmap,olatmatheditor,hr',\n")
 		  .append("  menu:{},\n")
 		  .append("  menubar: false,")
 		  .append("  toolbar1: 'bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmatheditor charmap',\n")
@@ -1452,9 +1452,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		  .append("      }\n")
 		  
 		  .append("      var global = tinymce.util.Tools.resolve('tinymce.util.Delay');\n")
-		  .append("      var debouncedUpdate = global.debounce(function () {\n")
+		  .append("      var debouncedUpdate = o_debounce(function () {\n")
 		  .append("       return updateCountDirty();\n")
-		  .append("      }, 300);\n")
+		  .append("      });\n")
 		  .append("      ed.on('SetContent BeforeAddUndo Undo Redo ViewUpdate keyup', debouncedUpdate);\n");
 		
 		sb.append("    },\n")
