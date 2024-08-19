@@ -21,6 +21,7 @@ package org.olat.modules.ceditor.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -43,7 +44,9 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
  *
  */
 public class TableRunController extends BasicController implements PageRunElement {
-	
+
+	private static final Pattern httpPattern = Pattern.compile("https?://");
+
 	private TableElement table;
 	private final boolean inForm;
 	private final VelocityContainer mainVC;
@@ -130,7 +133,11 @@ public class TableRunController extends BasicController implements PageRunElemen
 		Row row = new Row(columns);
 		for(int j=0; j<numOfColumns; j++) {
 			String text = content.getContent(i, j);
-			Column column = new Column(text, j == 0 && settings.isRowHeaders());
+			String css = null;
+			if (httpPattern.matcher(text).find()) {
+				css = "o_hyphens";
+			}
+			Column column = new Column(text, j == 0 && settings.isRowHeaders(), css);
 			columns.add(column);
 		}
 		return row;
@@ -150,13 +157,18 @@ public class TableRunController extends BasicController implements PageRunElemen
 	}
 	
 	public static class Column {
-		
+
 		private final String text;
 		private final boolean header;
-		
+		private final String css;
+
 		public Column(String text, boolean header) {
+			this(text, header, null);
+		}
+		public Column(String text, boolean header, String css) {
 			this.text = text;
 			this.header = header;
+			this.css = css;
 		}
 		
 		public boolean isHeader() {
@@ -165,6 +177,10 @@ public class TableRunController extends BasicController implements PageRunElemen
 		
 		public String getText() {
 			return text;
+		}
+
+		public String getCss() {
+			return css;
 		}
 	}
 }

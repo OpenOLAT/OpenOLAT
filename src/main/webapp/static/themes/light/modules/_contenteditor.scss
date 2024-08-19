@@ -1968,8 +1968,15 @@ table.o_ce_table {
 	}
 
 	.o_page_table_run {
+		overflow-x: auto;
+
 		table {
 			width: 100%;
+
+			td.o_hyphens {
+				hyphens: auto;
+				word-break: break-word;
+			}
 		}
 	}
 
