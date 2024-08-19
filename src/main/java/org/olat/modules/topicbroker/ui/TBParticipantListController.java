@@ -80,6 +80,9 @@ import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBParticipantDataModel.TBParticipantCols;
+import org.olat.user.UserAvatarMapper;
+import org.olat.user.UserInfoProfileConfig;
+import org.olat.user.UserInfoService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,6 +124,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	private final TBSecurityCallback secCallback;
 	private final TBParticipantCandidates participantCandidates;
 	private final List<Identity> identities;
+	private final UserInfoProfileConfig profileConfig;
 	private List<Long> detailsOpenIdentityKeys;
 	private List<TBParticipantSelectionsController> detailCtrls = new ArrayList<>(1);
 	private int counter = 0;
@@ -129,6 +133,8 @@ public class TBParticipantListController extends FormBasicController implements 
 	private TopicBrokerService topicBrokerService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private UserInfoService userInfoService;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -146,6 +152,12 @@ public class TBParticipantListController extends FormBasicController implements 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(TBParticipantDataModel.USAGE_IDENTIFIER,
 				isAdministrativeUser);
+		
+		profileConfig = userInfoService.createProfileConfig();
+		UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+		profileConfig.setAvatarMapper(avatarMapper);
+		String avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
+		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
 		initForm(ureq);
 		initBulkLinks();
@@ -298,7 +310,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 		selectionSearchParams.setBroker(broker);
 		selectionSearchParams.setIdentities(identities);
-		selectionSearchParams.setFetchParticipant(true);
+		selectionSearchParams.setFetchIdentity(true);
 		selectionSearchParams.setFetchTopic(true);
 		Map<Long, List<TBSelection>> identityKeyToSelections = topicBrokerService.getSelections(selectionSearchParams).stream()
 				.sorted((s1, s2) -> Integer.compare(s1.getSortOrder(), s2.getSortOrder()))
@@ -418,7 +430,8 @@ public class TBParticipantListController extends FormBasicController implements 
 		}
 		
 		TBParticipantSelectionsController detailsCtrl = new TBParticipantSelectionsController(ureq, getWindowControl(),
-				mainForm, broker, participant, row.getSelections(), secCallback.canEditSelections());
+				mainForm, broker, participant, profileConfig, userInfoService.createProfile(participant.getIdentity()),
+				row.getSelections(), secCallback.canEditSelections());
 		listenTo(detailsCtrl);
 		detailCtrls.add(detailsCtrl);
 		// Add as form item to catch the events...

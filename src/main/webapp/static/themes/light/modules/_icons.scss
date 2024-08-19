@@ -65,6 +65,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_brush { @include o-add-icon('paint-brush');}
 .o_icon_browsercheck { @include o-add-icon('thumbs-up');}
 .o_icon_bug { @include o-add-icon('bug');}
+.o_icon_business_card { @include o-add-icon('address-card');}
 .o_icon_busy { @include o-add-icon('spinner');}
 .o_icon_calendar { @include o-add-icon('calendar-days', false);}
 .o_icon_calendar_enabled { @include o-add-icon('check-square', false);}

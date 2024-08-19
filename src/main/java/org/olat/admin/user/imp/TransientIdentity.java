@@ -40,6 +40,7 @@ import org.olat.core.id.UserConstants;
 public class TransientIdentity implements Identity, User {
 	private static final long serialVersionUID = 1394807800521540930L;
 
+	private Long key;
 	private String login;
 	private String password;
 	private String language;
@@ -54,9 +55,13 @@ public class TransientIdentity implements Identity, User {
 
 	@Override
 	public Long getKey() {
-		return null;
+		return key;
 	}
 	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
 	@Override
 	public String getExternalId() {
 		return null;

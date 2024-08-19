@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -40,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActi
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -57,6 +55,8 @@ import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBSelectionDataModel.SelectionCols;
+import org.olat.user.UserInfoProfile;
+import org.olat.user.UserInfoProfileConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,12 +72,11 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	private static final String CMD_UNSELECT = "unselect";
 	
 	private FormLink topicAddLink;
-	private SingleSelection boostEl;
-	private SingleSelection requiredEnrollmentsEl;
 	private final TBSelectionStatusRenderer statusRenderer;
 	private TBSelectionDataModel selectionDataModel;
 	private FlexiTableElement selectionTableEl;
 
+	private TBParticipantController participantCtrl;
 	private CloseableModalController cmc;
 	private TBTopicAddController topicAddCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -85,6 +84,8 @@ public class TBParticipantSelectionsController extends FormBasicController {
 
 	private TBBroker broker;
 	private final TBParticipant participant;
+	private final UserInfoProfileConfig profileConfig;
+	private final UserInfoProfile profile;
 	private final List<TBSelection> selections;
 	private boolean canEditSelections;
 	private boolean canEditParticipant;
@@ -94,12 +95,15 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	private TopicBrokerService topicBrokerService;
 
 	public TBParticipantSelectionsController(UserRequest ureq, WindowControl wControl, Form mainForm, TBBroker broker,
-			TBParticipant participant, List<TBSelection> selections, boolean canEditSelections) {
+			TBParticipant participant, UserInfoProfileConfig profileConfig, UserInfoProfile profile,
+			List<TBSelection> selections, boolean canEditSelections) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "participant_selections", mainForm);
 		
 		// Show the same data as in the row. So no reload.
 		this.broker = broker;
 		this.participant = participant;
+		this.profileConfig = profileConfig;
+		this.profile = profile;
 		this.selections = selections;
 		this.canEditSelections = canEditSelections;
 		this.canEditParticipant = canEditSelections && broker.getEnrollmentStartDate() == null;
@@ -113,47 +117,12 @@ public class TBParticipantSelectionsController extends FormBasicController {
 
 	@Override
 	public void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		SelectionValues boostSV = new SelectionValues();
-		boostSV.add(SelectionValues.entry("0", translate("participant.boost.0")));
-		boostSV.add(SelectionValues.entry("1", translate("participant.boost.1")));
-		boostSV.add(SelectionValues.entry("2", translate("participant.boost.2")));
-		String boostElName = "boost_" + participant.getKey();
-		boostEl = uifactory.addDropdownSingleselect(boostElName, boostElName, "participant.boost", formLayout,
-				boostSV.keys(), boostSV.values(), null);
-		boostEl.setMandatory(true);
-		boostEl.setEnabled(canEditParticipant);
-		boostEl.addActionListener(FormEvent.ONCHANGE);
-		if (participant.getBoost() != null) {
-			boostEl.select(participant.getBoost().toString(), true);
-		} else {
-			boostEl.select("0", true);
-		}
-		flc.contextPut("boostName", boostElName);
-		
-		SelectionValues requiredEnrollmentsSV = new SelectionValues();
-		for (int i = 0; i < broker.getRequiredEnrollments(); i++) {
-			requiredEnrollmentsSV.add(SelectionValues.entry(String.valueOf(i), String.valueOf(i)));
-		}
-		requiredEnrollmentsSV.add(SelectionValues.entry(
-				String.valueOf(broker.getRequiredEnrollments()),
-				translate("participant.max.enrollments.default", String.valueOf(broker.getRequiredEnrollments()))));
-		if (participant.getRequiredEnrollments() != null && participant.getRequiredEnrollments() > broker.getRequiredEnrollments()) {
-			requiredEnrollmentsSV.add(SelectionValues.entry(String.valueOf(
-					participant.getRequiredEnrollments()),
-					String.valueOf(participant.getRequiredEnrollments())));
-		}
-		String enrollemntsElName = "enrollments_" + participant.getKey();
-		requiredEnrollmentsEl = uifactory.addDropdownSingleselect(enrollemntsElName, enrollemntsElName, "participant.max.enrollments",
-				formLayout, requiredEnrollmentsSV.keys(), requiredEnrollmentsSV.values(), null);
-		requiredEnrollmentsEl.setMandatory(true);
-		requiredEnrollmentsEl.setEnabled(canEditParticipant);
-		requiredEnrollmentsEl.addActionListener(FormEvent.ONCHANGE);
-		if (participant.getRequiredEnrollments() != null) {
-			requiredEnrollmentsEl.select(participant.getRequiredEnrollments().toString(), true);
-		} else {
-			requiredEnrollmentsEl.select(String.valueOf(broker.getRequiredEnrollments()), true);
-		}
-		flc.contextPut("enrollemntsName", enrollemntsElName);
+		participantCtrl = new TBParticipantController(ureq, getWindowControl(), mainForm, broker, participant,
+				profileConfig, profile, canEditParticipant);
+		listenTo(participantCtrl);
+		String participantName = "participant_" + participant.getKey();
+		formLayout.add(participantName, participantCtrl.getInitialFormItem());
+		flc.contextPut("participantName", participantName);
 		
 		if (canEditSelections) {
 			topicAddLink = uifactory.addFormLink("topic.add", formLayout, Link.BUTTON);
@@ -256,7 +225,11 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (topicAddCtrl == source) {
+		if (participantCtrl == source) {
+			if (Event.CHANGED_EVENT == event) {
+				fireEvent(ureq, event);
+			}
+		} else if (topicAddCtrl == source) {
 			if (Event.DONE_EVENT == event) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -292,10 +265,6 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == topicAddLink){
 			doAddTopic(ureq);
-		} else if (source == boostEl) {
-			doUpdateParticipant(ureq);
-		} else if (source == requiredEnrollmentsEl) {
-			doUpdateParticipant(ureq);
 		} else if (source instanceof FormLink link) {
 			if (link.getUserObject() instanceof TBSelectionRow row) {
 				String cmd = link.getCmd();
@@ -310,27 +279,6 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
-	}
-
-	private void doUpdateParticipant(UserRequest ureq) {
-		Integer boost = null;
-		if (boostEl.isOneSelected() && !"0".equals(boostEl.getSelectedKey())) {
-			boost = Integer.valueOf(boostEl.getSelectedKey());
-		}
-		participant.setBoost(boost);
-		
-		Integer maxEnrollments = null;
-		if (requiredEnrollmentsEl.isOneSelected() && !requiredEnrollmentsEl.getSelectedKey().equals(String.valueOf(broker.getRequiredEnrollments()))) {
-			Integer selectedMaxEnrollments = Integer.valueOf(requiredEnrollmentsEl.getSelectedKey());
-			if (broker.getRequiredEnrollments().intValue() != selectedMaxEnrollments.intValue()) {
-				maxEnrollments = selectedMaxEnrollments;
-			}
-		}
-		participant.setRequiredEnrollments(maxEnrollments);
-		
-		topicBrokerService.updateParticipant(getIdentity(), participant);
-		
-		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	private void doAddTopic(UserRequest ureq) {

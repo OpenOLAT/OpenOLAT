@@ -1,12 +1,5 @@
 <div class="o_tb_participant_selections">
-	<div class="panel o_tb_ps_panel">
-		<div class="o_tb_ps_user">
-		</div>
-		<div class="o_tb_ps_config form-horizontal">
-			$r.render("$boostName", "3_9", "form")
-			$r.render("$enrollemntsName", "3_9", "form")
-		</div>
-	</div>
+	$r.render($participantName)
 	#if($selectionMsg)
 		<div class="o_warning_with_icon">$selectionMsg</div>
 	#end

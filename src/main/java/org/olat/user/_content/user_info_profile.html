@@ -1,0 +1,30 @@
+<div class="o_user_info_profile">
+	<div class="o_user_info_profile_portrait_wrapper">
+		<div class="o_user_info_profile_portrait">
+			#if($portraitAvailable)
+				<img class="o_user_info_profile_portrait_image" src="$portraitUrl" alt="$portraitAltText">
+			#else
+				<div class="o_user_info_profile_portrait_initials o_user_initials $initialsCss">
+					$initials
+				</div>
+			#end
+		</div>
+		#if($r.isNotEmpty($imStatusIconCss))
+			<div class="o_user_info_im">
+				<i class="$imStatusIconCss"></i>
+			</div>
+		#end
+	</div>
+	<div class="o_user_info_profile_name_wrapper">
+		<div class="o_user_info_profile_name">
+			$name
+		</div>
+		<div class="o_user_info_profile_cmds">
+			$r.render("user.info.info")
+			$r.render("user.info.email")
+			#if($r.available("user.info.chat") && $r.visible("user.info.chat"))
+				$r.render("user.info.chat")
+			#end
+		</div>
+	</div>
+</div>

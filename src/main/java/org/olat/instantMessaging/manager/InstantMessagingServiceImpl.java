@@ -450,6 +450,10 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	@Override
 	public Buddy getBuddyById(Long identityKey) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(identityKey);
+		if (identity == null) {
+			return null;
+		}
+		
 		String fullname = userManager.getUserDisplayName(identity);
 		
 		String status;
