@@ -51,6 +51,7 @@ public class ProjDecisionEditController extends FormBasicController {
 
 	private ProjDecisionContentEditController contentCtrl;
 	private ProjArtefactReferencesController referenceCtrl;
+	private UsersAvatarController memberViewCtrl;
 	private ProjArtefactMembersEditController memberCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
@@ -67,7 +68,6 @@ public class ProjDecisionEditController extends FormBasicController {
 	
 	@Autowired
 	private ProjectService projectService;
-	private UsersAvatarController memberViewCtrl;
 	
 	public ProjDecisionEditController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
 			ProjProject project, Set<Identity> members, boolean withOpenInSameWindow) {

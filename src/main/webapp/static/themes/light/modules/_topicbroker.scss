@@ -165,31 +165,6 @@
 	}
 }
 
-.o_tb_participant_selections {
-	.o_tb_ps_panel {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 3rem;
-		flex-direction: row;
-		padding: 20px;
-		border: 1px solid #ddd;
-		.o_tb_ps_user {
-			order: -1;
-			min-width: 300px;
-		}
-		.o_tb_ps_config {
-			display: flex;
-			flex-direction: column;
-			flex-grow: 1;
-		}
-		&:before {
-			content: "";
-			border: 1px solid red;
-			align-self: stretch;
-		}
-	}
-}
-
 .o_labeled {
 	&.o_tb_label_broker_not_started {
 		background-color: $o-tb-broker-not-started-color;

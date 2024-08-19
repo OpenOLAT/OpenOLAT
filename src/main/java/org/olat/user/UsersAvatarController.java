@@ -58,6 +58,7 @@ public class UsersAvatarController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final String avatarBaseURL;
 	private final boolean chatEnabled;
+	private final boolean usersPreloaded;
 
 	@Autowired
 	private BaseSecurityModule securityModule;
@@ -75,6 +76,7 @@ public class UsersAvatarController extends FormBasicController {
 	public UsersAvatarController(UserRequest ureq, WindowControl wControl, Set<Identity> identities) {
 		super(ureq, wControl, "users_avatars");
 		this.identities = identities;
+		this.usersPreloaded = true;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -89,6 +91,7 @@ public class UsersAvatarController extends FormBasicController {
 	public UsersAvatarController(UserRequest ureq, WindowControl wControl, Form mainForm, Set<Identity> identities) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "users_avatars", mainForm);
 		this.identities = identities;
+		this.usersPreloaded = false;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -118,7 +121,10 @@ public class UsersAvatarController extends FormBasicController {
 
 	private IdentityItem createMemberView(Identity identity) {
 		IdentityItem item = new IdentityItem(identity, userPropertyHandlers, getLocale());
-		item.setDisplayName(userManager.getUserDisplayName(identity.getKey()));
+		String userDisplayName = usersPreloaded 
+				? userManager.getUserDisplayName(identity)
+				: userManager.getUserDisplayName(identity.getKey());
+		item.setDisplayName(userDisplayName);
 		
 		boolean portraitAvailable = portraitManager.hasPortrait(identity);
 		item.setPortraitAvailable(portraitAvailable);

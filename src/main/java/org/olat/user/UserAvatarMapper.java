@@ -21,6 +21,7 @@ package org.olat.user;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
@@ -76,7 +77,33 @@ public class UserAvatarMapper implements Mapper {
 		return rsrc;
 	}
 	
+	public String createPathFor(String mapperPath, IdentityRef identity, String username) {
+		Long lastModified = getLastModified(username);
+		return createPathFor(mapperPath, identity, lastModified);
+	}
+	
 	public String createPathFor(String mapperPath, Identity identity) {
-		return mapperPath + "/" + identity.getKey() + (useLarge ? POSTFIX_LARGE : POSTFIX_SMALL); 
+		Long lastModified = getLastModified(identity.getName());
+		return createPathFor(mapperPath, identity, lastModified);
+	}
+	
+	private String createPathFor(String mapperPath, IdentityRef identity, Long lastModified) {
+		return mapperPath + "/" + identity.getKey() + "/" + lastModified + (useLarge ? POSTFIX_LARGE : POSTFIX_SMALL); 
+	}
+	
+	private Long getLastModified(String username) {
+		if (!useLarge) {
+			MediaResource resource = portraitManager.getSmallPortraitResource(username);
+			if (resource != null) {
+				return resource.getLastModified();
+			}
+		}
+		
+		MediaResource resource = portraitManager.getBigPortraitResource(username);
+		if (resource != null) {
+			return resource.getLastModified();
+		}
+		
+		return Long.valueOf(0);
 	}
 }

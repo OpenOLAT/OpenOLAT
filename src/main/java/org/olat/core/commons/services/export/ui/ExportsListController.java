@@ -33,6 +33,8 @@ import org.olat.core.commons.services.export.ExportMetadata;
 import org.olat.core.commons.services.export.model.ExportInfos;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
 import org.olat.core.commons.services.export.ui.ExportsListDataModel.ExportsCols;
+import org.olat.core.commons.services.folder.ui.FileBrowserCopyToController;
+import org.olat.core.commons.services.folder.ui.FolderUIFactory;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskEvent;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -100,6 +102,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 
 	private CloseableModalController cmc;
 	private ExportInfosController infosCtrl;
+	private FileBrowserCopyToController copyToCtrl;
 	protected DialogBoxController confirmCancelCtrl;
 	private DialogBoxController confirmDeleteAllCtrl;
 	private ConfirmDeleteExportController confirmDeleteCtrl;
@@ -122,7 +125,8 @@ public class ExportsListController extends FormBasicController implements FlexiT
 
 	public ExportsListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent, boolean admin,
 			ExportsListSettings options, String pageName) {
-		super(ureq, wControl, pageName, Util.createPackageTranslator(ExportsListController.class, ureq.getLocale()));
+		super(ureq, wControl, pageName, Util.createPackageTranslator(ExportsListController.class, ureq.getLocale(),
+				Util.createPackageTranslator(FolderUIFactory.class, ureq.getLocale())));
 		this.admin = admin;
 		this.entry = entry;
 		this.options = options;
@@ -198,6 +202,9 @@ public class ExportsListController extends FormBasicController implements FlexiT
 			}
 			if(exportRow.getDeleteButton() != null) {
 				cmps.add(exportRow.getDeleteButton().getComponent());
+			}
+			if(exportRow.getCopyToButton() != null) {
+				cmps.add(exportRow.getCopyToButton().getComponent());
 			}
 			if(exportRow.getProgressBar() != null) {
 				cmps.add(exportRow.getProgressBar().getComponent());
@@ -312,6 +319,12 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		row.setDeleteButton(deleteButton);
 		deleteButton.setUserObject(row);
 		
+		FormLink copyToLink = uifactory.addFormLink("copy-to-".concat(c), "browser.copy.to", "browser.copy.to", null, flc, Link.BUTTON);
+		copyToLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+		copyToLink.setGhost(true);
+		row.setCopyToButton(copyToLink);
+		copyToLink.setUserObject(row);
+		
 		FormLink downloadButton = uifactory.addFormLink("download-".concat(c), "download", "download", null, flc, Link.BUTTON);
 		downloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		downloadButton.setGhost(true);
@@ -364,6 +377,9 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		} else if(infosCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
+		} else if(copyToCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -372,9 +388,11 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	
 	protected void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteCtrl);
+		removeAsListenerAndDispose(copyToCtrl);
 		removeAsListenerAndDispose(infosCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
+		copyToCtrl = null;
 		infosCtrl = null;
 		cmc = null;
 	}
@@ -393,6 +411,8 @@ public class ExportsListController extends FormBasicController implements FlexiT
 				doInfos(ureq, exportRow);
 			} else if("delete".equals(cmd) && link.getUserObject() instanceof ExportRow exportRow) {
 				doConfirmDelete(ureq, exportRow);
+			} else if("browser.copy.to".equals(cmd) && link.getUserObject() instanceof ExportRow exportRow) {
+				doCopyTo(ureq, exportRow);
 			} else if("download".equals(cmd) && link.getUserObject() instanceof ExportRow exportRow) {
 				doDownload(ureq, exportRow);
 			}
@@ -468,6 +488,17 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), infosCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doCopyTo(UserRequest ureq, ExportRow row) {
+		if(guardModalController(copyToCtrl)) return;
+		
+		copyToCtrl = new FileBrowserCopyToController(ureq, getWindowControl(), List.of(row.getArchive()));
+		listenTo(copyToCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), copyToCtrl.getInitialComponent(), true, translate("browser.copy.to"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doDownload(UserRequest ureq, ExportRow row) {

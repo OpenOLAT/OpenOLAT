@@ -18,6 +18,135 @@
 	}
 }
 
+.o_user_info_profile {
+	background-color: $o-user-info-profile-bg-color;
+	padding: $o-user-info-profile-padding;
+	border: $o-user-info-border;
+	border-radius: $o-user-info-border-radius;
+
+	display: inline-flex;
+	gap: $o-user-info-profile-gap;
+	align-items: center;
+	
+	.o_user_info_profile_portrait_wrapper {
+		display: grid;
+		grid-template-areas: "user-info-profile-portrait-wrapper";
+		.o_user_info_profile_portrait {
+			grid-area: user-info-profile-portrait-wrapper;
+		}
+		.o_user_info_im {
+			grid-area: user-info-profile-portrait-wrapper;
+			place-self: end end;
+			margin-bottom: -2px;
+			margin-right: -2px;
+			
+			border-radius: 50%;
+			line-height: 12px;
+			border: solid 1px white;
+			background-color: white;
+		}
+	}
+	.o_user_info_profile_portrait {
+		width: $o-user-info-portrait-size;
+		height: $o-user-info-portrait-size;
+		
+		display: grid;
+		align-items: stretch;
+		justify-items: stretch;
+		
+		.o_user_info_profile_portrait_image {
+			border-radius: 50%;
+			border: none;
+			object-fit: cover;
+		}
+		.o_user_initials {
+			border-radius: 50%;
+			border: none;
+			font-size: $o-user-info-initials-font-size;
+			
+			display: grid;
+			align-items: center;
+			justify-content: center;
+		}
+	}
+	.o_user_info_profile_name_wrapper {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		.o_user_info_profile_name {
+			font-size: $o-user-info-displayname-size;
+		}
+		.o_user_info_profile_cmds {
+			display: flex;
+			gap: 10px;
+		}
+	}	
+}
+.o_user_initials {
+	color: $o-user-initials-color;
+	&.o_user_initials_dark_blue {
+		background-color: $o-proj-avatar-dark-blue-bg-color;
+	}
+}
+.o_user_info {
+	border: $o-user-info-border;
+	border-radius: $o-user-info-border-radius;
+	
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr 2fr;
+	
+	>div:has(.o_user_info_profile) {
+		/* Full height of the profile */
+		display: grid;
+		.o_user_info_profile {
+			height: 100%;
+			/* Full width of the profile */
+			display: flex;
+			
+			
+			border: none;
+			border-radius: unset;
+			border-right: $o-user-info-border;
+		}
+	}
+	
+	.o_user_info_items {
+		padding: $o-user-info-items-padding;
+	
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		column-gap: 20px;
+	}
+
+}
+
+.o_user_info_wrapper {
+	container-type: inline-size;
+	
+	@container (max-width: 800px) {
+		.o_user_info {
+			grid-template-columns: 1fr;
+			
+			>div:has(.o_user_info_profile) {
+				.o_user_info_profile {
+					/* Adjust borders */
+					border-right: none;
+					border-bottom: $o-user-info-border;
+				}
+			}
+		}
+	}
+	@container (max-width: 600px) {
+		.o_user_info {
+			.o_user_info_items {
+				grid-template-columns: 1fr;
+			}
+		}
+	}
+}
+
+
 .o_useradmin {
 	.o_user_infos .o_user_infos_inner {
 		margin-right: 45px;

@@ -85,6 +85,7 @@ public class LTIRunController extends BasicController {
 	private VelocityContainer startPage;
 	
 	private boolean fullScreen;
+	private final boolean multipleItems;
 	private ChiefController thebaseChief;
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	
@@ -121,6 +122,7 @@ public class LTIRunController extends BasicController {
 		this.courseNode = ltCourseNode;
 		this.config = config;
 		this.courseEnv = courseEnv;
+		this.multipleItems = false;
 		this.userCourseEnv = userCourseEnv;
 		display = LTIDisplayOptions.iframe;
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(courseEnv), courseNode);
@@ -146,6 +148,7 @@ public class LTIRunController extends BasicController {
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
+		this.multipleItems = false;
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
 		String displayStr = config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
 		display = LTIDisplayOptions.valueOfOrDefault(displayStr); 
@@ -165,6 +168,7 @@ public class LTIRunController extends BasicController {
  		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		this.courseNode = courseNode;
 		this.ltiContext = context;
+		this.multipleItems = (contentItems != null && contentItems.size() > 1);
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
@@ -182,7 +186,8 @@ public class LTIRunController extends BasicController {
 			String displayStr = context.getDisplay();
 			display = LTIDisplayOptions.valueOfOrDefault(displayStr);
 			
-			ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), context, null, false, userCourseEnv);
+			LTI13ContentItem contentItem = (contentItems != null && contentItems.size() == 1) ? contentItems.get(0) : null;
+			ltiCtrl = new LTI13DisplayController(ureq, getWindowControl(), context, contentItem, false, userCourseEnv);
 			listenTo(ltiCtrl);
 			initRun(ureq);
 			if(contentItems != null && !contentItems.isEmpty()) {
@@ -298,7 +303,7 @@ public class LTIRunController extends BasicController {
 		Boolean skipAcceptLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE);
 		if (dataExchangeHash == null || checkHasDataExchangeAccepted(dataExchangeHash)
 				|| (!ltiModule.isForceLaunchPage() && skipAcceptLaunchPage != null && skipAcceptLaunchPage.booleanValue()) ) {
-			Boolean skipLaunchPage = (ltiContext != null && ltiContext.isSkipLaunchPage()) 
+			Boolean skipLaunchPage = (ltiContext != null && ltiContext.isSkipLaunchPage() && !multipleItems) 
 					|| config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE);
 			if(!ltiModule.isForceLaunchPage() && skipLaunchPage != null && skipLaunchPage.booleanValue()) {
 				// start the content immediately

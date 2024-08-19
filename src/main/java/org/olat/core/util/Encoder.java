@@ -33,6 +33,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -55,6 +58,8 @@ import org.olat.core.logging.Tracing;
 public class Encoder {
 	
 	private static final Logger log = Tracing.createLoggerFor(Encoder.class);
+	
+	private static final ExecutorService pool = Executors.newFixedThreadPool(10);
 	
 	public enum Algorithm {
 		/**
@@ -91,9 +96,14 @@ public class Encoder {
 		 */
 		pbkdf2("PBKDF2WithHmacSHA1", 20000, true, null),
 		/**
-		 * Argon 2 with 2 iterations, par
+		 * Argon 2 with 3 iterations, 19MB memory
 		 */
 		argon2id("Argon2", 3, true, null),
+		/**
+		 * Argon 2 with 3 iterations, 12MB memory, minimal recommendation OWASP:
+		 * https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+		 */
+		argon2id_owasp("Argon2", 3, true, null),
 		/**
 		 * SHA-256 with one iteration no salted
 		 */
@@ -200,7 +210,9 @@ public class Encoder {
 			case pbkdf2:
 				return secretKey(s, salt, algorithm);
 			case argon2id:
-				return argon2id(s, salt, algorithm);
+				return jailedArgon2id(s, salt, algorithm);
+			case argon2id_owasp:
+				return jailedArgon2id_owasp(s, salt, algorithm);
 			case aes:
 				return encodeAes(s, "rk6R9pQy7dg3usJk", salt, algorithm.getIterations());
 			default: return md5(s, salt, algorithm.getCharset());
@@ -260,10 +272,25 @@ public class Encoder {
 		}
 	}
 	
-	public static String argon2id(String password, String salt, Algorithm algorithm) {
+	public static String jailedArgon2id(final String password, final String salt, final Algorithm algorithm) {
+		return jailedArgon2id(password, algorithm.getIterations(), 19456, salt);
+	}
+	
+	public static String jailedArgon2id_owasp(final String password, final String salt, final Algorithm algorithm) {
+		return jailedArgon2id(password, algorithm.getIterations(), 12288, salt);
+	}
+	
+	public static String jailedArgon2id(final String password, final int iterations, final int memLimit, final String salt) {
 		try {
-			int iterations = algorithm.getIterations();
-			int memLimit = 19456;
+			return pool.submit(() -> argon2id(password, iterations, memLimit, salt)).get();
+		} catch (InterruptedException | ExecutionException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	private static String argon2id(String password, int iterations, int memLimit, String salt) {
+		try {
 			int hashLength = 128;
 			int parallelism = 1;
 		        
