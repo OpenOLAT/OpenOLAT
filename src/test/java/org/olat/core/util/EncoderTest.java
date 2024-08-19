@@ -178,4 +178,44 @@ public class EncoderTest {
 		String output = Encoder.encrypt(password, salt, Algorithm.argon2id);
 		Assert.assertEquals(hash, output);
 	}
+	
+	@Test
+	public void testJailedArgon2id() {
+		String password = "openolat#19";
+		String salt = "lji1/YS8rEwv/ML0JUV2OQ==";
+		String hash = """
+				//7Jf0qmUsfoIPSBnmqj8AGuXhoxOzX8rp6sLudAGF5Pouhx+lANNpclYWGXt0HkkuQxXeDMx68A
+				mL3dKuwR1ewb56nLbzLYXP6eYalFFNKwMvdU9RmYmGrL02QzRm2qvG5uoHxw8sGncZwRpe99t3/3
+				77y9SRw0IesIlui4HaY=""";
+
+		String output = Encoder.jailedArgon2id(password, salt, Algorithm.argon2id);
+		Assert.assertEquals(hash, output);
+	}
+	
+	/*
+	@Test
+	public void testPerformances() {
+		for(int i=1; i<10; i++) {
+			String password = "openolat#19" + i;
+			String salt = "lji1/YS8rEwv/ML0JUV2OQ==";
+			
+			long start1 = System.nanoTime();
+			Encoder.encrypt(password, salt, Algorithm.argon2id);
+			CodeHelper.printMilliSecondTime(start1, "Argon2d m=19456 (19 MiB), t=3, p=1: ");
+			
+			long start2 = System.nanoTime();
+			Encoder.encrypt(password, salt, Algorithm.argon2id_owasp);
+			CodeHelper.printMilliSecondTime(start2, "Argon2d m=12288 (12 MiB), t=3, p=1: ");
+			
+			long start3 = System.nanoTime();
+			Encoder.encrypt(password, salt, Algorithm.pbkdf2);
+			CodeHelper.printMilliSecondTime(start3, "PBK: ");
+			
+			long start4 = System.nanoTime();
+			Encoder.encrypt(password, salt, Algorithm.sha512);
+			CodeHelper.printMilliSecondTime(start4, "SHA512: ");
+			
+		}
+	}
+	*/
 }
