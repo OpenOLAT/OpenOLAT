@@ -24,14 +24,17 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.csp.CSPBuilder;
 import org.olat.core.commons.services.csp.CSPModule;
+import org.olat.core.commons.services.csp.SameSiteEnum;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -55,6 +58,8 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 	private MultipleSelectionElement forceDownloadEl;
 
 	private MultipleSelectionElement csrfEl;
+	private SingleSelection sameSiteEl;
+	
 	private MultipleSelectionElement strictTransportSecurityEl;
 	private MultipleSelectionElement xContentTypeOptionsEl;
 	private MultipleSelectionElement xFrameOptionsSameoriginEl;
@@ -146,6 +151,17 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 			csrfEl.select("on", true);
 		}
 		
+		SelectionValues cookieSameSitePK = new SelectionValues();
+		cookieSameSitePK.add(SelectionValues.entry(SameSiteEnum.STRICT.name(), SameSiteEnum.STRICT.sameSiteValue()));
+		cookieSameSitePK.add(SelectionValues.entry(SameSiteEnum.LAX.name(), SameSiteEnum.LAX.sameSiteValue()));
+		cookieSameSitePK.add(SelectionValues.entry(SameSiteEnum.NONE.name(), SameSiteEnum.NONE.sameSiteValue()));
+		sameSiteEl = uifactory.addDropdownSingleselect("sec.cookie.samesite", "sec.cookie.samesite", csrfCont,
+				cookieSameSitePK.keys(), cookieSameSitePK.values());
+		SameSiteEnum sameSiteValue = cspModule.getCookieSameSite();
+		if(sameSiteValue != null && cookieSameSitePK.containsKey(sameSiteValue.name())) {
+			sameSiteEl.select(sameSiteValue.name(), true);
+		}
+		
 		FormLayoutContainer cspCont = FormLayoutContainer.createDefaultFormLayout("csp", getTranslator());
 		formLayout.add(cspCont);
 		cspCont.contextPut("off_warn", translate("sec.description.csp"));
@@ -218,6 +234,19 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		sameSiteEl.clearError();
+		if(!sameSiteEl.isOneSelected()) {
+			sameSiteEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(contentSecurityPolicyEl == source) {
 			cspOptionsCont.setVisible(contentSecurityPolicyEl.isAtLeastSelected(1));
@@ -234,6 +263,7 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 		folderModule.setForceDownload(forceDownloadEl.isAtLeastSelected(1));
 		cspModule.setContentSecurityPolicy(contentSecurityPolicyEl.isAtLeastSelected(1));
 		cspModule.setCsrfEnabled(csrfEl.isAtLeastSelected(1));
+		cspModule.setCookieSameSite(SameSiteEnum.secureValueOf(sameSiteEl.getSelectedKey(), null));
 		
 		boolean cspEnabled = contentSecurityPolicyEl.isAtLeastSelected(1);
 		cspModule.setContentSecurityPolicy(cspEnabled);

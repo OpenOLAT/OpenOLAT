@@ -37,8 +37,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.csp.CSPModule;
+import org.olat.core.commons.services.csp.SameSiteEnum;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Implementation of an HTTP servlet {@link Filter} which conditionally adds the
@@ -60,6 +64,9 @@ public class SameSiteCookieFilter implements Filter {
 	
 	private static final String SET_COOKIE = "Set-Cookie";
 
+	@Autowired
+	private CSPModule securityModule;
+
 	public SameSiteCookieFilter() {
 		//
 	}
@@ -77,13 +84,16 @@ public class SameSiteCookieFilter implements Filter {
 	@Override
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
 			throws IOException, ServletException {
-
 		if (!(request instanceof HttpServletRequest)) {
 			throw new ServletException("Request is not an instance of HttpServletRequest");
 		}
 
 		if (!(response instanceof HttpServletResponse)) {
 			throw new ServletException("Response is not an instance of HttpServletResponse");
+		}
+		
+		if(securityModule == null) {
+			CoreSpringFactory.autowireObject(this);
 		}
 
 		chain.doFilter(request, new SameSiteResponseProxy((HttpServletResponse) response));
@@ -184,7 +194,8 @@ public class SameSiteCookieFilter implements Filter {
 			String sameSiteSetCookieValue = cookieHeader;
 			// only add if does not already exist, else leave
 			if (!cookieHeader.contains(SAMESITE_ATTRIBITE_NAME)) {
-				sameSiteSetCookieValue = String.format("%s; %s", cookieHeader, SAMESITE_ATTRIBITE_NAME + "=Strict");
+				SameSiteEnum sameSiteValue = securityModule.getCookieSameSite();
+				sameSiteSetCookieValue = String.format("%s; %s", cookieHeader, SAMESITE_ATTRIBITE_NAME + "=" + sameSiteValue.sameSiteValue());
 			}
 
 			if (first) {

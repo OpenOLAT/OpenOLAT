@@ -52,6 +52,7 @@ public class CSPModule extends AbstractSpringModule {
 	public static final String DEFAULT_CONTENT_SECURITY_POLICY_FORM_ACTION = "'self'";
 
 	private static final String CSRF = "csrf";
+	private static final String COOKIE_SAME_SITE = "cookieSameSite";
 	private static final String FORCE_TOP_FRAME = "forceTopFrame";
 	private static final String X_FRAME_OPTIONS_SAMEORIGIN = "xFrameOptionsSameOrigin";
 	private static final String STRICT_TRANSPORT_SECURITY = "strictTransportSecurity";
@@ -73,12 +74,16 @@ public class CSPModule extends AbstractSpringModule {
 
 	@Value("${base.security.csrf:enabled}")
 	private String csrf;
+	@Value("${base.security.cookie.samesite:Strict}")
+	private String cookieSameSite;
+	
 	@Value("${base.security.frameOptionsSameOrigine:enabled}")
 	private String xFrameOptionsSameorigin;
 	@Value("${base.security.strictTransportSecurity:enabled}")
 	private String strictTransportSecurity;
 	@Value("${base.security.xContentTypeOptions:enabled}")
 	private String xContentTypeOptions;
+	
 	@Value("${base.security.contentSecurityPolicy:enabled}")
 	private String contentSecurityPolicy;
 	@Value("${base.security.contentSecurityPolicy.reportOnly:enabled}")
@@ -203,6 +208,8 @@ public class CSPModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			contentSecurityPolicyFormAction = enabled;
 		}
+		
+		cookieSameSite = getStringPropertyValue(COOKIE_SAME_SITE, cookieSameSite);
 	}
 
 	public boolean isForceTopFrame() {
@@ -222,6 +229,16 @@ public class CSPModule extends AbstractSpringModule {
 		String enabled = enable ? "enabled" : "disabled";
 		csrf = enabled;
 		setStringProperty(CSRF, enabled, true);
+	}
+	
+	public SameSiteEnum getCookieSameSite() {
+		return SameSiteEnum.secureValueOf(cookieSameSite, SameSiteEnum.STRICT);
+	}
+	
+	public void setCookieSameSite(SameSiteEnum sameSiteValue) {
+		this.cookieSameSite = sameSiteValue != null ? sameSiteValue.name() : SameSiteEnum.STRICT.name();
+		setStringProperty(COOKIE_SAME_SITE, this.cookieSameSite, true);
+		
 	}
 
 	public boolean isXFrameOptionsSameoriginEnabled() {
