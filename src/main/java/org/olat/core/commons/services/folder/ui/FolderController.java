@@ -258,7 +258,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private Controller docEditorCtrl;
 	private WebDAVController webdavCtrl;
 	private Controller quotaEditCtrl;
-	private FolderTargetController copySelectFolderCtrl;
+	private FileBrowserTargetController copySelectFolderCtrl;
 	private LicenseCheckController licenseCheckCtrl;
 	private Controller metadataCtrl;
 	private RevisionListController revisonsCtrl;
@@ -1741,7 +1741,6 @@ public class FolderController extends FormBasicController implements Activateabl
 			VFSItem item = container.resolve(filename);
 			if(dir instanceof VFSContainer subContainer && item != null
 					&& canEdit(subContainer) && canMove(item, item.getMetaInfo())) {
-				//TODO uh wird diese Methode nur intern oder auch extern aufgerufen?
 				doCopyMove(ureq, true, true, subContainer, List.of(item), null, this::showDropSuccessMessage);
 			}
 		}
@@ -2059,8 +2058,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		removeAsListenerAndDispose(copySelectFolderCtrl);
-		copySelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, currentContainer,
-				translate(submitI18nKey));
+		copySelectFolderCtrl = new FileBrowserTargetController(ureq, getWindowControl(), rootContainer, currentContainer,
+				translate(submitI18nKey), !move);
 		listenTo(copySelectFolderCtrl);
 		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, suppressVersion, List.of(vfsItem), getCopyMoveSuccessMessage(move)));
 		
@@ -2124,6 +2123,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		cleanUp();
 	}
 
+	// FileBrowserCopyToController.doCopy() should do the same
 	private void doCopyMove(UserRequest ureq, boolean move, boolean suppressVersion, VFSContainer targetContainer,
 			List<VFSItem> itemsToCopy, License license, Consumer<List<String>> successMessage) {
 		if (isItemNotAvailable(ureq, targetContainer, true)) return;
@@ -2296,8 +2296,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
-		copySelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, currentContainer,
-				translate(submitI18nKey));
+		copySelectFolderCtrl = new FileBrowserTargetController(ureq, getWindowControl(), rootContainer, currentContainer,
+				translate(submitI18nKey), !move);
 		listenTo(copySelectFolderCtrl);
 		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, true, itemsToCopy, getCopyMoveSuccessMessage(move)));
 		

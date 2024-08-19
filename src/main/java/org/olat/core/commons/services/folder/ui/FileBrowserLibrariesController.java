@@ -77,12 +77,17 @@ public class FileBrowserLibrariesController extends BasicController {
 		putInitialPanel(mainVC);
 		
 		List<Link> links = new ArrayList<>();
-		links.add(createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media")));
-		if (sharePointModule.canSharePoint(ureq.getUserSession())) {
-			links.add(createLink(CMD_SHARE_POINT, "o_icon_provider_adfs", translate("browser.storages.share.point")));
+		if (FileBrowserSelectionMode.targetSingle != selectionMode) {
+			links.add(createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media")));
 		}
-		if (sharePointModule.canOneDrive(ureq.getUserSession())) {
-			links.add(createLink(CMD_ONE_DRIVE, "o_icon_onedrive", translate("browser.storages.one.drive")));
+		// Temporary until save to SharePoint is implemented
+		if (FileBrowserSelectionMode.targetSingle != selectionMode) {
+			if (sharePointModule.canSharePoint(ureq.getUserSession())) {
+				links.add(createLink(CMD_SHARE_POINT, "o_icon_provider_adfs", translate("browser.storages.share.point")));
+			}
+			if (sharePointModule.canOneDrive(ureq.getUserSession())) {
+				links.add(createLink(CMD_ONE_DRIVE, "o_icon_onedrive", translate("browser.storages.one.drive")));
+			}
 		}
 		mainVC.contextPut("links", links);
 	}
@@ -95,6 +100,10 @@ public class FileBrowserLibrariesController extends BasicController {
 		text += "<div class=\"o_mega_subline\">" + "</div>";
 		link.setCustomDisplayText(text);
 		return link;
+	}
+	
+	public boolean isLinkAvailable() {
+		return counter > 0;
 	}
 
 	@Override

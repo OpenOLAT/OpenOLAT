@@ -53,6 +53,7 @@ public class ExportRow {
 	private FormLink downloadButton;
 	private FormLink cancelButton;
 	private FormLink deleteButton;
+	private FormLink copyToButton;
 	private FormLink infosButton;
 	private FormLink toolsButton;
 	private ProgressBarItem progressBar;
@@ -231,6 +232,14 @@ public class ExportRow {
 
 	public void setDeleteButton(FormLink deleteButton) {
 		this.deleteButton = deleteButton;
+	}
+
+	public FormLink getCopyToButton() {
+		return copyToButton;
+	}
+
+	public void setCopyToButton(FormLink copyToButton) {
+		this.copyToButton = copyToButton;
 	}
 
 	public FormLink getInfosButton() {

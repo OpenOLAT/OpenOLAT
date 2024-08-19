@@ -17,6 +17,9 @@
 		</div>
 	</div>
 	<div class="o_flex_item_fix o_assessment_document_actions">
+		#if($r.available("browser.copy.to"))
+			$r.render("browser.copy.to")
+		#end
 		#if($r.available("open.link"))
 			$r.render("open.link")
 		#end

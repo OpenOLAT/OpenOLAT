@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
@@ -28,6 +29,8 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
+import org.olat.core.commons.services.folder.ui.FileBrowserCopyToController;
+import org.olat.core.commons.services.folder.ui.FolderUIFactory;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -64,6 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTAAssignedTaskController extends BasicController {
 
 	private CloseableModalController cmc;
+	private FileBrowserCopyToController copyToCtrl;
 	private SinglePageController viewTaskCtrl;
 	private VideoAudioPlayerController videoAudioPlayerController;
 	private Controller docEditorCtrl;
@@ -94,7 +98,8 @@ public class GTAAssignedTaskController extends BasicController {
 	public GTAAssignedTaskController(UserRequest ureq, WindowControl wControl, Task task,
 			TaskDefinition taskDef, CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			String i18nDescription, String i18nWarning, String message) {
-		super(ureq, wControl, Util.createPackageTranslator(DocEditorController.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(DocEditorController.class, ureq.getLocale(),
+				Util.createPackageTranslator(FolderUIFactory.class, ureq.getLocale())));
 		
 		this.gtaNode = gtaNode;
 		this.courseEnv = courseEnv;
@@ -125,6 +130,12 @@ public class GTAAssignedTaskController extends BasicController {
 			VFSItem vfsItem = tasksContainer.resolve(taskFile.getName());
 			// Link to download and open the file (if possible)
 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+				Link copyToLink = LinkFactory.createLink("browser.copy.to", "browser.copy.to", getTranslator(), mainVC, this, Link.BUTTON_XSMALL);
+				copyToLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+				copyToLink.setAriaRole("button");
+				copyToLink.setGhost(true);
+				copyToLink.setUserObject(vfsLeaf);
+				
 				Link downloadLink = LinkFactory.createLink("download.task", "download.task", getTranslator(), mainVC, this, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
 				downloadLink.setCustomDisplayText(translate("download"));
 				downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
@@ -187,7 +198,9 @@ public class GTAAssignedTaskController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source instanceof Link previewLink) {
-			if ("preview".equals(previewLink.getCommand()) && previewLink.getUserObject() instanceof VFSLeaf document) {
+			if ("browser.copy.to".equals(previewLink.getCommand()) && previewLink.getUserObject() instanceof VFSLeaf document) {
+				doCopyTo(ureq, document);
+			} else if ("preview".equals(previewLink.getCommand()) && previewLink.getUserObject() instanceof VFSLeaf document) {
 				if (taskFile.getName().endsWith(".html")) {
 					if(folderModule.isForceDownload(document)) {
 						doDownload(ureq, document);
@@ -206,7 +219,7 @@ public class GTAAssignedTaskController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(cmc == source || source == docEditorCtrl) {
+		if(cmc == source || source == docEditorCtrl || source == copyToCtrl) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -214,13 +227,26 @@ public class GTAAssignedTaskController extends BasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(copyToCtrl);
 		removeAsListenerAndDispose(viewTaskCtrl);
 		removeAsListenerAndDispose(videoAudioPlayerController);
 		removeAsListenerAndDispose(docEditorCtrl);
 		cmc = null;
+		copyToCtrl = null;
 		viewTaskCtrl = null;
 		videoAudioPlayerController = null;
 		docEditorCtrl = null;
+	}
+
+	private void doCopyTo(UserRequest ureq, VFSLeaf vfsLeaf) {
+		if(guardModalController(copyToCtrl)) return;
+		
+		copyToCtrl = new FileBrowserCopyToController(ureq, getWindowControl(), List.of(vfsLeaf));
+		listenTo(copyToCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), copyToCtrl.getInitialComponent(), true, translate("browser.copy.to"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doDownload(UserRequest ureq, VFSLeaf vfsLeaf) {

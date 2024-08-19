@@ -67,7 +67,9 @@ public class FileBrowserMainController extends BasicController {
 		mainVC.contextPut("librariesTitle", translate("browser.libraries"));
 		storageesCtrl = new FileBrowserLibrariesController(ureq, wControl, stackedPanel, selectionMode, submitButtonText);
 		listenTo(storageesCtrl);
-		mainVC.put("libraries", storageesCtrl.getInitialComponent());
+		if (storageesCtrl.isLinkAvailable()) {
+			mainVC.put("libraries", storageesCtrl.getInitialComponent());
+		}
 	}
 
 	@Override
