@@ -1110,7 +1110,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void forgeFilePath(FolderRow row) {
 		String filePath = null;
-		if (!config.isFileHub() && topMostDescendantsMetadata!= null && row.getMetadata() != null) {
+		if ((!config.isFileHub() || FolderView.trash == folderView) && topMostDescendantsMetadata!= null && row.getMetadata() != null) {
 			String rowRelativePath = row.getMetadata().getRelativePath();
 			String rootRelativePath = topMostDescendantsMetadata.getRelativePath() + "/" + topMostDescendantsMetadata.getFilename();
 			if (rowRelativePath.startsWith(rootRelativePath)) {
