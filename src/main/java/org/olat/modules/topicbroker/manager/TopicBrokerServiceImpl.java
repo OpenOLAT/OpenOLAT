@@ -358,17 +358,11 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	
 	@Override
 	public TBParticipant getOrCreateParticipant(Identity doer, TBBroker broker, Identity participantIdentity) {
-		return getOrCreateParticipant(doer, broker, participantIdentity, false);
-	}
-
-	private TBParticipant getOrCreateParticipant(Identity doer, TBBroker broker, Identity participantIdentity, boolean reload) {
 		TBParticipant participant = getParticipant(broker, participantIdentity);
 		if (participant == null) {
 			participant = createParticipant(doer, broker, participantIdentity);
-			if (reload) {
-				// reload to avoid hibernate classes in audit log xml
-				participant = getParticipant(broker, participantIdentity);
-			}
+			// reload to avoid hibernate classes in audit log xml
+			participant = getParticipant(broker, participantIdentity);
 		}
 		return participant;
 	}
@@ -956,7 +950,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		}
 		
 		if (selection == null) {
-			TBParticipant participant = getOrCreateParticipant(doer, reloadedTopic.getBroker(), participantIdentity, true);
+			TBParticipant participant = getOrCreateParticipant(doer, reloadedTopic.getBroker(), participantIdentity);
 			selection = selectionDao.createSelection(doer, participant, reloadedTopic, realSortOrder);
 			
 			String after = TopicBrokerXStream.toXml(selection);

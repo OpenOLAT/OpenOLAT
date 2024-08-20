@@ -1087,6 +1087,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				row.setSelectionItem(selectionEl);
 				
 				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, getTitleWithLabel(row), flc);
+				titleEl.setDomWrapperElement(DomWrapperElement.span);
 				titleEl.setStaticFormElement(false);
 				row.setTitleItem(titleEl);
 			}
@@ -1135,6 +1136,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		if (FolderView.trash == folderView) {
 			StaticTextElement pathEl = uifactory.addStaticTextElement("path_" + counter++, null, StringHelper.escapeHtml(row.getFilePath()), flc);
+			pathEl.setDomWrapperElement(DomWrapperElement.span);
 			pathEl.setStaticFormElement(false);
 			row.setFilePathItem(pathEl);
 		} else if (FolderView.folder != folderView) {

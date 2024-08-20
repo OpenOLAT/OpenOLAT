@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.1.11</org.springframework.version>
+		<org.springframework.version>6.1.12</org.springframework.version>
 		<org.hibernate.version>6.5.2.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
@@ -74,7 +74,7 @@
 		<apache.pdfbox>3.0.3</apache.pdfbox>
 		<apache.poi>5.3.0</apache.poi>
 		<apache.log4j>2.23.1</apache.log4j>
-		<org.slf4j>2.0.15</org.slf4j>
+		<org.slf4j>2.0.16</org.slf4j>
 		<org.bouncycastle>1.78.1</org.bouncycastle>
 		<io.jsonwebtoken>0.12.6</io.jsonwebtoken>
 		<io.undertow>2.3.15.Final</io.undertow>
@@ -1743,7 +1743,7 @@
 		<dependency>
 			<groupId>com.webauthn4j</groupId>
 			<artifactId>webauthn4j-core</artifactId>
-			<version>0.25.0.RELEASE</version>
+			<version>0.25.1.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -2434,7 +2434,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>33.2.1-jre</version>
+			<version>33.3.0-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>

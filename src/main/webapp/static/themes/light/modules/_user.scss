@@ -87,6 +87,28 @@
 	&.o_user_initials_dark_blue {
 		background-color: $o-proj-avatar-dark-blue-bg-color;
 	}
+	&.o_user_initials_light_blue {
+		background-color: $o-proj-avatar-light-blue-bg-color;
+	}
+	&.o_user_initials_purple {
+		background-color: $o-proj-avatar-purple-bg-color;
+	}
+	&.o_user_initials_red {
+		background-color: $o-proj-avatar-red-bg-color;
+	}
+	&.o_user_initials_orange {
+		background-color: $o-proj-avatar-orange-bg-color;
+	}
+	&.o_user_initials_yellow {
+		background-color: $o-proj-avatar-yellow-bg-color;
+		color: $o-proj-avatar-yellow-color;
+	}
+	&.o_user_initials_dark_green {
+		background-color: $o-proj-avatar-dark_green-bg-color;
+	}
+	&.o_user_initials_light_green {
+		background-color: $o-proj-avatar-light_green-bg-color;
+	}
 }
 .o_user_info {
 	border: $o-user-info-border;

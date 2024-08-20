@@ -95,6 +95,17 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	
 	private static final Logger log = Tracing.createLoggerFor(UserManagerImpl.class);
 	
+	public static final List<String> USER_INITIALS_CSS = List.of(
+			"o_user_initials_dark_blue",
+			"o_user_initials_light_blue",
+			"o_user_initials_purple",
+			"o_user_initials_red",
+			"o_user_initials_orange",
+			"o_user_initials_yellow",
+			"o_user_initials_dark_green",
+			"o_user_initials_light_green"
+	);
+	
   // used to save user data in the properties table 
   private static final String CHARSET = "charset";
   private UserDisplayNameCreator userDisplayNameCreator;
@@ -622,6 +633,12 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	}
 
 	@Override
+	public String getInitials(User user) {
+		return user.getFirstName().substring(0, 1).toUpperCase()
+				+ user.getLastName().substring(0, 1).toUpperCase();
+	}
+
+	@Override
 	public int deleteUserDataPriority() {
 		// delete with high priority
 		return 100;
@@ -733,5 +750,12 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		updateUserFromIdentity(identity);
 		log.info("clearUserProperties user::" + persistedUser.getKey() + " from identity::" + identity.getKey());
 		dbInstance.commit();
+	}
+
+	@Override
+	public String getInitialsColorCss(Long identityKey) {
+		// Always get the same color
+		int index = Math.abs(identityKey.intValue() % USER_INITIALS_CSS.size());
+		return USER_INITIALS_CSS.get(index);
 	}
 }
