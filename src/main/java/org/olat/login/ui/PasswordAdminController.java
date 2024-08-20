@@ -21,7 +21,6 @@ package org.olat.login.ui;
 
 import java.util.List;
 
-import org.olat.admin.user.bulkChange.UserBulkChangePasswordController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -51,18 +50,15 @@ public class PasswordAdminController extends BasicController implements Activate
 
 	private static final String SYNTAX_RES_TYPE = "syntax";
 	private static final String POLICY_RES_TYPE = "policy";
-	private static final String RESET_RES_TYPE = "reset";
 	
 	private VelocityContainer mainVC;
 	private final Link syntaxLink;
 	private final Link policyLink;
-	private final Link resetLink;
 	private final Link authenticationLink;
 	private final SegmentViewComponent segmentView;
 	
 	private PasswordSyntaxController syntaxCtrl;
 	private PasswordPolicyController policyCtrl;
-	private UserBulkChangePasswordController resetCtrl;
 	private final WebAuthnAuthenticationAdminController authenticationCtrl;
 	
 	public PasswordAdminController(UserRequest ureq, WindowControl wControl) {
@@ -79,8 +75,6 @@ public class PasswordAdminController extends BasicController implements Activate
 		segmentView.addSegment(syntaxLink, false);
 		policyLink = LinkFactory.createLink("admin.password.policy", mainVC, this);
 		segmentView.addSegment(policyLink, false);
-		resetLink = LinkFactory.createLink("admin.password.reset", mainVC, this);
-		segmentView.addSegment(resetLink, false);
 		
 		authenticationCtrl = new WebAuthnAuthenticationAdminController(ureq, getWindowControl());
 		listenTo(authenticationCtrl);
@@ -102,9 +96,6 @@ public class PasswordAdminController extends BasicController implements Activate
 			} else if(POLICY_RES_TYPE.equalsIgnoreCase(type)) {
 				doOpenPolicy(ureq);
 				segmentView.select(policyLink);
-			} else if(RESET_RES_TYPE.equalsIgnoreCase(type)) {
-				doOpenResetPassword(ureq);
-				segmentView.select(resetLink);
 			}
 		}
 	}
@@ -112,8 +103,7 @@ public class PasswordAdminController extends BasicController implements Activate
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if(clickedLink == authenticationLink) {
@@ -122,8 +112,6 @@ public class PasswordAdminController extends BasicController implements Activate
 					doOpenSyntax(ureq);
 				} else if(clickedLink == policyLink) {
 					doOpenPolicy(ureq);
-				} else if(clickedLink == resetLink) {
-					doOpenResetPassword(ureq);
 				}
 			}
 		}
@@ -154,16 +142,5 @@ public class PasswordAdminController extends BasicController implements Activate
 			addToHistory(ureq, policyCtrl);
 		}
 		mainVC.put("segmentCmp", policyCtrl.getInitialComponent());
-	}
-	
-	private void doOpenResetPassword(UserRequest ureq) {
-		if(resetCtrl == null) {
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(RESET_RES_TYPE), null);
-			resetCtrl = new UserBulkChangePasswordController(ureq, swControl);
-			listenTo(resetCtrl);
-		} else {
-			addToHistory(ureq, resetCtrl);
-		}
-		mainVC.put("segmentCmp", resetCtrl.getInitialComponent());
 	}
 }
