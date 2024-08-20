@@ -321,5 +321,9 @@ public abstract class UserManager {
 	 * @returns 
 	 */
 	public abstract String getEnsuredEmail(User user);
+	
+	public abstract String getInitials(User user);
+	
+	public abstract String getInitialsColorCss(Long identityKey);
 
 }

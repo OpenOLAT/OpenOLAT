@@ -49,7 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserInfoProfileController extends BasicController {
 
-	private final Link infoLink;
+	private final Link visitingCardLink;
 	private final Link emailLink;
 	private Link chatLink;
 
@@ -106,19 +106,20 @@ public class UserInfoProfileController extends BasicController {
 			mainVC.contextPut("imStatusIconCss", imStatusIconCss);
 		}
 		
-		infoLink = LinkFactory.createLink("user.info.info", mainVC, this);
-		infoLink.setIconLeftCSS("o_icon o_icon_business_card");
-		infoLink.setAriaRole("button");
+		visitingCardLink = LinkFactory.createLink("user.info.visiting.card", mainVC, this);
+		visitingCardLink.setIconLeftCSS("o_icon o_icon-fw o_icon_visiting_card");
+		visitingCardLink.setElementCssClass("o_nowrap");
+		visitingCardLink.setAriaRole("button");
 		
 		emailLink = LinkFactory.createLink("user.info.email", mainVC, this);
-		emailLink.setIconLeftCSS("o_icon o_icon_mail");
+		emailLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
+		emailLink.setElementCssClass("o_nowrap");
 		emailLink.setAriaRole("button");
 		
-		if (profileConfig.isChatEnabled()
-				&& Presence.available == profile.getPresence()
-				&& !profile.getIdentityKey().equals(getIdentity().getKey())) {
+		if (profileConfig.isChatEnabled() && !profile.getIdentityKey().equals(getIdentity().getKey())) {
 			chatLink = LinkFactory.createLink("user.info.chat", mainVC, this);
-			chatLink.setIconLeftCSS("o_icon o_icon_chat");
+			chatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_chat");
+			chatLink.setElementCssClass("o_nowrap");
 			chatLink.setAriaRole("button");
 		}
 	}
@@ -145,8 +146,8 @@ public class UserInfoProfileController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == infoLink) {
-			doShowInfo(ureq);
+		if (source == visitingCardLink) {
+			doVisitingCard(ureq);
 		} else if (source == emailLink) {
 			doEmail(ureq);
 		} else if (source == chatLink) {
@@ -154,12 +155,12 @@ public class UserInfoProfileController extends BasicController {
 		}
 	}
 
-	private void doShowInfo(UserRequest ureq) {
+	private void doVisitingCard(UserRequest ureq) {
 		if (guardModalController(infoCtrl)) return;
 		
 		Identity identity = securityManager.loadIdentityByKey(profile.getIdentityKey());
 		if (identity == null) {
-			showWarning("error.info.not.possible");
+			showWarning("error.visiting.card.not.possible");
 			return;
 		}
 		
@@ -168,7 +169,7 @@ public class UserInfoProfileController extends BasicController {
 		listenTo(infoCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), infoCtrl.getInitialComponent(),
-				true, translate("user.info.info"));
+				true, translate("user.info.visiting.card"));
 		listenTo(cmc);
 		cmc.activate();
 	}

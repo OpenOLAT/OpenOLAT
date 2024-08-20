@@ -65,7 +65,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_brush { @include o-add-icon('paint-brush');}
 .o_icon_browsercheck { @include o-add-icon('thumbs-up');}
 .o_icon_bug { @include o-add-icon('bug');}
-.o_icon_business_card { @include o-add-icon('address-card');}
 .o_icon_busy { @include o-add-icon('spinner');}
 .o_icon_calendar { @include o-add-icon('calendar-days', false);}
 .o_icon_calendar_enabled { @include o-add-icon('check-square', false);}
@@ -567,6 +566,7 @@ $fa-css-prefix: "o_icon" !default;
 	&:after { position: absolute; top: 28%; left: 50%; margin-left: -0.5em; font-size: 45%; color: white }
 }
 .o_icon_view_all_rubrics { @include o-add-icon('clipboard-check');}
+.o_icon_visiting_card { @include o-add-icon('address-card');}
 .o_icon_visitingcard.o_icon_waiting { @include o-add-icon('clock', false);}
 .o_icon_wait { @include o-add-icon('circle-notch');}
 .o_icon_warn { @include o-add-icon('exclamation-triangle'); color: $brand-warning;}

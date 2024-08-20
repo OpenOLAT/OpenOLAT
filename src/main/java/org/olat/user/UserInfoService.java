@@ -53,9 +53,8 @@ public class UserInfoService {
 	
 	public UserInfoProfile createProfile(Identity identity) {
 		String displayName = userManager.getUserDisplayName(identity);
-		String initials = identity.getUser().getFirstName().substring(0, 1).toUpperCase()
-				+ identity.getUser().getLastName().substring(0, 1).toUpperCase();
-		String initialsCss = "o_user_initials_dark_blue";
+		String initials = userManager.getInitials(identity.getUser());
+		String initialsCss = userManager.getInitialsColorCss(identity.getKey());
 		boolean portraitAvailable = portraitManager.hasPortrait(identity);
 		Presence presence = null;
 		if (imModule.isEnabled() && imModule.isPrivateEnabled()) {
