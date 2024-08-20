@@ -551,6 +551,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				row.setOwnerKeys(owners.stream().map(Identity::getKey).collect(Collectors.toSet()));
 				String ownersNames = owners.stream()
 						.map(userManager::getUserDisplayName)
+						.map(StringHelper::escapeHtml)
 						.sorted()
 						.collect(Collectors.joining(" / "));
 				row.setOwnersNames(ownersNames);

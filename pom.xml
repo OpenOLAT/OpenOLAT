@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.1.11</org.springframework.version>
+		<org.springframework.version>6.1.12</org.springframework.version>
 		<org.hibernate.version>6.5.2.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
@@ -2434,7 +2434,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>33.2.1-jre</version>
+			<version>33.3.0-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>

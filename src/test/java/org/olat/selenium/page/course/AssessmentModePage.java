@@ -208,6 +208,7 @@ public class AssessmentModePage {
 		List<WebElement> buttonsEl = browser.findElements(startBy);
 		buttonsEl.get(0).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -229,8 +230,8 @@ public class AssessmentModePage {
 	 */
 	public void backToOpenOLAT() {
 		By continueBy = By.cssSelector("div.modal-dialog div.modal-body div.o_button_group a.o_sel_assessment_continue");
-		WebElement continueEl = browser.findElement(continueBy);
-		continueEl.click();
+		browser.findElement(continueBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 	}
 }
