@@ -132,6 +132,8 @@
 		background-color: $o-cal-desc-background-color;
 		padding: 10px 7px;
 		margin: 10px -7px;
+		text-overflow: ellipsis;
+		overflow-x: hidden;
 	}
 	.o_cal_tooltip_buttons {
 		text-align: center;
