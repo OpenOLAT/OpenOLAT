@@ -823,7 +823,7 @@ public class UserTest extends Deployments {
 		
 		String uuid = UUID.randomUUID().toString();
 		String username = ("miku-" + uuid).substring(0, 32);
-		String password = "Miku#hatsune#01";
+		String password = "MiHat#Sune#01Sama";
 		UserVO userVo = UserAdminPage.createUserVO(username, "Miku", "Hatsune", username + "@openolat.com", password);
 
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -874,8 +874,8 @@ public class UserTest extends Deployments {
 		String uuid = UUID.randomUUID().toString();
 		String username = ("miku-" + uuid).substring(0, 32);
 		String lastName = "Hatsune" + uuid;
-		String password = "Miku#hatsune#02";
-		UserVO userVo = UserAdminPage.createUserVO(username, "Miku", lastName, username + "@openolat.com", password);
+		String password = "MiHat#Sune#02Sama";
+		UserVO userVo = UserAdminPage.createUserVO(username, "Miku012_KU", lastName, username + "@openolat.com", password);
 
 		NavigationPage navBar = NavigationPage.load(browser);
 		UserAdminPage userAdminPage = navBar
@@ -949,8 +949,8 @@ public class UserTest extends Deployments {
 		String username2 = ("mizore-" + uuid).substring(0, 32);
 		
 		StringBuilder csv = new StringBuilder();
-		UserVO user1 = importWizard.append(username1, "rosario01", "Moka", "Akashiya", csv);
-		importWizard.append(username2, "vampire01", "Mizore", "Shirayuki", csv);
+		UserVO user1 = importWizard.append(username1, "Rosario01Book1", "Moka", "Akashiya", csv);
+		importWizard.append(username2, "Vampire01Book2", "Mizore", "Shirayuki", csv);
 		importWizard
 			.fill(csv.toString())
 			.nextData() // -> preview
@@ -965,7 +965,7 @@ public class UserTest extends Deployments {
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		//tools
 		userLoginPage
-			.loginAs(username1, "rosario01")
+			.loginAs(username1, "Rosario01Book1")
 			.resume()
 			.assertLoggedIn(user1);
 	}
@@ -1003,8 +1003,8 @@ public class UserTest extends Deployments {
 		
 		String uuid = UUID.randomUUID().toString();
 		String username1 = ("moka-" + uuid).substring(0, 32);
-		String password1 = "Rosario#02";
-		String password2 = "Openolat#2";
+		String password1 = "Rosario#02Book";
+		String password2 = "Openolat#2Book";
 
 		StringBuilder csv = new StringBuilder();
 		UserVO newUser = importWizard.append(username1, password1, "Moka", "Akashiya", csv);

@@ -2058,7 +2058,7 @@ public class CourseTest extends Deployments {
 			.nextToDisclaimer()
 			.acknowledgeDisclaimer()
 			.nextToPassword()
-			.finalizeRegistration("2change");
+			.finalizeRegistration("2#ChangeSometimes");
 		
 		CoursePageFragment invitationCourse = new CoursePageFragment(browser);
 		invitationCourse
