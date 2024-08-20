@@ -19,10 +19,8 @@
  */
 package org.olat.login.oauth.spi;
 
-import jakarta.servlet.http.HttpSession;
-
 import org.olat.core.gui.UserRequest;
-import org.olat.login.oauth.OAuthConstants;
+import org.olat.login.oauth.model.OAuthSession;
 
 /**
  * 
@@ -67,12 +65,12 @@ public class OpenIDVerifier {
 		return sessionNonce;
 	}
 
-	public static OpenIDVerifier create(UserRequest ureq, HttpSession httpSession) {
+	public static OpenIDVerifier create(UserRequest ureq, OAuthSession oauthSession) {
 		String idToken = ureq.getParameter("id_token");
 		String accessToken = ureq.getParameter("access_token");
 		String state = ureq.getParameter("state");
-		String sessionNonce = (String)httpSession.getAttribute(OAuthConstants.OAUTH_NONCE);
-		String sessionState = (String)httpSession.getAttribute(OAuthConstants.OAUTH_STATE);
+		String sessionNonce = oauthSession.nonce();
+		String sessionState = oauthSession.state();
 		return new OpenIDVerifier(state, idToken, accessToken, sessionState, sessionNonce);
 	}
 }

@@ -39,12 +39,15 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.login.auth.AuthenticationProviderSPI;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.oauth.OAuthLoginManager;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
+import org.olat.login.oauth.model.OAuthSession;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.login.oauth.model.OAuthValidationResult;
 import org.olat.login.oauth.ui.OAuthRegistrationController;
@@ -52,6 +55,7 @@ import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,10 +66,12 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationProviderSPI {
+public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationProviderSPI, InitializingBean {
 	
 	private static final Logger log = Tracing.createLoggerFor(OAuthLoginManagerImpl.class);
 	
+	@Autowired
+	private Coordinator coordinator;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -78,6 +84,13 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationP
 	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private HttpClientService httpClientService;
+	
+	private CacheWrapper<String,OAuthSession> deliveryOptionsCache;
+	
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		deliveryOptionsCache = coordinator.getCacher().getCache("OAuth", "AuthorizationRequests");
+	}
 
 	@Override
 	public boolean isEnabled() {
@@ -123,6 +136,16 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationP
 			return OAuthValidationResult.allOk();
 		}
 		return OAuthValidationResult.error("username.rule.in.use");
+	}
+	
+	@Override
+	public OAuthSession retrieveAuthorizationRequest(String state) {
+		return deliveryOptionsCache.get(state);
+	}
+
+	@Override
+	public void registerAuthorizationRequest(String state, OAuthSession oauthSession) {
+		deliveryOptionsCache.put(state, oauthSession);
 	}
 
 	@Override

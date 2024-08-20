@@ -50,6 +50,10 @@ public class RedirectMediaResource implements MediaResource {
 		this.redirectURL = redirectURL;
 	}
 	
+	public String getRedirectURL() {
+		return redirectURL;
+	}
+	
 	@Override
 	public long getCacheControlDuration() {
 		return 0;
@@ -85,7 +89,7 @@ public class RedirectMediaResource implements MediaResource {
 		try {
 			hres.sendRedirect(redirectURL);
 		} catch (IOException | IllegalStateException ise){
-			log.error("redirect failed: url=" + redirectURL, ise);
+			log.error("redirect failed: url={}", redirectURL, ise);
 		}
 	}
 

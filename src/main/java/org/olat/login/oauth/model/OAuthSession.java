@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,32 +14,22 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.login.oauth;
+package org.olat.login.oauth.model;
 
-import org.json.JSONObject;
-import org.olat.core.id.Identity;
-import org.olat.login.oauth.model.OAuthSession;
-import org.olat.login.oauth.model.OAuthUser;
+import org.olat.login.oauth.OAuthSPI;
+
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
- * Initial date: 9 avr. 2021<br>
+ * Initial date: 19 août 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface OAuthLoginManager {
-	
-	public boolean isValid(OAuthUser oauthUser);
-	
-	public Identity createIdentity(OAuthUser oauthUser, String provider);
-	
-	public JSONObject loadDiscoveryUrl(String url);
-	
-	public OAuthSession retrieveAuthorizationRequest(String state);
-	
-	public void registerAuthorizationRequest(String state, OAuthSession oauthSession);
-	
+public record OAuthSession(String state, String nonce, Token requestToken, OAuthSPI oauthProvider, OAuthService service) {
+
 }

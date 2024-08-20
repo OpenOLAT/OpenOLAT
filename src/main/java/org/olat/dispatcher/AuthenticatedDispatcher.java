@@ -343,7 +343,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 					.append("<p>Can not redirect to this URL as it contains invalid elements</p>")
 					.append("<p><b>Invalid URL:</b> ").append(escapedRequest)
 					.append("</p></body>");
-					log.warn("Invalid URL, maybe XSS attempt. URL::" + escapedRequest);
+					log.warn("Invalid URL, maybe XSS attempt. URL::{}", escapedRequest);
 				} else {
 					clientSideWindowCheck.append("<script>window.location.replace(\"").append(requestUri).append("?");
 					if(StringHelper.containsNonWhitespace(newWindow)) {

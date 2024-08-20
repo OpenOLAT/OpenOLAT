@@ -39,6 +39,7 @@ import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -48,6 +49,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.oauth.model.OAuthRegistration;
+import org.olat.login.oauth.model.OAuthSession;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.login.oauth.spi.OpenIDVerifier;
 import org.olat.login.oauth.spi.OpenIdConnectApi.OpenIdConnectService;
@@ -118,12 +120,14 @@ public class OAuthDispatcher implements Dispatcher {
 			return; 
 		}
 		
-		HttpSession sess = request.getSession();
-		try(OAuthService service = (OAuthService)sess.getAttribute(OAuthConstants.OAUTH_SERVICE)) {
-			
-			//OAuth 2.0 hasn't any request token
-			Token requestToken = (Token)sess.getAttribute(OAuthConstants.REQUEST_TOKEN);
-			OAuthSPI provider = (OAuthSPI)sess.getAttribute(OAuthConstants.OAUTH_SPI);
+		OAuthSession oauthSession = getOAuthSession(ureq, request);
+		if(oauthSession == null) {
+			return; 
+		}
+		
+		try {
+			OAuthSPI provider = oauthSession.oauthProvider();
+			OAuthService service = oauthSession.service();
 
 			Token accessToken;
 			if(provider == null) {
@@ -135,27 +139,28 @@ public class OAuthDispatcher implements Dispatcher {
 				if(idToken == null) {
 					redirectImplicitWorkflow(ureq);
 					return;
-				} else if(service instanceof OpenIdConnectFullConfigurableService) {
-					OpenIDVerifier verifier = OpenIDVerifier.create(ureq, sess);
-					accessToken = ((OpenIdConnectFullConfigurableService)service).getAccessToken(verifier);
-				} else if(service instanceof OpenIdConnectService) {
-					OpenIDVerifier verifier = OpenIDVerifier.create(ureq, sess);
-					accessToken = ((OpenIdConnectService)service).getAccessToken(verifier);
+				} else if(service instanceof OpenIdConnectFullConfigurableService configurableService) {
+					OpenIDVerifier verifier = OpenIDVerifier.create(ureq, oauthSession);
+					accessToken = configurableService.getAccessToken(verifier);
+				} else if(service instanceof OpenIdConnectService connectService) {
+					OpenIDVerifier verifier = OpenIDVerifier.create(ureq, oauthSession);
+					accessToken = connectService.getAccessToken(verifier);
 				} else {
 					return;
 				}
-			} else if(service instanceof OAuth10aService) {
+			} else if(service instanceof OAuth10aService oauth10aService
+					&& oauthSession.requestToken() instanceof OAuth1RequestToken oauth1RequestToken) {
 				String requestVerifier = request.getParameter("oauth_verifier"); 
 				if(requestVerifier == null) {//OAuth 2.0 as a code
 					requestVerifier = request.getParameter("code");
 				}
-				accessToken = ((OAuth10aService)service).getAccessToken((OAuth1RequestToken)requestToken, requestVerifier);
-			} else if(service instanceof OAuth20Service) {
+				accessToken = oauth10aService.getAccessToken(oauth1RequestToken, requestVerifier);
+			} else if(service instanceof OAuth20Service oauth20Service) {
 				String requestVerifier = request.getParameter("oauth_verifier"); 
 				if(requestVerifier == null) {//OAuth 2.0 as a code
 					requestVerifier = request.getParameter("code");
 				}
-				accessToken = ((OAuth20Service)service).getAccessToken(requestVerifier);
+				accessToken = oauth20Service.getAccessToken(requestVerifier);
 			} else {
 				return;
 			}
@@ -205,6 +210,27 @@ public class OAuthDispatcher implements Dispatcher {
 		}
 	}
 	
+	private OAuthSession getOAuthSession(UserRequest ureq, HttpServletRequest request) {
+		OAuthSession oauthSession = null;
+		HttpSession sess = request.getSession();
+		String state = ureq.getParameter("state");
+		if(StringHelper.containsNonWhitespace(state)) {
+			oauthSession = oauthLoginManager.retrieveAuthorizationRequest(state);
+		}
+		
+		if(oauthSession == null) {
+			// OAuth 1.0
+			try {
+				oauthSession = (OAuthSession)sess.getAttribute(OAuthConstants.OAUTH_SESSION);
+			} catch (Exception e) {
+				log.error("Unexpected error", e);
+				error(ureq, translate(ureq, "error.generic"));
+			}
+		}
+		
+		return oauthSession;
+	}
+	
 	private void createUser(OAuthUser infos, OAuthRegistration registration, OAuthSPI provider,
 			UserRequest ureq, HttpServletRequest request, HttpServletResponse response) {
 		if(oauthLoginModule.isSkipRegistrationDialog()
@@ -241,11 +267,19 @@ public class OAuthDispatcher implements Dispatcher {
 			securityManager.setIdentityLastLogin(identity);
 			MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
 			if (mr instanceof RedirectMediaResource rmr) {
-				rmr.prepare(response);
+				redirectAfterLogin(ureq, rmr.getRedirectURL());
 			} else {
 				DispatcherModule.redirectToDefaultDispatcher(response); // error, redirect to login screen
 			}
 		}
+	}
+	
+	
+	private void redirectAfterLogin(UserRequest ureq, String redirectUrl) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<!DOCTYPE html>\n<html><head><title>Reload</title>");
+		sb.append("<script>window.location.replace(\"").append(redirectUrl).append("\");</script></head><body></body></html>");
+		ServletUtil.serveStringResource(ureq.getHttpResp(), sb.toString());
 	}
 	
 	private void redirectImplicitWorkflow(UserRequest ureq) {
