@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -48,6 +47,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.crypto.RandomUtils;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -126,8 +126,6 @@ import org.springframework.stereotype.Service;
 public class CourseAssessmentServiceImpl implements CourseAssessmentService, NodeVisitedListener {
 
 	private static final Logger log = Tracing.createLoggerFor(CourseAssessmentServiceImpl.class);
-
-    private final Random random = new Random();
 
 	@Autowired
 	private DB dbInstance;
@@ -689,7 +687,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 				identities.addAll(owners);
 			}
 			if(identities.size() > 1) {
-				Collections.shuffle(identities, random);
+				Collections.shuffle(identities, RandomUtils.secureRandom());
 			}
 			if(!identities.isEmpty()) {
 				coach = identities.get(0);

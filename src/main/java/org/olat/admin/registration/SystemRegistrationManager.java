@@ -53,6 +53,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.crypto.RandomUtils;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseModule;
@@ -91,8 +92,6 @@ public class SystemRegistrationManager implements InitializingBean {
 	private static final String SCHEDULER_NAME = "system.registration";
 	private static final String TRIGGER = "system_registration_trigger";
 	public static final String PRODUCT = "openolat";
-	
-	private Random rnd = new Random();
 
 	@Value("${cluster.mode}")
 	private String clusterMode;
@@ -132,6 +131,7 @@ public class SystemRegistrationManager implements InitializingBean {
 	private String createCronTriggerExpression() {
 		// Create a random hour and minute for the cronjob so that not every
 		// installation registers at the same time
+		Random rnd = RandomUtils.secureRandom();
 		int min = rnd.nextInt(59);
 		int hour = rnd.nextInt(23);
 		int day = rnd.nextInt(6) + 1;
@@ -216,11 +216,11 @@ public class SystemRegistrationManager implements InitializingBean {
 			} else if (status == HttpStatus.SC_NOT_MODIFIED || status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED) {
 				log.info("Successfully registered OpenOlat installation on openolat.org server, thank you for your support!");
 			} else if (status == HttpStatus.SC_NOT_FOUND) {
-				log.error("Registration server not found: " + response.getStatusLine().toString());
+				log.error("Registration server not found: {}", response.getStatusLine());
 			} else if(status == HttpStatus.SC_NO_CONTENT){
 				log.info(response.getStatusLine().toString() + " " + EntityUtils.toString(response.getEntity()));
 			} else {
-				log.error("Unexpected HTTP Status: " + response.getStatusLine().toString() + " during registration call");
+				log.error("Unexpected HTTP Status: {}  during registration call", response.getStatusLine().toString());
 			}
 		} catch (Exception e) {
 			log.error("Unexpected exception during registration call", e);
@@ -327,6 +327,6 @@ public class SystemRegistrationManager implements InitializingBean {
 		} catch (Exception e) {
 			log.error("Illegal cron expression for system registration", e);
 		}
-		log.info("Registration background job successfully started: "+cronExpression);
+		log.info("Registration background job successfully started: {}", cronExpression);
 	}
 }

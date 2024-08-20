@@ -29,12 +29,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.crypto.RandomUtils;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -59,7 +59,6 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 	private NarrowedPropertyManager pm;
 	private Map<Long,String> anonymizerMap;
 	private final OLATResourceable ores;
-	private static Random random = new Random(System.currentTimeMillis());
 
 	private PersistingCoursePropertyManager(OLATResourceable course) {
 		ores = OresHelper.clone(course);
@@ -163,7 +162,7 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 				Property anonymizedProperty = pm.findProperty(identity, null, "Anonymizing", "AnonymizedUserName");
 				if (anonymizedProperty == null) {
 					// not found - create a new anonymized name
-					anonymizedName = "RANDOM-" + random.nextInt(100000000);
+					anonymizedName = "RANDOM-" + RandomUtils.secureRandom().nextInt(100000000);
 					// add as course properties
 					anonymizedProperty = pm.createPropertyInstance(identity, null, "Anonymizing", "AnonymizedUserName", null, null, anonymizedName,
 							null);

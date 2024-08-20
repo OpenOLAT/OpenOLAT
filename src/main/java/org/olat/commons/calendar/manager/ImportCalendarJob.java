@@ -28,7 +28,6 @@ package org.olat.commons.calendar.manager;
 import java.io.InputStream;
 import java.net.URLConnection;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
@@ -38,6 +37,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.crypto.RandomUtils;
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 
@@ -52,8 +52,6 @@ import org.quartz.Scheduler;
 public class ImportCalendarJob extends JobWithDB {
 	
 	private static final Logger log = Tracing.createLoggerFor(ImportCalendarJob.class);
-	
-	private static final Random random = new Random();
 	
 	@Override
 	public void executeWithDB(JobExecutionContext context) {
@@ -117,7 +115,7 @@ public class ImportCalendarJob extends JobWithDB {
 	
 	private void jitter(Scheduler scheduler)  {
 		try {
-			double numOfWaitingLoops =  random.nextDouble() * 180.0d;
+			double numOfWaitingLoops =  RandomUtils.secureRandom().nextDouble() * 180.0d;
 			long wait = Math.round(numOfWaitingLoops);
 			for(int i=0; i<wait; i++) {
 				if(scheduler.isShutdown()) {

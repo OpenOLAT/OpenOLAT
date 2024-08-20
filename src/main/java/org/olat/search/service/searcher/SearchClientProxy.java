@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import java.util.Set;
 
 import jakarta.jms.Connection;
@@ -47,13 +46,14 @@ import jakarta.jms.Queue;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.crypto.RandomUtils;
 import org.olat.search.QueryException;
 import org.olat.search.SearchResults;
 import org.olat.search.ServiceNotAvailableException;
@@ -242,8 +242,7 @@ public class SearchClientProxy implements SearchClient {
 	}
 	
 	private String createRandomString() {
-		Random random = new Random(System.currentTimeMillis());
-		long randomLong = random.nextLong();
+		long randomLong = RandomUtils.secureRandom().nextLong();
 		return Long.toHexString(randomLong);
 	}
 

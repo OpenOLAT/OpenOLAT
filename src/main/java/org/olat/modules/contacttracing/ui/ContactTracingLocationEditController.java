@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.crypto.RandomUtils;
 import org.olat.modules.contacttracing.ContactTracingDispatcher;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
@@ -218,7 +219,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
     }
 
     private void generateNumericQrID(UserRequest ureq) {
-        Random generator = new Random();
+        Random generator = RandomUtils.secureRandom();
         String qrId;
 
         do {

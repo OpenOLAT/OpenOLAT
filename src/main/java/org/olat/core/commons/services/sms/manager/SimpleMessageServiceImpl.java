@@ -21,7 +21,6 @@ package org.olat.core.commons.services.sms.manager;
 
 
 import java.util.List;
-import java.util.Random;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.sms.MessageLog;
@@ -38,6 +37,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.crypto.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +51,6 @@ import org.springframework.stereotype.Service;
 public class SimpleMessageServiceImpl implements SimpleMessageService {
 	
 	private static final Logger log = Tracing.createLoggerFor(SimpleMessageServiceImpl.class);
-	private static final Random rnd = new Random();
 	
 	@Autowired
 	private MessageLogDAO messageLogDao;
@@ -68,17 +67,7 @@ public class SimpleMessageServiceImpl implements SimpleMessageService {
 
 	@Override
 	public String generateToken() {
-		StringBuilder sb = new StringBuilder();
-		for(int i=0; i<6; i++) {
-			int n = Math.round(rnd.nextFloat() * 9.0f);
-			if(n < 0) {
-				n = 0;
-			} else if(n > 9) {
-				n = 9;
-			}
-			sb.append(n);
-		}
-		return sb.toString();
+		return PasswordGenerator.generateNumericalCode(6);
 	}
 
 	@Override

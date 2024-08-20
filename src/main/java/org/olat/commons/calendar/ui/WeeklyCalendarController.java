@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarNotificationManager;
 import org.olat.commons.calendar.CalendarUtils;
@@ -87,6 +86,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.crypto.PasswordGenerator;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
@@ -577,7 +577,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			if(config == null) {
 				config = calendarManager.createCalendarConfig(getIdentity(), callerKalendar);
 			} else if(!StringHelper.containsNonWhitespace(config.getToken())) {
-				config.setToken(RandomStringUtils.randomAlphanumeric(6));
+				config.setToken(PasswordGenerator.generateAlphaNumericToken(8));
 				config = calendarManager.saveCalendarConfig(config);
 			}
 			return Settings.getServerContextPathURI() + "/ical/" + type + "/" + config.getKey()
@@ -597,7 +597,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			config = configurations.get(0);
 		} else {
 			config = configurations.get(0);
-			config.setToken(RandomStringUtils.randomAlphanumeric(6));
+			config.setToken(PasswordGenerator.generateAlphaNumericToken(8));
 			config = calendarManager.saveCalendarConfig(config);
 		}
 		return Settings.getServerContextPathURI() + "/ical/" + calendarType + "/" + config.getKey() + "/" + config.getToken() + ".ics";

@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.Authentication;
@@ -57,6 +56,7 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.crypto.PasswordGenerator;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -815,7 +815,7 @@ public class FeedManagerImpl extends FeedManager {
 			Authentication authentication = securityManager.findAuthenticationByAuthusername(idKey, FeedMediaDispatcher.TOKEN_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 			if (authentication == null) {
 				// Create an authentication
-				String token = RandomStringUtils.randomAlphanumeric(6);
+				String token = PasswordGenerator.generateAlphaNumericToken(8);
 				authentication = securityManager.createAndPersistAuthentication(identity, FeedMediaDispatcher.TOKEN_PROVIDER, BaseSecurity.DEFAULT_ISSUER, null, idKey, token, null);
 			}
 			// If the repository entry allows guest access it is public, thus not

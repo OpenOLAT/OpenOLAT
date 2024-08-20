@@ -24,12 +24,11 @@
 */
 package org.olat.course.statistic;
 
-import java.util.Random;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.crypto.RandomUtils;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -45,8 +44,6 @@ public class UpdateStatisticsJob extends JobWithDB {
 	
 	private static final Logger log = Tracing.createLoggerFor(UpdateStatisticsJob.class);
 
-	/** the logging object used in this class **/
-	private final Random random = new Random();
 
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
@@ -64,7 +61,7 @@ public class UpdateStatisticsJob extends JobWithDB {
 	
 	private void jitter() {
 		try {
-			double millis = random.nextDouble() * 60.0d * 1000.0d;
+			double millis = RandomUtils.secureRandom().nextDouble() * 60.0d * 1000.0d;
 			long wait = Math.round(millis);
 			Thread.sleep(wait);
 		} catch (InterruptedException e) {

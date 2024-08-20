@@ -47,7 +47,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.CalendarManagedFlag;
@@ -72,6 +71,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.crypto.PasswordGenerator;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
@@ -423,7 +423,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	
 	@Override
 	public CalendarUserConfiguration createAggregatedCalendarConfig(String calendarType, Long calendarId, Identity identity) {
-		String token = RandomStringUtils.randomAlphanumeric(6);
+		String token = PasswordGenerator.generateAlphaNumericToken(8);
 		Kalendar calendar = new Kalendar(calendarId.toString(), calendarType);
 		return calendarUserConfigDao.createCalendarUserConfiguration(calendar, identity,
 				token, true, true);
@@ -431,7 +431,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 
 	@Override
 	public CalendarUserConfiguration createCalendarConfig(Identity identity, Kalendar calendar) {
-		String token = RandomStringUtils.randomAlphanumeric(6);
+		String token = PasswordGenerator.generateAlphaNumericToken(8);
 		return calendarUserConfigDao.createCalendarUserConfiguration(calendar, identity,
 				token, true, true);
 	}

@@ -47,6 +47,9 @@ public class AssignmentCalculator {
 	
 	private static final Logger logger = Tracing.createLoggerFor(AssignmentCalculator.class);
 
+	/**
+	 * No need to have a secure random generator, it's only to shuffle a collection.
+	 */
     private static final Random random = new Random();
 	
 	private final List<Task> allTasks;

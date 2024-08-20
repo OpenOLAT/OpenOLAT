@@ -27,7 +27,6 @@ package org.olat.admin;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.admin.site.AdminSite;
@@ -40,6 +39,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.crypto.PasswordGenerator;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -91,7 +91,7 @@ public class AdminModule extends AbstractSpringModule {
 	private void initializeSystemTokenProperty(String tokenPropertyName) {
 		Property p = propertyManager.findProperty(null, null, null, SYSTEM_PROPERTY_CATEGORY, tokenPropertyName);
 		if (p == null) {
-			String token = RandomStringUtils.randomAlphanumeric(8);
+			String token = PasswordGenerator.generateAlphaNumericToken(8);
 			p = propertyManager.createPropertyInstance(null, null, null, SYSTEM_PROPERTY_CATEGORY, tokenPropertyName, null, null, token, null);
 			propertyManager.saveProperty(p);
 		}

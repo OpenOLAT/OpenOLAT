@@ -46,6 +46,7 @@ import org.olat.core.gui.media.ExcelMediaResource;
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.crypto.RandomUtils;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.model.ContactTracingLocationImpl;
@@ -230,7 +231,7 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 		}
 		
 		private void generateNumericQrID(List<ContactTracingLocation> newLocations, ContactTracingLocation location) {
-	        Random generator = new Random();
+	        Random generator = RandomUtils.secureRandom();
 	        String qrId;
 
 	        do {

@@ -19,6 +19,8 @@
  */
 package org.olat.core.util.crypto;
 
+import java.util.Random;
+
 /**
  * 
  * Initial date: 14 janv. 2021<br>
@@ -38,15 +40,20 @@ public class PasswordGenerator {
 		return generate(NUMERICAL, length);
 	}
 	
+	public static final String generateAlphaNumericToken(int length) {
+		return generate(CHARSET, length);
+	}
+	
 	public static final String generatePassword(int length) {
 		return generate(CHARSET, length);
 	}
 	
 	private static final String generate(String set, int length) {
+		Random secRnd = RandomUtils.secureRandom();
 		StringBuilder sb = new StringBuilder();
 		int countNum = 0;
 		for (int i = 0; i < length; i++) {
-			double dPos = Math.random() * set.length();
+			double dPos = secRnd.nextDouble() * set.length();
 			long pos = Math.round(dPos);
 			if(pos >= set.length()) {
 				pos = set.length() - 1l;
@@ -60,7 +67,7 @@ public class PasswordGenerator {
 		
 		//make a OLAT-compatible password
 		for (int i = countNum; i < 2; i++) {
-			double dPos = Math.random() * 10;
+			double dPos = secRnd.nextDouble() * 10;
 			long pos = Math.round(dPos);
 			if(pos >= set.length()) {
 				pos = set.length() - 1l;

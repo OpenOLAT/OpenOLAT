@@ -25,13 +25,13 @@
 
 package org.olat.core.commons.services.notifications;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.util.crypto.PasswordGenerator;
 
 /**
  * Description:<BR>
@@ -73,7 +73,7 @@ public class PersonalRSSUtil {
 		Authentication auth = secManager.findAuthentication(identity, RSS_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		if (auth == null) {
 			// no token found - create one
-			 token = RandomStringUtils.randomAlphanumeric(6);
+			 token = PasswordGenerator.generateAlphaNumericToken(8);
 			 secManager.createAndPersistAuthentication(identity, RSS_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER, null, identity.getName(), token, null);
 		} else {
 			token = auth.getCredential();

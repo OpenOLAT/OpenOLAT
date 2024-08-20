@@ -29,7 +29,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -55,6 +54,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.crypto.RandomUtils;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -326,7 +326,7 @@ public class TaskController extends BasicController {
 		}
 		if (availableTasks.isEmpty())	return null; // no more task available
 		
-		String task = availableTasks.get((new Random()).nextInt(availableTasks.size()));
+		String task = availableTasks.get(RandomUtils.secureRandom().nextInt(availableTasks.size()));
 		setAssignedTask(identity, task); // assignes the file to this identity
 		if (!samplingWithReplacement)
 			markTaskAsSampled(task); // remove the file from available files

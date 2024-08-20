@@ -24,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.crypto.RandomUtils;
 import org.olat.core.util.xml.XMLFactories;
 import org.olat.restapi.system.MonitoringService.Statistics;
 import org.olat.restapi.system.vo.SessionsVO;
@@ -63,7 +63,6 @@ import net.fortuna.ical4j.util.TimeZones;
 public class ProcSamplerJob extends QuartzJobBean {
 
 	private static final Logger log = Tracing.createLoggerFor(ProcSamplerJob.class);
-	private final Random random = new Random();
 
 	@Override
 	protected void executeInternal(JobExecutionContext context)  {
@@ -85,7 +84,7 @@ public class ProcSamplerJob extends QuartzJobBean {
 	
 	private void jitter() {
 		try {
-			double millis = random.nextDouble() * 6000.0d;
+			double millis = RandomUtils.secureRandom().nextDouble() * 6000.0d;
 			long wait = Math.round(millis);
 			Thread.sleep(wait);
 		} catch (InterruptedException e) {

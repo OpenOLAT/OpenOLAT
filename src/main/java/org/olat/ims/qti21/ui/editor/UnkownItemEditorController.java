@@ -24,7 +24,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -42,6 +41,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.crypto.RandomUtils;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21Constants;
@@ -163,7 +163,7 @@ public class UnkownItemEditorController extends FormBasicController {
                 itemSessionControllerSettings, itemProcessingMap, itemSessionState);
         sessionController.addNotificationListener(new NotificationRecorder(NotificationLevel.ERROR));
         
-        Long randomSeed = new Random().nextLong();
+        Long randomSeed = RandomUtils.secureRandom().nextLong();
         sessionController.setRandomSeed(randomSeed);
         sessionController.initialize(new Date());
         sessionController.performTemplateProcessing(new Date());
