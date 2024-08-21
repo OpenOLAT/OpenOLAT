@@ -52,6 +52,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.config.ui.AssessmentResetController.AssessmentResetEvent;
+import org.olat.course.editor.overview.OverviewListController.OverviewListOptions;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CourseNode;
@@ -73,7 +74,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseScoreController extends FormBasicController {
 	
 	public static final String SCORE_VALUE_NONE = "options.score.points.none";
-	public static final String PASSED_NONE = "none";
+	public static final String PASSED_BY_PASSED_ENABLED = "passed-by-passed-enabled";
+	
+	private static final OverviewListOptions PROGRESS_OPTIONS = new OverviewListOptions(true, false, false, false, false, AssessmentObligation.mandatory, false, false);
+	private static final OverviewListOptions PASSED_OPTIONS = new OverviewListOptions(true, false, false, true, true, null, true, false);
+	private static final OverviewListOptions SCORE_OPTIONS = new OverviewListOptions(true, false, false, true, true, null, false, true);
 
 	private FormLayoutContainer settingsCont;
 	private SingleSelection scoreEl;
@@ -81,6 +86,7 @@ public class CourseScoreController extends FormBasicController {
 	private FormToggle passedEnableEl;
 	private MultipleSelectionElement coachesCanEl;
 	private MultipleSelectionElement passedByProgressEl;
+	private MultipleSelectionElement passedByPassedEnableEl;
 	private SingleSelection passedByPassedEl;
 	private MultipleSelectionElement passedByScoreEl;
 	
@@ -224,7 +230,6 @@ public class CourseScoreController extends FormBasicController {
 		passedEnableInfosEl.setInformations(translate("options.passed.infos"));
 		
 		passedLabelEl = uifactory.addStaticTextElement("options.passed", "options.passed", "", settingsCont);
-		passedLabelEl.setHelpTextKey("options.passed.help", null);
 		
 		SelectionValues passedByProgressSV = new SelectionValues();
 		passedByProgressSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_PROGRESS, translate("options.passed.progress")));
@@ -244,20 +249,26 @@ public class CourseScoreController extends FormBasicController {
 		passedByProgressElCont.contextPut("linkId", "options.passed.by.progress.rightAddOn");
 		passedByProgressElCont.contextPut("msg", translate("options.passed.by.progress.explain", Integer.toString(infos.getNumOfMandatoryElements())));
 		
+		SelectionValues passedByPassedEnableSV = new SelectionValues();
+		passedByPassedEnableSV.add(SelectionValues.entry(PASSED_BY_PASSED_ENABLED, translate("options.passed.by.passed.elements")));
+		passedByPassedEnableEl = uifactory.addCheckboxesVertical("options.passed.by.passed", settingsCont, passedByPassedEnableSV.keys(), passedByPassedEnableSV.values(), 1);
+		passedByPassedEnableEl.addActionListener(FormEvent.ONCHANGE);
+		if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)
+				|| moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER)) {
+			passedByPassedEnableEl.select(PASSED_BY_PASSED_ENABLED, true);	
+		}
+		
 		SelectionValues passedByPassedSV = new SelectionValues();
-		passedByPassedSV.add(SelectionValues.entry(PASSED_NONE, translate("options.passed.no")));
 		passedByPassedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_ALL, translate("options.passed.all")));
 		passedByPassedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_NUMBER, translate("options.passed.number")));
-		passedByPassedEl = uifactory.addDropdownSingleselect("options.passed.by.passed", settingsCont, passedByPassedSV.keys(), passedByPassedSV.values());
+		passedByPassedEl = uifactory.addDropdownSingleselect("options.passed.by.passed.rule", settingsCont, passedByPassedSV.keys(), passedByPassedSV.values());
 		passedByPassedEl.addActionListener(FormEvent.ONCHANGE);
 		passedByPassedEl.setEnabled(editable);
-		passedByPassedEl.setVisible(passedEnableEl.isOn());
+		passedByPassedEl.setVisible(passedEnableEl.isOn() && passedByPassedEnableEl.isAtLeastSelected(1));
 		if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)) {
 			passedByPassedEl.select(STCourseNode.CONFIG_PASSED_ALL, true);
 		} else if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER)) {
 			passedByPassedEl.select(STCourseNode.CONFIG_PASSED_NUMBER, true);	
-		} else {
-			passedByPassedEl.select(PASSED_NONE, true);	
 		}
 		
 		String passedNumberCut = moduleConfig.has(STCourseNode.CONFIG_PASSED_NUMBER_CUT)
@@ -276,17 +287,16 @@ public class CourseScoreController extends FormBasicController {
 		passedNumberCutOverviewCont.setElementCssClass("o_block_move_up");
 		passedNumberCutOverviewCont.contextPut("linkId", "number.rightAddOn");
 		String[] numberCutOverviewArgs = new String[] {
-			Integer.toString(infos.getNumOfMandatoryElements() + infos.getNumOfOptionalElements()),
+			Integer.toString(infos.getNumOfPassedElements()),
 			Integer.toString(infos.getNumOfMandatoryElements()),
 			Integer.toString(infos.getNumOfOptionalElements()),
-			Integer.toString(infos.getNumOfExcludedElements())
+			Integer.toString(infos.getNumOfIgnoreInCourseAssessment())
 		};
 		passedNumberCutOverviewCont.contextPut("msg", translate("options.passed.number.cut.explain", numberCutOverviewArgs));
 		
 		SelectionValues passedByScoreSV = new SelectionValues();
 		passedByScoreSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_POINTS, translate("options.passed.by.points")));
 		passedByScoreEl = uifactory.addCheckboxesVertical("options.passed.by.score", settingsCont, passedByScoreSV.keys(), passedByScoreSV.values(), 1);
-		passedByScoreEl.setHelpTextKey("options.passed.help", null);
 		passedByScoreEl.addActionListener(FormEvent.ONCHANGE);
 		passedByScoreEl.setEnabled(editable);
 		passedByScoreEl.setVisible(passedEnableEl.isOn());
@@ -310,6 +320,8 @@ public class CourseScoreController extends FormBasicController {
 		passedPointsCutOverviewCont.contextPut("linkId", "points.rightAddOn");
 		String maxScore = AssessmentHelper.getRoundedScore(infos.getMaxScore());
 		passedPointsCutOverviewCont.contextPut("msg", translate("options.passed.points.cut.explain", maxScore));
+		
+		uifactory.addSpacerElement("spacer-coach-can", settingsCont, false);
 		
 		// Coach rights
 		SelectionValues coachesCanSV = new SelectionValues();
@@ -344,12 +356,11 @@ public class CourseScoreController extends FormBasicController {
 		passedByPassedEl.setVisible(passedEnabled);
 		passedByScoreEl.setVisible(passedEnabled);
 
-		if(passedEnabled && !passedByPassedEl.isOneSelected()) {
-			passedByPassedEl.select(PASSED_NONE, true);
-		}
+		boolean passedByPassedEnabled = passedByPassedEnableEl.isAtLeastSelected(1);				
+		passedByPassedEl.setVisible(passedEnabled && passedByPassedEnabled);
 			
 		if(passedEnabled &&  passedByProgressEl.getSelectedKeys().isEmpty() 
-				&& (!passedByPassedEl.isOneSelected() || passedByPassedEl.isSelected(0))
+				&& (!passedByPassedEl.isVisible() || !passedByPassedEl.isOneSelected())
 				&& passedByScoreEl.getSelectedKeys().isEmpty() ) {
 			passedByProgressEl.select(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 		}
@@ -382,7 +393,11 @@ public class CourseScoreController extends FormBasicController {
 		passedEnableInfosEl.setVisible(passedEnabled);
 		passedLabelEl.setVisible(passedEnabled);
 		
-		boolean passedNumber = passedEnabled && passedByPassedEl.isOneSelected() && STCourseNode.CONFIG_PASSED_NUMBER.equals(passedByPassedEl.getSelectedKey());
+		boolean passedByPassedEnabled = passedByPassedEnableEl.isAtLeastSelected(1);				
+		passedByPassedEl.setVisible(passedEnabled && passedByPassedEnabled);
+		
+		boolean passedNumber = passedEnabled && passedByPassedEnabled
+				&& passedByPassedEl.isOneSelected() && STCourseNode.CONFIG_PASSED_NUMBER.equals(passedByPassedEl.getSelectedKey());
 		passedNumberCutEl.setVisible(passedNumber);
 		passedNumberCutOverviewCont.setVisible(passedEnabled);
 		
@@ -403,10 +418,15 @@ public class CourseScoreController extends FormBasicController {
 			updatePassedUI();
 			updateUI();
 		} else if (source == scoreEnableEl || source == scoreEl || source == coachesCanEl
-				|| source == passedByProgressEl || source == passedByPassedEl || source == passedByScoreEl) {
+				|| source == passedByProgressEl || source == passedByPassedEnableEl
+				|| source == passedByPassedEl || source == passedByScoreEl) {
 			updateUI();
-		} else if(passedPointsCutOverviewButton == source || passedNumberCutOverviewButton == source || passedByProgressButton == source) {
-			doOpenOverviewCourseElements(ureq);
+		} else if(passedByProgressButton == source) {
+			doOpenOverviewCourseElements(ureq, PROGRESS_OPTIONS);
+		} else if(passedNumberCutOverviewButton == source) {
+			doOpenOverviewCourseElements(ureq, PASSED_OPTIONS);
+		} else if(passedPointsCutOverviewButton == source) {
+			doOpenOverviewCourseElements(ureq, SCORE_OPTIONS);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -506,9 +526,9 @@ public class CourseScoreController extends FormBasicController {
 		doConfirmSetting(ureq);
 	}
 	
-	private void doOpenOverviewCourseElements(UserRequest ureq) {
+	private void doOpenOverviewCourseElements(UserRequest ureq, OverviewListOptions listOptions) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		overviewCtrl = new CourseOverviewController(ureq, getWindowControl(), course);
+		overviewCtrl = new CourseOverviewController(ureq, getWindowControl(), course, listOptions);
 		listenTo(overviewCtrl);
 		
 		overviewCmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -595,7 +615,8 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_PROGRESS);
 		}
 		
-		boolean passedAll = passedEnableEl.isOn() && passedByPassedEl.isOneSelected() && STCourseNode.CONFIG_PASSED_ALL.equals(passedByPassedEl.getSelectedKey());
+		boolean passedAll = passedEnableEl.isOn() && passedByPassedEnableEl.isAtLeastSelected(1)
+				&& passedByPassedEl.isOneSelected() && STCourseNode.CONFIG_PASSED_ALL.equals(passedByPassedEl.getSelectedKey());
 		if (passedAll) {
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
 			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
@@ -604,7 +625,8 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_ALL);
 		}
 		
-		boolean passedNumber = passedEnableEl.isOn() && passedByPassedEl.isOneSelected() && STCourseNode.CONFIG_PASSED_NUMBER.equals(passedByPassedEl.getSelectedKey());
+		boolean passedNumber = passedEnableEl.isOn() && passedByPassedEnableEl.isAtLeastSelected(1)
+				&& passedByPassedEl.isOneSelected() && STCourseNode.CONFIG_PASSED_NUMBER.equals(passedByPassedEl.getSelectedKey());
 		if (passedNumber) {
 			int numberCut = Integer.parseInt(passedNumberCutEl.getValue());
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_NUMBER, true);
@@ -645,7 +667,7 @@ public class CourseScoreController extends FormBasicController {
 				CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
 				LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(course), courseNode);
-				visitor.visit(learningPathConfigs, assessmentConfig);
+				visitor.visit(courseNode, learningPathConfigs, assessmentConfig);
 			}
 		}, course.getRunStructure().getRootNode(), true)
 			.visitAll();
@@ -655,7 +677,8 @@ public class CourseScoreController extends FormBasicController {
 	private static class CourseElementsInfos {
 		private int numOfMandatoryElements = 0;
 		private int numOfOptionalElements = 0;
-		private int numOfExcludedElements = 0;
+		private int numOfPassedElements = 0;
+		private int numOfIgnoreInCourseAssessment = 0;
 		
 		private double maxScore = 0.0d;
 		
@@ -667,25 +690,37 @@ public class CourseScoreController extends FormBasicController {
 			return numOfOptionalElements;
 		}
 
-		public int getNumOfExcludedElements() {
-			return numOfExcludedElements;
+		
+		public int getNumOfPassedElements() {
+			return numOfPassedElements;
+		}
+		
+		public int getNumOfIgnoreInCourseAssessment() {
+			return numOfIgnoreInCourseAssessment;
 		}
 		
 		public double getMaxScore() {
 			return maxScore;
 		}
 
-		public void visit(LearningPathConfigs learningPathConfigs, AssessmentConfig assessmentConfig) {
+		public void visit(CourseNode courseNode, LearningPathConfigs learningPathConfigs, AssessmentConfig assessmentConfig) {
 			if (AssessmentObligation.mandatory.equals(learningPathConfigs.getObligation())) {
 				numOfMandatoryElements++;
 			} else if (AssessmentObligation.optional.equals(learningPathConfigs.getObligation())) {
 				numOfOptionalElements++;
-			} else if (AssessmentObligation.excluded.equals(learningPathConfigs.getObligation())) {
-				numOfExcludedElements++;
 			}
 			
-			if (Mode.none != assessmentConfig.getScoreMode()) {
-				maxScore += assessmentConfig.getMaxScore() != null ? assessmentConfig.getMaxScore().doubleValue(): 0.0d;
+			if(assessmentConfig.isAssessable() && !(courseNode instanceof STCourseNode)) {
+				if(assessmentConfig.ignoreInCourseAssessment()) {
+					numOfIgnoreInCourseAssessment++;
+				}
+				if(Mode.none != assessmentConfig.getPassedMode()) {
+					numOfPassedElements++;
+				}
+				if (Mode.none != assessmentConfig.getScoreMode()
+						&& !assessmentConfig.ignoreInCourseAssessment()) {
+					maxScore += assessmentConfig.getMaxScore() != null ? assessmentConfig.getMaxScore().doubleValue(): 0.0d;
+				}
 			}
 		}
 	}
@@ -710,7 +745,5 @@ public class CourseScoreController extends FormBasicController {
 		public boolean isMandatory() {
 			return mandatory;
 		}
-
 	}
-
 }

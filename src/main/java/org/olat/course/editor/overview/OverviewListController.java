@@ -50,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -71,6 +72,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.duedate.ui.DueDateConfigCellRenderer;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.SelectEvent;
@@ -103,12 +105,18 @@ public class OverviewListController extends FormBasicController implements Flexi
 	private static final String ALL_TAB_ID = "All";
 	private static final String ASSESSABLE_TAB_ID = "Assessable";
 	private static final String FILTER_ASSESSABLE = "assessable";
+	private static final String FILTER_OBLIGATION = "execution";
+	private static final String FILTER_ASSESSMENT = "assessment";
 	private static final String FILTER_INCLUDE_IN_COURSE_ASSESSMENT = "in-course-assessment";
+	private static final String FILTER_ASSESSMENT_WITH_SCORE = "withScore";
+	private static final String FILTER_ASSESSMENT_WITH_PASSED = "withPassed";
 	
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab assessableTab;
 	private FlexiTableElement tableEl;
 	private OverviewDataModel dataModel;
+	private FlexiTableMultiSelectionFilter executionFilter;
+	private FlexiTableMultiSelectionFilter assessmentFilter;
 	private FlexiTableOneClickSelectionFilter assessableFilter;
 	private FlexiTableOneClickSelectionFilter includeInCourseAssessmentFilter;
 	private FormLink bulkLink;
@@ -264,6 +272,12 @@ public class OverviewListController extends FormBasicController implements Flexi
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course-editor-overview");
 		
+		initFilterValues();
+
+		loadModel();
+	}
+	
+	protected void initFilterValues() {
 		// Set some default values for the filters before loading the model
 		if(listOptions.isDefaultValueAssessableFilter()) {
 			tableEl.setFilterValue(assessableFilter, FILTER_ASSESSABLE);
@@ -271,8 +285,19 @@ public class OverviewListController extends FormBasicController implements Flexi
 		if(listOptions.isDefaultValueIncludeInCourseAssessmentFilter()) {
 			tableEl.setFilterValue(includeInCourseAssessmentFilter, FILTER_INCLUDE_IN_COURSE_ASSESSMENT);
 		}
-
-		loadModel();
+		if(listOptions.getDefaultObligation() != null) {
+			tableEl.setFilterValue(executionFilter, listOptions.getDefaultObligation().name());
+		}
+		if(listOptions.isDefaultAssessmentWithPassed() || listOptions.isDefaultAssessmentWithScore()) {
+			List<String> assessmentFilterValues = new ArrayList<>(2);
+			if(listOptions.isDefaultAssessmentWithPassed()) {
+				assessmentFilterValues.add(FILTER_ASSESSMENT_WITH_PASSED);
+			}
+			if(listOptions.isDefaultAssessmentWithScore()) {
+				assessmentFilterValues.add(FILTER_ASSESSMENT_WITH_SCORE);
+			}
+			tableEl.setFilterValue(assessmentFilter, assessmentFilterValues);
+		}
 	}
 	
 	protected void initFilters() {
@@ -289,7 +314,22 @@ public class OverviewListController extends FormBasicController implements Flexi
 		includeInCourseAssessmentFilter = new FlexiTableOneClickSelectionFilter(translate("filter.in.course.assessment"),
 				FILTER_INCLUDE_IN_COURSE_ASSESSMENT, includeValues, true);
 		filters.add(includeInCourseAssessmentFilter);
-
+		
+		SelectionValues executionValues = new SelectionValues();
+		executionValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
+		executionValues.add(SelectionValues.entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
+		executionValues.add(SelectionValues.entry(AssessmentObligation.excluded.name(), translate("config.obligation.excluded")));
+		executionFilter = new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
+				FILTER_OBLIGATION, executionValues, true);
+		filters.add(executionFilter);
+		
+		SelectionValues assessmentValues = new SelectionValues();
+		assessmentValues.add(SelectionValues.entry(FILTER_ASSESSMENT_WITH_PASSED, translate("filter.assessment.with.passed")));
+		assessmentValues.add(SelectionValues.entry(FILTER_ASSESSMENT_WITH_SCORE, translate("filter.assessment.with.score")));
+		assessmentFilter = new FlexiTableMultiSelectionFilter(translate("filter.assessment"),
+				FILTER_ASSESSMENT, assessmentValues, true);
+		filters.add(assessmentFilter);
+		
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
@@ -325,15 +365,23 @@ public class OverviewListController extends FormBasicController implements Flexi
 	}
 	
 	private void filterModel(List<OverviewRow> rows) {
-		boolean filterAssessable = isFilterSelected(FILTER_ASSESSABLE);
-		boolean filterIncludeInCourseAssessment = isFilterSelected(FILTER_INCLUDE_IN_COURSE_ASSESSMENT);
+		final boolean filterAssessable = isFilterSelected(FILTER_ASSESSABLE);
+		final List<AssessmentObligation> filterObligations = getFilterObligations();
+		final boolean filterWithScore = getFilterWithAssessment(FILTER_ASSESSMENT_WITH_SCORE);
+		final boolean filterWithPassed = getFilterWithAssessment(FILTER_ASSESSMENT_WITH_PASSED);
+		final boolean filterIncludeInCourseAssessment = isFilterSelected(FILTER_INCLUDE_IN_COURSE_ASSESSMENT);
 		
-		if(filterAssessable || filterIncludeInCourseAssessment) {
+		if(filterAssessable || filterIncludeInCourseAssessment || !filterObligations.isEmpty()
+				|| filterWithPassed || filterWithScore) {
 			Set<FlexiTreeTableNode> toRetains = new HashSet<>();
 			
 			for(OverviewRow row:rows) {
 				if((!filterAssessable || row.getAssessmentConfig().isAssessable())
-						&& (!filterIncludeInCourseAssessment || acceptIncludeInCourseAssessment(row))) {
+						&& (!filterIncludeInCourseAssessment || acceptIncludeInCourseAssessment(row))
+						&& (filterObligations.isEmpty() || acceptObligations(row, filterObligations))
+						&& (!filterWithPassed || acceptAssessmentWithPassed(row))
+						&& (!filterWithScore || acceptAssessmentWithScore(row))
+				) {
 					for(FlexiTreeTableNode aRow=row; aRow != null; aRow = aRow.getParent()) {
 						toRetains.add(aRow);
 					}
@@ -356,12 +404,49 @@ public class OverviewListController extends FormBasicController implements Flexi
 	}
 	
 	private boolean isFilterSelected(String id) {
-		FlexiTableFilter assessableFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), id);
-		if (assessableFilter != null) {
-			List<String> filterValues = ((FlexiTableExtendedFilter)assessableFilter).getValues();
-			if(filterValues != null && filterValues.contains(id)) {
-				return true;
+		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), id);
+		if (filter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)filter).getValues();
+			return filterValues != null && filterValues.contains(id);
+		}
+		return false;
+	}
+	
+	private boolean acceptObligations(OverviewRow row, List<AssessmentObligation> filterObligations) {
+		AssessmentObligation obligation = row.getObligation();
+		return obligation != null && filterObligations.contains(obligation);
+	}
+	
+	private List<AssessmentObligation> getFilterObligations() {
+		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_OBLIGATION);
+		if (filter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)filter).getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				List<AssessmentObligation> filterObligations = new ArrayList<>(filterValues.size());
+				for(String filterValue:filterValues) {
+					filterObligations.add(AssessmentObligation.valueOf(filterValue));
+				}
+				return filterObligations;
 			}
+		}
+		return List.of();
+	}
+	
+	private boolean acceptAssessmentWithPassed(OverviewRow row) {
+		AssessmentConfig assessmentConfig = row.getAssessmentConfig();
+		return assessmentConfig != null && Mode.none != assessmentConfig.getPassedMode();
+	}
+	
+	private boolean acceptAssessmentWithScore(OverviewRow row) {
+		AssessmentConfig assessmentConfig = row.getAssessmentConfig();
+		return assessmentConfig != null && Mode.none != assessmentConfig.getScoreMode();
+	}
+
+	private boolean getFilterWithAssessment(String with) {
+		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ASSESSMENT);
+		if (filter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)filter).getValues();
+			return filterValues != null && filterValues.contains(with);
 		}
 		return false;
 	}
@@ -394,6 +479,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 			CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
 			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 			row.setDuration(learningPathConfigs.getDuration());
+			row.setObligation(learningPathConfigs.getObligation());
 			row.setTranslatedObligation(getTranslatedObligation(learningPathConfigs));
 			row.setStart(learningPathConfigs.getStartDateConfig());
 			row.setEnd(learningPathConfigs.getEndDateConfig());
@@ -668,18 +754,26 @@ public class OverviewListController extends FormBasicController implements Flexi
 		private final boolean showLearningTimeDefault;
 		private final boolean defaultValueAssessableFilter;
 		private final boolean defaultValueIncludeInCourseAssessmentFilter;
+		private final boolean defaultAssessmentWithPassed;
+		private final boolean defaultAssessmentWithScore;
+		
+		private final AssessmentObligation defaultObligation;
 		
 		public OverviewListOptions(boolean showMaxScoreDefault, boolean showShortTitleDefault, boolean showLearningTimeDefault,
-				boolean defaultValueAssessableFilter, boolean defaultValueIncludeInCourseAssessmentFilter) {
+				boolean defaultValueAssessableFilter, boolean defaultValueIncludeInCourseAssessmentFilter,
+				AssessmentObligation defaultObligation, boolean defaultAssessmentWithPassed, boolean defaultAssessmentWithScore) {
 			this.showMaxScoreDefault = showMaxScoreDefault;
 			this.showShortTitleDefault = showShortTitleDefault;
 			this.showLearningTimeDefault = showLearningTimeDefault;
 			this.defaultValueAssessableFilter = defaultValueAssessableFilter;
 			this.defaultValueIncludeInCourseAssessmentFilter = defaultValueIncludeInCourseAssessmentFilter;
+			this.defaultObligation = defaultObligation;
+			this.defaultAssessmentWithPassed = defaultAssessmentWithPassed;
+			this.defaultAssessmentWithScore = defaultAssessmentWithScore;
 		}
 		
 		public static OverviewListOptions defaultOptions() {
-			return new OverviewListOptions(false, true, true, false, false);
+			return new OverviewListOptions(false, true, true, false, false, null, false, false);
 		}
 
 		public boolean isShowMaxScoreDefault() {
@@ -700,6 +794,18 @@ public class OverviewListController extends FormBasicController implements Flexi
 
 		public boolean isDefaultValueIncludeInCourseAssessmentFilter() {
 			return defaultValueIncludeInCourseAssessmentFilter;
+		}
+		
+		public boolean isDefaultAssessmentWithPassed() {
+			return defaultAssessmentWithPassed;
+		}
+
+		public boolean isDefaultAssessmentWithScore() {
+			return defaultAssessmentWithScore;
+		}
+
+		public AssessmentObligation getDefaultObligation() {
+			return defaultObligation;
 		}
 	}
 }
