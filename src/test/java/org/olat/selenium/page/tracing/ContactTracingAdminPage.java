@@ -80,32 +80,38 @@ public class ContactTracingAdminPage {
 	 * @return
 	 */
 	public String addLocation(String reference, String title, String building) {
-		By addLocationBy = By.cssSelector("div.o_button_group a.o_sel_contacttracing_add_location");
-		OOGraphene.waitElement(addLocationBy, browser);
-		browser.findElement(addLocationBy).click();
-		OOGraphene.waitModalDialog(browser);
-		
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contacttracing_location"), browser);
-		
-		if(StringHelper.containsNonWhitespace(reference)) {
-			By refBy = By.cssSelector("fieldset.o_sel_contacttracing_location div.o_sel_contacttracing_ref input[type='text']");
-			browser.findElement(refBy).sendKeys(reference);
+		String url;
+		try {
+			By addLocationBy = By.cssSelector("div.o_button_group a.o_sel_contacttracing_add_location");
+			OOGraphene.waitElement(addLocationBy, browser);
+			browser.findElement(addLocationBy).click();
+			OOGraphene.waitModalDialog(browser);
+			
+			OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contacttracing_location"), browser);
+			
+			if(StringHelper.containsNonWhitespace(reference)) {
+				By refBy = By.cssSelector("fieldset.o_sel_contacttracing_location div.o_sel_contacttracing_ref input[type='text']");
+				browser.findElement(refBy).sendKeys(reference);
+			}
+			if(StringHelper.containsNonWhitespace(title)) {
+				By titleBy = By.cssSelector("fieldset.o_sel_contacttracing_location div.o_sel_contacttracing_title input[type='text']");
+				browser.findElement(titleBy).sendKeys(title);
+			}
+			if(StringHelper.containsNonWhitespace(building)) {
+				By buildingBy = By.cssSelector("fieldset.o_sel_contacttracing_location div.o_sel_contacttracing_building input[type='text']");
+				browser.findElement(buildingBy).sendKeys(building);
+			}
+			
+			By urlBy = By.xpath("//fieldset[contains(@class,'o_sel_contacttracing_location')]//div[contains(@class,'o_sel_contacttracing_qrid')]//div[contains(@class,'o_form_example')]");
+			url = browser.findElement(urlBy).getText().trim();
+			
+			By saveBy = By.cssSelector("fieldset.o_sel_contacttracing_location button.btn.btn-primary");
+			browser.findElement(saveBy).click();
+			OOGraphene.waitModalDialogDisappears(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("ContactTracingAddLocation", browser);
+			throw e;
 		}
-		if(StringHelper.containsNonWhitespace(title)) {
-			By titleBy = By.cssSelector("fieldset.o_sel_contacttracing_location div.o_sel_contacttracing_title input[type='text']");
-			browser.findElement(titleBy).sendKeys(title);
-		}
-		if(StringHelper.containsNonWhitespace(building)) {
-			By buildingBy = By.cssSelector("fieldset.o_sel_contacttracing_location div.o_sel_contacttracing_building input[type='text']");
-			browser.findElement(buildingBy).sendKeys(building);
-		}
-		
-		By urlBy = By.xpath("//fieldset[contains(@class,'o_sel_contacttracing_location')]//div[contains(@class,'o_sel_contacttracing_qrid')]//div[contains(@class,'o_form_example')]");
-		String url = browser.findElement(urlBy).getText().trim();
-		
-		By saveBy = By.cssSelector("fieldset.o_sel_contacttracing_location button.btn.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitModalDialogDisappears(browser);
 		return url;
 	}
 	
