@@ -53,6 +53,8 @@ import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.CourseNodeBadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,7 +75,8 @@ public class LTIRunSegmentController extends BasicController implements Activate
 	private Link overviewLink;
 	private Link participantsLink;
 	private Link remindersLink;
-	
+	private Link badgesLink;
+
 	private final VelocityContainer mainVC;
 	private final CourseNodeSegmentPrefs segmentPrefs;
 	private final SegmentViewComponent segmentView;
@@ -84,6 +87,7 @@ public class LTIRunSegmentController extends BasicController implements Activate
 	private TooledStackedPanel participantsPanel;
 	private AssessmentCourseNodeController participantsCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
+	private CourseNodeBadgesController badgesCtrl;
 
 	private final UserCourseEnvironment userCourseEnv;
 	private final BasicLTICourseNode courseNode;
@@ -92,7 +96,9 @@ public class LTIRunSegmentController extends BasicController implements Activate
 	private LTI13Service lti13Service;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
+
 	public LTIRunSegmentController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			BasicLTICourseNode courseNode) {
 		super(ureq, wControl);
@@ -136,11 +142,12 @@ public class LTIRunSegmentController extends BasicController implements Activate
 		// Content
 		contentLink = LinkFactory.createLink("segment.content", mainVC, this);
 		segmentView.addSegment(contentLink, true);
-		
+
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_REMINDERS), null);
-			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, courseNode.getReminderProvider(courseEntry, false));
 			listenTo(remindersCtrl);
 			if (remindersCtrl.hasDataOrActions()) {
@@ -148,7 +155,16 @@ public class LTIRunSegmentController extends BasicController implements Activate
 				segmentView.addSegment(remindersLink, false);
 			}
 		}
-		
+
+		// Badges
+		if (openBadgesManager.showBadgesRunSegment(courseEntry, courseNode, userCourseEnv)) {
+			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			listenTo(badgesCtrl);
+
+			badgesLink = LinkFactory.createLink("segment.badges", mainVC, this);
+			segmentView.addSegment(badgesLink, false);
+		}
+
 		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);
@@ -186,6 +202,8 @@ public class LTIRunSegmentController extends BasicController implements Activate
 					doOpenParticipants(ureq, true);
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
+				} else if (clickedLink == badgesLink) {
+					doOpenBadges();
 				}
 			}
 		}
@@ -281,4 +299,10 @@ public class LTIRunSegmentController extends BasicController implements Activate
 		}
 	}
 
+	private void doOpenBadges() {
+		if (badgesLink != null) {
+			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
+			segmentView.select(badgesLink);
+		}
+	}
 }

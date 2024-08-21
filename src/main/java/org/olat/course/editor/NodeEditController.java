@@ -180,7 +180,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			reminderInitiallyEnabled = reminderCtrl.hasDataOrActions();
 		}
 
-		if (openBadgesManager.isEnabled(courseEntry, courseNode)) {
+		if (openBadgesManager.showBadgesEditTab(courseEntry, courseNode)) {
 			RepositoryManager rm = RepositoryManager.getInstance();
 			RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, courseEntry);
 

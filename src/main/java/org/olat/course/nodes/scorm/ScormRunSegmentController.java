@@ -48,6 +48,8 @@ import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.CourseNodeBadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,7 +70,8 @@ public class ScormRunSegmentController extends BasicController implements Activa
 	private Link overviewLink;
 	private Link participantsLink;
 	private Link remindersLink;
-	
+	private Link badgesLink;
+
 	private final VelocityContainer mainVC;
 	private final CourseNodeSegmentPrefs segmentPrefs;
 	private final SegmentViewComponent segmentView;
@@ -79,13 +82,16 @@ public class ScormRunSegmentController extends BasicController implements Activa
 	private TooledStackedPanel participantsPanel;
 	private AssessmentCourseNodeController participantsCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
+	private CourseNodeBadgesController badgesCtrl;
 
 	private final UserCourseEnvironment userCourseEnv;
 	private final ScormCourseNode courseNode;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
+
 	public ScormRunSegmentController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			ScormCourseNode courseNode) {
 		super(ureq, wControl);
@@ -129,11 +135,12 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		// Content
 		contentLink = LinkFactory.createLink("segment.content", mainVC, this);
 		segmentView.addSegment(contentLink, true);
-		
+
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_REMINDERS), null);
-			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, courseNode.getReminderProvider(courseEntry, false));
 			listenTo(remindersCtrl);
 			if (remindersCtrl.hasDataOrActions()) {
@@ -141,7 +148,16 @@ public class ScormRunSegmentController extends BasicController implements Activa
 				segmentView.addSegment(remindersLink, false);
 			}
 		}
-		
+
+		// Badges
+		if (openBadgesManager.showBadgesRunSegment(courseEntry, courseNode, userCourseEnv)) {
+			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			listenTo(badgesCtrl);
+
+			badgesLink = LinkFactory.createLink("segment.badges", mainVC, this);
+			segmentView.addSegment(badgesLink, false);
+		}
+
 		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);
@@ -179,6 +195,8 @@ public class ScormRunSegmentController extends BasicController implements Activa
 					doOpenParticipants(ureq, true);
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
+				} else if (clickedLink == badgesLink) {
+					doOpenBadges();
 				}
 			}
 		}
@@ -258,4 +276,10 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		}
 	}
 
+	private void doOpenBadges() {
+		if (badgesLink != null) {
+			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
+			segmentView.select(badgesLink);
+		}
+	}
 }

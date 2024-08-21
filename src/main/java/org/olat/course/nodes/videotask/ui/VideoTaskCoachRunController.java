@@ -45,6 +45,8 @@ import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.CourseNodeBadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,7 +67,8 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 	private Link overviewLink;
 	private Link participantsListLink;
 	private Link remindersLink;
-	
+	private Link badgesLink;
+
 	private VelocityContainer mainVC;
 	private CourseNodeSegmentPrefs segmentPrefs;
 	private SegmentViewComponent segmentView;
@@ -78,10 +81,13 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 	private CourseNodeReminderRunController remindersCtrl;
 	private AssessmentCourseNodeOverviewController overviewCtrl;
 	private AssessmentCourseNodeController participantsListCtrl;
-	
+	private CourseNodeBadgesController badgesCtrl;
+
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
+
 	public VideoTaskCoachRunController(UserRequest ureq, WindowControl wControl,
 			VideoTaskCourseNode videoTaskNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
@@ -131,7 +137,15 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 				segmentView.addSegment(remindersLink, false);
 			}
 		}
-		
+
+		if (openBadgesManager.showBadgesRunSegment(courseEntry, videoTaskNode, userCourseEnv)) {
+			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			listenTo(badgesCtrl);
+
+			badgesLink = LinkFactory.createLink("run.badges", mainVC, this);
+			segmentView.addSegment(badgesLink, false);
+		}
+
 		doOpenPreferredSegment(ureq);
 		mainVC.put("segments", segmentView);
 		putInitialPanel(mainVC);
@@ -168,6 +182,8 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 					doOpenPreview(ureq, true);
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
+				} else if (clickedLink == badgesLink) {
+					doOpenBadges(ureq);
 				}
 			}
 		}
@@ -231,6 +247,14 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 			segmentView.select(remindersLink);
 			setPreferredSegment(ureq, CourseNodeSegment.reminders, saveSegmentPref);
+		}
+	}
+
+	private void doOpenBadges(UserRequest ureq) {
+		if (badgesLink != null) {
+			addToHistory(ureq, badgesCtrl);
+			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
+			segmentView.select(badgesLink);
 		}
 	}
 	

@@ -56,10 +56,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.openbadges.OpenBadgesManager;
-import org.olat.modules.openbadges.ui.BadgeClassesController;
+import org.olat.modules.openbadges.ui.CourseNodeBadgesController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntrySecurity;
-import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,8 +74,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private GTACoachSelectionController coachCtrl;
 	private GTACoachManagementController manageCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
-	private BadgeClassesController badgeClassesCtrl;
-	private BreadcrumbedStackedPanel badgesStackPanel;
+	private CourseNodeBadgesController badgesCtrl;
 
 	private Link runLink;
 	private Link overviewLink;
@@ -101,8 +98,6 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private GTAManager gtaManager;
 	@Autowired
 	private AssessmentService assessmentService;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -156,14 +151,9 @@ public class GTARunController extends BasicController implements Activateable2 {
 				}
 			}
 
-			if (openBadgesManager.isEnabled(entry, gtaNode)) {
-				RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, entry);
-				badgesStackPanel = new BreadcrumbedStackedPanel("badges-stack", getTranslator(), this);
-				badgeClassesCtrl = new BadgeClassesController(ureq, wControl, entry, reSecurity, badgesStackPanel,
-						null, "form.create.new.badge", "form.edit.badge");
-				listenTo(badgeClassesCtrl);
-				badgesStackPanel.setInvisibleCrumb(0);
-				badgesStackPanel.pushController(translate("run.coach.badges"), badgeClassesCtrl);
+			if (openBadgesManager.showBadgesRunSegment(entry, gtaNode, userCourseEnv)) {
+				badgesCtrl = new CourseNodeBadgesController(ureq, wControl, entry);
+				listenTo(badgesCtrl);
 
 				badgesLink = LinkFactory.createLink("run.coach.badges", mainVC, this);
 				segmentView.addSegment(badgesLink, false);
@@ -441,8 +431,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 	}
 
 	private void doOpenBadges() {
-		if (badgesLink != null && badgesStackPanel != null) {
-			mainVC.put("segmentCmp", badgesStackPanel);
+		if (badgesLink != null) {
+			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
 			segmentView.select(badgesLink);
 		}
 	}
