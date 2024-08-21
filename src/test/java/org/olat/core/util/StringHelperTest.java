@@ -84,6 +84,15 @@ public class StringHelperTest {
 	}
 	
 	@Test
+	public void getFirstLetter() {
+		Assert.assertEquals("M", StringHelper.getFirstLetter("My Name", true));
+		// Multi char letters
+		Assert.assertEquals("🏡", StringHelper.getFirstLetter("🏡 A house with a tree", true));
+		Assert.assertEquals("", StringHelper.getFirstLetter("", true));
+		Assert.assertEquals(null, StringHelper.getFirstLetter("", false));
+	}
+	
+	@Test
 	public void transformDisplayNameToFileSystemName() {
 		Assert.assertEquals("Webclass_Energie_2004_2005", StringHelper.transformDisplayNameToFileSystemName("Webclass Energie 2004/2005"));
 		Assert.assertEquals("Webclass_Energie_2004_2005", StringHelper.transformDisplayNameToFileSystemName("Webclass Energie 2004\\2005"));

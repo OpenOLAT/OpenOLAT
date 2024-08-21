@@ -328,6 +328,19 @@ public class StringHelper {
 		return value != null? String.valueOf(value): "";
 	}
 	
+	public static String getFirstLetter(String text, boolean blankIfNull) {
+		if (text == null || text.length() == 0) {
+			return blankIfNull? "": null;
+		}
+		
+		if (text.length() > 1 && Character.isSurrogatePair(text.charAt(0), text.charAt(1))) {
+			int codePoint = Character.toCodePoint(text.charAt(0), text.charAt(1));
+			return new String(Character.toChars(codePoint));
+		}
+		
+		return text.substring(0, 1);
+	}
+	
 	public static int count(String s, char character) {
 		int count = 0;
 		
