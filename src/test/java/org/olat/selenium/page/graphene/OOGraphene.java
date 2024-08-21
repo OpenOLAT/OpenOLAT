@@ -977,9 +977,12 @@ public class OOGraphene {
 		File screenshotFile = new File(path, filename);
 		log.error("Write screenshot: {} {}", test, screenshotFile);
 		FileUtils.copyFileToFile(screenFile, screenshotFile, true);
+		
+		log.error("Take screen shots: {}", test);
 	}
 	
 	public static byte[] takeScreenshotInMemory(WebDriver browser) {
+		log.info("Take screen shot in memory.");
 		TakesScreenshot scrShot = ((TakesScreenshot)browser);
 		return scrShot.getScreenshotAs(org.openqa.selenium.OutputType.BYTES);
 	}

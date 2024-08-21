@@ -40,9 +40,12 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.devtools.DevTools;
+
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
@@ -130,6 +133,7 @@ public class Deployments {
 		WebDriver driver = createWebDriver(id);
 		drivers.add(driver);
 		driver.manage().window().setSize(new Dimension(1024,800));
+		startDevTools(driver);
 		return driver;
 	}
 	
@@ -145,6 +149,7 @@ public class Deployments {
 			driver = new EdgeDriver(options);
 		} else if("firefox".equals(browser)) {
 			FirefoxOptions options = new FirefoxOptions();
+			options.setLogLevel(FirefoxDriverLogLevel.TRACE);
 			FirefoxProfile profile = new FirefoxProfile();
 			profile.setPreference("fission.webContentIsolationStrategy", Integer.valueOf(0));
 			profile.setPreference("fission.bfcacheInParent", Boolean.FALSE);
@@ -161,5 +166,24 @@ public class Deployments {
 			driver = new ChromeDriver(ChromeDriverService.createDefaultService(), options);
 		}
 		return driver;
+	}
+	
+	protected void startDevTools(WebDriver driver) {
+		try {
+			if(driver instanceof ChromeDriver chromeDriver) {
+				DevTools devTools = chromeDriver.getDevTools();
+				devTools.createSessionIfThereIsNotOne();
+				devTools.send(org.openqa.selenium.devtools.v127.log.Log.enable());
+				devTools.send(org.openqa.selenium.devtools.v127.console.Console.enable());
+				devTools.addListener(org.openqa.selenium.devtools.v127.log.Log.entryAdded(), logEntry -> {
+					log.warn("Chrome: {} {}", logEntry.getLevel(), logEntry.getText());
+				});
+				devTools.addListener(org.openqa.selenium.devtools.v127.console.Console.messageAdded(), logEntry -> {
+					log.warn("Chrome console: {} {}", logEntry.getLevel(), logEntry.getText());
+				});
+			}
+		} catch (Exception e) {
+			log.error("Cannot start dev tools", e);
+		}
 	}
 }

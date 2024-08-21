@@ -89,6 +89,12 @@ public class CourseEditorPageFragment {
 		return this;
 	}
 	
+	public CourseEditorPageFragment assertOnPanelResourceTitle(String resourceTitle) {
+		By landingBy = By.xpath("//div[@class='o_course_editor']//div[@class='o_icon_panel_header']//h4[text()[contains(.,'" + resourceTitle + "')]]");
+		OOGraphene.waitElement(landingBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Select the root course element.
 	 */
