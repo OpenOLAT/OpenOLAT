@@ -40,10 +40,9 @@ public class CourseOverviewController extends BasicController {
 	
 	private final OverviewListController overviewListCtrl;
 	
-	public CourseOverviewController(UserRequest ureq, WindowControl wControl, ICourse course) {
+	public CourseOverviewController(UserRequest ureq, WindowControl wControl, ICourse course, OverviewListOptions listOptions) {
 		super(ureq, wControl);
 		
-		OverviewListOptions listOptions = new OverviewListOptions(true, false, false, true, true);
 		overviewListCtrl = new OverviewListController(ureq, wControl, course, Model.RUN, listOptions);
 		listenTo(overviewListCtrl);
 		

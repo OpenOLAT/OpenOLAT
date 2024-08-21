@@ -27,6 +27,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -43,6 +44,7 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	private boolean hasChildren;
 	private String translatedDisplayOption;
 	private Integer duration;
+	private AssessmentObligation obligation;
 	private String translatedObligation;
 	private DueDateConfig start;
 	private DueDateConfig end;
@@ -124,6 +126,14 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 
 	public void setDuration(Integer duration) {
 		this.duration = duration;
+	}
+
+	public AssessmentObligation getObligation() {
+		return obligation;
+	}
+
+	public void setObligation(AssessmentObligation obligation) {
+		this.obligation = obligation;
 	}
 
 	public String getTranslatedObligation() {
