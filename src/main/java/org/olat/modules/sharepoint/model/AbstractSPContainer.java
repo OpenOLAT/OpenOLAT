@@ -31,6 +31,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSAllItemsFilter;
+import org.olat.modules.sharepoint.PermissionsDelegate;
 import org.olat.modules.sharepoint.SharePointHelper;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
@@ -50,15 +51,21 @@ public abstract class AbstractSPContainer extends AbstractVirtualContainer imple
 	protected final SharePointDAO sharePointDao;
 	protected final TokenCredential tokenProvider;
 	protected final List<String> exclusionsLabels;
+	private final PermissionsDelegate permissionsDelegate;
 
 	public AbstractSPContainer(VFSContainer parentContainer, String name,
 			SharePointDAO sharePointDao, List<String> exclusionsLabels,
-			TokenCredential tokenProvider) {
+			PermissionsDelegate permissionsDelegate, TokenCredential tokenProvider) {
 		super(name);
 		this.parentContainer = parentContainer;
 		this.sharePointDao = sharePointDao;
 		this.tokenProvider = tokenProvider;
 		this.exclusionsLabels = exclusionsLabels;
+		this.permissionsDelegate = permissionsDelegate;
+	}
+	
+	public PermissionsDelegate getPermissionsDelegate() {
+		return permissionsDelegate;
 	}
 	
 	protected List<VFSItem> toVFS(MicrosoftDrive drive, List<MicrosoftDriveItem> driveItems) {
@@ -68,8 +75,9 @@ public abstract class AbstractSPContainer extends AbstractVirtualContainer imple
 		for(MicrosoftDriveItem item:driveItems) {
 			if(SharePointDAO.accept(item, exclusionsLabels)) {
 				if(item.directory()) {
-					items.add(new DriveItemContainer(this, drive, item,
-							sharePointDao, exclusionsLabels, tokenProvider));
+					VFSStatus canWrite = canWrite(drive, item);
+					items.add(new DriveItemContainer(this, drive, item, canWrite,
+							sharePointDao, exclusionsLabels, permissionsDelegate, tokenProvider));
 				} else {
 					DriveItemMetadata metadata = toMetadata(item);
 					items.add(new DriveItemLeaf(this, drive, item, metadata, sharePointDao, tokenProvider));
@@ -77,6 +85,11 @@ public abstract class AbstractSPContainer extends AbstractVirtualContainer imple
 			}
 		}
 		return items;
+	}
+	
+	private VFSStatus canWrite(MicrosoftDrive drive, MicrosoftDriveItem item) {
+		if(permissionsDelegate == null) return VFSStatus.NO;
+		return permissionsDelegate.canWrite(drive, item, tokenProvider);
 	}
 	
 	protected DriveItemMetadata toMetadata(MicrosoftDriveItem item) {

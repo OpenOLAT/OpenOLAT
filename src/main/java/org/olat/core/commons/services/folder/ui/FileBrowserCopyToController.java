@@ -235,11 +235,13 @@ public class FileBrowserCopyToController extends BasicController {
 	
 	private void markNews(VFSItem targetContainer) {
 		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(targetContainer);
-		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
-		if (secCallback != null) {
-			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
-			if (subsContext != null) {
-				notificationsManager.markPublisherNews(subsContext, getIdentity(), true);
+		if(container != null) {
+			VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
+			if (secCallback != null) {
+				SubscriptionContext subsContext = secCallback.getSubscriptionContext();
+				if (subsContext != null) {
+					notificationsManager.markPublisherNews(subsContext, getIdentity(), true);
+				}
 			}
 		}
 	}

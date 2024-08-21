@@ -23,6 +23,7 @@ import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.FullAccessCallback;
+import org.olat.modules.sharepoint.PermissionsDelegate;
 import org.olat.modules.sharepoint.SharePointModule;
 import org.olat.modules.sharepoint.SharePointService;
 import org.olat.modules.sharepoint.model.OneDriveContainer;
@@ -50,12 +51,15 @@ public class SharePointServiceImpl implements SharePointService {
 	private SharePointModule sharePointModule;
 
 	@Override
-	public VFSContainer getSharePointContainer(UserSession usess) {
+	public VFSContainer getSharePointContainer(UserSession usess, boolean readWrite) {
 		if(!sharePointModule.isEnabled() || !sharePointModule.isSitesEnabled()) return null;
 		
 		OAuth2Tokens tokens = usess.getOAuth2Tokens();
 		TokenCredential tokenProvider = microsoftGraphDao.getTokenProvider(tokens);
-		return new SharePointContainer(null, "SharePoint", sharePointModule, sharePointDao, tokenProvider);
+		PermissionsDelegate permissionDelegate = readWrite
+				? new ReadWritePermissionsDelegate() 
+				: new ReadOnlyPermissionsDelegate();
+		return new SharePointContainer(null, "SharePoint", sharePointModule, sharePointDao, permissionDelegate, tokenProvider);
 	}
 
 	@Override

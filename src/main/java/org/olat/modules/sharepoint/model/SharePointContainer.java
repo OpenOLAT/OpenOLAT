@@ -27,6 +27,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
+import org.olat.modules.sharepoint.PermissionsDelegate;
 import org.olat.modules.sharepoint.SharePointModule;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
@@ -46,15 +47,18 @@ public class SharePointContainer extends MergeSource {
 	private final List<String> exclusionsSitesAndDrives;
 	private final List<String> exclusionsLabels;
 	private final SitesAndDrivesConfiguration sitesAndDrivesConfig;
+	private final PermissionsDelegate permissionsDelegate;
 	
 	public SharePointContainer(VFSContainer parentContainer, String name,
-			SharePointModule sharePointModule, SharePointDAO sharePointDao, TokenCredential tokenProvider) {
+			SharePointModule sharePointModule, SharePointDAO sharePointDao,
+			PermissionsDelegate permissionsDelegate, TokenCredential tokenProvider) {
 		super(parentContainer, name);
 		this.sharePointDao = sharePointDao;
 		this.tokenProvider = tokenProvider;
 		exclusionsSitesAndDrives = sharePointModule.getExcludeSitesAndDrives();
 		exclusionsLabels = sharePointModule.getExcludeLabels();
 		sitesAndDrivesConfig = sharePointModule.getSitesConfiguration();
+		this.permissionsDelegate = permissionsDelegate;
 		
 		setLocalSecurityCallback(new ReadOnlyCallback());
 		init();
@@ -71,7 +75,7 @@ public class SharePointContainer extends MergeSource {
 				if(siteContainer == null) {
 					MicrosoftSite site = sharePointDao.getSite(config.getSiteId(), tokenProvider);
 					siteContainer = new SiteContainer(this, site, sharePointDao,
-							exclusionsSitesAndDrives, exclusionsLabels, tokenProvider);
+							exclusionsSitesAndDrives, exclusionsLabels, permissionsDelegate, tokenProvider);
 					addContainer(siteContainer);
 					idToContainers.put(config.getSiteId(), siteContainer);
 				}

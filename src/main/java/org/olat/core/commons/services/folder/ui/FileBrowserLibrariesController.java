@@ -81,13 +81,12 @@ public class FileBrowserLibrariesController extends BasicController {
 			links.add(createLink(CMD_MEDIA_CENTER, "o_icon_media", translate("browser.storages.media")));
 		}
 		// Temporary until save to SharePoint is implemented
-		if (FileBrowserSelectionMode.targetSingle != selectionMode) {
-			if (sharePointModule.canSharePoint(ureq.getUserSession())) {
-				links.add(createLink(CMD_SHARE_POINT, "o_icon_provider_adfs", translate("browser.storages.share.point")));
-			}
-			if (sharePointModule.canOneDrive(ureq.getUserSession())) {
-				links.add(createLink(CMD_ONE_DRIVE, "o_icon_onedrive", translate("browser.storages.one.drive")));
-			}
+		if((FileBrowserSelectionMode.targetSingle != selectionMode || sharePointModule.isSitesWriteEnabled())
+				&& sharePointModule.canSharePoint(ureq.getUserSession())) {
+			links.add(createLink(CMD_SHARE_POINT, "o_icon_provider_adfs", translate("browser.storages.share.point")));
+		}
+		if (sharePointModule.canOneDrive(ureq.getUserSession())) {
+			links.add(createLink(CMD_ONE_DRIVE, "o_icon_onedrive", translate("browser.storages.one.drive")));
 		}
 		mainVC.contextPut("links", links);
 	}
@@ -139,7 +138,8 @@ public class FileBrowserLibrariesController extends BasicController {
 	}
 	
 	private void doOpenSharePoint(UserRequest ureq) {
-		VFSContainer spContainer = sharePointService.getSharePointContainer(ureq.getUserSession());
+		boolean readWrite = FileBrowserSelectionMode.targetSingle == selectionMode && sharePointModule.isSitesWriteEnabled();
+		VFSContainer spContainer = sharePointService.getSharePointContainer(ureq.getUserSession(), readWrite);
 		doOpenFolderSelection(ureq, spContainer);
 	}
 	

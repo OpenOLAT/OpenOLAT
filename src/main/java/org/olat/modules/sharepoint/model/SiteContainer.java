@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.modules.sharepoint.PermissionsDelegate;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
 import com.azure.core.credential.TokenCredential;
@@ -47,8 +48,8 @@ public class SiteContainer extends AbstractSPContainer {
 	
 	public SiteContainer(SharePointContainer parentContainer, MicrosoftSite site,
 			SharePointDAO sharePointDao, List<String> exclusionsSitesAndDrives,
-			List<String> exclusionsLabels, TokenCredential tokenProvider) {
-		super(parentContainer, site.preferedName(), sharePointDao, exclusionsLabels, tokenProvider);
+			List<String> exclusionsLabels, PermissionsDelegate permissionsDelegate, TokenCredential tokenProvider) {
+		super(parentContainer, site.preferedName(), sharePointDao, exclusionsLabels, permissionsDelegate, tokenProvider);
 		this.site = site;
 		this.exclusionsSitesAndDrives = exclusionsSitesAndDrives;
 	}
@@ -68,7 +69,8 @@ public class SiteContainer extends AbstractSPContainer {
 				for(MicrosoftDrive mDrive:mDrives) {
 					if(SharePointDAO.accept(mDrive, exclusionsSitesAndDrives)
 							&& (allowedDrivesIds.isEmpty() || allowedDrivesIds.contains(mDrive.id()))) {
-						drives.add(new SiteDriveContainer(this, mDrive, sharePointDao, exclusionsLabels, tokenProvider));
+						drives.add(new SiteDriveContainer(this, mDrive, sharePointDao, exclusionsLabels,
+								getPermissionsDelegate(), tokenProvider));
 					}
 				}
 			}

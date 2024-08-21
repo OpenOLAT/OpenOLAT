@@ -74,6 +74,6 @@ public class SharePointWebDAVProvider implements WebDAVProvider {
 
 	@Override
 	public VFSContainer getContainer(UserSession usess) {
-		return sharePointService.getSharePointContainer(usess);
+		return sharePointService.getSharePointContainer(usess, true);
 	}
 }

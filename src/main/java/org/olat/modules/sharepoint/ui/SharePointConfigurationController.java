@@ -65,11 +65,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SharePointConfigurationController extends FormBasicController {
 	
+	private static final String WRITE_OPTS = "write";
+	
 	private FormToggle moduleEnabledEl;
 	private FormToggle sitesEnabledEl;
 	private FormToggle oneDriveEnabledEl;
-	
+
 	private MultipleSelectionElement adminPropsEl;
+	private MultipleSelectionElement sitesWriteEnabledEl;
 
 	private TextElement excludeSitesAndDrivesEl;
 	private TextElement excludeLabelsEl;
@@ -105,6 +108,13 @@ public class SharePointConfigurationController extends FormBasicController {
 		sitesEnabledEl = uifactory.addToggleButton("sites.enable", "sharepoint.sites.enable", translate("on"), translate("off"), formLayout);
 		sitesEnabledEl.toggle(sharePointModule.isSitesEnabled());
 		sitesEnabledEl.addActionListener(FormEvent.ONCHANGE);
+
+		SelectionValues writePK = new SelectionValues();
+		writePK.add(SelectionValues.entry(WRITE_OPTS, translate("sharepoint.sites.write.enabled")));
+		sitesWriteEnabledEl = uifactory.addCheckboxesVertical("sites.write", "sharepoint.sites.write", formLayout, writePK.keys(), writePK.values(), 1);
+		sitesWriteEnabledEl.setVisible(sharePointModule.isSitesEnabled());
+		sitesWriteEnabledEl.setHelpTextKey("sharepoint.sites.write.explain", null);
+		sitesWriteEnabledEl.select(WRITE_OPTS, sharePointModule.isSitesWriteEnabled());
 		
 		oneDriveEnabledEl = uifactory.addToggleButton("onedrive.enable", "sharepoint.onedrive.enable", translate("on"), translate("off"), formLayout);
 		oneDriveEnabledEl.toggle(sharePointModule.isOneDriveEnabled());
@@ -157,6 +167,7 @@ public class SharePointConfigurationController extends FormBasicController {
 		excludeLabelsEl.setVisible(enabled);
 		
 		boolean sitesEnabled = sitesEnabledEl.isOn();
+		sitesWriteEnabledEl.setVisible(enabled && sitesEnabled);
 		excludeSitesAndDrivesEl.setVisible(enabled && sitesEnabled);
 		adminPropsEl.setVisible(enabled && sitesEnabled);
 		sitesAndDrivesContainer.setVisible(enabled && sitesEnabled);
@@ -228,6 +239,7 @@ public class SharePointConfigurationController extends FormBasicController {
 		sharePointModule.setSitesEnabled(enabled && sitesEnabledEl.isOn());
 		sharePointModule.setOneDriveEnabled(enabled && oneDriveEnabledEl.isOn());
 		sharePointModule.setRolesEnabledList(adminPropsEl.getSelectedKeys());
+		sharePointModule.setSitesWriteEnabled(enabled && sitesEnabledEl.isOn() && sitesWriteEnabledEl.isAtLeastSelected(1));
 		
 		if(enabled) {
 			List<SiteAndDriveConfiguration> configurationsList = sitesAndDrivesConfigurationModel.getObjects();

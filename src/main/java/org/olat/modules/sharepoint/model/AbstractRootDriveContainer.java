@@ -26,6 +26,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.modules.sharepoint.PermissionsDelegate;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
 import com.azure.core.credential.TokenCredential;
@@ -46,8 +47,8 @@ public abstract class AbstractRootDriveContainer extends AbstractSPContainer {
 	private List<VFSItem> items = new ArrayList<>();
 	
 	public AbstractRootDriveContainer(VFSContainer parentContainer, String name, SharePointDAO sharePointDao,
-			List<String> exclusionsLabels, TokenCredential tokenProvider) {
-		super(parentContainer, name, sharePointDao, exclusionsLabels, tokenProvider);
+			List<String> exclusionsLabels, PermissionsDelegate permissionsDelegate, TokenCredential tokenProvider) {
+		super(parentContainer, name, sharePointDao, exclusionsLabels, permissionsDelegate, tokenProvider);
 	}
 	
 	public abstract MicrosoftDrive getDrive();

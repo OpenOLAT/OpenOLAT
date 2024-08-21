@@ -50,6 +50,7 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	
 	private static final String PROP_ENABLED = "sharepoint.enabled";
 	private static final String PROP_SITES_ENABLED = "sharepoint.sites.enabled";
+	private static final String PROP_SITES_WRITE = "sharepoint.sites.write";
 	private static final String PROP_ONEDRIVE_ENABLED = "sharepoint.onedrive.enabled";
 	private static final String PROP_ROLES_ENABLED = "sharepoint.roles.enabled";
 	private static final String PROP_EXCLUDE_SITES_AND_DRIVES = "sharepoint.exclude.sites.drives";
@@ -60,6 +61,8 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean enabled;
 	@Value("${sharepoint.sites.enabled:false}")
 	private boolean sitesEnabled;
+	@Value("${sharepoint.sites.write:false}")
+	private boolean sitesWriteEnabled;
 	@Value("${sharepoint.onedrive.enabled:false}")
 	private boolean oneDriveEnabled;
 	@Value("${sharepoint.roles.enabled:administrator,learnresourcemanager,author}")
@@ -88,6 +91,10 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 		String sitesEnabledObj = getStringPropertyValue(PROP_SITES_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(sitesEnabledObj)) {
 			sitesEnabled = "true".equals(sitesEnabledObj);
+		}
+		String sitesWriteObj = getStringPropertyValue(PROP_SITES_WRITE, true);
+		if(StringHelper.containsNonWhitespace(sitesWriteObj)) {
+			sitesWriteEnabled = "true".equals(sitesWriteObj);
 		}
 		
 		String oneDriveEnabledObj = getStringPropertyValue(PROP_ONEDRIVE_ENABLED, true);
@@ -120,9 +127,18 @@ public class SharePointModule extends AbstractSpringModule implements ConfigOnOf
 		return sitesEnabled;
 	}
 
-	public void setSitesEnabled(boolean sitesEnabled) {
-		this.sitesEnabled = sitesEnabled;
-		setStringProperty(PROP_SITES_ENABLED, Boolean.toString(sitesEnabled), true);
+	public void setSitesEnabled(boolean enabled) {
+		this.sitesEnabled = enabled;
+		setStringProperty(PROP_SITES_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public boolean isSitesWriteEnabled() {
+		return sitesWriteEnabled;
+	}
+	
+	public void setSitesWriteEnabled(boolean enabled) {
+		this.sitesWriteEnabled = enabled;
+		setStringProperty(PROP_SITES_WRITE, Boolean.toString(enabled), true);
 	}
 
 	public boolean isOneDriveEnabled() {

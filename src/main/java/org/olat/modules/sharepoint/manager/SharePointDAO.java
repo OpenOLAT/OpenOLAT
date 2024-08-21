@@ -19,8 +19,6 @@
  */
 package org.olat.modules.sharepoint.manager;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +27,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.sharepoint.model.MicrosoftDrive;
 import org.olat.modules.sharepoint.model.MicrosoftDriveItem;
 import org.olat.modules.sharepoint.model.MicrosoftSite;
@@ -283,23 +282,26 @@ public class SharePointDAO {
 		}
 	}
 	
-	public DriveItem uploadLargeFile(Drive drive, DriveItem parentDriveItem, File file, String filename, TokenCredential tokenProvider) {
-		try(InputStream fileStream = new FileInputStream(file)) {
-			long streamSize = file.length();
+	public DriveItem uploadLargeFile(Drive drive, List<DriveItem> parentItems, VFSLeaf file, String filename, TokenCredential tokenProvider) {
+		try(InputStream fileStream = file.getInputStream()) {
+			long streamSize = file.getSize();
 
 			// Set body of the upload session request
 			CreateUploadSessionPostRequestBody uploadSessionRequest = new CreateUploadSessionPostRequestBody();
 			DriveItemUploadableProperties properties = new DriveItemUploadableProperties();
 			properties.getAdditionalData().put("@microsoft.graph.conflictBehavior", "replace");
+			properties.getAdditionalData().put("name", filename);
 			uploadSessionRequest.setItem(properties);
-	
+			
+			String itemPath = toItemPath(parentItems, filename);
+			
 			GraphServiceClient client = client(tokenProvider);
 			// Create an upload session
 			final UploadSession uploadSession = client
 					.drives()
 					.byDriveId(drive.getId())
 					.items()
-					.byDriveItemId(parentDriveItem.getId())
+					.byDriveItemId(itemPath)
 			        .createUploadSession()
 			        .post(uploadSessionRequest);
 	
@@ -330,6 +332,16 @@ public class SharePointDAO {
 			log.error("", e);
 		}
 		return null;
+	}
+	
+	private String toItemPath(List<DriveItem> parentItems, String filename) {
+		StringBuilder itemId = new StringBuilder();
+		itemId.append("root:/");
+		for(DriveItem parentItem:parentItems) {
+			itemId.append(parentItem.getName()).append("/");
+		}
+		itemId.append(filename).append(":");
+		return itemId.toString();
 	}
 	
 	public static boolean accept(MicrosoftDriveItem driveItem, List<String> exclusionsList) {

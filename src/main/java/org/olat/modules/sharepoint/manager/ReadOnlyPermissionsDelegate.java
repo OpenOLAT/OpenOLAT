@@ -17,28 +17,25 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.sharepoint;
+package org.olat.modules.sharepoint.manager;
 
-import org.olat.core.util.UserSession;
-import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSStatus;
+import org.olat.modules.sharepoint.PermissionsDelegate;
+import org.olat.modules.sharepoint.model.MicrosoftDrive;
+import org.olat.modules.sharepoint.model.MicrosoftDriveItem;
+
+import com.azure.core.credential.TokenCredential;
 
 /**
  * 
- * Initial date: 27 mai 2024<br>
+ * Initial date: 21 août 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface SharePointService {
-	
-	/**
-	 * The container is read-only per default.
-	 * 
-	 * @param usess The user session
-	 * @param writeAccess Ask to write
-	 * @return
-	 */
-	VFSContainer getSharePointContainer(UserSession usess, boolean readOnly);
-	
-	VFSContainer getOneDriveContainer(UserSession usess);
+public class ReadOnlyPermissionsDelegate implements PermissionsDelegate {
 
+	@Override
+	public VFSStatus canWrite(MicrosoftDrive drive, MicrosoftDriveItem item, TokenCredential tokenProvider) {
+		return VFSStatus.NO;
+	}
 }

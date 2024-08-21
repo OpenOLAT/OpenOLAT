@@ -22,6 +22,7 @@ package org.olat.modules.sharepoint.model;
 import java.util.List;
 
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.sharepoint.PermissionsDelegate;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
 import com.azure.core.credential.TokenCredential;
@@ -36,9 +37,9 @@ public class SiteDriveContainer extends AbstractRootDriveContainer {
 
 	private final MicrosoftDrive drive;
 	
-	public SiteDriveContainer(VFSContainer parentContainer, MicrosoftDrive drive,
-			SharePointDAO sharePointDao, List<String> exclusionsLabels, TokenCredential tokenProvider) {
-		super(parentContainer, drive.name(), sharePointDao, exclusionsLabels, tokenProvider);
+	public SiteDriveContainer(VFSContainer parentContainer, MicrosoftDrive drive, SharePointDAO sharePointDao,
+			List<String> exclusionsLabels, PermissionsDelegate permissionsDelegate, TokenCredential tokenProvider) {
+		super(parentContainer, drive.name(), sharePointDao, exclusionsLabels, permissionsDelegate, tokenProvider);
 		this.drive = drive;
 	}
 	

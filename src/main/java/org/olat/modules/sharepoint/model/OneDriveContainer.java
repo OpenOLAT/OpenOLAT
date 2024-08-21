@@ -24,6 +24,8 @@ import java.util.List;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.modules.sharepoint.PermissionsDelegate;
+import org.olat.modules.sharepoint.manager.ReadWritePermissionsDelegate;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
 import com.azure.core.credential.TokenCredential;
@@ -36,10 +38,12 @@ import com.azure.core.credential.TokenCredential;
  */
 public class OneDriveContainer extends AbstractRootDriveContainer {
 	
+	private static final PermissionsDelegate WRITE_PERMISSIONS = new ReadWritePermissionsDelegate();
+	
 	private MicrosoftDrive oneDrive;
 	
 	public OneDriveContainer(SharePointDAO sharePointDao, List<String> exclusionsLabels, TokenCredential tokenProvider) {
-		super(null, "OneDrive", sharePointDao, exclusionsLabels, tokenProvider);
+		super(null, "OneDrive", sharePointDao, exclusionsLabels, WRITE_PERMISSIONS, tokenProvider);
 	}
 	
 	@Override
