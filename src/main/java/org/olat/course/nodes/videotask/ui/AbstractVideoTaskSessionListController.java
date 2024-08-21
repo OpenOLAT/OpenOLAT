@@ -100,6 +100,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 	protected VideoTaskAssessmentDetailsTableModel tableModel;
 	
 	private int count = 0;
+	protected final boolean showSessionParticipant;
 	protected final int rounding;
 	protected final Float maxScore;
 	protected final Float cutValue;
@@ -129,8 +130,9 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 	protected VideoAssessmentService videoAssessmentService;
 
 	AbstractVideoTaskSessionListController(UserRequest ureq, WindowControl wControl, String page, TooledStackedPanel stackPanel,
-			VideoTaskCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+			VideoTaskCourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean showSessionParticipant) {
 		super(ureq, wControl, page);
+		this.showSessionParticipant = showSessionParticipant;
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		this.courseEnv = courseEnv;
 		this.userCourseEnv = userCourseEnv;
@@ -399,7 +401,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		removeAsListenerAndDispose(playCtrl);
 		
 		playCtrl = new VideoTaskAssessmentPlayController(ureq, getWindowControl(),
-				videoEntry, List.of(row.getTaskSession()), row.getAssessedIdentity(), courseNode);
+				videoEntry, List.of(row.getTaskSession()), row.getAssessedIdentity(), courseNode, false);
 		listenTo(playCtrl);
 		stackPanel.pushController(translate("play"), playCtrl);
 	}
@@ -411,7 +413,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 				.map(VideoTaskSessionRow::getTaskSession)
 				.toList();
 		playCtrl = new VideoTaskAssessmentPlayController(ureq, getWindowControl(),
-				videoEntry, taskSessions, null, courseNode);
+				videoEntry, taskSessions, null, courseNode, showSessionParticipant);
 		listenTo(playCtrl);
 
 		stackPanel.pushController(translate("play"), playCtrl);

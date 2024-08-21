@@ -49,6 +49,7 @@ import org.olat.modules.video.VideoTaskSegmentSelection;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.resource.OLATResource;
+import org.olat.user.UserManager;
 
 /**
  * Initial date: 2022-11-21<br>
@@ -62,6 +63,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 	private final VideoManager videoManager;
 	private final VideoAssessmentService videoAssessmentService;
 	private final Translator translator;
+	private final UserManager userManager;
 
 	private VideoSegments videoSegments;
 	private List<TimelineRow> rows = new ArrayList<>();
@@ -74,6 +76,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 		this.translator = translator;
 		videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		videoAssessmentService = CoreSpringFactory.getImpl(VideoAssessmentService.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		loadRows();
 	}
 
@@ -124,6 +127,8 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 				VideoSegmentCategory category = videoSegments.getCategory(sel.getCategoryId()).orElse(null);
 				String categoryTitle = category == null ? null : category.getLabelAndTitle();
 				TimelineRow row = new TimelineRow("selection-" + sel.getKey(), sel.getTime(), 1000L, type, categoryTitle, color);
+				row.setParticipantKey(sel.getTaskSession().getIdentity() != null ? Long.toString(sel.getTaskSession().getIdentity().getKey()) : null);
+				row.setParticipantValue(userManager.getUserDisplayName(sel.getTaskSession().getIdentity()));
 				if(category != null) {
 					row.setCategoryId(category.getId());
 					row.setColor(row.getColor() + " " + category.getStyle());
@@ -175,6 +180,17 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 							if (categoryId.equals(r.getCategoryId())) {
 								matchFound = true;
 								break;
+							}
+						}
+					} else if (TimelineFilter.PARTICIPANT.name().equals(filter.getFilter())) {
+						if (r.getParticipantKey() == null) {
+							matchFound = true;
+						} else {
+							for (String participantKey : multiSelectionFilter.getValues()) {
+								if (participantKey.equals(r.getParticipantKey())) {
+									matchFound = true;
+									break;
+								}
 							}
 						}
 					}
@@ -254,7 +270,8 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 	public enum TimelineFilter {
 		TYPE("filter.type"),
 		COLOR("filter.color"),
-		CATEGORY("filter.category");
+		CATEGORY("filter.category"),
+		PARTICIPANT("filter.participant");
 
 		private final String i18nKey;
 

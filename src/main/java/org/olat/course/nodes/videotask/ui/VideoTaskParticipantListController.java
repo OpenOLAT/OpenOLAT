@@ -277,7 +277,8 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 		IdentitiesList identities = getIdentities(false);
 		List<VideoTaskSession> taskSessions = videoAssessmentService
 				.getTaskSessions(courseEntry, courseNode.getIdent(), identities.getIdentities());
-		playCtrl = new VideoTaskAssessmentPlayController(ureq, getWindowControl(), videoEntry, taskSessions, null, (VideoTaskCourseNode) courseNode);
+		playCtrl = new VideoTaskAssessmentPlayController(ureq, getWindowControl(), videoEntry, taskSessions,
+				null, (VideoTaskCourseNode) courseNode, true);
 		listenTo(playCtrl);
 
 		stackPanel.pushController(translate("play"), playCtrl);

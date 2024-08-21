@@ -72,7 +72,7 @@ public class VideoTaskAssessmentStatisticsController extends AbstractVideoTaskSe
 	public VideoTaskAssessmentStatisticsController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, UserCourseEnvironment userCourseEnv,
 			IdentitiesList assessedIdentities, VideoTaskCourseNode courseNode, boolean canDelete) {
-		super(ureq, wControl, "assessment_statistics", stackPanel, courseNode, userCourseEnv);
+		super(ureq, wControl, "assessment_statistics", stackPanel, courseNode, userCourseEnv, true);
 		setTranslator(Util.createPackageTranslator(QTI21AssessmentTestStatisticsController.class, getLocale(), getTranslator()));
 
 		this.canDelete = canDelete;
