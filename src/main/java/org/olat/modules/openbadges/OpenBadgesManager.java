@@ -34,6 +34,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.manager.BadgeClassDAO;
@@ -207,7 +208,9 @@ public interface OpenBadgesManager {
 
 	boolean isEnabled();
 
-	boolean isEnabled(RepositoryEntry courseEntry, CourseNode courseNode);
+	boolean showBadgesEditTab(RepositoryEntry courseEntry, CourseNode courseNode);
+
+	boolean showBadgesRunSegment(RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
 	void deleteConfiguration(RepositoryEntryRef entry);
 

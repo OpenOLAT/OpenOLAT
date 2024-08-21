@@ -55,6 +55,8 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.CourseNodeBadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -81,6 +83,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private Link previewLink;
 	private Link remindersLink;
 	private Link inspectionsLink;
+	private Link badgesLink;
 	private final VelocityContainer mainVC;
 	private final CourseNodeSegmentPrefs segmentPrefs;
 	private final SegmentViewComponent segmentView;
@@ -94,7 +97,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private Controller previewCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
 	private AssessmentInspectionOverviewController inspectionController;
-	
+	private CourseNodeBadgesController badgesCtrl;
+
 	private final UserCourseEnvironment userCourseEnv;
 	private final IQTESTCourseNode courseNode;
 	
@@ -104,7 +108,9 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentInspectionService assessmentInspectionService;
-	
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
+
 	public IQTESTCoachRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			IQTESTCourseNode courseNode) {
 		super(ureq, wControl);
@@ -176,6 +182,15 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			}
 		}
 
+		// Badges
+		if (openBadgesManager.showBadgesRunSegment(courseEntry, courseNode, userCourseEnv)) {
+			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			listenTo(badgesCtrl);
+
+			badgesLink = LinkFactory.createLink("segment.badges", mainVC, this);
+			segmentView.addSegment(badgesLink, false);
+		}
+
 		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);
@@ -236,6 +251,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 					doOpenPreview(ureq, true);
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
+				} else if (clickedLink == badgesLink) {
+					doOpenBadges();
 				} else if (clickedLink == communicationLink) {
 					doOpenCommunication(ureq);
 				} else if (clickedLink == inspectionsLink) {
@@ -321,7 +338,15 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders, segmentView, saveSegmentPref);
 		}
 	}
-	
+
+
+	private void doOpenBadges() {
+		if (badgesLink != null) {
+			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
+			segmentView.select(badgesLink);
+		}
+	}
+
 	private void doOpenInspections(UserRequest ureq) {
 		if (inspectionsLink == null) return;
 		

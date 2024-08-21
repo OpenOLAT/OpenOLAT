@@ -374,6 +374,7 @@ public class FormJSHelper {
 		  .append("       && ((e.currentTarget.getAttribute('name') != null && e.currentTarget.getAttribute('name') === e.relatedTarget.getAttribute('name')) ")
 		  .append("           || (e.currentTarget.getAttribute('data-oo-validation-group') != null && e.currentTarget.getAttribute('data-oo-validation-group') === e.relatedTarget.getAttribute('data-oo-validation-group')))")
 		  .append("           || (jQuery(e.currentTarget).parents('.ui-datepicker').length > 0)\n")
+		  .append("           || (e.relatedTarget.tagName === 'BUTTON')\n")
 		  .append("           || (e.currentTarget.getAttribute('data-oo-validation') === 'suspend')) {\n")
 		  .append("     return;\n")
 		  .append("   }\n")

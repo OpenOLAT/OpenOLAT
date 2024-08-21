@@ -47,6 +47,8 @@ import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.CourseNodeBadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,13 +69,15 @@ public class CheckListCoachRunController extends BasicController implements Acti
 	private final Link participantsLink;
 	private final Link previewLink;
 	private Link remindersLink;
-	
+	private Link badgesLink;
+
 	private final VelocityContainer mainVC;
 	private final CourseNodeSegmentPrefs segmentPrefs;
 	private final SegmentViewComponent segmentView;
 	
 	private CheckListRunController previewCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
+	private CourseNodeBadgesController badgesCtrl;
 	private CheckListAssessmentController participantsCtrl;
 
 	private final AssessmentCourseNodeOverviewController overviewCtrl;
@@ -85,6 +89,8 @@ public class CheckListCoachRunController extends BasicController implements Acti
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 
 	public CheckListCoachRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			OLATResourceable ores, CheckListCourseNode courseNode) {
@@ -116,11 +122,12 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		// Preview
 		previewLink = LinkFactory.createLink("segment.preview", mainVC, this);
 		segmentView.addSegment(previewLink, false);
-		
+
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_REMINDERS), null);
-			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, courseNode.getReminderProvider(courseEntry, false));
 			listenTo(remindersCtrl);
 			if (remindersCtrl.hasDataOrActions()) {
@@ -128,7 +135,16 @@ public class CheckListCoachRunController extends BasicController implements Acti
 				segmentView.addSegment(remindersLink, false);
 			}
 		}
-		
+
+		// Badges
+		if (openBadgesManager.showBadgesRunSegment(courseEntry, courseNode, userCourseEnv)) {
+			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			listenTo(badgesCtrl);
+
+			badgesLink = LinkFactory.createLink("segment.badges", mainVC, this);
+			segmentView.addSegment(badgesLink, false);
+		}
+
 		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);
@@ -170,6 +186,8 @@ public class CheckListCoachRunController extends BasicController implements Acti
 					doOpenParticipants(ureq, true);
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
+				} else if (clickedLink == badgesLink) {
+					doOpenBadges();
 				} else if (clickedLink == previewLink) {
 					doOpenPreview(ureq, true);
 				}
@@ -228,6 +246,13 @@ public class CheckListCoachRunController extends BasicController implements Acti
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 			segmentView.select(remindersLink);
 			segmentPrefs.setSegment(ureq, CourseNodeSegment.reminders, segmentView, saveSegmentPref);
+		}
+	}
+
+	private void doOpenBadges() {
+		if (badgesLink != null) {
+			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
+			segmentView.select(badgesLink);
 		}
 	}
 }

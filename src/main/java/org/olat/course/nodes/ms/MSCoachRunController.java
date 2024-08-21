@@ -47,6 +47,8 @@ import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.CourseNodeBadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,7 +67,8 @@ public class MSCoachRunController extends BasicController implements Activateabl
 	private Link overviewLink;
 	private Link participantsLink;
 	private Link remindersLink;
-	
+	private Link badgesLink;
+
 	private final VelocityContainer mainVC;
 	private final CourseNodeSegmentPrefs segmentPrefs;
 	private final SegmentViewComponent segmentView;
@@ -75,9 +78,12 @@ public class MSCoachRunController extends BasicController implements Activateabl
 	private final TooledStackedPanel participantsPanel;
 	private final AssessmentCourseNodeController participantsCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
-	
+	private CourseNodeBadgesController badgesCtrl;
+
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 
 	public MSCoachRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			MSCourseNode courseNode) {
@@ -112,11 +118,12 @@ public class MSCoachRunController extends BasicController implements Activateabl
 		
 		participantsLink = LinkFactory.createLink("segment.participants", mainVC, this);
 		segmentView.addSegment(participantsLink, false);
-		
+
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_REMINDERS), null);
-			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, courseNode.getReminderProvider(courseEntry, false));
 			listenTo(remindersCtrl);
 			if (remindersCtrl.hasDataOrActions()) {
@@ -124,7 +131,16 @@ public class MSCoachRunController extends BasicController implements Activateabl
 				segmentView.addSegment(remindersLink, false);
 			}
 		}
-		
+
+		// Badges
+		if (openBadgesManager.showBadgesRunSegment(courseEntry, courseNode, userCourseEnv)) {
+			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			listenTo(badgesCtrl);
+
+			badgesLink = LinkFactory.createLink("segment.badges", mainVC, this);
+			segmentView.addSegment(badgesLink, false);
+		}
+
 		doOpenPreferredSegment(ureq);
 		
 		putInitialPanel(mainVC);
@@ -159,6 +175,8 @@ public class MSCoachRunController extends BasicController implements Activateabl
 					doOpenParticipants(ureq, true);
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
+				} else if (clickedLink == badgesLink) {
+					doOpenBadges();
 				}
 			}
 		} 
@@ -212,4 +230,10 @@ public class MSCoachRunController extends BasicController implements Activateabl
 		}
 	}
 
+	private void doOpenBadges() {
+		if (badgesLink != null) {
+			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
+			segmentView.select(badgesLink);
+		}
+	}
 }
