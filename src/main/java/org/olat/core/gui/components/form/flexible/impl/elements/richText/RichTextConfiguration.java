@@ -100,9 +100,6 @@ public class RichTextConfiguration implements Disposable {
 	private static final String NONEDITABLE_NONEDITABLE_CLASS_VALUE_MCENONEDITABLE = "mceNonEditable";
 	// Fullscreen plugin
 	private static final String FULLSCREEN_NEW_WINDOW = "fullscreen_new_window";
-	// Other plugins
-	private static final String TABFOCUS_SETTINGS = "tabfocus_elements";
-	private static final String TABFOCUS_SETTINGS_PREV_NEXT = ":prev,:next";
 	// Valid elements
 	private static final String EXTENDED_VALID_ELEMENTS = "extended_valid_elements";
 	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],figure[*],figcaption,img[*],iframe[*],map[*],area[*]";
@@ -441,7 +438,6 @@ public class RichTextConfiguration implements Disposable {
 		setContentCSSFromTheme(guiTheme);
 		// Plugins without buttons
 		setNoneditableContentEnabled(true, null);
-		setTabFocusEnabled(true);
 	}
 
 	public boolean isRelativeUrls() {
@@ -550,21 +546,6 @@ public class RichTextConfiguration implements Disposable {
 
 	public void setAdditionalConfiguration(RichTextConfigurationDelegate additionalConfiguration) {
 		this.additionalConfiguration = additionalConfiguration;
-	}
-
-	/**
-	 * Enable the tabfocus plugin
-	 * 
-	 * if enabled its possible to enter/leave the tinyMCE-editor with TAB-key.
-	 * drawback is, that you cannot enter tabs in the editor itself or navigate over
-	 * buttons! see http://bugs.olat.org/jira/browse/OLAT-6242
-	 * 
-	 * @param tabFocusEnabled
-	 */
-	private void setTabFocusEnabled(boolean tabFocusEnabled) {
-		if (tabFocusEnabled) {
-			setQuotedConfigValue(TABFOCUS_SETTINGS, TABFOCUS_SETTINGS_PREV_NEXT);
-		}
 	}
 
 	/**
