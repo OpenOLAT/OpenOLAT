@@ -3093,11 +3093,13 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void markNews() {
 		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
-		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
-		if (secCallback != null) {
-			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
-			if (subsContext != null) {
-				notificationsManager.markPublisherNews(subsContext, getIdentity(), true);
+		if (container != null) {
+			VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
+			if (secCallback != null) {
+				SubscriptionContext subsContext = secCallback.getSubscriptionContext();
+				if (subsContext != null) {
+					notificationsManager.markPublisherNews(subsContext, getIdentity(), true);
+				}
 			}
 		}
 	}
