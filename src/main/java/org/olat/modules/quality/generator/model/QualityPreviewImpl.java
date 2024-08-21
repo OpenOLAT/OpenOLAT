@@ -60,6 +60,7 @@ public class QualityPreviewImpl implements QualityPreview {
 	private QualityPreviewStatus status;
 	private List<Organisation> organisations;
 	private Long numParticipants;
+	private boolean restrictedEdit;
 	
 	@Override
 	public String getIdentifier() {
@@ -238,6 +239,15 @@ public class QualityPreviewImpl implements QualityPreview {
 
 	public void setNumParticipants(Long numParticipants) {
 		this.numParticipants = numParticipants;
+	}
+
+	@Override
+	public boolean isRestrictedEdit() {
+		return restrictedEdit;
+	}
+
+	public void setRestrictedEdit(boolean restrictedEdit) {
+		this.restrictedEdit = restrictedEdit;
 	}
 
 	@Override

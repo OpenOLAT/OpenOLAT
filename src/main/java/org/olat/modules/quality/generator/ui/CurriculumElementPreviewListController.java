@@ -113,8 +113,8 @@ public class CurriculumElementPreviewListController extends AbstractPreviewListC
 	}
 
 	@Override
-	protected boolean canEdit() {
-		return admin;
+	protected boolean canEdit(boolean restricted) {
+		return admin && !restricted;
 	}
 
 }

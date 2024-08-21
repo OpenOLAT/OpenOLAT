@@ -57,12 +57,17 @@
 		.o_user_info_profile_portrait_image {
 			border-radius: 50%;
 			border: none;
+			box-shadow: $o-user-info-portrait-box-shadow	;
+			
 			object-fit: cover;
 		}
 		.o_user_initials {
 			border-radius: 50%;
 			border: none;
 			font-size: $o-user-info-initials-font-size;
+			box-shadow: $o-user-info-portrait-box-shadow	;
+			-webkit-user-select: none; /* Safari */
+ 			user-select: none;
 			
 			display: grid;
 			align-items: center;
@@ -78,7 +83,8 @@
 		}
 		.o_user_info_profile_cmds {
 			display: flex;
-			gap: 10px;
+			flex-wrap: wrap;
+			column-gap: 10px;
 		}
 	}	
 }
@@ -115,7 +121,6 @@
 	border-radius: $o-user-info-border-radius;
 	
 	display: grid;
-	gap: 20px;
 	grid-template-columns: 1fr 2fr;
 	
 	>div:has(.o_user_info_profile) {

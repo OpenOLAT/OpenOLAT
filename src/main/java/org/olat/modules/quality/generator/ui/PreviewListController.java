@@ -97,7 +97,7 @@ public class PreviewListController extends AbstractPreviewListController {
 	}
 
 	@Override
-	protected boolean canEdit() {
+	protected boolean canEdit(boolean restricted) {
 		return true;
 	}
 

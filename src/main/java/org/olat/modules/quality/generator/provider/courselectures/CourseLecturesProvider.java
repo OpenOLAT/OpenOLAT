@@ -119,6 +119,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	public static final String TEACHING_COACH = "teaching.coach";
 	public static final String CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION = "educational.type.exclusion";
 	public static final String EDUCATIONAL_TYPE_EXCLUSION_DELIMITER = ",";
+	public static final String CONFIG_KEY_PREVIEW_EDIT_QM_RESTRICTED = "preview.edit.qm.restricted";
 	
 	@Autowired
 	private CourseLecturesProviderDAO providerDao;
@@ -628,7 +629,9 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			} else {
 				preview.setStatus(QualityPreviewStatus.regular);
 			}
-
+			
+			preview.setRestrictedEdit(StringHelper.containsNonWhitespace(configs.getValue(CONFIG_KEY_PREVIEW_EDIT_QM_RESTRICTED)));
+			
 			previews.add(preview);
 		}
 		

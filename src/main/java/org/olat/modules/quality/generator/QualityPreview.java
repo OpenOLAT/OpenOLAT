@@ -74,5 +74,7 @@ public interface QualityPreview {
 	public List<Organisation> getOrganisations();
 	
 	public Long getNumParticipants();
+	
+	public boolean isRestrictedEdit();
 
 }

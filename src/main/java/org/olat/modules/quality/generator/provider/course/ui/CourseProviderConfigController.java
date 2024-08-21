@@ -52,6 +52,7 @@ import org.olat.modules.quality.generator.ProviderHelper;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.provider.course.CourseProvider;
+import org.olat.modules.quality.generator.ui.GeneratorConfigController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -98,6 +99,7 @@ public class CourseProviderConfigController extends ProviderConfigController {
 	private TextElement reminder2DaysEl;
 	private MultipleSelectionElement rolesEl;
 	private MultipleSelectionElement educationalTypeEl;
+	private MultipleSelectionElement limitEditRightsEl;
 	
 	private final QualityGeneratorConfigs configs;
 	
@@ -109,6 +111,7 @@ public class CourseProviderConfigController extends ProviderConfigController {
 	public CourseProviderConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			QualityGeneratorConfigs configs) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, mainForm);
+		setTranslator(Util.createPackageTranslator(GeneratorConfigController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.configs = configs;
 		initForm(ureq);
@@ -121,6 +124,18 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		String identifiers = titleCreator.getIdentifiers(singletonList(RepositoryEntry.class)).stream()
 				.collect(Collectors.joining(", "));
 		titleEl.setHelpTextKey("config.title.help", new String[] {identifiers} );
+
+		// roles
+		rolesEl = uifactory.addCheckboxesHorizontal("config.roles", formLayout, ROLES_KEYS,
+				translateAll(getTranslator(), ROLES_KEYS));
+		String concatedRoles = configs.getValue(CourseProvider.CONFIG_KEY_ROLES);
+		if (StringHelper.containsNonWhitespace(concatedRoles)) {
+			String[] roles = concatedRoles.split(CourseProvider.ROLES_DELIMITER);
+			String[] roleKeys = Arrays.stream(roles).map(r -> ROLES_PREFIX + r).toArray(String[]::new);
+			for (String role: roleKeys) {
+				rolesEl.select(role, true);
+			}
+		}
 		
 		// trigger
 		triggerTypeEl = uifactory.addDropdownSingleselect("config.trigger.type", formLayout, TRIGGER_KEYS,
@@ -179,18 +194,6 @@ public class CourseProviderConfigController extends ProviderConfigController {
 
 		String reminder2Days = configs.getValue(CourseProvider.CONFIG_KEY_REMINDER2_AFTER_DC_DAYS);
 		reminder2DaysEl = uifactory.addTextElement("config.reminder2.days", 4, reminder2Days, formLayout);
-
-		// roles
-		rolesEl = uifactory.addCheckboxesHorizontal("config.roles", formLayout, ROLES_KEYS,
-				translateAll(getTranslator(), ROLES_KEYS));
-		String concatedRoles = configs.getValue(CourseProvider.CONFIG_KEY_ROLES);
-		if (StringHelper.containsNonWhitespace(concatedRoles)) {
-			String[] roles = concatedRoles.split(CourseProvider.ROLES_DELIMITER);
-			String[] roleKeys = Arrays.stream(roles).map(r -> ROLES_PREFIX + r).toArray(String[]::new);
-			for (String role: roleKeys) {
-				rolesEl.select(role, true);
-			}
-		}
 		
 		// educational type exclusion
 		SelectionValues educationalTypeKV = new SelectionValues();
@@ -206,6 +209,13 @@ public class CourseProviderConfigController extends ProviderConfigController {
 			Arrays.stream(educationalTypeKeys.split(CourseProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
 					.filter(key -> educationalTypeEl.getKeys().contains(key))
 					.forEach(key -> educationalTypeEl.select(key, true));
+		}
+		
+		// Preview rights
+		limitEditRightsEl = uifactory.addCheckboxesHorizontal("generator.limit.edit.rights", formLayout,
+				new String[] { "xx" }, new String[] { translate("generator.limit.edit.rights.limit") });
+		if (StringHelper.containsNonWhitespace(configs.getValue(CourseProvider.CONFIG_KEY_PREVIEW_EDIT_QM_RESTRICTED))) {
+			limitEditRightsEl.select(limitEditRightsEl.getKey(0), true);
 		}
 		
 		updateUI();
@@ -238,6 +248,7 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		rolesEl.setEnabled(enabled);
 		durationEl.setEnabled(enabled);
 		educationalTypeEl.setEnabled(enabled);
+		limitEditRightsEl.setEnabled(enabled);
 		flc.setDirty(true);
 	}
 
@@ -351,6 +362,9 @@ public class CourseProviderConfigController extends ProviderConfigController {
 						.collect(Collectors.joining(CourseProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
 				: null;
 		configs.setValue(CourseProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION, educationalTypeKeys);
+		
+		String extended = limitEditRightsEl.isAtLeastSelected(1)? "true": null;
+		configs.setValue(CourseProvider.CONFIG_KEY_PREVIEW_EDIT_QM_RESTRICTED, extended);
 	}
 
 	private void clearTriggerConfigs() {

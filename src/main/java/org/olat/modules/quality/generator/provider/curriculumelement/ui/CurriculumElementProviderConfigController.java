@@ -50,12 +50,15 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.TitleCreator;
+import org.olat.modules.quality.generator.provider.curriculumelement.CurriculumElementProvider;
+import org.olat.modules.quality.generator.ui.GeneratorConfigController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -90,6 +93,7 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 	private TextElement reminder2DaysEl;
 	private MultipleSelectionElement rolesEl;
 	private TextElement durationEl;
+	private MultipleSelectionElement limitEditRightsEl;
 	
 	private final QualityGeneratorConfigs configs;
 
@@ -101,6 +105,7 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 	public CurriculumElementProviderConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			QualityGeneratorConfigs configs) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, mainForm);
+		setTranslator(Util.createPackageTranslator(GeneratorConfigController.class, getLocale(), getTranslator()));
 		this.configs = configs;
 		initForm(ureq);
 	}
@@ -112,6 +117,18 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 		String identifiers = titleCreator.getIdentifiers(singletonList(CurriculumElement.class)).stream()
 				.collect(Collectors.joining(", "));
 		titleEl.setHelpTextKey("config.title.help", new String[] {identifiers} );
+
+		// roles
+		rolesEl = uifactory.addCheckboxesHorizontal("config.roles", formLayout, ROLES_KEYS,
+				translateAll(getTranslator(), ROLES_KEYS));
+		String concatedRoles = configs.getValue(CONFIG_KEY_ROLES);
+		if (StringHelper.containsNonWhitespace(concatedRoles)) {
+			String[] roles = concatedRoles.split(ROLES_DELIMITER);
+			String[] roleKeys = Arrays.stream(roles).map(r -> ROLES_PREFIX + r).toArray(String[]::new);
+			for (String role: roleKeys) {
+				rolesEl.select(role, true);
+			}
+		}
 
 		// curriculum element type
 		List<CurriculumElementType> ceTypes = curriculumService.getCurriculumElementTypes();
@@ -152,17 +169,12 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 
 		String reminder2Days = configs.getValue(CONFIG_KEY_REMINDER2_AFTER_DC_DAYS);
 		reminder2DaysEl = uifactory.addTextElement("config.reminder2.days", 4, reminder2Days, formLayout);
-
-		// roles
-		rolesEl = uifactory.addCheckboxesHorizontal("config.roles", formLayout, ROLES_KEYS,
-				translateAll(getTranslator(), ROLES_KEYS));
-		String concatedRoles = configs.getValue(CONFIG_KEY_ROLES);
-		if (StringHelper.containsNonWhitespace(concatedRoles)) {
-			String[] roles = concatedRoles.split(ROLES_DELIMITER);
-			String[] roleKeys = Arrays.stream(roles).map(r -> ROLES_PREFIX + r).toArray(String[]::new);
-			for (String role: roleKeys) {
-				rolesEl.select(role, true);
-			}
+		
+		// Preview rights
+		limitEditRightsEl = uifactory.addCheckboxesHorizontal("generator.limit.edit.rights", formLayout,
+				new String[] { "xx" }, new String[] { translate("generator.limit.edit.rights.limit") });
+		if (StringHelper.containsNonWhitespace(configs.getValue(CurriculumElementProvider.CONFIG_KEY_PREVIEW_EDIT_QM_RESTRICTED))) {
+			limitEditRightsEl.select(limitEditRightsEl.getKey(0), true);
 		}
 	}
 
@@ -178,6 +190,7 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 		reminder2DaysEl.setEnabled(enabled);
 		rolesEl.setEnabled(enabled);
 		durationEl.setEnabled(enabled);
+		limitEditRightsEl.setEnabled(enabled);
 		flc.setDirty(true);
 	}
 
@@ -242,5 +255,8 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 				.map(r -> r.substring(ROLES_PREFIX.length()))
 				.collect(joining(ROLES_DELIMITER));
 		configs.setValue(CONFIG_KEY_ROLES, roles);
+		
+		String extended = limitEditRightsEl.isAtLeastSelected(1)? "true": null;
+		configs.setValue(CurriculumElementProvider.CONFIG_KEY_PREVIEW_EDIT_QM_RESTRICTED, extended);
 	}
 }

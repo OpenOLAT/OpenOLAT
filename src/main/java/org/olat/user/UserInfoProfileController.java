@@ -92,20 +92,6 @@ public class UserInfoProfileController extends BasicController {
 			mainVC.contextPut("portraitAltText", translate("user.info.profile.portrait.alt", StringHelper.escapeHtml(profile.getDisplayName())));
 		}
 		
-		if (!profile.getIdentityKey().equals(getIdentity().getKey())) {
-			String imStatusIconCss;
-			if(Presence.available == profile.getPresence()) {
-				imStatusIconCss = "o_icon o_icon_status_available";
-			} else if (Presence.dnd == profile.getPresence()) {
-				imStatusIconCss = "o_icon o_icon_status_dnd";
-			} else if (Presence.unavailable == profile.getPresence()) {
-				imStatusIconCss = "o_icon o_icon_status_unavailable";
-			} else {
-				imStatusIconCss = "o_icon o_icon_status_chat";
-			}
-			mainVC.contextPut("imStatusIconCss", imStatusIconCss);
-		}
-		
 		visitingCardLink = LinkFactory.createLink("user.info.visiting.card", mainVC, this);
 		visitingCardLink.setIconLeftCSS("o_icon o_icon-fw o_icon_visiting_card");
 		visitingCardLink.setElementCssClass("o_nowrap");
@@ -121,6 +107,23 @@ public class UserInfoProfileController extends BasicController {
 			chatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_chat");
 			chatLink.setElementCssClass("o_nowrap");
 			chatLink.setAriaRole("button");
+			
+			String imStatusIconCss;
+			String imStatusText = null;
+			if (Presence.available == profile.getPresence()) {
+				imStatusIconCss = "o_icon o_icon_status_available";
+				imStatusText = translate("user.info.presence.available");
+			} else if (Presence.dnd == profile.getPresence()) {
+				imStatusIconCss = "o_icon o_icon_status_dnd";
+				imStatusText = translate("user.info.presence.dnd");
+			} else if (Presence.unavailable == profile.getPresence()) {
+				imStatusIconCss = "o_icon o_icon_status_unavailable";
+				imStatusText = translate("user.info.presence.unavailable");
+			} else {
+				imStatusIconCss = "o_icon o_icon_status_chat";
+			}
+			mainVC.contextPut("imStatusIconCss", imStatusIconCss);
+			mainVC.contextPut("imStatusText", imStatusText);
 		}
 	}
 
