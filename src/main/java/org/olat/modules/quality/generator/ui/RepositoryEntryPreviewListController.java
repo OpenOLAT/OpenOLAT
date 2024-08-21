@@ -99,8 +99,8 @@ public class RepositoryEntryPreviewListController extends AbstractPreviewListCon
 	}
 
 	@Override
-	protected boolean canEdit() {
-		return canEdit;
+	protected boolean canEdit(boolean restricted) {
+		return !restricted && canEdit;
 	}
 
 }

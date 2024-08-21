@@ -169,7 +169,7 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 
 	protected abstract String getEmptyTableHintKey();
 	
-	protected abstract boolean canEdit();
+	protected abstract boolean canEdit(boolean restricted);
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -633,9 +633,10 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 	private void doOpenGeneratorPreview(UserRequest ureq, PreviewRow row) {
 		Optional<QualityPreview> preview = loadGeneratorPreview(row);
 		if (preview.isPresent()) {
-			previewCtrl = new PreviewController(ureq, getWindowControl(), stackPanel, preview.get(), canEdit());
+			QualityPreview qualityPreview = preview.get();
+			previewCtrl = new PreviewController(ureq, getWindowControl(), stackPanel, qualityPreview, canEdit(qualityPreview.isRestrictedEdit()));
 			listenTo(previewCtrl);
-			stackPanel.pushController(preview.get().getTitle(), previewCtrl);
+			stackPanel.pushController(qualityPreview.getTitle(), previewCtrl);
 			previewCtrl.activate(ureq, null, null);
 		} else {
 			showWarning("preview.error.not.available");

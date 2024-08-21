@@ -102,6 +102,7 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	public static final String CONFIG_KEY_REMINDER1_AFTER_DC_DAYS = "reminder1.after.dc.start.days";
 	public static final String CONFIG_KEY_REMINDER2_AFTER_DC_DAYS = "reminder2.after.dc.start.days";
 	public static final String CONFIG_KEY_ROLES = "participants.roles";
+	public static final String CONFIG_KEY_PREVIEW_EDIT_QM_RESTRICTED = "preview.edit.qm.restricted";
 	public static final String CONFIG_KEY_TITLE = "title";
 	public static final String ROLES_DELIMITER = ",";
 
@@ -467,6 +468,8 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 			} else {
 				preview.setStatus(QualityPreviewStatus.regular);
 			}
+			
+			preview.setRestrictedEdit(StringHelper.containsNonWhitespace(configs.getValue(CONFIG_KEY_PREVIEW_EDIT_QM_RESTRICTED)));
 			
 			previews.add(preview);
 		}
