@@ -1378,11 +1378,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return new ArrayList<>();
 		}
 		return badgeAssertionDAO.getBadgeAssertions(recipient, courseEntry, false).stream()
-				.filter(ba -> couldInvolveCourseNodeRule(ba.getBadgeClass(), courseNodeIdent)).toList();
+				.filter(ba -> conditionForCourseNodeExists(ba.getBadgeClass(), courseNodeIdent)).toList();
 	}
 
-	// true if the fact of having earned a badge of 'badgeClass' could be the result of a rule involving 'courseNode'.
-	private boolean couldInvolveCourseNodeRule(BadgeClass badgeClass, String courseNodeIdent) {
+	public boolean conditionForCourseNodeExists(BadgeClass badgeClass, String courseNodeIdent) {
 		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 		if (badgeCriteria.conditionForCourseNodeExists(courseNodeIdent)) {
 			return true;

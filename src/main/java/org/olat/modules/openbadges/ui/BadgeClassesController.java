@@ -61,6 +61,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.nodes.CourseNode;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
@@ -82,6 +83,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private static final String CMD_TOOLS = "tools";
 
 	private final RepositoryEntry entry;
+	private final CourseNode courseNode;
 	private final RepositoryEntrySecurity reSecurity;
 	private final BreadcrumbPanel breadcrumbPanel;
 	private final String createKey;
@@ -102,12 +104,13 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private OpenBadgesManager openBadgesManager;
 
 	public BadgeClassesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-								  RepositoryEntrySecurity reSecurity, BreadcrumbPanel breadcrumbPanel,
-								  String contextHelp, String createKey, String editKey) {
+								  CourseNode courseNode, RepositoryEntrySecurity reSecurity,
+								  BreadcrumbPanel breadcrumbPanel, String contextHelp, String createKey, String editKey) {
 		super(ureq, wControl, "badge_classes");
 		flc.contextPut("contextHelp", contextHelp);
 		flc.contextPut("title", entry == null ? translate("form.global.badges") : translate("badges"));
 		this.entry = entry;
+		this.courseNode = courseNode;
 		this.reSecurity = reSecurity;
 		this.breadcrumbPanel = breadcrumbPanel;
 		this.createKey = createKey;
@@ -156,7 +159,14 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void loadModel() {
-		List<BadgeClassRow> rows = openBadgesManager.getBadgeClassesWithSizesAndCounts(entry).stream().map(this::forgeRow).toList();
+		List<BadgeClassRow> rows = openBadgesManager.getBadgeClassesWithSizesAndCounts(entry).stream()
+				.filter(bc -> {
+					if (courseNode == null) {
+						return true;
+					}
+					return openBadgesManager.conditionForCourseNodeExists(bc.badgeClass(), courseNode.getIdent());
+				})
+				.map(this::forgeRow).toList();
 		tableModel.setObjects(rows);
 		tableEl.reset();
 	}

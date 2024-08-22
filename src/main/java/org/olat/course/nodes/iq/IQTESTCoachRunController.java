@@ -75,6 +75,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
 	private static final String ORES_TYPE_COMMUNICATION = "Communication";
 	private static final String ORES_TYPE_INSPECTIONS = "Inspections";
+	private static final String ORES_TYPE_BADGES = "Badges";
 
 	private Link overviewLink;
 	private Link participantsLink;
@@ -184,7 +185,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 
 		// Badges
 		if (openBadgesManager.showBadgesRunSegment(courseEntry, courseNode, userCourseEnv)) {
-			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_BADGES), null);
+			badgesCtrl = new CourseNodeBadgesController(ureq, swControl, courseEntry, courseNode);
 			listenTo(badgesCtrl);
 
 			badgesLink = LinkFactory.createLink("segment.badges", mainVC, this);
@@ -212,6 +214,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			doOpenPreview(ureq, true);
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
 			doOpenReminders(ureq, true);
+		} else if(ORES_TYPE_BADGES.equalsIgnoreCase(type) && badgesLink != null) {
+			doOpenBadges(ureq, true);
 		} else if(ORES_TYPE_COMMUNICATION.equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenCommunication(ureq).activate(ureq, subEntries, state);
@@ -252,7 +256,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
 				} else if (clickedLink == badgesLink) {
-					doOpenBadges();
+					doOpenBadges(ureq, true);
 				} else if (clickedLink == communicationLink) {
 					doOpenCommunication(ureq);
 				} else if (clickedLink == inspectionsLink) {
@@ -272,6 +276,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			doOpenPreview(ureq, false);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
 			doOpenReminders(ureq, false);
+		} else if (CourseNodeSegment.badges == segment && badgesLink != null) {
+			doOpenBadges(ureq, false);
 		} else {
 			doOpenOverview(ureq, false);
 		}
@@ -340,10 +346,11 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	}
 
 
-	private void doOpenBadges() {
+	private void doOpenBadges(UserRequest ureq, boolean saveSegmentPref) {
 		if (badgesLink != null) {
 			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
 			segmentView.select(badgesLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.badges, segmentView, saveSegmentPref);
 		}
 	}
 

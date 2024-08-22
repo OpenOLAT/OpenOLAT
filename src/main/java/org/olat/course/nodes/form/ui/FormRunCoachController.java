@@ -58,7 +58,8 @@ public class FormRunCoachController extends BasicController implements Activatea
 	
 	private static final String ORES_TYPE_PARTICIPANTS = "Participants";
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
-	
+	private static final String ORES_TYPE_BADGES = "Badges";
+
 	private Link participantsLink;
 	private Link remindersLink;
 	private Link badgesLink;
@@ -116,7 +117,8 @@ public class FormRunCoachController extends BasicController implements Activatea
 
 		// Badges
 		if (openBadgesManager.showBadgesRunSegment(courseEntry, formCourseNode, userCourseEnv)) {
-			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_BADGES), null);
+			badgesCtrl = new CourseNodeBadgesController(ureq, swControl, courseEntry, formCourseNode);
 			listenTo(badgesCtrl);
 
 			badgesLink = LinkFactory.createLink("segment.badges", mainVC, this);
@@ -138,6 +140,8 @@ public class FormRunCoachController extends BasicController implements Activatea
 			doOpenParticipants(ureq, true).activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
 			doOpenReminders(ureq, true);
+		} else if(ORES_TYPE_BADGES.equalsIgnoreCase(type)) {
+			doOpenBadges(ureq, true);
 		}
 	}
 
@@ -153,7 +157,7 @@ public class FormRunCoachController extends BasicController implements Activatea
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
 				} else if (clickedLink == badgesLink) {
-					doOpenBadges();
+					doOpenBadges(ureq, true);
 				}
 			}
 		}
@@ -165,6 +169,8 @@ public class FormRunCoachController extends BasicController implements Activatea
 			doOpenParticipants(ureq, false);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
 			doOpenReminders(ureq, false);
+		} else if (CourseNodeSegment.badges == segment && badgesLink != null) {
+			doOpenBadges(ureq, false);
 		} else {
 			doOpenParticipants(ureq, false);
 		}
@@ -190,10 +196,11 @@ public class FormRunCoachController extends BasicController implements Activatea
 		}
 	}
 
-	private void doOpenBadges() {
+	private void doOpenBadges(UserRequest ureq, boolean saveSegmentPref) {
 		if (badgesLink != null) {
 			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
 			segmentView.select(badgesLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.badges, segmentView, saveSegmentPref);
 		}
 	}
 }

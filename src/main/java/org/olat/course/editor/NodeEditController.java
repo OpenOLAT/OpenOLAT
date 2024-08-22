@@ -184,8 +184,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			RepositoryManager rm = RepositoryManager.getInstance();
 			RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, courseEntry);
 
-			badgeClassesController = new BadgeClassesController(ureq, wControl, courseEntry, reSecurity, stackPanel,
-					null, "form.create.new.badge", "form.edit.badge");
+			badgeClassesController = new BadgeClassesController(ureq, wControl, courseEntry, courseNode, reSecurity,
+					stackPanel, null, "form.create.new.badge", "form.edit.badge");
 			listenTo(badgeClassesController);
 		}
 	}

@@ -25,6 +25,7 @@ import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
@@ -40,17 +41,15 @@ public class CourseNodeBadgesController extends BasicController {
 	@Autowired
 	private RepositoryManager repositoryManager;
 
-	private final BreadcrumbedStackedPanel badgesStackPanel;
-	private final BadgeClassesController badgeClassesController;
-
-	public CourseNodeBadgesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public CourseNodeBadgesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, CourseNode courseNode) {
 		super(ureq, wControl);
 
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, entry);
 
-		badgesStackPanel = new BreadcrumbedStackedPanel("badges-stack", getTranslator(), this);
-		badgeClassesController = new BadgeClassesController(ureq, wControl, entry, reSecurity, badgesStackPanel,
-				null, "form.create.new.badge", "form.edit.badge");
+		BreadcrumbedStackedPanel badgesStackPanel = new BreadcrumbedStackedPanel("badges-stack", getTranslator(), this);
+		BadgeClassesController badgeClassesController = new BadgeClassesController(ureq, wControl, entry,
+				courseNode, reSecurity, badgesStackPanel, null, "form.create.new.badge",
+				"form.edit.badge");
 		listenTo(badgeClassesController);
 		badgesStackPanel.setInvisibleCrumb(0);
 		badgesStackPanel.pushController(translate("badges"), badgeClassesController);

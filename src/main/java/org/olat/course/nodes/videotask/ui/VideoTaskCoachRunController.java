@@ -62,7 +62,8 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 	private static final String ORES_TYPE_OVERVIEW = "Overview";
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
 	private static final String ORES_TYPE_PARTICIPANTS = "Participants";
-	
+	private static final String ORES_TYPE_BADGES = "Badges";
+
 	private Link previewLink;
 	private Link overviewLink;
 	private Link participantsListLink;
@@ -139,7 +140,8 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 		}
 
 		if (openBadgesManager.showBadgesRunSegment(courseEntry, videoTaskNode, userCourseEnv)) {
-			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_BADGES), null);
+			badgesCtrl = new CourseNodeBadgesController(ureq, swControl, courseEntry, videoTaskNode);
 			listenTo(badgesCtrl);
 
 			badgesLink = LinkFactory.createLink("run.badges", mainVC, this);
@@ -165,6 +167,8 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 			doOpenPreview(ureq, true);
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
 			doOpenReminders(ureq, true);
+		} else if(ORES_TYPE_BADGES.equalsIgnoreCase(type) && badgesLink != null) {
+			doOpenBadges(ureq, true);
 		}
 	}
 
@@ -183,7 +187,7 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
 				} else if (clickedLink == badgesLink) {
-					doOpenBadges(ureq);
+					doOpenBadges(ureq, true);
 				}
 			}
 		}
@@ -250,11 +254,11 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 		}
 	}
 
-	private void doOpenBadges(UserRequest ureq) {
+	private void doOpenBadges(UserRequest ureq, boolean saveSegmentPref) {
 		if (badgesLink != null) {
-			addToHistory(ureq, badgesCtrl);
 			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
 			segmentView.select(badgesLink);
+			setPreferredSegment(ureq, CourseNodeSegment.badges, saveSegmentPref);
 		}
 	}
 	
@@ -266,6 +270,8 @@ public class VideoTaskCoachRunController extends BasicController implements Acti
 			doOpenParticipantsList(ureq, false);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
 			doOpenReminders(ureq, false);
+		} else if (CourseNodeSegment.badges == segment && badgesLink != null) {
+			doOpenBadges(ureq, false);
 		} else if(overviewLink != null) {
 			doOpenOverview(ureq, false);
 		} else {
