@@ -61,7 +61,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.QuotaExceededException;
-
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
@@ -994,7 +993,7 @@ public class WebDAVDispatcherImpl
         }
         
         if (copyResource(req, resp, true)) {
-            deleteResource(path, req, resp, false);
+            deleteResource(path, req, resp, false, true);
         }
     }
 
@@ -1594,7 +1593,7 @@ public class WebDAVDispatcherImpl
         if (overwrite) {
             // Delete destination resource, if it exists
             if (destination.exists()) {
-                if (!deleteResource(destinationPath, req, resp, true)) {
+                if (!deleteResource(destinationPath, req, resp, true, false)) {
                     return false;
                 }
             } else {
@@ -1779,7 +1778,7 @@ public class WebDAVDispatcherImpl
 
         String path = getRelativePath(req);
 
-        return deleteResource(path, req, resp, true);
+        return deleteResource(path, req, resp, true, false);
 
     }
 
@@ -1794,7 +1793,7 @@ public class WebDAVDispatcherImpl
      *                  completion
      */
     private boolean deleteResource(final String path, HttpServletRequest req,
-                                   HttpServletResponse resp, boolean setStatus)
+                                   HttpServletResponse resp, boolean setStatus, boolean postMoveOperation)
             throws IOException {
 
         String ifHeader = req.getHeader("If");
@@ -1819,7 +1818,7 @@ public class WebDAVDispatcherImpl
         }
 
         if (!resource.isDirectory()) {
-            if (!resources.delete(resource)) {
+            if (!resources.delete(resource, postMoveOperation)) {
                 resp.setStatus(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                 return false;
             } else {
@@ -1831,7 +1830,7 @@ public class WebDAVDispatcherImpl
             Hashtable<String,Integer> errorList = new Hashtable<>();
 
             deleteCollection(req, path, errorList);
-            if (!resources.delete(resource)) {
+            if (!resources.delete(resource, postMoveOperation)) {
                 errorList.put(path, Integer.valueOf(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
             }
 
@@ -1857,7 +1856,7 @@ public class WebDAVDispatcherImpl
                                   String path,
                                   Map<String,Integer> errorList) {
 
-        if (log.isDebugEnabled()) log.debug("Delete:" + path);
+        log.debug("Delete:{}", path);
 
         // Prevent deletion of special subdirectories
         if (isSpecialPath(path)) {
@@ -1894,7 +1893,7 @@ public class WebDAVDispatcherImpl
                     deleteCollection(req, childName, errorList);
                 }
 
-                if (!resources.delete(childResource)) {
+                if (!resources.delete(childResource, false)) {
                     if (!childResource.isDirectory()) {
                         // If it's not a collection, then it's an unknown error
                         errorList.put(childName, Integer.valueOf(WebdavStatus.SC_INTERNAL_SERVER_ERROR));

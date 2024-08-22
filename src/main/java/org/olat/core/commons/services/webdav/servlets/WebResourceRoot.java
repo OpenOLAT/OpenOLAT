@@ -86,6 +86,12 @@ public interface WebResourceRoot {
     boolean write(String path, InputStream is, boolean overwrite, WebResource movedFrom)
     throws QuotaExceededException;
     
-    public boolean delete(WebResource resourceo);
+    /**
+     * 
+     * @param resource
+     * @param deleteSilently Delete without passing by the trash, file and metadata
+     * @return
+     */
+    public boolean delete(WebResource resource, boolean deleteSilently);
 
 }
