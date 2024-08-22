@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.appointments.ui;
@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -103,7 +104,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 29 Apr 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class TopicsRunCoachController extends FormBasicController {
@@ -216,7 +217,7 @@ public class TopicsRunCoachController extends FormBasicController {
 		Map<Long, List<Participation>> appointmentKeyToParticipations = participations.stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
 		
-		topics.sort((t1, t2) -> t1.getTitle().toLowerCase().compareTo(t2.getTitle().toLowerCase()));
+		topics.sort(Comparator.comparing(t -> t.getTitle().toLowerCase()));
 		List<TopicWrapper> wrappers = new ArrayList<>(topics.size());
 		for (Topic topic : topics) {
 			TopicWrapper wrapper = new TopicWrapper(topic);
@@ -226,16 +227,15 @@ public class TopicsRunCoachController extends FormBasicController {
 				wrapper.setOrganizerNames(AppointmentsUIFactory.formatOrganizers(organizers));
 				List<Appointment> appointments = topicKeyToAppointments.getOrDefault(topic.getKey(), emptyList());
 				List<Participation> topicParticipations = topicKeyToParticipations.getOrDefault(topic.getKey(), emptyList());
-				wrapParticpations(wrapper, topicParticipations, appointments, appointmentKeyToParticipations);
+				wrapParticipations(wrapper, topicParticipations, appointments, appointmentKeyToParticipations);
 				wrappers.add(wrapper);
 			}
 		}
 		return wrappers;
 	}
 
-	private void wrapParticpations(TopicWrapper wrapper, List<Participation> participations, List<Appointment> appointments,
-			Map<Long, List<Participation>> appointmentKeyToParticipations) {
-		
+	private void wrapParticipations(TopicWrapper wrapper, List<Participation> participations, List<Appointment> appointments,
+									Map<Long, List<Participation>> appointmentKeyToParticipations) {
 		long numParticipants = participations.stream()
 				.map(participation -> participation.getIdentity().getKey())
 				.distinct()
@@ -259,8 +259,7 @@ public class TopicsRunCoachController extends FormBasicController {
 			nextAppointment = appointments.stream()
 					.filter(a -> Appointment.Status.confirmed == a.getStatus())
 					.filter(a -> appointmentsService.isEndAfter(a, now))
-					.sorted((a1, a2) -> a1.getStart().compareTo(a2.getStart()))
-					.findFirst();
+					.min(Comparator.comparing(Appointment::getStart));
 		}
 		
 		if (nextAppointment.isPresent()) {
@@ -272,7 +271,7 @@ public class TopicsRunCoachController extends FormBasicController {
 			wrapper.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 			wrapper.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 			
-			boolean showPrevNextHeader = Type.finding == wrapper.getTopic().getType()? false: true;
+			boolean showPrevNextHeader = Type.finding == wrapper.getTopic().getType() ? false: true;
 			if (showPrevNextHeader) {
 				wrapper.setFuture(Boolean.TRUE);
 			}
@@ -327,7 +326,7 @@ public class TopicsRunCoachController extends FormBasicController {
 			}
 		}
 		
-		String message = messages.isEmpty()? null: messages.stream().collect(Collectors.joining("<br>"));
+		String message = messages.isEmpty() ? null: String.join("<br>", messages);
 		wrapper.setMessage(message);
 	}
 	
@@ -337,7 +336,7 @@ public class TopicsRunCoachController extends FormBasicController {
 				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
 				.sorted(String.CASE_INSENSITIVE_ORDER)
 				.limit(limit)
-				.collect(Collectors.toList());
+				.toList();
 		wrapper.setParticipants(participants);
 		
 		if (participations.size() > PARTICIPANTS_RENDER_LIMIT) {
@@ -347,7 +346,7 @@ public class TopicsRunCoachController extends FormBasicController {
 			long hiddenParticipations = participations.size() - PARTICIPANTS_RENDER_LIMIT;
 			String displayText = showAllParticipationsTopicKeys.contains(wrapper.getTopic().getKey())
 					? translate("show.less")
-					: translate("show.more", new String[] { String.valueOf(hiddenParticipations)} );
+					: translate("show.more", String.valueOf(hiddenParticipations));
 			showMoreLink.setI18nKey(displayText);
 			showMoreLink.setUserObject(wrapper.getTopic());
 			wrapper.setShowMoreLinkName(showMoreLink.getName());
@@ -420,6 +419,10 @@ public class TopicsRunCoachController extends FormBasicController {
 		if (appointmentsService.isTeamsEnabled()
 				&& secCallback.canJoinTeamsMeeting(appointment, wrapper.getOrganizers(), participations)) {
 			wrapTeamsMeeting(wrapper);
+		}
+
+		if (secCallback.canJoinOtherMeeting(appointment, wrapper.getOrganizers(), participations)) {
+			wrapOthersMeeting(wrapper);
 		}
 	}
 	
@@ -497,6 +500,28 @@ public class TopicsRunCoachController extends FormBasicController {
 		joinButton.setPrimary(joinButton.isEnabled());
 		joinButton.setUserObject(wrapper);
 		wrapper.setJoinLinkName(joinButton.getName());
+	}
+
+	private void wrapOthersMeeting(TopicWrapper wrapper) {
+		if (wrapper.getAppointment() != null && wrapper.getAppointment().isRecordingEnabled()) {
+			SelectionValues acknowledgeKeyValue = new SelectionValues();
+			acknowledgeKeyValue.add(SelectionValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
+			MultipleSelectionElement acknowledgeRecordingOtherEl =
+					uifactory.addCheckboxesHorizontal("recordingAgreement_" + wrapper.getTopic().getKey(), null, flc,
+							acknowledgeKeyValue.keys(), acknowledgeKeyValue.values());
+			if (acknowlededRecordings.contains(wrapper.getTopic().getKey())) {
+				acknowledgeRecordingOtherEl.select(acknowledgeRecordingOtherEl.getKey(0), true);
+			}
+			acknowledgeRecordingOtherEl.addActionListener(FormEvent.ONCHANGE);
+			acknowledgeRecordingOtherEl.setUserObject(wrapper);
+			wrapper.setAcknowledgeRecordingOtherEl(acknowledgeRecordingOtherEl);
+		}
+
+		FormLink meetingEnterEl = uifactory.addFormLink("enterMeeting_" + wrapper.getTopic().getKey(), CMD_JOIN,"meeting.enter", null, flc, Link.BUTTON_LARGE);
+		meetingEnterEl.setPrimary(true);
+		meetingEnterEl.setUserObject(wrapper);
+		meetingEnterEl.setNewWindow(true, true, true);
+		wrapper.setJoinOtherLinkName(meetingEnterEl.getName());
 	}
 
 	private void wrapOpenLink(TopicWrapper wrapper) {
@@ -614,8 +639,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == createButton) {
 			doAddTopic(ureq);
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if (CMD_MORE.equals(cmd)) {
 				Topic topic = (Topic)link.getUserObject();
@@ -648,8 +672,7 @@ public class TopicsRunCoachController extends FormBasicController {
 				BigBlueButtonRecordingReference recordingReference = (BigBlueButtonRecordingReference)link.getUserObject();
 				doOpenRecording(ureq, recordingReference);
 			}
-		} else if (source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement mse = (MultipleSelectionElement)source;
+		} else if (source instanceof MultipleSelectionElement mse) {
 			Topic topic = ((TopicWrapper)mse.getUserObject()).getTopic();
 			if (mse.isAtLeastSelected(1)) {
 				acknowlededRecordings.add(topic.getKey());
@@ -762,7 +785,10 @@ public class TopicsRunCoachController extends FormBasicController {
 			appointment = appointments.get(0);
 		}
 		
-		if (appointment == null || (appointment.getBBBMeeting() == null && appointment.getTeamsMeeting() == null)) {
+		if (appointment == null ||
+				(appointment.getBBBMeeting() == null
+						&& appointment.getTeamsMeeting() == null
+						&& appointment.getMeetingUrl().isBlank())) {
 			showWarning("warning.no.meeting");
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			return;
@@ -772,6 +798,23 @@ public class TopicsRunCoachController extends FormBasicController {
 			doJoinBBBMeeting(wrapper, appointment);
 		} else if (appointment.getTeamsMeeting() != null) {
 			doJoinTeamsMeeting(ureq, appointment);
+		} else if (StringHelper.containsNonWhitespace(appointment.getMeetingUrl())) {
+			doJoinOtherMeeting(wrapper, appointment);
+		}
+	}
+
+	private void doJoinOtherMeeting(TopicWrapper wrapper, Appointment appointment) {
+		String joinUrl = appointment.getMeetingUrl();
+		if(appointment.isRecordingEnabled() && !acknowlededRecordings.contains(appointment.getTopic().getKey())) {
+			wrapper.getAcknowledgeRecordingOtherEl().setErrorKey("form.legende.mandatory");
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			return;
+		} else if (wrapper.getAcknowledgeRecordingOtherEl() != null) {
+			wrapper.getAcknowledgeRecordingOtherEl().clearError();
+		}
+
+		if (StringHelper.containsNonWhitespace(joinUrl)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(joinUrl));
 		}
 	}
 
@@ -880,11 +923,13 @@ public class TopicsRunCoachController extends FormBasicController {
 		private Boolean future;
 		
 		private MultipleSelectionElement acknowledgeRecordingEl;
+		private MultipleSelectionElement acknowledgeRecordingOtherEl;
 		private String openLinkName;
 		private String toolsName;
 		
 		private boolean bbb;
 		private String joinLinkName;
+		private String joinOtherLinkName;
 		private String serverWarning;
 		private String meetingWarning;
 		private List<String> recordingLinkNames;
@@ -1092,6 +1137,25 @@ public class TopicsRunCoachController extends FormBasicController {
 		public void setRecordingLinkNames(List<String> recordingLinkNames) {
 			this.recordingLinkNames = recordingLinkNames;
 		}
-		
+
+		public MultipleSelectionElement getAcknowledgeRecordingOtherEl() {
+			return acknowledgeRecordingOtherEl;
+		}
+
+		public void setAcknowledgeRecordingOtherEl(MultipleSelectionElement acknowledgeRecordingOtherEl) {
+			this.acknowledgeRecordingOtherEl = acknowledgeRecordingOtherEl;
+		}
+
+		public String getAcknowledgeOtherName() {
+			return acknowledgeRecordingOtherEl != null ? acknowledgeRecordingOtherEl.getName(): null;
+		}
+
+		public String getJoinOtherLinkName() {
+			return joinOtherLinkName;
+		}
+
+		public void setJoinOtherLinkName(String joinOtherLinkName) {
+			this.joinOtherLinkName = joinOtherLinkName;
+		}
 	}
 }

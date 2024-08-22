@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.appointments;
@@ -29,7 +29,7 @@ import org.olat.modules.teams.TeamsMeeting;
 /**
  * 
  * Initial date: 11 Apr 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public interface Appointment extends AppointmentRef, ModifiedInfo, CreateInfo {
@@ -64,6 +64,42 @@ public interface Appointment extends AppointmentRef, ModifiedInfo, CreateInfo {
 	public void setMaxParticipations(Integer maxParticipations);
 	
 	public Topic getTopic();
+
+	/**
+	 *
+	 * @return Title of the Meeting
+	 */
+	public String getMeetingTitle();
+
+	/**
+	 *
+	 * @param meetingTitle
+	 */
+	public void setMeetingTitle(String meetingTitle);
+
+	/**
+	 *
+	 * @return Url which refers to the meeting
+	 */
+	public String getMeetingUrl();
+
+	/**
+	 *
+	 * @param meetingUrl
+	 */
+	public void setMeetingUrl(String meetingUrl);
+
+	/**
+	 *
+	 * @return true is recording was enabled, false otherwise
+	 */
+	public boolean isRecordingEnabled();
+
+	/**
+	 *
+	 * @param recordingEnabled
+	 */
+	public void setRecordingEnabled(boolean recordingEnabled);
 	
 	public BigBlueButtonMeeting getBBBMeeting();
 	

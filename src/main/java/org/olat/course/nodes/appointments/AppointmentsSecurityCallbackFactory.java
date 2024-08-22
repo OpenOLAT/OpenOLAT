@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.appointments;
@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.noderight.NodeRightService;
 import org.olat.course.nodes.AppointmentsCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -40,7 +41,7 @@ import org.olat.modules.teams.TeamsMeeting;
 /**
  * 
  * Initial date: 13 Apr 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class AppointmentsSecurityCallbackFactory {
@@ -122,6 +123,24 @@ public class AppointmentsSecurityCallbackFactory {
 			boolean organizer = isOrganizer(organizers);
 			if (participation || organizer) {
 				Date end = meeting.getEndWithFollowupTime();
+				return end == null || end.compareTo(new Date()) >= 0;
+			}
+			return false;
+		}
+
+		@Override
+		public boolean canJoinOtherMeeting(Appointment appointment, Collection<Organizer> organizers, Collection<Participation> participations) {
+			if (readOnly
+					|| appointment == null
+					|| !StringHelper.containsNonWhitespace(appointment.getMeetingUrl())
+					|| Appointment.Status.confirmed != appointment.getStatus()) {
+				return false;
+			}
+
+			boolean participation = isParticipation(participations);
+			boolean organizer = isOrganizer(organizers);
+			if (participation || organizer) {
+				Date end = appointment.getEnd();
 				return end == null || end.compareTo(new Date()) >= 0;
 			}
 			return false;

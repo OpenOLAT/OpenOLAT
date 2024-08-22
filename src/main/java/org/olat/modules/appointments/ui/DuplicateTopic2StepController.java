@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.appointments.ui;
@@ -30,7 +30,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
@@ -71,7 +70,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 19 Nov 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.comm
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.comm
  *
  */
 public class DuplicateTopic2StepController extends StepFormBasicController {
@@ -119,10 +118,11 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		aParams.setFetchMeetings(true);
 		sourceAppointments = appointmentsService.getAppointments(aParams).stream()
 				.sorted(START_END_COMPARATOR)
-				.collect(Collectors.toList());
+				.toList();
 		
 		meetings = appointmentsService.isBigBlueButtonEnabled() && hasBBBMeeting(sourceAppointments)
-				|| (appointmentsService.isTeamsEnabled() && hasTeamsMeetings(sourceAppointments));
+				|| (appointmentsService.isTeamsEnabled() && hasTeamsMeetings(sourceAppointments)
+				|| (hasOthersMeetings(sourceAppointments)));
 		
 		currentFirstStart = sourceAppointments.isEmpty() ? new Date(): sourceAppointments.get(0).getStart();
 		
@@ -138,6 +138,10 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 
 	private boolean hasTeamsMeetings(List<Appointment> appointments) {
 		return appointments.stream().anyMatch(a -> a.getTeamsMeeting() != null);
+	}
+
+	private boolean hasOthersMeetings(List<Appointment> appointments) {
+		return appointments.stream().anyMatch(a -> StringHelper.containsNonWhitespace(a.getMeetingUrl()));
 	}
 
 	@Override
@@ -232,6 +236,8 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 			return validateBBBMeeting(appointment.getBBBMeeting(), start, end);
 		} else if (appointment.getTeamsMeeting() != null) {
 			return Boolean.TRUE;
+		} else if (StringHelper.containsNonWhitespace(appointment.getMeetingUrl())) {
+			return Boolean.TRUE;
 		}
 		return null;
 	}
@@ -295,7 +301,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		allOk &= validatePeriod(periodMinutesEl, min, max);
 		
 		if (!allOk) {
-			periodCont.setErrorKey("error.period.number", new String[] { String.valueOf(min), String.valueOf(max)} );
+			periodCont.setErrorKey("error.period.number", String.valueOf(min), String.valueOf(max));
 		}
 		return allOk;
 	}
@@ -347,7 +353,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		List<AppointmentInput> selectedAppointments = tableEl.getMultiSelectedIndex().stream()
 					.map(index -> dataModel.getObject(index.intValue()))
-					.collect(Collectors.toList());
+					.toList();
 		context.setAppointments(selectedAppointments);
 		
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
@@ -369,15 +375,14 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		}
 
 		public Object getValueAt(AppointmentInput row, int col) {
-			switch(Cols.values()[col]) {
-				case start: return row.getStart();
-				case end: return row.getEnd();
-				case location: return AppointmentsUIFactory.getDisplayLocation(translator, row.getAppointment());
-				case details: return row.getAppointment().getDetails();
-				case maxParticipations: return row.getAppointment().getMaxParticipations();
-				case meeting: return row;
-				default: return null;
-			}
+			return switch (Cols.values()[col]) {
+				case start -> row.getStart();
+				case end -> row.getEnd();
+				case location -> AppointmentsUIFactory.getDisplayLocation(translator, row.getAppointment());
+				case details -> row.getAppointment().getDetails();
+				case maxParticipations -> row.getAppointment().getMaxParticipations();
+				case meeting -> row;
+			};
 		}
 	}
 		

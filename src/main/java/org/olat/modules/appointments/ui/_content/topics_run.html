@@ -118,7 +118,22 @@
 							$r.render($topic.getJoinLinkName())
 						</div>
 					#end
-					
+
+					#if($topic.getAcknowledgeOtherName())
+						#if($topic.getAppointment().isRecordingEnabled())
+							<div class="o_warning o_bbb_warning">
+								<h4>$r.translate("meeting.recording.title")</h4>
+								<p>$r.translate("meeting.recording.desc")</p>
+								$r.render($topic.getAcknowledgeOtherName(), "minimal")
+							</div>
+						#end
+						#if($r.isNotNull($topic.getJoinOtherLinkName()))
+							<div class="o_button_group">
+								$r.render($topic.getJoinOtherLinkName())
+							</div>
+						#end
+					#end
+
 					#if($r.isNotNull($topic.getOpenLinkName()))
 						<div class="o_button_group o_button_group_right">
 							$r.render($topic.getOpenLinkName())

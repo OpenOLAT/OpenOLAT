@@ -103,8 +103,8 @@
 									</div>
 								#end
 							</div>
-							
-							#if(!$topic.isBbb())
+
+							#if(!$topic.isBbb() && !$topic.getAppointment().getMeetingUrl())
 								<div class="o_button_group o_button_group_right">
 									#if($r.isNotNull($topic.getOpenLinkName()))
 										$r.render($topic.getOpenLinkName())
@@ -113,6 +113,35 @@
 							#end
 						</div>
 					</div>
+
+					#if($topic.getAppointment().getMeetingUrl())
+						<div class="o_row">
+							#if($topic.getAppointment().isRecordingEnabled())
+								<div class="o_c2">
+										<div class="o_warning o_bbb_warning">
+											<h4>$r.translate("meeting.recording.title")</h4>
+											<p>$r.translate("meeting.recording.desc")</p>
+											$r.render($topic.getAcknowledgeOtherName(), "minimal")
+										</div>
+								</div>
+							#end
+							<div class="o_c2">
+								<div class="o_grow_10"></div>
+								#if($r.isNotNull($topic.getJoinOtherLinkName()))
+									<div class="o_button_group">
+										$r.render($topic.getJoinOtherLinkName())
+									</div>
+								#end
+
+								<div class="o_button_group o_button_group_right o_open">
+									#if($r.isNotNull($topic.getOpenLinkName()))
+										$r.render($topic.getOpenLinkName())
+									#end
+								</div>
+							</div>
+						</div>
+					#end
+
 					#if($topic.isBbb())
 						<div class="o_row">
 							<div class="o_c2">
