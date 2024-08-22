@@ -446,6 +446,12 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			assessedKeys.addAll(groupMemberKeys);	
 		}
 		
+		// Exclude always owners
+		if(assessmentMode.isApplySettingsForCoach()) {
+			List<Long> owners = repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+			assessedKeys.removeAll(owners);
+		}
+		
 		return assessedKeys;
 	}
 

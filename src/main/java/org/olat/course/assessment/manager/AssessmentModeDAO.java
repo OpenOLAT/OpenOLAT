@@ -355,16 +355,24 @@ public class AssessmentModeDAO {
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
 		  .append("  ))) or (mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.course.name()).append("')")
-		  .append("   and exists (select rel from repoentrytogroup as rel,  bgroupmember as membership ")
+		  .append("   and exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
 		  .append("     where mode.repositoryEntry.key=rel.entry.key and membership.group.key=rel.group.key and rel.defaultGroup=true and membership.identity.key=:identityKey")
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
-		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
-		  .append("  )) or (mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.curriculumEls.name()).append("')")
-		  .append("   and exists (select curElement from curriculumelement as curElement,  bgroupmember as curMembership ")
+		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("')))")
+		  // Exclude course owners
+		  .append("   and not exists (select notRel from repoentrytogroup as notRel, bgroupmember as notMembership")
+		  .append("     where mode.repositoryEntry.key=notRel.entry.key and notMembership.group.key=notRel.group.key and notRel.defaultGroup=true and notMembership.identity.key=:identityKey")
+		  .append("     and notMembership.role='").append(GroupRoles.owner.name()).append("')")
+		  .append("  ) or (mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.curriculumEls.name()).append("')")
+		  .append("   and exists (select curElement from curriculumelement as curElement, bgroupmember as curMembership ")
 		  .append("     where modeToCurriculumElement.curriculumElement.key=curElement.key and curMembership.group.key=curElement.group.key and curMembership.identity.key=:identityKey")
 		  .append("     and (curMembership.role='").append(GroupRoles.participant.name()).append("' or ")
-		  .append("       (mode.applySettingsForCoach=true and curMembership.role='").append(GroupRoles.coach.name()).append("'))")
-		  .append("  ))")
+		  .append("       (mode.applySettingsForCoach=true and curMembership.role='").append(GroupRoles.coach.name()).append("')))")
+		  // Exclude curriculum owners
+		  .append("   and not exists (select notCurElement from curriculumelement as notCurElement, bgroupmember as notCurMembership")
+		  .append("     where modeToCurriculumElement.curriculumElement.key=notCurElement.key and notCurMembership.group.key=notCurElement.group.key and notCurMembership.identity.key=:identityKey")
+		  .append("     and notCurMembership.role='").append(GroupRoles.owner.name()).append("')")
+		  .append("  )")
 		  .append(" )");
 	}
 	
