@@ -287,10 +287,9 @@ public class CourseScoreController extends FormBasicController {
 		passedNumberCutOverviewCont.setElementCssClass("o_block_move_up");
 		passedNumberCutOverviewCont.contextPut("linkId", "number.rightAddOn");
 		String[] numberCutOverviewArgs = new String[] {
-			Integer.toString(infos.getNumOfPassedElements()),
-			Integer.toString(infos.getNumOfMandatoryElements()),
-			Integer.toString(infos.getNumOfOptionalElements()),
-			Integer.toString(infos.getNumOfIgnoreInCourseAssessment())
+			Integer.toString(infos.getNumOfMandatoryPassedElements() + infos.getNumOfOptionalPassedElements()),
+			Integer.toString(infos.getNumOfMandatoryPassedElements()),
+			Integer.toString(infos.getNumOfOptionalPassedElements())
 		};
 		passedNumberCutOverviewCont.contextPut("msg", translate("options.passed.number.cut.explain", numberCutOverviewArgs));
 		
@@ -676,27 +675,21 @@ public class CourseScoreController extends FormBasicController {
 	
 	private static class CourseElementsInfos {
 		private int numOfMandatoryElements = 0;
-		private int numOfOptionalElements = 0;
-		private int numOfPassedElements = 0;
-		private int numOfIgnoreInCourseAssessment = 0;
+		private int numOfMandatoryPassedElements = 0;
+		private int numOfOptionalPassedElements = 0;
 		
 		private double maxScore = 0.0d;
 		
 		public int getNumOfMandatoryElements() {
 			return numOfMandatoryElements;
 		}
-
-		public int getNumOfOptionalElements() {
-			return numOfOptionalElements;
-		}
-
 		
-		public int getNumOfPassedElements() {
-			return numOfPassedElements;
+		public int getNumOfMandatoryPassedElements() {
+			return numOfMandatoryPassedElements;
 		}
 		
-		public int getNumOfIgnoreInCourseAssessment() {
-			return numOfIgnoreInCourseAssessment;
+		public int getNumOfOptionalPassedElements() {
+			return numOfOptionalPassedElements;
 		}
 		
 		public double getMaxScore() {
@@ -704,21 +697,21 @@ public class CourseScoreController extends FormBasicController {
 		}
 
 		public void visit(CourseNode courseNode, LearningPathConfigs learningPathConfigs, AssessmentConfig assessmentConfig) {
-			if (AssessmentObligation.mandatory.equals(learningPathConfigs.getObligation())) {
+			AssessmentObligation obligation = learningPathConfigs.getObligation();
+			if (AssessmentObligation.mandatory.equals(obligation)) {
 				numOfMandatoryElements++;
-			} else if (AssessmentObligation.optional.equals(learningPathConfigs.getObligation())) {
-				numOfOptionalElements++;
 			}
 			
-			if(assessmentConfig.isAssessable() && !(courseNode instanceof STCourseNode)) {
-				if(assessmentConfig.ignoreInCourseAssessment()) {
-					numOfIgnoreInCourseAssessment++;
+			if(assessmentConfig.isAssessable() && !assessmentConfig.ignoreInCourseAssessment()) {
+				if(Mode.none != assessmentConfig.getPassedMode() && courseNode.getParent() != null) {
+					if (AssessmentObligation.mandatory.equals(obligation)) {
+						numOfMandatoryPassedElements++;
+					} else if (AssessmentObligation.optional.equals(obligation)) {
+						numOfOptionalPassedElements++;
+					}
 				}
-				if(Mode.none != assessmentConfig.getPassedMode()) {
-					numOfPassedElements++;
-				}
-				if (Mode.none != assessmentConfig.getScoreMode()
-						&& !assessmentConfig.ignoreInCourseAssessment()) {
+				
+				if (Mode.none != assessmentConfig.getScoreMode() && !(courseNode instanceof STCourseNode)) {
 					maxScore += assessmentConfig.getMaxScore() != null ? assessmentConfig.getMaxScore().doubleValue(): 0.0d;
 				}
 			}
