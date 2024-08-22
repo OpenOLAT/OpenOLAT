@@ -54,6 +54,7 @@ public class TBSelectionRow {
 	private int topicSortOrder;
 	private int selectionSortOrder;
 	private UpDown upDown;
+	private FormLink selectLink;
 	private FormLink selectionToolsLink;
 	private FormLink topicToolsLink;
 	private FormLink detailsButton;
@@ -199,6 +200,14 @@ public class TBSelectionRow {
 
 	public void setUpDown(UpDown upDown) {
 		this.upDown = upDown;
+	}
+
+	public FormLink getSelectLink() {
+		return selectLink;
+	}
+
+	public void setSelectLink(FormLink selectLink) {
+		this.selectLink = selectLink;
 	}
 
 	public FormLink getSelectionToolsLink() {

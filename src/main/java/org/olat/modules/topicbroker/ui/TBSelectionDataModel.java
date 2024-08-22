@@ -62,6 +62,7 @@ public class TBSelectionDataModel extends DefaultFlexiTableDataModel<TBSelection
 		case minParticipants: return row.getMinParticipants();
 		case maxParticipants: return row.getMaxParticipants();
 		case upDown: return row.getUpDown();
+		case select: return row.getSelectLink();
 		case selectionTools: return row.getSelectionToolsLink();
 		case topicTools: return row.getTopicToolsLink();
 		default: return null;
@@ -75,6 +76,7 @@ public class TBSelectionDataModel extends DefaultFlexiTableDataModel<TBSelection
 		minParticipants("topic.participants.min"),
 		maxParticipants("topic.participants.max"),
 		upDown("updown"),
+		select("topic.select"),
 		selectionTools("tools"),
 		topicTools("tools");
 		
