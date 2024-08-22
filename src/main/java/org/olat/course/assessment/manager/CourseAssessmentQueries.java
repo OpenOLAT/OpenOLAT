@@ -49,6 +49,7 @@ public class CourseAssessmentQueries {
 		sb.append("       inner join fetch re.lifecycle as lifecycle");
 		sb.and().append("ores.resName ='CourseModule'");
 		sb.and().append("re.status").in(RepositoryEntryStatusEnum.preparationToClosed());
+		sb.and().append("re.lifecycleOverEvaluationDate is null");
 		sb.and().append("lifecycle.validTo < :validToBefore");
 		
 		return dbInstance.getCurrentEntityManager()

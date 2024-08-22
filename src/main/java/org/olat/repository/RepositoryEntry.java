@@ -174,6 +174,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	@ManyToOne(targetEntity=RepositoryEntryLifecycle.class,fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_lifecycle", nullable=true, insertable=true, updatable=true)
 	private RepositoryEntryLifecycle lifecycle;
+	@Column(name="lifecycle_over_eval_date", nullable=true, insertable=true, updatable=true)
+	private Date lifecycleOverEvaluationDate;
 	
 	@ManyToOne(targetEntity=RepositoryEntryStatistics.class,fetch=FetchType.LAZY, optional=false, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
 	@JoinColumn(name="fk_stats", nullable=false, insertable=true, updatable=false)
@@ -661,6 +663,14 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	public void setLifecycle(RepositoryEntryLifecycle lifecycle) {
 		this.lifecycle = lifecycle;
+	}
+
+	public Date getLifecycleOverEvaluationDate() {
+		return lifecycleOverEvaluationDate;
+	}
+
+	public void setLifecycleOverEvaluationDate(Date lifecycleOverEvaluationDate) {
+		this.lifecycleOverEvaluationDate = lifecycleOverEvaluationDate;
 	}
 
 	public RepositoryEntryStatistics getStatistics() {
