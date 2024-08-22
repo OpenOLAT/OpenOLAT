@@ -86,7 +86,11 @@ public class CreateBadge00ImageStep extends BasicStep {
 		super(ureq);
 		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.image", null);
-		setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
+		if (createBadgeClassContext.needsCustomization()) {
+			setNextStep(new CreateBadge01CustomizationStep(ureq, createBadgeClassContext));
+		} else {
+			setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
+		}
 	}
 
 	@Override
@@ -141,7 +145,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 				String templateKeyString = ureq.getParameter("templateKey");
 				if (templateKeyString != null) {
 					long templateKey = Long.parseLong(templateKeyString);
-					doSelectTemplate(templateKey);
+					doSelectTemplate(ureq, templateKey);
 				}
 				String tagKeyString = ureq.getParameter("tagKey");
 				if (tagKeyString != null) {
@@ -233,12 +237,13 @@ public class CreateBadge00ImageStep extends BasicStep {
 			initCards();
 		}
 
-		private void doSelectTemplate(long templateKey) {
+		private void doSelectTemplate(UserRequest ureq, long templateKey) {
 			if (templateKey == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
 				createContext.setSelectedTemplateKey(CreateBadgeClassWizardContext.OWN_BADGE_KEY);
 				createContext.setTemplateVariables(Set.of());
 				flc.contextPut("selectedTemplateKey", CreateBadgeClassWizardContext.OWN_BADGE_KEY);
 				flc.contextPut("showOwnBadgeSection", true);
+				updateSteps(ureq);
 				return;
 			}
 
@@ -251,6 +256,18 @@ public class CreateBadge00ImageStep extends BasicStep {
 			createContext.setSelectedTemplateImage(image);
 			createContext.setTemplateVariables(openBadgesManager.getTemplateSvgSubstitutionVariables(image));
 			flc.contextPut("selectedTemplateKey", templateKey);
+			updateSteps(ureq);
+		}
+
+		private void updateSteps(UserRequest ureq) {
+			if (CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(createContext.getSelectedTemplateKey())) {
+				setNextStep(new CreateBadge02DetailsStep(ureq, createContext));
+			} else if (createContext.needsCustomization()) {
+				setNextStep(new CreateBadge01CustomizationStep(ureq, createContext));
+			} else {
+				setNextStep(new CreateBadge02DetailsStep(ureq, createContext));
+			}
+			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 		}
 
 		private void setTemplateTranslations(BadgeTemplate template) {

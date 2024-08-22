@@ -73,7 +73,11 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 		super(ureq);
 		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.starting.point", null);
-		setNextStep(new CreateBadge00ImageStep(ureq, createBadgeClassContext));
+		if (createBadgeClassContext.isStartFromScratch()) {
+			setNextStep(new CreateBadge00ImageStep(ureq, createBadgeClassContext));
+		} else {
+			setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
+		}
 	}
 
 	@Override
@@ -124,9 +128,13 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 				createBadgeClassContext.setStartFromScratch(startingPointSelection.isKeySelected("form.create.from.scratch.title"));
 				if (createBadgeClassContext.isStartFromScratch()) {
 					createBadgeClassContext.startFromScratch();
+					setNextStep(new CreateBadge00ImageStep(ureq, createBadgeClassContext));
 				} else {
 					createBadgeClassContext.copyFromExistingBadge(getTranslator());
+					setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
 				}
+				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+
 				updateUI();
 			} else if (source == tableEl) {
 				if (event instanceof SelectionEvent selectionEvent) {
@@ -158,13 +166,6 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 
 		@Override
 		protected void formNext(UserRequest ureq) {
-			if (createBadgeClassContext.isStartFromScratch()) {
-				setNextStep(new CreateBadge00ImageStep(ureq, createBadgeClassContext));
-			} else {
-				setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
-			}
-
-			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
