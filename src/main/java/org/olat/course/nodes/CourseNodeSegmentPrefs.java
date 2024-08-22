@@ -41,7 +41,8 @@ public class CourseNodeSegmentPrefs {
 		overview,
 		participants,
 		preview,
-		reminders
+		reminders,
+		badges
 
 	}
 

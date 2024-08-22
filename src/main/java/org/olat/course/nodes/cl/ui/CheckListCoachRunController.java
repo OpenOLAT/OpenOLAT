@@ -64,7 +64,8 @@ public class CheckListCoachRunController extends BasicController implements Acti
 	private static final String ORES_TYPE_PARTICIPANTS = "Participants";
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
 	private static final String ORES_TYPE_PREVIEW = "Preview";
-	
+	private static final String ORES_TYPE_BADGES = "Badges";
+
 	private Link overviewLink;
 	private final Link participantsLink;
 	private final Link previewLink;
@@ -138,7 +139,8 @@ public class CheckListCoachRunController extends BasicController implements Acti
 
 		// Badges
 		if (openBadgesManager.showBadgesRunSegment(courseEntry, courseNode, userCourseEnv)) {
-			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_BADGES), null);
+			badgesCtrl = new CourseNodeBadgesController(ureq, swControl, courseEntry, courseNode);
 			listenTo(badgesCtrl);
 
 			badgesLink = LinkFactory.createLink("segment.badges", mainVC, this);
@@ -161,6 +163,8 @@ public class CheckListCoachRunController extends BasicController implements Acti
 			doOpenParticipants(ureq, true);
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
 			doOpenReminders(ureq, true);
+		} else if(ORES_TYPE_BADGES.equalsIgnoreCase(type) && badgesLink != null) {
+			doOpenBadges(ureq, true);
 		} else if(ORES_TYPE_PREVIEW.equalsIgnoreCase(type)) {
 			doOpenPreview(ureq, true);
 		}
@@ -187,7 +191,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
 				} else if (clickedLink == badgesLink) {
-					doOpenBadges();
+					doOpenBadges(ureq, true);
 				} else if (clickedLink == previewLink) {
 					doOpenPreview(ureq, true);
 				}
@@ -205,6 +209,8 @@ public class CheckListCoachRunController extends BasicController implements Acti
 			doOpenPreview(ureq, false);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
 			doOpenReminders(ureq, false);
+		} else if (CourseNodeSegment.badges == segment && badgesLink != null) {
+			doOpenBadges(ureq, false);
 		} else {
 			doOpenOverview(ureq, false);
 		}
@@ -249,10 +255,11 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		}
 	}
 
-	private void doOpenBadges() {
+	private void doOpenBadges(UserRequest ureq, boolean saveSegmentPref) {
 		if (badgesLink != null) {
 			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
 			segmentView.select(badgesLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.badges, segmentView, saveSegmentPref);
 		}
 	}
 }

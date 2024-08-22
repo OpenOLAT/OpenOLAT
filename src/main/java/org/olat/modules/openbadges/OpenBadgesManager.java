@@ -111,6 +111,8 @@ public interface OpenBadgesManager {
 
 	List<BadgeAssertion> getRuleEarnedBadgeAssertions(IdentityRef recipient, RepositoryEntryRef courseEntry, String courseNodeIdent);
 
+	boolean conditionForCourseNodeExists(BadgeClass badgeClass, String courseNodeIdent);
+
 	Long getNumberOfBadgeClasses(RepositoryEntryRef entry);
 
 	BadgeClass getBadgeClass(String uuid);

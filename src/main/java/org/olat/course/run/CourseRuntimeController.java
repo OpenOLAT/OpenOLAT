@@ -2584,7 +2584,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			WindowControl swControl = addToHistory(ureq, ores, null);
 
 			BadgeClassesController badgeClassesController = new BadgeClassesController(ureq, swControl,
-					getRepositoryEntry(), reSecurity, toolbarPanel, null, "form.create.new.badge",
+					getRepositoryEntry(), null, reSecurity, toolbarPanel, null, "form.create.new.badge",
 					"form.edit.badge");
 			badgeClassesCtrl = pushController(ureq, translate("command.openbadges"), badgeClassesController);
 			listenTo(badgeClassesCtrl);

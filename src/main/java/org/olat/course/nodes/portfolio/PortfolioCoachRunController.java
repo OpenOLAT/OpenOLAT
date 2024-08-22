@@ -70,7 +70,8 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 	private static final String ORES_TYPE_OVERVIEW = "Overview";
 	private static final String ORES_TYPE_PARTICIPANTS = "Participants";
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
-	
+	private static final String ORES_TYPE_BADGES = "Badges";
+
 	private final Link contentLink;
 	private Link overviewLink;
 	private Link participantsLink;
@@ -162,7 +163,8 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 
 		// Badges
 		if (openBadgesManager.showBadgesRunSegment(courseEntry, courseNode, userCourseEnv)) {
-			badgesCtrl = new CourseNodeBadgesController(ureq, wControl, courseEntry);
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_BADGES), null);
+			badgesCtrl = new CourseNodeBadgesController(ureq, swControl, courseEntry, courseNode);
 			listenTo(badgesCtrl);
 
 			badgesLink = LinkFactory.createLink("segment.badges", mainVC, this);
@@ -188,6 +190,8 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 			doOpenParticipants(ureq, true).activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type) && remindersLink != null) {
 			doOpenReminders(ureq, true);
+		} else if(ORES_TYPE_BADGES.equalsIgnoreCase(type) && badgesLink != null) {
+			doOpenBadges(ureq, true);
 		}
 	}
 
@@ -207,7 +211,7 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
 				} else if (clickedLink == badgesLink) {
-					doOpenBadges();
+					doOpenBadges(ureq, true);
 				}
 			}
 		}
@@ -231,6 +235,8 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 			doOpenContent(ureq, false);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
 			doOpenReminders(ureq, false);
+		} else if (CourseNodeSegment.badges == segment && badgesLink != null) {
+			doOpenBadges(ureq, false);
 		} else if (overviewLink != null) {
 			doOpenOverview(ureq, false);
 		} else {
@@ -293,10 +299,11 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 		}
 	}
 
-	private void doOpenBadges() {
+	private void doOpenBadges(UserRequest ureq, boolean saveSegmentPref) {
 		if (badgesLink != null) {
 			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
 			segmentView.select(badgesLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.badges, segmentView, saveSegmentPref);
 		}
 	}
 }

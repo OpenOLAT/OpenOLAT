@@ -152,7 +152,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			}
 
 			if (openBadgesManager.showBadgesRunSegment(entry, gtaNode, userCourseEnv)) {
-				badgesCtrl = new CourseNodeBadgesController(ureq, wControl, entry);
+				badgesCtrl = new CourseNodeBadgesController(ureq, wControl, entry, gtaNode);
 				listenTo(badgesCtrl);
 
 				badgesLink = LinkFactory.createLink("run.coach.badges", mainVC, this);
@@ -299,7 +299,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq, true);
 				} else if (clickedLink == badgesLink) {
-					doOpenBadges();
+					doOpenBadges(ureq, true);
 				} else if (clickedLink == workflowLink) {
 					doOpenWorkflow(ureq);
  				}
@@ -315,6 +315,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 			doOpenCoach(ureq, false);
 		} else if (CourseNodeSegment.reminders == segment && remindersLink != null) {
 			doOpenReminders(ureq, false);
+		} else if (CourseNodeSegment.badges == segment && badgesLink != null) {
+			doOpenBadges(ureq, false);
 		} else {
 			doOpenOverview(ureq, false);
 		}
@@ -430,10 +432,11 @@ public class GTARunController extends BasicController implements Activateable2 {
 		}
 	}
 
-	private void doOpenBadges() {
+	private void doOpenBadges(UserRequest ureq, boolean saveSegmentPref) {
 		if (badgesLink != null) {
 			mainVC.put("segmentCmp", badgesCtrl.getInitialComponent());
 			segmentView.select(badgesLink);
+			segmentPrefs.setSegment(ureq, CourseNodeSegment.badges, segmentView, saveSegmentPref);
 		}
 	}
 }
