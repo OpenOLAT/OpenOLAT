@@ -62,6 +62,7 @@ public class CreateBadgeClassWizardContext {
 	public final static Long OWN_BADGE_KEY = -1L;
 
 	private final RepositoryEntry entry;
+	private final CourseNode courseNode;
 	private final RepositoryEntrySecurity reSecurity;
 
 	public boolean showStartingPointStep(Identity author) {
@@ -179,8 +180,9 @@ public class CreateBadgeClassWizardContext {
 	private boolean startFromScratch = false;
 	private Long sourceBadgeClassKey;
 
-	public CreateBadgeClassWizardContext(RepositoryEntry entry, RepositoryEntrySecurity reSecurity) {
+	public CreateBadgeClassWizardContext(RepositoryEntry entry, CourseNode courseNode, RepositoryEntrySecurity reSecurity) {
 		this.entry = entry;
+		this.courseNode = courseNode;
 		this.reSecurity = reSecurity;
 		mode = Mode.create;
 		ICourse course = entry != null ? CourseFactory.loadCourse(entry) : null;
@@ -204,7 +206,13 @@ public class CreateBadgeClassWizardContext {
 		badgeClassImpl.setValidityEnabled(false);
 		badgeClassImpl.setEntry(entry);
 		backgroundColorId = "gold";
-		title = course != null ? course.getCourseTitle() : Settings.getApplicationName();
+		title = Settings.getApplicationName();
+		if (course != null) {
+			title = course.getCourseTitle();
+			if (courseNode != null) {
+				title = courseNode.getShortTitle();
+			}
+		}
 		initCriteria();
 		issuer = new Profile(badgeClassImpl);
 		badgeClass = badgeClassImpl;
@@ -214,6 +222,7 @@ public class CreateBadgeClassWizardContext {
 		mode = Mode.edit;
 		ICourse course = badgeClass.getEntry() != null ? CourseFactory.loadCourse(badgeClass.getEntry()) : null;
 		this.entry = badgeClass.getEntry();
+		this.courseNode = null;
 		this.reSecurity = reSecurity;
 		courseResourcableId = course != null ? course.getResourceableId() : null;
 		backgroundColorId = null;
