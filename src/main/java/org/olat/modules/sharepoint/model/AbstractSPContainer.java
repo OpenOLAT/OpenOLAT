@@ -97,7 +97,7 @@ public abstract class AbstractSPContainer extends AbstractVirtualContainer imple
 		
 		DriveItemMetadata metadata = new DriveItemMetadata();
 		metadata.setFilename(driveItem.getName());
-		metadata.setDirectory(driveItem.getFolder() != null);
+		metadata.setDirectory(item.directory());
 		metadata.setCreationDate(SharePointHelper.toDate(driveItem.getCreatedDateTime()));
 		metadata.setFileLastModified(SharePointHelper.toDate(driveItem.getLastModifiedDateTime()));
 		metadata.setLastModified(SharePointHelper.toDate(driveItem.getLastModifiedDateTime()));

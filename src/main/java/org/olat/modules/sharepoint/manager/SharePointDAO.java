@@ -69,7 +69,7 @@ public class SharePointDAO {
 
 	private static final String[] ATTRS_SITE = new String[] { "id", "name", "displayName" };
 	private static final String[] ATTRS_DRIVE = new String[] { "id", "name", "lastModifiedDateTime", "weburl" };
-	private static final String[] ATTRS_DRIVE_ITEM = new String[] { "id", "name", "lastModifiedDateTime", "weburl", "size", "file", "folder", "sensitivityLabel" };
+	private static final String[] ATTRS_DRIVE_ITEM = new String[] { "id", "name", "lastModifiedDateTime", "weburl", "size", "file", "folder", "package", "sensitivityLabel" };
 	private static final String[] EXPAND_DRIVE_ITEM = new String[] { "thumbnails" };
 
 	public List<MicrosoftSite> getSites(TokenCredential tokenProvider, String search) {
@@ -261,7 +261,8 @@ public class SharePointDAO {
 				thumbnails = sets.get(0);
 			}
 
-			boolean directory = driveItem.getFolder() != null;
+			boolean directory = driveItem.getFolder() != null
+					&& (driveItem.getPackage() == null || !StringHelper.containsNonWhitespace(driveItem.getPackage().getType()));
 			items.add(new MicrosoftDriveItem(driveItem, thumbnails, directory, protectionEnabled, sensitivityLabel));
 		}
 		return items;
