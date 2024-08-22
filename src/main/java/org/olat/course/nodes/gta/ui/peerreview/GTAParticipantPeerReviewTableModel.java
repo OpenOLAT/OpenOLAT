@@ -67,7 +67,6 @@ implements SortableFlexiTableDataModel<ParticipantPeerReviewAssignmentRow> {
 			case assessedIdentity -> row.getAssessedIdentityName();
 			case reviewerIdentity -> row.getReviewerName();
 			case numOfDocuments -> row.getNumOfDocumentsToReview();
-			case progress -> row.getProgressBar();
 			case plot -> row.getBoxPlot();
 			case ratingYesNo, ratingStars -> row.getRatingItem();
 			case sessionStatus -> row;
@@ -82,7 +81,6 @@ implements SortableFlexiTableDataModel<ParticipantPeerReviewAssignmentRow> {
 		assessedIdentity("table.header.reviewed.identity"),
 		reviewerIdentity("table.header.reviewer.identity"),
 		numOfDocuments("table.header.num.of.documents.to.review"),
-		progress("table.header.review.progress"),
 		plot("table.header.review.plot"),
 		ratingYesNo("table.header.review.rating.helpful"),
 		ratingStars("table.header.review.rating.stars"),

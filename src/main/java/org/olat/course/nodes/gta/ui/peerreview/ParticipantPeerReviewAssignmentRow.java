@@ -22,7 +22,6 @@ package org.olat.course.nodes.gta.ui.peerreview;
 import org.olat.core.gui.components.boxplot.BoxPlot;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
@@ -40,7 +39,6 @@ public class ParticipantPeerReviewAssignmentRow {
 	private FormItem ratingItem;
 	private FormLink viewSessionLink;
 	private FormLink executeSessionLink;
-	private ProgressBarItem progressBar;
 	
 	private final String assigneeFullName;
 	private final String assessedFullName;
@@ -97,14 +95,6 @@ public class ParticipantPeerReviewAssignmentRow {
 
 	public void setViewSessionLink(FormLink viewSessionLink) {
 		this.viewSessionLink = viewSessionLink;
-	}
-	
-	public ProgressBarItem getProgressBar() {
-		return progressBar;
-	}
-
-	public void setProgressBar(ProgressBarItem progress) {
-		this.progressBar = progress;
 	}
 
 	public BoxPlot getBoxPlot() {

@@ -20,9 +20,9 @@
 package org.olat.course.nodes.gta.ui.peerreview;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.boxplot.BoxPlot;
@@ -44,20 +44,22 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Identity;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.manager.ParticipationsFilter;
 import org.olat.course.nodes.gta.model.SessionParticipationListStatistics;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.SessionStatistics;
 import org.olat.course.nodes.gta.ui.peerreview.GTAParticipantPeerReviewTableModel.ReviewCols;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.modules.ceditor.DataStorage;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
-import org.olat.modules.forms.EvaluationFormSurvey;
-import org.olat.modules.portfolio.ui.MultiEvaluationFormController;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,19 +83,19 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 	private FlexiTableElement tableEl;
 	private GTAParticipantPeerReviewTableModel tableModel;
 	
-	private int counter = 0;
 	private Task task;
 	private final boolean withYesNoRating;
 	private final boolean withStarsRating;
-	private final EvaluationFormSurvey survey;
 	private final CourseEnvironment courseEnv;
 	
 	private CloseableModalController cmc;
-	private MultiEvaluationFormController multiEvaluationFormCtrl;
+	private GTAMultiEvaluationsFormController multiEvaluationFormCtrl;
 	private GTAEvaluationFormExecutionController evaluationFormExecCtrl;
-	
+
 	@Autowired
 	private GTAPeerReviewManager peerReviewManager;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	
 	public GTAParticipantPeerReviewsReceivedListController(UserRequest ureq, WindowControl wControl, Task task,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode) {
@@ -101,7 +103,6 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 		
 		this.task = task;
 		this.courseEnv = courseEnv;
-		survey = peerReviewManager.loadSurvey(task);
 		
 		boolean qualityFeedback = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW_QUALITY_FEEDBACK, false);
 		String qualityFeedbackType = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_QUALITY_FEEDBACK_TYPE,
@@ -306,13 +307,35 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 	}
 	
 	private void doViewAllRubrics(UserRequest ureq) {
-		boolean anonym = true;
+		RepositoryEntry formEntry = GTACourseNode.getPeerReviewEvaluationForm(gtaNode.getModuleConfiguration());
+		org.olat.modules.forms.model.xml.Form form = evaluationFormManager.loadForm(formEntry);
+		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
+
+		List<ParticipantPeerReviewAssignmentRow> rows = tableModel.getObjects();
+		List<Long> participationsKeys = rows.stream()
+				.filter(r -> r.getAssignment() != null && r.getAssignment().getParticipation() != null)
+				.map(ParticipantPeerReviewAssignmentRow::getAssignment)
+				.map(TaskReviewAssignment::getParticipation)
+				.map(EvaluationFormParticipation::getKey).toList();
 		
-		List<Identity> otherReviewers = tableModel.getObjects().stream().map(ParticipantPeerReviewAssignmentRow::getReviewer)
-			.collect(Collectors.toList());
+		List<TaskReviewAssignment> assignments = rows.stream()
+				.filter(r -> r.getAssignment() != null)
+				.map(ParticipantPeerReviewAssignmentRow::getAssignment)
+				.toList();
 		
-		multiEvaluationFormCtrl = new MultiEvaluationFormController(ureq, getWindowControl(), getIdentity(),
-				otherReviewers, survey, false, true, true, anonym);
+		Map<EvaluationFormParticipation,String> mapReviewers = new HashMap<>();
+		for(ParticipantPeerReviewAssignmentRow row:rows) {
+			String name = row.getReviewerName();
+			if(row.getAssignment() != null && row.getAssignment().getParticipation() != null) {
+				mapReviewers.put(row.getAssignment().getParticipation(), name);
+			}
+		}
+		
+		SessionFilter filter = new ParticipationsFilter(participationsKeys);
+		GTAPeerReviewLegendNameGenerator legendNameGenerator = GTAPeerReviewLegendNameGenerator.valueOf(mapReviewers); 
+		multiEvaluationFormCtrl = new GTAMultiEvaluationsFormController(ureq, getWindowControl(),
+				form, storage, filter, legendNameGenerator, gtaNode, assignments);
+		listenTo(multiEvaluationFormCtrl);
 		
 		String title = translate("review.assessment.all.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

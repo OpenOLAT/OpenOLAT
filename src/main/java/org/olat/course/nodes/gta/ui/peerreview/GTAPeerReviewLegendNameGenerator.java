@@ -59,4 +59,8 @@ public class GTAPeerReviewLegendNameGenerator implements LegendNameGenerator {
 			.collect(Collectors.toMap(CoachPeerReviewRow::getParticipation, CoachPeerReviewRow::getFullName, (u, v) -> u));
 		return new GTAPeerReviewLegendNameGenerator(map);
 	}
+	
+	public static GTAPeerReviewLegendNameGenerator valueOf(Map<EvaluationFormParticipation,String> map) {
+		return new GTAPeerReviewLegendNameGenerator(map);
+	}
 }

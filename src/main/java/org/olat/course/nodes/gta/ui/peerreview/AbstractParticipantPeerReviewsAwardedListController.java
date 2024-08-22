@@ -22,10 +22,6 @@ package org.olat.course.nodes.gta.ui.peerreview;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.boxplot.BoxPlot;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
-import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
-import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
-import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
@@ -88,15 +84,7 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 			progressVal = sessionStatistics.statistics().progress() * 100f;
 		}
 
-		String id = Integer.toString(counter++);
-		ProgressBarItem progress = uifactory.addProgressBar("progress-".concat(id), null, 20, (float)progressVal, 100f, null, flc);
-		progress.setRenderStyle(RenderStyle.pie);
-		progress.setRenderSize(RenderSize.inline);
-		progress.setLabelAlignment(LabelAlignment.right);
-		progress.setLabelMaxEnabled(false);
-		progress.setPercentagesEnabled(true);
-		row.setProgressBar(progress);
-		
+
 		if(progressVal > 0.0d) {
 			double firstQuartile = 0.0d;
 			double thirdQuartile = 0.0d;
@@ -111,6 +99,7 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 				thirdQuartile = sessionStatistics.statistics().thirdQuartile();
 			}
 
+			String id = Integer.toString(counter++);
 			BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), sessionStatistics.statistics().maxSteps(),
 					(float)min, (float)max, (float)average,
 					(float)firstQuartile, (float)thirdQuartile, (float)median, null);
