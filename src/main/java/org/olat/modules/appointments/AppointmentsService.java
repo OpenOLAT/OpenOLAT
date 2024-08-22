@@ -182,6 +182,18 @@ public interface AppointmentsService {
 
 	public Appointment removeTeamsMeeting(Appointment appointment);
 
+	/**
+	 * configure/add a new Meeting with given title, url and option for recording
+	 *
+	 * @param appointment
+	 * @param meetingTitle
+	 * @param meetingUrl
+	 * @param isRecording
+	 * @return created Appointment object, with respective title, url and option for recording (true/false)
+	 */
+	public Appointment addOthersMeeting(Appointment appointment, String meetingTitle,
+										String meetingUrl, boolean isRecording);
+
 	public TeamsMeeting joinTeamsMeeting(Appointment appointment, Identity identity, OAuth2Tokens oauth2Tokens, TeamsErrors errors);
 
 }

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.appointments.manager;
@@ -96,7 +96,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 14 Apr 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -200,7 +200,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			
 			List<Appointment> confimredAppointments = appointments.stream()
 					.filter(a -> a.getStatus() == Status.confirmed)
-					.collect(Collectors.toList());
+					.toList();
 			appointmentsMailing.sendAppointmentDeleted(confimredAppointments);
 			List<Organizer> organizers = organizerDao.loadOrganizers(entry, subIdent);
 			appointmentsMailing.sendAppointmentsDeleted(confimredAppointments, organizers);
@@ -230,7 +230,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		if (!appointments.isEmpty()) {
 			List<Appointment> confimredAppointments = appointments.stream()
 					.filter(a -> a.getStatus() == Status.confirmed)
-					.collect(Collectors.toList());
+					.toList();
 			appointmentsMailing.sendAppointmentDeleted(confimredAppointments);
 			List<Organizer> organizers = organizerDao.loadOrganizers(topicRef);
 			appointmentsMailing.sendAppointmentsDeleted(confimredAppointments, organizers);
@@ -280,8 +280,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		}
 		
 		ArrayList<Organizer> organizersToDelete = new ArrayList<>(organizers.size());
-		for (Iterator<Organizer> organizersIt = organizers.iterator(); organizersIt.hasNext(); ) {
-			Organizer organizer = organizersIt.next();
+		for (Organizer organizer : organizers) {
 			if (!identities.contains(organizer.getIdentity())) {
 				organizersToDelete.add(organizer);
 			}
@@ -323,7 +322,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		
 		Collection<Long> identityKeys = organizers.stream()
 				.map(organizer -> organizer.getIdentity().getKey())
-				.collect(Collectors.toList());
+				.toList();
 		securityManager.loadIdentityByKeys(identityKeys).stream()
 				.forEach(identity -> calendarSyncher.unsyncCalendar(appointments, identity));
 			
@@ -355,7 +354,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		params.setHasMeeting(true);
 		List<Appointment> appointments = appointmentDao.loadAppointments(params);
 		if (!appointments.isEmpty()) {
-			List<Long> identityKeys = organizers.stream().map(Identity::getKey).collect(Collectors.toList());
+			List<Long> identityKeys = organizers.stream().map(Identity::getKey).toList();
 			String mainPresenters = getFormattedOrganizers(identityKeys);
 			for (Appointment appointment : appointments) {
 				if (appointment.getBBBMeeting() != null) {
@@ -382,7 +381,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	public String getFormattedOrganizers(Topic topic) {
 		List<Long> identityKeys = getOrganizers(topic).stream()
 				.map(organizer -> organizer.getIdentity().getKey())
-				.collect(Collectors.toList());
+				.toList();
 		return getFormattedOrganizers(identityKeys);
 	}
 	
@@ -411,9 +410,8 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 				topicToGroups.add(topicToGroup);
 			}
 		}
-		
-		for (Iterator<TopicToGroup> lectureToGroupIt = topicToGroups.iterator(); lectureToGroupIt.hasNext(); ) {
-			TopicToGroup topicToGroup= lectureToGroupIt.next();
+
+		for (TopicToGroup topicToGroup : topicToGroups) {
 			if (!groups.contains(topicToGroup.getGroup())) {
 				topicToGroupDao.delete(topicToGroup);
 			}
@@ -542,7 +540,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			appointmentParams.setHasMeeting(true);
 			List<Appointment> otherAppointments = appointmentDao.loadAppointments(appointmentParams).stream()
 					.filter(a -> !a.equals(appointment))
-					.collect(Collectors.toList());
+					.toList();
 			deleteMeetings(otherAppointments);
 		}
 	}
@@ -625,7 +623,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		List<Participation> loadParticipations12 = participationDao.loadParticipations(params);
 		List<Long> existingParticipationIdentityKeys = loadParticipations12.stream()
 				.map(p -> p.getIdentity().getKey())
-				.collect(Collectors.toList());
+				.toList();
 		List<Identity> identitesWithoutParticipation = new ArrayList<>(identities);
 		identitesWithoutParticipation.removeIf(i -> existingParticipationIdentityKeys.contains(i.getKey()));
 		
@@ -692,7 +690,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 
 		List<Identity> fromIdentities = fromParticipations.stream()
 				.map(Participation::getIdentity)
-				.collect(Collectors.toList());
+				.toList();
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
 		params.setAppointment(toAppointment);
@@ -700,7 +698,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		List<Participation> loadParticipations12 = participationDao.loadParticipations(params);
 		List<Long> existingParticipationIdentityKeys = loadParticipations12.stream()
 				.map(p -> p.getIdentity().getKey())
-				.collect(Collectors.toList());
+				.toList();
 		List<Participation> fromWithoutParticipation = new ArrayList<>(fromParticipations);
 		fromWithoutParticipation.removeIf(p -> existingParticipationIdentityKeys.contains(p.getIdentity().getKey()));
 		
@@ -923,7 +921,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		List<BigBlueButtonMeeting> meetings = appointments.stream()
 				.map(Appointment::getBBBMeeting)
 				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
+				.toList();
 		
 		// Sync recording of running and of just finished meetings
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
@@ -933,8 +931,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 				.forEach(meeting -> bigBlueButtonManager.getRecordingAndReferences(meeting, errors));
 		
 		// Get the recordings of all meetings from database
-		List<BigBlueButtonMeeting> allMeetings = meetings.stream()
-				.collect(Collectors.toList());
+		List<BigBlueButtonMeeting> allMeetings = meetings.stream().toList();
 		Map<Long, List<BigBlueButtonRecordingReference>> meetingKeyToRecordings = bigBlueButtonManager
 				.getRecordingReferences(allMeetings).stream()
 				.collect(Collectors.groupingBy(recording -> recording.getMeeting().getKey()));
@@ -966,7 +963,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 				.filter(rr -> recordingReference.getRecordingId().equals(rr.getRecording().getRecordId()))
 				.map(BigBlueButtonRecordingWithReference::getRecording)
 				.findFirst();
-		return recording.isPresent()? bigBlueButtonManager.getRecordingUrl(usess, recording.get()): null;
+		return recording.map(bigBlueButtonRecording -> bigBlueButtonManager.getRecordingUrl(usess, bigBlueButtonRecording)).orElse(null);
 	}
 
 	@Override
@@ -1003,6 +1000,16 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			teamsService.deleteMeeting(meeting);
 		}
 		return updated;
+	}
+
+	@Override
+	public Appointment addOthersMeeting(Appointment appointment, String meetingTitle,
+										String meetingUrl, boolean isRecording) {
+		appointment.setMeetingTitle(meetingTitle);
+		appointment.setMeetingUrl(meetingUrl);
+		appointment.setRecordingEnabled(isRecording);
+
+		return appointmentDao.saveAppointment(appointment);
 	}
 
 	@Override

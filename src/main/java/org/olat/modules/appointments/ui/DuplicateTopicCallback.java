@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.appointments.ui;
@@ -30,6 +30,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Topic;
@@ -43,7 +44,7 @@ import org.olat.repository.RepositoryEntry;
 /**
  * 
  * Initial date: 19 Nov 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class DuplicateTopicCallback implements StepRunnerCallback {
@@ -100,7 +101,15 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 			addBBBMeeting(appointment, appointmentInput.getAppointment().getBBBMeeting());
 		} else if (appointmentInput.getAppointment().getTeamsMeeting() != null) {
 			addTeamsMeeting(appointment, appointmentInput.getAppointment().getTeamsMeeting());
+		} else if (StringHelper.containsNonWhitespace(appointmentInput.getAppointment().getMeetingUrl())) {
+			addOthersMeeting(appointment, appointmentInput.getAppointment().getMeetingTitle(),
+					appointmentInput.getAppointment().getMeetingUrl(), appointmentInput.getAppointment().isRecordingEnabled());
 		}
+	}
+
+	private void addOthersMeeting(Appointment appointment, String meetingTitle,
+								  String meetingUrl, boolean isRecording) {
+		getAppointmentsService().addOthersMeeting(appointment, meetingTitle, meetingUrl, isRecording);
 	}
 	
 	private void addBBBMeeting(Appointment appointment, BigBlueButtonMeeting meetingTemplate) {
@@ -289,7 +298,7 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 		
 	}
 	
-	public final static class AppointmentInput {
+	public static final class AppointmentInput {
 		
 		private final Appointment appointment;
 		private final Date start;

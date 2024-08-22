@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.appointments.ui;
@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -96,7 +97,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 20 Apr 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class TopicsRunController extends FormBasicController implements Activateable2 {
@@ -181,11 +182,11 @@ public class TopicsRunController extends FormBasicController implements Activate
 				.map(p -> p.getAppointment().getTopic())
 				.distinct()
 				.filter(topic -> !topics.contains(topic))
-				.forEach(topic -> topics.add(topic));
+				.forEach(topics::add);
 		
 		List<Topic> topicsFinding = topics.stream()
 				.filter(topic -> Type.finding == topic.getType())
-				.collect(Collectors.toList());
+				.toList();
 		
 		AppointmentSearchParams confirmedFindingsParams = new AppointmentSearchParams();
 		confirmedFindingsParams.setTopics(topicsFinding);
@@ -203,7 +204,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 				.getOrganizers(entry, subIdent).stream()
 				.collect(Collectors.groupingBy(o -> o.getTopic().getKey()));
 
-		topics.sort((t1, t2) -> t1.getTitle().toLowerCase().compareTo(t2.getTitle().toLowerCase()));
+		topics.sort(Comparator.comparing(t -> t.getTitle().toLowerCase()));
 		List<TopicWrapper> wrappers = new ArrayList<>(topics.size());
 		for (Topic topic : topics) {
 			TopicWrapper wrapper = new TopicWrapper(topic);
@@ -239,7 +240,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 		wrapper.setSelectedAppointments(Integer.valueOf(myTopicParticipations.size()));
 		
 		if (Type.finding == topic.getType()) {
-			wrapFindindAppointment(wrapper, myTopicParticipations);
+			wrapFindingAppointment(wrapper, myTopicParticipations);
 		} else {
 			wrapEnrollmentAppointment(wrapper, myTopicParticipations);
 		}
@@ -253,7 +254,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 		wrapMessage(wrapper, findingConfirmedKeys);
 	}
 
-	private void wrapFindindAppointment(TopicWrapper wrapper, List<Participation> myTopicParticipations) {
+	private void wrapFindingAppointment(TopicWrapper wrapper, List<Participation> myTopicParticipations) {
 		Optional<Appointment> firstAppointment = myTopicParticipations.stream()
 				.map(Participation::getAppointment)
 				.filter(a -> a.getStatus() == Status.confirmed)
@@ -275,14 +276,12 @@ public class TopicsRunController extends FormBasicController implements Activate
 			Optional<Appointment> nextAppointment = myTopicParticipations.stream()
 					.map(Participation::getAppointment)
 					.filter(a -> appointmentsService.isEndAfter(a, now))
-					.sorted((a1, a2) -> a1.getStart().compareTo(a2.getStart()))
-					.findFirst();
-			Appointment appointment = nextAppointment.isPresent()
-					? nextAppointment.get() // Next appointment ...
-					: myTopicParticipations.stream()
-						.map(Participation::getAppointment)
-						.sorted((a1, a2) -> a2.getStart().compareTo(a1.getStart()))
-						.findFirst().get(); // ... or the most recent one.
+					.min(Comparator.comparing(Appointment::getStart));
+			// Next appointment ...
+			Appointment appointment = nextAppointment.orElseGet(() -> myTopicParticipations.stream()
+					.map(Participation::getAppointment)
+					.min((a1, a2) -> a2.getStart().compareTo(a1.getStart()))
+					.get()); // ... or the most recent one.
 			wrapper.setFuture(Boolean.valueOf(appointment.getStart().after(now)));
 			
 			ParticipationSearchParams allParticipationParams = new ParticipationSearchParams();
@@ -368,6 +367,10 @@ public class TopicsRunController extends FormBasicController implements Activate
 				&& secCallback.canJoinTeamsMeeting(appointment, wrapper.getOrganizers(), appointmentParticipations)) {
 			wrapTeamsMeeting(wrapper);
 		}
+
+		if (secCallback.canJoinOtherMeeting(appointment, wrapper.getOrganizers(), appointmentParticipations)) {
+			wrapOthersMeeting(wrapper);
+		}
 	}
 
 	private void wrapBBBMeeting(TopicWrapper wrapper, Appointment appointment) {
@@ -439,6 +442,28 @@ public class TopicsRunController extends FormBasicController implements Activate
 		wrapper.setJoinLinkName(joinButton.getName());
 	}
 
+	private void wrapOthersMeeting(TopicWrapper wrapper) {
+		if (wrapper.getAppointment() != null && wrapper.getAppointment().isRecordingEnabled()) {
+			SelectionValues acknowledgeKeyValue = new SelectionValues();
+			acknowledgeKeyValue.add(SelectionValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
+			MultipleSelectionElement acknowledgeRecordingOtherEl =
+					uifactory.addCheckboxesHorizontal("recordingAgreement_" + wrapper.getTopic().getKey(), null, flc,
+							acknowledgeKeyValue.keys(), acknowledgeKeyValue.values());
+			if (acknowlededRecordings.contains(wrapper.getTopic())) {
+				acknowledgeRecordingOtherEl.select(acknowledgeRecordingOtherEl.getKey(0), true);
+			}
+			acknowledgeRecordingOtherEl.addActionListener(FormEvent.ONCHANGE);
+			acknowledgeRecordingOtherEl.setUserObject(wrapper);
+			wrapper.setAcknowledgeRecordingOtherEl(acknowledgeRecordingOtherEl);
+		}
+
+		FormLink meetingEnterEl = uifactory.addFormLink("enterMeeting_" + wrapper.getTopic().getKey(), CMD_JOIN,"meeting.enter", null, flc, Link.BUTTON_LARGE);
+		meetingEnterEl.setPrimary(true);
+		meetingEnterEl.setUserObject(wrapper);
+		meetingEnterEl.setNewWindow(true, true, true);
+		wrapper.setJoinOtherLinkName(meetingEnterEl.getName());
+	}
+
 	private boolean isServerDisabled(BigBlueButtonMeeting meeting) {
 		return meeting != null && meeting.getServer() != null && !meeting.getServer().isEnabled();
 	}
@@ -449,7 +474,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
 				.sorted(String.CASE_INSENSITIVE_ORDER)
 				.limit(limit)
-				.collect(Collectors.toList());
+				.toList();
 		wrapper.setParticipants(participants);
 		
 		if (participations.size() > PARTICIPANTS_RENDER_LIMIT) {
@@ -459,7 +484,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 			long hiddenParticipations = participations.size() - PARTICIPANTS_RENDER_LIMIT;
 			String displayText = showAllParticipationsTopicKeys.contains(wrapper.getTopic().getKey())
 					? translate("show.less")
-					: translate("show.more", new String[] { String.valueOf(hiddenParticipations)} );
+					: translate("show.more", String.valueOf(hiddenParticipations));
 			showMoreLink.setI18nKey(displayText);
 			showMoreLink.setUserObject(wrapper.getTopic());
 			wrapper.setShowMoreLinkName(showMoreLink.getName());
@@ -489,7 +514,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 					if (freeAppointments.longValue() == 1) {
 						messages.add(translate("appointments.free.one"));
 					} else if (freeAppointments.longValue() > 1) {
-						messages.add(translate("appointments.free", new String[] { freeAppointments.toString() }));
+						messages.add(translate("appointments.free", freeAppointments.toString()));
 					}
 				}
 			}
@@ -513,13 +538,13 @@ public class TopicsRunController extends FormBasicController implements Activate
 			} else {
 				if (topic.isMultiParticipation()) {
 					if (selectedAppointments > 1) {
-						messages.add(translate("appointments.selected", new String[] { String.valueOf(selectedAppointments) }));
+						messages.add(translate("appointments.selected", String.valueOf(selectedAppointments)));
 					}
 				}
 			}
 		}
 		
-		String message = messages.isEmpty()? null: messages.stream().collect(Collectors.joining("<br>"));
+		String message = messages.isEmpty() ? null: String.join("<br>", messages);
 		wrapper.setMessage(message);
 	}
 	
@@ -569,8 +594,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 				BigBlueButtonRecordingReference recordingReference = (BigBlueButtonRecordingReference)link.getUserObject();
 				doOpenRecording(ureq, recordingReference);
 			}
-		} else if (source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement mse = (MultipleSelectionElement)source;
+		} else if (source instanceof MultipleSelectionElement mse) {
 			Topic topic = ((TopicWrapper)mse.getUserObject()).getTopic();
 			if (mse.isAtLeastSelected(1)) {
 				acknowlededRecordings.add(topic);
@@ -627,7 +651,10 @@ public class TopicsRunController extends FormBasicController implements Activate
 			appointment = appointments.get(0);
 		}
 		
-		if (appointment == null || (appointment.getBBBMeeting() == null && appointment.getTeamsMeeting() == null)) {
+		if (appointment == null ||
+				(appointment.getBBBMeeting() == null
+						&& appointment.getTeamsMeeting() == null
+						&& appointment.getMeetingUrl().isBlank())) {
 			showWarning("warning.no.meeting");
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			return;
@@ -636,6 +663,23 @@ public class TopicsRunController extends FormBasicController implements Activate
 			doJoinBBBMeeting(wrapper, appointment);
 		} else if (appointment.getTeamsMeeting() != null) {
 			doJoinTeamsMeeting(ureq, appointment);
+		} else if (StringHelper.containsNonWhitespace(appointment.getMeetingUrl())) {
+			doJoinOtherMeeting(wrapper, appointment);
+		}
+	}
+
+	private void doJoinOtherMeeting(TopicWrapper wrapper, Appointment appointment) {
+		String joinUrl = appointment.getMeetingUrl();
+		if(appointment.isRecordingEnabled() && !acknowlededRecordings.contains(appointment.getTopic())) {
+			wrapper.getAcknowledgeRecordingOtherEl().setErrorKey("form.legende.mandatory");
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			return;
+		} else if (wrapper.getAcknowledgeRecordingOtherEl() != null) {
+			wrapper.getAcknowledgeRecordingOtherEl().clearError();
+		}
+
+		if (StringHelper.containsNonWhitespace(joinUrl)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(joinUrl));
 		}
 	}
 
@@ -739,8 +783,10 @@ public class TopicsRunController extends FormBasicController implements Activate
 		private Long freeAppointments;
 		private Integer selectedAppointments;
 		private MultipleSelectionElement acknowledgeRecordingEl;
+		private MultipleSelectionElement acknowledgeRecordingOtherEl;
 		private String openLinkName;
 		private String joinLinkName;
+		private String joinOtherLinkName;
 		private String serverWarning;
 		private String meetingWarning;
 		private List<String> recordingLinkNames;
@@ -964,6 +1010,25 @@ public class TopicsRunController extends FormBasicController implements Activate
 		public void setRecordingLinkNames(List<String> recordingLinkNames) {
 			this.recordingLinkNames = recordingLinkNames;
 		}
-		
+
+		public MultipleSelectionElement getAcknowledgeRecordingOtherEl() {
+			return acknowledgeRecordingOtherEl;
+		}
+
+		public void setAcknowledgeRecordingOtherEl(MultipleSelectionElement acknowledgeRecordingOtherEl) {
+			this.acknowledgeRecordingOtherEl = acknowledgeRecordingOtherEl;
+		}
+
+		public String getAcknowledgeOtherName() {
+			return acknowledgeRecordingOtherEl != null ? acknowledgeRecordingOtherEl.getName(): null;
+		}
+
+		public String getJoinOtherLinkName() {
+			return joinOtherLinkName;
+		}
+
+		public void setJoinOtherLinkName(String joinOtherLinkName) {
+			this.joinOtherLinkName = joinOtherLinkName;
+		}
 	}
 }

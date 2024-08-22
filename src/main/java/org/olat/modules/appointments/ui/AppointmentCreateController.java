@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.appointments.ui;
@@ -28,13 +28,13 @@ import static org.olat.modules.appointments.ui.StartDuration.ofString;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.getSelectedTemplate;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.isWebcamLayoutAvailable;
 
+import java.net.URL;
 import java.time.DayOfWeek;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -83,7 +83,7 @@ import com.microsoft.graph.models.OnlineMeetingPresenters;
 /**
  * 
  * Initial date: 4 Jun 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class AppointmentCreateController extends FormBasicController {
@@ -93,6 +93,7 @@ public class AppointmentCreateController extends FormBasicController {
 	private static final String KEY_NO = "no";
 	private static final String KEY_BIGBLUEBUTTON = "bbb";
 	private static final String KEY_TEAMS = "teams";
+	private static final String KEY_OTHER = "other";
 	private static final String KEY_MULTI_PARTICIPATION = "multi.participation";
 	private static final String KEY_COACH_CONFIRMATION = "coach.confirmation";
 	private static final String KEY_PARTICIPATION_VISIBLE = "participation.visible";
@@ -110,6 +111,8 @@ public class AppointmentCreateController extends FormBasicController {
 	private MultipleSelectionElement organizerEl;
 	private TextElement locationEl;
 	private TextElement maxParticipationsEl;
+	private TextElement providerNameEl;
+	private TextElement providerUrlEl;
 	private TextElement detailsEl;
 	private DateChooser recurringFirstEl;
 	private SingleSelection appointmentInputTypeEl;
@@ -126,6 +129,7 @@ public class AppointmentCreateController extends FormBasicController {
 	private TextElement welcomeEl;
 	private SingleSelection templateEl;
 	private SingleSelection recordEl;
+	private SingleSelection recordOptionEl;
 	private SingleSelection layoutEl;
 	// Teams
 	private StaticTextElement teamsCreatorEl;
@@ -137,8 +141,8 @@ public class AppointmentCreateController extends FormBasicController {
 	private TeamsMeetingsCalendarController teamsCalendarCtr;
 	private CloseableModalController cmc;
 	
-	private RepositoryEntry entry;
-	private String subIdent;
+	private final RepositoryEntry entry;
+	private final String subIdent;
 	private Topic topic;
 	private List<Identity> organizerCandidates;
 	private AppointmentInputType appointmentInputType;
@@ -286,8 +290,8 @@ public class AppointmentCreateController extends FormBasicController {
 		
 		DayOfWeek[] dayOfWeeks = DayOfWeek.values();
 		SelectionValues dayOfWeekKV = new SelectionValues();
-		for (int i = 0; i < dayOfWeeks.length; i++) {
-			dayOfWeekKV.add(entry(dayOfWeeks[i].name(), dayOfWeeks[i].getDisplayName(TextStyle.FULL_STANDALONE, getLocale())));
+		for (DayOfWeek dayOfWeek : dayOfWeeks) {
+			dayOfWeekKV.add(entry(dayOfWeek.name(), dayOfWeek.getDisplayName(TextStyle.FULL_STANDALONE, getLocale())));
 		}
 		recurringDaysOfWeekEl = uifactory.addCheckboxesHorizontal("appointments.recurring.days.of.week", formLayout,
 				dayOfWeekKV.keys(), dayOfWeekKV.values());
@@ -298,23 +302,34 @@ public class AppointmentCreateController extends FormBasicController {
 		recurringLastEl.setElementCssClass("o_sel_app_topic_recurring_last");
 		recurringLastEl.setMandatory(true);
 		recurringFirstEl.setPushDateValueTo(recurringLastEl);
-		
-		if (appointmentsService.isBigBlueButtonEnabled() || appointmentsService.isTeamsEnabled()) {
-			meetingSpacer = uifactory.addSpacerElement("meeting.spacer", formLayout, false);
-			
-			SelectionValues meetingKV = new SelectionValues();
-			meetingKV.add(entry(KEY_NO, translate("appointment.meeting.no")));
-			if (appointmentsService.isBigBlueButtonEnabled()) {
-				meetingKV.add(entry(KEY_BIGBLUEBUTTON, translate("appointment.meeting.bigbluebutton")));
-			}
-			if (appointmentsService.isTeamsEnabled()) {
-				meetingKV.add(entry(KEY_TEAMS, translate("appointment.meeting.teams")));
-			}
-			meetingEl = uifactory.addRadiosHorizontal("appointment.meeting", "appointment.meeting", formLayout,
-					meetingKV.keys(), meetingKV.values());
-			meetingEl.addActionListener(FormEvent.ONCHANGE);
-			meetingEl.select(KEY_NO, true);
+
+		meetingSpacer = uifactory.addSpacerElement("meeting.spacer", formLayout, false);
+
+		SelectionValues meetingKV = new SelectionValues();
+		meetingKV.add(entry(KEY_NO, translate("appointment.meeting.no")));
+		if (appointmentsService.isBigBlueButtonEnabled()) {
+			meetingKV.add(entry(KEY_BIGBLUEBUTTON, translate("appointment.meeting.bigbluebutton")));
 		}
+		if (appointmentsService.isTeamsEnabled()) {
+			meetingKV.add(entry(KEY_TEAMS, translate("appointment.meeting.teams")));
+		}
+
+		meetingKV.add(entry(KEY_OTHER, translate("appointment.meeting.others")));
+
+		meetingEl = uifactory.addRadiosHorizontal("appointment.meeting", "appointment.meeting", formLayout,
+				meetingKV.keys(), meetingKV.values());
+		meetingEl.addActionListener(FormEvent.ONCHANGE);
+		meetingEl.select(KEY_NO, true);
+
+		providerNameEl = uifactory.addTextElement("appointment.provider.name", 32, null, formLayout);
+		providerNameEl.setVisible(false);
+		providerUrlEl = uifactory.addTextElement("appointment.provider.url", 256, "Zoom", formLayout);
+		providerUrlEl.setVisible(false);
+
+		String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
+		recordOptionEl = uifactory.addRadiosVertical("appointment.recording.option", formLayout, KEYS_YES_NO, yesNoValues);
+		recordOptionEl.select(KEYS_YES_NO[0], true);
+		recordOptionEl.setVisible(false);
 		
 		if (appointmentsService.isBigBlueButtonEnabled()) {
 			welcomeEl = uifactory.addRichTextElementForStringDataMinimalistic("meeting.welcome", "meeting.welcome", "", 8, 60, formLayout, getWindowControl());
@@ -330,7 +345,6 @@ public class AppointmentCreateController extends FormBasicController {
 				templateEl.select(templateEl.getKeys()[0], true);
 			}
 			
-			String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
 			recordEl = uifactory.addRadiosVertical("meeting.record", formLayout, KEYS_YES_NO, yesNoValues);
 			recordEl.select(KEYS_YES_NO[0], true);
 		
@@ -425,6 +439,14 @@ public class AppointmentCreateController extends FormBasicController {
 			teamsLeadTimeEl.setVisible(teamsMeeting);
 			teamsFollowupTimeEl.setVisible(teamsMeeting);
 		}
+
+
+		boolean otherProvider = meetingEl.getSelectedKey().equals(KEY_OTHER);
+		providerNameEl.setVisible(otherProvider);
+		providerNameEl.setMandatory(otherProvider);
+		providerUrlEl.setVisible(otherProvider);
+		providerUrlEl.setMandatory(otherProvider);
+		recordOptionEl.setVisible(otherProvider);
 	}
 
 	private boolean isEnrollment() {
@@ -480,12 +502,10 @@ public class AppointmentCreateController extends FormBasicController {
 			doOpenBBBCalendar(ureq);
 		} else if (teamsOpenCalLink == source) {
 			doOpenTeamsCalendar(ureq);
-		} else if (source instanceof DateChooser) {
-			DateChooser dateChooser = (DateChooser)source;
+		} else if (source instanceof DateChooser dateChooser) {
 			AppointmentWrapper wrapper = (AppointmentWrapper)dateChooser.getUserObject();
 			doSetEndDate(wrapper);
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if (CMD_START_DURATION_ADD.equals(cmd)) {
 				AppointmentWrapper wrapper = (AppointmentWrapper)link.getUserObject();
@@ -674,7 +694,45 @@ public class AppointmentCreateController extends FormBasicController {
 		if (!bbbOk) {
 			allOk &= false;
 		}
+
+		if (meetingEl.getSelectedKey().equals(KEY_OTHER)) {
+			if (providerNameEl != null) {
+				providerNameEl.clearError();
+				if (!StringHelper.containsNonWhitespace(providerNameEl.getValue())) {
+					providerNameEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				} else {
+					providerNameEl.setValue(StringHelper.xssScan(providerNameEl.getValue()));
+				}
+			}
+
+			if (providerUrlEl != null) {
+				providerUrlEl.clearError();
+				if (!StringHelper.containsNonWhitespace(providerUrlEl.getValue())) {
+					providerUrlEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				} else {
+					providerUrlEl.setValue(StringHelper.xssScan(providerUrlEl.getValue()));
+					allOk &= validateUrl(providerUrlEl);
+				}
+			}
+		}
 		
+		return allOk;
+	}
+
+	private boolean validateUrl(TextElement textEl) {
+		boolean allOk = true;
+
+		if (StringHelper.containsNonWhitespace(textEl.getValue())) {
+			try {
+				new URL(textEl.getValue()).toURI();
+			} catch(Exception e) {
+				textEl.setErrorKey("error.url.not.valid");
+				allOk &= false;
+			}
+		}
+
 		return allOk;
 	}
 	
@@ -687,10 +745,10 @@ public class AppointmentCreateController extends FormBasicController {
 		
 		Date last = recurringLastEl.getDate();
 		last = DateUtils.setTime(last, 23, 59, 59);
-		
+
 		Collection<DayOfWeek> daysOfWeek = recurringDaysOfWeekEl.getSelectedKeys().stream()
 				.map(DayOfWeek::valueOf)
-				.collect(Collectors.toList());
+				.toList();
 		
 		List<Date> starts = DateUtils.getDaysInRange(firstStart, last, daysOfWeek);
 		for (Date start : starts) {
@@ -728,7 +786,7 @@ public class AppointmentCreateController extends FormBasicController {
 			doSaveWrappedAppointments(startEndWrappers);
 			break;
 		case recurring:
-			doSaveReccuringAppointments();
+			doSaveRecurringAppointments();
 			break;
 		default:
 			break;
@@ -766,7 +824,7 @@ public class AppointmentCreateController extends FormBasicController {
 		Collection<String> selectedOrganizerKeys = organizerEl.getSelectedKeys();
 		List<Identity> selectedOrganizers = organizerCandidates.stream()
 				.filter(i -> selectedOrganizerKeys.contains(i.getKey().toString()))
-				.collect(Collectors.toList());
+				.toList();
 		appointmentsService.updateOrganizers(topic, selectedOrganizers);
 	}
 
@@ -801,20 +859,21 @@ public class AppointmentCreateController extends FormBasicController {
 				
 				appointment = addBBBMeeting(appointment);
 				appointment = addTeamsMeeting(appointment);
+				appointment = addOthersMeeting(appointment);
 				appointmentsService.saveAppointment(appointment);
 			}
 		}
 	}
 
-	private void doSaveReccuringAppointments() {
+	private void doSaveRecurringAppointments() {
 		Date firstStart = recurringFirstEl.getDate();
 		Date firstEnd = recurringFirstEl.getSecondDate();
 		Date last = recurringLastEl.getDate();
 		last = DateUtils.setTime(last, 23, 59, 59);
-		
+
 		Collection<DayOfWeek> daysOfWeek = recurringDaysOfWeekEl.getSelectedKeys().stream()
 				.map(DayOfWeek::valueOf)
-				.collect(Collectors.toList());
+				.toList();
 		
 		List<Date> starts = DateUtils.getDaysInRange(firstStart, last, daysOfWeek);
 		for (Date start : starts) {
@@ -843,6 +902,7 @@ public class AppointmentCreateController extends FormBasicController {
 			
 			appointment = addBBBMeeting(appointment);
 			appointment = addTeamsMeeting(appointment);
+			appointment = addOthersMeeting(appointment);
 			appointmentsService.saveAppointment(appointment);
 		}
 	}
@@ -895,6 +955,14 @@ public class AppointmentCreateController extends FormBasicController {
 			teamsMeeting.setPermanent(false);
 			teamsMeeting.setAllowedPresenters(OnlineMeetingPresenters.RoleIsPresenter.name());
 			teamsMeeting.setMainPresenter(appointmentsService.getFormattedOrganizers(topic));
+		}
+		return appointment;
+	}
+
+	private Appointment addOthersMeeting(Appointment appointment) {
+		if (meetingEl != null && meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_OTHER)) {
+			appointment = appointmentsService.addOthersMeeting(appointment, providerNameEl.getValue(),
+					providerUrlEl.getValue(), recordOptionEl.getSelectedKey().equals(KEYS_YES_NO[0]));
 		}
 		return appointment;
 	}

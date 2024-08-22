@@ -84,6 +84,12 @@ public class AppointmentImpl implements Persistable, Appointment {
 	private String details;
 	@Column(name="a_max_participations", nullable=true, insertable=true, updatable=true)
 	private Integer maxParticipations;
+	@Column(name="a_meeting_title", nullable=true, insertable=true, updatable=true)
+	private String meetingTitle;
+	@Column(name="a_meeting_url", nullable=true, insertable=true, updatable=true)
+	private String meetingUrl;
+	@Column(name="a_recording_enabled", nullable=false, insertable=true, updatable=true)
+	private boolean recordingEnabled;
 	
 	@ManyToOne(targetEntity=TopicImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_topic_id", nullable=false, insertable=true, updatable=false)
@@ -198,6 +204,30 @@ public class AppointmentImpl implements Persistable, Appointment {
 
 	public void setTopic(Topic topic) {
 		this.topic = topic;
+	}
+
+	public String getMeetingTitle() {
+		return meetingTitle;
+	}
+
+	public void setMeetingTitle(String meetingTitle) {
+		this.meetingTitle = meetingTitle;
+	}
+
+	public String getMeetingUrl() {
+		return meetingUrl;
+	}
+
+	public void setMeetingUrl(String meetingUrl) {
+		this.meetingUrl = meetingUrl;
+	}
+
+	public boolean isRecordingEnabled() {
+		return recordingEnabled;
+	}
+
+	public void setRecordingEnabled(boolean recordingEnabled) {
+		this.recordingEnabled = recordingEnabled;
 	}
 
 	@Override

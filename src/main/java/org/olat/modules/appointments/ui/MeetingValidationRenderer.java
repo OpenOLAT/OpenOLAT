@@ -21,6 +21,7 @@ package org.olat.modules.appointments.ui;
 
 import org.olat.core.gui.components.table.IconCssCellRenderer;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.appointments.ui.DuplicateTopicCallback.AppointmentInput;
 
 /**
@@ -53,8 +54,7 @@ public class MeetingValidationRenderer extends IconCssCellRenderer {
 	@Override
 	protected String getCellValue(Object val) {
 		String value = null;
-		if (val instanceof AppointmentInput) {
-			AppointmentInput appointment = (AppointmentInput)val;
+		if (val instanceof AppointmentInput appointment) {
 			if (appointment.getMeetingValidation() != null) {
 				if (appointment.getAppointment().getBBBMeeting() != null) {
 					if (appointment.getMeetingValidation().booleanValue()) {
@@ -68,6 +68,12 @@ public class MeetingValidationRenderer extends IconCssCellRenderer {
 						value = translator.translate("meeting.teams.available");
 					} else {
 						value = translator.translate("meeting.teams.not.available");
+					}
+				} else if (StringHelper.containsNonWhitespace(appointment.getAppointment().getMeetingUrl())) {
+					if (Boolean.TRUE.equals(appointment.getMeetingValidation())) {
+						value = translator.translate("meeting.others.available");
+					} else {
+						value = translator.translate("meeting.others.not.available");
 					}
 				}
 			}
