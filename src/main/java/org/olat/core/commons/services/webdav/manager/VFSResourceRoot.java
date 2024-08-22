@@ -321,7 +321,8 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	private boolean isClientHelpFile(VFSItem item) {
 		if(item instanceof VFSLeaf) {
 			String name = item.getName();
-			if(name != null && name.startsWith("._") && !name.startsWith("._oo_")) {
+			if(name != null && name.startsWith("._") && !name.startsWith("._oo_")
+					&& !name.startsWith("._ootrash") && !name.startsWith(".DS_Store")) {
 				return true;
 			}
 		}
@@ -342,7 +343,8 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		@Override
 		public boolean accept(VFSItem vfsItem) {
 			String name = vfsItem.getName();
-			return !name.startsWith("._oo_");
+			return !name.startsWith("._oo_") && !name.startsWith("._ootrash")
+					&& !name.startsWith(".DS_Store");
 		}
 	}
 }
