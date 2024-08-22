@@ -72,6 +72,9 @@ public class CourseAssessmentQueriesTest extends OlatTestCase {
 		RepositoryEntry courseEntryClosed = createLpCourseEntryLifecycleOver(author, RepositoryEntryStatusEnum.closed);
 		RepositoryEntry courseEntryTrash = createLpCourseEntryLifecycleOver(author, RepositoryEntryStatusEnum.trash);
 		RepositoryEntry courseEntryDeleted = createLpCourseEntryLifecycleOver(author, RepositoryEntryStatusEnum.deleted);
+		RepositoryEntry courseEntryEvaluated = createLpCourseEntryLifecycleOver(author, RepositoryEntryStatusEnum.published);
+		courseEntryEvaluated.setLifecycleOverEvaluationDate(DateUtils.addDays(new Date(), -200));
+		dbInstance.getCurrentEntityManager().merge(courseEntryEvaluated);
 		dbInstance.commitAndCloseSession();
 		
 		List<RepositoryEntry> courseEntries = sut.loadCoursesLifecycle(new Date());
@@ -87,7 +90,8 @@ public class CourseAssessmentQueriesTest extends OlatTestCase {
 						courseEntryNoLifecycle,
 						courseEntryLifecycleNotOver,
 						courseEntryTrash,
-						courseEntryDeleted
+						courseEntryDeleted,
+						courseEntryEvaluated
 				);
 	}
 

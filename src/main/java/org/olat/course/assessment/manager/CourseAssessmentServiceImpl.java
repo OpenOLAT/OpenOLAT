@@ -27,7 +27,10 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
+import jakarta.annotation.PostConstruct;
+
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LazyInitializationException;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -39,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -47,7 +51,9 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.crypto.RandomUtils;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -56,6 +62,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -109,8 +116,12 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -123,7 +134,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class CourseAssessmentServiceImpl implements CourseAssessmentService, NodeVisitedListener {
+public class CourseAssessmentServiceImpl implements CourseAssessmentService, NodeVisitedListener, GenericEventListener {
 
 	private static final Logger log = Tracing.createLoggerFor(CourseAssessmentServiceImpl.class);
 
@@ -155,6 +166,15 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	private TaskExecutorManager taskExecutorManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private RepositoryEntryLifecycleDAO repositoryEntryLifecycleDao;
+	@Autowired
+	private Coordinator coordinator;
+	
+	@PostConstruct
+	public void init() {
+		coordinator.getEventBus().registerFor(this, null, RepositoryService.REPOSITORY_EVENT_ORES);
+	}
 
 
 	private AssessmentHandler getAssessmentHandler(CourseNode courseNode) {
@@ -642,12 +662,16 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void evaluateLifecycleOver(Date validToBefore) {
 		List<RepositoryEntry> courseEntries = courseAssessmentQueries.loadCoursesLifecycle(validToBefore);
-		log.debug("Evaluate lifecycle over for {} courses.", courseEntries.size());
+		log.info(Tracing.M_AUDIT, "Evaluate lifecycle over for {} courses.", courseEntries.size());
 		for (RepositoryEntry courseEntry : courseEntries) {
 			try {
 				tryEvaluateLifecycleOver(courseEntry);
+			} catch (CorruptedCourseException cce) {
+				log.warn("Evaluate lifecycle over for course {} failed (corrupted)", courseEntry);
+				setLifecycleOverEvaluationDate(courseEntry, new Date());
 			} catch (Exception e) {
-				// Just ignore
+				log.warn("Evaluate lifecycle over for course {} failed", courseEntry);
+				log.error("", e);
 			}
 		}
 	}
@@ -656,7 +680,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		if (isFailedOnLifecycleOver(NodeAccessType.of(course), (STCourseNode)rootNode)) {
-			log.debug("Evaluate lifecycle over for courses {}", courseEntry);
+			log.info(Tracing.M_AUDIT, "Evaluate lifecycle over for course {}", courseEntry);
 			List<AssessmentEntry> assessmentEntries = assessmentService.getRootEntriesWithoutPassed(courseEntry);
 			for (AssessmentEntry assessmentEntry : assessmentEntries) {
 				evaluateAll(course.getCourseEnvironment(), rootNode, assessmentEntry.getIdentity(), assessmentEntry);
@@ -664,7 +688,11 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 						assessmentEntry.getIdentity());
 				dbInstance.commitAndCloseSession();
 			}
+		} else {
+			log.info(Tracing.M_AUDIT, "Evaluate lifecycle over for course {} not needed", courseEntry);
 		}
+		
+		setLifecycleOverEvaluationDate(courseEntry, new Date());
 	}
 	
 	private boolean isFailedOnLifecycleOver(NodeAccessType type, STCourseNode rootNode) {
@@ -676,6 +704,48 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 					&& FailedEvaluationType.failedAsNotPassedAfterEndDate == rootNode.getScoreCalculator().getFailedType();
 		}
 		return false;
+	}
+
+	private void synchLifecycleOverEvalDate(Long repositoryEntryKey) {
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryEntryKey);
+		if (repositoryEntry == null || !repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
+			return;
+		}
+		if (repositoryEntry.getLifecycleOverEvaluationDate() == null) {
+			return;
+		}
+		Date lifecycleEnd = getLifecycleEnd(repositoryEntry);
+		if (lifecycleEnd != null && lifecycleEnd.after(new Date())) {
+			// Evaluate again when the lifecycle will be over.
+			setLifecycleOverEvaluationDate(repositoryEntry, null);
+		}
+	}
+	
+	private void setLifecycleOverEvaluationDate(RepositoryEntry courseEntry, Date date) {
+		RepositoryEntry reloadedEntry = repositoryManager.lookupRepositoryEntry(courseEntry.getKey());
+		reloadedEntry.setLifecycleOverEvaluationDate(date);
+		dbInstance.getCurrentEntityManager().merge(reloadedEntry);
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private Date getLifecycleEnd(RepositoryEntry courseEntry) {
+		RepositoryEntryLifecycle lifecycle = getRepositoryEntryLifecycle(courseEntry);
+		if (lifecycle != null && lifecycle.getValidTo() != null) {
+			return lifecycle.getValidTo();
+		}
+		return null;
+	}
+	
+	private RepositoryEntryLifecycle getRepositoryEntryLifecycle(RepositoryEntry re) {
+		try {
+			RepositoryEntryLifecycle lifecycle = re.getLifecycle();
+			if(lifecycle != null) {
+				lifecycle.getValidTo();
+			}
+			return lifecycle;
+		} catch (LazyInitializationException e) {
+			return repositoryEntryLifecycleDao.loadByEntry(re);
+		}
 	}
 
 	@Override
@@ -827,4 +897,12 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			mailManager.sendMessageAsync(bundle);
 		}
 	}
+	
+	@Override
+	public void event(Event event) {
+		if (event instanceof EntryChangedEvent entryChangedEvent && entryChangedEvent.isEventOnThisNode()) {
+			synchLifecycleOverEvalDate(entryChangedEvent.getRepositoryEntryKey());
+		}
+	}
+	
 }

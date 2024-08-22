@@ -542,6 +542,7 @@ create table if not exists o_repositoryentry (
    expenditureofwork text(32000),
    fk_stats bigint not null unique,
    fk_lifecycle bigint,
+   lifecycle_over_eval_date datetime,
    fk_olatresource bigint unique,
    description longtext,
    teaser varchar(255),

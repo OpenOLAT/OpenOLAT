@@ -111,6 +111,7 @@ public class IconPanelRenderer extends DefaultComponentRenderer {
 		}
 		
 		sb.append("</div>");
+		sb.append("</div>");
 		
 		panel.setDirty(false);
 	}

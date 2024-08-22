@@ -586,6 +586,7 @@ CREATE TABLE o_repositoryentry (
   expenditureofwork varchar(32000),
   fk_stats number(20) not null,
   fk_lifecycle number(20),
+  lifecycle_over_eval_date date,
   fk_olatresource number(20),
   description varchar2(4000),
   teaser varchar2(255),

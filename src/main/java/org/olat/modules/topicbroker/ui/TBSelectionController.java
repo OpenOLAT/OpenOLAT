@@ -219,7 +219,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		FlexiTableColumnModel selectionColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.priority, new TextFlexiCellRenderer(EscapeMode.none)));
 		
-		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title, CMD_DETAILS));
+		DefaultFlexiColumnModel titleColumn = new DefaultFlexiColumnModel(SelectionCols.title, CMD_DETAILS);
+		titleColumn.setAlwaysVisible(true);
+		selectionColumnsModel.addFlexiColumnModel(titleColumn);
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.status, statusRenderer));
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(SelectionCols.minParticipants);
@@ -256,7 +258,11 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 
 	private void initTopicsTable(UserRequest ureq, FormItemContainer formLayout) {
 		FlexiTableColumnModel selectionColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.title, CMD_DETAILS));
+		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.priority, new TextFlexiCellRenderer(EscapeMode.none)));
+		
+		DefaultFlexiColumnModel titleColumn = new DefaultFlexiColumnModel(SelectionCols.title, CMD_DETAILS);
+		titleColumn.setAlwaysVisible(true);
+		selectionColumnsModel.addFlexiColumnModel(titleColumn);
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.status, statusRenderer));
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(SelectionCols.minParticipants);
@@ -275,6 +281,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
 			columnModel.setDefaultVisible(customFieldDefinition.isDisplayInTable());
 			selectionColumnsModel.addFlexiColumnModel(columnModel);
+		}
+		
+		if (periodEvaluator.isSelectionPeriod()) {
+			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.select));
 		}
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SelectionCols.topicTools);
@@ -566,6 +576,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		}
 		
 		if (periodEvaluator.isSelectionPeriod() && row.getSelectionRef() == null) {
+			FormLink selectLink = uifactory.addFormLink("selectl_" + row.getTopic().getKey(), CMD_SELECT, "select", null, flc, Link.LINK);
+			selectLink.setUserObject(row);
+			row.setSelectLink(selectLink);
+			
 			FormLink selectButton = uifactory.addFormLink("select_" + row.getTopic().getKey(), CMD_SELECT, "select", null, flc, Link.BUTTON);
 			selectButton.setPrimary(true);
 			selectButton.setUserObject(row);

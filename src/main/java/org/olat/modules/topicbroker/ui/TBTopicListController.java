@@ -292,7 +292,9 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.identifier, CMD_DETAILS));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.title, CMD_DETAILS));
+		DefaultFlexiColumnModel titleColumn = new DefaultFlexiColumnModel(TopicCols.title, CMD_DETAILS);
+		titleColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(titleColumn);
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(TopicCols.minParticipants);
 		minParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
