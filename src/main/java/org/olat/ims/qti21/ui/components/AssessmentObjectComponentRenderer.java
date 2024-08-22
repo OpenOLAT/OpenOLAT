@@ -1416,7 +1416,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		  .append("  plugins: 'paste,advlist,lists,charmap,olatmatheditor,hr',\n")
 		  .append("  menu:{},\n")
 		  .append("  menubar: false,")
-		  .append("  toolbar1: 'bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmatheditor charmap',\n")
+		  .append("  toolbar1: 'bold italic underline | alignjustify alignright aligncenter alignleft | blocks | fontfamily fontsize | forecolor backcolor | bullist numlist indent outdent | olatmatheditor charmap',\n")
 		  .append("  removed_menuitems: 'newdocument',\n")
 		  .append("  elementpath: false,\n");
 		

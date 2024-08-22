@@ -86,6 +86,12 @@ label.mce-label {
 	}
 }
 
+
+.o_htmleditor .o_richtext_mce .tox.tox-tinymce {
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+}
+
 i.mce-ico.mce-i-help {
 	@include o-add-icon('question-circle');
 	@include o-add-icon-font();

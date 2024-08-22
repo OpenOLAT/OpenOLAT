@@ -57,7 +57,7 @@ public class TinyConfig {
 			  "view: {title: 'View', items: 'visualblocks visualchars | preview fullscreen'}",
 			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer olatrecordaudio image charmap emoticons hr link | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | blocks | fontfamily fontsize | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer olatrecordaudio image charmap emoticons hr link | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice";
 		editorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//compact profile
@@ -70,7 +70,7 @@ public class TinyConfig {
 				"format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
 				"table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | styleselect | fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer olatrecordaudio image olatmatheditor charmap hr link | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | styles | fontsize | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer olatrecordaudio image olatmatheditor charmap hr link | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice";
 		editorCompactConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//invisible
@@ -88,7 +88,7 @@ public class TinyConfig {
 	//paragraph editor for content editor
 	static {
 		String plugins = "lists,link,olatmatheditor";
-		String tools1 = "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | fontsizeselect forecolor backcolor | bullist numlist | link | olatmatheditor removeformat";
+		String tools1 = "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | fontsize forecolor backcolor | bullist numlist | link | olatmatheditor removeformat";
 		paragraphEditorConfig = new TinyConfig(plugins, null, tools1);
 	}
 	//full profile
@@ -101,7 +101,7 @@ public class TinyConfig {
 				"format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}",
 				"table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer olatrecordaudio image olatmatheditor charmap emoticons hr link | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | blocks | fontfamily fontsize | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer olatrecordaudio image olatmatheditor charmap emoticons hr link | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice";
 		editorFullConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//file profile
@@ -111,10 +111,10 @@ public class TinyConfig {
 			  "edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
 			  "insert: {title: 'Insert', items: 'olatmovieviewer olatrecordaudio media image link | olatmatheditor hr charmap anchor insertdatetime emoticons'}",
 			  "view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
-			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
+			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | styles | removeformat'}",
 			  "table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | styleselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer olatrecordaudio image charmap olatmatheditor olatedusharing emoticons hr link | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice | removeformat code";
+		String tools1 = "bold italic underline | styles | fontfamily fontsize | forecolor backcolor | bullist numlist indent outdent | olatmovieviewer olatrecordaudio image charmap olatmatheditor olatedusharing emoticons hr link | olatqtifibtext olatqtifibnumerical olatqtihottext olatqtiinlinechoice | removeformat code";
 		fileEditorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 

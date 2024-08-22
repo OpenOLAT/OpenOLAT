@@ -96,7 +96,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String DIALOG_TYPE_VALUE_MODAL = "modal";
 
 	// Non-Editable plugin
-	private static final String NONEDITABLE_NONEDITABLE_CLASS = "noneditable_noneditable_class";
+	private static final String NONEDITABLE_NONEDITABLE_CLASS = "noneditable_class";
 	private static final String NONEDITABLE_NONEDITABLE_CLASS_VALUE_MCENONEDITABLE = "mceNonEditable";
 	// Fullscreen plugin
 	private static final String FULLSCREEN_NEW_WINDOW = "fullscreen_new_window";
@@ -732,7 +732,7 @@ public class RichTextConfiguration implements Disposable {
 	 */
 	private void setContentCSS(String cssPath) {
 		if (cssPath != null) {
-			quotedConfigValues.put(CONTENT_CSS, cssPath);
+			quotedConfigValues.put(CONTENT_CSS, "default," + cssPath);
 		} else {
 			if (quotedConfigValues.containsKey(CONTENT_CSS))
 				quotedConfigValues.remove(CONTENT_CSS);
@@ -1150,7 +1150,7 @@ public class RichTextConfiguration implements Disposable {
 		    .append("theme: 'silver',\n")
 			.append("removed_menuitems: 'newdocument',\n")
 			.append("elementpath: false,\n")
-			.append("element_format: 'xhtml',\n") // it's the default
+			.append("element_format: 'xhtml',\n") // it's not the default
 			.append("deprecation_warnings: ").append(!Settings.isDebuging()).append(",\n")
 			.append("browser_spellcheck: true,\n")
 			// classic
@@ -1163,8 +1163,8 @@ public class RichTextConfiguration implements Disposable {
 			.append("statusbar:").append(isStatusBar()).append(",\n")
 			.append("resize:").append(true).append(",\n")
 			.append("menubar:").append(tinyConfig.hasMenu()).append(",\n")
-			.append("fontsize_formats:").append("'").append(tinyMceConfig.getFontSizes()).append("',\n")
-			.append("font_formats:").append("'");
+			.append("font_size_formats:").append("'").append(tinyMceConfig.getFontSizes()).append("',\n")
+			.append("font_family_formats:").append("'");
 
 		List<Font> fonts = tinyMceConfig.getFontList();
 		for(int i=0; i<fonts.size(); i++) {
