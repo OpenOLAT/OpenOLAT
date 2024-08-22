@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.crypto.RandomUtils;
+import org.olat.test.OlatTestCase;
 
 /**
  * 
@@ -33,12 +34,13 @@ import org.olat.core.util.crypto.RandomUtils;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RandomUtilsTest {
+public class RandomUtilsTest extends OlatTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(RandomUtilsTest.class);
 	
 	@Test
 	public void secureRandom() {
+		
 		Random secureRandom = RandomUtils.secureRandom();
 		Assert.assertNotNull(secureRandom);
 	}

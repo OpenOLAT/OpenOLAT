@@ -19,11 +19,8 @@
  */
 package org.olat.core.util.crypto;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Random;
-
-import org.olat.core.logging.OLATRuntimeException;
 
 /**
  * 
@@ -32,18 +29,14 @@ import org.olat.core.logging.OLATRuntimeException;
  *
  */
 public class RandomUtils {
-	
-	private static final Random rnd;
-	static {
-		try {
-			rnd = SecureRandom.getInstanceStrong();
-		} catch (NoSuchAlgorithmException e) {
-			throw new OLATRuntimeException("");
-		}
-	}
-	
+
+	private static final Random rnd = new SecureRandom();
+
 	public static final Random secureRandom() {
 		return rnd;
 	}
-
+	
+	private RandomUtils() {
+		//
+	}
 }
