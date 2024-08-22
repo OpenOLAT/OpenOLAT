@@ -150,12 +150,17 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		VFSItem parentItem = resolveFile(parentPath);
 		if (parentItem instanceof VFSLeaf) {
 			return false;
-		} else if (parentItem instanceof VFSContainer) {
+		}
+		if (parentItem instanceof VFSContainer folder) {
 			String name = path.substring(lastSlash + 1);
-			VFSContainer folder = (VFSContainer)parentItem;
 			if(folder.canWrite() == VFSStatus.YES) {
 				VFSContainer dir = folder.createChildContainer(name);
-				return dir != null && dir.exists();
+				if(dir != null && dir.exists()) {
+					if(dir.canMeta() == VFSStatus.YES) {
+						dir.getMetaInfo();
+					}
+					return true;
+				}
 			}
 		}
 		return false;
@@ -190,8 +195,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			if (lastSlash == -1) return false;
 			String parentPath = path.substring(0, lastSlash);
 			VFSItem parentItem = resolveFile(parentPath);
-			if(parentItem instanceof VFSContainer) {
-				VFSContainer folder = (VFSContainer)parentItem;
+			if(parentItem instanceof VFSContainer folder) {
 				String name = path.substring(lastSlash + 1);
 				childLeaf = folder.createChildLeaf(name);
 			} else {
@@ -224,9 +228,8 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		if(identity != null && childLeaf.canMeta() == VFSStatus.YES) {
 			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 			VFSMetadata metadata;
-			if(movedFrom instanceof VFSResource && ((VFSResource)movedFrom).getItem() instanceof VFSLeaf) {
-				VFSLeaf from = (VFSLeaf)((VFSResource)movedFrom).getItem();
-				metadata = CoreSpringFactory.getImpl(VFSRepositoryService.class).move(from, childLeaf, identity);
+			if(movedFrom instanceof VFSResource movedResource && movedResource.getItem() instanceof VFSLeaf from) {
+				metadata = vfsRepositoryService.move(from, childLeaf, identity);
 			} else {
 				vfsRepositoryService.itemSaved(childLeaf, identity);
 				metadata = vfsRepositoryService.getMetadataFor(childLeaf);
@@ -297,15 +300,14 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	}
 	
 	@Override
-	public boolean delete(WebResource resource) {
+	public boolean delete(WebResource resource, boolean deleteSilently) {
 		boolean deleted = false;
-		if(resource instanceof VFSResource) {
-			VFSResource vfsResource = (VFSResource)resource;
+		if(resource instanceof VFSResource vfsResource) {
 			VFSItem item = vfsResource.getItem();
 			if (item != null && VFSStatus.YES.equals(item.canDelete())) {
 				VFSSuccess status;
 				boolean helpFile = isClientHelpFile(item);
-				if(helpFile) {
+				if(helpFile || deleteSilently) {
 					status = item.deleteSilently();
 				} else {
 					status = item.delete();
@@ -319,7 +321,8 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	private boolean isClientHelpFile(VFSItem item) {
 		if(item instanceof VFSLeaf) {
 			String name = item.getName();
-			if(name != null && name.startsWith("._") && !name.startsWith("._oo_")) {
+			if(name != null && name.startsWith("._") && !name.startsWith("._oo_")
+					&& !name.startsWith("._ootrash") && !name.startsWith(".DS_Store")) {
 				return true;
 			}
 		}
@@ -340,7 +343,8 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		@Override
 		public boolean accept(VFSItem vfsItem) {
 			String name = vfsItem.getName();
-			return !name.startsWith("._oo_");
+			return !name.startsWith("._oo_") && !name.startsWith("._ootrash")
+					&& !name.startsWith(".DS_Store");
 		}
 	}
 }
