@@ -75,17 +75,14 @@ public class GTACoachPeerReviewController extends BasicController {
 		this.gtaNode = gtaNode;
 		
 		mainVC = createVelocityContainer("coach_peer_review");
-		
-		// Configuration
-		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		receivedLink = LinkFactory.createLink("coach.segment.received", mainVC, this);
-		segmentView.addSegment(receivedLink, true);
-		doOpenReceivedPeerReview(ureq);
 		
 		awardedLink = LinkFactory.createLink("coach.segment.awarded", mainVC, this);
-		segmentView.addSegment(awardedLink, false);
-
+		segmentView.addSegment(awardedLink, true);
+		receivedLink = LinkFactory.createLink("coach.segment.received", mainVC, this);
+		segmentView.addSegment(receivedLink, false);
+		doOpenAwardedPeerReview(ureq);
+		
 		putInitialPanel(mainVC);
 	}
 

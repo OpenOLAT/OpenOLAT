@@ -107,7 +107,6 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.assessedIdentity));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.numOfDocuments));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.progress));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.plot));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.sessionStatus,
 				new TaskReviewAssignmentStatusCellRenderer(getLocale(), true)));
