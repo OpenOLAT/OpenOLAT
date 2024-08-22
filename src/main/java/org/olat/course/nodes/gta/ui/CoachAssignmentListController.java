@@ -657,14 +657,14 @@ public class CoachAssignmentListController extends FormBasicController {
 				CoachCounter coachCounter = coaches.get(i);
 				int numOfCoachAssignee = coachCounter.getAssignees();
 				if(numOfCoachAssignee < numOfAssignees) {
-					whichCoach = which;
+					whichCoach = which - 1;
 					numOfAssignees = numOfCoachAssignee;
 				}
 			}
 		}
 		
-		if(whichCoach > 0) {
-			CoachCounter coachCounter = coaches.get(whichCoach - 1);
+		if(whichCoach >= 0) {
+			CoachCounter coachCounter = coaches.get(whichCoach);
 			selection.select(coachCounter.getCoachKey(), true);
 			coachCounter.increment();
 		}
@@ -680,7 +680,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		for(IdentityAssignmentRow row:rows) {
 			SingleSelection selection = row.getChoices();
 			int selected = selection.getSelected() - 1;
-			if(selected > 0 && selected < coaches.size()) {
+			if(selected >= 0 && selected < coaches.size()) {
 				coaches.get(selected).increment();
 			}
 		}
