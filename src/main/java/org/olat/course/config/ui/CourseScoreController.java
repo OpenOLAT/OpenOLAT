@@ -353,8 +353,9 @@ public class CourseScoreController extends FormBasicController {
 		boolean passedEnabled = passedEnableEl.isOn();
 		passedByProgressEl.setVisible(passedEnabled);
 		passedByPassedEl.setVisible(passedEnabled);
+		passedByPassedEnableEl.setVisible(passedEnabled);
 		passedByScoreEl.setVisible(passedEnabled);
-
+		
 		boolean passedByPassedEnabled = passedByPassedEnableEl.isAtLeastSelected(1);				
 		passedByPassedEl.setVisible(passedEnabled && passedByPassedEnabled);
 			
@@ -392,7 +393,8 @@ public class CourseScoreController extends FormBasicController {
 		passedEnableInfosEl.setVisible(passedEnabled);
 		passedLabelEl.setVisible(passedEnabled);
 		
-		boolean passedByPassedEnabled = passedByPassedEnableEl.isAtLeastSelected(1);				
+		passedByPassedEnableEl.setVisible(passedEnabled);
+		boolean passedByPassedEnabled = passedByPassedEnableEl.isAtLeastSelected(1);
 		passedByPassedEl.setVisible(passedEnabled && passedByPassedEnabled);
 		
 		boolean passedNumber = passedEnabled && passedByPassedEnabled
