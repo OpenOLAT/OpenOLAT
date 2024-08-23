@@ -146,24 +146,26 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		topic.setTitle(title);
 		String description = random();
 		topic.setDescription(description);
+
 		topic = sut.updateTopic(topic);
 		dbInstance.commitAndCloseSession();
+
 		Appointment appointment = sut.createUnsavedAppointment(topic);
 		Date start = new GregorianCalendar(2020, 10, 4, 10, 15, 00).getTime();
 		appointment.setStart(start);
 		Date end = new GregorianCalendar(2020, 10, 4, 11, 30, 00).getTime();
 		appointment.setEnd(end);
+
+		// Save the appointment to the database
 		appointment = sut.saveAppointment(appointment);
 
 		String meetingTitle = random();
 		String meetingUrl = "https://meeting.url/test";
 		boolean isRecording = true;
 
-		// Act
 		appointment = sut.addOthersMeeting(appointment, meetingTitle, meetingUrl, isRecording);
 		dbInstance.commitAndCloseSession();
 
-		// Assert
 		SoftAssertions softly = new SoftAssertions();
 		AppointmentSearchParams params = new AppointmentSearchParams();
 		params.setAppointment(appointment);
@@ -177,6 +179,54 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		softly.assertAll();
 	}
 
+	@Test
+	public void shouldRemoveOthersMeeting() {
+		Topic topic = createRandomTopic();
+		String title = random();
+		topic.setTitle(title);
+		String description = random();
+		topic.setDescription(description);
+
+		topic = sut.updateTopic(topic);
+		dbInstance.commitAndCloseSession();
+
+		Appointment appointment = sut.createUnsavedAppointment(topic);
+		Date start = new GregorianCalendar(2020, 10, 4, 10, 15, 00).getTime();
+		appointment.setStart(start);
+		Date end = new GregorianCalendar(2020, 10, 4, 11, 30, 00).getTime();
+		appointment.setEnd(end);
+
+		appointment = sut.saveAppointment(appointment);
+
+		// Add a meeting to the appointment to later remove
+		String meetingTitle = random();
+		String meetingUrl = "https://meeting.url/test";
+		boolean isRecording = true;
+
+		appointment = sut.addOthersMeeting(appointment, meetingTitle, meetingUrl, isRecording);
+		dbInstance.commitAndCloseSession();
+
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(appointment.getMeetingTitle()).as("Meeting Title").isEqualTo(meetingTitle);
+		softly.assertThat(appointment.getMeetingUrl()).as("Meeting URL").isEqualTo(meetingUrl);
+		softly.assertThat(appointment.isRecordingEnabled()).as("Recording Enabled").isEqualTo(isRecording);
+
+		// Remove the meeting configuration from the appointment
+		appointment = sut.removeOthersMeeting(appointment);
+		dbInstance.commitAndCloseSession();
+
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setAppointment(appointment);
+		Appointment retrievedAppointment = sut.getAppointments(params).get(0);
+
+		// Verify that the meeting title, URL, and recording option are null or false, as expected.
+		softly.assertThat(retrievedAppointment.getMeetingTitle()).as("Meeting Title").isNull();
+		softly.assertThat(retrievedAppointment.getMeetingUrl()).as("Meeting URL").isNull();
+		softly.assertThat(retrievedAppointment.isRecordingEnabled()).as("Recording Enabled").isFalse();
+		softly.assertThat(retrievedAppointment.getStart()).as("Start").isCloseTo(start, 1000);
+		softly.assertThat(retrievedAppointment.getEnd()).as("End").isCloseTo(end, 1000);
+		softly.assertAll();
+	}
 
 	@Test
 	public void shouldSyncTopicToBBBMeetings() {

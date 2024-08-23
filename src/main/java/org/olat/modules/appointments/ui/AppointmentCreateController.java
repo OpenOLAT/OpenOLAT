@@ -122,6 +122,7 @@ public class AppointmentCreateController extends FormBasicController {
 	private DateChooser recurringLastEl;
 	private SpacerElement meetingSpacer;
 	private SingleSelection meetingEl;
+	private SingleSelection recordOptionEl;
 	// BigBlueButton
 	private FormLink bbbOpenCalLink;
 	private TextElement bbbLeadTimeEl;
@@ -129,7 +130,6 @@ public class AppointmentCreateController extends FormBasicController {
 	private TextElement welcomeEl;
 	private SingleSelection templateEl;
 	private SingleSelection recordEl;
-	private SingleSelection recordOptionEl;
 	private SingleSelection layoutEl;
 	// Teams
 	private StaticTextElement teamsCreatorEl;
@@ -439,7 +439,6 @@ public class AppointmentCreateController extends FormBasicController {
 			teamsLeadTimeEl.setVisible(teamsMeeting);
 			teamsFollowupTimeEl.setVisible(teamsMeeting);
 		}
-
 
 		boolean otherProvider = meetingEl.getSelectedKey().equals(KEY_OTHER);
 		providerNameEl.setVisible(otherProvider);

@@ -1011,6 +1011,14 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		return appointmentDao.saveAppointment(appointment);
 	}
 
+	public Appointment removeOthersMeeting(Appointment appointment) {
+		appointment.setMeetingTitle(null);
+		appointment.setMeetingUrl(null);
+		appointment.setRecordingEnabled(false);
+
+		return appointmentDao.saveAppointment(appointment);
+	}
+
 	@Override
 	public void onBeforeDelete(TeamsMeeting meeting) {
 		AppointmentSearchParams params = new AppointmentSearchParams();
