@@ -197,7 +197,7 @@ public class AssessmentModePage {
 	 * @return
 	 */
 	public AssessmentModePage startAssessment(boolean wait) {
-		By startBy = By.cssSelector("div.modal-dialog div.modal-body div.o_button_group a.o_sel_assessment_start");
+		By startBy = By.cssSelector("div.modal-dialog div.modal-body div.o_button_group.o_sel_checked a.o_sel_assessment_start");
 		if(wait) {
 			OOGraphene.waitElement(startBy, browser);
 		}
