@@ -40,8 +40,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.devtools.DevTools;
-
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -133,7 +131,7 @@ public class Deployments {
 		WebDriver driver = createWebDriver(id);
 		drivers.add(driver);
 		driver.manage().window().setSize(new Dimension(1024,800));
-		startDevTools(driver);
+		// startDevTools(driver);
 		return driver;
 	}
 	
@@ -168,6 +166,7 @@ public class Deployments {
 		return driver;
 	}
 	
+	/*
 	protected void startDevTools(WebDriver driver) {
 		try {
 			if(driver instanceof ChromeDriver chromeDriver) {
@@ -186,4 +185,5 @@ public class Deployments {
 			log.error("Cannot start dev tools", e);
 		}
 	}
+	*/
 }
