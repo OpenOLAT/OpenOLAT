@@ -77,15 +77,15 @@
 		<org.slf4j>2.0.16</org.slf4j>
 		<org.bouncycastle>1.78.1</org.bouncycastle>
 		<io.jsonwebtoken>0.12.6</io.jsonwebtoken>
-		<io.undertow>2.3.15.Final</io.undertow>
+		<io.undertow>2.3.16.Final</io.undertow>
 		<jackson.version>2.17.2</jackson.version>
 		<swagger.ui.version>5.17.14</swagger.ui.version>
 		<com.mysql.version>9.0.0</com.mysql.version>
-		<org.postgresql.version>42.7.3</org.postgresql.version>
-		<org.infinispan.version>15.0.7.Final</org.infinispan.version>
+		<org.postgresql.version>42.7.4</org.postgresql.version>
+		<org.infinispan.version>15.0.8.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.23.1</version.selenium>
-		<activemq.artemis.version>2.36.0</activemq.artemis.version>
+		<activemq.artemis.version>2.37.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.2</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.2</jakarta.xml.ws-api>
@@ -1333,7 +1333,7 @@
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<skipTests>${skipTests}</skipTests>
-					<argLine>-Xmx2048m -Xms256m -Djava.awt.headless=true</argLine>
+					<argLine>-Xmx2048m -Xms256m -Djava.awt.headless=true -Djava.security.egd=file:/dev/urandom</argLine>
 					<systemPropertyVariables>
 						<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
 					</systemPropertyVariables>
