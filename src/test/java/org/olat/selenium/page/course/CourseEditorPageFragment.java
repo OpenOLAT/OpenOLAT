@@ -580,7 +580,9 @@ public class CourseEditorPageFragment {
 		browser.findElement(inputBy).sendKeys(resourceTitle);
 		By submitBy = By.cssSelector("dialog.modal.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(submitBy).click();
-		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_repo_save_details");
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_search_referenceable_entries");
+
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -645,12 +647,13 @@ public class CourseEditorPageFragment {
 	 */
 	public CoursePageFragment clickToolbarFirstCrumb() {
 		try {
-			By crumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_breadcrumb_crumb.o_first_crumb");
+			By crumbBy = By.xpath("//div[contains(@class,'o_edit_mode')]//ol[@class='breadcrumb']/li[contains(@class,'o_breadcrumb_crumb') and contains(@class,'o_first_crumb')]/a");
+			OOGraphene.waitElementPresence(crumbBy, 5, browser);
 			OOGraphene.waitElement(crumbBy, browser);
 			browser.findElement(crumbBy).click();
 			OOGraphene.waitBusy(browser);
 			
-			By lastCrumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_breadcrumb_crumb.o_last_crumb.o_nowrap");
+			By lastCrumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_last_crumb.o_nowrap");
 			OOGraphene.waitElementDisappears(lastCrumbBy, 5, browser);
 			By mainId = By.id("o_main");
 			OOGraphene.waitElement(mainId, browser);

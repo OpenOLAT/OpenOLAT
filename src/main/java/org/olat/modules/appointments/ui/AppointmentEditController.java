@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.appointments.ui;
@@ -24,6 +24,7 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.getSelectedTemplate;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.isWebcamLayoutAvailable;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -78,7 +79,7 @@ import com.microsoft.graph.models.OnlineMeetingPresenters;
 /**
  * 
  * Initial date: 15 Apr 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class AppointmentEditController extends FormBasicController {
@@ -87,14 +88,18 @@ public class AppointmentEditController extends FormBasicController {
 	private static final String KEY_NO = "no";
 	private static final String KEY_BIGBLUEBUTTON = "bbb";
 	private static final String KEY_TEAMS = "teams";
+	private static final String KEY_OTHER = "others";
 	
 	private DateChooser startEl;
 	private DateChooser endEl;
 	private TextElement locationEl;
 	private TextElement maxParticipationsEl;
+	private TextElement providerNameEl;
+	private TextElement providerUrlEl;
 	private TextElement detailsEl;
 	private SpacerElement meetingSpacer;
 	private SingleSelection meetingEl;
+	private SingleSelection recordOptionEl;
 	// BigBlueButton
 	private TextElement bbbExternalLinkEl;
 	private FormLink bbbOpenCalLink;
@@ -115,7 +120,7 @@ public class AppointmentEditController extends FormBasicController {
 	private TeamsMeetingsCalendarController teamsCalendarCtr;
 	private CloseableModalController cmc;
 	
-	private Topic topic;
+	private final Topic topic;
 	private Appointment appointment;
 	private final boolean hasParticipations;
 	private final boolean bbbEditable;
@@ -123,6 +128,7 @@ public class AppointmentEditController extends FormBasicController {
 	private List<BigBlueButtonMeetingTemplate> templates;
 	private TeamsMeeting teamsMeeting;
 	private final boolean teamsEditable;
+	private final boolean hasOthersMeeting;
 	
 	@Autowired
 	private AppointmentsService appointmentsService;
@@ -139,6 +145,7 @@ public class AppointmentEditController extends FormBasicController {
 		this.bbbMeeting = null;
 		this.teamsMeeting = null;
 		this.teamsEditable = true;
+		this.hasOthersMeeting = false;
 		initForm(ureq);
 		updateUI();
 	}
@@ -161,6 +168,8 @@ public class AppointmentEditController extends FormBasicController {
 		
 		this.teamsMeeting = appointment.getTeamsMeeting();
 		teamsEditable = TeamsUIHelper.isEditable(teamsMeeting);
+
+		this.hasOthersMeeting = appointment.getMeetingUrl() != null;
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
 		params.setAppointment(appointmentRef);
@@ -201,27 +210,53 @@ public class AppointmentEditController extends FormBasicController {
 		detailsEl = uifactory.addTextAreaElement("appointment.details", "appointment.details", 2000, 4, 72, false,
 				false, details, formLayout);
 		
-		if (appointmentsService.isBigBlueButtonEnabled() || appointmentsService.isTeamsEnabled()) {
-			meetingSpacer = uifactory.addSpacerElement("meeting.spacer", formLayout, false);
-			
-			SelectionValues meetingKV = new SelectionValues();
-			meetingKV.add(entry(KEY_NO, translate("appointment.meeting.no")));
-			if (appointmentsService.isBigBlueButtonEnabled()) {
-				meetingKV.add(entry(KEY_BIGBLUEBUTTON, translate("appointment.meeting.bigbluebutton")));
-			}
-			if (appointmentsService.isTeamsEnabled()) {
-				meetingKV.add(entry(KEY_TEAMS, translate("appointment.meeting.teams")));
-			}
-			meetingEl = uifactory.addRadiosHorizontal("appointment.meeting", "appointment.meeting", formLayout,
-					meetingKV.keys(), meetingKV.values());
-			meetingEl.addActionListener(FormEvent.ONCHANGE);
-			if (bbbMeeting != null && Arrays.asList(meetingEl.getKeys()).contains(KEY_BIGBLUEBUTTON)) {
-				meetingEl.select(KEY_BIGBLUEBUTTON, true);
-			} else if (teamsMeeting != null && Arrays.asList(meetingEl.getKeys()).contains(KEY_TEAMS)) {
-				meetingEl.select(KEY_TEAMS, true);
+
+		meetingSpacer = uifactory.addSpacerElement("meeting.spacer", formLayout, false);
+
+		SelectionValues meetingKV = new SelectionValues();
+		meetingKV.add(entry(KEY_NO, translate("appointment.meeting.no")));
+		if (appointmentsService.isBigBlueButtonEnabled()) {
+			meetingKV.add(entry(KEY_BIGBLUEBUTTON, translate("appointment.meeting.bigbluebutton")));
+		}
+		if (appointmentsService.isTeamsEnabled()) {
+			meetingKV.add(entry(KEY_TEAMS, translate("appointment.meeting.teams")));
+		}
+
+		meetingKV.add(entry(KEY_OTHER, translate("appointment.meeting.others")));
+
+		meetingEl = uifactory.addRadiosHorizontal("appointment.meeting", "appointment.meeting", formLayout,
+				meetingKV.keys(), meetingKV.values());
+		meetingEl.addActionListener(FormEvent.ONCHANGE);
+		if (bbbMeeting != null && Arrays.asList(meetingEl.getKeys()).contains(KEY_BIGBLUEBUTTON)) {
+			meetingEl.select(KEY_BIGBLUEBUTTON, true);
+		} else if (teamsMeeting != null && Arrays.asList(meetingEl.getKeys()).contains(KEY_TEAMS)) {
+			meetingEl.select(KEY_TEAMS, true);
+		} else if (hasOthersMeeting) {
+			meetingEl.select(KEY_OTHER, true);
+		} else {
+			meetingEl.select(KEY_NO, bbbMeeting == null && teamsMeeting == null);
+		}
+
+		providerNameEl = uifactory.addTextElement("appointment.provider.name", 32, null, formLayout);
+		providerNameEl.setVisible(false);
+		providerUrlEl = uifactory.addTextElement("appointment.provider.url", 256, "Zoom", formLayout);
+		providerUrlEl.setVisible(false);
+
+		String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
+		recordOptionEl = uifactory.addRadiosVertical("appointment.recording.option", formLayout, KEYS_YES_NO, yesNoValues);
+		recordOptionEl.select(KEYS_YES_NO[0], true);
+		recordOptionEl.setVisible(false);
+
+		if (hasOthersMeeting) {
+			providerNameEl.setValue(appointment.getMeetingTitle());
+			providerUrlEl.setValue(appointment.getMeetingUrl());
+			String recordingKey;
+			if (appointment.isRecordingEnabled()) {
+				recordingKey = KEYS_YES_NO[0];
 			} else {
-				meetingEl.select(KEY_NO, bbbMeeting == null && teamsMeeting == null);
+				recordingKey = KEYS_YES_NO[1];
 			}
+			recordOptionEl.select(recordingKey, true);
 		}
 
 		if (appointmentsService.isBigBlueButtonEnabled()) {
@@ -253,7 +288,6 @@ public class AppointmentEditController extends FormBasicController {
 				layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
 			}
 			
-			String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
 			recordEl = uifactory.addRadiosVertical("meeting.record", formLayout, KEYS_YES_NO, yesNoValues);
 			recordEl.setEnabled(bbbEditable);
 			if(BigBlueButtonUIHelper.isRecord(bbbMeeting)) {
@@ -363,6 +397,13 @@ public class AppointmentEditController extends FormBasicController {
 			teamsLeadTimeEl.setVisible(teamsMeeting);
 			teamsFollowupTimeEl.setVisible(teamsMeeting);
 		}
+
+		boolean otherProvider = meetingEl.getSelectedKey().equals(KEY_OTHER);
+		providerNameEl.setVisible(otherProvider);
+		providerNameEl.setMandatory(otherProvider);
+		providerUrlEl.setVisible(otherProvider);
+		providerUrlEl.setMandatory(otherProvider);
+		recordOptionEl.setVisible(otherProvider);
 	}
 	
 	@Override
@@ -500,7 +541,45 @@ public class AppointmentEditController extends FormBasicController {
 		if (teamsEditable && meetingEl!= null && meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_TEAMS)) {
 			allOk &= TeamsUIHelper.validateReadableIdentifier(teamsExternalLinkEl, teamsMeeting);
 		}
+
+		if (meetingEl != null && meetingEl.getSelectedKey().equals(KEY_OTHER)) {
+			if (providerNameEl != null) {
+				providerNameEl.clearError();
+				if (!StringHelper.containsNonWhitespace(providerNameEl.getValue())) {
+					providerNameEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				} else {
+					providerNameEl.setValue(StringHelper.xssScan(providerNameEl.getValue()));
+				}
+			}
+
+			if (providerUrlEl != null) {
+				providerUrlEl.clearError();
+				if (!StringHelper.containsNonWhitespace(providerUrlEl.getValue())) {
+					providerUrlEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				} else {
+					providerUrlEl.setValue(StringHelper.xssScan(providerUrlEl.getValue()));
+					allOk &= validateUrl(providerUrlEl);
+				}
+			}
+		}
 		
+		return allOk;
+	}
+
+	private boolean validateUrl(TextElement textEl) {
+		boolean allOk = true;
+
+		if (StringHelper.containsNonWhitespace(textEl.getValue())) {
+			try {
+				new URL(textEl.getValue()).toURI();
+			} catch(Exception e) {
+				textEl.setErrorKey("error.url.not.valid");
+				allOk &= false;
+			}
+		}
+
 		return allOk;
 	}
 
@@ -617,14 +696,29 @@ public class AppointmentEditController extends FormBasicController {
 			teamsMeeting.setPermanent(false);
 			
 			appointment = appointmentsService.removeBBBMeeting(appointment);
+		} else if (meetingEl != null && meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_OTHER)) {
+			appointment = addOthersMeeting(appointment);
+
+			// in case there was a bbb or teams meeting before editing
+			appointment = appointmentsService.removeBBBMeeting(appointment);
+			appointment = appointmentsService.removeTeamsMeeting(appointment);
 		} else {
 			appointment = appointmentsService.removeBBBMeeting(appointment);
 			appointment = appointmentsService.removeTeamsMeeting(appointment);
+			appointment = appointmentsService.removeOthersMeeting(appointment);
 		}
 		
 		appointment = appointmentsService.saveAppointment(appointment);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	private Appointment addOthersMeeting(Appointment appointment) {
+		if (meetingEl != null && meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_OTHER)) {
+			appointment = appointmentsService.addOthersMeeting(appointment, providerNameEl.getValue(),
+					providerUrlEl.getValue(), recordOptionEl.getSelectedKey().equals(KEYS_YES_NO[0]));
+		}
+		return appointment;
 	}
 	
 	private void doOpenBBBCalendar(UserRequest ureq) {

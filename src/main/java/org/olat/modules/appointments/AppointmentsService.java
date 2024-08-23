@@ -183,6 +183,13 @@ public interface AppointmentsService {
 	public Appointment removeTeamsMeeting(Appointment appointment);
 
 	/**
+	 * remove a certain meeting configuration (title, url and recording option) from an appointment
+	 * @param appointment
+	 * @return appointment without meeting configuration
+	 */
+	public Appointment removeOthersMeeting(Appointment appointment);
+
+	/**
 	 * configure/add a new Meeting with given title, url and option for recording
 	 *
 	 * @param appointment

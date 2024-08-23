@@ -374,7 +374,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		String userDN = ldapDao.searchUserForLogin(login, ctx);
 		if (userDN == null) {
-			log.info("Error when trying to bind user with username::{} - user not found on LDAP server {}"
+			log.info("User {} not found on LDAP server {}"
 					, login, (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin() ? ", trying with OLAT login provider" : ""));
 			errors.insert("Username or password incorrect");
 			return null;
