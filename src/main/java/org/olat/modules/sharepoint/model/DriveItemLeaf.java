@@ -26,7 +26,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSExternalLeaf;
 import org.olat.core.util.vfs.VFSExternalMetadata;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
@@ -41,7 +40,7 @@ import com.azure.core.credential.TokenCredential;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DriveItemLeaf implements VFSLeaf, VFSExternalLeaf {
+public class DriveItemLeaf implements VFSExternalLeaf {
 	
 	private final MicrosoftDrive drive;
 	private final MicrosoftDriveItem driveItem;

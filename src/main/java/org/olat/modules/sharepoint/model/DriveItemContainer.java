@@ -119,12 +119,43 @@ public class DriveItemContainer extends AbstractSPContainer {
 	
 	@Override
 	public VFSSuccess copyFrom(VFSItem vfsItem, Identity savedBy) {
+		List<DriveItem> parentLine = getParentLine();
+		return upload(parentLine, vfsItem);
+	}
+	
+	private VFSSuccess upload(List<DriveItem> parentLine, VFSItem vfsItem) {
 		if(vfsItem instanceof VFSLeaf leaf) {
-			List<DriveItem> parentLine = getParentLine();
-			sharePointDao.uploadLargeFile(drive.drive(), parentLine, leaf, leaf.getName(), tokenProvider);
+			return upload(parentLine, leaf);
+		}
+		
+		VFSSuccess allOk = VFSSuccess.SUCCESS;
+		if(vfsItem instanceof VFSContainer container) {
+			DriveItem directoryItem = sharePointDao.createDirectory(drive.drive(), parentLine, container.getName(), tokenProvider);
+			List<DriveItem> directoryParentLine = new ArrayList<>(parentLine);
+			directoryParentLine.add(directoryItem);
+			
+			List<VFSItem> children = container.getItems();
+			for(VFSItem child:children) {
+				VFSSuccess uploadStatus = upload(directoryParentLine, child);
+				allOk = mergeSuccessStatus(allOk, uploadStatus);
+			}
+		}
+		return allOk;
+	}
+	
+	private VFSSuccess mergeSuccessStatus(VFSSuccess currentStatus, VFSSuccess newStatus) {
+		if(currentStatus == VFSSuccess.SUCCESS && newStatus == VFSSuccess.SUCCESS) {
 			return VFSSuccess.SUCCESS;
 		}
-		return VFSSuccess.ERROR_FAILED;
+		if(newStatus != VFSSuccess.SUCCESS) {
+			return newStatus;
+		}
+		return currentStatus;
+	}
+	
+	private VFSSuccess upload(List<DriveItem> parentLine, VFSLeaf leaf) {
+		DriveItem uploadedItem = sharePointDao.uploadLargeFile(drive.drive(), parentLine, leaf, leaf.getName(), tokenProvider);
+		return uploadedItem == null ? VFSSuccess.ERROR_FAILED : VFSSuccess.SUCCESS;
 	}
 	
 	private List<DriveItem> getParentLine() {
@@ -132,7 +163,6 @@ public class DriveItemContainer extends AbstractSPContainer {
 		for(VFSContainer container=this; container.getParentContainer() != null; container=container.getParentContainer()) {
 			if(container instanceof DriveItemContainer itemContainer) {
 				parentLine.add(itemContainer.driveItem.driveItem());
-
 			}
 		}
 		if(parentLine.size() > 1) {

@@ -21,6 +21,7 @@ package org.olat.modules.sharepoint.manager;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +45,7 @@ import com.microsoft.graph.models.DriveCollectionResponse;
 import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.models.DriveItemCollectionResponse;
 import com.microsoft.graph.models.DriveItemUploadableProperties;
+import com.microsoft.graph.models.Folder;
 import com.microsoft.graph.models.Site;
 import com.microsoft.graph.models.SiteCollectionResponse;
 import com.microsoft.graph.models.ThumbnailSet;
@@ -283,6 +285,41 @@ public class SharePointDAO {
 		}
 	}
 	
+
+	public DriveItem createDirectory(Drive drive, List<DriveItem> parentItems, String name, TokenCredential tokenProvider) {
+		try {
+			String directoryPath = toDirectoryPath(parentItems);
+			
+			DriveItem driveItem = new DriveItem();
+			driveItem.setName(name);
+			driveItem.setFolder(new Folder());
+			Map<String, Object> additionalData = new HashMap<>();
+			additionalData.put("@microsoft.graph.conflictBehavior", "rename");
+			driveItem.setAdditionalData(additionalData);
+			
+			GraphServiceClient client = client(tokenProvider);
+			return client
+				.drives()
+				.byDriveId(drive.getId())
+				.items()
+				.byDriveItemId(directoryPath).children()
+				.post(driveItem);
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	private String toDirectoryPath(List<DriveItem> parentItems) {
+		StringBuilder itemId = new StringBuilder();
+		itemId.append("root:");
+		for(DriveItem parentItem:parentItems) {
+			itemId.append("/").append(parentItem.getName());
+		}
+		itemId.append(":");
+		return itemId.toString();
+	}
+	
 	public DriveItem uploadLargeFile(Drive drive, List<DriveItem> parentItems, VFSLeaf file, String filename, TokenCredential tokenProvider) {
 		try(InputStream fileStream = file.getInputStream()) {
 			long streamSize = file.getSize();
@@ -290,7 +327,7 @@ public class SharePointDAO {
 			// Set body of the upload session request
 			CreateUploadSessionPostRequestBody uploadSessionRequest = new CreateUploadSessionPostRequestBody();
 			DriveItemUploadableProperties properties = new DriveItemUploadableProperties();
-			properties.getAdditionalData().put("@microsoft.graph.conflictBehavior", "replace");
+			properties.getAdditionalData().put("@microsoft.graph.conflictBehavior", "rename");
 			properties.getAdditionalData().put("name", filename);
 			uploadSessionRequest.setItem(properties);
 			
