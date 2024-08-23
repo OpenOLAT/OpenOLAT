@@ -125,6 +125,7 @@
 	
 	/* action cols must have a minimum width to users can touch it */
 	.o_col_action {
+		width: 35px;
 		.o_icon_actions {
 			width: 25px;
 		}
