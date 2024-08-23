@@ -60,6 +60,18 @@ public class MergeSource extends AbstractVirtualContainer {
 		mergedContainersChildren = new ArrayList<>();
 	}
 	
+	public NamedContainerImpl getSingleNamedContainer() {
+		if((mergedContainersChildren.size() + mergedContainers.size()) == 1) {
+			if(mergedContainersChildren.size() == 1 && mergedContainersChildren.get(0) instanceof NamedContainerImpl namedContainer) {
+				return namedContainer;
+			}
+			if(mergedContainers.size() == 1 && mergedContainers.get(0) instanceof NamedContainerImpl namedContainer) {
+				return namedContainer;
+			}
+		}
+		return null;
+	}
+	
 	protected void init() {
 		if(mergedContainers == null) {
 			mergedContainers = new ArrayList<>();

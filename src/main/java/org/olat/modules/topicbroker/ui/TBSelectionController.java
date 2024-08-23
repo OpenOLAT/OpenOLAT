@@ -243,7 +243,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		}
 		
 		if (periodEvaluator.isSelectionPeriod()) {
-			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.upDown));
+			DefaultFlexiColumnModel upDownModel = new DefaultFlexiColumnModel(SelectionCols.upDown);
+			upDownModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+			upDownModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+			selectionColumnsModel.addFlexiColumnModel(upDownModel);
 		}
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SelectionCols.selectionTools);
@@ -284,7 +287,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		}
 		
 		if (periodEvaluator.isSelectionPeriod()) {
-			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.select));
+			DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel(SelectionCols.select);
+			selectColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+			selectColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+			selectionColumnsModel.addFlexiColumnModel(selectColumn);
 		}
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SelectionCols.topicTools);

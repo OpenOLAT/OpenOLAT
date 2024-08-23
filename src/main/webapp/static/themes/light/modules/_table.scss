@@ -125,6 +125,7 @@
 	
 	/* action cols must have a minimum width to users can touch it */
 	.o_col_action {
+		width: 35px;
 		.o_icon_actions {
 			width: 25px;
 		}
@@ -312,9 +313,14 @@ table.table.o_table_nowrap>tbody>tr>td {
 				}
 				padding-right: 15px;
 				white-space: nowrap;
-				overflow: hidden;
+				
+			}
+			
+			a.o_table_filter, a.o_table_add_filter {
+				overflow-x: clip;
 				text-overflow: ellipsis;
 			}
+			
 			/* special colors for the filter buttons itself */
 			.o_table_filter {
 				@include button-variant($o-table-filter-color, $o-table-filter-bg, $o-table-filter-border);
@@ -337,6 +343,8 @@ table.table.o_table_nowrap>tbody>tr>td {
 					> div > label {
 						width: 100%;
 						padding: 6px 12px 6px 32px;
+						overflow-x: clip;
+						text-overflow: ellipsis;
 					}
 				}
 			}

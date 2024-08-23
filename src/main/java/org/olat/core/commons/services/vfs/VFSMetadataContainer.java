@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -51,8 +52,12 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 	public VFSMetadataContainer(VFSRepositoryService vfsRepositoryService, boolean cached, VFSContainer wrappedContainer) {
 		this(vfsRepositoryService, cached, wrappedContainer.getMetaInfo(), wrappedContainer.getParentContainer(),
 				wrappedContainer.getLocalSecurityCallback(), wrappedContainer.getDefaultItemFilter());
-		if (wrappedContainer instanceof NamedContainerImpl namedContainer) {
+		
+		if (wrappedContainer instanceof NamedContainerImpl) {
 			this.vfsItem = wrappedContainer;
+		} else if (wrappedContainer instanceof MergeSource mergeContainer
+				&& mergeContainer.getSingleNamedContainer() != null) {
+			this.vfsItem = mergeContainer.getSingleNamedContainer();
 		}
 	}
 

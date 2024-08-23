@@ -103,6 +103,7 @@ public class TBParticipantDAO {
 		}
 		if (params.isFetchIdentity()) {
 			sb.append(" join fetch participant.identity identity");
+			sb.append(" join fetch identity.user user");
 		}
 		if (params.getBrokerKeys() != null && !params.getBrokerKeys().isEmpty()) {
 			sb.and().append("participant.broker.key in :brokerKeys");

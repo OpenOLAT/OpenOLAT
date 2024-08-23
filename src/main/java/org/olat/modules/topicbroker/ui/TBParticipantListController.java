@@ -304,6 +304,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		TBParticipantSearchParams participantSearchParams = new TBParticipantSearchParams();
 		participantSearchParams.setBroker(broker);
 		participantSearchParams.setIdentities(identities);
+		participantSearchParams.setFetchIdentity(true);
 		Map<Long, TBParticipant> identityKeyToParticipant = topicBrokerService.getParticipants(participantSearchParams).stream()
 				.collect(Collectors.toMap(particioant -> particioant.getIdentity().getKey(), Function.identity()));
 		
