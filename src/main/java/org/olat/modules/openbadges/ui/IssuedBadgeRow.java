@@ -40,6 +40,7 @@ public class IssuedBadgeRow {
 	private String downloadUrl;
 	private FormLink toolLink;
 	private String addToLinkedInUrl;
+	private String recipientName;
 
 	public IssuedBadgeRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
 		this.name = badgeAssertionWithSize.badgeAssertion().getBadgeClass().getName();
@@ -108,5 +109,13 @@ public class IssuedBadgeRow {
 
 	public String getAddToLinkedInUrl() {
 		return addToLinkedInUrl;
+	}
+
+	public String getRecipientName() {
+		return recipientName;
+	}
+
+	public void setRecipientName(String recipientName) {
+		this.recipientName = recipientName;
 	}
 }

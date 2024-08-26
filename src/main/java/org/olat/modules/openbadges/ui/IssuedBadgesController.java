@@ -65,6 +65,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -73,6 +74,7 @@ import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +105,8 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
+	@Autowired
+	private UserManager userManager;
 
 	public IssuedBadgesController(UserRequest ureq, WindowControl wControl, String titleKey, RepositoryEntry courseEntry,
 								  boolean nullEntryMeansAll, Identity identity, boolean mine, String helpLink) {
@@ -150,6 +154,9 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.status));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuer));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuedOn));
+		if (identity == null) {
+			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.recipient));
+		}
 
 		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
 				IssuedBadgesTableModel.IssuedBadgeCols.tools.i18nHeaderKey(),
@@ -245,15 +252,26 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 
 	private void forgeRow(IssuedBadgeRow row, OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
 		BadgeAssertion badgeAssertion = badgeAssertionWithSize.badgeAssertion();
+
 		String imageUrl = mediaUrl + "/" + badgeAssertion.getBakedImage();
 		BadgeImageComponent badgeImage = new BadgeImageComponent("badgeImage", imageUrl, BadgeImageComponent.Size.cardSize);
 		row.setBadgeImage(badgeImage);
+
 		row.setIssuedOn(Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()));
+
 		row.setIssuer(badgeAssertion.getBadgeClass().getIssuerDisplayString());
+
 		row.setDownloadUrl(downloadUrl + "/" + badgeAssertion.getDownloadFileName());
+
+		if (identity == null) {
+			String recipientName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
+			row.setRecipientName(StringHelper.xssScan(recipientName));
+		}
+
 		if (showLinkedInLink(badgeAssertion)) {
 			row.setAddToLinkedInUrl(openBadgesManager.badgeAssertionAsLinkedInUrl(badgeAssertion));
 		}
+
 		String toolId = "tool_" + badgeAssertion.getUuid();
 		FormLink toolLink = (FormLink) flc.getComponent(toolId);
 		if (toolLink == null) {
