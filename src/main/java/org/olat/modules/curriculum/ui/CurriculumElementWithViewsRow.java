@@ -562,8 +562,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumElementWithViewsRow) {
-			CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)obj;
+		if(obj instanceof CurriculumElementWithViewsRow row) {
 			return ((element == null && row.element == null) || (element != null && element.getKey().equals(row.element.getKey())))
 					&& ((repositoryEntry == null && row.repositoryEntry == null)
 							|| (repositoryEntry != null && row.repositoryEntry != null && repositoryEntry.getKey().equals(row.repositoryEntry.getKey())));
