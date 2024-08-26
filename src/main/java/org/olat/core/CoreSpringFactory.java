@@ -123,6 +123,11 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 		return context.getBean(beanName);
 	}
 	
+	public static <T> T getBean(String beanName, Class<T> interfaceClass) {
+		ApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
+		return context.getBean(beanName, interfaceClass);
+	}
+	
 	/**
 	 * @param interfaceImpl
 	 *            The bean name to check for. Be sure the bean does exist,

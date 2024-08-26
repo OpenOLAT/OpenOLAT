@@ -237,9 +237,9 @@ public class AppointmentEditController extends FormBasicController {
 			meetingEl.select(KEY_NO, bbbMeeting == null && teamsMeeting == null);
 		}
 
-		providerNameEl = uifactory.addTextElement("appointment.provider.name", 32, null, formLayout);
+		providerNameEl = uifactory.addTextElement("appointment.provider.name", 32, "Zoom", formLayout);
 		providerNameEl.setVisible(false);
-		providerUrlEl = uifactory.addTextElement("appointment.provider.url", 256, "Zoom", formLayout);
+		providerUrlEl = uifactory.addTextElement("appointment.provider.url", 256, null, formLayout);
 		providerUrlEl.setVisible(false);
 
 		String[] yesNoValues = new String[] { translate("yes"), translate("no")  };

@@ -2080,9 +2080,6 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	 */
 	private void enableSSL(Hashtable<String, String> env) {
 		env.put(Context.SECURITY_PROTOCOL, "ssl");
-		if(StringHelper.containsNonWhitespace(ldapLoginModule.getTrustStoreLocation())) {
-			System.setProperty("javax.net.ssl.trustStore", ldapLoginModule.getTrustStoreLocation());
-		}
 	}
 	
 	/**
