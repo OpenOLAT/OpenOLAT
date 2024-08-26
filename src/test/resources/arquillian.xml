@@ -7,6 +7,10 @@
 	<engine>
 		<property name="deploymentExportPath">target/arquillianDeployments</property>
 	</engine>
+	
+	<extension qualifier="suite">
+		<property name="deploymentClass">org.olat.selenium.Deployments</property>
+	</extension>
 
     <container qualifier="tomcat-10-managed" default="true">
         <configuration>

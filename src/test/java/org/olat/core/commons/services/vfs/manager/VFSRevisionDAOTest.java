@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -92,6 +93,29 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(revisions);
 		Assert.assertEquals(1, revisions.size());
 		Assert.assertEquals(revision, revisions.get(0));
+	}
+	
+	@Test
+	public void getRevisions_more() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-3");
+		List<VFSMetadata> metadatas = new ArrayList<>();
+		List<VFSRevision> revisions = new ArrayList<>();
+		for(int i=0; i<10; i++) {
+			VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text" + i + ".txt",
+				new Date(), 10l, false, "file:///text" + i + ".tx", "file", null);
+			VFSRevision revision = revisionDao.createRevision(author, author, "._oo_vr_1_text" + i + ".txt", 1, null, 25l, new Date(), "A comment", metadata);
+			metadatas.add(metadata);
+			revisions.add(revision);
+		}
+		
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSRevision> loadedRevisions = revisionDao.getRevisions(new ArrayList<>(metadatas));
+		Assertions.assertThat(loadedRevisions)
+			.hasSize(10)
+			.containsAll(revisions)
+			.map(VFSRevision::getMetadata)
+			.containsAll(metadatas);
 	}
 	
 	@Test
