@@ -45,6 +45,18 @@
 
 	max-width: 250px;
 	height: calc(100% - $line-height-computed);
+	display: flex;
+	flex-direction: column;
+
+	.o_badge_meta {
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+
+		.o_active {
+			flex-grow: 1;
+		}
+	}
 
 	legend {
 

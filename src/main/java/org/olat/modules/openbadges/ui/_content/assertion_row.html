@@ -2,13 +2,17 @@
 	<div class="panel-heading o_active" onclick="$f.ffXHREvent("select", "${row.badgeAssertion.key}");">
 		$r.render("badgeImage")
 	</div>
-	<div class="panel-body o_min_height">
+	<div class="o_badge_meta panel-body o_min_height">
 		<div class="o_active" onclick="$f.ffXHREvent("select", "${row.badgeAssertion.key}");">
 			<legend class="o_no_border o_small_bottom_margin o_text_one_line">$r.xssScan($row.name)</legend>
 			<div class="o_label">$r.translate("class.issuer")</div>
 			<div class="o_value o_text_on_two_lines">$r.xssScan($row.issuer)</div>
 			<div class="o_label">$r.translate("form.issued.on")</div>
 			<div class="o_value">$row.issuedOn</div>
+			#if($r.isNotEmpty($row.recipientName))
+			<div class="o_label">$r.translate("form.recipient")</div>
+			<div class="o_value">$row.recipientName</div>
+			#end
 		</div>
 		<div class="o_download">
 			<a class="btn btn-default" role="button" href="$row.downloadUrl" download>
