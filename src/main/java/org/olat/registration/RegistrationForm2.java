@@ -127,7 +127,9 @@ public class RegistrationForm2 extends FormBasicController {
 		this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
-		requiredLevel = loginModule.getPasskeyLevel(OrganisationRoles.user);
+		requiredLevel = loginModule.isOlatProviderWithPasskey()
+				? loginModule.getPasskeyLevel(OrganisationRoles.user)
+				: PasskeyLevels.level1;
 
 		initForm(ureq);
 	}
