@@ -50,7 +50,7 @@ public class CourseElementScoreCondition implements BadgeCondition {
 	public String toString(Translator translator, RepositoryEntry courseEntry) {
 		CourseElement courseElement = BadgeCondition.loadCourseElement(courseEntry, subIdent);
 		return translator.translate("badgeCondition." + KEY,
-				courseElement != null ? courseElement.getShortTitle() : "-", getSymbol().getSymbolString(),
+				courseElement != null ? courseElement.getShortTitle() : subIdent, getSymbol().getSymbolString(),
 				Double.toString(getValue()));
 	}
 

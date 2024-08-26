@@ -436,6 +436,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_review_removed { @include o-add-icon('times');}
 .o_icon_reviewer { @include o-add-icon('user-md');}
 .o_icon_revision { @include o-add-icon('thumbs-down');}
+.o_icon_revoke { @include o-add-icon('rotate-left');}
 .o_icon_right { @include o-add-icon('arrow-circle-right');}
 .o_icon_rss { @include o-add-icon('rss');}
 .o_icon_rss_unsubscribe { @include o-add-icon('rss'); color: #996633;}

@@ -130,7 +130,7 @@
 	}
 }
 
-.o_badge_wiz_summary_step {
+.o_badge_wiz_summary_step, .o_badge_criteria_view {
 	.o_small_badge {
 		max-width: 250px;
 		max-height: 250px;
@@ -223,5 +223,34 @@
 
 	.o_badge_thumbs .swiper-pagination {
 		margin-bottom: -10px;
+	}
+}
+
+.o_badge_classes {
+	th.o_col_image {
+		color: transparent;
+		user-select: none;
+	}
+}
+
+.o_badge_class_details {
+	.o_buttons {
+		display: flex;
+		justify-content: flex-end;
+	}
+}
+
+span.o_labeled_light {
+	&.o_badge_class_status_preparation {
+		color: $btn-info-border;
+	}
+	&.o_badge_class_status_active {
+		color: $btn-success-border;
+	}
+	&.o_badge_class_status_deleted {
+		color: $btn-warning-border;
+	}
+	&.o_badge_class_status_revoked {
+		color: $btn-danger-border;
 	}
 }

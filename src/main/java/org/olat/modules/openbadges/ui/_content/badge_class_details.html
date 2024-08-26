@@ -1,0 +1,11 @@
+<div class="o_badge_class_details">
+	$r.render($row.criteriaComponentName())
+	<div class="o_buttons">
+		<div>
+			#if($r.isNotEmpty($row.editBadgeLink()))
+				$r.render($row.editBadgeLink().getName())
+			#end
+			$r.render($row.awardManuallyLink().getName())
+		</div>
+	</div>
+</div>
