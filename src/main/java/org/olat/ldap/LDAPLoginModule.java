@@ -24,13 +24,6 @@ import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 
-import java.io.FileInputStream;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.Date;
-import java.util.Enumeration;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.Tracing;
@@ -71,12 +64,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	//SSL configuration
 	@Value("${ldap.sslEnabled}")
 	private boolean sslEnabled;
-	@Value("${ldap.trustStoreLocation}")
-	private String trustStoreLoc;
-	@Value("${ldap.trustStorePwd}")
-	private String trustStorePass;
-	@Value("${ldap.trustStoreType}")
-	private String trustStoreTyp;
 	
 	// System user: used for getting all users and connection testing
 	@Value("${ldap.ldapSystemDN}")
@@ -231,15 +218,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 			setEnableLDAPLogins(false);
 			return;
 		}
-		
-		// check SSL certifications, throws Startup Exception if certificate is not found
-		if(isSslEnabled() && StringHelper.containsNonWhitespace(getTrustStoreLocation())) {
-			if (!checkServerCertValidity(0)) {
-				log.error("LDAP enabled but no valid server certificate found. Please fix!");
-			} else if (!checkServerCertValidity(30)) {
-				log.warn("Server Certificate will expire in less than 30 days.");
-			}
-		}
 
 		// Start LDAP cron sync job
 		JobDetail jobDetail = initSyncJob();
@@ -295,49 +273,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		}
 	}
 
-	
-	/**
-	 * Checks if SSL certification is know and accepted by Java JRE.
-	 * 
-	 * 
-	 * @param dayFromNow Checks expiration 
-	 * @return true Certification accepted, false No valid certification
-	 * 
-	 * @throws Exception
-	 * 
-	 */
-	private boolean checkServerCertValidity(int daysFromNow) {
-		KeyStore keyStore;
-		try(FileInputStream in=new FileInputStream(getTrustStoreLocation())) {
-			keyStore = KeyStore.getInstance(getTrustStoreType());
-			keyStore.load(in, (getTrustStorePwd() != null) ? getTrustStorePwd().toCharArray() : null);
-			Enumeration<String> aliases = keyStore.aliases();
-			while (aliases.hasMoreElements()) {
-				String alias = aliases.nextElement();
-				Certificate cert = keyStore.getCertificate(alias);
-				if (cert instanceof X509Certificate) {
-					return isCertificateValid((X509Certificate)cert, daysFromNow);
-				}
-			}
-		} catch (Exception e) {
-			return false;
-		}
-		return false;
-	}
-	
-	private boolean isCertificateValid(X509Certificate x509Cert, int daysFromNow) {
-		try {
-			x509Cert.checkValidity();
-			if (daysFromNow > 0) {
-				Date nowPlusDays = new Date(System.currentTimeMillis() + (daysFromNow * 24l * 60l * 60l * 1000l));
-				x509Cert.checkValidity(nowPlusDays);
-			}
-		} catch (Exception e) {
-			return false;
-		}
-		return true;
-	}
-
 	/**
 	 * Internal helper to check for empty config variables
 	 * 
@@ -371,17 +306,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	
 	public void setLdapDateFormat(String dateFormat) {
 		ldapDateFormat = dateFormat;
-	}
-	
-	public void setTrustStoreLocation(String trustStoreLocation){
-		trustStoreLoc=trustStoreLocation.trim();
-	}
-	public void setTrustStorePwd(String trustStorePwd){
-		trustStorePass=trustStorePwd.trim();
-	}
-	
-	public void setTrustStoreType(String trustStoreType){
-		trustStoreTyp= trustStoreType.trim();
 	}
 
 	public void setLdapSyncOnStartup(boolean ldapStartSyncs) {
@@ -485,18 +409,6 @@ public class LDAPLoginModule extends AbstractSpringModule {
 			return ldapDateFormat;
 		}
 		return "yyyyMMddHHmmss'Z'";//default
-	}
-	
-	public String getTrustStoreLocation(){
-		return trustStoreLoc;
-	}
-	
-	public String getTrustStorePwd(){
-		return trustStorePass;
-	}
-	
-	public String getTrustStoreType(){
-		return trustStoreTyp;
 	}
 
 	public boolean isLdapSyncOnStartup() {
