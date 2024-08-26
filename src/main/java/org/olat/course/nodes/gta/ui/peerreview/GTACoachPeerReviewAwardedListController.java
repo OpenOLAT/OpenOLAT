@@ -55,6 +55,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
@@ -93,6 +94,8 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 
 	private static final String CMD_TOOLS = "tools-A";
 	private static final List<TaskReviewAssignmentStatus> STATUS_FOR_STATS = List.of(TaskReviewAssignmentStatus.done);
+
+	private FormLink assignReviews;
 	
 	private final TaskList taskList;
 	private final Identity reviewer;
@@ -101,6 +104,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	private ToolsController toolsCtrl;
 	private DialogBoxController confirmReopenPeerReviewCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private GTAPeerReviewsAssignmentController assignmentsCtrl;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -132,6 +136,11 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		assignReviews = uifactory.addFormLink("assign.reviews", formLayout, Link.BUTTON);
+		assignReviews.setIconLeftCSS("o_icon o_icon_shuffle");
+		
+		assignReviews.setVisible(reviewer != null);
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
 		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(new FullNameNodeRenderer());
@@ -145,8 +154,11 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sessionStatus,
 				new TaskReviewAssignmentStatusCellRenderer(getLocale(), true)));
 		if(reviewer == null) {
+			TaskStepStatusCellRenderer statusRenderer = new TaskStepStatusCellRenderer(getTranslator());
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.taskStepStatus,
-				new TaskStepStatusCellRenderer(getTranslator())));
+					statusRenderer));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.submissionStatus,
+					statusRenderer));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.review.view", translate("review.view"), "view"));
@@ -183,6 +195,8 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 
 	@Override
 	public void loadModel() {
+
+		boolean enableAssignReviews = false;
 		List<CoachPeerReviewRow> rows = new ArrayList<>();
 		List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
 		Map<Identity,Task> identityToTask = tasks.stream()
@@ -191,13 +205,16 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		if(reviewer != null) {
 			List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsOfReviewer(taskList, reviewer);
 			SessionParticipationListStatistics statistics = peerReviewManager.loadStatistics(taskList, assignments, reviewer, gtaNode, STATUS_FOR_STATS);
-			loadModelRow(reviewer, assignments, statistics, identityToTask, rows);
+			CoachPeerReviewRow reviewerRow = loadModelRow(reviewer, assignments, statistics, identityToTask, rows);
+			DueDate dueDate = gtaManager.getPeerReviewDueDate(reviewerRow.getTask(), reviewer, null, gtaNode, courseEntry, true);
+			enableAssignReviews = (dueDate == null || dueDate.getDueDate() == null || new Date().before(dueDate.getDueDate()));
 		} else {
 			loadModelList(rows, identityToTask);
 		}
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+		assignReviews.setVisible(enableAssignReviews);
 	}
 	
 	private void loadModelList(List<CoachPeerReviewRow> rows, Map<Identity,Task> identityToTask) {
@@ -225,11 +242,11 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		}
 	}
 	
-	private void loadModelRow(Identity reviewerIdentity, List<TaskReviewAssignment> assignments,
+	private CoachPeerReviewRow loadModelRow(Identity reviewerIdentity, List<TaskReviewAssignment> assignments,
 			SessionParticipationListStatistics statistics, Map<Identity,Task> identityToTask, List<CoachPeerReviewRow> rows) {
 		String reviewerFullName = userManager.getUserDisplayName(reviewerIdentity);
 		Task reviewerOwnTask = identityToTask.get(reviewerIdentity);
-		CoachPeerReviewRow surveyExecutorIdentityRow = new CoachPeerReviewRow(reviewerOwnTask, reviewerFullName);
+		CoachPeerReviewRow surveyExecutorIdentityRow = new CoachPeerReviewRow(reviewerOwnTask, reviewerIdentity, reviewerFullName);
 		List<CoachPeerReviewRow> sessionRows = new ArrayList<>();
 		rows.add(surveyExecutorIdentityRow);
 		surveyExecutorIdentityRow.setChildrenRows(sessionRows);
@@ -249,19 +266,21 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		
 		// Fill statistics
 		forgeSurveyExecutorIdentityRow(surveyExecutorIdentityRow, statistics.aggregatedStatistics(), reviewerOwnTask);
+		return surveyExecutorIdentityRow;
 	}
 	
 	private void forgeSurveyExecutorIdentityRow(CoachPeerReviewRow surveyExecutorIdentityRow, SessionStatistics aggregatedStatistics, Task reviewerOwnTask) {
 		decorateWithAggregatedStatistics(surveyExecutorIdentityRow, aggregatedStatistics);
 		decorateWithTools(surveyExecutorIdentityRow);
 		decorateWithStepStatus(surveyExecutorIdentityRow, reviewerOwnTask);
+		decorateWithSubmissionStatus(surveyExecutorIdentityRow, reviewerOwnTask);
 	}
 	
 	private CoachPeerReviewRow forgeSessionRow(TaskReviewAssignment assignment, SessionParticipationStatistics sessionStatistics) {
 		Identity assessedIdentity = assignment.getTask().getIdentity();
 		String assessedIdentityFullName = userManager.getUserDisplayName(assessedIdentity);
 		Task task = assignment.getTask();
-		CoachPeerReviewRow sessionRow = new CoachPeerReviewRow(task, assignment, assessedIdentityFullName, false);
+		CoachPeerReviewRow sessionRow = new CoachPeerReviewRow(task, assignment, assessedIdentity, assessedIdentityFullName, false);
 
 		decorateWithStatistics(sessionRow, sessionStatistics);
 		decorateWithTools(sessionRow);
@@ -270,7 +289,13 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(toolsCtrl == source) {
+		if(assignmentsCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(toolsCtrl == source) {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
 		} else if(confirmReopenPeerReviewCtrl == source) {
@@ -288,14 +313,18 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	protected void cleanUp() {
 		super.cleanUp();
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(assignmentsCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		toolsCalloutCtrl = null;
+		assignmentsCtrl = null;
 		toolsCtrl = null;
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(assignReviews == source) {
+			doAssignReviews(ureq, tableModel.getObject(0));
+		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				CoachPeerReviewRow row = tableModel.getObject(se.getIndex());
 				if(row.getParent() == null) {
@@ -354,9 +383,24 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		toolsCalloutCtrl.activate();
 	}
 	
+	private void doAssignReviews(UserRequest ureq, CoachPeerReviewRow row) {
+		if(row.getParent() != null) return;
+		
+		assignmentsCtrl = new GTAPeerReviewsAssignmentController(ureq, getWindowControl(),
+				taskList, row.getIdentity(), row.getTask(), gtaNode);
+		listenTo(assignmentsCtrl);
+		
+		String title = translate("review.assignment.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				assignmentsCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private class ToolsController extends BasicController {
 		private Link showReviewLink;
 		private Link showReviewsLink;
+		private Link assignReviewLink;
 		private Link invalidateReviewLink;
 		private Link reopenReviewLink;
 		private Link reopenPeerReviewLink;
@@ -369,15 +413,19 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 			this.row = row;
 			
 			mainVC = createVelocityContainer("tools");
-
+	
 			if(row.getParent() == null) {
 				showReviewsLink = LinkFactory.createLink("show.reviews", "show.reviews", getTranslator(), mainVC, this, Link.LINK);
 				showReviewsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eye");
-				
-				Date now = new Date();
+
 				DueDate dueDate = gtaManager.getPeerReviewDueDate(row.getTask(), row.getTask().getIdentity(), null, gtaNode, courseEntry, true);
+				if(dueDate == null || dueDate.getDueDate() == null || ureq.getRequestTimestamp().before(dueDate.getDueDate())) {
+					assignReviewLink = LinkFactory.createLink("assign.reviews", "assign.reviews", getTranslator(), mainVC, this, Link.LINK);
+					assignReviewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_shuffle");
+				}
+
 				if(row.getStepStatus() == CoachedParticipantStatus.done
-						&& (dueDate == null || dueDate.getDueDate() == null || now.before(dueDate.getDueDate()))) {
+						&& (dueDate == null || dueDate.getDueDate() == null || ureq.getRequestTimestamp().before(dueDate.getDueDate()))) {
 					reopenPeerReviewLink = LinkFactory.createLink("coach.reopen.peerreview", "coach.reopen.peerreview", getTranslator(), mainVC, this, Link.LINK);
 					reopenPeerReviewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
 				}
@@ -388,8 +436,12 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 				invalidateReviewLink = LinkFactory.createLink("invalidate.review", "invalidate.review", getTranslator(), mainVC, this, Link.LINK);
 				invalidateReviewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_invalidate");
 				
-				reopenReviewLink = LinkFactory.createLink("reopen.review", "reopen.review", getTranslator(), mainVC, this, Link.LINK);
-				reopenReviewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
+				DueDate peerReviewDueDate = gtaManager.getPeerReviewDueDate(row.getTask(), row.getAssignee(), null, gtaNode, courseEntry, true);
+				if(row.getAssignmentStatus() == TaskReviewAssignmentStatus.done
+						&& (peerReviewDueDate == null || peerReviewDueDate.getDueDate() == null || ureq.getRequestTimestamp().before(peerReviewDueDate.getDueDate()))) {
+					reopenReviewLink = LinkFactory.createLink("reopen.review", "reopen.review", getTranslator(), mainVC, this, Link.LINK);
+					reopenReviewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
+				}
 			}
 			
 			putInitialPanel(mainVC);
@@ -403,6 +455,9 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 			} else if(showReviewLink == source) {
 				fireEvent(ureq, Event.DONE_EVENT);
 				doViewEvaluationFormSession(ureq, row);
+			} else if(assignReviewLink == source) {
+				fireEvent(ureq, Event.DONE_EVENT);
+				doAssignReviews(ureq, row);
 			} else if(invalidateReviewLink == source) {
 				fireEvent(ureq, Event.DONE_EVENT);
 				doInvalidateReview(ureq, row);

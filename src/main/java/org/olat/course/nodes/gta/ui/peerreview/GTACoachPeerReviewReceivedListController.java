@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui.peerreview;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,7 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.SessionParticipationListStatistics;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.SessionStatistics;
@@ -97,11 +99,12 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 
 	private final TaskList taskList;
 	private final Task assignedTask;
+	private final Identity singleAssessedIdentity;
 	private final List<Identity> assessedIdentities;
 
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	private GTAPeerReviewAssignmentController assignmentsCtrl;
+	private GTAPeerReviewersAssignmentController assignmentsCtrl;
 	private GTAEvaluationFormExecutionController evaluationFormExecCtrl;
 
 	@Autowired
@@ -112,13 +115,14 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	private UserManager userManager;
 	
 	public GTACoachPeerReviewReceivedListController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbPanel stackPanel, TaskList taskList, Task assignedTask,
+			BreadcrumbPanel stackPanel, TaskList taskList, Identity assessedIdentity, Task assignedTask,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl, CMD_TOOLS, courseEnv, gtaNode);
 		this.assignedTask = assignedTask;
 		this.stackPanel = stackPanel;
 		this.taskList = taskList;
 		this.assessedIdentities = null;
+		singleAssessedIdentity = assessedIdentity;
 		
 		initForm(ureq);
 		loadModel();
@@ -131,6 +135,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		assignedTask = null;
 		this.stackPanel = stackPanel;
 		this.taskList = taskList;
+		singleAssessedIdentity = null;
 		this.assessedIdentities = assessedIdentities;
 		
 		initForm(ureq);
@@ -141,7 +146,6 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		assignReviewers = uifactory.addFormLink("assign.reviewers", formLayout, Link.BUTTON);
 		assignReviewers.setIconLeftCSS("o_icon o_icon_shuffle");
-		assignReviewers.setVisible(assignedTask != null);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
@@ -155,9 +159,12 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sum));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sessionStatus,
 				new TaskReviewAssignmentStatusCellRenderer(getLocale(), true)));
-		if(assignedTask == null) {
+		if(singleAssessedIdentity == null) {
+			TaskStepStatusCellRenderer statusRenderer = new TaskStepStatusCellRenderer(getTranslator());
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.taskStepStatus,
-				new TaskStepStatusCellRenderer(getTranslator())));
+					statusRenderer));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.submissionStatus,
+					statusRenderer));
 		}
 		
 		DefaultFlexiColumnModel leaveCol = new DefaultFlexiColumnModel(CoachReviewCols.editReview.i18nHeaderKey(),
@@ -201,20 +208,30 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	
 	@Override
 	public void loadModel() {
+		boolean enableAssignReviewers = false;
 		List<CoachPeerReviewRow> rows = new ArrayList<>();
 		
-		if(assignedTask != null) {
-			Identity assessedIdentity = assignedTask.getIdentity();
-			List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTask(assignedTask, false);
-			SessionParticipationListStatistics statistics = peerReviewManager
+		if(singleAssessedIdentity != null) {
+			List<TaskReviewAssignment> assignments;
+			SessionParticipationListStatistics statistics;
+			if(assignedTask != null) {
+				assignments = peerReviewManager.getAssignmentsForTask(assignedTask, false);
+				statistics = peerReviewManager
 					.loadStatistics(assignedTask, assignments, gtaNode, STATUS_FOR_STATS);
-			loadModelRow(assessedIdentity, assignedTask, assignments, statistics, rows);
+			} else {
+				assignments = List.of();
+				statistics = SessionParticipationListStatistics.noStatistics();
+			}
+			loadModelRow(singleAssessedIdentity, assignedTask, assignments, statistics, rows);
+			DueDate dueDate = gtaManager.getPeerReviewDueDate(assignedTask, singleAssessedIdentity, null, gtaNode, courseEntry, true);
+			enableAssignReviewers = (dueDate == null || dueDate.getDueDate() == null || new Date().before(dueDate.getDueDate()));
 		} else {
 			loadModelList(rows);
 		}
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+		assignReviewers.setVisible(enableAssignReviewers);
 	}
 	
 	protected void loadModelList(List<CoachPeerReviewRow> rows) {
@@ -250,7 +267,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	private void loadModelRow(Identity assessedIdentity, Task task, List<TaskReviewAssignment> assignments,
 			SessionParticipationListStatistics statistics, List<CoachPeerReviewRow> rows) {
 		String assessedIdentityFullname = userManager.getUserDisplayName(assessedIdentity);
-		CoachPeerReviewRow assessedIdentityRow = new CoachPeerReviewRow(task, assessedIdentityFullname);
+		CoachPeerReviewRow assessedIdentityRow = new CoachPeerReviewRow(task, assessedIdentity, assessedIdentityFullname);
 		
 		List<CoachPeerReviewRow> sessionRows = new ArrayList<>();
 		rows.add(assessedIdentityRow);
@@ -278,13 +295,15 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		decorateWithAggregatedStatistics(assessedIdentityRow, aggregatedStatistics);
 		decorateWithTools(assessedIdentityRow);
 		decorateWithStepStatus(assessedIdentityRow, assessedIdentityRow.getTask());
+		decorateWithSubmissionStatus(assessedIdentityRow, assessedIdentityRow.getTask());
 	}
 	
 	private CoachPeerReviewRow forgeAssignmentRow(Task task, TaskReviewAssignment assignment,
 			SessionParticipationStatistics statistics) {
+		Identity assignee = assignment.getAssignee();
 		String assigneeFullname = userManager.getUserDisplayName(assignment.getAssignee());
 		boolean canEdit = getIdentity().equals(assignment.getAssignee());
-		CoachPeerReviewRow sessionRow = new CoachPeerReviewRow(task, assignment, assigneeFullname, canEdit);
+		CoachPeerReviewRow sessionRow = new CoachPeerReviewRow(task, assignment, assignee, assigneeFullname, canEdit);
 		
 		decorateWithStatistics(sessionRow, statistics);
 		decorateWithTools(sessionRow);
@@ -352,7 +371,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	}
 	
 	private void doAssignReviewers(UserRequest ureq, CoachPeerReviewRow row) {
-		assignmentsCtrl = new GTAPeerReviewAssignmentController(ureq, getWindowControl(),
+		assignmentsCtrl = new GTAPeerReviewersAssignmentController(ureq, getWindowControl(),
 				taskList, row.getTask(), gtaNode);
 		listenTo(assignmentsCtrl);
 		

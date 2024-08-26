@@ -1,6 +1,11 @@
-#if($r.available("assign.reviewers"))
+#if($r.available("assign.reviewers") || $r.available("assign.reviews"))
 <div class="o_button_group o_button_group_right">
-	$r.render("assign.reviewers")
+	#if($r.available("assign.reviewers"))
+		$r.render("assign.reviewers")
+	#end
+	#if($r.available("assign.reviews"))
+		$r.render("assign.reviews")
+	#end
 </div>
 #end
 $r.render("reviews")

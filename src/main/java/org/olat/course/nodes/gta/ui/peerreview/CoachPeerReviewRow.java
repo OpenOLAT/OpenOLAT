@@ -45,6 +45,7 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	
 	private final Task task;
 	private final String fullName;
+	private final Identity identity;
 	
 	private NumOf numOfReviews;
 	private NumOf numOfReviewers;
@@ -57,6 +58,7 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	private Double sum;
 	
 	private CoachedParticipantStatus stepStatus;
+	private CoachedParticipantStatus submissionStatus;
 	
 	private Identity assignee;
 	
@@ -64,13 +66,14 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	private FormLink toolsLink;
 	private BoxPlot assessmentPlot;
 	
-	public CoachPeerReviewRow(Task task, String fullName) {
+	public CoachPeerReviewRow(Task task, Identity identity, String fullName) {
 		this.task = task;
 		this.fullName = fullName;
+		this.identity = identity;
 	}
 	
-	public CoachPeerReviewRow(Task task, TaskReviewAssignment assignment, String fullName, boolean canEdit) {
-		this(task, fullName);
+	public CoachPeerReviewRow(Task task, TaskReviewAssignment assignment, Identity identity, String fullName, boolean canEdit) {
+		this(task, identity, fullName);
 		this.canEdit = canEdit;
 		this.assignment = assignment;
 		this.assignee = assignment.getAssignee();
@@ -97,6 +100,10 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	@Override
 	public String getCrump() {
 		return fullName;
+	}
+	
+	public Identity getIdentity() {
+		return identity;
 	}
 
 	public String getFullName() {
@@ -182,6 +189,14 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 
 	public void setStepStatus(CoachedParticipantStatus status) {
 		this.stepStatus = status;
+	}
+
+	public CoachedParticipantStatus getSubmissionStatus() {
+		return submissionStatus;
+	}
+
+	public void setSubmissionStatus(CoachedParticipantStatus submissionStatus) {
+		this.submissionStatus = submissionStatus;
 	}
 
 	public BoxPlot getAssessmentPlot() {

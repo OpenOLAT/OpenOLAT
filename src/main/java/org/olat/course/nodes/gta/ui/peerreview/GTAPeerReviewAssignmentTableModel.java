@@ -80,7 +80,7 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	}
 	
 	private String getFilterStatus(List<FlexiTableFilter> filters) {
-		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, GTAPeerReviewAssignmentController.FILTER_ASSIGNMENT_STATUS);
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, GTAPeerReviewersAssignmentController.FILTER_ASSIGNMENT_STATUS);
 		if(statusFilter != null) {
 			return statusFilter.getValue();
 		}
@@ -88,7 +88,7 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	}
 	
 	private List<String> getFilterTaskName(List<FlexiTableFilter> filters) {
-		FlexiTableFilter taskNameFilter = FlexiTableFilter.getFilter(filters, GTAPeerReviewAssignmentController.FILTER_TASK_NAME);
+		FlexiTableFilter taskNameFilter = FlexiTableFilter.getFilter(filters, GTAPeerReviewersAssignmentController.FILTER_TASK_NAME);
 		if(taskNameFilter instanceof FlexiTableMultiSelectionFilter taskNamesFilter) {
 			return taskNamesFilter.getValues();
 		}
@@ -111,8 +111,8 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	
 	private boolean acceptStatus(PeerReviewAssignmentRow row, String assignmentStatus) {
 		return assignmentStatus == null
-				|| (row.isAssigned() && GTAPeerReviewAssignmentController.ASSIGNED.equals(assignmentStatus))
-				|| (!row.isAssigned() && GTAPeerReviewAssignmentController.NOT_ASSIGNED.equals(assignmentStatus));
+				|| (row.isAssigned() && GTAPeerReviewersAssignmentController.ASSIGNED.equals(assignmentStatus))
+				|| (!row.isAssigned() && GTAPeerReviewersAssignmentController.NOT_ASSIGNED.equals(assignmentStatus));
 	}
 
 	private boolean acceptTaskNames(PeerReviewAssignmentRow row, List<String> taskNames) {
