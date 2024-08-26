@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.admin.user.course;
@@ -100,7 +100,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 23.09.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CourseOverviewController extends FormBasicController  {
@@ -283,8 +283,7 @@ public class CourseOverviewController extends FormBasicController  {
 			tableEl.getMultiSelectedIndex();
 			doLeave(ureq, items);
 		} else if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if (TABLE_ACTION_LAUNCH.equals(se.getCommand())) {
 					CourseMemberView item = tableDataModel.getObject(se.getIndex());
 					launch(ureq, item.getRepoKey());
@@ -296,10 +295,8 @@ public class CourseOverviewController extends FormBasicController  {
 					doOpenEdit(ureq, item);
 				}
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if("invitation".equals(link.getCmd()) && link.getUserObject() instanceof CourseMemberView) {
-				CourseMemberView row = (CourseMemberView)link.getUserObject();
+		} else if(source instanceof FormLink link) {
+			if("invitation".equals(link.getCmd()) && link.getUserObject() instanceof CourseMemberView row) {
 				doOpenInvitationLink(ureq, link.getFormDispatchId(), row);
 			}
 		}
@@ -326,19 +323,16 @@ public class CourseOverviewController extends FormBasicController  {
 			}
 		} else if(source == editSingleMemberCtrl) {
 			cmc.deactivate();
-			if(event instanceof MemberPermissionChangeEvent) {
-				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
+			if(event instanceof MemberPermissionChangeEvent e) {
 				RepositoryEntry re = editSingleMemberCtrl.getRepositoryEntry();
 				doConfirmChangePermission(ureq, e, re);
 			}
 		} else if(source == confirmSendMailBox) {
 			boolean sendMail = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
 			Object confirmation = confirmSendMailBox.getUserObject();
-			if(confirmation instanceof ConfirmAdd) {
-				ConfirmAdd addInfos = (ConfirmAdd)confirmation;
+			if(confirmation instanceof ConfirmAdd addInfos) {
 				doAddToRepositoryEntry(ureq, addInfos.getEntries(), addInfos.getType(), sendMail);
-			} else if(confirmation instanceof ConfirmEdit) {
-				ConfirmEdit editInfos = (ConfirmEdit)confirmation;
+			} else if(confirmation instanceof ConfirmEdit editInfos) {
 				doChangePermission(ureq, editInfos.getChangeEvent(), editInfos.getEntry(), sendMail);
 			}
 			updateModel();
@@ -500,12 +494,12 @@ public class CourseOverviewController extends FormBasicController  {
 	/**
 	 * The method check the managed flags
 	 * @param ureq
-	 * @param views
+	 * @param selectedViews
 	 */
 	private void doLeave(UserRequest ureq, Collection<CourseMemberView> selectedViews) {
 		List<CourseMemberView> views = selectedViews.stream()
 				.filter(view -> !view.isFullyManaged())
-				.collect(Collectors.toList());
+				.toList();
 
 		if(views.isEmpty()) {
 			boolean groupWarning = false;

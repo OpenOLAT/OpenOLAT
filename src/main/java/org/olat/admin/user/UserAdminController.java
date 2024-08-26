@@ -34,6 +34,7 @@ import org.olat.admin.user.course.CourseOverviewController;
 import org.olat.admin.user.course.RepositoryEntriesOverviewController;
 import org.olat.admin.user.groups.BusinessGroupsOverviewController;
 import org.olat.admin.user.groups.GroupOverviewController;
+import org.olat.admin.user.projects.ProjectsOverviewController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
@@ -132,6 +133,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_EDIT_DISADVANTAGE	= "edit.udisadvantage";
 	private static final String NLS_VIEW_GROUPS			= "view.groups";
 	private static final String NLS_VIEW_COURSES		= "view.courses";
+	private static final String NLS_VIEW_PROJECTS		= "view.projects";
 	private static final String NLS_VIEW_ACCESS			= "view.access";
 	private static final String NLS_VIEW_EFF_STATEMENTS	= "view.effStatements";
 	private static final String NLS_VIEW_BADGES 		= "view.badges";
@@ -161,6 +163,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private Controller prefsCtr;
 	private Controller grpCtr;
 	private Controller courseCtr;
+	private Controller projectsCtrl;
 	private Controller propertiesCtr;
 	private Controller guiPrefsCtrl;
 	private Controller userShortDescrCtr;
@@ -556,6 +559,14 @@ public class UserAdminController extends BasicController implements Activateable
 				}
 				listenTo(courseCtr);
 				return courseCtr.getInitialComponent();
+			});
+
+			userTabP.addTab(ureq, translate(NLS_VIEW_PROJECTS), uureq -> {
+				boolean canModify = isAdminOf || isUserManagerOf || isRolesManagerOf;
+				projectsCtrl = new ProjectsOverviewController(uureq, getWindowControl(), identity, canModify);
+
+				listenTo(projectsCtrl);
+				return projectsCtrl.getInitialComponent();
 			});
 			
 			userTabP.addTab(ureq, translate(NLS_VIEW_PORTFOLIO), uureq -> {
