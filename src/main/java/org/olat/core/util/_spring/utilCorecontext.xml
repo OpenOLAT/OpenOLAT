@@ -119,4 +119,16 @@
 	<bean id="infinispanCacher" class="org.olat.core.util.cache.infinispan.InfinispanCacher">
 		<constructor-arg index="0" ref="infinispanCacheManager"/>
 	</bean>
+	
+	<!-- Thread pool for the encoder -->
+	<bean id="encoderExecutorService" class="org.springframework.core.task.support.ExecutorServiceAdapter">
+		<constructor-arg index="0" ref="encoderSpringExecutor" />
+	</bean>
+	
+	<bean id="encoderSpringExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="2" />
+		<property name="maxPoolSize" value="10" />
+		<property name="queueCapacity" value="32768" />
+		<property name="strictEarlyShutdown" value="true" />
+	</bean>
 </beans>

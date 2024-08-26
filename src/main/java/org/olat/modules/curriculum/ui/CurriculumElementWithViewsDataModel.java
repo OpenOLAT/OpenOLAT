@@ -19,8 +19,10 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -49,15 +51,24 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 			if(filter == null || filter.isShowAll()) {
 				setUnfilteredObjects();
 			} else {
-				List<CurriculumElementWithViewsRow> filteredRows = new ArrayList<>(backupRows.size());
 				// curriculum element inactive -> all repo are inactives
+				Set<CurriculumElementWithViewsRow> activeRows = backupRows.stream()
+					.filter(this::active)
+					.collect(Collectors.toSet());
+				
 				// parent inactive, child is active -> parent is forced active
-				for(CurriculumElementWithViewsRow row:backupRows) {
-					boolean accept = active(row);
-					if(accept) {
-						filteredRows.add(row);
+				Set<CurriculumElementWithViewsRow> activeRowSet = new HashSet<>(activeRows);
+				for(CurriculumElementWithViewsRow row:activeRowSet) {
+					if(row.getParent() != null && !activeRows.contains(row.getParent())) {
+						for(CurriculumElementWithViewsRow parent=row.getParent(); parent != null; parent=parent.getParent()) {
+							activeRows.add(parent);
+						}
 					}
 				}
+
+				List<CurriculumElementWithViewsRow> filteredRows =  backupRows.stream()
+						.filter(activeRows::contains)
+						.collect(Collectors.toList());
 				setFilteredObjects(filteredRows);
 			}
 		} else {
