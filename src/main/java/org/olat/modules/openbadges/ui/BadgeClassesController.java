@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
@@ -46,6 +48,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.ButtonClickedEvent;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -76,11 +79,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BadgeClassesController extends FormBasicController implements Activateable2 {
+public class BadgeClassesController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 
 	private static final String CMD_SELECT = "select";
-	private static final String CMD_EDIT = "edit";
 	private static final String CMD_TOOLS = "tools";
+	private static final String CMD_EDIT_BADGE = "editBadge";
+	private static final String CMD_AWARD_MANUALLY = "awardManually";
 
 	private final RepositoryEntry entry;
 	private final CourseNode courseNode;
@@ -99,6 +103,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private BadgeDetailsController badgeDetailsController;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ToolsController toolsCtrl;
+	private VelocityContainer detailsVC;
+	private IssueGlobalBadgeController issueGlobalBadgeCtrl;
+	private IssueCourseBadgeController issueCourseBadgeCtrl;
+	private CloseableModalController cmc;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
@@ -116,7 +124,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		this.createKey = createKey;
 		this.editKey = editKey;
 		initForm(ureq);
-		loadModel();
+		loadModel(ureq);
 	}
 
 	@Override
@@ -140,9 +148,11 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					sb.append("</div>");
 				}));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.name, CMD_SELECT));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.status));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.version));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.creationDate));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.status, new BadgeClassStatusRenderer()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.type));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.awardedCount, CMD_SELECT));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), CMD_EDIT));
 
 		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
 				BadgeClassTableModel.BadgeClassCols.tools.i18nHeaderKey(),
@@ -154,11 +164,26 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(),
 				formLayout);
 
+		detailsVC = createVelocityContainer("badge_class_details");
+		tableEl.setDetailsRenderer(detailsVC, this);
+		tableEl.setMultiDetails(true);
+
 		createLink = uifactory.addFormLink("create", createKey, null, formLayout, Link.BUTTON);
 		createLink.setElementCssClass("o_sel_badge_classes_create");
 	}
 
-	private void loadModel() {
+	@Override
+	public boolean isDetailsRow(int row, Object rowObject) {
+		return true;
+	}
+
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		List<Component> components = new ArrayList<>();
+		return components;
+	}
+
+	private void loadModel(UserRequest ureq) {
 		List<BadgeClassRow> rows = openBadgesManager.getBadgeClassesWithSizesAndCounts(entry).stream()
 				.filter(bc -> {
 					if (courseNode == null) {
@@ -166,22 +191,58 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					}
 					return openBadgesManager.conditionForCourseNodeExists(bc.badgeClass(), courseNode.getIdent());
 				})
-				.map(this::forgeRow).toList();
+				.map(bc -> forgeRow(ureq, bc)).toList();
 		tableModel.setObjects(rows);
 		tableEl.reset();
 	}
 
-	private BadgeClassRow forgeRow(OpenBadgesManager.BadgeClassWithSizeAndCount bc) {
+	private BadgeClassRow forgeRow(UserRequest ureq, OpenBadgesManager.BadgeClassWithSizeAndCount bc) {
 		String toolId = "tool_" + bc.badgeClass().getUuid();
 		FormLink toolLink = (FormLink) flc.getComponent(toolId);
 		if (toolLink == null) {
-			toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", tableEl, Link.LINK | Link.NONTRANSLATED);
+			toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", tableEl,
+					Link.LINK | Link.NONTRANSLATED);
 			toolLink.setTranslator(getTranslator());
 			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolLink.setTitle(translate("table.header.actions"));
 		}
-		BadgeClassRow row = new BadgeClassRow(bc, toolLink);
+
+		String editBadgeLinkId = "edit_badge_" + bc.badgeClass().getUuid();
+		FormLink editBadgeLink = null;
+		if (bc.badgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.preparation)) {
+			editBadgeLink = (FormLink) detailsVC.getComponent(editBadgeLinkId);
+			if (editBadgeLink == null) {
+				editBadgeLink = uifactory.addFormLink(editBadgeLinkId, CMD_EDIT_BADGE, "form.edit.badge",
+						null, flc, Link.BUTTON);
+			}
+		}
+
+		String awardManuallyLinkId = "award_manually_" + bc.badgeClass().getUuid();
+		FormLink awardManuallyLink = (FormLink) detailsVC.getComponent(awardManuallyLinkId);
+		if (awardManuallyLink == null) {
+			awardManuallyLink = uifactory.addFormLink(awardManuallyLinkId, CMD_AWARD_MANUALLY, "award.manually",
+					null, flc,  Link.BUTTON);
+		}
+
+		String criteriaXmlString = bc.badgeClass().getCriteria();
+		CriteriaViewController criteriaViewController = new CriteriaViewController(ureq, getWindowControl(), entry,
+				courseNode, criteriaXmlString);
+		String criteriaComponentName = "criteria_" + bc.badgeClass().getUuid();
+		listenTo(criteriaViewController);
+		detailsVC.put(criteriaComponentName, criteriaViewController.getInitialComponent());
+
+		if (editBadgeLink != null) {
+			detailsVC.put(editBadgeLinkId, editBadgeLink.getComponent());
+		}
+
+		detailsVC.put(awardManuallyLinkId, awardManuallyLink.getComponent());
+
+		BadgeClassRow row = new BadgeClassRow(bc, toolLink, criteriaComponentName, editBadgeLink, awardManuallyLink);
 		toolLink.setUserObject(row);
+		if (editBadgeLink != null) {
+			editBadgeLink.setUserObject(row);
+		}
+		awardManuallyLink.setUserObject(row);
 		return row;
 	}
 
@@ -193,18 +254,44 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			if (event instanceof SelectionEvent selectionEvent) {
 				String command = selectionEvent.getCommand();
 				BadgeClassRow row = tableModel.getObject(selectionEvent.getIndex());
-				if (CMD_EDIT.equals(command)) {
-					doEdit(ureq, row);
-				} else if (CMD_SELECT.equals(command)) {
+				if (CMD_SELECT.equals(command)) {
 					doSelect(ureq, row);
 				}
 			}
 		} else if (source instanceof FormLink link) {
 			if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof BadgeClassRow row) {
 				doOpenTools(ureq, link, row);
+			} else if (CMD_EDIT_BADGE.equals(link.getCmd()) && link.getUserObject() instanceof BadgeClassRow row) {
+				doEdit(ureq, row);
+			} else if (CMD_AWARD_MANUALLY.equals(link.getCmd()) && link.getUserObject() instanceof BadgeClassRow row) {
+				doAwardManually(ureq, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doAwardManually(UserRequest ureq, BadgeClassRow row) {
+		BadgeClass reloadedBadgeClass = openBadgesManager.getBadgeClass(row.badgeClassWithSizeAndCount().badgeClass().getKey());
+
+		if (reloadedBadgeClass.getEntry() == null) {
+			issueGlobalBadgeCtrl = new IssueGlobalBadgeController(ureq, getWindowControl(), reloadedBadgeClass);
+			listenTo(issueGlobalBadgeCtrl);
+
+			String title = translate("issueGlobalBadge");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					issueGlobalBadgeCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			issueCourseBadgeCtrl = new IssueCourseBadgeController(ureq, getWindowControl(), reloadedBadgeClass);
+			listenTo(issueCourseBadgeCtrl);
+
+			String title = translate("issueBadge");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					issueCourseBadgeCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 
 	private void doOpenTools(UserRequest ureq, FormLink link, BadgeClassRow row) {
@@ -219,9 +306,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	private class ToolsController extends BasicController {
 
+		private Link editLink;
 		private final Link deleteLink;
 		private Link revokeLink;
-		private Link copyLink;
+		private final Link copyLink;
 		private final BadgeClassRow row;
 
 		protected ToolsController(UserRequest ureq, WindowControl wControl, BadgeClassRow row) {
@@ -230,18 +318,28 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 			VelocityContainer mainVC = createVelocityContainer("badge_class_tools");
 
+			if (row.badgeClassWithSizeAndCount().badgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.preparation)) {
+				editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this,
+						Link.LINK);
+				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+				mainVC.put("edit", editLink);
+			}
+
 			deleteLink = LinkFactory.createLink("table.delete.text", "delete", getTranslator(), mainVC,
 					this, Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			mainVC.put("delete", deleteLink);
 
 			if (row.badgeClassWithSizeAndCount().count() > 0 &&
 					openBadgesManager.unrevokedBadgeAssertionsExist(row.badgeClassWithSizeAndCount().badgeClass())) {
 				revokeLink = LinkFactory.createLink("table.revoke", "remove", getTranslator(), mainVC,
 						this, Link.LINK);
+				revokeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_revoke");
 				mainVC.put("revoke", revokeLink);
 			}
 
 			copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
+			copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			mainVC.put("copy", copyLink);
 
 			putInitialPanel(mainVC);
@@ -251,21 +349,23 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
-			if (source == deleteLink) {
+		    if (source == editLink) {
+				doEdit(ureq, row);
+		    } else if (source == deleteLink) {
 				doConfirmDelete(ureq, row);
 			} else if (source == revokeLink) {
 				doConfirmRevoke(ureq, row);
 			} else if (source == copyLink) {
-				doCopy(row);
+				doCopy(ureq, row);
 			}
 		}
 	}
 
-	private void doCopy(BadgeClassRow row) {
+	private void doCopy(UserRequest ureq, BadgeClassRow row) {
 		openBadgesManager.copyBadgeClass(row.badgeClassWithSizeAndCount().badgeClass().getKey(),
 				getTranslator(), getIdentity());
 
-		loadModel();
+		loadModel(ureq);
 	}
 
 	private void doCreate(UserRequest ureq) {
@@ -277,7 +377,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass badgeClass = createBadgeClass(createBadgeClassContext);
 			openBadgesManager.issueBadge(badgeClass, createBadgeClassContext.getEarners(), getIdentity());
-			loadModel();
+			loadModel(ureq);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 
@@ -324,7 +424,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
 			openBadgesManager.issueBadge(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
-			loadModel();
+			loadModel(ureq);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 
@@ -397,7 +497,21 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == toolsCtrl) {
+		if (source == cmc) {
+			cleanUp();
+		} else if (source == issueGlobalBadgeCtrl) {
+			cmc.deactivate();
+			cleanUp();
+			if (event == Event.DONE_EVENT) {
+				loadModel(ureq);
+			}
+		} else if (source == issueCourseBadgeCtrl) {
+			cmc.deactivate();
+			cleanUp();
+			if (event == Event.DONE_EVENT) {
+				loadModel(ureq);
+			}
+		} else if (source == toolsCtrl) {
 			if (calloutCtrl != null) {
 				calloutCtrl.deactivate();
 			}
@@ -410,20 +524,20 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		} else if (source == confirmDeleteUnusedClassCtrl) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				BadgeClass badgeClass = (BadgeClass) confirmDeleteUnusedClassCtrl.getUserObject();
-				doDelete(badgeClass);
+				doDelete(ureq, badgeClass);
 				showInfo("confirm.delete.unused.class.info");
-				loadModel();
+				loadModel(ureq);
 			}
 		} else if (source == confirmDeleteUsedClassCtrl && event instanceof ButtonClickedEvent buttonClickedEvent) {
 			BadgeClass badgeClass = (BadgeClass) confirmDeleteUsedClassCtrl.getUserObject();
 			if (buttonClickedEvent.getPosition() == 0) {
-				doMarkDeletedAndRevokeIssuedBadges(badgeClass);
+				doMarkDeletedAndRevokeIssuedBadges(ureq, badgeClass);
 				showInfo("confirm.delete.used.class.option1.info");
 			} else if (buttonClickedEvent.getPosition() == 1) {
-				doDelete(badgeClass);
+				doDelete(ureq, badgeClass);
 				showInfo("confirm.delete.used.class.option2.info");
 			}
-			loadModel();
+			loadModel(ureq);
 		} else if (source == confirmRevokeAllBadgesCtrl) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				BadgeClass badgeClass = (BadgeClass) confirmRevokeAllBadgesCtrl.getUserObject();
@@ -437,7 +551,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			if (event == Event.CHANGED_EVENT) {
 				String name = badgeDetailsController.getName();
 				breadcrumbPanel.changeDisplayname(name);
-				loadModel();
+				loadModel(ureq);
 			}
 		}
 		super.event(ureq, source, event);
@@ -446,20 +560,26 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private void cleanUp() {
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(issueGlobalBadgeCtrl);
+		removeAsListenerAndDispose(issueCourseBadgeCtrl);
+		removeAsListenerAndDispose(cmc);
 		calloutCtrl = null;
 		toolsCtrl = null;
+		issueGlobalBadgeCtrl = null;
+		issueCourseBadgeCtrl = null;
+		cmc = null;
 	}
 
-	private void doMarkDeletedAndRevokeIssuedBadges(BadgeClass badgeClass) {
+	private void doMarkDeletedAndRevokeIssuedBadges(UserRequest ureq, BadgeClass badgeClass) {
 		badgeClass.setStatus(BadgeClass.BadgeClassStatus.deleted);
 		openBadgesManager.updateBadgeClass(badgeClass);
 		openBadgesManager.revokeBadgeAssertions(badgeClass);
-		loadModel();
+		loadModel(ureq);
 	}
 
-	private void doDelete(BadgeClass badgeClass) {
+	private void doDelete(UserRequest ureq, BadgeClass badgeClass) {
 		openBadgesManager.deleteBadgeClassAndAssertions(badgeClass);
-		loadModel();
+		loadModel(ureq);
 	}
 
 	private void doRevoke(BadgeClass badgeClass) {

@@ -22,11 +22,6 @@ package org.olat.core.commons.services.vfs.manager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
@@ -39,6 +34,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -160,17 +159,33 @@ public class VFSRevisionDAO {
 	public List<VFSRevision> getRevisions(List<VFSMetadataRef> metadatas) {
 		if(metadatas == null || metadatas.isEmpty()) return new ArrayList<>();
 
-		List<Long> metadataKeys = metadatas.stream().map(VFSMetadataRef::getKey).collect(Collectors.toList());
+		List<Long> metadataKeys = metadatas.stream().map(VFSMetadataRef::getKey).toList();
 
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select rev from vfsrevision rev")
-		.append(" left join fetch rev.fileInitializedBy as fileInitializedBy")
-		.append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
-		.append(" where rev.metadata.key in (:metadataKeys)");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), VFSRevision.class)
-				.setParameter("metadataKeys", metadataKeys)
+		String sb = """
+				select rev from vfsrevision rev
+				left join fetch rev.fileInitializedBy as fileInitializedBy
+				left join fetch fileInitializedBy.user as fileInitializedByUser
+				where rev.metadata.key in (:metadataKeys)""";
+		TypedQuery<VFSRevision> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb, VFSRevision.class);
+		
+		int count = 0;
+		int batch = 16000;
+		List<VFSRevision> revisions = new ArrayList<>();
+		do {
+			int toIndex = Math.min(count + batch, metadataKeys.size());
+			List<Long> toLoad = metadataKeys.subList(count, toIndex);
+			List<VFSRevision> partRevisions = query
+				.setParameter("metadataKeys", toLoad)
+				.setFirstResult(0)
+				.setMaxResults(batch)
 				.getResultList();
+			revisions.addAll(partRevisions);
+			
+			count += batch;
+		} while(count < metadatas.size());
+		
+		return revisions;
 	}
 
 	public List<VFSMetadataRef> getMetadataWithMoreThan(long numOfRevisions) {

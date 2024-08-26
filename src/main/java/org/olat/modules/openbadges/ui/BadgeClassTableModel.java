@@ -23,7 +23,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 
 /**
  * Initial date: 2023-10-02<br>
@@ -50,7 +52,11 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 		return switch (BadgeClassCols.values()[col]) {
 			case image -> badgeClass.getImage();
 			case name -> badgeClass.getName();
-			case status -> translator.translate("class.status." + badgeClass.getStatus().name());
+			case version -> badgeClass.getVersion();
+			case creationDate -> Formatter.getInstance(translator.getLocale()).formatDateAndTime(badgeClass.getCreationDate());
+			case status -> badgeClass.getStatus();
+			case type -> translator.translate(BadgeCriteriaXStream.fromXml(badgeClass.getCriteria()).isAwardAutomatically() ?
+					"form.award.procedure.automatic.short" : "form.award.procedure.manual.short");
 			case awardedCount -> row.badgeClassWithSizeAndCount().count();
 			case tools -> row.toolLink();
 		};
@@ -59,7 +65,10 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 	public enum BadgeClassCols implements FlexiSortableColumnDef {
 		image("form.image"),
 		name("form.name"),
+		version("form.version"),
+		creationDate("form.createdOn"),
 		status("form.status"),
+		type("form.type"),
 		awardedCount("form.awarded.to"),
 		tools("table.header.actions");
 

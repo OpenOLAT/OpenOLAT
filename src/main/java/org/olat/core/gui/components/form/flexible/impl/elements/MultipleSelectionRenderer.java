@@ -134,9 +134,12 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 				sb.append(" disabled");
 			}
 			sb.append("'>");
-
+			sb.append("<label class='").append("' for=\"").append(formDispatchId).append("\" id='").append(aId).append("'");
+			if(stF.isWithTitleOnLabels()) {
+				sb.append(" title='").append(value).append("'");
+			}
+			sb.append(">");
 			
-			sb.append("<label class='").append("' for=\"").append(formDispatchId).append("\" id='").append(aId).append("'>");			
 			sb.append("<input type='checkbox' id='").append(formDispatchId).append("' ");
 			sb.append(subStrName);
 			sb.append(" value='").append(key).append("'");
@@ -340,6 +343,9 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append(cssClass, cssClass != null).append("'");
 		if(StringHelper.containsNonWhitespace(value)) {
 			sb.append(" for='").append(formDispatchId).append("'");
+			if(stF.isWithTitleOnLabels()) {
+				sb.append(" title='").append(value).append("'");
+			}
 		}
 		sb.append(">");
 		

@@ -170,6 +170,13 @@ public interface MultipleSelectionElement extends SelectionElement {
 	
 	public void setEvaluationOnlyVisible(boolean onlyVisible);
 	
+	public boolean isWithTitleOnLabels();
+
+	/**
+	 * @param enable true add the title attribute to the label which wraps the check box
+	 */
+	public void setWithTitleOnLabels(boolean enable);
+	
 	public enum Layout {
 		horizontal,
 		vertical,

@@ -1,4 +1,7 @@
 <ul class="o_dropdown list-unstyled">
+	#if($r.available("edit"))
+	<li>$r.render("edit")</li>
+	#end
 	<li>$r.render("delete")</li>
 	#if($r.available("revoke"))
 	<li>$r.render("revoke")</li>

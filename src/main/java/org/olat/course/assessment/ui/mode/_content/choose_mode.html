@@ -26,7 +26,7 @@
 		#if($mode.safeExamBrowserHint && !$mode.safeExamBrowserHint.empty)
 			<div class="o_hint">$r.xssScan($mode.safeExamBrowserHint)</div>
 		#end
-		<div class="o_button_group">$r.render($mode.go.componentName)</div>
+		<div class="o_button_group o_sel_${checked}">$r.render($mode.go.componentName)</div>
 	#elseif($mode.status == "followup")
 		<div class="o_hint">$r.translate("current.mode.followuptime.info")</div>
 	#elseif($mode.status == "end")
@@ -54,7 +54,7 @@
 	#end
 #end
 
-<div class="o_button_group">
+<div class="o_button_group o_sel_${checked}">
 	$r.render("continue-main")
 	$r.render("quit-main")
 </div>

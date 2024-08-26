@@ -46,7 +46,7 @@ public class CourseElementPassedCondition implements BadgeCondition {
 	public String toString(Translator translator, RepositoryEntry courseEntry) {
 		CourseElement courseElement = BadgeCondition.loadCourseElement(courseEntry, subIdent);
 		return translator.translate("badgeCondition." + KEY,
-				courseElement != null ? courseElement.getShortTitle() : "-");
+				courseElement != null ? courseElement.getShortTitle() : subIdent);
 	}
 
 	public String getSubIdent() {

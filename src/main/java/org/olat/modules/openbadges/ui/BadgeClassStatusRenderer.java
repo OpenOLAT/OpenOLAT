@@ -19,16 +19,36 @@
  */
 package org.olat.modules.openbadges.ui;
 
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.core.gui.components.table.LabelCellRenderer;
+import org.olat.core.gui.translator.Translator;
+import org.olat.modules.openbadges.BadgeClass;
 
 /**
- * Initial date: 2023-10-02<br>
+ * Initial date: 2024-08-23<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public record BadgeClassRow(OpenBadgesManager.BadgeClassWithSizeAndCount badgeClassWithSizeAndCount,
-							FormLink toolLink, String criteriaComponentName, FormLink editBadgeLink,
-							FormLink awardManuallyLink) {
-}
+public class BadgeClassStatusRenderer extends LabelCellRenderer {
 
+
+	@Override
+	protected String getCellValue(Object val, Translator translator) {
+		if (val instanceof BadgeClass.BadgeClassStatus badgeClassStatus) {
+			return translator.translate("class.status." + badgeClassStatus.name());
+		}
+		return "";
+	}
+
+	@Override
+	protected String getIconCssClass(Object val) {
+		return "";
+	}
+
+	@Override
+	protected String getElementCssClass(Object val) {
+		if (val instanceof BadgeClass.BadgeClassStatus badgeClassStatus) {
+			return "o_badge_class_status_" + badgeClassStatus.name();
+		}
+		return null;
+	}
+}
