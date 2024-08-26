@@ -113,7 +113,7 @@ public class GTACoachPeerReviewController extends BasicController {
 	private GTACoachPeerReviewReceivedListController doOpenReceivedPeerReview(UserRequest ureq) {
 		if(receivedListCtrl == null) {
 			receivedListCtrl = new GTACoachPeerReviewReceivedListController(ureq, getWindowControl(), stackPanel,
-					taskList, assignedTask, courseEnv, gtaNode);
+					taskList, assessedIdentity, assignedTask, courseEnv, gtaNode);
 			listenTo(receivedListCtrl);
 		}
 		mainVC.put("segmentCmp", receivedListCtrl.getInitialComponent());

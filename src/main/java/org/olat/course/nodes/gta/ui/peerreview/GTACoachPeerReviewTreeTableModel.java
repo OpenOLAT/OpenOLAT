@@ -189,6 +189,7 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 			case sum -> AssessmentHelper.getRoundedScore(row.getSum());
 			case sessionStatus -> row;
 			case taskStepStatus -> row.getStepStatus();
+			case submissionStatus -> row.getSubmissionStatus();
 			case editReview -> Boolean.valueOf(row.canEdit());
 			case tools -> row.getToolsLink();
 			default -> "ERROR";
@@ -211,6 +212,7 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 		sum("table.header.sum"),
 		sessionStatus("table.header.review.status"),
 		taskStepStatus("table.header.step.status"),
+		submissionStatus("table.header.submission.status"),
 		editReview("table.header.review.view"),
 		tools("table.header.tools"),
 		;

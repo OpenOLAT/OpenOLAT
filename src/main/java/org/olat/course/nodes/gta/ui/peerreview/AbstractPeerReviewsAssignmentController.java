@@ -21,7 +21,6 @@ package org.olat.course.nodes.gta.ui.peerreview;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -33,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -56,63 +54,57 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupGradingController;
 import org.olat.course.nodes.gta.ui.peerreview.GTAPeerReviewAssignmentTableModel.AssignmentsCols;
+import org.olat.modules.assessment.Role;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 12 juin 2024<br>
+ * Initial date: 26 août 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTAPeerReviewAssignmentController extends FormBasicController {
+public abstract class AbstractPeerReviewsAssignmentController extends FormBasicController {
 
-	private static final String ALL_TAB_ID = "All";
-	private static final String ASSIGNED_TAB_ID = "Assigned";
-	private static final String NOT_ASSIGNED_TAB_ID = "ANotAssignedll";
+	protected static final String ALL_TAB_ID = "All";
+	protected static final String ASSIGNED_TAB_ID = "Assigned";
+	protected static final String NOT_ASSIGNED_TAB_ID = "ANotAssignedll";
 	protected static final String ASSIGNED = "Assigned";
 	protected static final String NOT_ASSIGNED = "NotAssigned";
 	protected static final String FILTER_ASSIGNMENT_STATUS = "assignment-status";
 	protected static final String FILTER_TASK_NAME = "task-name";
 	
-	private static final String ASSIGN = "assign";
+	protected static final String ASSIGN = "assign";
 	
-	private FlexiTableElement tableEl;
-	private GTAPeerReviewAssignmentTableModel tableModel;
-	private final SelectionValues assignmentPK;
+	protected FlexiTableElement tableEl;
+	protected GTAPeerReviewAssignmentTableModel tableModel;
+	protected final SelectionValues assignmentPK;
 	
-	private int counter = 0;
-	private final TaskList taskList;
-	private final Task taskToReview;
-	private final GTACourseNode gtaNode;
-	private final List<UserPropertyHandler> userPropertyHandlers;
-	
-	private final TaskPortraitController taskPortraitCtrl;
+	protected int counter = 0;
+	protected final TaskList taskList;
+	protected final GTACourseNode gtaNode;
+	protected final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
-	private GTAManager gtaManager;
+	protected GTAManager gtaManager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private BaseSecurityModule securityModule;
+	protected BaseSecurityModule securityModule;
 	@Autowired
-	private GTAPeerReviewManager peerReviewManager;
+	protected GTAPeerReviewManager peerReviewManager;
 	
-	public GTAPeerReviewAssignmentController(UserRequest ureq, WindowControl wControl, TaskList taskList,
-			Task taskToReview, GTACourseNode gtaNode) {
+	public AbstractPeerReviewsAssignmentController(UserRequest ureq, WindowControl wControl, TaskList taskList, GTACourseNode gtaNode) {
 		super(ureq, wControl, "asssign_reviewers", Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		this.taskToReview = taskToReview;
 		this.taskList = taskList;
 		this.gtaNode = gtaNode;
-		
-		taskPortraitCtrl = new TaskPortraitController(ureq, getWindowControl(), taskToReview);
-		listenTo(taskPortraitCtrl);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -120,19 +112,10 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 		
 		assignmentPK = new SelectionValues();
 		assignmentPK.add(SelectionValues.entry(ASSIGN, ""));
-		
-		initForm(ureq);
-		loadModel();
-		initFilters();
-		initFiltersPresets(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.put("portrait", taskPortraitCtrl.getInitialComponent());
-		}
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		int i=0;
@@ -161,7 +144,7 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
-	private void initFilters() {
+	protected final void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
 		
 		SelectionValues assignmentStatusKV = new SelectionValues();
@@ -184,7 +167,7 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
-	private void initFiltersPresets(UserRequest ureq) {
+	protected final void initFiltersPresets(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
 		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.assignment.status.all"),
@@ -203,23 +186,11 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 	
-	private void loadModel() {
-		final List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
-		final List<TaskReviewAssignment> assignments = peerReviewManager.getAssignmentsForTask(taskToReview, true);
-		final List<TaskReviewAssignment> allAssignments = peerReviewManager.getAssignmentsForTaskList(taskList, false);
-		List<PeerReviewAssignmentRow> assignmentRows = tasks.stream()
-				.filter(task -> taskToReview == null || !task.equals(taskToReview))
-				.map(task -> forgeRow(task, assignments, allAssignments))
-				.collect(Collectors.toList());
-		tableModel.setObjects(assignmentRows);
-		tableEl.reset(true, true, true);
-	}
+	protected abstract void loadModel();
 	
-	private PeerReviewAssignmentRow forgeRow(Task taskOfAssignee, List<TaskReviewAssignment> assignments, List<TaskReviewAssignment> allAssignments) {
-		Identity identity = taskOfAssignee.getIdentity();
-		TaskReviewAssignment assignment = getAssignmentFor(taskToReview, identity, assignments);
-		PeerReviewAssignmentRow assignmentRow = new PeerReviewAssignmentRow(taskOfAssignee, assignment, identity, userPropertyHandlers, getLocale());
-		
+	protected final PeerReviewAssignmentRow decorateRow(Identity identity, TaskReviewAssignment assignment,
+			PeerReviewAssignmentRow assignmentRow, List<TaskReviewAssignment> allAssignments) {
+
 		MultipleSelectionElement assignmentEl = uifactory.addCheckboxesHorizontal("assignment-" + (counter++), null, flc,
 				assignmentPK.keys(), assignmentPK.values());
 		assignmentEl.setAjaxOnly(true);
@@ -245,7 +216,7 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 		return assignmentRow;
 	}
 	
-	private TaskReviewAssignment getAssignmentFor(Task task, Identity assignee, List<TaskReviewAssignment> assignments) {
+	protected final TaskReviewAssignment getAssignmentFor(Task task, Identity assignee, List<TaskReviewAssignment> assignments) {
 		for(TaskReviewAssignment assignment:assignments) {
 			if(assignment.getTask().equals(task) && assignment.getAssignee().equals(assignee)) {
 				return assignment;
@@ -267,29 +238,13 @@ public class GTAPeerReviewAssignmentController extends FormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		List<PeerReviewAssignmentRow> assignmentRows = tableModel.getObjects();
-		for(PeerReviewAssignmentRow assignmentRow:assignmentRows) {
-			TaskReviewAssignment assignment = assignmentRow.getAssignment();
-			if(assignmentRow.getAssignmentEl().isAtLeastSelected(1)) {
-				if(assignment == null) {
-					peerReviewManager.createAssignment(taskToReview, assignmentRow.getAssignee());
-				} else if(!assignment.isAssigned()) {
-					assignment.setAssigned(true);
-					peerReviewManager.updateAssignment(assignment);
-				}
-			} else if(assignment != null && assignment.isAssigned()) {
-				assignment.setAssigned(false);
-				peerReviewManager.updateAssignment(assignment);
-			}
-		}
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
-
-	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	
+	protected final void reopenTaskIfNeeded(Task task) {
+		if(task.getTaskStatus().ordinal() > TaskProcess.peerreview.ordinal()) {
+			gtaManager.updateTask(task, TaskProcess.peerreview, gtaNode, false, getIdentity(), Role.coach);
+		}
+	}
 }

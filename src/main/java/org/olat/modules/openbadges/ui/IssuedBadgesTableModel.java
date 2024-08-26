@@ -63,6 +63,7 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 			case status -> translator.translate("assertion.status." + row.getBadgeAssertion().getStatus().name());
 			case issuer -> row.getBadgeAssertion().getBadgeClass().getIssuerDisplayString();
 			case issuedOn -> row.getBadgeAssertion().getIssuedOn();
+			case recipient -> row.getRecipientName();
 			case tools -> row.getToolLink();
 		};
 	}
@@ -81,6 +82,7 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 		status("form.status"),
 		issuer("class.issuer"),
 		issuedOn("form.issued.on"),
+		recipient("form.recipient"),
 		tools("table.header.actions");
 
 		private final String i18nKey;

@@ -346,26 +346,24 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				setNotAvailableStatusAndCssClass("peerReview");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.peerreview) {
 				if(isPeerReviewStarted(ureq, assignedTask)) {
-					setActiveStatusAndCssClass("peerReview");
-					setPeerReview(ureq, assignedTask);
+					setWaitingStatusAndCssClass("peerReview");
 				} else {
 					setNotAvailableStatusAndCssClass("peerReview");
 				}
 			} else {
 				setDoneStatusAndCssClass("peerReview");
-				setPeerReview(ureq, assignedTask);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.peerreview) {
 			if(isPeerReviewStarted(ureq, assignedTask)) {
-				setActiveStatusAndCssClass("peerReview");
-				setPeerReview(ureq, assignedTask);
+				setWaitingStatusAndCssClass("peerReview");
 			} else {
 				setNotAvailableStatusAndCssClass("peerReview");
 			}
 		} else {
 			setDoneStatusAndCssClass("peerReview");
-			setPeerReview(ureq, assignedTask);
 		}
+		
+		setPeerReview(ureq, assignedTask);
 
 		if (assignedTask != null 
 				&& assignedTask.getTaskStatus() != TaskProcess.assignment

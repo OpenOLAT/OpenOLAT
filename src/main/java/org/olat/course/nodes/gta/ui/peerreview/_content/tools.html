@@ -3,6 +3,10 @@
 		<li>$r.render("assign.reviewers")</li>
 		<li class="divider"></li>
 	#end
+		#if($r.available("assign.reviews"))
+		<li>$r.render("assign.reviews")</li>
+		<li class="divider"></li>
+	#end
 	#if($r.available("show.reviews"))
 		<li>$r.render("show.reviews")</li>
 	#end

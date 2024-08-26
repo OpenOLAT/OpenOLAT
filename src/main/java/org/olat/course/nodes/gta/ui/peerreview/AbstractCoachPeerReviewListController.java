@@ -326,10 +326,49 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		}
 	}
 	
+	protected void decorateWithSubmissionStatus(CoachPeerReviewRow row, Task assignedTask) {
+		//calculate state
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment) {
+				row.setSubmissionStatus(CoachedParticipantStatus.notAvailable);
+			} else if (assignedTask.getTaskStatus() == TaskProcess.submit) {
+
+				DueDate submissionDueDate = gtaManager.getSubmissionDueDate(assignedTask, assignedTask.getIdentity(), null, gtaNode, courseEntry, true);
+				DueDate lateSubmissionDueDate = gtaManager.getLateSubmissionDueDate(assignedTask, assignedTask.getIdentity(), null, gtaNode, courseEntry, true);
+				if(isSubmissionLate(submissionDueDate, lateSubmissionDueDate)) {
+					row.setSubmissionStatus(CoachedParticipantStatus.late);
+				} else {
+					row.setSubmissionStatus(CoachedParticipantStatus.waiting);
+				}
+			} else {
+				row.setSubmissionStatus(CoachedParticipantStatus.done);
+			}	
+		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
+			DueDate submissionDueDate = gtaManager.getSubmissionDueDate(assignedTask, assignedTask.getIdentity(), null, gtaNode, courseEntry, true);
+			DueDate lateSubmissionDueDate = gtaManager.getLateSubmissionDueDate(assignedTask, assignedTask.getIdentity(), null, gtaNode, courseEntry, true);
+			if(isSubmissionLate(submissionDueDate, lateSubmissionDueDate)) {
+				row.setSubmissionStatus(CoachedParticipantStatus.late);
+			} else {
+				row.setSubmissionStatus(CoachedParticipantStatus.open);
+			}
+		} else {
+			row.setSubmissionStatus(CoachedParticipantStatus.done);
+		}
+	}
+	
 	protected final boolean isPeerReviewStarted(Task assignedTask) {
 		DueDate availableDate = gtaManager.getPeerReviewDueDate(assignedTask, assignedTask.getIdentity(), null, gtaNode, courseEntry, true);
 		return availableDate == null || availableDate.getStartDate() == null ||
 				(availableDate.getStartDate() != null && availableDate.getStartDate().compareTo(new Date()) <= 0);
+	}
+	
+	protected final boolean isSubmissionLate(DueDate dueDate, DueDate lateDueDate) {
+		if(dueDate == null || dueDate.getDueDate() == null
+				|| lateDueDate == null || lateDueDate.getDueDate() == null) {
+			return false;
+		}
+		Date refDate = dueDate.getDueDate();
+		return new Date().after(refDate);
 	}
 	
 	@Override
