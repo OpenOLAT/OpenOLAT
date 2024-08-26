@@ -173,6 +173,7 @@ public class FlexiTableOneClickSelectionFilter extends FlexiTableFilter implemen
 			mse.setAjaxOnly(true);
 			mse.setKeysAndValues(availableValues.keys(), availableValues.values(), null, null);
 			mse.setFormLayout("minimal");
+			mse.setWithTitleOnLabels(true);
 			
 			if(value != null && mse.getKeys().contains(value)) {
 				mse.select(value, true);

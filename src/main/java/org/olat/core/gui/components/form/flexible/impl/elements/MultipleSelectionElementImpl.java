@@ -65,6 +65,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	private boolean originalIsDefined = false;
 	private boolean escapeHtml = true;
 	private boolean horizontallyAlignedCheckboxes = false;
+	private boolean withTitleOnLabels = false;
 	private String nonSelectedText = "";
 	private ConsumableBoolean formRequestEval = new ConsumableBoolean(false);
 
@@ -124,6 +125,16 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	@Override
 	public void setEvaluationOnlyVisible(boolean onlyVisible) {
 		evaluationOnlyVisible = onlyVisible;
+	}
+
+	@Override
+	public boolean isWithTitleOnLabels() {
+		return withTitleOnLabels;
+	}
+
+	@Override
+	public void setWithTitleOnLabels(boolean enable) {
+		this.withTitleOnLabels = enable;
 	}
 
 	@Override
