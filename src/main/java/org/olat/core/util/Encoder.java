@@ -33,9 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -45,6 +43,7 @@ import javax.crypto.spec.PBEKeySpec;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 
 
@@ -59,7 +58,6 @@ public class Encoder {
 	
 	private static final Logger log = Tracing.createLoggerFor(Encoder.class);
 	
-	private static final ExecutorService pool = Executors.newFixedThreadPool(10);
 	
 	public enum Algorithm {
 		/**
@@ -282,8 +280,11 @@ public class Encoder {
 	
 	public static String jailedArgon2id(final String password, final int iterations, final int memLimit, final String salt) {
 		try {
-			return pool.submit(() -> argon2id(password, iterations, memLimit, salt)).get();
-		} catch (InterruptedException | ExecutionException e) {
+			ExecutorService pool = CoreSpringFactory.getBean("encoderExecutorService", ExecutorService.class);
+			return pool
+					.submit(() -> argon2id(password, iterations, memLimit, salt))
+					.get();
+		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
