@@ -435,8 +435,8 @@
 	<!-- Job to auto enroll in topic brokers -->
 	<bean id="topicBrokerEnrollmentTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="topicBrokerEnrollmentJob" />
-		<!-- Once a hour at xx:00:17 -->
-		<property name="cronExpression" value="17 0 * * * ?" />
+		<!-- Every five minutes -->
+		<property name="cronExpression" value="17 */5 * * * ?" />
 		<property name="startDelay" value="30000" />
 	</bean>
 	

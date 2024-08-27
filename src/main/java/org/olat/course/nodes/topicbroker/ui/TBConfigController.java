@@ -183,8 +183,8 @@ public class TBConfigController extends FormBasicController implements Controlle
 		}
 		
 		SelectionValues enrollmentSV = new SelectionValues();
-		enrollmentSV.add(SelectionValues.entry(Boolean.TRUE.toString(), translate("config.enrollment.auto.auto")));
 		enrollmentSV.add(SelectionValues.entry(Boolean.FALSE.toString(), translate("config.enrollment.auto.manually")));
+		enrollmentSV.add(SelectionValues.entry(Boolean.TRUE.toString(), translate("config.enrollment.auto.auto")));
 		enrollmentAutoEl = uifactory.addRadiosHorizontal("config.enrollment.auto", periodCont, enrollmentSV.keys(), enrollmentSV.values());
 		enrollmentAutoEl.select(String.valueOf(moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENT_AUTO)), true);
 		

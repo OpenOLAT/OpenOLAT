@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -49,11 +49,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TBTopicAddController extends FormBasicController {
+public class TBParticipantTopicSelectController extends FormBasicController {
 
 	private SingleSelection topicEl;
 	private SingleSelection priorityEl;
-	private FormToggle enrollEl;
+	private MultipleSelectionElement enrollEl;
 	
 	private final TBBroker broker;
 	private final Identity participantIdentity;
@@ -62,7 +62,8 @@ public class TBTopicAddController extends FormBasicController {
 	@Autowired
 	private TopicBrokerService topicBrokerService;
 
-	protected TBTopicAddController(UserRequest ureq, WindowControl wControl, TBBroker broker, Identity participantIdentity, List<TBSelection> selections) {
+	protected TBParticipantTopicSelectController(UserRequest ureq, WindowControl wControl, TBBroker broker,
+			Identity participantIdentity, List<TBSelection> selections) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.broker = broker;
 		this.participantIdentity = participantIdentity;
@@ -73,7 +74,9 @@ public class TBTopicAddController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		Set<Long> selectedTopicKeys = selections.stream().map(selection -> selection.getTopic().getKey()).collect(Collectors.toSet());
+		Set<Long> selectedTopicKeys = selections.stream()
+				.map(selection -> selection.getTopic().getKey())
+				.collect(Collectors.toSet());
 		
 		TBTopicSearchParams topicSearchParams = new TBTopicSearchParams();
 		topicSearchParams.setBroker(broker);
@@ -109,11 +112,12 @@ public class TBTopicAddController extends FormBasicController {
 		priorityEl.setMandatory(true);
 		priorityEl.select(String.valueOf(selections.size() + 1), true);
 		
-		enrollEl = uifactory.addToggleButton("selection.enrol", "selection.enrol", translate("on"), translate("off"), formLayout);
+		enrollEl = uifactory.addCheckboxesHorizontal("selection.enroll", formLayout, new String[] { "enroll" },
+				new String[] { translate("selection.enroll.value") });
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("add", buttonLayout);
+		uifactory.addFormSubmitButton("participant.topic.select.button", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
@@ -144,7 +148,7 @@ public class TBTopicAddController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		topicBrokerService.select(getIdentity(), participantIdentity, () -> Long.valueOf(topicEl.getSelectedKey()),
 				Integer.valueOf(priorityEl.getSelectedKey()));
-		if (enrollEl.isOn()) {
+		if (enrollEl.isAtLeastSelected(1)) {
 			topicBrokerService.enroll(getIdentity(), participantIdentity, () -> Long.valueOf(topicEl.getSelectedKey()), false);
 		}
 		

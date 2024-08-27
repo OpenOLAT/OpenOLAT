@@ -3,9 +3,9 @@
 	#if($selectionMsg)
 		<div class="o_warning_with_icon">$selectionMsg</div>
 	#end
-	#if($r.available("topic.add"))
+	#if($r.available("participant.topic.select"))
 		<div class="o_button_group o_button_group_right">
-			$r.render("topic.add")
+			$r.render("participant.topic.select")
 		</div>
 	#end
 	$r.render($tableName)

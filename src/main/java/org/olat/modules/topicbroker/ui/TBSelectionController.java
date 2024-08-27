@@ -87,6 +87,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBBrokerStatus;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
@@ -667,17 +668,32 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 
 	private void updateSelectionMessage() {
-		if ((periodEvaluator.isBeforeSelectionPeriod() || periodEvaluator.isSelectionPeriod()) && selectionsSize < broker.getMaxSelections()) {
+		flc.contextRemove("selectionSuccess");
+		flc.contextRemove("selectionInfo");
+		flc.contextRemove("selectionWarning");
+		
+		boolean allSelected = selectionsSize >= broker.getMaxSelections();
+		TBBrokerStatus brokerStatus = TBUIFactory.getBrokerStatus(broker);
+		if (allSelected && TBBrokerStatus.enrollmentDone != brokerStatus) {
+			String selectionSuccess = translate("selection.msg.all.selected") + " " + translate("selection.msg.done.notification");
+			if (selectionsSize > broker.getMaxSelections()) {
+				selectionSuccess = selectionSuccess + "<br>" + translate("selection.msg.selected.surplus");
+			}
+			flc.contextPut("selectionSuccess", selectionSuccess);
+		} else if (selectionsSize > 0 && TBBrokerStatus.enrollmentInProgess == brokerStatus) {
+			String selectionInfo = translate("selection.msg.done.notification");
+			flc.contextPut("selectionInfo", selectionInfo);
+		}
+		
+		if (!allSelected && (periodEvaluator.isBeforeSelectionPeriod() || periodEvaluator.isSelectionPeriod())) {
 			int numPossibleSelections = broker.getMaxSelections() - selectionsSize;
 			String messageI18nKey = numPossibleSelections < 2
 					? "selection.msg.not.all.selected.single"
 					: "selection.msg.not.all.selected.multi";
-			String selectionMsg = translate(messageI18nKey, new String[] {
+			String selectionWarning = translate(messageI18nKey, new String[] {
 					String.valueOf(selectionsSize), String.valueOf(broker.getMaxSelections()),
 					String.valueOf(numPossibleSelections)});
-			flc.contextPut("selectionMsg", selectionMsg);
-		} else {
-			flc.contextRemove("selectionMsg");
+			flc.contextPut("selectionWarning", selectionWarning);
 		}
 	}
 	

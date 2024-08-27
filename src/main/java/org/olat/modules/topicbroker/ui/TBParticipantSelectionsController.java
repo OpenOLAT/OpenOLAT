@@ -71,14 +71,14 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	private static final String CMD_WITHDRAW = "withdraw";
 	private static final String CMD_UNSELECT = "unselect";
 	
-	private FormLink topicAddLink;
+	private FormLink topicSelectLink;
 	private final TBSelectionStatusRenderer statusRenderer;
 	private TBSelectionDataModel selectionDataModel;
 	private FlexiTableElement selectionTableEl;
 
 	private TBParticipantController participantCtrl;
 	private CloseableModalController cmc;
-	private TBTopicAddController topicAddCtrl;
+	private TBParticipantTopicSelectController topicSelectCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private SelectionToolsController selectionToolsCtrl;
 
@@ -125,8 +125,8 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		flc.contextPut("participantName", participantName);
 		
 		if (canEditSelections) {
-			topicAddLink = uifactory.addFormLink("topic.add", formLayout, Link.BUTTON);
-			topicAddLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+			topicSelectLink = uifactory.addFormLink("participant.topic.select", formLayout, Link.BUTTON);
+			topicSelectLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		}
 		
 		initSelectionTable(formLayout, ureq);
@@ -229,7 +229,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 			if (Event.CHANGED_EVENT == event) {
 				fireEvent(ureq, event);
 			}
-		} else if (topicAddCtrl == source) {
+		} else if (topicSelectCtrl == source) {
 			if (Event.DONE_EVENT == event) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -251,11 +251,11 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(topicAddCtrl);
+		removeAsListenerAndDispose(topicSelectCtrl);
 		removeAsListenerAndDispose(selectionToolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(cmc);
-		topicAddCtrl = null; 
+		topicSelectCtrl = null; 
 		selectionToolsCtrl = null;
 		toolsCalloutCtrl = null;
 		cmc = null;
@@ -263,8 +263,8 @@ public class TBParticipantSelectionsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == topicAddLink){
-			doAddTopic(ureq);
+		if (source == topicSelectLink){
+			doSelectTopic(ureq);
 		} else if (source instanceof FormLink link) {
 			if (link.getUserObject() instanceof TBSelectionRow row) {
 				String cmd = link.getCmd();
@@ -281,13 +281,13 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		//
 	}
 
-	private void doAddTopic(UserRequest ureq) {
-		if (guardModalController(topicAddCtrl)) return;
+	private void doSelectTopic(UserRequest ureq) {
+		if (guardModalController(topicSelectCtrl)) return;
 		
-		topicAddCtrl = new TBTopicAddController(ureq, getWindowControl(), broker, participant.getIdentity(), selections);
-		listenTo(topicAddCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), topicAddCtrl.getInitialComponent(),
-				true, translate("topic.add"), true);
+		topicSelectCtrl = new TBParticipantTopicSelectController(ureq, getWindowControl(), broker, participant.getIdentity(), selections);
+		listenTo(topicSelectCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), topicSelectCtrl.getInitialComponent(),
+				true, translate("participant.topic.select"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
