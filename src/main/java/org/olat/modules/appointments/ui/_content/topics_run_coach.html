@@ -116,15 +116,15 @@
 
 					#if($topic.getAppointment().getMeetingUrl())
 						<div class="o_row">
-							#if($topic.getAppointment().isRecordingEnabled())
-								<div class="o_c2">
-										<div class="o_warning o_bbb_warning">
-											<h4>$r.translate("meeting.recording.title")</h4>
-											<p>$r.translate("meeting.recording.desc")</p>
-											$r.render($topic.getAcknowledgeOtherName(), "minimal")
-										</div>
-								</div>
-							#end
+							<div class="o_c2">
+								#if($topic.getAppointment().isRecordingEnabled())
+									<div class="o_warning o_bbb_warning">
+										<h4>$r.translate("meeting.recording.title")</h4>
+										<p>$r.translate("meeting.recording.desc")</p>
+										$r.render($topic.getAcknowledgeOtherName(), "minimal")
+									</div>
+								#end
+							</div>
 							<div class="o_c2">
 								<div class="o_grow_10"></div>
 								#if($r.isNotNull($topic.getJoinOtherLinkName()))

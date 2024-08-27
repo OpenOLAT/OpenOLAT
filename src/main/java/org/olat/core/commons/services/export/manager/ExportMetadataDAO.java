@@ -37,7 +37,9 @@ import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +64,10 @@ public class ExportMetadataDAO {
 		metadata.setCreationDate(new Date());
 		metadata.setLastModified(metadata.getCreationDate());
 		metadata.setTitle(title);
+		if(description != null && description.length() >= 4000) {
+			description = FilterFactory.getHtmlTagsFilter().filter(description);
+			description = Formatter.truncate(description, 3950);
+		}
 		metadata.setDescription(description);
 		metadata.setFilename(filename);
 		metadata.setArchiveType(type);

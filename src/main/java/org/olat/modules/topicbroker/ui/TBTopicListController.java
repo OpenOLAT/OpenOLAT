@@ -173,7 +173,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private final TBParticipantCandidates participantCandidates;
 	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
 	private final List<TBCustomFieldDefinition> customFieldDefinitions;
-	private List<Long> detailsOpenTopicKeys;
+	private Set<Long> detailsOpenTopicKeys;
 	private List<TBTopicDetailController> detailCtrls = new ArrayList<>(1);
 	private final Roles roles;
 	private int counter = 0;
@@ -753,7 +753,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				.map(i -> dataModel.getObject(i))
 				.filter(Objects::nonNull)
 				.map(TBTopicRow::getKey)
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 	}
 	
 	@Override
@@ -868,9 +868,13 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				TBTopicRow row = dataModel.getObject(se.getIndex());
 				if (CMD_DETAILS.equals(cmd)) {
 					if (detailsOpenTopicKeys == null) {
-						detailsOpenTopicKeys = new ArrayList<>(1);
+						detailsOpenTopicKeys = new HashSet<>(1);
 					}
-					detailsOpenTopicKeys.add(row.getKey());
+					if (detailsOpenTopicKeys.contains(row.getKey())) {
+						detailsOpenTopicKeys.remove(row.getKey());
+					} else {
+						detailsOpenTopicKeys.add(row.getKey());
+					}
 					loadModel(ureq);
 				}
 			} else if (event instanceof DetailsToggleEvent) {

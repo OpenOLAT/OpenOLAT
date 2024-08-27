@@ -48,10 +48,10 @@ public class TBSelectionsRenderer implements FlexiCellRenderer {
 				TBSelectionStatus status = TBUIFactory.getSelectionStatus(participantRow.getBroker(),
 						participantRow.getRequiredEnrollments(), participantRow.getNumEnrollments(),
 						true, selection.isEnrolled(), selection.getSortOrder());
-				formatedLabels.add(TBUIFactory.getPriorityLabel(translator, status, selection.getSortOrder()));
+				formatedLabels.add(TBUIFactory.getPriorityLabel(translator, status, selection.getSortOrder(), selection.getTopic().getTitle()));
 			}
 			for (int i = participantRow.getNumSelections() + 1; i <= participantRow.getMaxSelections(); i++) {
-				formatedLabels.add(TBUIFactory.getPriorityLabel(translator, TBSelectionStatus.fillIn, i));
+				formatedLabels.add(TBUIFactory.getPriorityLabel(translator, TBSelectionStatus.fillIn, i, null));
 			}
 			
 			

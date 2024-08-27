@@ -22,6 +22,7 @@ package org.olat.modules.topicbroker.ui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -50,6 +51,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -72,6 +74,7 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBBrokerStatus;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBParticipantSearchParams;
@@ -101,6 +104,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	private static final String TAB_ID_WAITING_LIST = "WaitingList";
 	private static final String TAB_ID_ENROLLED_PARTIALLY = "PartiallyEnrolled";
 	private static final String TAB_ID_ENROLLED_FULLY = "FullyEnrolled";
+	private static final String CMD_DETAILS = "details";
 	
 	private InfoPanel configPanel;
 	private FlexiFiltersTab tabAll;
@@ -125,7 +129,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	private final TBParticipantCandidates participantCandidates;
 	private final List<Identity> identities;
 	private final UserInfoProfileConfig profileConfig;
-	private List<Long> detailsOpenIdentityKeys;
+	private Set<Long> detailsOpenIdentityKeys;
 	private List<TBParticipantSelectionsController> detailCtrls = new ArrayList<>(1);
 	private int counter = 0;
 	
@@ -241,7 +245,7 @@ public class TBParticipantListController extends FormBasicController implements 
 			String propName = userPropertyHandler.getName();
 			boolean visible = userManager.isMandatoryUserProperty(TBParticipantDataModel.USAGE_IDENTIFIER, userPropertyHandler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible,
-					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, true, propName));
+					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, CMD_DETAILS,true, propName));
 			if (UserConstants.LASTNAME.equals(userPropertyHandler.getName())) {
 				SortKey sortKey = new SortKey(propName, true);
 				sortOptions = new FlexiTableSortOptions();
@@ -449,11 +453,16 @@ public class TBParticipantListController extends FormBasicController implements 
 				.map(i -> dataModel.getObject(i))
 				.filter(Objects::nonNull)
 				.map(TBParticipantRow::getIdentityKey)
-				.toList();
+				.collect(Collectors.toSet());
 	}
 	
 	private void updateBrokerStatusUI() {
-		flc.contextPut("statusLabel", TBUIFactory.getLabel(getTranslator(), broker));
+		TBBrokerStatus brokerStatus = TBUIFactory.getBrokerStatus(broker);
+		if (broker.isAutoEnrollment() && TBBrokerStatus.enrollmentInProgess == brokerStatus) {
+			flc.contextPut("messageInfo", translate("selection.msg.auto.enrollment.pending"));
+		}
+		
+		flc.contextPut("statusLabel", TBUIFactory.getLabel(getTranslator(), brokerStatus));
 	}
 
 	private void updateEnrollmentManualUI() {
@@ -538,7 +547,22 @@ public class TBParticipantListController extends FormBasicController implements 
 		} else if (bulkEmailButton == source) {
 			doBulkEmail(ureq);
 		} else if (source == tableEl) {
-			if (event instanceof DetailsToggleEvent) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				TBParticipantRow row = dataModel.getObject(se.getIndex());
+				if (CMD_DETAILS.equals(cmd)) {
+					if (detailsOpenIdentityKeys == null) {
+						detailsOpenIdentityKeys = new HashSet<>(1);
+					}
+					if (detailsOpenIdentityKeys.contains(row.getIdentityKey())) {
+						detailsOpenIdentityKeys.remove(row.getIdentityKey());
+					} else {
+						detailsOpenIdentityKeys.add(row.getIdentityKey());
+					}
+					loadModel(ureq);
+				}
+			} else if (event instanceof DetailsToggleEvent) {
 				DetailsToggleEvent dte = (DetailsToggleEvent)event;
 				if (dte.isVisible()) {
 					TBParticipantRow row = dataModel.getObject(dte.getRowIndex());

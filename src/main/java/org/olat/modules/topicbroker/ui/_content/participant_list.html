@@ -9,5 +9,8 @@
 			$r.render("enrollment.manual.start")
 		</div>
 	#end
+	#if($messageInfo)
+		<div class="o_info_with_icon">$messageInfo</div>
+	#end
 	$r.render("table")
 </fieldset>

@@ -119,7 +119,7 @@
 						</div>
 					#end
 
-					#if($topic.getAcknowledgeOtherName())
+					#if($topic.getAppointment().getMeetingUrl())
 						#if($topic.getAppointment().isRecordingEnabled())
 							<div class="o_warning o_bbb_warning">
 								<h4>$r.translate("meeting.recording.title")</h4>

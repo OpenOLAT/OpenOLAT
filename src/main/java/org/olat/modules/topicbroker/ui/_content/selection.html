@@ -8,8 +8,14 @@
 			<div>$r.translate("selection.my")</div>
 			<div>$statusLabel</div>
 		</legend>
-		#if($selectionMsg)
-			<div class="o_warning_with_icon">$selectionMsg</div>
+		#if($selectionSuccess)
+			<div class="o_success_with_icon">$selectionSuccess</div>
+		#end
+		#if($selectionInfo)
+			<div class="o_info_with_icon">$selectionInfo</div>
+		#end
+		#if($selectionWarning)
+			<div class="o_warning_with_icon">$selectionWarning</div>
 		#end
 		$r.render("selectionTable")
 	</fieldset>

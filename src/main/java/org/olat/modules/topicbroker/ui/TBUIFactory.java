@@ -102,7 +102,10 @@ public class TBUIFactory {
 	}
 	
 	public static String getLabel(Translator translator, TBBroker broker) {
-		TBBrokerStatus status = getBrokerStatus(broker);
+		return getLabel(translator, getBrokerStatus(broker));
+	}
+	
+	public static String getLabel(Translator translator, TBBrokerStatus status) {
 		return "<span class=\"o_labeled " + getLabelCss(status) 
 				+ "\"><i class=\"o_icon " + getStatusIconCss(status)
 				+ "\"> </i> "+ getTranslatedStatus(translator, status) + "</span>";
@@ -206,8 +209,14 @@ public class TBUIFactory {
 		return null;
 	}
 	
-	public static final String getPriorityLabel(Translator translator, TBSelectionStatus status, int sortOrder) {
-		String label = "<div class=\"o_tb_priority_label\">";
+	public static final String getPriorityLabel(Translator translator, TBSelectionStatus status, int sortOrder, String topicTitle) {
+		String label = "<div class=\"o_tb_priority_label\"";
+		if (StringHelper.containsNonWhitespace(topicTitle)) {
+			label += " title=\"";
+			label += topicTitle;
+			label += "\"";
+		}
+		label += ">";
 		label += "<div class=\"";
 		label += getPriorityCss(status);
 		label += "\">";
@@ -222,7 +231,7 @@ public class TBUIFactory {
 	}
 	
 	public static final String getPriorityLabelAsRow(Translator translator, TBSelectionStatus status, int sortOrder) {
-		return getPriorityLabelsAsRow(List.of(getPriorityLabel(translator, status, sortOrder)));
+		return getPriorityLabelsAsRow(List.of(getPriorityLabel(translator, status, sortOrder, null)));
 	}
 	
 	public static final String getPriorityLabelsAsRow(List<String> formatedLabels) {

@@ -1145,6 +1145,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		}
 		updateEnrollmentProcessDone(null, broker, true);
 		dbInstance.commitAndCloseSession();
+		
+		log.info(Tracing.M_AUDIT, "Auto enrollment in topic broker {}", broker.getKey());
 	}
 	
 	private TBSelection getSelection(IdentityRef identity, TBTopicRef topic) {
