@@ -50,7 +50,7 @@ public class CreateFolderController extends FormBasicController {
 	private TextElement textElementEl;
 
 	private final VFSContainer currentContainer;
-	private VFSItem createdItem;
+	private VFSContainer createdItem;
 	
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
@@ -78,7 +78,7 @@ public class CreateFolderController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());
 	}
 
-	public VFSItem getCreatedItem() {
+	public VFSContainer getCreatedContainer() {
 		return createdItem;
 	}
 
@@ -115,7 +115,7 @@ public class CreateFolderController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String name = textElementEl.getValue().trim();
 		createdItem = currentContainer.createChildContainer(name);
-		if (createdItem instanceof VFSContainer && createdItem.canMeta() == VFSStatus.YES) {
+		if (createdItem != null && createdItem.canMeta() == VFSStatus.YES) {
 			VFSMetadata metaInfo = createdItem.getMetaInfo();
 			if (metaInfo instanceof VFSMetadataImpl metadata) {
 				metadata.setFileInitializedBy(getIdentity());

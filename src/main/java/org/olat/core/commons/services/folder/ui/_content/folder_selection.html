@@ -4,6 +4,11 @@
 			$r.render("folderBreadcrumb")
 		#end
 	</div>
+	#if($r.available("folder.create") && $r.visible("folder.create"))
+		<div class="o_button_group o_button_group_right">
+			$r.render("folder.create")
+		</div>
+	#end
 	<div class="o_folder_selection_table o_block_large_bottom">
 		$r.render("table")
 	</div>

@@ -28,6 +28,8 @@ import java.util.Set;
 import org.olat.core.commons.services.folder.ui.FolderDataModel.FolderCols;
 import org.olat.core.commons.services.folder.ui.event.FileBrowserPushEvent;
 import org.olat.core.commons.services.folder.ui.event.FileBrowserSelectionEvent;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataContainer;
 import org.olat.core.commons.services.vfs.VFSMetadataItem;
@@ -56,6 +58,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -64,6 +67,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CoursefolderWebDAVNamedContainer;
@@ -82,9 +86,13 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	private static final String CMD_PATH = "path";
 	private static final String CMD_CRUMB_PREFIX = "/oobc_";
 	
+	private FormLink addFolderLink;
 	private TooledStackedPanel stackedPanel;
 	private FolderDataModel dataModel;
 	private FlexiTableElement tableEl;
+	
+	private CloseableModalController cmc;
+	private CreateFolderController createFolderCtrl;
 
 	private final VFSContainer rootContainer;
 	private VFSContainer currentContainer;
@@ -101,6 +109,8 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private AVModule avModule;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	@Autowired
 	private MapperService mapperService;
 
@@ -123,6 +133,11 @@ public class FolderSelectionController extends FormBasicController implements Fi
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (FileBrowserSelectionMode.targetSingle == selectionMode) {
+			addFolderLink = uifactory.addFormLink("folder.create", formLayout, Link.BUTTON);
+			addFolderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_folder");
+		}
+		
 		createTable(ureq);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -350,6 +365,29 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (createFolderCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doOpenFolder(ureq, createFolderCtrl.getCreatedContainer());
+				markNews();
+			}
+			cmc.deactivate();
+			cleanUp();
+
+		} else if (source == cmc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(createFolderCtrl);
+		removeAsListenerAndDispose(cmc);
+		createFolderCtrl = null;
+		cmc = null;
+	}
+	
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == stackedPanel) {
 			if (event instanceof PopEvent popEvent) {
@@ -370,7 +408,9 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink) {
+		if (source == addFolderLink) {
+			doCreateFolder(ureq);
+		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if (CMD_FOLDER.equals(link.getCmd()) && link.getUserObject() instanceof FolderRow folderRow) {
 				doOpenFolder(ureq, folderRow);
@@ -420,10 +460,14 @@ public class FolderSelectionController extends FormBasicController implements Fi
 		if (isItemNotAvailable(folderRow, true)) return;
 		
 		if (folderRow.getVfsItem() instanceof VFSContainer vfsContainer) {
-			updateView(ureq, FolderView.folder);
-			updateCurrentContainer(ureq, vfsContainer);
-			loadModel();
+			doOpenFolder(ureq, vfsContainer);
 		}
+	}
+
+	private void doOpenFolder(UserRequest ureq, VFSContainer vfsContainer) {
+		updateView(ureq, FolderView.folder);
+		updateCurrentContainer(ureq, vfsContainer);
+		loadModel();
 	}
 
 	private void updateView(UserRequest ureq, FolderView view) {
@@ -470,6 +514,10 @@ public class FolderSelectionController extends FormBasicController implements Fi
 		topMostDescendantsMetadata = topMostDescendantsContainer != null? topMostDescendantsContainer.getMetaInfo(): null;
 		
 		updateFolderBreadcrumpUI(path);
+		
+		if (addFolderLink != null) {
+			addFolderLink.setVisible(VFSStatus.YES == currentContainer.canWrite());
+		}
 		
 		loadModel();
 		fireEvent(ureq, new FileBrowserPushEvent());
@@ -582,6 +630,33 @@ public class FolderSelectionController extends FormBasicController implements Fi
 			return true;
 		}
 		return false;
+	}
+	
+	private void doCreateFolder(UserRequest ureq) {
+		if (guardModalController(createFolderCtrl)) return;
+		
+		removeAsListenerAndDispose(createFolderCtrl);
+		
+		createFolderCtrl = new CreateFolderController(ureq, getWindowControl(), currentContainer);
+		listenTo(createFolderCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				createFolderCtrl.getInitialComponent(), true, translate("folder.create"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void markNews() {
+		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
+		if (container != null) {
+			VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
+			if (secCallback != null) {
+				SubscriptionContext subsContext = secCallback.getSubscriptionContext();
+				if (subsContext != null) {
+					notificationsManager.markPublisherNews(subsContext, getIdentity(), true);
+				}
+			}
+		}
 	}
 
 }

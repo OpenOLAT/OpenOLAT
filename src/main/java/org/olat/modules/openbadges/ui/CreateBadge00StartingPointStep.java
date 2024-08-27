@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
@@ -188,9 +189,9 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 		private void initTable(FormItemContainer formLayout, UserRequest ureq) {
 			String mediaUrl = registerMapper(ureq, new BadgesMediaFileMapper());
 			FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.image,
+			FlexiColumnModel imageModel = new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.image,
 					(renderer, sb, val, row, source, ubu, translator) -> {
-						Size targetSize = tableModel.getObject(row).badgeClassWithSizeAndCount().fitIn(60, 60);
+						Size targetSize = tableModel.getObject(row).badgeClassWithSizeAndCount().fitIn(55, 55);
 						int width = targetSize.getWidth();
 						int height = targetSize.getHeight();
 						sb.append("<div style='width: ").append(width).append("px; height: ").append(height).append("px;'>");
@@ -202,15 +203,18 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 						}
 						sb.append("</div>");
 						sb.append("</div>");
-					}));
+					});
+			imageModel.setColumnCssClass("o_badge_image");
+			columnModel.addFlexiColumnModel(imageModel);
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.title));
+			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.createdOn));
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.assertions));
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.course));
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.courseReference));
 
-			tableModel = new BadgesTableModel(columnModel, getLocale());
+			tableModel = new BadgesTableModel(columnModel, getLocale(), getTranslator());
 
-			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 3,
+			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 5,
 					true, getTranslator(), formLayout);
 			tableEl.setSelection(true, false, true);
 

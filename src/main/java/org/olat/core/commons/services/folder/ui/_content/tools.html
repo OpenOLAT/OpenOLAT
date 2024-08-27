@@ -5,6 +5,9 @@
 	#if($r.available("file.open"))
 		<li>$r.render("file.open")</li>
 	#end
+	#if($r.available("copy.to"))
+		<li>$r.render("copy.to")</li>
+	#end
 	#if($r.available("download"))
 		<li>$r.render("download")</li>
 	#end
@@ -13,9 +16,6 @@
 	#end
 	#if($r.available("move.to"))
 		<li>$r.render("move.to")</li>
-	#end
-	#if($r.available("copy.to"))
-		<li>$r.render("copy.to")</li>
 	#end
 	#if($r.available("metadata"))
 		<li>$r.render("metadata")</li>

@@ -276,7 +276,8 @@ public class BadgeClassDAO {
 				.append(" inner join group.members as membership")
 				.append(" where membership.role ").in(GroupRoles.owner)
 				.append(" and membership.identity.key = :authorKey")
-				.append(" and bc.status ").in(BadgeClass.BadgeClassStatus.active, BadgeClass.BadgeClassStatus.preparation);
+				.append(" and bc.status ").in(BadgeClass.BadgeClassStatus.active, BadgeClass.BadgeClassStatus.preparation)
+				.append(" order by bc.creationDate desc");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)

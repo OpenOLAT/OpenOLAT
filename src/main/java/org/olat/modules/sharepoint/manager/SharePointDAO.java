@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.servlets.URLEncoder;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.sharepoint.model.MicrosoftDrive;
 import org.olat.modules.sharepoint.model.MicrosoftDriveItem;
@@ -76,10 +77,11 @@ public class SharePointDAO {
 
 	public List<MicrosoftSite> getSites(TokenCredential tokenProvider, String search) {
 		try {
+			final String encodedSearch = new URLEncoder().encode(search);
 			SiteCollectionResponse allSites = client(tokenProvider)
 					.sites()
 					.get(requestConfiguration -> {
-						requestConfiguration.queryParameters.search = search;
+						requestConfiguration.queryParameters.search =  "\"" + encodedSearch + "\"";
 						requestConfiguration.queryParameters.filter = null;
 						requestConfiguration.queryParameters.select = ATTRS_SITE;
 					});

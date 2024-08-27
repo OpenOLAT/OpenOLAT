@@ -28,6 +28,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.modules.openbadges.BadgeClass;
 
 /**
@@ -38,10 +40,12 @@ import org.olat.modules.openbadges.BadgeClass;
 public class BadgesTableModel extends DefaultFlexiTableDataModel<BadgesRow> implements SortableFlexiTableDataModel<BadgesRow> {
 
 	private final Locale locale;
+	private final Translator translator;
 
-	public BadgesTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public BadgesTableModel(FlexiTableColumnModel columnModel, Locale locale, Translator translator) {
 		super(columnModel);
 		this.locale = locale;
+		this.translator = translator;
 	}
 
 	@Override
@@ -63,6 +67,7 @@ public class BadgesTableModel extends DefaultFlexiTableDataModel<BadgesRow> impl
 		return switch (BadgesCols.values()[col]) {
 			case image -> badgeClass.getImage();
 			case title -> badgeClass.getName();
+			case createdOn -> Formatter.getInstance(translator.getLocale()).formatDateAndTime(badgeClass.getCreationDate());
 			case assertions -> row.badgeClassWithSizeAndCount().count();
 			case course -> badgeClass.getEntry().getDisplayname();
 			case courseReference -> badgeClass.getEntry().getExternalRef();
@@ -72,6 +77,7 @@ public class BadgesTableModel extends DefaultFlexiTableDataModel<BadgesRow> impl
 	public enum BadgesCols implements FlexiSortableColumnDef {
 		image("form.image"),
 		title("var.title"),
+		createdOn("form.createdOn"),
 		assertions("openBadges.assertions"),
 		course("form.course"),
 		courseReference("form.course.reference");

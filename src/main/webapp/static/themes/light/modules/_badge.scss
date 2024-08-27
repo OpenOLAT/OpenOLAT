@@ -142,6 +142,22 @@
 	}
 }
 
+.o_badge_wiz_starting_point_step {
+	table {
+		> tbody {
+			> tr {
+				> td.o_singleselect {
+					vertical-align: middle;
+				}
+				> td.o_badge_image {
+					padding-top: 2px;
+					padding-bottom: 2px;
+				}
+			}
+		}
+	}
+}
+
 .o_badge_wiz_summary_step, .o_badge_criteria_view {
 	.o_small_badge {
 		max-width: 250px;
