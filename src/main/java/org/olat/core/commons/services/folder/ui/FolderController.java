@@ -757,6 +757,10 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void initBulkLinks() {
+		bulkCopyButton = uifactory.addFormLink("copy.to", flc, Link.BUTTON);
+		bulkCopyButton.setIconLeftCSS("o_icon o_icon-fw o_icon_duplicate");
+		tableEl.addBatchButton(bulkCopyButton);
+		
 		bulkDownloadButton = uifactory.addFormLink("download", flc, Link.BUTTON);
 		bulkDownloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		tableEl.addBatchButton(bulkDownloadButton);
@@ -764,10 +768,6 @@ public class FolderController extends FormBasicController implements Activateabl
 		bulkMoveButton = uifactory.addFormLink("move.to", flc, Link.BUTTON);
 		bulkMoveButton.setIconLeftCSS("o_icon o_icon-fw o_icon_move");
 		tableEl.addBatchButton(bulkMoveButton);
-		
-		bulkCopyButton = uifactory.addFormLink("copy.to", flc, Link.BUTTON);
-		bulkCopyButton.setIconLeftCSS("o_icon o_icon-fw o_icon_duplicate");
-		tableEl.addBatchButton(bulkCopyButton);
 		
 		bulkZipButton = uifactory.addFormLink("zip", flc, Link.BUTTON);
 		bulkZipButton.setIconLeftCSS("o_icon o_icon-fw o_filetype_zip");
@@ -3159,15 +3159,14 @@ public class FolderController extends FormBasicController implements Activateabl
 				}
 			}
 			
+			if (canCopy(vfsItem, vfsMetadata)) {
+				addLink("copy.to", CMD_COPY, "o_icon o_icon-fw o_icon_copy");
+			}
+			
 			addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download");
 			
 			if (canMove(vfsItem, vfsMetadata)) {
 				addLink("move.to", CMD_MOVE, "o_icon o_icon-fw o_icon_move");
-				divider = true;
-			}
-			
-			if (canCopy(vfsItem, vfsMetadata)) {
-				addLink("copy.to", CMD_COPY, "o_icon o_icon-fw o_icon_copy");
 				divider = true;
 			}
 			
