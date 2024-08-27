@@ -204,11 +204,12 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 						sb.append("</div>");
 					}));
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.title));
+			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.createdOn));
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.assertions));
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.course));
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.courseReference));
 
-			tableModel = new BadgesTableModel(columnModel, getLocale());
+			tableModel = new BadgesTableModel(columnModel, getLocale(), getTranslator());
 
 			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 3,
 					true, getTranslator(), formLayout);
