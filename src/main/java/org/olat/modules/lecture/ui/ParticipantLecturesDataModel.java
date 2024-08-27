@@ -41,6 +41,8 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
 public class ParticipantLecturesDataModel extends DefaultFlexiTableDataModel<LectureBlockStatistics>
 implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooterModel {
 	
+	private static final LecturesCols[] COLS = LecturesCols.values();
+	
 	private final Locale locale;
 	private final Translator translator;
 	private AggregatedLectureBlocksStatistics totalStatistics;
@@ -65,15 +67,14 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 	
 	@Override
 	public Object getValueAt(LectureBlockStatistics row, int col) {
-		switch(LecturesCols.values()[col]) {
+		switch(COLS[col]) {
 			case externalRef: return row.getExternalRef();
 			case entry: return row.getDisplayName();
 			case plannedLectures: return positive(row.getTotalPersonalPlannedLectures());
 			case attendedLectures: return positive(row.getTotalAttendedLectures());
 			case authorizedAbsentLectures: return positive(row.getTotalAuthorizedAbsentLectures());
 			case dispensedLectures: return positive(row.getTotalDispensationLectures());
-			case unauthorizedAbsentLectures:
-			case absentLectures: return positive(row.getTotalAbsentLectures());
+			case unauthorizedAbsentLectures, absentLectures: return positive(row.getTotalAbsentLectures());
 			case progress: return row;
 			case rateWarning: {
 				if(!row.isCalculateRate() || row.getTotalEffectiveLectures() <= 0) {
@@ -87,6 +88,7 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 				}
 				return row.getAttendanceRate();
 			}
+			case details: return Boolean.TRUE;
 			default: return null;
 		}
 	}
@@ -100,16 +102,16 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 	public Object getFooterValueAt(int col) {
 		if(totalStatistics == null) return null;
 		
-		switch(LecturesCols.values()[col]) {
-			case plannedLectures: return positive(totalStatistics.getPersonalPlannedLectures());
-			case attendedLectures: return positive(totalStatistics.getAttendedLectures());
-			case authorizedAbsentLectures: return positive(totalStatistics.getAuthorizedAbsentLectures());
-			case dispensedLectures: return positive(totalStatistics.getDispensedLectures());
-			case unauthorizedAbsentLectures:
-			case absentLectures: return positive(totalStatistics.getAbsentLectures());
-			case rate: return totalStatistics.getRate();
-			default: return null;
-		}
+		return switch(COLS[col]) {
+			case plannedLectures -> positive(totalStatistics.getPersonalPlannedLectures());
+			case attendedLectures -> positive(totalStatistics.getAttendedLectures());
+			case authorizedAbsentLectures -> positive(totalStatistics.getAuthorizedAbsentLectures());
+			case dispensedLectures -> positive(totalStatistics.getDispensedLectures());
+			case unauthorizedAbsentLectures, absentLectures -> positive(totalStatistics.getAbsentLectures());
+			case rate -> totalStatistics.getRate();
+			case details -> Boolean.FALSE;
+			default -> null;
+		};
 	}
 	
 	private long positive(long val) {
@@ -132,7 +134,8 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 		absentLectures("table.header.absent.lectures"),
 		progress("table.header.progress"),
 		rateWarning("table.header.rate.warning"),
-		rate("table.header.rate");
+		rate("table.header.rate"),
+		details("details");
 		
 		private final String i18nKey;
 		

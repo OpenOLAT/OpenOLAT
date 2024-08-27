@@ -44,10 +44,12 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
@@ -277,7 +279,9 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		rateColumn.setFooterCellRenderer(new PercentCellRenderer());
 		columnsModel.addFlexiColumnModel(rateColumn);
 		if(withSelect) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "details"));
+			DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("details", LecturesCols.details.ordinal(), "details",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("details"), "details"), null));
+			columnsModel.addFlexiColumnModel(selectColumn);
 		}
 		aggregatedElementColumnsModel = columnsModel;
 		return columnsModel;
@@ -468,6 +472,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	
 	private void doSelect(UserRequest ureq, LectureBlockStatistics statistics) {
 		removeAsListenerAndDispose(lectureBlocksCtrl);
+		if(statistics == null) return;
 		
 		RepositoryEntry entry = repositoryService.loadByKey(statistics.getRepoKey());
 		if(entry == null) {
