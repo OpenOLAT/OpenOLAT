@@ -61,15 +61,16 @@ public class PracticeResourceDAO {
 	}
 	
 	public List<PracticeResource> getResources(RepositoryEntry courseEntry, String subIdent) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select rsrc from practiceresource as rsrc")
-		  .append(" inner join fetch rsrc.repositoryEntry as v")
-		  .append(" left join fetch rsrc.testEntry as test")
-		  .append(" left join fetch rsrc.pool as pool")
-		  .append(" left join fetch rsrc.itemCollection as iCollection")
-		  .append(" left join fetch rsrc.resourceShare as share")
-		  .and().append(" rsrc.repositoryEntry.key=:repoEntryKey")
-		  .and().append(" rsrc.subIdent=:subIdent");
+		String sb = """
+				select rsrc from practiceresource as rsrc
+				inner join fetch rsrc.repositoryEntry as v
+				inner join fetch v.olatResource as vRsrc
+				left join fetch rsrc.testEntry as test
+				left join fetch test.olatResource as testRsrc
+				left join fetch rsrc.pool as pool
+				left join fetch rsrc.itemCollection as iCollection
+				left join fetch rsrc.resourceShare as share
+				where rsrc.repositoryEntry.key=:repoEntryKey and rsrc.subIdent=:subIdent""";
 		
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), PracticeResource.class)
 				.setParameter("repoEntryKey", courseEntry.getKey())

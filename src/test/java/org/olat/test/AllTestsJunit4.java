@@ -224,6 +224,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.practice.manager.PracticeServiceFreeShuffleTest.class,
 	org.olat.course.nodes.practice.manager.PracticeResourceDAOTest.class,
 	org.olat.course.nodes.practice.manager.PracticeQuestionItemQueriesTest.class,
+	org.olat.course.nodes.practice.manager.PracticeServiceTest.class,
 	org.olat.course.nodes.pf.manager.PFManagerTest.class,
 	org.olat.course.nodes.ProjectBrokerCourseNodeTest.class,
 	org.olat.course.assessment.AssessmentManagerTest.class,
