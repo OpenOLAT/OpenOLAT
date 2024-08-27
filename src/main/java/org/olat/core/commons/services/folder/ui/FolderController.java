@@ -1406,7 +1406,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			cleanUp();
 		} else if (createFolderCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				fireEvent(ureq, new FolderAddEvent(createFolderCtrl.getCreatedItem().getName()));
+				fireEvent(ureq, new FolderAddEvent(createFolderCtrl.getCreatedContainer().getName()));
 				markNews();
 			}
 			loadModel(ureq);
