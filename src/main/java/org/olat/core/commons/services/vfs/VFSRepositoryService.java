@@ -107,6 +107,8 @@ public interface VFSRepositoryService {
 	
 	public List<VFSMetadata> getDescendants(VFSMetadata parentMetadata, Boolean deleted);
 	
+	public Long getDescendantsSize(VFSMetadata parentMetadata, Boolean deleted);
+	
 	public void cleanMetadatas();
 	
 	public void synchMetadatas(VFSContainer container);

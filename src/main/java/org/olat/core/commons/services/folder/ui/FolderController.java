@@ -22,6 +22,8 @@ package org.olat.core.commons.services.folder.ui;
 import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -452,7 +454,6 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		quotaBar = new QuotaBar("quota", null, getLocale());
 		formLayout.add(new ComponentWrapperElement(quotaBar));
-		updateQuotaBarUI(ureq);
 	}
 
 	private void updateCommandUI(UserRequest ureq) {
@@ -592,6 +593,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void doOpenFolderView(UserRequest ureq) {
+		Instant start = Instant.now();
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel iconCol = new DefaultFlexiColumnModel(FolderCols.icon, new FolderIconRenderer());
 		iconCol.setExportable(false);
@@ -632,6 +635,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			initFilters();
 			initFilterTabs(ureq);
 		}
+		
+
+		log.debug("Folder: view updated in {} millis", Duration.between(start, Instant.now()).toMillis());
 	}
 
 	private void addCols(FlexiTableColumnModel columnsModel) {
@@ -791,24 +797,33 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void loadModel(UserRequest ureq) {
+		Instant start = Instant.now();
+		
 		List<FolderRow> rows = FolderView.trash == folderView
 				? loadTrashRows(ureq)
 				: loadRows(ureq);
 		
 		applyFilters(rows);
+		
+		Instant fordgeStart = Instant.now();
 		rows.forEach(row -> {
 			forgeThumbnail(row);
 			forgeToolsLink(row);
 		});
+		log.debug("Folder: thumbnails and tools forged in {} millis", Duration.between(fordgeStart, Instant.now()).toMillis());
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 		
 		updateQuotaBarUI(ureq);
+		
+		log.debug("Folder: model ({} rows) loaded in total {} millis", rows.size(), Duration.between(start, Instant.now()).toMillis());
 	}
 
 	private List<FolderRow> loadRows(UserRequest ureq) {
 		List<VFSItem> items = loadItems();
+		
+		Instant start = Instant.now();
 		
 		List<FolderRow> rows = new ArrayList<>(items.size());
 		for (VFSItem vfsItem : items) {
@@ -819,6 +834,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				rows.add(row);
 			}
 		}
+		
+		log.debug("Folder: rows created in {} millis", Duration.between(start, Instant.now()).toMillis());
 		return rows;
 	}
 
@@ -923,12 +940,19 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private List<VFSItem> loadItems() {
+		Instant start = Instant.now();
+		
 		if (FolderView.folder == folderView) {
-			return getCachedContainer(currentContainer).getItems(vfsFilter);
+			List<VFSItem> items = getCachedContainer(currentContainer).getItems(vfsFilter);
+			log.debug("Folder: items (folder view) loaded in {} millis", Duration.between(start, Instant.now()).toMillis());
+			return items;
 		}
 		
 		List<VFSItem> allItems = new ArrayList<>();
 		loadItemsAndChildren(allItems, currentContainer);
+		
+		log.debug("Folder: items loaded in {} millis", Duration.between(start, Instant.now()).toMillis());
+		
 		return allItems;
 	}
 	
@@ -950,6 +974,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		allItems.addAll(visibleItems);
 		
 		if (!descendantsLoaded) {
+			log.debug("Folder: items loaded recursively");
 			items.forEach(item -> {
 				if (item instanceof VFSContainer childContainer) {
 					loadItemsAndChildren(allItems, childContainer);
@@ -1968,18 +1993,6 @@ public class FolderController extends FormBasicController implements Activateabl
 				true, translate("quota.edit"), true);
 		listenTo(cmc);
 		cmc.activate();
-	}
-	
-	private void reloadQuota() {
-		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
-		if (inheritingContainer == null || inheritingContainer.getLocalSecurityCallback().getQuota() == null) {
-			return;
-		}
-		
-		Quota customQuota = quotaManager.getCustomQuota(inheritingContainer.getLocalSecurityCallback().getQuota().getPath());
-		if (customQuota != null) {
-			inheritingContainer.getLocalSecurityCallback().setQuota(customQuota);
-		}
 	}
 	
 	private void doSynchMetadata(UserRequest ureq) {
@@ -3072,19 +3085,39 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		return false;
 	}
+	
+	private void reloadQuota() {
+		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
+		if (inheritingContainer == null || inheritingContainer.getLocalSecurityCallback().getQuota() == null) {
+			return;
+		}
+		
+		Quota customQuota = quotaManager.getCustomQuota(inheritingContainer.getLocalSecurityCallback().getQuota().getPath());
+		if (customQuota != null) {
+			inheritingContainer.getLocalSecurityCallback().setQuota(customQuota);
+		}
+	}
 
 	private void updateQuotaBarUI(UserRequest ureq) {
 		quotaBar.setQuota(getFolderQuota(ureq));
 	}
 	
 	private FolderQuota getFolderQuota(UserRequest ureq) {
+		Instant start = Instant.now();
+		
 		Quota quota = null;
 		long actualUsage = 0;
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
 		if (inheritingContainer != null) {
 			quota = inheritingContainer.getLocalSecurityCallback().getQuota();
 			if (quota != null && Quota.UNLIMITED != quota.getQuotaKB()) {
-				actualUsage = VFSManager.getUsageKB(getUncachedItem(inheritingContainer));
+				if (VFSStatus.YES == inheritingContainer.canDescendants()) {
+					actualUsage = vfsRepositoryService.getDescendantsSize(inheritingContainer.getMetaInfo(), null) / 1024;
+					log.debug("Folder: quota calculated (metadata) in {} millis", Duration.between(start, Instant.now()).toMillis());
+				} else {
+					actualUsage = VFSManager.getUsageKB(getUncachedItem(inheritingContainer));
+					log.debug("Folder: quota calculated (files) in {} millis", Duration.between(start, Instant.now()).toMillis());
+				}
 			}
 		}
 		

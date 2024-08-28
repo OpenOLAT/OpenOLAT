@@ -402,4 +402,48 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		descendants = vfsMetadataDao.getDescendants(container, Boolean.FALSE);
 		Assert.assertEquals(3, descendants.size());
 	}
+	
+	@Test
+	public void testGetDecendentsSize() {
+		String uuid1 = UUID.randomUUID().toString();
+		String uuid2 = UUID.randomUUID().toString();
+		String parentPath = "/bcroot/course/" + uuid1;
+		String relativePath = parentPath + "/hello";
+		String relativePathTwo = parentPath + "/helloWorld";
+		String fileName1 = uuid1 + ".mp4";
+		String fileName21 = uuid2 + ".mp21";
+		String fileName22 = uuid2 + ".mp22";
+		String fileName23 = uuid2 + ".mp23";
+		
+		String uri1 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName1;
+		String uri21 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName21;
+		String uri22 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName22;
+		String uri23 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName23;
+		
+		List<VFSMetadata> allItemsBeforeTests = vfsMetadataDao.getMetadatas(relativePath);
+		for (VFSMetadata item : allItemsBeforeTests) {
+			vfsMetadataDao.removeMetadata(item);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		VFSMetadata container = vfsMetadataDao.createMetadata(uuid1, "/bcroot/course", uuid1, new Date(), 0L, true, uri1, "file", null);
+		VFSMetadata container1 = vfsMetadataDao.createMetadata(uuid1, parentPath, "hello", new Date(), 0L, true, uri1, "file", container);
+		VFSMetadata container2 = vfsMetadataDao.createMetadata(uuid1, parentPath, "helloWorld", new Date(), 0L, true, uri1, "file", container);
+		vfsMetadataDao.createMetadata(uuid1, relativePath, fileName1, new Date(), 100L, false, uri1, "file", container1);
+		VFSMetadataImpl fileMetadata21Deleted = (VFSMetadataImpl)vfsMetadataDao.createMetadata(uuid1, relativePathTwo, fileName21, new Date(), 80L, false, uri21, "file", container2);
+		fileMetadata21Deleted.setDeleted(true);
+		vfsMetadataDao.updateMetadata(fileMetadata21Deleted);
+		vfsMetadataDao.createMetadata(uuid1, relativePathTwo, fileName22, new Date(), 100L, false, uri22, "file", container2);
+		vfsMetadataDao.createMetadata(uuid1, relativePathTwo, fileName23, new Date(), 50L, false, uri23, "file", container2);
+		dbInstance.commitAndCloseSession();
+		
+		Long size = vfsMetadataDao.getDescendantsSize(container, null);
+		Assert.assertEquals(Long.valueOf(330), size);
+		
+		size = vfsMetadataDao.getDescendantsSize(container, Boolean.TRUE);
+		Assert.assertEquals(Long.valueOf(80), size);
+		
+		size = vfsMetadataDao.getDescendantsSize(container, Boolean.FALSE);
+		Assert.assertEquals(Long.valueOf(250), size);
+	}
 }

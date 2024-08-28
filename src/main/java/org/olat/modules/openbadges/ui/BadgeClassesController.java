@@ -210,19 +210,13 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		String editBadgeLinkId = "edit_badge_" + bc.badgeClass().getUuid();
 		FormLink editBadgeLink = null;
 		if (bc.badgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.preparation)) {
-			editBadgeLink = (FormLink) detailsVC.getComponent(editBadgeLinkId);
-			if (editBadgeLink == null) {
-				editBadgeLink = uifactory.addFormLink(editBadgeLinkId, CMD_EDIT_BADGE, "form.edit.badge",
-						null, flc, Link.BUTTON);
-			}
+			editBadgeLink = uifactory.addFormLink(editBadgeLinkId, CMD_EDIT_BADGE, "form.edit.badge",
+					null, flc, Link.BUTTON);
 		}
 
 		String awardManuallyLinkId = "award_manually_" + bc.badgeClass().getUuid();
-		FormLink awardManuallyLink = (FormLink) detailsVC.getComponent(awardManuallyLinkId);
-		if (awardManuallyLink == null) {
-			awardManuallyLink = uifactory.addFormLink(awardManuallyLinkId, CMD_AWARD_MANUALLY, "award.manually",
-					null, flc,  Link.BUTTON);
-		}
+		FormLink awardManuallyLink = uifactory.addFormLink(awardManuallyLinkId, CMD_AWARD_MANUALLY,
+				"award.manually", null, flc,  Link.BUTTON);
 
 		String criteriaXmlString = bc.badgeClass().getCriteria();
 		CriteriaViewController criteriaViewController = new CriteriaViewController(ureq, getWindowControl(), entry,
@@ -377,7 +371,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass badgeClass = createBadgeClass(createBadgeClassContext);
 			openBadgesManager.issueBadge(badgeClass, createBadgeClassContext.getEarners(), getIdentity());
-			loadModel(ureq);
+			loadModel(innerUreq);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 

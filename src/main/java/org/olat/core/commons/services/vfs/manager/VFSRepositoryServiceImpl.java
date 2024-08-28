@@ -508,6 +508,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
+	public Long getDescendantsSize(VFSMetadata parentMetadata, Boolean deleted) {
+		return metadataDao.getDescendantsSize(parentMetadata, deleted);
+	}
+
+	@Override
 	public List<VFSMetadata> getNewest(VFSMetadata ancestorMetadata, int maxResults) {
 		File file = toFile(ancestorMetadata);
 		String path = getRelativePath(file);
