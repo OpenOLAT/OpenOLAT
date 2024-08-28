@@ -454,7 +454,6 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		quotaBar = new QuotaBar("quota", null, getLocale());
 		formLayout.add(new ComponentWrapperElement(quotaBar));
-		updateQuotaBarUI(ureq);
 	}
 
 	private void updateCommandUI(UserRequest ureq) {
@@ -1996,18 +1995,6 @@ public class FolderController extends FormBasicController implements Activateabl
 		cmc.activate();
 	}
 	
-	private void reloadQuota() {
-		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
-		if (inheritingContainer == null || inheritingContainer.getLocalSecurityCallback().getQuota() == null) {
-			return;
-		}
-		
-		Quota customQuota = quotaManager.getCustomQuota(inheritingContainer.getLocalSecurityCallback().getQuota().getPath());
-		if (customQuota != null) {
-			inheritingContainer.getLocalSecurityCallback().setQuota(customQuota);
-		}
-	}
-	
 	private void doSynchMetadata(UserRequest ureq) {
 		if (isItemNotAvailable(ureq, currentContainer, false)) return;
 		
@@ -3098,6 +3085,18 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		return false;
 	}
+	
+	private void reloadQuota() {
+		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
+		if (inheritingContainer == null || inheritingContainer.getLocalSecurityCallback().getQuota() == null) {
+			return;
+		}
+		
+		Quota customQuota = quotaManager.getCustomQuota(inheritingContainer.getLocalSecurityCallback().getQuota().getPath());
+		if (customQuota != null) {
+			inheritingContainer.getLocalSecurityCallback().setQuota(customQuota);
+		}
+	}
 
 	private void updateQuotaBarUI(UserRequest ureq) {
 		quotaBar.setQuota(getFolderQuota(ureq));
@@ -3112,11 +3111,15 @@ public class FolderController extends FormBasicController implements Activateabl
 		if (inheritingContainer != null) {
 			quota = inheritingContainer.getLocalSecurityCallback().getQuota();
 			if (quota != null && Quota.UNLIMITED != quota.getQuotaKB()) {
-				actualUsage = VFSManager.getUsageKB(getUncachedItem(inheritingContainer));
+				if (VFSStatus.YES == inheritingContainer.canDescendants()) {
+					actualUsage = vfsRepositoryService.getDescendantsSize(inheritingContainer.getMetaInfo(), null) / 1024;
+					log.debug("Folder: quota calculated (metadata) in {} millis", Duration.between(start, Instant.now()).toMillis());
+				} else {
+					actualUsage = VFSManager.getUsageKB(getUncachedItem(inheritingContainer));
+					log.debug("Folder: quota calculated (files) in {} millis", Duration.between(start, Instant.now()).toMillis());
+				}
 			}
 		}
-		
-		log.debug("Folder: quota calculated in {} millis", Duration.between(start, Instant.now()).toMillis());
 		
 		return new FolderQuota(ureq, quota, actualUsage);
 	}

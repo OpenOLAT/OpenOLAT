@@ -246,6 +246,24 @@ public class VFSMetadataDAO {
 			.getResultList();
 	}
 	
+	public Long getDescendantsSize(VFSMetadata parentMetadata, Boolean deleted) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select sum(metadata.fileSize)");
+		sb.append("  from filemetadata metadata");
+		sb.and().append("metadata.key != :parentKey");
+		sb.and().append("metadata.relativePath like :relativePath");
+		if (deleted != null) {
+			sb.and().append("metadata.deleted = ").append(deleted);
+		}
+
+		List<Long> resultList = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("parentKey", parentMetadata.getKey())
+			.setParameter("relativePath", parentMetadata.getRelativePath() + "/" + parentMetadata.getFilename() + "%")
+			.getResultList();
+		return resultList != null && !resultList.isEmpty() && resultList.get(0) != null? resultList.get(0): Long.valueOf(0);
+	}
+	
 	public List<VFSMetadata> getMetadatasOnly(VFSMetadataRef parentMetadata) {
 		return dbInstance.getCurrentEntityManager()
 			.createNamedQuery("metadataOnlyByParent", VFSMetadata.class)
