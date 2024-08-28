@@ -278,6 +278,9 @@ public class CloseableCalloutWindowController extends BasicController implements
 			cmc.dispose();
 			cmc = null;
 		}
+		if(calloutVC != null) {
+			getWindowControl().removeModalDialog(calloutVC);
+		}
         super.doDispose();
 	}
 
