@@ -159,7 +159,7 @@ public class ProjectsOverviewController extends FormBasicController {
 				.toList();
 
 		dataModel.setObjects(rows);
-		tableEl.sort(new SortKey(ProjectOverviewCols.lastVisitDate.name(), false));
+		tableEl.sort(new SortKey(ProjectOverviewCols.title.name(), false));
 		tableEl.reset(true, true, true);
 	}
 
