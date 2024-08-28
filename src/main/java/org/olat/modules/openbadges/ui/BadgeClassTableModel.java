@@ -57,7 +57,7 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 			case status -> badgeClass.getStatus();
 			case type -> translator.translate(BadgeCriteriaXStream.fromXml(badgeClass.getCriteria()).isAwardAutomatically() ?
 					"form.award.procedure.automatic.short" : "form.award.procedure.manual.short");
-			case awardedCount -> row.badgeClassWithSizeAndCount().count();
+			case awardedCount -> row.badgeClassWithSizeAndCount().count() - row.badgeClassWithSizeAndCount().revokedCount();
 			case tools -> row.toolLink();
 		};
 	}

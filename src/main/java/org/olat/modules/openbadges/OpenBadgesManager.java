@@ -260,7 +260,7 @@ public interface OpenBadgesManager {
 		}
 	}
 
-	record BadgeClassWithSizeAndCount(BadgeClass badgeClass, Size size, Long count) {
+	record BadgeClassWithSizeAndCount(BadgeClass badgeClass, Size size, Long count, Long revokedCount) {
 		public Size fitIn(int width, int height) {
 			double sourceAspectRatio = (double) size.getWidth() / (double) size.getHeight();
 			double targetAspectRatio = (double) width / (double) height;

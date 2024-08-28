@@ -28,6 +28,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
@@ -165,7 +166,11 @@ public class BadgeClassDAO {
 		sb.append("select bc, ");
 		sb.append(" (select count(ba.key) from badgeassertion ba ");
 		sb.append("   where ba.badgeClass.key = bc.key ");
-		sb.append(" ) as useCount ");
+		sb.append(" ) as useCount, ");
+		sb.append(" (select count(rba.key) from badgeassertion rba");
+		sb.append("   where rba.badgeClass.key = bc.key");
+		sb.append("  and rba.status ").in(BadgeAssertion.BadgeAssertionStatus.revoked);
+		sb.append(" ) as revokedCount ");
 		sb.append("from badgeclass bc ");
 		if (entry != null) {
 			sb.append("where bc.entry.key = :entryKey ");
@@ -268,7 +273,11 @@ public class BadgeClassDAO {
 				.append("select bc,")
 				.append(" (select count(ba.key) from badgeassertion ba")
 				.append("   where ba.badgeClass.key = bc.key")
-				.append(" ) as useCount")
+				.append(" ) as useCount, ")
+				.append(" (select count(rba.key) from badgeassertion rba")
+				.append("  where rba.badgeClass.key = bc.key")
+				.append("  and rba.status ").in(BadgeAssertion.BadgeAssertionStatus.revoked)
+				.append(" ) as revokedCount")
 				.append(" from badgeclass bc")
 				.append(" inner join bc.entry as re")
 				.append(" inner join re.groups as groupRel")
@@ -291,10 +300,12 @@ public class BadgeClassDAO {
 	public static class BadgeClassWithUseCount {
 		private final BadgeClass badgeClass;
 		private final Long useCount;
+		private final Long revokedCount;
 
 		public BadgeClassWithUseCount(Object[] objectArray) {
 			this.badgeClass = (BadgeClass) objectArray[0];
 			this.useCount = PersistenceHelper.extractPrimitiveLong(objectArray, 1);
+			this.revokedCount = PersistenceHelper.extractPrimitiveLong(objectArray, 2);
 		}
 
 		public BadgeClass getBadgeClass() {
@@ -303,6 +314,10 @@ public class BadgeClassDAO {
 
 		public Long getUseCount() {
 			return useCount;
+		}
+
+		public Long getRevokedCount() {
+			return revokedCount;
 		}
 	}
 }
