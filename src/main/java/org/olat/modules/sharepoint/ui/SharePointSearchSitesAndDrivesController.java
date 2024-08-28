@@ -35,11 +35,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 import org.olat.modules.sharepoint.model.MicrosoftDrive;
 import org.olat.modules.sharepoint.model.MicrosoftSite;
@@ -104,24 +106,26 @@ public class SharePointSearchSitesAndDrivesController extends FormBasicControlle
 	}
 	
 	private void loadModel(UserRequest ureq) {
-		String searchString = tableEl.getQuickSearchString();
-		
-		OAuth2Tokens tokens = ureq.getUserSession().getOAuth2Tokens();
-		TokenCredential tokenProvider = microsoftGraphDao.getTokenProvider(tokens);
-		List<MicrosoftSite> sites = sharePointDao.getSites(tokenProvider, searchString);
-		
 		List<SiteAndDriveRow> rows = new ArrayList<>();
-		for(MicrosoftSite site:sites) {
-			SiteAndDriveRow siteRow = new SiteAndDriveRow(site);
-			rows.add(siteRow);
-			getLogger().debug("Site: {} ({})", site.name(), site.id());
-
-			List<MicrosoftDrive> drives = sharePointDao.getDrives(site.id(), tokenProvider);
-			for(MicrosoftDrive drive:drives) {
-				SiteAndDriveRow driveRow = new SiteAndDriveRow(site, drive);
-				driveRow.setParent(siteRow);
-				rows.add(driveRow);
-				getLogger().debug("Drive: {} ({})", drive.name(), drive.id());
+		
+		String searchString = tableEl.getQuickSearchString();
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			OAuth2Tokens tokens = ureq.getUserSession().getOAuth2Tokens();
+			TokenCredential tokenProvider = microsoftGraphDao.getTokenProvider(tokens);
+			List<MicrosoftSite> sites = sharePointDao.getSites(tokenProvider, searchString);
+			
+			for(MicrosoftSite site:sites) {
+				SiteAndDriveRow siteRow = new SiteAndDriveRow(site);
+				rows.add(siteRow);
+				getLogger().debug("Site: {} ({})", site.name(), site.id());
+	
+				List<MicrosoftDrive> drives = sharePointDao.getDrives(site.id(), tokenProvider);
+				for(MicrosoftDrive drive:drives) {
+					SiteAndDriveRow driveRow = new SiteAndDriveRow(site, drive);
+					driveRow.setParent(siteRow);
+					rows.add(driveRow);
+					getLogger().debug("Drive: {} ({})", drive.name(), drive.id());
+				}
 			}
 		}
 		
@@ -133,6 +137,10 @@ public class SharePointSearchSitesAndDrivesController extends FormBasicControlle
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addSitesAndDrivesButton == source) {
 			fireEvent(ureq, Event.DONE_EVENT);
+		} else if(tableEl == source) {
+			if(event instanceof FlexiTableSearchEvent) {
+				loadModel(ureq);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

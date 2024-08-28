@@ -20,6 +20,7 @@
 package org.olat.modules.sharepoint.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.util.vfs.VFSContainer;
@@ -30,6 +31,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.modules.sharepoint.manager.SharePointDAO;
 
 import com.azure.core.credential.TokenCredential;
+import com.microsoft.graph.models.DriveItem;
 
 /**
  * 
@@ -73,6 +75,16 @@ public class DriveItemContainer extends AbstractSPContainer {
 	}
 	
 	@Override
+	public VFSContainer createChildContainer(String child) {
+		List<DriveItem> parentLine = getParentLine();
+		DriveItem item = sharePointDao.createDirectory(drive.drive(), parentLine, child, tokenProvider);
+		MicrosoftDriveItem driveItem = new MicrosoftDriveItem(item, null, true, false, null);
+		DriveItemContainer container = new DriveItemContainer(this, drive, driveItem, sharePointDao, exclusionsLabels, tokenProvider);
+		items.add(container);
+		return container;
+	}
+
+	@Override
 	public VFSStatus canMeta() {
 		return VFSStatus.NO;
 	}
@@ -98,5 +110,18 @@ public class DriveItemContainer extends AbstractSPContainer {
 			return this == driveContainer;
 		}
 		return false;
+	}
+	
+	private List<DriveItem> getParentLine() {
+		List<DriveItem> parentLine = new ArrayList<>();
+		for(VFSContainer container=this; container.getParentContainer() != null; container=container.getParentContainer()) {
+			if(container instanceof DriveItemContainer itemContainer) {
+				parentLine.add(itemContainer.driveItem.driveItem());
+			}
+		}
+		if(parentLine.size() > 1) {
+			Collections.reverse(parentLine);
+		}
+		return parentLine;
 	}
 }
