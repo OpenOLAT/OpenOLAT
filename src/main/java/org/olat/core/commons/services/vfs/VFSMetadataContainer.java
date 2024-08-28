@@ -198,6 +198,7 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 					String relativePath = descendant.getRelativePath() + "/" + descendant.getFilename();
 					VFSMetadataContainer descendantContainer = new VFSMetadataContainer(vfsRepositoryService,
 							cached, descendant, descendantParentContainer, getLocalSecurityCallback(), defaultFilter);
+					descendantContainer.getChildren(); // init children list to avoid trying to fill the cache later
 					addToCache(descendantParentContainer, descendantContainer);
 					if (accept(filter, descendantContainer)) {
 						pathToConatiner.put(relativePath, descendantContainer);
