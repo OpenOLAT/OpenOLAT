@@ -58,6 +58,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.edusharing.EdusharingFilter;
 import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.modules.edusharing.EdusharingProvider;
@@ -252,6 +253,7 @@ public class RichTextConfiguration implements Disposable {
 		setQuotedConfigValue(INVALID_ELEMENTS, (baseContainer == null ? INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE
 				: INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE));
 		tinyConfig = TinyConfig.editorCompactConfig;
+		checkAudioRecordingSystemSetting();
 		setPathInStatusBar(false);
 
 		// Setup file and link browser
@@ -334,6 +336,7 @@ public class RichTextConfiguration implements Disposable {
 					: INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE));
 			tinyConfig = TinyConfig.editorConfig;
 		}
+		checkAudioRecordingSystemSetting();
 
 		// Setup file and link browser
 		if (baseContainer != null) {
@@ -383,8 +386,16 @@ public class RichTextConfiguration implements Disposable {
 		}
 
 		tinyConfig = TinyConfig.fileEditorConfig;
+		checkAudioRecordingSystemSetting();
 	}
-	
+
+	private void checkAudioRecordingSystemSetting() {
+		AVModule avModule = CoreSpringFactory.getImpl(AVModule.class);
+		if (!avModule.isAudioRecordingEnabled()) {
+			disableAudioRecording();
+		}
+	}
+
 	/**
 	 * Method to add a read only configuration for the file based editor
 	 * 
@@ -638,6 +649,10 @@ public class RichTextConfiguration implements Disposable {
 
 	public void disableMedia() {
 		tinyConfig = tinyConfig.disableMedia();
+	}
+
+	public void disableAudioRecording() {
+		tinyConfig = tinyConfig.disableAudioRecording();
 	}
 
 	public void disableTinyMedia() {

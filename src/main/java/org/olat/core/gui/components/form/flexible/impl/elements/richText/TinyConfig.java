@@ -20,6 +20,8 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
 
+import java.util.Arrays;
+
 /**
  * 
  * Initial date: 16.10.2013<br>
@@ -218,7 +220,11 @@ public class TinyConfig {
 	public TinyConfig disableMedia() {
 		return disableFeature("media").disableFeature("olatmovieviewer").disableFeature("olatrecordaudio");
 	}
-	
+
+	public TinyConfig disableAudioRecording() {
+		return disableFeature("olatrecordaudio").disableButtons("olatrecordaudio").disableMenu("olatrecordaudio");
+	}
+
 	public TinyConfig enableMathEditor() {
 		return enableFeature("olatmatheditor")
 				.endableButton("olatmatheditor");
@@ -257,7 +263,17 @@ public class TinyConfig {
 		}
 		return config;
 	}
-	
+
+	public TinyConfig disableMenu(String menuItemToDisable) {
+		String clonedMenu[] = Arrays.stream(menu).map((menuGroup) -> {
+			if (menuGroup.contains(menuItemToDisable)) {
+				return menuGroup.replace(menuItemToDisable, "");
+			}
+			return menuGroup;
+		}).toArray(String[]::new);
+		return new TinyConfig(plugins, clonedMenu, tool1);
+	}
+
 	public TinyConfig enableFeature(String feature) {
 		if(plugins.contains(feature)) {
 			return this;
