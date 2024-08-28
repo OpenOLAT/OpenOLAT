@@ -22,6 +22,8 @@ package org.olat.core.commons.services.folder.ui;
 import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -592,6 +594,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void doOpenFolderView(UserRequest ureq) {
+		Instant start = Instant.now();
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel iconCol = new DefaultFlexiColumnModel(FolderCols.icon, new FolderIconRenderer());
 		iconCol.setExportable(false);
@@ -632,6 +636,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			initFilters();
 			initFilterTabs(ureq);
 		}
+		
+
+		log.debug("Folder: view updated in {} millis", Duration.between(start, Instant.now()).toMillis());
 	}
 
 	private void addCols(FlexiTableColumnModel columnsModel) {
@@ -791,24 +798,33 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void loadModel(UserRequest ureq) {
+		Instant start = Instant.now();
+		
 		List<FolderRow> rows = FolderView.trash == folderView
 				? loadTrashRows(ureq)
 				: loadRows(ureq);
 		
 		applyFilters(rows);
+		
+		Instant fordgeStart = Instant.now();
 		rows.forEach(row -> {
 			forgeThumbnail(row);
 			forgeToolsLink(row);
 		});
+		log.debug("Folder: thumbnails and tools forged in {} millis", Duration.between(fordgeStart, Instant.now()).toMillis());
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 		
 		updateQuotaBarUI(ureq);
+		
+		log.debug("Folder: model ({} rows) loaded in total {} millis", rows.size(), Duration.between(start, Instant.now()).toMillis());
 	}
 
 	private List<FolderRow> loadRows(UserRequest ureq) {
 		List<VFSItem> items = loadItems();
+		
+		Instant start = Instant.now();
 		
 		List<FolderRow> rows = new ArrayList<>(items.size());
 		for (VFSItem vfsItem : items) {
@@ -819,6 +835,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				rows.add(row);
 			}
 		}
+		
+		log.debug("Folder: rows created in {} millis", Duration.between(start, Instant.now()).toMillis());
 		return rows;
 	}
 
@@ -923,12 +941,19 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private List<VFSItem> loadItems() {
+		Instant start = Instant.now();
+		
 		if (FolderView.folder == folderView) {
-			return getCachedContainer(currentContainer).getItems(vfsFilter);
+			List<VFSItem> items = getCachedContainer(currentContainer).getItems(vfsFilter);
+			log.debug("Folder: items (folder view) loaded in {} millis", Duration.between(start, Instant.now()).toMillis());
+			return items;
 		}
 		
 		List<VFSItem> allItems = new ArrayList<>();
 		loadItemsAndChildren(allItems, currentContainer);
+		
+		log.debug("Folder: items loaded in {} millis", Duration.between(start, Instant.now()).toMillis());
+		
 		return allItems;
 	}
 	
@@ -950,6 +975,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		allItems.addAll(visibleItems);
 		
 		if (!descendantsLoaded) {
+			log.debug("Folder: items loaded recursively");
 			items.forEach(item -> {
 				if (item instanceof VFSContainer childContainer) {
 					loadItemsAndChildren(allItems, childContainer);
@@ -3078,6 +3104,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private FolderQuota getFolderQuota(UserRequest ureq) {
+		Instant start = Instant.now();
+		
 		Quota quota = null;
 		long actualUsage = 0;
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
@@ -3087,6 +3115,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				actualUsage = VFSManager.getUsageKB(getUncachedItem(inheritingContainer));
 			}
 		}
+		
+		log.debug("Folder: quota calculated in {} millis", Duration.between(start, Instant.now()).toMillis());
 		
 		return new FolderQuota(ureq, quota, actualUsage);
 	}
