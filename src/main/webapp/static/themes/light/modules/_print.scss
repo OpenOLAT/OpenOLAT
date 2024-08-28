@@ -95,6 +95,13 @@
 	}
 	
 	/* When printing dialogs, hide everything below */
+	dialog.dialog {
+		margin: 0 0 0 0;
+		height: 100%;	
+		.modal-dialog .modal-content {
+			max-height: 100%;
+		}
+	}
 	.modal-content {
 		border: 0;
 	}
@@ -112,6 +119,20 @@
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 	}
+	/* When printing lightboxes, hide everything below */
+	.basicLightbox {
+		justify-content: left;
+	    align-items: initial;
+	    background: white !important;
+	    opacity: 1;
+	    transition: none;
+		height: 100%;	
+	    &:before {
+	    	// close icon
+	    	display: none;
+	    }
+	}
+	
 	
 	/* Print background colors in progress bar */
 	.progress {
