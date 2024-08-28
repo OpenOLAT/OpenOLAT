@@ -51,7 +51,7 @@ public abstract class AbstractSPContainer extends AbstractVirtualContainer imple
 	protected final SharePointDAO sharePointDao;
 	protected final TokenCredential tokenProvider;
 	protected final List<String> exclusionsLabels;
-	private final PermissionsDelegate permissionsDelegate;
+	protected final PermissionsDelegate permissionsDelegate;
 
 	public AbstractSPContainer(VFSContainer parentContainer, String name,
 			SharePointDAO sharePointDao, List<String> exclusionsLabels,

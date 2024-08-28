@@ -85,6 +85,16 @@ public class DriveItemContainer extends AbstractSPContainer {
 	}
 	
 	@Override
+	public VFSContainer createChildContainer(String child) {
+		List<DriveItem> parentLine = getParentLine();
+		DriveItem item = sharePointDao.createDirectory(drive.drive(), parentLine, child, tokenProvider);
+		MicrosoftDriveItem mItem = new MicrosoftDriveItem(item, null, true, false, null);
+		DriveItemContainer container = new DriveItemContainer(this, drive, mItem, writeFlag, sharePointDao, exclusionsLabels, permissionsDelegate, tokenProvider);
+		items.add(container);
+		return container;
+	}
+
+	@Override
 	public VFSStatus canMeta() {
 		return VFSStatus.NO;
 	}

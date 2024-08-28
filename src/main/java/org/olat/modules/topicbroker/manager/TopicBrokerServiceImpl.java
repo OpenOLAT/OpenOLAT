@@ -284,15 +284,25 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		Map<Long, List<TBSelection>> identityKeyToEnrolledSelections = getSelections(selectionSearchParams).stream()
 				.collect(Collectors.groupingBy(selction -> selction.getParticipant().getIdentity().getKey()));
 		
+		selectionSearchParams.setEnrolledOrMaxSortOrder(Integer.valueOf(1));
+		selectionSearchParams.setFetchTopic(false);
+		selectionSearchParams.setFetchParticipant(true);
+		Set<Long> identityKeysWithSelections = getSelections(selectionSearchParams).stream()
+				.map(selection -> selection.getParticipant().getIdentity().getKey())
+				.collect(Collectors.toSet());
+		
 		TopicBrokerCourseNodeParticipantCandidates participantCandidates = new TopicBrokerCourseNodeParticipantCandidates(
 				null, repositoryEntry, true);
 		for (Identity identity : participantCandidates.getAllIdentities()) {
-			mailing.sendEnrollmentEmail(identity,
-					broker,
-					identityKeyToParticipant.get(identity.getKey()),
-					identityKeyToEnrolledSelections.get(identity.getKey()),
-					repositoryEntry,
-					courseNode);
+			// Users without selection do not get an e-mail. They are not interested at all.
+			if (identityKeysWithSelections.contains(identity.getKey())) {
+				mailing.sendEnrollmentEmail(identity,
+						broker,
+						identityKeyToParticipant.get(identity.getKey()),
+						identityKeyToEnrolledSelections.get(identity.getKey()),
+						repositoryEntry,
+						courseNode);
+			}
 		}
 	}
 
