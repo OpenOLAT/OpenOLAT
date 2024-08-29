@@ -28,8 +28,6 @@ package org.olat.course.nodes.bc;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.folder.ui.FolderController;
 import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
@@ -55,7 +53,6 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -116,11 +113,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 				
 				boolean canDownload = courseNode.canDownload(ne);
 				boolean canUpload = courseNode.canUpload(userCourseEnv, ne);
-				
-				String sfSoftkey = courseEnv.getCourseConfig().getSharedFolderSoftkey();
-				RepositoryEntry sharedResource = repositoryManager.lookupRepositoryEntryBySoftkey(sfSoftkey, false);
-				boolean isAdministrator = repositoryService.hasRoleExpanded(getIdentity(), sharedResource,
-						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
+				boolean isAdministrator = userCourseEnv.isAdmin();
 				scallback = new FolderNodeCallback(relPath, canDownload, canUpload, isAdministrator, isGuestOnly, nodefolderSubContext);
 			}
 		} else{
