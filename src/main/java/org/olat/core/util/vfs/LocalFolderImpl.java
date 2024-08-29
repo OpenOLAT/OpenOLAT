@@ -517,6 +517,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		}
 		LocalFolderImpl locFI =  new LocalFolderImpl(fNewFile, this);
 		locFI.setDefaultItemFilter(defaultFilter);
+		locFI.getMetaInfo(); //init metadata
 		return locFI;
 	}
 
