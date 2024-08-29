@@ -306,11 +306,14 @@ body.o_width_full dialog.modal {
 	}
 }
 
+dialog.dialog.modal.o_offcanvas_right_modal {
+	padding: 38px 0 0 10px;
+	margin-right: 0;
+	margin-bottom: 0;
+}
 
 .modal.o_offcanvas_right_modal .modal-dialog {
-	margin: -1px -1px 0 auto;
 	width: 90vw;
-	height: 100vh; 
 	
 	.modal-content {
 		border-radius: 0;

@@ -458,7 +458,7 @@ public class EditMembershipController extends FormBasicController {
 			name = "";
 		}
 		name = StringHelper.escapeHtml(name);
-		String title = translate("edit.member.title", new String[]{ name });
+		String title = translate("edit.member.title", name);
 			
 		//repository entry rights
 		if (repoEntry != null) {

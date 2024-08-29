@@ -35,6 +35,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -549,6 +550,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		
 		groupDropDown = uifactory.addDropdownMenu("group.bulk.actions", "bulk.actions", "bulk.actions", formLayout, getTranslator());
 		groupDropDown.setIconCSS("o_icon o_icon_check_on");
+		groupDropDown.setOrientation(DropdownOrientation.right);
 		if(allowedRoles == null || allowedRoles.contains(GroupRoles.coach.name())) {
 			groupDropDown.addElement(selectAllGroupCoachesButton);
 		}
@@ -601,6 +603,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		selectAllCurriculumParticipantsButton.setUserObject(Boolean.TRUE);
 		
 		curriculumDropDown = uifactory.addDropdownMenu("curriculum.bulk.actions", "bulk.actions", "bulk.actions", formLayout, getTranslator());
+		curriculumDropDown.setOrientation(DropdownOrientation.right);
 		curriculumDropDown.setIconCSS("o_icon o_icon_check_on");
 		curriculumDropDown.addElement(selectAllCurriculumElementOwnerButton);
 		curriculumDropDown.addElement(selectAllCurriculumMasterCoachButton);
