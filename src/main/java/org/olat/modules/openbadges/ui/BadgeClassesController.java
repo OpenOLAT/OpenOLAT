@@ -537,6 +537,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				BadgeClass badgeClass = (BadgeClass) confirmRevokeAllBadgesCtrl.getUserObject();
 				doRevoke(badgeClass);
 				showInfo("confirm.revoke.issued.badges.info");
+				loadModel(ureq);
 			}
 		} else if (source == badgeDetailsController) {
 			if (event == FormEvent.BACK_EVENT) {

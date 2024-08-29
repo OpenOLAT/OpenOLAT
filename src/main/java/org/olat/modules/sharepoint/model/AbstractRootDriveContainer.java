@@ -59,9 +59,11 @@ public abstract class AbstractRootDriveContainer extends AbstractSPContainer {
 			items.clear();
 			drive = getDrive();
 			
-			rootItem = sharePointDao.getRootDriveItem(drive.drive(), tokenProvider);
-			List<MicrosoftDriveItem> driveItems = sharePointDao.getDriveItems(drive.drive(), rootItem, tokenProvider);
-			items = toVFS(drive, driveItems);
+			if(drive != null) {
+				rootItem = sharePointDao.getRootDriveItem(drive.drive(), tokenProvider);
+				List<MicrosoftDriveItem> driveItems = sharePointDao.getDriveItems(drive.drive(), rootItem, tokenProvider);
+				items = toVFS(drive, driveItems);
+			}
 			initialized = true;
 		}
 		return items;
@@ -69,6 +71,9 @@ public abstract class AbstractRootDriveContainer extends AbstractSPContainer {
 
 	@Override
 	public List<VFSItem> getDescendants(VFSItemFilter filter) {
+		if(drive == null) {
+			return new ArrayList<>(1);
+		}
 		List<MicrosoftDriveItem> driveItems = sharePointDao.searchDriveItems(drive.drive(), "", tokenProvider);
 		return toVFS(drive, driveItems);
 	}

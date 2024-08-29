@@ -779,6 +779,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			if (enhancedBadgeClass.getUseCount().equals(enhancedBadgeClass.getRevokedCount())) {
 				enhancedBadgeClass.getBadgeClass().setStatus(BadgeClass.BadgeClassStatus.revoked);
 				updateBadgeClass(enhancedBadgeClass.getBadgeClass());
+				log.debug("Set badge class {} to revoked.", enhancedBadgeClass.getBadgeClass().getKey());
+				return true;
+			}
+		} else if (enhancedBadgeClass.getBadgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.revoked)) {
+			if (enhancedBadgeClass.getUseCount() > enhancedBadgeClass.getRevokedCount()) {
+				enhancedBadgeClass.getBadgeClass().setStatus(BadgeClass.BadgeClassStatus.active);
+				updateBadgeClass(enhancedBadgeClass.getBadgeClass());
+				log.debug("Set badge class {} to active.", enhancedBadgeClass.getBadgeClass().getKey());
 				return true;
 			}
 		}
@@ -967,20 +975,46 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		String recipientLanguage = recipient.getUser().getPreferences().getLanguage();
 		Locale recipientLocale = i18nManager.getLocaleOrDefault(recipientLanguage);
 		Translator translator = Util.createPackageTranslator(OpenBadgesUIFactory.class, recipientLocale);
-		String[] args = createMailArgs(badgeAssertion);
+		String[] args = createMailArgs(badgeAssertion, translator);
 		String subject = translator.translate("email.subject", args);
 		String body = translator.translate("email.body", args);
-
+		if (log.isDebugEnabled()) {
+			log.debug("Email recipient: {}", recipient.getUser() != null ? recipient.getUser().getEmail() : "-");
+			log.debug("Email language:  {}", recipientLanguage);
+			log.debug("Email subject:   {}", subject);
+			log.debug("Email body:      {}", body);
+		}
 		mailBundle.setContent(subject, body, bakedImageFile);
 
 		return mailManager.sendMessage(mailBundle);
 	}
 
-	private String[] createMailArgs(BadgeAssertion badgeAssertion) {
+	private String[] createMailArgs(BadgeAssertion badgeAssertion, Translator translator) {
+		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
+		String badgeName = badgeClass.getName();
+		String issuerName = badgeAssertion.getBadgeClass().getIssuerDisplayString();
+		String issuerLine = StringHelper.containsNonWhitespace(issuerName) ?
+				translator.translate("email.issuer", issuerName) : "";
+		String courseName = badgeClass.getEntry() != null ? badgeClass.getEntry().getDisplayname() : "";
+		String courseLine = StringHelper.containsNonWhitespace(courseName) ?
+				translator.translate("email.course", courseName) : "";
+		String courseReference = badgeClass.getEntry() != null ? badgeClass.getEntry().getExternalRef() : "";
+		String courseReferenceLine = StringHelper.containsNonWhitespace(courseReference) ?
+				translator.translate("email.course.reference", courseReference) : "";
+		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+		String criteria = badgeCriteria.getDescriptionWithScan();
+		String criteriaLine = translator.translate("email.criteria", criteria);
+		String badgeUrl = Settings.getServerContextPathURI() + "/url/HomeSite/" +
+				badgeAssertion.getRecipient().getKey() + "/badges/0/key/" + badgeAssertion.getKey();
+		String downloadButton = translator.translate("email.download.button", badgeUrl);
+
 		return new String[] {
-				badgeAssertion.getBadgeClass().getName(), // badge name
-				Settings.getServerContextPathURI() + "/url/HomeSite/" + badgeAssertion.getRecipient().getKey() +
-						"/badges/0/key/" + badgeAssertion.getKey() // badge URL
+				badgeName,
+				issuerLine,
+				courseLine,
+				courseReferenceLine,
+				criteriaLine,
+				downloadButton,
 		};
 	}
 
