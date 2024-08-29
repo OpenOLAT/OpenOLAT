@@ -674,15 +674,15 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		
 		boolean allSelected = selectionsSize >= broker.getMaxSelections();
 		TBBrokerStatus brokerStatus = TBUIFactory.getBrokerStatus(broker);
-		if (allSelected && TBBrokerStatus.enrollmentDone != brokerStatus) {
+		if (selectionsSize > 0 && TBBrokerStatus.enrollmentInProgess == brokerStatus) {
+			String selectionInfo = translate("selection.msg.done.notification");
+			flc.contextPut("selectionInfo", selectionInfo);
+		} else if (allSelected && TBBrokerStatus.enrollmentDone != brokerStatus) {
 			String selectionSuccess = translate("selection.msg.all.selected") + " " + translate("selection.msg.done.notification");
 			if (selectionsSize > broker.getMaxSelections()) {
 				selectionSuccess = selectionSuccess + "<br>" + translate("selection.msg.selected.surplus");
 			}
 			flc.contextPut("selectionSuccess", selectionSuccess);
-		} else if (selectionsSize > 0 && TBBrokerStatus.enrollmentInProgess == brokerStatus) {
-			String selectionInfo = translate("selection.msg.done.notification");
-			flc.contextPut("selectionInfo", selectionInfo);
 		}
 		
 		if (!allSelected && (periodEvaluator.isBeforeSelectionPeriod() || periodEvaluator.isSelectionPeriod())) {

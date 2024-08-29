@@ -400,7 +400,8 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 			);
 		
 		// Create container and file without metadata
-		VFSContainer container2 = container.createChildContainer("sub2");
+		new File(((LocalFolderImpl)container).getBasefile(), "sub2").mkdir();
+		VFSContainer container2 = (VFSContainer)container.resolve("sub2");
 		VFSLeaf file21 = container2.createChildLeaf("image21.jpg");
 		copyTestTxt(file21, "IMG_1491.jpg");
 		descendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.FALSE);
