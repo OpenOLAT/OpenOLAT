@@ -1069,8 +1069,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			} else {
 				row.setOpenable(true);
 				
-				FormLink selectionLink = uifactory.addFormLink("select_" + counter++, CMD_FOLDER, "", null, null, Link.LINK + Link.NONTRANSLATED);
-				FormLink titleLink = uifactory.addFormLink("title_" + counter++, CMD_FOLDER, "", null, null, Link.NONTRANSLATED);
+				FormLink selectionLink = uifactory.addFormLink("select_" + counter++, CMD_FOLDER, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+				FormLink titleLink = uifactory.addFormLink("title_" + counter++, CMD_FOLDER, "", null, flc, Link.NONTRANSLATED);
 				
 				selectionLink.setElementCssClass("o_link_plain");
 				
