@@ -362,7 +362,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		peerReviewPeriodLengthEl.setMaxLength(4);
 		peerReviewPeriodLengthEl.setDisplaySize(4);
 		peerReviewPeriodLengthEl.setElementCssClass("form-inline");
-		peerReviewPeriodLengthEl.setTextAddOn(translate("days"));
+		peerReviewPeriodLengthEl.setTextAddOn("days");
 		peerReviewPeriodLengthEl.setMandatory(true);
 		
 		//revision

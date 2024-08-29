@@ -295,7 +295,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		decorateWithAggregatedStatistics(assessedIdentityRow, aggregatedStatistics);
 		decorateWithTools(assessedIdentityRow);
 		decorateWithStepStatus(assessedIdentityRow, assessedIdentityRow.getTask());
-		decorateWithSubmissionStatus(assessedIdentityRow, assessedIdentityRow.getTask());
+		decorateWithSubmissionStatus(assessedIdentityRow, assessedIdentityRow.getIdentity(), assessedIdentityRow.getTask());
 	}
 	
 	private CoachPeerReviewRow forgeAssignmentRow(Task task, TaskReviewAssignment assignment,

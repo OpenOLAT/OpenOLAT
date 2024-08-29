@@ -45,6 +45,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -326,15 +327,14 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		}
 	}
 	
-	protected void decorateWithSubmissionStatus(CoachPeerReviewRow row, Task assignedTask) {
+	protected void decorateWithSubmissionStatus(CoachPeerReviewRow row, Identity taskIdentity, Task assignedTask) {
 		//calculate state
 		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment) {
 				row.setSubmissionStatus(CoachedParticipantStatus.notAvailable);
 			} else if (assignedTask.getTaskStatus() == TaskProcess.submit) {
-
-				DueDate submissionDueDate = gtaManager.getSubmissionDueDate(assignedTask, assignedTask.getIdentity(), null, gtaNode, courseEntry, true);
-				DueDate lateSubmissionDueDate = gtaManager.getLateSubmissionDueDate(assignedTask, assignedTask.getIdentity(), null, gtaNode, courseEntry, true);
+				DueDate submissionDueDate = gtaManager.getSubmissionDueDate(assignedTask, taskIdentity, null, gtaNode, courseEntry, true);
+				DueDate lateSubmissionDueDate = gtaManager.getLateSubmissionDueDate(assignedTask, taskIdentity, null, gtaNode, courseEntry, true);
 				if(isSubmissionLate(submissionDueDate, lateSubmissionDueDate)) {
 					row.setSubmissionStatus(CoachedParticipantStatus.late);
 				} else {
@@ -344,8 +344,8 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 				row.setSubmissionStatus(CoachedParticipantStatus.done);
 			}	
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
-			DueDate submissionDueDate = gtaManager.getSubmissionDueDate(assignedTask, assignedTask.getIdentity(), null, gtaNode, courseEntry, true);
-			DueDate lateSubmissionDueDate = gtaManager.getLateSubmissionDueDate(assignedTask, assignedTask.getIdentity(), null, gtaNode, courseEntry, true);
+			DueDate submissionDueDate = gtaManager.getSubmissionDueDate(assignedTask, taskIdentity, null, gtaNode, courseEntry, true);
+			DueDate lateSubmissionDueDate = gtaManager.getLateSubmissionDueDate(assignedTask, taskIdentity, null, gtaNode, courseEntry, true);
 			if(isSubmissionLate(submissionDueDate, lateSubmissionDueDate)) {
 				row.setSubmissionStatus(CoachedParticipantStatus.late);
 			} else {
