@@ -48,14 +48,14 @@
 
 	/* Page breaks */	
 	.o_print_break_avoid {
-		page-break-inside : avoid;
+		break-inside: avoid-page;		
 	}
 	.o_print_break_before {
-		page-break-before: always;
+		break-before: page;
 	}
 	.o_print_break_after {
 		clear:both;
-		page-break-after:always;
+		break-after: page;
 	}
 	
 	
@@ -127,16 +127,21 @@
 	    opacity: 1;
 	    transition: none;
 		height: 100%;	
+		max-height: 100%;
 	    &:before {
 	    	// close icon
 	    	display: none;
 	    }
+		.o_lightbox_modal_form {
+			border: none;
+			width: 100%;
+		}
 	}
 	
 	
 	/* Print background colors in progress bar */
 	.progress {
-		page-break-inside : avoid;
+		break-inside : avoid-page;
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 	  	background-color: rgba(0,0,0,.1) !important;
@@ -185,7 +190,7 @@
 	
 	/* Print background colors in radial progress bar */
 	.radial-progress {
-		page-break-inside : avoid;
+		break-inside : avoid-page;
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 		
@@ -200,21 +205,39 @@
 		}
 	}
 	
+	/* Set size to an A4 aspect ratio */
 	body {
-		margin: 0; 
-		/* 	Make everything a bit smaller. 
-			OO Layout is designed for mobile-first, thus everything is a bit large for printing 
-			might not work on FF, but hey, better than nothing
-		*/
-		zoom: 0.6;
+		size: 1240px 1754px;
+		margin: 0;
+		padding: 0;
+		zoom: 1;
+		width: 1240px;
+		min-width: 1240px;
+		max-width: 1240px;
+		background-color:white;
+		/* 	Limit the inner content to certainly fit to the page. 
+		 	Smaller than page to take the unknown print borders into account. 
+		 */
+		.o_page_content {
+			min-width: 1150px;
+			max-width: 1150px;
+		}
+	}
+	/* prevent oversize tables to break layout, limit size to visible space on Sheet */
+	.o_scrollable {
+			max-width: 1150px;
 	}
 	
-	table, figure, figure {
-	  page-break-inside: avoid;
+	table, figure, figure,
+	panel, fieldset,
+	.o_block, .o_block_large
+	 {
+ 	  break-inside: avoid-page;
 	}
+	
 
 	h1, h2, h3, h4, h5, h6 {
-	  page-break-after: avoid;
+	  break-after: avoid-page;
 	}
 	
 	/* disclaimer formatting */
