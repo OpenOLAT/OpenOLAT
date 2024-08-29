@@ -779,6 +779,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			if (enhancedBadgeClass.getUseCount().equals(enhancedBadgeClass.getRevokedCount())) {
 				enhancedBadgeClass.getBadgeClass().setStatus(BadgeClass.BadgeClassStatus.revoked);
 				updateBadgeClass(enhancedBadgeClass.getBadgeClass());
+				log.debug("Set badge class {} to revoked.", enhancedBadgeClass.getBadgeClass().getKey());
+				return true;
+			}
+		} else if (enhancedBadgeClass.getBadgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.revoked)) {
+			if (enhancedBadgeClass.getUseCount() > enhancedBadgeClass.getRevokedCount()) {
+				enhancedBadgeClass.getBadgeClass().setStatus(BadgeClass.BadgeClassStatus.active);
+				updateBadgeClass(enhancedBadgeClass.getBadgeClass());
+				log.debug("Set badge class {} to active.", enhancedBadgeClass.getBadgeClass().getKey());
 				return true;
 			}
 		}
