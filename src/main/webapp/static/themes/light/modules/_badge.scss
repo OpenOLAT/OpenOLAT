@@ -282,3 +282,22 @@ span.o_labeled_light {
 		color: $btn-danger-border;
 	}
 }
+
+.o_labeled {
+	&.o_badge_class_status_preparation {
+		background-color: $btn-info-bg;
+	}
+	&.o_badge_class_status_active {
+		background-color: $btn-success-bg;
+	}
+	&.o_badge_class_status_revoked {
+		background-color: $btn-danger-bg;
+	}
+	&.o_badge_class_status_deleted {
+		background-color: $btn-warning-bg;
+	}
+}
+
+.o_badge_class_image_wrapper {
+	padding-right: 0;
+}

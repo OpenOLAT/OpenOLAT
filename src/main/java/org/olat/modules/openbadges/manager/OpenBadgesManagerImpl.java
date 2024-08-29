@@ -756,7 +756,33 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public List<BadgeClassWithSizeAndCount> getBadgeClassesWithSizesAndCounts(RepositoryEntry entry) {
-		return getBadgeClassesWithUseCounts(entry).stream().map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(), sizeForBadgeClass(obj.getBadgeClass()), obj.getUseCount())).toList();
+		List<BadgeClassDAO.BadgeClassWithUseCount> enhancedBadgeClasses = getBadgeClassesWithUseCounts(entry);
+		if (updateBadgeClasses(enhancedBadgeClasses)) {
+			enhancedBadgeClasses = getBadgeClassesWithUseCounts(entry);
+		}
+		return enhancedBadgeClasses.stream().map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(),
+				sizeForBadgeClass(obj.getBadgeClass()), obj.getUseCount(), obj.getRevokedCount())).toList();
+	}
+
+	private boolean updateBadgeClasses(List<BadgeClassDAO.BadgeClassWithUseCount> enhancedBadgeClasses) {
+		boolean updated = false;
+		for (BadgeClassDAO.BadgeClassWithUseCount enhancedBadgeClass : enhancedBadgeClasses) {
+			if (updateBadgeClass(enhancedBadgeClass)) {
+				updated = true;
+			}
+		}
+		return updated;
+	}
+
+	private boolean updateBadgeClass(BadgeClassDAO.BadgeClassWithUseCount enhancedBadgeClass) {
+		if (enhancedBadgeClass.getBadgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.active)) {
+			if (enhancedBadgeClass.getUseCount().equals(enhancedBadgeClass.getRevokedCount())) {
+				enhancedBadgeClass.getBadgeClass().setStatus(BadgeClass.BadgeClassStatus.revoked);
+				updateBadgeClass(enhancedBadgeClass.getBadgeClass());
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private Size sizeForBadgeClass(BadgeClass badgeClass) {
@@ -872,7 +898,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public List<BadgeClassWithSizeAndCount> getCourseBadgeClassesWithSizesAndCounts(Identity identity) {
 		return getCourseBadgeClassesWithUseCounts(identity).stream()
-				.map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(), sizeForBadgeClass(obj.getBadgeClass()), obj.getUseCount())).toList();
+				.map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(), sizeForBadgeClass(obj.getBadgeClass()),
+						obj.getUseCount(), obj.getRevokedCount())).toList();
 	}
 
 	//

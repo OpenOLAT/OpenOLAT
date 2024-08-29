@@ -3138,8 +3138,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void doOpenTools(UserRequest ureq, FolderRow row, FormLink link) {
-		addToHistory(ureq, this);
-		
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		
