@@ -1056,6 +1056,10 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void forgeTitleLink(UserRequest ureq, FolderRow row) {
+		// This method can lead to memory overflows if a folder has a large number of
+		// files and is often switched between.
+		// The links from the previous call remain referenced by the flc, even though
+		// they are no longer required. They cannot be destroyed by the garbage collection.
 		if (row.getVfsItem() instanceof VFSContainer) {
 			if (row.getMetadata() != null && row.getMetadata().isDeleted()) {
 				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), null);
@@ -1089,8 +1093,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			if (editorInfo.isEditorAvailable()) {
 				row.setOpenable(true);
 				
-				FormLink selectionEl = uifactory.addFormLink("file_" +  counter++, CMD_FILE, "", null, null, Link.LINK + Link.NONTRANSLATED);
-				FormLink titleEl = uifactory.addFormLink("file_" +  counter++, CMD_FILE, "", null, null, Link.LINK + Link.NONTRANSLATED);
+				FormLink selectionEl = uifactory.addFormLink("file_" +  counter++, CMD_FILE, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+				FormLink titleEl = uifactory.addFormLink("file_" +  counter++, CMD_FILE, "", null, flc, Link.LINK + Link.NONTRANSLATED);
 				
 				selectionEl.setElementCssClass("o_link_plain");
 				
