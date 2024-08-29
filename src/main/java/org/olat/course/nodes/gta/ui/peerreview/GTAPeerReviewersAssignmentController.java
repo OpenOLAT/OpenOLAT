@@ -46,11 +46,11 @@ public class GTAPeerReviewersAssignmentController extends AbstractPeerReviewsAss
 	private final TaskPortraitController taskPortraitCtrl;
 	
 	public GTAPeerReviewersAssignmentController(UserRequest ureq, WindowControl wControl, TaskList taskList,
-			Task taskToReview, GTACourseNode gtaNode) {
+			Identity identityToReview, Task taskToReview, GTACourseNode gtaNode) {
 		super(ureq, wControl, taskList, gtaNode);
 		this.taskToReview = taskToReview;
 		
-		taskPortraitCtrl = new TaskPortraitController(ureq, getWindowControl(), taskToReview);
+		taskPortraitCtrl = new TaskPortraitController(ureq, getWindowControl(), identityToReview, taskToReview);
 		listenTo(taskPortraitCtrl);
 		
 		initForm(ureq);

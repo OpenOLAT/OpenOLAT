@@ -517,6 +517,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void doOpenView(UserRequest ureq, FolderView view) {
+		boolean viewChanged = folderView != view;
 		this.folderView = view;
 		
 		if (FolderView.file == folderView) {
@@ -542,8 +543,12 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		}
 		
-		doOpenFolderView(ureq);
-		updateViewUI();
+		if (viewChanged) {
+			doOpenFolderView(ureq);
+			updateViewUI();
+		} else {
+			loadModel(ureq);
+		}
 		updateCommandUI(ureq);
 		
 		updateViewCrumb(view);
@@ -636,7 +641,6 @@ public class FolderController extends FormBasicController implements Activateabl
 			initFilterTabs(ureq);
 		}
 		
-
 		log.debug("Folder: view updated in {} millis", Duration.between(start, Instant.now()).toMillis());
 	}
 
@@ -1052,21 +1056,25 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void forgeTitleLink(UserRequest ureq, FolderRow row) {
+		// This method can lead to memory overflows if a folder has a large number of
+		// files and is often switched between.
+		// The links from the previous call remain referenced by the flc, even though
+		// they are no longer required. They cannot be destroyed by the garbage collection.
 		if (row.getVfsItem() instanceof VFSContainer) {
 			if (row.getMetadata() != null && row.getMetadata().isDeleted()) {
-				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), flc);
+				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), null);
 				selectionEl.setElementCssClass("o_nowrap");
 				selectionEl.setStaticFormElement(false);
 				row.setSelectionItem(selectionEl);
 				
-				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), flc);
+				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), null);
 				titleEl.setStaticFormElement(false);
 				row.setTitleItem(titleEl);
 			} else {
 				row.setOpenable(true);
 				
 				FormLink selectionLink = uifactory.addFormLink("select_" + counter++, CMD_FOLDER, "", null, flc, Link.LINK + Link.NONTRANSLATED);
-				FormLink titleLink = uifactory.addFormLink("title_" + counter++, CMD_FOLDER, "", null, null, Link.NONTRANSLATED);
+				FormLink titleLink = uifactory.addFormLink("title_" + counter++, CMD_FOLDER, "", null, flc, Link.NONTRANSLATED);
 				
 				selectionLink.setElementCssClass("o_link_plain");
 				
@@ -1105,13 +1113,13 @@ public class FolderController extends FormBasicController implements Activateabl
 				row.setSelectionItem(selectionEl);
 				row.setTitleItem(titleEl);
 			} else {
-				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), flc);
+				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), null);
 				selectionEl.setElementCssClass("o_nowrap");
 				selectionEl.setDomWrapperElement(DomWrapperElement.span);
 				selectionEl.setStaticFormElement(false);
 				row.setSelectionItem(selectionEl);
 				
-				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, getTitleWithLabel(row), flc);
+				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, getTitleWithLabel(row), null);
 				titleEl.setDomWrapperElement(DomWrapperElement.span);
 				titleEl.setStaticFormElement(false);
 				row.setTitleItem(titleEl);
@@ -1160,7 +1168,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		row.setFilePath(filePath);
 		
 		if (FolderView.trash == folderView) {
-			StaticTextElement pathEl = uifactory.addStaticTextElement("path_" + counter++, null, StringHelper.escapeHtml(row.getFilePath()), flc);
+			StaticTextElement pathEl = uifactory.addStaticTextElement("path_" + counter++, null, StringHelper.escapeHtml(row.getFilePath()), null);
 			pathEl.setDomWrapperElement(DomWrapperElement.span);
 			pathEl.setStaticFormElement(false);
 			row.setFilePathItem(pathEl);
