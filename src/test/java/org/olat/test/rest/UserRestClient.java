@@ -53,6 +53,11 @@ import jakarta.ws.rs.core.UriBuilder;
 public class UserRestClient {
 	
 	private static final AtomicInteger counter = new AtomicInteger();
+
+	/**
+	 * A shared administrator;
+	 */
+	private static UserVO administrator;
 	
 	private final URL deploymentUrl;
 	private final String username;
@@ -122,6 +127,44 @@ public class UserRestClient {
 		
 		RolesVO roles = new RolesVO();
 		roles.setPoolAdmin(true);
+		updateRoles(restConnection, user, roles);
+
+		restConnection.shutdown();
+		return user;
+	}
+	
+	/**
+	 * Reuse the same administrator.
+	 * 
+	 * @return An administrator with password.
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public UserVO getOrCreateAdministrator()
+	throws IOException, URISyntaxException {
+		if(administrator == null) {
+			administrator = createAdministrator();
+		}
+		return administrator;
+	}
+	
+	/**
+	 * Create a user with administrator and system administrator role.
+	 * 
+	 * @return An administrator user with password
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public UserVO createAdministrator()
+	throws IOException, URISyntaxException {
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		assertTrue(restConnection.login(username, password));
+		
+		UserVO user = createUser(restConnection, "Admin", "");
+		
+		RolesVO roles = new RolesVO();
+		roles.setOlatAdmin(true);
+		roles.setSystemAdmin(true);
 		updateRoles(restConnection, user, roles);
 
 		restConnection.shutdown();

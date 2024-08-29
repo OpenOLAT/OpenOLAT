@@ -79,14 +79,17 @@ public class LoginTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void loginAsAdministrator() {
+	public void loginAsAdministrator() 
+	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		//load dmz
 		LoginPage loginPage = LoginPage
 				.load(browser, deploymentUrl)
 				.assertOnLoginPage();
 		//login as administrator
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 	}
 	
@@ -149,12 +152,13 @@ public class LoginTest extends Deployments {
 	throws IOException, URISyntaxException {
 		WebDriver userBrowser = getWebDriver(1);
 		
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		
 		// Administrator opens the course to the public
 		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
 		adminLoginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		PasswordAndAuthenticationAdminPage passkeyAdminPage = NavigationPage.load(browser)
@@ -224,6 +228,8 @@ public class LoginTest extends Deployments {
 	throws IOException, URISyntaxException {
 		WebDriver reiBrowser = getWebDriver(1);
 		WebDriver kanuBrowser = getWebDriver(2);
+		
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		
@@ -234,7 +240,7 @@ public class LoginTest extends Deployments {
 		// administrator come in, and set a maintenance message
 		LoginPage.load(browser, deploymentUrl)
 			.assertOnLoginPage()
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		String message = "Hello - " + UUID.randomUUID();

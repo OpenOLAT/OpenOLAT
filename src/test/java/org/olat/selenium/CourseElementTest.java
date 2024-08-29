@@ -1681,10 +1681,12 @@ public class CourseElementTest extends Deployments {
 	public void courseWithForum_guest()
 	throws IOException, URISyntaxException {
 		WebDriver guestBrowser = getWebDriver(1);
-
+		
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		String node1 = "Forums " + UUID.randomUUID();
@@ -2593,10 +2595,12 @@ public class CourseElementTest extends Deployments {
 	@RunAsClient
 	public void courseWithBigBlueButtonGuestLogin()
 	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		// open meeting for guest
 		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
 		adminLoginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		NavigationPage.load(browser)
@@ -2868,10 +2872,12 @@ public class CourseElementTest extends Deployments {
 	@RunAsClient
 	public void courseWithJupyterLab()
 	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		// configure the lectures module
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		String name = "OpenOlatLab " + UUID.randomUUID().toString();
@@ -2923,13 +2929,16 @@ public class CourseElementTest extends Deployments {
 	 * 
 	 */
 	@Test
-	public void courseWithZoom() {
+	public void courseWithZoom() 
+	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		String profile = UUID.randomUUID().toString();
 		
 		// configure the lectures module
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		NavigationPage navBar = NavigationPage.load(browser);
 		AdministrationPage administration = navBar

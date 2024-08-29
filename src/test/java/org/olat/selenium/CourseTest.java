@@ -670,13 +670,14 @@ public class CourseTest extends Deployments {
 	public void catalogRoundTrip()
 	throws IOException, URISyntaxException {
 		
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		
 		//administrator create the categories in the catalog
 		LoginPage adminLogin = LoginPage.load(browser, deploymentUrl);
 		adminLogin
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		NavigationPage adminNavBar = NavigationPage.load(browser);
 		
@@ -1208,10 +1209,12 @@ public class CourseTest extends Deployments {
 	@RunAsClient
 	public void courseReminders()
 	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		//configure at least a license
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		NavigationPage.load(browser)
 			.openAdministration()
@@ -1675,6 +1678,7 @@ public class CourseTest extends Deployments {
 		WebDriver authorBrowser = getWebDriver(1);
 		WebDriver participantBrowser = getWebDriver(2);
 		
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser();
@@ -1683,7 +1687,7 @@ public class CourseTest extends Deployments {
 		//for groups created by standard users.
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		AdministrationPage administration = NavigationPage.load(browser)
 			.openAdministration()
@@ -1997,11 +2001,13 @@ public class CourseTest extends Deployments {
 	public void courseInvitation()
 	throws IOException, URISyntaxException {
 		
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		//admin make the confirmation of membership mandatory
 		//for groups created by standard users.
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -2082,9 +2088,11 @@ public class CourseTest extends Deployments {
 	throws IOException, URISyntaxException {
 		WebDriver externalUserBrowser = getWebDriver(1);
 		
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		//upload a test
@@ -2191,6 +2199,7 @@ public class CourseTest extends Deployments {
 	public void importCourseWithSoftKey()
 	throws IOException, URISyntaxException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Suleika");
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		// Deploy the form
 		URL formUrl = ArquillianDeployments.class.getResource("file_resources/form_soft_key.zip");
@@ -2207,7 +2216,7 @@ public class CourseTest extends Deployments {
 		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		NavigationPage navBar = NavigationPage.load(browser);

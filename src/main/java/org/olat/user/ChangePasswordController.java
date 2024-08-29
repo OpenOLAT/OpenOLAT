@@ -27,6 +27,7 @@ package org.olat.user;
 
 import java.util.List;
 
+import org.olat.admin.setup.SetupModule;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -81,6 +82,8 @@ public class ChangePasswordController extends BasicController implements Support
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
+	private SetupModule setupModule;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
@@ -121,6 +124,9 @@ public class ChangePasswordController extends BasicController implements Support
 		if(usess.getRoles() == null || usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()) {
 			return false;
 		}
+		if(needDefaultUserToSetPassword(usess)) {
+			return true;
+		}
 		if(usess.getRoles().isSystemAdmin()) {
 			return false;
 		}
@@ -129,6 +135,15 @@ public class ChangePasswordController extends BasicController implements Support
 			AuthenticationProvider olatProvider = loginModule.getAuthenticationProvider(BaseSecurityModule.getDefaultAuthProviderIdentifier());
 			return olatProvider.isEnabled() && !olatAuthenticationSpi
 					.hasValidAuthentication(getIdentity(), loginModule.isPasswordChangeOnce(), loginModule.getPasswordAgePolicy(usess.getRoles()));
+		}
+		return false;
+	}
+	
+	private boolean needDefaultUserToSetPassword(UserSession usess) {
+		Identity identity = usess.getIdentity();
+		if(identity != null && setupModule.getDefaultUsersKeys().contains(identity.getKey())) {
+			long passwordLength = olatAuthenticationSpi.getPasswordHistoryLength(identity);
+			return passwordLength <= 1;
 		}
 		return false;
 	}

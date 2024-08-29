@@ -642,7 +642,7 @@ public class LoginModule extends AbstractSpringModule {
 	 * @param login
 	 */
 	public final void clearFailedLoginAttempts(String login) {
-		if (attackPreventionEnabled) {
+		if (attackPreventionEnabled && StringHelper.containsNonWhitespace(login)) {
 			failedLoginCache.remove(login);
 		}
 	}

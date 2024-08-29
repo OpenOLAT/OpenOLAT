@@ -93,13 +93,15 @@ public class UserTest extends Deployments {
 	throws IOException, URISyntaxException {
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		//deploy a course
 		CourseVO newCourse = new RepositoryRestClient(deploymentUrl).deployDemoCourse();
 		
 		// Administrator opens the course to the public
 		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
 		adminLoginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -165,13 +167,15 @@ public class UserTest extends Deployments {
 	throws IOException, URISyntaxException {
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		//deploy a course
 		CourseVO newCourse = new RepositoryRestClient(deploymentUrl).deployDemoCourse();
 
 		// Administrator opens the course to the public
 		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
 		adminLoginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -358,11 +362,12 @@ public class UserTest extends Deployments {
 		
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		// Administrator opens the course to the public
 		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
 		adminLoginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		PasswordAndAuthenticationAdminPage passkeyAdminPage = NavigationPage.load(browser)
@@ -411,11 +416,12 @@ public class UserTest extends Deployments {
 		
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		// Administrator opens the course to the public
 		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
 		adminLoginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		PasswordAndAuthenticationAdminPage passkeyAdminPage = NavigationPage.load(browser)
@@ -777,9 +783,11 @@ public class UserTest extends Deployments {
 	@RunAsClient
 	public void browserBack()
 	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+	
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -813,12 +821,13 @@ public class UserTest extends Deployments {
 	@RunAsClient
 	public void createUser()
 	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.assertOnLoginPage()
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		String uuid = UUID.randomUUID().toString();
@@ -861,14 +870,17 @@ public class UserTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void deleteUser() {
+	public void deleteUser()
+	throws IOException, URISyntaxException {
 		WebDriver userBrowser = getWebDriver(1);
+		
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.assertOnLoginPage()
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		String uuid = UUID.randomUUID().toString();
@@ -930,11 +942,13 @@ public class UserTest extends Deployments {
 	@RunAsClient
 	public void importUsers()
 	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.assertOnLoginPage()
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -984,14 +998,14 @@ public class UserTest extends Deployments {
 	public void importExistingUsers()
 	throws IOException, URISyntaxException {
 
-		UserVO user1 = new UserRestClient(deploymentUrl)
-			.createRandomUser("tsukune");
+		UserVO user1 = new UserRestClient(deploymentUrl).createRandomUser("tsukune");
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.assertOnLoginPage()
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -1051,14 +1065,14 @@ public class UserTest extends Deployments {
 	@RunAsClient
 	public void modifyUserStatusBatch()
 	throws IOException, URISyntaxException {
-		UserVO user = new UserRestClient(deploymentUrl)
-				.createRandomUser("Katherin");
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Katherin");
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.assertOnLoginPage()
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -1091,14 +1105,14 @@ public class UserTest extends Deployments {
 	@RunAsClient
 	public void modifyUserAttributesBatch()
 	throws IOException, URISyntaxException {
-		UserVO user = new UserRestClient(deploymentUrl)
-				.createRandomUser("Jun");
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Jun");
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.assertOnLoginPage()
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -1139,10 +1153,12 @@ public class UserTest extends Deployments {
 	@RunAsClient
 	public void contactTracingAsGuest()
 	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		// configure the lectures module
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		ContactTracingAdminPage tracingAdmin = NavigationPage.load(browser)
@@ -1179,13 +1195,13 @@ public class UserTest extends Deployments {
 	@RunAsClient
 	public void contactTracingWithLogin()
 	throws IOException, URISyntaxException {
-		UserVO user = new UserRestClient(deploymentUrl)
-				.createRandomUser("carole");
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("carole");
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		// configure the lectures module
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		ContactTracingAdminPage tracingAdmin = NavigationPage.load(browser)

@@ -37,6 +37,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.AuthenticationDAO;
+import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
@@ -108,6 +109,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private RegistrationManager registrationManager;
+	@Autowired
+	private AuthenticationHistoryDAO authenticationHistoryDao;
 	@Autowired
 	private PasswordValidationRulesFactory passwordRulesFactory;
 	@Autowired
@@ -245,6 +248,10 @@ public class OLATAuthManager implements AuthenticationSPI {
 		}
 		log.info(Tracing.M_AUDIT, "Cannot authenticate user {} via provider OLAT", login);
 		return null;
+	}
+	
+	public long getPasswordHistoryLength(IdentityRef identity) {
+		return authenticationHistoryDao.historySize(identity, "OLAT");
 	}
 	
 	/**

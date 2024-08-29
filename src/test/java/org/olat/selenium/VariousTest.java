@@ -161,12 +161,12 @@ public class VariousTest extends Deployments {
 	@Test
 	public void library()
 	throws IOException, URISyntaxException {
-
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		// Administrator setup the library
@@ -217,10 +217,11 @@ public class VariousTest extends Deployments {
 	public void libraryWorkflow()
 	throws IOException, URISyntaxException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("kanu");
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		// Administrator setup the library with a folder
@@ -253,7 +254,7 @@ public class VariousTest extends Deployments {
 		// Administrator review the document
 		loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		
 		navigation = NavigationPage.load(browser);

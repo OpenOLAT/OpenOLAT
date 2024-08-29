@@ -21,6 +21,7 @@ package org.olat.admin.setup;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
@@ -59,6 +60,8 @@ public class SetupModule extends AbstractSpringModule {
 
 	@Autowired @Qualifier("defaultUsers")
 	private ArrayList<DefaultUser> defaultUsers;
+	
+	private final List<Long> defaultUsersKeys = new ArrayList<>();
 
 	@Autowired
 	protected DB dbInstance;
@@ -94,6 +97,10 @@ public class SetupModule extends AbstractSpringModule {
 		}
 	}
 	
+	public List<Long> getDefaultUsersKeys() {
+		return List.copyOf(defaultUsersKeys);
+	}
+	
 	protected void setup() {
 		createDefaultUsers();
 		DBFactory.getInstance().intermediateCommit();
@@ -103,7 +110,10 @@ public class SetupModule extends AbstractSpringModule {
 		// read user editable fields configuration
 		if (defaultUsers != null) {
 			for (DefaultUser user:defaultUsers) {
-				createUser(user);
+				Identity identity = createUser(user);
+				if(identity != null) {
+					defaultUsersKeys.add(identity.getKey());
+				}
 			}
 		}
 		// Cleanup, otherwhise this subjects will have problems in normal OLAT
@@ -117,8 +127,7 @@ public class SetupModule extends AbstractSpringModule {
 	 * @return Identity or null
 	 */
 	private Identity createUser(DefaultUser user) {
-		Identity identity;
-		identity = securityManager.findIdentityByUsername(user.getUserName());
+		Identity identity = securityManager.findIdentityByUsername(user.getUserName());
 		if (identity == null) {
 			// Create new user and subject
 			UserImpl newUser = new UserImpl();

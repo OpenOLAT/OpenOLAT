@@ -78,13 +78,15 @@ public class LecturesTest extends Deployments {
 	@RunAsClient
 	public void lecturesRollCall_authorizedAbsence()
 	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		WebDriver coachBrowser = getWebDriver(1);
 		WebDriver participantBrowser = getWebDriver(2);
 		
 		// configure the lectures module
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		 NavigationPage.load(browser)
 			.openAdministration()
@@ -227,10 +229,12 @@ public class LecturesTest extends Deployments {
 		WebDriver coachBrowser = getWebDriver(1);
 		WebDriver participantBrowser = getWebDriver(2);
 		
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		// configure the lectures module
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		NavigationPage.load(browser)
 			.openAdministration()
@@ -370,11 +374,12 @@ public class LecturesTest extends Deployments {
 	@RunAsClient
 	public void lecturesRollCall()
 	throws IOException, URISyntaxException {
-
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		// configure the lectures module
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		NavigationPage.load(browser)
 			.openAdministration()
@@ -492,11 +497,12 @@ public class LecturesTest extends Deployments {
 	@RunAsClient
 	public void lecturesRollCall_defaultAuthorizedAbsence()
 	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		// configure the lectures module
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		NavigationPage.load(browser)
 			.openAdministration()

@@ -382,12 +382,13 @@ public class BusinessGroupTest extends Deployments {
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser();
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		//admin make the confirmation of membership mandatory
 		//for groups created by standard users.
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		AdministrationPage administration = NavigationPage.load(browser)
 			.openAdministration()

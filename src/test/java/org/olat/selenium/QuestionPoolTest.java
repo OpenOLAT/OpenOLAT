@@ -102,10 +102,11 @@ public class QuestionPoolTest extends Deployments {
 	throws IOException, URISyntaxException {
 
 		UserVO reviewer = new UserRestClient(deploymentUrl).createAuthor("Albert");
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		AdministrationPage administration = NavigationPage.load(browser)
 			.openAdministration();
@@ -184,10 +185,13 @@ public class QuestionPoolTest extends Deployments {
 	@RunAsClient
 	public void questionPoolGeneralMetadata()
 	throws IOException, URISyntaxException {
+		
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
 		// prepare taxonomy
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs("administrator", "openolat")
+			.loginAs(administrator)
 			.resume();
 		AdministrationPage administration = NavigationPage.load(browser)
 			.openAdministration();

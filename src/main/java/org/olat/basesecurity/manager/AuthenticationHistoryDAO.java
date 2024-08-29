@@ -55,6 +55,18 @@ public class AuthenticationHistoryDAO {
 		dbInstance.getCurrentEntityManager().persist(hPoint);
 	}
 	
+	public long historySize(IdentityRef identity, String provider) {
+		String sb = """
+				select count(hAuth.key) from authenticationhistory as hAuth
+				where hAuth.identity.key=:identityKey and hAuth.provider=:provider""";
+		List<Long> counts = dbInstance.getCurrentEntityManager()
+			.createQuery(sb, Long.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("provider", provider)
+			.getResultList();
+		return counts == null || counts.isEmpty() || counts.get(0) == null ? 0 : counts.get(0).longValue();
+	}
+	
 	public List<AuthenticationHistory> loadHistory(IdentityRef identity, String provider, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("select hAuth from authenticationhistory as hAuth")
