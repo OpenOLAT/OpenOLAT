@@ -2334,16 +2334,21 @@
 						<property name="description" value="Participants of a topic broker" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyEmail" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyEmail" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
 							</set>
 						</property>
 					</bean>
