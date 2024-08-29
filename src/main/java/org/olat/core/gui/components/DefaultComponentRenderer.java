@@ -366,9 +366,11 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 				sb.append("</a>");
 			}			
 			// Attach bootstrap tooltip handler to help icon
+			boolean right = "vertical".equals(component.getLayout());
+			String placement = right ? "right" : "top";
 			sb.append("<script>\n")
 			  .append("\"use strict\"\n")
-			  .append("jQuery(function () {jQuery('#").append(helpIconId).append("').tooltip({placement:\"top\",container: \"#").append(helpIconId).append("\",html:true,title:\"");
+			  .append("jQuery(function () {jQuery('#").append(helpIconId).append("').tooltip({placement:\"").append(placement).append("\",container: \"#").append(helpIconId).append("\",html:true,title:\"");
 			if (helpText != null) {
 				sb.append(StringHelper.escapeJavaScript(helpText));
 			}
