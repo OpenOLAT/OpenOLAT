@@ -52,7 +52,7 @@ public class GTAPeerReviewsAssignmentController extends AbstractPeerReviewsAssig
 		this.reviewer = reviewer;
 		this.reviewerTask = reviewerTask;
 		
-		taskPortraitCtrl = new TaskPortraitController(ureq, getWindowControl(), reviewerTask);
+		taskPortraitCtrl = new TaskPortraitController(ureq, getWindowControl(), reviewer, reviewerTask);
 		listenTo(taskPortraitCtrl);
 
 		initForm(ureq);
@@ -114,7 +114,7 @@ public class GTAPeerReviewsAssignmentController extends AbstractPeerReviewsAssig
 			}
 		}
 		
-		if(newAssignment) {
+		if(newAssignment && reviewerTask != null) {
 			reopenTaskIfNeeded(reviewerTask);
 		}
 		fireEvent(ureq, Event.DONE_EVENT);

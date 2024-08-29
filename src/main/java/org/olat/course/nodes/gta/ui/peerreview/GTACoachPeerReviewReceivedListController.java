@@ -371,8 +371,10 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	}
 	
 	private void doAssignReviewers(UserRequest ureq, CoachPeerReviewRow row) {
+		final Identity identityToReview = row.getIdentity();
+		final Task taskToReview = row.getTask();
 		assignmentsCtrl = new GTAPeerReviewersAssignmentController(ureq, getWindowControl(),
-				taskList, row.getTask(), gtaNode);
+				taskList, identityToReview, taskToReview, gtaNode);
 		listenTo(assignmentsCtrl);
 		
 		String title = translate("review.assignment.title");

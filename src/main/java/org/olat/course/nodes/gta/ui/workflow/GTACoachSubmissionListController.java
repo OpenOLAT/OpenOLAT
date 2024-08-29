@@ -525,8 +525,11 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 		if(task == null && gtaNode.isOptional(courseEnv, userCourseEnv)) {
 			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
 			task = gtaManager.createTask(null, taskList, firstStep, null, assessedIdentity, gtaNode);
-		} else {
+		} else if(task != null) {
 			task = gtaManager.getTask(task);
+		} else {
+			getLogger().warn("Try to collect a inexistent task of: {}", assessedIdentity);
+			return;
 		}
 		
 		int numOfDocs = submittedDocuments == null ? 0 : submittedDocuments.length;

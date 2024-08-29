@@ -29,6 +29,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.ui.GTACoachController;
@@ -55,22 +56,23 @@ public class TaskPortraitController extends BasicController {
 	@Autowired
 	private MapperService mapperService;
 	
-	public TaskPortraitController(UserRequest ureq, WindowControl wControl, Task task) {
+	public TaskPortraitController(UserRequest ureq, WindowControl wControl, Identity identity, Task task) {
 		super(ureq, wControl, Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
 
 		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
 		
 		VelocityContainer mainVC = createVelocityContainer("task_portrait");
 		
-		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(List.of(task.getIdentity()));
+		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(List.of(identity));
 		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "task_identity", mainVC, null, avatarMapperKey);
 		usersPortraitCmp.setSize(PortraitSize.medium);
 		usersPortraitCmp.setMaxUsersVisible(1);
 		usersPortraitCmp.setUsers(portraitUsers);
 		
 		mainVC.put("task_portrait", usersPortraitCmp);
-		mainVC.contextPut("task_fullname", userManager.getUserDisplayName(task.getIdentity()));		
-		mainVC.contextPut("taskName", task.getTaskName());		
+		mainVC.contextPut("task_fullname", userManager.getUserDisplayName(identity));
+		String taskName = task == null || task.getTaskName() == null ? "" : task.getTaskName();
+		mainVC.contextPut("taskName", taskName);
 
 		putInitialPanel(mainVC);
 	}

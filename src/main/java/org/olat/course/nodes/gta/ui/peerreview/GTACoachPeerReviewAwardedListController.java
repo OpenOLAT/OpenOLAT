@@ -418,7 +418,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 				showReviewsLink = LinkFactory.createLink("show.reviews", "show.reviews", getTranslator(), mainVC, this, Link.LINK);
 				showReviewsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eye");
 
-				DueDate dueDate = gtaManager.getPeerReviewDueDate(row.getTask(), row.getTask().getIdentity(), null, gtaNode, courseEntry, true);
+				DueDate dueDate = gtaManager.getPeerReviewDueDate(row.getTask(), row.getIdentity(), null, gtaNode, courseEntry, true);
 				if(dueDate == null || dueDate.getDueDate() == null || ureq.getRequestTimestamp().before(dueDate.getDueDate())) {
 					assignReviewLink = LinkFactory.createLink("assign.reviews", "assign.reviews", getTranslator(), mainVC, this, Link.LINK);
 					assignReviewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_shuffle");
