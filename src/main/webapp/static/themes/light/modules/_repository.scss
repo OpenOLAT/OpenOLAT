@@ -429,7 +429,7 @@ a.o_repo_tools_status {
 .o_fake_participant_stop {
 	display: flex;
 	align-items: center;
-	@media (max-width: $screen-xs-min) {
+	@media (max-width: $screen-sm-min) {
 		flex-wrap: wrap;
 	}
 	.o_fps_message {
@@ -444,8 +444,10 @@ a.o_repo_tools_status {
 		}
 	}
 	.o_fps_button {
-		@media (max-width: $screen-xs-min) {
-			text-align: center;
+		display: flex;
+		gap: 5px;
+		@media (max-width: $screen-sm-min) {
+			justify-content: center;
 			width: 100%;
 			margin-top: 5px;
 		}
