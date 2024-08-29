@@ -317,7 +317,7 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 			int numOfSubmittedDocs = numOfSubmittedDocs(task);
 			Date syntheticSubmissionDate = gtaManager.getSyntheticSubmissionDate(identityRow.getTask());
 			if(syntheticSubmissionDate != null && task.getTaskStatus() != null && numOfSubmittedDocs > 0) {
-				RepositoryEntry courseEntry = null;
+				RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 				DueDate submissionDueDate = gtaManager.getSubmissionDueDate(task, identityRow.getAssessedIdentity(), null, gtaNode, courseEntry, true);
 				if(submissionDueDate != null) {
 					Date refDate = submissionDueDate.getReferenceDueDate();
