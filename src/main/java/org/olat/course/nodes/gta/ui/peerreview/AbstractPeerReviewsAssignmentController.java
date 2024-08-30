@@ -58,8 +58,10 @@ import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupGradingController;
+import org.olat.course.nodes.gta.ui.component.TaskStepStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.peerreview.GTAPeerReviewAssignmentTableModel.AssignmentsCols;
 import org.olat.modules.assessment.Role;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +87,7 @@ public abstract class AbstractPeerReviewsAssignmentController extends FormBasicC
 	protected FlexiTableElement tableEl;
 	protected GTAPeerReviewAssignmentTableModel tableModel;
 	protected final SelectionValues assignmentPK;
+	protected TaskStepStatusCellRenderer statusRenderer;
 	
 	protected int counter = 0;
 	protected final TaskList taskList;
@@ -100,7 +103,8 @@ public abstract class AbstractPeerReviewsAssignmentController extends FormBasicC
 	@Autowired
 	protected GTAPeerReviewManager peerReviewManager;
 	
-	public AbstractPeerReviewsAssignmentController(UserRequest ureq, WindowControl wControl, TaskList taskList, GTACourseNode gtaNode) {
+	public AbstractPeerReviewsAssignmentController(UserRequest ureq, WindowControl wControl,
+			TaskList taskList, RepositoryEntry courseEntry, GTACourseNode gtaNode) {
 		super(ureq, wControl, "asssign_reviewers", Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.taskList = taskList;
@@ -109,6 +113,8 @@ public abstract class AbstractPeerReviewsAssignmentController extends FormBasicC
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GTACoachedGroupGradingController.USER_PROPS_ID, isAdministrativeUser);
+		
+		statusRenderer = new TaskStepStatusCellRenderer(courseEntry, gtaNode, gtaManager, getTranslator());
 		
 		assignmentPK = new SelectionValues();
 		assignmentPK.add(SelectionValues.entry(ASSIGN, ""));
@@ -131,6 +137,8 @@ public abstract class AbstractPeerReviewsAssignmentController extends FormBasicC
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssignmentsCols.taskTitle));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssignmentsCols.submissionStatus,
+				statusRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssignmentsCols.numberReviews));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssignmentsCols.assignment));
 		

@@ -58,7 +58,7 @@ import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,11 +78,11 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 	@Autowired
 	private GTATaskDAO taskDao;
 	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private GTATaskReviewAssignmentDAO taskReviewAssignmentDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	@Override
 	public EvaluationFormSurvey loadSurvey(Task task) {
@@ -214,7 +214,7 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 	@Override
 	public void assign(RepositoryEntry courseEntry, TaskList taskList, GTACourseNode gtaNode) {
 		List<Task> allTasks = taskDao.getTasks(taskList, gtaNode);
-		List<Identity> allParticipants = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		List<Identity> allParticipants = repositoryEntryRelationDao.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 		List<TaskReviewAssignment> allAssignments = taskReviewAssignmentDao.getAssignmentsWithRemovedOnes(taskList);
 		Map<TaskReviewAssignmentKey, TaskReviewAssignment> allAssignmentsMap = allAssignments.stream()
 				.collect(Collectors.toMap(TaskReviewAssignmentKey::valueOf, assignment -> assignment, (u, v) -> u));
@@ -229,9 +229,13 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 		final boolean mutual = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW_MUTUAL_REVIEW);
 		
 		AssignmentType assignmentType = AssignmentType.keyOf(typeOfAssignment);
+		// If assignment is random, and there is no assignment of task, the assignment of reviews can happen
+		// quicker in the submit step.
+		boolean needSubmittedTask = (assignmentType != AssignmentType.RANDOM
+				|| gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT));
 		AssignmentCalculator assignmentCalculator = new AssignmentCalculator(allParticipants, allTasks, allAssignments);
 		List<Participant> participants = assignmentCalculator
-				.assign(assignmentType, numberOfReviews, mutual);
+				.assign(assignmentType, numberOfReviews, mutual, needSubmittedTask);
 		
 		for(Participant participant:participants) {
 			Identity assignee = participant.participant();

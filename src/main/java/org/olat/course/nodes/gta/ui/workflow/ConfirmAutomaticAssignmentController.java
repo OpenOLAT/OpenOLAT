@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui.workflow;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -28,6 +29,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.AssignmentType;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.ui.GTACoachController;
@@ -47,6 +50,10 @@ public class ConfirmAutomaticAssignmentController extends FormBasicController {
 	private final GTACourseNode gtaNode;
 	private final RepositoryEntry courseEntry;
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private GTAManager gtaManager;
 	@Autowired
 	private GTAPeerReviewManager peerReviewManager;
 	
@@ -75,6 +82,14 @@ public class ConfirmAutomaticAssignmentController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		final String typeOfAssignment = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT,
+				GTACourseNode.GTASK_PEER_REVIEW_ASSIGNMENT_DEFAULT);
+		AssignmentType assignmentType = AssignmentType.keyOf(typeOfAssignment);
+		if(assignmentType == AssignmentType.RANDOM && !gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			// Generate missing tasks
+			gtaManager.ensureTasksExist(taskList, courseEntry, gtaNode);
+			dbInstance.commitAndCloseSession();
+		}
 		peerReviewManager.assign(courseEntry, taskList, gtaNode);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

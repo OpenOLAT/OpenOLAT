@@ -75,8 +75,8 @@ import org.olat.course.nodes.gta.model.SessionStatistics;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.component.NumOfCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskReviewAssignmentStatusCellRenderer;
-import org.olat.course.nodes.gta.ui.component.TaskStepStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.peerreview.GTACoachPeerReviewTreeTableModel.CoachReviewCols;
+import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.user.UserManager;
@@ -160,7 +160,6 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sessionStatus,
 				new TaskReviewAssignmentStatusCellRenderer(getLocale(), true)));
 		if(singleAssessedIdentity == null) {
-			TaskStepStatusCellRenderer statusRenderer = new TaskStepStatusCellRenderer(getTranslator());
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.taskStepStatus,
 					statusRenderer));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.submissionStatus,
@@ -295,7 +294,10 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		decorateWithAggregatedStatistics(assessedIdentityRow, aggregatedStatistics);
 		decorateWithTools(assessedIdentityRow);
 		decorateWithStepStatus(assessedIdentityRow, assessedIdentityRow.getTask());
-		decorateWithSubmissionStatus(assessedIdentityRow, assessedIdentityRow.getIdentity(), assessedIdentityRow.getTask());
+		
+		CoachedParticipantStatus submissionStatus = statusRenderer
+				.calculateSubmissionStatus(assessedIdentityRow.getIdentity(), assessedIdentityRow.getTask());
+		assessedIdentityRow.setSubmissionStatus(submissionStatus);
 	}
 	
 	private CoachPeerReviewRow forgeAssignmentRow(Task task, TaskReviewAssignment assignment,
@@ -374,7 +376,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		final Identity identityToReview = row.getIdentity();
 		final Task taskToReview = row.getTask();
 		assignmentsCtrl = new GTAPeerReviewersAssignmentController(ureq, getWindowControl(),
-				taskList, identityToReview, taskToReview, gtaNode);
+				taskList, identityToReview, taskToReview, courseEntry, gtaNode);
 		listenTo(assignmentsCtrl);
 		
 		String title = translate("review.assignment.title");

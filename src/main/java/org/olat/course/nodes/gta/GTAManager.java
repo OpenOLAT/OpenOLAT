@@ -303,6 +303,15 @@ public interface GTAManager {
 	public Task ensureTaskExists(Task assignedTask, BusinessGroup assessedGroup, Identity assessedIdentity, RepositoryEntry entry, GTACourseNode gtaNode);
 	
 	/**
+	 * Ensue all participants have a task entry on the database.
+	 * 
+	 * @param entry The course entry
+	 * @param gtaNode The course element
+	 * @return
+	 */
+	public List<Task> ensureTasksExist(TaskList taskList, RepositoryEntry entry, GTACourseNode gtaNode);
+	
+	/**
 	 * If a temporary transient task created for coaching purpose need to be persisted,
 	 * 
 	 * @param task The transient task

@@ -72,7 +72,7 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 						.filter(row -> acceptSearch(row, searchString)
 								&& acceptStatus(row, assignmentStatus)
 								&& acceptTaskNames(row, taskNames))
-						.collect(Collectors.toList());
+						.toList();
 			super.setObjects(filteredRows);
 		} else {
 			super.setObjects(backupRows);
@@ -111,8 +111,8 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	
 	private boolean acceptStatus(PeerReviewAssignmentRow row, String assignmentStatus) {
 		return assignmentStatus == null
-				|| (row.isAssigned() && GTAPeerReviewersAssignmentController.ASSIGNED.equals(assignmentStatus))
-				|| (!row.isAssigned() && GTAPeerReviewersAssignmentController.NOT_ASSIGNED.equals(assignmentStatus));
+				|| (row.isAssigned() && AbstractPeerReviewsAssignmentController.ASSIGNED.equals(assignmentStatus))
+				|| (!row.isAssigned() && AbstractPeerReviewsAssignmentController.NOT_ASSIGNED.equals(assignmentStatus));
 	}
 
 	private boolean acceptTaskNames(PeerReviewAssignmentRow row, List<String> taskNames) {
@@ -138,6 +138,7 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 		if(col >= 0 && col < COLS.length) {
 			return switch(COLS[col]) {
 				case taskTitle -> assignmentRow.getTaskName();
+				case submissionStatus -> assignmentRow.getSubmissionStatus();
 				case numberReviews -> getNumberOfReviews(assignmentRow);
 				case assignment -> assignmentRow.getAssignmentEl();
 				default -> "ERROR";
@@ -164,7 +165,8 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	public enum AssignmentsCols implements FlexiSortableColumnDef {
 		taskTitle("table.header.group.taskTitle"),
 		numberReviews("table.header.num.of.review"),
-		assignment("table.header.assignment")
+		assignment("table.header.assignment"),
+		submissionStatus("table.header.submission.status"),
 		;
 		
 		private final String i18nKey;

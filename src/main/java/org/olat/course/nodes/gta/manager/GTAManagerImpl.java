@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -117,6 +118,7 @@ import org.olat.modules.edusharing.EdusharingService;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 import org.olat.resource.OLATResource;
@@ -1351,6 +1353,31 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 	public TaskRevisionDate createAndPersistTaskRevisionDate(Task task, int revisionLoop, TaskProcess status) {
 		return taskRevisionDateDao.createAndPersistTaskRevisionDate(task, revisionLoop, status);
+	}
+
+	@Override
+	public List<Task> ensureTasksExist(TaskList taskList, RepositoryEntry courseEntry, GTACourseNode gtaNode) {
+		List<Task> allTasks = taskDao.getTasks(taskList, gtaNode);
+		Set<Identity> identitiesWithTasks = allTasks.stream()
+				.map(Task::getIdentity)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		
+		List<Identity> allParticipants = repositoryEntryRelationDao
+				.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		
+		int count = 0;
+		for(Identity participant:allParticipants) {
+			if(!identitiesWithTasks.contains(participant)) {
+				TaskProcess status = firstStep(gtaNode);
+				Task task = createAndPersistTask(null, taskList, status, null, participant, gtaNode);
+				allTasks.add(task);
+				if(++count % 5 == 0) {
+					dbInstance.commitAndCloseSession();
+				}
+			}
+		}
+		return allTasks;
 	}
 
 	@Override
