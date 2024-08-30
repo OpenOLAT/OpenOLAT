@@ -705,7 +705,7 @@ public class CourseElementTest extends Deployments {
 		
 		//open the course and see the blog
 		CoursePageFragment course = courseEditor
-			.clickToolbarFirstCrumb();
+			.clickToolbarRootCrumb();
 		course
 			.tree()
 			.assertWithTitleSelected(blogNodeTitle);

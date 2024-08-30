@@ -49,6 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -815,7 +816,9 @@ public class FeedManagerImpl extends FeedManager {
 			Authentication authentication = securityManager.findAuthenticationByAuthusername(idKey, FeedMediaDispatcher.TOKEN_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 			if (authentication == null) {
 				// Create an authentication
+				long start = System.nanoTime();
 				String token = PasswordGenerator.generateAlphaNumericToken(8);
+				log.info("Feed random token takes {} ms", CodeHelper.nanoToMilliTime(start));
 				authentication = securityManager.createAndPersistAuthentication(identity, FeedMediaDispatcher.TOKEN_PROVIDER, BaseSecurity.DEFAULT_ISSUER, null, idKey, token, null);
 			}
 			// If the repository entry allows guest access it is public, thus not

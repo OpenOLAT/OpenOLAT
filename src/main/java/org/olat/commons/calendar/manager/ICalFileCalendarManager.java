@@ -423,7 +423,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	
 	@Override
 	public CalendarUserConfiguration createAggregatedCalendarConfig(String calendarType, Long calendarId, Identity identity) {
+		long start = System.nanoTime();
 		String token = PasswordGenerator.generateAlphaNumericToken(8);
+		log.info("Aggregated calendar random token takes {} ms", CodeHelper.nanoToMilliTime(start));
 		Kalendar calendar = new Kalendar(calendarId.toString(), calendarType);
 		return calendarUserConfigDao.createCalendarUserConfiguration(calendar, identity,
 				token, true, true);
@@ -431,7 +433,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 
 	@Override
 	public CalendarUserConfiguration createCalendarConfig(Identity identity, Kalendar calendar) {
+		long start = System.nanoTime();
 		String token = PasswordGenerator.generateAlphaNumericToken(8);
+		log.info("Calendar random token takes {} ms", CodeHelper.nanoToMilliTime(start));
 		return calendarUserConfigDao.createCalendarUserConfiguration(calendar, identity,
 				token, true, true);
 	}
