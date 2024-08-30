@@ -3,7 +3,7 @@
 <script>
 "use strict";
 
-var stopped = true;
+let stopped = true;
 function initPolling () {
 	o_info.lastClickTime = new Date().getTime();
 	pollgrowth = 0;
@@ -20,12 +20,12 @@ jQuery("#o_body").bind("mouseover click keypress", function(event){initPolling()
 o_info.wins = {};
 o_info.poller = null;
 
-var growthrate = 10;
-var pollminutes = 60;
-var pollcount = 0;
-var pollError = 0;
-var pollgrowth = 0;
-var timestampLastPoll = new Date().getTime();
+let growthrate = 10;
+let pollminutes = 60;
+let pollcount = 0;
+let pollError = 0;
+let pollgrowth = 0;
+let timestampLastPoll = new Date().getTime();
 
 ## starts an interval which checks every second whether to send an poll request based on
 ## the pollperiod or not 10 min after the last click the poll process stops
@@ -33,16 +33,22 @@ function tick () {
 	o_info.poller = jQuery.periodic({period: $pollperiod, decay:1.005, max_period: Number.MAX_VALUE}, function() {
 		if ( !o_info.linkbusy && (this.period > 1000) && (pollError < 2) ) {
 			try {
-				var now = new Date().getTime();
+				let now = new Date().getTime();
 				if ((now - o_info.lastClickTime) < (pollminutes * 60 * 1000)) {
 					if ((now - timestampLastPoll) > (this.period + pollgrowth)) {
 						timestampLastPoll = now;
 						pollcount++;
 						pollgrowth = Math.ceil((this.period+pollgrowth)*(100+growthrate)/100) - this.period;
+
+						let data = {
+							"_csrf": "$csrfToken",
+							"oow": window.name
+						};
 						o_info.ajaxpp = jQuery.ajax({
 							method:'POST',
-							url:'$mapuri/?_csrf=$csrfToken&oow=' + window.name,
+							url:'$mapuri/',
 							dataType: 'json',
+							data: data,
 							cache: false,
 							success:onPollSuccess,
 							error:onPollFailure
@@ -53,6 +59,7 @@ function tick () {
 					stopped = true;
 				}
 			} catch (e) {
+				if(window.console) console.log(e);
 				o_info.poller.cancel(); //stop on errors
 			}
 		}
@@ -85,12 +92,12 @@ function onPollSuccess(content, s, response) {
 }
 
 function onPollFailure(response) {
-  pollError++;
-  if(response.status == 404) { 
-	  ## Not found - happens when user opened a second window and logged in while in the first window the poller is still running. 
-	  ## Only solution: stop poller as this triggers some fancy ***.dms file downloads
-	  o_info.poller.cancel(); 
-  }
+	pollError++;
+	if(response.status == 404) { 
+		## Not found - happens when user opened a second window and logged in while in the first window the poller is still running. 
+		## Only solution: stop poller as this triggers some fancy ***.dms file downloads
+		o_info.poller.cancel(); 
+	}
 }
 </script>
 $r.render("pollperiodPanel")

@@ -241,6 +241,18 @@ public class Form {
 				return;
 			}
 		}
+		
+		if(StringHelper.containsNonWhitespace(ureq.getHttpReq().getQueryString())) {
+			log.warn("Query string not allowed in flexi form: {}", ureq.getHttpReq().getQueryString());
+			ureq.getHttpResp().setStatus(403);
+			return;
+		}
+		
+		if(!"POST".equalsIgnoreCase(ureq.getHttpReq().getMethod())) {
+			log.warn("POST method is mandatory in flexi form");
+			ureq.getHttpResp().setStatus(403);
+			return;
+		}
 
 		String dispatchUri = getRequestParameter(ureq, "dispatchuri");
 		String dispatchAction = getRequestParameter(ureq, "dispatchevent");

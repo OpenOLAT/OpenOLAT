@@ -184,10 +184,11 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 			sb.append("tagify.on('input', function(e) {\n")
 			  .append("  var value = e.detail.value;\n")
 			  .append("  tagify.settings.whitelist.length = 0;") // reset
-			  .append("  jQuery.ajax('").append(mapperUrl).append("?term=' + value, {\n")
+			  .append("  jQuery.ajax('").append(mapperUrl).append("', {\n")
 			  .append("    type:'POST',\n")
 			  .append("    cache: false,\n")
 			  .append("    dataType: 'json',\n")
+			  .append("    data: { 'term': value },\n")
 			  .append("    success: function(responseData, textStatus, jqXHR) {\n")
 			  .append("      tagify.settings.whitelist = responseData;\n")
 			  .append("      tagify.dropdown.show.call(tagify, value);\n")// render the suggestions dropdown

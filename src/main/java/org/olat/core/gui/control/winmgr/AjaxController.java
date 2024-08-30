@@ -51,6 +51,7 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.CannotReplaceDOMFragmentException;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
@@ -58,6 +59,7 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.pushpoll.WindowCommand;
+import org.olat.core.gui.media.BadRequestMediaResource;
 import org.olat.core.gui.media.DefaultMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
@@ -117,58 +119,72 @@ public class AjaxController extends DefaultController {
 		
 		// create a mapper to not block main traffic when polling (or vica versa)
 		final Window window = wboImpl.getWindow();
-		m = new Mapper() {
-			@Override
-			public MediaResource handle(String relPath, HttpServletRequest request) {
-				pollCount++;
-				statsManager.incrementAuthenticatedPollerClick();
+		m = (String relPath, HttpServletRequest request) -> {
+			pollCount++;
+			statsManager.incrementAuthenticatedPollerClick();
 
-				MediaResource resource;
-				UserRequest uureq = null;
-				
-				try {
-					String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
-					uureq = new UserRequestImpl(uriPrefix, request, null);
-					boolean reload = false;
-					Windows ws = Windows.getWindows(uureq);
-					if(ws != null && wboImpl.getChiefController() != null) {
-						ChiefController cc = wboImpl.getChiefController();
-						reload = cc.wishAsyncReload(uureq, false);
-						cc.getWindow().setMarkToBeRemoved(false);
-					}
-					
-					// check for dirty components now.
-					wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
-					Command updateDirtyCom = window.handleDirties();
-					wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
-					
-					if (updateDirtyCom != null) {
-						synchronized (windowcommands) { //o_clusterOK by:fj
-							windowcommands.add(new WindowCommand(wboImpl, updateDirtyCom));
-							if(reload) {
-								String timestampID = uureq.getTimestampID();
-								String reRenderUri = window.buildURIFor(window, timestampID, null);
-								Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
-								windowcommands.add(new WindowCommand(wboImpl, rmrcom));
-							}
-						}
-						resource = extractMediaResource(false);
-					} else {
-						resource = new NothingChangedMediaResource();
-					}
-				} catch (IOException e) {
-					log.error("Abort ajax", e);
-					return null;
-				} catch (CannotReplaceDOMFragmentException e) {
-					log.error("", e);
-					String timestampID = uureq.getTimestampID();
-					String reRenderUri = window.buildURIFor(window, timestampID, null);
-					Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
-					windowcommands.add(new WindowCommand(wboImpl, rmrcom));
-					resource = extractMediaResource(false);
+			MediaResource resource;
+			UserRequest uureq = null;
+			
+			try {
+				if(!"POST".equalsIgnoreCase(request.getMethod())) {
+					log.warn("Polling request need to be POST");
+					return new BadRequestMediaResource();
 				}
-				return resource;
+				if(StringHelper.containsNonWhitespace(request.getQueryString())) {
+					log.warn("Query request forbidden in polling request");
+					return new BadRequestMediaResource();
+				}
+				
+				String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
+				uureq = new UserRequestImpl(uriPrefix, request, null);
+				
+				// Always on
+				String csrfToken = request.getParameter(Form.FORM_CSRF);
+				if(csrfToken == null || !csrfToken.equals(uureq.getUserSession().getCsrfToken())) {
+					log.warn("CSRF token doesn't match: {} {}", csrfToken, ureq.getUserSession().getCsrfToken());
+					return new BadRequestMediaResource();
+				}
+				
+				boolean reload = false;
+				Windows ws = Windows.getWindows(uureq);
+				if(ws != null && wboImpl.getChiefController() != null) {
+					ChiefController cc = wboImpl.getChiefController();
+					reload = cc.wishAsyncReload(uureq, false);
+					cc.getWindow().setMarkToBeRemoved(false);
+				}
+				
+				// check for dirty components now.
+				wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
+				Command updateDirtyCom = window.handleDirties();
+				wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
+				
+				if (updateDirtyCom != null) {
+					synchronized (windowcommands) { //o_clusterOK by:fj
+						windowcommands.add(new WindowCommand(wboImpl, updateDirtyCom));
+						if(reload) {
+							String timestampID = uureq.getTimestampID();
+							String reRenderUri = window.buildURIFor(window, timestampID, null);
+							Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
+							windowcommands.add(new WindowCommand(wboImpl, rmrcom));
+						}
+					}
+					resource = extractMediaResource(false);
+				} else {
+					resource = new NothingChangedMediaResource();
+				}
+			} catch (IOException e) {
+				log.error("Abort ajax", e);
+				return null;
+			} catch (CannotReplaceDOMFragmentException e) {
+				log.error("", e);
+				String timestampID = uureq.getTimestampID();
+				String reRenderUri = window.buildURIFor(window, timestampID, null);
+				Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
+				windowcommands.add(new WindowCommand(wboImpl, rmrcom));
+				resource = extractMediaResource(false);
 			}
+			return resource;
 		};
 
 		mKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), m);
