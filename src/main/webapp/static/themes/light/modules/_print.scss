@@ -28,6 +28,7 @@
 	#o_main_right,
 	#o_main_toolbar,
 	#jsMath_PrintWarning,
+	.o_button_group,
 	.o_segments,
 	.o_table_toolbar,
 	.o_breadcrumb,
@@ -95,12 +96,26 @@
 	}
 	
 	/* When printing dialogs, hide everything below */
+	/* Findings for dialog and basicLighbox:
+	 -  Chrome needs fit-content for hight and min-height 
+	 - FF needs width/min-width to 100% 
+	 - Override positioning to be fixed and display to block
+	 */
 	dialog.dialog {
 		margin: 0 0 0 0;
-		height: 100%;	
+		padding: 0 0 0 0;
+		height: fit-content;
+		max-height: fit-content;
+		width: 100%; 
+		max-width: 100%;
+		
 		.modal-dialog .modal-content {
-			max-height: 100%;
+			height: fit-content;
+			max-height: fit-content;
 		}
+	}
+	.modal {
+		position: absolute;
 	}
 	.modal-content {
 		border: 0;
@@ -114,27 +129,40 @@
 	.modal-dialog {
 		margin: 0 !important;
 		width: 100% !important;
-		height: 100% !important;	
+		height: fit-content !important;	
 		background: #fff !important;
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 	}
 	/* When printing lightboxes, hide everything below */
 	.basicLightbox {
-		justify-content: left;
-	    align-items: initial;
+		position: absolute;
+		left: 0;
+		top:0;
+		justify-content: unset;
+  		align-items: unset;
+  		margin: 0;
+		display: block;
 	    background: white !important;
 	    opacity: 1;
 	    transition: none;
 		height: 100%;	
 		max-height: 100%;
 	    &:before {
-	    	// close icon
+			/* hide dialog close icon */
 	    	display: none;
 	    }
 		.o_lightbox_modal_form {
 			border: none;
-			width: 100%;
+			width: 100% !important;
+			max-height: 100%;
+		    /* overflow-x: hidden; */
+		    /* overflow-y: auto; */
+ 		}
+		
+		&.o_lightbox_close_border .basicLightbox__placeholder {
+    		max-width: 100%;
+    		max-height: 100%;
 		}
 	}
 	
@@ -219,13 +247,13 @@
 		 	Smaller than page to take the unknown print borders into account. 
 		 */
 		.o_page_content {
-			min-width: 1150px;
-			max-width: 1150px;
+			min-width: 1100px;
+			max-width: 1100px;
 		}
 	}
 	/* prevent oversize tables to break layout, limit size to visible space on Sheet */
 	.o_scrollable {
-			max-width: 1150px;
+			max-width: 1100px;
 	}
 	
 	table, figure, figure,
@@ -234,7 +262,6 @@
 	 {
  	  break-inside: avoid-page;
 	}
-	
 
 	h1, h2, h3, h4, h5, h6 {
 	  break-after: avoid-page;
