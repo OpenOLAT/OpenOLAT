@@ -2202,17 +2202,17 @@ public class CourseTest extends Deployments {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		// Deploy the form
+		RepositoryRestClient repositoryRestClient = new RepositoryRestClient(deploymentUrl, administrator);
 		URL formUrl = ArquillianDeployments.class.getResource("file_resources/form_soft_key.zip");
 		String formTitle = "Form-SK " + UUID.randomUUID();
-		RepositoryEntryVO formEntry = new RepositoryRestClient(deploymentUrl)
+		RepositoryEntryVO formEntry = repositoryRestClient
 			.deployResourceBySoftKey(new File(formUrl.toURI()), formTitle, "test9_1_109770189125568");
 		formTitle = formEntry.getDisplayname();
 		
 		// Deploy the course
 		URL courseUrl = ArquillianDeployments.class.getResource("file_resources/course_export_soft_key.zip");
 		String courseTitle = "Course-SK " + UUID.randomUUID();
-		new RepositoryRestClient(deploymentUrl)
-			.deployResourceBySoftKey(new File(courseUrl.toURI()), courseTitle, courseTitle.replace(" ", "-").toLowerCase().substring(0, 36));
+		repositoryRestClient.deployResourceBySoftKey(new File(courseUrl.toURI()), courseTitle, courseTitle.replace(" ", "-").toLowerCase().substring(0, 36));
 		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
