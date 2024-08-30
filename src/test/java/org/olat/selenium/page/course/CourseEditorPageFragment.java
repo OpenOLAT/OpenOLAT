@@ -663,4 +663,23 @@ public class CourseEditorPageFragment {
 			throw e;
 		}
 	}
+	
+	public CoursePageFragment clickToolbarRootCrumb() {
+		try {
+			By crumbBy = By.xpath("//div[contains(@class,'o_edit_mode')]//ol[@class='breadcrumb']/li[@class='o_breadcrumb_root']/a");
+			OOGraphene.waitElementPresence(crumbBy, 10, browser);
+			OOGraphene.waitElement(crumbBy, browser);
+			browser.findElement(crumbBy).click();
+			OOGraphene.waitBusy(browser);
+			
+			By lastCrumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_last_crumb.o_nowrap");
+			OOGraphene.waitElementDisappears(lastCrumbBy, 10, browser);
+			By mainId = By.id("o_main");
+			OOGraphene.waitElement(mainId, browser);
+			return new CoursePageFragment(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Clicktoolbarrootcrumb", browser);
+			throw e;
+		}
+	}
 }
