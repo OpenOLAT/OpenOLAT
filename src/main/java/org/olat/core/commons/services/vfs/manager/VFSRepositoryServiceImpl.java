@@ -308,7 +308,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		File directory = toFile(vfsMetadata);
 		if (directory != null) {
 			try {
-				migrateDirectories(directory);
+				migrateDirectories(directory, false);
 			} catch (IOException e) {
 				dbInstance.closeSession();
 				log.error("Error while cleaning metadata", e);
@@ -1713,7 +1713,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		File directory = toFile(container);
 		if(VFSRepositoryModule.canMeta(directory) == VFSStatus.YES) {
 			try {
-				migrateDirectories(directory);
+				migrateDirectories(directory, true);
 			} catch (IOException e) {
 				log.error("", e);
 			}
@@ -1731,7 +1731,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 		VFSMetadata persistedParent = ((VFSMetadataImpl)metadata).getParent();
 		String materializedPath = metadataDao.getMaterializedPathKeys((VFSMetadataImpl)parent, (VFSMetadataImpl)metadata);
-		if(!persistedParent.equals(parent)) {
+		if(persistedParent != null && !persistedParent.equals(parent)) {
 			((VFSMetadataImpl)metadata).setMaterializedPathKeys(materializedPath);
 			((VFSMetadataImpl)metadata).setParent(parent);
 			return metadataDao.updateMetadata(metadata);
@@ -1745,7 +1745,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		return metadata;
 	}
 
-	public void migrateDirectories(File folder) throws IOException {
+	public void migrateDirectories(File folder, boolean importFromFile) throws IOException {
 		Deque<VFSMetadata> parentLine = new LinkedList<>();
 		AtomicInteger migrationCounter = new AtomicInteger(0);
 		
@@ -1762,7 +1762,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				}
 				
 				VFSMetadata parent = parentLine.peekLast();
-				VFSMetadata metadata = migrateMetadata(dir.toFile(), parent);
+				VFSMetadata metadata = migrateMetadata(dir.toFile(), parent, importFromFile);
 				metadata = checkParentLine(metadata, parent);
 				parentLine.add(metadata);
 				dbInstance.commit();
@@ -1773,7 +1773,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				File f = file.toFile();
 				if(!f.isHidden() && VFSRepositoryModule.canMeta(f) == VFSStatus.YES) {
-					VFSMetadata metadata = migrateMetadata(file.toFile(), parentLine.getLast());
+					VFSMetadata metadata = migrateMetadata(file.toFile(), parentLine.getLast(), importFromFile);
 					checkParentLine(metadata, parentLine.getLast());
 					
 					migrationCounter.incrementAndGet();
@@ -1802,7 +1802,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		});
 	}
 	
-	public VFSMetadata migrate(File file, VFSMetadata parent) {
+	public VFSMetadata migrate(File file, VFSMetadata parent, boolean importFromFile) {
 		String relativePath = getRelativePath(file.getParentFile());
 		if(relativePath.equals("..")) {
 			return null;
@@ -1815,14 +1815,14 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		VFSMetadata metadata = metadataDao.getMetadata(relativePath, filename, file.isDirectory());
 		if(metadata == null) {
 			if(parent == null) {
-				parent = migrate(file.getParentFile(), null);
+				parent = migrate(file.getParentFile(), null, importFromFile);
 			}
-			metadata = migrateMetadata(file, parent);
+			metadata = migrateMetadata(file, parent, importFromFile);
 		}
 		return metadata;
 	}
 	
-	private VFSMetadata migrateMetadata(File file, VFSMetadata parent) {
+	private VFSMetadata migrateMetadata(File file, VFSMetadata parent, boolean importFromFile) {
 		VFSMetadata metadata = null;
 		String metaPath = getCanonicalMetaPath(file);
 		String relativePath = getRelativePath(file.getParentFile());
@@ -1837,7 +1837,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		long size = directory ? 0l : file.length();
 
 		Date fileLastModified = new Date(file.lastModified());
-		if(metaPath != null) {
+		if(importFromFile && metaPath != null) {
 			File metaFile = new File(metaPath);
 			if(metaFile.exists()) {
 				List<Thumbnail> thumbnails = null;
