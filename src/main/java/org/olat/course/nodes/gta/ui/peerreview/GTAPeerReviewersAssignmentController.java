@@ -32,6 +32,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -46,8 +47,8 @@ public class GTAPeerReviewersAssignmentController extends AbstractPeerReviewsAss
 	private final TaskPortraitController taskPortraitCtrl;
 	
 	public GTAPeerReviewersAssignmentController(UserRequest ureq, WindowControl wControl, TaskList taskList,
-			Identity identityToReview, Task taskToReview, GTACourseNode gtaNode) {
-		super(ureq, wControl, taskList, gtaNode);
+			Identity identityToReview, Task taskToReview, RepositoryEntry courseEntry, GTACourseNode gtaNode) {
+		super(ureq, wControl, taskList, courseEntry, gtaNode);
 		this.taskToReview = taskToReview;
 		
 		taskPortraitCtrl = new TaskPortraitController(ureq, getWindowControl(), identityToReview, taskToReview);
@@ -85,6 +86,7 @@ public class GTAPeerReviewersAssignmentController extends AbstractPeerReviewsAss
 		TaskReviewAssignment assignment = getAssignmentFor(taskToReview, identity, assignments);
 		PeerReviewAssignmentRow assignmentRow = new PeerReviewAssignmentRow(taskOfAssignee, assignment, identity, userPropertyHandlers, getLocale());
 		decorateRow(identity, assignment, assignmentRow, allAssignments);
+		assignmentRow.setSubmissionStatus(statusRenderer.calculateSubmissionStatus(identity, taskOfAssignee));
 		return assignmentRow;
 	}
 

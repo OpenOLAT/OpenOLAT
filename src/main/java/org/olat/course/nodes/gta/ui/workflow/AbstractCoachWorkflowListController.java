@@ -121,6 +121,7 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 	protected FormLink bulkExtendButton;
 	protected FlexiTableElement tableEl;
 	protected CoachedParticipantTableModel tableModel;
+	protected final TaskStepStatusCellRenderer statusRenderer;
 	
 	private Controller toolsCtrl;
 	protected CloseableModalController cmc;
@@ -132,6 +133,9 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 	AbstractCoachWorkflowListController(UserRequest ureq, WindowControl wControl, String pageName,
 			UserCourseEnvironment coachCourseEnv, List<Identity> identities, GTACourseNode gtaNode) {
 		super(ureq, wControl, pageName, coachCourseEnv,  identities, gtaNode);
+		
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		statusRenderer = new TaskStepStatusCellRenderer(courseEntry, gtaNode, gtaManager, getTranslator());
 	}
 	
 	@Override
@@ -179,7 +183,7 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 	
 	protected void initAdministrationColumnsModel(FlexiTableColumnModel columnsModel) {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachCols.taskStepStatus,
-				new TaskStepStatusCellRenderer(getTranslator())));
+				statusRenderer));
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CoachCols.tools);
 		toolsCol.setExportable(false);

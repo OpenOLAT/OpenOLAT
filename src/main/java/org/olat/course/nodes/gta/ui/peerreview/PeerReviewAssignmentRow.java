@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
+import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -42,6 +43,7 @@ public class PeerReviewAssignmentRow extends UserPropertiesRow {
 	private int numOfReviewers = 0;
 	private int numOfTasksToReviews = 0;
 	private TaskReviewAssignment assignment;
+	private CoachedParticipantStatus submissionStatus;
 	
 	private MultipleSelectionElement assignmentEl;
 	
@@ -83,6 +85,14 @@ public class PeerReviewAssignmentRow extends UserPropertiesRow {
 
 	public void setNumOfTasksToReviews(int numOfTasksToReviews) {
 		this.numOfTasksToReviews = numOfTasksToReviews;
+	}
+	
+	public CoachedParticipantStatus getSubmissionStatus() {
+		return submissionStatus;
+	}
+
+	public void setSubmissionStatus(CoachedParticipantStatus submissionStatus) {
+		this.submissionStatus = submissionStatus;
 	}
 	
 	public boolean isAssigned() {
