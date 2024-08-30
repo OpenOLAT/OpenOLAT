@@ -103,7 +103,6 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 					&& !bFile.startsWith(bcRoot.resolve("portfolio"))
 					&& !bFile.startsWith(bcRoot.resolve("scorm"))
 					&& !bFile.startsWith(bcRoot.resolve("certificates"))
-					&& !bFile.startsWith(bcRoot.resolve("qtiassessment"))
 					&& !bFile.startsWith(bcRoot.resolve("transcodedVideos"))
 					&& !bFile.startsWith(bcRoot.resolve("qpool"))
 					? VFSStatus.YES : VFSStatus.NO;
@@ -119,6 +118,7 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 				&& !bFile.startsWith(FolderConfig.getCanonicalMetaRootPath())
 				&& !bFile.startsWith(FolderConfig.getCanonicalVersionRootPath())
 				&& !bFile.startsWith(FolderConfig.getCanonicalTmpPath())
+				&& !bFile.startsWith(bcRoot.resolve("qtiassessment"))
 				&& !bFile.startsWith(bcRoot.resolve("bulkassessment"))
 				&& (!file.isHidden() || filename.equals(VFSRepositoryService.TRASH_NAME))
 				&& !filename.startsWith("._oo_")

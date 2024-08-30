@@ -19,14 +19,17 @@
  */
 package org.olat.upgrade;
 
+import java.io.File;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
+import org.olat.core.commons.services.vfs.manager.VFSRepositoryServiceImpl;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
@@ -49,11 +52,12 @@ public class OLATUpgrade_19_0_4 extends OLATUpgrade {
 
 	private static final String RESTORE_FROM_TRASH = "RESTORE FROM TRASH";
 	private static final String CLEAN_UP_DELETED_METADATA = "CLEAN UP DELETED METADATA";
+	private static final String CREATE_MISSING_METADATA = "CREATE MISSING METADATA";
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
+	private VFSRepositoryServiceImpl vfsRepositoryService;
 	@Autowired
 	private VFSMetadataDAO metadataDao;
 
@@ -79,6 +83,9 @@ public class OLATUpgrade_19_0_4 extends OLATUpgrade {
 		boolean allOk = true;
 		allOk &= restoreFromTrash(upgradeManager, uhd);
 		allOk &= cleanUpDeletedMetadata(upgradeManager, uhd);
+		if (allOk) {
+			allOk &= createMissingMetadata(upgradeManager, uhd);
+		}
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -246,5 +253,24 @@ public class OLATUpgrade_19_0_4 extends OLATUpgrade {
 				.getResultList();
 	}
 	
+	private boolean createMissingMetadata(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(CREATE_MISSING_METADATA)) {
+			try {
+				log.info("Create missing metadata.");
+				
+				vfsRepositoryService.migrateDirectories(new File(FolderConfig.getCanonicalRoot()), false);
+				
+				log.info("Create missing metadata finished.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(CREATE_MISSING_METADATA, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
 	
 }
