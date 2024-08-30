@@ -23,7 +23,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -31,10 +30,12 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
@@ -81,6 +82,8 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 	private UserLifecycleManager userLifecycleManager;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private VFSMetadataDAO metadataDao;
 
 	public OLATUpgrade_19_0_0() {
 		super();
@@ -244,20 +247,26 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 	
 	private void migrateMetadata(VFSMetadata metadata) {
 		if (metadata.isDirectory()) {
-			finishMetadataMigration(metadata, "No migration of directory: {}");
+			VFSItem item = vfsRepositoryService.getItemFor(metadata);
+			if (item instanceof VFSContainer && !item.getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
+				if (item.exists()) {
+					unmarkDeleted(metadata);
+				} else {
+					deleteMetadata(metadata);
+				}
+			}
 			return;
 		}
 		
 		VFSItem vfsItem = vfsRepositoryService.getItemFor(metadata);
-		if (vfsItem != null && vfsItem.exists()) {
-			// File still exists. Delete it again.
-			vfsItem.delete();
+		if (vfsItem instanceof VFSLeaf && vfsItem.exists()) {
+			unmarkDeleted(metadata);
 			return;
 		}
 		
 		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
 		if (revisions.isEmpty()) {
-			finishMetadataMigration(metadata, "No migration of deleted file without revision: {}");
+			deleteMetadata(metadata);
 			return;
 		}
 		
@@ -277,23 +286,33 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 						// The deletedDate is set as of today because we do not want do delete a lot of
 						// files directly in the night after the update.
 					}
+					log.info("Revision moved to trash: {}", metadata.getRelativePath() + "/" + metadata.getFilename());
+					return;
 				} catch (Exception e) {
 					log.error("", e);
 				}
 			}
 		}
 		
-		finishMetadataMigration(metadata, "Migration of deleted file not successfull: {}");
+		deleteMetadata(metadata);
+	}
+	private void unmarkDeleted(VFSMetadata metadata) {
+		if (metadata instanceof VFSMetadataImpl metadataImpl) {
+			metadataImpl.setDeletedBy(null);
+			metadataImpl.setDeleted(false);
+			metadataImpl.setDeletedDate(null);
+			metadataDao.updateMetadata(metadataImpl);
+			log.info("Metadata of existing file marked as not deleted: {}", metadataImpl.getRelativePath() + "/" + metadataImpl.getFilename());
+		}
 	}
 
-	private void finishMetadataMigration(VFSMetadata metadata, String logMessage) {
-		VFSMetadataImpl vfsMetadata = (VFSMetadataImpl)vfsRepositoryService.getMetadata(metadata);
-		if (vfsMetadata.getDeletedDate() == null) {
-			vfsMetadata.setDeleted(true);
-			vfsMetadata.setDeletedDate(new Date());
-			metadata = vfsRepositoryService.updateMetadata(vfsMetadata);
-			log.info(logMessage, metadata.getRelativePath() + "/" + metadata.getFilename());
+	private void deleteMetadata(VFSMetadata metadata) {
+		VFSMetadata reloadedMetadata = vfsRepositoryService.getMetadata(metadata);
+		// May be deleted with parent directory
+		if (reloadedMetadata != null) {
+			vfsRepositoryService.deleteMetadata(metadata);
 		}
+		log.info("Metadata of not existing file deleted: {}", metadata.getRelativePath() + "/" + metadata.getFilename());
 	}
 	
 	private void prepareWikiFile() {
