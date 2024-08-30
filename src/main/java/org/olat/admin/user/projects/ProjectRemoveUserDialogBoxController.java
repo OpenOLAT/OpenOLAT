@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -72,8 +73,9 @@ public class ProjectRemoveUserDialogBoxController extends FormBasicController {
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
+		FormSubmit submitButton = uifactory.addFormSubmitButton("deleteButton", "table.header.proj.overview.removes", buttonsContainer);
+		submitButton.setElementCssClass("btn-danger");
 		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("deleteButton", "ok", buttonsContainer);
 	}
 
 	public List<ProjProject> getProjectsToLeave() {

@@ -117,7 +117,7 @@ public class ProjectsOverviewController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectOverviewCols.title));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ProjectOverviewCols.externalRef));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectOverviewCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectOverviewCols.status, new ProjectStatusRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectOverviewCols.roles));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectOverviewCols.regDate));
@@ -159,7 +159,7 @@ public class ProjectsOverviewController extends FormBasicController {
 				.toList();
 
 		dataModel.setObjects(rows);
-		tableEl.sort(new SortKey(ProjectOverviewCols.title.name(), false));
+		tableEl.sort(new SortKey(ProjectOverviewCols.title.name(), true));
 		tableEl.reset(true, true, true);
 	}
 
