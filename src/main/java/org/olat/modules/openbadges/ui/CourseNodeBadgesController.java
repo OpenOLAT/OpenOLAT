@@ -41,6 +41,7 @@ public class CourseNodeBadgesController extends BasicController {
 	@Autowired
 	private RepositoryManager repositoryManager;
 
+	// Used for the 'Badges' segment of the assessable course node run controllers
 	public CourseNodeBadgesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, CourseNode courseNode) {
 		super(ureq, wControl);
 

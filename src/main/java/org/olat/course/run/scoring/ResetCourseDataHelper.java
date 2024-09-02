@@ -68,6 +68,8 @@ import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -79,6 +81,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
@@ -119,7 +122,9 @@ public class ResetCourseDataHelper {
 	private EfficiencyStatementManager efficiencyStatementMgr;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
-	
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
+
 	public ResetCourseDataHelper(CourseEnvironment courseEnv) {
 		this.courseEnv = courseEnv;
 		CoreSpringFactory.autowireObject(this);
@@ -172,6 +177,14 @@ public class ResetCourseDataHelper {
 		if(archiveNames.isEmpty()) {
 			return null;
 		}
+
+		if (resetCourse) {
+			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+			NodeAccessType nodeAccessType  = courseEnv.getCourseConfig().getNodeAccessType();
+			boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType());
+			openBadgesManager.handleCourseReset(courseEntry, learningPath, doer);
+		}
+
 		return new ResetCourseDataMediaResource(archiveNames, courseEnv);
 	}
 

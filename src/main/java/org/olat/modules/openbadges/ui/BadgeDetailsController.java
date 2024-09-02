@@ -151,7 +151,7 @@ public class BadgeDetailsController extends FormBasicController {
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient, CMD_SELECT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new BadgeAssertionStatusRenderer()));
 
 		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
 				Cols.tools.i18nHeaderKey(),
@@ -487,7 +487,7 @@ public class BadgeDetailsController extends FormBasicController {
 			BadgeAssertion badgeAssertion = getObject(row).badgeAssertion();
 			return switch (Cols.values()[col]) {
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
-				case status -> translate("assertion.status." + badgeAssertion.getStatus().name());
+				case status -> badgeAssertion.getStatus();
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
 				case tools -> getObject(row).toolLink();
 			};

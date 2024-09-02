@@ -166,11 +166,15 @@ public class BadgeClassDAO {
 		sb.append("select bc, ");
 		sb.append(" (select count(ba.key) from badgeassertion ba ");
 		sb.append("   where ba.badgeClass.key = bc.key ");
-		sb.append(" ) as useCount, ");
-		sb.append(" (select count(rba.key) from badgeassertion rba");
-		sb.append("   where rba.badgeClass.key = bc.key");
-		sb.append("  and rba.status ").in(BadgeAssertion.BadgeAssertionStatus.revoked);
-		sb.append(" ) as revokedCount ");
+		sb.append(" ), ");
+		sb.append(" (select count(ba.key) from badgeassertion ba");
+		sb.append("  where ba.badgeClass.key = bc.key");
+		sb.append("  and ba.status = '").append(BadgeAssertion.BadgeAssertionStatus.revoked.name()).append("'");
+		sb.append(" ), ");
+		sb.append(" (select count(ba.key) from badgeassertion ba");
+		sb.append("  where ba.badgeClass.key = bc.key");
+		sb.append("  and ba.status = '").append(BadgeAssertion.BadgeAssertionStatus.reset.name()).append("'");
+		sb.append(" ) ");
 		sb.append("from badgeclass bc ");
 		if (entry != null) {
 			sb.append("where bc.entry.key = :entryKey ");
@@ -273,11 +277,15 @@ public class BadgeClassDAO {
 				.append("select bc,")
 				.append(" (select count(ba.key) from badgeassertion ba")
 				.append("   where ba.badgeClass.key = bc.key")
-				.append(" ) as useCount, ")
-				.append(" (select count(rba.key) from badgeassertion rba")
-				.append("  where rba.badgeClass.key = bc.key")
-				.append("  and rba.status ").in(BadgeAssertion.BadgeAssertionStatus.revoked)
-				.append(" ) as revokedCount")
+				.append(" ), ")
+		        .append(" (select count(ba.key) from badgeassertion ba")
+		        .append("  where ba.badgeClass.key = bc.key")
+		        .append("  and ba.status = '").append(BadgeAssertion.BadgeAssertionStatus.revoked.name()).append("'")
+		        .append(" ), ")
+		        .append(" (select count(ba.key) from badgeassertion ba")
+		        .append("  where ba.badgeClass.key = bc.key")
+		        .append("  and ba.status = '").append(BadgeAssertion.BadgeAssertionStatus.reset.name()).append("'")
+		        .append(" ) ")
 				.append(" from badgeclass bc")
 				.append(" inner join bc.entry as re")
 				.append(" inner join re.groups as groupRel")
@@ -301,11 +309,13 @@ public class BadgeClassDAO {
 		private final BadgeClass badgeClass;
 		private final Long useCount;
 		private final Long revokedCount;
+		private final Long resetCount;
 
 		public BadgeClassWithUseCount(Object[] objectArray) {
 			this.badgeClass = (BadgeClass) objectArray[0];
 			this.useCount = PersistenceHelper.extractPrimitiveLong(objectArray, 1);
 			this.revokedCount = PersistenceHelper.extractPrimitiveLong(objectArray, 2);
+			this.resetCount = PersistenceHelper.extractPrimitiveLong(objectArray, 3);
 		}
 
 		public BadgeClass getBadgeClass() {
@@ -318,6 +328,10 @@ public class BadgeClassDAO {
 
 		public Long getRevokedCount() {
 			return revokedCount;
+		}
+
+		public Long getResetCount() {
+			return resetCount;
 		}
 	}
 }

@@ -48,6 +48,16 @@
 	display: flex;
 	flex-direction: column;
 
+	.panel-heading {
+		position: relative;
+	}
+
+	.o_badge_assertion_status {
+		position: absolute;
+		top: 4px;
+		left: 4px;
+	}
+
 	.o_badge_meta {
 		flex-grow: 1;
 		display: flex;
@@ -281,6 +291,22 @@ span.o_labeled_light {
 	&.o_badge_class_status_revoked {
 		color: $btn-danger-border;
 	}
+
+	&.o_badge_assertion_status_editing {
+		color: $btn-info-border;
+	}
+
+	&.o_badge_assertion_status_issued {
+		color: $btn-success-border;
+	}
+
+	&.o_badge_assertion_status_revoked {
+		color: $btn-danger-border;
+	}
+
+	&.o_badge_assertion_status_reset {
+		color: $btn-warning-border;
+	}
 }
 
 .o_labeled {
@@ -294,6 +320,22 @@ span.o_labeled_light {
 		background-color: $btn-danger-bg;
 	}
 	&.o_badge_class_status_deleted {
+		background-color: $btn-warning-bg;
+	}
+
+	&.o_badge_assertion_status_editing {
+		background-color: $btn-info-bg;
+	}
+
+	&.o_badge_assertion_status_issued {
+		background-color: $btn-success-bg;
+	}
+
+	&.o_badge_assertion_status_revoked {
+		background-color: $btn-danger-bg;
+	}
+
+	&.o_badge_assertion_status_reset {
 		background-color: $btn-warning-bg;
 	}
 }

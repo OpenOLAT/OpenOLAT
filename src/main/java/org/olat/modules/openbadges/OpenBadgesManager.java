@@ -144,6 +144,8 @@ public interface OpenBadgesManager {
 	BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 										Identity recipient, Identity savedBy);
 
+	void handleCourseReset(RepositoryEntry courseEntry, boolean learningPath, Identity doer);
+
 	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry,
 								  boolean learningPath, List<AssessmentEntry> assessmentEntries);
 
@@ -260,7 +262,7 @@ public interface OpenBadgesManager {
 		}
 	}
 
-	record BadgeClassWithSizeAndCount(BadgeClass badgeClass, Size size, Long count, Long revokedCount) {
+	record BadgeClassWithSizeAndCount(BadgeClass badgeClass, Size size, Long count, Long revokedCount, Long resetCount) {
 		public Size fitIn(int width, int height) {
 			double sourceAspectRatio = (double) size.getWidth() / (double) size.getHeight();
 			double targetAspectRatio = (double) width / (double) height;
