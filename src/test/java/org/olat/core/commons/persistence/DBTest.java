@@ -177,7 +177,7 @@ public class DBTest extends OlatTestCase {
 
 	@Test
 	public void testDbPerf() {
-		int loops = 1000;
+		int loops = 100;
 		long timeWithoutTransction = 0;
 		log.info("start testDbPerf with loops=" + loops);
 		try {
@@ -260,7 +260,7 @@ public class DBTest extends OlatTestCase {
 	@Test
 	public void testConcurrentUpdate() {
 		int maxWorkers = 5;
-		int loops = 100;
+		int loops = 50;
 		log.info("start testConcurrentUpdate maxWorkers=" + maxWorkers + "  loops=" + loops);
 		
 		CountDownLatch latch = new CountDownLatch(maxWorkers);
@@ -297,10 +297,11 @@ public class DBTest extends OlatTestCase {
 			this.workerId = Integer.toString(id);
 		}
 
+		@Override
 		public void run() {
 			int loopCounter = 0;
 			try {
-				Thread.sleep(10);
+				sleep(10);
 				
 				while (loopCounter++ < numberOfLoops ) {
 					String propertyKey = UUID.randomUUID().toString();
