@@ -84,7 +84,7 @@
 		<org.postgresql.version>42.7.2</org.postgresql.version>
 		<org.infinispan.version>14.0.21.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.23.1</version.selenium>
+		<version.selenium>4.24.0</version.selenium>
 		<activemq.artemis.version>2.31.2</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.1</jakarta.xml.bind-api>
@@ -1449,7 +1449,7 @@
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<skipTests>${skipTests}</skipTests>
-					<argLine>-Xmx1024m -Xms256m -Djava.awt.headless=true</argLine>
+					<argLine>-Xmx1024m -Xms256m -Djava.awt.headless=true -Djava.security.egd=file:/dev/urandom</argLine>
 					<systemPropertyVariables>
 						<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
 					</systemPropertyVariables>
@@ -1471,7 +1471,7 @@
 					<skipITs>${skipSeleniumTests}</skipITs>
 					<skipTests>${skipSeleniumTests}</skipTests>
 					<reuseForks>false</reuseForks>
-					<argLine>-Xmx512m -Xms256m -Djava.awt.headless=true -Dwebdriver.http.factory=jdk-http-client</argLine>
+					<argLine>-Xmx1024m -Xms256m -Djava.awt.headless=true -Dwebdriver.http.factory=jdk-http-client -Djava.security.egd=file:/dev/urandom</argLine>
 					<trimStackTrace>false</trimStackTrace>
 					<systemPropertyVariables>
 						<profile>${test.env}</profile>
@@ -2144,7 +2144,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.14.0</version>
+			<version>3.17.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

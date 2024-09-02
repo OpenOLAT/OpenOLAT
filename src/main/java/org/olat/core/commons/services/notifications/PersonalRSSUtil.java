@@ -73,7 +73,7 @@ public class PersonalRSSUtil {
 		Authentication auth = secManager.findAuthentication(identity, RSS_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		if (auth == null) {
 			// no token found - create one
-			 token = RandomStringUtils.randomAlphanumeric(6);
+			 token = RandomStringUtils.secure().nextAlphanumeric(6);
 			 secManager.createAndPersistAuthentication(identity, RSS_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER, null, identity.getName(), token, null);
 		} else {
 			token = auth.getCredential();

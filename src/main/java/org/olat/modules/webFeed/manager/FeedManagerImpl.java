@@ -709,7 +709,7 @@ public class FeedManagerImpl extends FeedManager {
 			Authentication authentication = securityManager.findAuthenticationByAuthusername(idKey, FeedMediaDispatcher.TOKEN_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 			if (authentication == null) {
 				// Create an authentication
-				String token = RandomStringUtils.randomAlphanumeric(6);
+				String token = RandomStringUtils.secure().nextAlphanumeric(6);
 				authentication = securityManager.createAndPersistAuthentication(identity, FeedMediaDispatcher.TOKEN_PROVIDER, BaseSecurity.DEFAULT_ISSUER, null, idKey, token, null);
 			}
 			// If the repository entry allows guest access it is public, thus not
