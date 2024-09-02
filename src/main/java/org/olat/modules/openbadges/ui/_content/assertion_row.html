@@ -1,6 +1,11 @@
 <div class="o_badge_row panel panel-default">
 	<div class="panel-heading o_active" onclick="$f.ffXHREvent("select", "${row.badgeAssertion.key}");">
 		$r.render("badgeImage")
+		#if($row.badgeAssertion.status.name().equals('revoked') || $row.badgeAssertion.status.name().equals('reset'))
+		<div class="o_badge_assertion_status o_labeled o_badge_assertion_status_${row.badgeAssertion.status.name()}">
+			${r.translate("assertion.status." + $row.badgeAssertion.status)}
+		</div>
+		#end
 	</div>
 	<div class="o_badge_meta panel-body o_min_height">
 		<div class="o_active" onclick="$f.ffXHREvent("select", "${row.badgeAssertion.key}");">

@@ -48,7 +48,7 @@ public class OtherBadgeEarnedCondition implements BadgeCondition {
 	public String toString(Translator translator, RepositoryEntry courseEntry) {
 		OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassUuid);
-		return translator.translate("badgeCondition." + KEY, badgeClass.getName());
+		return translator.translate("badgeCondition." + KEY, badgeClass == null ? "-" : badgeClass.getName());
 	}
 
 	public String getBadgeClassUuid() {

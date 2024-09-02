@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.core.gui.translator.Translator;
 
 /**
  * Initial date: 2023-06-28<br>
@@ -40,12 +39,10 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 
 	private static final IssuedBadgeCols[] COLS = IssuedBadgeCols.values();
 
-	private final Translator translator;
 	private final Locale locale;
 
-	public IssuedBadgesTableModel(FlexiTableColumnModel columnModel, Translator translator, Locale locale) {
+	public IssuedBadgesTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
-		this.translator = translator;
 		this.locale = locale;
 	}
 
@@ -60,7 +57,7 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 		return switch (COLS[col]) {
 			case image -> row.getBadgeAssertion().getBakedImage();
 			case title -> row.getName();
-			case status -> translator.translate("assertion.status." + row.getBadgeAssertion().getStatus().name());
+			case status -> row.getBadgeAssertion().getStatus();
 			case issuer -> row.getBadgeAssertion().getBadgeClass().getIssuerDisplayString();
 			case issuedOn -> row.getBadgeAssertion().getIssuedOn();
 			case recipient -> row.getRecipientName();

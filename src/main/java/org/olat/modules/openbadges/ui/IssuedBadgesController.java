@@ -129,7 +129,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 
 		initForm(ureq);
 		loadModel(ureq, null);
-		initFilters(ureq);
+		initFilters();
 	}
 
 	@Override
@@ -151,7 +151,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 					sb.append("</div>");
 				}));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.title, CMD_SELECT));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.status));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.status, new BadgeAssertionStatusRenderer()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuer));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuedOn));
 		if (identity == null) {
@@ -164,7 +164,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		);
 		columnModel.addFlexiColumnModel(toolsColumn);
 
-		tableModel = new IssuedBadgesTableModel(columnModel, getTranslator(), getLocale());
+		tableModel = new IssuedBadgesTableModel(columnModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20,
 				false, getTranslator(), formLayout);
 		tableEl.setCssDelegate(CssDelegate.DELEGATE);
@@ -177,7 +177,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		tableEl.setSearchEnabled(false);
 	}
 
-	private void initFilters(UserRequest ureq) {
+	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 
 		SelectionValues statusKV = new SelectionValues();

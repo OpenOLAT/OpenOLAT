@@ -761,7 +761,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			enhancedBadgeClasses = getBadgeClassesWithUseCounts(entry);
 		}
 		return enhancedBadgeClasses.stream().map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(),
-				sizeForBadgeClass(obj.getBadgeClass()), obj.getUseCount(), obj.getRevokedCount())).toList();
+				sizeForBadgeClass(obj.getBadgeClass()), obj.getUseCount(), obj.getRevokedCount(),
+				obj.getResetCount())).toList();
 	}
 
 	private boolean updateBadgeClasses(List<BadgeClassDAO.BadgeClassWithUseCount> enhancedBadgeClasses) {
@@ -907,7 +908,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	public List<BadgeClassWithSizeAndCount> getCourseBadgeClassesWithSizesAndCounts(Identity identity) {
 		return getCourseBadgeClassesWithUseCounts(identity).stream()
 				.map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(), sizeForBadgeClass(obj.getBadgeClass()),
-						obj.getUseCount(), obj.getRevokedCount())).toList();
+						obj.getUseCount(), obj.getRevokedCount(), obj.getResetCount())).toList();
 	}
 
 	//
@@ -919,6 +920,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 									 Identity recipient, Identity awardedBy) {
 		if (badgeAssertionExists(recipient, badgeClass)) {
 			log.debug("Badge assertion exists for user " + recipient.toString() + " and badge " + badgeClass.getName());
+			recreateBadgeAssertionIfNeeded(recipient, badgeClass, issuedOn, awardedBy);
 			return null;
 		}
 
@@ -964,6 +966,23 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 
 		return badgeAssertion;
+	}
+
+	private void recreateBadgeAssertionIfNeeded(Identity recipient, BadgeClass badgeClass, Date issuedOn, Identity awardedBy) {
+		BadgeAssertion badgeAssertion = badgeAssertionDAO.getBadgeAssertion(recipient, badgeClass);
+		if (badgeAssertion == null) {
+			log.debug("No badge assertion exists for user {} and badge {}.", recipient, badgeClass);
+			return;
+		}
+		if (badgeAssertion.getStatus().equals(BadgeAssertion.BadgeAssertionStatus.issued)) {
+			log.debug("No need to update badge assertion for user {} and badge {}.", recipient, badgeClass);
+			return;
+		}
+
+		badgeAssertion.setStatus(BadgeAssertion.BadgeAssertionStatus.issued);
+		badgeAssertion.setIssuedOn(issuedOn);
+		badgeAssertion.setAwardedBy(awardedBy);
+		badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
 	}
 
 	private MailerResult sendBadgeEmail(BadgeAssertion badgeAssertion, File bakedImageFile) {
@@ -1016,6 +1035,55 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				criteriaLine,
 				downloadButton,
 		};
+	}
+
+	@Override
+	public void handleCourseReset(RepositoryEntry courseEntry, boolean learningPath, Identity doer) {
+		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false,
+				false, true, true, true,
+				null, null);
+		List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries =
+				getParticipantsWithAssessmentEntryList(courseEntry, doer, secCallback);
+
+		// Direct course entry badge classes
+		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
+		for (BadgeClass badgeClass : badgeClasses) {
+			handleCourseReset(badgeClass, learningPath, participantsAndAssessmentEntries);
+		}
+	}
+
+	private void handleCourseReset(BadgeClass badgeClass, boolean learningPath,
+								   List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries) {
+		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+		assert badgeCriteria != null;
+
+		if (!badgeCriteria.isAwardAutomatically()) {
+			return;
+		}
+
+		for (ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries) {
+			List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
+			Identity assessedIdentity = participantAndAssessmentEntries.participant();
+			if (!badgeCriteria.allCourseConditionsMet(assessedIdentity, learningPath, assessmentEntries)) {
+				handleCourseReset(assessedIdentity, badgeClass);
+			}
+		}
+	}
+
+	private void handleCourseReset(Identity assessedIdentity, BadgeClass badgeClass) {
+		BadgeAssertion badgeAssertion = badgeAssertionDAO.getBadgeAssertion(assessedIdentity, badgeClass);
+		if (badgeAssertion == null) {
+			// candidate doesn't have this badge
+			return;
+		}
+
+		if (badgeAssertion.getStatus().equals(BadgeAssertion.BadgeAssertionStatus.reset)) {
+			// badge assertion already in the desired state
+			return;
+		}
+
+		badgeAssertion.setStatus(BadgeAssertion.BadgeAssertionStatus.reset);
+		badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
 	}
 
 	@Override

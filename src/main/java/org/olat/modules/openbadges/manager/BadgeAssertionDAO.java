@@ -174,6 +174,19 @@ public class BadgeAssertionDAO {
 				.getResultList().get(0);
 	}
 
+	public BadgeAssertion getBadgeAssertion(Identity recipient, BadgeClass badgeClass) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ba from badgeassertion ba ");
+		sb.append(" where ba.recipient.key = :recipientKey ");
+		sb.append("and ba.badgeClass.key = :badgeClassKey ");
+		List<BadgeAssertion> badgeAssertions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BadgeAssertion.class)
+				.setParameter("recipientKey", recipient.getKey())
+				.setParameter("badgeClassKey", badgeClass.getKey())
+				.getResultList();
+		return badgeAssertions != null && !badgeAssertions.isEmpty() ? badgeAssertions.get(0) : null;
+	}
+
 	public boolean unrevokedBadgeAssertionsExist(BadgeClass badgeClass) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(ba.key) from badgeassertion ba ");

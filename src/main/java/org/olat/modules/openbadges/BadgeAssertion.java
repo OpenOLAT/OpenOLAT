@@ -31,7 +31,7 @@ import org.olat.core.id.Identity;
 public interface BadgeAssertion {
 
 	enum BadgeAssertionStatus {
-		editing, issued, revoked
+		editing, issued, revoked, reset
 	}
 
 	Long getKey();

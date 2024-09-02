@@ -75,6 +75,9 @@
 		#if($expiredBadge)
 		<div style="margin-bottom: 14px; margin-right: 15px;" class="o_warning">$r.translate("badge.expired")</div>
 		#end
+		#if($resetBadge)
+		<div style="margin-bottom: 14px; margin-right: 15px;" class="o_warning">$r.translate("badge.reset")</div>
+		#end
 		<label>$r.translate("form.recipient")</label>
 		<legend class="o_no_border">$recipientName</legend>
 		<label>$r.translate("form.issued.by")</label>
