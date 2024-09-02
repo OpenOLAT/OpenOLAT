@@ -713,7 +713,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		sb.append("<div class='o_table_pagination'>");
 
-		if (rows > ftE.getDefaultPageSize()) {
+		if (rows > ftE.getDefaultPageSize() && ftE.isShowSmallPageSize()) {
 			renderSmallPageSize(sb, ftC, translator);
 		}
 

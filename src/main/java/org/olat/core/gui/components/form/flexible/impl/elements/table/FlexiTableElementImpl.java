@@ -131,6 +131,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean searchLarge;
 	private boolean selectAllEnabled;
 	private boolean numOfRowsEnabled = true;
+	private boolean showSmallPageSize = true;
 	private boolean showAllRowsEnabled = false;
 	private boolean extendedSearchExpanded = false;
 	private boolean hasAlwaysVisibleColumns = false;
@@ -401,6 +402,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setNumOfRowsEnabled(boolean enable) {
 		numOfRowsEnabled = enable;
+	}
+
+	public boolean isShowSmallPageSize() {
+		return showSmallPageSize;
+	}
+
+	public void setShowSmallPageSize(boolean showSmallPageSize) {
+		this.showSmallPageSize = showSmallPageSize;
 	}
 
 	@Override

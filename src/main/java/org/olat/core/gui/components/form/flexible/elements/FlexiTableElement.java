@@ -233,6 +233,13 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 * @param enable
 	 */
 	public void setNumOfRowsEnabled(boolean enable);
+
+	/**
+	 * Show smallPageSize for selecting how many items should be displayed on one page
+	 *
+	 * @param showSmallPageSize show selector if true
+	 */
+	public void setShowSmallPageSize(boolean showSmallPageSize);
 	
 	/**
 	 * @return True if the choice in page size "All" is allowed.

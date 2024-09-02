@@ -113,7 +113,7 @@ public class SubscriptionListItem {
 		Translator trans = Util.createPackageTranslator(ContextualSubscriptionController.class, locale);
 		Formatter form = Formatter.getInstance(locale);
 		StringBuilder sb = new StringBuilder();
-		String datePart = trans.translate("subscription.listitem.dateprefix", new String [] { form.formatDateAndTime(date) } ) ;
+		String datePart = trans.translate("subscription.listitem.dateprefix", form.formatDateAndTime(date)) ;
 		sb.append("- ");
 		sb.append(description.trim());
 		sb.append(" ").append(datePart.trim());
@@ -125,7 +125,7 @@ public class SubscriptionListItem {
 		StringBuilder sb = new StringBuilder();
 		Translator trans = Util.createPackageTranslator(ContextualSubscriptionController.class, locale);
 		Formatter form = Formatter.getInstance(locale);
-		String datePart = trans.translate("subscription.listitem.dateprefix", new String [] { form.formatDateAndTime(date) } ) ; 
+		String datePart = trans.translate("subscription.listitem.dateprefix", form.formatDateAndTime(date)) ;
 		sb.append("<li>");			
 		if (iconCssClass != null) {
 			sb.append("<i class=\"o_icon o_icon-fw ");

@@ -205,6 +205,15 @@ public class DateUtils {
 		c.add(Calendar.MONTH, months);
 		return c.getTime();
 	}
+
+	public static Date addWeeks(Date date, int weeks) {
+		if (date == null) return null;
+
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.WEEK_OF_YEAR, weeks);
+		return c.getTime();
+	}
 	
 	public static Date addDays(Date date, int days) {
 		if (date == null) return null;

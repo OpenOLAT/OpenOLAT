@@ -499,7 +499,6 @@ public class UserCommentFormController extends FormBasicController {
 				Subscriber subscriber = notificationsManager.getSubscriber(getIdentity(), publishingInformations.getContext());
 				if (subscriber == null) {
 					notificationsManager.subscribe(getIdentity(), publishingInformations.getContext(), publishingInformations.getData());
-					fireEvent(ureq, new UserCommentsSubscribeNotificationsEvent());
 				}
 				subscribeOnce = false;
 			}

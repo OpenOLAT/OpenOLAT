@@ -112,11 +112,7 @@ public class UserCommentsController extends BasicController {
 
 		// Add create form
 		if (securityCallback.canCreateComments()) {
-			removeAsListenerAndDispose(createCommentFormCtrl);
-			createCommentFormCtrl = new UserCommentFormController(ureq, getWindowControl(), null, null,
-					ores, resSubPath, publishingInformations);
-			listenTo(createCommentFormCtrl);
-			userCommentsVC.put("createCommentFormCtrl", createCommentFormCtrl.getInitialComponent());
+			handleRebuildNewCommentForm(ureq);
 
 			UserAvatarDisplayControllerCreator avatarControllerCreator = (UserAvatarDisplayControllerCreator) CoreSpringFactory.getBean(UserAvatarDisplayControllerCreator.class);
 			Controller avatarCtrl = avatarControllerCreator.createController(ureq, getWindowControl(), getIdentity(), false, true);
@@ -170,8 +166,6 @@ public class UserCommentsController extends BasicController {
 		if (event == Event.CANCELLED_EVENT) {
 			// do nothing
 			fireEvent(ureq, event);
-		} else if (event instanceof UserCommentsSubscribeNotificationsEvent) {
-			fireEvent(ureq, event);
 		} else if (event == Event.CHANGED_EVENT) {
 			handleCommentChangedEvent(ureq);
 		}
@@ -188,21 +182,21 @@ public class UserCommentsController extends BasicController {
 			buildTopLevelComments(ureq, true);
 		} else {
 			// Create top level comment controller
-			UserCommentDisplayController commentController = new UserCommentDisplayController(ureq, getWindowControl(), newComment, allComments,
-					ores, resSubPath, securityCallback, publishingInformations);
-			commentControllers.add(commentController);
-			listenTo(commentController);
-			userCommentsVC.put(commentController.getViewCompName(), commentController.getInitialComponent());
+			createTopLevelCommentCtrl(ureq, newComment);
 
 			// Rebuild new comment form
-			removeAsListenerAndDispose(createCommentFormCtrl);
-			createCommentFormCtrl = new UserCommentFormController(ureq, getWindowControl(), null, null,
-					ores, resSubPath, publishingInformations);
-			listenTo(createCommentFormCtrl);
-			userCommentsVC.put("createCommentFormCtrl", createCommentFormCtrl.getInitialComponent());
+			handleRebuildNewCommentForm(ureq);
 		}
 		// Notify parent about change
 		fireEvent(ureq, UserCommentDisplayController.COMMENT_COUNT_CHANGED);
+	}
+
+	private void handleRebuildNewCommentForm(UserRequest ureq) {
+		removeAsListenerAndDispose(createCommentFormCtrl);
+		createCommentFormCtrl = new UserCommentFormController(ureq, getWindowControl(), null, null,
+				ores, resSubPath, publishingInformations);
+		listenTo(createCommentFormCtrl);
+		userCommentsVC.put("createCommentFormCtrl", createCommentFormCtrl.getInitialComponent());
 	}
 
 	private void handleCommentChangeCtrlEvent(UserRequest ureq, UserCommentDisplayController commentCtrl, Event event) {

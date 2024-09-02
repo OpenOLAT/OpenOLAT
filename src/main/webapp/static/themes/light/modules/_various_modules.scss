@@ -352,6 +352,15 @@ ul.o_dropdown {
 			margin-left: 1.5em;			
 		}
 	}
+	.o_notifications_subs_callout {
+		display: flex;
+		align-items: baseline;
+		padding-bottom: 10px;
+
+		.o_notifications_help {
+			margin-left: auto;
+		}
+	}
 }
 .o_noti {
 	margin: $padding-base-vertical 0 $padding-base-vertical $padding-base-horizontal;
@@ -771,7 +780,7 @@ ul.o_certificates li {
 	}
 }
 
-/* Feed (Blog/Podcast */
+/* Feed (Blog/Podcast) */
 .o_feed {
 	.o_media {
 		@extend .img-thumbnail;
