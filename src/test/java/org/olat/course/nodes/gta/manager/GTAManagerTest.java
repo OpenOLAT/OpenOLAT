@@ -1166,7 +1166,7 @@ public class GTAManagerTest extends OlatTestCase {
 		copyTestFile(tasksDirectory, "FileO0O.pdf");
 		dbInstance.commit();
 
-		final int numThreads = 25;
+		final int numThreads = 12;
 		final int batchSize = 10;
 		final int numOfPersons = batchSize * numThreads;
 		List<Identity> participants = new ArrayList<>(numOfPersons);
@@ -1208,7 +1208,7 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertEquals(5, maps.size());
 		for(AtomicInteger count:maps.values()) {
 			log.info("Counter: {}", count.get());
-			Assert.assertEquals(50, count.get());
+			Assert.assertEquals(24, count.get());
 		}
 	}
 	

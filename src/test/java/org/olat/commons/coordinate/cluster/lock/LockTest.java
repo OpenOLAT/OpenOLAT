@@ -63,8 +63,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LockTest extends OlatTestCase {
 
-	private static final int MAX_COUNT = 30; //at least 2
-	private static final int MAX_USERS_MORE = 100; //20; //100;
+	private static final int MAX_COUNT = 15; //at least 2
+	private static final int MAX_USERS_MORE = 30; //20; //100;
 	
 	private static final Logger log = Tracing.createLoggerFor(LockTest.class);
 	

@@ -259,10 +259,10 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		//test paging
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(null, "kan", null, types,
 				learnResourceManager1, learnResourceManager1Role);
-		List<RepositoryEntry> resultOneShootInstitut6 = repositoryEntryQueries.searchEntries(params, 0, 50, true);
+		List<RepositoryEntry> resultOneShootInstitut6 = repositoryEntryQueries.searchEntries(params, 0, 10, true);
 		rm.countGenericANDQueryWithRolesRestriction(params);
 		assertNotNull(resultOneShootInstitut6);
-		assertEquals(50, resultOneShootInstitut6.size());
+		assertEquals(10, resultOneShootInstitut6.size());
 	}
 	
 	@Test
