@@ -305,7 +305,9 @@ public class ProjectsOverviewController extends FormBasicController {
 		for (ProjectsOverviewRow row : selectedRows) {
 			projectsToLeave.add(row.getProject());
 			List<Identity> projectOwners = projectService.getMembers(row.getProject(), Collections.singleton(ProjectRole.owner));
-			if (projectOwners.size() == 1) {
+			// only show error, if the user which is going to be removed is owner
+			// and the project only contains one owner overall
+			if (row.getRoles().toLowerCase().contains(ProjectRole.owner.name()) && projectOwners.size() == 1) {
 				showError("error.atleastone", row.getTitle());
 				return;
 			}
