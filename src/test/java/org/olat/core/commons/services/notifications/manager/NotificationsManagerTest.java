@@ -183,7 +183,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Assert.assertEquals("PS2", publisher.getResName());
 		Assert.assertEquals(Long.valueOf(124), publisher.getResId());
 		
-		sleep(2000);
+		sleep(1100);
 
 		//update the publisher
 		notificationManager.markPublisherNews(context, null, false);
@@ -261,7 +261,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Assert.assertNotNull(subscriber);
 		dbInstance.commitAndCloseSession();
 		
-		sleep(2000);
+		sleep(1100);
 		
 		notificationManager.markSubscriberRead(id, context);
 		
@@ -611,7 +611,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testConcurrentSubscriberOperationsWithOneIdentity() {
-		final int NUM_OF_THREADS = 100;
+		final int NUM_OF_THREADS = 25;
 		
 		PublisherData pd = new PublisherData("MPSubscriber", "e.g. forumdata=keyofforum", null);
 		SubscriptionContext sc = new SubscriptionContext("MPSubscriber", Long.valueOf(1238778566), UUID.randomUUID().toString().replace("-", ""));

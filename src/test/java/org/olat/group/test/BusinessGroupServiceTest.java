@@ -1422,7 +1422,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		@Override
 		public void run() {
 			try {
-				Thread.sleep(10);
+				sleep(10);
 				for(BusinessGroup businessGroup:businessGroups) {
 					businessGroupService.removeParticipants(uIdentity, members, businessGroup, null);
 				}

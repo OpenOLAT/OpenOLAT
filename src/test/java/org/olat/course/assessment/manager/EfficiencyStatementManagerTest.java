@@ -173,7 +173,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		@Override
 		public void run() {
 			try {
-				Thread.sleep(10);
+				sleep(10);
 				UserEfficiencyStatementImpl statement = new UserEfficiencyStatementImpl();
 				statement.setCreationDate(new Date());
 				statement.setLastModified(statement.getCreationDate());

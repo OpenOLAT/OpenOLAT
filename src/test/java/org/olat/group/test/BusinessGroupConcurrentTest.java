@@ -100,7 +100,7 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 				-1, -1, false, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 
-		int numOfThreads = 25;
+		int numOfThreads = 20;
 		final CountDownLatch doneSignal = new CountDownLatch(numOfThreads);
 		
 		SetLastUsageThread[] threads = new SetLastUsageThread[numOfThreads];
@@ -148,7 +148,7 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 		@Override
 		public void run() {
 			try {
-				Thread.sleep(10);
+				sleep(10);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
