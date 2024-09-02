@@ -35,6 +35,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -131,8 +132,12 @@ public class OLATUpgrade_19_0_4 extends OLATUpgrade {
 										// Previously, not all revisions had the initializedBy set, so that the
 										// deletedBy was also missing in the metadata, although it was a deleted file.
 										if (revisions.isEmpty()) {
-											item.restore(targetContainer);
-											log.info("File restored from trash: {}", metadata.getRelativePath() + "/" + metadata.getFilename());
+											VFSSuccess restored = item.restore(targetContainer);
+											if (VFSSuccess.SUCCESS == restored) {
+												log.info("File restored from trash: {}", metadata.getRelativePath() + "/" + metadata.getFilename());
+											} else {
+												log.warn("File not restored from trash ({}): {}", restored, metadata.getRelativePath() + "/" + metadata.getFilename());
+											}
 											dbInstance.commit();
 											updated++;
 										}
