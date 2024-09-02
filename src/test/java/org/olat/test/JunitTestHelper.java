@@ -402,7 +402,7 @@ public class JunitTestHelper {
 	 */
 	public static RepositoryEntry deployBasicCourse(Identity initialAuthor) {
 		String displayname = "Basic course (" + CodeHelper.getForeverUniqueID() + ")";
-		return deployBasicCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, true, false);
+		return deployBasicCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published);
 	}
 	
 	/**
@@ -412,10 +412,9 @@ public class JunitTestHelper {
 	 * @param access The access
 	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployBasicCourse(Identity initialAuthor,
-			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, RepositoryEntryStatusEnum status) {
 		String displayname = "Basic course (" + CodeHelper.getForeverUniqueID() + ")";
-		return deployBasicCourse(initialAuthor, displayname, status, allUsers, guests);
+		return deployBasicCourse(initialAuthor, displayname, status);
 	}
 
 	/**
@@ -426,8 +425,7 @@ public class JunitTestHelper {
 	 * @param access The access
 	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, String displayname,
-			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, String displayname, RepositoryEntryStatusEnum status) {
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Basic_course.zip");
 			return deployCourse(initialAuthor, displayname, status, courseUrl);

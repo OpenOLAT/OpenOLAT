@@ -104,7 +104,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 			CourseConfigVO config = new CourseConfigVO();
 			config.setCalendar(Boolean.TRUE);
 			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth1.getIdentity(),
-					RepositoryEntryStatusEnum.preparation, false, false);
+					RepositoryEntryStatusEnum.preparation);
 			course1 = CourseFactory.loadCourse(courseEntry);
 			dbInstance.commit();
 			
@@ -151,7 +151,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	@Test
 	public void putCalendarEvent() throws IOException, URISyntaxException {
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth1.getIdentity(),
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		RestConnection conn = new RestConnection();
@@ -241,7 +241,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 		
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 		

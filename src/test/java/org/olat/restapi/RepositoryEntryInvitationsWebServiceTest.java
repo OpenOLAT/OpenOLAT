@@ -88,7 +88,7 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, "course-invitation 1",
-				RepositoryEntryStatusEnum.published, false, false);
+				RepositoryEntryStatusEnum.published);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Assert.assertNotNull(course);
 		
@@ -235,7 +235,7 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 		String email = "albert.v@" + UUID.randomUUID();
 		
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, "course-invitation 7",
-				RepositoryEntryStatusEnum.published, false, false);
+				RepositoryEntryStatusEnum.published);
 		Invitation tmpInvitation = invitationService.createInvitation(InvitationTypeEnum.repositoryEntry);
 		tmpInvitation.setFirstName("Albert");
 		tmpInvitation.setLastName("Valentin");
@@ -284,7 +284,7 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		Identity existingInvitee = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-1");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, "course-invitation 8",
-				RepositoryEntryStatusEnum.published, false, false);
+				RepositoryEntryStatusEnum.published);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Assert.assertNotNull(course);
 		

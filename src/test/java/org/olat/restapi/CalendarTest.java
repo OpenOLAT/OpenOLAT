@@ -113,7 +113,7 @@ public class CalendarTest extends OlatRestTestCase {
 		if(course1 == null) {
 			//create a course with a calendar
 			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id1.getIdentity(),
-					RepositoryEntryStatusEnum.preparation, false, false);
+					RepositoryEntryStatusEnum.preparation);
 			course1 = CourseFactory.loadCourse(courseEntry);
 			dbInstance.commit();
 			
@@ -150,7 +150,7 @@ public class CalendarTest extends OlatRestTestCase {
 		if(course2 == null) {
 			//create a course with a calendar
 			RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id2.getIdentity(),
-					RepositoryEntryStatusEnum.preparation, false, false);
+					RepositoryEntryStatusEnum.preparation);
 			course2 = CourseFactory.loadCourse(courseEntry);
 			dbInstance.commit();
 
@@ -576,8 +576,7 @@ public class CalendarTest extends OlatRestTestCase {
 		conn.login(identity);
 		
 		//create a course with a calendar
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity.getIdentity(), RepositoryEntryStatusEnum.published,
-				false, false);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity.getIdentity(), RepositoryEntryStatusEnum.published);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commit();
 		

@@ -115,10 +115,10 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed, false, false);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", RepositoryEntryStatusEnum.trash, false, false);
-		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", RepositoryEntryStatusEnum.published, false, false);
-		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", RepositoryEntryStatusEnum.trash);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", RepositoryEntryStatusEnum.published);
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element, entry1, false);
 		curriculumService.addRepositoryEntry(element, entry2, false);
@@ -159,10 +159,10 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed, false, false);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", RepositoryEntryStatusEnum.trash, false, false);
-		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", RepositoryEntryStatusEnum.published, false, false);
-		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", RepositoryEntryStatusEnum.trash);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", RepositoryEntryStatusEnum.published);
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element, entry1, false);
 		curriculumService.addRepositoryEntry(element, entry2, false);
@@ -224,10 +224,10 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed, false, false);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", RepositoryEntryStatusEnum.published, false, false);
-		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", RepositoryEntryStatusEnum.closed, false, false);
-		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", RepositoryEntryStatusEnum.closed);
+		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", RepositoryEntryStatusEnum.published);
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element1, entry1, false);
 		curriculumService.addRepositoryEntry(element2, entry2, false);

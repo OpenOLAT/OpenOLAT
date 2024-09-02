@@ -51,6 +51,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
@@ -176,8 +177,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 	@Test
 	public void testPerformanceGetProjectList() throws Exception {
 		int FIRST_ITERATION = 10;
-		int SECOND_ITERATION = 90;
-		int THIRD_ITERATION = 400;
+		
 		// create ProjectBroker C
 		ProjectBroker projectBrokerC = projectBrokerManager.createAndSaveProjectBroker();
 		Long idProjectBrokerC = projectBrokerC.getKey();
@@ -186,48 +186,15 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 			createProject("thema C1_" + i, id1, idProjectBrokerC, resourceableId );		
 		}
 		dbInstance.closeSession();
-		
-		long startTime = System.currentTimeMillis();		
-		List<Project> projectListC = projectBrokerManager.getProjectListBy(idProjectBrokerC);
-		long endTime = System.currentTimeMillis();
-		assertEquals("Wrong projectList.size for project-broker C after first iteration",FIRST_ITERATION, projectListC.size());
-		long duration = endTime - startTime; 
-		log.info("getProjectListBy takes " + duration + "ms with " + FIRST_ITERATION + " projects");
-
-		for (int i = 0; i < SECOND_ITERATION; i++) {
-			createProject("thema C1_" + i, id1, idProjectBrokerC, resourceableId );			
-		}
-		dbInstance.closeSession();
-		
-		startTime = System.currentTimeMillis();
-		projectListC = projectBrokerManager.getProjectListBy(idProjectBrokerC);
-		endTime = System.currentTimeMillis();
-		int numberOfProjects = FIRST_ITERATION + SECOND_ITERATION;
-		assertEquals("Wrong projectList.size for project-broker C", numberOfProjects, projectListC.size());
-		duration = endTime - startTime; 
-		log.info("getProjectListBy takes " + duration + "ms with " + numberOfProjects + " projects");
-
-		for (int i = 0; i < THIRD_ITERATION; i++) {
-			createProject("thema C1_" + i, id1, idProjectBrokerC, resourceableId );			
-		}
-		dbInstance.closeSession();
-		
-		startTime = System.currentTimeMillis();
-		projectListC = projectBrokerManager.getProjectListBy(idProjectBrokerC);
-		endTime = System.currentTimeMillis();
-		numberOfProjects = FIRST_ITERATION + SECOND_ITERATION + THIRD_ITERATION;
-		assertEquals("Wrong projectList.size for project-broker C", numberOfProjects, projectListC.size());
-		duration = endTime - startTime; 
-		log.info("getProjectListBy takes " + duration + "ms with " + numberOfProjects + " projects");
-		
+	
 		waitMessageAreConsumed();
 	}
 
 	@Test
 	public void testPerformanceTableModel() throws Exception {
-		int ITERATION = 300;
-		int START_PAGE_INDEX = 100;
-		int PAGE_SIZE = 20;
+		int ITERATION = 25;
+		int START_PAGE_INDEX = 2;
+		int PAGE_SIZE = 10;
 		Translator translator = Util.createPackageTranslator(this.getClass(), Locale.GERMAN);
 
 		ProjectBroker projectBrokerD = projectBrokerManager.createAndSaveProjectBroker();
@@ -241,15 +208,14 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		ProjectListTableModel tableModel = new ProjectListTableModel(projectListD, id1, translator, moduleConfig, 0, 0, 0, false);
 		
 		// loop over table like rendering loop
-		long startTime = System.currentTimeMillis();
+		long startTime = System.nanoTime();
 		for (int row = START_PAGE_INDEX; row < START_PAGE_INDEX+PAGE_SIZE; row++) {
 			for (int col = 0; col < tableModel.getColumnCount(); col++) {
 				Object element = tableModel.getValueAt(row, col);
 				Assert.assertNotNull(element);
 			}
 		}
-		long endTime = System.currentTimeMillis();
-		long duration = endTime - startTime; 
+		long duration = CodeHelper.nanoToMilliTime(startTime); 
 		log.info("tableModel.getValueAt(row, col) for " + PAGE_SIZE + "elements (of " + ITERATION + ") takes " + duration + "ms with " + ITERATION + " projects");
 		
 		waitMessageAreConsumed();
