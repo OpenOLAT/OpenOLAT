@@ -257,7 +257,7 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createNamedGroup() {
-		String name = RandomStringUtils.randomAlphanumeric(12);
+		String name = RandomStringUtils.secure().nextAlphanumeric(12);
 		SecurityGroup secG = securityGroupDao.createAndPersistSecurityGroup();
 		NamedGroupImpl ngi = new NamedGroupImpl(name, secG);
 		dbInstance.saveObject(ngi);

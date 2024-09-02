@@ -577,7 +577,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			if(config == null) {
 				config = calendarManager.createCalendarConfig(getIdentity(), callerKalendar);
 			} else if(!StringHelper.containsNonWhitespace(config.getToken())) {
-				config.setToken(RandomStringUtils.randomAlphanumeric(6));
+				config.setToken(RandomStringUtils.secure().nextAlphanumeric(6));
 				config = calendarManager.saveCalendarConfig(config);
 			}
 			return Settings.getServerContextPathURI() + "/ical/" + type + "/" + config.getKey()
@@ -597,7 +597,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			config = configurations.get(0);
 		} else {
 			config = configurations.get(0);
-			config.setToken(RandomStringUtils.randomAlphanumeric(6));
+			config.setToken(RandomStringUtils.secure().nextAlphanumeric(6));
 			config = calendarManager.saveCalendarConfig(config);
 		}
 		return Settings.getServerContextPathURI() + "/ical/" + calendarType + "/" + config.getKey() + "/" + config.getToken() + ".ics";

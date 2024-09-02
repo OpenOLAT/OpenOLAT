@@ -817,7 +817,7 @@ public class FeedManagerImpl extends FeedManager {
 			if (authentication == null) {
 				// Create an authentication
 				long start = System.nanoTime();
-				String token = RandomStringUtils.randomAlphanumeric(6);
+				String token = RandomStringUtils.secure().nextAlphanumeric(6);
 				log.info("Feed random token takes {} ms", CodeHelper.nanoToMilliTime(start));
 				authentication = securityManager.createAndPersistAuthentication(identity, FeedMediaDispatcher.TOKEN_PROVIDER, BaseSecurity.DEFAULT_ISSUER, null, idKey, token, null);
 			}

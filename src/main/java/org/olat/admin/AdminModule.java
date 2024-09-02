@@ -91,7 +91,7 @@ public class AdminModule extends AbstractSpringModule {
 	private void initializeSystemTokenProperty(String tokenPropertyName) {
 		Property p = propertyManager.findProperty(null, null, null, SYSTEM_PROPERTY_CATEGORY, tokenPropertyName);
 		if (p == null) {
-			String token = RandomStringUtils.randomAlphanumeric(8);
+			String token = RandomStringUtils.secure().nextAlphanumeric(8);
 			p = propertyManager.createPropertyInstance(null, null, null, SYSTEM_PROPERTY_CATEGORY, tokenPropertyName, null, null, token, null);
 			propertyManager.saveProperty(p);
 		}

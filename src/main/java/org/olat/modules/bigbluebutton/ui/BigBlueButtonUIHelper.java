@@ -86,7 +86,7 @@ public class BigBlueButtonUIHelper {
 					passwordEnableEl.setVisible(visible);
 					if(visible && passwordEnableEl.isAtLeastSelected(1)) {
 						if(!StringHelper.containsNonWhitespace(passwordEl.getValue())) {
-							passwordEl.setValue(RandomStringUtils.randomAlphanumeric(6));
+							passwordEl.setValue(RandomStringUtils.secure().nextAlphanumeric(6));
 						}
 						passwordEl.setVisible(true);
 					} else {

@@ -45,4 +45,11 @@ public class PasswordGeneratorTest extends OlatTestCase {
 		Assert.assertNotNull(code);
 		Assert.assertEquals(6, code.length());
 	}
+	
+	@Test
+	public void secureNextAlphanumeric() {
+		String code = RandomStringUtils.secure().nextAlphanumeric(6);
+		Assert.assertNotNull(code);
+		Assert.assertEquals(6, code.length());
+	}
 }
