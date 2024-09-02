@@ -432,7 +432,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 
 		KalendarRenderWrapper calendarWrapper = row.getWrapper();
 		if(!StringHelper.containsNonWhitespace(row.getToken())) {
-			calendarWrapper.setToken(RandomStringUtils.randomAlphanumeric(6));
+			calendarWrapper.setToken(RandomStringUtils.secure().nextAlphanumeric(6));
 			calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
 		}
 
