@@ -109,7 +109,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void testGetCourse() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		RestConnection conn = new RestConnection();
@@ -131,7 +131,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void testGetCourseConfig() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		RestConnection conn = new RestConnection();
@@ -155,7 +155,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void updateCourseConfig() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		RestConnection conn = new RestConnection();
@@ -189,7 +189,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void testGetCourse_keyRoundTrip() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseRe = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseRe);
 
 		RestConnection conn = new RestConnection();
@@ -222,7 +222,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void testGetCourseRunStructure() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		RestConnection conn = new RestConnection();
@@ -244,7 +244,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void testGetCourseEditorTreeModel() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		RestConnection conn = new RestConnection();
@@ -266,7 +266,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void testDeleteCourses() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 
@@ -300,7 +300,7 @@ public class CourseTest extends OlatRestTestCase {
 		Identity auth = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-zero");
 		
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		RestConnection conn = new RestConnection();
@@ -376,7 +376,7 @@ public class CourseTest extends OlatRestTestCase {
 		Identity auth2 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-5");
 		
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		//make auth1 and auth2 authors
@@ -413,7 +413,7 @@ public class CourseTest extends OlatRestTestCase {
 		Identity auth2 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-7");
 		
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		//make auth1 and auth2 authors
@@ -459,7 +459,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void getTutors() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Course-coach");
@@ -493,7 +493,7 @@ public class CourseTest extends OlatRestTestCase {
 		Identity auth = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-8");
 		
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		RestConnection conn = new RestConnection();
@@ -517,7 +517,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void removeCoach() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		//add a coach
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Course-coach");
@@ -584,7 +584,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void getParticipants() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Course-participant");
@@ -617,7 +617,7 @@ public class CourseTest extends OlatRestTestCase {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		Identity auth = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-11");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		RestConnection conn = new RestConnection();
@@ -641,7 +641,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void removeParticipant() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		//add a coach
