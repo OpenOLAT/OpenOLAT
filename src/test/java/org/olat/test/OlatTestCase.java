@@ -129,7 +129,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	public void closeConnectionAfter() {
 		long time = CodeHelper.nanoToMilliTime(timestamp);
 		String evaluation = "";
-		if(time > 10000) {
+		if(time > 5000) {
 			evaluation = "very slow test";
 		} else if(time > 1000) {
 			evaluation = "slow test";

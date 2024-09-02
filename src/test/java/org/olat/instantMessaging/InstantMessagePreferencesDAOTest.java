@@ -206,7 +206,7 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 		@Override
 		public void run() {
 			try {
-				Thread.sleep(10);
+				sleep(10);
 				
 				for(int i=0; i<NUM_OF_THREADS; i++) {
 					double r = Math.random() * 5.0d;

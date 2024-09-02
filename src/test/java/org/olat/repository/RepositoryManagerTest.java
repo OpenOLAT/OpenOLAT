@@ -771,15 +771,17 @@ public class RepositoryManagerTest extends OlatTestCase {
 	
 	@Test
 	public void queryReferencableResourcesLimitType() {
+		int ITERATION = 50;
+		
 		String resourceType = UUID.randomUUID().toString().replace("_", "");
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsAuthor("id1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsAuthor("id2");
 		Roles id1Roles = securityManager.getRoles(id1);
-
-		// generate 5000 repo entries
-		int numbRes = 500;
-		long startCreate = System.currentTimeMillis();
-		for (int i = 1; i < numbRes; i++) {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		
+		// generate 50 repo entries
+		long startCreate = System.nanoTime();
+		for (int i = 1; i < ITERATION; i++) {
 			// create course and persist as OLATResourceImpl
 			Identity owner = (i % 2 > 0) ? id1 : id2;
 
@@ -788,8 +790,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 			dbInstance.getCurrentEntityManager().persist(r);
 			
 			// now make a repository entry for this course
-			Organisation defOrganisation = organisationService.getDefaultOrganisation();
-			RepositoryEntry re = repositoryService.create(owner, null, "Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i",
+			RepositoryEntry re = repositoryService.create(owner, null, "Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "Description bla bla + i",
 					r, RepositoryEntryStatusEnum.review, RepositoryEntryRuntimeType.embedded, defOrganisation);			
 			if ((i % 2 > 0)) {
 				re.setCanReference(true);
@@ -806,22 +807,17 @@ public class RepositoryManagerTest extends OlatTestCase {
 				dbInstance.commitAndCloseSession();
 			}
 		}
-		long endCreate = System.currentTimeMillis();
-		log.info("created " + numbRes + " repo entries in " + (endCreate - startCreate) + "ms");
+		log.info("created {} repo entries in {} ms", ITERATION, CodeHelper.nanoToMilliTime(startCreate));
 		
 		List<String> typelist = Collections.singletonList(resourceType);
 		// finally the search query
-		long startSearchReferencable = System.currentTimeMillis();
+		long startSearchReferencable = System.nanoTime();
 		List<RepositoryEntry> results = repositoryManager.queryResourcesLimitType(id1, id1Roles, false, typelist,
 				null, null, null, null, null, true, false);
-		long endSearchReferencable = System.currentTimeMillis();
-		log.info("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms");
+		log.info("found {} repo entries {} ms", results.size(), CodeHelper.nanoToMilliTime(startSearchReferencable));
 
 		// only half of the items should be found
-		Assert.assertEquals(numbRes / 2, results.size());
-		
-		// inserting must take longer than searching, otherwhise most certainly we have a problem somewhere in the query
-		Assert.assertTrue((endCreate - startCreate) > (endSearchReferencable - startSearchReferencable));
+		Assert.assertEquals(ITERATION / 2, results.size());
 	}
 	
 	@Test

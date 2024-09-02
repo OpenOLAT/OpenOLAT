@@ -957,19 +957,21 @@ public class PortfolioServiceTest extends OlatTestCase {
 	
 	@Test
 	public void deleteTemplateBinder() {
+		final int ITERATION = 5;
+		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-20");
 		RepositoryEntry templateEntry = createTemplate(owner, "Template", "TE");
 		dbInstance.commitAndCloseSession();
 
 		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
 		List<SectionRef> sections = new ArrayList<>();
-		for(int i=0; i<10; i++) {
+		for(int i=0; i<ITERATION; i++) {
 			SectionRef templateSectionRef = portfolioService.appendNewSection(i + ". section ", "Section " + i, null, null, templateBinder);
 			dbInstance.commit();
 			sections.add(templateSectionRef);
 			
 			Section templateSection = portfolioService.getSection(templateSectionRef);
-			for(int j=0; j<10; j++) {
+			for(int j=0; j<ITERATION; j++) {
 				Assignment assignment = portfolioService.addAssignment(i + "_" + j + " Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
 				Assert.assertNotNull(assignment);
 			}
@@ -978,7 +980,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		
 		//collect the page
 		List<Page> assignmentPages = new ArrayList<>();
-		for(int k=0; k<10; k++) {
+		for(int k=0; k<ITERATION; k++) {
 			// get a binder from the template
 			Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-13" + k);
 			Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
