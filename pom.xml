@@ -1355,7 +1355,7 @@
 					<skipITs>${skipSeleniumTests}</skipITs>
 					<skipTests>${skipSeleniumTests}</skipTests>
 					<reuseForks>false</reuseForks>
-					<argLine>-Xmx2048m -Xms256m -Djava.awt.headless=true -Dwebdriver.http.factory=jdk-http-client -Djava.security.egd=file:/dev/urandom</argLine>
+					<argLine>-Xmx2048m -Xms256m -Djava.awt.headless=true -Djava.security.egd=file:/dev/urandom</argLine>
 					<trimStackTrace>false</trimStackTrace>
 					<systemPropertyVariables>
 						<profile>${test.env}</profile>

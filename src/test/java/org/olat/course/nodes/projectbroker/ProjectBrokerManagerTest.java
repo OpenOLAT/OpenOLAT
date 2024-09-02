@@ -186,7 +186,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 			createProject("thema C1_" + i, id1, idProjectBrokerC, resourceableId );		
 		}
 		dbInstance.closeSession();
-	
+		
 		waitMessageAreConsumed();
 	}
 

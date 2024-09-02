@@ -70,14 +70,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CopyServiceImplTest extends OlatTestCase {
 	
-	private Identity author;
-	private Identity owner1;
-	private Identity owner2;
-	private Identity coach1;
-	private Identity coach2;
-	private RepositoryEntry source;
-	private RepositoryEntry target;
-	private CopyCourseContext context;
+	private static Identity author;
+	private static Identity owner1;
+	private static Identity owner2;
+	private static Identity coach1;
+	private static Identity coach2;
+	private static RepositoryEntry source;
+	private static RepositoryEntry target;
 		
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
@@ -102,6 +101,8 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Before
 	public void createCourse() {
+		if(source != null) return;
+		
 		author = JunitTestHelper.createAndPersistIdentityAsRndUser("Copy-author");
 		owner1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Copy-owner1");
 		owner2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Copy-owner2");
@@ -114,28 +115,14 @@ public class CopyServiceImplTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(owner2, source, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(coach1, source, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(coach2, source, GroupRoles.coach.name());
-		
-		OLATResourceable sourceOres = source.getOlatResource();
-		ICourse sourceCourse = CourseFactory.openCourseEditSession(sourceOres.getResourceableId());
-		
-		context = new CopyCourseContext();
+	}
+	
+	private CopyCourseContext createContext() {
+		CopyCourseContext context = new CopyCourseContext();
 		context.setExecutingIdentity(author);
 		context.setSourceRepositoryEntry(source);
 		context.setDisplayName(source.getDisplayname());
 		
-		loadCopyConfig(context);
-		
-		TreeNode rootNode = sourceCourse.getEditorTreeModel().getRootNode();
-		List<CopyCourseOverviewRow> courseNodes = new ArrayList<>();
-		forgeRows(context, courseNodes, rootNode, 0, null);
-		
-		context.setCourseNodes(courseNodes);
-		
-		CourseFactory.closeCourseEditSession(sourceOres.getResourceableId(), true);
-	}
-	
-	private void loadCopyConfig(CopyCourseContext context) {
-		// Set everything to ignore
 		context.setGroupCopyType(CopyType.ignore);
 		context.setOwnersCopyType(CopyType.ignore);
 		context.setCoachesCopyType(CopyType.ignore);
@@ -152,6 +139,14 @@ public class CopyServiceImplTest extends OlatTestCase {
 		context.setLectureBlockCopyType(CopyType.ignore);
 		
 		context.setExecutionType(ExecutionType.none);
+		
+		ICourse sourceCourse = CourseFactory.loadCourse(source);
+		TreeNode rootNode = sourceCourse.getEditorTreeModel().getRootNode();
+		List<CopyCourseOverviewRow> courseNodes = new ArrayList<>();
+		forgeRows(context, courseNodes, rootNode, 0, null);
+		context.setCourseNodes(courseNodes);
+		
+		return context;
 	}
 	
 	private void forgeRows(CopyCourseContext context, List<CopyCourseOverviewRow> rows, INode node, int recursionLevel, CopyCourseOverviewRow parent) {
@@ -194,6 +189,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Test
 	public void referenceGroups() {
+		CopyCourseContext context = createContext();
 		context.setGroupCopyType(CopyType.reference);
 		
 		target = copyService.copyLearningPathCourse(context);	
@@ -220,6 +216,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Test
 	public void copyGroups() {
+		CopyCourseContext context = createContext();
 		context.setGroupCopyType(CopyType.copy);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -246,6 +243,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Test
 	public void ignoreGroups() {
+		CopyCourseContext context = createContext();
 		context.setGroupCopyType(CopyType.ignore);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -261,6 +259,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Test
 	public void ignoreGroupsKeys() {
+		CopyCourseContext context = createContext();
 		context.setGroupCopyType(CopyType.copy);
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -280,6 +279,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Test
 	public void copyCoaches() {
+		CopyCourseContext context = createContext();
 		context.setCoachesCopyType(CopyType.copy);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -294,6 +294,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Test 
 	public void ignoreCoaches() {
+		CopyCourseContext context = createContext();
 		context.setCoachesCopyType(CopyType.ignore);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -305,6 +306,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Test
 	public void copyOwners() {
+		CopyCourseContext context = createContext();
 		context.setOwnersCopyType(CopyType.copy);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -319,6 +321,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Test 
 	public void ignoreOwners() {
+		CopyCourseContext context = createContext();
 		context.setOwnersCopyType(CopyType.ignore);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -339,7 +342,8 @@ public class CopyServiceImplTest extends OlatTestCase {
 		sourceEntry.setName("Source");
 
 		catalogManager.addCatalogEntry(rootEntry, sourceEntry);
-		
+
+		CopyCourseContext context = createContext();
 		context.setCatalogCopyType(CopyType.copy);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -363,7 +367,8 @@ public class CopyServiceImplTest extends OlatTestCase {
 		sourceEntry.setName("Source");
 
 		catalogManager.addCatalogEntry(rootEntry, sourceEntry);
-		
+
+		CopyCourseContext context = createContext();
 		context.setCatalogCopyType(CopyType.ignore);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -375,6 +380,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Test
 	public void copyDisclaimer() {
+		CopyCourseContext context = createContext();
 		context.setDisclaimerCopyType(CopyType.copy);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -390,6 +396,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Test 
 	public void ignoreDisclaimer() {
+		CopyCourseContext context = createContext();
 		context.setDisclaimerCopyType(CopyType.ignore);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -409,7 +416,8 @@ public class CopyServiceImplTest extends OlatTestCase {
 		RepositoryEntryLifecycle sourceCycle = lifecycleDAO.create(source.getDisplayname(), sourceSoftKey, true, new Date(), new Date());
 		source.setLifecycle(sourceCycle);
 		long dateDifference = 1000*60*60*24*30;		// Move by 1 month
-		
+
+		CopyCourseContext context = createContext();
 		context.setExecutionType(ExecutionType.beginAndEnd);
 		context.setDateDifference(dateDifference);
 		context.setBeginDate(new Date(sourceCycle.getValidFrom().getTime() + dateDifference));
@@ -427,6 +435,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	@Test
 	public void copyLectureBlocks() {
 		createLectureBlocks();
+		CopyCourseContext context = createContext();
 		context.setLectureBlockCopyType(CopyType.copy);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -442,6 +451,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	@Test
 	public void ignoreLectureBlocks() {
 		createLectureBlocks();
+		CopyCourseContext context = createContext();
 		context.setLectureBlockCopyType(CopyType.ignore);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -472,6 +482,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	@Test
 	public void copyAssessmentModes() {
 		createAssessmentModes();
+		CopyCourseContext context = createContext();
 		context.setAssessmentModeCopyType(CopyType.copy);
 		
 		target = copyService.copyLearningPathCourse(context);
@@ -487,6 +498,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	@Test
 	public void ignoreAssessmentModes() {
 		createAssessmentModes();
+		CopyCourseContext context = createContext();
 		context.setAssessmentModeCopyType(CopyType.ignore);
 		
 		target = copyService.copyLearningPathCourse(context);
