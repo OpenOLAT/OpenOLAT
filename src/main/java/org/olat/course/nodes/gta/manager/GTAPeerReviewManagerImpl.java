@@ -231,11 +231,11 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 		AssignmentType assignmentType = AssignmentType.keyOf(typeOfAssignment);
 		// If assignment is random, and there is no assignment of task, the assignment of reviews can happen
 		// quicker in the submit step.
-		boolean needSubmittedTask = (assignmentType != AssignmentType.RANDOM
+		boolean needSelectedTask = (assignmentType != AssignmentType.RANDOM
 				|| gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT));
 		AssignmentCalculator assignmentCalculator = new AssignmentCalculator(allParticipants, allTasks, allAssignments);
 		List<Participant> participants = assignmentCalculator
-				.assign(assignmentType, numberOfReviews, mutual, needSubmittedTask);
+				.assign(assignmentType, numberOfReviews, mutual, needSelectedTask);
 		
 		for(Participant participant:participants) {
 			Identity assignee = participant.participant();

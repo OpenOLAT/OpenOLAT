@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,8 +46,6 @@ public class AssignmentCalculator {
 	
 	private static final Logger logger = Tracing.createLoggerFor(AssignmentCalculator.class);
 
-    private static final Random random = new Random();
-	
 	private final List<Task> allTasks;
 	private final Map<Identity,Task> allTasksMap;
 	private final Set<Long> allCourseParticipantsKeys;
@@ -65,12 +62,12 @@ public class AssignmentCalculator {
 				.collect(Collectors.toMap(Task::getIdentity, task -> task, (u,v) -> u));
 	}
 	
-	public List<Participant> assign(AssignmentType assignmentType, int numberOfReviews, boolean mutual, boolean needSubmittedTask) {
-		List<Participant> participants = loadCurrentState(needSubmittedTask);
+	public List<Participant> assign(AssignmentType assignmentType, int numberOfReviews, boolean mutual, boolean needSelectedTask) {
+		List<Participant> participants = loadCurrentState(needSelectedTask);
 		
 		for(Participant participant:participants) {
 			List<Participant> toReviewList = new ArrayList<>(participants);
-			Collections.shuffle(toReviewList, random);
+			Collections.shuffle(toReviewList);
 			awardReviews(participant, toReviewList, assignmentType, numberOfReviews, mutual);
 		}
 		return participants;
@@ -155,7 +152,7 @@ public class AssignmentCalculator {
 				&& !alreadyAwardedTaskName.contains(reviewerTaskName);
 	}
 	
-	private List<Participant> loadCurrentState(boolean needSubmittedTask) {
+	private List<Participant> loadCurrentState(boolean needSelectedTask) {
 		Map<Identity,List<TaskReviewAssignment>> taskToAssignments = new HashMap<>();
 		Map<Identity,List<TaskReviewAssignment>> assigneeToAssignments = new HashMap<>();
 		for(TaskReviewAssignment assignment:allAssignments) {
@@ -173,10 +170,10 @@ public class AssignmentCalculator {
 		return allTasks.stream()
 				.filter(task -> task != null && task.getIdentity() != null)
 				.filter(task -> allCourseParticipantsKeys.contains(task.getIdentity().getKey()))
-				.filter(task -> StringHelper.containsNonWhitespace(task.getTaskName()) || !needSubmittedTask)
+				.filter(task -> StringHelper.containsNonWhitespace(task.getTaskName()) || !needSelectedTask)
 				.filter(task -> task.getTaskStatus() != null
 						&& task.getTaskStatus() != TaskProcess.assignment
-						&& ((!needSubmittedTask && task.getTaskStatus() == TaskProcess.submit) || task.getTaskStatus() != TaskProcess.submit))
+						&& task.getTaskStatus() != TaskProcess.submit)
 				.map(task -> {
 					Identity identity = task.getIdentity();
 					// Reviews already awarded, the identity needs to do them
