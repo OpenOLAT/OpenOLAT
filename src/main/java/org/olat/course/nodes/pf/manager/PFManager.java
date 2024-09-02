@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -103,8 +102,6 @@ public class PFManager {
 	private AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
-	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
 	
 	/**
 	 * Resolve an existing drop folder or return null
@@ -532,19 +529,17 @@ public class PFManager {
 		MergeSource namedCourseFolder = new MergeSource(courseElementBaseContainer, baseContainerName);
 		namedCourseFolder.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 
-		VFSContainer dropBaseContainer = VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX);
 		VFSContainer dropContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ?
 				baseContainerName : toFileSystem(translator.translate(PFCourseNode.FOLDER_DROP_BOX)),
-				dropBaseContainer);
+				VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
 
 		if (pfNode.hasParticipantBoxConfigured()){
 			namedCourseFolder.addContainer(dropContainer);
 		}
 		
-		VFSContainer returnBaseContainer = VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX);
 		VFSContainer returnContainer = new NamedContainerImpl(PFView.onlyDrop.equals(pfView) || PFView.onlyReturn.equals(pfView) ?
 				baseContainerName : toFileSystem(translator.translate(PFCourseNode.FOLDER_RETURN_BOX)),
-				returnBaseContainer);
+				VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
 
 		if (pfNode.hasCoachBoxConfigured()){
 			namedCourseFolder.addContainer(returnContainer);
@@ -553,11 +548,6 @@ public class PFManager {
 		// Generate folders from template
         syncModuleConfigWithVFSContainer(pfNode, identity, courseEnv);
 
-		if (pfNode.getModuleConfiguration().get(PFCourseNode.CONFIG_KEY_TEMPLATE) != null) {
-			vfsRepositoryService.synchMetadatas(dropBaseContainer);
-			vfsRepositoryService.synchMetadatas(returnBaseContainer);
-		}
-		
 		if (readOnly) {
 			dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, null));
 			returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, null));
