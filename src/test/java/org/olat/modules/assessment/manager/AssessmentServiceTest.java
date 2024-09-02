@@ -110,7 +110,7 @@ public class AssessmentServiceTest extends OlatTestCase {
 		@Override
 		public void run() {
 			try {
-				Thread.sleep(10);
+				sleep(10);
 				AssessmentEntry nodeAssessment = assessmentService.getOrCreateAssessmentEntry(participant, null, re, "39485349775", Boolean.TRUE, re);
 				dbInstance.commitAndCloseSession();
 				ok = nodeAssessment != null;

@@ -1319,11 +1319,11 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		repositoryEntryFirstPublished = repositoryManager.setStatus(repositoryEntryFirstPublished, RepositoryEntryStatusEnum.preparation);
 		repositoryEntryFirstPublished = repositoryManager.setStatus(repositoryEntryFirstPublished, RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
-		Thread.sleep(1000);
+		sleep(1000);
 		repositoryEntrySecondPublished = repositoryManager.setStatus(repositoryEntrySecondPublished, RepositoryEntryStatusEnum.preparation);
 		repositoryEntrySecondPublished = repositoryManager.setStatus(repositoryEntrySecondPublished, RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
-		Thread.sleep(1000);
+		sleep(1000);
 		repositoryEntryLastPublished = repositoryManager.setStatus(repositoryEntryLastPublished, RepositoryEntryStatusEnum.preparation);
 		repositoryEntryLastPublished = repositoryManager.setStatus(repositoryEntryLastPublished, RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
