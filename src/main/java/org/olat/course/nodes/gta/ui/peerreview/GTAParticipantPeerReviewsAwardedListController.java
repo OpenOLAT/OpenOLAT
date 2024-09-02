@@ -44,6 +44,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.model.SessionParticipationListStatistics;
@@ -160,7 +161,8 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 		// Start evaluation link
 		if(!readOnly && (assignment.getParticipation() == null || assignment.getStatus() == null
 				|| assignment.getStatus() ==  TaskReviewAssignmentStatus.open
-				|| assignment.getStatus() == TaskReviewAssignmentStatus.inProgress)) {
+				|| assignment.getStatus() == TaskReviewAssignmentStatus.inProgress)
+				&& task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
 			String executeLinkName = "execute-" + (++counter);
 			FormLink executeLink = uifactory.addFormLink(executeLinkName, CMD_EXECUTE, "review.execute", null, flc, Link.LINK);
 			executeLink.setUserObject(row);
