@@ -128,7 +128,14 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	@After
 	public void closeConnectionAfter() {
 		long time = CodeHelper.nanoToMilliTime(timestamp);
-		log.info("Method test finished: {} ({}) takes (ms): {}", currentTestName.getMethodName(), this.getClass().getCanonicalName(), time);
+		String evaluation = "";
+		if(time > 10000) {
+			evaluation = "very slow test";
+		} else if(time > 1000) {
+			evaluation = "slow test";
+		}
+		log.info("Method test finished: {} ({}) takes (ms): {} {}", currentTestName.getMethodName(), this.getClass().getCanonicalName(), time, evaluation);
+		
 		try {
 			DBFactory.getInstance().commitAndCloseSession();
 		} catch (Exception e) {
