@@ -201,6 +201,10 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 
 	@Override
 	public VFSSuccess restore(VFSContainer targetContainer) {
+		return restore(targetContainer, true);
+	}
+	
+	public VFSSuccess restore(VFSContainer targetContainer, boolean checkQuota) {
 		if (targetContainer.canWrite() != VFSStatus.YES) {
 			return VFSSuccess.ERROR_FAILED;
 		}
@@ -221,9 +225,11 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 		}
 		
 		if (targetContainer instanceof LocalFolderImpl localFolder) {
-			long quotaLeft = VFSManager.getQuotaLeftKB(targetContainer);
-			if (quotaLeft != Quota.UNLIMITED && quotaLeft < (file.length() / 1024)) {
-				return VFSSuccess.ERROR_QUOTA_EXCEEDED;
+			if (checkQuota) {
+				long quotaLeft = VFSManager.getQuotaLeftKB(targetContainer);
+				if (quotaLeft != Quota.UNLIMITED && quotaLeft < (file.length() / 1024)) {
+					return VFSSuccess.ERROR_QUOTA_EXCEEDED;
+				}
 			}
 			
 			File restoredFile;

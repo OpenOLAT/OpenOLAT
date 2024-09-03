@@ -32,6 +32,7 @@ import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.commons.services.vfs.manager.VFSRepositoryServiceImpl;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -132,7 +133,12 @@ public class OLATUpgrade_19_0_4 extends OLATUpgrade {
 										// Previously, not all revisions had the initializedBy set, so that the
 										// deletedBy was also missing in the metadata, although it was a deleted file.
 										if (revisions.isEmpty()) {
-											VFSSuccess restored = item.restore(targetContainer);
+											VFSSuccess restored = null;
+											if (item instanceof LocalFileImpl localFile) {
+												restored = localFile.restore(targetContainer, false);
+											} else {
+												restored = item.restore(targetContainer);
+											}
 											if (VFSSuccess.SUCCESS == restored) {
 												log.info("File restored from trash: {}", metadata.getRelativePath() + "/" + metadata.getFilename());
 											} else {
@@ -140,10 +146,20 @@ public class OLATUpgrade_19_0_4 extends OLATUpgrade {
 											}
 											dbInstance.commit();
 											updated++;
+										} else {
+											log.warn("File not restored from trash (trashed because of revisions): {}", metadata.getRelativePath() + "/" + metadata.getFilename());
 										}
+									} else {
+										log.warn("File not restored from trash (file with same name exists in target): {}", metadata.getRelativePath() + "/" + metadata.getFilename());
 									}
+								} else {
+									log.warn("File not restored from trash (grand parent does not exist): {}", metadata.getRelativePath() + "/" + metadata.getFilename());
 								}
+							} else {
+								log.warn("File not restored from trash (parent does not exist): {}", metadata.getRelativePath() + "/" + metadata.getFilename());
 							}
+						} else {
+							log.warn("File not restored from trash (no leaf or does not exists): {}", metadata.getRelativePath() + "/" + metadata.getFilename());
 						}
 						
 						if(i % 25 == 0) {
