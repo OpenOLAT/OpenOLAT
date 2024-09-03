@@ -239,7 +239,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		String bundleName = OpenBadgesUIFactory.getBundleName();
 		String nameKey = OpenBadgesUIFactory.getTemplateNameI18nKey(identifier);
 
-		SelectionValues languageKV = getTemplateTranslationLanguages(null);
+		SelectionValues languageKV = getAvailableLanguages(null);
 		Map<Locale, Locale> overlayLocales = i18nModule.getOverlayLocales();
 
 		for (String languageKey : languageKV.keys()) {
@@ -445,7 +445,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public SelectionValues getTemplateTranslationLanguages(Locale displayLocale) {
+	public SelectionValues getAvailableLanguages(Locale displayLocale) {
 		SelectionValues result = new SelectionValues();
 		Collection<String> enabledKeys = i18nModule.getEnabledLanguageKeys();
 		for (String enabledKey : enabledKeys) {
@@ -505,7 +505,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	private void deleteTranslations(BadgeTemplate badgeTemplate) {
-		SelectionValues languageKV = getTemplateTranslationLanguages(null);
+		SelectionValues languageKV = getAvailableLanguages(null);
 		Map<Locale, Locale> overlayLocales = i18nModule.getOverlayLocales();
 
 		for (String languageKey : languageKV.keys()) {
@@ -593,6 +593,20 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			log.error("", e);
 		}
 		return targetFile;
+	}
+
+	@Override
+	public List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(RepositoryEntry entry,
+																			 boolean excludeBadgeClass,
+																			 BadgeClass badgeClass) {
+		final BadgeClassDAO.NameAndVersion excludeTuple = excludeBadgeClass ?
+				new BadgeClassDAO.NameAndVersion(badgeClass.getName(), badgeClass.getVersion()) : null;
+		return badgeClassDAO.getBadgeClassNameVersionTuples(entry).stream().filter(tuple -> {
+			if (excludeTuple != null) {
+				return !excludeTuple.equals(tuple);
+			}
+			return true;
+		}).toList();
 	}
 
 	/**
@@ -776,22 +790,43 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	private boolean updateBadgeClass(BadgeClassDAO.BadgeClassWithUseCount enhancedBadgeClass) {
-		if (enhancedBadgeClass.getBadgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.active)) {
-			if (enhancedBadgeClass.getUseCount().equals(enhancedBadgeClass.getRevokedCount())) {
-				enhancedBadgeClass.getBadgeClass().setStatus(BadgeClass.BadgeClassStatus.revoked);
-				updateBadgeClass(enhancedBadgeClass.getBadgeClass());
-				log.debug("Set badge class {} to revoked.", enhancedBadgeClass.getBadgeClass().getKey());
-				return true;
-			}
-		} else if (enhancedBadgeClass.getBadgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.revoked)) {
-			if (enhancedBadgeClass.getUseCount() > enhancedBadgeClass.getRevokedCount()) {
-				enhancedBadgeClass.getBadgeClass().setStatus(BadgeClass.BadgeClassStatus.active);
-				updateBadgeClass(enhancedBadgeClass.getBadgeClass());
-				log.debug("Set badge class {} to active.", enhancedBadgeClass.getBadgeClass().getKey());
-				return true;
-			}
+		switch (enhancedBadgeClass.getBadgeClass().getStatus()) {
+			case preparation:
+				if (enhancedBadgeClass.isPreparation()) {
+					return false;
+				}
+				break;
+			case active:
+				if (enhancedBadgeClass.isActive()) {
+					return false;
+				}
+				break;
+			case revoked:
+				if (enhancedBadgeClass.isRevoked()) {
+					return false;
+				}
+				break;
+			case deleted:
+				return false;
 		}
-		return false;
+
+		if (enhancedBadgeClass.isPreparation()) {
+			enhancedBadgeClass.getBadgeClass().setStatus(BadgeClass.BadgeClassStatus.preparation);
+		}
+
+		if (enhancedBadgeClass.isActive()) {
+			enhancedBadgeClass.getBadgeClass().setStatus(BadgeClass.BadgeClassStatus.active);
+		}
+
+		if (enhancedBadgeClass.isRevoked()) {
+			enhancedBadgeClass.getBadgeClass().setStatus(BadgeClass.BadgeClassStatus.revoked);
+		}
+
+		updateBadgeClass(enhancedBadgeClass.getBadgeClass());
+		log.debug("Set badge class {} to {}.", enhancedBadgeClass.getBadgeClass().getKey(),
+				enhancedBadgeClass.getBadgeClass().getStatus().name());
+
+		return true;
 	}
 
 	private Size sizeForBadgeClass(BadgeClass badgeClass) {

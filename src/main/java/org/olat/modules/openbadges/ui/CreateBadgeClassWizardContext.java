@@ -45,6 +45,8 @@ import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
+import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
+import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
@@ -235,6 +237,13 @@ public class CreateBadgeClassWizardContext {
 	private void initCriteria() {
 		badgeCriteria = new BadgeCriteria();
 		badgeCriteria.setAwardAutomatically(false);
+		if (courseNode != null) {
+			badgeCriteria.setAwardAutomatically(true);
+			badgeCriteria.getConditions().add(new CourseElementPassedCondition(courseNode.getIdent()));
+		} else if (entry != null) {
+			badgeCriteria.setAwardAutomatically(true);
+			badgeCriteria.getConditions().add(new CoursePassedCondition());
+		}
 	}
 
 	public BadgeClass getBadgeClass() {

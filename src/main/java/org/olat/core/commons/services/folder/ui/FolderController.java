@@ -404,7 +404,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		createDropdown.setOrientation(DropdownOrientation.right);
 		
 		addBrowserLink = uifactory.addFormLink("browser.add", formLayout, Link.LINK);
-		addBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_file_browser");
+		addBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_filehub_add");
 		addBrowserLink.setElementCssClass("o_sel_folder_add_browser");
 		createDropdown.addElement(addBrowserLink);
 		
@@ -1662,7 +1662,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private void updateEmptyMessage() {
 		if (VFSStatus.YES == currentContainer.canWrite()) {
-			tableEl.setEmptyTableSettings("folder.empty", "folder.empty.hint.readwrite", "o_filetype_folder", "browser.add", "o_icon_file_browser", false);
+			tableEl.setEmptyTableSettings("folder.empty", "folder.empty.hint.readwrite", "o_filetype_folder", "browser.add", "o_icon_filehub_add", false);
 		} else {
 			tableEl.setEmptyTableSettings("folder.empty", "folder.empty.hint.readonly", "o_filetype_folder");
 		}

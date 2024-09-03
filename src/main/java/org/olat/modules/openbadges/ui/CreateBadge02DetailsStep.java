@@ -20,6 +20,7 @@
 package org.olat.modules.openbadges.ui;
 
 import java.net.URL;
+import java.util.List;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.manager.BadgeClassDAO;
 import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
 
@@ -88,7 +90,10 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		private SingleSelection validityTimelapseUnitEl;
 		private final SelectionValues validityTimelapseUnitKV;
 		private final SelectionValues linkedInOrganizationKV;
+		private final List<BadgeClassDAO.NameAndVersion> nameVersionTuples;
 		private SingleSelection linkedInOrganizationEl;
+		private final SelectionValues availableLanguagesKV;
+		private SingleSelection availableLanguagesEl;
 
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
@@ -124,6 +129,13 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			openBadgesManager.loadLinkedInOrganizations().forEach((bo) -> {
 				linkedInOrganizationKV.add(SelectionValues.entry(bo.getOrganizationKey(), bo.getOrganizationValue()));
 			});
+
+			boolean isEditMode = CreateBadgeClassWizardContext.Mode.edit.equals(createContext.getMode());
+			BadgeClass badgeClass = createContext.getBadgeClass();
+			nameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(
+					createContext.getBadgeClass().getEntry(), isEditMode, badgeClass);
+
+			availableLanguagesKV = openBadgesManager.getAvailableLanguages(getLocale());
 
 			initForm(ureq);
 		}
@@ -174,6 +186,12 @@ public class CreateBadge02DetailsStep extends BasicStep {
 				allOk &= false;
 			}
 
+			if (nameVersionTuples.contains(new BadgeClassDAO.NameAndVersion(nameEl.getValue(), versionEl.getValue()))) {
+				nameEl.setErrorKey("error.name.version.unique");
+				versionEl.setErrorKey("error.name.version.unique");
+				allOk &= false;
+			}
+
 			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
 				descriptionEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
@@ -219,6 +237,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			badgeClass.setNameWithScan(nameEl.getValue());
 			badgeClass.setVersionWithScan(versionEl.getValue());
 			badgeClass.setDescriptionWithScan(descriptionEl.getValue());
+			badgeClass.setLanguage(availableLanguagesEl.getSelectedKey());
 			issuer.setNameWithScan(issuerNameEl.getValue());
 			if (StringHelper.containsNonWhitespace(issuerUrlEl.getValue())) {
 				issuer.setUrl(issuerUrlEl.getValue());
@@ -270,6 +289,10 @@ public class CreateBadge02DetailsStep extends BasicStep {
 					badgeClass.getDescriptionWithScan(), formLayout);
 			descriptionEl.setElementCssClass("o_sel_badge_description o_badge_class_description");
 			descriptionEl.setMandatory(true);
+
+			availableLanguagesEl = uifactory.addDropdownSingleselect("form.language", formLayout,
+					availableLanguagesKV.keys(), availableLanguagesKV.values());
+			availableLanguagesEl.select(badgeClass.getLanguage(), true);
 
 			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuer.getName(), formLayout);
 			issuerNameEl.setMandatory(true);

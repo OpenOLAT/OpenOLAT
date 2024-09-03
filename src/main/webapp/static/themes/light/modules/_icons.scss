@@ -179,7 +179,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_fake_participant { @include o-add-icon('street-view');}
 .o_icon_file { @include o-add-icon('file');}
 .o_icon_file_arrow_up { @include o-add-icon('file-arrow-up');}
-.o_icon_file_browser { @include o-add-icon('globe');}
+.o_icon_filehub_add { @include o-add-icon('file-circle-plus');}
 .o_icon_files { @include o-add-icon('copy', false);} // files not in FA6 public set!
 .o_icon_fileupload { @include o-add-icon('file', false);}
 .o_icon_filter { @include o-add-icon('filter');}
