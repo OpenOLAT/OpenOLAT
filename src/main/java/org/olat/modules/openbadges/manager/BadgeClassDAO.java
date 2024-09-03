@@ -333,5 +333,17 @@ public class BadgeClassDAO {
 		public Long getResetCount() {
 			return resetCount;
 		}
+
+		public boolean isActive() {
+			return useCount > revokedCount;
+		}
+
+		public boolean isRevoked() {
+			return useCount > 0 && useCount.equals(revokedCount);
+		}
+
+		public boolean isPreparation() {
+			return useCount == 0 & revokedCount == 0;
+		}
 	}
 }
