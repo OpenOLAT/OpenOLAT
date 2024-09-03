@@ -1792,11 +1792,13 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			@Override
 			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 				VFSMetadata metadata = parentLine.pollLast();
-				if(metadata instanceof VFSMetadataImpl) {
-					((VFSMetadataImpl)metadata).setMigrated("migrated");
-					metadataDao.updateMetadata(metadata);
+				if (!importFromFile) {
+					if(metadata instanceof VFSMetadataImpl) {
+						((VFSMetadataImpl)metadata).setMigrated("migrated");
+						metadataDao.updateMetadata(metadata);
+					}
+					dbInstance.commitAndCloseSession();
 				}
-				dbInstance.commitAndCloseSession();
 				return FileVisitResult.CONTINUE;
 			}
 		});
@@ -1870,6 +1872,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			if(metadata == null) {
 				metadata = metadataDao.createMetadata(UUID.randomUUID().toString(), relativePath, file.getName(), fileLastModified,
 						size, directory, file.toURI().toString(), "file", parent);
+			}
+		}
+		if (!directory) {
+			if (metadata instanceof VFSMetadataImpl impl) {
+				// Update the size as well (some tolerance to avoid hardware differences).
+				if (Math.abs(metadata.getFileSize() - size) > 1000) {
+					impl.setFileSize(size);
+					impl.setLastModified(new Date());
+					metadata = updateMetadata(impl);
+				}
 			}
 		}
 		return metadata;
