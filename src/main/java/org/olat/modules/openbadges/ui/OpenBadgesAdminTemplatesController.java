@@ -108,8 +108,8 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.delete.text", translate("table.delete.text"), "delete"));
 
 		tableModel = new TemplateDataModel(columnModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "templates", tableModel, getTranslator(),
-				formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "templates", tableModel, 10,
+				true, getTranslator(), formLayout);
 
 		uploadLink = uifactory.addFormLink("upload", "template.upload", "template.upload", formLayout, Link.BUTTON);
 		updateUI();
