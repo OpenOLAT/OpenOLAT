@@ -316,10 +316,12 @@ public class BadgeClassDAO {
 			sb.append(" where bc.entry is null ");
 		}
 
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), NameAndVersion.class)
-				.setParameter("entryKey", entry.getKey())
-				.getResultList();
+		TypedQuery<NameAndVersion> typedQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), NameAndVersion.class);
+		if (entry != null) {
+			typedQuery.setParameter("entryKey", entry.getKey());
+		}
+		return typedQuery.getResultList();
 	}
 
 	public record NameAndVersion(String name, String version) {}

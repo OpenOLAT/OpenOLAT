@@ -596,12 +596,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(RepositoryEntry entry,
-																			 boolean excludeBadgeClass,
-																			 BadgeClass badgeClass) {
+	public List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(boolean excludeBadgeClass, BadgeClass badgeClass) {
 		final BadgeClassDAO.NameAndVersion excludeTuple = excludeBadgeClass ?
 				new BadgeClassDAO.NameAndVersion(badgeClass.getName(), badgeClass.getVersion()) : null;
-		return badgeClassDAO.getBadgeClassNameVersionTuples(entry).stream().filter(tuple -> {
+		return badgeClassDAO.getBadgeClassNameVersionTuples(badgeClass.getEntry()).stream().filter(tuple -> {
 			if (excludeTuple != null) {
 				return !excludeTuple.equals(tuple);
 			}
