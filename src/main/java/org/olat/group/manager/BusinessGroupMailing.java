@@ -24,14 +24,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -46,6 +50,7 @@ import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.BGMailHelper.BGMailTemplateInfos;
+import org.olat.group.ui.main.BusinessGroupListController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.repository.RepositoryEntryShort;
 
@@ -138,9 +143,15 @@ public class BusinessGroupMailing {
 				template = getDefaultTemplate(type, group, ureqIdentity);
 			}
 		} else if(group != null && template.getContext() != null && needTemplateEnhancement(template)) {
+
+			String lang = null;
+			if (identity != null) {
+				lang = identity.getUser().getPreferences().getLanguage();
+			}
+			Locale locale = I18nManager.getInstance().getLocaleOrDefault(lang);
 			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);
-			template = new MailTemplateDelegate(template, group, repoEntries);
+			template = new MailTemplateDelegate(template, group, repoEntries, locale);
 		}
 		
 		MailContext context = mailing == null ? null : mailing.getContext();
@@ -190,10 +201,13 @@ public class BusinessGroupMailing {
 		private final MailTemplate delegate;
 		private final BGMailTemplateInfos infos;
 		
-		public MailTemplateDelegate(MailTemplate delegate, BusinessGroupShort group, List<RepositoryEntryShort> entries) {
+		public MailTemplateDelegate(MailTemplate delegate, BusinessGroupShort group, List<RepositoryEntryShort> entries, Locale locale) {
 			super(null, null, null);
 			this.delegate = delegate;
-			infos = BGMailHelper.getTemplateInfos(group, entries, null);
+			
+			Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale,
+					Util.createPackageTranslator(BusinessGroupListController.class, locale));
+			infos = BGMailHelper.getTemplateInfos(group, entries, trans);
 			String subject = delegate.getSubjectTemplate();
 			if(subject != null) {
 				subject = subject.replace("$groupname", infos.getGroupName());

@@ -119,11 +119,13 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 			MSCourseNode.initDefaultConfig(config);
 		}
 		if (version < 3) {
-			String instructions = getInstruction();
-			if (!StringHelper.containsNonWhitespace(instructions)) {
-				setInstruction(config.getStringValue("node_text"));
-			} else {
-				setInstruction(instructions.concat(config.getStringValue("node_text")));
+			if(StringHelper.containsNonWhitespace(config.getStringValue("node_text"))) {
+				String instructions = getInstruction();
+				if (!StringHelper.containsNonWhitespace(instructions)) {
+					setInstruction(config.getStringValue("node_text"));
+				} else {
+					setInstruction(instructions.concat(config.getStringValue("node_text")));
+				}
 			}
 		}
 		config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
