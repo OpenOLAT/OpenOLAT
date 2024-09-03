@@ -104,9 +104,9 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(auth);
 		
 		//check if the new token was saved
-		int historyLength = authenticationHistoryDao.historyLength(ident,
+		long historyLength = authenticationHistoryDao.historyLength(ident,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier());
-		Assert.assertEquals(1, historyLength);
+		Assert.assertEquals(1l, historyLength);
 	}
 	
 	@Test

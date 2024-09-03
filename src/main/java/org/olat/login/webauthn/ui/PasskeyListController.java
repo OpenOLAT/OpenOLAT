@@ -20,7 +20,6 @@
 package org.olat.login.webauthn.ui;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.admin.user.SendTokenToUserForm;
 import org.olat.basesecurity.Authentication;
@@ -126,7 +125,7 @@ public class PasskeyListController extends FormBasicController {
 		List<Authentication> authentications = webAuthnManager.getPasskeyAuthentications(identityToModify);
 		List<PasskeyRow> rows = authentications.stream()
 				.map(PasskeyRow::new)
-				.collect(Collectors.toList());
+				.toList();
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 		
@@ -143,6 +142,7 @@ public class PasskeyListController extends FormBasicController {
 			cmc.deactivate();
 			cleanUp();
 		} else if(sendTokenToUserCtrl == source || newPasskeyCtrl == source) {
+			loadModel();
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {

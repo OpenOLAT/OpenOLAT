@@ -33,6 +33,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.AuthenticationHistory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRef;
@@ -250,8 +251,14 @@ public class OLATAuthManager implements AuthenticationSPI {
 		return null;
 	}
 	
-	public long getPasswordHistoryLength(IdentityRef identity) {
-		return authenticationHistoryDao.historySize(identity, "OLAT");
+	/**
+	 * Return the last 3 elements of the password history.
+	 * 
+	 * @param identity
+	 * @return
+	 */
+	public List<AuthenticationHistory> getShortPasswordHistory(IdentityRef identity) {
+		return authenticationHistoryDao.loadHistory(identity, "OLAT", 0, 3);
 	}
 	
 	/**

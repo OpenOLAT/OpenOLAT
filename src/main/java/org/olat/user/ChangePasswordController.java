@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.olat.admin.setup.SetupModule;
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.AuthenticationHistory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -142,8 +143,17 @@ public class ChangePasswordController extends BasicController implements Support
 	private boolean needDefaultUserToSetPassword(UserSession usess) {
 		Identity identity = usess.getIdentity();
 		if(identity != null && setupModule.getDefaultUsersKeys().contains(identity.getKey())) {
-			long passwordLength = olatAuthenticationSpi.getPasswordHistoryLength(identity);
-			return passwordLength <= 1;
+			List<AuthenticationHistory> authenticationHistory = olatAuthenticationSpi.getShortPasswordHistory(identity);
+			if(authenticationHistory == null || authenticationHistory.isEmpty()) {
+				return true;
+			}
+			if(authenticationHistory.size() > 1) {
+				return false;
+			}
+			// The authentication and the log are created with the identity, creation date must be almost the same
+			AuthenticationHistory authenticationEl = authenticationHistory.get(0);
+			long diff = Math.abs(authenticationEl.getCreationDate().getTime() - identity.getCreationDate().getTime());
+			return diff < (15 * 1000);
 		}
 		return false;
 	}

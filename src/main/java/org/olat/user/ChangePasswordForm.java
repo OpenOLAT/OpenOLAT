@@ -27,6 +27,8 @@ package org.olat.user;
 
 import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
 
+import java.util.Objects;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -145,6 +147,14 @@ public class ChangePasswordForm extends FormBasicController {
 			String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
 			newCredEl.setErrorKey("error.password.invalid", descriptions);
 			allOk &= false;
+		}
+		
+		if(oldCredEl.isVisible()) {
+			String oldPassword = oldCredEl.getValue();
+			if(Objects.equals(newPassword, oldPassword)) {
+				oldCredEl.setErrorKey("error.password.same.old");
+				allOk &= false;
+			}
 		}
 
 		newCredConfirmationEl.clearError();
