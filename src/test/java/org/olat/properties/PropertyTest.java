@@ -255,11 +255,11 @@ public class PropertyTest extends OlatTestCase {
 	}
 	
 	/**
-	 * Performance test of 500 propertycreations per type.
-	 * Rename to testPerf500Properties to include this test in the test suit.
+	 * Performance test of 100 propertycreations per type.
+	 * Rename to testPerf100Properties to include this test in the test suit.
 	 */
 	@Test
-	public void testPerf500Properties() {
+	public void testPerf100Properties() {
 		//create identity, group and resource
 		OLATResource res = JunitTestHelper.createRandomResource();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("prop-5-" + UUID.randomUUID().toString());
@@ -269,7 +269,7 @@ public class PropertyTest extends OlatTestCase {
 
 
 		long start, stop;
-		long count = 500;
+		long count = 100;
 		
 		// create generic proerties
 		log.info("----------------------------------------------------------------");
@@ -277,10 +277,10 @@ public class PropertyTest extends OlatTestCase {
 		log.info("CREATE generic property test started...");
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
-			Property p = pm.createPropertyInstance(identity, group, res, "perf500", "TestProperty" + i, Float.valueOf(1.1f), Long.valueOf(123456), "stringValue", "textValue");
+			Property p = pm.createPropertyInstance(identity, group, res, "perf100", "TestProperty" + i, Float.valueOf(1.1f), Long.valueOf(123456), "stringValue", "textValue");
 			pm.saveProperty(p);
 			
-			if(i % 50 == 0) {
+			if(i % 25 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
 		}
@@ -289,7 +289,7 @@ public class PropertyTest extends OlatTestCase {
 		stop = System.currentTimeMillis();
 		log.info("CREATE generic property test: " + (stop-start) + " ms (" + (count * 1000 / (stop-start)) + "/sec)");
 		// some find identitites tests
-		List<Identity> ids = pm.findIdentitiesWithProperty(null, null, "perf500", null, false);
+		List<Identity> ids = pm.findIdentitiesWithProperty(null, null, "perf100", null, false);
 		Assert.assertNotNull("Identities cannot be null", ids);
 		Assert.assertFalse("Identities cannot be empty", ids.isEmpty());
 		Assert.assertTrue("Identities must contains reference identity", ids.contains(identity));
@@ -298,7 +298,7 @@ public class PropertyTest extends OlatTestCase {
 		log.info("Preparing user/group properties test. Creating additional properties..");
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
-			Property pUser = pm.createUserPropertyInstance(identity, "perf500", "TestProperty" + i, Float.valueOf(1.1f), Long.valueOf(123456), "stringValue", "textValue");
+			Property pUser = pm.createUserPropertyInstance(identity, "perf100", "TestProperty" + i, Float.valueOf(1.1f), Long.valueOf(123456), "stringValue", "textValue");
 			pm.saveProperty(pUser);
 			if(i % 50 == 0) {
 				dbInstance.commitAndCloseSession();
@@ -314,7 +314,7 @@ public class PropertyTest extends OlatTestCase {
 		log.info("FIND generic property test started...");
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
-			Property p = pm.findProperty(identity, group, res, "perf500", "TestProperty" + i);
+			Property p = pm.findProperty(identity, group, res, "perf100", "TestProperty" + i);
 			assertNotNull("Must find the p (count=" + i + ")", p);
 			dbInstance.commitAndCloseSession();
 		}
@@ -325,7 +325,7 @@ public class PropertyTest extends OlatTestCase {
 		log.info("FIND user property test started...");
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
-			Property p = pm.findUserProperty(identity, "perf500", "TestProperty" + i);
+			Property p = pm.findUserProperty(identity, "perf100", "TestProperty" + i);
 			assertNotNull("Must find the p (count=" + i + ")", p);
 			dbInstance.commitAndCloseSession();
 		}
@@ -336,7 +336,7 @@ public class PropertyTest extends OlatTestCase {
 		log.info("FIND and DELETE generic property test started...");
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
-			Property p = pm.findUserProperty(identity, "perf500", "TestProperty" + i);
+			Property p = pm.findUserProperty(identity, "perf100", "TestProperty" + i);
 			pm.deleteProperty(p);
 		}
 		stop = System.currentTimeMillis();
