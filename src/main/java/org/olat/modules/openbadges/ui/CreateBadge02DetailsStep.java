@@ -20,6 +20,7 @@
 package org.olat.modules.openbadges.ui;
 
 import java.net.URL;
+import java.util.List;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.manager.BadgeClassDAO;
 import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
 
@@ -88,6 +90,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		private SingleSelection validityTimelapseUnitEl;
 		private final SelectionValues validityTimelapseUnitKV;
 		private final SelectionValues linkedInOrganizationKV;
+		private final List<BadgeClassDAO.NameAndVersion> nameVersionTuples;
 		private SingleSelection linkedInOrganizationEl;
 
 		@Autowired
@@ -124,6 +127,8 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			openBadgesManager.loadLinkedInOrganizations().forEach((bo) -> {
 				linkedInOrganizationKV.add(SelectionValues.entry(bo.getOrganizationKey(), bo.getOrganizationValue()));
 			});
+
+			nameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(createContext.getBadgeClass().getEntry());
 
 			initForm(ureq);
 		}
@@ -171,6 +176,12 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 			if (!StringHelper.containsNonWhitespace(versionEl.getValue())) {
 				versionEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+
+			if (nameVersionTuples.contains(new BadgeClassDAO.NameAndVersion(nameEl.getValue(), versionEl.getValue()))) {
+				nameEl.setErrorKey("error.name.version.unique");
+				versionEl.setErrorKey("error.name.version.unique");
 				allOk &= false;
 			}
 

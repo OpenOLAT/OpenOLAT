@@ -595,6 +595,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return targetFile;
 	}
 
+	@Override
+	public List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(RepositoryEntry entry) {
+		return badgeClassDAO.getBadgeClassNameVersionTuples(entry);
+	}
+
 	/**
 	 * Copies fields from a 'sourceClass' to a 'targetClass'.
 	 * The 'targetClass' must have the fields 'uuid' and 'entry' set already. All other fields in

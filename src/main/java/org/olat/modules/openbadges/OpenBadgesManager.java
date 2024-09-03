@@ -137,6 +137,8 @@ public interface OpenBadgesManager {
 
 	File copyBadgeClassWithTemporaryImage(Long sourceClassKey, BadgeClass targetClass, Translator translator);
 
+	List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(RepositoryEntry entry);
+
 	//
 	// Assertion
 	//

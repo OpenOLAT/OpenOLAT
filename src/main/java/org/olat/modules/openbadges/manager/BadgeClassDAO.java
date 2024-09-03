@@ -305,6 +305,25 @@ public class BadgeClassDAO {
 				.toList();
 	}
 
+	public List<NameAndVersion> getBadgeClassNameVersionTuples(RepositoryEntry entry) {
+		QueryBuilder sb = new QueryBuilder();
+
+		sb.append("select bc.name, bc.version from badgeclass bc ");
+
+		if (entry != null) {
+			sb.append(" where bc.entry.key = :entryKey ");
+		} else {
+			sb.append(" where bc.entry is null ");
+		}
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), NameAndVersion.class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+	}
+
+	public record NameAndVersion(String name, String version) {}
+
 	public static class BadgeClassWithUseCount {
 		private final BadgeClass badgeClass;
 		private final Long useCount;
