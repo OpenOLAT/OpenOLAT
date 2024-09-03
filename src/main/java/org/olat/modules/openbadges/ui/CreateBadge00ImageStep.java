@@ -132,7 +132,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 				createContext = createBadgeClassWizardContext;
 			}
 
-			templateLanguageKV = openBadgesManager.getTemplateTranslationLanguages(getLocale());
+			templateLanguageKV = openBadgesManager.getAvailableLanguages(getLocale());
 
 			initForm(ureq);
 

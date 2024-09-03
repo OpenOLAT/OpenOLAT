@@ -239,7 +239,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		String bundleName = OpenBadgesUIFactory.getBundleName();
 		String nameKey = OpenBadgesUIFactory.getTemplateNameI18nKey(identifier);
 
-		SelectionValues languageKV = getTemplateTranslationLanguages(null);
+		SelectionValues languageKV = getAvailableLanguages(null);
 		Map<Locale, Locale> overlayLocales = i18nModule.getOverlayLocales();
 
 		for (String languageKey : languageKV.keys()) {
@@ -445,7 +445,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public SelectionValues getTemplateTranslationLanguages(Locale displayLocale) {
+	public SelectionValues getAvailableLanguages(Locale displayLocale) {
 		SelectionValues result = new SelectionValues();
 		Collection<String> enabledKeys = i18nModule.getEnabledLanguageKeys();
 		for (String enabledKey : enabledKeys) {
@@ -505,7 +505,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	private void deleteTranslations(BadgeTemplate badgeTemplate) {
-		SelectionValues languageKV = getTemplateTranslationLanguages(null);
+		SelectionValues languageKV = getAvailableLanguages(null);
 		Map<Locale, Locale> overlayLocales = i18nModule.getOverlayLocales();
 
 		for (String languageKey : languageKV.keys()) {
@@ -596,8 +596,17 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(RepositoryEntry entry) {
-		return badgeClassDAO.getBadgeClassNameVersionTuples(entry);
+	public List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(RepositoryEntry entry,
+																			 boolean excludeBadgeClass,
+																			 BadgeClass badgeClass) {
+		final BadgeClassDAO.NameAndVersion excludeTuple = excludeBadgeClass ?
+				new BadgeClassDAO.NameAndVersion(badgeClass.getName(), badgeClass.getVersion()) : null;
+		return badgeClassDAO.getBadgeClassNameVersionTuples(entry).stream().filter(tuple -> {
+			if (excludeTuple != null) {
+				return !excludeTuple.equals(tuple);
+			}
+			return true;
+		}).toList();
 	}
 
 	/**

@@ -92,6 +92,8 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		private final SelectionValues linkedInOrganizationKV;
 		private final List<BadgeClassDAO.NameAndVersion> nameVersionTuples;
 		private SingleSelection linkedInOrganizationEl;
+		private final SelectionValues availableLanguagesKV;
+		private SingleSelection availableLanguagesEl;
 
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
@@ -128,7 +130,12 @@ public class CreateBadge02DetailsStep extends BasicStep {
 				linkedInOrganizationKV.add(SelectionValues.entry(bo.getOrganizationKey(), bo.getOrganizationValue()));
 			});
 
-			nameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(createContext.getBadgeClass().getEntry());
+			boolean isEditMode = CreateBadgeClassWizardContext.Mode.edit.equals(createContext.getMode());
+			BadgeClass badgeClass = createContext.getBadgeClass();
+			nameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(
+					createContext.getBadgeClass().getEntry(), isEditMode, badgeClass);
+
+			availableLanguagesKV = openBadgesManager.getAvailableLanguages(getLocale());
 
 			initForm(ureq);
 		}
@@ -230,6 +237,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			badgeClass.setNameWithScan(nameEl.getValue());
 			badgeClass.setVersionWithScan(versionEl.getValue());
 			badgeClass.setDescriptionWithScan(descriptionEl.getValue());
+			badgeClass.setLanguage(availableLanguagesEl.getSelectedKey());
 			issuer.setNameWithScan(issuerNameEl.getValue());
 			if (StringHelper.containsNonWhitespace(issuerUrlEl.getValue())) {
 				issuer.setUrl(issuerUrlEl.getValue());
@@ -281,6 +289,10 @@ public class CreateBadge02DetailsStep extends BasicStep {
 					badgeClass.getDescriptionWithScan(), formLayout);
 			descriptionEl.setElementCssClass("o_sel_badge_description o_badge_class_description");
 			descriptionEl.setMandatory(true);
+
+			availableLanguagesEl = uifactory.addDropdownSingleselect("form.language", formLayout,
+					availableLanguagesKV.keys(), availableLanguagesKV.values());
+			availableLanguagesEl.select(badgeClass.getLanguage(), true);
 
 			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuer.getName(), formLayout);
 			issuerNameEl.setMandatory(true);

@@ -78,7 +78,7 @@ public interface OpenBadgesManager {
 
 	String getTemplateSvgImageWithSubstitutions(String templateImage, String backgroundColorId, String title);
 
-	SelectionValues getTemplateTranslationLanguages(Locale displayLocale);
+	SelectionValues getAvailableLanguages(Locale displayLocale);
 
 	void updateTemplate(BadgeTemplate badgeTemplate);
 
@@ -137,7 +137,8 @@ public interface OpenBadgesManager {
 
 	File copyBadgeClassWithTemporaryImage(Long sourceClassKey, BadgeClass targetClass, Translator translator);
 
-	List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(RepositoryEntry entry);
+	List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(RepositoryEntry entry, boolean excludeBadgeClass,
+																	  BadgeClass badgeClass);
 
 	//
 	// Assertion
