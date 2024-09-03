@@ -393,7 +393,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 			badgesKV = new SelectionValues();
 			if (createContext.isCourseBadge()) {
-				openBadgesManager.getBadgeClassesInCoOwnedCourseSet(createContext.getBadgeClass().getEntry()).stream()
+				openBadgesManager.getBadgeClasses(createContext.getBadgeClass().getEntry()).stream()
 						.filter((badgeClass) -> !badgeClass.getUuid().equals(createContext.getBadgeClass().getUuid()))
 						.forEach((badgeClass) -> badgesKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName())));
 			}
