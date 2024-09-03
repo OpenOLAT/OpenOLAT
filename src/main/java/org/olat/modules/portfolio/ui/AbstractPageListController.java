@@ -846,7 +846,8 @@ public abstract class AbstractPageListController extends FormBasicController imp
 				doOpenRow(ureq, row, false);
 			} else if("comment".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
-				doComment(ureq, row.getPage());
+				doOpenRow(ureq, row, false);
+				doOpenComments(ureq, row.getPage());
 			} else if("close.section".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doConfirmCloseSection(ureq, row);
@@ -1044,7 +1045,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		}
 	}
 	
-	private void doComment(UserRequest ureq, Page page) {
+	private void doOpenComments(UserRequest ureq, Page page) {
 		CommentAndRatingSecurityCallback commentSecCallback;
 		if(PageStatus.isClosed(page)) {
 			commentSecCallback = new ReadOnlyCommentsSecurityCallback();
@@ -1054,11 +1055,8 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
 		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, null, commentSecCallback);
 		listenTo(commentsCtrl);
-		
-		String title = translate("comment.title");
-		cmc = new CloseableModalController(getWindowControl(), null, commentsCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
+
+		commentsCtrl.scrollToCommentsArea();
 	}
 	
 	protected void doOpenRow(UserRequest ureq, PortfolioElementRow row, boolean newElement) {

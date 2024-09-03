@@ -132,8 +132,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 			boolean isEditMode = CreateBadgeClassWizardContext.Mode.edit.equals(createContext.getMode());
 			BadgeClass badgeClass = createContext.getBadgeClass();
-			nameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(
-					createContext.getBadgeClass().getEntry(), isEditMode, badgeClass);
+			nameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(isEditMode, badgeClass);
 
 			availableLanguagesKV = openBadgesManager.getAvailableLanguages(getLocale());
 

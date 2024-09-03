@@ -522,7 +522,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		pageRow.setOpenLink(openLink);
 
 		Long numOfComments = numberOfCommentsMap.get(page.getKey());
-		if(portfolioV2Module.isOverviewCommentsEnabled() && numOfComments != null && numOfComments.longValue() > 0) {
+		if(portfolioV2Module.isOverviewCommentsEnabled() && numOfComments != null && numOfComments > 0) {
 			Link commentLink = LinkFactory.createCustomLink("com_" + (++counter), "comments", "(" + numOfComments + ")", Link.LINK | Link.NONTRANSLATED, mainVC, this);
 			commentLink.setDomReplacementWrapperRequired(false);
 			commentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_comments");
@@ -614,8 +614,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		} else if(selectPageListCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
-			if(event instanceof PageSelectionEvent) {
-				PageSelectionEvent pageSelectionEvent = (PageSelectionEvent) event;
+			if(event instanceof PageSelectionEvent pageSelectionEvent) {
 				doCreateNewEntryFrom(ureq, pageSelectionEvent.getPage(), pageSelectionEvent.getSection());
 			}
 		} else if (wizardCtrl == source) {
@@ -687,8 +686,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			doExportBinderAsPdf(ureq);
 		} else if(toReferenceEntryLink == source) {
 			doOpenReferenceEntry(ureq);
-		} else if(source instanceof Link) {
-			Link link = (Link)source;
+		} else if(source instanceof Link link) {
 			String cmd = link.getCommand();
 			if("open_section".equals(cmd)) {
 				SectionRow row = (SectionRow)link.getUserObject();
@@ -710,6 +708,7 @@ public class TableOfContentController extends BasicController implements TooledC
 				doOverrideDatesSection(ureq, row);
 			} else if("comments".equals(cmd)) {
 				PageRow row = (PageRow)link.getUserObject();
+				doOpenPage(ureq, row.getPage());
 				doOpenComments(ureq, row);
 			} else if("up_section".equals(cmd)) {
 				SectionRow row = (SectionRow)link.getUserObject();
@@ -751,10 +750,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, null, commentSecCallback);
 		listenTo(commentsCtrl);
 		
-		String title = translate("comment.title");
-		cmc = new CloseableModalController(getWindowControl(), null, commentsCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
+		commentsCtrl.scrollToCommentsArea();
 	}
 	
 	private void doOpenSection(UserRequest ureq, Section section) {

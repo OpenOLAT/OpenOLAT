@@ -219,14 +219,17 @@ public class OLATUpgrade_19_0_4 extends OLATUpgrade {
 						lastKey = metadata.getKey();
 						
 						VFSItem item = vfsRepositoryService.getItemFor(metadata);
-						if (metadata instanceof VFSMetadataImpl metadataImpl
-								&& !item.getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
+						if (metadata instanceof VFSMetadataImpl metadataImpl) {
 							if (item.exists()) {
-								metadataImpl.setDeletedBy(null);
-								metadataImpl.setDeleted(false);
-								metadataImpl.setDeletedDate(null);
-								metadataDao.updateMetadata(metadataImpl);
-								log.info("Metadata of existing file marked as not deleted: {}", metadata.getRelativePath() + "/" + metadata.getFilename());
+								if (!item.getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
+									metadataImpl.setDeletedBy(null);
+									metadataImpl.setDeleted(false);
+									metadataImpl.setDeletedDate(null);
+									metadataDao.updateMetadata(metadataImpl);
+									log.info("Metadata of existing file marked as not deleted: {}", metadata.getRelativePath() + "/" + metadata.getFilename());
+								} else {
+									log.info("Metadata correctly marked as deleted: {}", metadata.getRelativePath() + "/" + metadata.getFilename());
+								}
 							} else {
 								VFSMetadata reloadedMetadata = vfsRepositoryService.getMetadata(metadata);
 								// May be deleted with parent directory

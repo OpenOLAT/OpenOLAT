@@ -106,8 +106,8 @@ public class UserCommentFormController extends FormBasicController {
 	private final UserComment parentComment;
 	private final OLATResourceable ores;
 	private final PublishingInformations publishingInformations;
-	private List<VFSLeaf> uploadedAttachmentLeafs = new ArrayList<>();
-	private Map<VFSLeaf, String> uploadedFiles = new HashMap<>();
+	private final List<VFSLeaf> uploadedAttachmentLeafs = new ArrayList<>();
+	private final Map<VFSLeaf, String> uploadedFiles = new HashMap<>();
 	private UserComment toBeUpdatedComment;
 
 	private Controller docEditorCtrl;
@@ -294,7 +294,7 @@ public class UserCommentFormController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (addFromBrowserCtrl == source) {
 			handleAddFromBrowserEvent(ureq, event);
-		} else if (source == docEditorCtrl) {
+		} else if (source == docEditorCtrl || source == cmc) {
 			cleanUp();
 		}
 	}
@@ -537,6 +537,7 @@ public class UserCommentFormController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		cleanUpTempDir();
+		cleanUp();
 		super.doDispose();
 	}
 

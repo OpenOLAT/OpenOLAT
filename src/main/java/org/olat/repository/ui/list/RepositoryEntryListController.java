@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.repository.ui.list;
@@ -120,7 +120,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 20.11.2012<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class RepositoryEntryListController extends FormBasicController
 	implements Activateable2, RepositoryEntryDataSourceUIFactory, FlexiTableComponentDelegate {
@@ -498,8 +498,7 @@ public class RepositoryEntryListController extends FormBasicController
 			selectFilterTab(ureq, myTab);
 		}
 		
-		if(state instanceof RepositoryEntryListState) {
-			RepositoryEntryListState se = (RepositoryEntryListState)state;
+		if(state instanceof RepositoryEntryListState se) {
 			if(se.getTableState() != null) {
 				tableEl.setStateEntry(ureq, se.getTableState());
 			}
@@ -516,13 +515,10 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {	
-		if(source instanceof RatingWithAverageFormItem && event instanceof RatingFormEvent) {
-			RatingFormEvent ratingEvent = (RatingFormEvent)event;
-			RatingWithAverageFormItem ratingItem = (RatingWithAverageFormItem)source;
+		if(source instanceof RatingWithAverageFormItem ratingItem && event instanceof RatingFormEvent ratingEvent) {
 			RepositoryEntryRow row = (RepositoryEntryRow)ratingItem.getUserObject();
 			doRating(row, ratingEvent.getRating());
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			
 			if("mark".equals(cmd)) {
@@ -547,11 +543,11 @@ public class RepositoryEntryListController extends FormBasicController
 				}
 			} else if ("comments".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
+				doOpenDetails(ureq, row);
 				doOpenComments(ureq, row);
 			}
 		} else if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				RepositoryEntryRow row = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
@@ -565,8 +561,7 @@ public class RepositoryEntryListController extends FormBasicController
 				RepositoryEntryListState state = new RepositoryEntryListState();
 				state.setTableState(tableEl.getStateEntry());
 				addToHistory(ureq, state);
-			} else if(event instanceof FlexiTableFilterEvent) {
-				FlexiTableFilterEvent ftfe = (FlexiTableFilterEvent)event;
+			} else if(event instanceof FlexiTableFilterEvent ftfe) {
 				saveFilterPreferences(ureq, ftfe.getFilters());
 			}
 		}
@@ -575,11 +570,9 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(source instanceof Link) {
-			Link link = (Link)source;
+		if(source instanceof Link link) {
 			Object uo = link.getUserObject();
-			if(uo instanceof OrderBy) {
-				OrderBy sort = (OrderBy)uo;
+			if(uo instanceof OrderBy sort) {
 				for(Link order:orderByLinks) {
 					removeCheck(order);
 				}
@@ -760,16 +753,13 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 	
 	protected void doOpenComments(UserRequest ureq, RepositoryEntryRow row) {
-		if(guardModalController(commentsCtrl)) return;
-		
 		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
 		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), row.getRepositoryEntryResourceable(), null, null, secCallback);
 		commentsCtrl.setUserObject(row);
 		listenTo(commentsCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), commentsCtrl.getInitialComponent(), true, translate("comments"));
-		listenTo(cmc);
-		cmc.activate();
+
+		commentsCtrl.scrollToCommentsArea();
 	}
 	
 	protected boolean doMark(UserRequest ureq, RepositoryEntryRow row) {

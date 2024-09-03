@@ -635,6 +635,11 @@ function o_aexecute(command, parameters) {
 		case "disposevideorecorder":
 			videoRecorder.dispose();// Not working, use strict hide the recorder
 			break;
+		case "scrolltoid":
+			setTimeout(function () {
+				o_scrollToElement(parameters["elemId"])
+			}, 1)
+			break;
 		default:
 			console.log("Unkown command", command, parameters);
 	}

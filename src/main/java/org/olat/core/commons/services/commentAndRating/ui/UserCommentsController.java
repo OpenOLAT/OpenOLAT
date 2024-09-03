@@ -35,8 +35,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.Formatter;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -136,9 +136,8 @@ public class UserCommentsController extends BasicController {
 		return commentControllers == null ? 0 : commentControllers.size();
 	}
 	
-	public void scrollTo(Long commentId) {
-		userCommentsVC.contextPut("goToComment", new ConsumableBoolean(true));
-		userCommentsVC.contextPut("goToCommentId", commentId);
+	public void scrollToCommentsArea() {
+		getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#o_comments_area"));
 	}
 
 	@Override
