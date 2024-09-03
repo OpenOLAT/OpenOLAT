@@ -5,7 +5,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -24,10 +24,7 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
-import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -43,7 +40,6 @@ import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
@@ -81,13 +77,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntryDetailsMetadataController extends FormBasicController {
 	
 	private FormLink markLink;
-	private FormLink commentsLink;
 	private FormLink leaveLink;
 	private RatingWithAverageFormItem ratingEl;
-	
-	private CloseableModalController cmc;
+
 	private DialogBoxController leaveDialogBox;
-	private UserCommentsController commentsCtrl;
 	
 	private final RepositoryEntry entry;
 	private final boolean isMember;
@@ -178,15 +171,6 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 				layoutCont.add("rating", ratingEl);
 			}
 			
-			if (repositoryModule.isCommentEnabled()) {
-				long numOfComments = statistics.getNumOfComments();
-				String title = "(" + numOfComments + ")";
-				commentsLink = uifactory.addFormLink("comments", "comments", title, null, layoutCont, Link.NONTRANSLATED);
-				commentsLink.setCustomEnabledLinkCSS("o_comments");
-				String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
-				commentsLink.setIconLeftCSS(css);
-			}
-			
 			if (!guestOnly && isParticipant && repositoryService.isParticipantAllowedToLeave(entry)) {
 				leaveLink = uifactory.addFormLink("sign.out", "leave", translate("sign.out"), null, formLayout, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
 				leaveLink.setElementCssClass("o_sign_out btn-danger");
@@ -246,8 +230,6 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 				boolean marked = doMark();
 				markLink.setI18nKey(marked ? "details.bookmark.remove" : "details.bookmark");
 				markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
-			} else if ("comments".equals(cmd)) {
-				doOpenComments(ureq);
 			} else if ("group".equals(cmd)) {
 				Long groupKey = (Long)link.getUserObject();
 				doOpenGroup(ureq, groupKey);
@@ -262,31 +244,13 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(commentsCtrl == source) {
-			if(event == Event.CANCELLED_EVENT) {
-				updateComments(commentsCtrl.getNumOfComments());
-				cmc.deactivate();
-				cleanUp();
-			}
-		} else if(cmc == source) {
-			if(commentsCtrl != null) {
-				updateComments(commentsCtrl.getNumOfComments());
-			}
-			cleanUp();
-		} else if(leaveDialogBox == source) {
+		if(leaveDialogBox == source) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				doLeave();
 				fireEvent(ureq, new LeavingEvent());
 			}
 		}
 		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(commentsCtrl);
-		removeAsListenerAndDispose(cmc);
-		commentsCtrl = null;
-		cmc = null;
 	}
 
 	@Override
@@ -335,26 +299,6 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	
 	private void doRating(float rating) {
 		userRatingsDao.updateRating(getIdentity(), entry, null, Math.round(rating));
-	}
-	
-	protected void doOpenComments(UserRequest ureq) {
-		if (guardModalController(commentsCtrl)) return;
-		
-		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
-		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey());
-		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, null, secCallback);
-		listenTo(commentsCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), commentsCtrl.getInitialComponent(), true, translate("comments"));
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void updateComments(int numOfComments) {
-		String title = "(" + numOfComments + ")";
-		commentsLink.setI18nKey(title);
-		String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
-		commentsLink.setIconLeftCSS(css);
 	}
 	
 	protected void doOpenCategory(UserRequest ureq, Long categoryKey) {

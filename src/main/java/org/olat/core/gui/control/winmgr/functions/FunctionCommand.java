@@ -45,6 +45,7 @@ public class FunctionCommand extends Command {
 		CLOSE_DIALOG("closedialog"),
 		DISPOSE_AUDIO_RECORDER("disposeaudiorecorder"),
 		DISPOSE_VIDEO_RECORDER("disposevideorecorder"),
+		SCROLL_TO_ID("scrolltoid"),
 		
 		SET_DOCUMENT_TITLE("setdocumenttitle"),
 		SET_BUSINESS_PATH("setbusinesspath"),
@@ -78,7 +79,9 @@ public class FunctionCommand extends Command {
 
 	/**
 	 * Create a command that executes arbitrary JS code
-	 * @param javaScriptCode
+	 *
+	 * @param function
+	 * @param parameters
 	 */
 	private FunctionCommand(String function, JSONObject parameters) {
 		super(InvokeIdentifier.FUNCTION); // do not change this command id, it is in js also
@@ -135,6 +138,10 @@ public class FunctionCommand extends Command {
 	
 	public static FunctionCommand disposeVideoRecorder() {
 		return valueOf(Functions.DISPOSE_VIDEO_RECORDER, null);
+	}
+
+	public static FunctionCommand scrollToElemId(String elemId) {
+		return valueOf(Functions.SCROLL_TO_ID, "elemId", elemId);
 	}
 	
 	public static FunctionCommand setDocumentTitle(String title) {

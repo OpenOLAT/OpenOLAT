@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.repository.ui.list;
@@ -23,6 +23,9 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -39,6 +42,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.run.InfoCourse;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -50,7 +54,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * 
  * Initial date: 25.03.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  * 
  */
 public abstract class RepositoryEntryDetailsController extends BasicController {
@@ -63,12 +67,14 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	private final RepositoryEntryDetailsMetadataController metadataCtrl;
 	private final RepositoryEntryDetailsLinkController linkCtrl;
 	private final RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
-	
+
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private final RepositoryEntry entry;
 
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private CourseModule courseModule;
 
@@ -114,7 +120,12 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		linkCtrl = new RepositoryEntryDetailsLinkController(ureq, wControl, entry);
 		listenTo(linkCtrl);
 		mainVC.put("link", linkCtrl.getInitialComponent());
-		
+
+		if (repositoryModule.isCommentEnabled()) {
+			UserCommentsAndRatingsController userCommentsCtrl = initCommentsCtrl(ureq);
+			mainVC.put("comments", userCommentsCtrl.getInitialComponent());
+		}
+
 		// show technical data only for administrative users or owners, hide from normal users
 		Roles roles = ureq.getUserSession().getRoles();
 		if (isOwner || roles.isAdministrator() || roles.isManager()) {
@@ -143,6 +154,16 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		}
 		
 		putInitialPanel(mainVC);
+	}
+
+	private UserCommentsAndRatingsController initCommentsCtrl(UserRequest ureq) {
+		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
+		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey());
+		UserCommentsAndRatingsController commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, secCallback, null, secCallback.canViewComments(), false, true);
+
+		listenTo(commentsCtrl);
+		return commentsCtrl;
 	}
 
 	@Override

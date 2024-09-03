@@ -451,8 +451,7 @@ public class PageRunController extends BasicController implements TooledControll
 		
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Comment".equalsIgnoreCase(resName)) {
-			Long commentId = entries.get(0).getOLATResourceable().getResourceableId();
-			commentsCtrl.expandCommentsAt(commentId);
+			commentsCtrl.scrollToCommentsArea();
 		}
 	}
 
