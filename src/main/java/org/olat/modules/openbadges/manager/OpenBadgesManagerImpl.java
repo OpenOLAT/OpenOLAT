@@ -983,6 +983,18 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeAssertion.setIssuedOn(issuedOn);
 		badgeAssertion.setAwardedBy(awardedBy);
 		badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
+
+		File bakedImageFile;
+		if (getBadgeAssertionVfsLeaf(badgeAssertion.getBakedImage()) instanceof LocalFileImpl bakedFileImpl) {
+			bakedImageFile = bakedFileImpl.getBasefile();
+			MailerResult mailerResult = sendBadgeEmail(badgeAssertion, bakedImageFile);
+			if (!mailerResult.isSuccessful()) {
+				log.error("Sending badge creation email for badge \"{}\" to \"{}\" failed",
+						badgeAssertion.getBadgeClass().getName(), badgeAssertion.getRecipient().getKey());
+			}
+		} else {
+			log.error("Missing baked badge image for badge assertion {}.", badgeAssertion.getUuid());
+		}
 	}
 
 	private MailerResult sendBadgeEmail(BadgeAssertion badgeAssertion, File bakedImageFile) {

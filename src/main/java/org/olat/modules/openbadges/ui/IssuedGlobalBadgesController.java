@@ -90,7 +90,8 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete));
 
 		tableModel = new TableModel(columnModel, userManager);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
+				getTranslator(), formLayout);
 		addLink = uifactory.addFormLink("add", "issueGlobalBadge", "issueGlobalBadge", formLayout, Link.BUTTON);
 		updateUI();
 	}

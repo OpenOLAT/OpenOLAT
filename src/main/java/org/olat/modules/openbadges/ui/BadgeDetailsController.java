@@ -160,7 +160,8 @@ public class BadgeDetailsController extends FormBasicController {
 		columnModel.addFlexiColumnModel(toolsColumn);
 
 		tableModel = new TableModel(columnModel, userManager);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
+				getTranslator(), formLayout);
 
 		loadData();
 	}

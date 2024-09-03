@@ -120,7 +120,7 @@ public class IssueCourseBadgeController extends FormBasicController {
 
 		tableModel = new BadgeEarnersTableModel(columnsModel, getLocale());
 		tableModel.setObjects(rows);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20,
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10,
 				false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);

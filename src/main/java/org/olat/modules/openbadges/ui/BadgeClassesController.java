@@ -161,8 +161,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		columnModel.addFlexiColumnModel(toolsColumn);
 
 		tableModel = new BadgeClassTableModel(columnModel, getTranslator());
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(),
-				formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
+				getTranslator(), formLayout);
 
 		detailsVC = createVelocityContainer("badge_class_details");
 		tableEl.setDetailsRenderer(detailsVC, this);

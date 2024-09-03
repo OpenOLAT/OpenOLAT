@@ -161,7 +161,7 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 
 			tableModel = new BadgeEarnersTableModel(columnsModel, getLocale());
 			tableModel.setObjects(rows);
-			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20,
+			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10,
 					false, getTranslator(), formLayout);
 			tableEl.reset();
 			tableEl.reloadData();
