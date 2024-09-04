@@ -154,11 +154,13 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.type));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.awardedCount, CMD_SELECT));
 
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
-				BadgeClassTableModel.BadgeClassCols.tools.i18nHeaderKey(),
-				BadgeClassTableModel.BadgeClassCols.tools.ordinal()
-		);
-		columnModel.addFlexiColumnModel(toolsColumn);
+		if (reSecurity.isOwner()) {
+			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
+					BadgeClassTableModel.BadgeClassCols.tools.i18nHeaderKey(),
+					BadgeClassTableModel.BadgeClassCols.tools.ordinal()
+			);
+			columnModel.addFlexiColumnModel(toolsColumn);
+		}
 
 		tableModel = new BadgeClassTableModel(columnModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
@@ -170,6 +172,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 		createLink = uifactory.addFormLink("create", createKey, null, formLayout, Link.BUTTON);
 		createLink.setElementCssClass("o_sel_badge_classes_create");
+
+		createLink.setVisible(reSecurity.isOwner());
 	}
 
 	@Override
