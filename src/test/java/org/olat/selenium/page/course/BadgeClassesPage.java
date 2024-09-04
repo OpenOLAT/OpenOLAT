@@ -137,7 +137,7 @@ public class BadgeClassesPage {
 		By criteriaBy = By.cssSelector("#o_fioform_award_procedure_wr input[name='form.award.procedure'][value='automatic']");
 		browser.findElement(criteriaBy).click();
 		
-		By selectBy = By.id("o_fioform_condition_new_SELBOX");
+		By selectBy = By.id("o_fioform_condition_0_SELBOX");
 		OOGraphene.waitElement(selectBy, browser);
 		OOGraphene.scrollBottom(selectBy, browser);
 		
