@@ -66,7 +66,9 @@ implements SortableFlexiTableDataModel<TrashRow> {
 			case relativePath: return row.getRelativePath();
 			case filename: return row.getFilename();
 			case size: return row.getSize();
-			
+			case folder: return Boolean.valueOf(row.isDirectory());
+			case deletedDate: return row.getDeletedDate();
+			case deletedBy: return row.getDeletedBy();
 			default: return "ERROR";
 		}
 	}
@@ -76,7 +78,10 @@ implements SortableFlexiTableDataModel<TrashRow> {
 		id("table.header.id"),
 		relativePath("table.header.path"),
 		filename("table.header.file"),
-		size("table.header.size");
+		size("table.header.size"),
+		folder("table.header.folder"),
+		deletedDate("deleted.date"),
+		deletedBy("deleted.by"),;
 
 		private final String i18nKey;
 		

@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.vfs.ui.version;
 
+import java.util.Date;
+
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 
@@ -32,6 +34,8 @@ public class TrashRow {
 	
 	private final VFSMetadata metadata;
 	private final String relativePath;
+	private Date deletedDate;
+	private String deletedBy;
 	
 	public TrashRow(VFSMetadata metadata) {
 		this.metadata = metadata;
@@ -56,6 +60,26 @@ public class TrashRow {
 
 	public String getFilename() {
 		return metadata.getFilename();
+	}
+	
+	public boolean isDirectory() {
+		return metadata.isDirectory();
+	}
+	
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	public String getDeletedBy() {
+		return deletedBy;
+	}
+
+	public void setDeletedBy(String deletedBy) {
+		this.deletedBy = deletedBy;
 	}
 
 }

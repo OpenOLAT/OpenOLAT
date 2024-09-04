@@ -19,15 +19,16 @@
  */
 package org.olat.core.commons.services.vfs.ui.version;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.admin.SystemAdminMainController;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderUIFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.ui.component.BytesCellRenderer;
@@ -56,6 +57,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,6 +78,8 @@ public class VFSTrashController extends FormBasicController {
 	
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private UserManager userManager;
 	
 	public VFSTrashController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -94,10 +98,13 @@ public class VFSTrashController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(VersionsDeletedCols.relativePath));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(VersionsDeletedCols.filename));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(VersionsDeletedCols.size, new BytesCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, VersionsDeletedCols.folder));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(VersionsDeletedCols.deletedDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(VersionsDeletedCols.deletedBy));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 		
 		dataModel = new VersionsDeletedFileDataModel(columnsModel, getTranslator());
-		tableEl = uifactory.addTableElement(getWindowControl(), "orphansList", dataModel, 24, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "orphansList", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableSettings("version.noDeletedFiles", null, "o_icon_files");
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
@@ -116,9 +123,14 @@ public class VFSTrashController extends FormBasicController {
 	private void loadModel() {
 		List<VFSMetadata> metadataDeleted = vfsRepositoryService.getDeletedDateBeforeMetadatas(DateUtils.addDays(new Date(), 2));
 		
-		List<TrashRow> rows = metadataDeleted.stream()
-				.map(TrashRow::new)
-				.collect(Collectors.toList());
+		List<TrashRow> rows = new ArrayList<>(metadataDeleted.size());
+		for (VFSMetadata vfsMetadata : metadataDeleted) {
+			TrashRow row = new TrashRow(vfsMetadata);
+			row.setDeletedDate(FolderUIFactory.getDeletedDate(vfsMetadata, null));
+			row.setDeletedBy(FolderUIFactory.getDeletedBy(userManager, vfsMetadata, null));
+			rows.add(row);
+		}
+		
 		dataModel.setObjects(rows);
 		tableEl.reset(false, true, true);
 	}
@@ -194,7 +206,6 @@ public class VFSTrashController extends FormBasicController {
 	private void doDeletePermanently(VFSMetadata metadata) {
 		VFSMetadata reloadedMetadata = vfsRepositoryService.getMetadata(metadata);
 		if (reloadedMetadata == null || !reloadedMetadata.isDeleted()) {
-			loadModel();
 			return;
 		}
 		
