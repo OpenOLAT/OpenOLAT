@@ -145,7 +145,9 @@ public class TopicBrokerMailing {
 			putVariablesInMailContext(context, "enrollmentList", enrollmentList);
 			
 			putVariablesInMailContext(context, "courseTitle", StringHelper.escapeHtml(courseEntry.getDisplayname()));
+			putVariablesInMailContext(context, "courseTitleSubject", courseEntry.getDisplayname());
 			putVariablesInMailContext(context, "courseElementTitle", StringHelper.escapeHtml(courseNode.getLongTitle()));
+			putVariablesInMailContext(context, "courseElementTitleSubject", courseNode.getLongTitle());
 			
 			String businessPath = "[RepositoryEntry:" + courseEntry.getKey() + "][CourseNode:" + courseNode.getIdent() + "]";
 			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
