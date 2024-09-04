@@ -156,7 +156,7 @@ public class FolderPage {
 			By calloutBy = By.cssSelector(".o_folder_create_group ul.dropdown-menu");
 			OOGraphene.waitElement(calloutBy, browser);
 			
-			By onlineButtonBy = By.xpath("//div[contains(@class,'o_folder_create_group')]//ul[contains(@class,'dropdown-menu')]/li/a[i[contains(@class,'o_icon_file_browser')]]");
+			By onlineButtonBy = By.xpath("//div[contains(@class,'o_folder_create_group')]//ul[contains(@class,'dropdown-menu')]/li/a[i[contains(@class,'o_icon_filehub_add')]]");
 			OOGraphene.waitElement(onlineButtonBy, browser);
 			browser.findElement(onlineButtonBy).click();
 			OOGraphene.waitModalDialog(browser);
