@@ -84,6 +84,7 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		runContext.put(CreateBadgeClassWizardContext.KEY, createBadgeClassContext);
+		form.setMultipartEnabled(true);
 		return new CreateBadge00StartingPointForm(ureq, wControl, form, runContext);
 	}
 
