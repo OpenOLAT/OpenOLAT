@@ -152,6 +152,125 @@
 	}
 }
 
+.o_badge_wiz_image_step {
+	.o_template_language {
+		margin-top: 15px;
+		margin-bottom: 20px;
+	}
+
+	.o_template_tags {
+		margin-bottom: 14px;
+	}
+
+	.o_template_cards {
+		width: 100%;
+		margin-left: -8px;
+		margin-right: -8px;
+		margin-top: -8px;
+
+		.o_template_card {
+			display: inline-block;
+			position: relative;
+			width: 120px;
+			height: 120px;
+			margin: 8px;
+			border-radius: 8px;
+			border-color: gray;
+			border-width: 1px;
+			border-style: solid;
+
+			&.o_selectable {
+				cursor: pointer;
+			}
+
+			&.o_selectable:active {
+				background-color: #dddddd;
+			}
+
+			&.o_selectable:hover {
+				background-color: #eeeeee;
+			}
+
+			&.o_selected {
+				background-color: #dddddd;
+			}
+
+			.o_template_image {
+				display: inline-block;
+				position: absolute;
+				left: 50%;
+				transform: translateX(-50%);
+				top: 8px;
+			}
+
+			.o_template_own_image {
+				display: inline-block;
+				position: absolute;
+				left: 50%;
+				transform: translateX(-50%);
+				top: 8px;
+
+				img {
+					height: 66px;
+				}
+			}
+
+			.o_template_own_image_bitmap {
+				display: inline-block;
+				position: absolute;
+				max-width: 100px;
+				max-height: 100px;
+				left: 50%;
+				top: 33%;
+				transform: translate(-50%, -33%);
+
+				.o_image {
+					max-height: 80px;
+				}
+
+				img {
+					max-height: 80px;
+				}
+			}
+
+			.o_template_image_placeholder {
+				display: inline-block;
+				position: absolute;
+				max-width: 60px;
+				left: 50%;
+				transform: translateX(-50%);
+				top: 8px;
+
+				.o_line {
+					stroke-dasharray: 0 0 40 40;
+				}
+
+				.o_line, .o_template_image_placeholder .o_polyline {
+					fill: none;
+					stroke: #000;
+					stroke-linecap: round;
+					stroke-linejoin: round;
+					stroke-width: 10px;
+				}
+
+				.o_rect {
+					fill: none;
+				}
+			}
+
+			.o_template_title {
+				position: absolute;
+				width: 100%;
+				bottom: 8px;
+				text-align: center;
+				line-height: 16px;
+				left: 50%;
+				transform: translateX(-50%) scale(90%);
+			}
+		}
+	}
+}
+
 .o_badge_wiz_starting_point_step {
 	table {
 		> tbody {
