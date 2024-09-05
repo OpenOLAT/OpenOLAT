@@ -99,7 +99,7 @@ public class TextServiceTest extends OlatTestCase {
 		@Override
 		public void run() {
 			try {
-				Thread.sleep(100);
+				sleep(100);
 				for(int i=0; i<2500; i++) {
 					Locale locale = service.detectLocale("Bonjour, je parle français.");
 					Assert.assertNotNull(locale);

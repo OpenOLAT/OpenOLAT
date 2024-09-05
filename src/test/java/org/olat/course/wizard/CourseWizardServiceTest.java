@@ -74,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseWizardServiceTest extends OlatTestCase {
 	
-	private Identity author;
+	private static Identity author;
 	
 	@Autowired
 	private DB dbInstance;
@@ -94,7 +94,9 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	
 	@Before
 	public void setUp() {
-		author = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		if(author == null) {
+			author = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		}
 	}
 	
 	@Test

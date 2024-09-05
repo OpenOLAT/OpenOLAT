@@ -20,7 +20,6 @@
 package org.olat.course.nodes.gta.rule;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -63,6 +62,7 @@ import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.rule.LaunchUnit;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -694,13 +694,11 @@ public class GTAReminderRuleTest extends OlatTestCase {
 	
 	private RepositoryEntry deployGTACourse() {
 		try {
-			Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-reminder");
+			Identity initialAuthor = JunitTestHelper.getDefaultAuthor();
 			String displayname = "GTARemind-" + UUID.randomUUID();
-			
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/GTA_course.zip");
-			File courseFile = new File(courseUrl.toURI());
-			return JunitTestHelper.deployCourse(initialAuthor, displayname, courseFile);
-		} catch (URISyntaxException e) {
+			return JunitTestHelper.deployCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, courseUrl);
+		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}

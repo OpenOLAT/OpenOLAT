@@ -121,7 +121,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void getLecturesBlock_course()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -154,7 +154,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void getLecturesBlock_repository()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -181,7 +181,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void putLecturesBlock_repository()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -248,7 +248,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void putLecturesBlock_autoclosed()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -298,7 +298,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void getLecturesBlockConfiguration()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -320,7 +320,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void updateLecturesBlockConfiguration()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		dbInstance.commit();
 		
@@ -370,7 +370,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void getLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -395,7 +395,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void deleteLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -418,7 +418,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void addRepositoryEntryDefaultGroupToLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -454,7 +454,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void addRepositoryEntryDefaultGroupToLectureBlockMultipleTimes()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1-multi");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -485,7 +485,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void removeRepositoryEntryDefaultGroupToLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		Group defGroup = repositoryService.getDefaultGroup(entry);
@@ -516,7 +516,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	public void syncRepositoryEntryCurriculumElementToLectureBlock()
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -554,7 +554,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	public void syncRepositoryEntryCurriculumElementToLectureBlockAddRemove()
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -612,7 +612,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	public void syncRepositoryEntryCurriculumElementToLectureBlockAddRemoveOtherGroups()
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -695,7 +695,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	public void syncRepositoryEntryCurriculumElementToLectureBlockSeveralAdd()
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -737,7 +737,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
 		// the lecture block use already the curriculum element as source of participants
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
@@ -775,7 +775,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void addTeacherToLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
@@ -802,7 +802,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void removeTeacherToLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
 		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
@@ -841,7 +841,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void moveLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entryOrigin = JunitTestHelper.deployBasicCourse(author);
 		RepositoryEntry entryTarget = JunitTestHelper.deployBasicCourse(author);
 		ICourse courseOrigin = CourseFactory.loadCourse(entryOrigin);
@@ -877,7 +877,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void getTaxonomyLevels()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
@@ -907,7 +907,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void addTaxonomyLevels()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
@@ -941,7 +941,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void addTwiceTaxonomyLevels()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
@@ -976,7 +976,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void deleteTaxonomyLevel()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);

@@ -669,7 +669,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		@Override
 		public void run() {
 			try {
-				Thread.sleep(10);
+				sleep(10);
 				for(int i=5; i-->0; ) {
 					//subscribe
 					notificationManager.subscribe(id, sc, pd);
@@ -763,7 +763,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		@Override
 		public void run() {
 			try {
-				Thread.sleep(10);
+				sleep(10);
 				for(int i=5; i-->0; ) {
 					notificationManager.subscribe(id, sc, pd);
 					dbInstance.closeSession();

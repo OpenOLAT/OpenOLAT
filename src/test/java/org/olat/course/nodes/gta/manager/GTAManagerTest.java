@@ -65,6 +65,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -1479,13 +1480,11 @@ public class GTAManagerTest extends OlatTestCase {
 	
 	protected static RepositoryEntry deployGTACourse() {
 		try {
-			Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-author");
 			String displayname = "GTA-" + UUID.randomUUID();
-			
+			Identity initialAuthor = JunitTestHelper.getDefaultAuthor();
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/GTA_course.zip");
-			File courseFile = new File(courseUrl.toURI());
-			return JunitTestHelper.deployCourse(initialAuthor, displayname, courseFile);
-		} catch (URISyntaxException e) {
+			return JunitTestHelper.deployCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, courseUrl);
+		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}

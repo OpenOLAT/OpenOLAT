@@ -19,7 +19,6 @@
  */
 package org.olat.course;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -362,11 +361,8 @@ public class CourseContainerTest extends WebDAVTestCase {
 	private RepositoryEntry deployCourse(String displayName, Identity author, Identity coach, Identity participant)
 	throws URISyntaxException {
 		URL courseWithForumsUrl = CourseContainerTest.class.getResource("CourseWebDAV.zip");
-
 		Assert.assertNotNull(courseWithForumsUrl);
-		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		RepositoryEntry re = JunitTestHelper.deployCourse(author, displayName, courseWithForums);
-		repositoryService.addRole(author, re, GroupRoles.owner.name());
+		RepositoryEntry re = JunitTestHelper.deployCourse(author, displayName, courseWithForumsUrl);
 		if(coach != null) {
 			repositoryService.addRole(coach, re, GroupRoles.coach.name());
 		}
