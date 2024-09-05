@@ -1835,8 +1835,19 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return false;
 		}
 
-		if (userCourseEnv.isCourseReadOnly() || userCourseEnv.isCoach() || userCourseEnv.isParticipant()) {
+		BadgeEntryConfiguration badgeEntryConfiguration = getConfiguration(courseEntry);
+		if (!badgeEntryConfiguration.isAwardEnabled()) {
 			return false;
+		}
+
+		if (userCourseEnv.isCourseReadOnly() || userCourseEnv.isParticipant()) {
+			return false;
+		}
+
+		if (userCourseEnv.isCoach()) {
+			if (!badgeEntryConfiguration.isCoachCanAward()) {
+				return false;
+			}
 		}
 
 		if (!AssessmentHelper.checkIfNodeIsAssessable(courseEntry, courseNode)) {

@@ -154,11 +154,14 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.type));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.awardedCount, CMD_SELECT));
 
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
-				BadgeClassTableModel.BadgeClassCols.tools.i18nHeaderKey(),
-				BadgeClassTableModel.BadgeClassCols.tools.ordinal()
-		);
-		columnModel.addFlexiColumnModel(toolsColumn);
+		boolean owner = reSecurity == null || reSecurity.isOwner();
+		if (owner) {
+			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
+					BadgeClassTableModel.BadgeClassCols.tools.i18nHeaderKey(),
+					BadgeClassTableModel.BadgeClassCols.tools.ordinal()
+			);
+			columnModel.addFlexiColumnModel(toolsColumn);
+		}
 
 		tableModel = new BadgeClassTableModel(columnModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
@@ -170,6 +173,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 		createLink = uifactory.addFormLink("create", createKey, null, formLayout, Link.BUTTON);
 		createLink.setElementCssClass("o_sel_badge_classes_create");
+
+		createLink.setVisible(owner);
 	}
 
 	@Override
@@ -418,7 +423,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
 			openBadgesManager.issueBadge(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
-			loadModel(ureq);
+			loadModel(innerUreq);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 
