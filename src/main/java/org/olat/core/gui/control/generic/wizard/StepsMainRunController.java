@@ -470,6 +470,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 				prevButton.setEnabled(pnfConf.isBackIsEnabled());
 				nextButton.setEnabled(pnfConf.isNextIsEnabled());
 				finishButton.setEnabled(pnfConf.isFinishIsEnabled());
+				finishCycle = false;
 			}
 		}
 	}
