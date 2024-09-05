@@ -48,7 +48,7 @@ public class ImportedCalendarDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createImportedCalendar() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Imp-cal-1");
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Imp-cal-1", null);
 		String calendarId = UUID.randomUUID().toString();
 		String type = "imported-test";
 		String url = "http://www.openolat.org/calendar.ics";
@@ -72,7 +72,7 @@ public class ImportedCalendarDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getImportedCalendar() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Imp-cal-2");
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Imp-cal-2", null);
 		String calendarId = UUID.randomUUID().toString();
 		String type = "imported-test-2";
 		String url = "http://www.openolat.org/calendar1.ics";

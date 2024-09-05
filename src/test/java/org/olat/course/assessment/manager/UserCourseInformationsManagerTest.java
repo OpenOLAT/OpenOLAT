@@ -445,7 +445,7 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		@Override
 		public void run() {
 			try {
-				Thread.sleep(10);
+				sleep(10);
 				for(int i=0; i<25;i++) {
 					uciManager.updateUserCourseInformations(courseResource, user);
 					uciManager.getUserCourseInformations(courseResource, user);

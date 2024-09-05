@@ -29,6 +29,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
@@ -66,6 +67,16 @@ public class OrganisationDAOTest extends OlatTestCase {
 	private OrganisationTypeDAO organisationTypeDao;
 	@Autowired
 	private OrganisationService organisationService;
+	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+		}
+	}
 	
 	@Test
 	public void createOrganisation() {
@@ -401,8 +412,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void getDescendants() {
 		String identifier = UUID.randomUUID().toString();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root 1", identifier, null, defOrganisation, null);
+		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root 1", identifier, null, defaultUnitTestOrganisation, null);
 		Organisation organisation2_1 = organisationDao.createAndPersistOrganisation("Level 2.1", identifier, null, rootOrganisation, null);
 		Organisation organisation2_2 = organisationDao.createAndPersistOrganisation("Level 2.2", identifier, null, rootOrganisation, null);
 		dbInstance.commitAndCloseSession();
@@ -424,8 +434,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void getDescendants_leaf() {
 		String identifier = UUID.randomUUID().toString();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation = organisationDao.createAndPersistOrganisation("Root 1", identifier, null, defOrganisation, null);
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Root 1", identifier, null, defaultUnitTestOrganisation, null);
 		dbInstance.commitAndCloseSession();
 
 		List<Organisation> descendants = organisationDao.getDescendants(organisation);
@@ -436,8 +445,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void getDescendantTree() {
 		String identifier = UUID.randomUUID().toString();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root 2", identifier, null, defOrganisation, null);
+		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root 2", identifier, null, defaultUnitTestOrganisation, null);
 		Organisation organisation2_1 = organisationDao.createAndPersistOrganisation("Tree2 2.1", identifier, null, rootOrganisation, null);
 		Organisation organisation2_2 = organisationDao.createAndPersistOrganisation("Tree2 2.2", identifier, null, rootOrganisation, null);
 		dbInstance.commitAndCloseSession();
@@ -473,8 +481,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void getDescendantTree_leaf() {
 		String identifier = UUID.randomUUID().toString();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation = organisationDao.createAndPersistOrganisation("Root 3", identifier, null, defOrganisation, null);
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Root 3", identifier, null, defaultUnitTestOrganisation, null);
 		dbInstance.commitAndCloseSession();
 
 		OrganisationNode rootNode = organisationDao.getDescendantTree(organisation);
@@ -485,8 +492,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void getParentLine() {
 		String identifier = UUID.randomUUID().toString();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root 4", identifier, null, defOrganisation, null);
+		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root 4", identifier, null, defaultUnitTestOrganisation, null);
 		Organisation organisation2_1 = organisationDao.createAndPersistOrganisation("Tree4 2.1", identifier, null, rootOrganisation, null);
 		Organisation organisation2_2 = organisationDao.createAndPersistOrganisation("Tree4 2.2", identifier, null, rootOrganisation, null);
 		dbInstance.commitAndCloseSession();
@@ -501,7 +507,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		List<Organisation> parentLine2_2_1_1 = organisationDao.getParentLine(organisation2_2_1_1);
 		Assert.assertNotNull(parentLine2_2_1_1);
 		Assert.assertEquals(5, parentLine2_2_1_1.size());
-		Assert.assertEquals(defOrganisation, parentLine2_2_1_1.get(0));
+		Assert.assertEquals(defaultUnitTestOrganisation, parentLine2_2_1_1.get(0));
 		Assert.assertEquals(rootOrganisation, parentLine2_2_1_1.get(1));
 		Assert.assertEquals(organisation2_2, parentLine2_2_1_1.get(2));
 		Assert.assertEquals(organisation2_2_1, parentLine2_2_1_1.get(3));
@@ -511,7 +517,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		List<Organisation> parentLine2_1_2 = organisationDao.getParentLine(organisation2_1_2);
 		Assert.assertNotNull(parentLine2_1_2);
 		Assert.assertEquals(4, parentLine2_1_2.size());
-		Assert.assertEquals(defOrganisation, parentLine2_1_2.get(0));
+		Assert.assertEquals(defaultUnitTestOrganisation, parentLine2_1_2.get(0));
 		Assert.assertEquals(rootOrganisation, parentLine2_1_2.get(1));
 		Assert.assertEquals(organisation2_1, parentLine2_1_2.get(2));
 		Assert.assertEquals(organisation2_1_2, parentLine2_1_2.get(3));
@@ -520,23 +526,22 @@ public class OrganisationDAOTest extends OlatTestCase {
 		List<Organisation> parentLine2_1_1 = organisationDao.getParentLine(organisation2_1_1);
 		Assert.assertNotNull(parentLine2_1_1);
 		Assert.assertEquals(4, parentLine2_1_1.size());
-		Assert.assertEquals(defOrganisation, parentLine2_1_1.get(0));
+		Assert.assertEquals(defaultUnitTestOrganisation, parentLine2_1_1.get(0));
 		Assert.assertEquals(rootOrganisation, parentLine2_1_1.get(1));
 		Assert.assertEquals(organisation2_1, parentLine2_1_1.get(2));
 		Assert.assertEquals(organisation2_1_1, parentLine2_1_1.get(3));
 		
 		// check parent line of def
-		List<Organisation> parentLineDef = organisationDao.getParentLine(defOrganisation);
+		List<Organisation> parentLineDef = organisationDao.getParentLine(defaultUnitTestOrganisation);
 		Assert.assertNotNull(parentLineDef);
 		Assert.assertEquals(1, parentLineDef.size());
-		Assert.assertEquals(defOrganisation, parentLineDef.get(0));
+		Assert.assertEquals(defaultUnitTestOrganisation, parentLineDef.get(0));
 	}
 	
 	@Test
 	public void getParentLineRefs() {
 		String identifier = UUID.randomUUID().toString();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root 4", identifier, null, defOrganisation, null);
+		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root 4", identifier, null, defaultUnitTestOrganisation, null);
 		Organisation organisation2_1 = organisationDao.createAndPersistOrganisation("Tree4 2.1", identifier, null, rootOrganisation, null);
 		Organisation organisation2_2 = organisationDao.createAndPersistOrganisation("Tree4 2.2", identifier, null, rootOrganisation, null);
 		dbInstance.commitAndCloseSession();
@@ -553,7 +558,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		List<Long> parentLineKeys = organisationDao.getParentLineRefs(List.of(organisation2_1, organisation2_2_1)).stream().map(OrganisationRef::getKey).collect(Collectors.toList());
 		parentLineKeys.forEach(System.out::println);
 		Assert.assertEquals(5, parentLineKeys.size());
-		Assert.assertTrue(parentLineKeys.contains(defOrganisation.getKey()));
+		Assert.assertTrue(parentLineKeys.contains(defaultUnitTestOrganisation.getKey()));
 		Assert.assertTrue(parentLineKeys.contains(rootOrganisation.getKey()));
 		Assert.assertTrue(parentLineKeys.contains(organisation2_1.getKey()));
 		Assert.assertTrue(parentLineKeys.contains(organisation2_2.getKey()));

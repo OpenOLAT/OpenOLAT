@@ -82,7 +82,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("user-cert-1");
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-cert-2");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		dbInstance.commitAndCloseSession();
 
@@ -218,7 +218,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("user-cert-2");
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-cert-3");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		dbInstance.commitAndCloseSession();
 

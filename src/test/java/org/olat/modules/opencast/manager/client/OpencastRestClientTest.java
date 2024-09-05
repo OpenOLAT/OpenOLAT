@@ -110,7 +110,7 @@ public class OpencastRestClientTest extends OlatTestCase {
 		
 		softly.assertThat(sut.deleteEvent(identifier)).as("deleted").isTrue();
 		
-		Thread.sleep(5000);
+		sleep(5000);
 		softly.assertThat(sut.getEvent(identifier)).as("Event does not exist in admin anymore").isNull();
 		softly.assertThat(sut.isEpisodeExisting(identifier)).as("Episode does not exist in presentation anymore").isFalse();
 		

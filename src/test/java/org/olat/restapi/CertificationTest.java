@@ -29,9 +29,6 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -43,6 +40,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -61,6 +59,9 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
+
 /**
  * 
  * Initial date: 17.11.2014<br>
@@ -73,22 +74,29 @@ public class CertificationTest extends OlatRestTestCase {
 	private DB dbInstance;
 	@Autowired
 	private CertificatesManager certificatesManager;
-
-
+	
+	private static RepositoryEntry defaultEntry;
+	
+	@Before
+	public void defaultCourse() {
+		if(defaultEntry == null) {
+			Identity author = JunitTestHelper.getDefaultAuthor();
+			defaultEntry = JunitTestHelper.deployBasicCourse(author);
+		}
+	}
+	
 	@Test
 	public void getCertificate_file() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-2");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
 				Double.valueOf(0.2), "");
 		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
-		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, defaultEntry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		sleep(1000);
@@ -97,7 +105,7 @@ public class CertificationTest extends OlatRestTestCase {
 		waitCertificate(certificate.getKey());
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
-				.path(entry.getOlatResource().getKey().toString())
+				.path(defaultEntry.getOlatResource().getKey().toString())
 				.path("certificates").path(assessedIdentity.getKey().toString()).build();
 		HttpGet method = conn.createGet(uri, "application/pdf", true);
 		HttpResponse response = conn.execute(method);
@@ -115,20 +123,18 @@ public class CertificationTest extends OlatRestTestCase {
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-11");
 		Identity unassessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-12");
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-2");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
 				Double.valueOf(0.2), "");
 		CertificateConfig config = CertificateConfig.builder().build();
-		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, defaultEntry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		sleep(1000);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
-				.path(entry.getOlatResource().getKey().toString())
+				.path(defaultEntry.getOlatResource().getKey().toString())
 				.path("certificates").path(assessedIdentity.getKey().toString()).build();
 		HttpHead method = conn.createHead(uri, "application/pdf", true);
 		HttpResponse response = conn.execute(method);
@@ -137,7 +143,7 @@ public class CertificationTest extends OlatRestTestCase {
 		
 		//check  with a stupid number
 		URI nonExistentUri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
-				.path(entry.getOlatResource().getKey().toString())
+				.path(defaultEntry.getOlatResource().getKey().toString())
 				.path("certificates").path(unassessedIdentity.getKey().toString()).build();
 		HttpHead nonExistentMethod = conn.createHead(nonExistentUri, "application/pdf", true);
 		HttpResponse nonExistentResponse = conn.execute(nonExistentMethod);
@@ -171,7 +177,6 @@ public class CertificationTest extends OlatRestTestCase {
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 		
-		//async process mean sleep a little
 		sleep(2000);
 		
 		//check certificate
@@ -190,19 +195,17 @@ public class CertificationTest extends OlatRestTestCase {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-2");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		String externalId = UUID.randomUUID().toString();
 		
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		Assert.assertNotNull(certificateUrl);
 		File certificateFile = new File(certificateUrl.toURI()); 
 		Certificate certificate = certificatesManager
-				.uploadCertificate(assessedIdentity, new Date(), externalId, null, entry.getOlatResource(), certificateFile);
+				.uploadCertificate(assessedIdentity, new Date(), externalId, null, defaultEntry.getOlatResource(), certificateFile);
 		dbInstance.commitAndCloseSession();
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
-				.path(entry.getOlatResource().getKey().toString())
+				.path(defaultEntry.getOlatResource().getKey().toString())
 				.path("certificates")
 				.queryParam("externalId", externalId)
 				.build();
@@ -228,12 +231,10 @@ public class CertificationTest extends OlatRestTestCase {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-2");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		dbInstance.commitAndCloseSession();
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
-				.path(entry.getOlatResource().getKey().toString())
+				.path(defaultEntry.getOlatResource().getKey().toString())
 				.path("certificates").path(assessedIdentity.getKey().toString()).build();
 
 		URL certificateUrl = CertificationTest.class.getResource("certificate.pdf");
@@ -254,7 +255,7 @@ public class CertificationTest extends OlatRestTestCase {
 		EntityUtils.consume(response.getEntity());
 
 		//check certificate
-		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
+		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, defaultEntry.getOlatResource().getKey());
 		Assert.assertNotNull(certificate);
 		Assert.assertEquals(creationDate, certificate.getCreationDate());
 		//check the certificate file
@@ -309,7 +310,7 @@ public class CertificationTest extends OlatRestTestCase {
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-15");
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-5");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		
 		dbInstance.commitAndCloseSession();

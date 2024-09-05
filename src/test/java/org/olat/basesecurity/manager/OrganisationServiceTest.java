@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.OrganisationRoles;
@@ -61,6 +61,16 @@ public class OrganisationServiceTest extends OlatTestCase {
 	@Autowired
 	private OrganisationService organisationService;
 	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+		}
+	}
+	
 	@Test
 	public void getDefaultOrganisation() {
 		Organisation organisation = organisationService.getDefaultOrganisation();
@@ -79,7 +89,7 @@ public class OrganisationServiceTest extends OlatTestCase {
 	public void addMembershipWithInheritance() {
 		Identity user = createRandomUser("Org. user");
 		
-		Organisation organisation = organisationService.getDefaultOrganisation();
+		Organisation organisation = defaultUnitTestOrganisation;
 		String identifierLevel1 = UUID.randomUUID().toString();
 		Organisation organisationLevel1 = organisationService.createOrganisation("Sub-organisation", identifierLevel1, "", organisation, null);
 		String identifierLevel2 = UUID.randomUUID().toString();
@@ -106,7 +116,7 @@ public class OrganisationServiceTest extends OlatTestCase {
 	public void removeAllMembershipWithInheritance() {
 		Identity user = createRandomUser("Org. user");
 		
-		Organisation organisation = organisationService.getDefaultOrganisation();
+		Organisation organisation = defaultUnitTestOrganisation;
 		String identifierLevel1 = UUID.randomUUID().toString();
 		Organisation organisationLevel1 = organisationService.createOrganisation("1. Org.", identifierLevel1, "", organisation, null);
 		String identifierLevel1_1 = UUID.randomUUID().toString();
@@ -147,7 +157,7 @@ public class OrganisationServiceTest extends OlatTestCase {
 	public void createSubOrganisationWithInheritedsMemberships() {
 		Identity user = createRandomUser("Org. user");
 		
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation defOrganisation = defaultUnitTestOrganisation;
 		Organisation organisation = organisationService.createOrganisation("Inherit-organisation", "Top", "", defOrganisation, null);
 		organisationService.addMember(organisation, user, OrganisationRoles.usermanager);
 		organisationService.addMember(organisation, user, OrganisationRoles.user);
@@ -234,7 +244,7 @@ public class OrganisationServiceTest extends OlatTestCase {
 	
 	@Test
 	public void moveMembers() {
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation defOrganisation = defaultUnitTestOrganisation;
 		Organisation sourceOrganisation1 = organisationService.createOrganisation("Source 1", "Source 1", "", defOrganisation, null);
 		Organisation sourceOrganisation1_1 = organisationService.createOrganisation("Source 1.1", "Source 1.1", "", sourceOrganisation1, null);
 		Organisation sourceOrganisation1_1_1 = organisationService.createOrganisation("Source 1.1.1", "Source 1.1.1", "", sourceOrganisation1_1, null);
@@ -303,9 +313,8 @@ public class OrganisationServiceTest extends OlatTestCase {
 	private Identity createRandomUser(String login) {
 		login += UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + login, "last" + login, login + "@openolat.com");
-		return securityManager.createAndPersistIdentityAndUser(null, login, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
-				login, JunitTestHelper.PWD, null);
+		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
+				null, null, null,
+				null, null, defaultUnitTestOrganisation, null);
 	}
-
 }

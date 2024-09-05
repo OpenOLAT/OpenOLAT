@@ -626,7 +626,7 @@ public class CoursesTest extends OlatRestTestCase {
 
 	@Test
 	public void testCopyCourse() throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		Assert.assertNotNull(entry);
 
@@ -653,7 +653,7 @@ public class CoursesTest extends OlatRestTestCase {
 	
 	@Test
 	public void testCopyCourseMetadata() throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		Assert.assertNotNull(entry);
 		
@@ -703,7 +703,7 @@ public class CoursesTest extends OlatRestTestCase {
 
 	@Test
 	public void testCopyCourseUnkownCourse() throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		Assert.assertNotNull(entry);
 
@@ -726,7 +726,7 @@ public class CoursesTest extends OlatRestTestCase {
 	
 	@Test
 	public void testCopyCourse_withMetadata() throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		
 		RepositoryEntryEducationalType educationalType = repositoryManager.createEducationalType(UUID.randomUUID().toString());

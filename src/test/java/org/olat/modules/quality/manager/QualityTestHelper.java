@@ -116,7 +116,7 @@ public class QualityTestHelper {
 	}
 
 	public RepositoryEntry createFormEntry() {
-		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		Identity initialAuthor = JunitTestHelper.getDefaultAuthor();
 		return evaluationFormHandler.createResource(initialAuthor, random(), null, null,
 				organisationService.getDefaultOrganisation(), Locale.ENGLISH);
 	}

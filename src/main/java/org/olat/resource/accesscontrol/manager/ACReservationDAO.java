@@ -98,7 +98,7 @@ public class ACReservationDAO {
 		  .append(" where reservation.creationDate<:date");
 		
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
-				.setParameter("date", date)
+				.setParameter("date", date, TemporalType.TIMESTAMP)
 				.getResultList();
 		
 	}

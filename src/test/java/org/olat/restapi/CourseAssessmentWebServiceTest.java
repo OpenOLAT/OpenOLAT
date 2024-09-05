@@ -29,11 +29,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.Callable;
-
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -67,6 +62,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * 
@@ -296,33 +294,26 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 		final RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		final String rootIdent = course.getRunStructure().getRootNode().getIdent();
 		
-		this.waitForCondition(new Callable<Boolean>() {
-			@Override
-			public Boolean call() throws Exception {
+		waitForCondition(() -> {
 				AssessmentEntry entry = assessmentEntryDao.loadAssessmentEntry(identity, courseEntry, rootIdent);
 				dbInstance.commitAndCloseSession();
 				return entry != null;
-			}
 		}, 10000);
 	}
 	
 	private ICourse deployQtiCourse() {
-		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
+		Identity admin = JunitTestHelper.getDefaultAuthor();
 		URL courseUrl = OlatRestTestCase.class.getResource("file_resources/course_with_qti21.zip");
-		RepositoryEntry courseEntry = JunitTestHelper.deployCourse(admin, "QTI 2.1 Course", courseUrl);
-		ICourse course = CourseFactory.loadCourse(courseEntry);
-		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, admin, Locale.ENGLISH);
-		return course;
+		RepositoryEntry courseEntry = JunitTestHelper.deployCourse(admin, "QTI 2.1 Course", RepositoryEntryStatusEnum.published, courseUrl);
+		return CourseFactory.loadCourse(courseEntry);
 	}
 	
 	private ICourse deployGTACourse() {
-		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
+		Identity admin = JunitTestHelper.getDefaultAuthor();
 		URL courseUrl = JunitTestHelper.class.getResource("file_resources/GTA_0_10_Course.zip");
 
-		RepositoryEntry courseEntry = JunitTestHelper.deployCourse(admin, "GTA Course", courseUrl);
-		ICourse course = CourseFactory.loadCourse(courseEntry);
-		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, admin, Locale.ENGLISH);
-		return course;
+		RepositoryEntry courseEntry = JunitTestHelper.deployCourse(admin, "GTA Course", RepositoryEntryStatusEnum.published, courseUrl);
+		return CourseFactory.loadCourse(courseEntry);
 	}
 	
 	private List<AssessableResultsVO> parseResultsArray(HttpEntity body) {

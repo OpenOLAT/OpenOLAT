@@ -179,7 +179,7 @@ public class MapperDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Calendar cal = Calendar.getInstance();
-		Thread.sleep(5000);
+		sleep(4100);
 		
 		//create a new mapper
 		String mapperId = UUID.randomUUID().toString();
@@ -213,7 +213,7 @@ public class MapperDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Calendar cal = Calendar.getInstance();
-		Thread.sleep(5000);
+		sleep(4100);
 		
 		//create a new mapper
 		String mapperId = UUID.randomUUID().toString();

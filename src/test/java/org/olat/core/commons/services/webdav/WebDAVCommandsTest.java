@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.services.webdav;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,8 +26,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.UUID;
-
-import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -60,12 +57,15 @@ import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.restapi.CoursePublishTest;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * 
@@ -992,9 +992,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	private RepositoryEntry deployTestCourse(Identity author, Identity coAuthor, String displayName, URL courseWithForumsUrl)
 	throws URISyntaxException {
 		Assert.assertNotNull(courseWithForumsUrl);
-		File courseWithForums = new File(courseWithForumsUrl.toURI());
-		RepositoryEntry re = JunitTestHelper.deployCourse(author, displayName, courseWithForums);
-		repositoryService.addRole(author, re, GroupRoles.owner.name());
+		RepositoryEntry re = JunitTestHelper.deployCourse(author, displayName, RepositoryEntryStatusEnum.published, courseWithForumsUrl);
 		if(coAuthor != null) {
 			repositoryService.addRole(coAuthor, re, GroupRoles.owner.name());
 		}

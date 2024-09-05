@@ -118,7 +118,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, resource);
 		dbInstance.commitAndCloseSession();
 		
-		sleep(2500);
+		sleep(3100);
 		
 		//check by load
 		Calendar cal = Calendar.getInstance();
@@ -149,7 +149,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		ResourceReservation reservation3 = acReservationDao.createReservation(id, "test", cal3.getTime(), resource);
 		dbInstance.commitAndCloseSession();
 		
-		sleep(3500);
+		sleep(3100);
 		
 		//check by load
 		Calendar cal = Calendar.getInstance();

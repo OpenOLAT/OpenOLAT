@@ -97,6 +97,23 @@ public class JunitTestHelper {
 			maildomain = "mytrashmail.com";
 		}
 	}
+	
+	private static Identity defaultAuthor;
+	private static Organisation defaultOrganisation;
+	
+	public static final Identity getDefaultAuthor() {
+		if(defaultAuthor == null) {
+			defaultAuthor = createAndPersistIdentityAsRndAuthor("the-author");
+		}
+		return defaultAuthor;
+	}
+	
+	public static final Organisation getDefaultOrganisation() {
+		if(defaultOrganisation == null) {
+			defaultOrganisation = CoreSpringFactory.getImpl(OrganisationService.class).getDefaultOrganisation();
+		}
+		return defaultOrganisation;
+	}
 
 	public static final String random() {
 		return UUID.randomUUID().toString();
@@ -150,23 +167,39 @@ public class JunitTestHelper {
 	}
 	
 	public static final RepositoryEntry createRandomRepositoryEntry(Identity author) {
+		Organisation defOrganisation = getDefaultOrganisation();
+		return createRandomRepositoryEntry(author, defOrganisation);
+	}
+	
+	public static final RepositoryEntry createRandomRepositoryEntry(Identity author, Organisation organisation) {
 		OLATResource resource = OLATResourceManager.getInstance()
 				.createOLATResourceInstance(new ImageFileResource());
-		Organisation defOrganisation = CoreSpringFactory.getImpl(OrganisationService.class)
-				.getDefaultOrganisation();
 		return CoreSpringFactory.getImpl(RepositoryService.class).create(author, "", "-", "Image - " + resource.getResourceableId(), "",
-				resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, defOrganisation);
+				resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
 	}
 	
 	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin) {
 		String login = getRandomizedLoginName(prefixLogin);
-		return createAndPersistIdentityAsUser(login);
+		Organisation defOrganisation = getDefaultOrganisation();
+		return createAndPersistIdentityAsUser(login, defOrganisation, null);
+	}
+	
+	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin, String password) {
+		String login = getRandomizedLoginName(prefixLogin);
+		Organisation defOrganisation = getDefaultOrganisation();
+		return createAndPersistIdentityAsUser(login, defOrganisation, password);
+	}
+	
+	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin, Organisation organisation, String password) {
+		String login = getRandomizedLoginName(prefixLogin);
+		return createAndPersistIdentityAsUser(login, organisation, password);
 	}
 	
 	public static final IdentityWithLogin createAndPersistRndUser(String prefixLogin) {
 		String login = getRandomizedLoginName(prefixLogin);
 		String password = PWD;
-		Identity identity = createAndPersistIdentityAsUser(login, password);
+		Organisation defOrganisation = getDefaultOrganisation();
+		Identity identity = createAndPersistIdentityAsUser(login, defOrganisation, password);
 		return new IdentityWithLogin(identity, login, password);
 	}
 	
@@ -180,10 +213,18 @@ public class JunitTestHelper {
 		}
 		return prefixLogin + UUID.randomUUID();
 	}
-	
 
 	public static final Identity createAndPersistIdentityAsUser(String login) {
 		return createAndPersistIdentityAsUser(login, PWD);
+	}
+	
+	public static final Identity createAndPersistIdentityAsUser(String login, String pwd) {
+		Identity identity = findIdentityByLogin(login);
+		if (identity != null) {
+			return identity;
+		}
+		Organisation defaultOrganisation = getDefaultOrganisation();
+		return createAndPersistIdentityAsUser(login, defaultOrganisation, pwd);
 	}
 
 	/**
@@ -191,17 +232,19 @@ public class JunitTestHelper {
 	 * @param login
 	 * @return
 	 */
-	public static final Identity createAndPersistIdentityAsUser(String login, String pwd) {
-		Identity identity = findIdentityByLogin(login);
-		if (identity != null) {
-			return identity;
-		}
+	private static final Identity createAndPersistIdentityAsUser(String login, Organisation organisation, String pwd) {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		User user = userManager.createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, pwd, null);
-		addToDefaultOrganisation(identity, OrganisationRoles.user);
+		
+		Identity identity;
+		if(StringHelper.containsNonWhitespace(pwd)) {
+			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
+					BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, pwd, organisation, null);
+		} else {
+			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
+					null, null, null, null, null, organisation, null);
+		}
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
 	}
@@ -251,7 +294,7 @@ public class JunitTestHelper {
 	 * @param login
 	 * @return
 	 */
-	public static final Identity createAndPersistIdentityAsAuthor(String login, String password) {
+	private static final Identity createAndPersistIdentityAsAuthor(String login, String password) {
 		Identity identity = findIdentityByLogin(login);
 		if (identity != null) {
 			return identity;
@@ -260,8 +303,13 @@ public class JunitTestHelper {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		User user = CoreSpringFactory.getImpl(UserManager.class)
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
+		if(StringHelper.containsNonWhitespace(password)) {
+			identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, password, null);
+		} else {
+			identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
+					null, null, null, null, null, null);
+		}
 		addToDefaultOrganisation(identity, OrganisationRoles.author);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
@@ -273,6 +321,19 @@ public class JunitTestHelper {
 		String password = PWD;
 		Identity identity = createAndPersistIdentityAsAdmin(login, password);
 		return new IdentityWithLogin(identity, login, password);
+	}
+	
+	public static final IdentityWithLogin createAndPersistRndAdmin(String prefixLogin, Organisation organisation) {
+		String login = getRandomizedLoginName(prefixLogin);
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		User user = CoreSpringFactory.getImpl(UserManager.class)
+				.createUser("first" + login, "last" + login, login + "@" + maildomain);
+		Identity identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, PWD, organisation, null);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.user);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.administrator);
+		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
+		return new IdentityWithLogin(identity, login, PWD);
 	}
 	
 	public static final Identity createAndPersistIdentityAsRndAdmin(String prefixLogin) {
@@ -353,8 +414,7 @@ public class JunitTestHelper {
 	
 	public static final RepositoryEntry createAndPersistRepositoryEntry(String initialAuthor, OLATResource r, boolean membersOnly) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation defOrganisation = getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, initialAuthor, "Lernen mit OLAT", r.getResourceableTypeName(), null,
 				r, RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		if(!membersOnly) {
@@ -480,18 +540,6 @@ public class JunitTestHelper {
 	}
 	
 	/**
-	 * The course will be accessible to all registrated users.
-	 * 
-	 * @param initialAuthor The author (not mandatory)
-	 * @param displayname The name of the course
-	 * @param courseFile The file to import
-	 * @return The repository entry of the course
-	 */
-	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile) {	
-		return deployCourse(initialAuthor, displayname, courseFile, RepositoryEntryStatusEnum.published) ;
-	}
-	
-	/**
 	 * 
 	 * @param initialAuthor The author (not mandatory)
 	 * @param displayname The name of the course
@@ -499,12 +547,11 @@ public class JunitTestHelper {
 	 * @param access The access
 	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile, RepositoryEntryStatusEnum status) {
+	private static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile, RepositoryEntryStatusEnum status) {
 		try {
 			RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
 					.getRepositoryHandler(CourseModule.getCourseTypeName());
-			OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-			Organisation defOrganisation = organisationService.getDefaultOrganisation();
+			Organisation defOrganisation = getDefaultOrganisation();
 			RepositoryEntry re = courseHandler.importResource(initialAuthor, null, displayname, "A course",
 					RepositoryEntryImportExportLinkEnum.WITH_REFERENCE, defOrganisation, Locale.ENGLISH, courseFile, null);
 			

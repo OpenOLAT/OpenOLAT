@@ -1018,7 +1018,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	 */
 	@Test
 	public void allowToLeavingBusinessGroup_defaultSettings() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("leave-auth-1-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("leave-auth-1-");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-1-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(author, "Leaving group", "But you cannot leave :-(", BusinessGroup.BUSINESS_TYPE,
 				Integer.valueOf(0), Integer.valueOf(2), false, false, null);
@@ -1035,7 +1035,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	 */
 	@Test
 	public void allowToLeavingBusinessGroup_defaultSettings_groupOverride() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("leave-auth-2-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("leave-auth-2-");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-2-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(author, "Leaving group", "But you cannot leave :-(", BusinessGroup.BUSINESS_TYPE,
 				Integer.valueOf(0), Integer.valueOf(2), false, false, null);
@@ -1066,7 +1066,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	public void allowToLeavingBusinessGroup_overrideForbidden() {
 		businessGroupModule.setAllowLeavingGroupOverride(false);
 
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("leave-auth-3-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("leave-auth-3-");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-3-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(author, "Leaving group", "But you cannot leave :-(", BusinessGroup.BUSINESS_TYPE,
 				Integer.valueOf(0), Integer.valueOf(2), false, false, null);
@@ -1093,7 +1093,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		businessGroupModule.setAllowLeavingGroupCreatedByLearners(true);
 		
 		//authors group
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("leave-auth-4-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("leave-auth-4-");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-4-");
 		BusinessGroup authorsGroup = businessGroupService.createBusinessGroup(author, "Leaving group", "But you cannot leave :-(", BusinessGroup.BUSINESS_TYPE,
 				Integer.valueOf(0), Integer.valueOf(2), false, false, null);
@@ -1137,7 +1137,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		businessGroupModule.setAllowLeavingGroupCreatedByLearners(false);
 		
 		//authors group
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("leave-auth-5-" + UUID.randomUUID().toString());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("leave-auth-5-");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-5-");
 		BusinessGroup authorsGroup = businessGroupService.createBusinessGroup(author, "Leaving group", "But you cannot leave :-(", BusinessGroup.BUSINESS_TYPE,
 				Integer.valueOf(0), Integer.valueOf(2), false, false, null);
