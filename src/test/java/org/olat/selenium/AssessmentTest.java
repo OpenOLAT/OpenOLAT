@@ -315,31 +315,31 @@ public class AssessmentTest extends Deployments {
 			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		//start the assessment
 		AssessmentModePage ryomouAssessment = new AssessmentModePage(ryomouBrowser)
-			.startAssessment(false);
+			.assertOnStartAssessment()
+			.startAssessment();
 		//go to the test
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
 		//pass the test
 		QTI21Page.getQTI21Page(ryomouBrowser)
 			.passE4()
 			.assertOnCourseAssessmentTestScore(4);
-
 	
 		//Kanu makes the test
 		AssessmentModePage kanuAssessment = new AssessmentModePage(kanuBrowser)
-			.startAssessment(true);
+			.assertOnStartAssessment()
+			.startAssessment();
 		//go to the test
 		CoursePageFragment kanuTestCourse = new CoursePageFragment(kanuBrowser);
 		kanuTestCourse
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
 		//pass the test
 		QTI21Page.getQTI21Page(kanuBrowser)
 			.passE4()
 			.assertOnCourseAssessmentTestScore(4);
-
 		
 		//Author ends the test
 		courseRuntime

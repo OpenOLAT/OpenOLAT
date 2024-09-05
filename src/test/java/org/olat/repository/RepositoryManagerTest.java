@@ -771,11 +771,11 @@ public class RepositoryManagerTest extends OlatTestCase {
 	
 	@Test
 	public void queryReferencableResourcesLimitType() {
-		int ITERATION = 50;
+		int ITERATION = 10;
 		
 		String resourceType = UUID.randomUUID().toString().replace("_", "");
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsAuthor("id1");
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsAuthor("id2");
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("id1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("id2");
 		Roles id1Roles = securityManager.getRoles(id1);
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		

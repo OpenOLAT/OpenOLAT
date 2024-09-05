@@ -75,7 +75,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	private static SimpleSmtpServer dumbster;
 	private static long timestamp;
 	
-	 @Rule public TestName currentTestName = new TestName();
+	@Rule public TestName currentTestName = new TestName();
 	
 	/**
 	 * If you like to disable a test method for some time just add the
@@ -156,7 +156,13 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	@AfterClass
 	public static void waitMessageAreConsumed() {
 		OpenOlatEmbeddedActiveMQ mq = CoreSpringFactory.getImpl(OpenOlatEmbeddedActiveMQ.class);
-		waitForCondition(() -> mq.getMessageCount() <= 0, 10000);
+		waitForCondition(() -> {
+			long count = mq.getMessageCount();
+			if(count > 0) {
+				log.info("Still {} messages to process", count);
+			}
+			return count <= 0;
+		}, 10000);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -175,7 +181,6 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		} catch (IOException e) {
 			System.err.println("Could not load properties files from classpath! Exception=" + e);
 		}
-		
 	}
 	
 	protected static boolean waitForCondition(final Callable<Boolean> condition, final int timeoutInMilliseconds) {
