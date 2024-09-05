@@ -1290,23 +1290,29 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 
-		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
-		if(entry == null) {
-			tableEl.reloadData();
-			showWarning("repositoryentry.not.existing");
-		} else  {
-			if(entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted
-					|| entry.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
-				toolsCtrl = new DeletedToolsController(ureq, getWindowControl(), row, entry);
-			} else {
-				toolsCtrl = new ToolsController(ureq, getWindowControl(), row, entry);
+		try {
+			RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+			if(entry == null) {
+				tableEl.reloadData();
+				showWarning("repositoryentry.not.existing");
+			} else  {
+				if(entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted
+						|| entry.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
+					toolsCtrl = new DeletedToolsController(ureq, getWindowControl(), row, entry);
+				} else {
+					toolsCtrl = new ToolsController(ureq, getWindowControl(), row, entry);
+				}
+				listenTo(toolsCtrl);
+				
+				calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+						toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				listenTo(calloutCtrl);
+				calloutCtrl.activate();
 			}
-			listenTo(toolsCtrl);
-			
-			calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
-			listenTo(calloutCtrl);
-			calloutCtrl.activate();
+		} catch (CorruptedCourseException e) {
+			log.warn("Course corrupted: {} ({})", row.getKey(), row.getOLATResourceable().getResourceableId(), e);
+			showError("cif.error.corrupted");
+
 		}
 	}
 	
