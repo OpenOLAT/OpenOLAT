@@ -1341,7 +1341,7 @@
 				width: 24px;
 				height: 24px;
 				display: inline-block;
-				position: fixed;
+				position: absolute;
 				margin-top: -2px;
 				margin-left: -5px;
 			}
@@ -1460,6 +1460,51 @@
 
 		.o_audio_canvas {
 			height: 100px;
+		}
+	}
+}
+
+@media (orientation: portrait) and (max-width: $screen-sm) {
+	dialog:has(.o_av_wrapper) {
+		min-width: 100vw;
+		margin: 0;
+		padding: 0;
+
+		.modal-content {
+			border: none;
+			border-radius: 0;
+			box-shadow: none;
+
+			.o_av_wrapper {
+				min-width: calc(100vw - 40px);
+			}
+		}
+	}
+}
+
+@media (orientation: landscape) and (max-width: $screen-md) {
+	dialog:has(.o_av_wrapper) {
+		min-width: 80vw;
+		min-height: calc(100vh - 2px);
+
+		margin-top: 0;
+		margin-bottom: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+
+		.modal-dialog {
+			.modal-content {
+				max-height: 100vh;
+
+				.modal-body {
+					padding-top: 0;
+					padding-bottom: 0;
+				}
+
+				.o_av_wrapper {
+					min-width: calc(80vw - 96px);
+				}
+			}
 		}
 	}
 }

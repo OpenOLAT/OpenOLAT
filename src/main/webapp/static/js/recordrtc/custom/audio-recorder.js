@@ -229,7 +229,7 @@ class AudioRecorder {
 				echoCancellation: true
 			}
 		}).then((mediaStream) => {
-			console.log('Successfully captured mediaStream', mediaStream);
+			console.log('Received audio mediaStream', mediaStream);
 			self.mediaStream = mediaStream;
 			self.mediaStreamReady(mediaStream);
 			if (self.config.audioRendererActive) {
