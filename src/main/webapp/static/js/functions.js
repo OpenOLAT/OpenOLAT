@@ -630,10 +630,16 @@ function o_aexecute(command, parameters) {
 			analytics(parameters["type"],parameters["url"],parameters["title"])
 			break;
 		case "disposeaudiorecorder":
-			audioRecorder.dispose();// Not working, use strict hide the recorder
+			if (audioRecorder) {
+				audioRecorder.dispose();
+				audioRecorder = null;
+			}
 			break;
 		case "disposevideorecorder":
-			videoRecorder.dispose();// Not working, use strict hide the recorder
+			if (videoRecorder) {
+				videoRecorder.dispose();
+				videoRecorder = null;
+			}
 			break;
 		case "scrolltoid":
 			setTimeout(function () {

@@ -417,7 +417,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 			@Override
 			public void run() {
 				try {
-					Thread.sleep(100);
+					sleep(100);
 					RepositoryEntry repositoryEntryT1 = repositoryManager.lookupRepositoryEntry(keyRepo);
 					repositoryService.incrementDownloadCounter(repositoryEntryT1);
 					log.info("testConcurrentIncrementLaunchCounterWithCodePoints: Thread1 incremented download-counter");
@@ -434,7 +434,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 			@Override
 			public void run() {
 				try {
-					Thread.sleep(300);
+					sleep(300);
 					RepositoryEntry repositoryEntryT2 = repositoryManager.lookupRepositoryEntry(keyRepo);
 					repositoryService.incrementDownloadCounter(repositoryEntryT2);
 					log.info("testConcurrentIncrementLaunchCounterWithCodePoints: Thread2 incremented download-counter");
@@ -451,7 +451,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 			@Override
 			public void run() {
 				try {
-					Thread.sleep(200);
+					sleep(200);
 					RepositoryEntry repositoryEntryT3 = repositoryManager.lookupRepositoryEntry(keyRepo);
 					repositoryEntryT3 = repositoryManager.setStatus(repositoryEntryT3, RepositoryEntryStatusEnum.published);
 					dbInstance.closeSession();

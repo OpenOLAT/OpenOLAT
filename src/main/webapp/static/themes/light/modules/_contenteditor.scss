@@ -2714,6 +2714,18 @@ table.o_ce_table {
 	}
 }
 
+@media (max-width: $screen-xs-max) {
+	.o_ceditor_add_elements {
+		min-width: calc(100vw - 96px);
+	}
+}
+
+@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
+	.o_ceditor_add_elements {
+		min-width: calc(50vw - 96px);
+	}
+}
+
 .o_ceditor_add_elements {
 
 	.o_link_wrapper {

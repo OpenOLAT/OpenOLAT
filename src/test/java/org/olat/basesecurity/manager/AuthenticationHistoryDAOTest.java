@@ -68,7 +68,7 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 
 	@Test
 	public void createAuthenticationHistory() {
-		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-");
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-", JunitTestHelper.PWD);
 		dbInstance.commitAndCloseSession();
 		
 		Authentication authentication = securityManager.findAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
@@ -79,7 +79,7 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 	@Test
 	public void loadHistory() {
 		
-		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-");
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-", JunitTestHelper.PWD);
 		Authentication auth = securityManager
 				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
 						ident.getName(), "secret", Encoder.Algorithm.sha512);
@@ -96,7 +96,7 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 	
 	@Test
 	public void updateCredential() {
-		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-");
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-", JunitTestHelper.PWD);
 		Authentication auth = securityManager
 				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
 						ident.getName(), "secret", Encoder.Algorithm.sha512);
@@ -111,7 +111,7 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 	
 	@Test
 	public void deleteAuthenticationHistory_identity() {
-		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-3-");
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-3-", JunitTestHelper.PWD);
 		Authentication auth = securityManager
 				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
 						ident.getName(), "secret", Encoder.Algorithm.sha512);

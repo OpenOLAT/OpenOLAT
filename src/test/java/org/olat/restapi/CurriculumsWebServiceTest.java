@@ -45,6 +45,7 @@ import org.apache.logging.log4j.Logger;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -112,16 +113,27 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	@Autowired
 	private RepositoryEntryLectureConfigurationDAO repositoryEntryLectureConfigurationDao;
 	
+	private static IdentityWithLogin defaultUnitTestAdministrator;
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+			defaultUnitTestAdministrator = JunitTestHelper.createAndPersistRndAdmin("Cur-Elem-Web", defaultUnitTestOrganisation);
+		}
+	}
+	
 	@Test
 	public void getCurriculums()
 	throws IOException, URISyntaxException {
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", defOrganisation, null);
+		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", defaultUnitTestOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum", "REST Curriculum", "A curriculum accessible by REST API", false, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -141,13 +153,12 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getCurriculum()
 	throws IOException, URISyntaxException {
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", defOrganisation, null);
+		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", defaultUnitTestOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-2-Curriculum", "REST 2 Curriculum", "A curriculum accessible by REST API", false, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -164,12 +175,11 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void createCurriculum()
 	throws IOException, URISyntaxException {
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation", "REST-p-organisation", "", defOrganisation, null);
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation", "REST-p-organisation", "", defaultUnitTestOrganisation, null);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		CurriculumVO vo = new CurriculumVO();
 		vo.setDescription("REST created curriculum");
@@ -217,13 +227,12 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateCurriculum()
 	throws IOException, URISyntaxException {
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 3", "REST-p-3-organisation", "", defOrganisation, null);
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 3", "REST-p-3-organisation", "", defaultUnitTestOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-4-Curriculum", "REST 4 Curriculum", "A curriculum accessible by REST API", false, organisation);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		CurriculumVO vo = new CurriculumVO();
 		vo.setKey(curriculum.getKey());
@@ -270,9 +279,8 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void deleteCurriculum()
 	throws IOException, URISyntaxException {
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Del-Curriculum", "REST del Curriculum", "A curriculum deleted by REST API", false, defOrganisation);
-		Curriculum notDeletedCurriculum = curriculumService.createCurriculum("REST-Not-Me-Curriculum", "REST don't delete me", "A curriculum by REST API", false, defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Del-Curriculum", "REST del Curriculum", "A curriculum deleted by REST API", false, defaultUnitTestOrganisation);
+		Curriculum notDeletedCurriculum = curriculumService.createCurriculum("REST-Not-Me-Curriculum", "REST don't delete me", "A curriculum by REST API", false, defaultUnitTestOrganisation);
 		dbInstance.commit();
 		CurriculumElement element = curriculumService.createCurriculumElement("by-key", "Element will be deleted",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -280,7 +288,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
@@ -381,7 +389,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		// it cannot change something in organization A
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum/elements").queryParam("externalId", externalId).build();
@@ -407,7 +415,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		// it cannot change something in organization A
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum/elements").queryParam("identifier", identifier).build();
@@ -432,7 +440,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		// it cannot change something in organization A
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum/elements").queryParam("key", element.getKey().toString()).build();
@@ -450,11 +458,10 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	public void getCurriculumOwners()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, defaultUnitTestOrganisation);
 		dbInstance.commit();
 		
 		curriculumService.addMember(curriculum, member, CurriculumRoles.curriculumowner);
@@ -477,11 +484,10 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	public void addCurriculumOwner()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-11");
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, defaultUnitTestOrganisation);
 		dbInstance.commit();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -502,12 +508,11 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	public void removeCurriculumManager()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-23");
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-24");
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, defaultUnitTestOrganisation);
 		dbInstance.commit();
 		
 		curriculumService.addMember(curriculum, owner, CurriculumRoles.curriculumowner);
@@ -534,11 +539,10 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	public void getLecturesStatistics()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		// Curriculum with 2 courses
-		Organisation defOrg = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("cur-lect-1", "Curriculum for lectures", "Curriculum", false, defOrg);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-lect-1", "Curriculum for lectures", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-lect-1",
 				"Element for lectures", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -548,12 +552,12 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
 				curriculum);
 		
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lect-1");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lect-2");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lect-1", defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lect-2", defaultUnitTestOrganisation, null);
 		
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lect-auth");
-		RepositoryEntry entryLecture1 = JunitTestHelper.createRandomRepositoryEntry(author);
-		RepositoryEntry entryLecture2 = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry entryLecture1 = JunitTestHelper.createRandomRepositoryEntry(author, defaultUnitTestOrganisation);
+		RepositoryEntry entryLecture2 = JunitTestHelper.createRandomRepositoryEntry(author, defaultUnitTestOrganisation);
 		
 		// Configuration with lectures enabled 
 		RepositoryEntryLectureConfiguration lectureConfig1 = repositoryEntryLectureConfigurationDao.createConfiguration(entryLecture1);
@@ -640,19 +644,18 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	public void getLecturesOfParticipant()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		// curriculum with 2 courses
-		Organisation defOrg = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("cur-lectures-2", "Curriculum for lectures", "Curriculum", false, defOrg);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-lectures-2", "Curriculum for lectures", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-lectures",
 				"Element for checked relation", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
 				curriculum);
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lectures-part");
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lectures-auth");
-		RepositoryEntry entryLecture1 = JunitTestHelper.createRandomRepositoryEntry(author);
-		RepositoryEntry entryLecture2 = JunitTestHelper.createRandomRepositoryEntry(author);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lectures-part", defaultUnitTestOrganisation, null);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-lectures-auth", defaultUnitTestOrganisation, null);
+		RepositoryEntry entryLecture1 = JunitTestHelper.createRandomRepositoryEntry(author, defaultUnitTestOrganisation);
+		RepositoryEntry entryLecture2 = JunitTestHelper.createRandomRepositoryEntry(author, defaultUnitTestOrganisation);
 		
 		// Configuration with lectures enabled 
 		RepositoryEntryLectureConfiguration lectureConfig1 = repositoryEntryLectureConfigurationDao.createConfiguration(entryLecture1);

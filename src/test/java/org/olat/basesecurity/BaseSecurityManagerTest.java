@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -684,7 +685,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	
 	@Test
 	public void findAuthenticationName() {
-		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-d-");
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-d-", "secret");
 		dbInstance.commitAndCloseSession();
 		
 		Authentication auth = securityManager.findAuthentication(ident, "OLAT", BaseSecurity.DEFAULT_ISSUER);
@@ -696,7 +697,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	
 	@Test
 	public void updateToSaltedAuthentication() {
-		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("auth-c-" + UUID.randomUUID().toString());
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-c-", JunitTestHelper.PWD);
 		dbInstance.commitAndCloseSession();
 		
 		Authentication auth = securityManager.findAuthentication(ident, "OLAT", BaseSecurity.DEFAULT_ISSUER);
@@ -721,7 +722,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	
 	@Test
 	public void deleteAuthentication() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("auth-del-" + UUID.randomUUID().toString());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-del-");
 		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", BaseSecurity.DEFAULT_ISSUER, null,
 				identity.getName(), "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();

@@ -359,10 +359,10 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 	}
 	
 	private RepositoryEntry createCourseEntry(boolean toDosEnabled, boolean learningPath, boolean statusPublished, boolean absoluteDates) {
-		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Identity doer = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(doer);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		dbInstance.commitAndCloseSession();
+		dbInstance.commit();
 		
 		// create the course node and a task definition
 		CourseFactory.openCourseEditSession(course.getResourceableId());
@@ -395,7 +395,7 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		TaskDefinition taskDefinition = new TaskDefinition();
 		taskDefinition.setTitle(random());
 		gtaManager.addTaskDefinition(taskDefinition, course.getCourseEnvironment(), gtaNode);
-		dbInstance.commitAndCloseSession();
+		dbInstance.commit();
 		
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), false);
 		
@@ -404,7 +404,7 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		CourseFactory.publishCourse(course, status, doer, Locale.ENGLISH);
 		dbInstance.commitAndCloseSession();
 		
-		waitMessageAreConsumed();// Try it
+		waitMessageAreConsumed();
 		
 		return repositoryManager.lookupRepositoryEntry(courseEntry.getKey());
 	}
@@ -451,9 +451,9 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 	}
 	
 	private UserCourseEnvironment addParticipant(RepositoryEntry courseEntry) {
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("todoer");
 		repositoryEntryRelationDao.addRole(participant, courseEntry, GroupRoles.participant.name());
-		dbInstance.commitAndCloseSession();
+		dbInstance.commit();
 		
 		// First course element is a SPCourseNode
 		String subIdent = getSPNode(courseEntry).getIdent();

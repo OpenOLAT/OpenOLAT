@@ -191,18 +191,22 @@ public class AssessmentModePage {
 		return this;
 	}
 	
+	public AssessmentModePage assertOnStartAssessment() {
+		By startBy = By.cssSelector("div.modal-dialog div.modal-body div.o_button_group a.o_sel_assessment_start");
+		OOGraphene.waitElement(startBy, browser);
+		return this;
+	}
+	
 	/**
 	 * A student can start its assessment
 	 * 
 	 * @return
 	 */
-	public AssessmentModePage startAssessment(boolean wait) {
+	public AssessmentModePage startAssessment() {
 		By startBy = By.cssSelector("div.modal-dialog div.modal-body div.o_button_group.o_sel_checked a.o_sel_assessment_start");
-		if(wait) {
-			OOGraphene.waitElement(startBy, browser);
-		}
-		List<WebElement> buttonsEl = browser.findElements(startBy);
-		buttonsEl.get(0).click();
+		OOGraphene.waitElement(startBy, browser);
+		browser.findElement(startBy).click();
+		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

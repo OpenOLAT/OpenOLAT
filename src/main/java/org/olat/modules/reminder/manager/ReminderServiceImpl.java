@@ -255,10 +255,14 @@ public class ReminderServiceImpl implements ReminderService {
 		Translator trans = Util.createPackageTranslator(ReminderAdminController.class, locale);
 		String subject = reminder.getEmailSubject();
 		String body = reminder.getEmailBody();
-		if (body.contains("$courseurl")) {
-			body = body.replace("$courseurl", "<a href=\"$courseurl\">$courseurl</a>");
-		} else {			
-			body = body + "<p>---<br />" + trans.translate("reminder.from.course", "<a href=\"$courseurl\">$coursename</a>") + "</p>";
+		try {
+			if (body.contains("$courseurl")) {
+				body = body.replace("$courseurl", "<a href=\"$courseurl\">$courseurl</a>");
+			} else {			
+				body = body + "<p>---<br>" + trans.translate("reminder.from.course", "<a href=\"$courseurl\">$coursename</a>") + "</p>";
+			}
+		} catch (Exception e) {
+			log.error("Repo-Id: {}, Reminder-Id: {}, body: {}", entry.getKey(), reminder.getKey(), body);
 		}
 		String metaId = UUID.randomUUID().toString();
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
@@ -272,7 +276,7 @@ public class ReminderServiceImpl implements ReminderService {
 			long run = currentRun == null || currentRun.longValue() < 1 ? 1l : currentRun.longValue();
 			
 			MailBundle bundle = mailManager.makeMailBundle(context, identityToRemind, template, null, metaId, overviewResult);
-			if(bundle == null) {
+			if(bundle == null || subject == null || body == null) {
 				status = "error";
 			} else {
 				MailerResult result;

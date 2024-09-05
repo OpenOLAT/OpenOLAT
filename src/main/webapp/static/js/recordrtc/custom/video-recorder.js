@@ -285,6 +285,7 @@ class VideoRecorder {
 				height: {ideal: this.quality.height}
 			}
 		}).then((mediaStream) => {
+			console.log('Received video mediaStream', mediaStream);
 			const track = mediaStream.getVideoTracks()[0];
 			self.imageCapture = new ImageCapture(track);
 			const trackSettings = track.getSettings();
@@ -472,12 +473,12 @@ class VideoRecorder {
 	}
 
 	dispose() {
-		console.log('videoRecorder.dispose()');
 		this.blobs = null;
 		this.imageCaptureBlob = null;
 		this.imageCapture = null;
 		this.destroyRecorder();
 		this.releaseMediaStream();
+		console.log('video recorder dispose() finished.');
 	}
 
 	releaseMediaStream() {

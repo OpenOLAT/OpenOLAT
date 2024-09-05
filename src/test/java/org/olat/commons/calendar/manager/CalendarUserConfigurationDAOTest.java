@@ -48,7 +48,7 @@ public class CalendarUserConfigurationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createConfiguration() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Cal-1");
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Cal-1", null);
 		String calendarId = UUID.randomUUID().toString();
 		Kalendar calendar = new Kalendar(calendarId, CalendarManager.TYPE_USER);
 		
@@ -65,7 +65,7 @@ public class CalendarUserConfigurationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getCalendarUserConfigurations() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Cal-2");
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Cal-2", null);
 		String calendarId = UUID.randomUUID().toString();
 		Kalendar calendar = new Kalendar(calendarId, CalendarManager.TYPE_COURSE);
 		
@@ -92,7 +92,7 @@ public class CalendarUserConfigurationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getCalendarUserConfigurations_byTypes() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Cal-3");
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Cal-3", null);
 		String calendarId = UUID.randomUUID().toString();
 		
 		Kalendar courseCalendar = new Kalendar(calendarId, CalendarManager.TYPE_COURSE);
