@@ -416,6 +416,7 @@ class AudioRecorder {
 		if (this.config.audioRendererActive) {
 			this.renderer.stopRecording();
 		}
+		console.log('audio recorder dispose() finished.');
 	}
 
 	releaseMediaStream() {

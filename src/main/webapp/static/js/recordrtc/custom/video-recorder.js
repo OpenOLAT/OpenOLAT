@@ -472,12 +472,12 @@ class VideoRecorder {
 	}
 
 	dispose() {
-		console.log('videoRecorder.dispose()');
 		this.blobs = null;
 		this.imageCaptureBlob = null;
 		this.imageCapture = null;
 		this.destroyRecorder();
 		this.releaseMediaStream();
+		console.log('video recorder dispose() finished.');
 	}
 
 	releaseMediaStream() {

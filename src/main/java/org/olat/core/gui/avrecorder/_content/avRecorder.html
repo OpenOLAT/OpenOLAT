@@ -113,7 +113,8 @@
 </div>
 
 <script>
-	"use strict";
+	var videoRecorder, audioRecorder;
+
 	jQuery().ready(function() {
 		var audioElement = document.querySelector('#audioElement');
 		jQuery(audioElement).hide();
@@ -128,7 +129,11 @@
 				var canvas = null;
 			#end
 
-			var audioRecorder = new AudioRecorder(audioElement, {
+			if (audioRecorder) {
+				audioRecorder.dispose();
+				audioRecorder = null;
+			}
+			audioRecorder = new AudioRecorder(audioElement, {
 				firstName: '$firstName',
 				lastName: '$lastName',
 				recordingLengthLimit: $recordingLengthLimit,
@@ -138,7 +143,11 @@
 			});
 			audioRecorder.stateInit();
 		#else
-			var videoRecorder = new VideoRecorder(videoElement, $qualities, {
+			if (videoRecorder) {
+				videoRecorder.dispose();
+				videoRecorder = null;
+			}
+			videoRecorder = new VideoRecorder(videoElement, $qualities, {
 				firstName: '$firstName',
 				lastName: '$lastName',
 				recordingLengthLimit: $recordingLengthLimit,
@@ -153,7 +162,9 @@
 			function updateSizes() {
 				if ((videoPreviewDiv.width() > (controllerDiv.width() + 30)) ||
 					(videoPreviewDiv.width() < (controllerDiv.width() - 100))) {
-					videoRecorder.sizeVideoElement(videoPreviewDiv.width(), videoPreviewDiv.height());
+					if (videoRecorder) {
+						videoRecorder.sizeVideoElement(videoPreviewDiv.width(), videoPreviewDiv.height());
+					}
 				}
 			}
 			new ResizeObserver(updateSizes).observe(controllerDiv[0]);
