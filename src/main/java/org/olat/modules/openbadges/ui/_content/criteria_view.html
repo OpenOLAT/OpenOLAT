@@ -1,4 +1,5 @@
 <div class="o_badge_criteria_view o_form form-horizontal">
+  #if($automatic)
 	#foreach($condition in $conditions)
 	<div class="o_badge_condition_line">
 		<span class="o_badge_theme_area #if(!$condition.first()) o_tab_left #end">
@@ -6,11 +7,12 @@
 		</span>
 		$condition.toString()
 	</div>
+	#end
 	<div class="o_badge_condition_line">
 		<span class="o_badge_theme_area">
 			$r.translate("condition.then")
 		</span>
 		$r.translate("badge.awarded")
 	</div>
-	#end
+  #end
 </div>

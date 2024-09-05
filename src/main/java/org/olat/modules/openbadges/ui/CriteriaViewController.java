@@ -62,7 +62,7 @@ public class CriteriaViewController extends BasicController {
 			conditions.add(condition);
 		}
 		mainVC.contextPut("conditions", conditions);
-
+		mainVC.contextPut("automatic", criteria.isAwardAutomatically());
 		putInitialPanel(mainVC);
 	}
 
