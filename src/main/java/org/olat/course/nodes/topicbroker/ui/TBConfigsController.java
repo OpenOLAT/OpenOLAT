@@ -66,7 +66,7 @@ public class TBConfigsController extends FormBasicController implements Controll
 		formLayout.add("rights", nodeRightCtrl.getInitialFormItem());
 		
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("bottonsWrapper", getTranslator());
-		buttonsWrapperCont.setElementCssClass("o_block_top");
+		buttonsWrapperCont.setElementCssClass("o_sel_tb_buttons o_block_top");
 		buttonsWrapperCont.setRootForm(mainForm);
 		formLayout.add(buttonsWrapperCont);
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
