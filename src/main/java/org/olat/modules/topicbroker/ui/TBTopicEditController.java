@@ -104,15 +104,18 @@ public class TBTopicEditController extends FormBasicController {
 		FormLayoutContainer standardCont = FormLayoutContainer.createVerticalFormLayout("standard", getTranslator());
 		standardCont.setFormTitle(translate("topic.fields.standard"));
 		standardCont.setRootForm(mainForm);
+		standardCont.setElementCssClass("o_sel_tb_standard_fields");
 		formLayout.add(standardCont);
 		
 		String identifier = topic != null? topic.getIdentifier(): null;
 		identifierEl = uifactory.addTextElement("topic.identifier", TBTopic.IDENTIFIER_MAX_LENGTH, identifier, standardCont);
+		identifierEl.setElementCssClass("o_sel_tb_identifier");
 		identifierEl.setMandatory(true);
 		identifierEl.setFocus(true);
 		
 		String title = topic != null? topic.getTitle(): null;
 		titleEl = uifactory.addTextElement("topic.title", TBTopic.TITLE_MAX_LENGTH, title, standardCont);
+		titleEl.setElementCssClass("o_sel_tb_title");
 		titleEl.setMandatory(true);
 		
 		String description = topic != null? topic.getDescription(): null;
@@ -128,12 +131,14 @@ public class TBTopicEditController extends FormBasicController {
 				? topic.getMinParticipants().toString()
 				: null;
 		minParticipantsEl = uifactory.addTextElement("topic.participants.min", null, 20, minParticipants, participantsCont);
+		minParticipantsEl.setElementCssClass("o_sel_tb_min_participants");
 		minParticipantsEl.setDisplaySize(100);
 		
 		String maxParticipants = topic != null && topic.getMaxParticipants() != null
 				? topic.getMaxParticipants().toString()
 				: null;
 		maxParticipantsEl = uifactory.addTextElement("topic.participants.max", null, 320, maxParticipants, participantsCont);
+		maxParticipantsEl.setElementCssClass("o_sel_tb_max_participants");
 		maxParticipantsEl.setDisplaySize(100);
 		
 		

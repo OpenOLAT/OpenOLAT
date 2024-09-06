@@ -233,6 +233,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		
 		if (!broker.isAutoEnrollment() && secCallback.canStartManualEnrollment()) {
 			enrollmentManualStartLink = uifactory.addFormLink("enrollment.manual.start", formLayout, Link.BUTTON);
+			enrollmentManualStartLink.setElementCssClass("o_sel_tb_enrollment_start");
 			updateEnrollmentManualUI();
 		}
 		

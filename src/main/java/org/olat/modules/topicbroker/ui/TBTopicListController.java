@@ -278,6 +278,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		
 		if (secCallback.canEditTopics()) {
 			createLink = uifactory.addFormLink("topic.create", formLayout, Link.BUTTON);
+			createLink.setElementCssClass("o_sel_tb_create_topic");
 			createLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 			
 			addDropdown = uifactory.addDropdownMenu("topic.dropdown", null, null, formLayout, getTranslator());

@@ -161,7 +161,7 @@ public class MembersPage {
 	 * 
 	 * @param users Users to import
 	 */
-	public void quickImport(UserVO... users) {
+	public MembersPage quickImport(UserVO... users) {
 		addMember()
 			.importList()
 			.setMembers(users)
@@ -169,6 +169,7 @@ public class MembersPage {
 			.nextOverview()
 			.nextPermissions()
 			.finish();
+		return this;
 	}
 	
 	/**
