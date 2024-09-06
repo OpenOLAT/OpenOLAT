@@ -76,7 +76,7 @@ public class ENEditController extends ActivateableTabbableDefaultController {
 
 	private void doFormInit(UserRequest ureq) {
 		easyGroupEditCtrllr = new ENEditGroupAreaFormController(ureq, getWindowControl(), moduleConfiguration, euce.getCourseEditorEnv());
-		easyGroupEditCtrllr.addControllerListener(this);
+		listenTo(easyGroupEditCtrllr);
 		myContent.put("groupnameform",easyGroupEditCtrllr.getInitialComponent());
 	}
 

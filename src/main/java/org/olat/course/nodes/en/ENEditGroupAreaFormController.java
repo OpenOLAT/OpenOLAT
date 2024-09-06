@@ -308,7 +308,10 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		minParticipantsColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(minParticipantsColumn);
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ENEditGroupTableColumns.remove, CMD_REMOVE));
+		StaticFlexiCellRenderer removeRenderer = new StaticFlexiCellRenderer(translate("remove"), CMD_REMOVE, null);
+		removeRenderer.setPush(true);
+		removeRenderer.setDirtyCheck(false);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ENEditGroupTableColumns.remove, removeRenderer));
 
 		easyGroupTableModel = new ENEditGroupTableModel(columnsModel, getTranslator());
 		easyGroupTableElement = uifactory.addTableElement(getWindowControl(), "en_edit_group_table", easyGroupTableModel, getTranslator(), formLayout);
@@ -563,9 +566,8 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		if (source == groupChooseC) {
 			if (event == Event.DONE_EVENT) {
 				cmc.deactivate();
-
 				updateModel(groupChooseC.getSelectedKeys());
-				easyGroupTableElement.getRootForm().submit(ureq);
+				markDirty();
 			} else if (Event.CANCELLED_EVENT == event) {
 				cmc.deactivate();
 			}
@@ -575,7 +577,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				KeysAndNames c = getAreaKeysAndNames(areaChooseC.getSelectedKeys());
 				easyAreaList.setValue(c.getDecoratedNames());
 				easyAreaList.setUserObject(c);
-				easyAreaList.getRootForm().submit(ureq);
 				chooseAreasLink.setI18nKey("choose");
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
@@ -590,13 +591,12 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				c.addAll(groupCreateCntrllr.getCreatedGroupKeys());
 
 				updateModel(c);
+				markDirty();
 
 				if (!groupCreateCntrllr.getCreatedGroupNames().isEmpty() && !hasGroups) {
 					chooseGroupsLink.setLinkTitle("select");
 					singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
-
-				easyGroupTableElement.getRootForm().submit(ureq);
 			}
 		} else if (source == areaCreateCntrllr) {
 			easyAreaList.setEnabled(true);
@@ -614,7 +614,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 					chooseAreasLink.setLinkTitle("select");
 					singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
-				easyAreaList.getRootForm().submit(ureq);
 			} 
 		}
 	}
