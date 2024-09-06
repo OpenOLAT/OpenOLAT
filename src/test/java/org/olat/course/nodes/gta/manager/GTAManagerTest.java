@@ -38,9 +38,12 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.nodes.INode;
@@ -93,6 +96,8 @@ public class GTAManagerTest extends OlatTestCase {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
+	
+	private static Organisation defaultUnitTestOrganisation;
 	
 	@Test
 	public void createIfNotExists() {
@@ -1478,12 +1483,21 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertEquals("C", nextSlot);
 	}
 	
+	/**
+	 * The course is in a specific organisation.
+	 * 
+	 * @return A course with a task course element
+	 */
 	protected static RepositoryEntry deployGTACourse() {
 		try {
+			if(defaultUnitTestOrganisation == null) {
+				defaultUnitTestOrganisation = CoreSpringFactory.getImpl(OrganisationService.class).createOrganisation("GTA organisation", "GTA-org", "", null, null);
+			}
+			
 			String displayname = "GTA-" + UUID.randomUUID();
 			Identity initialAuthor = JunitTestHelper.getDefaultAuthor();
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/GTA_course.zip");
-			return JunitTestHelper.deployCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, courseUrl);
+			return JunitTestHelper.deployCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

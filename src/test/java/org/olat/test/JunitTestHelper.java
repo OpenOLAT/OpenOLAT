@@ -269,7 +269,7 @@ public class JunitTestHelper {
 	public static final IdentityWithLogin createAndPersistRndAuthor(String prefixLogin) {
 		String login = getRandomizedLoginName(prefixLogin);
 		String password = PWD;
-		Identity identity = createAndPersistIdentityAsAuthor(login, password);
+		Identity identity = createAndPersistIdentityAsAuthor(login, getDefaultOrganisation(), password);
 		return new IdentityWithLogin(identity, login, password);
 	}
 	
@@ -284,9 +284,13 @@ public class JunitTestHelper {
 		return createAndPersistIdentityAsAuthor(login);
 	}
 	
+	public static final Identity createAndPersistIdentityAsRndAuthor(String prefixLogin, Organisation organisation, String pwd) {
+		String login = getRandomizedLoginName(prefixLogin);
+		return createAndPersistIdentityAsAuthor(login, organisation, pwd);
+	}
 
 	public static final Identity createAndPersistIdentityAsAuthor(String login) {
-		return createAndPersistIdentityAsAuthor(login, PWD);
+		return createAndPersistIdentityAsAuthor(login, getDefaultOrganisation(), PWD);
 	}
 
 	/**
@@ -294,7 +298,7 @@ public class JunitTestHelper {
 	 * @param login
 	 * @return
 	 */
-	private static final Identity createAndPersistIdentityAsAuthor(String login, String password) {
+	private static final Identity createAndPersistIdentityAsAuthor(String login, Organisation organisation, String password) {
 		Identity identity = findIdentityByLogin(login);
 		if (identity != null) {
 			return identity;
@@ -304,11 +308,11 @@ public class JunitTestHelper {
 		User user = CoreSpringFactory.getImpl(UserManager.class)
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		if(StringHelper.containsNonWhitespace(password)) {
-			identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, password, null);
+			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, password, organisation, null);
 		} else {
-			identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
-					null, null, null, null, null, null);
+			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
+				null, null, null, null, null, organisation, null);
 		}
 		addToDefaultOrganisation(identity, OrganisationRoles.author);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
@@ -530,7 +534,19 @@ public class JunitTestHelper {
 			RepositoryEntryStatusEnum status, URL courseUrl) {
 		try {
 			File courseFile = new File(courseUrl.toURI());
-			return deployCourse(initialAuthor, displayname, courseFile, status);
+			Organisation defOrganisation = getDefaultOrganisation();
+			return deployCourse(initialAuthor, displayname, courseFile, status, defOrganisation);
+		} catch (URISyntaxException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public static RepositoryEntry deployCourse(Identity initialAuthor, String displayname,
+			RepositoryEntryStatusEnum status, URL courseUrl, Organisation organisation) {
+		try {
+			File courseFile = new File(courseUrl.toURI());
+			return deployCourse(initialAuthor, displayname, courseFile, status, organisation);
 		} catch (URISyntaxException e) {
 			log.error("", e);
 			return null;
@@ -545,14 +561,13 @@ public class JunitTestHelper {
 	 * @param access The access
 	 * @return The repository entry of the course
 	 */
-	private static RepositoryEntry deployCourse(Identity initialAuthor, String displayname, File courseFile, RepositoryEntryStatusEnum status) {
+	private static RepositoryEntry deployCourse(Identity initialAuthor, String displayname,
+			File courseFile, RepositoryEntryStatusEnum status, Organisation organisation) {
 		try {
 			RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
 					.getRepositoryHandler(CourseModule.getCourseTypeName());
-			Organisation defOrganisation = getDefaultOrganisation();
 			RepositoryEntry re = courseHandler.importResource(initialAuthor, null, displayname, "A course",
-					RepositoryEntryImportExportLinkEnum.WITH_REFERENCE, defOrganisation, Locale.ENGLISH, courseFile, null);
-			
+					RepositoryEntryImportExportLinkEnum.WITH_REFERENCE, organisation, Locale.ENGLISH, courseFile, null);
 			ICourse course = CourseFactory.loadCourse(re);
 			CourseFactory.publishCourse(course, status, initialAuthor, Locale.ENGLISH);
 			return CoreSpringFactory.getImpl(RepositoryManager.class).lookupRepositoryEntry(re.getKey());
