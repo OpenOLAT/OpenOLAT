@@ -98,6 +98,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.callbacks.FullAccessWithLazyQuotaCallback;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.config.CourseConfig;
@@ -561,6 +562,7 @@ public class CourseFactory {
 			VFSContainer sourceCourseStyleCont = VFSManager.olatRootContainer(
 					sourceCourse.getCourseEnvironment().getCourseBaseContainer().getRelPath() + "/" + CourseStyleService.FOLDER_ROOT);
 			if (sourceCourseStyleCont.exists()) {
+				sourceCourseStyleCont.setDefaultItemFilter(new VFSSystemItemFilter());
 				VFSContainer targetCourseStyleCont = VFSManager.olatRootContainer(
 						targetCourse.getCourseEnvironment().getCourseBaseContainer().getRelPath() + "/" + CourseStyleService.FOLDER_ROOT);
 				targetCourseStyleCont.copyContentOf(sourceCourseStyleCont, author);
@@ -569,6 +571,7 @@ public class CourseFactory {
 			// copy course folder
 			VFSContainer sourceCourseContainer = sourceCourse.getIsolatedCourseBaseContainer();
 			if (sourceCourseContainer.exists()) {
+				sourceCourseContainer.setDefaultItemFilter(new VFSSystemItemFilter());
 				VFSContainer targetCourseContainer = targetCourse.getIsolatedCourseBaseContainer();
 				targetCourseContainer.copyContentOf(sourceCourseContainer, author);
 			}
@@ -578,6 +581,7 @@ public class CourseFactory {
 			if(cc.isCoachFolderEnabled() && !StringHelper.containsNonWhitespace(cc.getCoachFolderPath())) {
 				VFSContainer sourceContainer = CoachFolderFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
 				if (sourceContainer.exists()) {
+					sourceContainer.setDefaultItemFilter(new VFSSystemItemFilter());
 					VFSContainer targetContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
 					targetContainer.copyContentOf(sourceContainer, author);
 				}
@@ -585,6 +589,7 @@ public class CourseFactory {
 			if(cc.isDocumentsEnabled() && !StringHelper.containsNonWhitespace(cc.getDocumentsPath())) {
 				VFSContainer sourceContainer = CourseDocumentsFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
 				if (sourceContainer.exists()) {
+					sourceContainer.setDefaultItemFilter(new VFSSystemItemFilter());
 					VFSContainer targetContainer = CourseDocumentsFactory.getFileContainer(targetCourse.getCourseBaseContainer());
 					targetContainer.copyContentOf(sourceContainer, author);
 				}
@@ -594,6 +599,7 @@ public class CourseFactory {
 			VFSContainer sourceFoldernodesContainer = VFSManager
 					.olatRootContainer(BCCourseNode.getFoldernodesPathRelToFolderBase(sourceCourse.getCourseEnvironment()));
 			if (sourceFoldernodesContainer.exists()) {
+				sourceFoldernodesContainer.setDefaultItemFilter(new VFSSystemItemFilter());
 				VFSContainer targetFoldernodesContainer = VFSManager
 						.olatRootContainer(BCCourseNode.getFoldernodesPathRelToFolderBase(targetCourse.getCourseEnvironment()));
 				targetFoldernodesContainer.copyContentOf(sourceFoldernodesContainer, author);
