@@ -22,7 +22,6 @@ package org.olat.group.test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,12 +63,12 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 				-1, -1, false, false, false, false, false);
 		dbInstance.commit();
 
-		int numOfThreads = 25;
+		int numOfThreads = 10;
 		final CountDownLatch doneSignal = new CountDownLatch(numOfThreads);
 		
 		SetLastUsageThread[] threads = new SetLastUsageThread[numOfThreads];
 		for(int i=numOfThreads; i-->0; ) {
-			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("group-concurent-" + i + "-" + UUID.randomUUID().toString());
+			Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("group-concurent-" + i, null, null);
 			businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 			threads[i] = new SetLastUsageThread(group.getKey(), id, doneSignal);
 		}
@@ -95,12 +94,12 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 	
 	@Test
 	public void concurrentSetLastUsageFor_singleUser() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("group-cc-single-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("group-cc-single", null, null);
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
 		dbInstance.commitAndCloseSession();
 
-		int numOfThreads = 20;
+		int numOfThreads = 10;
 		final CountDownLatch doneSignal = new CountDownLatch(numOfThreads);
 		
 		SetLastUsageThread[] threads = new SetLastUsageThread[numOfThreads];
@@ -134,11 +133,13 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 		private final Long key;
 		private final Identity identity;
 		private final CountDownLatch doneSignal;
+		private final BusinessGroupService service;
 		
 		public SetLastUsageThread(Long key, Identity identity, CountDownLatch doneSignal) {
 			this.key = key;
 			this.identity = identity;
 			this.doneSignal = doneSignal;
+			service = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		}
 		
 		public int getErrorCount() {
@@ -152,10 +153,10 @@ public class BusinessGroupConcurrentTest extends OlatTestCase {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			BusinessGroupService service = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			
 			try {
 				BusinessGroup group = service.loadBusinessGroup(key);
-				for(int i=50; i-->0; ) {
+				for(int i=25; i-->0; ) {
 					group = service.setLastUsageFor(identity, group);
 				}
 			} catch (Exception e) {

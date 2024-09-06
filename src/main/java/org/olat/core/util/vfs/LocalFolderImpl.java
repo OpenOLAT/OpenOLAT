@@ -50,7 +50,6 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
-import org.olat.core.util.vfs.filters.VFSOrFilter;
 import org.olat.core.util.vfs.filters.VFSRevisionsAndThumbnailsFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
@@ -234,7 +233,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			}
 			
 			// copy recursively
-			List<VFSItem> children = sourceContainer.getItems(new VFSOrFilter(List.of(new VFSRevisionsAndThumbnailsFilter(), new VFSSystemItemFilter())));
+			List<VFSItem> children = sourceContainer.getItems(new VFSSystemItemFilter());
 			for (VFSItem child : children) {
 				VFSSuccess status = targetContainer.copyFrom(child , false, savedBy);
 				if (status != VFSSuccess.SUCCESS) {
@@ -310,7 +309,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			return VFSSuccess.SUCCESS;
 		}
 		File parentFile = f.getParentFile();
-		if (VFSRepositoryService.TRASH_NAME.equals(parentFile.getName())) {
+		if (VFSRepositoryService.TRASH_NAME.equals(parentFile.getName()) || VFSRepositoryService.TRASH_NAME.equals(getName())) {
 			return VFSSuccess.SUCCESS;
 		}
 		
@@ -346,7 +345,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			}
 		}
 		
-		List<VFSItem> children = getItems();
+		List<VFSItem> children = getItems(new VFSRevisionsAndThumbnailsFilter());
 		for (VFSItem child:children) {
 			child.delete();
 		}

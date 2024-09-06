@@ -23,6 +23,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -206,11 +207,13 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 				prepareWikiFile();
 				
 				int counter = 0;
+				Long lastKey = Long.valueOf(0);
 				List<VFSMetadata> metadatas;
 				do {
-					metadatas = getDeletedMetadata(BATCH_SIZE);
+					metadatas = getDeletedMetadata(BATCH_SIZE, lastKey);
 					for(int i=0; i<metadatas.size(); i++) {
 						VFSMetadata metadata = metadatas.get(i);
+						lastKey = metadata.getKey();
 						migrateMetadata(metadata);
 						if(i % 25 == 0) {
 							dbInstance.commitAndCloseSession();
@@ -234,13 +237,16 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 		return allOk;
 	}
 
-	private List<VFSMetadata> getDeletedMetadata(int maxResults) {
+	private List<VFSMetadata> getDeletedMetadata(int maxResults, Long lastKey) {
 		String query = """
 				select metadata from filemetadata as metadata 
 				where metadata.deleted = true
-				  and metadata.deletedDate is null""";
+				  and metadata.deletedDate is null
+				  and metadata.key > :lastKey
+				order by metadata.key""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, VFSMetadata.class)
+				.setParameter("lastKey", lastKey)
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
@@ -281,10 +287,11 @@ public class OLATUpgrade_19_0_0 extends OLATUpgrade {
 					vfsLeaf.delete();
 					VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
 					if (vfsMetadata.getDeletedDate() != null) {
-						((VFSMetadataImpl)vfsMetadata).setDeletedBy(revision.getFileInitializedBy());
-						vfsRepositoryService.updateMetadata(vfsMetadata);
 						// The deletedDate is set as of today because we do not want do delete a lot of
 						// files directly in the night after the update.
+						((VFSMetadataImpl)vfsMetadata).setDeletedDate(new Date());
+						((VFSMetadataImpl)vfsMetadata).setDeletedBy(revision.getFileInitializedBy());
+						vfsRepositoryService.updateMetadata(vfsMetadata);
 					}
 					log.info("Revision moved to trash: {}", metadata.getRelativePath() + "/" + metadata.getFilename());
 					return;

@@ -89,8 +89,8 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
@@ -428,6 +428,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode
 			if(settings.getCopyType() == CopyType.copy) {
 				File srcFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(sourceCourse.getCourseEnvironment(), sourceCourseNode));
 				LocalFolderImpl sourceFolder = new LocalFolderImpl(srcFolderNodeDir);
+				sourceFolder.setDefaultItemFilter(new VFSSystemItemFilter());
 				File targetFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this));
 				LocalFolderImpl tagetFolder = new LocalFolderImpl(targetFolderNodeDir);
 				tagetFolder.copyContentOf(sourceFolder, envMapper.getAuthor());

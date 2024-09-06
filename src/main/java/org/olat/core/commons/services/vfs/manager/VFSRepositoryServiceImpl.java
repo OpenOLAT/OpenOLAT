@@ -588,6 +588,20 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		VFSMetadata vfsMetadata = getMetadataFor(leaf);
 		Identity initializedBy = metadataExists? vfsMetadata.getFileInitializedBy(): savedBy;
 		metadataDao.updateMetadata(leaf.getSize(), lastModified, initializedBy, savedBy, relativePath, leaf.getName());
+		
+		// Should not happen, but happens due to errors in other code.
+		// So make at least sure that the deleted flag is set,
+		// because the updateMetadatae() always set it to false
+		if (relativePath.indexOf(VFSRepositoryService.TRASH_NAME) > -1) {
+			vfsMetadata = getMetadataFor(leaf);
+			if (!vfsMetadata.isDeleted() && vfsMetadata instanceof VFSMetadataImpl impl) {
+				impl.setDeleted(true);
+				if (impl.getDeletedDate() == null) {
+					impl.setDeletedDate(new Date());
+				}
+				vfsMetadata = metadataDao.updateMetadata(impl);
+			}
+		}
 		dbInstance.commitAndCloseSession();
 	}
 
@@ -831,7 +845,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	
 	private void moveRevisionsFromTrash(VFSMetadata metadata, File restoredFile) {
 		File parent = restoredFile.getParentFile();
-		if (parent == null || !metadata.getRelativePath().endsWith(VFSRepositoryService.TRASH_NAME)) {
+		if (parent == null || !metadata.getRelativePath().contains(VFSRepositoryService.TRASH_NAME)) {
 			return;
 		}
 		
