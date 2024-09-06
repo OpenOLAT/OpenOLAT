@@ -96,7 +96,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
-	private CourseElementDAO couurseElementDao;
+	private CourseElementDAO courseElementDao;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -1028,30 +1028,31 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void getCoachingEntries_filter_scoreNull() {
 		//course
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
+		Identity author = JunitTestHelper.getDefaultAuthor();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		waitMessageAreConsumed();// Wait sync course element ready
 		String subIdent = random();
-		createCourseElement(entry1, subIdent);
+		createCourseElement(entry, subIdent);
 		
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 
-		repositoryEntryRelationDao.addRole(assessedIdentity1, entry1, GroupRoles.participant.name());
-		repositoryEntryRelationDao.addRole(assessedIdentity2, entry1, GroupRoles.participant.name());
-		repositoryEntryRelationDao.addRole(assessedIdentity3, entry1, GroupRoles.participant.name());
-		repositoryEntryRelationDao.addRole(coach, entry1, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
 		// some datas
-		AssessmentEntry ae1 = createAssessmentEntry(assessedIdentity1, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae1 = createAssessmentEntry(assessedIdentity1, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae1.setScore(new BigDecimal(1));
 		assessmentEntryDao.updateAssessmentEntry(ae1);
-		AssessmentEntry ae2 = createAssessmentEntry(assessedIdentity2, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae2 = createAssessmentEntry(assessedIdentity2, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae2.setScore(new BigDecimal(2));
 		assessmentEntryDao.updateAssessmentEntry(ae2);
-		AssessmentEntry ae3 = createAssessmentEntry(assessedIdentity3, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae3 = createAssessmentEntry(assessedIdentity3, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae3.setScore(null);
 		assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
@@ -1070,7 +1071,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void getCoachingEntries_filter_gradeNull() {
 		//course
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		Identity admin = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
 		String subIdent = random();
 		createCourseElement(entry1, subIdent);
@@ -1111,7 +1112,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void getCoachingEntries_filter_configScoreModes() {
 		//course
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		Identity admin = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		repositoryEntryRelationDao.addRole(assessedIdentity, entry1, GroupRoles.participant.name());
@@ -1149,7 +1150,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void getCoachingEntries_filter_configGrade() {
 		//course
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		Identity admin = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		repositoryEntryRelationDao.addRole(assessedIdentity, entry1, GroupRoles.participant.name());
@@ -1186,7 +1187,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void getCoachingEntries_filter_configAutoGrade() {
 		//course
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		Identity admin = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		repositoryEntryRelationDao.addRole(assessedIdentity, entry1, GroupRoles.participant.name());
@@ -1392,7 +1393,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		courseNode.setIdent(subIdent);
 		courseNode.setShortTitle(miniRandom());
 		courseNode.setLongTitle(random());
-		return couurseElementDao.create(entry, courseNode, assessmentConfig);
+		return courseElementDao.create(entry, courseNode, assessmentConfig);
 	}
 	
 	private AssessmentConfigMock createAssessmentConfigMock() {

@@ -771,13 +771,14 @@ public class RepositoryManagerTest extends OlatTestCase {
 	
 	@Test
 	public void queryReferencableResourcesLimitType() {
+		Organisation reOrganisation = organisationService.createOrganisation("Repo. org.", "repo-org", null, null, null);
+		
 		int ITERATION = 10;
 		
 		String resourceType = UUID.randomUUID().toString().replace("_", "");
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("id1");
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("id2");
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("id1", reOrganisation, null);
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("id2", reOrganisation, null);
 		Roles id1Roles = securityManager.getRoles(id1);
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		
 		// generate 50 repo entries
 		long startCreate = System.nanoTime();
@@ -791,7 +792,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 			
 			// now make a repository entry for this course
 			RepositoryEntry re = repositoryService.create(owner, null, "Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "Description bla bla + i",
-					r, RepositoryEntryStatusEnum.review, RepositoryEntryRuntimeType.embedded, defOrganisation);			
+					r, RepositoryEntryStatusEnum.review, RepositoryEntryRuntimeType.embedded, reOrganisation);			
 			if ((i % 2 > 0)) {
 				re.setCanReference(true);
 			}

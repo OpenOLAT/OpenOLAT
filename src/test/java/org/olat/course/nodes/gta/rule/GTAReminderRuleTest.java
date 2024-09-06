@@ -33,9 +33,12 @@ import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.GroupMembershipImpl;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
@@ -93,11 +96,12 @@ public class GTAReminderRuleTest extends OlatTestCase {
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 	
-
 	@Autowired
 	private AssignTaskRuleSPI assignTaskRuleSPI;
 	@Autowired
 	private SubmissionTaskRuleSPI submissionTaskRuleSPI;
+	
+	private static Organisation defaultUnitTestOrganisation;
 	
 	@Test
 	public void assignTask_individual() {
@@ -626,10 +630,14 @@ public class GTAReminderRuleTest extends OlatTestCase {
 	
 	private RepositoryEntry deployGTACourse() {
 		try {
+			if(defaultUnitTestOrganisation == null) {
+				defaultUnitTestOrganisation = CoreSpringFactory.getImpl(OrganisationService.class).createOrganisation("GTA organisation", "GTA-org", "", null, null);
+			}
+			
 			Identity initialAuthor = JunitTestHelper.getDefaultAuthor();
 			String displayname = "GTARemind-" + UUID.randomUUID();
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/GTA_course.zip");
-			return JunitTestHelper.deployCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, courseUrl);
+			return JunitTestHelper.deployCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

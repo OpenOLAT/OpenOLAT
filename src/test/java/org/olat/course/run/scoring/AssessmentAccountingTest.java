@@ -78,9 +78,10 @@ public class AssessmentAccountingTest extends OlatTestCase {
 	@Test
 	public void testSequentialStructures() {
 		// Create course
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(author, "Learning Path",
 				RepositoryEntryStatusEnum.published);
+		waitMessageAreConsumed();
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		course.getCourseConfig().setNodeAccessType(LearningPathNodeAccessProvider.TYPE);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
@@ -269,9 +270,10 @@ public class AssessmentAccountingTest extends OlatTestCase {
 	@Test
 	public void testWithoutSequenceStructures() {
 		// Create course
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(author, "Learning Path",
 				RepositoryEntryStatusEnum.published);
+		waitMessageAreConsumed();
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		course.getCourseConfig().setNodeAccessType(LearningPathNodeAccessProvider.TYPE);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
@@ -467,9 +469,10 @@ public class AssessmentAccountingTest extends OlatTestCase {
 	@Test
 	public void shouldRespectStartDates() {
 		// Create course
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author");
+		Identity author = JunitTestHelper.getDefaultAuthor();
 		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(author, "Learning Path",
 				RepositoryEntryStatusEnum.published);
+		waitMessageAreConsumed();
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		course.getCourseConfig().setNodeAccessType(LearningPathNodeAccessProvider.TYPE);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
