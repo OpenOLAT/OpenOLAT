@@ -107,9 +107,9 @@ public class TBEditController extends ActivateableTabbableDefaultController {
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CONFIG), configCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_CUSTOM_FIELDS), customFieldDefinitionsCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_TOPICS), topicsCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CONFIG), "o_sel_tb_configuration", configCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CUSTOM_FIELDS), "o_sel_tb_custom_fields", customFieldDefinitionsCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_TOPICS), "o_sel_tb_topics", topicsCtrl.getInitialComponent());
 	}
 
 }

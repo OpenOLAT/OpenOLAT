@@ -97,6 +97,7 @@ public class ConfirmationController extends FormBasicController {
 		FormLayoutContainer confirmCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
 		formLayout.add("confirm", confirmCont);
 		confirmCont.setRootForm(mainForm);
+		confirmCont.setElementCssClass("o_sel_confirm_form");
 		
 		initFormElements(confirmCont);
 		
@@ -108,6 +109,7 @@ public class ConfirmationController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		confirmCont.add(buttonsCont);
 		confirmLink = uifactory.addFormLink("confirm", buttonsCont, Link.BUTTON + Link.NONTRANSLATED);
+		confirmLink.setElementCssClass("o_sel_confirm");
 		confirmLink.setI18nKey(confirmButton);
 		if (confirmDanger) {
 			confirmLink.setElementCssClass("btn-danger");

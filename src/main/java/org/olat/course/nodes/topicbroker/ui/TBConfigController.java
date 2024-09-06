@@ -174,6 +174,7 @@ public class TBConfigController extends FormBasicController implements Controlle
 		Date selectionPeriodStart = DueDateConfig.isAbsolute(selectionPeriodStartConfig)? selectionPeriodStartConfig.getAbsoluteDate(): null;
 		Date selectionPeriodEnd = moduleConfig.getDateValue(TopicBrokerCourseNode.CONFIG_KEY_SELECTION_END);
 		selectionPeriodAbsEl = uifactory.addDateChooser("config.selection.period.abs", "config.selection.period", selectionPeriodStart, periodCont);
+		selectionPeriodAbsEl.setElementCssClass("o_sel_tb_period");
 		selectionPeriodAbsEl.setDateChooserTimeEnabled(true);
 		selectionPeriodAbsEl.setSecondDate(true);
 		selectionPeriodAbsEl.setSeparator("to.separator");

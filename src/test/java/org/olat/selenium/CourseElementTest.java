@@ -34,6 +34,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.core.util.DateUtils;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -75,6 +76,8 @@ import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.course.SinglePage;
 import org.olat.selenium.page.course.SinglePageConfigurationPage;
+import org.olat.selenium.page.course.TBrokerConfigurationPage;
+import org.olat.selenium.page.course.TBrokerPage;
 import org.olat.selenium.page.course.TeamsPage;
 import org.olat.selenium.page.course.ZoomConfigurationPage;
 import org.olat.selenium.page.course.ZoomPage;
@@ -2856,6 +2859,158 @@ public class CourseElementTest extends Deployments {
 	}
 	
 	
+	/**
+	 * An author creates a topic broker course element with a topic. Set the dates
+	 * in the past and the future. It publishes the course, add two participants,
+	 * the participants choose the topic, one normally, one with the highest priority.
+	 * The author come back, set both dates in the past and run the enrollment. It checks
+	 * the enrollment of both participants is successful. A participant checks
+	 * that it's enrolled successfully too.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithTopicBroker()
+	throws IOException, URISyntaxException {
+		UserVO participant1 = new UserRestClient(deploymentUrl).createRandomUser("Cel");
+		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Val");
+			
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword());
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		
+		//create a course
+		String courseTitle = "Course with topic broker " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type test with the QTI 2.1 test that we upload above
+		String brokerNodeTitle = "Topic broker 1.0";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("topicbroker")
+			.nodeTitle(brokerNodeTitle);
+		
+		Date now = new Date();
+		Date start = DateUtils.addDays(now, -4);
+		Date end = DateUtils.addDays(now, 2);
+		String topicTitle = "Selenium testing";
+		String topicIdentifier = "SEL-100c";
+		
+		TBrokerConfigurationPage tbConfig = new TBrokerConfigurationPage(browser);
+		tbConfig
+			.selectConfiguration()
+			.selectPeriod(start, end)
+			.saveConfiguration()
+			.selectConfigurationTopics()
+			.addTopic(topicIdentifier, topicTitle, 1, 5);
+		
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		// Open the course
+		CoursePageFragment courseRuntime = courseEditor
+			.clickToolbarBack();
+		courseRuntime
+			.tree()
+			.assertWithTitleSelected(brokerNodeTitle);
+		
+		// Add participants
+		courseRuntime
+			.members()
+			.quickImport(participant1, participant2)
+			.clickToolbarBack();
+		
+		// First participant select a topic
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant1.getLogin(), participant1.getPassword());
+		
+		NavigationPage participant1NavBar = NavigationPage.load(browser);
+		participant1NavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		new CoursePageFragment(browser)
+			.tree()
+			.assertWithTitleSelected(brokerNodeTitle);
+		
+		new TBrokerPage(browser)
+			.assertOnTopicTitle(topicTitle)
+			.selectTopic(topicTitle)
+			.assertOnSelectedTopic(topicTitle);
+		
+		// Second participant select topic with high priority
+		LoginPage participant2LoginPage = LoginPage.load(browser, deploymentUrl);
+		participant2LoginPage
+			.loginAs(participant2.getLogin(), participant2.getPassword());
+		
+		NavigationPage participant2NavBar = NavigationPage.load(browser);
+		participant2NavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		new CoursePageFragment(browser)
+			.tree()
+			.assertWithTitleSelected(brokerNodeTitle);
+		
+		new TBrokerPage(browser)
+			.assertOnTopicTitle(topicTitle)
+			.selectTopicHighest(topicTitle)
+			.assertOnSelectedTopic(topicTitle);
+		
+		// Author come back to change the end date of the enrollment
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		NavigationPage.load(browser)
+			.openAuthoringEnvironment()
+			.openResource(courseTitle);
+		
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		courseEditor = course
+			.assertOnTitle(brokerNodeTitle)
+			.edit()
+			.selectNode(brokerNodeTitle);
+		
+		Date newEnd = DateUtils.addDays(now, -1);
+		new TBrokerConfigurationPage(browser)
+			.selectConfiguration()
+			.selectPeriod(start, newEnd)
+			.saveConfiguration();
+		
+		courseEditor
+			.autoPublish();
+		
+		course
+			.tree()
+			.assertWithTitleSelected(brokerNodeTitle);
+
+		new TBrokerPage(browser)
+			.startEnrollment()
+			.confirmEnrollment(2)
+			.assertEnrolledByUser(participant1, 1)
+			.assertEnrolledByUser(participant2, 1);
+		
+		// First participant check the results
+		participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant1.getLogin(), participant1.getPassword())
+			.resumeWithAssert();
+		
+		new TBrokerPage(browser)
+			.assertEnrolledByTopic(topicTitle, 1);
+	}
 
 	/**
 	 * Minimal testing of the JupyterHub course element. An administrator
