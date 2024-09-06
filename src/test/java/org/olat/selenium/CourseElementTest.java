@@ -78,6 +78,8 @@ import org.olat.selenium.page.course.SinglePage;
 import org.olat.selenium.page.course.SinglePageConfigurationPage;
 import org.olat.selenium.page.course.TBrokerConfigurationPage;
 import org.olat.selenium.page.course.TBrokerPage;
+import org.olat.selenium.page.course.TUConfigurationPage;
+import org.olat.selenium.page.course.TUPage;
 import org.olat.selenium.page.course.TeamsPage;
 import org.olat.selenium.page.course.ZoomConfigurationPage;
 import org.olat.selenium.page.course.ZoomPage;
@@ -3011,6 +3013,55 @@ public class CourseElementTest extends Deployments {
 		new TBrokerPage(browser)
 			.assertEnrolledByTopic(topicTitle, 1);
 	}
+	
+	
+	/**
+	 * An author create a tunnel course element, set the URL and
+	 * publishes the course. It checks the page.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithTunnel()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword());
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		
+		//create a course
+		String courseTitle = "Course with tunnel " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+
+		//Create a course element of type tunnel
+		String tunnelNodeTitle = "Tunnel 1.0";
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("tu")
+			.nodeTitle(tunnelNodeTitle);
+		new TUConfigurationPage(browser)
+			.selectTunnelConfiguration()
+			.addURL("https://testing.frentix.com")
+			.selectIframeVisible()
+			.saveConfiguration();
+		
+		courseEditor
+			.autoPublish();
+		
+		course
+			.assertOnLearnPathLastNode(tunnelNodeTitle);
+		new TUPage(browser)
+			.checkPage("body #page_margins>h1");
+	}
+	
 
 	/**
 	 * Minimal testing of the JupyterHub course element. An administrator
