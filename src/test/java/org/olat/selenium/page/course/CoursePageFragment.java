@@ -117,6 +117,10 @@ public class CoursePageFragment {
 		return assertOnLearnPathNodeStatus(nodeTitle, "o_lp_not_accessible");
 	}
 	
+	public CoursePageFragment assertOnLearnPathLastNode(String nodeTitle) {
+		return assertOnLearnPathNodeStatus(nodeTitle, "o_last_node");
+	}
+	
 	private CoursePageFragment assertOnLearnPathNodeStatus(String nodeTitle, String statusCssClass) {
 		if(nodeTitle.length() > 20) {
 			nodeTitle = nodeTitle.substring(0, 20);
