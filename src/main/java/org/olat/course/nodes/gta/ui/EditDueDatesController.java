@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
@@ -116,10 +117,13 @@ public class EditDueDatesController extends FormBasicController {
 		revisionDueDateEl.setDateChooserTimeEnabled(true);
 		revisionDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD));
 		
-		Date peerReviewDueDate = task.getPeerReviewDueDate();
-		peerReviewDueDateEl = uifactory.addDateChooser("peerreview.duedate", peerReviewDueDate, formLayout);
+		DueDate peerReviewDueDate = gtaManager.getPeerReviewDueDate(task, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
+		Date peerReviewSetDueDate = task.getPeerReviewDueDate();
+		peerReviewDueDateEl = uifactory.addDateChooser("peerreview.duedate", peerReviewSetDueDate, formLayout);
 		peerReviewDueDateEl.setDateChooserTimeEnabled(true);
-		peerReviewDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW));
+		peerReviewDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)
+				&& (peerReviewSetDueDate != null || peerReviewDueDate != null
+					|| StringHelper.containsNonWhitespace(config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_LENGTH, ""))));
 		
 		Date solutionDueDate = task.getSolutionDueDate();
 		solutionDueDateEl = uifactory.addDateChooser("solution.duedate", solutionDueDate, formLayout);

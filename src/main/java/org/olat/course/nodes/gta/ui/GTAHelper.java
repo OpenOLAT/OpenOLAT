@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,51 +14,37 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.course.duedate.model;
-
-import java.util.Date;
+package org.olat.course.nodes.gta.ui;
 
 import org.olat.course.duedate.DueDateConfig;
 
 /**
  * 
- * Initial date: 5 Nov 2021<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 9 sept. 2024<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class NoDueDateConfig implements DueDateConfig {
+public class GTAHelper {
 	
-	public static final NoDueDateConfig NO_DUE_DATE_CONFIG = new NoDueDateConfig();
-	
-	private NoDueDateConfig() {
+	private GTAHelper() {
 		//
 	}
-
-	@Override
-	public int getNumOfDays() {
-		return -1;
+	
+	public static final boolean hasDateConfigured(DueDateConfig dueDateConfig) {
+		boolean hasDates = false;
+		if(dueDateConfig == null || dueDateConfig == DueDateConfig.noDueDateConfig()) {
+			//
+		} else if(dueDateConfig.getAbsoluteStartDate() != null && dueDateConfig.getAbsoluteDate() != null) {
+			hasDates = true;
+		} else if(dueDateConfig.getAbsoluteDate() != null) {
+			hasDates = true;
+		} else if(dueDateConfig.getRelativeToType() != null) {
+			hasDates = true;
+		}
+		return hasDates;
 	}
 
-	@Override
-	public String getRelativeToType() {
-		return null;
-	}
-
-	@Override
-	public int getDurationInDays() {
-		return -1;
-	}
-
-	@Override
-	public Date getAbsoluteDate() {
-		return null;
-	}
-
-	@Override
-	public Date getAbsoluteStartDate() {
-		return null;
-	}
 }
