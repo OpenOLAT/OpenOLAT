@@ -20,7 +20,6 @@
 
 package org.olat.login;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 
@@ -61,7 +60,7 @@ public class AboutController extends BasicController {
 		String licenses = "Not found";
 		try(InputStream licensesStream = AboutController.class.getResourceAsStream("../../../NOTICE.TXT")) {		    
 			licenses = IOUtils.toString(licensesStream, "UTF-8");
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logError("Error while reading NOTICE.TXT", e);
 		}
 		aboutVC.contextPut("licenses", licenses);
