@@ -75,6 +75,7 @@ import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.DirectoryController;
 import org.olat.course.nodes.gta.ui.GTACoachController;
+import org.olat.course.nodes.gta.ui.GTAHelper;
 import org.olat.course.nodes.gta.ui.component.TaskStepAdditionalInfosCellRenderer;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantTableModel.CoachCols;
@@ -134,7 +135,7 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 			
 		DueDateConfig lateDueDateConfig = gtaNode.getDueDateConfig(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE);
 		if(lateDueDateConfig != DueDateConfig.noDueDateConfig()) {
-			String lateDueDateVal = dueDateConfigToString(dueDateConfig);
+			String lateDueDateVal = dueDateConfigToString(lateDueDateConfig);
 			if(StringHelper.containsNonWhitespace(lateDueDateVal)) {
 				lateDeadlineInfos = translate("workflow.deadline.submission.late", lateDueDateVal);
 			}
@@ -253,8 +254,6 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 
 	@Override
 	protected CoachedParticipantRow forgeRow(CoachedParticipantRow identityRow, RepositoryEntry entry) {
-		identityRow.setToolsLink(forgeToolsLink(identityRow));
-		
 		// late date
 		Task assignedTask = identityRow.getTask();
 		IdentityRef assessedIdentity = new IdentityRefImpl(identityRow.getIdentityKey());
@@ -265,7 +264,11 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 		
 		status(identityRow);
 		lateStatus(identityRow);
-		
+
+		if(canBackToSubmission(identityRow) || identityRow.isCanCollectSubmission()
+				|| GTAHelper.hasDateConfigured(gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE))) {
+			identityRow.setToolsLink(forgeToolsLink(identityRow));
+		}
 		return identityRow;
 	}
 	
@@ -583,8 +586,11 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 	}
 	
 	private boolean canBackToSubmission(CoachedParticipantRow row) {
-		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT) &&
-				(row.getTask() == null || row.getTask().getTaskStatus() != TaskProcess.submit)) {
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
+				&& row.getTask() != null
+				&& row.getTask().getTaskStatus() != TaskProcess.assignment
+				&& row.getTask().getTaskStatus() != TaskProcess.submit
+				&& row.getStatus() != CoachedParticipantStatus.notAvailable) {
 			Date now = new Date();
 			DueDate dueDate = row.getSubmissionDueDate();
 			if(!coachCourseEnv.isCourseReadOnly() && (dueDate == null || dueDate.getDueDate() == null || now.before(dueDate.getDueDate()))) {
@@ -607,10 +613,11 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tools");
-			
-			dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
-			dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
-			
+			DueDateConfig dueDateConfig = gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
+			if(GTAHelper.hasDateConfigured(dueDateConfig)) {
+				dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
+				dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
+			}
 			if(row.isCanCollectSubmission()) {
 				collectSubmissionsLink = LinkFactory.createLink("coach.collect.task", mainVC, this);
 				collectSubmissionsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_status_done");
