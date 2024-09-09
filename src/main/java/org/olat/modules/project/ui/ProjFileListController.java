@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,11 +14,14 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.project.ui;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,6 +39,10 @@ import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
+import org.olat.core.commons.services.folder.ui.FileBrowserController;
+import org.olat.core.commons.services.folder.ui.FileBrowserSelectionMode;
+import org.olat.core.commons.services.folder.ui.FolderQuota;
+import org.olat.core.commons.services.folder.ui.event.FileBrowserSelectionEvent;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
@@ -48,6 +55,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElementInfos;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -100,6 +108,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.project.ProjArtefact;
@@ -124,7 +133,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 12 Dec 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 abstract class ProjFileListController extends FormBasicController  implements Activateable2, FlexiTableComponentDelegate {
@@ -146,7 +155,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private FormLink bulkDownloadButton;
 	private FormLink bulkDeleteButton;
 	private FlexiFiltersTab tabMy;
-	private FlexiFiltersTab tabAll;
+	protected FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRecently;
 	private FlexiFiltersTab tabNew;
 	private FlexiFiltersTab tabDeleted;
@@ -154,7 +163,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private ProjFileDataModel dataModel;
 	
 	private CloseableModalController cmc;
-	private ProjFileUploadController fileUploadCtrl;
 	private ProjFileCreateController fileCreateCtrl;
 	private ProjFileEditController fileEditCtrl;
 	private ProjRecordAVController recordAVController;
@@ -164,6 +172,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private Controller docEditorCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private FileBrowserController addFromBrowserCtrl;
 	
 	protected final ProjectBCFactory bcFactory;
 	protected final ProjProject project;
@@ -356,9 +365,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (secCallback.canCreateFiles() && (tabDeleted == null || tabDeleted != tab)) {
-			tableEl.setEmptyTableSettings("file.list.empty.message", null, "o_icon_proj_file", "file.upload", "o_icon_upload", false);
+			tableEl.setEmptyTableSettings("file.list.empty.message", "file.empty.hint.readwrite", "o_icon_proj_file", "file.upload", "o_icon_filehub_add", false);
 		} else {
-			tableEl.setEmptyTableSettings("file.list.empty.message", null, "o_icon_proj_file");
+			tableEl.setEmptyTableSettings("file.list.empty.message", "file.empty.hint.readonly", "o_icon_proj_file");
 		}
 		
 		if (bulkDeleteButton != null) {
@@ -589,8 +598,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> cmps = new ArrayList<>(2);
-		if (rowObject instanceof ProjFileRow) {
-			ProjFileRow projRow = (ProjFileRow)rowObject;
+		if (rowObject instanceof ProjFileRow projRow) {
 			if (projRow.getSelectLink() != null) {
 				cmps.add(projRow.getSelectLink().getComponent());
 			}
@@ -634,21 +642,23 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (fileUploadCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				loadModel(ureq, false);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+		if (addFromBrowserCtrl == source) {
+			// No clean up. Uploaded, temporary files are deleted when controller is disposed.
+			// The clean up if no license check is needed.
+			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
+				List<VFSItem> vfsItems = selectionEvent.getVfsItems();
+
+				for (VFSItem vfsItem : vfsItems) {
+					InputStream fileInputStream = ((VFSLeaf) vfsItem).getInputStream();
+					projectService.createFile(getIdentity(), project, vfsItem.getName(), fileInputStream, true);
+				}
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (fileCreateCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				loadModel(ureq, false);
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if (fileEditCtrl == source) {
+			loadModel(ureq, false);
+		} else if (fileCreateCtrl == source
+				|| fileEditCtrl == source
+				|| recordAVController == source) {
 			if (event == Event.DONE_EVENT) {
 				loadModel(ureq, false);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -657,13 +667,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			cleanUp();
 		} else if (deleteSoftlyConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				doDeleteSoftly(ureq, (ProjFileRef)deleteSoftlyConfirmationCtrl.getUserObject());
+				doDeleteSoftly(ureq, (ProjFileRef) deleteSoftlyConfirmationCtrl.getUserObject());
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if (deletePermanentlyConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				doDeletePermanently(ureq, (ProjFileRef)deletePermanentlyConfirmationCtrl.getUserObject());
+				doDeletePermanently(ureq, (ProjFileRef) deletePermanentlyConfirmationCtrl.getUserObject());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -673,9 +683,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(docEditorCtrl == source) {
+		} else if (docEditorCtrl == source) {
 			cleanUp();
-		} else if(cmc == source) {
+		} else if (cmc == source) {
 			cleanUp();
 		} else if (toolsCalloutCtrl == source) {
 			cleanUp();
@@ -686,13 +696,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					cleanUp();
 				}
 			}
-		} else if (recordAVController == source) {
-			if (event == Event.DONE_EVENT) {
-				loadModel(ureq, false);
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-			cmc.deactivate();
-			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -701,9 +704,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(deleteSoftlyConfirmationCtrl);
 		removeAsListenerAndDispose(deletePermanentlyConfirmationCtrl);
+		removeAsListenerAndDispose(addFromBrowserCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(fileEditCtrl);
-		removeAsListenerAndDispose(fileUploadCtrl);
 		removeAsListenerAndDispose(fileCreateCtrl);
 		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
@@ -712,9 +715,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		bulkDeleteConfirmationCtrl = null;
 		deleteSoftlyConfirmationCtrl = null;
 		deletePermanentlyConfirmationCtrl = null;
+		addFromBrowserCtrl = null;
 		toolsCalloutCtrl = null;
 		fileEditCtrl = null;
-		fileUploadCtrl = null;
 		fileCreateCtrl = null;
 		docEditorCtrl = null;
 		toolsCtrl = null;
@@ -740,23 +743,21 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (tableEl == source) {
 			if (event instanceof FlexiTableSearchEvent) {
 				loadModel(ureq, false);
-			} else if (event instanceof FlexiTableFilterTabEvent) {
-				doSelectFilterTab(((FlexiTableFilterTabEvent)event).getTab());
+			} else if (event instanceof FlexiTableFilterTabEvent flexiTableFilterTabEvent) {
+				doSelectFilterTab((flexiTableFilterTabEvent).getTab());
 				loadModel(ureq, true);
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
-				doUploadFile(ureq);
+				doAddFromBrowser(ureq);
 			}
 		} else if (bulkDownloadButton == source) {
 			doBulkDownload(ureq);
 		} else if (bulkDeleteButton == source) {
 			doConfirmBulkDelete(ureq);
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if (CMD_SELECT.equals(link.getCmd()) && link.getUserObject() instanceof ProjFileRow) {
-				ProjFileRow row = (ProjFileRow)link.getUserObject();
+		} else if (source instanceof FormLink link) {
+			if (CMD_SELECT.equals(link.getCmd()) && link.getUserObject() instanceof ProjFileRow row) {
 				doOpenOrDownload(ureq, row.getKey());
-			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof ProjFileRow) {
-				doOpenTools(ureq, (ProjFileRow)link.getUserObject(), link);
+			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof ProjFileRow row) {
+				doOpenTools(ureq, row, link);
 			} 
 		}
 		
@@ -768,16 +769,68 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		//
 	}
 
-	protected void doUploadFile(UserRequest ureq) {
-		if (guardModalController(fileUploadCtrl)) return;
-		
-		fileUploadCtrl = new ProjFileUploadController(ureq, getWindowControl(), project);
-		listenTo(fileUploadCtrl);
-		
-		String title = translate("file.upload");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileUploadCtrl.getInitialComponent(), true, title, true);
+	private void showUploadSuccessMessage(List<String> filenames) {
+		if (filenames != null && !filenames.isEmpty()) {
+			if (filenames.size() == 1) {
+				showInfo("upload.success.single", filenames.get(0));
+			} else {
+				showInfo("upload.success.multi", String.valueOf(filenames.size()));
+			}
+		}
+	}
+
+	protected void doUploadFile(UserRequest ureq, List<FileElementInfos> uploadFilesInfos) {
+		if (uploadFilesInfos != null && !uploadFilesInfos.isEmpty()) {
+			List<String> filenames = new ArrayList<>();
+			for (FileElementInfos elementInfos : uploadFilesInfos) {
+				try (InputStream inputStream = new FileInputStream(elementInfos.file())) {
+					String filename = elementInfos.fileName();
+					ProjFile file = projectService.createFile(getIdentity(), project, filename, inputStream, true);
+					if (file != null) {
+						VFSMetadata vfsMetadata = file.getVfsMetadata();
+						vfsRepositoryService.updateMetadata(vfsMetadata);
+					}
+					filenames.add(filename);
+				} catch (IOException e) {
+					showWarning("error.cannot.upload");
+					break;
+				}
+			}
+			showUploadSuccessMessage(filenames);
+			loadModel(ureq, false);
+		}
+	}
+
+	protected void doAddFromBrowser(UserRequest ureq) {
+		if (guardModalController(addFromBrowserCtrl)) return;
+		VFSContainer currentContainer = projectService.getProjectContainer(project);
+		if (!canEdit(currentContainer)) {
+			showWarning("error.cannot.upload");
+			loadModel(ureq, false);
+		}
+
+		FolderQuota folderQuota = new FolderQuota(ureq, null, 0L);
+
+		removeAsListenerAndDispose(addFromBrowserCtrl);
+		addFromBrowserCtrl = new FileBrowserController(ureq, getWindowControl(), FileBrowserSelectionMode.sourceMulti,
+				folderQuota, translate("add"));
+		listenTo(addFromBrowserCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				addFromBrowserCtrl.getInitialComponent(), true, translate("browser.add"), true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	private boolean canEdit(VFSItem vfsItem) {
+		if (vfsItem instanceof VFSLeaf) {
+			VFSContainer parentContainer = vfsItem.getParentContainer();
+			if (parentContainer != null) {
+				return parentContainer.canWrite() == VFSStatus.YES;
+			}
+		}
+
+		return vfsItem.canWrite() == VFSStatus.YES;
 	}
 
 	protected void doCreateFile(UserRequest ureq) {
@@ -1214,8 +1267,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if (source instanceof Link) {
-				Link link = (Link)source;
+			if (source instanceof Link link) {
 				String cmd = link.getCommand();
 				if (CMD_OPEN.equals(cmd)) {
 					doOpenFile(ureq, file, vfsLeaf);

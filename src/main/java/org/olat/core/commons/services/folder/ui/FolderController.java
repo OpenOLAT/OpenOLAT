@@ -1401,8 +1401,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			doBulkRestoreSelectFolder(ureq);
 		} else if (bulkDeletePermanentlyButton == source) {
 			doBulkConfirmDeletePermanently(ureq);
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if (source instanceof FormLink link) {
 			if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof FolderRow folderRow) {
 				doOpenTools(ureq, folderRow, link);
 			} else if (CMD_FOLDER.equals(link.getCmd()) && link.getUserObject() instanceof FolderRow folderRow) {
@@ -3255,8 +3254,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if (source instanceof Link) {
-				Link link = (Link)source;
+			if (source instanceof Link link) {
 				String cmd = link.getCommand();
 				if (CMD_FOLDER.equals(cmd)) {
 					doOpenFolder(ureq, row);
