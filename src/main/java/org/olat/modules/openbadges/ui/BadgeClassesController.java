@@ -368,7 +368,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doCreate(UserRequest ureq) {
-		createBadgeClassContext = new CreateBadgeClassWizardContext(entry, courseNode, reSecurity);
+		createBadgeClassContext = new CreateBadgeClassWizardContext(entry, courseNode, reSecurity, getTranslator());
 		Step start = createBadgeClassContext.showStartingPointStep(getIdentity()) ?
 				new CreateBadge00StartingPointStep(ureq, createBadgeClassContext) :
 				new CreateBadge00ImageStep(ureq, createBadgeClassContext);

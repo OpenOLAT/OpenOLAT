@@ -189,7 +189,8 @@ public class CreateBadgeClassWizardContext {
 	private boolean startFromScratch = false;
 	private Long sourceBadgeClassKey;
 
-	public CreateBadgeClassWizardContext(RepositoryEntry entry, CourseNode courseNode, RepositoryEntrySecurity reSecurity) {
+	public CreateBadgeClassWizardContext(RepositoryEntry entry, CourseNode courseNode,
+										 RepositoryEntrySecurity reSecurity, Translator translator) {
 		this.entry = entry;
 		this.courseNode = courseNode;
 		this.reSecurity = reSecurity;
@@ -215,13 +216,7 @@ public class CreateBadgeClassWizardContext {
 		badgeClassImpl.setValidityEnabled(false);
 		badgeClassImpl.setEntry(entry);
 		backgroundColorId = "gold";
-		title = Settings.getApplicationName();
-		if (course != null) {
-			title = course.getCourseTitle();
-			if (courseNode != null) {
-				title = courseNode.getShortTitle();
-			}
-		}
+		title = translator.translate("var.title.default");
 		initCriteria();
 		issuer = new Profile(badgeClassImpl);
 		badgeClass = badgeClassImpl;
