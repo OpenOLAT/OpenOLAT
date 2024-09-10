@@ -181,7 +181,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
 		}
 		fileUpload.setVisible(!managed && !readOnly);
-		fileUpload.limitToMimeType(imageMimeTypes, "cif.error.mimetype", new String[]{ imageMimeTypes.toString()} );
+		fileUpload.limitToMimeType(imageMimeTypes, "error.mimetype", new String[]{ imageMimeTypes.toString()} );
 
 		VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
 		movieUpload = uifactory.addFileElement(getWindowControl(), getIdentity(), "rentry.movie", "rentry.movie", formLayout);
@@ -195,7 +195,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			movieUpload.setInitialFile(((LocalFileImpl)movie).getBasefile());
 		}
 		movieUpload.setVisible(!managed && !readOnly);
-		movieUpload.limitToMimeType(videoMimeTypes, "cif.error.mimetype", new String[]{ videoMimeTypes.toString()} );
+		movieUpload.limitToMimeType(videoMimeTypes, "error.mimetype", new String[]{ videoMimeTypes.toString()} );
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
