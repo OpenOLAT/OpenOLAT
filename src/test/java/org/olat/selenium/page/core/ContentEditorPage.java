@@ -21,6 +21,8 @@ package org.olat.selenium.page.core;
 
 import java.io.File;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -34,6 +36,8 @@ import org.openqa.selenium.support.ui.Select;
  *
  */
 public class ContentEditorPage extends ContentViewPage {
+	
+	private static final Logger log = Tracing.createLoggerFor(ContentEditorPage.class);
 
 	private final boolean form;
 	
@@ -196,21 +200,29 @@ public class ContentEditorPage extends ContentViewPage {
 	}
 	
 	private ContentEditorPage closeEditFragment(By containerBy, By alternativeContainerBy) {
+		log.info("Close edit fragment (1): {}", containerBy);
 		browser.findElement(containerBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitingALittleBit();
-		browser.findElement(alternativeContainerBy).click();
-		OOGraphene.waitBusy(browser);
-		
+
 		try {
 			OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
-		} catch (Exception e) {
-			OOGraphene.takeScreenshot("Close edit fragment", browser);
-			
-			// Try again
-			OOGraphene.waitingALittleLonger();
+		} catch(Exception e) {
+			OOGraphene.waitingALittleBit();
+			log.info("Close edit fragment (alt 1): {}", alternativeContainerBy);
 			browser.findElement(alternativeContainerBy).click();
-			OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
+			OOGraphene.waitBusy(browser);
+			
+			try {
+				OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
+			} catch (Exception e2) {
+				OOGraphene.takeScreenshot("Close edit fragment", browser);
+				
+				// Try again
+				OOGraphene.waitingALittleLonger();
+				log.info("Close edit fragment (2 alt): {}", alternativeContainerBy);
+				browser.findElement(alternativeContainerBy).click();
+				OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
+			}
 		}
 		return this;
 	}
