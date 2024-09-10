@@ -47,6 +47,8 @@ import org.olat.modules.webFeed.Feed;
 @Table(name="o_feed")
 @NamedQuery(name="loadFeedByRessourceable",
 		query="select data from feed as data where data.resourceableId=:key and data.resourceableType=:name")
+@NamedQuery(name="loadFeedByKey",
+	query="select data from feed as data where data.key=:key")
 public class FeedImpl implements Feed, Serializable {
 
 	private static final long serialVersionUID = 6005283969959964489L;
@@ -238,11 +240,13 @@ public class FeedImpl implements Feed, Serializable {
 	}
 
 	@Override
+	@Transient
 	public boolean isExternal() {
 		return isExternal != null && isExternal;
 	}
 
 	@Override
+	@Transient
 	public boolean isInternal() {
 		return isExternal != null && !this.isExternal;
 	}

@@ -80,8 +80,13 @@ public class FeedDAO {
 	}
 	
 	public Feed loadFeed(Long key) {
-		FeedImpl feed = dbInstance.getCurrentEntityManager().find(FeedImpl.class, key);
-		return feed;
+		if(key == null) return null;
+		
+		List<FeedImpl> feeds = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadFeedByKey", FeedImpl.class)
+				.setParameter("key", key)
+				.getResultList();
+		return feeds == null || feeds.isEmpty() ? null : feeds.get(0);
 	}
 	
 	public Feed loadFeed(OLATResourceable resourceable) {
