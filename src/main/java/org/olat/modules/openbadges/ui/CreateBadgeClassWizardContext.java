@@ -35,6 +35,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.core.CourseElement;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -43,10 +45,14 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
+import org.olat.modules.openbadges.criteria.CourseElementScoreCondition;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
+import org.olat.modules.openbadges.criteria.CourseScoreCondition;
+import org.olat.modules.openbadges.criteria.Symbol;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
@@ -239,10 +245,39 @@ public class CreateBadgeClassWizardContext {
 		badgeCriteria.setAwardAutomatically(false);
 		if (courseNode != null) {
 			badgeCriteria.setAwardAutomatically(true);
-			badgeCriteria.getConditions().add(new CourseElementPassedCondition(courseNode.getIdent()));
+			addDefaultRule(badgeCriteria, courseNode);
 		} else if (entry != null) {
 			badgeCriteria.setAwardAutomatically(true);
 			badgeCriteria.getConditions().add(new CoursePassedCondition());
+		}
+	}
+
+	private void addDefaultRule(BadgeCriteria badgeCriteria, CourseNode courseNode) {
+		if (courseNode != null) {
+			CourseElement courseElement = BadgeCondition.loadCourseElement(entry, courseNode.getIdent());
+			if (courseElement != null && courseElement.isAssesseable()) {
+				if (!AssessmentConfig.Mode.none.equals(courseElement.getPassedMode())) {
+					badgeCriteria.getConditions().add(new CourseElementPassedCondition(this.courseNode.getIdent()));
+					return;
+				}
+				if (!AssessmentConfig.Mode.none.equals(courseElement.getScoreMode())) {
+					badgeCriteria.getConditions().add(new CourseElementScoreCondition(this.courseNode.getIdent(),
+							Symbol.greaterThan, 1));
+					return;
+				}
+			}
+		}
+		if (entry != null) {
+			CourseNode rootNode = CourseFactory.loadCourse(entry).getRunStructure().getRootNode();
+			CourseElement courseElement = BadgeCondition.loadCourseElement(entry, rootNode.getIdent());
+			if (!AssessmentConfig.Mode.none.equals(courseElement.getPassedMode())) {
+				badgeCriteria.getConditions().add(new CoursePassedCondition());
+				return;
+			}
+			if (!AssessmentConfig.Mode.none.equals(courseElement.getScoreMode())) {
+				badgeCriteria.getConditions().add(new CourseScoreCondition(Symbol.greaterThan, 1));
+				return;
+			}
 		}
 	}
 

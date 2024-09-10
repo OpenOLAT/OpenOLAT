@@ -17,60 +17,60 @@
 	$r.render("form.criteria.condition.met", "horizontal", "form")
 	#end
 
-	#foreach($condition in $conditions)
-		#if($r.visible($condition.getAndTextEl().getComponent().getComponentName()))
-			$r.render($condition.getAndTextEl().getComponent().getComponentName(), "horizontal", "form")
+	#foreach($conditionRow in $conditionRows)
+		#if($r.visible($conditionRow.getAndTextEl().getComponent().getComponentName()))
+			$r.render($conditionRow.getAndTextEl().getComponent().getComponentName(), "horizontal", "form")
 		#end
 		<div class="row">
 			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
 				<!-- condition dropdown -->
-				#if($r.visible($condition.getConditionDropdown().getName()))
-					$r.render($condition.getConditionDropdown().getName(), "horizontal", "form")
+				#if($r.visible($conditionRow.getConditionDropdown().getName()))
+					$r.render($conditionRow.getConditionDropdown().getName(), "horizontal", "form")
 				#end
 			</div>
 			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
 				<!-- global badges dropdown -->
-				#if($r.visible($condition.getGlobalBadgesDropdown().getName()))
-					$r.render($condition.getGlobalBadgesDropdown().getName(), "horizontal", "form")
+				#if($r.visible($conditionRow.getGlobalBadgesDropdown().getName()))
+					$r.render($conditionRow.getGlobalBadgesDropdown().getName(), "horizontal", "form")
 				#end
 			</div>
 			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
 				<!-- courses dropdown -->
-				#if($r.visible($condition.getCoursesDropdown().getName()))
-					$r.render($condition.getCoursesDropdown().getName(), "horizontal", "form")
+				#if($r.visible($conditionRow.getCoursesDropdown().getName()))
+					$r.render($conditionRow.getCoursesDropdown().getName(), "horizontal", "form")
 				#end
 			</div>
 			<div class="col-xs-offset-1 col-xs-10 col-sm-offset-0 col-sm-5 col-md-4 col-lg-2">
 				<div class="row">
-					#if($r.visible($condition.getBadgesDropdown().getName()))
+					#if($r.visible($conditionRow.getBadgesDropdown().getName()))
 					<!-- badge dropdown -->
 					<div class="col-xs-12">
-						$r.render($condition.getBadgesDropdown().getName(), "horizontal", "form")
+						$r.render($conditionRow.getBadgesDropdown().getName(), "horizontal", "form")
 					</div>
 					#end
-					#if($r.visible($condition.getCourseElementsDropdown().getName()))
+					#if($r.visible($conditionRow.getCourseElementsDropdown().getName()))
 					<!-- course element dropdown -->
 					<div class="col-xs-12">
-						$r.render($condition.getCourseElementsDropdown().getName(), "horizontal", "form")
+						$r.render($conditionRow.getCourseElementsDropdown().getName(), "horizontal", "form")
 					</div>
 					#end
-					#if($r.visible($condition.getSymbolDropdown().getName()) && $r.visible($condition.getValueEl().getComponent().getComponentName()) && $r.visible($condition.getUnitEl().getComponent().getComponentName()))
+					#if($r.visible($conditionRow.getSymbolDropdown().getName()) && $r.visible($conditionRow.getValueEl().getComponent().getComponentName()) && $r.visible($conditionRow.getUnitEl().getComponent().getComponentName()))
 					<div class="col-xs-5">
 						<!-- comparison symbol -->
-						#if($r.visible($condition.getSymbolDropdown().getName()))
-						$r.render($condition.getSymbolDropdown().getName(), "horizontal", "form")
+						#if($r.visible($conditionRow.getSymbolDropdown().getName()))
+						$r.render($conditionRow.getSymbolDropdown().getName(), "horizontal", "form")
 						#end
 					</div>
 					<div class="col-xs-5">
 						<!-- value -->
-						#if($r.visible($condition.getValueEl().getComponent().getComponentName()))
-						$r.render($condition.getValueEl().getComponent().getComponentName(), "horizontal", "form")
+						#if($r.visible($conditionRow.getValueEl().getComponent().getComponentName()))
+						$r.render($conditionRow.getValueEl().getComponent().getComponentName(), "horizontal", "form")
 						#end
 					</div>
 					<div class="col-xs-2">
 						<!-- unit -->
-						#if($r.visible($condition.getUnitEl().getComponent().getComponentName()))
-						$r.render($condition.getUnitEl().getComponent().getComponentName(), "horizontal", "form")
+						#if($r.visible($conditionRow.getUnitEl().getComponent().getComponentName()))
+						$r.render($conditionRow.getUnitEl().getComponent().getComponentName(), "horizontal", "form")
 						#end
 					</div>
 					#end
@@ -78,7 +78,7 @@
 			</div>
 			<div class="col-xs-1">
 				<!-- delete button -->
-				$r.render($condition.getDeleteLink().getComponent().getComponentName())
+				$r.render($conditionRow.getDeleteLink().getComponent().getComponentName())
 			</div>
 		</div>
 	#end
