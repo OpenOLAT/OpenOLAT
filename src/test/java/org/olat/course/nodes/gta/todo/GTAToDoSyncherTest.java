@@ -416,7 +416,7 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		GTACourseNode gtaNode = getGTANode(courseEntry);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		CourseFactory.openCourseEditSession(course.getResourceableId());
+		course = CourseFactory.openCourseEditSession(course.getResourceableId());
 		CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(gtaNode.getIdent());
 		editorTreeNode.getCourseNode().getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_ASSIGNMENT, assignment);
 		editorTreeNode.getCourseNode().getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_SUBMIT, submit);
