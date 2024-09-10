@@ -52,6 +52,7 @@ import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
 import org.olat.modules.openbadges.criteria.CourseElementScoreCondition;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CourseScoreCondition;
+import org.olat.modules.openbadges.criteria.LearningPathProgressCondition;
 import org.olat.modules.openbadges.criteria.Symbol;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Constants;
@@ -277,6 +278,10 @@ public class CreateBadgeClassWizardContext {
 			if (!AssessmentConfig.Mode.none.equals(courseElement.getScoreMode())) {
 				badgeCriteria.getConditions().add(new CourseScoreCondition(Symbol.greaterThan, 1));
 				return;
+			}
+
+			if (isLearningPath()) {
+				badgeCriteria.getConditions().add(new LearningPathProgressCondition(Symbol.greaterThan, 50));
 			}
 		}
 	}

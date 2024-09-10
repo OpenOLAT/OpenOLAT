@@ -135,6 +135,9 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("form.recipients.preview");
+			setFormInfoHelp("manual_user/learningresources/OpenBadges/");
+			setFormContextHelp("manual_user/learningresources/OpenBadges/");
+
 			formLayout.setElementCssClass("o_sel_badge_recipients");
 
 			StaticTextElement description = uifactory.addStaticTextElement("form.recipients.preview.description", null,

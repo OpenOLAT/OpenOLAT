@@ -274,6 +274,8 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("form.details");
+			setFormInfoHelp("manual_user/learningresources/OpenBadges/");
+			setFormContextHelp("manual_user/learningresources/OpenBadges/");
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
