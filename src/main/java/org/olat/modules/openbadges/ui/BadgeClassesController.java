@@ -430,7 +430,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			return;
 		}
 		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity);
-		Step start = new CreateBadge04DetailsStep(ureq, createBadgeClassContext);
+		Step start = new CreateBadge03CriteriaStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());

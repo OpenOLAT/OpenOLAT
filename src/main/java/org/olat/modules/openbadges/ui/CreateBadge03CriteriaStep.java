@@ -69,14 +69,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadge03CriteriaStep extends BasicStep {
+
+	private final CreateBadgeClassWizardContext createBadgeClassContext;
+
 	public CreateBadge03CriteriaStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
+		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.award.criteria", null);
 		setNextStep(new CreateBadge04DetailsStep(ureq, createBadgeClassContext));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
+		runContext.put(CreateBadgeClassWizardContext.KEY, createBadgeClassContext);
 		return new CreateBadgeCriteriaForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "criteria_step");
 	}
 
