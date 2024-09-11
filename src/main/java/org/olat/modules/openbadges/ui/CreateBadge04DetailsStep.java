@@ -290,10 +290,13 @@ public class CreateBadge04DetailsStep extends BasicStep {
 					badgeClass.getDescriptionWithScan(), formLayout);
 			descriptionEl.setElementCssClass("o_sel_badge_description o_badge_class_description");
 			descriptionEl.setMandatory(true);
+			descriptionEl.setHelpTextKey("form.description.help", null);
+			descriptionEl.setPlaceholderKey("form.description.placeholder", null);
 
 			availableLanguagesEl = uifactory.addDropdownSingleselect("form.language", formLayout,
 					availableLanguagesKV.keys(), availableLanguagesKV.values());
 			availableLanguagesEl.select(badgeClass.getLanguage(), true);
+			availableLanguagesEl.setHelpTextKey("form.language.help", null);
 
 			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuer.getName(), formLayout);
 			issuerNameEl.setMandatory(true);
