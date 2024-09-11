@@ -278,7 +278,7 @@ public class CreateBadge01ImageStep extends BasicStep {
 			String templateDescription = OpenBadgesUIFactory.translateTemplateDescription(translator, template.getIdentifier());
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
-			badgeClass.setNameWithScan(templateName);
+			badgeClass.setNameWithScan(createContext.getBadgeName(templateName));
 			if (StringHelper.containsNonWhitespace(templateDescription)) {
 				badgeClass.setDescriptionWithScan(templateDescription);
 			}
