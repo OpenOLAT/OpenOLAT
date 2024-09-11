@@ -39,6 +39,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -87,7 +88,7 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 				
 				String id = "filter_lnk_" + (count++);
 				FlexiTableExtendedFilter filter = filterButton.getFilter();
-				String label = filter.isSelected() ? filter.getDecoratedLabel(true) : filter.getLabel();
+				String label = filter.isSelected() ? filter.getDecoratedLabel(true) : StringHelper.escapeHtml(filter.getLabel());
 				FormLink link = uifactory.addFormLink(id, label, null, formLayout, Link.LINK | Link.NONTRANSLATED);
 				link.setIconRightCSS("o_icon o_icon-fw o_icon_start");
 				link.setUserObject(filterButton);
@@ -153,7 +154,7 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 	protected void updateLink(FlexiTableExtendedFilter filter, Object value) {
 		FormLink link = getFilterLinkByFilter(filter);
 		if(link != null) {
-			String label = value == null ? filter.getLabel() : filter.getDecoratedLabel(value, true);
+			String label = value == null ? StringHelper.escapeHtml(filter.getLabel()) : filter.getDecoratedLabel(value, true);
 			link.getComponent().setCustomDisplayText(label);
 		}
 	}

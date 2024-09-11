@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 import java.util.List;
 
 import org.olat.core.gui.components.choice.ChoiceModel;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -51,7 +52,7 @@ class VisibleFlexiFiltersModel implements ChoiceModel<FlexiFilterButton> {
 	@Override
 	public String getLabel(int row) {
 		FlexiFilterButton filter = getObject(row);
-		return filter == null ? "-" : filter.getFilter().getLabel();
+		return filter == null ? "-" : StringHelper.escapeHtml(filter.getFilter().getLabel());
 	}
 
 	@Override

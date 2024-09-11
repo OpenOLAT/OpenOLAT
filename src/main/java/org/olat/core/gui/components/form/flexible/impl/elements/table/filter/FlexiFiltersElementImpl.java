@@ -55,6 +55,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.Callout
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -359,10 +360,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		String label;
 		String title;
 		if(filter.isSelected()) {
+			// Escaped by the filter itself
 			label = filter.getDecoratedLabel(true);
 			title = filter.getDecoratedLabel(false);
 		} else {
-			label = title = filter.getLabel();
+			label = title = StringHelper.escapeHtml(filter.getLabel());
 		}
 		
 		FormLink button = new FormLinkImpl(id, id, label, Link.BUTTON | Link.NONTRANSLATED);
@@ -546,7 +548,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			
 			if(resetFilter) {
 				filter.reset();
-				filterButton.getButton().getComponent().setCustomDisplayText(filter.getLabel());
+				filterButton.getButton().getComponent().setCustomDisplayText(StringHelper.escapeHtml(filter.getLabel()));
 				setFilterButtonCssClass(filterButton, filter.isSelected());
 			} else if(filter.isSelected()) {
 				filterButton.setChanged(true);
@@ -584,7 +586,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			label = filter.getDecoratedLabel(true);
 			title = filter.getDecoratedLabel(false);
 		} else {
-			label = title = filter.getLabel();
+			label = title = StringHelper.escapeHtml(filter.getLabel());
 		}
 		filterButton.getButton().getComponent().setCustomDisplayText(label);
 		filterButton.getButton().getComponent().setTitle(title);
@@ -657,7 +659,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		for(FlexiFilterButton filterButton:filterButtons) {
 			FlexiTableExtendedFilter filter = filterButton.getFilter();
 			filter.reset();
-			String label = filter.getLabel();
+			String label = StringHelper.escapeHtml(filter.getLabel());
 			filterButton.getButton().setI18nKey(label);
 			filterButton.getButton().setTitle(label);
 			filterButton.setEnabled(filter.isDefaultVisible());

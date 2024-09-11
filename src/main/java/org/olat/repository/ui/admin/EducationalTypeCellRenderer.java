@@ -19,11 +19,8 @@
  */
 package org.olat.repository.ui.admin;
 
-import java.util.Locale;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -37,7 +34,7 @@ import org.olat.repository.ui.RepositoyUIFactory;
  * @author Florian Gnägi, gnaegi@frentix.com, https://www.frentix.com
  *
  */
-public class EducationalTypeCellRenderer implements FlexiCellRenderer, CustomCellRenderer {
+public class EducationalTypeCellRenderer implements FlexiCellRenderer {
 	private final Translator translator;
 	
 	public EducationalTypeCellRenderer(Translator translator) {
@@ -48,18 +45,11 @@ public class EducationalTypeCellRenderer implements FlexiCellRenderer, CustomCel
 	public void render(Renderer renderer, StringOutput sb, Object val,
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans)  {
 		
-		if(val instanceof RepositoryEntryEducationalType) {
-			RepositoryEntryEducationalType educationalType = (RepositoryEntryEducationalType)val;
+		if(val instanceof RepositoryEntryEducationalType educationalType) {
 			sb.append("<span class='").append(educationalType.getCssClass()).append("'><span class='o_educational_type'>")
-			.append(translator.translate(RepositoyUIFactory.getI18nKey(educationalType)))			
+			.appendHtmlEscaped(translator.translate(RepositoyUIFactory.getI18nKey(educationalType)))			
 			.append("</span></span>");
 			
 		}
-	}
-
-	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		// use the FlexiCellRenderer method
-		render(renderer, sb, val, -1, null, null, null);
 	}
 }
