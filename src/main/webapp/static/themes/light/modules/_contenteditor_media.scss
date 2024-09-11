@@ -101,6 +101,65 @@
 	margin-left: 0.5em;
 }
 
+.o_media_cmd {
+	display: flex;
+	.o_media_add_cmd {
+		display: flex;
+		>div>div.o_fileinput.o_area {
+			@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
+
+			margin-bottom: 0;
+			padding-top: 5px;
+			padding-bottom: 6px;
+			border: 1px solid $btn-default-border;
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
+			border-right: none;
+			background-color: $btn-default-bg;
+
+			&:has(.o_realchooser:hover),
+			&:has(.o_realchooser:focus) {
+				outline: 0;
+				color: #333;
+				background-color: #dfdfdf;
+				button {
+					color: #333;
+					background-color: #dfdfdf;
+					border: none;
+					box-shadow: none;
+				}
+			}
+		}
+
+		.o_filepreview, .o_filemeta {
+			display: none;
+		}
+
+		.o_dnd {
+			.o_dnd_icon {
+				font-size: 1em;
+				color: black;
+				display: inline-block;
+				margin-right: 5px;
+			}
+
+			.o_dnd_select {
+				display: inline-block;
+				margin: 0;
+
+				button {
+					@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
+
+					padding: 0;
+					border: none;
+				}
+			}
+			.o_dnd_info {
+				display: none;
+			}
+		}
+	}
+}
 
 .o_page_lead {
 	padding: $o-portfolio-lead-space-sm * 2;

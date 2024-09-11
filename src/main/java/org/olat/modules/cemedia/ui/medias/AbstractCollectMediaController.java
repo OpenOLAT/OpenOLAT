@@ -173,6 +173,9 @@ public abstract class AbstractCollectMediaController extends FormBasicController
 				licenseEl.select(noLicenseKey, true);
 			}
 			licenseEl.addActionListener(FormEvent.ONCHANGE);
+			if (mediaModule.isForceLicenseCheck()) {
+				licenseEl.setMandatory(true);
+			}
 			
 			String licensor = license == null ? null :  license.getLicensor();
 			licensorEl = uifactory.addTextElement("rights.licensor", 1000, licensor, formLayout);

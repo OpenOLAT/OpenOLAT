@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.cemedia.ui;
@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 5 juil. 2023<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class MediaAdminController extends FormBasicController {
@@ -64,6 +64,7 @@ public class MediaAdminController extends FormBasicController {
 	private MultipleSelectionElement withGroupEl;
 	private MultipleSelectionElement withCourseEl;
 	private MultipleSelectionElement withOrganisationEl;
+	private MultipleSelectionElement forceLicenseCheckEl;
 	
 	@Autowired
 	private MediaModule mediaModule;
@@ -78,10 +79,21 @@ public class MediaAdminController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer licenseLayout = uifactory.addDefaultFormLayout("license", null, formLayout);
+		initFormLicenseCheck(licenseLayout);
 		FormLayoutContainer taxonomyLayout = uifactory.addDefaultFormLayout("taxonomy", null, formLayout);
 		initFormTaxonomy(taxonomyLayout);
 		FormLayoutContainer permissionsLayout = uifactory.addDefaultFormLayout("permissions", null, formLayout);
 		initFormPermissions(permissionsLayout);
+	}
+
+	private void initFormLicenseCheck(FormLayoutContainer formLayout) {
+		formLayout.setFormTitle(translate("admin.license.title"));
+
+		forceLicenseCheckEl = uifactory.addCheckboxesHorizontal("admin.license.force", formLayout, new String[] { "xx" },
+				new String[] { translate("admin.license.force.value") });
+		forceLicenseCheckEl.addActionListener(FormEvent.ONCHANGE);
+		forceLicenseCheckEl.select(forceLicenseCheckEl.getKey(0), mediaModule.isForceLicenseCheck());
 	}
 
 	private void initFormTaxonomy(FormLayoutContainer formLayout) {
@@ -181,6 +193,8 @@ public class MediaAdminController extends FormBasicController {
 			mediaModule.setShareWithCourse(toSelectedString(withCourseEl));
 		} else if(withOrganisationEl == source) {
 			mediaModule.setShareWithOrganisation(toSelectedString(withOrganisationEl));
+		} else if (forceLicenseCheckEl == source) {
+			mediaModule.setForceLicense(forceLicenseCheckEl.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

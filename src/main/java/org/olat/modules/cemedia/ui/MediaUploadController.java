@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.cemedia.ui;
@@ -44,7 +44,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.Quota;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -67,23 +66,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 02.08.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class MediaUploadController extends AbstractCollectMediaController implements PageElementAddController {
-	
-	private FileElement fileEl;
+
+	private final FileElement fileEl;
+
 	private TextElement titleEl;
 	private TagSelection tagsEl;
 	private TextElement altTextEl;
 	private RichTextElement descriptionEl;
 	private TaxonomyLevelSelection taxonomyLevelEl;
-	
-	private final Quota quota;
+
 	private final String businessPath;
 	private AddElementInfos userObject;
 	
-	private MediaRelationsController relationsCtrl;
+	private final MediaRelationsController relationsCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -94,17 +93,18 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	@Autowired
 	private TaxonomyService taxonomyService;
 
-	public MediaUploadController(UserRequest ureq, WindowControl wControl) {
+	public MediaUploadController(UserRequest ureq, WindowControl wControl, FileElement fileEl) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 				Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale())));
+		this.fileEl = fileEl;
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
-		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		
 		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
 		relationsCtrl.setOpenClose(false);
 		listenTo(relationsCtrl);
 		
 		initForm(ureq);
+		initMetadata();
 		updateUILicense();
 	}
 	
@@ -143,12 +143,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 		
-	private void initMediaForm(FormItemContainer formLayout) {	
-		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
-		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setMandatory(true);
-		MediaUIHelper.setQuota(quota, fileEl);
-
+	private void initMediaForm(FormItemContainer formLayout) {
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
 		titleEl.setElementCssClass("o_sel_media_title");
 		titleEl.setMandatory(true);
@@ -202,33 +197,65 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(mediaReference == null) {
-			String title = titleEl.getValue();
-			String altText = altTextEl.isVisible() ? altTextEl.getValue() : null;
-			String description = descriptionEl.getValue();
-			File uploadedFile = fileEl.getUploadFile();
-			String uploadedFilename = fileEl.getUploadFileName();
-			MediaHandler mediaHandler = getHandler();
-			if(mediaHandler != null) {
-				UploadMedia mObject = new UploadMedia(uploadedFile, uploadedFilename, fileEl.getUploadMimeType());
-				mediaReference = mediaHandler.createMedia(title, description, altText, mObject, businessPath,
-						getIdentity(), MediaLog.Action.UPLOAD);
-			}
-		}
-		
-		saveLicense();
+		processMediaForm();
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
 
+	private void processMediaForm() {
+		if (mediaReference == null) {
+			createMediaReference();
+		}
+
+		saveLicense();
+		updateTags();
+		updateTaxonomyLevels();
+
+		relationsCtrl.saveRelations(mediaReference);
+
+		dbInstance.commit();
+	}
+
+	private void createMediaReference() {
+		String title = titleEl.getValue();
+		String altText = altTextEl.isVisible() ? altTextEl.getValue() : null;
+		String description = descriptionEl.getValue();
+
+		File uploadedFile = fileEl.getUploadFile();
+		String uploadedFilename = fileEl.getUploadFileName();
+
+		MediaHandler mediaHandler = getHandler();
+		if (mediaHandler == null || uploadedFile == null) {
+			return;  // Early exit if no media handler or file
+		}
+
+		UploadMedia mObject = new UploadMedia(uploadedFile, uploadedFilename, fileEl.getUploadMimeType());
+		mediaReference = mediaHandler.createMedia(
+				title, description, altText, mObject, businessPath, getIdentity(), MediaLog.Action.UPLOAD
+		);
+	}
+
+	private void updateTags() {
 		List<String> updatedTags = tagsEl.getDisplayNames();
 		mediaService.updateTags(getIdentity(), mediaReference, updatedTags);
-		
-		Set<TaxonomyLevelRef> selectedlevels = taxonomyLevelEl.getSelection();
-		mediaService.updateTaxonomyLevels(mediaReference, selectedlevels);
-		
-		relationsCtrl.saveRelations(mediaReference);
-		
-		dbInstance.commit();
+	}
 
-		fireEvent(ureq, Event.DONE_EVENT);
+	private void updateTaxonomyLevels() {
+		Set<TaxonomyLevelRef> selectedLevels = taxonomyLevelEl.getSelection();
+		mediaService.updateTaxonomyLevels(mediaReference, selectedLevels);
+	}
+
+	private void initMetadata() {
+		MediaHandler handler = getHandler();
+		if (titleEl.isEmpty()) {
+			titleEl.setValue(fileEl.getUploadFileName());
+			titleEl.getComponent().setDirty(true);
+		}
+		titleEl.clearWarning();
+		if(fileEl.getUploadFile() != null && mediaService.isInMediaCenter(getIdentity(), fileEl.getUploadFile())) {
+			titleEl.setWarningKey("warning.checksum.file");
+		}
+		altTextEl.setVisible(handler != null && ImageHandler.IMAGE_TYPE.equals(handler.getType()));
+		updateUILicense();
 	}
 	
 	@Override
