@@ -36,6 +36,7 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
@@ -133,7 +134,7 @@ public class LicenseHandler implements CatalogFilterHandler {
 				.filter(licenseType -> !licenseService.isNoLicense(licenseType))
 				.forEach(licenseType -> filterKV.add(new SelectionValue(
 						licenseType.getKey().toString(),
-						LicenseUIFactory.translate(licenseType, translator.getLocale()))));
+						StringHelper.escapeHtml(LicenseUIFactory.translate(licenseType, translator.getLocale())))));
 		filterKV.sort(SelectionValues.VALUE_ASC);
 		
 		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.license"), TYPE, filterKV,

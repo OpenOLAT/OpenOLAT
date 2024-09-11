@@ -32,7 +32,9 @@ import org.olat.core.gui.components.util.SelectionValuesSupplier;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
@@ -111,7 +113,12 @@ public class ExpenditureOfWorkHandler implements CatalogFilterHandler {
 		}
 		
 		SelectionValues filterKV = new SelectionValues();
-		expendituresOfWork.forEach(expenditureOfWork -> filterKV.add(new SelectionValue(expenditureOfWork, expenditureOfWork)));
+		expendituresOfWork.forEach(expenditureOfWork -> {
+				if(!StringHelper.isHtml(expenditureOfWork) && StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(expenditureOfWork))) {
+					String value = StringHelper.escapeHtml(expenditureOfWork);
+					filterKV.add(new SelectionValue(expenditureOfWork, value));
+				}
+			});
 		filterKV.sort(SelectionValues.VALUE_ASC);
 		
 		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.expenditureOfWork"), TYPE, filterKV,
