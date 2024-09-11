@@ -253,9 +253,9 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 		
 		if(showReplaceButton) {
 			sb.append("<div class='o_dnd' aria-hidden='true'>");
-			sb.append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>");
+			sb.append("<div class='o_dnd_select'><span class='btn btn-xs btn-default' tabindex='-1'><span>");
 			sb.append("<i class='o_icon o_icon_upload'> </i> ").append(trans.translate("replace"));
-			sb.append("</span></button></div>");
+			sb.append("</span></span></div>");
 			sb.append("</div>");
 		} else {
 			String dndInfo = fileElem.getDndInformations();
