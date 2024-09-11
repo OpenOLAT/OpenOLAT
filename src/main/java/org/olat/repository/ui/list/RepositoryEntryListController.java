@@ -423,7 +423,7 @@ public class RepositoryEntryListController extends FormBasicController
 		// educational type
 		SelectionValues educationalTypeKV = new SelectionValues();
 		educationalTypes
-			.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
+			.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), StringHelper.escapeHtml(translate(RepositoyUIFactory.getI18nKey(type))))));
 		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
 				FilterButton.EDUCATIONALTYPE.name(), educationalTypeKV, true));
