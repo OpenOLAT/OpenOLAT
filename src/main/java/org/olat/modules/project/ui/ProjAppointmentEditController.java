@@ -104,7 +104,8 @@ public class ProjAppointmentEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjAppointmentContentEditController(ureq, getWindowControl(), mainForm, project, template, appointment, initialStartDate);
+		contentCtrl = new ProjAppointmentContentEditController(ureq, getWindowControl(), mainForm,
+				bcFactory, project, template, appointment, initialStartDate);
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
