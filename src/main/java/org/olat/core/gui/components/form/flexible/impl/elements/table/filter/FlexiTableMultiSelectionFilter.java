@@ -153,7 +153,8 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 
 	@Override
 	public String getDecoratedLabel(Object objectValue, boolean withHtml) {
-		StringBuilder label = new StringBuilder(getLabel());
+		String originalLabel = StringHelper.escapeHtml(getLabel());
+		StringBuilder label = new StringBuilder(originalLabel);
 		List<String> list = convert(objectValue);
 		if(list != null && !list.isEmpty()) {
 			int currentLength = 0;

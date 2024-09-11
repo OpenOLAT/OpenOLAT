@@ -32,6 +32,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
@@ -120,7 +121,7 @@ public class EducationalTypeHandler implements CatalogFilterHandler {
 				.forEach(type -> educationalTypeKV
 				.add(entry(
 						type.getKey().toString(),
-						repositoryTranslator.translate(RepositoyUIFactory.getI18nKey(type)))));
+						StringHelper.escapeHtml(repositoryTranslator.translate(RepositoyUIFactory.getI18nKey(type))))));
 		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
 		FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.educational.type"), TYPE,
 				educationalTypeKV, catalogFilter.isDefaultVisible());
