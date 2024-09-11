@@ -973,12 +973,20 @@ public class AuthorListController extends FormBasicController implements Activat
 				cleanUp();
 			}
 		} else if(copyCtrl == source) {
-			cmc.deactivate();
-			if (event == Event.DONE_EVENT) {
-				reloadRows();
-				launchEditDescription(ureq, copyCtrl.getCopiedEntry());
+			if (event == Event.CLOSE_EVENT) {
+				if(cmc != null) {
+					cmc.deactivate();
+				}
+			} else {
+				if(cmc != null) {
+					cmc.deactivate();
+				}
+				if (event == Event.DONE_EVENT) {
+					reloadRows();
+					launchEditDescription(ureq, copyCtrl.getCopiedEntry());
+				}
+				cleanUp();
 			}
-			cleanUp();
 		} else if(copyWrapperCtrl == source) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				reloadRows();

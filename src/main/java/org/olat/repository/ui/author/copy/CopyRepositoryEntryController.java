@@ -80,6 +80,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String displayname = displaynameEl.getValue();
+		fireEvent(ureq, Event.CLOSE_EVENT);
 		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
