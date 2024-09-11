@@ -28,10 +28,10 @@
 				<div class="o_file_meta o_nowrap"><a class="o_file o_nowrap" href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank">$responseValue.fileName</a>
 					<span class="o_file_date">${r.getUploadDate($interaction.responseIdentifier)}</span><span class="o_file_type">${r.getUploadExtension($interaction.responseIdentifier)}</span><span class="o_file_size">${r.getUploadSize($interaction.responseIdentifier)}</span></div>
 				<div class="o_file_actions">
-				<a href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank">
+				<a href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank" title="${r.escapeForHtmlAttribute($r.translate("upload.download", "$responseValue.fileName"))}">
 					<i class="o_icon o_icon_download"> </i></a>
 			#if($r.isItemSessionOpen())
-				<a href="javascript:;" onclick="$r.ffXHREvent("cid","deleteResponse","responseIdentifier","${responseIdentifier}");"><i class="o_icon o_icon_pf_trash"> </i></a>
+				<a href="javascript:;" onclick="$r.ffXHREvent("cid","deleteResponse","responseIdentifier","${responseIdentifier}");"  title="${r.escapeForHtmlAttribute($r.translate("upload.delete", "$responseValue.fileName"))}"><i class="o_icon o_icon_pf_trash"> </i></a>
 			#end
 				</div>
 			</div>
