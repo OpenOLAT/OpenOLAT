@@ -92,6 +92,10 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		tableModel = new TableModel(columnModel, userManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
 				getTranslator(), formLayout);
+		tableEl.setEmptyTableSettings("empty.badges.table", null,
+				"o_icon_badge", null, null,
+				false);
+
 		addLink = uifactory.addFormLink("add", "issueGlobalBadge", "issueGlobalBadge", formLayout, Link.BUTTON);
 		updateUI();
 	}

@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
@@ -170,6 +171,15 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		detailsVC = createVelocityContainer("badge_class_details");
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
+		if (owner) {
+			tableEl.setEmptyTableSettings("empty.badges.table.owner", null,
+					"o_icon_badge", "form.create.new.badge", "o_icon_add",
+					false);
+		} else {
+			tableEl.setEmptyTableSettings("empty.badges.table", null,
+					"o_icon_badge", null, null,
+					false);
+		}
 
 		createLink = uifactory.addFormLink("create", createKey, null, formLayout, Link.BUTTON);
 		createLink.setElementCssClass("o_sel_badge_classes_create");
@@ -256,6 +266,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				if (CMD_SELECT.equals(command)) {
 					doSelect(ureq, row);
 				}
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doCreate(ureq);
 			}
 		} else if (source instanceof FormLink link) {
 			if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof BadgeClassRow row) {
