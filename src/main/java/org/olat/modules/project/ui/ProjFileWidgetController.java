@@ -83,7 +83,8 @@ public class ProjFileWidgetController extends ProjFileListController {
 		uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file.upload", null, formLayout);
 		uploadEl.addActionListener(FormEvent.ONCHANGE);
 		uploadEl.setElementCssClass("btn btn-default o_button_ghost");
-		uploadEl.setMultiFileUpload(true);
+		uploadEl.setMultiFileUpload(false);
+		uploadEl.setDragAndDropForm(true);
 		uploadEl.setChooseButtonLabel("none");
 		uploadEl.setVisible(secCallback.canCreateFiles());
 
@@ -134,8 +135,7 @@ public class ProjFileWidgetController extends ProjFileListController {
 		if (source == titleLink || source == showAllLink) {
 			fireEvent(ureq, ProjProjectDashboardController.SHOW_ALL);
 		} else if (source == uploadEl) {
-			doUploadFile(ureq, uploadEl.getUploadFilesInfos());
-			uploadEl.reset();
+			doUploadFile(ureq, uploadEl);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == createLink) {
 			doCreateFile(ureq);

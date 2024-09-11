@@ -19,12 +19,10 @@
  */
 package org.olat.modules.project.ui;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -55,7 +53,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FileElementInfos;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -163,6 +161,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private ProjFileDataModel dataModel;
 	
 	private CloseableModalController cmc;
+	private ProjFileUploadController fileUploadCtrl;
 	private ProjFileCreateController fileCreateCtrl;
 	private ProjFileEditController fileEditCtrl;
 	private ProjRecordAVController recordAVController;
@@ -642,20 +641,20 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (addFromBrowserCtrl == source) {
-			// No clean up. Uploaded, temporary files are deleted when controller is disposed.
-			// The clean up if no license check is needed.
-			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
-				List<VFSItem> vfsItems = selectionEvent.getVfsItems();
-
-				for (VFSItem vfsItem : vfsItems) {
-					InputStream fileInputStream = ((VFSLeaf) vfsItem).getInputStream();
-					projectService.createFile(getIdentity(), project, vfsItem.getName(), fileInputStream, true);
-				}
+		if (fileUploadCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				loadModel(ureq, false);
+				showUploadSuccessMessage(Collections.singletonList(fileUploadCtrl.getFilename()));
+				fileUploadCtrl.getFileEl().reset();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
-			loadModel(ureq, false);
+		} else if (addFromBrowserCtrl == source) {
+			cmc.deactivate();
+			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
+				doUploadFile(ureq, selectionEvent.getFileElement());
+			}
 		} else if (fileCreateCtrl == source
 				|| fileEditCtrl == source
 				|| recordAVController == source) {
@@ -707,6 +706,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		removeAsListenerAndDispose(addFromBrowserCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(fileEditCtrl);
+		removeAsListenerAndDispose(fileUploadCtrl);
 		removeAsListenerAndDispose(fileCreateCtrl);
 		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
@@ -718,6 +718,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		addFromBrowserCtrl = null;
 		toolsCalloutCtrl = null;
 		fileEditCtrl = null;
+		fileUploadCtrl = null;
 		fileCreateCtrl = null;
 		docEditorCtrl = null;
 		toolsCtrl = null;
@@ -779,26 +780,16 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		}
 	}
 
-	protected void doUploadFile(UserRequest ureq, List<FileElementInfos> uploadFilesInfos) {
-		if (uploadFilesInfos != null && !uploadFilesInfos.isEmpty()) {
-			List<String> filenames = new ArrayList<>();
-			for (FileElementInfos elementInfos : uploadFilesInfos) {
-				try (InputStream inputStream = new FileInputStream(elementInfos.file())) {
-					String filename = elementInfos.fileName();
-					ProjFile file = projectService.createFile(getIdentity(), project, filename, inputStream, true);
-					if (file != null) {
-						VFSMetadata vfsMetadata = file.getVfsMetadata();
-						vfsRepositoryService.updateMetadata(vfsMetadata);
-					}
-					filenames.add(filename);
-				} catch (IOException e) {
-					showWarning("error.cannot.upload");
-					break;
-				}
-			}
-			showUploadSuccessMessage(filenames);
-			loadModel(ureq, false);
-		}
+	protected void doUploadFile(UserRequest ureq, FileElement fileElement) {
+		if (guardModalController(fileUploadCtrl)) return;
+
+		fileUploadCtrl = new ProjFileUploadController(ureq, getWindowControl(), project, fileElement);
+		listenTo(fileUploadCtrl);
+
+		String title = translate("file.upload");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileUploadCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	protected void doAddFromBrowser(UserRequest ureq) {
@@ -812,7 +803,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		FolderQuota folderQuota = new FolderQuota(ureq, null, 0L);
 
 		removeAsListenerAndDispose(addFromBrowserCtrl);
-		addFromBrowserCtrl = new FileBrowserController(ureq, getWindowControl(), FileBrowserSelectionMode.sourceMulti,
+		addFromBrowserCtrl = new FileBrowserController(ureq, getWindowControl(), FileBrowserSelectionMode.sourceSingle,
 				folderQuota, translate("add"));
 		listenTo(addFromBrowserCtrl);
 
@@ -1093,7 +1084,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		bulkDeleteConfirmationCtrl = new BulkDeleteConfirmationController(ureq, getWindowControl(),
 				translate("file.bulk.delete.permanently.message", String.valueOf(filesToDelete.size())),
-				translate("file.bulk.delete.permanently.confirm", new String[] { String.valueOf(filesToDelete.size()) }),
+				translate("file.bulk.delete.permanently.confirm", String.valueOf(filesToDelete.size())),
 				translate("delete"), translate("file.bulk.delete.permanently.label"), filenames,
 				"file.bulk.delete.permanently.show.all");
 		listenTo(bulkDeleteConfirmationCtrl);

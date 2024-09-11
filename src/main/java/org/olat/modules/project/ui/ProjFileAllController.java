@@ -84,7 +84,7 @@ public class ProjFileAllController extends ProjFileListController {
 
 		uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file.upload", null, formLayout);
 		uploadEl.addActionListener(FormEvent.ONCHANGE);
-		uploadEl.setMultiFileUpload(true);
+		uploadEl.setMultiFileUpload(false);
 		uploadEl.setChooseButtonLabel(translate("file.upload"));
 		uploadEl.setDragAndDropForm(true);
 
@@ -136,8 +136,7 @@ public class ProjFileAllController extends ProjFileListController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == uploadEl) {
-			doUploadFile(ureq, uploadEl.getUploadFilesInfos());
-			uploadEl.reset();
+			doUploadFile(ureq, uploadEl);
 			selectFilterTab(ureq, tabAll);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == createLink) {

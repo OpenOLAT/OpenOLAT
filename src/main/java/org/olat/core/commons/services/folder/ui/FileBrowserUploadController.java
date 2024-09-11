@@ -83,7 +83,7 @@ public class FileBrowserUploadController extends FormBasicController {
 		List<VFSItem> items = fileEl.getUploadFilesInfos().stream()
 				.map(infos -> (VFSItem)new NamedLeaf(infos.fileName(), new LocalFileImpl(infos.file())))
 				.toList();
-		fireEvent(ureq, new FileBrowserSelectionEvent(items));
+		fireEvent(ureq, new FileBrowserSelectionEvent(items, fileEl));
 	}
 
 }

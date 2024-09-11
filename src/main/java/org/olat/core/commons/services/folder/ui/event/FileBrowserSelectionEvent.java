@@ -21,6 +21,7 @@ package org.olat.core.commons.services.folder.ui.event;
 
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.control.Event;
 import org.olat.core.util.vfs.VFSItem;
 
@@ -35,14 +36,25 @@ public class FileBrowserSelectionEvent extends Event {
 	private static final long serialVersionUID = -5041930163208368339L;
 
 	private final List<VFSItem> vfsItems;
+	private final FileElement fileElement;
 	
 	public FileBrowserSelectionEvent(List<VFSItem> vfsItems) {
 		super("file-browser-selection");
 		this.vfsItems = vfsItems;
+		this.fileElement = null;
+	}
+
+	public FileBrowserSelectionEvent(List<VFSItem> vfsItems, FileElement fileElement) {
+		super("file-browser-selection");
+		this.vfsItems = vfsItems;
+		this.fileElement = fileElement;
 	}
 	
 	public List<VFSItem> getVfsItems() {
 		return vfsItems;
 	}
 
+	public FileElement getFileElement() {
+		return fileElement;
+	}
 }
