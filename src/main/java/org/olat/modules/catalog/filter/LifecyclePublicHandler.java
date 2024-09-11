@@ -34,6 +34,7 @@ import org.olat.core.gui.components.util.SelectionValuesSupplier;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
@@ -114,7 +115,7 @@ public class LifecyclePublicHandler implements CatalogFilterHandler {
 		}
 		
 		SelectionValues filterKV = new SelectionValues();
-		publicLifecycles.forEach(lifecycle -> filterKV.add(new SelectionValue(lifecycle.getKey().toString(), lifecycle.getLabel())));
+		publicLifecycles.forEach(lifecycle -> filterKV.add(new SelectionValue(lifecycle.getKey().toString(), StringHelper.escapeHtml(lifecycle.getLabel()))));
 		filterKV.sort(SelectionValues.VALUE_ASC);
 		
 		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.public.dates"), TYPE, filterKV,

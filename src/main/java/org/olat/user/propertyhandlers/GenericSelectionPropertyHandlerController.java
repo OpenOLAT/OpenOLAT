@@ -36,7 +36,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
@@ -70,8 +70,8 @@ public class GenericSelectionPropertyHandlerController extends FormBasicControll
 	// list of i18n keys to remove from the overlay, after form submit
 	private List<String> i18nKeysToDelete;
 
+	private CloseableModalController cmc;
 	private SingleKeyTranslatorController singleKeyTrsCtrl;
-	private CloseableCalloutWindowController translatorCallout;
 
 	// the handler this controller actually configures
 	private GenericSelectionPropertyHandler handler;
@@ -139,8 +139,8 @@ public class GenericSelectionPropertyHandlerController extends FormBasicControll
 			uifactory.addStaticTextElement(OPTFIELD_TRSLBL_PREFIX + teNumber, null, "(" + translate(val) + ")", hcFlc);
 		}
 
-		FormLink tl = uifactory.addFormLink(OPTFIELD_TRS_PREFIX + teNumber, "gsphc.translate", "label", hcFlc, Link.LINK);
-		FormLink re = uifactory.addFormLink(OPTFIELD_RMV_PREFIX + teNumber, "gsphc.remove", "label", hcFlc, Link.BUTTON_XSMALL);
+		FormLink tl = uifactory.addFormLink(OPTFIELD_TRS_PREFIX + teNumber, "gsphc.translate", null, hcFlc, Link.LINK);
+		FormLink re = uifactory.addFormLink(OPTFIELD_RMV_PREFIX + teNumber, "gsphc.remove", null, hcFlc, Link.BUTTON_XSMALL);
 		re.setUserObject(te);
 		tl.setUserObject(te);
 		optionFieldNames.add(String.valueOf(teNumber));
@@ -148,35 +148,45 @@ public class GenericSelectionPropertyHandlerController extends FormBasicControll
 	}
 
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		super.propagateDirtinessToContainer(fiSrc, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source.equals(bttAdd)) {
 			addOptionField("");
-		} else if (source instanceof FormLink) {
-			TextElement te = (TextElement) source.getUserObject();
+		} else if (source instanceof FormLink link
+				&& source.getUserObject() instanceof TextElement te) {
 			if (source.getName().startsWith(OPTFIELD_TRS_PREFIX)) {
 				if (StringHelper.containsNonWhitespace(te.getValue())) {
-					if(singleKeyTrsCtrl != null)
-						removeAsListenerAndDispose(singleKeyTrsCtrl);
-					singleKeyTrsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), te.getValue(), GenericSelectionPropertyHandler.class);
-					listenTo(singleKeyTrsCtrl);
-
-					removeAsListenerAndDispose(translatorCallout);
-					translatorCallout = new CloseableCalloutWindowController(ureq, getWindowControl(), singleKeyTrsCtrl.getInitialComponent(),
-							(FormLink) source, translate("gsphc.translate") + ":: " + te.getValue(), false, null);
-					translatorCallout.activate();
-					listenTo(translatorCallout);
+					doTranslate(ureq, te);
 				} else {
 					te.setErrorKey("gsphc.translate");
 					te.showLabel(true);
 				}
 			} else if (source.getName().startsWith(OPTFIELD_RMV_PREFIX)) {
-				if(optionFieldNames.size()>1){
-					this.optionFieldNames.remove(te.getName().replace(OPTFIELD_PREFIX, ""));
-					this.i18nKeysToDelete.add(te.getValue());
+				if(optionFieldNames.size() > 1) {
+					optionFieldNames.remove(te.getName().replace(OPTFIELD_PREFIX, ""));
+					i18nKeysToDelete.add(te.getValue());
 					hcFlc.contextPut("optionfields", optionFieldNames);
 				}
 			}
 		}
+	}
+	
+	private void doTranslate(UserRequest ureq, TextElement te) {
+		removeAsListenerAndDispose(singleKeyTrsCtrl);
+		removeAsListenerAndDispose(cmc);
+		
+		singleKeyTrsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), te.getValue(), GenericSelectionPropertyHandler.class);
+		listenTo(singleKeyTrsCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), singleKeyTrsCtrl.getInitialComponent(),
+				true, translate("gsphc.translate") + ":: " + te.getValue());
+		cmc.activate();
+		listenTo(cmc);
+		
 	}
 
 	@Override
@@ -185,45 +195,47 @@ public class GenericSelectionPropertyHandlerController extends FormBasicControll
 	}
 
 	private void closeTranslatorCallout() {
-		if (translatorCallout != null) {
-			translatorCallout.deactivate();
-			removeAsListenerAndDispose(translatorCallout);
-			translatorCallout = null;
+		if (cmc != null) {
+			removeAsListenerAndDispose(cmc);
+			cmc = null;
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source.equals(singleKeyTrsCtrl)) {
+		if (source == singleKeyTrsCtrl) {
 			closeTranslatorCallout();
 		}
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		if( optionFieldNames.size() < 1) {
-			return false;
-		}
-		
-		if(singleKeyTrsCtrl == null){
-			singleKeyTrsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(),"", GenericSelectionPropertyHandler.class);
-			listenTo(singleKeyTrsCtrl);
-		}
-		
-		for (int i = 0; i < optionFieldNames.size(); i++) {
-			TextElement te = (TextElement) hcFlc.getFormComponent(OPTFIELD_PREFIX + optionFieldNames.get(i));
-			String textValue = te.getValue();
-			if (StringHelper.containsNonWhitespace(textValue)) {
-				String translatedValue = I18nManager.getInstance().getLocalizedString(GenericSelectionPropertyHandler.class.getPackage().getName(), textValue, null, getLocale(), true, true);
-				if(translatedValue == null) {
-					txtError.setValue("Please translate all values");
-					txtError.setVisible(true);
-					return false;
+		boolean allOk = super.validateFormLogic(ureq);
+
+		txtError.setVisible(false);
+		if( optionFieldNames.isEmpty()) {
+			txtError.setValue(translate("form.legende.mandatory"));
+			txtError.setVisible(true);
+			allOk &= false;
+		} else {
+			for (int i = 0; i < optionFieldNames.size(); i++) {
+				TextElement te = (TextElement) hcFlc.getFormComponent(OPTFIELD_PREFIX + optionFieldNames.get(i));
+				String textValue = te.getValue();
+				
+				te.clearError();
+				if (StringHelper.containsNonWhitespace(textValue)) {
+					String translatedValue = I18nManager.getInstance().getLocalizedString(GenericSelectionPropertyHandler.class.getPackage().getName(), textValue, null, getLocale(), true, true);
+					if(translatedValue == null) {
+						te.setErrorKey("error.missing.translation");
+						txtError.setValue("Please translate all values");
+						txtError.setVisible(true);
+						allOk &= false;
+					}
 				}
 			}
 		}
-		txtError.setVisible(false);
-		return true;
+		
+		return allOk;
 	}
 
 	@Override
