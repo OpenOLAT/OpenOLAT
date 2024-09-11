@@ -72,15 +72,15 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 	public CreateBadge03CriteriaStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.award.criteria", null);
-		setNextStep(new CreateBadge04SummaryStep(ureq, createBadgeClassContext));
+		setNextStep(new CreateBadge04DetailsStep(ureq, createBadgeClassContext));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadge03CriteriaForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "criteria_step");
+		return new CreateBadgeCriteriaForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "criteria_step");
 	}
 
-	private static class CreateBadge03CriteriaForm extends StepFormBasicController {
+	private static class CreateBadgeCriteriaForm extends StepFormBasicController {
 
 		private SingleSelection newRule;
 		private ArrayList<ConditionRow> conditionRows;
@@ -102,7 +102,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		private MarkdownElement descriptionEl;
 		private SingleSelection awardProcedureCards;
 
-		public CreateBadge03CriteriaForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
+		public CreateBadgeCriteriaForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
 			super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {

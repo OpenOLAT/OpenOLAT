@@ -62,12 +62,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CreateBadge04SummaryStep extends BasicStep {
-	public CreateBadge04SummaryStep(UserRequest ureq, CreateBadgeClassWizardContext createContext) {
+public class CreateBadge05SummaryStep extends BasicStep {
+	public CreateBadge05SummaryStep(UserRequest ureq, CreateBadgeClassWizardContext createContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.summary", null);
 		if (createContext.showRecipientsStep()) {
-			setNextStep(new CreateBadge05RecipientsStep(ureq, createContext));
+			setNextStep(new CreateBadge06RecipientsStep(ureq, createContext));
 		} else {
 			setNextStep(Step.NOSTEP);
 		}
@@ -75,10 +75,10 @@ public class CreateBadge04SummaryStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadge04SummaryForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "summary_step");
+		return new CreateBadgeSummaryForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "summary_step");
 	}
 
-	private class CreateBadge04SummaryForm extends StepFormBasicController {
+	private class CreateBadgeSummaryForm extends StepFormBasicController {
 
 		private final String mediaUrl;
 		private CreateBadgeClassWizardContext createContext;
@@ -88,7 +88,7 @@ public class CreateBadge04SummaryStep extends BasicStep {
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
 
-		public CreateBadge04SummaryForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
+		public CreateBadgeSummaryForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
 			super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {

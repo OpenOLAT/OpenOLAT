@@ -371,7 +371,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		createBadgeClassContext = new CreateBadgeClassWizardContext(entry, courseNode, reSecurity, getTranslator());
 		Step start = createBadgeClassContext.showStartingPointStep(getIdentity()) ?
 				new CreateBadge00StartingPointStep(ureq, createBadgeClassContext) :
-				new CreateBadge00ImageStep(ureq, createBadgeClassContext);
+				new CreateBadge01ImageStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass badgeClass = createBadgeClass(createBadgeClassContext);
@@ -418,7 +418,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			return;
 		}
 		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity);
-		Step start = new CreateBadge02DetailsStep(ureq, createBadgeClassContext);
+		Step start = new CreateBadge04DetailsStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());

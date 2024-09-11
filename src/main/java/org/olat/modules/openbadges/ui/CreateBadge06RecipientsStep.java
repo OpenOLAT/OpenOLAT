@@ -66,9 +66,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CreateBadge05RecipientsStep extends BasicStep {
+public class CreateBadge06RecipientsStep extends BasicStep {
 
-	public CreateBadge05RecipientsStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
+	public CreateBadge06RecipientsStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.recipients", null);
 		setNextStep(Step.NOSTEP);
@@ -76,10 +76,10 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadge05RecipientsForm(ureq, wControl, form, runContext);
+		return new CreateBadgeRecipientsForm(ureq, wControl, form, runContext);
 	}
 
-	private class CreateBadge05RecipientsForm extends StepFormBasicController {
+	private class CreateBadgeRecipientsForm extends StepFormBasicController {
 		private CreateBadgeClassWizardContext createContext;
 
 		@Autowired
@@ -97,7 +97,7 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 		private BadgeEarnersTableModel tableModel;
 		private FlexiTableElement tableEl;
 
-		public CreateBadge05RecipientsForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		public CreateBadgeRecipientsForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {

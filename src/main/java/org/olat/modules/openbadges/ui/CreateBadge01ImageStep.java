@@ -78,25 +78,25 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CreateBadge00ImageStep extends BasicStep {
+public class CreateBadge01ImageStep extends BasicStep {
 
 	private final CreateBadgeClassWizardContext createBadgeClassContext;
 
-	public CreateBadge00ImageStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
+	public CreateBadge01ImageStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.image", null);
 		if (createBadgeClassContext.needsCustomization()) {
-			setNextStep(new CreateBadge01CustomizationStep(ureq, createBadgeClassContext));
+			setNextStep(new CreateBadge02CustomizationStep(ureq, createBadgeClassContext));
 		} else {
-			setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
+			setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
 		}
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		runContext.put(CreateBadgeClassWizardContext.KEY, createBadgeClassContext);
-		return new CreateBadge00ImageForm(ureq, wControl, form, runContext);
+		return new CreateBadgeImageForm(ureq, wControl, form, runContext);
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 		return PrevNextFinishConfig.NEXT;
 	}
 
-	private class CreateBadge00ImageForm extends StepFormBasicController {
+	private class CreateBadgeImageForm extends StepFormBasicController {
 		public final static String OWN_BADGE_IDENTIFIER = "ownBadge";
 		private CreateBadgeClassWizardContext createContext;
 		private List<TagInfo> tagInfos;
@@ -125,7 +125,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 		@Autowired
 		I18nManager i18nManager;
 
-		public CreateBadge00ImageForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		public CreateBadgeImageForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "image_step");
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
@@ -261,11 +261,11 @@ public class CreateBadge00ImageStep extends BasicStep {
 
 		private void updateSteps(UserRequest ureq) {
 			if (CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(createContext.getSelectedTemplateKey())) {
-				setNextStep(new CreateBadge02DetailsStep(ureq, createContext));
+				setNextStep(new CreateBadge03CriteriaStep(ureq, createContext));
 			} else if (createContext.needsCustomization()) {
-				setNextStep(new CreateBadge01CustomizationStep(ureq, createContext));
+				setNextStep(new CreateBadge02CustomizationStep(ureq, createContext));
 			} else {
-				setNextStep(new CreateBadge02DetailsStep(ureq, createContext));
+				setNextStep(new CreateBadge03CriteriaStep(ureq, createContext));
 			}
 			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 		}
@@ -309,16 +309,16 @@ public class CreateBadge00ImageStep extends BasicStep {
 			if (CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(createContext.getSelectedTemplateKey())) {
 				createContext.setTemporaryBadgeImageFile(tmpImageFile);
 				createContext.setTargetBadgeImageFileName(fileEl.getUploadFileName());
-				setNextStep(new CreateBadge02DetailsStep(ureq, createContext));
+				setNextStep(new CreateBadge03CriteriaStep(ureq, createContext));
 				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 				return;
 			}
 
 			if (createContext.needsCustomization()) {
-				setNextStep(new CreateBadge01CustomizationStep(ureq, createContext));
+				setNextStep(new CreateBadge02CustomizationStep(ureq, createContext));
 			} else {
-				setNextStep(new CreateBadge02DetailsStep(ureq, createContext));
+				setNextStep(new CreateBadge03CriteriaStep(ureq, createContext));
 			}
 			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
@@ -394,7 +394,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 		}
 
 		public record Card(Long key, String name, String imageSrc, int width, int height, String identifier, List<Tag> tags,
-						   CreateBadge00ImageForm form) {
+						   CreateBadgeImageForm form) {
 			public boolean isVisible() {
 				if (OWN_BADGE_IDENTIFIER.equals(identifier)) {
 					return true;

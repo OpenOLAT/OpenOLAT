@@ -56,24 +56,24 @@ import org.olat.modules.openbadges.v2.Profile;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CreateBadge02DetailsStep extends BasicStep {
+public class CreateBadge04DetailsStep extends BasicStep {
 
 	private final CreateBadgeClassWizardContext createBadgeClassContext;
 
-	public CreateBadge02DetailsStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
+	public CreateBadge04DetailsStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.details", null);
-		setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
+		setNextStep(new CreateBadge05SummaryStep(ureq, createBadgeClassContext));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		runContext.put(CreateBadgeClassWizardContext.KEY, createBadgeClassContext);
-		return new CreateBadge02DetailsForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_VERTICAL, null);
+		return new CreateBadgeDetailsForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_VERTICAL, null);
 	}
 
-	private static class CreateBadge02DetailsForm extends StepFormBasicController {
+	private static class CreateBadgeDetailsForm extends StepFormBasicController {
 
 		private CreateBadgeClassWizardContext createContext;
 		private TextElement nameEl;
@@ -106,7 +106,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			day, week, month, year
 		}
 
-		public CreateBadge02DetailsForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
+		public CreateBadgeDetailsForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
 			super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {

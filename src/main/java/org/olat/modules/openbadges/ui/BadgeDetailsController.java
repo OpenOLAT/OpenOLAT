@@ -342,7 +342,7 @@ public class BadgeDetailsController extends FormBasicController {
 	private void doEdit(UserRequest ureq) {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassKey);
 		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity);
-		Step start = new CreateBadge02DetailsStep(ureq, createBadgeClassContext);
+		Step start = new CreateBadge04DetailsStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
