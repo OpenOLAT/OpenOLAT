@@ -109,8 +109,7 @@ public class LifecycleAdminController extends FormBasicController {
 		if(source == createLifeCycle) {
 			doEdit(ureq, null);
 		} else if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if("delete-lifecycle".equals(se.getCommand())) {
 					RepositoryEntryLifecycle row = model.getObject(se.getIndex());
 					doConfirmDelete(ureq, row);
@@ -157,7 +156,7 @@ public class LifecycleAdminController extends FormBasicController {
 
 	private void doConfirmDelete(UserRequest ureq, RepositoryEntryLifecycle lifecycle) {
 		String title = translate("delete.lifecycle");
-		String text = translate("delete.lifecycle.confirm", new String[]{ lifecycle.getSoftKey(), lifecycle.getLabel() });
+		String text = translate("delete.lifecycle.confirm", lifecycle.getSoftKey(), lifecycle.getLabel());
 		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
 		confirmDeleteCtrl.setUserObject(lifecycle);
 	}
