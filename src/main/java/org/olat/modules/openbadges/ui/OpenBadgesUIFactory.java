@@ -34,6 +34,10 @@ import org.apache.logging.log4j.Level;
  */
 public class OpenBadgesUIFactory {
 
+	public static boolean isSpecifyVersion() {
+		return false;
+	}
+
 	public static String getBundleName() {
 		return OpenBadgesUIFactory.class.getPackage().getName();
 	}

@@ -146,7 +146,9 @@ public class CreateBadge05SummaryStep extends BasicStep {
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
 			uifactory.addStaticTextElement("name", "form.name", badgeClass.getNameWithScan(), formLayout);
-			uifactory.addStaticTextElement("version", "form.version", badgeClass.getVersionWithScan(), formLayout);
+			if (OpenBadgesUIFactory.isSpecifyVersion()) {
+				uifactory.addStaticTextElement("version", "form.version", badgeClass.getVersionWithScan(), formLayout);
+			}
 			uifactory.addStaticTextElement("language", "form.language", badgeClass.getLanguage(), formLayout);
 			MarkdownElement descriptionEl = uifactory.addMarkdownElement("description", "form.description", badgeClass.getDescriptionWithScan(), formLayout);
 			descriptionEl.setElementCssClass("o_badge_class_description");

@@ -90,7 +90,8 @@ public class CreateBadge04DetailsStep extends BasicStep {
 		private SingleSelection validityTimelapseUnitEl;
 		private final SelectionValues validityTimelapseUnitKV;
 		private final SelectionValues linkedInOrganizationKV;
-		private final List<BadgeClassDAO.NameAndVersion> nameVersionTuples;
+		private List<BadgeClassDAO.NameAndVersion> usedNameVersionTuples;
+		private List<String> usedNames;
 		private SingleSelection linkedInOrganizationEl;
 		private final SelectionValues availableLanguagesKV;
 		private SingleSelection availableLanguagesEl;
@@ -132,7 +133,11 @@ public class CreateBadge04DetailsStep extends BasicStep {
 
 			boolean isEditMode = CreateBadgeClassWizardContext.Mode.edit.equals(createContext.getMode());
 			BadgeClass badgeClass = createContext.getBadgeClass();
-			nameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(isEditMode, badgeClass);
+			if (OpenBadgesUIFactory.isSpecifyVersion()) {
+				usedNameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(isEditMode, badgeClass);
+			} else {
+				usedNames = openBadgesManager.getBadgeClassNames(isEditMode, badgeClass);
+			}
 
 			availableLanguagesKV = openBadgesManager.getAvailableLanguages(getLocale());
 
@@ -180,15 +185,22 @@ public class CreateBadge04DetailsStep extends BasicStep {
 				allOk &= false;
 			}
 
-			if (!StringHelper.containsNonWhitespace(versionEl.getValue())) {
-				versionEl.setErrorKey("form.legende.mandatory");
-				allOk &= false;
-			}
+			if (OpenBadgesUIFactory.isSpecifyVersion()) {
+				if (!StringHelper.containsNonWhitespace(versionEl.getValue())) {
+					versionEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				}
 
-			if (nameVersionTuples.contains(new BadgeClassDAO.NameAndVersion(nameEl.getValue(), versionEl.getValue()))) {
-				nameEl.setErrorKey("error.name.version.unique");
-				versionEl.setErrorKey("error.name.version.unique");
-				allOk &= false;
+				if (usedNameVersionTuples.contains(new BadgeClassDAO.NameAndVersion(nameEl.getValue(), versionEl.getValue()))) {
+					nameEl.setErrorKey("error.name.version.unique");
+					versionEl.setErrorKey("error.name.version.unique");
+					allOk &= false;
+				}
+			} else {
+				if (usedNames.contains(nameEl.getValue())) {
+					nameEl.setErrorKey("error.name.unique");
+					allOk &= false;
+				}
 			}
 
 			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
@@ -285,6 +297,7 @@ public class CreateBadge04DetailsStep extends BasicStep {
 
 			versionEl = uifactory.addTextElement("form.version", 24, badgeClass.getVersionWithScan(), formLayout);
 			versionEl.setMandatory(true);
+			versionEl.setVisible(OpenBadgesUIFactory.isSpecifyVersion());
 
 			descriptionEl = uifactory.addMarkdownElement("form.description", "form.description",
 					badgeClass.getDescriptionWithScan(), formLayout);

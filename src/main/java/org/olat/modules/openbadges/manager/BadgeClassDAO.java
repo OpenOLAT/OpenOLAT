@@ -324,6 +324,25 @@ public class BadgeClassDAO {
 		return typedQuery.getResultList();
 	}
 
+	public List<String> getBadgeClassNames(RepositoryEntry entry) {
+		QueryBuilder sb = new QueryBuilder();
+
+		sb.append("select bc.name from badgeclass bc ");
+
+		if (entry != null) {
+			sb.append(" where bc.entry.key = :entryKey ");
+		} else {
+			sb.append(" where bc.entry is null ");
+		}
+
+		TypedQuery<String> typedQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class);
+		if (entry != null) {
+			typedQuery.setParameter("entryKey", entry.getKey());
+		}
+		return typedQuery.getResultList();
+	}
+
 	public record NameAndVersion(String name, String version) {}
 
 	public static class BadgeClassWithUseCount {
