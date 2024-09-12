@@ -262,15 +262,17 @@ public class CreateBadgeClassWizardContext {
 		if (entry != null) {
 			CourseNode rootNode = CourseFactory.loadCourse(entry).getRunStructure().getRootNode();
 			CourseElement courseElement = BadgeCondition.loadCourseElement(entry, rootNode.getIdent());
-			if (!AssessmentConfig.Mode.none.equals(courseElement.getPassedMode())) {
-				badgeCriteria.setAwardAutomatically(true);
-				badgeCriteria.getConditions().add(new CoursePassedCondition());
-				return;
-			}
-			if (!AssessmentConfig.Mode.none.equals(courseElement.getScoreMode())) {
-				badgeCriteria.setAwardAutomatically(true);
-				badgeCriteria.getConditions().add(new CourseScoreCondition(Symbol.greaterThan, 1));
-				return;
+			if (courseElement != null) {
+				if (!AssessmentConfig.Mode.none.equals(courseElement.getPassedMode())) {
+					badgeCriteria.setAwardAutomatically(true);
+					badgeCriteria.getConditions().add(new CoursePassedCondition());
+					return;
+				}
+				if (!AssessmentConfig.Mode.none.equals(courseElement.getScoreMode())) {
+					badgeCriteria.setAwardAutomatically(true);
+					badgeCriteria.getConditions().add(new CourseScoreCondition(Symbol.greaterThan, 1));
+					return;
+				}
 			}
 
 			if (isLearningPath()) {
