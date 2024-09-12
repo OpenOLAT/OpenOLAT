@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.user.UserManager;
@@ -209,7 +210,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	}
 
 	private void doConfirmRevoke(UserRequest ureq, BadgeAssertion badgeAssertion) {
-		String recipientDisplayName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
+		String recipientDisplayName = StringHelper.escapeHtml(userManager.getUserDisplayName(badgeAssertion.getRecipient()));
 		String title = translate("confirm.revoke.issued.badge.title", recipientDisplayName);
 		String text = translate("confirm.revoke.issued.badge", recipientDisplayName);
 		confirmRevokeCtrl = activateOkCancelDialog(ureq, title, text, confirmRevokeCtrl);
@@ -217,7 +218,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	}
 
 	private void doConfirmDelete(UserRequest ureq, BadgeAssertion badgeAssertion) {
-		String recipientDisplayName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
+		String recipientDisplayName = StringHelper.escapeHtml(userManager.getUserDisplayName(badgeAssertion.getRecipient()));
 		String title = translate("confirm.delete.issued.badge.title", recipientDisplayName);
 		String text = translate("confirm.delete.issued.badge", recipientDisplayName);
 		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
