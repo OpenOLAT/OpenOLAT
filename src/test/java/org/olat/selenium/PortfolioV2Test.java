@@ -1073,7 +1073,7 @@ public class PortfolioV2Test extends Deployments {
 			.openUserToolsMenu()
 			.openMediaCenter()
 			.assertOnMediaCenter()
-			.uploadMedia(imageName, imageFile)
+			.quickUploadFile(imageName, imageFile)
 			.assertOnMediaDetails(imageName)
 			.openShares()
 			.shareWithUser(user);
@@ -1113,7 +1113,7 @@ public class PortfolioV2Test extends Deployments {
 		userTools
 			.openUserToolsMenu()
 			.openMediaCenter()
-			.uploadMedia(documentName, documentFile)
+			.quickUploadFile(documentName, documentFile)
 			.assertOnMediaDetails(documentName);
 		
 		URL document2Url = JunitTestHelper.class.getResource("file_resources/word_document_2.docx");
