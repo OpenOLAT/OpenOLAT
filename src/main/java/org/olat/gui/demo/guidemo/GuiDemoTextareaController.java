@@ -23,9 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
@@ -37,6 +40,8 @@ import org.olat.core.gui.control.WindowControl;
 public class GuiDemoTextareaController extends FormBasicController {
 	
 	private TextAreaElement stripedBackgroundAndLineNumbersEl;
+	private MarkdownElement markdownInputEl;
+	private MarkdownElement markdownOutputEl;
 
 	public GuiDemoTextareaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -63,7 +68,28 @@ public class GuiDemoTextareaController extends FormBasicController {
 		errors.add(1500);
 		
 		stripedBackgroundAndLineNumbersEl.setErrors(errors);
-		
+
+		markdownInputEl = uifactory.addMarkdownElement("markdownInput",
+				"guidemo.textarea.markdown.input", "", formLayout);
+		markdownInputEl.setPlaceholderKey("guidemo.textarea.markdown.input.placeholder", null);
+		markdownInputEl.addActionListener(FormEvent.ONCHANGE);
+		markdownInputEl.setAutosave(true);
+
+		markdownOutputEl = uifactory.addMarkdownElement("markdownOutput",
+				"guidemo.textarea.markdown.output", "", formLayout);
+		markdownOutputEl.setEnabled(false);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == markdownInputEl) {
+			if (event instanceof MarkdownElement.MarkdownAutosaveEvent markdownAutosaveEvent) {
+				markdownOutputEl.setValue(markdownAutosaveEvent.getText());
+			} else {
+				markdownOutputEl.setValue(markdownInputEl.getValue());
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

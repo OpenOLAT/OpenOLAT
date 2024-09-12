@@ -22,6 +22,7 @@
 		"@milkdown/transformer": "^7.2.1",
 		"@milkdown/plugin-listener": "^7.2.1",
 		"@milkdown/preset-commonmark": "^7.2.1",
+		"@milkdown/preset-gfm": "^7.2.1",
 		"strip-markdown": "^5.0.1"
 	}
 }
