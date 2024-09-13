@@ -272,7 +272,7 @@ $r.renderForce("development")
 <div id="o_navbar_wrapper" class="o_navbar" role="navigation" aria-label="$r.translate("accesskey.nav")" data-nosnippet>
 	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
 		#set($logoLinkUri = $logoInfos.logoLinkUri)
-		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end rel="noopener noreferrer" aria-hidden="true"></a>
+		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end rel="noopener noreferrer"><span class="sr-only">$logoInfos.logoAlt"</span></a>
 		
 		<div class="o_collapse o_navbar-collapse">
 			## sites and tabs
@@ -311,7 +311,7 @@ $r.render("stickymsg")
 <div id="o_main_wrapper">
 	<div id="o_main_container" class="o_container_offcanvas container-fluid">
 		$r.render("main")
-		<a id="o_toplink" href="#o_top" onclick="o_scrollTop();" title="$r.translateInAttribute("top.alt")" aria-hidden="true">
+		<a id="o_toplink" href="#o_top" onclick="o_scrollTop();" title="$r.translateInAttribute("top.alt")">
 			<i class="o_icon o_icon_top"></i> 
 			$r.translate("top")
 		</a>	

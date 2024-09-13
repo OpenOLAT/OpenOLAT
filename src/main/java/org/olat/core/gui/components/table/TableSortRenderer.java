@@ -58,7 +58,7 @@ class TableSortRenderer extends DefaultComponentRenderer {
 			ColumnDescriptor cd = table.getColumnDescriptor(i);
 			// header either a link or not
 			if (cd.isSortingAllowed()) {
-				sb.append("<li><a  href=\"javascript:;\" onclick=\"o_XHRSubmit('")
+				sb.append("<li role='menuitem'><a  href=\"javascript:;\" onclick=\"o_XHRSubmit('")
 	              .append(formName).append("','").append(Table.FORM_CMD).append("','").append(Table.COMMAND_SORTBYCOLUMN)
 	              .append("','").append(Table.FORM_PARAM).append("','").append(i).append("'); return false;\"")
 				  .append(" title=\"")

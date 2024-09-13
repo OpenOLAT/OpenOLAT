@@ -41,10 +41,10 @@
 				</button>
 				<div id="table-filters" class="hide"><ul class="o_dropdown list-unstyled" role="menu">
 					#if ($useNoFilterOption)
-						<li><a href="$r.commandURI("cmd.filter.nofilter")">$noFilterOption</a></li>
+						<li role="menuitem"><a href="$r.commandURI("cmd.filter.nofilter")">$noFilterOption</a></li>
 					#end
 					#foreach ($filter in $filters)
-						<li>
+						<li role="menuitem">
 							#set ($filterPosition = $foreach.count - 1)
 							<a href="$r.commandURI("cmd.filter.${filterPosition}")">
 							#if ($filter == $selectedFilterValue)

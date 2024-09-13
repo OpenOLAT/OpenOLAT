@@ -470,7 +470,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			} else {
 				boolean isSelected = filter.isSelected() || (filter.isShowAll() && selectedFilters.isEmpty());
 				
-				sb.append("<li><a href=\"javascript:")
+				sb.append("<li role='menuitem'><a href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("filter", filter.getFilter())))
 				  .append("\" draggable=\"false\">").append("<i class='o_icon o_icon_check o_icon-fw'> </i> ", isSelected);
@@ -528,7 +528,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			if(FlexiTableSort.SPACER.equals(sort)) {
 				sb.append("<li class='divider'></li>");
 			} else {
-				sb.append("<li><a href=\"javascript:")
+				sb.append("<li role='menuitem'><a href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("sort", sort.getSortKey().getKey()),
 						  new NameValuePair("asc",  sort.getSortKey().isAsc() ? "desc" : "asc")))
@@ -758,14 +758,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			Arrays.sort(sizes);
 		}
 		for(int size:sizes) {
-			sb.append("<li><a href=\"javascript:")
+			sb.append("<li role='menuitem'><a href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("pagesize", Integer.toString(size))))
 			  .append("\" draggable=\"false\">").append(Integer.toString(size)).append("</a></li>");
 		}
 		
 		if(ftE.isShowAllRowsEnabled()) {
-			sb.append("<li><a href=\"javascript:")
+			sb.append("<li role='menuitem'><a href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("pagesize", "all")))
 			  .append("\" draggable=\"false\">").append(translator.translate("show.all")).append("</a></li>");
