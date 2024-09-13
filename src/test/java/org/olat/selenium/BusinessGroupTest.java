@@ -727,7 +727,8 @@ public class BusinessGroupTest extends Deployments {
 		EnrollmentConfigurationPage enrolmentConfig = new EnrollmentConfigurationPage(browser);
 		enrolmentConfig
 			.selectConfiguration()
-			.createBusinessGroup(groupName, "-", 1, true, false);
+			.createBusinessGroup(groupName, "-", 1, true, false)
+			.saveConfiguration();
 		//publish the course
 		courseEditor
 			.publish()
@@ -956,7 +957,8 @@ public class BusinessGroupTest extends Deployments {
 		EnrollmentConfigurationPage enrolmentConfig = new EnrollmentConfigurationPage(browser);
 		enrolmentConfig
 			.selectConfiguration()
-			.selectBusinessGroups();
+			.selectBusinessGroups()
+			.saveConfiguration();
 		
 		//publish the course
 		courseEditor
@@ -1089,7 +1091,8 @@ public class BusinessGroupTest extends Deployments {
 		EnrollmentConfigurationPage enrolmentConfig = new EnrollmentConfigurationPage(browser);
 		enrolmentConfig
 			.selectConfiguration()
-			.selectBusinessGroups();
+			.selectBusinessGroups()
+			.saveConfiguration();
 		
 		//publish the course
 		courseEditor

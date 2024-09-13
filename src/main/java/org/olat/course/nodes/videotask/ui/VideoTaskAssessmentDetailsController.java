@@ -42,7 +42,7 @@ public class VideoTaskAssessmentDetailsController extends AbstractVideoTaskSessi
 
 	public VideoTaskAssessmentDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			VideoTaskCourseNode courseNode, UserCourseEnvironment assessedUserCourseEnv) {
-		super(ureq, wControl, "assessment_details", stackPanel, courseNode, assessedUserCourseEnv);
+		super(ureq, wControl, "assessment_details", stackPanel, courseNode, assessedUserCourseEnv, false);
 		
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();

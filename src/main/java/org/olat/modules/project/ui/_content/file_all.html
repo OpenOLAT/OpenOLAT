@@ -10,7 +10,10 @@
 		</div>
 		<div class="o_proj_title_cmds">
 			#if($r.available("file.upload") && $r.visible("file.upload"))
-				$r.render("file.upload")
+				<div class="btn-group">
+					$r.render("file.upload")
+					$r.render("upload.dropdown")
+				</div>
 			#end
 			<div class="o_proj_title_subcmds">
 				#if($r.available("file.create") && $r.visible("file.create") && $r.available("file.create.dropdown") && $r.visible("file.create.dropdown"))

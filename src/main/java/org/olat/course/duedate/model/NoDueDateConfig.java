@@ -31,7 +31,7 @@ import org.olat.course.duedate.DueDateConfig;
  */
 public class NoDueDateConfig implements DueDateConfig {
 	
-	public static NoDueDateConfig NO_DUE_DATE_CONFIG = new NoDueDateConfig();
+	public static final NoDueDateConfig NO_DUE_DATE_CONFIG = new NoDueDateConfig();
 	
 	private NoDueDateConfig() {
 		//

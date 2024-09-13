@@ -134,7 +134,7 @@ public class TableRunController extends BasicController implements PageRunElemen
 		for(int j=0; j<numOfColumns; j++) {
 			String text = content.getContent(i, j);
 			String css = null;
-			if (httpPattern.matcher(text).find()) {
+			if (StringHelper.containsNonWhitespace(text) && httpPattern.matcher(text).find()) {
 				css = "o_hyphens";
 			}
 			Column column = new Column(text, j == 0 && settings.isRowHeaders(), css);

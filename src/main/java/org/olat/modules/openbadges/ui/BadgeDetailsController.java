@@ -142,6 +142,7 @@ public class BadgeDetailsController extends FormBasicController {
 		issuerEl = uifactory.addStaticTextElement("class.issuer", "", formLayout);
 		languageEl = uifactory.addStaticTextElement("form.language", "", formLayout);
 		versionEl = uifactory.addStaticTextElement("form.version", "", formLayout);
+		versionEl.setVisible(OpenBadgesUIFactory.isSpecifyVersion());
 		issuedManuallyEl = uifactory.addStaticTextElement("badge.issued.manually", null,
 				translate("badge.issued.manually"), formLayout);
 
@@ -342,7 +343,7 @@ public class BadgeDetailsController extends FormBasicController {
 	private void doEdit(UserRequest ureq) {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassKey);
 		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity);
-		Step start = new CreateBadge02DetailsStep(ureq, createBadgeClassContext);
+		Step start = new CreateBadge03CriteriaStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());

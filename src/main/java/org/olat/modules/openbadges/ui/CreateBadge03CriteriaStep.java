@@ -29,16 +29,11 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -49,7 +44,6 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.course.core.manager.CourseElementDAO;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
@@ -75,306 +69,45 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadge03CriteriaStep extends BasicStep {
+
+	private final CreateBadgeClassWizardContext createBadgeClassContext;
+
 	public CreateBadge03CriteriaStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
+		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.award.criteria", null);
-		setNextStep(new CreateBadge04SummaryStep(ureq, createBadgeClassContext));
+		setNextStep(new CreateBadge04DetailsStep(ureq, createBadgeClassContext));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadge03CriteriaForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "criteria_step");
+		runContext.put(CreateBadgeClassWizardContext.KEY, createBadgeClassContext);
+		return new CreateBadgeCriteriaForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "criteria_step");
 	}
 
-	private static class CreateBadge03CriteriaForm extends StepFormBasicController {
+	private static class CreateBadgeCriteriaForm extends StepFormBasicController {
 
 		private SingleSelection newRule;
-		private ArrayList<Condition> conditions;
+		private ArrayList<ConditionRow> conditionRows;
 
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
 		@Autowired
-		private CourseElementDAO courseElementDao;
-		@Autowired
 		private RepositoryManager repositoryManager;;
-
-		public class Condition {
-			private final String id;
-			private final StaticTextElement andTextEl;
-			private final SingleSelection conditionDropdown;
-			private final SingleSelection symbolDropdown;
-			private final SingleSelection badgesDropdown;
-			private final SingleSelection courseElementsDropdown;
-			private final MultipleSelectionElement coursesDropdown;
-			private final MultipleSelectionElement globalBadgesDropdown;
-			private final TextElement valueEl;
-			private final StaticTextElement unitEl;
-			private final FormLink deleteLink;
-
-			Condition(String id, BadgeCondition badgeCondition, FormItemContainer formLayout, boolean showAndLabel) {
-				this.id = id;
-
-				andTextEl = uifactory.addStaticTextElement("form.criteria.condition.and." + id, null,
-						translate("form.criteria.condition.and"), formLayout);
-				andTextEl.setVisible(showAndLabel);
-
-				conditionDropdown = uifactory.addDropdownSingleselect("form.condition." + id, null,
-						formLayout, conditionsKV.keys(), conditionsKV.values());
-				if (conditionDropdown.containsKey(badgeCondition.getKey())) {
-					conditionDropdown.select(badgeCondition.getKey(), true);
-				}
-				conditionDropdown.setVisible(true);
-				conditionDropdown.addActionListener(FormEvent.ONCHANGE);
-				conditionDropdown.setUserObject(this);
-
-				symbolDropdown = uifactory.addDropdownSingleselect("form.condition.symbol." + id, null,
-						formLayout, symbolsKV.keys(), symbolsKV.values());
-				symbolDropdown.addActionListener(FormEvent.ONCHANGE);
-
-				badgesDropdown = uifactory.addDropdownSingleselect("form.condition.badges." + id, null,
-						formLayout, badgesKV.keys(), badgesKV.values());
-				badgesDropdown.addActionListener(FormEvent.ONCHANGE);
-
-				courseElementsDropdown = uifactory.addDropdownSingleselect("form.condition.courseElements." + id, null,
-						formLayout, courseElementsKV.keys(), courseElementsKV.values());
-				courseElementsDropdown.addActionListener(FormEvent.ONCHANGE);
-
-				coursesDropdown = uifactory.addCheckboxesDropdown("form.condition.courses." + id, null,
-						formLayout, coursesKV.keys(), coursesKV.values());
-				coursesDropdown.addActionListener(FormEvent.ONCHANGE);
-
-				globalBadgesDropdown = uifactory.addCheckboxesDropdown("form.condition.global.badges.earned." + id, null,
-						formLayout, globalBadgesKV.keys(), globalBadgesKV.values());
-				globalBadgesDropdown.addActionListener(FormEvent.ONCHANGE);
-
-				valueEl = uifactory.addTextElement("form.condition.value." + id, "", 32,
-						"", formLayout);
-
-				unitEl = uifactory.addStaticTextElement("form.condition.unit." + id, null,
-						"", formLayout);
-
-				deleteLink = uifactory.addFormLink("delete." + id, "delete." + id, "", "",
-						formLayout, Link.BUTTON | Link.NONTRANSLATED);
-				deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
-				deleteLink.setUserObject(this);
-
-				symbolDropdown.setVisible(false);
-				badgesDropdown.setVisible(false);
-				courseElementsDropdown.setVisible(false);
-				coursesDropdown.setVisible(false);
-				globalBadgesDropdown.setVisible(false);
-				valueEl.setVisible(false);
-				unitEl.setVisible(false);
-
-				if (badgeCondition instanceof CourseScoreCondition courseScoreCondition) {
-					symbolDropdown.setVisible(true);
-					symbolDropdown.select(courseScoreCondition.getSymbol().name(), true);
-
-					valueEl.setVisible(true);
-					valueEl.setValue(Double.toString(courseScoreCondition.getValue()));
-
-					unitEl.setVisible(true);
-					unitEl.setValue("Pt.");
-				}
-
-				if (badgeCondition instanceof LearningPathProgressCondition learningPathProgressCondition) {
-					symbolDropdown.setVisible(true);
-					symbolDropdown.select(learningPathProgressCondition.getSymbol().name(), true);
-
-					valueEl.setVisible(true);
-					valueEl.setValue(Double.toString(learningPathProgressCondition.getValue()));
-
-					unitEl.setVisible(true);
-					unitEl.setValue("%");
-				}
-
-				if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeCondition) {
-					badgesDropdown.setVisible(true);
-					if (badgesDropdown.containsKey(otherBadgeCondition.getBadgeClassUuid())) {
-						badgesDropdown.select(otherBadgeCondition.getBadgeClassUuid(), true);
-					}
-				}
-
-				if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
-					courseElementsDropdown.setVisible(true);
-					if (courseElementsDropdown.containsKey(courseElementPassedCondition.getSubIdent())) {
-						courseElementsDropdown.select(courseElementPassedCondition.getSubIdent(), true);
-					}
-				}
-				if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
-					courseElementsDropdown.setVisible(true);
-					if (courseElementsDropdown.containsKey(courseElementScoreCondition.getSubIdent())) {
-						courseElementsDropdown.select(courseElementScoreCondition.getSubIdent(), true);
-					}
-
-					symbolDropdown.setVisible(true);
-					symbolDropdown.select(courseElementScoreCondition.getSymbol().name(), true);
-
-					valueEl.setVisible(true);
-					valueEl.setValue(Double.toString(courseElementScoreCondition.getValue()));
-
-					unitEl.setVisible(true);
-					unitEl.setValue("Pt.");
-				}
-				if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
-					coursesDropdown.setVisible(true);
-					for (Long courseResourceKey : coursesPassedCondition.getCourseResourceKeys()) {
-						if (coursesDropdown.getKeys().contains(courseResourceKey.toString())) {
-							coursesDropdown.select(courseResourceKey.toString(), true);
-						}
-					}
-				}
-				if (badgeCondition instanceof GlobalBadgesEarnedCondition) {
-					globalBadgesDropdown.setVisible(true);
-				}
-			}
-
-			public void updateVisibilities() {
-				String conditionKey = conditionDropdown.getSelectedKey();
-				symbolDropdown.setVisible(false);
-				badgesDropdown.setVisible(false);
-				courseElementsDropdown.setVisible(false);
-				coursesDropdown.setVisible(false);
-				globalBadgesDropdown.setVisible(false);
-				valueEl.setVisible(false);
-				unitEl.setVisible(false);
-				switch (conditionKey) {
-					case CoursePassedCondition.KEY -> {
-						//
-					}
-					case CourseScoreCondition.KEY, LearningPathProgressCondition.KEY -> {
-						symbolDropdown.setVisible(true);
-						valueEl.setVisible(true);
-						unitEl.setVisible(true);
-					}
-					case CourseElementScoreCondition.KEY -> {
-						courseElementsDropdown.setVisible(true);
-						symbolDropdown.setVisible(true);
-						valueEl.setVisible(true);
-						unitEl.setVisible(true);
-					}
-					case OtherBadgeEarnedCondition.KEY -> badgesDropdown.setVisible(true);
-					case CourseElementPassedCondition.KEY -> courseElementsDropdown.setVisible(true);
-					case CoursesPassedCondition.KEY -> coursesDropdown.setVisible(true);
-					case GlobalBadgesEarnedCondition.KEY -> globalBadgesDropdown.setVisible(true);
-				}
-			}
-
-			public String getId() {
-				return id;
-			}
-
-			/**
-			 *  Used in template
-			 */
-			public StaticTextElement getAndTextEl() {
-				return andTextEl;
-			}
-
-			public SingleSelection getConditionDropdown() {
-				return conditionDropdown;
-			}
-
-			/**
-			 *  Used in template
-			 */
-			public SingleSelection getSymbolDropdown() {
-				return symbolDropdown;
-			}
-
-			/**
-			 * Used in template
-			 */
-			public SingleSelection getBadgesDropdown() {
-				return badgesDropdown;
-			}
-
-			/**
-			 * Used in template
-			 */
-			public SingleSelection getCourseElementsDropdown() {
-				return courseElementsDropdown;
-			}
-
-			/**
-			 * Used in template
-			 */
-			public MultipleSelectionElement getCoursesDropdown() {
-				return coursesDropdown;
-			}
-
-			/**
-			 * Used in template
-			 */
-			public MultipleSelectionElement getGlobalBadgesDropdown() {
-				return globalBadgesDropdown;
-			}
-
-			public TextElement getValueEl() {
-				return valueEl;
-			}
-
-			/**
-			 *  Used in template
-			 */
-			public StaticTextElement getUnitEl() {
-				return unitEl;
-			}
-
-			public FormLink getDeleteLink() {
-				return deleteLink;
-			}
-
-			public BadgeCondition asBadgeCondition() {
-				return switch (conditionDropdown.getSelectedKey()) {
-					case CoursePassedCondition.KEY -> new CoursePassedCondition();
-					case CourseScoreCondition.KEY -> new CourseScoreCondition(
-							Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
-							StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
-					);
-					case LearningPathProgressCondition.KEY -> new LearningPathProgressCondition(
-							Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
-							StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
-					);
-					case OtherBadgeEarnedCondition.KEY -> new OtherBadgeEarnedCondition(
-							badgesDropdown.isOneSelected() ? badgesDropdown.getSelectedKey() : badgesDropdown.getKeys()[0]
-					);
-					case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(
-							courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedKey() : courseElementsDropdown.getKeys()[0]
-					);
-					case CourseElementScoreCondition.KEY -> new CourseElementScoreCondition(
-							courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedKey() : courseElementsDropdown.getKeys()[0],
-							Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
-							StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
-					);
-					case CoursesPassedCondition.KEY -> new CoursesPassedCondition(
-							coursesDropdown.getSelectedKeys().stream().map(Long::parseLong).toList()
-					);
-					case GlobalBadgesEarnedCondition.KEY -> new GlobalBadgesEarnedCondition(
-							globalBadgesDropdown.getSelectedKeys().stream().map(Long::parseLong).toList()
-					);
-					default -> null;
-				};
-			}
-		}
 
 		private static final String KEY_AUTOMATIC = "automatic";
 		private static final String KEY_MANUAL = "manual";
 		private final String[] awardProcedureKeys;
 		private final String[] awardProcedureValues;
 		private final String[] awardProcedureDescriptions;
-		private final SelectionValues conditionsKV;
-		private final SelectionValues symbolsKV;
-		private final SelectionValues badgesKV;
-		private final SelectionValues courseElementsKV;
-		private final SelectionValues coursesKV;
-		private final SelectionValues globalBadgesKV;
+
+		private ConditionRow.ConditionRowContext conditionContext;
 
 		private CreateBadgeClassWizardContext createContext;
 		private MarkdownElement descriptionEl;
 		private SingleSelection awardProcedureCards;
 
-		public CreateBadge03CriteriaForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
+		public CreateBadgeCriteriaForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
 			super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
@@ -391,21 +124,27 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					translate("form.award.procedure.manual.description")
 			};
 
-			badgesKV = new SelectionValues();
+			buildConditionContext();
+
+			initForm(ureq);
+		}
+
+		private void buildConditionContext() {
+			SelectionValues badgesKV = new SelectionValues();
 			if (createContext.isCourseBadge()) {
 				openBadgesManager.getBadgeClasses(createContext.getBadgeClass().getEntry()).stream()
 						.filter((badgeClass) -> !badgeClass.getUuid().equals(createContext.getBadgeClass().getUuid()))
 						.forEach((badgeClass) -> badgesKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName())));
 			}
 
-			courseElementsKV = new SelectionValues();
+			SelectionValues courseElementsKV = new SelectionValues();
 			if (createContext.isCourseBadge()) {
 				createContext.assessableCourseNodes().stream()
 						.filter(courseNode -> !STCourseNode.TYPE.equals(courseNode.getType()))
 						.forEach(courseNode -> courseElementsKV.add(SelectionValues.entry(courseNode.getIdent(), courseNode.getShortName())));
 			}
 
-			coursesKV = new SelectionValues();
+			SelectionValues coursesKV = new SelectionValues();
 			if (createContext.isGlobalBadge()) {
 				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), Roles.administratorRoles());
 				params.setResourceTypes(Collections.singletonList("CourseModule"));
@@ -414,7 +153,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						.forEach(re -> coursesKV.add(SelectionValues.entry(re.getOlatResource().getKey().toString(), re.getDisplayname())));
 			}
 
-			globalBadgesKV = new SelectionValues();
+			SelectionValues globalBadgesKV = new SelectionValues();
 			if (createContext.isGlobalBadge()) {
 				openBadgesManager.getBadgeClasses(null).stream()
 						.filter(badgeClass -> !badgeClass.getKey().equals(createContext.getBadgeClass().getKey()))
@@ -422,7 +161,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						.forEach(globalBadgesKV::add);
 			}
 
-			conditionsKV = new SelectionValues();
+			SelectionValues conditionsKV = new SelectionValues();
 			if (createContext.isCourseBadge()) {
 				conditionsKV.add(SelectionValues.entry(CoursePassedCondition.KEY, translate("form.criteria.condition.course.passed")));
 				conditionsKV.add(SelectionValues.entry(CourseScoreCondition.KEY, translate("form.criteria.condition.course.score")));
@@ -447,14 +186,15 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				}
 			}
 
-			symbolsKV = new SelectionValues();
+			SelectionValues symbolsKV = new SelectionValues();
 			symbolsKV.add(SelectionValues.entry(Symbol.greaterThan.name(), Symbol.greaterThan.getSymbolString()));
 			symbolsKV.add(SelectionValues.entry(Symbol.greaterThanOrEqual.name(), Symbol.greaterThanOrEqual.getSymbolString()));
 			symbolsKV.add(SelectionValues.entry(Symbol.equals.name(), Symbol.equals.getSymbolString()));
 			symbolsKV.add(SelectionValues.entry(Symbol.lessThanOrEqual.name(), Symbol.lessThanOrEqual.getSymbolString()));
 			symbolsKV.add(SelectionValues.entry(Symbol.lessThan.name(), Symbol.lessThan.getSymbolString()));
 
-			initForm(ureq);
+			conditionContext = new ConditionRow.ConditionRowContext(badgesKV, coursesKV, courseElementsKV,
+					globalBadgesKV, conditionsKV, symbolsKV);
 		}
 
 		@Override
@@ -462,12 +202,12 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			if (source == awardProcedureCards) {
 				boolean awardAutomatically = KEY_AUTOMATIC.equals(awardProcedureCards.getSelectedKey());
 				flc.contextPut("awardAutomatically", awardAutomatically);
-			} else if (source.getUserObject() instanceof Condition condition) {
-				if (source == condition.getConditionDropdown()) {
-					condition.updateVisibilities();
+			} else if (source.getUserObject() instanceof ConditionRow conditionRow) {
+				if (source == conditionRow.getConditionDropdown()) {
+					conditionRow.updateVisibilities();
 					setVelocityConditions();
-				} else if (source == condition.getDeleteLink()) {
-					conditions.remove(condition);
+				} else if (source == conditionRow.getDeleteLink()) {
+					conditionRows.remove(conditionRow);
 					setVelocityConditions();
 				}
 			} else if (source == newRule) {
@@ -477,14 +217,14 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		}
 
 		private void setVelocityConditions() {
-			flc.contextPut("conditions", conditions);
+			flc.contextPut("conditionRows", conditionRows);
 
 			SelectionValues newConditionsKV = new SelectionValues();
-			newConditionsKV.addAll(conditionsKV);
+			newConditionsKV.addAll(conditionContext.conditionsKV());
 
-			Set<String> unusedBadgeKeys = new HashSet<>(Set.of(badgesKV.keys()));
-			Set<String> subIdentsNotUsedInPassedCondition = new HashSet<>(Set.of(courseElementsKV.keys()));
-			for (Condition condition : conditions) {
+			Set<String> unusedBadgeKeys = new HashSet<>(Set.of(conditionContext.badgesKV().keys()));
+			Set<String> subIdentsNotUsedInPassedCondition = new HashSet<>(Set.of(conditionContext.courseElementsKV().keys()));
+			for (ConditionRow condition : conditionRows) {
 				BadgeCondition badgeCondition = condition.asBadgeCondition();
 				if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
 					unusedBadgeKeys.remove(otherBadgeEarnedCondition.getBadgeClassUuid());
@@ -526,26 +266,41 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				default -> null;
 			};
 			if (newBadgeCondition != null) {
-				String id = Long.toString(conditions.size());
-				Condition condition = new Condition(id, newBadgeCondition, flc, !conditions.isEmpty());
-				conditions.add(condition);
+				String id = Long.toString(conditionRows.size());
+				ConditionRow conditionRow = new ConditionRow(id, newBadgeCondition, flc, !conditionRows.isEmpty(),
+						getTranslator(), conditionContext);
+				conditionRows.add(conditionRow);
 				setVelocityConditions();
 			}
 		}
 
 		private String getUnusedBadgeKey() {
-			Set<String> unusedBadgeKeys = new HashSet<>(Set.of(badgesKV.keys()));
-			for (Condition condition : conditions) {
-				if (condition.asBadgeCondition() instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
+			Set<String> unusedBadgeKeys = new HashSet<>(Set.of(conditionContext.badgesKV().keys()));
+			for (ConditionRow conditionRow : conditionRows) {
+				if (conditionRow.asBadgeCondition() instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
 					unusedBadgeKeys.remove(otherBadgeEarnedCondition.getBadgeClassUuid());
 				}
 			}
 			return unusedBadgeKeys.isEmpty() ? null : unusedBadgeKeys.iterator().next();
 		}
 
+		private SelectionValues.SelectionValue getUnusedCourseElementPassedConditions() {
+			Set<String> usedSubIdents = conditionRows.stream().map(ConditionRow::asBadgeCondition)
+					.filter(bc -> bc instanceof CourseElementPassedCondition)
+					.map(CourseElementPassedCondition.class::cast)
+					.map(CourseElementPassedCondition::getSubIdent)
+					.collect(Collectors.toSet());
+			for (SelectionValues.SelectionValue courseElement : conditionContext.courseElementsKV().keyValues()) {
+				if (!usedSubIdents.contains(courseElement.getKey())) {
+					return courseElement;
+				}
+			}
+			return null;
+		}
+
 		private String getSubIdentsNotUsedInPassedCondition() {
-			Set<String> unusedSubIdents = new HashSet<>(Set.of(courseElementsKV.keys()));
-			for (Condition condition : conditions) {
+			Set<String> unusedSubIdents = new HashSet<>(Set.of(conditionContext.courseElementsKV().keys()));
+			for (ConditionRow condition : conditionRows) {
 				if (condition.asBadgeCondition() instanceof CourseElementPassedCondition courseElementPassedCondition) {
 					unusedSubIdents.remove(courseElementPassedCondition.getSubIdent());
 				}
@@ -554,8 +309,8 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		}
 
 		private String getSubIdentsNotUsedInScoreCondition() {
-			Set<String> unusedSubIdents = new HashSet<>(Set.of(courseElementsKV.keys()));
-			for (Condition condition : conditions) {
+			Set<String> unusedSubIdents = new HashSet<>(Set.of(conditionContext.courseElementsKV().keys()));
+			for (ConditionRow condition : conditionRows) {
 				if (condition.asBadgeCondition() instanceof CourseElementScoreCondition courseElementScoreCondition) {
 					unusedSubIdents.remove(courseElementScoreCondition.getSubIdent());
 				}
@@ -571,7 +326,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 			newRule.clearError();
 			if (awardAutomatically) {
-				if (conditions.isEmpty()) {
+				if (conditionRows.isEmpty()) {
 					newRule.setErrorKey("alert");
 					allOk &= false;
 				}
@@ -592,7 +347,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			boolean awardAutomatically = KEY_AUTOMATIC.equals(awardProcedureCards.getSelectedKey());
 			badgeCriteria.setDescriptionWithScan(descriptionEl.getValue());
 			badgeCriteria.setAwardAutomatically(awardAutomatically);
-			badgeCriteria.setConditions(conditions.stream().map(Condition::asBadgeCondition).collect(Collectors.toList()));
+			badgeCriteria.setConditions(conditionRows.stream().map(ConditionRow::asBadgeCondition).collect(Collectors.toList()));
 
 			String xml = BadgeCriteriaXStream.toXml(badgeCriteria);
 			createContext.getBadgeClass().setCriteria(xml);
@@ -619,6 +374,8 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					"form.criteria.description", badgeCriteria.getDescriptionWithScan(), formLayout);
 			descriptionEl.setElementCssClass("o_sel_badge_criteria_summary o_badge_criteria_description");
 			descriptionEl.setMandatory(true);
+			descriptionEl.setHelpText(translate("form.criteria.description.help"));
+			descriptionEl.setPlaceholderText(translate("form.criteria.description.placeholder"));
 			uifactory.addStaticTextElement("form.award.procedure.description", null,
 					translate("form.award.procedure.description"), formLayout);
 
@@ -637,7 +394,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			}
 
 			newRule = uifactory.addDropdownSingleselect("form.condition.new", null,
-					formLayout, conditionsKV.keys(), conditionsKV.values());
+					formLayout, conditionContext.conditionsKV().keys(), conditionContext.conditionsKV().values());
 			newRule.enableNoneSelection(translate("form.criteria.new.rule"));
 			newRule.addActionListener(FormEvent.ONCHANGE);
 
@@ -648,13 +405,13 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
 			List<BadgeCondition> badgeConditions = badgeCriteria.getConditions(
-					Set.of(conditionsKV.keys()),
-					Set.of(courseElementsKV.keys()));
-			conditions = new ArrayList<>();
+					Set.of(conditionContext.conditionsKV().keys()),
+					Set.of(conditionContext.courseElementsKV().keys()));
+			conditionRows = new ArrayList<>();
 			for (int i = 0; i < badgeConditions.size(); i++) {
 				BadgeCondition badgeCondition = badgeConditions.get(i);
-				Condition condition = new Condition(Integer.toString(i), badgeCondition, formLayout, i > 0);
-				conditions.add(condition);
+				ConditionRow condition = new ConditionRow(Integer.toString(i), badgeCondition, formLayout, i > 0, getTranslator(), conditionContext);
+				conditionRows.add(condition);
 			}
 			setVelocityConditions();
 		}

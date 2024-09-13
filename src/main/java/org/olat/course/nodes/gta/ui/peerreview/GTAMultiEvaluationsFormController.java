@@ -90,9 +90,9 @@ public class GTAMultiEvaluationsFormController extends BasicController {
 					RatingComponent ratingCmp;
 					String ratingId = "reviewRating_" + (++count);
 					if(withYesNoRating) {
-						ratingCmp = new RatingComponent(ratingId, RatingType.stars, 0, 5, false);
-					} else if(withStarsRating) {
 						ratingCmp = new RatingComponent(ratingId, RatingType.yesNo, 0, 5, false);
+					} else if(withStarsRating) {
+						ratingCmp = new RatingComponent(ratingId, RatingType.stars, 0, 5, false);
 					} else {
 						continue;
 					}

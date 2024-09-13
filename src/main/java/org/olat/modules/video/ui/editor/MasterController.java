@@ -94,6 +94,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private final VFSLeaf videoFile;
 	private final long videoFrameCount;
 	private final boolean readOnly;
+	private final boolean showSessionParticipant;
 	private long videoDurationInMillis;
 	private int fps;
 	private final Size movieSize;
@@ -119,14 +120,15 @@ public class MasterController extends FormBasicController implements FlexiTableC
 
 	public MasterController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 							List<VideoTaskSession> sessions, String videoElementId, long durationInSeconds) {
-		this(ureq, wControl, repositoryEntry, sessions, videoElementId, durationInSeconds, false);
+		this(ureq, wControl, repositoryEntry, sessions, videoElementId, durationInSeconds, false, false);
 	}
 
 	public MasterController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 							List<VideoTaskSession> sessions, String videoElementId, long durationInSeconds,
-							boolean readOnly) {
+							boolean readOnly, boolean showSessionParticipant) {
 		super(ureq, wControl, "master");
 		this.readOnly = readOnly;
+		this.showSessionParticipant = showSessionParticipant;
 
 		flc.contextPut("videoElementId", videoElementId);
 		thumbnailsContainer = videoManager.getThumbnailsContainer(repositoryEntry.getOlatResource());
@@ -183,6 +185,9 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				sb.append(((String) val));
 			}
 		}));
+		if (showSessionParticipant) {
+			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TimelineCols.participant));
+		}
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TimelineCols.color,
 				(renderer, sb, val, row, source, ubu, translator) -> {
 			if (val instanceof String) {
@@ -284,6 +289,19 @@ public class MasterController extends FormBasicController implements FlexiTableC
 			}
 			filters.add(new FlexiTableMultiSelectionFilter(translate(TimelineDataSource.TimelineFilter.CATEGORY.getI18nKey()),
 					TimelineDataSource.TimelineFilter.CATEGORY.name(), categoryKV, true));
+		}
+
+		if (showSessionParticipant) {
+			SelectionValues participantKV = new SelectionValues();
+			timelineDataSource.getRows().forEach(r -> {
+				if (r.getParticipantKey() != null) {
+					participantKV.add(SelectionValues.entry(r.getParticipantKey(), r.getParticipantValue()));
+				}
+			});
+			if (participantKV.size() > 0) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate(TimelineDataSource.TimelineFilter.PARTICIPANT.getI18nKey()),
+						TimelineDataSource.TimelineFilter.PARTICIPANT.name(), participantKV, true));
+			}
 		}
 		
 		timelineTableEl.setFilters(true, filters, true, false);

@@ -172,7 +172,7 @@ public class CatalogEntryEditController extends FormBasicController {
 		if(img instanceof LocalFileImpl) {
 			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
 		}
-		fileUpload.limitToMimeType(mimeTypes, "cif.error.mimetype", new String[]{ mimeTypes.toString()} );
+		fileUpload.limitToMimeType(mimeTypes, "error.mimetype", new String[]{ mimeTypes.toString()} );
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		buttonLayout.setElementCssClass("o_sel_catalog_entry_form_buttons");

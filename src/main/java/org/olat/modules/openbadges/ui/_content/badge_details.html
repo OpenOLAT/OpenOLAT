@@ -42,7 +42,9 @@
 				#if($r.available("form.language") && $r.visible("form.language"))
 				$r.render("form.language", "3_9", "form")
 				#end
+				#if($r.available("form.version") && $r.visible("form.version"))
 				$r.render("form.version", "3_9", "form")
+				#end
 			</div>
 		</div>
 	</div>

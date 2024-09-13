@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.project.ui;
@@ -28,10 +28,12 @@ import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.project.ProjFileSearchParams;
@@ -44,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 12 Dec 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class ProjFileWidgetController extends ProjFileListController {
@@ -52,7 +54,7 @@ public class ProjFileWidgetController extends ProjFileListController {
 	private static final Integer NUM_LAST_MODIFIED = 6;
 	
 	private FormLink titleLink;
-	private FormLink uploadLink;
+	private FileElement uploadEl;
 	private FormLink createLink;
 	private FormLink recordVideoLink;
 	private FormLink recordAudioLink;
@@ -77,12 +79,14 @@ public class ProjFileWidgetController extends ProjFileListController {
 		
 		String url = bcFactory.getFilesUrl(project);
 		titleLink.setUrl(url);
-		
-		uploadLink = uifactory.addFormLink("file.upload", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
-		uploadLink.setIconLeftCSS("o_icon o_icon_upload");
-		uploadLink.setTitle(translate("file.upload"));
-		uploadLink.setGhost(true);
-		uploadLink.setVisible(secCallback.canCreateFiles());
+
+		uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file.upload", null, formLayout);
+		uploadEl.addActionListener(FormEvent.ONCHANGE);
+		uploadEl.setElementCssClass("btn btn-default o_button_ghost");
+		uploadEl.setMultiFileUpload(false);
+		uploadEl.setDragAndDropForm(true);
+		uploadEl.setChooseButtonLabel("none");
+		uploadEl.setVisible(secCallback.canCreateFiles());
 
 		if (secCallback.canCreateFiles() && avModule.isRecordingEnabled()) {
 			DropdownItem createDropdown = uifactory.addDropdownMenu("file.create.dropdown", null,
@@ -130,8 +134,9 @@ public class ProjFileWidgetController extends ProjFileListController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == titleLink || source == showAllLink) {
 			fireEvent(ureq, ProjProjectDashboardController.SHOW_ALL);
-		} else if (source == uploadLink) {
-			doUploadFile(ureq);
+		} else if (source == uploadEl) {
+			doUploadFile(ureq, uploadEl);
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == createLink) {
 			doCreateFile(ureq);
 		} else if (source == recordVideoLink) {

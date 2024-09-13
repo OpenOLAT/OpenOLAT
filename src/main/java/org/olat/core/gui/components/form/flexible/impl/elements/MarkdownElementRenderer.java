@@ -85,6 +85,7 @@ public class MarkdownElementRenderer extends DefaultComponentRenderer {
 					.append(",").append("'").append(StringHelper.escapeJavaScriptParam(element.getValue())).append("'")
 					.append(",").append("updateListener")
 					.append(",").append("onBlur")
+					.append(",").append("'").append(StringHelper.escapeJavaScriptParam(element.hasPlaceholder() ? StringHelper.unescapeHtml(element.getPlaceholder()) : "")).append("'")
 					.append(");");
 			sb.append(FormJSHelper.getJSEnd());
 		} else {

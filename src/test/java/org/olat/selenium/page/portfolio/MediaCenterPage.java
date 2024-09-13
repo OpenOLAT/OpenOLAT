@@ -79,19 +79,22 @@ public class MediaCenterPage {
 		return new MediaDetailsPage(browser);
 	}
 	
-	public MediaCenterPage uploadMedia(String title, File file) {
-		By addMedia = By.cssSelector("div.o_portfolio a.o_sel_add_media");
-		browser.findElement(addMedia).click();
+	/**
+	 * Use the quick upload field to upload a file.
+	 * 
+	 * @param file The file to upload
+	 * @return Itself
+	 */
+	public MediaCenterPage quickUploadFile(String title, File file) {
+		By addFileBy = By.cssSelector(".o_media_cmd .o_media_add_cmd div.o_fileinput");
+		OOGraphene.waitElement(addFileBy, browser);
+		By inputFileBy = By.cssSelector(".o_media_cmd .o_media_add_cmd div.o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputFileBy, file, browser);
+		
 		OOGraphene.waitModalDialog(browser);
 		
 		By titleBy = By.cssSelector("fieldset.o_sel_upload_media_form .o_sel_media_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
-	
-		By inputBy = By.cssSelector("fieldset.o_sel_upload_media_form .o_fileinput input[type='file']");
-		OOGraphene.uploadFile(inputBy, file, browser);
-		OOGraphene.waitBusy(browser);
-		By uploadedBy = By.cssSelector("fieldset.o_sel_upload_media_form .o_sel_file_uploaded");
-		OOGraphene.waitElement(uploadedBy, browser);
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_upload_media_form .o_sel_buttons button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);

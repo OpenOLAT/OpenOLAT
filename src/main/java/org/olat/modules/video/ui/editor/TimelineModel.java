@@ -71,6 +71,7 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 			case startTime -> new Date(timelineRow.getStartTime());
 			case type -> timelineRow.getType();
 			case text -> timelineRow.getText();
+			case participant -> timelineRow.getParticipantValue();
 			case color -> timelineRow.getColor();
 			case tools -> timelineRow.getToolLink();
 		};

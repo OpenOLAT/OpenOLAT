@@ -30,6 +30,7 @@ public enum TimelineCols implements FlexiColumnDef {
 	startTime("table.header.timeline.startTime"),
 	type("table.header.timeline.type"),
 	text("table.header.timeline.text"),
+	participant("table.header.timeline.participant"),
 	color("table.header.timeline.color"),
 	tools("table.header.timeline.tools");
 

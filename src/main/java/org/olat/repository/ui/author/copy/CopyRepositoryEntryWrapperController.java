@@ -94,11 +94,19 @@ public class CopyRepositoryEntryWrapperController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(copyRepositoryEntryController == source) {
-			cmc.deactivate();
-			if (event == Event.DONE_EVENT) {
-				launchCopiedCourse(ureq, copyRepositoryEntryController.getCopiedEntry());
+			if (event == Event.CLOSE_EVENT) {
+				if(cmc != null) {
+					cmc.deactivate();
+				}
+			} else {
+				if(cmc != null) {
+					cmc.deactivate();
+				}
+				if (event == Event.DONE_EVENT) {
+					launchCopiedCourse(ureq, copyRepositoryEntryController.getCopiedEntry());
+				}
+				cleanUp();
 			}
-			cleanUp();
 		} else if (copyLearningPathCourseWizardController == source) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				launchCopiedCourse(ureq, copyLearningPathCourseWizardController.getCopiedEntry());

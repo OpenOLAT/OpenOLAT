@@ -320,9 +320,12 @@ ul.o_dropdown {
 		}
 	}
 	
-	.o_file_actions a {
-		font-size: 2em;
-		vertical-align: bottom;
+	.o_file_actions {
+		white-space: nowrap;
+		a {
+			font-size: 2em;
+			vertical-align: bottom;
+		}
 	}
 }
 

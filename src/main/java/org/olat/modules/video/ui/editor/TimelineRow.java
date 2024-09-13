@@ -37,6 +37,8 @@ public class TimelineRow {
 	private long duration;
 	private TimelineEventType type;
 	private String text;
+	private String participantKey;
+	private String participantValue;
 	private String color;
 	private String categoryId;
 
@@ -91,6 +93,22 @@ public class TimelineRow {
 
 	public void setText(String text) {
 		this.text = text;
+	}
+
+	public String getParticipantKey() {
+		return participantKey;
+	}
+
+	public void setParticipantKey(String participantKey) {
+		this.participantKey = participantKey;
+	}
+
+	public String getParticipantValue() {
+		return participantValue;
+	}
+
+	public void setParticipantValue(String participantValue) {
+		this.participantValue = participantValue;
 	}
 
 	public String getColor() {

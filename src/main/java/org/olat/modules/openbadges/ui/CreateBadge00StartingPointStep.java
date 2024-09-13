@@ -75,9 +75,9 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.starting.point", null);
 		if (createBadgeClassContext.isStartFromScratch()) {
-			setNextStep(new CreateBadge00ImageStep(ureq, createBadgeClassContext));
+			setNextStep(new CreateBadge01ImageStep(ureq, createBadgeClassContext));
 		} else {
-			setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
+			setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
 		}
 	}
 
@@ -85,7 +85,7 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		runContext.put(CreateBadgeClassWizardContext.KEY, createBadgeClassContext);
 		form.setMultipartEnabled(true);
-		return new CreateBadge00StartingPointForm(ureq, wControl, form, runContext);
+		return new CreateBadgeStartingPointForm(ureq, wControl, form, runContext);
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 		return PrevNextFinishConfig.NEXT;
 	}
 
-	private class CreateBadge00StartingPointForm extends StepFormBasicController {
+	private class CreateBadgeStartingPointForm extends StepFormBasicController {
 		private static final String FILTER_BADGE_TITLE = "badgeTitle";
 		private static final String FILTER_COURSE_NAME = "courseName";
 		private static final String FILTER_COURSE_REFERENCE = "courseReference";
@@ -107,7 +107,7 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
 
-		public CreateBadge00StartingPointForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		public CreateBadgeStartingPointForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "starting_point_step");
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
@@ -130,10 +130,10 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 				createBadgeClassContext.setStartFromScratch(startingPointSelection.isKeySelected("form.create.from.scratch.title"));
 				if (createBadgeClassContext.isStartFromScratch()) {
 					createBadgeClassContext.startFromScratch();
-					setNextStep(new CreateBadge00ImageStep(ureq, createBadgeClassContext));
+					setNextStep(new CreateBadge01ImageStep(ureq, createBadgeClassContext));
 				} else {
 					createBadgeClassContext.copyFromExistingBadge(getTranslator());
-					setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
+					setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
 				}
 				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 

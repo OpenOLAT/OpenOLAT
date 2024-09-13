@@ -183,7 +183,7 @@ public class TaxonomyLevelFilterHandler implements CatalogFilterHandler {
 	}
 	
 	private void addParentNames(Translator translator, List<String> names, TaxonomyLevel level, TaxonomyLevel topLevel) {
-		names.add(TaxonomyUIFactory.translateDisplayName(translator, level));
+		names.add(StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(translator, level)));
 		TaxonomyLevel parent = level.getParent();
 		if (parent != null && !parent.equals(topLevel)) {
 			addParentNames(translator, names, parent, topLevel);

@@ -102,9 +102,6 @@
 				#if($r.available("form.valid") && $r.visible("form.valid"))
 				$r.render("form.valid", "3_9", "form")
 				#end
-				#if($r.available("form.language") && $r.visible("form.language"))
-				$r.render("form.language", "3_9", "form")
-				#end
 				#if($r.available("form.course"))
 				$r.render("form.course", "3_9", "form")
 				#end
@@ -114,13 +111,18 @@
 			#else
 			<div class="col-xs-6 col-sm-6 col-md-6 col-lg-5 o_badge_details_column">
 			#end
+				#if($r.available("form.language") && $r.visible("form.language"))
+				$r.render("form.language", "3_9", "form")
+				#end
 				#if($r.available("form.awarded.by"))
 					$r.render("form.awarded.by", "3_9", "form")
 					#if($r.available("form.contact"))
 						$r.render("form.contact", "3_9", "form")
 					#end
 				#end
+				#if($r.available("form.version") && $r.visible("form.version"))
 				$r.render("form.version", "3_9", "form")
+				#end
 			</div>
 		</div>
 	</div>

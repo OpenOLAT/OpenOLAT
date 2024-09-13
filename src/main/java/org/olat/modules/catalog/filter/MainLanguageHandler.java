@@ -32,7 +32,9 @@ import org.olat.core.gui.components.util.SelectionValuesSupplier;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
@@ -111,7 +113,11 @@ public class MainLanguageHandler implements CatalogFilterHandler {
 		}
 		
 		SelectionValues filterKV = new SelectionValues();
-		mainLangauages.forEach(language -> filterKV.add(new SelectionValue(language, language)));
+		mainLangauages.forEach(language -> {
+			if(!StringHelper.isHtml(language) && StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(language))) {
+				filterKV.add(new SelectionValue(language, StringHelper.escapeHtml(language)));
+			}
+		});
 		filterKV.sort(SelectionValues.VALUE_ASC);
 		
 		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.mainLanguage"), TYPE, filterKV,

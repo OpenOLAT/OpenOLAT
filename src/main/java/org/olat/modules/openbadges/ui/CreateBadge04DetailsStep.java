@@ -56,24 +56,24 @@ import org.olat.modules.openbadges.v2.Profile;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CreateBadge02DetailsStep extends BasicStep {
+public class CreateBadge04DetailsStep extends BasicStep {
 
 	private final CreateBadgeClassWizardContext createBadgeClassContext;
 
-	public CreateBadge02DetailsStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
+	public CreateBadge04DetailsStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.details", null);
-		setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
+		setNextStep(new CreateBadge05SummaryStep(ureq, createBadgeClassContext));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		runContext.put(CreateBadgeClassWizardContext.KEY, createBadgeClassContext);
-		return new CreateBadge02DetailsForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_VERTICAL, null);
+		return new CreateBadgeDetailsForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_VERTICAL, null);
 	}
 
-	private static class CreateBadge02DetailsForm extends StepFormBasicController {
+	private static class CreateBadgeDetailsForm extends StepFormBasicController {
 
 		private CreateBadgeClassWizardContext createContext;
 		private TextElement nameEl;
@@ -90,7 +90,8 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		private SingleSelection validityTimelapseUnitEl;
 		private final SelectionValues validityTimelapseUnitKV;
 		private final SelectionValues linkedInOrganizationKV;
-		private final List<BadgeClassDAO.NameAndVersion> nameVersionTuples;
+		private List<BadgeClassDAO.NameAndVersion> usedNameVersionTuples;
+		private List<String> usedNames;
 		private SingleSelection linkedInOrganizationEl;
 		private final SelectionValues availableLanguagesKV;
 		private SingleSelection availableLanguagesEl;
@@ -106,7 +107,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			day, week, month, year
 		}
 
-		public CreateBadge02DetailsForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
+		public CreateBadgeDetailsForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
 			super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
@@ -132,7 +133,11 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 			boolean isEditMode = CreateBadgeClassWizardContext.Mode.edit.equals(createContext.getMode());
 			BadgeClass badgeClass = createContext.getBadgeClass();
-			nameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(isEditMode, badgeClass);
+			if (OpenBadgesUIFactory.isSpecifyVersion()) {
+				usedNameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(isEditMode, badgeClass);
+			} else {
+				usedNames = openBadgesManager.getBadgeClassNames(isEditMode, badgeClass);
+			}
 
 			availableLanguagesKV = openBadgesManager.getAvailableLanguages(getLocale());
 
@@ -180,15 +185,22 @@ public class CreateBadge02DetailsStep extends BasicStep {
 				allOk &= false;
 			}
 
-			if (!StringHelper.containsNonWhitespace(versionEl.getValue())) {
-				versionEl.setErrorKey("form.legende.mandatory");
-				allOk &= false;
-			}
+			if (OpenBadgesUIFactory.isSpecifyVersion()) {
+				if (!StringHelper.containsNonWhitespace(versionEl.getValue())) {
+					versionEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				}
 
-			if (nameVersionTuples.contains(new BadgeClassDAO.NameAndVersion(nameEl.getValue(), versionEl.getValue()))) {
-				nameEl.setErrorKey("error.name.version.unique");
-				versionEl.setErrorKey("error.name.version.unique");
-				allOk &= false;
+				if (usedNameVersionTuples.contains(new BadgeClassDAO.NameAndVersion(nameEl.getValue(), versionEl.getValue()))) {
+					nameEl.setErrorKey("error.name.version.unique");
+					versionEl.setErrorKey("error.name.version.unique");
+					allOk &= false;
+				}
+			} else {
+				if (usedNames.contains(nameEl.getValue())) {
+					nameEl.setErrorKey("error.name.unique");
+					allOk &= false;
+				}
 			}
 
 			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
@@ -274,6 +286,8 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("form.details");
+			setFormInfoHelp("manual_user/learningresources/OpenBadges/");
+			setFormContextHelp("manual_user/learningresources/OpenBadges/");
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
@@ -283,15 +297,19 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 			versionEl = uifactory.addTextElement("form.version", 24, badgeClass.getVersionWithScan(), formLayout);
 			versionEl.setMandatory(true);
+			versionEl.setVisible(OpenBadgesUIFactory.isSpecifyVersion());
 
 			descriptionEl = uifactory.addMarkdownElement("form.description", "form.description",
 					badgeClass.getDescriptionWithScan(), formLayout);
 			descriptionEl.setElementCssClass("o_sel_badge_description o_badge_class_description");
 			descriptionEl.setMandatory(true);
+			descriptionEl.setHelpTextKey("form.description.help", null);
+			descriptionEl.setPlaceholderKey("form.description.placeholder", null);
 
 			availableLanguagesEl = uifactory.addDropdownSingleselect("form.language", formLayout,
 					availableLanguagesKV.keys(), availableLanguagesKV.values());
 			availableLanguagesEl.select(badgeClass.getLanguage(), true);
+			availableLanguagesEl.setHelpTextKey("form.language.help", null);
 
 			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuer.getName(), formLayout);
 			issuerNameEl.setMandatory(true);

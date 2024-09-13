@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui.peerreview;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -35,17 +36,20 @@ import org.olat.modules.forms.ui.LegendNameGenerator;
  */
 public class GTAPeerReviewLegendNameGenerator implements LegendNameGenerator {
 
-	private final Map<EvaluationFormParticipation,String> userMap;
+	private final Map<Long,String> userMap;
 	
-	private GTAPeerReviewLegendNameGenerator(Map<EvaluationFormParticipation,String> userMap) {
-		this.userMap = userMap;
+	private GTAPeerReviewLegendNameGenerator(Map<EvaluationFormParticipation,String> map) {
+		userMap = new HashMap<>();
+		for(Map.Entry<EvaluationFormParticipation, String> entry:map.entrySet()) {
+			userMap.put(entry.getKey().getKey(), entry.getValue());
+		}
 	}
 	
 	public String getName(EvaluationFormParticipation participation) {
 		if(participation == null) {
 			return "ERROR";
 		}
-		return userMap.getOrDefault(participation, "ERROR");
+		return userMap.getOrDefault(participation.getKey(), "ERROR");
 	}
 	
 	@Override

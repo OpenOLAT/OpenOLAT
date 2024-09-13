@@ -63,6 +63,14 @@ public class EnrollmentConfigurationPage {
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
+
+	public EnrollmentConfigurationPage saveConfiguration() {
+		By saveBy = By.cssSelector(".o_sel_course_en button.btn.btn-primary.o_button_dirty");
+		OOGraphene.waitElement(saveBy, browser);
+		OOGraphene.click(saveBy, browser);
+		OOGraphene.waitElementDisappears(saveBy, 5, browser);
+		return this;
+	}
 	
 	/**
 	 * Open the popup to create a business group.

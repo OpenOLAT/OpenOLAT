@@ -1,12 +1,12 @@
 /**
 
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -15,7 +15,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.cemedia.ui;
@@ -36,6 +36,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
+import org.olat.core.commons.services.folder.ui.FileBrowserController;
+import org.olat.core.commons.services.folder.ui.FileBrowserSelectionMode;
+import org.olat.core.commons.services.folder.ui.FolderQuota;
+import org.olat.core.commons.services.folder.ui.event.FileBrowserSelectionEvent;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
@@ -45,6 +49,7 @@ import org.olat.core.commons.services.vfs.manager.VFSTranscodingDoneEvent;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -66,6 +71,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -108,6 +114,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.audiovideorecording.AVModule;
@@ -158,7 +165,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 15.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class MediaCenterController extends FormBasicController
@@ -188,9 +195,9 @@ public class MediaCenterController extends FormBasicController
 	private FormLink bulkSelectButton;
 	private FormLink newMediaCallout;
 	private FlexiTableElement tableEl;
-	private FormLink addFileLink;
 	private FormLink createFileLink;
-	private FormLink addMediaLink;
+	private FileElement addMediaEl;
+	private FormLink addBrowserLink;
 	private FormLink addTextLink;
 	private FormLink addVideoViaUrlLink;
 	private FormLink addCitationLink;
@@ -234,6 +241,7 @@ public class MediaCenterController extends FormBasicController
 	private CreateDrawioMediaController createDrawioCtrl;
 	private CollectCitationMediaController citationUploadCtrl;
 	private ConfirmDeleteMediaController confirmDeleteMediaCtrl;
+	private FileBrowserController addFromBrowserCtrl;
 
 	private NewMediasController newMediasCtrl;
 	private CloseableCalloutWindowController newMediasCalloutCtrl;
@@ -322,7 +330,6 @@ public class MediaCenterController extends FormBasicController
 		tableEl.setCustomizeColumns(true);
 		tableEl.setMultiSelect(withMediaSelection && withMultiSelect);
 		tableEl.setSelectAllEnable(withMediaSelection && withMultiSelect && !withMultiSelectDelete);
-		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
 		VelocityContainer row = createVelocityContainer("media_row");
 		row.contextPut("mediaSelection",  Boolean.valueOf(withMediaSelection));
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
@@ -349,6 +356,7 @@ public class MediaCenterController extends FormBasicController
 		if(withUploadCard) {
 			uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add.card.upload", null, formLayout);
 			uploadEl.addActionListener(FormEvent.ONCHANGE);
+			uploadEl.setDragAndDropForm(true);
 			if(preselectedType != null) {
 				uploadEl.setDndInformations(translate("dnd.infos." + preselectedType));
 			}
@@ -360,10 +368,13 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private void initTools(FormItemContainer formLayout) {
-		addMediaLink = uifactory.addFormLink("add.media", formLayout, Link.BUTTON);
-		addMediaLink.setIconLeftCSS("o_icon o_icon-fw o_icon_media");
-		addMediaLink.setElementCssClass("o_sel_add_media");
-		addMediaLink.setVisible(withAddMedias);
+		addMediaEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add.media", null, formLayout);
+		addMediaEl.addActionListener(FormEvent.ONCHANGE);
+		addMediaEl.setChooseButtonLabel(translate("add.media"));
+		addMediaEl.setElementCssClass("o_sel_add_media");
+		addMediaEl.setMultiFileUpload(false);
+		addMediaEl.setDragAndDropForm(true);
+		addMediaEl.setVisible(withAddMedias);
 		
 		DropdownItem addDropdown = uifactory.addDropdownMenu("add.more", "add.more", formLayout, getTranslator());
 		addDropdown.setOrientation(DropdownOrientation.right);
@@ -371,6 +382,13 @@ public class MediaCenterController extends FormBasicController
 		addDropdown.setEmbbeded(true);
 		addDropdown.setButton(true);
 		addDropdown.setVisible(withAddMedias);
+
+		addBrowserLink = uifactory.addFormLink("browser.add", formLayout, Link.LINK);
+		addBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_filehub_add");
+		addBrowserLink.setElementCssClass("o_sel_folder_add_browser");
+
+		addDropdown.addElement(addBrowserLink);
+		addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
 		
 		if (!editableFileTypes.isEmpty()) {
 			createFileLink = uifactory.addFormLink("create.file.title", formLayout, Link.LINK);
@@ -551,17 +569,22 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	public void setSelectedTab(UserRequest ureq, String tabId) {
-		FlexiFiltersTab tab;
-		switch(tabId) {
-			case ALL_TAB_ID: tab = allTab; break;
-			case MY_TAB_ID: tab = myTab; break;
-			case SHARED_TAB_BY_ME_ID: tab = sharedByMeTab; break;
-			case SHARED_TAB_WITH_ME_ID: tab = sharedWithMeTab; break;
-			case SHARED_TAB_WITH_ENTRY: tab = sharedWithEntryTab; break;
-			case NOT_SHARED_TAB_ID: tab = notSharedTab; break;
-			case SEARCH_TAB_ID: tab = searchTab; break;
-			default: tab = allTab; break;
+		FlexiFiltersTab tab = switch (tabId) {
+			case ALL_TAB_ID -> allTab;
+			case MY_TAB_ID -> myTab;
+			case SHARED_TAB_BY_ME_ID -> sharedByMeTab;
+			case SHARED_TAB_WITH_ME_ID -> sharedWithMeTab;
+			case SHARED_TAB_WITH_ENTRY -> sharedWithEntryTab;
+			case NOT_SHARED_TAB_ID -> notSharedTab;
+			case SEARCH_TAB_ID -> searchTab;
+			default -> allTab;
+		};
+		if (withAddMedias && (allTab != null && tab == allTab)) {
+			tableEl.setEmptyTableSettings("media.list.empty.message", "media.empty.hint.readwrite", "o_icon_media", "browser.add", "o_icon_filehub_add", false);
+		} else {
+			tableEl.setEmptyTableSettings("media.list.empty.message", "media.empty.hint.readonly", "o_icon_media");
 		}
+
 		tableEl.setSelectedFilterTab(ureq, tab);
 	}
 	
@@ -833,60 +856,62 @@ public class MediaCenterController extends FormBasicController
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(createFileLink == source) {
 			doCreateFile(ureq);
-		} else if(addFileLink == source) {
-			doAddMedia(ureq, "add.file");
-		} else if(addMediaLink == source) {
-			doAddMedia(ureq, "add.media");
-		} else if(addTextLink == source) {
+		} else if(addMediaEl == source) {
+			doAddMedia(ureq, "add.media", addMediaEl);
+		} else if (addBrowserLink == source) {
+			doAddFromBrowser(ureq);
+		} else if (addTextLink == source) {
 			doAddTextMedia(ureq);
-		} else if(addCitationLink == source) {
+		} else if (addCitationLink == source) {
 			doAddCitationMedia(ureq);
-		} else if(addVideoViaUrlLink == source) {
+		} else if (addVideoViaUrlLink == source) {
 			doAddVideoViaUrl(ureq);
-		} else if(recordVideoLink == source) {
+		} else if (recordVideoLink == source) {
 			doRecordVideo(ureq);
-		} else if(recordAudioLink == source) {
+		} else if (recordAudioLink == source) {
 			doRecordAudio(ureq);
-		} else if(createDrawioLink== source) {
+		} else if (createDrawioLink == source) {
 			doAddDrawio(ureq);
-		} else if(bulkDeleteButton == source) {
+		} else if (bulkDeleteButton == source) {
 			doConfirmDelete(ureq);
-		} else if(bulkSelectButton == source) {
+		} else if (bulkSelectButton == source) {
 			doMultiSelect(ureq);
-		} else if(uploadEl == source) {
-			if("ONCHANGE".equals(event.getCommand()) || event instanceof UploadFileElementEvent) {
+		} else if (uploadEl == source) {
+			if ("ONCHANGE".equals(event.getCommand()) || event instanceof UploadFileElementEvent) {
 				doUpload(ureq);
 			}
-		} else if(source == tableEl) {
-			if(event instanceof SelectionEvent se) {
+		} else if (source == tableEl) {
+			if (event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				MediaRow row = model.getObject(se.getIndex());
-				if("select".equals(cmd)) {
-					if(withSelect) {
+				if ("select".equals(cmd)) {
+					if (withSelect) {
 						doSelect(ureq, row.getKey());
 					} else {
 						Activateable2 activateable = doOpenMedia(ureq, row.getKey());
-						if(activateable != null) {
+						if (activateable != null) {
 							activateable.activate(ureq, null, null);
 						}
 					}
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
+			} else if (event instanceof FlexiTableSearchEvent) {
 				loadModel(true);
-			} else if(event instanceof FlexiTableFilterTabEvent) {
+			} else if (event instanceof FlexiTableFilterTabEvent) {
 				doSelectTab();
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doAddFromBrowser(ureq);
 			}
-		} else if(newMediaCallout == source) {
+		} else if (newMediaCallout == source) {
 			doOpenNewMediaCallout(ureq, newMediaCallout);
-		} else if(source instanceof FormLink link) {
+		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if("select".equals(cmd)) {
-				MediaRow row = (MediaRow)link.getUserObject();
-				if(withSelect) {
+			if ("select".equals(cmd)) {
+				MediaRow row = (MediaRow) link.getUserObject();
+				if (withSelect) {
 					doSelect(ureq, row.getKey());
 				} else {
 					Activateable2 activateable = doOpenMedia(ureq, row.getKey());
-					if(activateable != null) {
+					if (activateable != null) {
 						activateable.activate(ureq, null, null);
 					}
 				}
@@ -899,7 +924,7 @@ public class MediaCenterController extends FormBasicController
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (createFileCtrl == source || mediaUploadCtrl == source || textUploadCtrl == source
 				|| citationUploadCtrl == source || addVideoViaUrlCtrl == source || recordVideoCtrl == source
-				|| recordAudioCtrl == source || createDrawioCtrl == source || confirmDeleteMediaCtrl == source) {
+				|| recordAudioCtrl == source || createDrawioCtrl == source || confirmDeleteMediaCtrl == source || addFromBrowserCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(false);
 			}
@@ -923,13 +948,17 @@ public class MediaCenterController extends FormBasicController
 					doOpenOrSelectNew(ureq, createDrawioCtrl.getMediaReference());
 				}
 			}
-			cleanUp();
+			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
+				doAddMedia(ureq, "add.media", selectionEvent.getFileElement());
+			} else {
+				cleanUp();
+			}
 		} else if(newMediasCtrl == source) {
 			newMediasCalloutCtrl.deactivate();
 			if("add.file".equals(event.getCommand())) {
-				doAddMedia(ureq, "add.file");
+				doAddMedia(ureq, "add.file", addMediaEl);
 			} else if("add.media".equals(event.getCommand())) {
-				doAddMedia(ureq, "add.media");
+				doAddMedia(ureq, "add.media", addMediaEl);
 			} else if("add.text".equals(event.getCommand())) {
 				doAddTextMedia(ureq);
 			} else if("add.citation".equals(event.getCommand())) {
@@ -957,6 +986,7 @@ public class MediaCenterController extends FormBasicController
 		removeAsListenerAndDispose(createDrawioCtrl);
 		removeAsListenerAndDispose(mediaUploadCtrl);
 		removeAsListenerAndDispose(addVideoViaUrlCtrl);
+		removeAsListenerAndDispose(addFromBrowserCtrl);
 		removeAsListenerAndDispose(recordVideoCtrl);
 		removeAsListenerAndDispose(recordAudioCtrl);
 		removeAsListenerAndDispose(createFileCtrl);
@@ -967,6 +997,7 @@ public class MediaCenterController extends FormBasicController
 		createDrawioCtrl = null;
 		mediaUploadCtrl = null;
 		addVideoViaUrlCtrl = null;
+		addFromBrowserCtrl = null;
 		recordVideoCtrl = null;
 		recordAudioCtrl = null;
 		createFileCtrl = null;
@@ -1025,16 +1056,37 @@ public class MediaCenterController extends FormBasicController
 		cmc.activate();
 	}
 	
-	private void doAddMedia(UserRequest ureq, String titleKey) {
+	private void doAddMedia(UserRequest ureq, String titleKey, FileElement fileElement) {
 		if(guardModalController(mediaUploadCtrl)) return;
-		
-		mediaUploadCtrl = new MediaUploadController(ureq, getWindowControl());
+
+		mediaUploadCtrl = new MediaUploadController(ureq, getWindowControl(), fileElement);
 		listenTo(mediaUploadCtrl);
 		
 		String title = translate(titleKey);
 		cmc = new CloseableModalController(getWindowControl(), null, mediaUploadCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	private void doAddFromBrowser(UserRequest ureq) {
+		if (guardModalController(addFromBrowserCtrl)) return;
+
+		Quota quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
+		FolderQuota folderQuota = new FolderQuota(ureq, quota, quota.getUsageKB());
+
+		removeAsListenerAndDispose(addFromBrowserCtrl);
+		addFromBrowserCtrl = new FileBrowserController(ureq, getWindowControl(), FileBrowserSelectionMode.sourceSingle,
+				folderQuota, translate("add"));
+		listenTo(addFromBrowserCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				addFromBrowserCtrl.getInitialComponent(), true, translate("browser.add"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doHandleAddFromBrowserEvent(List<VFSItem> uploadedItems) {
+
 	}
 	
 	private void doAddTextMedia(UserRequest ureq) {

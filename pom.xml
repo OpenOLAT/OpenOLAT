@@ -66,14 +66,14 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.1.12</org.springframework.version>
+		<org.springframework.version>6.1.13</org.springframework.version>
 		<org.hibernate.version>6.5.2.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.5</apache.cxf>
 		<apache.pdfbox>3.0.3</apache.pdfbox>
 		<apache.poi>5.3.0</apache.poi>
-		<apache.log4j>2.23.1</apache.log4j>
+		<apache.log4j>2.24.0</apache.log4j>
 		<org.slf4j>2.0.16</org.slf4j>
 		<org.bouncycastle>1.78.1</org.bouncycastle>
 		<io.jsonwebtoken>0.12.6</io.jsonwebtoken>
@@ -2167,7 +2167,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.15.0</version>
+			<version>6.16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>

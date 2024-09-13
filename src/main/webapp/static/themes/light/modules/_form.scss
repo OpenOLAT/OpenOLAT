@@ -697,13 +697,15 @@ form .o_form, form.o_form {
 		.o_realchooser {
 			&:hover,
 			&:focus {
-					&+script+.o_dnd .btn {
+					&+script+.o_dnd .btn,
+					&+.o_dnd .btn {
 					color: $btn-default-color;
 				    background-color: darken($btn-default-bg, 5%);
 				}
 			}
 			/* same highlight style as in bootstrap form-control-focus mixin */
-			&:focus+script+.o_dnd .btn {
+			&:focus+script+.o_dnd .btn,
+			&:focus+.o_dnd .btn  {
 				$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
 				border-color: $input-border-focus;
 				outline: 0;

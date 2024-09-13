@@ -4,6 +4,8 @@ import { commonmark } from '@milkdown/preset-commonmark';
 import {remark} from 'remark';
 import strip from 'strip-markdown';
 
+import { gfm } from '@milkdown/preset-gfm';
+import { placeholder, placeholderCtx } from './placeholder';
 
 /**
  * Render a markdown text as read-only HTML.
@@ -28,15 +30,18 @@ export function ooMdView(targetDomId, text) {
 
 /**
  * Create an editor to edit a markdown text in a flex form MarkdownElement.
- * @param  targetDomId  The editor is added inside the DOM element with the id targetDomId
- * @param  text         The text to edit
+ * @param  targetDomId     The editor is added inside the DOM element with the id targetDomId
+ * @param  text            The text to edit
+ * @param  updateListener  A listener of text update events in JavaScript that is injected by the renderer
+ * @param  onBlur          A listener to the blur event of the editor in JavaScript that is injected by the renderer
+ * @param  placeholderText An optional placeholder string
  */
-export async function ooMdEditFormElement(targetDomId, text, updateListener, onBlur) {
+export async function ooMdEditFormElement(targetDomId, text, updateListener, onBlur, placeholderText) {
 	var editor = await new Editor()
 		.config((ctx) => {
 			ctx.set(rootCtx, targetDomId);
 			ctx.set(defaultValueCtx, text);
-
+			ctx.set(placeholderCtx, placeholderText);
 			const listener = ctx.get(listenerCtx);
 			listener.markdownUpdated((ctx, markdown, prevMarkdown) => {
 				if (markdown !== prevMarkdown) {
@@ -45,6 +50,8 @@ export async function ooMdEditFormElement(targetDomId, text, updateListener, onB
 			});
 		})
 		.use(commonmark)
+		.use(gfm)
+		.use(placeholder)
 		.use(listener)
 		.create();
 

@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.project.ui;
@@ -42,11 +42,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 12 Dec 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class ProjFileUploadController extends FormBasicController {
-	
+
 	private FileElement fileEl;
 
 	private ProjFileContentController fileEditCtrl;
@@ -59,23 +59,37 @@ public class ProjFileUploadController extends FormBasicController {
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 
-	public ProjFileUploadController(UserRequest ureq, WindowControl wControl, ProjProject project) {
+	public ProjFileUploadController(UserRequest ureq, WindowControl wControl, ProjProject project, FileElement fileEl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(CreateDocumentController.class, getLocale(), getTranslator()));
 		this.project = project;
+		this.fileEl = fileEl;
 		
 		initForm(ureq);
+		if (fileEl.getUploadFileName() != null) {
+			fileEditCtrl.setFilename(fileEl.getUploadFileName(), false);
+		}
 	}
 	
 	public ProjFile getFile() {
 		return file;
 	}
+
+	public FileElement getFileEl() {
+		return fileEl;
+	}
+
+	public String getFilename() {
+		return fileEditCtrl.getFilename();
+	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file.file", formLayout);
-		fileEl.setMandatory(true, "form.mandatory.hover");
-		fileEl.addActionListener(FormEvent.ONCHANGE);
+		if (fileEl == null) {
+			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file.file", formLayout);
+			fileEl.setMandatory(true, "form.mandatory.hover");
+			fileEl.addActionListener(FormEvent.ONCHANGE);
+		}
 		
 		fileEditCtrl = new ProjFileContentController(ureq, getWindowControl(), mainForm, project, null);
 		listenTo(fileEditCtrl);
@@ -115,14 +129,15 @@ public class ProjFileUploadController extends FormBasicController {
 			file = projectService.createFile(getIdentity(), project, fileEditCtrl.getFilename(), fileEl.getUploadInputStream(), true);
 			if (file != null) {
 				projectService.updateTags(getIdentity(), file.getArtefact(), fileEditCtrl.getTagDisplayValues());
-				
+
 				VFSMetadata vfsMetadata = file.getVfsMetadata();
 				fileEditCtrl.updateVfsMetdata(vfsMetadata);
 				vfsMetadata = vfsRepositoryService.updateMetadata(vfsMetadata);
 			}
-		} 
-		
-		fireEvent(ureq, FormEvent.DONE_EVENT);
+			fireEvent(ureq, FormEvent.DONE_EVENT);
+		} else {
+			fireEvent(ureq, Event.CANCELLED_EVENT);
+		}
 	}
 
 }

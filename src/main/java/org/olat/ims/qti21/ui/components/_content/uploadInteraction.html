@@ -4,7 +4,7 @@
 #set($uploadIndex = $r.getIndexOfUploadInteraction($interaction.responseIdentifier))
 
 <input name="qtiworks_uploadpresented_${responseIdentifier}" type="hidden" value="1"/>
-<div class="$localName">
+<div class="$localName o_block">
 	#if($interaction.getPrompt())
 	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
@@ -25,13 +25,22 @@
 			## Already uploaded something, so show file and ability to replace it
 	
 			<div class="o_file_upload">
-				<div class="o_file_meta o_nowrap"><a class="o_file o_nowrap" href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank">$responseValue.fileName</a>
+				<div class="o_file_meta o_nowrap">
+					<a class="o_file o_nowrap" href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank">
+						<i class="o_icon o_icon-lg o_filetype_file $r.getFiletypeIconCss("$responseValue.fileName")"></i>				
+						$responseValue.fileName
+					</a>
 					<span class="o_file_date">${r.getUploadDate($interaction.responseIdentifier)}</span><span class="o_file_type">${r.getUploadExtension($interaction.responseIdentifier)}</span><span class="o_file_size">${r.getUploadSize($interaction.responseIdentifier)}</span></div>
 				<div class="o_file_actions">
 				<a href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank">
-					<i class="o_icon o_icon_download"> </i></a>
+					<i class="o_icon o_icon_download" aria-hidden="true" title="${r.escapeForHtmlAttribute($r.translate("upload.download", "$responseValue.fileName"))}"> </i>
+					<span class="sr-only">${r.escapeForHtmlAttribute($r.translate("upload.download", "$responseValue.fileName"))}</span>
+				</a>
 			#if($r.isItemSessionOpen())
-				<a href="javascript:;" onclick="$r.ffXHREvent("cid","deleteResponse","responseIdentifier","${responseIdentifier}");"><i class="o_icon o_icon_pf_trash"> </i></a>
+				<a href="javascript:;" onclick="$r.ffXHREvent("cid","deleteResponse","responseIdentifier","${responseIdentifier}");">
+					<i class="o_icon o_icon_pf_trash" aria-hidden="true" title="${r.escapeForHtmlAttribute($r.translate("upload.delete", "$responseValue.fileName"))}"> </i>
+					<span class="sr-only">${r.escapeForHtmlAttribute($r.translate("upload.delete", "$responseValue.fileName"))}</span>
+				</a>
 			#end
 				</div>
 			</div>
@@ -39,11 +48,14 @@
 			## Nothing uploaded yet
 			#if($r.isItemSessionOpen())
 			<div class="o_form">
-				<div class="o_fileinput">
-					<input id="oo_${responseIdentifier}" class="form-control o_realchooser" type="file" name="qtiworks_uploadresponse_${responseIdentifier}" onchange="b_handleFileUploadFormChange(this, this.form.fake_oo_${responseIdentifier}, this.form.upload); $r.getFullTemporaryResponseEvent();" />
-					<div class="o_fakechooser input-group">
-						<input class="form-control" name="fake_oo_${responseIdentifier}" tabindex="-1">
-						<span class="input-group-addon"><a href="javascript:;" tabindex="-1"><i class="o_icon o_icon_upload"> </i></a></span>
+				<div class="o_fileinput o_area panel-placeholder">
+					<input id="oo_${responseIdentifier}" class="form-control o_realchooser" tabindex="0" type="file" name="qtiworks_uploadresponse_${responseIdentifier}" onchange="b_handleFileUploadFormChange(this, this.form.fake_oo_${responseIdentifier}, this.form.upload); $r.getFullTemporaryResponseEvent();" />
+  					<div class="o_dnd" aria-hidden="true">
+						<div class="o_dnd_icon"><i class="o_icon o_icon o_icon_upload"></i></div>
+						<div class="o_dnd_info">$r.translate("upload.info")</div>
+						<div class="o_dnd_select"><span class="btn btn-xs btn-default" tabindex="-1">
+							<span>$r.translate("upload.select")</span>
+						</span></div>
 					</div>
 				</div>
 			</div>

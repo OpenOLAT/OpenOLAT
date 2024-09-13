@@ -55,19 +55,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CreateBadge01CustomizationStep extends BasicStep {
-	public CreateBadge01CustomizationStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
+public class CreateBadge02CustomizationStep extends BasicStep {
+	public CreateBadge02CustomizationStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.customization", null);
-		setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
+		setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadge01CustomizationForm(ureq, wControl, form, runContext);
+		return new CreateBadgeCustomizationForm(ureq, wControl, form, runContext);
 	}
 
-	private class CreateBadge01CustomizationForm extends StepFormBasicController {
+	private class CreateBadgeCustomizationForm extends StepFormBasicController {
 
 		private CreateBadgeClassWizardContext createContext;
 		private ColorPickerElement backgroundColor;
@@ -83,7 +83,7 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
 
-		public CreateBadge01CustomizationForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		public CreateBadgeCustomizationForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "customize_step");
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {

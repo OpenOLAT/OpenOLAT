@@ -147,7 +147,9 @@ public class BadgeAssertionPublicController extends FormBasicController {
 			}
 		}
 
-		uifactory.addStaticTextElement("form.version", badgeClass.getVersionWithScan(), formLayout);
+		if (OpenBadgesUIFactory.isSpecifyVersion()) {
+			uifactory.addStaticTextElement("form.version", badgeClass.getVersionWithScan(), formLayout);
+		}
 
 		uifactory.addStaticTextElement("form.issued.on",
 				Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()), formLayout);

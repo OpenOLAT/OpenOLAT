@@ -69,7 +69,8 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 	
 	public VideoTaskAssessmentPlayController(UserRequest ureq, WindowControl wControl,
 											 RepositoryEntry videoEntry, List<VideoTaskSession> taskSessions,
-											 Identity assessedIdentity, VideoTaskCourseNode courseNode) {
+											 Identity assessedIdentity, VideoTaskCourseNode courseNode,
+											 boolean showSessionParticipant) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("play");
@@ -101,13 +102,23 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 
 		String videoElementId = videoDisplayController.getVideoElementId();
 		long durationInSeconds = VideoHelper.durationInSeconds(videoEntry, videoDisplayController);
+
 		timelineCtrl = new MasterController(ureq, getWindowControl(),
-				videoEntry, taskSessions, videoElementId, durationInSeconds, true);
+				videoEntry, taskSessions, videoElementId, durationInSeconds, true,
+				testMode(courseNode) && showSessionParticipant);
 		timelineCtrl.setVisibleChannels(List.of(TimelineEventType.CORRECT, TimelineEventType.SEGMENT, TimelineEventType.INCORRECT, TimelineEventType.VIDEO));
 		listenTo(timelineCtrl);
 		mainVC.put("timeline", timelineCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
+	}
+
+	private boolean testMode(VideoTaskCourseNode courseNode) {
+		if (courseNode == null) {
+			return false;
+		}
+		String mode = courseNode.getModuleConfiguration().getStringValue(VideoTaskEditController.CONFIG_KEY_MODE, VideoTaskEditController.CONFIG_KEY_MODE_DEFAULT);
+		return VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode);
 	}
 
 	@Override

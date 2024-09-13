@@ -206,8 +206,8 @@ public class SingleKeyTranslatorController extends FormBasicController {
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("ok_cancel", getTranslator());
 		buttonLayout.setRootForm(mainForm);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("ok", buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		formLayout.add(buttonLayout);
 	}
 

@@ -122,7 +122,7 @@ public class TUEditController extends ActivateableTabbableDefaultController {
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_TUCONFIG), myContent);
+		tabbedPane.addTab(translate(PANE_TAB_TUCONFIG), "o_sel_tu_configuration", myContent);
 	}
 
 	@Override

@@ -260,6 +260,7 @@ public class TUConfigForm extends FormBasicController {
 	
 		thost = uifactory.addTextElement("st", "TUConfigForm.url", 255, fullURI, formLayout);
 		thost.setExampleKey("form.url.example", null);
+		thost.setElementCssClass("o_sel_tu_url");
 		thost.setMandatory(true);
 		
 		uifactory.addStaticTextElement("expl", NLS_DESCRIPTION_LABEL, translate(NLS_DESCRIPTION_PREAMBLE), formLayout);
@@ -271,6 +272,7 @@ public class TUConfigForm extends FormBasicController {
 
 		String loadedConfig = convertConfigToNewStyle(config);
 		selectables = uifactory.addRadiosVertical("selectables", NLS_DISPLAY_CONFIG_EXTERN, formLayout, selectablePK.keys(), selectablePK.values());
+		selectables.setElementCssClass("o_sel_tu_type");
 		selectables.select(loadedConfig, true);
 		selectables.addActionListener(FormEvent.ONCLICK);
 		

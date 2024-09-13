@@ -253,9 +253,9 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 		
 		if(showReplaceButton) {
 			sb.append("<div class='o_dnd' aria-hidden='true'>");
-			sb.append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>");
+			sb.append("<div class='o_dnd_select'><span class='btn btn-xs btn-default' tabindex='-1'><span>");
 			sb.append("<i class='o_icon o_icon_upload'> </i> ").append(trans.translate("replace"));
-			sb.append("</span></button></div>");
+			sb.append("</span></span></div>");
 			sb.append("</div>");
 		} else {
 			String dndInfo = fileElem.getDndInformations();
@@ -263,14 +263,20 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				dndInfo = trans.translate("file.element.dnd.info");
 			}
 			String buttonLabel = fileElem.getChooseButtonLabel();
-			if(!StringHelper.containsNonWhitespace(buttonLabel)) {
+			boolean hasBtnLabel = true;
+			if (StringHelper.containsNonWhitespace(buttonLabel) && buttonLabel.equals("none")) {
+				hasBtnLabel = false;
+			} else if(!StringHelper.containsNonWhitespace(buttonLabel)) {
 				buttonLabel = trans.translate("file.element.dnd.select");
 			}
 			sb.append("<div class='o_dnd' aria-hidden='true'>")
 			  .append("<div class='o_dnd_icon'><i class='o_icon o_icon o_icon_upload'></i></div>")
 			  .append("<div class='o_dnd_info'>").append(dndInfo).append("</div>")
-			  .append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>")
-			  .append(buttonLabel).append("</span></button></div>")
+			  .append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'>");
+			if (hasBtnLabel) {
+				sb.append("<span>").append(buttonLabel).append("</span>");
+			}
+			sb.append("</button></div>")
 			  .append("</div>");
 		}
 		

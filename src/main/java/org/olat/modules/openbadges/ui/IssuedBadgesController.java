@@ -175,6 +175,9 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		tableEl.setRowRenderer(rowVC, this);
 		tableEl.setSortEnabled(true);
 		tableEl.setSearchEnabled(false);
+		tableEl.setEmptyTableSettings("empty.badges.table", null,
+				"o_icon_badge", null, null,
+				false);
 	}
 
 	private void initFilters() {

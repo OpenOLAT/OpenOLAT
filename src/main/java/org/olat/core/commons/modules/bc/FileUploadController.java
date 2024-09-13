@@ -75,13 +75,13 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalImpl;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -257,7 +257,7 @@ public class FileUploadController extends FormBasicController {
 		setMaxUploadSizeKB((uploadLimitKB < remainingQuotKB ? uploadLimitKB : remainingQuotKB));
 		fileEl.setMandatory(true, "NoFileChoosen");
 		if (mimeTypes != null && mimeTypes.size() > 0) {
-			fileEl.limitToMimeType(mimeTypes, "WrongMimeType", new String[]{mimeTypes.toString()});					
+			fileEl.limitToMimeType(mimeTypes, "error.mimetype", new String[]{mimeTypes.toString()});
 		}
 		if(uriValidation) {// Reduce the max. file name length if it need to be URI valid for QTI
 			fileEl.setMaxFilenameLength(48);
