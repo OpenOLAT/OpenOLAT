@@ -357,7 +357,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				target.append(";");
 				target.append(" return false;\" role='button' draggable=\"false\">");
 				target.append("<i class='o_icon o_icon-lg ").append(collapseIcon).append("'> </i>");
-				target.append("<span class='visually-hidden'>").append(collapseText).append("</span>");
+				target.append("<span class='sr-only'>").append(collapseText).append("</span>");
 				target.append("</a>");
 			}
 			
