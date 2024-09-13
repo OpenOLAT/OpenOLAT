@@ -3317,11 +3317,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		@Override
 		public List<Data> getRowDataAttributes(int pos) {
 			FolderRow row = dataModel.getObject(pos);
+			String filename = StringHelper.escapeForHtmlAttribute(row.getFilename());
 			if(row.isDirectory()) {
-				String filename = row.getFilename();
 				return List.of(new Data("upload-folder", filename));
 			} 
-			String filename = row.getFilename();
 			return List.of(new Data("drag-file", filename));
 		}
 	}

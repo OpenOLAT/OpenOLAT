@@ -132,8 +132,12 @@ public class DispatcherModule {
 	 * 
 	 * @param response
 	 */
-	public static final void redirectToDefaultDispatcher(HttpServletResponse response) {
-		redirectTo(response, WebappHelper.getServletContextPath() + getPathDefault());
+	public static final boolean redirectToDefaultDispatcher(HttpServletResponse response) {
+		if(!response.isCommitted()) {
+			redirectTo(response, WebappHelper.getServletContextPath() + getPathDefault());
+			return true;
+		}
+		return false;
 	}
 
 	/**

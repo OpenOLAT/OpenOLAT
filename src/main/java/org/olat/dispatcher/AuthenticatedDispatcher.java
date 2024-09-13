@@ -308,15 +308,17 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		}
 	}
 	
-	private void redirectToDefaultDispatcher(HttpServletRequest request, HttpServletResponse response) {
+	private boolean redirectToDefaultDispatcher(HttpServletRequest request, HttpServletResponse response) {
 		if(ServletUtil.acceptJson(request)) {
 			try {
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+				return true;
 			} catch (IOException e) {
 				log.error("", e);
+				return false;
 			}
 		} else {
-			DispatcherModule.redirectToDefaultDispatcher(response);
+			return DispatcherModule.redirectToDefaultDispatcher(response);
 		}
 	}
 	
