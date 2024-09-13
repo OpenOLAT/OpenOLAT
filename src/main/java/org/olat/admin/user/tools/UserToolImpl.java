@@ -60,13 +60,14 @@ public class UserToolImpl implements UserTool, ComponentEventListener {
 		Link link = LinkFactory.createLink(linkName, linkName, container.getTranslator(), container, this, Link.LINK | Link.NONTRANSLATED);
 		link.setUserObject(this);
 		link.setElementCssClass("o_sel_user_tools-" + extension.getNavigationKey());
-		link.setIconLeftCSS(iconCssClass + " o_icon-lg");
 		// in top nav render only icon. In the visual UI use tool tip, in the screenreader UI use aria label
 		if (iconOnly) {
 			link.setCustomDisplayText("");
 			link.setTitle(label); 
+			link.setIconLeftCSS(iconCssClass + " o_icon-lg");
 		} else {			
 			link.setCustomDisplayText(label);
+			link.setIconLeftCSS(iconCssClass);
 		}
 
 		// build perma link for "open in new tab/window"

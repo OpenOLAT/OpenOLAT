@@ -111,7 +111,7 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 			vc.contextPut("helpPlugins", helpPluginLinksName);
 		}
 		
-		loginLink = LinkFactory.createLink("topnav.login", vc, this);
+		loginLink = LinkFactory.createButton("topnav.login", vc, this);
 		loginLink.setIconLeftCSS("o_icon o_icon_login o_icon-fw o_icon-lg");
 		loginLink.setTitle("topnav.login.alt");
 		loginLink.setGhost(true);

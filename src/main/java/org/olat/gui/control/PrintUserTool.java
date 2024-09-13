@@ -41,14 +41,15 @@ public class PrintUserTool implements UserTool, ComponentEventListener {
 		String componentName = "print-" + CodeHelper.getRAMUniqueID();
 		ExternalLink printLink = new ExternalLink(componentName);
 		container.put(componentName, printLink);
-		printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg o_icon-fw");
 		printLink.setUrl("javascript:o_doPrint();");
 		
 		// in top nav render only icon. In the visual UI use tool tip, in the screenreader UI use aria label		
 		if (iconOnly) {
+			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg o_icon-fw");
 			printLink.setName("");
 			printLink.setTooltip(container.getTranslator().translate("topnav.printview"));
 		} else {			
+			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-fw");
 			printLink.setName(container.getTranslator().translate("topnav.printview"));
 			printLink.setTooltip(container.getTranslator().translate("topnav.printview.alt"));
 		}

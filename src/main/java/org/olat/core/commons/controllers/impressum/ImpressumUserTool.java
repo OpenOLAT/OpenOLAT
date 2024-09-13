@@ -48,7 +48,6 @@ public class ImpressumUserTool implements UserTool, ComponentEventListener {
 		} else {
 			impressumLink = LinkFactory.createLink("topnav.impressum", container, this);			
 		}
-		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg o_icon-fw");
 		impressumLink.setAjaxEnabled(false);
 		impressumLink.setTarget("_blank");
 		
@@ -56,6 +55,9 @@ public class ImpressumUserTool implements UserTool, ComponentEventListener {
 		if (iconOnly) {
 			impressumLink.setCustomDisplayText("");
 			impressumLink.setTitle(container.getTranslator().translate("topnav.impressum.alt"));
+			impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg o_icon-fw");			
+		} else {
+			impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-fw");
 		}
 		
 		return impressumLink;
