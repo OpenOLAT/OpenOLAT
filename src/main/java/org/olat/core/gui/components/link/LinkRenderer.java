@@ -44,6 +44,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -128,9 +129,21 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		StringBuilder jsSb = new StringBuilder(240); 
 		boolean inForm = isInForm(args);
 
-		String i18n = link.getI18n();
+		// Init the text values as non-translated text...
 		String title = link.getTitle();
-		String customDisplayText = link.getCustomDisplayText();
+		String linkText = (link.getCustomDisplayText() != null ? link.getCustomDisplayText() : link.getI18n());
+		String ariaLabel = link.getAriaLabel();
+		// .. and translate the text values if of i18n type. The values are either all
+		// translated or all non-translated
+		if (!nontranslated){
+			if (link.getCustomDisplayText() == null) {
+				linkText = (link.getI18n() == null ? null : (translator == null ? link.getI18n() : translator.translate(link.getI18n())));				
+			}
+			title = (link.getTitle() == null ? null : (translator == null ? link.getTitle() : translator.translate(link.getTitle())));
+			ariaLabel = (link.getAriaLabel() == null ? null : (translator == null ? link.getAriaLabel() : translator.translate(link.getAriaLabel())));			
+		}
+		// Calculate flag for pure icons links without link text or link render component
+		boolean isIconLink = (!StringHelper.containsNonWhitespace(linkText) && link.getInnerComponent() == null);
 		
 		// a form link can not have tooltips at the moment
 		// tooltip sets its own id into the <a> tag.
@@ -163,32 +176,15 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			
 			sb.append(" draggable=\"false\"");
 			
-			//tooltips
-			if(title != null) {
-				sb.append(" title=\"");
-				if (link.hasTooltip()) {
-					String text;
-					if (nontranslated) {
-						text = title;
-					} else {
-						text = translator.translate(title);
-					}
-					sb.appendHtmlAttributeEscaped(text);
-				} else if (nontranslated){
-					sb.appendHtmlAttributeEscaped(title);
-				} else {
-					sb.appendHtmlAttributeEscaped(translator.translate(title));
-				}
-				sb.append("\"");
+			// title / tooltips, but only if not redundant with link text
+			if(StringHelper.containsNonWhitespace(title) && !title.equals(linkText) && !isIconLink) {
+				sb.append(" title=\"").appendHtmlAttributeEscaped(title).append("\"");
 			}
-			if(link.getAriaLabel() != null) {
-				sb.append(" aria-label=\"");
-				if (nontranslated){
-					sb.appendHtmlAttributeEscaped(link.getAriaLabel()).append("\"");
-				} else {
-					sb.appendHtmlAttributeEscaped(translator.translate(link.getAriaLabel())).append("\"");
-				}
+			// A11y: aria-label for screen-readers, but only if not redundant with link text
+			if(ariaLabel != null && !ariaLabel.equals(linkText) && !ariaLabel.equals(title)) {
+				sb.append(" aria-label=\"").appendHtmlAttributeEscaped(ariaLabel).append("\"");
 			}
+			// A11y: Override the linke role for links that are actually buttons
 			if(link.getAriaRole() != null) {
 				sb.append(" role=\"").appendHtmlEscaped(link.getAriaRole()).append("\"");
 			} else {
@@ -205,12 +201,22 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			}
 			sb.append(">");
 			
-			// CSS icon
-			if (link.getIconLeftCSS() != null) {
-				sb.append("<i class='").append(link.getIconLeftCSS()).append("'");
+			// LEFT CSS icon
+			if (link.getIconLeftCSS() != null || presentation == Link.LINK_BACK) {
+				sb.append("<i class='");
+				if (link.getIconLeftCSS() != null) {
+					sb.append(link.getIconLeftCSS());
+				} else {
+					sb.append("o_icon o_icon_back o_icon-fw");
+				}
+				sb.append("' aria-hidden='true'");
+				if(title != null && isIconLink) {
+					// For icon-links add the title for non-screen-readers here so that it is not
+					// read by the screenreader and add the text for screen readers in a visually
+					// hidden element
+					sb.append(" title=\"").appendHtmlAttributeEscaped(title).append("\"");
+				}
 				sb.append("></i> "); // one space needed
-			} else if (presentation == Link.LINK_BACK) {
-				sb.append("<i class='o_icon o_icon_back'> </i> "); // one space needed				
 			}
 			
 			sb.append("<span"); // inner wrapper for layouting
@@ -221,43 +227,30 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			
 			if(link.getInnerComponent() != null) {
 				renderer.render(link.getInnerComponent(), sb, args);
-			} else if (customDisplayText != null) {
-				//link is not translated but has custom text
-				if (StringHelper.containsNonWhitespace(customDisplayText)) {
-					sb.append(customDisplayText);					
-				} else {
-					// a11y: try adding something invisible but speakable for screenreaders
-					if(title != null) {
-						sb.append("<span class='visually-hidden'>" + title + "</span>");
-					}
-				}
-				
-			} else if (nontranslated) {
-				if (StringHelper.containsNonWhitespace(i18n)) {
-					// link name is not a i18n key
-					sb.append(i18n);
-				} else {
-					// a11y: try adding something invisible but speakable for screenreaders
-					if(title != null) {
-						sb.append("<span class='visually-hidden'>" + title + "</span>");
-					}
-				}
 			} else {
-				// use translator
-				if(translator == null) {
-					sb.append("Ohoho");
+				if (StringHelper.containsNonWhitespace(linkText)) {
+					sb.append(linkText);					
 				} else {
-					sb.append(translator.translate(i18n));
+					// a11y: try adding something invisible but speakable for screenreaders, but only if not already added during 
+					if(isIconLink && StringHelper.containsNonWhitespace(title)) {
+						sb.append("<span class='sr-only'>").appendHtmlEscaped(title).append("</span>");
+					}
 				}
 			}
 			sb.append("</span>");
 			
-			// CSS icon
+			// RIGHT CSS icon
 			if (link.getIconRightCSS() != null) {
 				sb.append(" <i class='").append(link.getIconRightCSS()).append("'"); // one space needed
-				sb.append("></i> "); 
+				if(StringHelper.containsNonWhitespace(title) && isIconLink) {
+					// For icon-links add the title for non-screen-readers here so that it is not
+					// read by the screenreader and add the text for screen readers in a visually
+					// hidden element
+					sb.append(" title=\"").appendHtmlAttributeEscaped(title).append("\"");
+				}
+				sb.append(" aria-hidden='true'></i> "); 
 			}
-			
+						
 			if(link.getBadge() != null) {
 				renderer.render(link.getBadge(), sb, args);
 			}
@@ -290,16 +283,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				jsSb.append(");");
 			}
 		} else {
-			String text;
-			if (customDisplayText != null) {
-				//link is not translated but has custom text
-				text = customDisplayText;
-			}	else if (nontranslated) {
-				// link name is not a i18n key
-				text = (i18n == null ? "" : i18n);
-			} else {
-				text = translator.translate(i18n);
-			}
+			// DISABLED rendering 
 			sb.append("<a ");
 			if (elementId != null) sb.append(" id=\"").append(elementId).append("\" ");
 			
@@ -318,15 +302,17 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			// CSS icon
 			if (link.getIconLeftCSS() != null) {
 				sb.append("<i class='").append(link.getIconLeftCSS()).append("'");
-				sb.append("></i> "); // one space needed
+				sb.append(" aria-hidden='true'></i> "); // one space needed
 			}			
 
-			sb.append("<span>").append(text).append("</span>");
+			if (StringHelper.containsNonWhitespace(linkText)) {				
+				sb.append("<span>").append(linkText).append("</span>");
+			}
 			
 			// CSS icon
 			if (link.getIconRightCSS() != null) {
 				sb.append(" <i class='").append(link.getIconRightCSS()).append("'"); // one space needed
-				sb.append("></i> "); 
+				sb.append(" aria-hidden='true'></i> "); 
 			}			
 
 			sb.append("</a>");
@@ -352,18 +338,26 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		      .append("\n</script>");
 		}
 		
-		if (elementId != null && link.hasTooltip() && StringHelper.containsNonWhitespace(link.getTitle())) {
+		if (elementId != null && link.hasTooltip() && StringHelper.containsNonWhitespace(title)) {
 			sb.append("<script>")
 			  .append("\"use strict\";\n")
 			  .append("jQuery(function() {\n")
-			  .append("  jQuery('#").append(elementId).append("').tooltip({\n")
+			  .append("  jQuery('#").append(elementId).append(" i", isIconLink).append("').tooltip({\n")
 			  .append("    html: true,\n")
 			  .append("    placement: '").append(link.getTooltipPosition()).append("',\n")
 			  .append("    container: 'body',\n")
-			  .append("    title: '").appendHtmlEscaped(link.getTitle()).append("' \n")
+			  .append("    title: \"").appendHtmlEscaped(title).append("\" \n")
 			  .append("  });\n")
 			  .append("});")
 			  .append("</script>");
+		}
+		
+		// Dev alert for missing a11y text
+		if (Settings.isDebuging()) {
+			if (isIconLink && !StringHelper.containsNonWhitespace(title)) {
+				log.warn("A11y issue: icon-only links must always have a title, please fix your code for link:: " + link.getComponentName() + " with URL::" + link.getUrl() + " and icon::" + link.getIconLeftCSS());
+			}
+			
 		}
 	}
 	

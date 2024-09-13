@@ -77,7 +77,7 @@ public class SupportMailSPI implements HelpLinkSPI  {
 		}
 
 		@Override
-		public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+		public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 			Link helpLink = LinkFactory.createLink("help.support", container, this);
 			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getSupportIcon());
 			return helpLink;

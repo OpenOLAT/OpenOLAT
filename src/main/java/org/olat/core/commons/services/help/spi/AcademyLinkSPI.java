@@ -62,7 +62,7 @@ public class AcademyLinkSPI implements HelpLinkSPI  {
 		}
 
 		@Override
-		public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+		public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 			ExternalLink helpLink = new ExternalLink("help.academy");
 			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getAcademyIcon());
 			helpLink.setName(container.getTranslator().translate("help.academy"));

@@ -42,7 +42,7 @@ public class CoachingUserTool implements UserTool {
 	}
 
 	@Override
-	public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+	public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 		if(notificationsCtrl == null) {
 			notificationsCtrl = new CoachingNotificationsController(ureq, wControl);
 		}

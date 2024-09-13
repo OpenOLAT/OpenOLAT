@@ -82,6 +82,7 @@ public class CoachingNotificationsController extends BasicController implements 
 		mainVC.setDomReplacementWrapperRequired(false);
 		notificationsLink = LinkFactory.createLink("coaching.notifications.link", "notifications", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 		notificationsLink.setCustomDisplayText("0");
+		notificationsLink.setTitle(translate("coaching.tool.activities"));
 		notificationsLink.setElementCssClass("badge");
 		notificationsLink.setIconRightCSS("o_icon o_icon_time");
 		notificationsLink.setDomReplacementWrapperRequired(false);

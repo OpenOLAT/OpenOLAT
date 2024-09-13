@@ -2,7 +2,7 @@
 <div id = "$id" style="display: none">
 	$r.render("content")
 	## render close button just for screenreaders
-	<div class="visually-hidden"><a href="#" class="close" onClick="$r.javaScriptCommand('lightbox-closed');">$r.translate("close.dialog")</a></div>
+	<div class="sr-only"><a href="#" class="close" onClick="$r.javaScriptCommand('lightbox-closed');">$r.translate("close.dialog")</a></div>
 </div>
 <script>
 	if (typeof $lightboxId === 'undefined') {

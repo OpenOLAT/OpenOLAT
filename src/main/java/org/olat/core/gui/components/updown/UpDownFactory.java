@@ -22,6 +22,7 @@ package org.olat.core.gui.components.updown;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.updown.UpDown.Layout;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
@@ -32,7 +33,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 public class UpDownFactory {
 	
 	public static UpDown createUpDown(String name, Layout layout, VelocityContainer vc, ComponentEventListener listener) {
-		UpDown upDown = createUpDown(name, layout);
+		UpDown upDown = createUpDown(name, layout, vc.getTranslator());
 		if (listener != null) {
 			upDown.addListener(listener);
 		}
@@ -42,8 +43,8 @@ public class UpDownFactory {
 		return upDown;
 	}
 	
-	static UpDown createUpDown(String name, Layout layout) {
-		return new UpDown(name, layout);
+	static UpDown createUpDown(String name, Layout layout, Translator translator) {
+		return new UpDown(name, layout, translator);
 	}
 	
 }

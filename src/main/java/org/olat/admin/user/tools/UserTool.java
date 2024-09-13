@@ -32,6 +32,16 @@ import org.olat.core.gui.control.Disposable;
  */
 public interface UserTool extends Disposable {
 	
-	public Component getMenuComponent(UserRequest ureq, VelocityContainer container);
+	/**
+	 * Factory method to create a user tool, either as an icon-link for the to
+	 * navigation or as a regular link
+	 * 
+	 * @param ureq      The user request
+	 * @param container The container where the link shall be added to
+	 * @param iconOnly  true: make an icon-only version with appropriate hover and
+	 *                  a11y text or a normal link with text
+	 * @return The component representing the user tool
+	 */
+	public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly);
 	
 }

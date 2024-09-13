@@ -49,7 +49,7 @@ public class SearchUserTool implements UserTool, ComponentEventListener {
 	}
 
 	@Override
-	public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+	public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 		if(searchC == null) {
 			String resourceUrl = null;
 			BusinessControl bc = wControl.getBusinessControl();
@@ -67,6 +67,7 @@ public class SearchUserTool implements UserTool, ComponentEventListener {
 		VelocityContainer search = new VelocityContainer(componentName, pagePath, container.getTranslator(), this);
 		search.setDomReplacementWrapperRequired(false);
 		search.put("search_input", searchC.getInitialComponent());
+		search.contextPut("iconOnly", Boolean.valueOf(iconOnly));
 		container.put(componentName, search);
 		return search;
 	}

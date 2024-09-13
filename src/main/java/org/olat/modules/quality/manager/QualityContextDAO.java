@@ -19,9 +19,13 @@
  */
 package org.olat.modules.quality.manager;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
@@ -185,10 +189,28 @@ class QualityContextDAO {
 		sb.append("       left join fetch context.audienceRepositoryEntry audienceRepositoryEntry");
 		sb.and().append("context.evaluationFormSession.key in :sessionKeys");
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QualityContext.class)
-				.setParameter("sessionKeys", sessionRefs.stream().map(EvaluationFormSessionRef::getKey).toList())
+		TypedQuery<QualityContext> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContext.class);
+		
+		int count = 0;
+		int batch = 8192;
+		List<Long> sessionKeys = sessionRefs.stream().map(EvaluationFormSessionRef::getKey).collect(Collectors.toList());
+		List<QualityContext> contexts = new ArrayList<>();
+		do {
+			int toIndex = Math.min(count + batch, sessionKeys.size());
+			List<Long> toLoad = sessionKeys.subList(count, toIndex);
+			List<QualityContext> partContexts = query
+				.setParameter("sessionKeys", toLoad)
+				.setFirstResult(0)
+				.setMaxResults(batch)
 				.getResultList();
+			contexts.addAll(partContexts);
+			
+			count += batch;
+		} while(count < sessionKeys.size());
+		
+		
+		return contexts;
 	}
 
 	/**

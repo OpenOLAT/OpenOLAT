@@ -41,12 +41,25 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 public class ImpressumUserTool implements UserTool, ComponentEventListener {
 
 	@Override
-	public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
-		Link impressumLink = LinkFactory.createLink("topnav.impressum", container, this);
-		impressumLink.setTitle("topnav.impressum.alt");
-		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-fw");
+	public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
+		Link impressumLink = null;
+		if (iconOnly) { 		
+			impressumLink = LinkFactory.createLink("topnav.impressum", "topnav.impressum", container.getTranslator(), container, this, Link.LINK | Link.NONTRANSLATED);
+		} else {
+			impressumLink = LinkFactory.createLink("topnav.impressum", container, this);			
+		}
 		impressumLink.setAjaxEnabled(false);
 		impressumLink.setTarget("_blank");
+		
+		// in top nav render only icon. In the visual UI use tool tip, in the screenreader UI use aria label
+		if (iconOnly) {
+			impressumLink.setCustomDisplayText("");
+			impressumLink.setTitle(container.getTranslator().translate("topnav.impressum.alt"));
+			impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg o_icon-fw");			
+		} else {
+			impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-fw");
+		}
+		
 		return impressumLink;
 	}
 

@@ -109,7 +109,7 @@ public class UserToolsMenuController extends BasicController implements Lockable
 			if(!shortCutOnly && !selectedToolSet.contains(toolExtension.getUniqueExtensionID())) {
 				UserTool tool = toolExtension.createUserTool(ureq, getWindowControl(), getLocale());
 				if(tool != null) {
-					Component link = tool.getMenuComponent(ureq, menuVC);
+					Component link = tool.getMenuComponent(ureq, menuVC, false);
 					String linkName = link.getComponentName();
 					switch(category) {
 						case search: searchLinksName.add(linkName); break;
@@ -121,7 +121,7 @@ public class UserToolsMenuController extends BasicController implements Lockable
 							for (HelpLinkSPI helpLinkSPI : helpModule.getUserToolHelpPlugins()) {
 								UserTool helpTool = helpLinkSPI.getHelpUserTool(getWindowControl());
 								if (helpTool != null) {
-									Component helpLink = helpTool.getMenuComponent(ureq, menuVC);
+									Component helpLink = helpTool.getMenuComponent(ureq, menuVC, false);
 									String helpLinkName = helpLink.getComponentName();
 									
 									helpLinksName.add(helpLinkName);

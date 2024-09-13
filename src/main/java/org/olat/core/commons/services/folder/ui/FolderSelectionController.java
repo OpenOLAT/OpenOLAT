@@ -304,11 +304,11 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	private void forgeTitleLink(FolderRow row) {
 		if (row.getVfsItem() instanceof VFSContainer) {
 			FormLink link = uifactory.addFormLink("title_" + counter++, CMD_FOLDER, "", null, null, Link.NONTRANSLATED);
-			link.setI18nKey(row.getTitle());
+			link.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
 			link.setUserObject(row);
 			row.setTitleItem(link);
 		} else {
-			StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, row.getTitle(), flc);
+			StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), flc);
 			titleEl.setStaticFormElement(false);
 			row.setTitleItem(titleEl);
 		}

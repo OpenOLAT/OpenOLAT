@@ -1,37 +1,49 @@
 ## DOM replacement implemented via ID on UL element - bypass standard OO wrapper DIV
-<ul id="$r.getCId()" class="nav o_navbar-nav o_navbar-right o_sel_menu_tools">
+<ul id="$r.getCId()" class="nav o_navbar-nav o_navbar-right o_sel_menu_tools list-unstyled">
 	#if(!$locked)
 		#foreach($search in $searchs)
 		 	<li>$r.render($search)</li>
 		#end
 		#if($personalTools && $personalTools.size() > 0)
-			<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.tools")</li>
-			#foreach($personalTool in $personalTools)
-			 	<li>$r.render($personalTool)</li>
-			#end
+			<li>
+				<span id="o_navbar_cagegory_tools" class="o_navbar_category">$r.translate("topnav.my.menu.tools")</span>				
+				<ul class="list-unstyled" aria-describedby='o_navbar_cagegory_tools'>
+				#foreach($personalTool in $personalTools)
+				 	<li>$r.render($personalTool)</li>
+				#end
+				</ul>
+			</li>
 		#end
 		#if($configs && $configs.size() > 0)
-			<li role="presentation" class="divider"></li>
-			<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.configurations")</li>
-			#foreach($config in $configs)
-			 	<li>$r.render($config)</li>
-			#end
+			<li>
+				<span id="o_navbar_cagegory_configurations" class="o_navbar_category">$r.translate("topnav.my.menu.configurations")</span>				
+				<ul class="list-unstyled" aria-describedby='o_navbar_cagegory_configurations'>
+				#foreach($config in $configs)
+				 	<li>$r.render($config)</li>
+				#end
+				</ul>
+			</li>
 		#end
 		#if($helpPlugins && $helpPlugins.size() > 0)
-			<li role="presentation" class="divider"></li>
-			<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.help")</li>
-			#foreach($helpPlugin in $helpPlugins)
-			 	<li>$r.render($helpPlugin)</li>
-			#end
+			<li>
+				<span id="o_navbar_cagegory_help" class="o_navbar_category">$r.translate("topnav.my.menu.help")</span>				
+				<ul class="list-unstyled" aria-describedby='o_navbar_cagegory_help'>
+				#foreach($helpPlugin in $helpPlugins)
+				 	<li>$r.render($helpPlugin)</li>
+				#end
+				</ul>
+			</li>
 		#end
 		#if($systems && $systems.size() > 0)
-			<li role="presentation" class="divider"></li>
-			<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.systems")</li>
-			#foreach($system in $systems)
-			 	<li>$r.render($system)</li>
-			#end
+			<li>
+				<span id="o_navbar_cagegory_systems" class="o_navbar_category">$r.translate("topnav.my.menu.systems")</span>				
+				<ul class="list-unstyled" aria-describedby='o_navbar_cagegory_systems>
+				#foreach($system in $systems)
+				 	<li>$r.render($system)</li>
+				#end
+				</ul>
+			</li>
 		#end
-		<li role="presentation" class="divider"></li>
 	#end
 	#if($r.isTrue($authenticated))
 	<li>

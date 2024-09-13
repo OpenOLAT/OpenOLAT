@@ -23,10 +23,10 @@ import org.olat.admin.user.tools.UserTool;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.Util;
 
 /**
  * 
@@ -37,14 +37,26 @@ import org.olat.core.util.Util;
 public class PrintUserTool implements UserTool, ComponentEventListener {
 
 	@Override
-	public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+	public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 		String componentName = "print-" + CodeHelper.getRAMUniqueID();
-		String velocity_root = Util.getPackageVelocityRoot(PrintUserTool.class);
-		String pagePath = velocity_root + "/print.html";
-		VelocityContainer print = new VelocityContainer(componentName, pagePath, container.getTranslator(), this);
-		print.setDomReplacementWrapperRequired(false);
-		container.put(componentName, print);
-		return print;
+		ExternalLink printLink = new ExternalLink(componentName);
+		container.put(componentName, printLink);
+		printLink.setUrl("javascript:o_doPrint();");
+		
+		// in top nav render only icon. In the visual UI use tool tip, in the screenreader UI use aria label		
+		if (iconOnly) {
+			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg o_icon-fw");
+			printLink.setName("");
+			printLink.setTooltip(container.getTranslator().translate("topnav.printview"));
+		} else {			
+			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-fw");
+			printLink.setName(container.getTranslator().translate("topnav.printview"));
+			printLink.setTooltip(container.getTranslator().translate("topnav.printview.alt"));
+		}
+		
+		return printLink;
+
+		
 	}
 
 	@Override

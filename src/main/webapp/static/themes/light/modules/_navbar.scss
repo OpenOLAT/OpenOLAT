@@ -95,10 +95,6 @@ a.o_disabled.navbar-text {
 		}	
 	}
 	
-	.o_navbar_tools>#o_navbar_tools_permanent>li>a>span {
-		display: none;
-	}
-	
 	.o_navbar_tools li.o_portrait>a>span {
 		@media (min-width: $screen-sm-min) {
 			display: inline;
@@ -131,9 +127,22 @@ a.o_disabled.navbar-text {
 			top: 10px; 
 			right: 10px; // Win8 issue with overlapping scrollbar
 		}
+		
+		ul.o_navbar-right {
+			padding: 3px 20px;
+			&>li {
+				margin-bottom: 1em;
+			}						
+			li {
+				padding-top: 3px;
+			}
+		}
 		.o_navbar-right {
+			.o_navbar_category {
+				font-size: 90%;
+			}
 			a {
-				padding: 3px 20px;
+				padding: 3px 0px;
 				color: $o-offcanvas-link-color;
 				&:hover,
 				&:focus {
@@ -142,17 +151,12 @@ a.o_disabled.navbar-text {
 				}
 				&.o_logout {
 					color: $o-offcanvas-logout-color;
+					padding-left: 0;
 					&:hover,
 					&:focus {
 						color: $o-offcanvas-logout-hover-color;
 					}
-				}
-				.o_icon-lg {
-					font-size:1.0em;
-					//overrides vertical-align of o_icon-lg
-					vertical-align: baseline;
-				}
-				
+				}				
 			}
 			.divider {
 				height: 1px;
@@ -239,12 +243,6 @@ a.o_disabled.navbar-text {
 	}
 }
 
-/* hide texts for some topnav icons, but not in on login screen */
-#o_navbar_impress, #o_navbar_search_opener {
-	a span {
-		display: none;
-	}
-}
 body.o_dmz {
 	#o_navbar_print, #o_navbar_impress, #o_navbar_help, #o_navbar_search_opener {
 		a span {
