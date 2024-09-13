@@ -24,7 +24,9 @@ import org.junit.Test;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.webauthn4j.converter.util.ObjectConverter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webauthn4j.data.attestation.authenticator.COSEKey;
 import com.webauthn4j.data.attestation.authenticator.EC2COSEKey;
 
@@ -40,11 +42,15 @@ public class OLATWebAuthnManagerTest extends OlatTestCase {
 	private OLATWebAuthnManagerImpl webAuthnManager;
 
 	@Test
-	public void readCoseKeyPlayGround() {
+	public void readCoseKeyPlayGround() throws Exception {
 		String val = "{\"1\":\"2\",\"3\":-7,\"-1\":1,\"-2\":\"rewHgUMdxTrgD7tELlXKFwAYEKnLUTaODOIBIPL8Joo=\",\"-3\":\"YGq+nrRgIWczBBg4hzho/G4dyN64DMQhjYEOIqGm5P0=\",\"1\":2}";
 		
-		ObjectConverter converter = new ObjectConverter();
-		COSEKey key = converter.getJsonConverter().readValue(val, COSEKey.class);
+		ObjectMapper jsonMapper = new ObjectMapper();
+		jsonMapper.configure(DeserializationFeature.WRAP_EXCEPTIONS, false);
+        jsonMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+   
+		COSEKey key = jsonMapper.readValue(val, COSEKey.class);
 		Assert.assertNotNull(key);
 	}
 	

@@ -70,11 +70,15 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webauthn4j.WebAuthnManager;
-import com.webauthn4j.authenticator.Authenticator;
-import com.webauthn4j.authenticator.AuthenticatorImpl;
 import com.webauthn4j.converter.AttestationObjectConverter;
+import com.webauthn4j.converter.util.JsonConverter;
 import com.webauthn4j.converter.util.ObjectConverter;
+import com.webauthn4j.credential.CredentialRecord;
+import com.webauthn4j.credential.CredentialRecordImpl;
 import com.webauthn4j.data.AuthenticationData;
 import com.webauthn4j.data.AuthenticationParameters;
 import com.webauthn4j.data.AuthenticationRequest;
@@ -89,6 +93,7 @@ import com.webauthn4j.data.attestation.statement.AttestationStatement;
 import com.webauthn4j.data.client.Origin;
 import com.webauthn4j.data.client.challenge.Challenge;
 import com.webauthn4j.data.client.challenge.DefaultChallenge;
+import com.webauthn4j.data.extension.authenticator.AuthenticationExtensionsAuthenticatorOutputs;
 import com.webauthn4j.server.ServerProperty;
 import com.webauthn4j.util.Base64UrlUtil;
 
@@ -302,21 +307,26 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 				webAuthentication.getCredentialId(), coseKey);
 
 		ServerProperty serverProperty = request.serverProperty();
-		AttestationStatement attestationStatement = null;
+		AuthenticationParameters authenticationParameters = null;
 		if(webAuthentication.getAttestationObject() != null && webAuthentication.getAttestationObject().length() > 10) {// statement saved like {} cannot be read
 			ObjectConverter converter = new ObjectConverter();
 			AttestationObjectConverter attestationObjectConverter = new AttestationObjectConverter(converter);
 			AttestationObject attestationObject = attestationObjectConverter.convert(webAuthentication.getAttestationObject());
-			attestationStatement = attestationObject.getAttestationStatement();
+			AttestationStatement attestationStatement = attestationObject.getAttestationStatement();
+			
+			CredentialRecord authenticator = new CredentialRecordImpl(attestationStatement,
+					Boolean.TRUE, null, null,
+					webAuthentication.getCounter(),
+					attestedCredentialData,
+					new AuthenticationExtensionsAuthenticatorOutputs<>(),
+					null, null, Set.of());
+			
+			authenticationParameters = new AuthenticationParameters(serverProperty,
+	                authenticator, List.of(webAuthentication.getCredentialId()), false, false);
 		}
-
-		Authenticator authenticator = new AuthenticatorImpl(attestedCredentialData, attestationStatement, webAuthentication.getCounter());
-		AuthenticationParameters authenticationParameters = new AuthenticationParameters(serverProperty,
-		                authenticator,
-		                List.of(webAuthentication.getCredentialId()), false, false);
-
+		
 		WebAuthnManager webAuthnManager = WebAuthnManager.createNonStrictWebAuthnManager();
-		AuthenticationData response = webAuthnManager.validate(authenticationRequest, authenticationParameters);
+		AuthenticationData response = webAuthnManager.verify(authenticationRequest, authenticationParameters);
 		return response != null;
 	}
 
@@ -335,7 +345,7 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
     	RegistrationParameters parameters = new RegistrationParameters(serverProperty, null, false, false);
 		
 		WebAuthnManager webAuthnManager = WebAuthnManager.createNonStrictWebAuthnManager();
-		RegistrationData response = webAuthnManager.validate(request, parameters);
+		RegistrationData response = webAuthnManager.verify(request, parameters);
 		AttestationObject attestation = response.getAttestationObject();
 		
 		AttestedCredentialData credentialData = attestation.getAuthenticatorData().getAttestedCredentialData();
@@ -420,7 +430,24 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 	public COSEKey convertToCOSEKey(byte[] value) {
 		try(InputStream in = new ByteArrayInputStream(value)) {
 			ObjectConverter converter = new ObjectConverter();
-			return converter.getJsonConverter().readValue(in, COSEKey.class);
+			JsonConverter jsonConverter = converter.getJsonConverter();
+			return jsonConverter.readValue(in, COSEKey.class);
+		} catch (IOException | IllegalArgumentException e) {
+			COSEKey keyV1 = convertToCOSEKeyV1(value);
+			if(keyV1 == null) {
+				log.error("", e);
+			}
+			return keyV1;
+		}
+	}
+	
+	public COSEKey convertToCOSEKeyV1(byte[] value) {
+		try {
+			ObjectMapper jsonMapper = new ObjectMapper();
+			jsonMapper.configure(DeserializationFeature.WRAP_EXCEPTIONS, false);
+			jsonMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+			return jsonMapper.readValue(value, COSEKey.class);
 		} catch (IOException e) {
 			log.error("", e);
 			return null;
