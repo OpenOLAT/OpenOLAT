@@ -424,8 +424,6 @@ public class OLATWebAuthnManagerImpl implements OLATWebAuthnManager, UserDataDel
 	}
 	
 	public COSEKey convertToCOSEKey(byte[] value) {
-		String val = new String(value);
-		System.out.println(val);
 		try(InputStream in = new ByteArrayInputStream(value)) {
 			ObjectConverter converter = new ObjectConverter();
 			return converter.getJsonConverter().readValue(in, COSEKey.class);
