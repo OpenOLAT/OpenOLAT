@@ -339,7 +339,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			if(!selectable) {
 				target.append(" disabled='disabled'");
 			}
-			target.append("></td>");
+			target.append(" aria-label=\"").append(translator.translate("aria.select.row")).append("\"></td>");
 		}
 		
 		if(ftE.hasDetailsRenderer()) {
