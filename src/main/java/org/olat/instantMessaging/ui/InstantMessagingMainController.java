@@ -266,7 +266,7 @@ public class InstantMessagingMainController extends BasicController implements G
 			String altText = translate("im.roster.launch.screenreader", Long.toString(stats.getOnlineBuddies()), Long.toString(stats.getOfflineBuddies()));
 			
 			if(!text.equals(onlineOfflineCount.getCustomDisplayText())) {
-				String withMarkup = "<span aria-hidden='true'>" + text + "</span><span class='visually-hidden'>" + altText + "</span>";
+				String withMarkup = "<span aria-hidden='true'>" + text + "</span><span class='sr-only'>" + altText + "</span>";
 				onlineOfflineCount.setCustomDisplayText(withMarkup);
 			}
 		}

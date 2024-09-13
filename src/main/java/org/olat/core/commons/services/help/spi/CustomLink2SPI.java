@@ -62,7 +62,7 @@ public class CustomLink2SPI implements HelpLinkSPI  {
 		}
 
 		@Override
-		public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+		public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 			ExternalLink helpLink = new ExternalLink("help.custom2");
 			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getCustom2Icon());
 			helpLink.setName(container.getTranslator().translate("help.custom2"));

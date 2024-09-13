@@ -166,7 +166,7 @@ public class OlatTopNavController extends BasicController implements LockableCon
 					for (HelpLinkSPI helpLinkSPI : helpModule.getUserToolHelpPlugins()) {
 						UserTool helpTool = helpLinkSPI.getHelpUserTool(getWindowControl());
 						if (helpTool != null) {
-							Component cmp = helpTool.getMenuComponent(ureq, topNavVC);
+							Component cmp = helpTool.getMenuComponent(ureq, topNavVC, true);
 							String cssId = toolExtension.getShortCutCssId() + "_" + helpLinkSPI.getPluginName();
 							String cssClass = toolExtension.getShortCutCssClass();
 							helpPluginLinksName.add(new Tool(cssId, cssClass, cmp.getComponentName()));
@@ -174,7 +174,7 @@ public class OlatTopNavController extends BasicController implements LockableCon
 						}
 					}
 				} else {
-					Component cmp = tool.getMenuComponent(ureq, topNavVC);
+					Component cmp = tool.getMenuComponent(ureq, topNavVC, true);
 					String cssId = toolExtension.getShortCutCssId();
 					String cssClass = toolExtension.getShortCutCssClass();
 					toolSetLinksName.add(new Tool(cssId, cssClass, cmp.getComponentName()));

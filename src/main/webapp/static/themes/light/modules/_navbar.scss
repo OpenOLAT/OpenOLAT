@@ -95,10 +95,6 @@ a.o_disabled.navbar-text {
 		}	
 	}
 	
-	.o_navbar_tools>#o_navbar_tools_permanent>li>a>span {
-		display: none;
-	}
-	
 	.o_navbar_tools li.o_portrait>a>span {
 		@media (min-width: $screen-sm-min) {
 			display: inline;
@@ -239,12 +235,6 @@ a.o_disabled.navbar-text {
 	}
 }
 
-/* hide texts for some topnav icons, but not in on login screen */
-#o_navbar_impress, #o_navbar_search_opener {
-	a span {
-		display: none;
-	}
-}
 body.o_dmz {
 	#o_navbar_print, #o_navbar_impress, #o_navbar_help, #o_navbar_search_opener {
 		a span {

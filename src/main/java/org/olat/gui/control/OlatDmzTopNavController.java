@@ -87,7 +87,7 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 		if (helpModule.isHelpEnabled()) {
 			List<String> helpPlugins = new ArrayList<>();
 			for (HelpLinkSPI helpLinkSPI : helpModule.getDMZHelpPlugins()) {
-				helpPlugins.add(helpLinkSPI.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, vc).getComponentName());
+				helpPlugins.add(helpLinkSPI.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, vc, false).getComponentName());
 			}
 			vc.contextPut("helpPlugins", helpPlugins);
 		}

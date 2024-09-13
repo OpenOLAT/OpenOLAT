@@ -428,7 +428,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private void initHelpModuleTools(UserRequest ureq, FormLayoutContainer formLayout) {		
 		List<HelpLinkSPI> helpLinks = helpModule.getAuthorSiteHelpPlugins();
 		if (helpLinks.size() == 1) {
-			Component helpCmp = helpLinks.get(0).getHelpUserTool(getWindowControl()).getMenuComponent(ureq, formLayout.getFormItemComponent());
+			Component helpCmp = helpLinks.get(0).getHelpUserTool(getWindowControl()).getMenuComponent(ureq, formLayout.getFormItemComponent(), false);
 			formLayout.getFormItemComponent().put("help.single", helpCmp);
 		} else if (helpLinks.size() > 1) {
 			DropdownItem helpDropdown = uifactory.addDropdownMenu("help.list", "help.authoring", "help.authoring", formLayout, getTranslator());
@@ -436,7 +436,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			helpDropdown.setOrientation(DropdownOrientation.right);
 			for (HelpLinkSPI helpLinkSPI : helpLinks) {
 				((Dropdown)helpDropdown.getComponent()).addComponent(helpLinkSPI
-						.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, formLayout.getFormItemComponent()));
+						.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, formLayout.getFormItemComponent(), false));
 			}
 		}
 	}

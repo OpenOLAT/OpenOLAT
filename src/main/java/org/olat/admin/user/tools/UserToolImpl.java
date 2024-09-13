@@ -22,6 +22,7 @@ package org.olat.admin.user.tools;
 import java.util.Locale;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
@@ -31,6 +32,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.WebappHelper;
 
 /**
  * 
@@ -51,16 +53,28 @@ public class UserToolImpl implements UserTool, ComponentEventListener {
 	}
 
 	@Override
-	public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+	public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 		String label = extension.getLabel(locale);
 		String iconCssClass = extension.getIconCssClass();
 		String linkName = "personal.tool.alt." + CodeHelper.getRAMUniqueID();
 		Link link = LinkFactory.createLink(linkName, linkName, container.getTranslator(), container, this, Link.LINK | Link.NONTRANSLATED);
 		link.setUserObject(this);
-		link.setCustomDisplayText(label);
 		link.setElementCssClass("o_sel_user_tools-" + extension.getNavigationKey());
 		link.setIconLeftCSS(iconCssClass + " o_icon-lg");
-		link.setTitle(label);
+		// in top nav render only icon. In the visual UI use tool tip, in the screenreader UI use aria label
+		if (iconOnly) {
+			link.setCustomDisplayText("");
+			link.setTitle(label); 
+		} else {			
+			link.setCustomDisplayText(label);
+		}
+
+		// build perma link for "open in new tab/window"
+		String navKey = extension.getNavigationKey();
+		Long identityKey = ureq.getUserSession().getIdentity().getKey();
+		String relPath = "HomeSite/" + identityKey + "/" + navKey + "/0";
+		link.setUrl(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + relPath);
+		
 		return link;
 	}
 

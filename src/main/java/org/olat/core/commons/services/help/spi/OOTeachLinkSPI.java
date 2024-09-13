@@ -62,7 +62,7 @@ public class OOTeachLinkSPI implements HelpLinkSPI  {
 		}
 
 		@Override
-		public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+		public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 			ExternalLink helpLink = new ExternalLink("help.ooTeach");
 			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getOOTeachIcon());
 			helpLink.setName(container.getTranslator().translate("help.ooTeach"));

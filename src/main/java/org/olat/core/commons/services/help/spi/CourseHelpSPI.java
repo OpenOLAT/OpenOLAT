@@ -75,7 +75,7 @@ public class CourseHelpSPI implements HelpLinkSPI  {
 		}
 
 		@Override
-		public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+		public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 			Link helpLink = LinkFactory.createLink("help.course", container, this);
 			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getCourseIcon());
 			helpLink.setTarget("oohelp");

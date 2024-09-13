@@ -31,6 +31,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.updown.UpDownEvent.Direction;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 
 /**
@@ -56,7 +57,7 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 	private boolean loweremost = false;
 	private Object userObject;
 
-	UpDown(String name, Layout layout) {
+	UpDown(String name, Layout layout, Translator trans) {
 		super(name);
 		this.layout = layout;
 		setDomReplacementWrapperRequired(false);
@@ -67,12 +68,14 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 		up.setDomReplacementWrapperRequired(false);
 		up.setIconLeftCSS("o_icon o_icon-lg o_icon_move_up");
 		up.setCustomDisplayText("");
+		up.setTitle(trans == null ? "Up" : trans.translate("move.up"));
 		
 		downName = idPrefix + "_down";
 		this.down = createLink(layout, downName);
 		down.setDomReplacementWrapperRequired(false);
 		down.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
 		down.setCustomDisplayText("");
+		down.setTitle(trans == null ? "Down" : trans.translate("move.down"));
 	}
 
 	private Link createLink(Layout layout, String name) {

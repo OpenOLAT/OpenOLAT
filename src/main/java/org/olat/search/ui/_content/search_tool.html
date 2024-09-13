@@ -1,8 +1,8 @@
-<a id="o_search_tool_toggler" href="#" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("search")" aria-expanded="false" aria-label="$r.translate("search")">
-	<i class="o_icon o_icon_search o_icon-lg"></i>
-	<span>$r.translate("topnav.search")</span>
+<a id="o_search_tool_toggler" href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+	<i class="o_icon o_icon_search o_icon-lg" aria-hidden="true" #if($iconOnly) title="$r.translateInAttribute("search")" #end ></i>
+	<span #if($iconOnly) class="sr-only" #end>$r.translate("topnav.search")</span>
 </a>
-<ul class="dropdown-menu dropdown-menu-right">          
+<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="o_search_tool_toggler">          
 	<li id="o_navbar_search" class="o_navbar-form">
 		$r.render("search_input")
 	</li>

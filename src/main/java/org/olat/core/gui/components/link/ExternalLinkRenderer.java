@@ -41,6 +41,15 @@ public class ExternalLinkRenderer extends DefaultComponentRenderer {
 			Translator translator, RenderResult renderResult, String[] args) {
 		ExternalLink link = (ExternalLink)source;
 		
+		
+		String linkText = link.getName();
+		String title = link.getTooltip();
+		// don't use title if the same as link text to remove a11y redundancy
+		if (StringHelper.containsNonWhitespace(linkText) && linkText.equals(title)) {
+			title = "";
+		}
+		boolean isIconLink = (!StringHelper.containsNonWhitespace(linkText) && StringHelper.containsNonWhitespace(link.getIconLeftCSS()));
+		
 		//class
 		sb.append("<a class=\"");
 		if (!link.isEnabled()) {
@@ -59,19 +68,24 @@ public class ExternalLinkRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(link.getTarget())) {
 			sb.append(" target=\"").append(link.getTarget()).append("\"");
 		}
-		if(StringHelper.containsNonWhitespace(link.getTooltip())) {
-			sb.append(" title=\"").append(link.getTooltip()).append("\"");
+		if(!isIconLink && StringHelper.containsNonWhitespace(title)) {
+			sb.append(" title=\"").appendHtmlAttributeEscaped(title).append("\"");
 		}
-		if(StringHelper.containsNonWhitespace(link.getTooltip())) {
-			sb.append(" rel=\"noopener noreferrer\"");
-		}
-		sb.append(">");
+		sb.append(" rel=\"noopener noreferrer\"");
+		sb.append(" id='").append(link.getComponentName()).append("'>");
 		
 		if(StringHelper.containsNonWhitespace(link.getIconLeftCSS())) {
-			sb.append("<i class=\"").append(link.getIconLeftCSS()).append("\"> </i> ");
+			sb.append("<i class=\"").append(link.getIconLeftCSS()).append("\" aria-hidden='true'");
+			if(isIconLink && StringHelper.containsNonWhitespace(title)) {
+				sb.append(" title=\"").appendHtmlAttributeEscaped(title).append("\"");
+			}
+			sb.append("> </i> ");
 		}
-		if(StringHelper.containsNonWhitespace(link.getName())) {
-			sb.append("<span>").append(link.getName()).append("</span>");
+		if(StringHelper.containsNonWhitespace(linkText)) {
+			sb.append("<span>").appendHtmlEscaped(linkText).append("</span>");
+		}
+		if(isIconLink && StringHelper.containsNonWhitespace(title)) {
+			sb.append("<span class='sr-only'>").appendHtmlEscaped(link.getTooltip()).append("</span>");
 		}
 		sb.append("</a>");
 	}

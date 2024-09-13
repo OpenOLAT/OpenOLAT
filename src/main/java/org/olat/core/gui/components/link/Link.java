@@ -403,10 +403,11 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	}
 
 	/**
-	 * Set an link title which gets displayed when hovering over the link.
+	 * Set an link title which gets displayed when hovering over the link. The title
+	 * is also displayed to a11y users in a visually hidden element. 
 	 * <br>
 	 * If ((getPresentation() - Link.NONTRANSLATED) >= 0 ) the provided title is
-	 * already translated, otherwise its an untranslated i18n key 
+	 * already translated, otherwise its an untranslated i18n key
 	 * 
 	 * @param the i18n key or the translated key depending on presentation mode
 	 */
@@ -414,6 +415,16 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 		this.title = i18nKey;
 	}
 	
+	/**
+	 * Add an optional aria-label to the link. This should only be used rarely when
+	 * an additional explenation is required. Do not use the same text for the aria
+	 * label as already used as title or the link text! To get best a11y results use
+	 * a descriptive link text. If the link text is not enouch or the link is only
+	 * an icon without text, then set the link title. Only if the link title is not
+	 * descriptive enough use an additional aria-label.
+	 * 
+	 * @param i18nKey
+	 */
 	public void setAriaLabel(String i18nKey) {
 		this.ariaLabel = i18nKey;
 	}
@@ -720,7 +731,12 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	}
 
 	/**
-	 * @param iconCSS The CSS classes used as icons in the i element on the left hand side of the link text
+	 * Set the CSS classes for an icon that is placed before the link text or
+	 * instead of a link text. If you use not link-text at all, make sure you set a
+	 * title that explains what the link does.
+	 * 
+	 * @param iconCSS The CSS classes used as icons in the i element on the left
+	 *                hand side of the link text
 	 */
 	public void setIconLeftCSS(String iconCSS) {
 		this.iconLeftCSS = iconCSS;
@@ -735,7 +751,11 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	}
 
 	/**
-	 * @param iconCSS The CSS classes used as icons in the i element on the right hand side of the link text
+	 * Set the CSS classes for an icon that is placed after the link text. If you
+	 * wan to to use a icon-only link, please us the iconLeftCSS instead!
+	 * 
+	 * @param iconCSS The CSS classes used as icons in the i element on the right
+	 *                hand side of the link text
 	 */
 	public void setIconRightCSS(String iconCSS) {
 		this.iconRightCSS = iconCSS;

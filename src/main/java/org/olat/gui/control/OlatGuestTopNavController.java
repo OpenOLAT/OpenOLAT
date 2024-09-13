@@ -83,14 +83,14 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 		vc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
 		impressumLink = LinkFactory.createLink("_top_nav_guest_impressum", "topnav.impressum", vc, this);
 		impressumLink.setTitle("topnav.impressum.alt");
-		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
+		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-fw o_icon-lg");
 		impressumLink.setAjaxEnabled(false);
 		impressumLink.setTarget("_blank");
 		
 		if(searchModule.isGuestEnabled()) {
 			SearchUserToolExtension search = CoreSpringFactory.getImpl(SearchUserToolExtension.class);
 			UserTool userTool = search.createUserTool(ureq, getWindowControl(), getLocale());
-			Component cmp = userTool.getMenuComponent(ureq, vc);
+			Component cmp = userTool.getMenuComponent(ureq, vc, false);
 			vc.put("search.tool", cmp);
 		}
 		
@@ -101,7 +101,7 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 			for (HelpLinkSPI helpLinkSPI : helpModule.getDMZHelpPlugins()) {
 				UserTool helpTool = helpLinkSPI.getHelpUserTool(getWindowControl());
 				if (helpTool != null) {
-					Component cmp = helpTool.getMenuComponent(ureq, vc);
+					Component cmp = helpTool.getMenuComponent(ureq, vc, false);
 					String CssId = "o_navbar_help_" + helpLinkSPI.getPluginName();
 					String cssClass = "";
 					helpPluginLinksName.add(new Tool(CssId, cssClass, cmp.getComponentName()));
@@ -112,8 +112,9 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 		}
 		
 		loginLink = LinkFactory.createLink("topnav.login", vc, this);
-		loginLink.setIconLeftCSS("o_icon o_icon_login o_icon-lg");
+		loginLink.setIconLeftCSS("o_icon o_icon_login o_icon-fw o_icon-lg");
 		loginLink.setTitle("topnav.login.alt");
+		loginLink.setGhost(true);
 
 		putInitialPanel(vc);
 	}

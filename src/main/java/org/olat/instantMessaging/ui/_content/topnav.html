@@ -4,10 +4,11 @@
 	</div>
 
 	<div id="o_im_status" class="dropdown">
-		<a href="javascript:;" class="o_undecorated dropdown-toggle" data-toggle="dropdown" title="$r.translate("im.status.change.long")" aria-label="$r.translate("im.status.change.long")">
-			<i class="$statusClass"></i>
+		<a id="o_im_status_toggle" href="javascript:;" class="o_undecorated dropdown-toggle" data-toggle="dropdown">
+			<i class="$statusClass" aria-hidden="true" title="$r.translateInAttribute("im.status.change.long")"></i>
+			<span class="sr-only">$r.translate("im.status.change.long")</span>
 		</a>
-		<ul class="dropdown-menu dropdown-menu-right" role="menu">
+		<ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="o_im_status_toggle">
 			<li>$r.contextHelpWithWrapper("manual_user/basic_concepts/Chat/")</li>
 			<li>$r.render("presence.available")</li>
 			<li>$r.render("presence.dnd")</li>

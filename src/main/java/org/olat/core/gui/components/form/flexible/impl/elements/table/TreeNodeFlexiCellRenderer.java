@@ -168,12 +168,17 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, true, true, pair);
 			
 			target.append("<a href=\"javascript:;\" onclick=\"").append(jsCode).append("; return false\"><i class='o_icon o_icon-fw ");
+			String translatedCommand = "";
 			if(open) {
 				target.append("o_icon_close_tree");
+				translatedCommand = translator.translate("level.close");
 			} else {
 				target.append("o_icon_open_tree");
+				translatedCommand = translator.translate("level.open");
 			}
-			target.append("'> </i></a>");
+			target.append("' title=\"").appendHtmlAttributeEscaped(translatedCommand).append("\" aria-hidden='true'> </i>");
+			target.append("<span class='sr-only'>").append(translatedCommand).append("</span'>");
+			target.append("</a>");
 		}
 		
 		if (withAction && action != null) {

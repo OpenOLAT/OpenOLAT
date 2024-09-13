@@ -42,7 +42,7 @@ public class InstantMessagingUserTool implements UserTool {
 	}
 
 	@Override
-	public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+	public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 		if(imController == null) {
 			imController = new InstantMessagingMainController(ureq, wControl);
 		}

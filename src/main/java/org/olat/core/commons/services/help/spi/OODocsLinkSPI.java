@@ -63,7 +63,7 @@ public class OODocsLinkSPI implements HelpLinkSPI {
 	public class ConfluenceUserTool implements UserTool {
 
 		@Override
-		public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+		public Component getMenuComponent(UserRequest ureq, VelocityContainer container, boolean iconOnly) {
 			ExternalLink helpLink = new ExternalLink("help.ooDocs");
 			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getOODocsIcon());
 			helpLink.setName(container.getTranslator().translate("help.ooDocs"));
