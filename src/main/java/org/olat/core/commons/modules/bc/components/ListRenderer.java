@@ -301,10 +301,10 @@ public class ListRenderer {
 		  .append(FileSelection.FORM_ID)
 		  .append("\" value=\"");
 		if(xssErrors) {
-			sb.append(StringHelper.escapeHtml(name))
+			sb.append(StringHelper.escapeForHtmlAttribute(name))
 			  .append("\" disabled=\"disabled\"");
 		} else {
-			sb.append(name).append("\" ");
+			sb.append(StringHelper.escapeForHtmlAttribute(name)).append("\" ");
 		}
 		sb.append("/></td><td class=\"o_bc_filename\">");
 		// browse link pre
