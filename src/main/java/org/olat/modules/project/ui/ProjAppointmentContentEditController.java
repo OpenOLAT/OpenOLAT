@@ -44,6 +44,7 @@ public class ProjAppointmentContentEditController extends FormBasicController {
 
 	private ProjAppointmentContentEditForm appointmentContentEditForm;
 
+	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final boolean template;
 	private ProjAppointment appointment;
@@ -53,8 +54,10 @@ public class ProjAppointmentContentEditController extends FormBasicController {
 	private ProjectService projectService;
 
 	public ProjAppointmentContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjProject project,  boolean template, ProjAppointment appointment, Date initialStartDate) {
+			ProjectBCFactory bcFactory, ProjProject project, boolean template, ProjAppointment appointment,
+			Date initialStartDate) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
+		this.bcFactory = bcFactory;
 		this.project = project;
 		this.template = template;
 		this.appointment = appointment;
@@ -80,11 +83,11 @@ public class ProjAppointmentContentEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (appointment == null) {
-			appointment = projectService.createAppointment(getIdentity(), new ProjectBCFactory(), project,
+			appointment = projectService.createAppointment(getIdentity(), bcFactory, project,
 					appointmentContentEditForm.getStartDate(), appointmentContentEditForm.getEndDate());
 		}
 		
-		projectService.updateAppointment(getIdentity(), new ProjectBCFactory(), appointment, 
+		projectService.updateAppointment(getIdentity(), bcFactory, appointment, 
 				appointmentContentEditForm.getStartDate(),
 				appointmentContentEditForm.getEndDate(),
 				appointmentContentEditForm.getSubject(),

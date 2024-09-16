@@ -308,15 +308,17 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		}
 	}
 	
-	private void redirectToDefaultDispatcher(HttpServletRequest request, HttpServletResponse response) {
+	private boolean redirectToDefaultDispatcher(HttpServletRequest request, HttpServletResponse response) {
 		if(ServletUtil.acceptJson(request)) {
 			try {
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+				return true;
 			} catch (IOException e) {
 				log.error("", e);
+				return false;
 			}
 		} else {
-			DispatcherModule.redirectToDefaultDispatcher(response);
+			return DispatcherModule.redirectToDefaultDispatcher(response);
 		}
 	}
 	
@@ -343,7 +345,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 					.append("<p>Can not redirect to this URL as it contains invalid elements</p>")
 					.append("<p><b>Invalid URL:</b> ").append(escapedRequest)
 					.append("</p></body>");
-					log.warn("Invalid URL, maybe XSS attempt. URL::" + escapedRequest);
+					log.warn("Invalid URL, maybe XSS attempt. URL::{}", escapedRequest);
 				} else {
 					clientSideWindowCheck.append("<script>window.location.replace(\"").append(requestUri).append("?");
 					if(StringHelper.containsNonWhitespace(newWindow)) {

@@ -247,7 +247,10 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(evaluationFormExecCtrl == source) {
+		if(multiEvaluationFormCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(evaluationFormExecCtrl == source) {
 			loadModel();
 			cmc.deactivate();
 			cleanUp();
@@ -258,8 +261,10 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(multiEvaluationFormCtrl);
 		removeAsListenerAndDispose(evaluationFormExecCtrl);
 		removeAsListenerAndDispose(cmc);
+		multiEvaluationFormCtrl = null;
 		evaluationFormExecCtrl = null;
 		cmc = null;
 	}

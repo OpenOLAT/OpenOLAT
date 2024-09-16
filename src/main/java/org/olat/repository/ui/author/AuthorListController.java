@@ -739,7 +739,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		// educational type
 		SelectionValues educationalTypeKV = new SelectionValues();
 		repositoryManager.getAllEducationalTypes()
-				.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
+				.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), StringHelper.escapeHtml(translate(RepositoyUIFactory.getI18nKey(type))))));
 		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
 				AuthorSourceFilter.EDUCATIONALTYPE.name(), educationalTypeKV, true));
@@ -788,7 +788,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		SelectionValues organisationValues = new SelectionValues();
 		for(Organisation organisation:organisationList) {
 			String key = organisation.getKey().toString();
-			organisationValues.add(SelectionValues.entry(key, organisation.getDisplayName()));
+			organisationValues.add(SelectionValues.entry(key, StringHelper.escapeHtml(organisation.getDisplayName())));
 		}
 		if(organisationValues.size() > 1) {
 			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.organisations"),
@@ -973,12 +973,20 @@ public class AuthorListController extends FormBasicController implements Activat
 				cleanUp();
 			}
 		} else if(copyCtrl == source) {
-			cmc.deactivate();
-			if (event == Event.DONE_EVENT) {
-				reloadRows();
-				launchEditDescription(ureq, copyCtrl.getCopiedEntry());
+			if (event == Event.CLOSE_EVENT) {
+				if(cmc != null) {
+					cmc.deactivate();
+				}
+			} else {
+				if(cmc != null) {
+					cmc.deactivate();
+				}
+				if (event == Event.DONE_EVENT) {
+					reloadRows();
+					launchEditDescription(ureq, copyCtrl.getCopiedEntry());
+				}
+				cleanUp();
 			}
-			cleanUp();
 		} else if(copyWrapperCtrl == source) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				reloadRows();

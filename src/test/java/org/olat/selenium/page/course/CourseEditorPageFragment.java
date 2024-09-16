@@ -327,6 +327,12 @@ public class CourseEditorPageFragment {
 		return this;
 	}
 	
+	public CourseEditorPageFragment assertSelectedNode(String nodeTitle) {
+		By targetNodeBy = By.xpath("//div[contains(@class,'o_editor_menu')]//span[contains(@class,'active')][contains(@class,'o_tree_level_label_leaf')]/a[contains(@title,'" + nodeTitle + "')]");
+		OOGraphene.waitElement(targetNodeBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Open the tools drop-down
 	 * @return Itself

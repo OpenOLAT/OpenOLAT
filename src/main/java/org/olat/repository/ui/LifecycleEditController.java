@@ -86,15 +86,23 @@ public class LifecycleEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		labelEl.clearError();
 		if(!StringHelper.containsNonWhitespace(labelEl.getValue())) {
 			labelEl.setErrorKey("form.mandatory.hover");
-			allOk = false;
+			allOk &= false;
+		} else if(labelEl.getValue() != null && labelEl.getValue().length() > 250) {
+			labelEl.setErrorKey("form.error.toolong", "250");
+			allOk &= false;
+		}
+		
+		if(softKeyEl.getValue() != null && softKeyEl.getValue().length() > 64) {
+			softKeyEl.setErrorKey("form.error.toolong", "64");
+			allOk &= false;
 		}
 
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

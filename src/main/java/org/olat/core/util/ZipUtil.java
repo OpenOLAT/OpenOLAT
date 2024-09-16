@@ -57,6 +57,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -684,17 +685,18 @@ public class ZipUtil {
 			String itemName = currentPath.length() == 0 ?
 					vfsItem.getName() : currentPath + "/" + vfsItem.getName();
 			if(filter.accept(vfsItem)) {
-				if (vfsItem instanceof VFSContainer ) {
+				if (vfsItem instanceof VFSContainer container) {
 					out.putNextEntry(new ZipEntry(itemName + "/"));
 					out.closeEntry();
 					
-					List<VFSItem> items = ((VFSContainer)vfsItem).getItems();
+					List<VFSItem> items = container.getItems();
 					for (VFSItem item:items) {
 						if (!addToZip(item, itemName, out, filter, withMetadata)) {
 							success = false;
 							break;
 						}
 					}
+					DBFactory.getInstance().commitAndCloseSession();
 				} else {
 					VFSLeaf leaf = (VFSLeaf)vfsItem;
 					ZipEntry entry = new ZipEntry(itemName);

@@ -74,6 +74,8 @@ public class TBParticipantTopicSelectController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_tb_select_topic_form");
+		
 		Set<Long> selectedTopicKeys = selections.stream()
 				.map(selection -> selection.getTopic().getKey())
 				.collect(Collectors.toSet());
@@ -97,6 +99,7 @@ public class TBParticipantTopicSelectController extends FormBasicController {
 				.sorted((t1, t2) -> Integer.compare(t1.getSortOrder(), t2.getSortOrder()))
 				.forEach(topic -> topicsSV.add(SelectionValues.entry(topic.getKey().toString(), topic.getTitle())));
 		topicEl = uifactory.addDropdownSingleselect("selection.topic", formLayout, topicsSV.keys(), topicsSV.values());
+		topicEl.setElementCssClass("o_sel_tb_topic");
 		topicEl.setMandatory(true);
 		topicEl.setFocus(true);
 		if (topicEl.getKeys().length > 0) {
@@ -114,6 +117,7 @@ public class TBParticipantTopicSelectController extends FormBasicController {
 		
 		enrollEl = uifactory.addCheckboxesHorizontal("selection.enroll", formLayout, new String[] { "enroll" },
 				new String[] { translate("selection.enroll.value") });
+		enrollEl.setElementCssClass("o_sel_tb_enroll");
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

@@ -550,6 +550,7 @@ import org.junit.runners.Suite;
 	org.olat.login.oauth.SwitchEduIDProviderTest.class,
 	org.olat.login.oauth.spi.MicrosoftAzureADFSProviderTest.class,
 	org.olat.login.webauthn.manager.WebAuthnCounterDAOTest.class,
+	org.olat.login.webauthn.manager.OLATWebAuthnManagerTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
 	org.olat.ldap.manager.LDAPDAOTest.class,
 	org.olat.ldap.manager.LDAPLoginManagerTest.class,

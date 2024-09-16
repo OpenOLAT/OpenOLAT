@@ -294,7 +294,7 @@ public class ScormSessionController {
 				saveLessonStatusProperties(scoId, lessonStatus);
 				// notify
 				if(isAssessable()) {
-					calculateResults(lessonStatus, scoresProp, lessonStatusProp, false);
+					calculateResults(lessonStatus, scoresProp, lessonStatusProp, true);
 				}
 			}
 		} else {
