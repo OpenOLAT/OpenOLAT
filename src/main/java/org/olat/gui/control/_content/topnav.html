@@ -34,13 +34,3 @@
 	#end
 	</ul>
 </div>
-
-## focus search input field whenever search is displayed
-<script>
-"use strict";
-jQuery('#o_help_tool_toggler').click(function () {
-	setTimeout(function() {
-		jQuery('#o_help_tool_toggler[aria-expanded="true"] + .dropdown-menu #o_navbar_help_list input:text').focus();	
-	},0);
-});
-</script>
