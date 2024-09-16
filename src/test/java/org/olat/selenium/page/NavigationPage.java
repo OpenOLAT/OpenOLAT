@@ -182,7 +182,7 @@ public class NavigationPage {
 	}
 	
 	public void openCourse(String title) {
-		By courseTab = By.xpath("//li/a[contains(@title,'" + title + "')][not(i[contains(@class,'o_icon_close_tab')])]");
+		By courseTab = By.xpath("//div[@id='o_navbar_container']//li/a[contains(@title,'" + title + "')][not(i[contains(@class,'o_icon_close_tab')])]");
 		OOGraphene.waitElementPresence(courseTab, 5, browser);
 		List<WebElement> courseLinks = browser.findElements(courseTab);
 		if(courseLinks.isEmpty() || !courseLinks.get(0).isDisplayed()) {
