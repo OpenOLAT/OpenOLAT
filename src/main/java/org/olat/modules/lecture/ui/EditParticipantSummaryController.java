@@ -145,7 +145,7 @@ public class EditParticipantSummaryController extends FormBasicController {
 		participantSummary = lectureService.saveParticipantSummary(participantSummary);
 		lectureService.recalculateSummary(entry, assessedIdentity);
 		lectureService.auditLog(LectureBlockAuditLog.Action.updateSummary, before, lectureService.toAuditXml(participantSummary),
-				"", null, null, entry, assessedIdentity, getIdentity());
+				"", null, null, entry, null, assessedIdentity, getIdentity());
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -160,7 +160,7 @@ public class EditParticipantSummaryController extends FormBasicController {
 		participantSummary.setRequiredAttendanceRate(null);
 		participantSummary = lectureService.saveParticipantSummary(participantSummary);
 		lectureService.auditLog(LectureBlockAuditLog.Action.removeCustomRate, before, lectureService.toAuditXml(participantSummary),
-				"", null, null, entry, assessedIdentity, getIdentity());
+				"", null, null, entry, null, assessedIdentity, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

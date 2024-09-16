@@ -512,13 +512,13 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			row.getAuthorizedAbsence().select(onKeys[0], true);
 			rollCall = lectureService.getOrCreateRollCall(calledIdentity, row.getLectureBlock(), true, reason, category);
 			lectureService.auditLog(LectureBlockAuditLog.Action.createRollCall, before, lectureService.toAuditXml(rollCall),
-					reason, row.getLectureBlock(), rollCall, row.getLectureBlock().getEntry(), calledIdentity, getIdentity());
+					reason, row.getLectureBlock(), rollCall, row.getLectureBlock().getEntry(), null, calledIdentity, getIdentity());
 		} else {
 			rollCall.setAbsenceReason(reason);
 			rollCall.setAbsenceCategory(category);
 			rollCall = lectureService.updateRollCall(rollCall);
 			lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
-					reason, row.getLectureBlock(), rollCall, row.getLectureBlock().getEntry(), calledIdentity, getIdentity());
+					reason, row.getLectureBlock(), rollCall, row.getLectureBlock().getEntry(), null, calledIdentity, getIdentity());
 		}
 		row.setRollCall(rollCall);
 	}
@@ -557,11 +557,11 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		if(check.isAtLeastSelected(1)) {
 			rollCall = lectureService.addRollCall(calledIdentity, lectureBlock, row.getRollCall(), indexList);
 			lectureService.auditLog(LectureBlockAuditLog.Action.addToRollCall, before, lectureService.toAuditXml(rollCall),
-					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), calledIdentity, getIdentity());
+					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), null, calledIdentity, getIdentity());
 		} else {
 			rollCall = lectureService.removeRollCall(calledIdentity, lectureBlock, row.getRollCall(), indexList);
 			lectureService.auditLog(LectureBlockAuditLog.Action.removeFromRollCall, before, lectureService.toAuditXml(rollCall),
-					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), calledIdentity, getIdentity());
+					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), null, calledIdentity, getIdentity());
 		}
 		row.setRollCall(rollCall);
 		if(authorizedAbsenceEnabled && row.getAuthorizedAbsence() != null) {
@@ -583,13 +583,13 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		if(rollCall == null) {
 			rollCall = lectureService.getOrCreateRollCall(calledIdentity, lectureBlock, authorized, null, null);
 			lectureService.auditLog(LectureBlockAuditLog.Action.createRollCall, null, lectureService.toAuditXml(rollCall),
-					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), calledIdentity, getIdentity());
+					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), null, calledIdentity, getIdentity());
 		} else {
 			String before = lectureService.toAuditXml(rollCall);
 			rollCall.setAbsenceAuthorized(authorized);
 			rollCall = lectureService.updateRollCall(rollCall);
 			lectureService.auditLog(LectureBlockAuditLog.Action.updateAuthorizedAbsence, before, lectureService.toAuditXml(rollCall),
-					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), calledIdentity, getIdentity());
+					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), null, calledIdentity, getIdentity());
 		}
 
 		row.getReasonLink().setVisible(authorized);

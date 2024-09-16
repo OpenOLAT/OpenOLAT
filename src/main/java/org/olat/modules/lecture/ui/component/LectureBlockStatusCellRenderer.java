@@ -46,11 +46,9 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof LectureBlockStatus) {
-			LectureBlockStatus status = (LectureBlockStatus)cellValue;
+		if(cellValue instanceof LectureBlockStatus status) {
 			target.append(translator.translate(status.name()));
-		} else if(cellValue instanceof LectureBlock) {
-			LectureBlock block = (LectureBlock)cellValue;
+		} else if(cellValue instanceof LectureBlock block) {
 			String status  = getStatus(block, translator);
 			if(StringHelper.containsNonWhitespace(status)) {
 				target.append(status);

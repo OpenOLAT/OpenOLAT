@@ -555,7 +555,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		rollCall.setAppealReason(message);
 		rollCall = lectureService.updateRollCall(rollCall);
 		String after = lectureService.toAuditXml(rollCall);
-		lectureService.auditLog(Action.sendAppeal, before, after, message, lectureBlock, rollCall, entry, assessedIdentity, null);
+		lectureService.auditLog(Action.sendAppeal, before, after, message, lectureBlock, rollCall, entry, null, assessedIdentity, null);
 		dbInstance.commit();
 		loadModel();
 		tableEl.reset(false, false, true);

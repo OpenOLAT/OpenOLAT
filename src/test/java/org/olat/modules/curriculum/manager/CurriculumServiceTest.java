@@ -20,8 +20,10 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
@@ -41,6 +43,8 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.manager.QualityTestHelper;
@@ -72,6 +76,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private LectureService lectureService;
 	
 	@Test
 	public void addCurriculumManagers() {
@@ -91,6 +97,39 @@ public class CurriculumServiceTest extends OlatTestCase {
 		// check that there is not an other member with an other role
 		List<Identity> owners = curriculumService.getMembersIdentity(curriculum, CurriculumRoles.owner);
 		Assert.assertTrue(owners.isEmpty());
+	}
+	
+	@Test
+	public void addToCurriculumElementWithMoveLectureBlocks() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-8", "Curriculum 8", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		LectureBlock lectureBlock = lectureService.createLectureBlock(element, null);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello curriculum 8");
+		lectureBlock.setPlannedLecturesNumber(4);
+		lectureBlock = lectureService.save(lectureBlock, null);
+		
+		RepositoryEntry courseEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commitAndCloseSession();
+
+		// Add the course to the curriculum
+		curriculumService.addRepositoryEntry(element, courseEntry, true);
+		dbInstance.commitAndCloseSession();
+		
+		//Check the transfer of block
+		
+		List<LectureBlock> courseLectureBlocks = lectureService.getLectureBlocks(courseEntry);
+		Assertions
+			.assertThat(courseLectureBlocks)
+			.isNotNull()
+			.hasSize(1)
+			.containsExactly(lectureBlock);
 	}
 	
 	@Test

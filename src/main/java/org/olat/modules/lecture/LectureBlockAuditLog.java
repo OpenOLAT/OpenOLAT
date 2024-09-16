@@ -45,6 +45,8 @@ public interface LectureBlockAuditLog {
 	
 	public Long getEntryKey();
 	
+	public Long getCurriculumElementKey();
+	
 	public Long getAbsenceNoticeKey();
 
 	public Long getIdentityKey();

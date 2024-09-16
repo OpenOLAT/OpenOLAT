@@ -3578,7 +3578,8 @@ create table o_lecture_block (
   l_status varchar2(16 char) not null,
   l_roll_call_status varchar2(16 char) not null,
   fk_reason number(20),
-  fk_entry number(20) not null,
+  fk_entry number(20),
+  fk_curriculum_element number(20),
   fk_teacher_group number(20) not null,
   primary key (id)
 );
@@ -3691,6 +3692,7 @@ create table o_lecture_block_audit_log (
   fk_roll_call number(20),
   fk_absence_notice number(20),
   fk_entry number(20),
+  fk_curriculum_element number(20),
   fk_identity number(20),
   fk_author number(20),
   primary key (id)
@@ -5926,6 +5928,8 @@ create index idx_tax_level_to_ident_idx on o_tax_taxonomy_competence (fk_identit
 -- lectures
 alter table o_lecture_block add constraint lec_block_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_lec_block_entry_idx on o_lecture_block(fk_entry);
+alter table o_lecture_block add constraint lec_block_curelem_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element(id);
+create index idx_lec_block_curelem_idx on o_lecture_block(fk_curriculum_element);
 alter table o_lecture_block add constraint lec_block_gcoach_idx foreign key (fk_teacher_group) references o_bs_group (id);
 create index idx_lec_block_gcoach_idx on o_lecture_block(fk_teacher_group);
 alter table o_lecture_block add constraint lec_block_reason_idx foreign key (fk_reason) references o_lecture_reason (id);

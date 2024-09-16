@@ -188,7 +188,8 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 
 		String after = lectureService.toAuditXml(lectureBlock);
-		lectureService.auditLog(LectureBlockAuditLog.Action.closeLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
+		lectureService.auditLog(LectureBlockAuditLog.Action.closeLectureBlock, before, after, null,
+				lectureBlock, null, lectureBlock.getEntry(), null, null, getIdentity());
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_CLOSED, getClass(),
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
@@ -285,7 +286,8 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 
 		String after = lectureService.toAuditXml(lectureBlock);
-		lectureService.auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
+		lectureService.auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null,
+				lectureBlock, null, lectureBlock.getEntry(), null, null, getIdentity());
 	}
 	
 	private void commitLectureBlocks() {

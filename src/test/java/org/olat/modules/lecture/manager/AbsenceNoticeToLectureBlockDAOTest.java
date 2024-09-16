@@ -90,7 +90,7 @@ public class AbsenceNoticeToLectureBlockDAOTest extends OlatTestCase {
 
 	public LectureBlock createLectureBlock() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello absences");
@@ -225,7 +225,7 @@ public class AbsenceNoticeToLectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry, Date start, Date end) {
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(start);
 		lectureBlock.setEndDate(end);
 		lectureBlock.setTitle("Absence");

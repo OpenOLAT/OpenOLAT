@@ -219,7 +219,7 @@ public class LecturesBlockRollCallTest extends OlatRestTestCase {
 	
 	private LectureBlock createMinimalLectureBlock(int numOfLectures) {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello REST lecturers");

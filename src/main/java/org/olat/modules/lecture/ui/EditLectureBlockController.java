@@ -21,7 +21,6 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -62,6 +61,7 @@ import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
@@ -71,6 +71,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LocationHistory;
+import org.olat.modules.lecture.ui.component.LocationDateComparator;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
@@ -103,6 +104,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private final boolean readOnly;
 	private RepositoryEntry entry;
 	private LectureBlock lectureBlock;
+	private CurriculumElement curriculumElement;
 	
 	private List<Identity> teachers;
 	private List<GroupBox> groupBox;
@@ -130,16 +132,22 @@ public class EditLectureBlockController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		this(ureq, wControl, entry, null, false);
+		this(ureq, wControl, entry, null, null, false);
+	}
+	
+	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
+		this(ureq, wControl, null, curriculumElement, null, false);
 	}
 	
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, LectureBlock lectureBlock, boolean readOnly) {
+			RepositoryEntry entry, CurriculumElement curriculumElement,
+			LectureBlock lectureBlock, boolean readOnly) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = readOnly;
 		this.lectureBlock = lectureBlock;
+		this.curriculumElement = curriculumElement;
 		locations = getLocations(ureq);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		if(lectureBlock != null && lectureBlock.getKey() != null) {
@@ -203,7 +211,12 @@ public class EditLectureBlockController extends FormBasicController {
 			compulsoryEl.select(onKeys[0], true);
 		}
 
-		List<Identity> coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name());
+		List<Identity> coaches;
+		if(curriculumElement != null && entry == null) {
+			coaches = curriculumService.getMembersIdentity(curriculumElement, CurriculumRoles.coach);
+		} else {
+			coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name());
+		}
 		List<Identity> allPossibleTeachers = new ArrayList<>();
 		allPossibleTeachers.addAll(coaches);
 		if(teachers != null) {// eventually external teachers
@@ -240,18 +253,27 @@ public class EditLectureBlockController extends FormBasicController {
 			teacherEl.select(teacherKeys[0], true);
 		}
 		
-		Group entryBaseGroup = repositoryService.getDefaultGroup(entry);
 		groupBox = new ArrayList<>();
-		groupBox.add(new GroupBox(entry, entryBaseGroup));
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, entry, 0, -1, BusinessGroupOrder.nameAsc);
-		for(BusinessGroup businessGroup:businessGroups) {
-			groupBox.add(new GroupBox(businessGroup));
+		List<CurriculumElement> elements = null;
+		if(entry != null) {
+			Group entryBaseGroup =repositoryService.getDefaultGroup(entry);
+			groupBox.add(new GroupBox(entry, entryBaseGroup));
+		
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+			List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, entry, 0, -1, BusinessGroupOrder.nameAsc);
+			for(BusinessGroup businessGroup:businessGroups) {
+				groupBox.add(new GroupBox(businessGroup));
+			}
+			
+			elements = curriculumService.getCurriculumElements(entry);
+			for(CurriculumElement element:elements) {
+				groupBox.add(new GroupBox(element));
+			}
 		}
-		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
-		for(CurriculumElement element:elements) {
-			groupBox.add(new GroupBox(element));
+		if(curriculumElement != null && (elements == null || !elements.contains(curriculumElement))) {
+			groupBox.add(new GroupBox(curriculumElement));
 		}
+		
 		String[] groupKeys = new String[groupBox.size()];
 		String[] groupValues = new String[groupBox.size()];
 		for(int i=groupBox.size(); i-->0; ) {
@@ -393,7 +415,11 @@ public class EditLectureBlockController extends FormBasicController {
 		if(lectureBlock == null) {
 			beforeXml = null;
 			action = LectureBlockAuditLog.Action.createLectureBlock;
-			lectureBlock = lectureService.createLectureBlock(entry);
+			if(entry != null) {
+				lectureBlock = lectureService.createLectureBlock(entry);
+			} else if(curriculumElement != null) {
+				lectureBlock = lectureService.createLectureBlock(curriculumElement, null);
+			}
 			create = true;
 		} else {
 			beforeXml = lectureService.toAuditXml(lectureBlock);
@@ -462,7 +488,8 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 
 		String afterxml = lectureService.toAuditXml(lectureBlock);
-		lectureService.auditLog(action, beforeXml, afterxml, audit.toString(), lectureBlock, null, entry, null, getIdentity());
+		lectureService.auditLog(action, beforeXml, afterxml, audit.toString(), lectureBlock, null,
+				entry, curriculumElement, null, getIdentity());
 		dbInstance.commit();
 		if(currentPlannedLectures >= 0) {
 			lectureService.adaptRollCalls(lectureBlock);
@@ -524,7 +551,7 @@ public class EditLectureBlockController extends FormBasicController {
 		return "Lectures::Location::" + getIdentity().getKey();
 	}
 	
-	public class GroupBox {
+	public static class GroupBox {
 		
 		private BusinessGroup businessGroup;
 		private RepositoryEntry repoEntry;
@@ -593,36 +620,6 @@ public class EditLectureBlockController extends FormBasicController {
 					}
 				}
 			}
-		}
-	}
-	
-	private static class LocationDateComparator implements Comparator<LocationHistory> {
-
-		@Override
-		public int compare(LocationHistory o1, LocationHistory o2) {
-			if(o1 == null) {
-				if(o2 == null) {
-					return 0;
-				} else {
-					return -1;
-				}
-			} else if(o2 == null) {
-				return 1;
-			}
-			
-			Date d1 = o1.getLastUsed();
-			Date d2 = o2.getLastUsed();
-			if(d1 == null) {
-				if(d2 == null) {
-					return 0;
-				} else {
-					return -1;
-				}
-			} else if(d2 == null) {
-				return 1;
-			}
-			
-			return -d1.compareTo(d2);
 		}
 	}
 }

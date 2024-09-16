@@ -72,7 +72,7 @@ public class ConfirmAuthorizeRollCallController extends FormBasicController {
 					sb.append(fullName);
 				}
 			}
-			String message = translate("confirm.authorize", new String[] { sb.toString() });
+			String message = translate("confirm.authorize", sb.toString());
 			layoutCont.contextPut("message", message);
 		}
 		
@@ -97,7 +97,7 @@ public class ConfirmAuthorizeRollCallController extends FormBasicController {
 				rollCall.setAbsenceAuthorized(Boolean.TRUE);
 				rollCall = lectureService.updateRollCall(rollCall);
 				lectureService.auditLog(LectureBlockAuditLog.Action.updateAuthorizedAbsence, before, lectureService.toAuditXml(rollCall),
-						"true", lectureBlock, rollCall, lectureBlock.getEntry(), rollCall.getIdentity(), getIdentity());
+						"true", lectureBlock, rollCall, lectureBlock.getEntry(), null, rollCall.getIdentity(), getIdentity());
 			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);

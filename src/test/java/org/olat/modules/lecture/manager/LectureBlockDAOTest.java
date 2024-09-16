@@ -107,7 +107,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	@Test
 	public void createLectureBlock() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecturers");
@@ -126,9 +126,30 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void createLectureBlockLinkedToCurriculum() {
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur", "Curriculum with lectures", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(null, element);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(lectureBlock);
+		Assert.assertNotNull(lectureBlock.getKey());
+		Assert.assertEquals(element, lectureBlock.getCurriculumElement());
+		Assert.assertEquals(LectureBlockStatus.active, lectureBlock.getStatus());
+		Assert.assertEquals(LectureRollCallStatus.open, lectureBlock.getRollCallStatus());
+	}
+	
+	@Test
 	public void createAndLoadLectureBlock() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Bienvenue");
@@ -162,9 +183,9 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getLectureBlocks_entry() {
+	public void getLectureBlocksByRepositoryEntry() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecturers");
@@ -179,9 +200,30 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getLectureBlocksByCurriculumElement() {
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-5", "Curriculum with lectures", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(null, element);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureBlock> blocks = lectureBlockDao.getLectureBlocks(element);
+		Assert.assertNotNull(blocks);
+		Assert.assertEquals(1, blocks.size());
+		LectureBlock loadedBlock = blocks.get(0);
+		Assert.assertEquals(lectureBlock, loadedBlock);
+	}
+	
+	@Test
 	public void loadByKey() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello loader of block");
@@ -196,7 +238,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	@Test
 	public void loadByKeys() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello loader of block");
@@ -216,7 +258,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-1");
 		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		repositoryEntryRelationDao.addRole(lectureManager, entry, OrganisationRoles.lecturemanager.name());
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecture manager");
@@ -260,7 +302,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-1");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryEntryRelationDao.addRole(lectureManager, entry, OrganisationRoles.lecturemanager.name());
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecture manager");
@@ -282,7 +324,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		repositoryEntryRelationDao.addRole(lectureManager, entry, OrganisationRoles.lecturemanager.name());
 		
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecture manager");
@@ -318,7 +360,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		organisationService.addMember(lectureManager, OrganisationRoles.lecturemanager);
 		
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecture manager");
@@ -338,7 +380,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	@Test
 	public void getLectureBlocks_all() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Get them all");
@@ -787,7 +829,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	@Test
 	public void addGroup() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecturers");
@@ -1230,7 +1272,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.MINUTE, -15);
 		lectureBlock.setStartDate(cal.getTime());

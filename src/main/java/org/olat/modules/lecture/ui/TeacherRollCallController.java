@@ -566,9 +566,8 @@ public class TeacherRollCallController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement check = (MultipleSelectionElement)source;
-			TeacherRollCallRow row = (TeacherRollCallRow)check.getUserObject();
+		if(source instanceof MultipleSelectionElement check
+				&& check.getUserObject() instanceof TeacherRollCallRow row)  {
 			if(row.getAuthorizedAbsence() == check) {
 				doAuthorizedAbsence(row, check);
 				if(check.isAtLeastSelected(1)) {
@@ -591,8 +590,7 @@ public class TeacherRollCallController extends FormBasicController {
 		} else if(cancelLectureBlockButton == source) {
 			saveLectureBlocks();
 			doConfirmCancelLectureBlock(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if(cmd != null) {
 				if(cmd.startsWith("abs_reason_")) {
@@ -667,7 +665,8 @@ public class TeacherRollCallController extends FormBasicController {
 		lectureService.recalculateSummary(lectureBlock.getEntry());
 		
 		String after = lectureService.toAuditXml(lectureBlock);
-		lectureService.auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
+		lectureService.auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null,
+				lectureBlock, null, lectureBlock.getEntry(), null, null, getIdentity());
 	}
 	
 	@Override
@@ -743,11 +742,11 @@ public class TeacherRollCallController extends FormBasicController {
 		if(check.isAtLeastSelected(1)) {
 			rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), indexList);
 			lectureService.auditLog(LectureBlockAuditLog.Action.addToRollCall, before, lectureService.toAuditXml(rollCall),
-					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
+					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), null, row.getIdentity(), getIdentity());
 		} else {
 			rollCall = lectureService.removeRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), indexList);
 			lectureService.auditLog(LectureBlockAuditLog.Action.removeFromRollCall, before, lectureService.toAuditXml(rollCall),
-					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
+					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), null, row.getIdentity(), getIdentity());
 		}
 		row.setRollCall(rollCall);
 		if(authorizedAbsenceEnabled && row.getAuthorizedAbsence() != null) {
@@ -770,13 +769,13 @@ public class TeacherRollCallController extends FormBasicController {
 		if(rollCall == null) {
 			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, authorized, null, null);
 			lectureService.auditLog(LectureBlockAuditLog.Action.createRollCall, null, lectureService.toAuditXml(rollCall),
-					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
+					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), null, row.getIdentity(), getIdentity());
 		} else {
 			String before = lectureService.toAuditXml(rollCall);
 			rollCall.setAbsenceAuthorized(authorized);
 			rollCall = lectureService.updateRollCall(rollCall);
 			lectureService.auditLog(LectureBlockAuditLog.Action.updateAuthorizedAbsence, before, lectureService.toAuditXml(rollCall),
-					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
+					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), null, row.getIdentity(), getIdentity());
 		}
 
 		row.getReasonLink().setVisible(authorized);
@@ -804,13 +803,13 @@ public class TeacherRollCallController extends FormBasicController {
 			row.getAuthorizedAbsence().select(onKeys[0], true);
 			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, true, reason, category);
 			lectureService.auditLog(LectureBlockAuditLog.Action.createRollCall, before, lectureService.toAuditXml(rollCall),
-					reason, lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
+					reason, lectureBlock, rollCall, lectureBlock.getEntry(), null, row.getIdentity(), getIdentity());
 		} else {
 			rollCall.setAbsenceReason(reason);
 			rollCall.setAbsenceCategory(category);
 			rollCall = lectureService.updateRollCall(rollCall);
 			lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
-					reason, lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
+					reason, lectureBlock, rollCall, lectureBlock.getEntry(), null, row.getIdentity(), getIdentity());
 		}
 
 		row.setRollCall(rollCall);
@@ -832,7 +831,8 @@ public class TeacherRollCallController extends FormBasicController {
 		closeRollCallCtrl = new CloseRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
 		listenTo(closeRollCallCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), closeRollCallCtrl.getInitialComponent(), true, translate("close.lecture.blocks"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), closeRollCallCtrl.getInitialComponent(),
+				true, translate("close.lecture.blocks"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -843,7 +843,8 @@ public class TeacherRollCallController extends FormBasicController {
 		cancelRollCallCtrl = new CancelRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
 		listenTo(cancelRollCallCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), cancelRollCallCtrl.getInitialComponent(), true, translate("cancel.lecture.blocks"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), cancelRollCallCtrl.getInitialComponent(),
+				true, translate("cancel.lecture.blocks"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -861,7 +862,8 @@ public class TeacherRollCallController extends FormBasicController {
 		fireEvent(ureq, new ReopenLectureBlockEvent());
 		
 		String after = lectureService.toAuditXml(lectureBlock);
-		lectureService.auditLog(LectureBlockAuditLog.Action.reopenLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
+		lectureService.auditLog(LectureBlockAuditLog.Action.reopenLectureBlock, before, after, null, lectureBlock, null,
+				lectureBlock.getEntry(), null, null, getIdentity());
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_REOPENED, getClass(),
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 	}

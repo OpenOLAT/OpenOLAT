@@ -515,7 +515,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(user, entryLecture, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(author, entryLecture, GroupRoles.owner.name());
 		
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entryLecture);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entryLecture, null);
 		lectureBlock.setStartDate(DateUtils.addHours(new Date(), -2));
 		lectureBlock.setEndDate(DateUtils.addHours(new Date(), -1));
 		lectureBlock.setTitle("Hello lecturers");
@@ -565,7 +565,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 
 	private LectureBlock createMinimalLectureBlock(int numOfLectures) {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecturers");

@@ -713,7 +713,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	}
 	
 	private LectureBlock createLectureBlock(RepositoryEntry entry, CurriculumElement element) {
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(DateUtils.addHours(lectureBlock.getCreationDate(), -2));
 		lectureBlock.setEndDate(DateUtils.addHours(lectureBlock.getCreationDate(), -1));
 		lectureBlock.setTitle("Hello lecturers");

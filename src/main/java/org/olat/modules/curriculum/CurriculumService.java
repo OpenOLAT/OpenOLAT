@@ -501,7 +501,7 @@ public interface CurriculumService {
 	 * @param entry The repository entry
 	 * @param master If the relation is the master one
 	 */
-	public void addRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry, boolean master);
+	public boolean addRepositoryEntry(CurriculumElement element, RepositoryEntry entry, boolean moveLectureBlocks);
 
 
 	/**

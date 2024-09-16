@@ -219,8 +219,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 		} else if(removeResourcesButton == source) {
 			doConfirmRemoveResources(ureq);
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if("select".equals(se.getCommand())) {
 					doSelectRepositoryEntry(ureq, tableModel.getObject(se.getIndex()));
 				}
@@ -259,8 +258,13 @@ public class CurriculumElementResourceListController extends FormBasicController
 	}
 	
 	private void doAddRepositoryEntry(List<RepositoryEntry> entries) {
+		boolean moveLectureBlocks = false;
+		if(entries.size() == 1 && tableModel.getRowCount() == 0) {
+			moveLectureBlocks = true;
+		}
+		
 		for(RepositoryEntry entry:entries) {
-			curriculumService.addRepositoryEntry(curriculumElement, entry, false);
+			curriculumService.addRepositoryEntry(curriculumElement, entry, moveLectureBlocks);
 		}
 	}
 	

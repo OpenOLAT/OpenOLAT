@@ -29,6 +29,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
+
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -42,6 +46,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.LectureBlock;
@@ -67,10 +72,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.TypedQuery;
-
 /**
  * 
  * Initial date: 17 mars 2017<br>
@@ -87,7 +88,7 @@ public class LectureBlockDAO {
 	@Autowired
 	private AssessmentModeDAO assessmentModeDao;
 	
-	public LectureBlock createLectureBlock(RepositoryEntry entry) {
+	public LectureBlock createLectureBlock(RepositoryEntry entry, CurriculumElement curriculumElement) {
 		LectureBlockImpl block = new LectureBlockImpl();
 		block.setCreationDate(new Date());
 		block.setLastModified(block.getCreationDate());
@@ -95,6 +96,7 @@ public class LectureBlockDAO {
 		block.setRollCallStatus(LectureRollCallStatus.open);
 		block.setCompulsory(true);
 		block.setEntry(entry);
+		block.setCurriculumElement(curriculumElement);
 		block.setGroups(new HashSet<>());
 		block.setTaxonomyLevels(new HashSet<>());
 		return block;
@@ -114,11 +116,11 @@ public class LectureBlockDAO {
 	public List<LectureBlock> loadByKeys(List<Long> keys) {
 		if(keys == null || keys.isEmpty()) return new ArrayList<>();
 		
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select block from lectureblock block")
-		  .append(" left join fetch block.reasonEffectiveEnd reason")
-		  .append(" inner join fetch block.entry entry")
-		  .append(" where block.key in (:blockKeys)");
+		String sb = """
+				select block from lectureblock block
+				left join fetch block.reasonEffectiveEnd reason
+				inner join fetch block.entry entry
+				where block.key in (:blockKeys)""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlock.class)
 				.setParameter("blockKeys", keys)
@@ -129,7 +131,8 @@ public class LectureBlockDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select block from lectureblock block")
 		  .append(" left join fetch block.reasonEffectiveEnd reason")
-		  .append(" inner join fetch block.entry entry")
+		  .append(" left join fetch block.entry entry")
+		  .append(" left join fetch block.curriculumElement element")
 		  .append(" where block.key=:blockKey");
 
 		List<LectureBlock> blocks = dbInstance.getCurrentEntityManager()
@@ -203,6 +206,23 @@ public class LectureBlockDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("lectureBlocksByRepositoryEntry", LectureBlock.class)
 				.setParameter("repoEntryKey", entry.getKey())
+				.getResultList();
+	}
+	
+	public List<LectureBlock> getLectureBlocks(CurriculumElementRef curriculumElement) {
+		String query = """
+				select block from lectureblock block
+				where block.curriculumElement.key=:curriculumElementKey
+				or block.entry.key in (select v.key from repositoryentry v
+				  inner join v.groups as baseGroups
+				  inner join baseGroups.group as baseGroup
+				  inner join curriculumelement as curEl on (curEl.group.key=baseGroup.key)
+				  where curEl.key = :curriculumElementKey
+				)""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, LectureBlock.class)
+				.setParameter("curriculumElementKey", curriculumElement.getKey())
 				.getResultList();
 	}
 	

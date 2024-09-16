@@ -72,6 +72,8 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.AbsenceNoticeRef;
@@ -230,7 +232,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public LectureBlock createLectureBlock(RepositoryEntry entry) {
-		return lectureBlockDao.createLectureBlock(entry);
+		return lectureBlockDao.createLectureBlock(entry, null);
+	}
+	
+	@Override
+	public LectureBlock createLectureBlock(CurriculumElement curriculumElement, RepositoryEntry entry) {
+		return lectureBlockDao.createLectureBlock(entry, curriculumElement);
 	}
 
 	@Override
@@ -335,7 +342,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
 			LectureBlockRef lectureBlock, LectureBlockRollCall rollCall,
-			RepositoryEntryRef entry, IdentityRef assessedIdentity, IdentityRef author) {
+			RepositoryEntryRef entry, CurriculumElementRef curriculumElement, IdentityRef assessedIdentity, IdentityRef author) {
 		auditLogDao.auditLog(action, before, after, message, lectureBlock, rollCall, entry, assessedIdentity, author);
 	}
 	
@@ -415,7 +422,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block) {
-		LectureBlock copy = lectureBlockDao.createLectureBlock(block.getEntry());
+		LectureBlock copy = lectureBlockDao.createLectureBlock(block.getEntry(), block.getCurriculumElement());
 		copy.setTitle(newTitle);
 		copy.setDescription(block.getDescription());
 		copy.setPreparation(block.getPreparation());
@@ -434,7 +441,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		//first remove events
 		LectureBlock reloadedBlock = lectureBlockDao.loadByKey(lectureBlock.getKey());
 		RepositoryEntry entry = reloadedBlock.getEntry();
-		RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
+		RepositoryEntryLectureConfiguration config = entry == null ? null : getRepositoryEntryLectureConfiguration(entry);
 		internalDeleteLectureBlock(reloadedBlock, actingIdentity, entry, config);
 	}
 	
@@ -443,7 +450,6 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		if(ConfigurationHelper.isSyncCourseCalendarEnabled(config, lectureModule)) {
 			unsyncCourseCalendar(lectureBlock, entry);
 		}
-		
 		
 		if(ConfigurationHelper.isSyncTeacherCalendarEnabled(config, lectureModule)) {
 			List<Identity> teachers = getTeachers(lectureBlock);
@@ -1208,7 +1214,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		recalculateSummary(lectureBlock.getEntry());
 		
 		String after = toAuditXml(lectureBlock);
-		auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, teacher);
+		auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null,
+				lectureBlock, null, lectureBlock.getEntry(), lectureBlock.getCurriculumElement(), null, teacher);
 		
 		return lectureBlock;
 	}
@@ -1462,6 +1469,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		return lectureBlockDao.getLectureBlocks(entry);
 	}
 	
+	@Override
+	public List<LectureBlock> getLectureBlocks(CurriculumElementRef element) {
+		return lectureBlockDao.getLectureBlocks(element);
+	}
+
 	@Override
 	public List<LectureBlock> getLectureBlocks(LecturesBlockSearchParameters searchParams) {
 		return lectureBlockDao.searchLectureBlocks(searchParams);
@@ -1763,6 +1775,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public void syncCalendars(LectureBlock lectureBlock) {
+		if(lectureBlock.getEntry() == null) return; // Only for courses
+		
 		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.getConfiguration(lectureBlock);
 		if(ConfigurationHelper.isSyncTeacherCalendarEnabled(config, lectureModule)) {
 			List<Identity> teachers = getTeachers(lectureBlock);
@@ -1780,11 +1794,13 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	private void syncCourseCalendar(LectureBlock lectureBlock, RepositoryEntry entry) {
+		if(lectureBlock == null || entry == null) return;
 		Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_COURSE, entry.getOlatResource().getResourceableId().toString());
 		syncEvent(lectureBlock, entry, cal);
 	}
 	
 	private void unsyncCourseCalendar(LectureBlock lectureBlock, RepositoryEntry entry) {
+		if(lectureBlock == null || entry == null) return;
 		Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_COURSE, entry.getOlatResource().getResourceableId().toString());
 		unsyncEvent(lectureBlock, entry, cal);
 	}
@@ -1874,6 +1890,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 	
 	private void unsyncInternalCalendar(LectureBlock lectureBlock, List<Identity> identities) {
+		if(lectureBlock == null || lectureBlock.getEntry() == null) return;
+		
 		RepositoryEntry entry = lectureBlock.getEntry();
 		for(Identity identity:identities) {
 			Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_USER, identity.getName());

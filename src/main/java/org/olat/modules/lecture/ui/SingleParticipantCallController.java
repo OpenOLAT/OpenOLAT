@@ -336,7 +336,8 @@ public class SingleParticipantCallController extends FormBasicController {
 			rollCall = lectureService.updateRollCall(rollCall);
 		}
 		lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
-				Integer.toString(rollCall.getLecturesAttendedNumber()), lectureBlock, rollCall, lectureBlock.getEntry(), calledIdentity, getIdentity());
+				Integer.toString(rollCall.getLecturesAttendedNumber()),
+				lectureBlock, rollCall, lectureBlock.getEntry(), null, calledIdentity, getIdentity());
 	}
 	
 	

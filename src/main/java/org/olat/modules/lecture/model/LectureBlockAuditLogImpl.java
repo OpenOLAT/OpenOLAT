@@ -72,6 +72,8 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 
 	@Column(name="fk_entry", nullable=true, insertable=true, updatable=false)
 	private Long entryKey;
+	@Column(name="fk_curriculum_element", nullable=true, insertable=true, updatable=false)
+	private Long curriculumElementKey;
 	@Column(name="fk_identity", nullable=true, insertable=true, updatable=false)
 	private Long identityKey;
 	@Column(name="fk_author", nullable=true, insertable=true, updatable=false)
@@ -152,6 +154,15 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 
 	public void setEntryKey(Long entryKey) {
 		this.entryKey = entryKey;
+	}
+
+	@Override
+	public Long getCurriculumElementKey() {
+		return curriculumElementKey;
+	}
+
+	public void setCurriculumElementKey(Long curriculumElementKey) {
+		this.curriculumElementKey = curriculumElementKey;
 	}
 
 	@Override

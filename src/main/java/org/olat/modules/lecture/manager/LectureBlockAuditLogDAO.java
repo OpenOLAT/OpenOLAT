@@ -78,6 +78,7 @@ public class LectureBlockAuditLogDAO {
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "groups");
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "lastModified");
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "taxonomyLevels");// Can only be modified in REST
+		lectureBlockXStream.omitField(LectureBlockImpl.class, "curriculumElement");
 		
 		lectureBlockXStream.alias("reason", ReasonImpl.class);
 		lectureBlockXStream.omitField(ReasonImpl.class, "lastModified");
@@ -134,6 +135,7 @@ public class LectureBlockAuditLogDAO {
 		
 		absenceNoticeRelationsXStream.alias("lectureBlock", LectureBlockImpl.class);
 		absenceNoticeRelationsXStream.omitField(LectureBlockImpl.class, "entry");
+		absenceNoticeRelationsXStream.omitField(LectureBlockImpl.class, "curriculumElement");
 		absenceNoticeRelationsXStream.omitField(LectureBlockImpl.class, "teacherGroup");
 		absenceNoticeRelationsXStream.omitField(LectureBlockImpl.class, "groups");
 		absenceNoticeRelationsXStream.omitField(LectureBlockImpl.class, "lastModified");

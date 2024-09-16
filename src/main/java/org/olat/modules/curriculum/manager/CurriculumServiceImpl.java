@@ -102,7 +102,10 @@ import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.manager.LectureBlockDAO;
 import org.olat.modules.lecture.manager.LectureBlockToGroupDAO;
+import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -149,6 +152,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private RepositoryEntryMyCourseQueries myCourseQueries;
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private LectureBlockDAO lectureBlockDao;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
@@ -959,10 +964,27 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public void addRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry, boolean master) {
-		RepositoryEntry repoEntry = repositoryEntryDao.loadByKey(entry.getKey());
-		repositoryEntryRelationDao.createRelation(element.getGroup(), repoEntry);
-		fireRepositoryEntryAddedEvent(element, entry);
+	public boolean addRepositoryEntry(CurriculumElement curriculumElement, RepositoryEntry entry, boolean moveLectureBlocks) {
+		if(!hasRepositoryEntry(curriculumElement, entry)) {
+			RepositoryEntry repoEntry = repositoryEntryDao.loadByKey(entry.getKey());
+			repositoryEntryRelationDao.createRelation(curriculumElement.getGroup(), repoEntry);
+			if(moveLectureBlocks) {
+				moveLectureBlocks(curriculumElement, entry);
+			}
+			fireRepositoryEntryAddedEvent(curriculumElement, entry);
+			return true;
+		}
+		return false;
+	}
+	
+	private void moveLectureBlocks(CurriculumElement curriculumElement, RepositoryEntry entry) {
+		if(curriculumElement == null || entry == null) return;
+		
+		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks(curriculumElement);
+		for(LectureBlock lectureBlock:lectureBlocks) {
+			((LectureBlockImpl)lectureBlock).setEntry(entry);
+			lectureBlockDao.update(lectureBlock);
+		}
 	}
 
 	@Override

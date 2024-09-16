@@ -133,7 +133,7 @@ public class EditAppealController extends FormBasicController {
 			rollCall = lectureService.updateRollCall(rollCall);
 	
 			lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
-					reasonEl.getValue(), lectureBlock, rollCall, entry, assessedIdentity, getIdentity());
+					reasonEl.getValue(), lectureBlock, rollCall, entry, null, assessedIdentity, getIdentity());
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

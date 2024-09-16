@@ -133,7 +133,7 @@ public class LectureBlockToGroupDAOTest extends OlatTestCase {
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry, List<Group> groups) {
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.MINUTE, -15);
 		lectureBlock.setStartDate(cal.getTime());

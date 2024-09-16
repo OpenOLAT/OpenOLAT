@@ -296,7 +296,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		
 		LectureBlock block = lectureService.getLectureBlock(row);
 		boolean readOnly = lectureManagementManaged || !secCallback.canNewLectureBlock();
-		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, readOnly);
+		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, null, block, readOnly);
 		listenTo(editLectureCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
@@ -414,7 +414,8 @@ public class LectureListRepositoryController extends FormBasicController {
 		lectureBlock = lectureService.save(lectureBlock, null);
 		
 		String after = lectureService.toAuditXml(lectureBlock);
-		lectureService.auditLog(LectureBlockAuditLog.Action.reopenLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
+		lectureService.auditLog(LectureBlockAuditLog.Action.reopenLectureBlock, before, after, null,
+				lectureBlock, null, lectureBlock.getEntry(), null, null, getIdentity());
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_REOPENED, getClass(),
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 		

@@ -239,7 +239,7 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 		lectureService.updateRepositoryEntryLectureConfiguration(config);
 		dbInstance.commit();
 		
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());

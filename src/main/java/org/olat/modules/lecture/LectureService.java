@@ -28,6 +28,8 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.lecture.model.AbsenceNoticeInfos;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.IdentityRateWarning;
@@ -103,6 +105,14 @@ public interface LectureService {
 	public LectureBlock createLectureBlock(RepositoryEntry entry);
 	
 	/**
+	 * Create but not persist a new lecture block.
+	 * 
+	 * @param curriculumElement
+	 * @return A new lecture block
+	 */
+	public LectureBlock createLectureBlock(CurriculumElement curriculumElement, RepositoryEntry entry);
+	
+	/**
 	 * Merge or persist the specified lecture block and return
 	 * the fresh block.
 	 * 
@@ -155,7 +165,8 @@ public interface LectureService {
 	 */
 	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
 			LectureBlockRef lectureBlock, LectureBlockRollCall rollCall,
-			RepositoryEntryRef entry, IdentityRef assessedIdentity, IdentityRef author);
+			RepositoryEntryRef entry, CurriculumElementRef curriculumElement,
+			IdentityRef assessedIdentity, IdentityRef author);
 	
 	/**
 	 * 
@@ -566,6 +577,13 @@ public interface LectureService {
 	 * @return
 	 */
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry);
+	
+	/**
+	 * 
+	 * @param element
+	 * @return
+	 */
+	public List<LectureBlock> getLectureBlocks(CurriculumElementRef element);
 	
 	/**
 	 * Search lecture blocks. It returns only lecture blocks with a teacher and

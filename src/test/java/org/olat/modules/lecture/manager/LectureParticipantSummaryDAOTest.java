@@ -108,7 +108,7 @@ public class LectureParticipantSummaryDAOTest extends OlatTestCase {
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecturers");

@@ -42,6 +42,8 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -60,6 +62,7 @@ import org.olat.repository.RepositoryEntry;
 @Entity(name="lectureblock")
 @Table(name="o_lecture_block")
 @NamedQuery(name="lectureBlocksByRepositoryEntry", query="select block from lectureblock block where block.entry.key=:repoEntryKey")
+@NamedQuery(name="lectureBlocksByCurriculumElement", query="select block from lectureblock block where block.curriculumElement.key=:curriculumElementKey")
 public class LectureBlockImpl implements Persistable, LectureBlock {
 
 	private static final long serialVersionUID = -1010006683915268916L;
@@ -123,9 +126,12 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@JoinColumn(name="fk_reason", nullable=true, insertable=true, updatable=true)
 	private Reason reasonEffectiveEnd;
 	
-	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_entry", nullable=false, insertable=true, updatable=true)
+	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_entry", nullable=true, insertable=true, updatable=true)
 	private RepositoryEntry entry;
+	@ManyToOne(targetEntity=CurriculumElementImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_curriculum_element", nullable=true, insertable=true, updatable=true)
+	private CurriculumElement curriculumElement;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_teacher_group", nullable=false, insertable=true, updatable=false)
@@ -390,6 +396,15 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 		this.entry = entry;
 	}
 	
+	@Override
+	public CurriculumElement getCurriculumElement() {
+		return curriculumElement;
+	}
+
+	public void setCurriculumElement(CurriculumElement curriculumElement) {
+		this.curriculumElement = curriculumElement;
+	}
+
 	public Group getTeacherGroup() {
 		return teacherGroup;
 	}

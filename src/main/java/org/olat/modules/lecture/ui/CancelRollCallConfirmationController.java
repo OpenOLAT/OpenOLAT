@@ -135,7 +135,8 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 		}
 		lectureBlock = lectureService.cancel(lectureBlock);
 		String after = lectureService.toAuditXml(lectureBlock);
-		lectureService.auditLog(LectureBlockAuditLog.Action.cancelLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
+		lectureService.auditLog(LectureBlockAuditLog.Action.cancelLectureBlock, before, after, null,
+				lectureBlock, null, lectureBlock.getEntry(), null, null, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 		
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_CANCELLED, getClass(),

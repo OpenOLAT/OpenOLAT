@@ -26,6 +26,7 @@ import java.util.Set;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -119,6 +120,8 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 	public Date getAutoClosedDate();
 
 	public RepositoryEntry getEntry();
+	
+	public CurriculumElement getCurriculumElement();
 	
 	/**
 	 * @return The relation to taxonomy levels (lazy loading)

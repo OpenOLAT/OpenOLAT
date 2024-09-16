@@ -3524,7 +3524,8 @@ create table o_lecture_block (
   l_status varchar(16) not null,
   l_roll_call_status varchar(16) not null,
   fk_reason int8,
-  fk_entry int8 not null,
+  fk_entry int8,
+  fk_curriculum_element int8,
   fk_teacher_group int8 not null,
   primary key (id)
 );
@@ -3637,6 +3638,7 @@ create table o_lecture_block_audit_log (
   fk_roll_call int8,
   fk_absence_notice int8,
   fk_entry int8,
+  fk_curriculum_element int8,
   fk_identity int8,
   fk_author int8,
   primary key (id)
@@ -5861,6 +5863,8 @@ alter table o_feed add f_cancomment bool default true;
 -- lectures
 alter table o_lecture_block add constraint lec_block_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_lec_block_entry_idx on o_lecture_block(fk_entry);
+alter table o_lecture_block add constraint lec_block_curelem_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element(id);
+create index idx_lec_block_curelem_idx on o_lecture_block(fk_curriculum_element);
 alter table o_lecture_block add constraint lec_block_gcoach_idx foreign key (fk_teacher_group) references o_bs_group (id);
 create index idx_lec_block_gcoach_idx on o_lecture_block(fk_teacher_group);
 alter table o_lecture_block add constraint lec_block_reason_idx foreign key (fk_reason) references o_lecture_reason (id);

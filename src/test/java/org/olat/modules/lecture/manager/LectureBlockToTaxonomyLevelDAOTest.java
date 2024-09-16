@@ -61,7 +61,7 @@ public class LectureBlockToTaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void createRelation() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello taxonomists");
@@ -77,7 +77,7 @@ public class LectureBlockToTaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void createAndGetRelation() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello taxonomists");
@@ -100,7 +100,7 @@ public class LectureBlockToTaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void getTaxonomyLevels() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello taxonomists");
@@ -122,7 +122,7 @@ public class LectureBlockToTaxonomyLevelDAOTest extends OlatTestCase {
 	@Test
 	public void getLectureBlocks() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lectures of taxonomists");
