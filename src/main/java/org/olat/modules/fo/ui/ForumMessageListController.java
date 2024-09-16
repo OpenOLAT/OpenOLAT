@@ -228,7 +228,9 @@ public class ForumMessageListController extends FormBasicController {
 		}
 
 		if (showMarks) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForumMessageCols.mark));
+			DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(ForumMessageCols.mark);
+			markColModel.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
+			columnsModel.addFlexiColumnModel(markColModel);
 		}
 
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
@@ -266,8 +268,9 @@ public class ForumMessageListController extends FormBasicController {
 		if (showNew && !guestOnly) {
 			FlexiCellRenderer newMessageRenderer = new BooleanCSSCellRenderer(getTranslator(),
 					"o_icon o_forum_new_icon", null, "table.new.message.hover", null);
-			columnsModel
-					.addFlexiColumnModel(new DefaultFlexiColumnModel(ForumMessageCols.newMessage, newMessageRenderer));
+			DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(ForumMessageCols.newMessage, newMessageRenderer);
+			markColModel.setIconHeader("o_icon o_forum_new_icon o_icon-lg");
+			columnsModel.addFlexiColumnModel(markColModel);			
 		}
 
 		dataModel = new ForumMessageDataModel(columnsModel, getTranslator());

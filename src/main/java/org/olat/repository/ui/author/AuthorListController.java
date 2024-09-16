@@ -516,6 +516,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		DefaultFlexiColumnModel markColumn = new DefaultFlexiColumnModel(configuration.isDefaultBookmark(),
 				Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name());
 		markColumn.setExportable(false);
+		markColumn.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
 		columnsModel.addFlexiColumnModel(markColumn);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(configuration.isDefaultIconType(),
 				Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),

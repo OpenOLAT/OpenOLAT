@@ -122,7 +122,8 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 					new NameValuePair("select", "uncheckall")))
 			.append("; return false;\" title=\"").append(translator.translate("form.uncheckall")).append("\"")
 			.append(" style='display:none'", (numOfChecked < numOfRows || numOfChecked == 0))
-			.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_on' aria-hidden='true'> </i></a>");
+			.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_on' aria-hidden='true'> </i>")
+			.append("<span class='sr-only'>").append(translator.translate("form.uncheckall")).append("</span></a>");
 
 		// Some are checked (mixed) - uncheck all
 		target.append("<a id='").append(dispatchId).append("_dsm' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
@@ -131,7 +132,8 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 					new NameValuePair("select", "uncheckall")))
 			.append("; return false;\" title=\"").append(translator.translate("form.uncheckall")).append("\"")
 			.append(" style='display:none'", (numOfChecked == numOfRows || numOfChecked == 0))
-			.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_mixed' aria-hidden='true'> </i></a>");
+			.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_mixed' aria-hidden='true'> </i>")
+			.append("<span class='sr-only'>").append(translator.translate("form.uncheckall")).append("</span></a>");
 
 		// Nothing is checked - check all
 		if (ftE.getPageSize() == -1 || numOfRows <= ftE.getPageSize()) {
@@ -141,9 +143,10 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 						new NameValuePair("select", "checkall")))
 				.append("; return false;\" title=\"")
-				.append(translator.translate("form.checkall.numbered", Integer.toString(numOfRows))).append("\"")
+				.appendHtmlAttributeEscaped(translator.translate("form.checkall.numbered", Integer.toString(numOfRows))).append("\"")
 				.append(" style='display:none'", numOfChecked > 0)
-				.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a>");
+				.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i>")
+				.append("<span class='sr-only'>").append(translator.translate("form.checkall.numbered", Integer.toString(numOfRows))).append("</span></a>");
 								
 		} else {					
 			// Show menu to opt for all or just current page check
@@ -151,7 +154,8 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				.append("display:none;", numOfChecked > 0)
 				.append("'><a class='dropdown-toggle' data-toggle='dropdown' href='javascript:;' ")
 				.append(" title=\"").append(translator.translate("form.checkall")).append("\"")
-				.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a>")					
+				.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i>")					
+				.append("<span class='sr-only'>").append(translator.translate("form.checkall")).append("</span></a>")
 				.append("<ul class='dropdown-menu dropdown-menu-left'>")
 				// page
 				.append("<li><a id='").append(dispatchId).append("_sp' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
@@ -175,7 +179,6 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 	}
 	
 	private void renderHeader(StringOutput sb, FlexiTableComponent ftC, FlexiColumnModel fcm, Translator translator) {
-		String header = getHeader(fcm, translator);
 		sb.append("<th scope='col'");
 		if(StringHelper.containsNonWhitespace(fcm.getHeaderTooltip())) {
 			String title =  fcm.getHeaderTooltip();
@@ -200,7 +203,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		sb.append(">");
 		// sort is not defined
 		if (!fcm.isSortable() || fcm.getSortKey() == null) {
-			sb.append(header);	
+			renderHeaderText(fcm, translator, sb);
 		} else {
 			FlexiTableElementImpl ftE = ftC.getFormItem();
 			
@@ -232,15 +235,14 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
 				  .append("\" draggable=\"false\">");
 			}
-			sb.append(header).append("</a>");
+			renderHeaderText(fcm, translator, sb);
+			sb.append("</a>");
 		}
 		sb.append("</th>");
 	}
 	
-	private String getHeader(FlexiColumnModel fcm, Translator translator) {
-		String header;
+	private void renderHeaderText(FlexiColumnModel fcm, Translator translator, StringOutput sb) {
 		if(StringHelper.containsNonWhitespace(fcm.getIconHeader())) {
-			StringBuilder sb = new StringBuilder(64);
 			sb.append("<i class=\"").append(fcm.getIconHeader()).append("\"");
 			
 			String title = null;
@@ -250,17 +252,16 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				title = translator.translate(fcm.getHeaderKey());
 			}
 			if(StringHelper.containsNonWhitespace(title)) {
-				sb.append(" title=\"").append(title).append("\"");
+				sb.append(" title=\"").appendHtmlAttributeEscaped(title).append("\"");
 			}
 			
-			sb.append("> </i>");
-			header = sb.toString();
+			sb.append(" aria-hidden='true'> </i>");
+			sb.append("<span class='sr-only'>").append(title).append("</span>");
 		} else if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
-			header = fcm.getHeaderLabel();
+			sb.appendHtmlEscaped(fcm.getHeaderLabel());
 		} else {
-			header = translator.translate(fcm.getHeaderKey());
+			sb.append(translator.translate(fcm.getHeaderKey()));
 		}
-		return header;
 	}
 	
 	@Override

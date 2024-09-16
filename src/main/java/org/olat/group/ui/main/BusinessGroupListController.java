@@ -123,7 +123,9 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	protected FlexiTableColumnModel initColumnModel() {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		//mark
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark));
+		DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(Cols.mark);
+		markColModel.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
+		columnsModel.addFlexiColumnModel(markColModel);
 		//group name
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nHeaderKey(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH,
 				true, Cols.name.name(), new StaticFlexiCellRenderer(TABLE_ACTION_LAUNCH, new BusinessGroupNameCellRenderer())));

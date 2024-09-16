@@ -218,13 +218,16 @@ public class TableRenderer extends DefaultComponentRenderer {
 				.append(formID).append("',true,false);")
 				.append("\" title=\"").append(translator.translate("uncheckall")).append("\"")
 				.append(" style='display:none'")
-				.append("><i class='o_icon o_icon-lg o_icon_check_on' aria-hidden='true'> </i></a>");
+				.append("><i class='o_icon o_icon-lg o_icon_check_on' aria-hidden='true'> </i>")
+				.append("<span class='sr-ony'>").append(translator.translate("uncheckall")).append("</span></a></div>");			
 			// Everything is checked - uncheck all
 			target.append("<a id='").append(formID).append("_sa' href=\"javascript:o_table_toggleCheck('")
 				.append(formID).append("',true);o_table_updateCheckAllMenu('")
 				.append(formID).append("',false,true);")
 				.append("\" title=\"").append(translator.translate("checkall")).append("\"")
-				.append("><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a></div>");
+				.append("><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i>")
+				.append("<span class='sr-ony'>").append(translator.translate("checkall")).append("</span></a></div>");
+			
 		} else {
 			target.append("<div title=\"").append(translator.translate("table.header.multiselect")).append("\">")
 				.append("<i class='o_icon o_icon-lg o_icon_check_disabled text-muted' aria-hidden='true'> </i></div>");
