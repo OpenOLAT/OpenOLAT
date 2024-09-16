@@ -26,9 +26,8 @@
 	#end
 	#if (!$isGuest)
 		<li id="o_navbar_my_menu" class="o_portrait">
-			<a id="o_sel_navbar_my_menu_caret" href="javascript:;" onclick="OPOL.navbar.toggleRight(); return false;">
+			<a id="o_sel_navbar_my_menu_caret" href="javascript:;" onclick="OPOL.navbar.toggleRight(); return false;" title="$r.escapeForHtmlAttribute("$myMenuLabel") – $r.translateInAttribute("topnav.my.menu.tools")">
 				$r.render("portrait")
-				<span>$myMenuLabel</span>
 				<b class="caret"> </b>
 			</a>
 		</li>
