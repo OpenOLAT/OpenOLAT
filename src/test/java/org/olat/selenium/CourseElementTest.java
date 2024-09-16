@@ -76,6 +76,7 @@ import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.course.SinglePage;
 import org.olat.selenium.page.course.SinglePageConfigurationPage;
+import org.olat.selenium.page.course.TBrokerCoachPage;
 import org.olat.selenium.page.course.TBrokerConfigurationPage;
 import org.olat.selenium.page.course.TBrokerPage;
 import org.olat.selenium.page.course.TUConfigurationPage;
@@ -2890,14 +2891,14 @@ public class CourseElementTest extends Deployments {
 		
 		NavigationPage navBar = NavigationPage.load(browser);
 		
-		//create a course
+		// Create a course
 		String courseTitle = "Course with topic broker " + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
 			.clickToolbarBack();
 
-		//create a course element of type test with the QTI 2.1 test that we upload above
+		// Create a course element of type topic broker
 		String brokerNodeTitle = "Topic broker 1.0";
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
@@ -3016,6 +3017,118 @@ public class CourseElementTest extends Deployments {
 		
 		new TBrokerPage(browser)
 			.assertEnrolledByTopic(topicTitle, 1);
+	}
+	
+	
+	/**
+	 * An author creates a topic broker course element with a topic. Set the dates
+	 * in the past and the future. It publishes the course, add two participants,
+	 * and choose the topics for the participants. Update the end date and runs
+	 * the enrollment. It checks that the 2 participants are enrolled successfully.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithTopicBrokerByAuthorOnly()
+	throws IOException, URISyntaxException {
+		UserVO participant1 = new UserRestClient(deploymentUrl).createRandomUser("So");
+		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Mat");
+			
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword());
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		
+		// Create a course
+		String courseTitle = "Course unfair broker " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+
+		//
+		String brokerNodeTitle = "Topic broker 2.0";
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("topicbroker")
+			.nodeTitle(brokerNodeTitle);
+		
+		Date now = new Date();
+		Date start = DateUtils.addDays(now, -4);
+		Date end = DateUtils.addDays(now, 2);
+		String topicTitle = "Unfair testing";
+		String topicIdentifier = "SEL-200c";
+		
+		TBrokerConfigurationPage tbConfig = new TBrokerConfigurationPage(browser);
+		tbConfig
+			.selectConfiguration()
+			.selectPeriod(start, end)
+			.saveConfiguration()
+			.selectConfigurationTopics()
+			.addTopic(topicIdentifier, topicTitle, 1, 5);
+		
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		// Open the course
+		CoursePageFragment courseRuntime = courseEditor
+			.clickToolbarBack();
+		courseRuntime
+			.tree()
+			.assertWithTitleSelected(brokerNodeTitle);
+		
+		// Add participants
+		courseRuntime
+			.members()
+			.quickImport(participant1, participant2)
+			.clickToolbarBack();
+		
+		// Choose for the participants
+		courseRuntime
+			.tree()
+			.selectWithTitle(brokerNodeTitle);
+		
+		TBrokerCoachPage brokerPage = new TBrokerCoachPage(browser);
+		brokerPage
+			.assertOnParticipant(participant1)
+			.expandParticipantDetails(participant1)
+			.selectTopic(topicTitle)
+			.collapseParticipantDetails(participant1);
+		
+		brokerPage
+			.assertOnParticipant(participant2)
+			.expandParticipantDetails(participant2)
+			.selectTopic(topicTitle);
+		
+		courseEditor = course
+			.edit()
+			.assertSelectedNode(brokerNodeTitle);
+		
+		Date newEnd = DateUtils.addDays(now, -1);
+		new TBrokerConfigurationPage(browser)
+			.selectConfiguration()
+			.selectPeriod(start, newEnd)
+			.saveConfiguration();
+		
+		courseEditor
+			.autoPublish();
+	
+		course
+			.tree()
+			.assertWithTitleSelected(brokerNodeTitle);
+	
+		new TBrokerPage(browser)
+			.startEnrollment()
+			.confirmEnrollment(2)
+			.assertEnrolledByUser(participant1, 1)
+			.assertEnrolledByUser(participant2, 1);
 	}
 	
 	

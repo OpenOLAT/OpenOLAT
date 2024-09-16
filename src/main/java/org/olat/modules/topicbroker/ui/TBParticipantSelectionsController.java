@@ -126,6 +126,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		
 		if (canEditSelections) {
 			topicSelectLink = uifactory.addFormLink("participant.topic.select", formLayout, Link.BUTTON);
+			topicSelectLink.setElementCssClass("o_sel_tb_select_topic");
 			topicSelectLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		}
 		
