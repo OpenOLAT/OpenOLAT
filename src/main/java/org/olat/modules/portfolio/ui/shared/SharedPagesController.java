@@ -142,7 +142,8 @@ public class SharedPagesController extends FormBasicController implements Activa
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SharePageCols.bookmark));
+		DefaultFlexiColumnModel markColumn = new DefaultFlexiColumnModel(SharePageCols.bookmark);
+		markColumn.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SharePageCols.userInfosStatus,
 				new SharedPageStatusCellRenderer(getTranslator())));
 		FlexiCellRenderer titleRenderer =  new BooleanCellRenderer(

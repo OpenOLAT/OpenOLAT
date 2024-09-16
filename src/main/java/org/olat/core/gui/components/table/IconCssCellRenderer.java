@@ -111,6 +111,9 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			sb.appendHtmlEscaped(hoverText);
 		}
 		sb.append("\">");
+		if (StringHelper.containsNonWhitespace(hoverText)) {
+			sb.append("<span class='sr-only'>").append(hoverText).append("</span>");
+		}
 		sb.append(blankIfNull(getCellValue(val)));
 		sb.append("</span></div>");
 	}

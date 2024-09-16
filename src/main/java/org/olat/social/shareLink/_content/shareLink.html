@@ -13,31 +13,36 @@ function o_shareCallout() {
 }
 </script>
 
-<div id="o_share" aria-hidden="true">
+<div id="o_share">
 #set($shareBPLink = $shareLinks.contains("link"))
 #set($hasShareLinks = $shareBPLink && $shareLinks.size() > 1)
 
 #if ($hasShareLinks)
-	<a id="o_share_social" href="javascript:;" title="$r.translateInAttribute("share.social")" aria-label="$r.translateInAttribute("share.social")">
-		<i class="o_icon o_icon_share_social o_icon-lg"></i>
+	<a id="o_share_social" href="javascript:;">
+		<i class="o_icon o_icon_share_social o_icon-lg" aria-hidden='true' title="$r.translateInAttribute("share.social")"></i>
+		<span class='sr-only'>$r.translate("share.social")</span>
 	</a>
 	<div id="o_share_social_wrapper" class="hide"><div id="o_share_social_container">
 	#foreach ($link in $shareLinks)
 		#if ($link == "linkedin")
-			<a tabindex="1" id="o_linkedin" href="#" target="_blank" title="$r.translateInAttribute("share.linkedin")" aria-label="$r.translateInAttribute("share.linkedin")" onclick="window.open('https://www.linkedin.com/feed/?shareActive&text='+encodeURIComponent(o_shareSocialTitle())+'%0A'+encodeURIComponent(o_shareSocialUrl()));return false;">
-				<i class="o_icon o_icon_linkedin o_icon-lg"></i>
+			<a tabindex="1" id="o_linkedin" href="#" target="_blank" onclick="window.open('https://www.linkedin.com/feed/?shareActive&text='+encodeURIComponent(o_shareSocialTitle())+'%0A'+encodeURIComponent(o_shareSocialUrl()));return false;">
+				<i class="o_icon o_icon_linkedin o_icon-lg" aria-hidden='true' title="$r.translateInAttribute("share.linkedin")"></i>
+				<span class='sr-only'>$r.translate("share.linkedin")</span>
 			</a>
 		#elseif ($link == "facebook")
-			<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" aria-label="$r.translateInAttribute("share.facebook")" onclick="window.open('https://www.facebook.com/sharer.php?u='+encodeURIComponent(o_shareSocialUrl())+'&amp;t='+encodeURIComponent(o_shareSocialTitle()));return false;">
-				<i class="o_icon o_icon_facebook o_icon-lg"></i>
+			<a id="o_facebook" href="#" target="_blank" onclick="window.open('https://www.facebook.com/sharer.php?u='+encodeURIComponent(o_shareSocialUrl())+'&amp;t='+encodeURIComponent(o_shareSocialTitle()));return false;">
+				<i class="o_icon o_icon_facebook o_icon-lg" aria-hidden='true' title="$r.translateInAttribute("share.facebook")"></i>
+				<span class='sr-only'>$r.translate("share.facebook")</span>
 			</a>
 		#elseif ($link == "twitter")
-			<a id="o_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" aria-label="$r.translateInAttribute("share.twitter")" onclick="window.open('https://twitter.com/share?url='+encodeURIComponent(o_shareSocialUrl())+'&amp;text='+encodeURIComponent(o_shareSocialTitle()));return false;">
-				<i class="o_icon o_icon_twitter o_icon-lg"></i>
+			<a id="o_twitter" href="#" target="_blank" onclick="window.open('https://twitter.com/share?url='+encodeURIComponent(o_shareSocialUrl())+'&amp;text='+encodeURIComponent(o_shareSocialTitle()));return false;">
+				<i class="o_icon o_icon_twitter o_icon-lg" aria-hidden='true' title="$r.translateInAttribute("share.twitter")"></i>
+				<span class='sr-only'>$r.translate("share.twitter")</span>
 			</a>
 		#elseif ($link == "mail")	
-			<a id="o_mail" href="javascript: window.location.href='mailto:?subject=' + encodeURIComponent(o_shareSocialTitle()) + '&body=' + encodeURIComponent(o_shareSocialUrl());" title="$r.translateInAttribute("share.mail")" aria-label="$r.translateInAttribute("share.mail")">
- 				<i class="o_icon o_icon_mailto o_icon-lg"></i>
+			<a id="o_mail" href="javascript: window.location.href='mailto:?subject=' + encodeURIComponent(o_shareSocialTitle()) + '&body=' + encodeURIComponent(o_shareSocialUrl());">
+ 				<i class="o_icon o_icon_mailto o_icon-lg" aria-hidden='true' title="$r.translateInAttribute("share.mail")"></i>
+ 				<span class='sr-only'>$r.translate("share.mail")</span>
  			</a>
 		#end
 	#end
@@ -49,11 +54,13 @@ function o_shareCallout() {
 	</script>
 #end		
 	#if ($shareBPLink)	
-		<a id="o_link" href="javascript:;" title="$r.translateInAttribute("share.link")" aria-label="$r.translateInAttribute("share.link")">
-			<i class="o_icon o_icon_link o_icon-lg"></i>
+		<a id="o_link" href="javascript:;" title="$r.translateInAttribute("share.link")">
+			<i class="o_icon o_icon_link o_icon-lg" aria-hidden='true' title="$r.translateInAttribute("share.link")"></i>
+			<span class='sr-only'>$r.translate("share.link")</span>
 		</a>
-		<a id="o_qrcode" href="javascript:;" title="$r.translateInAttribute("share.qrcode")" aria-label="$r.translateInAttribute("share.qrcode")">
-			<i class="o_icon o_icon_qrcode o_icon-lg"></i>
+		<a id="o_qrcode" href="javascript:;" title="$r.translateInAttribute("share.qrcode")">
+			<i class="o_icon o_icon_qrcode o_icon-lg" aria-hidden='true' title="$r.translateInAttribute("share.qrcode")"></i>
+			<span class='sr-only'>$r.translate("share.qrcode")</span>
 		</a>
 		<script>
 		jQuery(function() {
@@ -64,8 +71,9 @@ function o_shareCallout() {
 	#end
 	## always show the 'set as landing page' button
 	#if ($isUser)
-	<a id="o_landingpage" $r.hrefAndOnclick("setLandingPage", false, false) title="$r.translateInAttribute("landingpage.set.current")" aria-label="$r.translateInAttribute("landingpage.set.current")">
-		<i class="o_icon o_icon_landingpage o_icon-lg"></i>
+	<a id="o_landingpage" $r.hrefAndOnclick("setLandingPage", false, false)>
+		<i class="o_icon o_icon_landingpage o_icon-lg" aria-hidden='true' title="$r.translateInAttribute("landingpage.set.current")"></i>
+		<span class='sr-only'>$r.translate("landingpage.set.current")</span>
 	</a>
 	#end
 </div>

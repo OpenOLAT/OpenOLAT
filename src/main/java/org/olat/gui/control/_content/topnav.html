@@ -17,7 +17,7 @@
 					</a>
 					<ul class="dropdown-menu dropdown-menu-right" id="$r.getCId()_help" role="menu" aria-labelledby="o_navbar_help_opener">          
 						#foreach($helpPlugin in $helpPlugins)
-			 				<li #if($helpPlugin.shortCutCssId) id="$helpPlugin.shortCutCssId" #end class="o_navbar_tool #if($helpPlugin.shortCutCssClass) $helpPlugin.shortCutCssClass #end">$r.render($helpPlugin.shortCutComponentName)</li>
+			 				<li role="menuitem" #if($helpPlugin.shortCutCssId) id="$helpPlugin.shortCutCssId" #end class="o_navbar_tool #if($helpPlugin.shortCutCssClass) $helpPlugin.shortCutCssClass #end">$r.render($helpPlugin.shortCutComponentName)</li>
 						#end
 					</ul>
 				</li>
@@ -26,22 +26,11 @@
 	#end
 	#if (!$isGuest)
 		<li id="o_navbar_my_menu" class="o_portrait">
-			<a id="o_sel_navbar_my_menu_caret" href="javascript:;" onclick="OPOL.navbar.toggleRight(); return false;">
+			<a id="o_sel_navbar_my_menu_caret" href="javascript:;" onclick="OPOL.navbar.toggleRight(); return false;" title="$r.escapeForHtmlAttribute("$myMenuLabel") – $r.translateInAttribute("topnav.my.menu.tools")">
 				$r.render("portrait")
-				<span>$myMenuLabel</span>
 				<b class="caret"> </b>
 			</a>
 		</li>
 	#end
 	</ul>
 </div>
-
-## focus search input field whenever search is displayed
-<script>
-"use strict";
-jQuery('#o_help_tool_toggler').click(function () {
-	setTimeout(function() {
-		jQuery('#o_help_tool_toggler[aria-expanded="true"] + .dropdown-menu #o_navbar_help_list input:text').focus();	
-	},0);
-});
-</script>

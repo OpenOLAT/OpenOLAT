@@ -229,7 +229,7 @@ public class SearchInputController extends FormBasicController implements Generi
 			searchLayout = FormLayoutContainer.createInputGroupLayout("searchWrapper", getTranslator(), null, null);
 			formLayout.add(searchLayout);
 			searchInput = uifactory.addTextElement("search_input", "search.title", 255, "", searchLayout);
-			searchInput.setLabel(null, null);
+			searchInput.setAriaLabel(translate("search.title"));
 			searchInput.setPlaceholderKey("search", null);
 			searchInput.setFocus(true);
 		}

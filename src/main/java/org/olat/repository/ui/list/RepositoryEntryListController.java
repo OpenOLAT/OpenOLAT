@@ -215,7 +215,9 @@ public class RepositoryEntryListController extends FormBasicController
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
 		if(!guestOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name()));
+			DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name());
+			markColModel.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
+			columnsModel.addFlexiColumnModel(markColModel);
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
 				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));

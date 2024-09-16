@@ -172,16 +172,16 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 		sb.append("<ul class='dropdown-menu dropdown-menu-right' role='menu' style=''>");
 		
 		if(cmp.isCreate()) {
-			sb.append("<li>");
+			sb.append("<li role='menuitem'>");
 			renderAddAbove(sb, cmp, ubu, translator);
-			sb.append("</li><li>");
+			sb.append("</li><li role='menuitem'>");
 			renderAddBelow(sb, cmp, ubu, translator);
 			sb.append("</li>");
 		}
 		
 		if(cmp.isDeleteable()) {
 			sb.append("<li class='divider'></li>")
-			  .append("<li>");
+			  .append("<li role='menuitem'>");
 			renderDelete(sb, cmp, ubu, translator);
 			sb.append("</li>");
 		}

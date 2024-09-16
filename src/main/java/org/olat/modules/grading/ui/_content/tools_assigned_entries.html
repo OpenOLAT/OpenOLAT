@@ -1,8 +1,8 @@
 <ul class="o_dropdown list-unstyled" role="menu">
 	#if($r.available("tool.send.mail"))
-	<li>$r.render("tool.send.mail")</li>
+	<li role="menuitem">$r.render("tool.send.mail")</li>
 	#end
 	#if($r.available("tool.absence"))
-	<li>$r.render("tool.absence")</li>
+	<li role="menuitem">$r.render("tool.absence")</li>
 	#end
 </ul>

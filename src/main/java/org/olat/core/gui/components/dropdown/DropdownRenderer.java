@@ -145,9 +145,9 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 					}
 					
 					if(component.isEnabled()) {
-						sb.append("<li>");
+						sb.append("<li role='menuitem'>");
 					} else {
-						sb.append("<li class='disabled'>");
+						sb.append("<li role='menuitem' class='disabled'>");
 					}
 					renderer.render(component, sb, null);
 					sb.append("</li>");

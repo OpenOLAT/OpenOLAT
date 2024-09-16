@@ -77,14 +77,16 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 				sb.append(" role='button'");
 				sb.append(" id='").append(id).append("_dd'");
 				sb.append(">");
-				sb.append("<i class='o_icon o_icon_breadcrumb_more'>&nbsp;</i>");
+				String moreLabel = translator.translate("action.more");
+				sb.append("<i class='o_icon o_icon_breadcrumb_more' aria-idden='true' title=\"").append(moreLabel).append("\">&nbsp;</i>");
+				sb.append("<span class='sr-only'>").append(moreLabel).append("</span>");
 				sb.append("</a>");
 				// Menu
-				sb.append("<ul class='o_breadcrumb_menu dropdown-menu'");
+				sb.append("<ul class='o_breadcrumb_menu dropdown-menu' aria-describedby='").append(id).append("_dd'"); 
 				sb.append(" id='").append(id).append("_dm'");
 				sb.append(" role='menu'>");
 				for (Link menuCrumb : breadCrumbs) {
-					sb.append("<li class='o_breadcrumb_menu_item'>");
+					sb.append("<li class='o_breadcrumb_menu_item' role='menuitem'>");
 					renderer.render(menuCrumb, sb, args);
 					sb.append("</li>");
 				}
@@ -100,7 +102,7 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 						crumb.setEnabled(false);
 						sb.append(" o_last_crumb");
 					}
-					sb.append("'>");
+					sb.append("' role='menuitem'>");
 					
 					String displayText = crumb.getCustomDisplayText();
 					crumb.setTitle(displayText);
@@ -116,7 +118,7 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 			
 			Link closeLink = panel.getCloseLink();
 			if (closeLink.isVisible()) {
-				sb.append("<li class='o_breadcrumb_close'>");
+				sb.append("<li class='o_breadcrumb_close' role='menuitem'>");
 				closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
 				sb.append("</li>");				
 			}
