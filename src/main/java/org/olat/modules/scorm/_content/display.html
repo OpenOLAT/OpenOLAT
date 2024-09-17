@@ -19,7 +19,7 @@
 		window.API.on("LMSFinish", function() {
 			var flatCmis = window.API.renderCommitCMI(true);
 			var flatCmisString = JSON.stringify(flatCmis);
-			$r.openScormCommand("LMSFinish"), 'cmis', flatCmisString);
+			$r.openScormCommand("LMSFinish"), 'ignore-validating-error', 'oo-ignore-validating-error', 'cmis', flatCmisString);
 		});
 		
 		function o_unloadSCO(command, currentScoId, nextScoId) {

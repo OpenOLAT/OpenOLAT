@@ -21,9 +21,11 @@ package org.olat.search.service.document.file.pdf;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -31,10 +33,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.SearchModule;
 import org.olat.search.service.document.file.DocumentAccessException;
+import org.olat.search.service.document.file.FileContent;
+import org.olat.search.service.document.file.FileDocumentFactory;
 
 /**
  * The extractor call an extern process: command pdf txt
@@ -59,18 +66,21 @@ public class PdfExternalExtractor implements PdfExtractor {
 	}
 
 	@Override
-	public void extract(VFSLeaf document, File bufferFile)
+	public FileContent extract(VFSLeaf document)
 	throws IOException, DocumentAccessException {
 		if(!(document instanceof LocalFileImpl)) {
 			log.warn("Can only index local file");
-			return;
+			return null;
 		}
-		
+
 		List<String> cmds = new ArrayList<>();
 		cmds.add(searchModule.getPdfExternalIndexerCmd());
 		String path = ((LocalFileImpl)document).getBasefile().getAbsolutePath();
 		cmds.add(path);
-		cmds.add(bufferFile.getAbsolutePath());
+		
+		File tmpFile = new File(WebappHelper.getTmpDir(), "pdf-temp-" + CodeHelper.getGlobalForeverUniqueID() + ".txt");
+		tmpFile.createNewFile();
+		cmds.add(tmpFile.getAbsolutePath());
 
 		CountDownLatch doneSignal = new CountDownLatch(1);
 
@@ -86,6 +96,42 @@ public class PdfExternalExtractor implements PdfExtractor {
 		}
 		
 		worker.destroyProcess();
+		
+		FileContent content = getPdfTextFromBuffer(tmpFile);
+		Files.deleteIfExists(tmpFile.toPath());
+		return content;
+	}
+	
+	private FileContent getPdfTextFromBuffer(File pdfTextFile) throws IOException {
+		if (log.isDebugEnabled()) log.debug("readContent from text file start...");
+
+		try(BufferedReader br = new BufferedReader(new FileReader(pdfTextFile));
+				LimitedContentWriter sb = new LimitedContentWriter(5000, FileDocumentFactory.getMaxFileSize())) {
+			//search the title
+			char[] cbuf = new char[4096];
+			int length = br.read(cbuf);
+			int indexSep = 0;
+			String title = "";
+			
+			if(length > 0) {
+				String firstChunk = new String(cbuf, 0, length);
+				indexSep = firstChunk.indexOf("\u00A0|\u00A0");
+				if(indexSep > 0) {
+					title = firstChunk.substring(0, indexSep);
+					sb.append(firstChunk.substring(indexSep + 3));
+				} else {
+					sb.append(firstChunk);
+				}
+				while((length = br.read(cbuf)) > 0) {
+					sb.write(cbuf, 0, length);
+				}
+			}
+	
+			return new FileContent(title, sb.toString());
+		} catch(IOException e) {
+			log.error("", e);
+			throw e;
+		}
 	}
 
 	private final void executeProcess(Process proc) {
@@ -119,7 +165,7 @@ public class PdfExternalExtractor implements PdfExtractor {
 		try {
 			int exitValue = proc.waitFor();
 			if(log.isDebugEnabled()) {
-				log.info("PDF extracted: " + exitValue);
+				log.info("PDF extracted: {}", exitValue);
 			}
 		} catch (InterruptedException e) {
 			//

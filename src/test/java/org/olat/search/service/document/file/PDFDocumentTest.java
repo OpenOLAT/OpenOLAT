@@ -44,8 +44,7 @@ public class PDFDocumentTest extends OlatTestCase {
 		Assert.assertNotNull(pdfUrl);
 
 		VFSLeaf doc = new VFSJavaIOFile("Test_1.pdf", new File(pdfUrl.toURI()));
-		String temp = System.getProperty("java.io.tmpdir");
-		PdfDocument document = new PdfDocument(temp, false);
+		PdfDocument document = new PdfDocument(false);
 		FileContent content =	document.readContent(doc);
 		Assert.assertNotNull(content);
 		Assert.assertEquals("Test pdf indexing", content.getTitle());
@@ -60,8 +59,7 @@ public class PDFDocumentTest extends OlatTestCase {
 		Assert.assertNotNull(pdfUrl);
 
 		VFSLeaf doc = new VFSJavaIOFile(UUID.randomUUID().toString() + ".pdf", new File(pdfUrl.toURI()));
-		String temp = System.getProperty("java.io.tmpdir");
-		PdfDocument document = new PdfDocument(temp, false);
+		PdfDocument document = new PdfDocument(false);
 		
 		//index the pdf
 		FileContent contentIndexed =	document.readContent(doc);

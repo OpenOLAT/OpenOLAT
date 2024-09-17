@@ -78,8 +78,6 @@ public class SearchModule extends AbstractSpringModule {
 	private String tempIndexPath;
 	@Value("${search.index.tempSpellcheck:/tmp}")
 	private String tempSpellCheckPath;
-	@Value("${search.index.pdfBuffer:/tmp}")
-	private String tempPdfTextBufferPath;
 
 	@Value("${search.index.path:/tmp}")
 	private String indexPath;
@@ -117,7 +115,6 @@ public class SearchModule extends AbstractSpringModule {
 	@Value("${search.pdf.external.command:convertpdf.sh}")
 	private String pdfExternalIndexerCmd;
 	private boolean isSpellCheckEnabled = true;
-	private String fullPdfTextBufferPath;
 
 	private long maxFileSize = 10485760;
 
@@ -155,7 +152,6 @@ public class SearchModule extends AbstractSpringModule {
 		
 		fullTempIndexPath = buildPath(tempIndexPath);
 		fullTempSpellCheckPath = buildPath(tempSpellCheckPath);
-		fullPdfTextBufferPath = buildPath(tempPdfTextBufferPath);
 	}
 	
 	private String buildPath(String path) {
@@ -405,10 +401,6 @@ public class SearchModule extends AbstractSpringModule {
 	 */
 	public boolean getSpellCheckEnabled() {
 		return isSpellCheckEnabled;
-	}
-
-	public String getPdfTextBufferPath() {
-		return fullPdfTextBufferPath;
 	}
 
 	public List<String> getFileSizeSuffixes() {

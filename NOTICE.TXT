@@ -23,7 +23,7 @@ Contributors and copy right holders of openolat.org codebase since 2011:
   Florian Gnägi, Roman Haag, Stéphane Rossé, Christian Franck, Sergio Trentini, Michael Enz, Joël Krähemann, 
   Dirk Furrer, Matthai Kurian, Oliver Kant, Sabrina Scheiwiler, Marco Ferrari, Urs Hensler, Fabian Kiefer, 
   Kirsten Scherer,  Mandy Menzel, Saara Welti, Martin Sauerbrey, Alexander Böckle, Rico Eberle, Benjamin Glock, 
-  Lukas Witschi, Christoph Pfranger, Sumit Kapoor, Samet Kilic
+  Lukas Witschi, Christoph Pfranger, Sumit Kapoor, Samet Kilic, Lara Kant
 - BPS Bildungsportal Sachsen GmbH, Germany [http://www.bildungsportal.sachsen.de]:
   Armin Blawitzki, Stefan Köber, Sven Morgner
 - VCRP Virtueller Campus Rheinland-Pfalz [http://www.vcrp.de]
