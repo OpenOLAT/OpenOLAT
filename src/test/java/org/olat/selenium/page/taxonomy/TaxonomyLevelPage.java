@@ -89,7 +89,7 @@ public class TaxonomyLevelPage {
 		OOGraphene.moveAndClick(searchBy, browser);
 
 		// select all
-		By selectAll = By.xpath("//dialog[contains(@class,'modal')]//th/div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
+		By selectAll = By.xpath("//dialog[contains(@class,'modal')]//th/a[i[contains(@class,'o_icon_check_off')]]");
 		OOGraphene.waitElement(selectAll, browser);
 		browser.findElement(selectAll).click();
 		OOGraphene.waitBusy(browser);
