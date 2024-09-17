@@ -27,6 +27,7 @@
 package org.olat.core.gui.components.link;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -254,6 +255,16 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			if(link.getBadge() != null) {
 				renderer.render(link.getBadge(), sb, args);
 			}
+			
+			// a11y helper to indicate active elements
+			if (link.isActive() || args != null && Arrays.stream(args).anyMatch("a11yactive"::equals)) {
+				if (translator != null) {
+					sb.append("<span class='sr-only'>").append(translator.translate("a11y.active")).append("</span>");					
+				} else if (Settings.isDebuging()) {
+					log.warn("A11y issue: missing translator in renderer, please fix your code for link:: " + link.getComponentName() + " with URL::" + link.getUrl() + " and icon::" + link.getIconLeftCSS());
+				}
+			}
+			
 			sb.append("</a>").append("</p>", inForm);
 			
 			//on click() is part of prototype.js
@@ -315,6 +326,15 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append(" aria-hidden='true'></i> "); 
 			}			
 
+			// a11y helper to indicate active elements
+			if (link.isActive() || args != null && Arrays.stream(args).anyMatch("a11yactive"::equals)) {
+				if (translator != null) {
+					sb.append("<span class='sr-only'>").append(translator.translate("a11y.active")).append("</span>");
+				} else if (Settings.isDebuging()) {
+					log.warn("A11y issue: missing translator in renderer, please fix your code for link:: " + link.getComponentName() + " with URL::" + link.getUrl() + " and icon::" + link.getIconLeftCSS());
+				}
+
+			}
 			sb.append("</a>");
 		}
 		

@@ -1137,6 +1137,20 @@ public class VelocityRenderDecorator implements Closeable {
 		return Formatter.formatURLsAsLinks(textFragment, true);
 	}	
 	
+	
+	/**
+	 * Wrap the given text to be rendered for screenreaders only. This works only
+	 * for inline HTML code or plain text. Do not use it in HTML attributes as this
+	 * code generates a wrapper DOM elements. 
+	 * 
+	 * @param Text The text to be shown only to sreen readers
+	 * @return The wrapped text element
+	 */
+	public String screenreaderOnly(String text) {
+		return "<span class='sr-only'>" + text + "</span>";
+	}
+
+	
  	/**
 	 * Strips all HTML tags from the source string.
 	 * 
