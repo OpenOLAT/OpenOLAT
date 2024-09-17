@@ -271,3 +271,8 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 .dropdown-toggle:focus-visible {
 	@include tab-focus;
 }
+/* a11y: set max contrast for a11y checker tools */
+.sr-only {
+	color: #000 !important;
+	background: #fff !important;
+}

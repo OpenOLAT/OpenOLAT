@@ -59,7 +59,9 @@ $pagination-disabled-border		: $btn-default-border !default;
 
 /* a11y optimizations */
 $text-color						: #333 !default;
+$navbar-default-link-color		: #666 !default;
 $badge-bg						: #666 !default;
+$btn-warning-color				: #222 !default;
 
 /* other general colors, override bootstrap counterparts */
 $brand-info						: #2B78E4 !default;
@@ -1152,7 +1154,7 @@ $o-drawing-select-bg		: transparentize($brand-primary, 0.5) !default;
 /* Placeholder panels */
 $o-panel-placeholder-border-width			: 2px !default;
 $o-panel-placeholder-border-radius			: 10px !default;
-$o-panel-placeholder-color					: #888 !default;
+$o-panel-placeholder-color					: #666 !default;
 $o-panel-placeholder-font-weight			: bold !default;
 $o-panel-placeholder-border-color			: #ccc!default;
 $o-panel-placeholder-border-active-color	: $brand-primary !default;
@@ -1172,7 +1174,7 @@ $o-slider-handler-background-color	: $brand-primary !default;
 
 /* Labels */
 $o-labeled_color					: #fff !default;
-$o-labeled_bg-color					: #777 !default;
+$o-labeled_bg-color					: #666 !default;
 $o-labeled-light-bg-color			: $o-toolbar-bg-color !default;
 $o-labeled-yellow-color				: #574000 !default;
 $o-labeled-yellow-bg-color			: #FBD774 !default;
