@@ -79,6 +79,8 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 					initToolbar();
 				}
 				setActiveTool(null);
+			} else if(event == Event.CLOSE_EVENT) {
+				super.doClose(ureq);
 			}
 		} else if (source == changeScormLink) {
 			doReplaceScorm(ureq);
@@ -91,7 +93,8 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 		if (guardDeleted(ureq)) return;
 		
 		if(source == getRuntimeController()) {
-			if(event == Event.BACK_EVENT) {
+			// For authors which play with the package, never close it via LMSFinish
+			if(event == Event.BACK_EVENT && !reSecurity.getWrappedSecurity().isEntryAdmin()) {
 				super.doClose(ureq);
 			}
 		} else if (source == scormResourceEditCtrl) {
