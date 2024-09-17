@@ -96,7 +96,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 	public PreviewRunController(UserRequest ureq, WindowControl wControl, IdentityEnvironment identEnv, CourseEnvironment cenv, String role, LayoutMain3ColsController previewLayoutCtr) { 
 		super(ureq, wControl, Util.createPackageTranslator(RunMainController.class, ureq.getLocale()));
 		// set up the components
-		luTree = new MenuTree(null, "luTreeRun", this);
+		luTree = new MenuTree(null, "luTreeRun", this, getTranslator());
 		luTree.setScrollTopOnClick(true);
 
 		// build up the running structure for this user

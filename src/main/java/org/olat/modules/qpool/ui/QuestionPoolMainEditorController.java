@@ -103,7 +103,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		treeModel = new QuestionPoolMenuTreeModel(stackPanel, getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
-		menuTree = new MenuTree("qpoolTree");
+		menuTree = new MenuTree("qpoolTree", getTranslator());
 		menuTree.setTreeModel(treeModel);
 		menuTree.setSelectedNode(menuTree.getTreeModel().getRootNode());
 		menuTree.setDragEnabled(false);

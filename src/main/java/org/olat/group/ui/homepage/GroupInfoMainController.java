@@ -92,7 +92,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		super(ureq, wControl);
 		this.businessGroup = businessGroup;
 
-		menuTree = new MenuTree("menuTree");
+		menuTree = new MenuTree("menuTree", getTranslator());
 		menuTree.setRootVisible(false);
 		menuTree.setTreeModel(buildTreeModel());
 		menuTree.addListener(this);

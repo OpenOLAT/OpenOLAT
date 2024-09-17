@@ -107,7 +107,7 @@ public class UserInfoMainController extends AbstractUserInfoMainController imple
 
 		// Navigation menu
 		if (!chosenIdentity.getStatus().equals(Identity.STATUS_DELETED)) {
-			menuTree = new MenuTree("menuTree");
+			menuTree = new MenuTree("menuTree", getTranslator());
 			GenericTreeModel tm = buildTreeModel(firstLastName);
 			menuTree.setTreeModel(tm);
 			menuTree.setSelectedNodeId(tm.getRootNode().getChildAt(0).getIdent());

@@ -98,7 +98,7 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 	 * @param ureq
 	 */
 	public void init(UserRequest ureq) {
-		olatMenuTree = new MenuTree("olatMenuTree");
+		olatMenuTree = new MenuTree("olatMenuTree", getTranslator());
 		TreeModel tm = buildTreeModel(ureq);
 		olatMenuTree.setTreeModel(tm);
 		content = new Panel("content");

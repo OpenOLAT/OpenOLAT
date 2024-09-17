@@ -44,7 +44,7 @@ public class MenuTreeItem extends FormItemImpl {
 	
 	public MenuTreeItem(String name, ComponentEventListener listener) {
 		super(name);
-		treeCmp = new MenuTree(null, name + "_CMP", listener, this);
+		treeCmp = new MenuTree(null, name + "_CMP", listener, this, getTranslator());
 	}
 
 	public boolean isNoDirtyCheckOnClick() {

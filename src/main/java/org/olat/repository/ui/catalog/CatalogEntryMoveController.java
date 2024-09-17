@@ -78,7 +78,7 @@ public class CatalogEntryMoveController extends BasicController {
 		List<CatalogEntry> catEntryList = fetchChildren(ownedEntries);
 
 		VelocityContainer mainVC = createVelocityContainer("catMove");
-		selectionTree = new MenuTree(null, "catSelection", this);
+		selectionTree = new MenuTree(null, "catSelection", this, getTranslator());
 		selectionTree.enableInsertTool(true);
 		selectionTree.setTreeModel(new CatalogTreeModel(catEntryList, moveMe, ownedEntries));
 		

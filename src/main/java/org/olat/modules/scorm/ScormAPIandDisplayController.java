@@ -196,7 +196,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			throw new OLATRuntimeException("error.manifest.missing", null, getClass().getName(), "CP " + cpRoot.getAbsolutePath() + " has no imsmanifest", null);
 		}
 		treeModel = new ScormCPManifestTreeModel(mani, sessionController.getScoItemsStatus());
-		menuTree = new MenuTree("cpDisplayTree");
+		menuTree = new MenuTree("cpDisplayTree", getTranslator());
 		menuTree.setTreeModel(treeModel);
 		menuTree.addListener(this);
 		

@@ -96,7 +96,7 @@ public class CPTreeController extends BasicController {
 		this.cp = cp;
 		
 		treeModel = cpManager.getTreeDataModel(cp);
-		treeCtr = new MenuTree("cp");
+		treeCtr = new MenuTree("cp", getTranslator());
 		treeCtr.setTreeModel(treeModel);
 		treeCtr.setDragEnabled(true);
 		treeCtr.setDropEnabled(true);

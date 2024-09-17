@@ -95,7 +95,7 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 		
 		TreeModel treeModel = resourceResult.getTreeModel();
 
-		courseTree = new MenuTree("qti21StatisticsTree");
+		courseTree = new MenuTree("qti21StatisticsTree", getTranslator());
 		courseTree.setTreeModel(treeModel);
 		courseTree.addListener(this);
 		

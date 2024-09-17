@@ -134,7 +134,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		rootCourseNodeIdent = course.getRunStructure().getRootNode().getIdent();
 		
 		// Overview navigation
-		overviewMenuTree = new MenuTree("menuTree");
+		overviewMenuTree = new MenuTree("menuTree", getTranslator());
 		TreeModel overviewTreeModel = overviewTreeModel();
 		
 		overviewMenuTree.setTreeModel(overviewTreeModel);
@@ -143,7 +143,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		overviewMenuTree.addListener(this);
 
 		// Navigation menu
-		menuTree = new MenuTree("menuTree");
+		menuTree = new MenuTree("menuTree", getTranslator());
 		TreeModel tm = AssessmentHelper.assessmentTreeModel(course, getLocale());
 		menuTree.setTreeModel(tm);
 		menuTree.setSelectedNode(tm.getRootNode());

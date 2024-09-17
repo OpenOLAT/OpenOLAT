@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -52,6 +53,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
@@ -62,6 +65,7 @@ import org.olat.core.util.nodes.INode;
  * @author Felix Jost, Florian Gnaegi
  */
 public class MenuTreeRenderer extends DefaultComponentRenderer {
+	private static final Logger log = Tracing.createLoggerFor(MenuTreeRenderer.class);
 
 	/**
 	 * Constructor for TableRenderer. Singleton and must be reentrant There must
@@ -293,7 +297,17 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 					new NameValuePair(COMMAND_TREENODE, renderChildren ? MenuTree.TREENODE_CLOSE : MenuTree.TREENODE_OPEN));
 
 			String openCloseCss = renderChildren ? "close" : "open";
-			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree'></i></a>");
+			String openCloseTitle = null;
+			if (tree.getTranslator() == null) {
+				openCloseTitle = "ERR:missing translator";
+				if (Settings.isDebuging()) {
+					log.warn("A11y issue: missing translator in MenuTreeRenderer, please fix your code for link:: " + tree.getComponentName() + " currRoot::" + curRoot.getTitle());
+				}
+			} else {
+				openCloseTitle = tree.getTranslator().translate("level." + openCloseCss);			
+			}
+			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree' title=\"")
+				.appendHtmlAttributeEscaped(openCloseTitle).append("\")></i><span class='sr-only'>").append(openCloseTitle).append("</span></a>");
 		} else if (level != 0 && chdCnt == 0) {
 			target.append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;</span>");
 		}

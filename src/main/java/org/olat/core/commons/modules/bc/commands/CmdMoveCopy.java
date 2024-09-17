@@ -99,7 +99,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 			main.contextPut("invalidFileNames", fileSelection.getInvalidFileNames());
 		}		
 
-		selTree = new MenuTree(null, "seltree", this);
+		selTree = new MenuTree(null, "seltree", this, trans);
 		FolderTreeModel ftm = new FolderTreeModel(ureq.getLocale(), fc.getRootContainer(),
 				true, false, true, fc.getRootContainer().canWrite() == VFSStatus.YES, new EditableFilter());
 		selTree.setTreeModel(ftm);

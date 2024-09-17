@@ -139,7 +139,7 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 			rootTreeNode.addChild(subNode);
 		}
 
-		courseTree = new MenuTree("qti21StatisticsTree");
+		courseTree = new MenuTree("qti21StatisticsTree", getTranslator());
 		courseTree.setTreeModel(treeModel);
 		courseTree.addListener(this);
 		

@@ -171,7 +171,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				OrganisationRoles.administrator, OrganisationRoles.principal,
 				OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
 
-		menuTree = new MenuTree("olatMenuTree");
+		menuTree = new MenuTree("olatMenuTree", getTranslator());
 		menuTree.setExpandSelectedNode(false);
 		menuTree.setScrollTopOnClick(true);
 		menuTree.setRootVisible(false);
