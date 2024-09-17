@@ -19,9 +19,6 @@
  */
 package org.olat.modules.scorm;
 
-import java.io.File;
-
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,7 +30,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.FileUtils;
+import org.olat.core.util.ZipUtil;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.ScormCPFileResource;
@@ -103,27 +102,22 @@ public class ScormResourceEditController extends FormBasicController {
 	}
 
 	private boolean doReplaceScormResource() {
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File currentResource = frm.getFileResource(entry.getOlatResource());
-
 		String typeName = entry.getOlatResource().getResourceableTypeName();
 		if (typeName.equals(ScormCPFileResource.TYPE_NAME)) {
-			if (currentResource.getName().endsWith(".zip")) {
-				currentResource.delete();
+			FileResourceManager frm = FileResourceManager.getInstance();
+			VFSContainer rootContainer = frm.getResourceRootContainer(entry.getOlatResource());		
+			VFSItem zipContainer = rootContainer.resolve(FileResourceManager.ZIPDIR);
+			if(zipContainer != null) {
+				zipContainer.deleteSilently();
 			}
 			
-			File resourceDir = frm.getFileResourceRoot(entry.getOlatResource());
-			File newResource = new File(resourceDir, "scorm.zip");
-			
-			String repositoryHome = FolderConfig.getCanonicalRepositoryHome();
-			String relUnzipDir = frm.getUnzippedDirRel(entry.getOlatResource());
-			File unzipDir = new File(repositoryHome, relUnzipDir);	
-			FileUtils.copyFileToFile(uploadFileEl.getUploadFile(), newResource, false);	
-			if (unzipDir.exists()) {
-				FileUtils.deleteDirsAndFiles(unzipDir, true, true);
-				frm.unzipFileResource(entry.getOlatResource());
-				newResource.delete();
+			VFSItem zipFile = rootContainer.resolve("scorm.zip");
+			if(zipFile != null) {
+				zipFile.deleteSilently();
 			}
+			
+			VFSContainer newZipContainer = rootContainer.createChildContainer(FileResourceManager.ZIPDIR);
+			ZipUtil.unzipStrict(uploadFileEl.getUploadFile(), newZipContainer);
 			return true;
 		}
 		return false;

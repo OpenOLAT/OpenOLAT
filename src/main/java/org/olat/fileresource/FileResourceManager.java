@@ -95,6 +95,10 @@ public class FileResourceManager {
 		return VFSManager.olatRootContainer(FolderConfig.getRepositoryHome() + "/" + res.getResourceableId(), null);
 	}
 	
+	public VFSContainer getResourceRootContainer(OLATResourceable res) {
+		return VFSManager.olatRootContainer(FolderConfig.getRepositoryHome() + "/" + res.getResourceableId(), null);
+	}
+	
 	public VFSContainer getFileResourceMedia(OLATResourceable res) {
 		VFSContainer folder = getFileResourceRootImpl(res);
 		VFSItem item = folder.resolve("media");
