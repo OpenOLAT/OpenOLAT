@@ -307,7 +307,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 				openCloseTitle = tree.getTranslator().translate("level." + openCloseCss);			
 			}
 			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree' title=\"")
-				.appendHtmlAttributeEscaped(openCloseTitle).append("\")></i><span class='sr-only'>").append(openCloseTitle).append("</span></a>");
+				.appendHtmlAttributeEscaped(openCloseTitle).append("\") aria-hidden='true'></i><span class='sr-only'>").append(openCloseTitle).append("</span></a>");
 		} else if (level != 0 && chdCnt == 0) {
 			target.append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;</span>");
 		}

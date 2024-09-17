@@ -57,6 +57,7 @@ public class InfoPanelRenderer extends DefaultComponentRenderer {
 			sb.append("<a id='").append(cid).append("_button' class='o_collapse_title").append(collapsed ? " collapsed" : "").append("' role='button' data-toggle='collapse' data-target='#").append(cid).append("_infos' aria-expanded='").append(collapsed ? "false" : "true").append("' aria-controls='").append(cid).append("_infos'>")
 			  .append("<h4>").appendHtmlEscaped(title).append("</h4> <i class='o_icon o_icon_lg o_icon_details_expand'> </i>")
 			  .append("</a>");
+			//TODO a11y title/sr-only 
 		}
 		
 		sb.append("<div id='").append(cid).append("_infos' class='collapse ").append("in", !collapsed).append("' aria-expanded='").append(collapsed ? "false" : "true").append("'>")

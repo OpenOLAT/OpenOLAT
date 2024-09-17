@@ -223,7 +223,7 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		expandButton = uifactory.addFormLink("expandButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		expandButton.setIconLeftCSS("o_icon o_icon_lg o_icon_details_collaps");
-		expandButton.setTooltip(translate("more"));
+		expandButton.setTitle(translate("details.expand"));
 		expandButton.setElementCssClass("o_button_details");
 		expandButton.setUserObject(Boolean.TRUE);
 		
@@ -680,6 +680,7 @@ public class TeacherRollCallController extends FormBasicController {
 		boolean nextState = !expanded.booleanValue();
 		String nextCssState = nextState ? "o_icon_details_collaps" : "o_icon_details_expand";
 		expandButton.setIconLeftCSS("o_icon o_icon_lg ".concat(nextCssState));
+		expandButton.setTitle(translate((nextState ? "details.collapse" : "details.expand")));
 		expandButton.setUserObject(Boolean.valueOf(nextState));
 		flc.contextPut("expandedDescription", Boolean.valueOf(nextState));
 	}

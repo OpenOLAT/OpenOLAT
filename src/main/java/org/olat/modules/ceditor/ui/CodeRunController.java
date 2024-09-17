@@ -98,6 +98,7 @@ public class CodeRunController extends BasicController implements PageRunElement
 		}
 		mainVC.contextPut("expanded", expanded);
 		expandCollapseButton.setIconLeftCSS("o_icon o_icon_lg " + (expanded ? "o_icon_details_collaps" : "o_icon_details_expand"));
+		expandCollapseButton.setTitle(translate((expanded ? "details.collapse" : "details.expand")));
 		mainVC.contextPut("allowExpand", !editable && numberOfLines <= MAX_LINES_TO_EXPAND);
 		mainVC.contextPut("content", StringHelper.escapeHtml(content));
 	}
