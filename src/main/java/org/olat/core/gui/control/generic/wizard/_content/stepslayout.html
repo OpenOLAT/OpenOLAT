@@ -13,7 +13,12 @@
 				<ul>
 				#foreach($mainTitle in $mainStepTitles)
 					<li #if($mainStepPos == $foreach.index) class="active"#end>
-						$r.render($mainTitle)<span class="chevron"></span>
+					#if($mainStepPos == $foreach.index)
+						$r.render($mainTitle, "a11yactive")
+					#else
+						$r.render($mainTitle)
+					#end						
+						<span class="chevron"></span>
 					</li>
 				#end
 				</ul>
@@ -24,7 +29,11 @@
 					<ul>
 					#foreach($subTitle in $subStepTitles)
 						<li #if($subStepPos == $foreach.index) class="active"#end>
+						#if($subStepPos == $foreach.index)
+							$r.render($subTitle, "a11yactive")
+						#else
 							$r.render($subTitle)
+						#end
 						</li>
 					#end
 					</ul>

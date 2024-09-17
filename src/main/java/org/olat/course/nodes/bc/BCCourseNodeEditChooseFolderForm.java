@@ -49,7 +49,7 @@ public class BCCourseNodeEditChooseFolderForm extends BasicController {
 		VelocityContainer chooseVC = createVelocityContainer("chooseFolder");
 
 		treeModel = new FolderTreeModel(ureq.getLocale(), namedContainer,  true, false, true, true, new VFSFolderNodeFilter());
-		selectionTree = new MenuTree("stTree");
+		selectionTree = new MenuTree("stTree", getTranslator());
 		selectionTree.setTreeModel(treeModel);
 		selectionTree.addListener(this);
 		chooseVC.put("selectionTree", selectionTree);

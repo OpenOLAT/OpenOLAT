@@ -50,7 +50,7 @@ public class TaxonomyTreeController extends BasicController {
 
 		VelocityContainer mainVC = createVelocityContainer("admin_trees");
 
-		taxonomiesTree = new MenuTree("taxonomyTree");
+		taxonomiesTree = new MenuTree("taxonomyTree", getTranslator());
 		taxonomyModel = new TaxonomyTreesModel();
 		taxonomiesTree.setTreeModel(taxonomyModel);
 		taxonomiesTree.setSelectedNode(taxonomiesTree.getTreeModel().getRootNode());

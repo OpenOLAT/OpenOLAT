@@ -84,7 +84,7 @@ public class ProjMembersManagementController extends MainLayoutBasicController i
 		
 		invitationsEnabled = invitationModule.isProjectInvitationEnabled();
 		
-		menuTree = new MenuTree("menuTree");
+		menuTree = new MenuTree("menuTree", getTranslator());
 		menuTree.setTreeModel(buildTreeModel());
 		menuTree.setRootVisible(false);
 		menuTree.addListener(this);

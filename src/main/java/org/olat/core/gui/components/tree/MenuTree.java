@@ -44,6 +44,7 @@ import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.ValidationResult;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.INodeFilter;
@@ -138,12 +139,12 @@ public class MenuTree extends AbstractComponent implements FormBaseComponent {
 	/**
 	 * @param name
 	 */
-	public MenuTree(String name) {
-		super(null, name);
+	public MenuTree(String name, Translator trans) {
+		super(null, name, trans);
 	}
 	
-	public MenuTree(String id, String name) {
-		super(id, name);
+	public MenuTree(String id, String name, Translator trans) {
+		super(id, name, trans);
 	}
 	
 	/**
@@ -151,13 +152,13 @@ public class MenuTree extends AbstractComponent implements FormBaseComponent {
 	 * @param name
 	 * @param eventListener
 	 */
-	public MenuTree(String id, String name, ComponentEventListener eventListener) {
-		super(id, name);
+	public MenuTree(String id, String name, ComponentEventListener eventListener, Translator trans) {
+		super(id, name, trans);
 		addListener(eventListener);
 	}
 	
-	MenuTree(String id, String name, ComponentEventListener eventListener, MenuTreeItem menuTreeItem) {
-		this(id, name, eventListener);
+	MenuTree(String id, String name, ComponentEventListener eventListener, MenuTreeItem menuTreeItem, Translator trans) {
+		this(id, name, eventListener, trans);
 		this.menuTreeItem = menuTreeItem;
 	}
 	

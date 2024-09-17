@@ -70,7 +70,7 @@ public class ArchiveAndReportController extends MainLayoutBasicController implem
 		this.courseEntry = courseEntry;
 		this.ores = OresHelper.clone(courseEntry.getOlatResource());
 		
-		menuTree = new MenuTree("menuTree");
+		menuTree = new MenuTree("menuTree", getTranslator());
 		TreeModel tm = buildTreeModel(); 
 		menuTree.setTreeModel(tm);
 		menuTree.setRootVisible(false);

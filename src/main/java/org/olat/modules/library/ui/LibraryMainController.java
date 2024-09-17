@@ -203,7 +203,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 	 */
 	private void initCtrs(UserRequest ureq, RepositoryEntry catalogEntry) {
 		// Menu tree
-		menuTree = new MenuTree("menuTree");
+		menuTree = new MenuTree("menuTree", getTranslator());
 		menuTree.setExpandSelectedNode(false);
 		menuTree.addListener(this);
 		initializeMenuTreeAndCatalog(ureq);

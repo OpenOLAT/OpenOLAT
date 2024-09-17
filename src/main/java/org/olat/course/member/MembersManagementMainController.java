@@ -140,7 +140,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		
 		//ui stuff
-		menuTree = new MenuTree("menuTree");
+		menuTree = new MenuTree("menuTree", getTranslator());
 		menuTree.setTreeModel(buildTreeModel());
 		menuTree.setRootVisible(false);
 		menuTree.addListener(this);

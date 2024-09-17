@@ -52,7 +52,7 @@ public class EditorTreeController extends BasicController {
 	public EditorTreeController(UserRequest ureq, WindowControl wControl, NodeAccessType nodeAccessType) {
 		super(ureq, wControl);
 		
-		menuTree = new MenuTree("luTree");
+		menuTree = new MenuTree("luTree", getTranslator());
 		menuTree.setExpandSelectedNode(false);
 		menuTree.setDragEnabled(true);
 		menuTree.setDropEnabled(true);
@@ -65,7 +65,7 @@ public class EditorTreeController extends BasicController {
 		menuTree.setElementCssClass(menuTreeCss);
 		menuTree.addListener(this);
 		
-		configurationMenuTree = new MenuTree("configurationTree");
+		configurationMenuTree = new MenuTree("configurationTree", getTranslator());
 		configurationMenuTree.setElementCssClass("o_editor_configuration_menu");
 		configurationMenuTree.addListener(this);
 		configurationMenuTree.setHighlightSelection(false);

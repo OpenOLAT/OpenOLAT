@@ -62,7 +62,7 @@ public class CourseNodeSelectionController extends BasicController {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		// Navigation menu
-		menuTree = new MenuTree("menuTree");
+		menuTree = new MenuTree("menuTree", getTranslator());
 		TreeModel tm = AssessmentHelper.assessmentTreeModel(course, getLocale());
 		menuTree.setTreeModel(tm);
 		menuTree.setExpandSelectedNode(true);

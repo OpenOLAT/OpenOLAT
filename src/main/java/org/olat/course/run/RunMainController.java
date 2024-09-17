@@ -234,7 +234,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// to the courselog
 		getLogger().info(Tracing.M_AUDIT, "Entering course: [[[{}]]] {}", courseTitle, course.getResourceableId());
 		
-		luTree = new MenuTree(null, "luTreeRun", this);
+		luTree = new MenuTree(null, "luTreeRun", this, getTranslator());
 		luTree.setScrollTopOnClick(true);
 		luTree.setExpandSelectedNode(false);
 		String treeCssClass = nodeAccessService.getCourseTreeCssClass(course.getCourseConfig());

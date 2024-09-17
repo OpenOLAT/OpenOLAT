@@ -80,7 +80,7 @@ public class MoveCopySubtreeController extends BasicController {
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		addLoggingResourceable(LoggingResourceable.wrap(moveCopyFrom.getCourseNode()));
 
-		insertTree = new MenuTree(null, "copy_node_selection", this);
+		insertTree = new MenuTree(null, "copy_node_selection", this, getTranslator());
 		insertTree.enableInsertTool(true);
 		insertModel = new InsertTreeModel(course.getEditorTreeModel().getRootNode(), moveCopyFrom);
 		insertTree.setTreeModel(insertModel);		

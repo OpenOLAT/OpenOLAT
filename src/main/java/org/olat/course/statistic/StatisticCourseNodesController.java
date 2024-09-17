@@ -88,7 +88,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 			options.setParticipantsGroups(groups);
 		}
 
-		courseTree = new MenuTree("assessmentStatisticsTree");
+		courseTree = new MenuTree("assessmentStatisticsTree", getTranslator());
 		courseTree.setTreeModel(buildTreeModel(ureq, userCourseEnv));
 		courseTree.setRootVisible(false);
 		courseTree.addListener(this);

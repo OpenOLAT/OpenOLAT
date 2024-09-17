@@ -137,7 +137,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		}
 		coachAssignmentsAvailable = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal() || roles.isAuthor();
 
-		menu = new MenuTree(null, "coachMenu", this);
+		menu = new MenuTree(null, "coachMenu", this, getTranslator());
 		menu.setExpandSelectedNode(false);
 		menu.setRootVisible(false);
 		menu.setTreeModel(buildTreeModel());

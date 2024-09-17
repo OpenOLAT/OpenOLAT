@@ -253,7 +253,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 		
 		// test structure
-		menuTree = new MenuTree("atTree");
+		menuTree = new MenuTree("atTree", getTranslator());
 		menuTree.setExpandSelectedNode(false);
 
 		menuTree.setDropSiblingEnabled(!restrictedEdit);	

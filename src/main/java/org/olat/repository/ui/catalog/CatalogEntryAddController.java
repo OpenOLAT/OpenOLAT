@@ -80,7 +80,7 @@ public class CatalogEntryAddController extends BasicController {
 
 		mainVC = createVelocityContainer("catMove");
 		mainVC.contextPut("withTitle", Boolean.valueOf(title));
-		selectionTree = new MenuTree("catSelection");
+		selectionTree = new MenuTree("catSelection", getTranslator());
 		selectionTree.setExpandSelectedNode(true);
 		selectionTree.setUnselectNodes(true);
 		selectionTree.addListener(this);

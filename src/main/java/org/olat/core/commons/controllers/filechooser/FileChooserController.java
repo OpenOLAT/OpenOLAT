@@ -90,7 +90,7 @@ public class FileChooserController extends BasicController {
 		this.onlyLeafsSelectable = onlyLeafsSelectable;
 
 		treeModel = new FolderTreeModel(ureq.getLocale(), rootContainer,  false, true, !onlyLeafsSelectable, false, customItemFilter);
-		selectionTree = new MenuTree("stTree");
+		selectionTree = new MenuTree("stTree", getTranslator());
 		selectionTree.setTreeModel(treeModel);
 		selectionTree.addListener(this);
 		

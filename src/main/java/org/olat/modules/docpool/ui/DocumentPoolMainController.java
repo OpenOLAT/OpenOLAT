@@ -101,7 +101,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 		TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, getIdentity(), rootTitle,
 				isTaxonomyAdmin, docPoolModule.isTemplatesDirectoryEnabled(), translate("document.pool.templates"), getLocale());
 		
-		taxonomyTree = new MenuTree(null, "taxonomy-menu", this);
+		taxonomyTree = new MenuTree(null, "taxonomy-menu", this, getTranslator());
 		taxonomyTree.setExpandSelectedNode(false);
 		taxonomyTree.setRootVisible(true);
 		taxonomyTree.setTreeModel(builder.buildTreeModel());
