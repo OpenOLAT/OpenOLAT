@@ -19,8 +19,6 @@
  */
 package org.olat.search.service.document.file.pdf;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
@@ -28,7 +26,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.olat.core.commons.services.pdf.PdfLoader;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.document.file.DocumentAccessException;
@@ -46,22 +43,9 @@ public class PdfBoxExtractor implements PdfExtractor {
 	private static final Logger log = Tracing.createLoggerFor(PdfBoxExtractor.class);
 	
 	@Override
-	public void extract(VFSLeaf document, File bufferFile)
+	public FileContent extract(VFSLeaf document)
 	throws IOException, DocumentAccessException {
-		FileContent content = extractTextFromPdf(document);
-		storePdfTextInBuffer(content, bufferFile);
-	}
-	
-	private void storePdfTextInBuffer(FileContent pdfText, File pdfTextFile) throws IOException {
-		try(FileWriter out = new FileWriter(pdfTextFile)) {
-			if(StringHelper.containsNonWhitespace(pdfText.getTitle())) {
-				out.write(pdfText.getTitle());
-				out.write("\u00A0|\u00A0");
-			}
-			out.write(pdfText.getContent());
-		} catch(IOException e) {
-			throw e;
-		}
+		return extractTextFromPdf(document);
 	}
 	
 	private FileContent extractTextFromPdf(VFSLeaf leaf) throws IOException {

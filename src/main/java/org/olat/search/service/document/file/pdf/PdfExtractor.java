@@ -19,11 +19,11 @@
  */
 package org.olat.search.service.document.file.pdf;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.document.file.DocumentAccessException;
+import org.olat.search.service.document.file.FileContent;
 
 /**
  * 
@@ -33,7 +33,7 @@ import org.olat.search.service.document.file.DocumentAccessException;
  */
 public interface PdfExtractor {
 	
-	public void extract(VFSLeaf document, File bufferFile)
+	public FileContent extract(VFSLeaf document)
 			throws IOException, DocumentAccessException;
 
 }

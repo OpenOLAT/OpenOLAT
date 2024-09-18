@@ -155,10 +155,15 @@ public class EvaluationFormHandler implements PageElementHandler {
 					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, true, null);
 				}
 			} else if(hasRole(ContentRoles.coach, ureq.getIdentity(), accessRights)) {
-				Identity owner = getOwner(accessRights);
-				List<Identity> coachesAndReviewers = getCoachesAndReviewers(accessRights);
 				boolean readOnly = (pageStatus == PageStatus.draft) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted) || onePage;
-				ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, false, readOnly, onePage, anonym);
+				if(assignment.isReviewerSeeAutoEvaluation()) {
+					Identity owner = getOwner(accessRights);
+					List<Identity> coachesAndReviewers = getCoachesAndReviewers(accessRights);
+					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, false, readOnly, onePage, anonym);
+				} else {
+					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, true, null);
+				}
 			} else if(hasRole(ContentRoles.reviewer, ureq.getIdentity(), accessRights)
 					|| hasRole(ContentRoles.invitee, ureq.getIdentity(), accessRights)) {
 				boolean readOnly = (pageStatus == PageStatus.draft) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted) || onePage;

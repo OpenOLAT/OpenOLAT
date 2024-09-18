@@ -109,9 +109,11 @@ public class CurriculumLecturesInfosController extends FormBasicController {
 		
 		moreLink = uifactory.addFormLink("more", "more", "more.less", formLayout, Link.BUTTON);
 		moreLink.setIconLeftCSS("o_icon o_icon_lg o_icon_details_expand");
+		moreLink.setTitle("details.expand");
 		moreLink.setElementCssClass("o_button_details");
 		lessLink = uifactory.addFormLink("less", "less", "more.less", formLayout, Link.BUTTON);
 		lessLink.setIconLeftCSS("o_icon o_icon_lg o_icon_details_collaps");
+		lessLink.setTitle("details.collapse");
 		lessLink.setElementCssClass("o_button_details");
 	}
 

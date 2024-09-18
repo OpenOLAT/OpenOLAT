@@ -233,6 +233,7 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 		
 		if (expandButton != null) {
 			String expandIcon = expand.booleanValue()? "o_icon_details_collaps": "o_icon_details_expand";
+			expandButton.setTitle(translate((expand.booleanValue() ? "details.collapse" : "details.expand")));
 			expandButton.setIconLeftCSS("o_icon o_icon_lg " + expandIcon);
 			expandButton.setElementCssClass("o_tax_ls_expand_button");
 		}

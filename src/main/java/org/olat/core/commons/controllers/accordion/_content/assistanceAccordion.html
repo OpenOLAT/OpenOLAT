@@ -11,8 +11,8 @@
             		#if($expanded) aria-expanded="true" #else aria-expanded="false" class="collapsed" #end >
 					<span>
 						$helpItem.getTitle()
-						<i class="o_icon o_icon-2x o_icon-fw o_icon_details_expand" aria-hidden="true"> </i>
-						<i class="o_icon o_icon-2x o_icon-fw o_icon_details_collaps" aria-hidden="true"> </i>						
+						<i class="o_icon o_icon-2x o_icon-fw o_icon_details_expand" title="$r.translateInAttribute("details.expand")" aria-hidden='true'> </i>$r.screenreaderOnly($r.translate("details.expand"))
+						<i class="o_icon o_icon-2x o_icon-fw o_icon_details_collaps" title="$r.translateInAttribute("details.collapse")" aria-hidden='true'> </i>$r.screenreaderOnly($r.translate("details.collapse"))
             		</span>
 				</a>            
             </div>

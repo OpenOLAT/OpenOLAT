@@ -66,6 +66,7 @@ public class ExpandController extends BasicController {
 		String expandIcon = expand.booleanValue()? "o_icon_details_collaps": "o_icon_details_expand";
 		expandButton.setIconLeftCSS("o_icon o_icon_lg " + expandIcon);
 		expandButton.setElementCssClass("o_button_details");
+		expandButton.setTitle(translate(expand.booleanValue() ? "details.collapse" : "details.expand"));
 		
 		if (expandableCtrl != null) {
 			expandableCtrl.setExpanded(getExpandSwitch(expand));
