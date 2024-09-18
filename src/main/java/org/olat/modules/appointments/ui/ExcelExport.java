@@ -91,7 +91,7 @@ public class ExcelExport {
 	}
 	
 	private void createWorkbook(OutputStream out) {
-		List<String> sheetNames = Collections.singletonList(translator.translate("participants"));
+		List<String> sheetNames = Collections.singletonList(translator.translate("export.participants"));
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1, sheetNames)) {
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 			addHeader(exportSheet);
