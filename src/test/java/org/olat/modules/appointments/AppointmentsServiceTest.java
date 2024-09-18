@@ -659,6 +659,68 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		softly.assertAll();
 	}
 	
+	@Test
+	public void rebookParticipationShouldUnconfirmIfAutoconfirmation() {
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Topic topic = createRandomTopic();
+		Appointment currentAppointment = createRandomAppointment(topic);
+		Appointment rebookAppointment = createRandomAppointment(topic);
+		ParticipationResult participationResult1 = sut.createParticipations(currentAppointment, singletonList(participant1), participant1, true, true, true);
+		Participation participation1 = participationResult1.getParticipations().get(0);
+		dbInstance.commitAndCloseSession();
+		
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setAppointment(currentAppointment);
+		assertThat(sut.getAppointments(params).get(0).getStatus()).isEqualTo(Appointment.Status.confirmed);
+		
+		sut.rebookParticipations(rebookAppointment, asList(participation1), participant1, true);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.getAppointments(params).get(0).getStatus()).isEqualTo(Appointment.Status.planned);
+	}
+	
+	@Test
+	public void rebookParticipationShouldNotUnconfirmIfNotAutoconfirmation() {
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Topic topic = createRandomTopic();
+		Appointment currentAppointment = createRandomAppointment(topic);
+		Appointment rebookAppointment = createRandomAppointment(topic);
+		ParticipationResult participationResult1 = sut.createParticipations(currentAppointment, singletonList(participant1), participant1, true, false, true);
+		Participation participation1 = participationResult1.getParticipations().get(0);
+		dbInstance.commitAndCloseSession();
+		
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setAppointment(currentAppointment);
+		assertThat(sut.getAppointments(params).get(0).getStatus()).isEqualTo(Appointment.Status.planned);
+		
+		sut.rebookParticipations(rebookAppointment, asList(participation1), participant1, false);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.getAppointments(params).get(0).getStatus()).isEqualTo(Appointment.Status.planned);
+	}
+	
+	@Test
+	public void rebookParticipationShouldNotUnconfirmIfStillHasParticipants() {
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Topic topic = createRandomTopic();
+		Appointment currentAppointment = createRandomAppointment(topic);
+		Appointment rebookAppointment = createRandomAppointment(topic);
+		ParticipationResult participationResult1 = sut.createParticipations(currentAppointment, singletonList(participant1), participant1, true, true, true);
+		Participation participation1 = participationResult1.getParticipations().get(0);
+		sut.createParticipations(currentAppointment, singletonList(participant2), participant1, true, true, true);
+		dbInstance.commitAndCloseSession();
+		
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setAppointment(currentAppointment);
+		assertThat(sut.getAppointments(params).get(0).getStatus()).isEqualTo(Appointment.Status.confirmed);
+		
+		sut.rebookParticipations(rebookAppointment, asList(participation1), participant1, true);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.getAppointments(params).get(0).getStatus()).isEqualTo(Appointment.Status.confirmed);
+	}
+	
 	private Topic createRandomTopic() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);

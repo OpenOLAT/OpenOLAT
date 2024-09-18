@@ -145,7 +145,7 @@ public interface AppointmentsService {
 
 	public void deleteParticipation(Participation participation);
 	
-	public void deleteParticipations(Collection<? extends ParticipationRef> participationRefs, boolean sendEmail);
+	public void deleteParticipations(Collection<? extends ParticipationRef> participationRefs, boolean sendEmail, boolean autoConfirmation);
 
 	public Long getParticipationCount(ParticipationSearchParams params);
 
