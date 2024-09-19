@@ -310,7 +310,7 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 				return;
 			}
 		} else {
-			appointmentsService.deleteParticipations(participationRefs, true);
+			appointmentsService.deleteParticipations(participationRefs, true, currentAppointment.getTopic().isAutoConfirmation());
 		}
 		
 		onAfterRemoving();

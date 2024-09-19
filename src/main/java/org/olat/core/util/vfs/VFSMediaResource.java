@@ -28,6 +28,8 @@ package org.olat.core.util.vfs;
 
 import java.io.InputStream;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.image.ImageUtils;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
@@ -35,8 +37,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 
 public class VFSMediaResource implements MediaResource {
@@ -131,7 +131,7 @@ public class VFSMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		String filename = StringHelper.urlEncodeUTF8(getLeaf().getName());
+		String filename = StringHelper.urlEncodeUTF8(getLeaf().getName()).replace("+", "%20");
 		if (unknownMimeType || downloadable) {
 			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
 		} else {

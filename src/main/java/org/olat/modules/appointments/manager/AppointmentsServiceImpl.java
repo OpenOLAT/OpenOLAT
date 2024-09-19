@@ -543,6 +543,17 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			deleteMeetings(otherAppointments);
 		}
 	}
+	
+	private void unconfirmAppointmentWithoutAppointments(Appointment appointment) {
+		ParticipationSearchParams pParams;
+		List<Participation> fromParticipations;
+		pParams = new ParticipationSearchParams();
+		pParams.setAppointment(appointment);
+		fromParticipations = participationDao.loadParticipations(pParams);
+		if (fromParticipations.isEmpty()) {
+			unconfirmAppointment(appointment);
+		}
+	}
 
 	@Override
 	public void unconfirmAppointment(Appointment appointment) {
@@ -725,23 +736,29 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		if (autoConfirmation) {
 			confirmReloadedAppointment(toAppointment, false);
 		}
-		
+			
 		// Delete after send email to have the from participations informations in the email
 		fromParticipations.forEach(this::deleteParticipation);
-
+		if (autoConfirmation && !fromParticipations.isEmpty()) {
+			unconfirmAppointmentWithoutAppointments(fromParticipations.get(0).getAppointment());
+		}
+		
 		markNews(toAppointment.getTopic());
 		
 		return ParticipationResult.of(participations);
 	}
 	
 	@Override
-	public void deleteParticipations(Collection<? extends ParticipationRef> participationRefs, boolean sendEmail) {
+	public void deleteParticipations(Collection<? extends ParticipationRef> participationRefs, boolean sendEmail, boolean autoConfirmation) {
 		ParticipationSearchParams participationParams = new ParticipationSearchParams();
 		participationParams.setParticipations(participationRefs);
 		participationParams.setFetchAppointments(true);
 		participationParams.setFetchIdentities(true);
-		List<Participation> loadParticipations = participationDao.loadParticipations(participationParams);
-		loadParticipations.forEach(participation -> deleteParticipation(participation, sendEmail));
+		List<Participation> participations = participationDao.loadParticipations(participationParams);
+		participations.forEach(participation -> deleteParticipation(participation, sendEmail));
+		if (autoConfirmation && !participations.isEmpty()) {
+			unconfirmAppointmentWithoutAppointments(participations.get(0).getAppointment());
+		}
 	}
 
 	@Override
@@ -1011,6 +1028,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		return appointmentDao.saveAppointment(appointment);
 	}
 
+	@Override
 	public Appointment removeOthersMeeting(Appointment appointment) {
 		appointment.setMeetingTitle(null);
 		appointment.setMeetingUrl(null);
