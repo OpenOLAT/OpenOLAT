@@ -148,3 +148,14 @@
 @media (min-width: $screen-md-min) {
   .modal-lg { width: $modal-lg; }
 }
+
+/* hierarchical dialogs */
+.o_layer_1 .modal-dialog {
+	padding: 20px;
+}
+.o_layer_2 .modal-dialog {
+	padding: 40px;
+}
+.o_layer_3 dialog.dialog {
+	padding: 60px;
+}

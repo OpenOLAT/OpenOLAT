@@ -39,6 +39,7 @@ public class ObligationOverridableImpl implements ObligationOverridable {
 	private AssessmentObligation configCurrent;
 	private AssessmentObligation configOriginal;
 	private Identity modBy;
+	private String modNodeIdent;
 	private Date modDate;
 	
 	public ObligationOverridableImpl() {
@@ -50,13 +51,14 @@ public class ObligationOverridableImpl implements ObligationOverridable {
 	}
 
 	public ObligationOverridableImpl(AssessmentObligation current, AssessmentObligation inherited, AssessmentObligation evaluated,
-			AssessmentObligation configCurrent, AssessmentObligation configOriginal, Identity modBy, Date modDate) {
+			AssessmentObligation configCurrent, AssessmentObligation configOriginal, Identity modBy, String modNodeIdent, Date modDate) {
 		this.current = current;
 		this.inherited = inherited;
 		this.evaluated = evaluated;
 		this.configCurrent = configCurrent;
 		this.configOriginal = configOriginal;
 		this.modBy = modBy;
+		this.modNodeIdent = modNodeIdent;
 		this.modDate = modDate;
 	}
 	
@@ -115,17 +117,23 @@ public class ObligationOverridableImpl implements ObligationOverridable {
 	}
 
 	@Override
+	public String getModNodeIdent() {
+		return modNodeIdent;
+	}
+
+	@Override
 	public Date getModDate() {
 		return modDate;
 	}
 
 	@Override
-	public void overrideConfig(AssessmentObligation custom, Identity modBy, Date modDate) {
+	public void overrideConfig(AssessmentObligation custom, Identity modBy, String modNodeIdent, Date modDate) {
 		if (!isOverridden()) {
 			this.configOriginal = this.configCurrent;
 		}
 		this.configCurrent = custom;
 		this.modBy = modBy;
+		this.modNodeIdent = modNodeIdent;
 		this.modDate = modDate;
 	}
 
@@ -141,6 +149,7 @@ public class ObligationOverridableImpl implements ObligationOverridable {
 		}
 		configOriginal = null;
 		modBy = null;
+		modNodeIdent = null;
 		modDate = null;
 	}
 	
@@ -153,6 +162,7 @@ public class ObligationOverridableImpl implements ObligationOverridable {
 		clone.configCurrent = this.configCurrent;
 		clone.configOriginal = this.configOriginal;
 		clone.modBy = this.modBy;
+		clone.modNodeIdent = this.modNodeIdent;
 		clone.modDate = this.modDate;
 		return clone;
 	}
@@ -172,6 +182,8 @@ public class ObligationOverridableImpl implements ObligationOverridable {
 		builder.append(configOriginal);
 		builder.append(", modBy=");
 		builder.append(modBy);
+		builder.append(", modNodeIdent=");
+		builder.append(modNodeIdent);
 		builder.append(", modDate=");
 		builder.append(modDate);
 		builder.append("]");

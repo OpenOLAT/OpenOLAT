@@ -361,8 +361,19 @@ ul.o_dropdown {
 		padding-bottom: 10px;
 
 		.o_notifications_help {
+			display: flex;
+			align-items: baseline;
+			gap: 15px;
 			margin-left: auto;
 		}
+	}
+
+	>div .o_table_toolbar {
+		margin-top: 0;
+	}
+	>div .o_table_wrapper .container-fluid {
+		padding-right: 0;
+		padding-left: 0;
 	}
 }
 .o_noti {

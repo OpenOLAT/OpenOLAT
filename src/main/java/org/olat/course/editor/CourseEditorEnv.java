@@ -34,6 +34,7 @@ import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.tree.CourseEditorTreeNode;
 
 /**
  * Description:<br>
@@ -165,12 +166,12 @@ public interface CourseEditorEnv {
 	 */
 	public CourseGroupManager getCourseGroupManager();
 
-	// <OLATCE-91>
 	/**
 	 * @return the requested course nod from the current course of this courseenvironement
 	 */
 	public CourseNode getNode(String nodeId);
-	// </OLATCE-91>
+	
+	public CourseEditorTreeNode getTreeNode(String nodeId);
 	
 	/**
 	 *

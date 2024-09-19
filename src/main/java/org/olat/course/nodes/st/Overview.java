@@ -48,6 +48,7 @@ public class Overview {
 	private final DueDateConfig startDateConfig;
 	private final DueDateConfig endDateConfig;
 	private final Integer duration;
+	private final boolean goToNodeLinkEnabled;
 
 	private Overview(Builder builder) {
 		this.nodeIdent = builder.nodeIdent;
@@ -65,6 +66,7 @@ public class Overview {
 		this.startDateConfig = builder.startDateConfig;
 		this.endDateConfig = builder.endDateConfig;
 		this.duration = builder.duration;
+		this.goToNodeLinkEnabled = builder.goToNodeLinkEnabled;
 	}
 	
 	public String getNodeIdent() {
@@ -127,6 +129,10 @@ public class Overview {
 		return duration;
 	}
 
+	public boolean isGoToNodeLinkEnabled() {
+		return goToNodeLinkEnabled;
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -147,6 +153,7 @@ public class Overview {
 		private DueDateConfig startDateConfig;
 		private DueDateConfig endDateConfig;
 		private Integer duration;
+		private boolean goToNodeLinkEnabled = true;
 
 		private Builder() {
 		}
@@ -215,6 +222,11 @@ public class Overview {
 
 		public Builder withDuration(Integer duration) {
 			this.duration = duration;
+			return this;
+		}
+
+		public Builder withGoToNodeLinkEnabled(boolean enabled) {
+			this.goToNodeLinkEnabled = enabled;
 			return this;
 		}
 

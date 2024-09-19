@@ -83,9 +83,9 @@ public class IndentedNodeRenderer implements CustomCellRenderer, FlexiCellRender
 			appendIndent(sb, row.getRecursionLevel());
 		}
 		
-		sb.append("<i class=\"o_icon o_icon_fw ").append(cssClass).append("\"> </i> <span");
-		if (altText != null) {
-			sb.append(" title= \"").append(StringHelper.escapeHtml(altText)).append("\"");
+		sb.append("<i class=\"o_icon o_icon-fw ").append(cssClass).append("\"> </i> <span");
+		if (altText != null && !altText.equalsIgnoreCase(title)) {
+			sb.append(" title= \"").append(StringHelper.escapeForHtmlAttribute(altText)).append("\"");
 		}
 		sb.append(">").append(StringHelper.escapeHtml(title)).append("</span>");
 	}

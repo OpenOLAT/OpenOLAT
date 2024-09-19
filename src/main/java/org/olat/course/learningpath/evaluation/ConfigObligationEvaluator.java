@@ -22,7 +22,6 @@ package org.olat.course.learningpath.evaluation;
 import java.util.Set;
 
 import org.olat.course.nodes.st.assessment.AbstractConfigObligationEvaluator;
-import org.olat.course.run.scoring.ObligationEvaluator;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -31,7 +30,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ConfigObligationEvaluator extends AbstractConfigObligationEvaluator implements ObligationEvaluator {
+public class ConfigObligationEvaluator extends AbstractConfigObligationEvaluator {
 	
 	@Override
 	public AssessmentObligation getMostImportantExceptionalObligation(Set<AssessmentObligation> assessmentObligations,

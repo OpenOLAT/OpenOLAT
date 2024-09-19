@@ -71,6 +71,7 @@ import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.course.learningpath.obligation.ExceptionalObligationController;
 import org.olat.course.learningpath.obligation.ExceptionalObligationHandler;
 import org.olat.course.learningpath.ui.ExceptionalObligationDataModel.ExceptionalObligationCols;
+import org.olat.course.nodes.CNSCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -121,6 +122,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	private final RepositoryEntry courseEntry;
 	private final ICourse course;
 	private final CourseNode courseNode;
+	private final boolean selectionCourseNodeChild;
 	private final LearningPathConfigs learningPathConfigs;
 	private final LearningPathEditConfigs editConfigs;
 	private final List<String> relativeToDates;
@@ -141,6 +143,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		this.courseNode = courseNode;
 		CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
 		CourseEditorTreeNode parent = editorTreeNode != null? (CourseEditorTreeNode)editorTreeNode.getParent(): null;
+		this.selectionCourseNodeChild = isSelectionCourseNodeChild(parent);
 		this.learningPathConfigs = learningPathService.getConfigs(courseNode, parent);
 		this.editConfigs = editConfigs;
 		this.relativeToDates = dueDateService.getCourseRelativeToDateTypes(courseEntry);
@@ -150,8 +153,17 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		initForm(ureq);
 		updateUI();
-		loadExceptionalObligations();
-		updateExceptionalObligationsUI(allRows.size() > 1); // One for the default obligation
+		if (!selectionCourseNodeChild) {
+			loadExceptionalObligations();
+			updateExceptionalObligationsUI(allRows.size() > 1); // One for the default obligation
+		}
+	}
+
+	private boolean isSelectionCourseNodeChild(CourseEditorTreeNode parent) {
+		if (parent != null) {
+			return parent.getCourseNode().getType().equals(CNSCourseNode.TYPE);
+		}
+		return false;
 	}
 
 	@Override
@@ -160,45 +172,50 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		setFormContextHelp("manual_user/learningresources/Learning_path_course_Course_editor/");
 		formLayout.setElementCssClass("o_lp_config_edit");
 		
-		obligationCont = FormLayoutContainer.createCustomFormLayout("obligationCont", getTranslator(), velocity_root + "/config_obligation.html");
-		obligationCont.setLabel("config.obligation", null);
-		obligationCont.setRootForm(mainForm);
-		formLayout.add(obligationCont);
-		
-		SelectionValues obligationKV = new SelectionValues();
-		obligationKV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
-		obligationKV.add(entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
-		obligationKV.add(entry(AssessmentObligation.excluded.name(), translate("config.obligation.excluded")));
-		obligationEl = uifactory.addRadiosHorizontal("config.obligation", obligationCont, obligationKV.keys(), obligationKV.values());
-		obligationEl.addActionListener(FormEvent.ONCHANGE);
-		String obligationKey = selectedObligation.name();
-		if (Arrays.asList(obligationEl.getKeys()).contains(obligationKey)) {
-			obligationEl.select(obligationKey, true);
+		if (selectionCourseNodeChild) {
+			SelectionValues obligationSV = createObligationSV();
+			obligationEl = uifactory.addRadiosHorizontal("config.obligation", formLayout, obligationSV.keys(), obligationSV.values());
+			obligationEl.setEnabled(false);
+			obligationEl.select(AssessmentObligation.excluded.name(), true);
+			selectedObligation = AssessmentObligation.excluded;
+		} else {
+			obligationCont = FormLayoutContainer.createCustomFormLayout("obligationCont", getTranslator(), velocity_root + "/config_obligation.html");
+			obligationCont.setLabel("config.obligation", null);
+			obligationCont.setRootForm(mainForm);
+			formLayout.add(obligationCont);
+			
+			SelectionValues obligationSV = createObligationSV();
+			obligationEl = uifactory.addRadiosHorizontal("config.obligation", obligationCont, obligationSV.keys(), obligationSV.values());
+			obligationEl.addActionListener(FormEvent.ONCHANGE);
+			String obligationKey = selectedObligation.name();
+			if (Arrays.asList(obligationEl.getKeys()).contains(obligationKey)) {
+				obligationEl.select(obligationKey, true);
+			}
+			
+			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.name, new TextFlexiCellRenderer(EscapeMode.none)));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.type));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.mandatory));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.optional));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.excluded));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.delete));
+			
+			dataModel = new ExceptionalObligationDataModel(columnsModel);
+			tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), obligationCont);
+			tableEl.setCustomizeColumns(false);
+			tableEl.setNumOfRowsEnabled(false);
+			
+			DropdownItem addExceptionalObligationDropdown = uifactory.addDropdownMenu("config.exceptional.obligation.add",
+					"config.exceptional.obligation.add", null, obligationCont, getTranslator());
+			addExceptionalObligationDropdown.setOrientation(DropdownOrientation.right);
+			addExceptionalObligationDropdown.setExpandContentHeight(true);
+			
+			learningPathService.getExceptionalObligationHandlers().stream()
+					.sorted((h1, h2) -> Integer.compare(h1.getSortValue(), h2.getSortValue()))
+					.forEach(handler -> addHandlerToDropdown(addExceptionalObligationDropdown, handler));
+			
+			showExceptionalObligationLink = uifactory.addToggleButton("show.exceptional.obligation", null, translate("on"), translate("off"), obligationCont);
 		}
-		
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.name, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.type));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.mandatory));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.optional));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.excluded));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.delete));
-		
-		dataModel = new ExceptionalObligationDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), obligationCont);
-		tableEl.setCustomizeColumns(false);
-		tableEl.setNumOfRowsEnabled(false);
-		
-		DropdownItem addExceptionalObligationDropdown = uifactory.addDropdownMenu("config.exceptional.obligation.add",
-				"config.exceptional.obligation.add", null, obligationCont, getTranslator());
-		addExceptionalObligationDropdown.setOrientation(DropdownOrientation.right);
-		addExceptionalObligationDropdown.setExpandContentHeight(true);
-		
-		learningPathService.getExceptionalObligationHandlers().stream()
-				.sorted((h1, h2) -> Integer.compare(h1.getSortValue(), h2.getSortValue()))
-				.forEach(handler -> addHandlerToDropdown(addExceptionalObligationDropdown, handler));
-		
-		showExceptionalObligationLink = uifactory.addToggleButton("show.exceptional.obligation", null, translate("on"), translate("off"), obligationCont);
 		
 		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", formLayout, ON_KEYS, new String[]{ "" });
 		relativeDatesEl.addActionListener(FormEvent.ONCHANGE);
@@ -224,16 +241,20 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		durationEl = uifactory.addTextElement("config.duration", 128, duration , formLayout);
 		durationEl.setHelpTextKey("config.duration.help", null);
 		
-		SelectionValues triggerKV = getTriggerKV();
-		triggerEl = uifactory.addRadiosVertical("config.trigger", formLayout,
-				triggerKV.keys(), triggerKV.values());
-		triggerEl.addActionListener(FormEvent.ONCHANGE);
-		FullyAssessedTrigger trigger = learningPathConfigs.getFullyAssessedTrigger() != null
-				? learningPathConfigs.getFullyAssessedTrigger()
-				: LearningPathConfigs.LEGACY_TRIGGER_DEFAULT;
-		String triggerKey = trigger.name();
-		if (Arrays.asList(triggerEl.getKeys()).contains(triggerKey)) {
-			triggerEl.select(triggerKey, true);
+		SelectionValues triggerKV = createTriggerKV();
+		if (triggerKV.size() > 1) {
+			triggerEl = uifactory.addRadiosVertical("config.trigger", formLayout,
+					triggerKV.keys(), triggerKV.values());
+			triggerEl.addActionListener(FormEvent.ONCHANGE);
+			FullyAssessedTrigger trigger = learningPathConfigs.getFullyAssessedTrigger() != null
+					? learningPathConfigs.getFullyAssessedTrigger()
+					: LearningPathConfigs.LEGACY_TRIGGER_DEFAULT;
+			String triggerKey = trigger.name();
+			if (Arrays.asList(triggerEl.getKeys()).contains(triggerKey)) {
+				triggerEl.select(triggerKey, true);
+			}
+		} else if (triggerKV.size() == 1) {
+			uifactory.addStaticTextElement("config.trigger", triggerKV.values()[0], formLayout);
 		}
 		
 		String score = learningPathConfigs.getScoreTriggerValue() != null
@@ -253,7 +274,15 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		}
 	}
 
-	private SelectionValues getTriggerKV() {
+	private SelectionValues createObligationSV() {
+		SelectionValues obligationSV = new SelectionValues();
+		obligationSV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
+		obligationSV.add(entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
+		obligationSV.add(entry(AssessmentObligation.excluded.name(), translate("config.obligation.excluded")));
+		return obligationSV;
+	}
+
+	private SelectionValues createTriggerKV() {
 		SelectionValues triggerKV = new SelectionValues();
 		if (editConfigs.isTriggerNodeVisited()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_NODE_VISITED, translate("config.trigger.visited")));
@@ -298,7 +327,9 @@ public class LearningPathNodeConfigController extends FormBasicController {
 				
 		durationEl.setMandatory(isDurationMandatory());
 		
-		boolean triggerScore = triggerEl.isOneSelected() && triggerEl.getSelectedKey().equals(CONFIG_VALUE_TRIGGER_SCORE);
+		boolean triggerScore = triggerEl != null
+				&& triggerEl.isOneSelected()
+				&& triggerEl.getSelectedKey().equals(CONFIG_VALUE_TRIGGER_SCORE);
 		scoreCutEl.setVisible(triggerScore);
 	}
 	
@@ -541,23 +572,25 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		learningPathConfigs.setObligation(selectedObligation);
-		
-		List<ExceptionalObligation> exeptionalObligations = null;
-		if (!obligationEl.isVisible()) {
-			List<ExceptionalObligationRow> rows = dataModel.getObjects();
-			exeptionalObligations = new ArrayList<>(rows.size());
-			for (ExceptionalObligationRow row : rows) {
-				if (row.isExceptionalObligation()) {
-					ExceptionalObligation exceptionalObligation = row.getExceptionalObligation();
-					exceptionalObligation.setObligation(row.getObligation());
-					exeptionalObligations.add(exceptionalObligation);
+		if (!selectionCourseNodeChild) {
+			learningPathConfigs.setObligation(selectedObligation);
+			
+			List<ExceptionalObligation> exeptionalObligations = null;
+			if (!obligationEl.isVisible()) {
+				List<ExceptionalObligationRow> rows = dataModel.getObjects();
+				exeptionalObligations = new ArrayList<>(rows.size());
+				for (ExceptionalObligationRow row : rows) {
+					if (row.isExceptionalObligation()) {
+						ExceptionalObligation exceptionalObligation = row.getExceptionalObligation();
+						exceptionalObligation.setObligation(row.getObligation());
+						exeptionalObligations.add(exceptionalObligation);
+					}
 				}
 			}
+			learningPathConfigs.setExceptionalObligations(exeptionalObligations);
+			loadExceptionalObligations();
+			updateExceptionalObligationsUI((Boolean)obligationCont.contextGet("exceptional"));
 		}
-		learningPathConfigs.setExceptionalObligations(exeptionalObligations);
-		loadExceptionalObligations();
-		updateExceptionalObligationsUI((Boolean)obligationCont.contextGet("exceptional"));
 		
 		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
 		learningPathConfigs.setRelativeDates(relativeDates);
@@ -573,10 +606,12 @@ public class LearningPathNodeConfigController extends FormBasicController {
 				: null;
 		learningPathConfigs.setDuration(duration);
 		
-		FullyAssessedTrigger trigger = triggerEl.isOneSelected()
-				? FullyAssessedTrigger.valueOf(triggerEl.getSelectedKey())
-				: LearningPathConfigs.LEGACY_TRIGGER_DEFAULT;
-		learningPathConfigs.setFullyAssessedTrigger(trigger);
+		if (triggerEl != null) {
+			FullyAssessedTrigger trigger = triggerEl.isOneSelected()
+					? FullyAssessedTrigger.valueOf(triggerEl.getSelectedKey())
+					: LearningPathConfigs.LEGACY_TRIGGER_DEFAULT;
+			learningPathConfigs.setFullyAssessedTrigger(trigger);
+		}
 		
 		Integer score = scoreCutEl.isVisible()? Integer.valueOf(scoreCutEl.getValue()): null;
 		learningPathConfigs.setScoreTriggerValue(score);
@@ -592,7 +627,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	private boolean hasMandatoryObligation() {
 		if (AssessmentObligation.mandatory == selectedObligation) return true;
 		
-		if (!obligationEl.isVisible()) {
+		if (dataModel != null && !obligationEl.isVisible()) {
 			for (ExceptionalObligationRow row : dataModel.getObjects()) {
 				if (AssessmentObligation.mandatory == row.getObligation()) {
 					return true;

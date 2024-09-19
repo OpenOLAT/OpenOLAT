@@ -62,7 +62,7 @@ public class ObligationOverridableImplTest {
 		sut.setCurrent(AssessmentObligation.optional);
 		sut.setConfigCurrent(AssessmentObligation.excluded);
 		
-		sut.overrideConfig(AssessmentObligation.mandatory, identity, modDate);
+		sut.overrideConfig(AssessmentObligation.mandatory, identity, null, modDate);
 		
 		assertThat(sut.getCurrent()).isEqualTo(AssessmentObligation.optional);
 		assertThat(sut.getConfigCurrent()).isEqualTo(AssessmentObligation.mandatory);
@@ -87,7 +87,7 @@ public class ObligationOverridableImplTest {
 		ObligationOverridableImpl sut = new ObligationOverridableImpl();
 		assertThat(sut.isOverridden()).isFalse();
 		
-		sut.overrideConfig(custom, identity, modDate);
+		sut.overrideConfig(custom, identity, null, modDate);
 		assertThat(sut.isOverridden()).isTrue();
 		
 		sut.reset();

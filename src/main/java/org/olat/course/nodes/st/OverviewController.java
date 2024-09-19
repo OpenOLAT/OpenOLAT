@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.st;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
@@ -51,7 +53,7 @@ public class OverviewController extends BasicController {
 	private final Link nodeLink;
 	private final Controller peekViewCtrl;
 
-	public OverviewController(UserRequest ureq, WindowControl wControl, Overview overview, Controller peekViewCtrl) {
+	public OverviewController(UserRequest ureq, WindowControl wControl, Overview overview, Controller peekViewCtrl, List<Link> customLinks) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentForm.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(LearningPathListController.class, getLocale(), getTranslator()));
@@ -77,15 +79,20 @@ public class OverviewController extends BasicController {
 		nodeLink.setIconLeftCSS("o_icon o_icon-fw " + overview.getIconCss());
 		nodeLink.setUserObject(overview.getNodeIdent());
 		nodeLink.setElementCssClass("o_gotoNode");
-		nodeLink.setEnabled(overview.getNoAccessMessage() == null);
+		nodeLink.setEnabled(overview.isGoToNodeLinkEnabled());
 		
 		mainVC.contextPut("handlingRange", getHandlingRange(overview));
 		mainVC.contextPut("noAccessMessage", NoAccessResolver.translate(getTranslator(), overview.getNoAccessMessage(), true));
 		mainVC.contextPut("noAccessMessageInfos", NoAccessResolver.translate(getTranslator(), overview.getNoAccessMessage(), false));
 		
 		if (peekViewCtrl != null) {
-			mainVC.put("peekView", this.peekViewCtrl.getInitialComponent());
+			mainVC.put("peekView", peekViewCtrl.getInitialComponent());
 			listenTo(peekViewCtrl);
+		}
+		
+		if (customLinks != null && !customLinks.isEmpty()) {
+			customLinks.forEach(link -> mainVC.put(link.getComponentName(), link));
+			mainVC.contextPut("customLinks", customLinks);
 		}
 		
 		putInitialPanel(mainVC);

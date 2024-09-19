@@ -89,7 +89,7 @@ public class NodeLayoutPreviewController extends BasicController {
 		removeAsListenerAndDispose(overviewCtrl);
 		overviewCtrl = null;
 		if (overview != null) {
-			overviewCtrl = new OverviewController(ureq, getWindowControl(), overview, null);
+			overviewCtrl = new OverviewController(ureq, getWindowControl(), overview, null, null);
 			listenTo(overviewCtrl);
 			tabPane.replaceTab(1, overviewCtrl);
 		} else {

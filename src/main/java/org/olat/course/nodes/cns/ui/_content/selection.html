@@ -1,0 +1,13 @@
+<div class="o_tb_selection">
+	$r.render("config")
+	<fieldset class="o_block_large">
+		<legend class="o_flex_first_grow">
+			<div>$r.translate("selection.my")</div>
+			<div>$statusLabel</div>
+		</legend>
+		#if($selectionWarning)
+			<div class="o_warning_with_icon">$selectionWarning</div>
+		#end
+		$r.render("selectionTable")
+	</fieldset>
+</div>

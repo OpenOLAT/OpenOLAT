@@ -32,6 +32,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.nodeaccess.NoAccessResolver;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
+import org.olat.course.nodes.CNSCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
@@ -66,7 +67,7 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 
 	@Override
 	public boolean isSupported(String courseNodeType) {
-		return true;
+		return !CNSCourseNode.TYPE.equals(courseNodeType);
 	}
 
 	@Override

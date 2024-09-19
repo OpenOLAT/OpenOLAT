@@ -147,7 +147,7 @@ public class GTAToDoSyncherTest extends OlatTestCase {
 		String subIdent = getGTANode(courseEntry).getIdent();
 		Identity participant = userCourseEnv.getIdentityEnvironment().getIdentity();
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(participant, null, courseEntry, subIdent, Boolean.FALSE, null);
-		assessmentEntry.getObligation().overrideConfig(AssessmentObligation.excluded, participant, new Date());
+		assessmentEntry.getObligation().overrideConfig(AssessmentObligation.excluded, participant, null, new Date());
 		assessmentService.updateAssessmentEntry(assessmentEntry);
 		dbInstance.commitAndCloseSession();
 		

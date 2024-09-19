@@ -103,7 +103,7 @@ public class ContextualSubscriptionController extends BasicController {
 		subscribeButton = LinkFactory.createLink("command.subscribe", "subscribe", getTranslator(), myContent, this, Link.BUTTON + Link.NONTRANSLATED);
 		subscribeButton.setCustomDisplayText("");
 		toggleSubscriptionIcon();
-		subscribeButton.setIconRightCSS("o_icon o_icon_caret");
+		subscribeButton.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
 		subscribeButton.setElementCssClass("o_noti_subscribe_link");
 		subscribeButton.setGhost(true);
 
@@ -153,9 +153,9 @@ public class ContextualSubscriptionController extends BasicController {
 		myContent.contextRemove("command.subscribe");
 		subscriber = notificationsManager.getSubscriber(getIdentity(), subscriptionContext);
 		if (subscriber != null && subscriber.isEnabled()) {
-			subscribeButton.setIconLeftCSS("o_icon o_icon-bell");
+			subscribeButton.setIconLeftCSS("o_icon o_icon-fw o_icon-bell");
 		} else {
-			subscribeButton.setIconLeftCSS("o_icon o_icon-bell-slash");
+			subscribeButton.setIconLeftCSS("o_icon o_icon-fw o_icon-bell-slash");
 		}
 		myContent.contextPut("command.subscribe", subscribeButton);
 	}

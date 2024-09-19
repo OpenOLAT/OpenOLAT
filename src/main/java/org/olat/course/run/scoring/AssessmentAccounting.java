@@ -46,6 +46,8 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
+import org.olat.course.run.scoring.ObligationEvaluator.ConfigObligationEvaluator;
+import org.olat.course.run.scoring.ObligationEvaluator.ObligationResult;
 import org.olat.course.run.scoring.RootPassedEvaluator.GradePassed;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.todo.CourseNodesToDoSyncher;
@@ -90,7 +92,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 				? new SingleUserObligationContext()
 				: NullObligationContext.create();
 		this.exceptionalObligationEvaluator = new ExceptionalObligationEvaluator(getIdentity(),
-				getCourseEntry(), userCourseEnvironment.getCourseEnvironment().getRunStructure(), this);
+				getCourseEntry(), userCourseEnvironment.getCourseEnvironment().getRunStructure(), null);
 		this.exceptionalObligationEvaluator.setObligationContext(obligationContext);
 	
 		CoreSpringFactory.autowireObject(this);
@@ -142,7 +144,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 			
 			Blocker blocker = courseAssessmentService.getEvaluators(root, courseConfig).getBlockerEvaluator()
 					.getChildrenBlocker(null, null);
-			updateEntryRecursiv(root, blocker, null);
+			updateEntryRecursiv(root, blocker, null, ObligationEvaluator.DEFAULT_CONFIG_OBLIGATION_EVALUATOR);
 		}
 		dbInstance.commit();
 		
@@ -188,7 +190,8 @@ public class AssessmentAccounting implements ScoreAccounting {
 		return entry;
 	}
 	
-	private AccountingResult updateEntryRecursiv(CourseNode courseNode, Blocker blocker, AssessmentObligation parentObligation) {
+	private AccountingResult updateEntryRecursiv(CourseNode courseNode, Blocker blocker,
+			AssessmentObligation parentObligation, ConfigObligationEvaluator configObligationEvaluator) {
 		log.debug("Evaluate course node: type '{}', ident: '{}'", courseNode.getType(), courseNode.getIdent());
 		
 		AssessmentEvaluation currentEvaluation = evalCourseNode(courseNode);
@@ -198,8 +201,13 @@ public class AssessmentAccounting implements ScoreAccounting {
 		AccountingEvaluators evaluators = courseAssessmentService.getEvaluators(courseNode, courseConfig);
 		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();
-		ObligationOverridable obligation = obligationEvaluator.getObligation(result, courseNode, parentObligation, exceptionalObligationEvaluator);
-		result.setObligation(obligation);
+		ObligationResult obligationResult = obligationEvaluator.getObligation(
+				result,
+				courseNode,
+				parentObligation,
+				configObligationEvaluator,
+				exceptionalObligationEvaluator);
+		result.setObligation(obligationResult.getObligationOverridable());
 		
 		StartDateEvaluator startDateEvaluator = evaluators.getStartDateEvaluator();
 		Date startDate = startDateEvaluator.evaluate(result, courseNode, getCourseEntry(), getIdentity(), blocker);
@@ -220,13 +228,17 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setStatus(status);
 		
 		BlockerEvaluator blockerEvaluator = evaluators.getBlockerEvaluator();
-		Blocker childrenBlocker = blockerEvaluator.getChildrenBlocker(blocker, obligation.getCurrent());
+		Blocker childrenBlocker = blockerEvaluator.getChildrenBlocker(blocker, obligationResult.getObligationOverridable().getCurrent());
 		int childCount = courseNode.getChildCount();
 		List<AssessmentEvaluation> children = new ArrayList<>(childCount);
 		for (int i = 0; i < childCount; i++) {
 			INode child = courseNode.getChildAt(i);
 			if (child instanceof CourseNode childCourseNode) {
-				AccountingResult childResult = updateEntryRecursiv(childCourseNode, childrenBlocker, obligation.getCurrent());
+				AccountingResult childResult = updateEntryRecursiv(
+						childCourseNode,
+						childrenBlocker,
+						obligationResult.getObligationOverridable().getCurrent(),
+						obligationResult.getConfigObligationResolver());
 				children.add(childResult);
 			}
 		}
@@ -243,7 +255,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setLastUserModified(lastModifications.getLastUserModified());
 		result.setLastCoachModified(lastModifications.getLastCoachModified());
 		
-		obligation = obligationEvaluator.getObligation(result, courseNode, exceptionalObligationEvaluator, children);
+		ObligationOverridable obligation = obligationEvaluator.getObligation(result, courseNode, exceptionalObligationEvaluator, children);
 		result.setObligation(obligation);
 		
 		ScoreEvaluator scoreEvaluator = evaluators.getScoreEvaluator();
@@ -268,11 +280,11 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setPassedOverridable(passed);
 		
 		FullyAssessedEvaluator fullyAssessedEvaluator = evaluators.getFullyAssessedEvaluator();
-		Boolean fullyAssessed = fullyAssessedEvaluator.getFullyAssessed(result, children, blocker);
+		Boolean fullyAssessed = fullyAssessedEvaluator.getFullyAssessed(result, courseNode, children, blocker);
 		result.setFullyAssessed(fullyAssessed);
 		
 		CompletionEvaluator completionEvaluator = evaluators.getCompletionEvaluator();
-		Double completion = completionEvaluator.getCompletion(result, courseNode, this, getCourseEntry());
+		Double completion = completionEvaluator.getCompletion(result, courseNode, this, getCourseEntry(), children);
 		result.setCompletion(completion);
 		
 		status = statusEvaluator.getStatus(result, children);

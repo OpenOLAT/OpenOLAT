@@ -65,6 +65,8 @@ public interface ObligationOverridable {
 	public AssessmentObligation getConfigOriginal();
 	
 	public Identity getModBy();
+	
+	public String getModNodeIdent();
 
 	public Date getModDate();
 
@@ -74,9 +76,10 @@ public interface ObligationOverridable {
 	 *
 	 * @param configCustom
 	 * @param by
+	 * @param modNodeIdent
 	 * @param at
 	 */
-	public void overrideConfig(AssessmentObligation configCustom, Identity by, Date at);
+	public void overrideConfig(AssessmentObligation configCustom, Identity by, String modNodeIdent, Date at);
 	
 	public boolean isOverridden();
 	

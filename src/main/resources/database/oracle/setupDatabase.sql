@@ -1627,6 +1627,7 @@ create table o_as_entry (
    a_obligation_config varchar2(50),
    a_obligation_original varchar2(50),
    a_obligation_mod_date date,
+   a_obligation_mod_node_ident varchar(64),
    a_first_visit date,
    a_last_visit date,
    a_num_visits number(20),

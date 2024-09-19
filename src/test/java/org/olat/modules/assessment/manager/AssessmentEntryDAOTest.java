@@ -481,6 +481,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		nodeAssessment.setObligationOriginal(obligationOriginal);
 		Date obligationModDate = new GregorianCalendar(2014,1,1,1,1,5).getTime();
 		nodeAssessment.setObligationModDate(obligationModDate);
+		String modNodeIdent = random();
+		nodeAssessment.setObligationModNodeIdent(modNodeIdent);
 		nodeAssessment.setObligationModIdentity(modIdentity);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
 		dbInstance.commitAndCloseSession();
@@ -499,6 +501,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		assertThat(reloadedEntry.getObligation().getConfigCurrent()).isEqualTo(obligationConfig);
 		assertThat(reloadedEntry.getObligation().getConfigOriginal()).isEqualTo(obligationOriginal);
 		assertThat(reloadedEntry.getObligation().getModBy()).isEqualTo(modIdentity);
+		assertThat(reloadedEntry.getObligation().getModNodeIdent()).isEqualTo(modNodeIdent);
 		assertThat(reloadedEntry.getObligation().getModDate()).isCloseTo(obligationModDate, Duration.ofMinutes(2).toMillis());
 	}
 	

@@ -1,0 +1,43 @@
+<div class="o_cns_details">
+	<div class="o_cns_details_header">
+		$r.render("header")
+	<div>
+	<div class="o_cns_descriptions o_text">
+		#if($r.isNotEmpty($item.description))
+			<div class="o_text_block">
+				<div>
+					<div>$r.formatLatexFormulas($item.description)</div>
+				</div>
+				<div></div>
+			</div>
+		#end
+		#if($r.isNotEmpty($item.objectives))
+			<div class="o_text_block">
+				<div>
+					<h5><i class="o_icon o_icon_objectives"></i> $r.translate("header.objectives")</h5>
+					<div>$r.formatLatexFormulas($item.objectives)</div>
+				</div>
+				<div></div>
+			</div>
+		#end
+		#if($r.isNotEmpty($item.instruction))
+			<div class="o_text_block">
+				<div>
+					<h5><i class="o_icon o_icon_instruction"></i> $r.translate("header.instruction")</h5>
+					<div>$r.formatLatexFormulas($item.instruction)</div>
+				</div>
+				<div></div>
+			</div>
+		#end
+		#if($r.isNotEmpty($item.instructionalDesign))
+			<div class="o_text_block">
+				<div class="o_instructional_design">
+					<h5><i class="o_icon o_icon_instructional_design"></i> $r.translate("header.instructional.design")</h5>
+					<div>$r.formatLatexFormulas($item.instructionalDesign)</div>
+				</div>
+				<div></div>
+			</div>
+		#end
+	</div>
+	<div>
+<div>

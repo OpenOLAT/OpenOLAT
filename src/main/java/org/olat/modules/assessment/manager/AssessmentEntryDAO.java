@@ -285,6 +285,7 @@ public class AssessmentEntryDAO {
 			impl.setObligationConfig(obligation.getConfigCurrent());
 			impl.setObligationOriginal(obligation.getConfigOriginal());
 			impl.setObligationModIdentity(obligation.getModBy());
+			impl.setObligationModNodeIdent(obligation.getModNodeIdent());
 			impl.setObligationModDate(obligation.getModDate());
 		}
 		return mergeAndLoadIdentity(nodeAssessment);

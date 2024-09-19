@@ -2858,7 +2858,6 @@ function showInfoBox(title, content) {
     jQuery('#' + uuid).click(function(e) {
     	cleanup();
     });
-	o_scrollToElement('#o_top');
     
     setTimeout(function(){
 		try {
