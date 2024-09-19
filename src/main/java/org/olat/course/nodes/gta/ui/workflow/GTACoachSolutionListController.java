@@ -124,7 +124,7 @@ public class GTACoachSolutionListController extends AbstractCoachWorkflowListCon
 		SelectionValues assignmentStatusPK = new SelectionValues();
 		assignmentStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.solutionAvailable.name(), translate(CoachedParticipantStatus.solutionAvailable.i18nKey())));
 		assignmentStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.notAvailable.name(), translate(CoachedParticipantStatus.notAvailable.i18nKey())));
-		FlexiTableMultiSelectionFilter assignmentStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.assignment.status"),
+		FlexiTableMultiSelectionFilter assignmentStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.step.status"),
 				FILTER_STATUS, assignmentStatusPK, true);
 		filters.add(assignmentStatusFilter);
 	}

@@ -1280,11 +1280,11 @@ public class FolderController extends FormBasicController implements Activateabl
 		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
 		VFSItem vfsItem = rootContainer.resolve(path);
 		if (vfsItem instanceof VFSContainer) {
+			doOpenFolderView(ureq);
 			updateCurrentContainer(ureq, path, true);
-			doOpenFolderView(ureq);
 		} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			updateCurrentContainer(ureq, vfsLeaf.getParentContainer(), true);
 			doOpenFolderView(ureq);
+			updateCurrentContainer(ureq, vfsLeaf.getParentContainer(), true);
 			doOpenFileInLightbox(ureq, vfsLeaf);
 		}
 	}

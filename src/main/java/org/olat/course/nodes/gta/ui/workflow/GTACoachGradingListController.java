@@ -179,7 +179,7 @@ public class GTACoachGradingListController extends AbstractCoachWorkflowListCont
 		assignmentStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.open.name(), translate(CoachedParticipantStatus.open.i18nKey())));
 		assignmentStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.done.name(), translate(CoachedParticipantStatus.done.i18nKey())));
 		assignmentStatusPK.add(SelectionValues.entry(CoachedParticipantStatus.notAvailable.name(), translate(CoachedParticipantStatus.notAvailable.i18nKey())));
-		FlexiTableMultiSelectionFilter assignmentStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.assignment.status"),
+		FlexiTableMultiSelectionFilter assignmentStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.step.status"),
 				FILTER_STATUS, assignmentStatusPK, true);
 		filters.add(assignmentStatusFilter);
 	}
