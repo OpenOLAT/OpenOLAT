@@ -159,7 +159,11 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		CourseNode cen = cetm.getCourseNode(nodeId);
 		return cen;
 	}
-	// </OLATCE-91>
+	
+	@Override
+	public CourseEditorTreeNode getTreeNode(String nodeId) {
+		return cetm.getCourseEditorNodeById(nodeId);
+	}
 
 	@Override
 	public boolean existsGroup(String groupNameOrKey) {

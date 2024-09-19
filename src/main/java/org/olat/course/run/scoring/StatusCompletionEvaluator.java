@@ -19,6 +19,8 @@
  */
 package org.olat.course.run.scoring;
 
+import java.util.List;
+
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntryRef;
@@ -33,7 +35,7 @@ public class StatusCompletionEvaluator implements CompletionEvaluator {
 
 	@Override
 	public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
+			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, List<AssessmentEvaluation> children) {
 		return getCompletion(currentEvaluation);
 	}
 

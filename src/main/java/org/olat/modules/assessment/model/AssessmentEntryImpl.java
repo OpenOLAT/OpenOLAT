@@ -190,6 +190,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private AssessmentObligation obligationOriginal;
 	@Column(name="a_obligation_mod_date", nullable=true, insertable=true, updatable=true)
 	private Date obligationModDate;
+	@Column(name="a_obligation_mod_node_ident", nullable=true, insertable=true, updatable=true)
+	private String obligationModNodeIdent;
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_identity_obligation_mod", nullable=true, insertable=true, updatable=true)
 	private Identity obligationModIdentity;
@@ -579,7 +581,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	public ObligationOverridable getObligation() {
 		if (obligationOverridable == null) {
 			obligationOverridable = new ObligationOverridableImpl(obligation, obligationInherited, obligationEvaluated,
-					obligationConfig, obligationOriginal, obligationModIdentity, obligationModDate);
+					obligationConfig, obligationOriginal, obligationModIdentity, obligationModNodeIdent, obligationModDate);
 		}
 		return obligationOverridable;
 	}
@@ -639,6 +641,14 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 
 	public void setObligationModIdentity(Identity obligationModIdentity) {
 		this.obligationModIdentity = obligationModIdentity;
+	}
+
+	public String getObligationModNodeIdent() {
+		return obligationModNodeIdent;
+	}
+
+	public void setObligationModNodeIdent(String obligationModNodeIdent) {
+		this.obligationModNodeIdent = obligationModNodeIdent;
 	}
 
 	@Override

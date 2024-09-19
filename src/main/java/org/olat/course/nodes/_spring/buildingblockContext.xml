@@ -191,4 +191,8 @@
 		<property name="order" value="199" />
 	</bean>
 	
+	<bean id="cns" class="org.olat.course.nodes.cns.CNSCourseNodeConfiguration" scope="prototype">
+		<property name="order" value="500" />
+	</bean>
+	
 </beans>

@@ -267,6 +267,7 @@ public class AccountingResult extends AssessmentEvaluation {
 				|| !Objects.equals(origin.getObligation().getConfigCurrent(), evaluatedObligation.getConfigCurrent())
 				|| !Objects.equals(origin.getObligation().getConfigOriginal(), evaluatedObligation.getConfigOriginal())
 				|| !Objects.equals(origin.getObligation().getModBy(), evaluatedObligation.getModBy())
+				|| !Objects.equals(origin.getObligation().getModNodeIdent(), evaluatedObligation.getModNodeIdent())
 				|| !Objects.equals(origin.getObligation().getModDate(), evaluatedObligation.getModDate())
 				|| !Objects.equals(origin.getPassedOverridable().getCurrent(), evaluatedPassedOverridable.getCurrent())
 				|| !Objects.equals(origin.getPassedOverridable().getOriginal(), evaluatedPassedOverridable.getOriginal())

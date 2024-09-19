@@ -19,9 +19,13 @@
  */
 package org.olat.course.nodes.st.assessment;
 
+import java.util.List;
 import java.util.Set;
 
-import org.olat.course.run.scoring.ObligationEvaluator;
+import org.olat.course.learningpath.evaluation.ExceptionalObligationEvaluator;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -30,11 +34,42 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class STObligationEvaluator extends AbstractConfigObligationEvaluator implements ObligationEvaluator {
+public class STObligationEvaluator extends AbstractConfigObligationEvaluator {
 	
 	@Override
 	public AssessmentObligation getMostImportantExceptionalObligation(Set<AssessmentObligation> assessmentObligations,
 			AssessmentObligation defaultObligation) {
 		return AssessmentObligation.evaluated == defaultObligation? AssessmentObligation.excluded: AssessmentObligation.evaluated;
 	}
+	
+	@Override
+	public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+			ExceptionalObligationEvaluator exceptionalObligationEvaluator, List<AssessmentEvaluation> children) {
+		ObligationOverridable obligation = currentEvaluation.getObligation().clone();
+	
+		AssessmentObligation evaluatedObligation = AssessmentObligation.evaluated == obligation.getConfigCurrent()
+				? getChildrenObligation(children)
+				: null;
+		obligation.setEvaluated(evaluatedObligation);
+		
+		AssessmentObligation currentObligation = getCurrentObligation(obligation);
+		obligation.setCurrent(currentObligation);
+		
+		return obligation;
+	}
+
+	private AssessmentObligation getChildrenObligation(List<AssessmentEvaluation> children) {
+		for (AssessmentEvaluation child : children) {
+			AssessmentObligation childObligation = child.getObligation().getConfigCurrent();
+			if (AssessmentObligation.evaluated == childObligation) {
+				childObligation = child.getObligation().getEvaluated();
+			}
+			
+			if (AssessmentObligation.mandatory == childObligation) {
+				return AssessmentObligation.mandatory;
+			}
+		}
+		return AssessmentObligation.optional;
+	}
+	
 }

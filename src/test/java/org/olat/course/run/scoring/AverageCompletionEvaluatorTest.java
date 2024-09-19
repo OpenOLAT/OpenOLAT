@@ -116,7 +116,7 @@ public class AverageCompletionEvaluatorTest {
 		scoreAccounting.put(child2Uncalculated, child2UncalculatedEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, child2Uncalculated)).thenReturn(configSetByNode);
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry, null);
 		
 		assertThat(completion).isEqualTo(0.75);
 	}
@@ -153,7 +153,7 @@ public class AverageCompletionEvaluatorTest {
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInvisible)).thenReturn(configSetByNode);
 
 		AverageCompletionEvaluator weightedSut = new AverageCompletionEvaluator(courseAssessmentService, DURATION_WEIGHTED);
-		Double completion = weightedSut.getCompletion(null, parent, scoreAccounting, courseEntry);
+		Double completion = weightedSut.getCompletion(null, parent, scoreAccounting, courseEntry, null);
 		
 		double expected = (1 * 0.0 + 2 * 0.5 + 3 * 1.0) / 6;
 		assertThat(completion).isEqualTo(expected, offset(0.001));
@@ -190,7 +190,7 @@ public class AverageCompletionEvaluatorTest {
 		scoreAccounting.put(childInvisible, childInvisibleEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInvisible)).thenReturn(configSetByNode);
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry, null);
 		
 		assertThat(completion).isEqualTo(0.5);
 	}
@@ -250,7 +250,7 @@ public class AverageCompletionEvaluatorTest {
 		scoreAccounting.put(childInvisible, childInvisibleEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInvisible)).thenReturn(configSetByNode);
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry, null);
 		
 		double expected = (1.0 + 0.0 + 0.0 + 0.0 + 0.5 + 0.75 + 0.9) / 7;
 		assertThat(completion).isEqualTo(expected, offset(0.001));
@@ -287,7 +287,7 @@ public class AverageCompletionEvaluatorTest {
 		scoreAccounting.put(child4, childEvaluation4);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, child4)).thenReturn(configSetByNode);
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry, null);
 		
 		double expected = (1.0 + 0.0 + 1.0 + 0.5 ) / 4;
 		assertThat(completion).isEqualTo(expected, offset(0.001));
@@ -298,7 +298,7 @@ public class AverageCompletionEvaluatorTest {
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		CourseNode parent = new STCourseNode();
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry, null);
 		
 		assertThat(completion).isNull();
 	}
@@ -340,7 +340,7 @@ public class AverageCompletionEvaluatorTest {
 		scoreAccounting.put(childInvisible, childInvisibleEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, childInvisible)).thenReturn(configSetByNode);
 		
-		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry, null);
 		
 		assertThat(completion).isNull();
 	}

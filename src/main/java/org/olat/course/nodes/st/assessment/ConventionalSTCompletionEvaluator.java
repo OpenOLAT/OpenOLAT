@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.st.assessment;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -49,7 +51,7 @@ public class ConventionalSTCompletionEvaluator implements CompletionEvaluator {
 	
 	@Override
 	public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
+			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, List<AssessmentEvaluation> children) {
 		
 		Double completion = null;
 		

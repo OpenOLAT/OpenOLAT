@@ -19,6 +19,7 @@
  */
 package org.olat.course.run.scoring;
 
+import java.util.List;
 import java.util.function.Function;
 
 import org.olat.core.CoreSpringFactory;
@@ -60,7 +61,7 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 	
 	@Override
 	public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry) {
+			ScoreAccounting scoreAccounting, RepositoryEntryRef courseEntry, List<AssessmentEvaluation> children) {
 		
 		// get all children
 		CollectingVisitor visitor = CollectingVisitor.testing(cn -> !cn.getIdent().equals(courseNode.getIdent()));

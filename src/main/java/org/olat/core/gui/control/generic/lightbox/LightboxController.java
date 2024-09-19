@@ -108,6 +108,11 @@ public class LightboxController extends BasicController {
 		// Set the focus to the first element in the lightbox.
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createLightBoxFocus());
 	}
+
+	public void deactivate() {
+		getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.closeLightBox(lightboxId));
+		getWindowControl().removeModalDialog(mainVC);
+	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

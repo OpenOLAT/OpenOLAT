@@ -50,7 +50,7 @@ public class STFullyAssessedEvaluatorTest {
 		AssessmentEvaluation childOptoinalNullAssessed = createAssessmentEvaluation(null, AssessmentObligation.optional);
 		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed, childOptoinalAssessed, childOptoinalNotAssessed, childOptoinalNullAssessed);
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
+		Boolean fullyAssessed = sut.getFullyAssessed(null, null, children, blocker);
 		
 		assertThat(fullyAssessed).isTrue();
 		assertThat(blocker.isBlocked()).isFalse();
@@ -63,7 +63,7 @@ public class STFullyAssessedEvaluatorTest {
 		AssessmentEvaluation childMandatoryAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed);
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
+		Boolean fullyAssessed = sut.getFullyAssessed(null, null, children, blocker);
 		
 		assertThat(fullyAssessed).isTrue();
 	}
@@ -72,7 +72,7 @@ public class STFullyAssessedEvaluatorTest {
 	public void shouldReturnTrueIfItHasNoChildren() {
 		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, Collections.emptyList(), blocker);
+		Boolean fullyAssessed = sut.getFullyAssessed(null, null, Collections.emptyList(), blocker);
 		
 		assertThat(fullyAssessed).isTrue();
 		assertThat(blocker.isBlocked()).isFalse();
@@ -85,7 +85,7 @@ public class STFullyAssessedEvaluatorTest {
 		AssessmentEvaluation childMandatoryNotAssessed = createAssessmentEvaluation(Boolean.FALSE, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed, childMandatoryNotAssessed);
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
+		Boolean fullyAssessed = sut.getFullyAssessed(null, null, children, blocker);
 		
 		assertThat(fullyAssessed).isFalse();
 		assertThat(blocker.isBlocked()).isTrue();
@@ -97,7 +97,7 @@ public class STFullyAssessedEvaluatorTest {
 		AssessmentEvaluation childMandatoryNotAssessed = createAssessmentEvaluation(null, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed, childMandatoryNotAssessed);
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
+		Boolean fullyAssessed = sut.getFullyAssessed(null, null, children, blocker);
 		
 		assertThat(fullyAssessed).isFalse();
 		assertThat(blocker.isBlocked()).isTrue();
@@ -109,7 +109,7 @@ public class STFullyAssessedEvaluatorTest {
 		AssessmentEvaluation childOptoinalNotAssessed = createAssessmentEvaluation(Boolean.FALSE, AssessmentObligation.optional);
 		List<AssessmentEvaluation> children = Arrays.asList(childOptoinalNotAssessed);
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
+		Boolean fullyAssessed = sut.getFullyAssessed(null, null, children, blocker);
 		
 		assertThat(fullyAssessed).isTrue();
 	}
@@ -122,7 +122,7 @@ public class STFullyAssessedEvaluatorTest {
 		AssessmentEvaluation childOptoinalNotAssessed2 = createAssessmentEvaluation(null, AssessmentObligation.optional);
 		List<AssessmentEvaluation> children = Arrays.asList(childOptoinalNotAssessed1, childOptoinalNotAssessed2);
 		
-		Boolean fullyAssessed = sut.getFullyAssessed(null, children, blocker);
+		Boolean fullyAssessed = sut.getFullyAssessed(null, null, children, blocker);
 		
 		assertThat(fullyAssessed).isFalse();
 	}

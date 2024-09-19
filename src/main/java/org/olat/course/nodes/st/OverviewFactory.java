@@ -102,25 +102,8 @@ public class OverviewFactory {
 		if (!courseNodeFilter.accept(courseNode)) return null;
 		
 		Builder builder = Overview.builder();
-		builder.withNodeIdent(courseNode.getIdent());
-		
-		String colorCategoryCss = colorCategoryResolver.getColorCategoryCss(courseNode);
-		builder.withColorCategoryCss(colorCategoryCss);
-		
-		VFSMediaMapper mapper = courseStyleService.getTeaserImageMapper(course, courseNode);
-		if (mapper != null) {
-			boolean teaserImageTransparent = courseStyleService.isImageTransparent(mapper);
-			TeaserImageStyle teaserImageStyle = courseStyleService.getTeaserImageStyle(course, courseNode);
-			builder.withTeaserImage(mapper, teaserImageTransparent, teaserImageStyle);
-			
-			// Same ID for the same image during one structure run view
-			String teaserImageID = mapperPrefix + mapper.getVfsLeaf().getRelPath() + mapper.getVfsLeaf().getName();
-			builder.withTeaserImageID(teaserImageID);
-		}
-		
-		builder.withIconCss(CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
-		builder.withTitle(courseNode.getLongTitle());
-		builder.withSubTitle(CourseNodeHelper.getFuzzyDifferentShortTitle(courseNode));
+		appendCourseNodeInfos(builder, courseNode);
+		appendCourseStyleInfos(builder, courseNode);
 		
 		if (scoreAccounting != null) {
 			AssessmentEvaluation evaluation = scoreAccounting.getScoreEvaluation(courseNode);
@@ -140,10 +123,7 @@ public class OverviewFactory {
 				}
 			}
 		} else if (learningPathService != null) {
-			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
-			builder.withDuration(learningPathConfigs.getDuration());
-			builder.withStartDateConfig(learningPathConfigs.getStartDateConfig());
-			builder.withEndDateConfig(learningPathConfigs.getEndDateConfig());
+			appendLearningPathConfigs(builder, courseNode);
 		}
 		
 		Controller peekViewCtrl = null;
@@ -156,9 +136,40 @@ public class OverviewFactory {
 		} else {
 			NoAccess noAccessMessage = noAccessResolver.getNoAccessMessage(courseNode);
 			builder.withNoAccessMessage(noAccessMessage);
+			builder.withGoToNodeLinkEnabled(false);
 		}
 		
-		return new OverviewController(ureq, wControl, builder.build(), peekViewCtrl);
+		return new OverviewController(ureq, wControl, builder.build(), peekViewCtrl, null);
+	}
+
+	public void appendCourseNodeInfos(Builder builder, CourseNode courseNode) {
+		builder.withNodeIdent(courseNode.getIdent());
+		builder.withIconCss(CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
+		builder.withTitle(courseNode.getLongTitle());
+		builder.withSubTitle(CourseNodeHelper.getFuzzyDifferentShortTitle(courseNode));
+	}
+
+	public void appendCourseStyleInfos(Builder builder, CourseNode courseNode) {
+		String colorCategoryCss = colorCategoryResolver.getColorCategoryCss(courseNode);
+		builder.withColorCategoryCss(colorCategoryCss);
+		
+		VFSMediaMapper mapper = courseStyleService.getTeaserImageMapper(course, courseNode);
+		if (mapper != null) {
+			boolean teaserImageTransparent = courseStyleService.isImageTransparent(mapper);
+			TeaserImageStyle teaserImageStyle = courseStyleService.getTeaserImageStyle(course, courseNode);
+			builder.withTeaserImage(mapper, teaserImageTransparent, teaserImageStyle);
+			
+			// Same ID for the same image during one structure run view
+			String teaserImageID = mapperPrefix + mapper.getVfsLeaf().getRelPath() + mapper.getVfsLeaf().getName();
+			builder.withTeaserImageID(teaserImageID);
+		}
+	}
+
+	public void appendLearningPathConfigs(Builder builder, CourseNode courseNode) {
+		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
+		builder.withDuration(learningPathConfigs.getDuration());
+		builder.withStartDateConfig(learningPathConfigs.getStartDateConfig());
+		builder.withEndDateConfig(learningPathConfigs.getEndDateConfig());
 	}
 	
 	public interface CourseNodeFilter {

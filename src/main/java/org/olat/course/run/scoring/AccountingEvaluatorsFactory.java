@@ -169,11 +169,13 @@ public class AccountingEvaluatorsFactory {
 	}
 
 	private static class NoneObligationEvaluator implements ObligationEvaluator {
+		
+		private static final ObligationResult RESULT = new ObligationEvaluator.ObligationResult(ObligationOverridable.empty(), ObligationEvaluator.DEFAULT_CONFIG_OBLIGATION_EVALUATOR);
 
 		@Override
-		public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-				AssessmentObligation parentObligation, ExceptionalObligationEvaluator exceptionalObligationEvaluator) {
-			return ObligationOverridable.empty();
+		public ObligationResult getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode, AssessmentObligation parentObligation,
+				ConfigObligationEvaluator configObligationEvaluator, ExceptionalObligationEvaluator exceptionalObligationEvaluator) {
+			return RESULT;
 		}
 
 		@Override
@@ -274,7 +276,7 @@ public class AccountingEvaluatorsFactory {
 
 		@Override
 		public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-				ScoreAccounting scoureAccounting, RepositoryEntryRef courseEntry) {
+				ScoreAccounting scoureAccounting, RepositoryEntryRef courseEntry, List<AssessmentEvaluation> children) {
 			return currentEvaluation.getCompletion();
 		}
 		
@@ -299,8 +301,8 @@ public class AccountingEvaluatorsFactory {
 	private static class UnchangingFullyAssessedEvaluator implements FullyAssessedEvaluator {
 
 		@Override
-		public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children,
-				Blocker blocker) {
+		public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+				List<AssessmentEvaluation> children, Blocker blocker) {
 			return currentEvaluation.getFullyAssessed();
 		}
 		

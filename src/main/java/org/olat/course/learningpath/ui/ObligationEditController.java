@@ -42,6 +42,7 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -78,6 +79,7 @@ public class ObligationEditController extends FormBasicController implements Con
 	private FormLink resetOverwriteLink;
 	
 	private final RepositoryEntry courseEntry;
+	private final ICourse course;
 	private final boolean canEdit;
 	private final LearningPathConfigs learningPathConfigs;
 	private final ObligationEvaluator obligationEvaluator;
@@ -101,7 +103,7 @@ public class ObligationEditController extends FormBasicController implements Con
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.courseEntry = courseEntry;
 		this.canEdit = canEdit;
-		ICourse course = CourseFactory.loadCourse(courseEntry);
+		this.course = CourseFactory.loadCourse(courseEntry);
 		CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
 		this.learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 		this.obligationEvaluator = courseAssessmentService.getEvaluators(courseNode, course.getCourseConfig()).getObligationEvaluator();
@@ -196,13 +198,33 @@ public class ObligationEditController extends FormBasicController implements Con
 		boolean overridden = obligation.isOverridden();
 		AssessmentObligation configCurrent = obligation.getConfigCurrent();
 		if (overridden) {
-			String[] args = new String[] {
-					translateObligation(configCurrent),
-					userManager.getUserDisplayName(obligation.getModBy()),
-					formatter.formatDateAndTime(obligation.getModDate())
-			};
-			String infoText = translate("override.obligation.info", args);
-			infoEl.setValue(infoText);
+			if (obligation.getModBy() != null) {
+				String[] args = new String[] {
+						translateObligation(configCurrent),
+						userManager.getUserDisplayName(obligation.getModBy()),
+						formatter.formatDateAndTime(obligation.getModDate())
+				};
+				String infoText = translate("override.obligation.info", args);
+				infoEl.setValue(infoText);
+			} else {
+				String courseNodeName = null;
+				if (StringHelper.containsNonWhitespace(obligation.getModNodeIdent()))  {
+					CourseNode courseNode = course.getCourseEnvironment().getRunStructure().getNode(obligation.getModNodeIdent());
+					if (courseNode != null) {
+						courseNodeName = courseNode.getLongTitle();
+					}
+				}
+				if (!StringHelper.containsNonWhitespace(courseNodeName))  {
+					courseNodeName = translate("override.obligation.node.unknown");
+				}
+				String[] args = new String[] {
+						translateObligation(configCurrent),
+						courseNodeName,
+						formatter.formatDateAndTime(obligation.getModDate())
+				};
+				String infoText = translate("override.obligation.info.node", args);
+				infoEl.setValue(infoText);
+			}
 		}
 		
 		AssessmentObligation original = overridden ? obligation.getConfigOriginal() : configCurrent;
@@ -246,7 +268,7 @@ public class ObligationEditController extends FormBasicController implements Con
 		boolean override = obligationEl.isOneSelected();
 		if (override) {
 			AssessmentObligation selectedObligation = AssessmentObligation.valueOf(obligationEl.getSelectedKey());
-			obligation.overrideConfig(selectedObligation, getIdentity(), new Date());
+			obligation.overrideConfig(selectedObligation, getIdentity(), null, new Date());
 		} else {
 			obligation.reset();
 		}

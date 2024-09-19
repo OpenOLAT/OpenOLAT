@@ -22,11 +22,7 @@ package org.olat.course.nodes.st.assessment;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.evaluation.ExceptionalObligationEvaluator;
-import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ObligationEvaluator;
@@ -41,39 +37,26 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public abstract class AbstractConfigObligationEvaluator implements ObligationEvaluator {
 
-	private LearningPathService learningPathService;
-
 	@Override
-	public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			AssessmentObligation parentObligation, ExceptionalObligationEvaluator exceptionalObligationEvaluator) {
+	public ObligationResult getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+			AssessmentObligation parentObligation, ConfigObligationEvaluator configObligationEvaluator,
+			ExceptionalObligationEvaluator exceptionalObligationEvaluator) {
 		ObligationOverridable obligation = currentEvaluation.getObligation().clone();
 		
 		AssessmentObligation inherited = AssessmentObligation.excluded == parentObligation? parentObligation: null;
 		obligation.setInherited(inherited);
 		
-		AssessmentObligation configObligation = getConfigObligation(courseNode, exceptionalObligationEvaluator);
+		AssessmentObligation configObligation = configObligationEvaluator.getConfigObligation(courseNode, exceptionalObligationEvaluator);
 		obligation.setConfigCurrent(configObligation);
 		
 		AssessmentObligation currentObligation = getCurrentObligation(obligation);
 		obligation.setCurrent(currentObligation);
 		
-		return obligation;
+		return new ObligationResult(obligation, getConfigObligationEvaluator());
 	}
-
-	private AssessmentObligation getConfigObligation(CourseNode courseNode, ExceptionalObligationEvaluator exceptionalObligationEvaluator) {
-		LearningPathConfigs configs = getLearningPathService().getConfigs(courseNode);
-		// Initialize the obligation by the configured standard obligation
-		AssessmentObligation nodeObligation = configs.getObligation();
-		
-		List<ExceptionalObligation> exceptionalObligations = configs.getExceptionalObligations();
-		if (exceptionalObligations != null && !exceptionalObligations.isEmpty()) {
-			Set<AssessmentObligation> filtered = exceptionalObligationEvaluator
-					.filterAssessmentObligation(exceptionalObligations, nodeObligation);
-			if (!filtered.isEmpty()) {
-				nodeObligation = filtered.stream().findFirst().get();
-			}
-		}
-		return nodeObligation;
+	
+	protected ConfigObligationEvaluator getConfigObligationEvaluator() {
+		return ObligationEvaluator.DEFAULT_CONFIG_OBLIGATION_EVALUATOR;
 	}
 
 	@Override
@@ -116,22 +99,6 @@ public abstract class AbstractConfigObligationEvaluator implements ObligationEva
 		}
 		
 		return obligation.getConfigCurrent();
-	}
-
-	protected LearningPathService getLearningPathService() {
-		if (learningPathService == null) {
-			learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
-		}
-		return learningPathService;
-	}
-
-	/**
-	 * For Testing only!
-	 *
-	 * @param learningPathService
-	 */
-	protected void setLearningPathService(LearningPathService learningPathService) {
-		this.learningPathService = learningPathService;
 	}
 
 	@Override

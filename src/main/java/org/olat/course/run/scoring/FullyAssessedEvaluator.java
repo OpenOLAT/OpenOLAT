@@ -21,6 +21,8 @@ package org.olat.course.run.scoring;
 
 import java.util.List;
 
+import org.olat.course.nodes.CourseNode;
+
 /**
  * 
  * Initial date: 18 Sep 2019<br>
@@ -29,7 +31,7 @@ import java.util.List;
  */
 public interface FullyAssessedEvaluator {
 
-	public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children,
-			Blocker blocker);
+	public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+			List<AssessmentEvaluation> children, Blocker blocker);
 
 }

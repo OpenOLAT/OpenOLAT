@@ -76,7 +76,7 @@ public class ConventionalSTCompletionEvaluatorTest {
 		scoreAccounting.put(child, parrentEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, child)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, child, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(parrentEvaluation, child, scoreAccounting, courseEntry, null);
 		
 		assertThat(completion).isNull();
 	}
@@ -90,7 +90,7 @@ public class ConventionalSTCompletionEvaluatorTest {
 		scoreAccounting.put(root, parrentEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, root)).thenReturn(configWithoutPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry, null);
 		
 		assertThat(completion).isNull();
 	}
@@ -104,7 +104,7 @@ public class ConventionalSTCompletionEvaluatorTest {
 		scoreAccounting.put(root, parrentEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, root)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry, null);
 		
 		assertThat(completion).isEqualTo(0.0);
 	}
@@ -118,7 +118,7 @@ public class ConventionalSTCompletionEvaluatorTest {
 		scoreAccounting.put(root, parrentEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, root)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry, null);
 		
 		assertThat(completion).isEqualTo(0.0);
 	}
@@ -132,7 +132,7 @@ public class ConventionalSTCompletionEvaluatorTest {
 		scoreAccounting.put(root, parrentEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, root)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry, null);
 		
 		assertThat(completion).isEqualTo(0.0);
 	}
@@ -146,7 +146,7 @@ public class ConventionalSTCompletionEvaluatorTest {
 		scoreAccounting.put(root, parrentEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, root)).thenReturn(configWithPassed);
 		
-		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry);
+		Double completion = sut.getCompletion(parrentEvaluation, root, scoreAccounting, courseEntry, null);
 		
 		assertThat(completion).isEqualTo(1.0);
 	}

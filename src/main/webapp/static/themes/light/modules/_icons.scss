@@ -1150,6 +1150,12 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_run { @include o-add-icon('clock-rotate-left');}
 .o_icon_tb_run_start { @include o-add-icon('circle-play');}
 
+/* Course node selection course node */
+.o_icon_cns { @include o-add-icon('arrows-turn-right');}
+.o_icon_cns_status_done { @include o-add-icon('check-circle');}
+.o_icon_cns_status_in_progress { @include o-add-icon('circle-play');}
+.o_icon_cns_status_selected { @include o-add-icon('hand-point-up');}
+
 /* Library */
 .o_library_icon { @include o-add-icon('university');}
 
