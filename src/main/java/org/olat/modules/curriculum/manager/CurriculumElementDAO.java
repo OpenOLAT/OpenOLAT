@@ -731,11 +731,11 @@ public class CurriculumElementDAO {
 	}
 	
 	public int countChildren(CurriculumElementRef curriculumElement) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select count(el.key) from curriculumelement el")
-		  .append(" where el.parent.key=:elementKey");
+		String query = """
+				select count(el.key) from curriculumelement el
+				where el.parent.key=:elementKey""";
 		List<Long> count = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
+				.createQuery(query, Long.class)
 				.setParameter("elementKey", curriculumElement.getKey())
 				.getResultList();
 		return count != null && !count.isEmpty() && count.get(0) != null ? count.get(0).intValue() : 0;

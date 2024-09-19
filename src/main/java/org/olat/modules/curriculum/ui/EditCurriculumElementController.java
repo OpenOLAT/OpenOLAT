@@ -19,7 +19,6 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -39,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -51,7 +51,6 @@ import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
-import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -118,6 +117,7 @@ public class EditCurriculumElementController extends FormBasicController {
 	private Curriculum curriculum;
 	private CurriculumElement element;
 	private CurriculumElement parentElement;
+	private final CurriculumElementType preSelectedType;
 	private final CurriculumSecurityCallback secCallback;
 	
 	@Autowired
@@ -134,12 +134,13 @@ public class EditCurriculumElementController extends FormBasicController {
 	 * @param wControl The window control
 	 */
 	public EditCurriculumElementController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement parentElement, Curriculum curriculum, CurriculumSecurityCallback secCallback) {
+			CurriculumElement parentElement, CurriculumElementType preSelectedType, Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.curriculum = curriculum;
 		this.parentElement = parentElement;
 		this.secCallback = secCallback;
+		this.preSelectedType = preSelectedType;
 		initForm(ureq);
 	}
 	
@@ -150,6 +151,7 @@ public class EditCurriculumElementController extends FormBasicController {
 		this.curriculum = curriculum;
 		this.element = element;
 		this.parentElement = parentElement;
+		this.preSelectedType = null;
 		this.secCallback = secCallback;
 		initForm(ureq);
 	}
@@ -202,33 +204,31 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 		
 		List<CurriculumElementType> types = getTypes();
-		String[] typeKeys = new String[types.size() + 1];
-		String[] typeValues = new String[types.size() + 1];
-		typeKeys[0] = "";
-		typeValues[0] = "-";
-		for(int i=types.size(); i-->0; ) {
-			typeKeys[i+1] = types.get(i).getKey().toString();
-			typeValues[i+1] = types.get(i).getDisplayName();
+		SelectionValues typePK = new SelectionValues();
+		for(CurriculumElementType type:types) {
+			typePK.add(SelectionValues.entry(type.getKey().toString(), StringHelper.escapeHtml(type.getDisplayName())));
 		}
-		curriculumElementTypeEl = uifactory.addDropdownSingleselect("type", "curriculum.element.type", formLayout, typeKeys, typeValues, null);
+		
+		curriculumElementTypeEl = uifactory.addDropdownSingleselect("type", "curriculum.element.type", formLayout, typePK.keys(), typePK.values());
 		curriculumElementTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type) && canEdit);
 		curriculumElementTypeEl.addActionListener(FormEvent.ONCHANGE);
+		curriculumElementTypeEl.setMandatory(true);
 		boolean typeFound = false;
-		CurriculumElementType elementType = element == null ? null : element.getType();
+		CurriculumElementType elementType = element == null ? preSelectedType : element.getType();
 		if(elementType != null) {
 			String selectedTypeKey = elementType.getKey().toString();
-			for(String typeKey:typeKeys) {
-				if(typeKey.equals(selectedTypeKey)) {
-					curriculumElementTypeEl.select(selectedTypeKey, true);
-					typeFound = true;
-					break;
-				}
+			if(typePK.containsKey(selectedTypeKey)) {
+				curriculumElementTypeEl.select(selectedTypeKey, true);
+				typeFound = true;
 			}
 		}
 		if(!typeFound) {
-			curriculumElementTypeEl.select(typeKeys[0], true);
+			for(CurriculumElementType type:types) {
+				if(CurriculumService.DEFAULT_CURRICULUM_ELEMENT_TYPE.equals(type.getExternalId())) {
+					curriculumElementTypeEl.select(type.getKey().toString(), true);
+				}
+			}
 		}
-		
 		
 		// Subjects
 		TaxonomyLevelSearchParameters filter = new TaxonomyLevelSearchParameters();
@@ -315,10 +315,10 @@ public class EditCurriculumElementController extends FormBasicController {
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		if(canEdit) {
 			uifactory.addFormSubmitButton("save", buttonsCont);
 		}
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	private void updateCalendarsEnabled(CurriculumCalendars preferedEnabled, CurriculumElementType selectedType) {
@@ -407,7 +407,7 @@ public class EditCurriculumElementController extends FormBasicController {
 
 			String[] onValues = new String[] {
 					translate("type.learning.progress.enabled.enabled"), translate("type.learning.progress.enabled.disabled"),
-					translate("type.learning.progress.enabled.inherited", new String[] { typeVal })
+					translate("type.learning.progress.enabled.inherited", typeVal)
 			};
 			learningProgressEnabledEl.setKeysAndValues(learningProgressTypedKeys, onValues, null);
 			learningProgressEnabledEl.select(preferedEnabled.name(), true);
@@ -415,36 +415,15 @@ public class EditCurriculumElementController extends FormBasicController {
 	}
 	
 	private List<CurriculumElementType> getTypes() {
-		List<CurriculumElementType> types;
-		if(parentElement != null) {
-			types = getTypes(parentElement);
-		} else {
-			types = new ArrayList<>();
-		}
-		
+		List<CurriculumElementType> types = curriculumService.getAllowedCurriculumElementType(parentElement, element);
 		if(types.isEmpty()) {
-			types.addAll(curriculumService.getCurriculumElementTypes());
-		} else if(element != null && element.getType() != null && !types.contains(element.getType())) {
-			types.add(element.getType());
-		}
-		return types;
-	}
-	
-	private List<CurriculumElementType> getTypes(CurriculumElement curriculumParentElement)  {
-		List<CurriculumElementType> types = new ArrayList<>();
-		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(curriculumParentElement);
-		for(int i=parentLine.size(); i-->0; ) {
-			CurriculumElement parent = parentLine.get(i);
-			CurriculumElementType parentType = parent.getType();
-			if(parentType != null) {
-				Set<CurriculumElementTypeToType> typeToTypes = parentType.getAllowedSubTypes();
-				for(CurriculumElementTypeToType typeToType:typeToTypes) {
-					if(typeToType != null) {
-						types.add(typeToType.getAllowedSubType());
-					}
-				}
-				break;
+			CurriculumElementType defaultType = curriculumService.getDefaultCurriculumElementType();
+			if(defaultType != null) {
+				types.add(defaultType);
 			}
+		}
+		if(element != null && element.getType() != null && !types.contains(element.getType())) {
+			types.add(element.getType());
 		}
 		return types;
 	}
@@ -458,7 +437,7 @@ public class EditCurriculumElementController extends FormBasicController {
 			displayNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(displayNameEl.getValue().length() > 255) {
-			displayNameEl.setErrorKey("form.error.toolong", new String[] { "255" });
+			displayNameEl.setErrorKey("form.error.toolong", "255");
 			allOk &= false;
 		}
 		
@@ -467,7 +446,13 @@ public class EditCurriculumElementController extends FormBasicController {
 			identifierEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(identifierEl.getValue().length() > 64) {
-			identifierEl.setErrorKey("form.error.toolong", new String[] { "64" });
+			identifierEl.setErrorKey("form.error.toolong", "64");
+			allOk &= false;
+		}
+		
+		curriculumElementTypeEl.clearError();
+		if(!curriculumElementTypeEl.isOneSelected()) {
+			displayNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

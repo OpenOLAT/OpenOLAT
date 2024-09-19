@@ -53,6 +53,8 @@ public interface CurriculumSecurityCallback {
 	
 	public boolean canViewAllCalendars();
 	
+	public boolean canNewLectureBlock();
+	
 	public boolean canViewAllLectures();
 	
 	public boolean canViewAllLearningProgress();

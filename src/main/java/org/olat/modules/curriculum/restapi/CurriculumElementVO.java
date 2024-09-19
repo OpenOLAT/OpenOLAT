@@ -206,5 +206,19 @@ public class CurriculumElementVO {
 		this.curriculumElementTypeKey = curriculumElementTypeKey;
 	}
 
-	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 26169661 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof CurriculumElementVO element) {
+			return getKey() != null && getKey().equals(element.getKey());
+		}
+		return false;
+	}
 }

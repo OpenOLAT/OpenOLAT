@@ -28,6 +28,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 
 /**
  * 
@@ -45,7 +46,7 @@ public class CurriculumElementTypeVO {
 	private String description;
 	private String cssClass;
 	private String externalId;
-	@Schema(required = true, description = "Action to be performed on managedFlagsString", allowableValues = { 
+	@Schema(requiredMode = RequiredMode.NOT_REQUIRED, description = "Action to be performed on managedFlagsString", allowableValues = { 
 			"all",
 			 "identifier(all)",
 			 "displayName(all)",
@@ -54,22 +55,36 @@ public class CurriculumElementTypeVO {
 			 "externalId(all)",
 			 "calendars(all)",
 			 "lectures(all)",
+			 "composite(all)",
+			 "allowAsRoot(all)",
+			 "maxEntryRelations(all)",
 			 "subTypes(all)",
 			 "copy(all)",
 			 "delete(all)"})
 	private String managedFlagsString;
-	@Schema(required = false, description = "Enable or disable the calendars aggregation", allowableValues = { 
+	
+	@Schema(requiredMode = RequiredMode.NOT_REQUIRED, description = "Enable or disable the calendars aggregation", allowableValues = { 
 			"enabled",
 			"disabled",
 			"inherited"})
 	@XmlAttribute(name="calendars", required=false)
 	private String calendars;
-	@Schema(required = false, description = "Enable or disable the lecture block overview and aggregation", allowableValues = { 
+	@Schema(requiredMode = RequiredMode.NOT_REQUIRED, description = "Enable or disable the lecture block overview and aggregation", allowableValues = { 
 			"enabled",
 			"disabled",
 			"inherited"})
 	@XmlAttribute(name="lectures", required=false)
 	private String lectures;
+	@Schema(requiredMode = RequiredMode.NOT_REQUIRED, description = "Enable or disable learning progress overview", allowableValues = { 
+			"enabled",
+			"disabled",
+			"inherited"})
+	@XmlAttribute(name="learningProgress", required=false)
+	private String learningProgress;
+	
+	private Boolean singleElement;
+	private Integer maxRepositoryEntryRelations;
+	private Boolean allowedAsRootElement;
 	
 	public CurriculumElementTypeVO() {
 		//
@@ -86,6 +101,9 @@ public class CurriculumElementTypeVO {
 		vo.setManagedFlagsString(CurriculumElementTypeManagedFlag.toString(type.getManagedFlags()));
 		vo.setCalendars(type.getCalendars().name());
 		vo.setLectures(type.getLectures().name());
+		vo.setSingleElement(type.isSingleElement());
+		vo.setMaxRepositoryEntryRelations(type.getMaxRepositoryEntryRelations());
+		vo.setAllowedAsRootElement(type.isAllowedAsRootElement());
 		return vo;
 	}
 
@@ -159,5 +177,53 @@ public class CurriculumElementTypeVO {
 
 	public void setLectures(String lectures) {
 		this.lectures = lectures;
+	}
+
+	public String getLearningProgress() {
+		return learningProgress;
+	}
+
+	public void setLearningProgress(String learningProgress) {
+		this.learningProgress = learningProgress;
+	}
+
+	public Boolean getSingleElement() {
+		return singleElement;
+	}
+
+	public void setSingleElement(Boolean singleElement) {
+		this.singleElement = singleElement;
+	}
+
+	public Integer getMaxRepositoryEntryRelations() {
+		return maxRepositoryEntryRelations;
+	}
+
+	public void setMaxRepositoryEntryRelations(Integer maxRepositoryEntryRelations) {
+		this.maxRepositoryEntryRelations = maxRepositoryEntryRelations;
+	}
+
+	public Boolean getAllowedAsRootElement() {
+		return allowedAsRootElement;
+	}
+
+	public void setAllowedAsRootElement(Boolean allowedAsRootElement) {
+		this.allowedAsRootElement = allowedAsRootElement;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 26169661 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof CurriculumElementTypeVO type) {
+			return getKey() != null && getKey().equals(type.getKey());
+		}
+		return false;
 	}
 }

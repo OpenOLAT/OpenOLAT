@@ -50,8 +50,7 @@ public class CurriculumElementTypeRefImpl implements CurriculumElementTypeRef {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumElementTypeRefImpl) {
-			CurriculumElementTypeRefImpl ref = (CurriculumElementTypeRefImpl)obj;
+		if(obj instanceof CurriculumElementTypeRefImpl ref) {
 			return getKey() != null && getKey().equals(ref.getKey());
 		}
 		return super.equals(obj);

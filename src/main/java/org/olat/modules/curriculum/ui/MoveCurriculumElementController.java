@@ -40,6 +40,7 @@ import org.olat.core.gui.components.tree.TreePosition;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.nodes.INode;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -65,11 +66,13 @@ public class MoveCurriculumElementController extends FormBasicController {
 	private final CurriculumSecurityCallback secCallback;
 	private Set<CurriculumElementType> allowedTypes = new HashSet<>();
 	private Set<CurriculumElementType> allowedSiblingTypes = new HashSet<>();
-	private List<CurriculumElement> curriculumElementsToMove;
-	private Set<TreeNode> targetableNodes = new HashSet<>();
+	private final List<CurriculumElement> curriculumElementsToMove;
 	
 	private Predicate<CurriculumElement> admin = c -> true;
 	private Predicate<CurriculumElement> editionOnly = c -> isEditable(c);
+
+	private CloseableModalController cmc;
+	private MoveCurriculumElementChangeTypeController elementTypeCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -82,7 +85,7 @@ public class MoveCurriculumElementController extends FormBasicController {
 		super(ureq, wControl, "move_curriculum_element");
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
-		this.curriculumElementsToMove = new ArrayList<>(curriculumElementsToMove);
+		this.curriculumElementsToMove = List.copyOf(curriculumElementsToMove);
 		curriculumModel = new CurriculumTreeModel(curriculum, curriculumElementsToMove);
 		initAllowedTypes();
 		
@@ -98,8 +101,8 @@ public class MoveCurriculumElementController extends FormBasicController {
 		curriculumTreeEl.setRootVisible(true);
 		curriculumTreeEl.setInsertTool(true);
 
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("move.element", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
 	private void loadModel() {
@@ -143,21 +146,18 @@ public class MoveCurriculumElementController extends FormBasicController {
 			CurriculumElementType type = level.getType();
 			if(type == null || allowedTypes.contains(type)) {
 				openedNodes.add(node);
-				((GenericTreeNode)node).setIconCssClass("o_icon_node_under o_icon-rotate-180");
-				targetableNodes.add(node);
+				((GenericTreeNode)node).setIconCssClass("o_icon_node_under o_icon-rotate-180");;
 				ok = true;
 			} else if(allowedSiblingTypes.contains(type)) {
 				openedNodes.add(node);
 				// CSS class used as marker for restrictions on insertion point in tree model
 				((GenericTreeNode)node).setIconCssClass("o_icon_node_up_down");
-				targetableNodes.add(node);
 				ok = true;
 			} else if(node.getChildCount() > 0) {
 				openedNodes.add(node);
 				ok = true;
 			}
 		} else {
-			targetableNodes.add(node);
 			openedNodes.add(node);
 			ok = true;
 		}
@@ -211,9 +211,6 @@ public class MoveCurriculumElementController extends FormBasicController {
 		} else if(isParent()) {
 			curriculumTreeEl.setErrorKey("error.target.no.parent");
 			allOk &= false;
-		} else if(!targetableNodes.contains(curriculumTreeEl.getSelectedNode())) {
-			curriculumTreeEl.setErrorKey("error.target.not.allowed");
-			allOk &= false;
 		} else if(curriculumTreeEl.getInsertionPosition() == null) {
 			curriculumTreeEl.setErrorKey("error.target.no.insertion.point");
 			allOk &= false;
@@ -250,6 +247,31 @@ public class MoveCurriculumElementController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(elementTypeCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doMove(getSelectedPosition(), elementTypeCtrl.getInvalidElements(),
+						elementTypeCtrl.getSelectedCurriculumElementType());
+			}
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, event);
+			}
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(elementTypeCtrl);
+		removeAsListenerAndDispose(cmc);
+		elementTypeCtrl = null;
+		cmc = null;	
+	}
+
+	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
@@ -258,47 +280,96 @@ public class MoveCurriculumElementController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(isParent()) {
 			showWarning("error.target.no.parent");
+			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(curriculumTreeEl.getInsertionPosition() == null)  {
 			showWarning("error.target.no.insertion.point");
+			fireEvent(ureq, Event.DONE_EVENT);
 		} else {
-			TreePosition tp = curriculumTreeEl.getInsertionPosition();
-			TreeNode parentNode = tp.getParentTreeNode();
-			CurriculumElement newParent = (CurriculumElement)parentNode.getUserObject();
-			if(newParent == curriculumModel.getRootNode()) {
-				newParent = null; // root element
-			}
-			
-			CurriculumElement siblingBefore;
-			if(tp.getNode() == null) {
-				siblingBefore = null;
-			} else if(tp.getPosition() == Position.down) {
-				siblingBefore = (CurriculumElement)tp.getNode().getUserObject();
-			} else if(tp.getPosition() == Position.up) {
-				TreeNode selectedNode = tp.getNode();
-				int index = -1;
-				for(int i=tp.getParentTreeNode().getChildCount(); i-->0; ) {
-					if(selectedNode.equals(tp.getParentTreeNode().getChildAt(i))) {
-						index = i;
-						break;
+			ElementPosition position = getSelectedPosition();
+
+			List<CurriculumElementType> allowTypes = null;
+			List<CurriculumElement> invalidElements = new ArrayList<>();
+			for(CurriculumElement elementToMove:curriculumElementsToMove) {
+				List<CurriculumElementType> elementAllowTypes = curriculumService.getAllowedCurriculumElementType(position.newParent(), elementToMove);
+				if(elementToMove.getType() == null || !elementAllowTypes.contains(elementToMove.getType())) {
+					invalidElements.add(elementToMove);
+					if(allowTypes == null) {
+						allowTypes = new ArrayList<>(elementAllowTypes);
+					} else {
+						allowTypes.retainAll(elementAllowTypes);
 					}
 				}
-				
-				if(index == 0) {
-					siblingBefore = null;
-				} else {
-					INode nodeBefore = tp.getParentTreeNode().getChildAt(index -1);
-					siblingBefore = (CurriculumElement)((TreeNode)nodeBefore).getUserObject();
-				}
-			} else {
-				siblingBefore = null;
 			}
-	
-			for(CurriculumElement elementToMove:curriculumElementsToMove) {
-				curriculumService.moveCurriculumElement(elementToMove, newParent, siblingBefore, curriculum);
-				dbInstance.commit();
+			
+			if(invalidElements.isEmpty()) {
+				doMove(position, List.of(), null);
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else {
+				doChooseCurriculumElementType(ureq, invalidElements, allowTypes);
 			}
 		}
+	}
+	
+	private void doChooseCurriculumElementType(UserRequest ureq,
+			List<CurriculumElement> invalidElements, List<CurriculumElementType> allowTypes) {
+		elementTypeCtrl = new MoveCurriculumElementChangeTypeController(ureq, getWindowControl(),
+				invalidElements, allowTypes);
+		listenTo(elementTypeCtrl);
+		
+		String title = translate("move.element.type");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), elementTypeCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doMove(ElementPosition position, List<CurriculumElement> invalidElements, CurriculumElementType type) {
+		for(CurriculumElement elementToMove:curriculumElementsToMove) {
+			if(invalidElements.contains(elementToMove) && type != null) {
+				elementToMove.setType(type);
+			}
+			curriculumService.moveCurriculumElement(elementToMove, position.newParent(), position.siblingBefore(), curriculum);
+			dbInstance.commit();
+		}
 		dbInstance.commitAndCloseSession();
-		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private ElementPosition getSelectedPosition() {
+		TreePosition tp = curriculumTreeEl.getInsertionPosition();
+		TreeNode parentNode = tp.getParentTreeNode();
+		CurriculumElement newParent = (CurriculumElement)parentNode.getUserObject();
+		if(newParent == curriculumModel.getRootNode()) {
+			newParent = null; // root element
+		}
+		
+		CurriculumElement siblingBefore;
+		if(tp.getNode() == null) {
+			siblingBefore = null;
+		} else if(tp.getPosition() == Position.down) {
+			siblingBefore = (CurriculumElement)tp.getNode().getUserObject();
+		} else if(tp.getPosition() == Position.up) {
+			TreeNode selectedNode = tp.getNode();
+			int index = -1;
+			for(int i=tp.getParentTreeNode().getChildCount(); i-->0; ) {
+				if(selectedNode.equals(tp.getParentTreeNode().getChildAt(i))) {
+					index = i;
+					break;
+				}
+			}
+			
+			if(index == 0) {
+				siblingBefore = null;
+			} else {
+				INode nodeBefore = tp.getParentTreeNode().getChildAt(index -1);
+				siblingBefore = (CurriculumElement)((TreeNode)nodeBefore).getUserObject();
+			}
+		} else {
+			siblingBefore = null;
+		}
+		
+		return new ElementPosition(newParent, siblingBefore);
+	}
+	
+	public record ElementPosition(CurriculumElement newParent, CurriculumElement siblingBefore) {
+		//
 	}
 }

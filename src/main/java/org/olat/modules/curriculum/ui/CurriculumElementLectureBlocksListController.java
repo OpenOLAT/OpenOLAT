@@ -1,3 +1,22 @@
+/**
+ * <a href="https://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, https://www.frentix.com
+ * <p>
+ */
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
@@ -87,7 +106,7 @@ public class CurriculumElementLectureBlocksListController extends FormBasicContr
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!lectureManagementManaged /* && secCallback.canNewLectureBlock() */) { //TODO curriculum
+		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) { 
 			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
 			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
 			addLectureButton.setElementCssClass("o_sel_curriculum_add_lecture");
@@ -188,7 +207,7 @@ public class CurriculumElementLectureBlocksListController extends FormBasicContr
 	}
 	
 	private void doAddLectureBlock(UserRequest ureq) {
-		if(guardModalController(editLectureCtrl) /* || !secCallback.canNewLectureBlock()*/) return;
+		if(guardModalController(editLectureCtrl) || !secCallback.canNewLectureBlock()) return;
 		
 		CurriculumElement element = curriculumService.getCurriculumElement(curriculumElement);
 		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(element);
@@ -202,7 +221,7 @@ public class CurriculumElementLectureBlocksListController extends FormBasicContr
 	}
 	
 	private void doEditLectureBlock(UserRequest ureq) {
-		if(guardModalController(editLectureCtrl) /* || !secCallback.canNewLectureBlock()*/) return;
+		if(guardModalController(editLectureCtrl) || !secCallback.canNewLectureBlock()) return;
 		
 		CurriculumElement element = curriculumService.getCurriculumElement(curriculumElement);
 		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), element);

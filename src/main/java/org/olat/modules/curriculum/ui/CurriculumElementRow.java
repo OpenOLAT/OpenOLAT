@@ -42,8 +42,8 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	private boolean hasChildren;
 	private CurriculumElementRow parent;
 	private final Long parentKey;
-	private final CurriculumElement element;
-	private final CurriculumElementType elementType;
+	private CurriculumElement element;
+	private CurriculumElementType elementType;
 	private final long numOfResources;
 	private final long numOfParticipants;
 	private final long numOfCoaches;
@@ -93,6 +93,10 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 		return element;
 	}
 	
+	public void setCurriculumElement(CurriculumElement element) {
+		this.element = element;
+	}
+	
 	public String getIdentifier() {
 		return element.getIdentifier();
 	}
@@ -124,6 +128,10 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	
 	public CurriculumElementType getCurriculumElementType() {
 		return elementType;
+	}
+	
+	public void setCurriculumElementType(CurriculumElementType elementType) {
+		this.elementType = elementType;
 	}
 	
 	public boolean isCalendarsEnabled() {

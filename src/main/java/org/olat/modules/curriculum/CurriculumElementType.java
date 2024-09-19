@@ -73,6 +73,18 @@ public interface CurriculumElementType extends CurriculumElementTypeRef, CreateI
 	
 	public void setLearningProgress(CurriculumLearningProgress learningProgress);
 	
+	public boolean isSingleElement();
+
+	public void setSingleElement(boolean singleElement);
+
+	public int getMaxRepositoryEntryRelations();
+
+	public void setMaxRepositoryEntryRelations(int maxRepositoryEntryRelations);
+
+	public boolean isAllowedAsRootElement();
+
+	public void setAllowedAsRootElement(boolean allowedAsRootElement);
+	
 	public CurriculumElementTypeManagedFlag[] getManagedFlags();
 	
 	public void setManagedFlags(CurriculumElementTypeManagedFlag[] flags);

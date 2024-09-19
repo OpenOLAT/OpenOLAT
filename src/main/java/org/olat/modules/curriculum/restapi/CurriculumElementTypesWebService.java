@@ -46,6 +46,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
@@ -213,15 +214,39 @@ public class CurriculumElementTypesWebService {
 			elementType.setExternalId(elementTypeVo.getExternalId());
 		}
 		elementType.setCssClass(elementTypeVo.getCssClass());
-		if(StringHelper.containsNonWhitespace(elementTypeVo.getCalendars())) {
-			elementType.setCalendars(CurriculumCalendars.valueOf(elementTypeVo.getCalendars()));
-		} else {
-			elementType.setCalendars(CurriculumCalendars.disabled);
+		
+		if(elementTypeVo.getCalendars() != null) {
+			if(StringHelper.containsNonWhitespace(elementTypeVo.getCalendars())) {
+				elementType.setCalendars(CurriculumCalendars.valueOf(elementTypeVo.getCalendars()));
+			} else {
+				elementType.setCalendars(CurriculumCalendars.disabled);
+			}
 		}
-		if(StringHelper.containsNonWhitespace(elementTypeVo.getLectures())) {
-			elementType.setLectures(CurriculumLectures.valueOf(elementTypeVo.getLectures()));
-		} else {
-			elementType.setLectures(CurriculumLectures.disabled);
+		
+		if(elementTypeVo.getLectures() != null) {
+			if(StringHelper.containsNonWhitespace(elementTypeVo.getLectures())) {
+				elementType.setLectures(CurriculumLectures.valueOf(elementTypeVo.getLectures()));
+			} else {
+				elementType.setLectures(CurriculumLectures.disabled);
+			}
+		}
+		
+		if(elementTypeVo.getLearningProgress() != null) {
+			if(StringHelper.containsNonWhitespace(elementTypeVo.getLearningProgress())) {
+				elementType.setLearningProgress(CurriculumLearningProgress.valueOf(elementTypeVo.getLearningProgress()));
+			} else {
+				elementType.setLearningProgress(CurriculumLearningProgress.disabled);
+			}
+		}
+		
+		if(elementTypeVo.getSingleElement() != null) {
+			elementType.setSingleElement(elementTypeVo.getSingleElement().booleanValue());
+		}
+		if(elementTypeVo.getMaxRepositoryEntryRelations() != null) {
+			elementType.setMaxRepositoryEntryRelations(elementTypeVo.getMaxRepositoryEntryRelations().intValue());
+		}
+		if(elementTypeVo.getAllowedAsRootElement() != null) {
+			elementType.setAllowedAsRootElement(elementTypeVo.getAllowedAsRootElement().booleanValue());
 		}
 		
 		elementType.setManagedFlags(CurriculumElementTypeManagedFlag.toEnum(elementTypeVo.getManagedFlagsString()));
@@ -339,7 +364,7 @@ public class CurriculumElementTypesWebService {
 	@Operation(summary = "Remove a sub-type to a specified curriculum element type",
 		description = "Remove a sub-type to a specified curriculum element type")
 	@ApiResponse(responseCode = "200", description = "The sub type was removed successfully")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "405", description = "The curriculum element type was not found")
 	public Response disalloweSubType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey,
 			@PathParam("subTypeKey") Long subTypeKey, @Context HttpServletRequest httpRequest) {

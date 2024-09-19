@@ -55,6 +55,7 @@ import org.olat.login.LoginModule;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
@@ -90,6 +91,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 	private final boolean resourcesManaged;
 	private final CurriculumElement curriculumElement;
 	private final CurriculumSecurityCallback secCallback;
+	private final CurriculumElementType curriculumElementType;
 	
 	@Autowired
 	private LoginModule loginModule;
@@ -103,6 +105,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.secCallback = secCallback;
 		this.curriculumElement = curriculumElement;
+		this.curriculumElementType = curriculumElement.getType();
 		resourcesManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.resources);
 		
 		initForm(ureq);
@@ -136,7 +139,8 @@ public class CurriculumElementResourceListController extends FormBasicController
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-resource-list");
 				
 		// special rights for managers
-		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)) {
+		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)
+				&& (curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 0)) {
 			// 1) add
 			addResourcesButton = uifactory.addFormLink("add.resources", formLayout, Link.BUTTON);
 			addResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");		
@@ -179,6 +183,12 @@ public class CurriculumElementResourceListController extends FormBasicController
 		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
 		tableModel.setObjects(entries);
 		tableEl.reset(true, true, true);
+		
+		int maxRelations = curriculumElementType == null ? -1 : curriculumElementType.getMaxRepositoryEntryRelations();
+		if(addResourcesButton != null) {
+			boolean canAddResource = maxRelations < 0 || entries.size() < maxRelations ;
+			addResourcesButton.setEnabled(canAddResource);
+		}
 	}
 	
 	@Override

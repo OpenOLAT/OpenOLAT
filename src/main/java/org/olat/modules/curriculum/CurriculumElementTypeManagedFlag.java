@@ -43,6 +43,9 @@ public enum CurriculumElementTypeManagedFlag {
 	 calendars(all),
 	 lectures(all),
 	 learningProgress(all),
+	 composite(all),
+	 allowAsRoot(all),
+	 maxEntryRelations(all),
 	 subTypes(all),
 	 copy(all),
 	 delete(all);

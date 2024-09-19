@@ -70,6 +70,19 @@ public class CurriculumRepositoryEntryRelationDAO {
 			.getResultList();
 	}
 	
+	public long countRepositoryEntries(CurriculumElementRef element) {
+		String query = """
+				select count(distinct v.key) from repositoryentry as v
+				inner join v.groups as rel
+				inner join curriculumelement as el on (el.group.key=rel.group.key)
+				where el.key=:elementKey""";
+		
+		List<Number> count = dbInstance.getCurrentEntityManager().createQuery(query, Number.class)
+				.setParameter("elementKey", element.getKey())
+				.getResultList();
+		return count != null && !count.isEmpty() && count.get(0) != null ? count.get(0).longValue() : 0l;
+	}
+	
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumRef curriculum, List<CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status,
 			boolean onlyWithLectures, IdentityRef identity, List<String> roles) {
 		if((elements == null || elements.isEmpty()) && curriculum == null) return new ArrayList<>();

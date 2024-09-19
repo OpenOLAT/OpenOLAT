@@ -76,6 +76,7 @@ import org.olat.modules.curriculum.CurriculumElementRepositoryEntryEvent;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
@@ -120,6 +121,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.accesscontrol.ACService;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -130,7 +132,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class CurriculumServiceImpl implements CurriculumService, OrganisationDataDeletable {
+public class CurriculumServiceImpl implements CurriculumService, OrganisationDataDeletable, InitializingBean {
 	
 	private static final Logger log = Tracing.createLoggerFor(CurriculumServiceImpl.class);
 	
@@ -170,6 +172,25 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
 	@Autowired
 	private CoordinatorManager coordinator;
+	
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		List<CurriculumElementType> defaultTypes = curriculumElementTypeDao.loadByExternalId(DEFAULT_CURRICULUM_ELEMENT_TYPE);
+		if(defaultTypes == null || defaultTypes.isEmpty()) {
+			CurriculumElementType defaultType = createCurriculumElementType(DEFAULT_CURRICULUM_ELEMENT_TYPE,
+					"Default type", "", DEFAULT_CURRICULUM_ELEMENT_TYPE);
+			defaultType.setAllowedAsRootElement(true);
+			defaultType.setMaxRepositoryEntryRelations(-1);
+			defaultType.setSingleElement(false);
+			defaultType.setManagedFlags(new CurriculumElementTypeManagedFlag[] {
+					CurriculumElementTypeManagedFlag.identifier, CurriculumElementTypeManagedFlag.externalId,
+					CurriculumElementTypeManagedFlag.allowAsRoot, CurriculumElementTypeManagedFlag.composite,
+					CurriculumElementTypeManagedFlag.maxEntryRelations });
+			updateCurriculumElementType(defaultType);
+			log.info("Default curriculum element type created.");
+		}
+		dbInstance.commitAndCloseSession();
+	}
 
 	@Override
 	public Curriculum createCurriculum(String identifier, String displayName, String description, boolean lecturesEnabled, Organisation organisation) {
@@ -259,8 +280,59 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
+	public CurriculumElementType getDefaultCurriculumElementType() {
+		List<CurriculumElementType> defaultTypes = curriculumElementTypeDao.loadByExternalId(DEFAULT_CURRICULUM_ELEMENT_TYPE);
+		return defaultTypes == null || defaultTypes.isEmpty() ? null : defaultTypes.get(0);
+	}
+
+	@Override
 	public CurriculumElementType getCurriculumElementType(CurriculumElementTypeRef typeRef) {
 		return curriculumElementTypeDao.loadByKey(typeRef.getKey());
+	}
+	
+	@Override
+	public CurriculumElementType getCurriculumElementType(CurriculumElementRef element) {
+		return curriculumElementTypeDao.loadByCurriculumElement(element.getKey());
+	}
+
+	@Override
+	public List<CurriculumElementType> getAllowedCurriculumElementType(CurriculumElement parentElement, CurriculumElement element) {
+		List<CurriculumElementType> allowedTypes;
+		if(parentElement == null) {
+			allowedTypes = curriculumElementTypeDao.load().stream()
+					.filter(CurriculumElementType::isAllowedAsRootElement)
+					.collect(Collectors.toList());
+		} else {
+			allowedTypes = new ArrayList<>();
+			List<CurriculumElement> parentLine = getCurriculumElementParentLine(parentElement);
+			for(int i=parentLine.size(); i-->0; ) {
+				CurriculumElement parent = parentLine.get(i);
+				CurriculumElementType parentType = parent.getType();
+				if(parentType != null) {
+					Set<CurriculumElementTypeToType> typeToTypes = parentType.getAllowedSubTypes();
+					for(CurriculumElementTypeToType typeToType:typeToTypes) {
+						if(typeToType != null) {
+							allowedTypes.add(typeToType.getAllowedSubType());
+						}
+					}
+					break;
+				}
+			}
+		}
+		
+		if(element != null && !allowedTypes.isEmpty()) {
+			long numOfSubElements = curriculumElementDao.countChildren(element);
+			long numOfEntryRelations = curriculumRepositoryEntryRelationDao.countRepositoryEntries(element);
+			
+			for(Iterator<CurriculumElementType> typeIterator=allowedTypes.iterator(); typeIterator.hasNext(); ) {
+				CurriculumElementType type = typeIterator.next();
+				if((type.isSingleElement() && numOfSubElements > 0)
+						|| (type.getMaxRepositoryEntryRelations() >= 0 && numOfEntryRelations > type.getMaxRepositoryEntryRelations())) {
+					typeIterator.remove();
+				}
+			}
+		}
+		return allowedTypes;
 	}
 
 	@Override

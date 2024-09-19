@@ -52,6 +52,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActi
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -87,6 +88,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -111,6 +113,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CurriculumComposerController extends FormBasicController implements Activateable2, FlexiTableCssDelegate, TooledController {
+	
+	private static final String NEW_ELEMENT  = "new-element";
 	
 	private Link newElementButton;
 	private Link manageFocusedMembersLink;
@@ -321,6 +325,18 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.reset(true, true, true);
 	}
 	
+	private void reloadElement(CurriculumElement element) {
+		List<CurriculumElementRow> rows = tableModel.getAllRows();
+		for(CurriculumElementRow row:rows) {
+			CurriculumElement rowElement = row.getCurriculumElement();
+			if(rowElement.equals(element)) {
+				row.setCurriculumElement(element);
+				row.setCurriculumElementType(element.getType());
+				break;
+			}
+		}
+	}
+	
 	private CurriculumElementRow forgeRow(CurriculumElementInfos element) {
 		FormLink toolsLink = null;
 		boolean tooled = secCallback.canEditCurriculumTree() || secCallback.canEditCurriculumElement(element.getCurriculumElement());
@@ -472,6 +488,10 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(!toolbarPanel.isToolbarEnabled()) {
 				toolbarPanel.setToolbarEnabled(true);
 			}
+			if(event instanceof PopEvent pe
+					&& pe.getController() instanceof EditCurriculumElementOverviewController elementCtrl) {
+				reloadElement(elementCtrl.getCurriculumElement());
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -560,25 +580,29 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doNewCurriculumElement(UserRequest ureq) {
 		if(guardModalController(newElementCtrl)) return;
 
-		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), null, curriculum, secCallback);
+		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), null,
+				(CurriculumElementType)null, curriculum, secCallback);
 		listenTo(newElementCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), newElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				newElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
-	private void doNewSubCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
+	private void doNewSubCurriculumElement(UserRequest ureq, CurriculumElementRow row, CurriculumElementType type) {
 		CurriculumElement parentElement = curriculumService.getCurriculumElement(row);
 		if(parentElement == null) {
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
 		} else {
-			newSubElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), parentElement, curriculum, secCallback);
+			newSubElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), parentElement,
+					type, curriculum, secCallback);
 			newSubElementCtrl.setParentElement(parentElement);
 			listenTo(newSubElementCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), newSubElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					newSubElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -829,7 +853,7 @@ public class CurriculumComposerController extends FormBasicController implements
 					moveLink = addLink("move.element", "o_icon_move", links);
 				}
 				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
-					newLink = addLink("add.element.under", "o_icon_levels", links);
+					addNewElementLinks(element, links);
 				}
 				copyLink = addLink("copy.element", "o_icon_copy", links);
 			}
@@ -853,6 +877,26 @@ public class CurriculumComposerController extends FormBasicController implements
 			putInitialPanel(mainVC);
 		}
 		
+		private void addNewElementLinks(CurriculumElement parentElement, List<String> links) {
+			CurriculumElementType parentType = parentElement.getType();
+			if(parentType != null && parentType.isSingleElement()) return;
+			
+			List<CurriculumElementType> types = curriculumService.getAllowedCurriculumElementType(parentElement, null);
+			if(types.isEmpty()) {
+				newLink = addLink("add.element.under", "o_icon_levels", links);
+			} else {
+				for(CurriculumElementType type:types) {
+					String name = "new_el_" + type.getKey();
+					String label = translate("add.element.with.type.under", StringHelper.escapeHtml(type.getDisplayName()));
+					Link link = LinkFactory.createLink(name, name, NEW_ELEMENT, label, getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+					link.setIconLeftCSS("o_icon o_icon-fw o_icon_levels");
+					link.setUserObject(type);
+					mainVC.put(name, link);
+					links.add(name);
+				}
+			}
+		}
+		
 		private Link addLink(String name, String iconCss, List<String> links) {
 			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.LINK);
 			mainVC.put(name, link);
@@ -874,7 +918,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				doConfirmDelete(ureq, row);
 			} else if(newLink == source) {
 				close();
-				doNewSubCurriculumElement(ureq, row);
+				doNewSubCurriculumElement(ureq, row, null);
 			} else if(copyLink == source) {
 				close();
 				doCopyCurriculumElement(ureq, row);
@@ -884,6 +928,11 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(manageMembersLink == source) {
 				close();
 				doManageMembers(ureq, row);
+			} else if(source instanceof Link link
+					&& NEW_ELEMENT.equals(link.getCommand())
+					&& link.getUserObject() instanceof CurriculumElementType type) {
+				close();
+				doNewSubCurriculumElement(ureq, row, type);
 			}
 		}
 		

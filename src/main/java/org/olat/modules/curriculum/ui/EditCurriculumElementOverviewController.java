@@ -26,6 +26,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -75,6 +76,10 @@ public class EditCurriculumElementOverviewController extends BasicController imp
 		putInitialPanel(mainVC);
 	}
 	
+	public CurriculumElement getCurriculumElement() {
+		return element;
+	}
+	
 	private void initTabPane(UserRequest ureq) {
 		tabPane.addTab(ureq, translate("tab.resources"), uureq -> {
 			resourcesCtrl = new CurriculumElementResourceListController(uureq, getWindowControl(), element, secCallback);
@@ -99,6 +104,14 @@ public class EditCurriculumElementOverviewController extends BasicController imp
 	protected void event(UserRequest ureq, Component source, Event event) {
 		 if (source == tabPane && event instanceof TabbedPaneChangedEvent) {
 			 tabPane.addToHistory(ureq, getWindowControl());
+		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(metadataCtrl == source) {
+			element = metadataCtrl.getCurriculumElement();
+			fireEvent(ureq, event);
 		}
 	}
 }

@@ -158,6 +158,11 @@ public class CurriculumSecurityCallbackFactory {
 		public boolean canViewAllCalendars() {
 			return admin;
 		}
+		
+		@Override
+		public boolean canNewLectureBlock() {
+			return admin;
+		}
 
 		@Override
 		public boolean canViewAllLectures() {

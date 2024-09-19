@@ -3919,6 +3919,9 @@ create table o_cur_element_type (
   c_calendars varchar(16),
   c_lectures varchar(16),
   c_learning_progress varchar(16),
+  c_single_element number default 0 not null,
+  c_max_repo_entries number(20) default -1 not null,
+  c_allow_as_root number default 1 not null,
   c_css_class varchar(64),
   primary key (id)
 );

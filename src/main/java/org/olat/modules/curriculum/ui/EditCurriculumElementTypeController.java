@@ -28,9 +28,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,16 +55,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditCurriculumElementTypeController extends FormBasicController {
 	
-	private static final String[] onKeys = new String[] { "on" };
+	private static final String LECTURES = "lectures";
+	private static final String CALENDAR = "calendar";
+	private static final String LEARNING_PROGRESS = "learningprogress";
+	private static final String COMPOSITE = "composite";
+	private static final String ROOT = "root";
 	
 	private TextElement cssClassEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
 	private RichTextElement descriptionEl;
 	private MultipleSelectionElement allowedSubTypesEl;
-	private MultipleSelectionElement lecturesEnabledEl;
-	private MultipleSelectionElement calendarsEnabledEl;
-	private MultipleSelectionElement learningProgressEnabledEl;
+	private MultipleSelectionElement featuresEnabledEl;
+	private MultipleSelectionElement compositeTypeEl;
+	private MultipleSelectionElement allowedAsRootEl;
+	private SingleSelection maxRepositoryEntryRelationsEl;
 	
 	private CurriculumElementType curriculumElementType;
 	
@@ -99,34 +106,61 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				formLayout,  getWindowControl());
 		descriptionEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.description));
 
-		String[] onValues = new String[] { translate("type.calendars.enabled.on") };
-		calendarsEnabledEl = uifactory.addCheckboxesHorizontal("type.calendars.enabled", formLayout, onKeys, onValues);
-		calendarsEnabledEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.calendars));
-		CurriculumCalendars calendarsEnabled =  curriculumElementType == null ? null : curriculumElementType.getCalendars();
-		calendarsEnabledEl.select(onKeys[0], calendarsEnabled == CurriculumCalendars.enabled);
-		
-		String[] onLecturesValues = new String[] { translate("type.lectures.enabled.on") };
-		lecturesEnabledEl = uifactory.addCheckboxesHorizontal("type.lectures.enabled", formLayout, onKeys, onLecturesValues);
-		lecturesEnabledEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.lectures));
+		SelectionValues featuresPK = new SelectionValues();
+		featuresPK.add(SelectionValues.entry(LECTURES, translate("type.lectures.enabled"), null, null, null,
+				!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.lectures)));
+		featuresPK.add(SelectionValues.entry(CALENDAR, translate("type.calendars.enabled"), null, null, null,
+				!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.calendars)));
+		featuresPK.add(SelectionValues.entry(LEARNING_PROGRESS, translate("type.learning.progress.enabled"), null, null, null,
+				!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.learningProgress)));
+
+		featuresEnabledEl = uifactory.addCheckboxesVertical("type.features.enabled", formLayout, featuresPK.keys(), featuresPK.values(), 2);
+		featuresEnabledEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.calendars));
 		CurriculumLectures lecturesEnabled =  curriculumElementType == null ? null : curriculumElementType.getLectures();
-		lecturesEnabledEl.select(onKeys[0], lecturesEnabled == CurriculumLectures.enabled);
-		
-		String[] onLearningProgressValues = new String[] { translate("type.learning.progress.enabled.on") };
-		learningProgressEnabledEl = uifactory.addCheckboxesHorizontal("type.learning.progress.enabled", formLayout, onKeys, onLearningProgressValues);
-		learningProgressEnabledEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.learningProgress));
+		featuresEnabledEl.select(LECTURES, lecturesEnabled == CurriculumLectures.enabled);
+		CurriculumCalendars calendarsEnabled =  curriculumElementType == null ? null : curriculumElementType.getCalendars();
+		featuresEnabledEl.select(CALENDAR, calendarsEnabled == CurriculumCalendars.enabled);
 		CurriculumLearningProgress learningProgressEnabled =  curriculumElementType == null ? null : curriculumElementType.getLearningProgress();
-		learningProgressEnabledEl.select(onKeys[0], learningProgressEnabled == CurriculumLearningProgress.enabled);
+		featuresEnabledEl.select(LEARNING_PROGRESS, learningProgressEnabled == CurriculumLearningProgress.enabled);
+		
+		// Max course references
+		SelectionValues maxRelationsPK = new SelectionValues();
+		maxRelationsPK.add(SelectionValues.entry("-1", translate("unlimited")));
+		maxRelationsPK.add(SelectionValues.entry("0", "0"));
+		maxRelationsPK.add(SelectionValues.entry("1", "1"));
+		maxRepositoryEntryRelationsEl = uifactory.addDropdownSingleselect("type.max.repository.entry.relations", formLayout,
+				maxRelationsPK.keys(), maxRelationsPK.values());
+		maxRepositoryEntryRelationsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.maxEntryRelations));
+		int maxRelations = curriculumElementType == null ? -1 : curriculumElementType.getMaxRepositoryEntryRelations();
+		String maxRelationsKey = Integer.toString(maxRelations);
+		if(maxRelationsPK.containsKey(maxRelationsKey)) {
+			maxRepositoryEntryRelationsEl.select(maxRelationsKey, true);
+		} else {
+			maxRepositoryEntryRelationsEl.select("-1", true);
+		}
+		
+		// Composite type : can contain multiple sub-elements
+		SelectionValues compositePK = new SelectionValues();
+		compositePK.add(SelectionValues.entry(COMPOSITE, translate("type.composite.multiple")));
+		compositeTypeEl = uifactory.addCheckboxesHorizontal("type.composite", formLayout, compositePK.keys(), compositePK.values());
+		compositeTypeEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.composite));
+		boolean singleElement = curriculumElementType == null ? false : curriculumElementType.isSingleElement();
+		compositeTypeEl.select(COMPOSITE, !singleElement);
+		
+		SelectionValues rootPK = new SelectionValues();
+		rootPK.add(SelectionValues.entry(ROOT, translate("type.allow.as.root.value")));
+		allowedAsRootEl = uifactory.addCheckboxesHorizontal("type.allow.as.root", formLayout, rootPK.keys(), rootPK.values());
+		allowedAsRootEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.allowAsRoot));
+		boolean allowAsRoot = curriculumElementType == null ? true : curriculumElementType.isAllowedAsRootElement();
+		allowedAsRootEl.select(ROOT, allowAsRoot);
 		
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
 		types.remove(curriculumElementType);
-		
-		String[] subTypeKeys = new String[types.size()];
-		String[] subTypeValues = new String[types.size()];
-		for(int i=types.size(); i-->0; ) {
-			subTypeKeys[i] = types.get(i).getKey().toString();
-			subTypeValues[i] = types.get(i).getDisplayName();
+		SelectionValues subTypePK = new SelectionValues();
+		for(CurriculumElementType type:types) {
+			subTypePK.add(SelectionValues.entry(type.getKey().toString(), StringHelper.escapeHtml(type.getDisplayName())));
 		}
-		allowedSubTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", formLayout, subTypeKeys, subTypeValues, 2);
+		allowedSubTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", formLayout, subTypePK.keys(), subTypePK.values(), 2);
 		allowedSubTypesEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.subTypes));
 		if(curriculumElementType != null) {
 			Set<CurriculumElementTypeToType> typeToTypes = curriculumElementType.getAllowedSubTypes();
@@ -138,8 +172,8 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
 	@Override
@@ -173,20 +207,27 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			curriculumElementType.setDescription(descriptionEl.getValue());
 		}
 		curriculumElementType.setCssClass(cssClassEl.getValue());
-		if(calendarsEnabledEl.isAtLeastSelected(1)) {
+		Collection<String> selectedFeatures = featuresEnabledEl.getSelectedKeys();
+		if(selectedFeatures.contains(CALENDAR)) {
 			curriculumElementType.setCalendars(CurriculumCalendars.enabled);
 		} else {
 			curriculumElementType.setCalendars(CurriculumCalendars.disabled);
 		}
-		if(lecturesEnabledEl.isAtLeastSelected(1)) {
+		if(selectedFeatures.contains(LECTURES)) {
 			curriculumElementType.setLectures(CurriculumLectures.enabled);
 		} else {
 			curriculumElementType.setLectures(CurriculumLectures.disabled);
 		}
-		if(learningProgressEnabledEl.isAtLeastSelected(1)) {
+		if(selectedFeatures.contains(LEARNING_PROGRESS)) {
 			curriculumElementType.setLearningProgress(CurriculumLearningProgress.enabled);
 		} else {
 			curriculumElementType.setLearningProgress(CurriculumLearningProgress.disabled);
+		}
+		
+		curriculumElementType.setSingleElement(!compositeTypeEl.isAtLeastSelected(1));
+		curriculumElementType.setAllowedAsRootElement(allowedAsRootEl.isAtLeastSelected(1));
+		if(maxRepositoryEntryRelationsEl.isOneSelected()) {
+			curriculumElementType.setMaxRepositoryEntryRelations(Integer.parseInt(maxRepositoryEntryRelationsEl.getSelectedKey()));
 		}
 
 		Collection<String> selectedAllowedSubTypeKeys = allowedSubTypesEl.getSelectedKeys();

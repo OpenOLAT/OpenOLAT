@@ -55,6 +55,8 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public interface CurriculumService {
 	
+	public static final String DEFAULT_CURRICULUM_ELEMENT_TYPE = "default-curriculum-element-type";
+	
 	/**
 	 * Create and persist a curriculum.
 	 * 
@@ -180,6 +182,8 @@ public interface CurriculumService {
 	 */
 	public List<CurriculumElementType> getCurriculumElementTypes();
 	
+	public CurriculumElementType getDefaultCurriculumElementType();
+	
 	/**
 	 * Load the curriculum element type with the specified primary key.
 	 * 
@@ -187,6 +191,16 @@ public interface CurriculumService {
 	 * @return A curriculum element type
 	 */
 	public CurriculumElementType getCurriculumElementType(CurriculumElementTypeRef typeRef);
+	
+	public CurriculumElementType getCurriculumElementType(CurriculumElementRef element);
+	
+	/**
+	 * 
+	 * @param parentElement The parent of the element (can be null if root)
+	 * @param element The element (can be null for new one)
+	 * @return A list of possible types
+	 */
+	public List<CurriculumElementType> getAllowedCurriculumElementType(CurriculumElement parentElement, CurriculumElement element);
 	
 	public CurriculumElementType createCurriculumElementType(String identifier, String displayName, String description, String externalId);
 

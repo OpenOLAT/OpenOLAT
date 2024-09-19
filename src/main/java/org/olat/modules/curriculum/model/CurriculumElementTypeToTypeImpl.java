@@ -94,8 +94,7 @@ public class CurriculumElementTypeToTypeImpl implements Persistable, CurriculumE
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumElementTypeToTypeImpl) {
-			CurriculumElementTypeToTypeImpl type2type = (CurriculumElementTypeToTypeImpl)obj;
+		if(obj instanceof CurriculumElementTypeToTypeImpl type2type) {
 			return getKey() != null && getKey().equals(type2type.getKey());
 		}
 		return false	;

@@ -150,5 +150,21 @@ public class CurriculumVO {
 	public void setOrganisationKey(Long organisationKey) {
 		this.organisationKey = organisationKey;
 	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 26169661 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof CurriculumVO curriculum) {
+			return getKey() != null && getKey().equals(curriculum.getKey());
+		}
+		return false;
+	}
 
 }

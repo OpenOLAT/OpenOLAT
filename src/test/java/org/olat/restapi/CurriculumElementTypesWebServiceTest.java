@@ -45,9 +45,12 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.restapi.CurriculumElementTypeVO;
@@ -226,6 +229,12 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 		vo.setExternalId("REST6b");
 		vo.setIdentifier("REST-ID-6b");
 		vo.setManagedFlagsString("identifier");
+		vo.setLectures(CurriculumLectures.enabled.name());
+		vo.setCalendars(CurriculumCalendars.enabled.name());
+		vo.setLearningProgress(CurriculumLearningProgress.enabled.name());
+		vo.setAllowedAsRootElement(Boolean.TRUE);
+		vo.setSingleElement(Boolean.TRUE);
+		vo.setMaxRepositoryEntryRelations(Integer.valueOf(1));
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path("types").path(type.getKey().toString()).build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
@@ -253,6 +262,12 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(savedElementType.getManagedFlags());
 		Assert.assertEquals(1, savedElementType.getManagedFlags().length);
 		Assert.assertEquals(CurriculumElementTypeManagedFlag.identifier, savedElementType.getManagedFlags()[0]);
+		Assert.assertEquals(CurriculumLectures.enabled, savedElementType.getLectures());
+		Assert.assertEquals(CurriculumLearningProgress.enabled, savedElementType.getLearningProgress());
+		Assert.assertEquals(CurriculumCalendars.enabled, savedElementType.getCalendars());
+		Assert.assertEquals(1, savedElementType.getMaxRepositoryEntryRelations());
+		Assert.assertTrue(savedElementType.isAllowedAsRootElement());
+		Assert.assertTrue(savedElementType.isSingleElement());
 	}
 
 	@Test

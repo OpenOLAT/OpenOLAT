@@ -21,8 +21,10 @@ package org.olat.modules.curriculum.manager;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -64,6 +66,12 @@ public class CurriculumElementTypeDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasType() {
+		boolean hasCurriculumElementTypes = curriculumElementTypeDao.hasType();
+		Assert.assertTrue(hasCurriculumElementTypes);
+	}
+	
+	@Test
 	public void loadByKey() {
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("cur-el-2", "2. Element", "Second element", "AC-235");
 		Assert.assertNotNull(type);
@@ -81,6 +89,20 @@ public class CurriculumElementTypeDAOTest extends OlatTestCase {
 		Assert.assertEquals("2. Element", reloadedType.getDisplayName());
 		Assert.assertEquals("Second element", reloadedType.getDescription());
 		Assert.assertEquals("AC-235", reloadedType.getExternalId());
+	}
+	
+	@Test
+	public void loadByExternalId() {
+		String externalId = UUID.randomUUID().toString();
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("cur-el-2", "2. Element", "Second element", externalId);
+		Assert.assertNotNull(type);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElementType> types = curriculumElementTypeDao.loadByExternalId(externalId);
+		Assertions.assertThat(types)
+			.isNotNull()
+			.hasSize(1)
+			.containsExactly(type);
 	}
 	
 	@Test

@@ -70,6 +70,8 @@ import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Objects;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -252,23 +254,26 @@ public class CurriculumElementsWebService {
 		if(curriculumElement.getCurriculumElementTypeKey() != null) {
 			type = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElement.getCurriculumElementTypeKey()));
 		}
+		
 		CurriculumElement parentElement = null;
 		if(curriculumElement.getParentElementKey() != null) {
 			parentElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElement.getParentElementKey()));
 			checkCurriculum(parentElement);
 			if(curriculumElement.getParentElementKey().equals(curriculumElement.getKey())) {
-				throw new WebApplicationException(Status.CONFLICT);
+				throw new WebApplicationException("Parent element is self", Status.CONFLICT);
 			}
 		}
 		
 		boolean move = false;
 		boolean moveAsCurriculumRoot = false;
 		if(curriculumElement.getKey() == null) {
+			type = checkCurriculumElementType(type, parentElement, curriculumElement, null);
 			elementToSave = curriculumService.createCurriculumElement(curriculumElement.getIdentifier(),
 					curriculumElement.getDisplayName(), null, curriculumElement.getBeginDate(),
 					curriculumElement.getEndDate(), parentElement, type, null, null, null, curriculum);
 		} else {
 			elementToSave = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElement.getKey()));
+			type = checkCurriculumElementType(type, parentElement, curriculumElement, elementToSave);
 			elementToSave.setDisplayName(curriculumElement.getDisplayName());
 			elementToSave.setIdentifier(curriculumElement.getIdentifier());
 			elementToSave.setBeginDate(curriculumElement.getBeginDate());
@@ -309,9 +314,29 @@ public class CurriculumElementsWebService {
 		return savedElement;
 	}
 	
+	private CurriculumElementType checkCurriculumElementType(CurriculumElementType type,
+			CurriculumElement parentElement, CurriculumElementVO elementVo, CurriculumElement element) {
+		if(type == null) {
+			type = curriculumService.getDefaultCurriculumElementType();
+		} else if(elementVo.getKey() == null) {
+			List<CurriculumElementType> allowedTypes = curriculumService.getAllowedCurriculumElementType(parentElement, null);
+			if(!allowedTypes.contains(type)) {
+				throw new WebApplicationException("Forbidden curriculum element type", Response.serverError().status(Status.CONFLICT).build());
+			}
+		} else if(Objects.equal(type, element.getType())) {
+			// Do nothing, nothing changes
+		} else {
+			List<CurriculumElementType> allowedTypes = curriculumService.getAllowedCurriculumElementType(parentElement, element);
+			if(!allowedTypes.contains(type)) {
+				throw new WebApplicationException("Forbidden curriculum element type", Response.serverError().status(Status.CONFLICT).build());
+			}
+		}
+		return type;
+	}
+	
 	private void checkCurriculum(CurriculumElement element) {
 		if(element.getCurriculum() != null && !element.getCurriculum().getKey().equals(curriculum.getKey())) {
-			throw new WebApplicationException(Response.serverError().status(Status.CONFLICT).build());
+			throw new WebApplicationException("Inconsistent curriculum", Response.serverError().status(Status.CONFLICT).build());
 		}
 	}
 	

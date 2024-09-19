@@ -87,6 +87,7 @@ public class CurriculumElementToTaxonomyLevelImpl implements CurriculumElementTo
 		this.creationDate = creationDate;
 	}
 
+	@Override
 	public CurriculumElement getCurriculumElement() {
 		return curriculumElement;
 	}
@@ -95,6 +96,7 @@ public class CurriculumElementToTaxonomyLevelImpl implements CurriculumElementTo
 		this.curriculumElement = curriculumElement;
 	}
 
+	@Override
 	public TaxonomyLevel getTaxonomyLevel() {
 		return taxonomyLevel;
 	}
@@ -113,8 +115,7 @@ public class CurriculumElementToTaxonomyLevelImpl implements CurriculumElementTo
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumElementToTaxonomyLevelImpl) {
-			CurriculumElementToTaxonomyLevelImpl rel = (CurriculumElementToTaxonomyLevelImpl)obj;
+		if(obj instanceof CurriculumElementToTaxonomyLevelImpl rel) {
 			return getKey() != null && getKey().equals(rel.getKey());
 		}
 		return false;

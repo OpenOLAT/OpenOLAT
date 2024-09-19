@@ -117,8 +117,7 @@ public class CurriculumTreeModel extends GenericTreeModel implements InsertionTr
 	
 	@Override
 	public boolean isSource(TreeNode node) {
-		if(node instanceof GenericTreeNode) {
-			GenericTreeNode gNode = (GenericTreeNode)node;
+		if(node instanceof GenericTreeNode gNode) {
 			return gNode.getUserObject() instanceof CurriculumElement && sources.contains(gNode.getUserObject());
 		}
 		return false;
@@ -126,9 +125,17 @@ public class CurriculumTreeModel extends GenericTreeModel implements InsertionTr
 	
 	public boolean isInParentLine(TreeNode node) {
 		for(INode iteratorNode=node; node.getParent() != null && iteratorNode != null; iteratorNode=iteratorNode.getParent()) {
-			if(iteratorNode instanceof TreeNode && isSource((TreeNode)iteratorNode)) {
+			if(iteratorNode instanceof TreeNode treeNode && isSource(treeNode)) {
 				return true;
 			}
+		}
+		return false;
+	}
+	
+	public boolean isSingleElement(TreeNode node) {
+		if(node instanceof GenericTreeNode gNode) {
+			return gNode.getUserObject() instanceof CurriculumElement element
+					&& element.getType() != null && element.getType().isSingleElement();
 		}
 		return false;
 	}
@@ -142,7 +149,7 @@ public class CurriculumTreeModel extends GenericTreeModel implements InsertionTr
 			positions = new Position[] { Position.under };
 		} else if(isInParentLine(node)) {
 			positions = new Position[0];
-		} else if(node.getIconCssClass() != null && node.getIconCssClass().contains("o_icon_node_up_down")) {
+		} else if(isSingleElement(node) || (node.getIconCssClass() != null && node.getIconCssClass().contains("o_icon_node_up_down"))) {
 			positions = new Position[] { Position.up, Position.down };
 		} else {
 			positions = new Position[] { Position.up, Position.down, Position.under };

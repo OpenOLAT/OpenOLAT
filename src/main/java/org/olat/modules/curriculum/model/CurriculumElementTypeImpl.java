@@ -89,6 +89,13 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	private String lecturesEnabledString;
 	@Column(name="c_learning_progress", nullable=true, insertable=true, updatable=true)
 	private String learningProgressEnabledString;
+
+	@Column(name="c_single_element", nullable=true, insertable=true, updatable=true)
+	private boolean singleElement;
+	@Column(name="c_max_repo_entries", nullable=true, insertable=true, updatable=true)
+	private int maxRepositoryEntryRelations;
+	@Column(name="c_allow_as_root", nullable=true, insertable=true, updatable=true)
+	private boolean allowedAsRootElement;
 	
 	@OneToMany(targetEntity=CurriculumElementTypeToTypeImpl.class, fetch=FetchType.LAZY,
 			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
@@ -242,6 +249,36 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 		}
 	}
 
+	@Override
+	public boolean isSingleElement() {
+		return singleElement;
+	}
+
+	@Override
+	public void setSingleElement(boolean singleElement) {
+		this.singleElement = singleElement;
+	}
+
+	@Override
+	public int getMaxRepositoryEntryRelations() {
+		return maxRepositoryEntryRelations;
+	}
+
+	@Override
+	public void setMaxRepositoryEntryRelations(int maxRepositoryEntryRelations) {
+		this.maxRepositoryEntryRelations = maxRepositoryEntryRelations;
+	}
+
+	@Override
+	public boolean isAllowedAsRootElement() {
+		return allowedAsRootElement;
+	}
+
+	@Override
+	public void setAllowedAsRootElement(boolean allowedAsRootElement) {
+		this.allowedAsRootElement = allowedAsRootElement;
+	}
+
 	public String getManagedFlagsString() {
 		return managedFlagsString;
 	}
@@ -271,7 +308,7 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 
 	@Override
 	public int hashCode() {
-		return key == null ? 26169661 : key.hashCode();
+		return getKey() == null ? 26169661 : getKey().hashCode();
 	}
 
 	@Override
@@ -279,8 +316,7 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof CurriculumElementTypeImpl) {
-			CurriculumElementTypeImpl type = (CurriculumElementTypeImpl)obj;
+		if(obj instanceof CurriculumElementTypeImpl type) {
 			return getKey() != null && getKey().equals(type.getKey());
 		}
 		return false;

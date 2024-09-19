@@ -51,6 +51,9 @@ public class CurriculumElementTypeDAO {
 		type.setDescription(description);
 		type.setExternalId(externalId);
 		type.setAllowedSubTypes(new HashSet<>());
+		type.setSingleElement(false);
+		type.setMaxRepositoryEntryRelations(-1);
+		type.setAllowedAsRootElement(true);
 		dbInstance.getCurrentEntityManager().persist(type);
 		return type;
 	}
@@ -65,6 +68,9 @@ public class CurriculumElementTypeDAO {
 		clone.setDisplayName(reloadedType.getDisplayName());
 		clone.setDescription(reloadedType.getDescription());
 		clone.setCssClass(reloadedType.getCssClass());
+		clone.setSingleElement(reloadedType.isSingleElement());
+		clone.setMaxRepositoryEntryRelations(reloadedType.getMaxRepositoryEntryRelations());
+		clone.setAllowedAsRootElement(reloadedType.isAllowedAsRootElement());
 		dbInstance.getCurrentEntityManager().persist(clone);
 		return clone;
 	}
@@ -77,11 +83,48 @@ public class CurriculumElementTypeDAO {
 		return types == null || types.isEmpty() ? null : types.get(0);
 	}
 	
+	public CurriculumElementType loadByCurriculumElement(Long elementKey) {
+		String query = """
+				select type from curriculumelement element
+				inner join element.type as type
+				where element.key=:elementKey""";
+		
+		List<CurriculumElementType> types = dbInstance.getCurrentEntityManager()
+				.createQuery(query, CurriculumElementType.class)
+				.setParameter("elementKey", elementKey)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return types == null || types.isEmpty() ? null : types.get(0);
+	}
+	
+	public List<CurriculumElementType> loadByExternalId(String externalId) {
+		String query = """
+				select type from curriculumelementtype type
+				where type.externalId=:externalId
+				order by type.externalId, type.key""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, CurriculumElementType.class)
+				.setParameter("externalId", externalId)
+				.getResultList();
+	}
+	
 	public boolean hasElements(CurriculumElementTypeRef typeRef) {
 		String query = "select el.key from curriculumelement el where el.type.key=:typeKey";
 		List<Long> types = dbInstance.getCurrentEntityManager()
 				.createQuery(query, Long.class)
 				.setParameter("typeKey", typeRef.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return types != null && !types.isEmpty() && types.get(0) != null && types.get(0).longValue() > 0;
+	}
+	
+	public boolean hasType() {
+		String query = "select el.key from curriculumelementtype el";
+		List<Long> types = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
