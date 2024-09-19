@@ -49,15 +49,20 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +80,8 @@ public class ContextualSubscriptionListController extends FormBasicController im
 
 	// default filter value, last seven days
 	private Date selectedFilterDate = DateUtils.addDays(new Date(), -7);
+	private Map<Subscriber, SubscriptionInfo> subsInfoMap;
 
-	private FormLink personalNotificationsAreaLink;
 	private FormToggle subscribeToggle;
 	private Subscriber subscriber;
 	private final SubscriptionContext subscriptionContext;
@@ -84,6 +89,8 @@ public class ContextualSubscriptionListController extends FormBasicController im
 
 	private FlexiTableElement tableEl;
 	private ContextualSubscriptionListDataModel dataModel;
+
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 
 	@Autowired
 	private NotificationsManager notificationsManager;
@@ -98,7 +105,6 @@ public class ContextualSubscriptionListController extends FormBasicController im
 		this.publisherData = publisherData;
 
 		initForm(ureq);
-		loadModel();
 	}
 
 	@Override
@@ -107,16 +113,14 @@ public class ContextualSubscriptionListController extends FormBasicController im
 		subscribeToggle.addActionListener(FormEvent.ONCHANGE);
 		flc.put("toggle", subscribeToggle.getComponent());
 
-		if (subscriber == null || !subscriber.isEnabled()) {
-			subscribeToggle.toggleOff();
-		} else {
-			subscribeToggle.toggleOn();
-		}
-
 		HelpLinkSPI provider = helpModule.getManualProvider();
 		Component helpPageLink = provider.getHelpPageLink(ureq, translate("help"), translate("command.subscribe"),
 				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/personal_menu/Personal_Tools/#subscriptions");
 		flc.put("helpLink", helpPageLink);
+
+		FormLink toolsLink = uifactory.addFormLink("tools_Link", "tools", "", null, flc, Link.NONTRANSLATED);
+		toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions o_icon-fws");
+		flc.put("toolsLink", toolsLink.getComponent());
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ContextualSubscriptionListCols.description));
@@ -142,22 +146,21 @@ public class ContextualSubscriptionListController extends FormBasicController im
 
 		flc.put("table", tableEl.getComponent());
 
-		personalNotificationsAreaLink = uifactory.addFormLink("personal.notifications", flc, Link.LINK);
-		String businessPath = "[HomeSite:" + getIdentity().getKey() + "][notifications:0]";
-		String urlFromBusinessPathString = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
-		if (urlFromBusinessPathString != null) {
-			personalNotificationsAreaLink.setUrl(urlFromBusinessPathString);
+		if (subscriber == null || !subscriber.isEnabled()) {
+			subscribeToggle.toggleOff();
+		} else {
+			subscribeToggle.toggleOn();
+			loadModel();
+			toggleFilterTabs(ureq);
 		}
-
-		initFilterTabs(ureq);
+		initEmptyTableSettings();
 	}
 
 	private void loadModel() {
 		subscriber = notificationsManager.getSubscriber(getIdentity(), subscriptionContext);
 
 		if (subscriber != null) {
-			Map<Subscriber, SubscriptionInfo> subsInfoMap = NotificationHelper.getSubscriptionMap(getLocale(), true,
-					selectedFilterDate, Collections.singletonList(subscriber));
+			subsInfoMap = initSubsInfoMap(selectedFilterDate);
 
 			List<ContextualSubscriptionListRow> rows = new ArrayList<>();
 			if (subsInfoMap.get(subscriber) != null && subscriber.isEnabled()) {
@@ -174,6 +177,27 @@ public class ContextualSubscriptionListController extends FormBasicController im
 			dataModel.setObjects(rows);
 		}
 		tableEl.reset(false, true, true);
+	}
+
+	private void initEmptyTableSettings() {
+		if (!subscribeToggle.isOn()) {
+			tableEl.setEmptyTableSettings("subs.list.empty.message", null,
+					"o_icon_notification", "command.subscribe",
+					"o_icon-bell", false);
+		} else {
+			tableEl.setEmptyTableSettings("subs.list.empty.message", null, "o_icon_notification");
+		}
+	}
+
+	private Map<Subscriber, SubscriptionInfo> initSubsInfoMap(Date compareDate) {
+		return NotificationHelper.getSubscriptionMap(getLocale(), true,
+				compareDate, Collections.singletonList(subscriber));
+	}
+
+	private boolean isSubSInfoMapEmpty() {
+		if (initSubsInfoMap(DateUtils.addWeeks(new Date(), -4)).isEmpty()) {
+			return true;
+		} else return initSubsInfoMap(DateUtils.addMonth(new Date(), -6)).isEmpty();
 	}
 
 	private void initFilterTabs(UserRequest ureq) {
@@ -209,6 +233,14 @@ public class ContextualSubscriptionListController extends FormBasicController im
 		//
 	}
 
+	private void toggleFilterTabs(UserRequest ureq) {
+		if (dataModel != null && !isSubSInfoMapEmpty() && subscribeToggle.isOn()) {
+			initFilterTabs(ureq);
+		} else {
+			tableEl.setFilterTabs(true, Collections.emptyList());
+		}
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == subscribeToggle) {
@@ -216,27 +248,92 @@ public class ContextualSubscriptionListController extends FormBasicController im
 				notificationsManager.subscribe(getIdentity(), subscriptionContext, publisherData);
 			} else {
 				notificationsManager.unsubscribe(getIdentity(), subscriptionContext);
+				dataModel.setObjects(Collections.emptyList());
 			}
 			loadModel();
+			toggleFilterTabs(ureq);
+			initEmptyTableSettings();
 			fireEvent(ureq, event);
-		} else if (source == tableEl && event instanceof FlexiTableFilterTabEvent selectedFilter) {
-			if (selectedFilter.getTab().getId().equals(TAB_SEVEN_DAY)) {
-				selectedFilterDate = DateUtils.addDays(new Date(), -7);
-			} else if (selectedFilter.getTab().getId().equals(TAB_FOUR_WEEKS)) {
-				selectedFilterDate = DateUtils.addWeeks(new Date(), -4);
-			} else if (selectedFilter.getTab().getId().equals(TAB_SIX_MONTHS)) {
-				selectedFilterDate = DateUtils.addMonth(new Date(), -6);
+		} else if (source == tableEl) {
+			if (event instanceof FlexiTableFilterTabEvent selectedFilter) {
+				if (selectedFilter.getTab().getId().equals(TAB_SEVEN_DAY)) {
+					selectedFilterDate = DateUtils.addDays(new Date(), -7);
+				} else if (selectedFilter.getTab().getId().equals(TAB_FOUR_WEEKS)) {
+					selectedFilterDate = DateUtils.addWeeks(new Date(), -4);
+				} else if (selectedFilter.getTab().getId().equals(TAB_SIX_MONTHS)) {
+					selectedFilterDate = DateUtils.addMonth(new Date(), -6);
+				}
+				loadModel();
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				subscribeToggle.toggleOn();
+				notificationsManager.subscribe(getIdentity(), subscriptionContext, publisherData);
+				toggleFilterTabs(ureq);
+				initEmptyTableSettings();
+				fireEvent(ureq, event);
 			}
-			loadModel();
-		} else if (source == personalNotificationsAreaLink) {
-			String businessPath = "[HomeSite:" + getIdentity().getKey() + "][notifications:0]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-			fireEvent(ureq, event);
+		} else if (source instanceof FormLink link) {
+			if (link.getCmd().equals("tools")) {
+				doOpenTools(ureq, link.getFormDispatchId());
+			}
 		}
+	}
+
+	private void doOpenTools(UserRequest ureq, String dispatchID) {
+		ToolsController toolsCtrl = new ToolsController(ureq, getWindowControl());
+		listenTo(toolsCtrl);
+
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), dispatchID, "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
 	}
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		return null;
+	}
+
+	private void launchPersonalNotifications(UserRequest ureq) {
+		String businessPath = "[HomeSite:" + getIdentity().getKey() + "][notifications:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+
+	private class ToolsController extends BasicController {
+
+		private final Link jumpSubLink;
+
+		protected ToolsController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl);
+
+			VelocityContainer mainVC = createVelocityContainer("tools");
+
+			List<String> links = new ArrayList<>();
+			mainVC.contextPut("links", links);
+
+			jumpSubLink = LinkFactory.createCustomLink("personal.notifications", "jump", "personal.notifications", Link.LINK, mainVC, this);
+			String businessPath = "[HomeSite:" + getIdentity().getKey() + "][notifications:0]";
+			String urlFromBusinessPathString = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+			if (urlFromBusinessPathString != null) {
+				jumpSubLink.setUrl(urlFromBusinessPathString);
+			}
+			links.add(jumpSubLink.getComponentName());
+
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if (source == jumpSubLink) {
+				closeAndCleanup();
+				launchPersonalNotifications(ureq);
+				fireEvent(ureq, event);
+			}
+		}
+
+		private void closeAndCleanup() {
+			toolsCalloutCtrl.deactivate();
+			removeAsListenerAndDispose(toolsCalloutCtrl);
+			toolsCalloutCtrl = null;
+		}
 	}
 }
