@@ -190,8 +190,11 @@ public class ContextualSubscriptionListController extends FormBasicController im
 	}
 
 	private Map<Subscriber, SubscriptionInfo> initSubsInfoMap(Date compareDate) {
-		return NotificationHelper.getSubscriptionMap(getLocale(), true,
-				compareDate, Collections.singletonList(subscriber));
+		if (subscriber != null) {
+			return NotificationHelper.getSubscriptionMap(getLocale(), true,
+					compareDate, Collections.singletonList(subscriber));
+		}
+		return Collections.emptyMap();
 	}
 
 	private boolean isSubSInfoMapEmpty() {
