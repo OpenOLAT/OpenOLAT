@@ -21,6 +21,7 @@ package org.olat.course.editor.importnodes;
 
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 
@@ -33,6 +34,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 public class ConfigurationCourseNodeRow extends AbstractConfigurationRow implements IndentedCourseNode {
 	
 	private final ImportCourseNode node;
+	private String type;
 	
 	private int numOfReminders;
 	private SingleSelection configurationItem;
@@ -54,7 +56,11 @@ public class ConfigurationCourseNodeRow extends AbstractConfigurationRow impleme
 
 	@Override
 	public String getType() {
-		return node.getCourseNode().getType();
+		return StringHelper.containsNonWhitespace(type)? type: node.getCourseNode().getType();
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	@Override

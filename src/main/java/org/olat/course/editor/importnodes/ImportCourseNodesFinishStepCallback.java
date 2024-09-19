@@ -33,6 +33,8 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -44,7 +46,10 @@ import org.olat.course.PersistingCourseImpl;
 import org.olat.course.editor.NodeConfigController;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.folder.CourseContainerOptions;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
@@ -179,7 +184,9 @@ public class ImportCourseNodesFinishStepCallback implements StepRunnerCallback {
 			ImportSettings settings = new ImportSettings();
 			settings.setCopyType(node.getImportSetting());
 			
-			targetCourseNode.postImportCourseNodes(targetCourse, srcCourseNode, sourceCourse, settings, envMapper);
+			if (!StringHelper.containsNonWhitespace(node.getReplaceWithType())) {
+				targetCourseNode.postImportCourseNodes(targetCourse, srcCourseNode, sourceCourse, settings, envMapper);
+			}
 		}
 		
 		int numOfChildren = node.getChildren().size();
@@ -196,7 +203,9 @@ public class ImportCourseNodesFinishStepCallback implements StepRunnerCallback {
 			CourseEditorTreeNode sourceEditorTreeNode = node.getEditorTreeNode();
 			
 			// create copy of course node
-			CourseNode targetCourseNode = createCopy(sourceEditorTreeNode.getCourseNode());
+			CourseNode targetCourseNode = StringHelper.containsNonWhitespace(node.getReplaceWithType())
+					? createNew(sourceEditorTreeNode.getCourseNode(), node.getReplaceWithType(), targetCourse)
+					: createCopy(sourceEditorTreeNode.getCourseNode());
 			envMapper.addNodeIdentKeyPair(sourceEditorTreeNode.getCourseNode().getIdent(), targetCourseNode.getIdent());
 			
 			// Remove the parent and the children references as the new node ends up in the editortreemodel,
@@ -222,9 +231,23 @@ public class ImportCourseNodesFinishStepCallback implements StepRunnerCallback {
 			recursiveCopy(child, parentNode, i, identity, envMapper);
 		}
 	}
-	
+
 	private CourseNode createCopy(CourseNode courseNode) {
 		CourseNode copyInstance = (CourseNode) XStreamHelper.xstreamClone(courseNode);
+		initCopy(courseNode, copyInstance);
+		return copyInstance;
+	}
+	
+	private CourseNode createNew(CourseNode courseNode, String copyType, ICourse targetCourse) {
+		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(copyType);
+		CourseNode copyInstance = nodeConfig.getInstance();
+		initCopy(courseNode, copyInstance);
+		INode rootNode = targetCourse.getCourseEnvironment().getRunStructure().getRootNode();
+		copyInstance.updateModuleConfigDefaults(true, rootNode, NodeAccessType.of(targetCourse), null);
+		return copyInstance;
+	}
+
+	private void initCopy(CourseNode courseNode, CourseNode copyInstance) {
 		copyInstance.setIdent(String.valueOf(CodeHelper.getForeverUniqueID()));
 		if (CourseNodeHelper.isCustomShortTitle(courseNode.getLongTitle(), courseNode.getShortTitle())) {
 			copyInstance.setShortTitle(Formatter.truncateOnly(courseNode.getShortTitle(), NodeConfigController.SHORT_TITLE_MAX_LENGTH));
@@ -232,6 +255,5 @@ public class ImportCourseNodesFinishStepCallback implements StepRunnerCallback {
 			copyInstance.setShortTitle(null);
 		}
 		copyInstance.setLongTitle(courseNode.getLongTitle());
-		return copyInstance;
 	}
 }

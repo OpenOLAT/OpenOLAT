@@ -52,10 +52,12 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.editor.importnodes.ConfigurationCourseNodesTableModel.ConfigurationCols;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BlogCourseNode;
+import org.olat.course.nodes.CNSCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.DocumentCourseNode;
 import org.olat.course.nodes.GTACourseNode;
@@ -184,22 +186,24 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 		ConfigurationCourseNodeRow row = new ConfigurationCourseNodeRow(importNode, parent);
 		
 		CourseNode courseNode = importNode.getCourseNode();
-		if(courseNode instanceof BCCourseNode) {
-			forgeBCRow(row, importNode, (BCCourseNode)courseNode);
-		} else if(courseNode instanceof SPCourseNode) {
-			forgeSPRow(row, importNode, (SPCourseNode)courseNode);
+		if(courseNode instanceof BCCourseNode bcCourseNode) {
+			forgeBCRow(row, importNode, bcCourseNode);
+		} else if(courseNode instanceof SPCourseNode spCourseNode) {
+			forgeSPRow(row, importNode, spCourseNode);
 		} else if(courseNode instanceof GTACourseNode) {
 			forgeGTARow(row, importNode);
-		} else if(courseNode instanceof DocumentCourseNode) {
-			forgeDocumentRow(row, importNode, (DocumentCourseNode)courseNode);
+		} else if(courseNode instanceof DocumentCourseNode documentCourseNode) {
+			forgeDocumentRow(row, importNode, documentCourseNode);
 		} else if(courseNode instanceof BlogCourseNode || courseNode instanceof PodcastCourseNode || courseNode instanceof WikiCourseNode) {
 			forgeReferenceOrEmptyRow(row, importNode, CopyType.reference);
-		} else if(courseNode instanceof LLCourseNode) {
-			forgeLinkListRow(importNode, (LLCourseNode)courseNode);
-		} else if(courseNode instanceof IQTESTCourseNode) {
-			forgeQTIRow(row, importNode, (IQTESTCourseNode)courseNode);
-		} else if(courseNode instanceof STCourseNode) {
-			forgeStructureRow(row, importNode, (STCourseNode)courseNode);
+		} else if(courseNode instanceof LLCourseNode llCourseNode) {
+			forgeLinkListRow(importNode, llCourseNode);
+		} else if(courseNode instanceof IQTESTCourseNode testCourseNode) {
+			forgeQTIRow(row, importNode, testCourseNode);
+		} else if(courseNode instanceof CNSCourseNode cnsCourseNode) {
+			forgeCNSRow(row, importNode);
+		} else if(courseNode instanceof STCourseNode stCourseNode) {
+			forgeStructureRow(row, importNode, stCourseNode);
 		}
 
 		if(courseNode.hasBusinessGroups()) {
@@ -302,6 +306,14 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 			if(!target.contains("://") && !target.contains("/library/")) {
 				importNode.addCourseFolderSubPath(target);
 			}
+		}
+	}
+	
+	private void forgeCNSRow(ConfigurationCourseNodeRow row, ImportCourseNode importNode) {
+		ICourse targetCourse = CourseFactory.loadCourse(importCourseContext.getTargetEntry());
+		if (ConditionNodeAccessProvider.TYPE.equals(targetCourse.getCourseConfig().getNodeAccessType().getType())) {
+			row.setType(STCourseNode.TYPE);
+			importNode.setReplaceWithType(STCourseNode.TYPE);
 		}
 	}
 	

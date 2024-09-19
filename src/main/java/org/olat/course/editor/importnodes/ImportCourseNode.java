@@ -38,6 +38,7 @@ public class ImportCourseNode {
 	private boolean courseFolderSubPathWithParent;
 	
 	private CopyType importSetting;
+	private String replaceWithType;
 	private final CourseEditorTreeNode editorTreeNode;
 	
 	private boolean selected = false;
@@ -104,6 +105,14 @@ public class ImportCourseNode {
 
 	public void setImportSetting(CopyType importSetting) {
 		this.importSetting = importSetting;
+	}
+
+	public String getReplaceWithType() {
+		return replaceWithType;
+	}
+
+	public void setReplaceWithType(String replaceWithType) {
+		this.replaceWithType = replaceWithType;
 	}
 
 	public boolean isCourseFolderSubPathWithParent() {
