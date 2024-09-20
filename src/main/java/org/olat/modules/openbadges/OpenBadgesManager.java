@@ -103,6 +103,8 @@ public interface OpenBadgesManager {
 
 	List<BadgeClass> getBadgeClassesInCoOwnedCourseSet(RepositoryEntry entry);
 
+	List<BadgeClassWithSize> getBadgeClassesWithSizes(RepositoryEntry entry);
+
 	List<BadgeClassWithSizeAndCount> getBadgeClassesWithSizesAndCounts(RepositoryEntry entry);
 
 	List<BadgeClassDAO.BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry);
@@ -255,6 +257,18 @@ public interface OpenBadgesManager {
 	}
 
 	record TemplateWithSize (BadgeTemplate template, Size size) {
+		public Size fitIn(int width, int height) {
+			double sourceAspectRatio = (double) size.getWidth() / (double) size.getHeight();
+			double targetAspectRatio = (double) width / (double) height;
+			if (sourceAspectRatio > targetAspectRatio) {
+				return new Size(width, (int) Math.round(width / sourceAspectRatio), false);
+			} else {
+				return new Size((int) Math.round(height * sourceAspectRatio), height, false);
+			}
+		}
+	}
+
+	record BadgeClassWithSize(BadgeClass badgeClass, Size size) {
 		public Size fitIn(int width, int height) {
 			double sourceAspectRatio = (double) size.getWidth() / (double) size.getHeight();
 			double targetAspectRatio = (double) width / (double) height;

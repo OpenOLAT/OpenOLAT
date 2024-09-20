@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -41,6 +42,9 @@ import org.olat.modules.openbadges.criteria.GlobalBadgesEarnedCondition;
 import org.olat.modules.openbadges.criteria.LearningPathProgressCondition;
 import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.criteria.Symbol;
+import org.olat.modules.openbadges.ui.element.BadgeSelectorElement;
+import org.olat.modules.openbadges.ui.element.BadgeSelectorElementImpl;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2024-09-06<br>
@@ -55,16 +59,16 @@ public class ConditionRow {
 	private final SingleSelection badgesDropdown;
 	private final SingleSelection courseElementsDropdown;
 	private final MultipleSelectionElement coursesDropdown;
-	private final MultipleSelectionElement globalBadgesDropdown;
+	private final BadgeSelectorElement globalBadgesDropdown;
 	private final TextElement valueEl;
 	private final StaticTextElement unitEl;
 	private final FormLink deleteLink;
 
-	public record ConditionRowContext(SelectionValues badgesKV, SelectionValues coursesKV,
+	public record ConditionRowContext(RepositoryEntry entry, SelectionValues badgesKV, SelectionValues coursesKV,
 									  SelectionValues courseElementsKV, SelectionValues globalBadgesKV,
-									  SelectionValues conditionsKV, SelectionValues symbolsKV) {}
+									  SelectionValues conditionsKV, SelectionValues symbolsKV, String mediaUrl) {}
 
-	public ConditionRow(String id, BadgeCondition badgeCondition, FormItemContainer formLayout, boolean showAndLabel,
+	public ConditionRow(UserRequest ureq, String id, BadgeCondition badgeCondition, FormItemContainer formLayout, boolean showAndLabel,
 						Translator translator, ConditionRowContext context) {
 		this.id = id;
 
@@ -98,8 +102,9 @@ public class ConditionRow {
 				formLayout, context.coursesKV.keys(), context.coursesKV.values());
 		coursesDropdown.addActionListener(FormEvent.ONCHANGE);
 
-		globalBadgesDropdown = uifactory.addCheckboxesDropdown("form.condition.global.badges.earned." + id, null,
-				formLayout, context.globalBadgesKV.keys(), context.globalBadgesKV.values());
+		globalBadgesDropdown = new BadgeSelectorElementImpl(ureq, formLayout.getRootForm().getWindowControl(),
+				"form.condition.global.badges." + id, context.entry, context.globalBadgesKV, context.mediaUrl);
+		formLayout.add(globalBadgesDropdown);
 		globalBadgesDropdown.addActionListener(FormEvent.ONCHANGE);
 
 		valueEl = uifactory.addTextElement("form.condition.value." + id, "", 32,
@@ -111,6 +116,7 @@ public class ConditionRow {
 		deleteLink = uifactory.addFormLink("delete." + id, "delete." + id, "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
+		deleteLink.setTitle(translator.translate("delete"));
 		deleteLink.setUserObject(this);
 
 		symbolDropdown.setVisible(false);
@@ -179,8 +185,9 @@ public class ConditionRow {
 				}
 			}
 		}
-		if (badgeCondition instanceof GlobalBadgesEarnedCondition) {
+		if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
 			globalBadgesDropdown.setVisible(true);
+			globalBadgesDropdown.setSelection(globalBadgesEarnedCondition.getBadgeClassKeys());
 		}
 	}
 
@@ -211,7 +218,9 @@ public class ConditionRow {
 			case OtherBadgeEarnedCondition.KEY -> badgesDropdown.setVisible(true);
 			case CourseElementPassedCondition.KEY -> courseElementsDropdown.setVisible(true);
 			case CoursesPassedCondition.KEY -> coursesDropdown.setVisible(true);
-			case GlobalBadgesEarnedCondition.KEY -> globalBadgesDropdown.setVisible(true);
+			case GlobalBadgesEarnedCondition.KEY -> {
+				globalBadgesDropdown.setVisible(true);
+			}
 		}
 	}
 
@@ -261,7 +270,7 @@ public class ConditionRow {
 	/**
 	 * Used in template
 	 */
-	public MultipleSelectionElement getGlobalBadgesDropdown() {
+	public BadgeSelectorElement getGlobalBadgesDropdown() {
 		return globalBadgesDropdown;
 	}
 
@@ -306,7 +315,7 @@ public class ConditionRow {
 					coursesDropdown.getSelectedKeys().stream().map(Long::parseLong).toList()
 			);
 			case GlobalBadgesEarnedCondition.KEY -> new GlobalBadgesEarnedCondition(
-					globalBadgesDropdown.getSelectedKeys().stream().map(Long::parseLong).toList()
+					globalBadgesDropdown.getSelection().stream().toList()
 			);
 			default -> null;
 		};

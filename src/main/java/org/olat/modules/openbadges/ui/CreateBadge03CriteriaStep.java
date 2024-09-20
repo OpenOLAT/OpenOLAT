@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,8 +43,12 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
@@ -61,6 +66,7 @@ import org.olat.modules.openbadges.criteria.Symbol;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -124,12 +130,12 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					translate("form.award.procedure.manual.description")
 			};
 
-			buildConditionContext();
+			buildConditionContext(ureq);
 
 			initForm(ureq);
 		}
 
-		private void buildConditionContext() {
+		private void buildConditionContext(UserRequest ureq) {
 			SelectionValues badgesKV = new SelectionValues();
 			if (createContext.isCourseBadge()) {
 				openBadgesManager.getBadgeClasses(createContext.getBadgeClass().getEntry()).stream()
@@ -193,8 +199,23 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			symbolsKV.add(SelectionValues.entry(Symbol.lessThanOrEqual.name(), Symbol.lessThanOrEqual.getSymbolString()));
 			symbolsKV.add(SelectionValues.entry(Symbol.lessThan.name(), Symbol.lessThan.getSymbolString()));
 
-			conditionContext = new ConditionRow.ConditionRowContext(badgesKV, coursesKV, courseElementsKV,
-					globalBadgesKV, conditionsKV, symbolsKV);
+			String mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
+
+			conditionContext = new ConditionRow.ConditionRowContext(createContext.getBadgeClass().getEntry(),
+					badgesKV, coursesKV, courseElementsKV,
+					globalBadgesKV, conditionsKV, symbolsKV, mediaUrl);
+		}
+
+		private class BadgeClassMediaFileMapper implements Mapper {
+
+			@Override
+			public MediaResource handle(String relPath, HttpServletRequest request) {
+				VFSLeaf classFileLeaf = openBadgesManager.getBadgeClassVfsLeaf(relPath);
+				if (classFileLeaf != null) {
+					return new VFSMediaResource(classFileLeaf);
+				}
+				return new NotFoundMediaResource();
+			}
 		}
 
 		@Override
@@ -211,7 +232,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					setVelocityConditions();
 				}
 			} else if (source == newRule) {
-				doAddCondition();
+				doAddCondition(ureq);
 			}
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -249,7 +270,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			newRule.setKeysAndValues(newConditionsKV.keys(), newConditionsKV.values(), null);
 		}
 
-		private void doAddCondition() {
+		private void doAddCondition(UserRequest ureq) {
 			if (!newRule.isOneSelected()) {
 				return;
 			}
@@ -267,7 +288,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			};
 			if (newBadgeCondition != null) {
 				String id = Long.toString(conditionRows.size());
-				ConditionRow conditionRow = new ConditionRow(id, newBadgeCondition, flc, !conditionRows.isEmpty(),
+				ConditionRow conditionRow = new ConditionRow(ureq, id, newBadgeCondition, flc, !conditionRows.isEmpty(),
 						getTranslator(), conditionContext);
 				conditionRows.add(conditionRow);
 				setVelocityConditions();
@@ -398,10 +419,10 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			newRule.enableNoneSelection(translate("form.criteria.new.rule"));
 			newRule.addActionListener(FormEvent.ONCHANGE);
 
-			buildConditionsFromContext(formLayout);
+			buildConditionsFromContext(ureq, formLayout);
 		}
 
-		private void buildConditionsFromContext(FormItemContainer formLayout) {
+		private void buildConditionsFromContext(UserRequest ureq, FormItemContainer formLayout) {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
 			List<BadgeCondition> badgeConditions = badgeCriteria.getConditions(
@@ -410,7 +431,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			conditionRows = new ArrayList<>();
 			for (int i = 0; i < badgeConditions.size(); i++) {
 				BadgeCondition badgeCondition = badgeConditions.get(i);
-				ConditionRow condition = new ConditionRow(Integer.toString(i), badgeCondition, formLayout, i > 0, getTranslator(), conditionContext);
+				ConditionRow condition = new ConditionRow(ureq, Integer.toString(i), badgeCondition, formLayout, i > 0, getTranslator(), conditionContext);
 				conditionRows.add(condition);
 			}
 			setVelocityConditions();

@@ -1,0 +1,91 @@
+<div class="clearfix">
+	<div id="$r.getId('bsearch')" class="input-group o_badge_selector_search">
+		<div class="input-group-btn">
+			$r.render("searchButton")
+		</div>
+		$r.render("searchField")
+		<div class="input-group-btn">
+			$r.render("searchResetButton")
+		</div>
+	</div>
+</div>
+
+<div class="clearfix">
+	<div class="o_badge_selector_selected">
+		<div class="o_badge_selector_selected_label">
+			#if($nbSelected > 0)
+			$r.translate("badge.selector.selected") <span class="badge">$nbSelected</span>
+			#else
+			$r.translate("badge.selector.selected.none")
+			#end
+		</div>
+		<div class="o_badge_selector_rows">
+			#foreach($selectedRow in $selectedRows)
+			<div class="o_badge_selector_row">
+				<div class="o_badge_selector_checkbox">
+					<input type="checkbox" checked id="bsel_${selectedRow.key()}" name="bsel_${selectedRow.key()}" value="bsel_${selectedRow.key()}">
+				</div>
+				<div class="o_badge_selector_image">
+					<img src="$mediaUrl/${selectedRow.image()}" width="${selectedRow.size().width}px" height="${selectedRow.size().height}px">
+				</div>
+				<div class="o_badge_selector_text">
+					<div class="o_badge_selector_status">${selectedRow.statusString()}</div>
+					<div class="o_badge_selector_title_version">${selectedRow.title()} &middot; $r.translate("form.version") ${selectedRow.version()}</div>
+				</div>
+			</div>
+			#end
+		</div>
+	</div>
+	<div class="o_badge_selector_unselected">
+		<div class="o_badge_selector_rows">
+			#foreach($unselectedRow in $unselectedRows)
+			<div class="o_badge_selector_row">
+				<div class="o_badge_selector_checkbox">
+					<input type="checkbox" id="bsel_${unselectedRow.key()}" name="bsel_${unselectedRow.key()}" value="bsel_${unselectedRow.key()}">
+				</div>
+				<div class="o_badge_selector_image">
+					<img src="$mediaUrl/${unselectedRow.image()}" width="${unselectedRow.size().width}px" height="${unselectedRow.size().height}px">
+				</div>
+				<div class="o_badge_selector_text">
+					<div class="o_badge_selector_status">${unselectedRow.statusString()}</div>
+					<div class="o_badge_selector_title_version">${unselectedRow.title()} &middot; $r.translate("form.version") ${unselectedRow.version()}</div>
+				</div>
+			</div>
+			#end
+		</div>
+	</div>
+</div>
+
+<div class="clearfix">
+	<div class="o_badge_selector_table">
+		#if($r.available("table") && $r.visible("table"))
+		$r.render("table")
+		#end
+	</div>
+</div>
+
+<div class="o_button_group o_button_group_right o_button_group_bottom">
+	#if($r.available("badge.selector.open.browser") && $r.visible("badge.selector.open.browser"))
+	$r.render("badge.selector.open.browser")
+	#end
+	#if($r.available("apply") && $r.visible("apply"))
+	$r.render("apply")
+	#end
+</div>
+
+<script>
+	"use strict";
+	jQuery(function() {
+		var searchField = jQuery('#$r.getId("bsearch") input');
+		if (!searchField.length) {
+			return;
+		}
+		var searchFieldEl = searchField.get(0);
+		var elemLen = searchFieldEl.value.length;
+		if (searchFieldEl.selectionStart || searchFieldEl.selectionStart == '0') {
+			searchFieldEl.selectionStart = elemLen;
+			searchFieldEl.selectionEnd = elemLen;
+			searchFieldEl.focus();
+		}
+	});
+</script>
