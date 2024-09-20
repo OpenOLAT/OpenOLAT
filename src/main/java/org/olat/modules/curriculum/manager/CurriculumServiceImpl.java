@@ -1144,7 +1144,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculums) {
+	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
+			List<? extends CurriculumRef> curriculums, CurriculumElementStatus[] status) {
 		if(curriculums == null || curriculums.isEmpty()) return Collections.emptyList();
 		
 		List<CurriculumElementMembership> memberships = curriculumElementDao.getMembershipInfos(curriculums, null, identity);
@@ -1154,7 +1155,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		
 		Map<CurriculumElement, List<Long>> elementsMap = curriculumRepositoryEntryRelationDao
-				.getCurriculumElementsWithRepositoryEntryKeys(curriculums);
+				.getCurriculumElementsWithRepositoryEntryKeys(curriculums, status);
 		List<CurriculumElementRepositoryEntryViews> elements = new ArrayList<>(elementsMap.size());
 		if(!elementsMap.isEmpty()) {
 			SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);

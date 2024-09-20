@@ -586,14 +586,14 @@ public class CurriculumTreeWithViewsRow implements CurriculumTreeWithView, Flexi
 	
 	public boolean isClosedOrInactive() {
 		if(isCurriculumElementOnly()) {
-			return element.getElementStatus() == CurriculumElementStatus.inactive || element.getElementStatus() == CurriculumElementStatus.deleted;
+			return element.getElementStatus() != null && element.getElementStatus().isClosed();
 		}
 		if(isRepositoryEntryOnly()) {
 			return status != null && status.decommissioned();
 		}
 		return (status != null && status.decommissioned())
 				|| (element != null &&  element.getElementStatus() != null
-				&& (element.getElementStatus() == CurriculumElementStatus.inactive || element.getElementStatus() == CurriculumElementStatus.deleted));
+				&& (element.getElementStatus() != null && element.getElementStatus().isClosed()));
 	}
 
 	@Override

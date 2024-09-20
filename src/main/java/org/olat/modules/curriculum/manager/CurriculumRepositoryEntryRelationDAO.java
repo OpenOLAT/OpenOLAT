@@ -199,7 +199,8 @@ public class CurriculumRepositoryEntryRelationDAO {
 	 * @param curriculum The curriculum
 	 * @return A map of curriculum element to their repository entries
 	 */
-	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(List<? extends CurriculumRef> curriculums) {
+	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(List<? extends CurriculumRef> curriculums,
+			CurriculumElementStatus[] status) {
 		if(curriculums == null || curriculums.isEmpty()) return Collections.emptyMap();
 		
 		QueryBuilder sb = new QueryBuilder(256);
@@ -210,7 +211,7 @@ public class CurriculumRepositoryEntryRelationDAO {
 		  .append(" left join fetch parentEl.parent parentParentEl")
 		  .append(" left join fetch parentParentEl.parent parentParentParentEl")
 		  .append(" left join repoentrytogroup as rel on (el.group.key=rel.group.key)")
-		  .append(" where curriculum.key in (:curriculumKeys) and el.status ").in(CurriculumElementStatus.notDeleted());
+		  .append(" where curriculum.key in (:curriculumKeys) and el.status ").in(status);
 
 		List<Long> curriculumKeys = curriculums.stream()
 				.map(CurriculumRef::getKey).collect(Collectors.toList());

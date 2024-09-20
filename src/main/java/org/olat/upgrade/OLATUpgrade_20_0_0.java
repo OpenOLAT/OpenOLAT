@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +42,9 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 	
 	private static final String VERSION = "OLAT_20.0.0";
 
-	private static final String MANDATORY_CURRICULUM_ELEMENT_TYPE = "MANDATORY CURRICULUM ELEMENT TYPE";
+	private static final String UPDATE_CURRICULUM_ELEMENT = "UPDATE CURRICULUM ELEMENT";
 	
-	private static final int BATCH_SIZE = 2;
+	private static final int BATCH_SIZE = 1000;
 	
 	@Autowired
 	private DB dbInstance;
@@ -70,7 +71,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 		}
 
 		boolean allOk = true;
-		allOk &= updateMandatoryCurriculumElementType(upgradeManager, uhd);
+		allOk &= updateCurriculumElement(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -82,9 +83,9 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
-	private boolean updateMandatoryCurriculumElementType(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+	private boolean updateCurriculumElement(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
-		if (!uhd.getBooleanDataValue(MANDATORY_CURRICULUM_ELEMENT_TYPE)) {
+		if (!uhd.getBooleanDataValue(UPDATE_CURRICULUM_ELEMENT)) {
 			try {
 				CurriculumElementType defaultType = curriculumService.getDefaultCurriculumElementType();
 				if(defaultType == null) {
@@ -99,10 +100,19 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 						if(!elements.isEmpty()) {
 							for(int i=0; i<elements.size(); i++) {
 								CurriculumElement element = elements.get(i);
+								boolean update = false;
 								if(element.getType() == null) {
 									element.setType(defaultType);
+									update = true;
+								}
+								if(element.getElementStatus() == CurriculumElementStatus.inactive) {
+									element.setElementStatus(CurriculumElementStatus.finished);
+									update = true;
+								}
+								if(update) {
 									curriculumService.updateCurriculumElement(element);
 								}
+								
 								if(i % 25 == 0) {
 									dbInstance.commitAndCloseSession();
 								}
@@ -120,7 +130,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 				allOk = false;
 			}
 		
-			uhd.setBooleanDataValue(MANDATORY_CURRICULUM_ELEMENT_TYPE, allOk);
+			uhd.setBooleanDataValue(UPDATE_CURRICULUM_ELEMENT, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;

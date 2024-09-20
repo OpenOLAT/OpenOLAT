@@ -102,6 +102,7 @@ import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
@@ -423,7 +424,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		});
 		
 		Roles userRoles = baseSecurityManager.getRoles(assessedIdentity);
-		List<CurriculumElementRepositoryEntryViews> curriculumElements = curriculumService.getCurriculumElements(assessedIdentity, userRoles, List.of(curriculum));
+		List<CurriculumElementRepositoryEntryViews> curriculumElements = curriculumService
+				.getCurriculumElements(assessedIdentity, userRoles, List.of(curriculum), CurriculumElementStatus.notDeleted());
 
 		Map<CurriculumElement, CertificateAndEfficiencyStatementRow> curriculumElToRows = new HashMap<>();
 		Map<CurriculumElement, Map<TaxonomyLevel, CertificateAndEfficiencyStatementRow>> taxonomyLevelToCurriculumElements = new HashMap<>();

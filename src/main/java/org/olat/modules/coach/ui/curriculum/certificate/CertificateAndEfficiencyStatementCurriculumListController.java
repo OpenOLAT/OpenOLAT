@@ -99,6 +99,7 @@ import org.olat.modules.coach.ui.curriculum.certificate.CurriculumElementWithVie
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
@@ -415,8 +416,10 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         // Load Curricula
 		Roles roles = securityManager.getRoles(assessedIdentity);
         List<CurriculumTreeWithViewsRow> allRows = new ArrayList<>();
-        List<CurriculumElementRepositoryEntryViews> elementsWithViewsForAll = curriculumService.getCurriculumElements(assessedIdentity, roles, curriculumList);
-        Map<Curriculum, List<CurriculumElementRepositoryEntryViews>> elementsMap = elementsWithViewsForAll.stream().collect(Collectors.groupingBy(row -> row.getCurriculumElement().getCurriculum(), Collectors.toList()));
+        List<CurriculumElementRepositoryEntryViews> elementsWithViewsForAll = curriculumService
+        		.getCurriculumElements(assessedIdentity, roles, curriculumList, CurriculumElementStatus.notDeleted());
+        Map<Curriculum, List<CurriculumElementRepositoryEntryViews>> elementsMap = elementsWithViewsForAll.stream()
+        		.collect(Collectors.groupingBy(row -> row.getCurriculumElement().getCurriculum(), Collectors.toList()));
 
         for (Curriculum curriculum : curriculumList) {
             CurriculumTreeWithViewsRow curriculumRow = new CurriculumTreeWithViewsRow(curriculum);

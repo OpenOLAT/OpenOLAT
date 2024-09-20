@@ -85,6 +85,7 @@ import org.olat.modules.coach.ui.curriculum.course.CurriculumElementWithViewsDat
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementWithView;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -294,8 +295,10 @@ public class CurriculumElementListController extends FormBasicController impleme
     private void loadModel() {
     	Roles roles = securityManager.getRoles(assessedIdentity);
         List<CourseCurriculumTreeWithViewsRow> allRows = new ArrayList<>();
-        List<CurriculumElementRepositoryEntryViews> elementsWithViewsForAll = curriculumService.getCurriculumElements(assessedIdentity, roles, curriculumRefList);
-        Map<Curriculum, List<CurriculumElementRepositoryEntryViews>> elementsMap = elementsWithViewsForAll.stream().collect(Collectors.groupingBy(row -> row.getCurriculumElement().getCurriculum(), Collectors.toList()));
+        List<CurriculumElementRepositoryEntryViews> elementsWithViewsForAll = curriculumService
+        		.getCurriculumElements(assessedIdentity, roles, curriculumRefList, CurriculumElementStatus.visibleUser());
+        Map<Curriculum, List<CurriculumElementRepositoryEntryViews>> elementsMap = elementsWithViewsForAll.stream()
+        		.collect(Collectors.groupingBy(row -> row.getCurriculumElement().getCurriculum(), Collectors.toList()));
 
         for (Curriculum curriculum : curriculumList) {
             CourseCurriculumTreeWithViewsRow curriculumRow = new CourseCurriculumTreeWithViewsRow(curriculum);

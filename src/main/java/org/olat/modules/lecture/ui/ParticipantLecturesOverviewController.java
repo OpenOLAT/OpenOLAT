@@ -66,6 +66,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
@@ -302,7 +303,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		List<Curriculum> curriculums = curriculumService.getMyCurriculums(assessedIdentity);
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
-				.getCurriculumElements(assessedIdentity, roles, new ArrayList<>(curriculums));
+				.getCurriculumElements(assessedIdentity, roles, new ArrayList<>(curriculums), CurriculumElementStatus.notDeleted());
 
 		List<CurriculumElementRepositoryEntryViews> elementsToAggregate = new ArrayList<>();
 		for(CurriculumElementRepositoryEntryViews view:elementsWithViews) {

@@ -154,7 +154,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
-		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculumList);
+		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService
+				.getCurriculumElements(participant, Roles.userRoles(), curriculumList, CurriculumElementStatus.visibleUser());
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(1, myElements.size());
 		
@@ -196,7 +197,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
-		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculumList);
+		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService
+				.getCurriculumElements(participant, Roles.userRoles(), curriculumList, CurriculumElementStatus.visibleUser());
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(2, myElements.size());
 		

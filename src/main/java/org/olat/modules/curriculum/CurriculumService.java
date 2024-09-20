@@ -563,7 +563,8 @@ public interface CurriculumService {
 	 * @param curriculum The curriculum
 	 * @return A list of views
 	 */
-	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculum);
+	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
+			List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status);
 	
 
 	public List<CurriculumElementWebDAVInfos> getCurriculumElementInfosForWebDAV(IdentityRef identity);

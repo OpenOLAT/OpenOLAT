@@ -254,8 +254,13 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private List<FlexiTableFilter> getFilters() {
 		List<FlexiTableFilter> filters = new ArrayList<>(5);
-		filters.add(new FlexiTableFilter(translate("filter.active"), "active"));
-		filters.add(new FlexiTableFilter(translate("filter.inactive"), "inactive"));
+		filters.add(new FlexiTableFilter(translate("filter.preparation"), CurriculumElementStatus.preparation.name()));
+		filters.add(new FlexiTableFilter(translate("filter.provisional"), CurriculumElementStatus.provisional.name()));
+		filters.add(new FlexiTableFilter(translate("filter.confirmed"), CurriculumElementStatus.confirmed.name()));
+		filters.add(new FlexiTableFilter(translate("filter.active"), CurriculumElementStatus.active.name()));
+		filters.add(new FlexiTableFilter(translate("filter.cancelled"), CurriculumElementStatus.cancelled.name()));
+		filters.add(new FlexiTableFilter(translate("filter.finished"), CurriculumElementStatus.finished.name()));
+		filters.add(new FlexiTableFilter(translate("filter.deleted"), CurriculumElementStatus.deleted.name()));
 		filters.add(FlexiTableFilter.SPACER);
 		filters.add(new FlexiTableFilter(translate("show.all"), "all", true));
 		return filters;
@@ -286,7 +291,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		String cssClass;
 		if(!row.isAcceptedByFilter()) {
 			cssClass = "o_curriculum_element_unfiltered";
-		} else if(row.getStatus() == CurriculumElementStatus.inactive) {
+		} else if(row.getStatus() == CurriculumElementStatus.finished) {
 			cssClass = "o_curriculum_element_inactive";
 		} else if(row.getStatus() == CurriculumElementStatus.deleted) {
 			cssClass = "o_curriculum_element_deleted";

@@ -44,8 +44,7 @@ public class CurriculumElementStatusCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof CurriculumElementStatus) {
-			CurriculumElementStatus status = (CurriculumElementStatus)cellValue;
+		if(cellValue instanceof CurriculumElementStatus status) {
 			target.append(translator.translate("status.".concat(status.name())));
 		}
 	}

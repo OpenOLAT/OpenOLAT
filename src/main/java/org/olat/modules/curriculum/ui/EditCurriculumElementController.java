@@ -95,10 +95,7 @@ public class EditCurriculumElementController extends FormBasicController {
 	private static final String[] learningProgressTypedKeys = new String[] {
 			CurriculumLearningProgress.enabled.name(), CurriculumLearningProgress.disabled.name(), CurriculumLearningProgress.inherited.name()
 		};
-	
-	private static final String[] statusKey = new String[] {
-			CurriculumElementStatus.active.name(), CurriculumElementStatus.inactive.name(), CurriculumElementStatus.deleted.name()
-		};
+
 
 	private DateChooser endEl;
 	private DateChooser beginEl;
@@ -192,10 +189,13 @@ public class EditCurriculumElementController extends FormBasicController {
 		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && canEdit);
 		displayNameEl.setMandatory(true);
 		
-		String[] statusValues = new String[] {
-			translate("status.active"), translate("status.inactive"), translate("status.deleted")
-		};
-		statusEl = uifactory.addRadiosHorizontal("status", "curriculum.element.status", formLayout, statusKey, statusValues);
+		// Status
+		SelectionValues statusPK = new SelectionValues();
+		for(CurriculumElementStatus status:CurriculumElementStatus.values()) {
+			if(status == CurriculumElementStatus.inactive) continue;
+			statusPK.add(SelectionValues.entry(status.name(), translate("status." + status.name())));
+		}
+		statusEl = uifactory.addRadiosHorizontal("status", "curriculum.element.status", formLayout, statusPK.keys(), statusPK.values());
 		statusEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.status) && canEdit);
 		if(element == null || element.getElementStatus() == null) {
 			statusEl.select(CurriculumElementStatus.active.name(), true);
@@ -203,12 +203,12 @@ public class EditCurriculumElementController extends FormBasicController {
 			statusEl.select(element.getElementStatus().name(), true);
 		}
 		
+		// Element type
 		List<CurriculumElementType> types = getTypes();
 		SelectionValues typePK = new SelectionValues();
 		for(CurriculumElementType type:types) {
 			typePK.add(SelectionValues.entry(type.getKey().toString(), StringHelper.escapeHtml(type.getDisplayName())));
 		}
-		
 		curriculumElementTypeEl = uifactory.addDropdownSingleselect("type", "curriculum.element.type", formLayout, typePK.keys(), typePK.values());
 		curriculumElementTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type) && canEdit);
 		curriculumElementTypeEl.addActionListener(FormEvent.ONCHANGE);

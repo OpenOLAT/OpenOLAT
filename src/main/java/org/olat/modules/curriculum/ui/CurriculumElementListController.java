@@ -81,6 +81,7 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementWithView;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -280,7 +281,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private void loadModel() {
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
-		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService.getCurriculumElements(assessedIdentity, roles, curriculumList);
+		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
+				.getCurriculumElements(assessedIdentity, roles, curriculumList, CurriculumElementStatus.visibleUser());
 		
 		Set<Long> repoKeys = new HashSet<>(elementsWithViews.size() * 3);
 		List<OLATResource> resourcesWithAC = new ArrayList<>(elementsWithViews.size() * 3);

@@ -28,9 +28,24 @@ import org.olat.core.util.StringHelper;
  *
  */
 public enum CurriculumElementStatus {
+	
+	preparation,
+	provisional,
+	confirmed,
 	active,
+	cancelled,
+	finished,
+	@Deprecated
 	inactive,
 	deleted;
+	
+	
+	/**
+	 * @return true if finished, inactive or deleted
+	 */
+	public boolean isClosed() {
+		return this == finished || this == inactive || this == deleted;
+	}
 	
 	public static boolean isValueOf(String val) {
 		boolean ok = false;
@@ -44,8 +59,24 @@ public enum CurriculumElementStatus {
 		return ok;
 	}
 	
-	public static CurriculumElementStatus[] notDeleted() {
-		return new CurriculumElementStatus[] { CurriculumElementStatus.active, CurriculumElementStatus.inactive };
+	public static CurriculumElementStatus[] visibleUser() {
+		return new CurriculumElementStatus[] {
+				CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,
+				CurriculumElementStatus.active, CurriculumElementStatus.cancelled,
+				CurriculumElementStatus.finished };
 	}
-
+	
+	public static CurriculumElementStatus[] visibleAdmin() {
+		return new CurriculumElementStatus[] { CurriculumElementStatus.preparation,
+				CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,
+				CurriculumElementStatus.active, CurriculumElementStatus.cancelled,
+				CurriculumElementStatus.finished, CurriculumElementStatus.deleted };
+	}
+	
+	public static CurriculumElementStatus[] notDeleted() {
+		return new CurriculumElementStatus[] { CurriculumElementStatus.preparation,
+				CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,
+				CurriculumElementStatus.active, CurriculumElementStatus.cancelled,
+				CurriculumElementStatus.finished, CurriculumElementStatus.inactive };
+	}
 }

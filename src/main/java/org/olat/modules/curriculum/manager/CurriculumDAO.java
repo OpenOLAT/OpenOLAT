@@ -255,7 +255,7 @@ public class CurriculumDAO {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select cur,")
 		  .append(" (select count(curElement.key) from curriculumelement curElement")
-		  .append("  where curElement.curriculum.key=cur.key and curElement.status ").in(CurriculumElementStatus.active, CurriculumElementStatus.inactive)
+		  .append("  where curElement.curriculum.key=cur.key and curElement.status ").in(CurriculumElementStatus.notDeleted())
 		  .append(" ) as numOfElements")
 		  .append(" from curriculum cur")
 		  .append(" inner join fetch cur.group baseGroup")
