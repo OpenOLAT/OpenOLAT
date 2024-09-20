@@ -205,7 +205,14 @@
 		    	background-color: $table-bg-accent;
 		    }
 		}
-	}
+		/* fix a11y contrast on stipped cols */
+ 	 	> tbody > tr:nth-of-type(odd) {
+			a {
+				color: o-a11y-color($link-color, $table-bg-accent);
+			}
+ 	 	}
+	}	
+	
 	.o_scrollable_right .table-striped {
   		> tbody > tr:nth-child(odd) {
   			.o_col_sticky_right {		
