@@ -2,26 +2,14 @@
 	#if($r.available("open.button"))
 		<li>$r.render("open.button")</li>
 	#end
-	#if($r.available("file.open"))
-		<li>$r.render("file.open")</li>
-	#end
-	#if($r.available("copy.to"))
-		<li>$r.render("copy.to")</li>
-	#end
 	#if($r.available("download"))
 		<li>$r.render("download")</li>
 	#end
-	#if($divider)
+	#if($copyDivider)
 		<li class="divider"></li>
 	#end
-	#if($r.available("move.to"))
-		<li>$r.render("move.to")</li>
-	#end
-	#if($r.available("metadata"))
-		<li>$r.render("metadata")</li>
-	#end
-	#if($r.available("versions"))
-		<li>$r.render("versions")</li>
+	#if($r.available("rename"))
+		<li>$r.render("rename")</li>
 	#end
 	#if($r.available("zip"))
 		<li>$r.render("zip")</li>
@@ -29,15 +17,34 @@
 	#if($r.available("unzip"))
 		<li>$r.render("unzip")</li>
 	#end
+	#if($r.available("file.open"))
+		<li>$r.render("file.open")</li>
+	#end
+	#if($r.available("copy.to"))
+		<li>$r.render("copy.to")</li>
+	#end
+	#if($r.available("move.to"))
+		<li>$r.render("move.to")</li>
+	#end
+	#if($metadataDivider)
+		<li class="divider"></li>
+	#end
+	#if($r.available("metadata"))
+		<li>$r.render("metadata")</li>
+	#end
+	#if($r.available("versions"))
+		<li>$r.render("versions")</li>
+	#end
+	#if($deleteDivider)
+		<li class="divider"></li>
+	#end
 	#if($r.available("restore"))
 		<li>$r.render("restore")</li>
 	#end
 	#if($r.available("delete"))
-		<li class="divider"></li>
 		<li>$r.render("delete")</li>
 	#end
 	#if($r.available("delete.permanently"))
-		<li class="divider"></li>
 		<li>$r.render("delete.permanently")</li>
 	#end
 </ul>

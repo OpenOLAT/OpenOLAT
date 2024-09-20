@@ -285,9 +285,15 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 
 	@Override
 	public VFSSuccess rename(String newname) {
-		CoreSpringFactory.getImpl(VFSRepositoryService.class).rename(this, newname);
-		
 		File f = getBasefile();
+		if(!f.exists()) {
+			return VFSSuccess.ERROR_FAILED;
+		}
+		
+		if(canMeta() == VFSStatus.YES) {
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).rename(this, newname);
+		}
+		
 		File par = f.getParentFile();
 		File nf = new File(par, newname);
 		boolean ren = f.renameTo(nf);
