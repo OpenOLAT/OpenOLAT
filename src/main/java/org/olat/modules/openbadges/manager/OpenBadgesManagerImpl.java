@@ -1084,14 +1084,17 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void handleCourseReset(RepositoryEntry courseEntry, boolean learningPath, Identity doer) {
+		// Direct course entry badge classes
+		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
+		if (badgeClasses == null || badgeClasses.isEmpty()) {
+			return;
+		}
 		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false,
 				false, true, true, true,
 				null, null);
 		List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries =
 				getParticipantsWithAssessmentEntryList(courseEntry, doer, secCallback);
 
-		// Direct course entry badge classes
-		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
 		for (BadgeClass badgeClass : badgeClasses) {
 			handleCourseReset(badgeClass, learningPath, participantsAndAssessmentEntries);
 		}
