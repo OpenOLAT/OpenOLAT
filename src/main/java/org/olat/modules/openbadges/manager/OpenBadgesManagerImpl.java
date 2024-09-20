@@ -778,6 +778,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public List<BadgeClassWithSize> getBadgeClassesWithSizes(RepositoryEntry entry) {
+		List<BadgeClass> badgeClasses = badgeClassDAO.getBadgeClasses(entry);
+		return badgeClasses.stream().map(bc -> new BadgeClassWithSize(bc, sizeForBadgeClass(bc))).toList();
+	}
+
+	@Override
 	public List<BadgeClassWithSizeAndCount> getBadgeClassesWithSizesAndCounts(RepositoryEntry entry) {
 		List<BadgeClassDAO.BadgeClassWithUseCount> enhancedBadgeClasses = getBadgeClassesWithUseCounts(entry);
 		if (updateBadgeClasses(enhancedBadgeClasses)) {

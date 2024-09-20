@@ -462,3 +462,93 @@ span.o_labeled_light {
 .o_badge_class_image_wrapper {
 	padding-right: 0;
 }
+
+.o_badge_selector_button {
+	display: flex;
+
+	span.o_badge_selector_span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		padding-right: 4px;
+	}
+
+	.o_icon {
+		margin: auto 0 auto auto;
+	}
+
+	&:is(.form-group *) {
+		width: 100%;
+		max-width: 100%;
+		min-width: $input-height-base;
+	}
+}
+
+.o_badge_selector_selected {
+	margin-top: 10px;
+
+	.o_badge_selector_selected_label {
+		line-height: 40px;
+		font-weight: 700;
+
+		label {
+			margin: 0;
+		}
+
+		span.badge {
+			display: unset;
+			vertical-align: unset;
+			background-color: $brand-primary;
+		}
+	}
+}
+
+.o_badge_selector_unselected {
+	margin-top: 30px;
+}
+
+.o_badge_selector_rows {
+	width: 100%;
+
+	.o_badge_selector_row {
+		display: flex;
+		width: 100%;
+		margin-top: 4px;
+		margin-bottom: 4px;
+
+		.o_badge_selector_checkbox {
+			width: 26px;
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: start;
+
+			input[type=checkbox] {
+				margin: 0;
+			}
+		}
+
+		.o_badge_selector_image {
+			width: 40px;
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-right: 10px;
+		}
+		.o_badge_selector_text {
+			flex-grow: 1;
+
+			.o_badge_selector_status {
+				height: 16px;
+				line-height: 16px;
+				font-size: 12px;
+				color: #999;
+			}
+
+			.o_badge_selector_title_version {
+				height: 24px;
+				line-height: 24px;
+			}
+		}
+	}
+}
