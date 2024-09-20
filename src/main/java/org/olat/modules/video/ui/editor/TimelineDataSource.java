@@ -184,7 +184,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 						}
 					} else if (TimelineFilter.PARTICIPANT.name().equals(filter.getFilter())) {
 						if (r.getParticipantKey() == null) {
-							matchFound = true;
+							matchFound = false;
 						} else {
 							for (String participantKey : multiSelectionFilter.getValues()) {
 								if (participantKey.equals(r.getParticipantKey())) {
