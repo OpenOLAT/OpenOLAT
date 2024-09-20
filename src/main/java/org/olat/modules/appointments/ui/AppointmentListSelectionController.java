@@ -172,12 +172,11 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			Identity createdBy = participation.getCreatedBy();
 			if (!identity.getKey().equals(createdBy.getKey())) {
 				String createdByName = userManager.getUserDisplayName(createdBy.getKey());
-				String createdByText = translate("participation.created.by", createdByName);
-				createdByText = StringHelper.unescapeHtml(createdByText);
+				String createdByText = translate("participation.created.by", StringHelper.escapeHtml(createdByName));
 				String details = StringHelper.containsNonWhitespace(row.getDetails())
-						? row.getDetails() + " " + createdByText
+						? StringHelper.escapeHtml(row.getDetails()) + " " + createdByText
 						: createdByText;
-				row.setDetails(details);
+				row.setEscapedDetails(details);
 			}
 		}
 	

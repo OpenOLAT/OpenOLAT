@@ -1,6 +1,6 @@
 <strong>$r.translate("appointment.participations", $participantsSize)</strong>
 <ul class="list-unstyled">
 #foreach($participant in $participants)
-	<li><span class="o_nowrap"><i class='o_icon o_icon-fw o_icon_user'></i> $participant</li></span>
+	<li><span class="o_nowrap"><i class='o_icon o_icon-fw o_icon_user'></i> $r.escapeHtml($participant)</li></span>
 #end
 </ul>

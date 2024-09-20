@@ -44,10 +44,10 @@
 						$r.escapeHtml($row.getLocation())
 					</div>
 				#end
-				#if($row.getDetails() && $row.getDetails() != "")
+				#if($row.getEscapedDetails() && $row.getEscapedDetails() != "")
 					<div>
 						<i class="o_icon o_icon-fw o_icon_info_ap">&nbsp;</i>
-						$r.escapeHtml($row.getDetails())
+						$row.getEscapedDetails()
 					</div>
 				#end
 				#if($r.isNotNull($row.getRecordingLinks()))
@@ -70,7 +70,7 @@
 				#if($r.isNotEmpty($row.participants))
 					<div class="text-muted">
 						#foreach($participant in $row.participants)
-							<span class='o_participant'><i class='o_icon o_icon_user'>&nbsp;</i>$participant &nbsp;</span>
+							<span class='o_participant'><i class='o_icon o_icon_user'>&nbsp;</i>$r.escapeHtml($participant) &nbsp;</span>
 						#end
 						#if($r.isNotNull($row.showMoreLink))
 							<small>$r.render($row.showMoreLink)</small>
