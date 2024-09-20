@@ -721,7 +721,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			tools.addComponent(editLink);
 		}
 			
-		if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 			folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefiles"), this, "o_icon_coursefolder");
 			folderLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Coursefolder:0]]"));

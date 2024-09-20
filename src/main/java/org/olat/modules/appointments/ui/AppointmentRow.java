@@ -48,6 +48,7 @@ public class AppointmentRow {
 	private String time;
 	private String location;
 	private String details;
+	private String escapedDetails;
 	private String translatedStatus;
 	private String statusCSS;
 	private Boolean showNumberOfParticipations;
@@ -151,6 +152,14 @@ public class AppointmentRow {
 
 	public void setDetails(String details) {
 		this.details = details;
+	}
+
+	public String getEscapedDetails() {
+		return escapedDetails;
+	}
+
+	public void setEscapedDetails(String escapedDetails) {
+		this.escapedDetails = escapedDetails;
 	}
 
 	public String getTranslatedStatus() {
