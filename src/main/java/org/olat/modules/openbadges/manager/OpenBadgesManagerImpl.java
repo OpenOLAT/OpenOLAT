@@ -1164,12 +1164,18 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 			return;
 		}
+		if (!isEnabled()) {
+			return;
+		}
+		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
+		if (badgeClasses == null || badgeClasses.isEmpty()) {
+			return;
+		}
 		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false,
 				false, true, true, true,
 				null, null);
 		List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries =
 				getParticipantsWithAssessmentEntryList(courseEntry, awardedBy, secCallback);
-		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
 		for (BadgeClass badgeClass : badgeClasses) {
 			List<Identity> automaticRecipients = getAutomaticRecipients(badgeClass, learningPath, participantsAndAssessmentEntries);
 			issueBadge(badgeClass, automaticRecipients, awardedBy);
