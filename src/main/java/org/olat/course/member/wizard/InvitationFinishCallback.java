@@ -228,6 +228,9 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		invitation.setAdditionalInfos(transientInvitation.getAdditionalInfos());
 		invitation.setRegistration(true);
 		invitation.setRoleList(roles);
+		if(transientInvitation.getIdentity() != null && transientInvitation.getIdentity().getKey() != null) {
+			invitation.setIdentity(transientInvitation.getIdentity());
+		}
 		
 		if(group == null) {
 			return StepsMainRunController.DONE_UNCHANGED;
