@@ -270,6 +270,7 @@ public class InvitationImpl implements Persistable, Invitation {
 		return identity;
 	}
 
+	@Override
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
 	}
