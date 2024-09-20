@@ -151,6 +151,7 @@ public class EditCurriculumElementController extends FormBasicController {
 		this.preSelectedType = null;
 		this.secCallback = secCallback;
 		initForm(ureq);
+		updateStatusWarning(ureq);
 	}
 	
 	public CurriculumElement getCurriculumElement() {
@@ -197,6 +198,7 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 		statusEl = uifactory.addRadiosHorizontal("status", "curriculum.element.status", formLayout, statusPK.keys(), statusPK.values());
 		statusEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.status) && canEdit);
+		statusEl.addActionListener(FormEvent.ONCHANGE);
 		if(element == null || element.getElementStatus() == null) {
 			statusEl.select(CurriculumElementStatus.active.name(), true);
 		} else {
@@ -302,10 +304,12 @@ public class EditCurriculumElementController extends FormBasicController {
 		Date begin = element == null ? null : element.getBeginDate();
 		beginEl = uifactory.addDateChooser("start", "curriculum.element.begin", begin, formLayout);
 		beginEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates) && canEdit);
+		beginEl.addActionListener(FormEvent.ONCHANGE);
 
 		Date end = element == null ? null : element.getEndDate();
 		endEl = uifactory.addDateChooser("end", "curriculum.element.end", end, formLayout);
 		endEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates) && canEdit);
+		endEl.addActionListener(FormEvent.ONCHANGE);
 		endEl.setDefaultValue(beginEl);
 		
 		String description = element == null ? "" : element.getDescription();
@@ -414,6 +418,31 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 	}
 	
+	private void updateStatusWarning(UserRequest ureq) {
+		statusEl.clearWarning();
+		if(!statusEl.isOneSelected()) return;
+		
+		CurriculumElementStatus status = CurriculumElementStatus.valueOf(statusEl.getSelectedKey());
+		if(status == CurriculumElementStatus.preparation || status == CurriculumElementStatus.provisional) {
+			Date begin = beginEl.getDate();
+			if(begin != null && ureq.getRequestTimestamp().compareTo(begin) > 0) {
+				statusEl.setWarningKey("warning.date.preparation.status", translate("status." + status.name()));
+			}
+		} else if(status == CurriculumElementStatus.confirmed || status == CurriculumElementStatus.active) {
+			Date end = endEl.getDate();
+			if(end != null && ureq.getRequestTimestamp().compareTo(end) > 0) {
+				statusEl.setWarningKey("warning.date.active.status", translate("status." + status.name()));
+			}
+		} else if(status == CurriculumElementStatus.finished) {
+			Date end = endEl.getDate();
+			if(end != null && ureq.getRequestTimestamp().compareTo(end) < 0) {
+				statusEl.setWarningKey("warning.date.finished.status", translate("status." + status.name()));
+			}
+		}
+		
+		
+	}
+	
 	private List<CurriculumElementType> getTypes() {
 		List<CurriculumElementType> types = curriculumService.getAllowedCurriculumElementType(parentElement, element);
 		if(types.isEmpty()) {
@@ -479,6 +508,8 @@ public class EditCurriculumElementController extends FormBasicController {
 			statusEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
+		
+		updateStatusWarning(ureq);
 		
 		return allOk;
 	}
@@ -548,7 +579,9 @@ public class EditCurriculumElementController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == curriculumElementTypeEl) {
+		if(statusEl == source || beginEl == source || endEl == source) {
+			updateStatusWarning(ureq);
+		} else if(source == curriculumElementTypeEl) {
 			CurriculumElementType elementType = getSelectedType();
 			if(calendarsEnabledEl.isOneSelected()) {
 				CurriculumCalendars enabled = CurriculumCalendars.valueOf(calendarsEnabledEl.getSelectedKey());
