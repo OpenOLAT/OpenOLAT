@@ -472,6 +472,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		row.setTime(time);
 		row.setLocation(AppointmentsUIFactory.getDisplayLocation(getTranslator(), appointment));
 		row.setDetails(appointment.getDetails());
+		row.setEscapedDetails(StringHelper.escapeHtml(row.getDetails()));
 		forgeDayElement(row, appointment.getStart());
 	}
 	
