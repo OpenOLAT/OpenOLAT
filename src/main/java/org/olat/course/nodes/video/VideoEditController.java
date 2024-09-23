@@ -133,9 +133,9 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 
 		videoConfigurationVc = createVelocityContainer("edit");
 		chooseVideoButton = LinkFactory.createButtonSmall(NLS_COMMAND_CREATEVID, videoConfigurationVc, this);
-		chooseVideoButton.setElementCssClass("o_sel_cp_choose_repofile");
+		chooseVideoButton.setElementCssClass("o_sel_video_choose_repofile");
 		changeVideoButton = LinkFactory.createButtonSmall(NLS_COMMAND_CHANGEVID, videoConfigurationVc, this);
-		changeVideoButton.setElementCssClass("o_sel_cp_change_repofile");
+		changeVideoButton.setElementCssClass("o_sel_video_change_repofile");
 
 		if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
 			// fetch repository entry to display the repository entry title of
@@ -175,7 +175,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_VIDEOCONFIG), main);
+		tabbedPane.addTab(translate(PANE_TAB_VIDEOCONFIG), "o_sel_video_configuration", main);
 	}
 
 	@Override
