@@ -1815,6 +1815,12 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				}
 				return FileVisitResult.CONTINUE;
 			}
+			
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) {
+				log.warn("Failed to access file during migration: " + file.toString());
+				return FileVisitResult.CONTINUE;
+			}
 		});
 	}
 	
