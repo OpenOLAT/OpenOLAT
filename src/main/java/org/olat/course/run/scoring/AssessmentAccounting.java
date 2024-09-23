@@ -92,7 +92,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 				? new SingleUserObligationContext()
 				: NullObligationContext.create();
 		this.exceptionalObligationEvaluator = new ExceptionalObligationEvaluator(getIdentity(),
-				getCourseEntry(), userCourseEnvironment.getCourseEnvironment().getRunStructure(), null);
+				getCourseEntry(), userCourseEnvironment.getCourseEnvironment().getRunStructure(), this);
 		this.exceptionalObligationEvaluator.setObligationContext(obligationContext);
 	
 		CoreSpringFactory.autowireObject(this);

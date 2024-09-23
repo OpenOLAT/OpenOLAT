@@ -8,6 +8,7 @@
  */
 @use "sass:color";
 @use "sass:math";
+@use "sass:map";
  
  
 /* Helper method to calculate the relative luminance required to
@@ -66,4 +67,23 @@
 	} @else {
 		@return ( math.div(($lum1 + 0.05) , ($lum2 + 0.05)) )
     } 
+}
+
+@function o-a11y-color($color, $background: #fff, $targetRatio: 4.5) {
+	$currentRatio: contrast($color, $background);
+	$i: 0; // while loop breaker
+	
+	@while $currentRatio < $targetRatio and $i < 100  {
+		@if (luminance($color) > luminance($background)) {
+	    	$color: lighten($color, 1%);
+		} @else {
+		   	$color: darken($color, 1%);
+		}
+    	$currentRatio: contrast($color, $background);
+    	$i: $i + 1;
+    	@if $i == 100 {
+			@debug "Can not calculate o-a11y-color with ratio" $targetRatio for color $color on background $background;    	
+    	}
+  	}
+  	@return $color;
 }

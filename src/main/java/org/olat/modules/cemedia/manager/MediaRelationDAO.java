@@ -222,7 +222,7 @@ public class MediaRelationDAO {
 		dbInstance.getCurrentEntityManager().remove(relation);
 	}
 
-	public int deleteRelations(RepositoryEntry repositoryEntry) {
+	public int deleteRelations(RepositoryEntryRef repositoryEntry) {
 		String query = "delete from mediatogroup relation where relation.repositoryEntry.key = :repositoryEntryKey";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query)

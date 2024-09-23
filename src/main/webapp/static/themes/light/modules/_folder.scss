@@ -323,17 +323,17 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 	&.o_folder_label_elements {
 		background-color: $o-folder-label-elements-bg-color;
 		border-color: $o-folder-label-elements-color;
-		@include o-high-contrast-color($o-folder-label-elements-color);
+		color: $o-folder-label-elements-color;
 	}
 	&.o_folder_label_locked {
 		background-color: $o-folder-label-locked-bg-color;
 		border-color: $o-folder-label-locked-color;
-		@include o-high-contrast-color($o-folder-label-locked-color);
+		color: $o-folder-label-locked-color;
 	}
 	&.o_folder_label_editing {
 		background-color: $o-folder-label-editing-bg-color;
 		border-color: $o-folder-label-editing-color;
-		@include o-high-contrast-color($o-folder-label-editing-color);
+		color: $o-folder-label-editing-color;
 	}
 	&.o_folder_label_new {
 		background-color: $o-folder-label-new-bg-color;

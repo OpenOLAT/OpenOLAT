@@ -27,7 +27,7 @@
   border-radius: 7px;
   padding: 5px 10px;
   border-color: $o-dialog-cn-label-new-border-color;
-  @include o-high-contrast-color($o-dialog-cn-label-new-color);
+  color: $o-dialog-cn-label-new-color;
 }
 
 

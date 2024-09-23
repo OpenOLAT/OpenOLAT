@@ -275,6 +275,7 @@ public class FragmentRendererHelper {
 					FragmentRendererHelper.openCollapseLink(collapsingId, collapsingId, sb, fragmentId, numberOfItems,"o_alert_collapse_icon");
 					sb.append("<i class='o_icon o_icon-lg o_icon_details_expand' aria-hidden='true'> </i>");
 					sb.append("<i class='o_icon o_icon-lg o_icon_details_collaps' aria-hidden='true'> </i>");
+					//TODO a11y title/sr-only 
 					sb.append("</a>");
 				} else {
 					sb.append("<div class='o_alert_text'>")

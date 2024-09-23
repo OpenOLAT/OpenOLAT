@@ -44,11 +44,13 @@ import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
@@ -205,6 +207,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_COPY = "copy";
 	private static final String CMD_MOVE = "move";
+	private static final String CMD_RENAME = "rename";
 	private static final String CMD_METADATA = "metadata";
 	private static final String CMD_VERSION = "version";
 	private static final String CMD_ZIP = "zip";
@@ -222,9 +225,13 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FormLink quickSearchButton;
 	private FileElement addFileEl;
 	private DropdownItem createDropdown;
+	private FormLink createFolderLink;
 	private FormLink addBrowserLink;
 	private FormLink createDocumentLink;
-	private FormLink createFolderLink;
+	private SpacerItem officeSpacer;
+	private FormLink createWordLink;
+	private FormLink createExcelLink;
+	private FormLink createPowerPointLink;
 	private SpacerItem recordSpacer;
 	private FormLink recordVideoLink;
 	private FormLink recordAudioLink;
@@ -262,6 +269,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private Controller quotaEditCtrl;
 	private FileBrowserTargetController copySelectFolderCtrl;
 	private LicenseCheckController licenseCheckCtrl;
+	private RenameController renameCtrl;
 	private Controller metadataCtrl;
 	private RevisionListController revisonsCtrl;
 	private ZipConfirmationController zipConfirmationCtrl;
@@ -403,22 +411,40 @@ public class FolderController extends FormBasicController implements Activateabl
 		createDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
 		createDropdown.setOrientation(DropdownOrientation.right);
 		
+		createFolderLink = uifactory.addFormLink("folder.create", formLayout, Link.LINK);
+		createFolderLink.setIconLeftCSS("o_icon o_icon-fw o_icon_new_folder");
+		createFolderLink.setElementCssClass("o_sel_folder_new_folder");
+		createDropdown.addElement(createFolderLink);
+		
+		createDropdown.addElement(new SpacerItem("documentSpace"));
+		
 		addBrowserLink = uifactory.addFormLink("browser.add", formLayout, Link.LINK);
 		addBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_filehub_add");
 		addBrowserLink.setElementCssClass("o_sel_folder_add_browser");
 		createDropdown.addElement(addBrowserLink);
-		
-		createDropdown.addElement(new SpacerItem("createSpace"));
 		
 		createDocumentLink = uifactory.addFormLink("document.create", formLayout, Link.LINK);
 		createDocumentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		createDocumentLink.setElementCssClass("o_sel_folder_new_document");
 		createDropdown.addElement(createDocumentLink);
 		
-		createFolderLink = uifactory.addFormLink("folder.create", formLayout, Link.LINK);
-		createFolderLink.setIconLeftCSS("o_icon o_icon-fw o_icon_new_folder");
-		createFolderLink.setElementCssClass("o_sel_folder_new_folder");
-		createDropdown.addElement(createFolderLink);
+		officeSpacer = new SpacerItem("officeSpace");
+		createDropdown.addElement(officeSpacer);
+		
+		createWordLink = uifactory.addFormLink("document.create.word", formLayout, Link.LINK);
+		createWordLink.setIconLeftCSS("o_icon o_icon-fw o_FileResource-DOC_icon");
+		createWordLink.setNewWindow(true, true, true);
+		createDropdown.addElement(createWordLink);
+		
+		createExcelLink = uifactory.addFormLink("document.create.excel", formLayout, Link.LINK);
+		createExcelLink.setIconLeftCSS("o_icon o_icon-fw o_FileResource-XLS_icon");
+		createExcelLink.setNewWindow(true, true, true);
+		createDropdown.addElement(createExcelLink);
+		
+		createPowerPointLink = uifactory.addFormLink("document.create.powerpoint", formLayout, Link.LINK);
+		createPowerPointLink.setIconLeftCSS("o_icon o_icon-fw o_FileResource-PPT_icon");
+		createPowerPointLink.setNewWindow(true, true, true);
+		createDropdown.addElement(createPowerPointLink);
 		
 		recordSpacer = new SpacerItem("recordSpace");
 		createDropdown.addElement(recordSpacer);
@@ -455,7 +481,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		quotaBar = new QuotaBar("quota", null, getLocale());
 		formLayout.add(new ComponentWrapperElement(quotaBar));
 	}
-
+	
 	private void updateCommandUI(UserRequest ureq) {
 		boolean canDecendants = VFSStatus.YES == currentContainer.canDescendants();
 		viewFileLink.setVisible(canDecendants);
@@ -471,6 +497,10 @@ public class FolderController extends FormBasicController implements Activateabl
 		addBrowserLink.setVisible(canEditCurrentContainer);
 		createDocumentLink.setVisible(canEditCurrentContainer);
 		createFolderLink.setVisible(canEditCurrentContainer);
+		createWordLink.setVisible(canEditCurrentContainer && canCreateDocument(ureq, DocTemplates.SUFFIX_DOCX));
+		createExcelLink.setVisible(canEditCurrentContainer && canCreateDocument(ureq, DocTemplates.SUFFIX_XLSX));
+		createPowerPointLink.setVisible(canEditCurrentContainer && canCreateDocument(ureq, DocTemplates.SUFFIX_PPTX));
+		officeSpacer.setVisible(createWordLink.isVisible() || createExcelLink.isVisible() || createPowerPointLink.isVisible());
 		recordSpacer.setVisible(canEditCurrentContainer && avModule.isRecordingEnabled());
 		recordVideoLink.setVisible(canEditCurrentContainer && avModule.isVideoRecordingEnabled());
 		recordAudioLink.setVisible(canEditCurrentContainer && avModule.isAudioRecordingEnabled());
@@ -479,7 +509,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		quotaEditLink.setVisible(config.isDisplayQuotaLink() && canEditQuota(ureq));
 		synchMetadataLink.setVisible(VFSStatus.YES == currentContainer.canMeta());
 		trashMenuLink.setVisible(canViewTrash());
-		cmdDropdown.setVisible(webdavLink.isVisible() || quotaEditLink.isVisible() || trashMenuLink.isVisible());
+		cmdDropdown.setVisible(webdavLink.isVisible() || synchMetadataLink.isVisible() || quotaEditLink.isVisible() || trashMenuLink.isVisible());
 		
 		boolean trashView = FolderView.trash == folderView;
 		if (trashMessageEl != null) {
@@ -514,6 +544,11 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		}
 		return false;
+	}
+	
+	private boolean canCreateDocument(UserRequest ureq, String suffix) {
+		return docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), suffix, DocEditor.Mode.EDIT,
+				hasMetadata(currentContainer), false);
 	}
 	
 	private void doOpenView(UserRequest ureq, FolderView view) {
@@ -1373,6 +1408,12 @@ public class FolderController extends FormBasicController implements Activateabl
 			doAddFromBrowser(ureq);
 		} else if (createDocumentLink == source) {
 			doCreateDocument(ureq);
+		} else if (createWordLink == source) {
+			doCreateOfficeDocument(ureq, DocTemplates.SUFFIX_DOCX);
+		} else if (createExcelLink == source) {
+			doCreateOfficeDocument(ureq, DocTemplates.SUFFIX_XLSX);
+		} else if (createPowerPointLink == source) {
+			doCreateOfficeDocument(ureq, DocTemplates.SUFFIX_PPTX);
 		} else if (createFolderLink == source) {
 			doCreateFolder(ureq);
 		} else if (source == recordVideoLink) {
@@ -1461,6 +1502,13 @@ public class FolderController extends FormBasicController implements Activateabl
 		} else if (quotaEditCtrl == source) {
 			if (event == Event.CHANGED_EVENT) {
 				reloadQuota();
+			}
+			loadModel(ureq);
+			cmc.deactivate();
+			cleanUp();
+		} else if (renameCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				markNews();
 			}
 			loadModel(ureq);
 			cmc.deactivate();
@@ -1566,6 +1614,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(webdavCtrl);
 		removeAsListenerAndDispose(quotaEditCtrl);
+		removeAsListenerAndDispose(renameCtrl);
 		removeAsListenerAndDispose(metadataCtrl);
 		removeAsListenerAndDispose(revisonsCtrl);
 		removeAsListenerAndDispose(copySelectFolderCtrl);
@@ -1585,6 +1634,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		docEditorCtrl = null;
 		webdavCtrl = null;
 		quotaEditCtrl = null;
+		renameCtrl = null;
 		metadataCtrl = null;
 		revisonsCtrl = null;
 		copySelectFolderCtrl = null;
@@ -1822,6 +1872,43 @@ public class FolderController extends FormBasicController implements Activateabl
 		cmc.activate();
 	}
 
+	private void doCreateOfficeDocument(UserRequest ureq, String suffix) {
+		leaveTrash(ureq);
+		if (!canEdit(currentContainer)) {
+			showWarning("error.cannot.create.document");
+			updateCommandUI(ureq);
+		}
+		
+		FolderQuota folderQuota = getFolderQuota(ureq);
+		if (folderQuota.isExceeded()) {
+			showWarning("error.quota.exceeded");
+			return;
+		}
+		
+		DocTemplate template = switch (suffix) {
+		case DocTemplates.SUFFIX_DOCX -> DocTemplates.builder(getLocale()).addDocx().build().getTemplates().get(0);
+		case DocTemplates.SUFFIX_XLSX -> DocTemplates.builder(getLocale()).addXlsx().build().getTemplates().get(0);
+		case DocTemplates.SUFFIX_PPTX -> DocTemplates.builder(getLocale()).addPptx().build().getTemplates().get(0);
+		default -> null;
+		};
+		if (template == null) {
+			showWarning("error.cannot.create.document");
+			return;
+		}
+		
+		String filename = template.getName() 
+				+ "_" + StringHelper.escapeHtml(getIdentity().getUser().getFirstName())
+				+ "_" + StringHelper.escapeHtml(getIdentity().getUser().getLastName())
+				+ "_1";
+		filename = StringHelper.transformDisplayNameToFileSystemName(filename) + "." + template.getSuffix();
+		filename = VFSManager.similarButNonExistingName(currentContainer, filename);
+		VFSLeaf vfsLeaf = currentContainer.createChildLeaf(filename);
+		VFSManager.copyContent(template.getContentProvider().getContent(getLocale()), vfsLeaf, getIdentity());
+		loadModel(ureq);
+		
+		doOpenFile(ureq, vfsLeaf, DocEditorService.MODES_EDIT_VIEW);
+	}
+	
 	private void doCreateFolder(UserRequest ureq) {
 		if (guardModalController(createFolderCtrl)) return;
 		leaveTrash(ureq);
@@ -2002,6 +2089,32 @@ public class FolderController extends FormBasicController implements Activateabl
 		cmc.activate();
 	}
 	
+	private boolean canRename(VFSItem vfsItem, VFSMetadata vfsMetadata) {
+		return canEditMedatata(vfsItem, vfsMetadata);
+	}
+	
+	public void doRename(UserRequest ureq, FolderRow row) {
+		if (guardModalController(metadataCtrl)) return;
+		if (isItemNotAvailable(ureq, row, true)) return;
+		if (!canRename(row.getVfsItem(), row.getMetadata())) {
+			showWarning(row.isDirectory()? "error.cannot.rename.folder": "error.cannot.rename.document");
+			updateCommandUI(ureq);
+			return;
+		}
+		
+		removeAsListenerAndDispose(metadataCtrl);
+		
+		VFSItem vfsItem = getUncachedItem(row.getVfsItem());
+		VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
+		renameCtrl = new RenameController(ureq, getWindowControl(), vfsItem, vfsMetadata);
+		listenTo(renameCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), renameCtrl.getInitialComponent(),
+				true, translate("rename"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doSynchMetadata(UserRequest ureq) {
 		if (isItemNotAvailable(ureq, currentContainer, false)) return;
 		
@@ -2009,6 +2122,24 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		showInfo("synch.metadata.done");
 		loadModel(ureq);
+	}
+
+	private boolean hasMetadata(VFSItem item) {
+		if (item instanceof NamedContainerImpl namedContainer) {
+			item = namedContainer.getDelegate();
+		}
+		if (item instanceof VFSContainer) {
+			String name = item.getName();
+			if (name.equals("_sharedfolder_") || name.equals("_courseelementdata")) {
+				return false;
+			}
+		}
+		return item != null && item.canMeta() == VFSStatus.YES;
+	}
+
+	private boolean canEditMedatata(VFSItem vfsItem, VFSMetadata vfsMetadata) {
+		return canEdit(vfsItem) && canEdit(vfsItem.getParentContainer()) && isNotDeleted(vfsMetadata)
+				&& !vfsLockManager.isLockedForMe(vfsItem, getIdentity(), VFSLockApplicationType.vfs, null);
 	}
 	
 	private void doOpenMetadata(UserRequest ureq, FolderRow row) {
@@ -2342,24 +2473,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private boolean canCopy(VFSItem vfsItem, VFSMetadata vfsMetadata) {
 		return vfsItem != null && VFSStatus.YES == vfsItem.canCopy() && isNotDeleted(vfsMetadata);
-	}
-
-	private boolean hasMetadata(VFSItem item) {
-		if (item instanceof NamedContainerImpl namedContainer) {
-			item = namedContainer.getDelegate();
-		}
-		if (item instanceof VFSContainer) {
-			String name = item.getName();
-			if (name.equals("_sharedfolder_") || name.equals("_courseelementdata")) {
-				return false;
-			}
-		}
-		return item != null && item.canMeta() == VFSStatus.YES;
-	}
-
-	private boolean canEditMedatata(VFSItem vfsItem, VFSMetadata vfsMetadata) {
-		return canEdit(vfsItem) && isNotDeleted(vfsMetadata)
-				&& !vfsLockManager.isLockedForMe(vfsItem, getIdentity(), VFSLockApplicationType.vfs, null);
 	}
 
 	private void doDownload(UserRequest ureq, FolderRow row) {
@@ -3174,7 +3287,6 @@ public class FolderController extends FormBasicController implements Activateabl
 			
 			mainVC = createVelocityContainer("tools");
 			
-			boolean divider = false;
 			VFSItem vfsItem = getUncachedItem(row.getVfsItem());
 			VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
 			boolean isNotDeleted = isNotDeleted(vfsMetadata);
@@ -3197,48 +3309,56 @@ public class FolderController extends FormBasicController implements Activateabl
 				}
 			}
 			
-			if (canCopy(vfsItem, vfsMetadata)) {
-				addLink("copy.to", CMD_COPY, "o_icon o_icon-fw o_icon_copy");
-			}
-			
 			addLink("download", CMD_DOWNLOAD, "o_icon o_icon-fw o_icon_download");
 			
-			if (canMove(vfsItem, vfsMetadata)) {
-				addLink("move.to", CMD_MOVE, "o_icon o_icon-fw o_icon_move");
-				divider = true;
-			}
-			
-			if (hasMetadata(vfsItem)) {
-				addLink("metadata", CMD_METADATA, "o_icon o_icon-fw o_icon_metadata");
-				divider = true;
-			}
-			if (hasVersion(row.getMetadata(), vfsItem) && canEdit(vfsItem) && isNotDeleted) {
-				addLink("versions", CMD_VERSION, "o_icon o_icon-fw o_icon_version");
-				divider = true;
+			boolean copyDivider = false;
+			if (canRename(vfsItem, vfsMetadata)) {
+				addLink("rename", CMD_RENAME, "o_icon o_icon-fw o_icon_rename");
+				copyDivider = true;
 			}
 			if (canZip(vfsItem, vfsMetadata)) {
 				addLink("zip", CMD_ZIP, "o_icon o_icon-fw o_filetype_zip");
-				divider = true;
+				copyDivider = true;
 			}
 			if (canUnzip(vfsItem, vfsMetadata)) {
 				addLink("unzip", CMD_UNZIP, "o_icon o_icon-fw o_filetype_zip");
-				divider = true;
+				copyDivider = true;
 			}
+			if (canMove(vfsItem, vfsMetadata)) {
+				addLink("move.to", CMD_MOVE, "o_icon o_icon-fw o_icon_move");
+				copyDivider = true;
+			}
+			if (canCopy(vfsItem, vfsMetadata)) {
+				addLink("copy.to", CMD_COPY, "o_icon o_icon-fw o_icon_copy");
+				copyDivider = true;
+			}
+			mainVC.contextPut("copyDivider", copyDivider);
 			
+			boolean metadataDivider = false;
+			if (hasMetadata(vfsItem)) {
+				addLink("metadata", CMD_METADATA, "o_icon o_icon-fw o_icon_metadata");
+				metadataDivider = true;
+			}
+			if (hasVersion(row.getMetadata(), vfsItem) && canEdit(vfsItem) && isNotDeleted) {
+				addLink("versions", CMD_VERSION, "o_icon o_icon-fw o_icon_version");
+				metadataDivider = true;
+			}
+			mainVC.contextPut("metadataDivider", metadataDivider);
+			
+			boolean deleteDivider = false;
 			if (!isNotDeleted && canRestore()) {
 				addLink("restore", CMD_RESTORE, "o_icon o_icon-fw o_icon_restore");
-				divider = true;
+				deleteDivider = true;
 			}
-			
-			mainVC.contextPut("divider", divider);
-			
 			if (canDelete(vfsItem) && isNotDeleted) {
 				addLink("delete", CMD_DELETE, "o_icon o_icon-fw o_icon_delete_item");
+				deleteDivider = true;
 			}
-			
 			if (canDeletePermamently(vfsItem) && !isNotDeleted) {
 				addLink("delete.permanently", CMD_DELETE_PERMANENTLY, "o_icon o_icon-fw o_icon_delete_item");
+				deleteDivider = true;
 			}
+			mainVC.contextPut("deleteDivider", deleteDivider);
 			
 			putInitialPanel(mainVC);
 		}
@@ -3266,6 +3386,8 @@ public class FolderController extends FormBasicController implements Activateabl
 					doMoveSelectFolder(ureq, row);
 				} else if (CMD_COPY.equals(cmd)) {
 					doCopySelectFolder(ureq, row);
+				} else if (CMD_RENAME.equals(cmd)) {
+					doRename(ureq, row);
 				} else if (CMD_METADATA.equals(cmd)) {
 					doOpenMetadata(ureq, row);
 				} else if (CMD_VERSION.equals(cmd)) {

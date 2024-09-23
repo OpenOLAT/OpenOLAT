@@ -75,4 +75,6 @@ public interface Invitation extends CreateInfo {
 	public Group getBaseGroup();
 	
 	public Identity getIdentity();
+	
+	public void setIdentity(Identity identity);
 }

@@ -1,5 +1,9 @@
 .o_breadcrumb {
 	position:relative;
+	
+	a {
+		color: $o-toolbar-breadcrumb-link-color;
+	}
 
 	/* close link, used mostly in breadcrumb wrapped in toolbar */
 	.o_breadcrumb_close {

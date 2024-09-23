@@ -62,6 +62,7 @@ $text-color						: #333 !default;
 $navbar-default-link-color		: #666 !default;
 $badge-bg						: #666 !default;
 $btn-warning-color				: #222 !default;
+$text-muted						: #595959 !default;
 
 /* other general colors, override bootstrap counterparts */
 $brand-info						: #2B78E4 !default;
@@ -310,7 +311,8 @@ $o-toolbar-tools-margin-top-xs		: 6px !default;
 $o-toolbar-tools-margin-bottom-xs	: 4px !default;
 $o-toolbar-close-color				: $brand-danger !default;
 $o-toolbar-breadcrumb-bg-color		: $panel-default-heading-bg !default;
-$o-toolbar-breadcrumb-font-size 		: $font-size-base !default;
+$o-toolbar-breadcrumb-link-color 	: o-a11y-color($link-color, $o-toolbar-breadcrumb-bg-color) !default;
+$o-toolbar-breadcrumb-font-size 	: $font-size-base !default;
 $o-toolbar-breadcrumb-line-height	: $line-height-base !default;
 $o-toolbar-nav-link-color			: $o-toolbar-link-color !default; 
 $o-toolbar-nav-link-hover-color		: $o-toolbar-link-hover-color !default; 
@@ -1137,13 +1139,13 @@ $o-radial-progress-number-color			: $progress-bar-bg !default;
 $o-radial-progress-addon-color			: $text-muted !default;
 $o-radial-progress-margin 				: 10px !default;
 $o-radial-progress-circle-success-color		: $progress-bar-success-bg !default;
-$o-radial-progress-percentage-success-color	: $progress-bar-success-bg !default;
+$o-radial-progress-percentage-success-color	: $state-success-text !default;
 $o-radial-progress-circle-warning-color		: $progress-bar-warning-bg !default;
-$o-radial-progress-percentage-warning-color	: $progress-bar-warning-bg !default;
+$o-radial-progress-percentage-warning-color	: $state-warning-text !default;
 $o-radial-progress-circle-danger-color		: $progress-bar-danger-bg !default;
-$o-radial-progress-percentage-danger-color	: $progress-bar-danger-bg !default;
+$o-radial-progress-percentage-danger-color	: $state-danger-text !default;
 $o-radial-progress-circle-info-color		: $progress-bar-info-bg !default;
-$o-radial-progress-percentage-info-color	: $progress-bar-info-bg !default;
+$o-radial-progress-percentage-info-color	: $state-info-text !default;
 
 /* Drawing (border cannot be change without modifications of the jquery plugin and hotspot interaction) */
 $o-drawing-border-color		: $brand-primary;
@@ -1349,20 +1351,20 @@ $o-files-size-okay								: #61E868;
 $o-files-size-warning							: #FFB100;
 $o-files-size-large								: #E82A0C;
 $o-file-upload-border-bottom-color				: $text-muted;
-$o-folder-row-thumbnail-size						: 30px !default;
+$o-folder-row-thumbnail-size					: 30px !default;
 $o-folder-row-thumbnail-icon-size				: 22px !default;
-$o-folder-row-thumbnail-image-border				: 1px solid #e7e7e7 !default;
+$o-folder-row-thumbnail-image-border			: 1px solid #e7e7e7 !default;
 $o-folder-row-thumbnail-folder-icon-color		: $brand-primary !default;
 $o-folder-card-thumbnail-height					: 172px !default;
 $o-folder-card-thumbnail-icon-color				: #ccc !default;
 $o-folder-card-thumbnail-folder-icon-color		: $brand-primary !default;
 $o-folder-label-elements-bg-color				: white !default;
-$o-folder-label-elements-color					: $text-color !default;
+$o-folder-label-elements-color					: o-a11y-color($text-color, $o-folder-label-elements-bg-color) !default;
 $o-folder-label-locked-bg-color					: white !default;
-$o-folder-label-locked-color						: #D6001C !default;
-$o-folder-label-editing-bg-color					: white !default;
-$o-folder-label-editing-color					: #337ab7 !default;
-$o-folder-label-new-bg-color						: $btn-primary-bg !default;
+$o-folder-label-locked-color					: o-a11y-color(#D6001C, $o-folder-label-locked-bg-color) !default;
+$o-folder-label-editing-bg-color				: white !default;
+$o-folder-label-editing-color					: o-a11y-color(#337ab7, $o-folder-label-editing-bg-color) !default;
+$o-folder-label-new-bg-color					: $btn-primary-bg !default;
 $o-folder-label-new-color						: $btn-primary-color !default;
 $o-folder-muted-color							: $text-muted !default;
 
@@ -1493,14 +1495,14 @@ $o-video-border-color-light-green : $o-video-border-color;
 $o-video-border-color-sea-green   : $o-video-border-color;
 
 /* Educational course types */
-$o-edu-type-standard-course-color 			: $gray !default;
-$o-edu-type-exam-course-color 				: $o-cn-style-cat-red-color !default;
-$o-edu-type-certification-course-color		: $o-cn-style-cat-orange-color !default;
-$o-edu-type-date-course-color				: $o-cn-style-cat-purple-color !default;
-$o-edu-type-seminar-course-color			: $o-cn-style-cat-light-blue-color !default;
-$o-edu-type-lecture-course-color			: $o-cn-style-cat-light-green-color !default;
-$o-edu-type-blendedlearning-course-color	: $o-cn-style-cat-yellow-color !default;
-$o-edu-type-selfstudy-course-color			: $o-cn-style-cat-dark-green-color !default;
+$o-edu-type-standard-course-color 			: o-a11y-color($gray) !default;
+$o-edu-type-exam-course-color 				: o-a11y-color($o-cn-style-cat-red-color)  !default;
+$o-edu-type-certification-course-color		: o-a11y-color($o-cn-style-cat-orange-color)  !default;
+$o-edu-type-date-course-color				: o-a11y-color($o-cn-style-cat-purple-color)  !default;
+$o-edu-type-seminar-course-color			: o-a11y-color($o-cn-style-cat-light-blue-color)  !default;
+$o-edu-type-lecture-course-color			: o-a11y-color($o-cn-style-cat-light-green-color)  !default;
+$o-edu-type-blendedlearning-course-color	: o-a11y-color($o-cn-style-cat-yellow-color)  !default;
+$o-edu-type-selfstudy-course-color			: o-a11y-color($o-cn-style-cat-dark-green-color)  !default;
 
 /* Export area */
 $o-export-area-meta-color					: #777;
@@ -1580,7 +1582,7 @@ $o-todo-details-row-gap						: 15px !default;
 /* Dialog courseNode */
 $o-dialog-cn-box-border-color				: $panel-default-border;
 $o-dialog-cn-label-new-border-color			: $o-edu-type-standard-course-color;
-$o-dialog-cn-label-new-color				: #998100;
+$o-dialog-cn-label-new-color				: o-a11y-color(#998100) !default;
 
 /* Card */
 $o-card-border								: 1px solid #cccccc !default;
