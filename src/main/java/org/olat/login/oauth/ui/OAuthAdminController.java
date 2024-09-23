@@ -27,7 +27,6 @@ import org.json.JSONObject;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
 import org.olat.core.gui.components.dropdown.DropdownItem;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -221,9 +220,7 @@ public class OAuthAdminController extends FormBasicController {
 		addCont.setRootForm(mainForm);
 		formLayout.add(addCont);
 		
-		DropdownItem addDropdown = uifactory.addDropdownMenu("add.provider", "add.provider", addCont, getTranslator());
-		addDropdown.setCarretIconCSS("o_icon o_icon-fw o_icon_commands");
-		addDropdown.setOrientation(DropdownOrientation.right);
+		DropdownItem addDropdown = uifactory.addDropdownMenuMore("add.provider", addCont, getTranslator());
 
 		for(OAuthSPI spi:allConfigurableSpis) {
 			if(!spi.isEnabled()) {

@@ -76,7 +76,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		sb.append("' data-toggle='dropdown'");
 		if (StringHelper.containsNonWhitespace(dropdown.getAriaLabel())) {
 			sb.append(" aria-label=\"");
-			sb.append(dropdown.getAriaLabel());
+			sb.appendHtmlAttributeEscaped(dropdown.getAriaLabel());
 			sb.append("\"");
 		}
 		sb.append(">");
@@ -85,7 +85,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		sb.append("<span class='o_inner_wrapper ").append(dropdownInnerCss, (dropdownInnerCss != null)).append("'>");
 		// With or without Icon
 		if(StringHelper.containsNonWhitespace(dropdown.getIconCSS())) {
-			sb.append("<i class='").append(dropdown.getIconCSS()).append("'>&nbsp;</i>");
+			sb.append("<i class='").append(dropdown.getIconCSS()).append("' aria-hidden='true'>&nbsp;</i>");
 		}
 		String dropdownInnerText = dropdown.getInnerText();
 		sb.append("<span class='o_inner_text'>", (dropdownInnerText != null));
@@ -177,11 +177,21 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 				sb.append(dropdown.getCarretIconCSS());
 			} else {
 				// Caret to indicate the drop-down nature of the button
-				sb.append("o_icon o_icon_caret");
+				sb.append("o_icon o_icon_caret o-icon-fw");
 			}
-			sb.append("'> </i> ");
+			sb.append("' aria-hidden='true'");
+			// if there is an aria label we also use this as a mouse-over help
+			if (dropdown.getTranslator() != null) {
+				sb.append(" title=\"").appendHtmlAttributeEscaped(dropdown.getTranslator().translate("action.more")).append("\"");				
+				sb.append("> </i>");
+				sb.append("<span class='sr-only'>").appendHtmlAttributeEscaped(dropdown.getTranslator().translate("action.more")).append("</span>");				
+			} else {
+				sb.append("> </i>");
+			}
+			
+			
 		} else {
-			sb.append(" <i class='o_icon'> </i>");
+			sb.append(" <i class='o_icon' aria-hidden='true'> </i>");
 		}
 	}
 }

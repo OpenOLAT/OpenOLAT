@@ -23,7 +23,6 @@ import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -74,10 +73,8 @@ public class CatalogSearchHeaderController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		DropdownItem dropdown = uifactory.addDropdownMenu("tools", null, null, flc, getTranslator());
+		DropdownItem dropdown = uifactory.addDropdownMenuMore("tools", flc, getTranslator());
 		dropdown.setElementCssClass("o_catalog_admin_tools");
-		dropdown.setCarretIconCSS("o_icon o_icon_commands");
-		dropdown.setOrientation(DropdownOrientation.right);
 		if (secCallback.canEditCatalogAdministration()) {
 			openAdminLink = uifactory.addFormLink("open.admin", "open.admin", "open.admin", null, flc, Link.LINK);
 			dropdown.addElement(openAdminLink);
