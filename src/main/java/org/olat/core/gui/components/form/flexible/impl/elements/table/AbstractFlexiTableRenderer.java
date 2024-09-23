@@ -788,7 +788,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 					  new NameValuePair("page", Integer.toString(page - 1))));
 		}
-		sb.append("\" draggable=\"false\">").append("&laquo;").append("</a></li>");
+		sb.append("\" draggable=\"false\"").append(" aria-disabled='true'", disabled).append(">").append("&laquo;").append("</a></li>");
 	}
 	
 	private void renderPageNextLink(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
@@ -803,7 +803,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 					  new NameValuePair("page", Integer.toString(page + 1)))); 
 		}
-		sb.append("\" draggable=\"false\">").append("&raquo;").append("</a></li>");
+		sb.append("\" draggable=\"false\"").append(" aria-disabled='true'", disabled).append(">").append("&raquo;").append("</a></li>");
 	}
 	
 	private void renderPageNumberLinks(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
