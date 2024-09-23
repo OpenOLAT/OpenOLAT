@@ -162,7 +162,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, false, readOnly, onePage, anonym);
 				} else {
 					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, true, null);
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, false, null);
 				}
 			} else if(hasRole(ContentRoles.reviewer, ureq.getIdentity(), accessRights)
 					|| hasRole(ContentRoles.invitee, ureq.getIdentity(), accessRights)) {
@@ -173,7 +173,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, reviewers, survey, true, readOnly, onePage, anonym);
 				} else {
 					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, true, null);
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, false, null);
 				}
 			}
 		}
