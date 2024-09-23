@@ -70,7 +70,10 @@ public interface AssessmentToolManager {
 	public long countAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
 	
 	public List<AssessmentEntry> getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
-	
+
+	public void getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status,
+									 AssessmentEntryHandler assessmentEntryHandler);
+
 	public List<GradingAssignment> getGradingAssignments(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
 	
 	public List<CoachingAssignmentStatistics> getCoachingAssignmentStatistics(Identity manager, AssessmentEntryStatus status);
@@ -88,4 +91,7 @@ public interface AssessmentToolManager {
 
 	public Set<IdentityRef> getFakeParticipants(RepositoryEntry entry, Identity identity, boolean admin, boolean coach);
 
+	public interface AssessmentEntryHandler {
+		void handleAssessmentEntry(AssessmentEntry assessmentEntry);
+	}
 }

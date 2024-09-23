@@ -153,12 +153,13 @@ public interface OpenBadgesManager {
 
 	void issueBadgesAutomatically(RepositoryEntry courseEntry, boolean learningPath, Identity awardedBy);
 
-	List<ParticipantAndAssessmentEntries> getParticipantsWithAssessmentEntryList(
-			RepositoryEntry courseEntry, Identity identity, AssessmentToolSecurityCallback securityCallback);
+	interface AssessmentEntriesHandler {
+		void handleAssessmentEntries(Identity participant, List<AssessmentEntry> assessmentEntries);
+	}
 
-	List<Identity> getAutomaticRecipients(BadgeClass badgeClass,
-										  boolean learningPath, List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries);
-
+	void getParticipantsWithAssessmentEntries(RepositoryEntry courseEntry, Identity identity,
+											  AssessmentToolSecurityCallback securityCallback,
+											  AssessmentEntriesHandler assessmentEntriesHandler);
 
 	List<ParticipantAndAssessmentEntries> associateParticipantsWithAssessmentEntries(List<AssessmentEntry> assessmentEntries);
 
