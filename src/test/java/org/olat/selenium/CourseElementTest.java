@@ -82,6 +82,8 @@ import org.olat.selenium.page.course.TBrokerPage;
 import org.olat.selenium.page.course.TUConfigurationPage;
 import org.olat.selenium.page.course.TUPage;
 import org.olat.selenium.page.course.TeamsPage;
+import org.olat.selenium.page.course.VideoConfigurationPage;
+import org.olat.selenium.page.course.VideoPage;
 import org.olat.selenium.page.course.ZoomConfigurationPage;
 import org.olat.selenium.page.course.ZoomPage;
 import org.olat.selenium.page.forum.ForumPage;
@@ -270,6 +272,54 @@ public class CourseElementTest extends Deployments {
 			.passVerySimpleScorm()
 			.assertOnScormPassed()
 			.assertOnScormScore(33);
+	}
+	
+	/**
+	 * An author create a video course element, import the video with an URL
+	 * and publishes the course. It checks the page.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithVideo()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword());
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		
+		//create a course
+		String courseTitle = "Course with video " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+
+		//Create a course element of type video
+		String videoNodeTitle = "Video YT 1.0";
+		String videoId = "A49N9C3YvS0";
+		String youtubeUrl = "https://youtu.be/" + videoId;
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("video")
+			.nodeTitle(videoNodeTitle);
+		new VideoConfigurationPage(browser)
+			.selectVideoConfiguration()
+			.selectVideoUrl("Explanation", youtubeUrl);
+
+		courseEditor
+			.autoPublish();
+		
+		course
+			.assertOnLearnPathLastNode(videoNodeTitle);
+		
+		new VideoPage(browser)
+			.assertOnYoutubeVideo(videoId);
 	}
 	
 	/**
