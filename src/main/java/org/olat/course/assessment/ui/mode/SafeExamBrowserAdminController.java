@@ -257,6 +257,17 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 		assessmentModule.setSafeExamBrowserUrlFilter(urlFilter);
 		boolean urlContentFilter = urlFilter && urlContentFilterEl.isOneSelected() && urlContentFilterEl.isKeySelected("true");
 		assessmentModule.setSafeExamBrowserUrlContentFilter(urlContentFilter);
+		if (urlFilter) {
+			assessmentModule.setSafeExamBrowserAllowedUrlExpressions(allowedExpressionsEl.getValue());
+			assessmentModule.setSafeExamBrowserAllowedUrlRegex(allowedRegexEl.getValue());
+			assessmentModule.setSafeExamBrowserBlockedUrlExpressions(blockedExpressionsEl.getValue());
+			assessmentModule.setSafeExamBrowserBlockedUrlRegex(blockedRegexEl.getValue());
+		} else {
+			assessmentModule.setSafeExamBrowserAllowedUrlExpressions(null);
+			assessmentModule.setSafeExamBrowserAllowedUrlRegex(null);
+			assessmentModule.setSafeExamBrowserBlockedUrlExpressions(null);
+			assessmentModule.setSafeExamBrowserBlockedUrlRegex(null);
+		}
 		
 		assessmentModule.setSafeExamBrowserHint(safeExamBrowserHintEl.getValue());
 	}
