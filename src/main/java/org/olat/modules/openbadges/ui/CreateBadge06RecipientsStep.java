@@ -221,18 +221,14 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 				ICourse course = CourseFactory.loadCourse(createContext.getCourseResourcableId());
 				NodeAccessType nodeAccessType  = course.getCourseConfig().getNodeAccessType();
 				boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType());
-				List<OpenBadgesManager.ParticipantAndAssessmentEntries> participantsAndAssessmentEntries =
-						openBadgesManager.getParticipantsWithAssessmentEntryList(courseEntry,
-								getIdentity(), secCallback);
-				for (OpenBadgesManager.ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries) {
-					Identity assessedIdentity = participantAndAssessmentEntries.participant();
-					List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
-					if (badgeCriteria.allCourseConditionsMet(assessedIdentity, learningPath, assessmentEntries)) {
-						BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
-						rows.add(row);
-						earners.add(assessedIdentity);
-					}
-				}
+				openBadgesManager.getParticipantsWithAssessmentEntries(courseEntry, getIdentity(), secCallback,
+						(participant, assessmentEntries) -> {
+							if (badgeCriteria.allCourseConditionsMet(participant, learningPath, assessmentEntries)) {
+								BadgeEarnerRow row = new BadgeEarnerRow(participant, userPropertyHandlers, getLocale());
+								rows.add(row);
+								earners.add(participant);
+							}
+						});
 			}
 
 			createContext.setEarners(earners);

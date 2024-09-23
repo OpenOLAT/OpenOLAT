@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
@@ -69,6 +70,7 @@ import org.olat.modules.grading.GradingAssignment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.hibernate.internal.util.MutableInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -829,7 +831,38 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		
 		return list.getResultList();
 	}
-	
+
+	public void getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params,
+									 AssessmentEntryStatus status,
+									 AssessmentEntryHandler assessmentEntryHandler) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select aentry from assessmententry aentry")
+				.append(" inner join fetch aentry.identity as assessedIdentity")
+				.append(" inner join fetch assessedIdentity.user as assessedUser");
+		QueryParams queryParams = new QueryParams();
+		applySearchAssessedIdentityParams(sb, params, status, queryParams);
+		sb.append(" order by aentry.identity.key");
+
+		TypedQuery<AssessmentEntry> list = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class);
+
+		appendQueryParams(list, queryParams, params, coach);
+		applySearchAssessedIdentityParams(list, params, status);
+
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		MutableInteger count = new MutableInteger(0);
+		list.getResultStream().forEach(row -> {
+			em.detach(row);
+			assessmentEntryHandler.handleAssessmentEntry(row);
+
+			if (count.incrementAndGet() % 5000 == 0) {
+				em.clear();
+			}
+		});
+		em.clear();
+		dbInstance.commitAndCloseSession();
+	}
+
 	@Override
 	public List<GradingAssignment> getGradingAssignments(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
 		QueryBuilder sb = new QueryBuilder();
