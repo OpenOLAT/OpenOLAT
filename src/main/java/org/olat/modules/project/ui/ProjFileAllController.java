@@ -122,9 +122,7 @@ public class ProjFileAllController extends ProjFileListController {
 			}
 		}
 
-		DropdownItem dropdown = uifactory.addDropdownMenu("cmds", null, null, flc, getTranslator());
-		dropdown.setCarretIconCSS("o_icon o_icon_commands");
-		dropdown.setOrientation(DropdownOrientation.right);
+		DropdownItem dropdown = uifactory.addDropdownMenuMore("cmds", flc, getTranslator());
 		
 		downloadAllLink = uifactory.addFormLink("file.download.all", formLayout, Link.LINK);
 		downloadAllLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");

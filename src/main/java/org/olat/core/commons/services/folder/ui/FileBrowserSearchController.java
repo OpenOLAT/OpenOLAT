@@ -52,10 +52,12 @@ public class FileBrowserSearchController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
 		quickSearchEl.setDomReplacementWrapperRequired(false);
+		quickSearchEl.setAriaLabel("enter.search.term");
 		
 		quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
 		quickSearchButton.setDomReplacementWrapperRequired(false);
+		quickSearchButton.setTitle(translate("search"));
 	}
 
 	@Override
@@ -85,12 +87,14 @@ public class FileBrowserSearchController extends FormBasicController {
 
 	public void enable(String placeholder) {
 		quickSearchEl.setPlaceholderText(placeholder);
+		quickSearchEl.setAriaLabel(placeholder);
 		quickSearchEl.setEnabled(true);
 		quickSearchButton.setEnabled(true);
 	}
 
 	public void disable() {
 		quickSearchEl.setPlaceholderText(translate("search.not.available"));
+		quickSearchEl.setAriaLabel(translate("search.not.available"));
 		quickSearchEl.setEnabled(false);
 		quickSearchButton.setEnabled(false);
 	}

@@ -1021,12 +1021,20 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private void recreateBadgeAssertionIfNeeded(Identity recipient, BadgeClass badgeClass, Date issuedOn, Identity awardedBy) {
 		BadgeAssertion badgeAssertion = badgeAssertionDAO.getBadgeAssertion(recipient, badgeClass);
 		if (badgeAssertion == null) {
-			log.debug("No badge assertion exists for user {} and badge {}.", recipient, badgeClass);
+			if (log.isDebugEnabled()) {
+				log.debug("No badge assertion exists for user {} and badge {}.", recipient, badgeClass);
+			}
 			return;
 		}
 		if (badgeAssertion.getStatus().equals(BadgeAssertion.BadgeAssertionStatus.issued)) {
-			log.debug("No need to update badge assertion for user {} and badge {}.", recipient, badgeClass);
+			if (log.isDebugEnabled()) {
+				log.debug("No need to update badge assertion for user {} and badge {}.", recipient, badgeClass);
+			}
 			return;
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug("Recreating badge '{}' for user '{}'.", badgeClass.getName(), recipient.getName());
 		}
 
 		badgeAssertion.setStatus(BadgeAssertion.BadgeAssertionStatus.issued);
@@ -1109,28 +1117,34 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false,
 				false, true, true, true,
 				null, null);
-		List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries =
-				getParticipantsWithAssessmentEntryList(courseEntry, doer, secCallback);
-
-		for (BadgeClass badgeClass : badgeClasses) {
-			handleCourseReset(badgeClass, learningPath, participantsAndAssessmentEntries);
-		}
+		getParticipantsWithAssessmentEntries(courseEntry, doer, secCallback, (participant, assessmentEntries) -> {
+			for (BadgeClass badgeClass : badgeClasses) {
+				handleCourseReset(badgeClass, learningPath, participant, assessmentEntries);
+			}
+		});
 	}
 
 	private void handleCourseReset(BadgeClass badgeClass, boolean learningPath,
-								   List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries) {
+								   Identity participant, List<AssessmentEntry> assessmentEntries) {
 		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 		assert badgeCriteria != null;
 
 		if (!badgeCriteria.isAwardAutomatically()) {
+			if (log.isDebugEnabled()) {
+				log.debug("Not resetting manually awarded badge '{}' for participant '{}'", badgeClass.getName(), participant.getName());
+			}
 			return;
 		}
 
-		for (ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries) {
-			List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
-			Identity assessedIdentity = participantAndAssessmentEntries.participant();
-			if (!badgeCriteria.allCourseConditionsMet(assessedIdentity, learningPath, assessmentEntries)) {
-				handleCourseReset(assessedIdentity, badgeClass);
+		if (!badgeCriteria.allCourseConditionsMet(participant, learningPath, assessmentEntries)) {
+			if (log.isDebugEnabled()) {
+				log.debug("Resetting badge '{}' for participant '{}'.", badgeClass.getName(), participant.getName());
+			}
+			handleCourseReset(participant, badgeClass);
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Not resetting badge '{}' for participant '{}' because conditions are still met.",
+						badgeClass.getName(), participant.getName());
 			}
 		}
 	}
@@ -1138,17 +1152,28 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private void handleCourseReset(Identity assessedIdentity, BadgeClass badgeClass) {
 		BadgeAssertion badgeAssertion = badgeAssertionDAO.getBadgeAssertion(assessedIdentity, badgeClass);
 		if (badgeAssertion == null) {
-			// candidate doesn't have this badge
+			if (log.isDebugEnabled()) {
+				log.debug("'{}' doesn't have badge '{}'. Nothing to reset.", assessedIdentity.getName(),
+						badgeClass.getName());
+			}
 			return;
 		}
 
 		if (badgeAssertion.getStatus().equals(BadgeAssertion.BadgeAssertionStatus.reset)) {
-			// badge assertion already in the desired state
+			if (log.isDebugEnabled()) {
+				log.debug("'{}' already has badge '{}' in reset state. No need to reset.", assessedIdentity.getName(),
+						badgeClass.getName());
+			}
 			return;
 		}
 
 		badgeAssertion.setStatus(BadgeAssertion.BadgeAssertionStatus.reset);
 		badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
+
+		if (log.isDebugEnabled()) {
+			log.debug("'{}' has badge '{}' in reset state now.", assessedIdentity.getName(),
+					badgeClass.getName());
+		}
 	}
 
 	@Override
@@ -1194,65 +1219,75 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false,
 				false, true, true, true,
 				null, null);
-		List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries =
-				getParticipantsWithAssessmentEntryList(courseEntry, awardedBy, secCallback);
-		for (BadgeClass badgeClass : badgeClasses) {
-			List<Identity> automaticRecipients = getAutomaticRecipients(badgeClass, learningPath, participantsAndAssessmentEntries);
-			issueBadge(badgeClass, automaticRecipients, awardedBy);
+
+		getParticipantsWithAssessmentEntries(courseEntry, awardedBy, secCallback, (participant, assessmentEntries) -> {
+			for (BadgeClass badgeClass : badgeClasses) {
+				issueBadgeAutomatically(badgeClass, learningPath, participant, assessmentEntries, awardedBy);
+			}
+		});
+	}
+
+	private void issueBadgeAutomatically(BadgeClass badgeClass, boolean learningPath, Identity participant,
+										 List<AssessmentEntry> assessmentEntries, Identity awardedBy) {
+		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+		assert badgeCriteria != null;
+
+		if (!badgeCriteria.isAwardAutomatically()) {
+			if (log.isDebugEnabled()) {
+				log.debug("Badge '{}' is not awarded automatically for participant '{}' (manual mode)", badgeClass.getName(), participant.getName());
+			}
+			return;
+		}
+
+		if (badgeCriteria.allCourseConditionsMet(participant, learningPath, assessmentEntries)) {
+			if (log.isDebugEnabled()) {
+				log.debug("Issuing badge '{}' automatically for participant '{}'.", badgeClass.getName(),
+						participant.getName());
+			}
+			issueBadge(badgeClass, List.of(participant), awardedBy);
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Not issuing badge '{}' for participant '{}' because conditions are not met.",
+						badgeClass.getName(), participant.getName());
+			}
 		}
 	}
 
 	@Override
-	public List<ParticipantAndAssessmentEntries> getParticipantsWithAssessmentEntryList(
-			RepositoryEntry courseEntry, Identity identity, AssessmentToolSecurityCallback securityCallback) {
-		List<ParticipantAndAssessmentEntries> result = new ArrayList<>();
+	public void getParticipantsWithAssessmentEntries(RepositoryEntry courseEntry, Identity identity,
+													 AssessmentToolSecurityCallback securityCallback,
+													 AssessmentEntriesHandler assessmentEntriesHandler) {
 
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
 				courseEntry, null, null, securityCallback);
 
-		Map<Long, List<AssessmentEntry>> participantKeyToAssessmentEntries = new HashMap<>();
-		assessmentToolManager.getAssessmentEntries(identity, params, null)
-				.stream()
-				.filter(entry -> entry.getIdentity() != null)
-				.forEach(entry -> {
-					Long participantKey = entry.getIdentity().getKey();
-					if (!participantKeyToAssessmentEntries.containsKey(participantKey)) {
-						participantKeyToAssessmentEntries.put(participantKey, new ArrayList<>());
-					}
-					participantKeyToAssessmentEntries.get(entry.getIdentity().getKey()).add(entry);
-				});
-		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(identity, params);
+		Set<Identity> assessedIdentities = new HashSet<>(assessmentToolManager.getAssessedIdentities(identity, params));
 
-		for (Identity assessedIdentity : assessedIdentities) {
-			List<AssessmentEntry> assessmentEntries = participantKeyToAssessmentEntries.get(assessedIdentity.getKey());
-			if (assessmentEntries == null) {
-				log.info("Could not find assessment entries for {}", assessedIdentity.getKey());
-				continue;
+		final Identity[] currentParticipant = {null};
+		final List<AssessmentEntry>[] currentAssessmentEntries = new List[]{null};
+
+		assessmentToolManager.getAssessmentEntries(identity, params, null, (assessmentEntry) -> {
+			if (assessmentEntry.getIdentity() == null) {
+				return;
 			}
-			result.add(new ParticipantAndAssessmentEntries(assessedIdentity, assessmentEntries));
-		}
-		return result;
-	}
-
-	@Override
-	public List<Identity> getAutomaticRecipients(BadgeClass badgeClass,
-												 boolean learningPath, List<ParticipantAndAssessmentEntries> participantsAndAssessmentEntries) {
-		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
-		assert badgeCriteria != null;
-
-		List<Identity> automaticRecipients = new ArrayList<>();
-		if (!badgeCriteria.isAwardAutomatically()) {
-			return automaticRecipients;
-		}
-
-		for (ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries) {
-			List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
-			Identity assessedIdentity = participantAndAssessmentEntries.participant();
-			if (badgeCriteria.allCourseConditionsMet(assessedIdentity, learningPath, assessmentEntries)) {
-				automaticRecipients.add(assessedIdentity);
+			Identity participant = assessmentEntry.getIdentity();
+			if (currentParticipant[0] == null) {
+				currentParticipant[0] = participant;
+				currentAssessmentEntries[0] = new ArrayList<>();
+			} else if (!currentParticipant[0].equals(participant)) {
+				if (assessedIdentities.contains(currentParticipant[0])) {
+					assessmentEntriesHandler.handleAssessmentEntries(currentParticipant[0], currentAssessmentEntries[0]);
+				}
+				currentParticipant[0] = participant;
+				currentAssessmentEntries[0] = new ArrayList<>();
 			}
+
+			currentAssessmentEntries[0].add(assessmentEntry);
+		});
+
+		if (!currentAssessmentEntries[0].isEmpty() && assessedIdentities.contains(currentParticipant[0])) {
+			assessmentEntriesHandler.handleAssessmentEntries(currentParticipant[0], currentAssessmentEntries[0]);
 		}
-		return automaticRecipients;
 	}
 
 	@Override

@@ -283,7 +283,7 @@ public class TableController extends BasicController {
 		preferenceLink.setTooltip(translate("command.changecols"));
 		
 		downloadLink = LinkFactory.createCustomLink("downloadLink", "cmd.download", "", Link.BUTTON | Link.NONTRANSLATED, contentVc, this);
-		downloadLink.setTooltip(translate("table.export.title"));
+		downloadLink.setTitle(translate("table.export.title"));
 		downloadLink.setIconLeftCSS("o_icon o_icon_download");
 		
 		putInitialPanel(contentVc);

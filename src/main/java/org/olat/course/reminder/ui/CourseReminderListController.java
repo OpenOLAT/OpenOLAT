@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -132,9 +131,7 @@ public class CourseReminderListController extends FormBasicController
 		addButton.setIconLeftCSS("o_icon o_icon_add");
 		addButton.setElementCssClass("o_sel_add_course_reminder");
 		
-		DropdownItem dropdown = uifactory.addDropdownMenu("tools", null, null, flc, getTranslator());
-		dropdown.setCarretIconCSS("o_icon o_icon_commands");
-		dropdown.setOrientation(DropdownOrientation.right);
+		DropdownItem dropdown = uifactory.addDropdownMenuMore("tools", flc, getTranslator());
 		dropdown.setExpandContentHeight(true);
 		
 		showLogLink = uifactory.addFormLink("show.sent", "show.sent", "show.sent", null, flc, Link.LINK);

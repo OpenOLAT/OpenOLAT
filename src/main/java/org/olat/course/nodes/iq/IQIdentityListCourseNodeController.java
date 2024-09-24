@@ -37,7 +37,6 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -285,9 +284,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 			if(qti21) {
 				if(getAssessmentCallback().canDeleteData()) {
-					moreDropdown = uifactory.addDropdownMenu("more.menu", null, null, formLayout, getTranslator());
-					moreDropdown.setCarretIconCSS("o_icon o_icon_commands");
-					moreDropdown.setOrientation(DropdownOrientation.right);
+					moreDropdown = uifactory.addDropdownMenuMore("more.menu", formLayout, getTranslator());
 					moreDropdown.setEmbbeded(true);
 					moreDropdown.setButton(true);
 					

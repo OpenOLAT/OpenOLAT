@@ -167,7 +167,8 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 		// More button
 		sb.append("<button id='o_cmore_").append(cmp.getDispatchID()).append("' tabindex='0' type='button' class='dropdown-toggle' data-toggle='dropdown' aria-expanded='false'")
 		  .append(" title='").append(translator.translate("more.title")).append("'>")
-		  .append("<i class='o_icon o_icon-fw o_icon_commands'> </i></button>");
+		  .append("<i class='o_icon o_icon-fw o_icon_commands' aria-hidden='true' title=\"").appendHtmlAttributeEscaped(translator.translate("action.more")).append("\"> </i>")
+		  .append("<span class='sr-only'>").appendHtmlAttributeEscaped(translator.translate("action.more")).append("</span></button>");
 		// Menu
 		sb.append("<ul class='dropdown-menu dropdown-menu-right' role='menu' style=''>");
 		

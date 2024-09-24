@@ -397,10 +397,12 @@ public class FolderController extends FormBasicController implements Activateabl
 		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
 		quickSearchEl.setPlaceholderKey("enter.search.term", null);
 		quickSearchEl.setDomReplacementWrapperRequired(false);
+		quickSearchEl.setAriaLabel("enter.search.term");
 		
 		quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
 		quickSearchButton.setDomReplacementWrapperRequired(false);
+		quickSearchButton.setTitle(translate("search"));
 		
 		addFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add", null, formLayout);
 		addFileEl.addActionListener(FormEvent.ONCHANGE);// Needed for selenium tests
@@ -457,9 +459,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		recordAudioLink.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
 		createDropdown.addElement(recordAudioLink);
 		
-		cmdDropdown = uifactory.addDropdownMenu("cmds", null, null, flc, getTranslator());
-		cmdDropdown.setCarretIconCSS("o_icon o_icon_commands");
-		cmdDropdown.setOrientation(DropdownOrientation.right);
+		cmdDropdown = uifactory.addDropdownMenuMore("cmds", flc, getTranslator());
 		
 		webdavLink = uifactory.addFormLink("webdav", formLayout, Link.LINK);
 		webdavLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
@@ -1218,6 +1218,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private void forgeToolsLink(FolderRow row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + counter++, "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

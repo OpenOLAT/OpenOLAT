@@ -442,9 +442,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void initMoreMenu(FormLayoutContainer formLayout) {
-		DropdownItem moreDropdown = uifactory.addDropdownMenu("more.menu", null, null, formLayout, getTranslator());
-		moreDropdown.setCarretIconCSS("o_icon o_icon_commands");
-		moreDropdown.setOrientation(DropdownOrientation.right);
+		DropdownItem moreDropdown = uifactory.addDropdownMenuMore("more.menu", formLayout, getTranslator());
 		moreDropdown.setEmbbeded(true);
 		moreDropdown.setButton(true);
 		

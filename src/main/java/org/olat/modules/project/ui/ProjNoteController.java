@@ -26,7 +26,6 @@ import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
 import org.olat.core.gui.components.dropdown.DropdownItem;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -117,12 +116,10 @@ public class ProjNoteController extends FormBasicController {
 		editToggle = uifactory.addToggleButton("edit", "edit.mode", translate("on"), translate("off"), formLayout);
 		flc.contextPut("editLableFor", editToggle.getFormDispatchId());
 		
-		cmdsDropDown = uifactory.addDropdownMenu("cmds", null, null, formLayout, getTranslator());
+		cmdsDropDown = uifactory.addDropdownMenuMore("cmds", formLayout, getTranslator());
 		cmdsDropDown.setElementCssClass("o_proj_cmds");
-		cmdsDropDown.setCarretIconCSS("o_icon o_icon_commands");
 		cmdsDropDown.setButton(true);
 		cmdsDropDown.setEmbbeded(true);
-		cmdsDropDown.setOrientation(DropdownOrientation.right);
 		
 		openNewWindowLink = uifactory.addFormLink("open.in.new.window", formLayout);
 		openNewWindowLink.setIconLeftCSS("o_icon o_icon-fw o_icon_content_popup");

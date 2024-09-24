@@ -219,13 +219,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		customButton = new FormLinkImpl(dispatchId.concat("_customButton"), "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		customButton.setTranslator(translator);
 		customButton.setIconLeftCSS("o_icon o_icon_customize");
-		customButton.setAriaLabel(translator.translate("aria.customize"));
+		customButton.setTitle(translator.translate("aria.customize"));
 		components.put("rCustomize", customButton);
 		
 		settingsButton = new FormLinkImpl(dispatchId.concat("_settingsButton"), "rSetttingsButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		settingsButton.setTranslator(translator);
 		settingsButton.setIconLeftCSS("o_icon o_icon_actions");
-		settingsButton.setAriaLabel(translator.translate("aria.settings"));
+		settingsButton.setTitle(translator.translate("aria.settings"));
 		components.put("rSettings", settingsButton);
 		
 		this.pageSize = pageSize;
@@ -297,7 +297,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			customTypeButton.setIconLeftCSS("o_icon o_icon_table_custom o_icon-lg");
 			customTypeButton.setElementCssClass("o_sel_custom");
 			customTypeButton.setActive(FlexiTableRendererType.custom == rendererType);
-			customTypeButton.setAriaLabel(translator.translate("aria.view.custom"));
+			customTypeButton.setTitle(translator.translate("aria.view.custom"));
 			components.put("rTypeCustom", customTypeButton);
 			//classic tables
 			classicTypeButton = new FormLinkImpl(dispatchId + "_classicRTypeButton", "rClassicRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
@@ -305,7 +305,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			classicTypeButton.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
 			classicTypeButton.setElementCssClass("o_sel_table");
 			classicTypeButton.setActive(FlexiTableRendererType.classic == rendererType);
-			classicTypeButton.setAriaLabel(translator.translate("aria.view.table"));
+			classicTypeButton.setTitle(translator.translate("aria.view.table"));
 			components.put("rTypeClassic", classicTypeButton);
 			// externally defined table visualization
 			externalTypeButton = new FormLinkImpl(dispatchId + "_externalRTypeButton", "rExternalRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
@@ -313,7 +313,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			externalTypeButton.setIconLeftCSS("o_icon");
 			externalTypeButton.setElementCssClass("o_sel_external");
 			externalTypeButton.setActive(FlexiTableRendererType.external == rendererType);
-			externalTypeButton.setAriaLabel(translator.translate("aria.view.other"));
+			externalTypeButton.setTitle(translator.translate("aria.view.other"));
 
 			if(getRootForm() != null) {
 				rootFormAvailable(customTypeButton);
@@ -667,6 +667,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			exportButton = new FormLinkImpl(dispatchId + "_exportButton", "rExportButton", "", Link.BUTTON | Link.NONTRANSLATED);
 			exportButton.setTranslator(translator);
 			exportButton.setIconLeftCSS("o_icon o_icon_download");
+			exportButton.setTitle(translator.translate("download"));
 			components.put("rExport", exportButton);
 			rootFormAvailable(exportButton);
 		} else {
@@ -2562,7 +2563,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if (emptyPrimaryActionIconCSS != null) {
 				emptyTablePrimaryActionButton.setIconLeftCSS("o_icon o_icon-fw " + emptyPrimaryActionIconCSS);
 			}
-			emptyTablePrimaryActionButton.setAriaLabel(emptyPrimaryActionKey);
+			emptyTablePrimaryActionButton.setTitle(emptyPrimaryActionKey);
 			components.put("rEmtpyTablePrimaryActionButton", emptyTablePrimaryActionButton);			
 			if(getRootForm() != null) {
 				rootFormAvailable(emptyTablePrimaryActionButton);

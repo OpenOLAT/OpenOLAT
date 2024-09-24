@@ -39,6 +39,7 @@ import org.olat.core.commons.services.tag.ui.component.TagSelectionImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.emptystate.EmptyStateItem;
 import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
@@ -1562,6 +1563,13 @@ public class FormUIFactory {
 		return slider;
 	}
 	
+	public DropdownItem addDropdownMenuMore(String name, FormItemContainer formLayout, Translator translator) {
+		DropdownItem dropdown = addDropdownMenu(name, null, null, formLayout, translator);
+		dropdown.setCarretIconCSS("o_icon o_icon_commands");
+		dropdown.setOrientation(DropdownOrientation.right);
+		return dropdown;
+	}
+
 	public DropdownItem addDropdownMenu(String name, String i18nLabel, FormItemContainer formLayout, Translator translator) {
 		return addDropdownMenu(name, name, i18nLabel, formLayout, translator);
 	}
