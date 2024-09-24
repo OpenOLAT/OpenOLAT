@@ -113,6 +113,8 @@ public class VideoSubtitlesHelper {
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
 				if (StringHelper.containsNonWhitespace(line)) {
+					// remove invisible BOM character at the beginning of the file
+					line = line.replace("\uFEFF", "");
 					return line.startsWith(VTT_MARKER);
 				}
 			}
